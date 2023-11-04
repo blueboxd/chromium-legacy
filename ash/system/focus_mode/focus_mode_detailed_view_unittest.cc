@@ -7,32 +7,43 @@
 #include <memory>
 
 #include "ash/constants/ash_features.h"
+#include "ash/shell.h"
+#include "ash/style/pill_button.h"
 #include "ash/style/switch.h"
 #include "ash/system/focus_mode/focus_mode_controller.h"
+#include "ash/system/focus_mode/focus_mode_util.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/fake_detailed_view_delegate.h"
+#include "ash/system/tray/hover_highlight_view.h"
 #include "ash/test/ash_test_base.h"
+#include "base/i18n/time_formatting.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "ui/message_center/message_center.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
 
 class FocusModeDetailedViewTest : public AshTestBase {
  public:
-  FocusModeDetailedViewTest() : scoped_feature_(features::kFocusMode) {}
+  FocusModeDetailedViewTest()
+      : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
+        scoped_feature_(features::kFocusMode) {}
   ~FocusModeDetailedViewTest() override = default;
 
   // AshTestBase:
   void SetUp() override {
     AshTestBase::SetUp();
 
-    auto focus_mode_detailed_view =
-        std::make_unique<FocusModeDetailedView>(&detailed_view_delegate_);
-    focus_mode_detailed_view_ = focus_mode_detailed_view.get();
-
     widget_ = CreateFramelessTestWidget();
     widget_->SetFullscreen(true);
-    widget_->SetContentsView(std::move(focus_mode_detailed_view));
+
+    CreateFakeFocusModeDetailedView();
   }
 
   void TearDown() override {
@@ -40,6 +51,27 @@ class FocusModeDetailedViewTest : public AshTestBase {
     widget_.reset();
 
     AshTestBase::TearDown();
+  }
+
+  void CreateFakeFocusModeDetailedView() {
+    auto focus_mode_detailed_view =
+        std::make_unique<FocusModeDetailedView>(&detailed_view_delegate_);
+    focus_mode_detailed_view_ = focus_mode_detailed_view.get();
+
+    widget_->SetContentsView(std::move(focus_mode_detailed_view));
+  }
+
+  views::Label* GetToggleRowLabel() {
+    return focus_mode_detailed_view_->toggle_view_->text_label();
+  }
+
+  views::Label* GetToggleRowSubLabel() {
+    return focus_mode_detailed_view_->toggle_view_->sub_text_label();
+  }
+
+  PillButton* GetToggleRowButton() {
+    return views::AsViewClass<PillButton>(
+        focus_mode_detailed_view_->toggle_view_->right_view());
   }
 
   Switch* GetDoNotDisturbToggleButton() {
@@ -109,6 +141,62 @@ TEST_F(FocusModeDetailedViewTest, DoNotDisturbToggleButtonAndQuietMode) {
   EXPECT_FALSE(toggle_button->GetIsOn());
   EXPECT_FALSE(focus_mode_controller->turn_on_do_not_disturb());
   EXPECT_TRUE(message_center->IsQuietMode());
+}
+
+// Tests label texts and start/stop functionalities for the toggle row.
+TEST_F(FocusModeDetailedViewTest, ToggleRow) {
+  auto* focus_mode_controller = FocusModeController::Get();
+
+  auto validate_labels = [&](bool active) {
+    EXPECT_EQ(active, focus_mode_controller->in_focus_session());
+    EXPECT_EQ(active ? u"Focusing" : u"Focus", GetToggleRowLabel()->GetText());
+
+    const base::Time now = base::Time::Now();
+    const base::TimeDelta session_duration =
+        focus_mode_controller->session_duration();
+    const int remaining_minutes =
+        active ? (focus_mode_controller->end_time() - now).InMinutes()
+               : session_duration.InMinutes();
+
+    EXPECT_EQ(base::UTF8ToUTF16(base::StringPrintf(
+                  "%d min ⋅ Until %s", remaining_minutes,
+                  base::UTF16ToUTF8(focus_mode_util::GetFormattedClockString(
+                                        now + session_duration))
+                      .c_str())),
+              GetToggleRowSubLabel()->GetText());
+    EXPECT_EQ(active ? u"End" : u"Start", GetToggleRowButton()->GetText());
+  };
+
+  validate_labels(/*active=*/false);
+
+  // Starting the focus session closes the bubble, so we need to recreate the
+  // detailed view.
+  LeftClickOn(GetToggleRowButton());
+  CreateFakeFocusModeDetailedView();
+
+  // Wait a second to avoid the time remaining being either 1500 seconds or
+  // 1499.99 seconds.
+  task_environment()->FastForwardBy(base::Seconds(1));
+  validate_labels(/*active=*/true);
+
+  LeftClickOn(GetToggleRowButton());
+  validate_labels(/*active=*/false);
+
+  // Verify that the time displays correctly in the 24-hour clock format.
+  Shell::Get()->system_tray_model()->SetUse24HourClock(true);
+
+  // Starting the focus session closes the bubble, so we need to recreate the
+  // detailed view.
+  LeftClickOn(GetToggleRowButton());
+  CreateFakeFocusModeDetailedView();
+
+  // Wait a second to avoid the time remaining being either 1500 seconds or
+  // 1499.99 seconds.
+  task_environment()->FastForwardBy(base::Seconds(1));
+  validate_labels(/*active=*/true);
+
+  LeftClickOn(GetToggleRowButton());
+  validate_labels(/*active=*/false);
 }
 
 }  // namespace ash

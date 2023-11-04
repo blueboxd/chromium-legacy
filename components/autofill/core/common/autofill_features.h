@@ -53,6 +53,8 @@ BASE_DECLARE_FEATURE(kAutofillEnableSupportForAddressOverflow);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillEnableSupportForAddressOverflowAndLandmark);
 COMPONENT_EXPORT(AUTOFILL)
+BASE_DECLARE_FEATURE(kAutofillEnableSupportForBetweenStreetsOrLandmark);
+COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillEnableSupportForLandmark);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillPredictionsForAutocompleteUnrecognized);
@@ -101,8 +103,6 @@ COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillEnableLabelPrecedenceForTurkishAddresses);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillEnableSupportForParsingWithSharedLabels);
-COMPONENT_EXPORT(AUTOFILL)
-BASE_DECLARE_FEATURE(kAutofillEnableSupportForMergingSubsetNames);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillEnableSupportForHonorificPrefixes);
 COMPONENT_EXPORT(AUTOFILL)
@@ -180,6 +180,8 @@ BASE_DECLARE_FEATURE(kAutofillPopupDoesNotOverlapWithContextMenu);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillPopupUseLatencyInformationForAcceptThreshold);
 COMPONENT_EXPORT(AUTOFILL)
+BASE_DECLARE_FEATURE(kAutofillPreferLabelsInSomeCountries);
+COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillPreventOverridingPrefilledValues);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillProbableFormSubmissionInBrowser);
@@ -187,7 +189,6 @@ COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillRemoveInaccessibleProfileValuesOnStartup);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillRequireNameForProfileImport);
-COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillSaveAndFillVPA);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillServerBehaviors);
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::FeatureParam<int> kAutofillServerBehaviorsParam;
@@ -197,17 +198,11 @@ BASE_DECLARE_FEATURE(kAutofillStructuredFieldsDisableAddressLines);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillShowAutocompleteDeleteButton);
 COMPONENT_EXPORT(AUTOFILL)
-BASE_DECLARE_FEATURE(kAutofillShowManualFallbackInContextMenu);
-COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillGranularFillingAvailable);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillTestFormWithDevtools);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillSilentProfileUpdateForInsufficientImport);
-COMPONENT_EXPORT(AUTOFILL)
-BASE_DECLARE_FEATURE(kAutofillSkipComparingInferredLabels);
-COMPONENT_EXPORT(AUTOFILL)
-COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillTokenPrefixMatching);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillTrackProfileTokenQuality);
 COMPONENT_EXPORT(AUTOFILL)
@@ -222,8 +217,6 @@ COMPONENT_EXPORT(AUTOFILL)
 extern const base::FeatureParam<bool> kAutofillSectioningModeCreateGaps;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::FeatureParam<bool> kAutofillSectioningModeExpand;
-COMPONENT_EXPORT(AUTOFILL)
-BASE_DECLARE_FEATURE(kAutofillRefillByFormRendererId);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillEnableAblationStudy);
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::FeatureParam<bool>
@@ -249,8 +242,6 @@ BASE_DECLARE_FEATURE(kAutofillVirtualCardsOnTouchToFillAndroid);
 
 #if BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillKeyboardAccessory);
-COMPONENT_EXPORT(AUTOFILL)
-BASE_DECLARE_FEATURE(kAutofillKeyboardAccessoryAcceptanceDelayThreshold);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillTouchToFillForCreditCardsAndroid);
 COMPONENT_EXPORT(AUTOFILL)
@@ -295,8 +286,6 @@ extern const base::FeatureParam<std::string>
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillDisableProfileUpdates);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillDisableSilentProfileUpdates);
-COMPONENT_EXPORT(AUTOFILL)
-BASE_DECLARE_FEATURE(kAutofillCreateAccountProfilesFromSettings);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillLogToTerminal);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillServerCommunication);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillShowTypePredictions);

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/time/time.h"
+#include "components/autofill/core/browser/autofill_trigger_details.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 
@@ -20,8 +21,40 @@ class AutofillType;
 namespace suggestion_selection {
 
 extern const size_t kMaxSuggestedProfilesCount;
-extern const size_t kMaxUniqueSuggestionsCount;
-extern const size_t kMaxPrunedUniqueSuggestionsCount;
+extern const size_t kMaxUniqueSuggestedProfilesCount;
+
+// Sets the `popup_item_id` for `suggestion` depending on
+// `last_filling_granularity`. If the `last_filling_granularity` for a certain
+// form was group filling, also add labels to give users feedback about the next
+// filling behaviour.
+// `last_targeted_fields` specified the last set of fields target by the user.
+// When not present, we default to full form.
+// TODO(crbug.com/1466116): Add tests when this is actually used.
+// TODO(crbug.com/1466116): Add labels when `last_filling_granularity` is group
+// filling.
+void AddSuggestionDetailsForCurrentFillingGranularity(
+    absl::optional<ServerFieldTypeSet> last_targeted_fields,
+    const AutofillType& triggering_field_type,
+    Suggestion& suggestion);
+
+// Creates nested/child suggestions for `suggestion` with the `profile`
+// information. Uses `type` to define what group filling suggestion to add
+// (name, address or phone). The existence of child suggestions defines whether
+// the autofill popup will have submenus.
+// `last_targeted_fields` specified the last set of fields target by the user.
+// When not present, we default to full form.
+void AddGranularFillingChildSuggestions(
+    const AutofillType& type,
+    absl::optional<ServerFieldTypeSet> last_targeted_fields,
+    const AutofillProfile& profile,
+    const std::string& app_locale,
+    Suggestion& suggestion);
+
+// In addition to just getting the values out of the autocomplete profile, this
+// function handles formatting of the street addresses and phone numbers.
+std::u16string GetSuggestionMainText(const AutofillProfile* profile,
+                                     const AutofillType& type,
+                                     const std::string& app_locale);
 
 // Normalizes text for comparison based on the type of the field `text` was
 // entered into.
@@ -29,57 +62,41 @@ std::u16string NormalizeForComparisonForType(const std::u16string& text,
                                              ServerFieldType type);
 
 // Matches based on prefix search, and limits number of profiles.
-// Returns the top matching suggestions based on prefix search, and adds the
-// corresponding profiles to |matched_profiles|. At most
-// |kMaxSuggestedProfilesCount| are returned.
-std::vector<Suggestion> GetPrefixMatchedSuggestions(
+// Returns the top matching profiles based on prefix search. At most
+// `kMaxSuggestedProfilesCount` are returned.
+std::vector<const AutofillProfile*> GetPrefixMatchedProfiles(
     const AutofillType& type,
     const std::u16string& raw_field_contents,
     const std::u16string& field_contents_canon,
     const std::string& app_locale,
     bool field_is_autofilled,
-    const std::vector<AutofillProfile*>& profiles,
-    std::vector<AutofillProfile*>* matched_profiles);
+    const std::vector<AutofillProfile*>& profiles);
 
-// Dedupes given suggestions based on if one is a subset of the other.
-// Returns unique_suggestions, and adds the corresponding profiles to
-// |unique_matched_profiles|. At most |kMaxUniqueSuggestionsCount| are returned.
-// |field_types| stores all of the form's ServerFieldTypes, including that of
-// the field on which the user is currently focused.
-std::vector<Suggestion> GetUniqueSuggestions(
+// Dedupes the given profiles based on if one is a subset of the other for
+// suggestions represented by `field_types`. The function returns at most
+// `kMaxUniqueSuggestedProfilesCount` profiles. `field_types` stores all of the
+// ServerFieldTypes relevant for the current suggestions, including that of the
+// field on which the user is currently focused.
+std::vector<const AutofillProfile*> DeduplicatedProfilesForSuggestions(
+    const AutofillType& type,
     const ServerFieldTypeSet& field_types,
     const AutofillProfileComparator& comparator,
-    const std::vector<AutofillProfile*> matched_profiles,
-    const std::vector<Suggestion>& suggestions,
-    std::vector<AutofillProfile*>* unique_matched_profiles);
+    const std::vector<const AutofillProfile*> matched_profiles);
 
 // Returns whether the |suggestion_canon| is valid considering the
 // |field_contents_canon|, the |type|, |is_masked_server_card|, and
-// |field_is_autofilled|. Assigns true to |is_prefix_matched| if the
-// |field_contents_canon| is a prefix to |suggestion_canon|, assigns false
-// otherwise.
+// |field_is_autofilled|.
 bool IsValidSuggestionForFieldContents(std::u16string suggestion_canon,
                                        std::u16string field_contents_canon,
                                        const AutofillType& type,
                                        bool is_masked_server_card,
-                                       bool field_is_autofilled,
-                                       bool* is_prefix_matched);
+                                       bool field_is_autofilled);
 
 // Removes profiles that haven't been used after |min_last_used| from
 // |profiles|. The relative ordering of |profiles| is maintained.
 void RemoveProfilesNotUsedSinceTimestamp(
     base::Time min_last_used,
-    std::vector<AutofillProfile*>* profiles);
-
-// Prepares a collection of Suggestions to show to the user. Adds |labels| to
-// their corresponding |suggestions| and removes duplicates, if any. A label
-// corresponds to the suggestion with the same index.
-//
-// NOTE: |suggestions| are assumed to have already been sorted from most to
-// least important.
-void PrepareSuggestions(const std::vector<std::u16string>& labels,
-                        std::vector<Suggestion>* suggestions,
-                        const AutofillProfileComparator& comparator);
+    std::vector<AutofillProfile*>& profiles);
 
 }  // namespace suggestion_selection
 }  // namespace autofill

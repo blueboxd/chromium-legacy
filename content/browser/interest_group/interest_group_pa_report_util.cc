@@ -13,9 +13,11 @@
 #include <vector>
 
 #include "base/check.h"
+#include "base/check_op.h"
 #include "base/containers/flat_map.h"
 #include "base/notreached.h"
 #include "base/numerics/clamped_math.h"
+#include "content/browser/private_aggregation/private_aggregation_manager.h"
 #include "content/common/content_export.h"
 #include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom.h"
 #include "content/services/auction_worklet/public/mojom/seller_worklet.mojom.h"
@@ -25,6 +27,7 @@
 #include "third_party/blink/public/mojom/private_aggregation/aggregatable_report.mojom.h"
 #include "third_party/blink/public/mojom/private_aggregation/private_aggregation_host.mojom.h"
 #include "url/origin.h"
+#include "url/url_constants.h"
 
 namespace content {
 
@@ -314,12 +317,20 @@ FillInPrivateAggregationRequest(
 
 void SplitContributionsIntoBatchesThenSendToHost(
     std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr> requests,
-    mojo::Remote<blink::mojom::PrivateAggregationHost>& remote_host) {
+    PrivateAggregationManager& pa_manager,
+    const url::Origin& reporting_origin,
+    const url::Origin& main_frame_origin) {
+  CHECK_EQ(reporting_origin.scheme(), url::kHttpsScheme);
+  CHECK_EQ(main_frame_origin.scheme(), url::kHttpsScheme);
+
   // Split the vector of requests into those with matching debug mode details.
   std::map<
       blink::mojom::DebugModeDetailsPtr,
       std::vector<blink::mojom::AggregatableReportHistogramContributionPtr>>
       contributions_map;
+
+  bool is_debug_mode_allowed = pa_manager.IsDebugModeAllowed(
+      /*top_frame_origin=*/main_frame_origin, reporting_origin);
 
   for (auction_worklet::mojom::PrivateAggregationRequestPtr& request :
        requests) {
@@ -333,17 +344,36 @@ void SplitContributionsIntoBatchesThenSendToHost(
     CHECK_EQ(request->aggregation_mode,
              blink::mojom::AggregationServiceMode::kDefault);
 
+    // If debug mode will be ignored by the Private Aggregation layer, we
+    // override the value here to allow the contributions to be batched
+    // together.
+    if (!is_debug_mode_allowed) {
+      request->debug_mode_details = blink::mojom::DebugModeDetails::New();
+    }
+
     contributions_map[std::move(request->debug_mode_details)].push_back(
         std::move(request->contribution->get_histogram_contribution()));
   }
 
   for (auto& [debug_mode_details, contributions] : contributions_map) {
-    // TODO(alexmt): Use `std::map::extract()` to avoid the `Clone()` when
-    // this is allowed in Chromium.
-    remote_host->SendHistogramReport(
-        std::move(contributions),
-        blink::mojom::AggregationServiceMode::kDefault,
-        debug_mode_details.Clone());
+    mojo::Remote<blink::mojom::PrivateAggregationHost> remote_host;
+
+    bool bound = pa_manager.BindNewReceiver(
+        /*worklet_origin=*/reporting_origin,
+        /*top_frame_origin=*/main_frame_origin,
+        PrivateAggregationBudgetKey::Api::kProtectedAudience,
+        /*context_id=*/absl::nullopt,
+        /*timeout=*/absl::nullopt, remote_host.BindNewPipeAndPassReceiver());
+
+    // The worklet origin should be potentially trustworthy (and no context ID
+    // is set), so this should always succeed.
+    CHECK(bound);
+
+    if (debug_mode_details->is_enabled) {
+      remote_host->EnableDebugMode(std::move(debug_mode_details->debug_key));
+    }
+    remote_host->ContributeToHistogram(std::move(contributions));
+    remote_host.reset();
   }
 }
 

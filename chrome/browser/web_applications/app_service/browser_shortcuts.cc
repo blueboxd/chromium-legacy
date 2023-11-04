@@ -7,10 +7,12 @@
 #include <memory>
 #include <utility>
 
-#include "base/feature_list.h"
 #include "base/no_destructor.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_icon/icon_effects.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/app_service/publisher_helper.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -18,10 +20,12 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
-#include "chrome/common/chrome_features.h"
 #include "components/app_constants/constants.h"
+#include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/shortcut/shortcut.h"
+#include "components/services/app_service/public/cpp/shortcut/shortcut_registry_cache.h"
 
 namespace {
 
@@ -38,6 +42,7 @@ BrowserShortcuts::BrowserShortcuts(apps::AppServiceProxy* proxy)
     : apps::ShortcutPublisher(proxy),
       profile_(proxy->profile()),
       provider_(WebAppProvider::GetForLocalAppsUnchecked(profile_)) {
+  proxy_ = proxy;
   Initialize();
 }
 
@@ -65,7 +70,8 @@ void BrowserShortcuts::InitBrowserShortcuts() {
   // Register publisher for shortcuts created from browser.
   RegisterShortcutPublisher(apps::AppType::kChromeApp);
 
-  for (const AppId& web_app_id : provider_->registrar_unsafe().GetAppIds()) {
+  for (const webapps::AppId& web_app_id :
+       provider_->registrar_unsafe().GetAppIds()) {
     MaybePublishBrowserShortcut(web_app_id);
   }
 
@@ -76,16 +82,9 @@ void BrowserShortcuts::InitBrowserShortcuts() {
   }
 }
 
-bool BrowserShortcuts::IsShortcut(const AppId& app_id) {
-  if (base::FeatureList::IsEnabled(features::kCrosWebAppShortcutUiUpdate)) {
-    return provider_->registrar_unsafe().IsShortcutApp(app_id);
-  } else {
-    return false;
-  }
-}
-
-void BrowserShortcuts::MaybePublishBrowserShortcut(const AppId& app_id) {
-  if (!IsShortcut(app_id)) {
+void BrowserShortcuts::MaybePublishBrowserShortcut(const webapps::AppId& app_id,
+                                                   bool raw_icon_updated) {
+  if (!IsAppServiceShortcut(app_id, *provider_)) {
     return;
   }
   const WebApp* web_app = provider_->registrar_unsafe().GetAppById(app_id);
@@ -97,6 +96,10 @@ void BrowserShortcuts::MaybePublishBrowserShortcut(const AppId& app_id) {
   shortcut->name =
       provider_->registrar_unsafe().GetAppShortName(web_app->app_id());
   shortcut->shortcut_source = apps::ShortcutSource::kUser;
+  // TODO(crbug.com/1412708): Add shortcut specific icon masking.
+  shortcut->icon_key = std::move(
+      *icon_key_factory_.CreateIconKey(apps::IconEffects::kCrOsStandardMask));
+  shortcut->icon_key->raw_icon_updated = raw_icon_updated;
   apps::ShortcutPublisher::PublishShortcut(std::move(shortcut));
 }
 
@@ -114,7 +117,7 @@ void BrowserShortcuts::LaunchShortcut(const std::string& host_app_id,
 void BrowserShortcuts::RemoveShortcut(const std::string& host_app_id,
                                       const std::string& local_shortcut_id,
                                       apps::UninstallSource uninstall_source) {
-  if (!IsShortcut(local_shortcut_id)) {
+  if (!IsAppServiceShortcut(local_shortcut_id, *provider_)) {
     return;
   }
 
@@ -134,11 +137,23 @@ void BrowserShortcuts::RemoveShortcut(const std::string& host_app_id,
       web_app->app_id(), webapp_uninstall_source, base::DoNothing());
 }
 
-void BrowserShortcuts::OnWebAppInstalled(const AppId& app_id) {
+void BrowserShortcuts::GetCompressedIconData(
+    const std::string& shortcut_id,
+    int32_t size_in_dip,
+    ui::ResourceScaleFactor scale_factor,
+    apps::LoadIconCallback callback) {
+  std::string local_id = proxy_->ShortcutRegistryCache()->GetShortcutLocalId(
+      apps::ShortcutId(shortcut_id));
+  apps::GetWebAppCompressedIconData(profile_, local_id, size_in_dip,
+                                    scale_factor, std::move(callback));
+}
+
+void BrowserShortcuts::OnWebAppInstalled(const webapps::AppId& app_id) {
   MaybePublishBrowserShortcut(app_id);
 }
 
-void BrowserShortcuts::OnWebAppInstalledWithOsHooks(const AppId& app_id) {
+void BrowserShortcuts::OnWebAppInstalledWithOsHooks(
+    const webapps::AppId& app_id) {
   MaybePublishBrowserShortcut(app_id);
 }
 
@@ -147,9 +162,16 @@ void BrowserShortcuts::OnWebAppInstallManagerDestroyed() {
 }
 
 void BrowserShortcuts::OnWebAppUninstalled(
-    const AppId& app_id,
+    const webapps::AppId& app_id,
     webapps::WebappUninstallSource uninstall_source) {
-  if (!IsShortcut(app_id)) {
+  // Once a web app has been uninstalled, the WebAppRegistrar can no longer
+  // be used to determine if it is a shortcut. Here we check if we have got an
+  // app registered in AppRegistryCache that can be be uninstalled. If this is
+  // registered as an app, we do not update for shortcut.
+  bool found = apps::AppServiceProxyFactory::GetForProfile(profile_)
+                   ->AppRegistryCache()
+                   .ForOneApp(app_id, [](const apps::AppUpdate& update) {});
+  if (found) {
     return;
   }
   apps::ShortcutPublisher::ShortcutRemoved(

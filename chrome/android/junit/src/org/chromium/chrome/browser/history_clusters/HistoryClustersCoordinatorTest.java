@@ -272,8 +272,8 @@ public class HistoryClustersCoordinatorTest {
     @Config(qualifiers = "w600dp-h820dp")
     public void testOpenHistoryClustersUiTablet() {
         mHistoryClustersCoordinator.openHistoryClustersUi("pandas");
-        verify(mTab).loadUrl(
-                argThat(HistoryClustersMediatorTest.hasSameUrl("chrome://history/2?q=pandas")));
+        verify(mTab).loadUrl(argThat(
+                HistoryClustersMediatorTest.hasSameUrl("chrome://history/grouped?q=pandas")));
     }
 
     @Test
@@ -503,6 +503,13 @@ public class HistoryClustersCoordinatorTest {
         assertNotNull(toolbar);
         assertNotNull(toolbar.getMenu().findItem(R.id.close_menu_id));
         assertNotNull(toolbar.getMenu().findItem(R.id.selection_mode_open_in_tab_group));
+        assertFalse(toolbar.getMenu().findItem(R.id.selection_mode_open_in_tab_group).isVisible());
+
+        mSelectionDelegate.setSelectedItems(new HashSet<>(Arrays.asList(mVisit1, mVisit2)));
+        assertTrue(toolbar.getMenu().findItem(R.id.selection_mode_open_in_tab_group).isVisible());
+
+        mSelectionDelegate.setSelectedItems(new HashSet<>(Arrays.asList(mVisit1)));
+        assertNull(toolbar.getMenu().findItem(R.id.selection_mode_open_in_tab_group));
     }
 
     @Test

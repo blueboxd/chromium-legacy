@@ -34,6 +34,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/timer/elapsed_timer.h"
+#include "components/user_education/common/events.h"
 #include "components/user_education/common/help_bubble.h"
 #include "components/user_education/common/tutorial_description.h"
 #include "components/user_manager/user_type.h"
@@ -149,18 +150,9 @@ ui::ElementContext WelcomeTourController::GetInitialElementContext() const {
       GetMatchingViewInPrimaryRootWindow(kShelfViewElementId));
 }
 
-std::map<TutorialId, user_education::TutorialDescription>
-WelcomeTourController::GetTutorialDescriptions() {
-  std::map<TutorialId, user_education::TutorialDescription>
-      tutorial_descriptions_by_id;
-
-  user_education::TutorialDescription& tutorial_description =
-      tutorial_descriptions_by_id
-          .emplace(std::piecewise_construct,
-                   std::forward_as_tuple(TutorialId::kWelcomeTourPrototype1),
-                   std::forward_as_tuple())
-          .first->second;
-
+user_education::TutorialDescription
+WelcomeTourController::GetTutorialDescription() const {
+  user_education::TutorialDescription tutorial_description;
   tutorial_description.complete_button_text_id =
       IDS_ASH_WELCOME_TOUR_COMPLETE_BUTTON_TEXT;
 
@@ -298,7 +290,7 @@ WelcomeTourController::GetTutorialDescriptions() {
   // Step 7: Explore app window.
   // Implemented in `WelcomeTourController::OnWelcomeTourEnded()`.
 
-  return tutorial_descriptions_by_id;
+  return tutorial_description;
 }
 
 void WelcomeTourController::OnAccessibilityControllerShutdown() {
@@ -430,10 +422,17 @@ void WelcomeTourController::MaybeStartWelcomeTour() {
   // app until the Welcome Tour is either completed or aborted.
   std::ignore = maybe_launch_explore_app_async.Release();
 
+  auto* const tutorial_controller = UserEducationTutorialController::Get();
+  if (!tutorial_controller->IsTutorialRegistered(TutorialId::kWelcomeTour)) {
+    tutorial_controller->RegisterTutorial(UserEducationPrivateApiKey(),
+                                          TutorialId::kWelcomeTour,
+                                          GetTutorialDescription());
+  }
+
   // NOTE: It is theoretically possible for the tutorial to outlive `this`
   // controller during the destruction sequence.
-  UserEducationTutorialController::Get()->StartTutorial(
-      UserEducationPrivateApiKey(), TutorialId::kWelcomeTourPrototype1,
+  tutorial_controller->StartTutorial(
+      UserEducationPrivateApiKey(), TutorialId::kWelcomeTour,
       GetInitialElementContext(),
       /*completed_callback=*/
       base::BindOnce(&WelcomeTourController::OnWelcomeTourEnded,
@@ -456,15 +455,9 @@ void WelcomeTourController::MaybeAbortWelcomeTour(
   }
 
   UserEducationTutorialController::Get()->AbortTutorial(
-      UserEducationPrivateApiKey(), TutorialId::kWelcomeTourPrototype1);
+      UserEducationPrivateApiKey(), TutorialId::kWelcomeTour);
 }
 
-// TODO(http://b/277091006): Stabilize app launches.
-// TODO(http://b/277091067): Stabilize apps in launcher.
-// TODO(http://b/277091443): Stabilize apps in shelf.
-// TODO(http://b/277091733): Stabilize continue section in launcher.
-// TODO(http://b/277091715): Stabilize pods in shelf.
-// TODO(http://b/277091619): Stabilize wallpaper.
 void WelcomeTourController::OnWelcomeTourStarted() {
   aborted_reason_ = welcome_tour_metrics::AbortedReason::kUnknown;
   accelerator_handler_ = std::make_unique<WelcomeTourAcceleratorHandler>(
@@ -504,12 +497,6 @@ void WelcomeTourController::OnWelcomeTourStarted() {
   }
 }
 
-// TODO(http://b/277091006): Restore app launches.
-// TODO(http://b/277091067): Restore apps in launcher.
-// TODO(http://b/277091443): Restore apps in shelf.
-// TODO(http://b/277091733): Restore continue section in launcher.
-// TODO(http://b/277091715): Restore pods in shelf.
-// TODO(http://b/277091619): Restore wallpaper.
 void WelcomeTourController::OnWelcomeTourEnded(
     bool completed,
     base::ElapsedTimer time_since_start) {

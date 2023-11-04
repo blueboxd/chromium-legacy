@@ -109,6 +109,7 @@ BASE_DECLARE_FEATURE(kShoppingPDPMetrics);
 BASE_DECLARE_FEATURE(kShoppingPDPMetricsRegionLaunched);
 
 // Feature flag for Discounts on navigation.
+BASE_DECLARE_FEATURE(kShowDiscountOnNavigation);
 BASE_DECLARE_FEATURE(kShowDiscountOnNavigationRegionLaunched);
 
 BASE_DECLARE_FEATURE(kRetailCoupons);
@@ -130,6 +131,9 @@ BASE_DECLARE_FEATURE(kCodeBasedRBD);
 
 // Feature flag for DOM-based heuristics for ChromeCart.
 BASE_DECLARE_FEATURE(kChromeCartDomBasedHeuristics);
+
+// Feature flag for parcel tracking.
+BASE_DECLARE_FEATURE(kParcelTracking);
 
 // Shopping list update interval.
 constexpr base::FeatureParam<base::TimeDelta>

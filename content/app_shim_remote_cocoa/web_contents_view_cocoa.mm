@@ -16,6 +16,7 @@
 #import "content/app_shim_remote_cocoa/web_contents_occlusion_checker_mac.h"
 #import "content/app_shim_remote_cocoa/web_drag_source_mac.h"
 #import "content/browser/web_contents/web_drag_dest_mac.h"
+#include "content/common/features.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -150,7 +151,7 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
 }
 
 - (instancetype)initWithViewsHostableView:(ui::ViewsHostableView*)v {
-  self = [super initWithFrame:NSZeroRect];
+  self = [super initWithFrame:NSZeroRect tracking:YES];
   if (self != nil) {
     _viewsHostableView = v;
     [self registerDragTypes];
@@ -243,6 +244,7 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
 }
 
 - (void)startDragWithDropData:(const DropData&)dropData
+                 sourceOrigin:(const url::Origin&)sourceOrigin
             dragOperationMask:(NSDragOperation)operationMask
                         image:(NSImage*)image
                        offset:(NSPoint)offset
@@ -410,8 +412,10 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
 }
 
 - (void)setWebContentsVisibility:(remote_cocoa::mojom::Visibility)visibility {
-  if (_host && !content::GetContentClient()->browser()->IsShuttingDown())
+  if (_host && !(content::GetContentClient()->browser() &&
+                 content::GetContentClient()->browser()->IsShuttingDown())) {
     _host->OnWindowVisibilityChanged(visibility);
+  }
 }
 
 - (void)performDelayedSetWebContentsOccluded {

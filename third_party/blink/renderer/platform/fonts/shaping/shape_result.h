@@ -73,10 +73,25 @@ enum class AdjustMidCluster {
 
 struct ShapeResultCharacterData {
   DISALLOW_NEW();
-  float x_position;
+
+  ShapeResultCharacterData()
+      : is_cluster_base(false),
+        safe_to_break_before(false),
+        has_auto_spacing_after(false) {}
+
+  void SetCachedData(float new_x_position,
+                     bool new_is_cluster_base,
+                     bool new_safe_to_break_before) {
+    x_position = new_x_position;
+    is_cluster_base = new_is_cluster_base;
+    safe_to_break_before = new_safe_to_break_before;
+  }
+
+  float x_position = 0;
   // Set for the logical first character of a cluster.
   unsigned is_cluster_base : 1;
   unsigned safe_to_break_before : 1;
+  unsigned has_auto_spacing_after : 1;
 };
 
 // A space should be appended after `offset` with the width of `spacing`.
@@ -249,8 +264,8 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // Computes and caches a position data object as needed.
   void EnsurePositionData() const;
 
-  // Discards cached position data, freeing up memory.
-  void DiscardPositionData() const;
+  const ShapeResultCharacterData& CharacterData(unsigned offset) const;
+  ShapeResultCharacterData& CharacterData(unsigned offset);
 
   // Fast versions of OffsetForPosition and PositionForOffset that operates on
   // a cache (that needs to be pre-computed using EnsurePositionData) and that
@@ -277,13 +292,16 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
 
   // Adds spacing between ideograph character and non-ideograph character for
   // the property of text-autospace.
-  // If `has_spacing_added_to_adjacent_char` is true, it means we append spacing
-  // to the previous glyph, in this case, the first glyph in this result should
-  // be unsafe to break before, because the previous is no longer adjacent to
-  // this one.
   void ApplyTextAutoSpacing(
-      bool has_spacing_added_to_adjacent_char,
       const Vector<OffsetWithSpacing, 16>& offsets_with_spacing);
+
+  // True if the auto-spacing is applied. See `ApplyTextAutoSpacing`.
+  bool HasAutoSpacingBefore(unsigned offset) const;
+
+  // Returns a line-end `ShapeResult` when breaking at `break_offset`, and the
+  // glyph before `break_offset` has auto-spacing.
+  scoped_refptr<ShapeResult> UnapplyAutoSpacing(unsigned start_offset,
+                                                unsigned break_offset) const;
 
   // Append a copy of a range within an existing result to another result.
   //
@@ -437,6 +455,13 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
     CharacterPositionData(unsigned num_characters, float width)
         : data_(num_characters), width_(width) {}
 
+    ShapeResultCharacterData& operator[](unsigned index) {
+      return data_[index];
+    }
+    const ShapeResultCharacterData& operator[](unsigned index) const {
+      return data_[index];
+    }
+
     // Returns the next or previous offsets respectively at which it is safe to
     // break without reshaping.
     unsigned NextSafeToBreakOffset(unsigned offset) const;
@@ -472,6 +497,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
 
   template <bool>
   void ComputePositionData() const;
+  void RecalcCharacterPositions() const;
 
   template <typename TextContainerType>
   void ApplySpacingImpl(ShapeResultSpacing<TextContainerType>&,
@@ -556,10 +582,8 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // Internal implementation of `ApplyTextAutoSpacing`. The iterator can be
   // Vector::iterator or Vector::reverse_iterator, depending on the text
   // direction.
-  template <class Iterator>
-  void ApplyTextAutoSpacingCore(bool has_spacing_added_to_adjacent_glyph,
-                                Iterator offset_begin,
-                                Iterator offset_end);
+  template <TextDirection direction, class Iterator>
+  void ApplyTextAutoSpacingCore(Iterator offset_begin, Iterator offset_end);
 };
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const ShapeResult&);

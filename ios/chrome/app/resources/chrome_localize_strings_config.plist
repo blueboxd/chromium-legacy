@@ -4,7 +4,7 @@
 <dict>
   <key>headers</key>
   <array>
-    <string>ios/chrome/grit/ios_chromium_strings.h</string>
+    <string>ios/chrome/grit/ios_branded_strings.h</string>
     <string>ios/chrome/grit/ios_strings.h</string>
   </array>
   <key>outputs</key>
@@ -66,32 +66,26 @@
       <key>strings</key>
       <array>
         <dict>
-         <key>output</key>
-          <string>eoLMs3</string>
-          <key>input</key>
-          <string>IDS_IOS_INTENTS_OPEN_LATEST_TAB_TITLE</string>
-        </dict>
-        <dict>
           <key>output</key>
           <string>QI9R4N</string>
           <key>input</key>
           <string>IDS_IOS_INTENTS_CLEAR_BROWSING_DATA_TITLE</string>
         </dict>
         <dict>
-         <key>output</key>
+          <key>output</key>
           <string>6yFN6Z</string>
           <key>input</key>
           <string>IDS_IOS_INTENTS_CLEAR_BROWSING_DATA_TITLE</string>
         </dict>
         <dict>
           <key>output</key>
-          <string>G5abvV</string>
+          <string>lfVwmu</string>
           <key>input</key>
-          <string>IDS_IOS_INTENTS_CLEAR_BROWSING_DATA_TITLE</string>
+          <string>IDS_IOS_INTENTS_CLEAR_BROWSING_DATA_DESCRIPTION</string>
         </dict>
         <dict>
           <key>output</key>
-          <string>QNOy9O</string>
+          <string>G5abvV</string>
           <key>input</key>
           <string>IDS_IOS_INTENTS_CLEAR_BROWSING_DATA_DESCRIPTION</string>
         </dict>
@@ -99,17 +93,17 @@
           <key>output</key>
           <string>O7udUr</string>
           <key>input</key>
-          <string>IDS_IOS_INTENTS_OPEN_LENS_TITLE</string>
-        </dict>
-        <dict>
-          <key>output</key>
-          <string>M0ARnB</string>
-          <key>input</key>
           <string>IDS_IOS_INTENTS_OPEN_LENS_DESCRIPTION</string>
         </dict>
         <dict>
           <key>output</key>
           <string>IBwb6d</string>
+          <key>input</key>
+          <string>IDS_IOS_INTENTS_OPEN_LENS_DESCRIPTION</string>
+        </dict>
+        <dict>
+          <key>output</key>
+          <string>pe1BPb</string>
           <key>input</key>
           <string>IDS_IOS_INTENTS_OPEN_LENS_TITLE</string>
         </dict>
@@ -121,7 +115,7 @@
         </dict>
         <dict>
           <key>output</key>
-          <string>Evtnyl</string>
+          <string>k6vkhf</string>
           <key>input</key>
           <string>IDS_IOS_INTENTS_OPEN_LATEST_TAB_DESCRIPTION</string>
         </dict>

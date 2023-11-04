@@ -25,7 +25,6 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/contact_info_model_type_controller.h"
 #include "components/autofill/core/browser/webdata/contact_info_sync_bridge.h"
-#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/browser_sync/active_devices_provider_impl.h"
 #include "components/browser_sync/browser_sync_client.h"
 #include "components/history/core/browser/sync/history_delete_directives_model_type_controller.h"
@@ -53,7 +52,6 @@
 #include "components/sync/service/glue/sync_engine_impl.h"
 #include "components/sync/service/glue/sync_transport_data_prefs.h"
 #include "components/sync/service/model_type_controller.h"
-#include "components/sync/service/sync_prefs.h"
 #include "components/sync/service/syncable_service_based_model_type_controller.h"
 #include "components/sync_bookmarks/bookmark_model_type_controller.h"
 #include "components/sync_bookmarks/bookmark_sync_service.h"
@@ -68,10 +66,6 @@
 #include "components/supervised_user/core/browser/supervised_user_settings_model_type_controller.h"
 #include "components/supervised_user/core/browser/supervised_user_settings_service.h"
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USER)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/constants/ash_features.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 using syncer::DataTypeController;
 using syncer::DataTypeManager;
@@ -356,18 +350,9 @@ SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers(
     }
   }
 
-  if (!disabled_types.Has(syncer::TYPED_URLS)) {
-    // HistoryModelTypeController uses a proxy delegate internally, as
-    // provided by HistoryService.
+  if (!disabled_types.Has(syncer::HISTORY)) {
     controllers.push_back(std::make_unique<history::HistoryModelTypeController>(
-        syncer::TYPED_URLS, sync_service, sync_client_->GetIdentityManager(),
-        sync_client_->GetHistoryService(), sync_client_->GetPrefService()));
-  }
-
-  if (!disabled_types.Has(syncer::HISTORY) &&
-      base::FeatureList::IsEnabled(syncer::kSyncEnableHistoryDataType)) {
-    controllers.push_back(std::make_unique<history::HistoryModelTypeController>(
-        syncer::HISTORY, sync_service, sync_client_->GetIdentityManager(),
+        sync_service, sync_client_->GetIdentityManager(),
         sync_client_->GetHistoryService(), sync_client_->GetPrefService()));
   }
 
@@ -602,6 +587,14 @@ SyncApiComponentFactoryImpl::CreateSyncEngine(
       engines_and_directory_deletion_thread_,
       base::BindRepeating(&syncer::SyncClient::OnLocalSyncTransportDataCleared,
                           base::Unretained(sync_client_)));
+}
+
+bool SyncApiComponentFactoryImpl::HasTransportDataIncludingFirstSync() {
+  syncer::SyncTransportDataPrefs sync_transport_data_prefs(
+      sync_client_->GetPrefService());
+  // NOTE: Keep this logic consistent with how SyncEngineImpl reports
+  // is-first-sync.
+  return !sync_transport_data_prefs.GetLastSyncedTime().is_null();
 }
 
 void SyncApiComponentFactoryImpl::ClearAllTransportData() {

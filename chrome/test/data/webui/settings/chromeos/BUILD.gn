@@ -11,6 +11,7 @@ mojom("test_api_mojom") {
   sources = [
     "os_people_page/password_settings_api.test-mojom",
     "os_people_page/pin_settings_api.test-mojom",
+    "os_people_page/set_local_password_input_api.test-mojom",
     "test_api.test-mojom",
   ]
   webui_module_path = "chrome://webui-test/settings/chromeos"
@@ -27,6 +28,7 @@ build_webui_tests("build") {
     "cellular_roaming_toggle_button_test.js",
     "crostini_extra_containers_subpage_test.js",
     "crostini_page_test.js",
+    "crostini_settings_card_test.js",
     "esim_remove_profile_dialog_test.js",
     "fake_canvas_context.js",
     "fake_input_method_private.js",
@@ -41,21 +43,14 @@ build_webui_tests("build") {
     "fake_system_display.js",
     "fake_user_action_recorder.js",
     "fake_users_private.js",
-    "internet_detail_menu_test.js",
     "internet_known_networks_subpage_tests.js",
     "internet_page_tests.js",
     "internet_subpage_tests.js",
-    "internet_subpage_menu_test.js",
     "lacros_extension_controlled_indicator_test.ts",
     "lock_screen_subpage_test.ts",
-    "main_page_container_test.js",
-    "nearby_share_receive_dialog_tests.js",
-    "nearby_share_subpage_tests.js",
     "onc_mojo_test.ts",
     "os_about_page_tests.js",
     "os_page_availability_test.ts",
-    "os_settings_main_test.js",
-    "people_page_account_manager_subpage_test.js",
     "personalization_page_with_personalization_hub_test.js",
     "search_engine_test.js",
     "test_about_page_browser_proxy_chromeos.js",
@@ -65,12 +60,9 @@ build_webui_tests("build") {
     "test_crostini_browser_proxy.js",
     "test_device_name_browser_proxy.js",
     "test_lacros_extension_control_browser_proxy.ts",
-    "test_os_languages_browser_proxy.ts",
-    "test_os_languages_metrics_proxy.js",
     "test_os_lifetime_browser_proxy.ts",
     "test_os_sync_browser_proxy.ts",
     "test_personalization_hub_browser_proxy.js",
-    "test_profile_info_browser_proxy.js",
     "utils.ts",
 
     # Subfolder files.
@@ -94,10 +86,14 @@ build_webui_tests("build") {
     "device_page/customize_mouse_buttons_subpage_test.ts",
     "device_page/customize_tablet_buttons_subpage_test.ts",
     "device_page/customize_pen_buttons_subpage_test.ts",
+    "device_page/drag_and_drop_manager_test.ts",
+    "device_page/device_page_revamp_test.ts",
     "device_page/device_page_tests.js",
     "device_page/fake_cros_audio_config_test.ts",
     "device_page/fake_input_device_settings_provider_test.ts",
+    "device_page/fkey_row_test.ts",
     "device_page/input_device_mojo_interface_provider_test.ts",
+    "device_page/key_combination_input_dialog_test.ts",
     "device_page/keyboard_six_pack_key_row_test.ts",
     "device_page/per_device_keyboard_remap_keys_test.ts",
     "device_page/per_device_keyboard_subsection_test.ts",
@@ -108,6 +104,7 @@ build_webui_tests("build") {
     "device_page/per_device_pointing_stick_test.ts",
     "device_page/per_device_touchpad_subsection_test.ts",
     "device_page/per_device_touchpad_test.ts",
+    "device_page/power_test.ts",
     "device_page/test_device_page_browser_proxy.ts",
 
     "guest_os/guest_os_shared_paths_test.ts",
@@ -121,7 +118,9 @@ build_webui_tests("build") {
     "internet_page/hotspot_subpage_test.ts",
     "internet_page/hotspot_summary_item_test.ts",
     "internet_page/internet_config_test.ts",
+    "internet_page/internet_detail_menu_test.ts",
     "internet_page/internet_detail_subpage_tests.js",
+    "internet_page/internet_subpage_menu_test.ts",
     "internet_page/network_always_on_vpn_test.ts",
     "internet_page/network_device_info_dialog_test.ts",
     "internet_page/network_proxy_section_test.ts",
@@ -140,14 +139,15 @@ build_webui_tests("build") {
 
     "keyboard_shortcut_banner/keyboard_shortcut_banner_test.ts",
 
+    "main_page_container/main_page_container_test.ts",
     "main_page_container/page_displayer_test.ts",
-    "main_page_container/route_navigation_test.js",
+    "main_page_container/route_navigation_test.ts",
 
-    "multidevice_page/multidevice_page_tests.js",
     "multidevice_page/multidevice_combined_setup_item_test.ts",
     "multidevice_page/multidevice_feature_item_test.ts",
     "multidevice_page/multidevice_feature_toggle_test.ts",
     "multidevice_page/multidevice_notification_access_setup_dialog_test.ts",
+    "multidevice_page/multidevice_page_test.ts",
     "multidevice_page/multidevice_permissions_setup_dialog_test.ts",
     "multidevice_page/multidevice_smartlock_item_test.ts",
     "multidevice_page/multidevice_subpage_test.ts",
@@ -159,6 +159,9 @@ build_webui_tests("build") {
 
     "nearby_share_page/nearby_share_confirm_page_test.ts",
     "nearby_share_page/nearby_share_high_visibility_page_test.ts",
+    "nearby_share_page/nearby_share_receive_dialog_test.ts",
+    "nearby_share_page/nearby_share_subpage_test.ts",
+    "nearby_share_page/test_nearby_account_manager_browser_proxy.ts",
 
     "os_a11y_page/audio_and_captions_page_test.ts",
     "os_a11y_page/change_dictation_locale_dialog_test.ts",
@@ -199,9 +202,11 @@ build_webui_tests("build") {
     "os_apps_page/app_notifications_page/app_notifications_subpage_test.ts",
     "os_apps_page/app_notifications_page/fake_app_notification_handler.ts",
 
+    "os_apps_page/manage_isolated_web_apps_page/manage_isolated_web_apps_subpage_test.ts",
+
     "os_bluetooth_page/os_bluetooth_change_device_name_dialog_test.ts",
     "os_bluetooth_page/os_bluetooth_device_detail_subpage_tests.js",
-    "os_bluetooth_page/os_bluetooth_devices_subpage_tests.js",
+    "os_bluetooth_page/os_bluetooth_devices_subpage_test.ts",
     "os_bluetooth_page/os_bluetooth_page_test.ts",
     "os_bluetooth_page/os_bluetooth_pairing_dialog_test.ts",
     "os_bluetooth_page/os_bluetooth_saved_devices_subpage_test.ts",
@@ -212,32 +217,40 @@ build_webui_tests("build") {
     "os_bluetooth_page/os_saved_devices_list_test.ts",
     "os_bluetooth_page/test_os_bluetooth_subpage_browser_proxy.ts",
 
+    "os_files_page/files_settings_card_test.ts",
     "os_files_page/google_drive_page_test.ts",
     "os_files_page/office_page_test.ts",
     "os_files_page/one_drive_page_test.ts",
+    "os_files_page/one_drive_test_browser_proxy.ts",
     "os_files_page/os_files_page_test.ts",
     "os_files_page/smb_shares_page_test.ts",
-    "os_files_page/one_drive_test_browser_proxy.ts",
+    "os_files_page/test_smb_browser_proxy.ts",
 
+    "os_languages_page/fake_language_helper.ts",
     "os_languages_page/input_method_options_page_test.ts",
     "os_languages_page/input_page_test.ts",
     "os_languages_page/language_settings_card_test.ts",
     "os_languages_page/os_clear_personalization_data_page_test.ts",
     "os_languages_page/os_edit_dictionary_page_test.ts",
     "os_languages_page/os_languages_page_v2_test.ts",
-    "os_languages_page/smart_inputs_page_test.ts",
+    "os_languages_page/test_os_languages_browser_proxy.ts",
+    "os_languages_page/test_os_languages_metrics_proxy.ts",
 
+    "os_people_page/account_manager_subpage_test.ts",
     "os_people_page/add_user_dialog_test.ts",
     "os_people_page/fingerprint_list_subpage_test.ts",
     "os_people_page/os_people_page_test.ts",
     "os_people_page/os_sync_controls_subpage_test.ts",
     "os_people_page/personalization_options_test.ts",
-    "os_people_page/password_settings_api.ts",
     "os_people_page/pin_dialog_api.ts",
     "os_people_page/pin_settings_api.ts",
+    "os_people_page/set_local_password_input_api.ts",
+    "os_people_page/password_settings_api.ts",
     "os_people_page/test_account_manager_browser_proxy.ts",
     "os_people_page/test_fingerprint_browser_proxy.ts",
     "os_people_page/test_os_sync_browser_proxy.ts",
+    "os_people_page/test_parental_controls_browser_proxy.ts",
+    "os_people_page/test_profile_info_browser_proxy.ts",
 
     "os_printing_page/cups_print_server_test.ts",
     "os_printing_page/cups_printer_dialog_test.ts",
@@ -247,10 +260,12 @@ build_webui_tests("build") {
     "os_printing_page/cups_printers_entry_test.ts",
     "os_printing_page/os_printing_page_test.ts",
     "os_printing_page/printer_status_test.ts",
-    "os_printing_page/test_cups_printers_browser_proxy.js",
+    "os_printing_page/printing_settings_card_test.ts",
+    "os_printing_page/test_cups_printers_browser_proxy.ts",
 
     "os_privacy_page/manage_users_subpage_test.ts",
     "os_privacy_page/os_privacy_page_test.ts",
+    "os_privacy_page/privacy_hub_microphone_subpage_test.ts",
     "os_privacy_page/privacy_hub_subpage_test.ts",
     "os_privacy_page/smart_privacy_subpage_test.ts",
     "os_privacy_page/test_metrics_consent_browser_proxy.ts",
@@ -266,6 +281,8 @@ build_webui_tests("build") {
     "os_search_page/search_and_assistant_settings_card_test.ts",
     "os_search_page/search_subpage_test.ts",
 
+    "os_settings_main/os_settings_main_test.ts",
+
     "os_settings_menu/os_settings_menu_test.ts",
     "os_settings_menu/os_settings_menu_revamp_test.ts",
 
@@ -274,16 +291,16 @@ build_webui_tests("build") {
     "os_settings_search_box/test_os_settings_search_box_browser_proxy.ts",
 
     "os_settings_ui/os_settings_ui_about_page_test.ts",
-    "os_settings_ui/os_settings_ui_menu_test.js",
+    "os_settings_ui/os_settings_ui_menu_test.ts",
     "os_settings_ui/os_settings_ui_page_availability_test.ts",
     "os_settings_ui/os_settings_ui_page_visibility_revamp_test.ts",
     "os_settings_ui/os_settings_ui_test.ts",
     "os_settings_ui/os_settings_hats_ui_test.ts",
-    "os_settings_ui/os_settings_ui_toolbar_test.js",
+    "os_settings_ui/os_settings_ui_toolbar_test.ts",
     "os_settings_ui/page_availability_test_helpers.ts",
     "os_settings_ui/scroll_restoration_test.ts",
     "os_settings_ui/test_os_settings_hats_browser_proxy.ts",
-    "os_settings_ui/user_action_recorder_test.js",
+    "os_settings_ui/user_action_recorder_test.ts",
 
     "parental_controls_page/parental_controls_page_test.ts",
     "parental_controls_page/test_parental_controls_browser_proxy.ts",
@@ -298,6 +315,7 @@ build_webui_tests("build") {
     "$root_gen_dir/mojom-webui/chrome/test/data/webui/settings/chromeos/test_api.test-mojom-webui.js",
     "$root_gen_dir/mojom-webui/chrome/test/data/webui/settings/chromeos/os_people_page/password_settings_api.test-mojom-webui.js",
     "$root_gen_dir/mojom-webui/chrome/test/data/webui/settings/chromeos/os_people_page/pin_settings_api.test-mojom-webui.js",
+    "$root_gen_dir/mojom-webui/chrome/test/data/webui/settings/chromeos/os_people_page/set_local_password_input_api.test-mojom-webui.js",
   ]
 
   mojo_files_deps = [ ":test_api_mojom_js__generator" ]
@@ -307,6 +325,7 @@ build_webui_tests("build") {
     "//chrome/browser/resources/ash/settings:build_ts",
     "//chrome/test/data/webui/chromeos:build_ts",
     "//chrome/test/data/webui/cr_components/chromeos:build_ts",
+    "//chrome/test/data/webui/nearby_share:build_ts",
     "//third_party/polymer/v3_0:library",
     "//ui/webui/resources/cr_components/app_management:build_ts",
     "//ui/webui/resources/cr_elements:build_ts",
@@ -330,6 +349,9 @@ build_webui_tests("build") {
         rebase_path(
             "$root_gen_dir/chrome/test/data/webui/cr_components/chromeos/tsc/*",
             target_gen_dir),
+    "chrome://webui-test/nearby_share/*|" +
+        rebase_path("$root_gen_dir/chrome/test/data/webui/nearby_share/tsc/*",
+                    target_gen_dir),
   ]
 
   ts_definitions = ts_definition_files

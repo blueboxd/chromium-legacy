@@ -9,10 +9,16 @@ package org.chromium.base.jank_tracker;
  * to UMA.
  */
 class JankMetrics {
+    public final long[] timestampsNs;
     public final long[] durationsNs;
     public final boolean[] isJanky;
-
-    public JankMetrics(long[] durationsNs, boolean[] isJanky) {
+    public JankMetrics() {
+        timestampsNs = new long[0];
+        durationsNs = new long[0];
+        isJanky = new boolean[0];
+    }
+    public JankMetrics(long[] timestampsNs, long[] durationsNs, boolean[] isJanky) {
+        this.timestampsNs = timestampsNs;
         this.durationsNs = durationsNs;
         this.isJanky = isJanky;
     }

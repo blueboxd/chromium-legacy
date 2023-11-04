@@ -687,6 +687,23 @@ std::string AwBrowserContext::GetExtraHeaders(const GURL& url) {
   return iter != extra_headers_.end() ? iter->second : std::string();
 }
 
+void AwBrowserContext::SetServiceWorkerIoThreadClient(
+    JNIEnv* const env,
+    const base::android::JavaParamRef<jobject>& io_thread_client) {
+  sw_io_thread_client_ =
+      base::android::ScopedJavaGlobalRef<jobject>(io_thread_client);
+}
+
+std::unique_ptr<AwContentsIoThreadClient>
+AwBrowserContext::GetServiceWorkerIoThreadClientThreadSafe() {
+  base::android::ScopedJavaLocalRef<jobject> java_delegate =
+      base::android::ScopedJavaLocalRef<jobject>(sw_io_thread_client_);
+  if (java_delegate) {
+    return std::make_unique<AwContentsIoThreadClient>(java_delegate);
+  }
+  return nullptr;
+}
+
 jboolean JNI_AwBrowserContext_CheckNamedContextExists(
     JNIEnv* const env,
     const base::android::JavaParamRef<jstring>& jname) {
@@ -787,6 +804,10 @@ void AwBrowserContext::DeleteContext(const base::FilePath& relative_path) {
   CHECK(storage_deleted);
   bool cache_deleted = base::DeletePathRecursively(cache_path);
   CHECK(cache_deleted);
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_AwBrowserContext_deleteSharedPreferences(
+      env, base::android::ConvertUTF8ToJavaString(env, relative_path.value()));
 }
 
 }  // namespace android_webview

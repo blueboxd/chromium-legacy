@@ -40,7 +40,7 @@
 #include "components/history/core/common/pref_names.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/password_manager/core/browser/features/password_features.h"
-#include "components/password_manager/core/browser/password_manager_features_util.h"
+#include "components/password_manager/core/browser/features/password_manager_features_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -134,6 +134,9 @@ class BrowsingDataRemoverBrowserTest
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
     enabled_features.push_back(media::kExternalClearKeyForTesting);
 #endif
+    // WebSQL is disabled by default as of M119 (crbug/695592). Enable feature
+    // in tests during deprecation trial and enterprise policy support.
+    enabled_features.push_back(blink::features::kWebSQLAccess);
     InitFeatureLists(std::move(enabled_features), {});
   }
 

@@ -72,7 +72,7 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="124678866338384709">Itxi oraingo fitxa</translation>
 <translation id="1246890715821376239">Aplikazio bateraezinak</translation>
 <translation id="1247372569136754018">Mikrofonoa (barnekoa)</translation>
-<translation id="1247519845643687288">Azkenaldiko aplikazioak</translation>
+<translation id="1247519845643687288">Azken aplikazioak</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> gailutik kargatzen</translation>
 <translation id="1255033239764210633">Zer eguraldi dago?</translation>
 <translation id="1269405891096105529">Gailu periferikoa ez da onartzen gonbidatu moduan</translation>
@@ -206,6 +206,7 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="1775598828170459419"><ph name="NUM_SHOWN_ITEMS" />/<ph name="NUM_TOTAL_ITEMS" /> daude ikusgai</translation>
 <translation id="178347895271755507">Konfiguratu telefonoko azken argazkiak, multimedia-elementuak eta jakinarazpenak ikusteko aukera</translation>
 <translation id="1787955149152357925">Desaktibatuta</translation>
+<translation id="1797271123677381264">Pasahitza ahaztu zait</translation>
 <translation id="181103072419391116">Seinalearen indarra: <ph name="SIGNAL_STRENGTH" />. Administratzaileak kudeatua.</translation>
 <translation id="1815245884418711390">Aktibatu/Desaktibatu wifi-gunea. Wifi-gunea desaktibatuta dago.</translation>
 <translation id="1816896987747843206">Kamera erabiltzeko baimena daukaten aplikazio eta webgune guztiek kamera atzitu ahal izango dute</translation>
@@ -275,7 +276,7 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="2083190527011054446">Gabon, <ph name="GIVEN_NAME" />:</translation>
 <translation id="2086334242442703436">Ireki emoji-hautatzailea</translation>
 <translation id="2088116547584365419">jokoak</translation>
-<translation id="209965399369889474">Ez zaude konektatuta sarera</translation>
+<translation id="209965399369889474">Ez zaude sarera konektatuta</translation>
 <translation id="2107914222138020205">USB-C kableak ez du onartzen Thunderbolt. Baliteke gailuaren errendimendua mugatuta egotea.</translation>
 <translation id="2108303511227308752">Alt + Atzera tekla lasterbidea aldatu egin da. "Ezabatu" tekla erabiltzeko, sakatu <ph name="LAUNCHER_KEY_NAME" /> tekla + Atzera tekla.</translation>
 <translation id="2126242104232412123">Lan-eremu berria</translation>
@@ -298,7 +299,6 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="2227179592712503583">Kendu iradokizuna</translation>
 <translation id="2248634276911611268">Ireki esteka beste fitxa batean eta joan fitxa horretara</translation>
 <translation id="225680501294068881">Gailuak bilatzen…</translation>
-<translation id="225716114209817872">Gehienekoa</translation>
 <translation id="2257486738914982088">Arazo bat izan da <ph name="FILENAME" /> deskargatzean</translation>
 <translation id="2258734398699965611">Iradokitako fitxategiak</translation>
 <translation id="2268130516524549846">Bluetootha desgaituta dago</translation>
@@ -377,7 +377,7 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="255671100581129685">Google-ren Laguntzailea ez dago erabilgarri saio publikoetan.</translation>
 <translation id="256712445991462162">ainguratutako lupa</translation>
 <translation id="2573588302192866788">Ezin izan da konektatu <ph name="NAME" /></translation>
-<translation id="2575685495496069081">Desgaitu egin da saio bat baino gehiago hasteko eginbidea</translation>
+<translation id="2575685495496069081">Desgaitu egin da saio-hasiera anitza</translation>
 <translation id="2579264398927991698">Firmware-eguneratzeak</translation>
 <translation id="2582112259361606227">Eguneratzeko, berrabiarazi</translation>
 <translation id="2586561057878260610">Sakatu Ktrl + W <ph name="DESK_NAME" /> lan-eremuarekin konbinatzeko. Sakatu Ktrl + Maius + W lan-eremua eta leihoak ixteko.</translation>
@@ -451,6 +451,7 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="2891209721153296020">"Desautatu"</translation>
 <translation id="2894949423239620203">Baliteke kableak errendimenduan eragina izatea</translation>
 <translation id="2914580577416829331">Pantaila-argazkiak</translation>
+<translation id="2924416280450782352">Ezin da erakutsi elementurik. Ireki berriro panel hau.</translation>
 <translation id="2931572158271115754">Ez dago ezer egitekoen zerrendan.</translation>
 <translation id="2941112035454246133">Txikia</translation>
 <translation id="2942350706960889382">Lupa ainguratua</translation>
@@ -509,7 +510,7 @@ Hona hemen hasteko egin ditzakezun gauza batzuk.</translation>
 <translation id="3139942575505304791">1. lan-eremua</translation>
 <translation id="315116470104423982">Datu-konexioa</translation>
 <translation id="3151786313568798007">Orientazioa</translation>
-<translation id="3153444934357957346">Gehienez ere, <ph name="MULTI_PROFILE_USER_LIMIT" /> kontu izan ditzakezu saio bat baino gehiago hasteko eginbidea erabiltzen duzunean.</translation>
+<translation id="3153444934357957346">Gehienez ere, <ph name="MULTI_PROFILE_USER_LIMIT" /> kontu izan ditzakezu saio-hasiera anitza erabiltzen duzunean.</translation>
 <translation id="3154351730702813399">Gailuaren administratzaileak arakatze-jarduerak kontrola ditzake.</translation>
 <translation id="316086887565479535">Bateragarriak ez diren aplikazio batzuk daude txantiloian</translation>
 <translation id="3161500364292033097">Itxi lan-eremuak eta leihoak</translation>
@@ -672,8 +673,8 @@ Konektatu gailua korrontera.</translation>
 <translation id="3756485814916578707">Pantaila igortzen</translation>
 <translation id="3765841382945324995">"<ph name="SIX_PACK_KEY_NAME" />" lasterbidea <ph name="OLD_SHORTCUT" /> izatetik <ph name="NEW_SHORTCUT" /> izatera pasatu da</translation>
 <translation id="3765841986579723851">Gaur editatu da</translation>
-<translation id="3773700760453577392">Administratzaile batek saio bat baino gehiago hasteko eginbidea desgaitu dio <ph name="USER_EMAIL" /> erabiltzaileari.
-Aurrera egiteko, erabiltzaile guztiek saioa amaitu behar dute.</translation>
+<translation id="3773700760453577392">Administratzaile batek <ph name="USER_EMAIL" /> erabiltzaileari saio-hasiera anitza desgaitu dio.
+Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translation>
 <translation id="3779139509281456663"><ph name="NAME" /> konektatzen</translation>
 <translation id="3781910048497807059">Fokuratu aurreko panela</translation>
 <translation id="3783640748446814672">alt</translation>
@@ -697,7 +698,6 @@ Aurrera egiteko, erabiltzaile guztiek saioa amaitu behar dute.</translation>
 <translation id="385300504083504382">Hasiera</translation>
 <translation id="3859364108019690">Ezin da igorri zuzenean aplikaziorik</translation>
 <translation id="3861651314799684201">Pantaila osoa grabatzeko, sakatu Sartu</translation>
-<translation id="3871092408932389764">Baxuena</translation>
 <translation id="3886872229787704059">Gaur ireki da</translation>
 <translation id="3891340733213178823">Saioa amaitzeko, sakatu Ktrl + Maius + Q bi aldiz.</translation>
 <translation id="3893630138897523026">ChromeVox (ahozko argibideak)</translation>
@@ -739,6 +739,7 @@ Aurrera egiteko, erabiltzaile guztiek saioa amaitu behar dute.</translation>
 <translation id="4028481283645788203">Pasahitza behar da gailua babestuago edukitzeko</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4032988577476260673"><ph name="LAUNCHER_KEY_NAME" /> + ezkerrera egiteko gezi-tekla</translation>
+<translation id="4039699481424758547"><ph name="WINDOW_TITLE" /> leihoaren pantaila-argazki bat ateratzeko, sakatu Sartu</translation>
 <translation id="4042660782729322247">Pantaila partekatzen ari zara</translation>
 <translation id="404437169852192935">Eguneratzeak amaitu dira</translation>
 <translation id="4049230407053723315">Ezarpen bizkorrak</translation>
@@ -834,7 +835,6 @@ Aurrera egiteko, erabiltzaile guztiek saioa amaitu behar dute.</translation>
 <translation id="4406883609789734330">Istanteko azpitituluak</translation>
 <translation id="4412944820643904175">Desaktibatuta dago <ph name="FEATURE_NAME" />.</translation>
 <translation id="4424159417645388645">5. lan-eremua</translation>
-<translation id="4427695046139341014">Joko-panela</translation>
 <translation id="4430019312045809116">Bolumena</translation>
 <translation id="4441283832827406317">Izenaren arabera daude ordenatuta aplikazioak</translation>
 <translation id="4445159312344259901">Desblokeatzeko, hasi saioa</translation>
@@ -956,7 +956,7 @@ Aurrera egiteko, erabiltzaile guztiek saioa amaitu behar dute.</translation>
 <translation id="4918086044614829423">Onartu</translation>
 <translation id="4919841137949306064"><ph name="APP_NAME" /> kamera erabiltzen ari da une honetan</translation>
 <translation id="492453977506755176">Edukia kapturatzeko moduaren tekla</translation>
-<translation id="4925542575807923399">Saio bat baino gehiago hasteko eginbidea erabiltzeko, saioa hasten duen lehen kontua hau izatea eskatzen du kontu honen administratzaileak.</translation>
+<translation id="4925542575807923399">Saio-hasiera anitzeko saioetan, saioa hasten duen lehen kontua hau izatea eskatzen du kontu honen administratzaileak.</translation>
 <translation id="493076006037866439">Txikitu pantaila</translation>
 <translation id="4936329710968938986">Denekin, desaktibatuta</translation>
 <translation id="4937170330762390348">Diktaketari esker, ahotsaren bidez idatz dezakezu. Testu-eremu batean zaudenean, sakatu diktatzeko tekla edo hautatu pantailaren behealdeko mikrofonoaren ikonoa. <ph name="LANGUAGE" /> daukazu ezarrita diktatzeko hizkuntza gisa. Hizketa-fitxategiak deskargatuko dira, diktaketa konexiorik gabe ere erabili ahal izateko. Diktatzeko hizkuntza aldatzeko, joan Ezarpenak &gt; Erabilerraztasuna atalera.</translation>
@@ -1104,7 +1104,7 @@ Aurrera egiteko, erabiltzaile guztiek saioa amaitu behar dute.</translation>
 <translation id="5523434445161341166"><ph name="FEATURE_NAME" /> konektatzen ari da.</translation>
 <translation id="5529587891732734495">Pausatu igorpena</translation>
 <translation id="5532994612895037630">Sakatu edozein toki pantaila osoko moduan grabatzeko</translation>
-<translation id="5536723544185013515">Azkenaldiko aplikazioak, erabili ezkerrera edo eskuinera egiteko gezi-teklak azkenaldiko aplikazioak atzitzeko</translation>
+<translation id="5536723544185013515">Azken aplikazioak, erabili ezkerrera edo eskuinera egiteko gezi-teklak azken aplikazioak atzitzeko</translation>
 <translation id="553675580533261935">Saiotik irteten</translation>
 <translation id="5537725057119320332">Igorri</translation>
 <translation id="5546397813406633847">Berreskuratu erabiltzailea</translation>
@@ -1215,7 +1215,6 @@ Aurrera egiteko, erabiltzaile guztiek saioa amaitu behar dute.</translation>
 <translation id="5961960957587052807">Txikia</translation>
 <translation id="5965524703725988602">Aktibatu/Desaktibatu gai iluna. <ph name="STATE_TEXT" />.</translation>
 <translation id="5975235751479998104">Egin aurrera leiho batetik bestera</translation>
-<translation id="5976112937189445008">Leihoa grabatzeko, sakatu Sartu</translation>
 <translation id="5978382165065462689">Urruneko laguntzaren bidez pantailaren kontrola partekatzen.</translation>
 <translation id="5980301590375426705">Irten gonb. saiotik</translation>
 <translation id="5983567367406220847">Jarduerarik egon ez denez, wifi-gunea desaktibatu da.</translation>
@@ -1437,7 +1436,6 @@ Berriki instalatu da</translation>
 <translation id="6886172995547742638">Baliteke <ph name="DEVICE_TYPE" /> gailuaren errendimendua txikiagoa izatea. Erabili <ph name="PREFERRED_MINIMUM_POWER" /> W-eko edo gehiagoko USB-C egokigailu bat.</translation>
 <translation id="688631446150864480">Leihoz aldatzeko, sakatu behera egiteko gezi-tekla</translation>
 <translation id="6896758677409633944">Kopiatu</translation>
-<translation id="6901883536534621389">Probatu nabigatzeko keinuak</translation>
 <translation id="6912841030378044227">Fokuratu helbide-barra</translation>
 <translation id="6912901278692845878">Txango bizkorra</translation>
 <translation id="6919251195245069855">Ezin izan da hauteman txartel adimenduna. Saiatu berriro.</translation>
@@ -1669,7 +1667,7 @@ Itzaltzeko, eduki sakatuta berriro gailuaren etengailua.</translation>
 <translation id="7901190436359881020">Aldatu leihoak</translation>
 <translation id="7901405293566323524">Phone Hub</translation>
 <translation id="7902625623987030061">Ukitu hatz-marken sentsorea</translation>
-<translation id="7904094684485781019">Kontu honen administratzaileak saio bat baino gehiago hasteko baimenak kendu ditu.</translation>
+<translation id="7904094684485781019">Kontu honen administratzaileak saio-hasiera anitzerako baimenak kendu ditu.</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7917760201509801422"><ph name="DEVICECOUNT" /> gailu daude konektatuta</translation>
 <translation id="7926080067315048321">Ikusi zeregin guztiak Google Zereginak zerbitzuaren sareko bertsioan</translation>
@@ -1693,7 +1691,7 @@ Itzaltzeko, eduki sakatuta berriro gailuaren etengailua.</translation>
 <translation id="7984197416080286869">Saiakera gehiegi egin dira hatz-markarekin</translation>
 <translation id="798779949890829624">Administratzaileak kudeatzen du ezarpena</translation>
 <translation id="799296642788192631">Fitxategi garrantzitsuak aingura ditzakezu. Ainguratzeko, pasatu erakuslea elementu baten gainetik edo ireki Fitxategiak eta egin klik eskuineko botoiarekin elementu batean.</translation>
-<translation id="7994370417837006925">Saio bat baino gehiago hasteko eginbidea</translation>
+<translation id="7994370417837006925">Saio-hasiera anitza</translation>
 <translation id="7995804128062002838">Ezin izan da atera pantaila-argazkia</translation>
 <translation id="8000066093800657092">Ez dago sarerik</translation>
 <translation id="8001755249288974029">Hautatu kurtsoretik lerroaren hasiera arteko testua</translation>
@@ -1742,7 +1740,6 @@ Itzaltzeko, eduki sakatuta berriro gailuaren etengailua.</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> erabiltzen</translation>
 <translation id="8185090165691050712">Aktibatu/Desaktibatu tamaina aldatzeko aukera blokeatuta daukan moduaren menua</translation>
 <translation id="8192202700944119416">Jakinarazpenak ezkutatuta daude.</translation>
-<translation id="8196787716797768628">Erabili keinuak aplikazio batetik bestera joateko eta Chromebook gailua tableta moduan erabiltzeko.</translation>
 <translation id="8198456017687137612">Edukia igortzen ari den fitxa</translation>
 <translation id="8200772114523450471">Berrekin</translation>
 <translation id="8203795194971602413">Egin klik eskuineko botoiarekin</translation>
@@ -1752,7 +1749,6 @@ Itzaltzeko, eduki sakatuta berriro gailuaren etengailua.</translation>
 <translation id="8230305195727960608">Koloreak alderantzikatzeko modua</translation>
 <translation id="8236042855478648955">Atseden hartzeko garaia da</translation>
 <translation id="8239034820133090126">Aktibatu eskuineko lan-eremua</translation>
-<translation id="8246282815785366524">Ongi etorri berriro, <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />. Seinalearen indarra: <ph name="SIGNAL_STRENGTH" />. Telefonoaren bateria: <ph name="BATTERY_STATUS" />.</translation>
 <translation id="8247998213073982446">Aplikazioa (<ph name="APP_NAME" />)</translation>
 <translation id="8255234195843591763">Gailua eguneratzeko, berrezar ezazu</translation>
@@ -1851,6 +1847,7 @@ Itzaltzeko, eduki sakatuta berriro gailuaren etengailua.</translation>
 <translation id="8703634754197148428">Hasi grabatzen. Grabatzen hasi ondoren, sakatu Alt + Maius + L apalera joateko; bertan ikusiko duzu grabaketa gelditzeko botoia.</translation>
 <translation id="8704155109538237473">Fokuratu pantaila txiki gainjarria</translation>
 <translation id="870917907284186124">Aktibatu/Desaktibatu diktaketa (ahotsaren bidez idaztea)</translation>
+<translation id="8714138378966541668">Hornitzaileak blokeatu du</translation>
 <translation id="8717459106217102612">Hautatu aurreko hitza edo hizkia</translation>
 <translation id="8721053961083920564">Aldatu bolumena. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Pantaila osoaren kaptura</translation>
@@ -1864,12 +1861,11 @@ Itzaltzeko, eduki sakatuta berriro gailuaren etengailua.</translation>
         <ph name="SCREEN_SHARE_STATUS" /></translation>
 <translation id="8755498163081687682">Egiaztatu zure identitatea: <ph name="ORIGIN_NAME" /> webguneak zeu zarela berretsi nahi du</translation>
 <translation id="875593634123171288">Erakutsi VPN ezarpenak</translation>
-<translation id="8759408218731716181">Ezin da konfiguratu saio bat baino gehiago hasteko eginbidea</translation>
+<translation id="8759408218731716181">Ezin da saio-hasiera anitza konfiguratu</translation>
 <translation id="8763883995157866248">Ezarri gailua bateria aurrezteko moduan</translation>
 <translation id="878215960996152260"><ph name="APP_NAME" />, instalatutako aplikazioa, blokeatuta</translation>
 <translation id="8785070478575117577">Konektatu <ph name="NETWORK_NAME" /> sarera</translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
-<translation id="8790998409862094015">Asko</translation>
 <translation id="8792626944327216835">mikrofonoa</translation>
 <translation id="8801802992492329306">5G</translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> karpeta</translation>
@@ -1882,6 +1878,7 @@ Itzaltzeko, eduki sakatuta berriro gailuaren etengailua.</translation>
 <translation id="8834539327799336565">Konektatuta daudenak</translation>
 <translation id="8841375032071747811">Atzera botoia</translation>
 <translation id="8843682306134542540">Aldatu biratzearen blokeoa. <ph name="STATE_TEXT" /></translation>
+<translation id="8849001918648564819">Ezkutatuta</translation>
 <translation id="8853703225951107899">Oraindik ezin izan da egiaztatu PINa edo pasahitza. Oharra: pasahitza duela gutxi aldatu baduzu, erabili pasahitz zaharra. Saioa amaitu eta gero aplikatuko da pasahitz berria.</translation>
 <translation id="8855885154700222542">Pantaila osoaren tekla</translation>
 <translation id="8858369206579825206">Pribatutasun-ezarpenak</translation>
@@ -1901,7 +1898,6 @@ Itzaltzeko, eduki sakatuta berriro gailuaren etengailua.</translation>
 <translation id="8909138438987180327">Bateriaren % <ph name="PERCENTAGE" /> geratzen zaizu.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google-ren Laguntzailea zerbitzuak ezin du erabili hizkuntza hori.</translation>
-<translation id="8924458948354692166">Leihoaren pantaila-argazki bat ateratzeko, sakatu Sartu</translation>
 <translation id="8926951137623668982">Apala beti dago ezkutatuta</translation>
 <translation id="8934926665751933910">{NUM_FILES,plural, =1{1 fitxategi}other{# fitxategi}}</translation>
 <translation id="8936501819958976551">desaktibatuta</translation>
@@ -1966,6 +1962,7 @@ Itzaltzeko, eduki sakatuta berriro gailuaren etengailua.</translation>
 <translation id="9211490828691860325">Lan-eremu guztiak</translation>
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> bateria guztiz kargatu arte.</translation>
 <translation id="9215934040295798075">Ezarri horma-papera</translation>
+<translation id="9216699844945104164"><ph name="WINDOW_TITLE" /> leihoa grabatzeko, sakatu Sartu</translation>
 <translation id="9219103736887031265">Irudiak</translation>
 <translation id="921989828232331238">Guraso batek gailua blokeatu dizu gaurkoz</translation>
 <translation id="9220525904950070496">Kendu kontua</translation>

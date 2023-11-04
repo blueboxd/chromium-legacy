@@ -15,9 +15,8 @@
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/crash_report/crash_keys_helper.h"
+#import "ios/chrome/browser/crash_report/model/crash_keys_helper.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
-#import "ios/chrome/browser/shared/public/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/chrome_table_view_styler.h"
@@ -57,6 +56,7 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/thread/web_task_traits.h"
 #import "ios/web/public/thread/web_thread.h"
+#import "ios/web/public/web_state_id.h"
 #import "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -1373,7 +1373,13 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 - (void)configureAddToButtonMenuForSelectedItems {
   GridViewController* gridViewController =
       [self gridViewControllerForPage:self.currentPage];
-  NSArray<NSString*>* items =
+  // This can be called when the current page is not tied to a grid view
+  // controller. If so, return early, because getting the std::set off of a nil
+  // gridViewController would return a garbage std::set.
+  if (!gridViewController) {
+    return;
+  }
+  const std::set<web::WebStateID> items =
       gridViewController.selectedShareableItemIDsForEditing;
   UIMenu* menu = nil;
   switch (self.currentPage) {
@@ -1568,10 +1574,16 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 - (void)updateSelectionModeToolbars {
   GridViewController* currentGridViewController =
       [self gridViewControllerForPage:self.currentPage];
+  // This can be called when the current page is not tied to a grid view
+  // controller. If so, return early, because getting the std::set off of a nil
+  // gridViewController would return a garbage std::set.
+  if (!currentGridViewController) {
+    return;
+  }
   NSUInteger selectedItemsCount =
-      [currentGridViewController.selectedItemIDsForEditing count];
+      currentGridViewController.selectedItemIDsForEditing.size();
   NSUInteger sharableSelectedItemsCount =
-      [currentGridViewController.selectedShareableItemIDsForEditing count];
+      currentGridViewController.selectedShareableItemIDsForEditing.size();
   self.topToolbar.selectedTabsCount = selectedItemsCount;
   self.bottomToolbar.selectedTabsCount = selectedItemsCount;
 
@@ -1964,7 +1976,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)pinnedTabsViewController:
             (PinnedTabsViewController*)pinnedTabsViewController
-             didSelectItemWithID:(NSString*)itemID {
+             didSelectItemWithID:(web::WebStateID)itemID {
   // Record how long it took to select an item.
   [self reportTabSelectionTime];
 
@@ -2001,12 +2013,12 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)pinnedTabsViewController:
             (PinnedTabsViewController*)pinnedTabsViewController
-               didMoveItemWithID:(NSString*)itemID {
+               didMoveItemWithID:(web::WebStateID)itemID {
   [self setCurrentIdlePageStatus:NO];
 }
 
 - (void)pinnedTabsViewController:(GridViewController*)gridViewController
-             didRemoveItemWIthID:(NSString*)itemID {
+             didRemoveItemWIthID:(web::WebStateID)itemID {
   [self setCurrentIdlePageStatus:NO];
 }
 
@@ -2034,7 +2046,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 #pragma mark - GridViewControllerDelegate
 
 - (void)gridViewController:(GridViewController*)gridViewController
-       didSelectItemWithID:(NSString*)itemID {
+       didSelectItemWithID:(web::WebStateID)itemID {
   // Check that the current page matches the grid view being interacted with.
   BOOL isOnRegularTabsPage = self.currentPage == TabGridPageRegularTabs;
   BOOL isOnIncognitoTabsPage = self.currentPage == TabGridPageIncognitoTabs;
@@ -2101,7 +2113,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)gridViewController:(GridViewController*)gridViewController
-        didCloseItemWithID:(NSString*)itemID {
+        didCloseItemWithID:(web::WebStateID)itemID {
   [self setCurrentIdlePageStatus:NO];
 
   if (gridViewController == self.regularTabsViewController) {
@@ -2117,7 +2129,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)gridViewController:(GridViewController*)gridViewController
-         didMoveItemWithID:(NSString*)itemID
+         didMoveItemWithID:(web::WebStateID)itemID
                    toIndex:(NSUInteger)destinationIndex {
   [self setCurrentIdlePageStatus:NO];
 
@@ -2144,7 +2156,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)gridViewController:(GridViewController*)gridViewController
-       didRemoveItemWIthID:(NSString*)itemID {
+       didRemoveItemWIthID:(web::WebStateID)itemID {
   [self setCurrentIdlePageStatus:NO];
 }
 
@@ -2270,6 +2282,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 - (void)selectAllButtonTapped:(id)sender {
   GridViewController* gridViewController =
       [self gridViewControllerForPage:self.currentPage];
+  CHECK(gridViewController);
 
   // Deselect all items if they are all already selected.
   if (gridViewController.allItemsSelectedForEditing) {
@@ -2299,49 +2312,22 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   self.tabGridMode = TabGridModeNormal;
 }
 
-- (void)newTabButtonTapped:(id)sender {
-  // Ignore the tap if the current page is disabled for some reason, by policy
-  // for instance. This is to avoid situations where the tap action from an
-  // enabled page can make it to a disabled page by releasing the
-  // button press after switching to the disabled page (b/273416844 is an
-  // example).
-  if (![self isPageEnabled:self.currentPage]) {
-    return;
-  }
-
-  [self setCurrentIdlePageStatus:NO];
-  base::RecordAction(base::UserMetricsAction("MobileTabNewTab"));
-  [self openNewTabInPage:self.currentPage focusOmnibox:NO];
-  // Record metrics for button taps
-  switch (self.currentPage) {
-    case TabGridPageIncognitoTabs:
-      base::RecordAction(
-          base::UserMetricsAction("MobileTabGridCreateIncognitoTab"));
-      break;
-    case TabGridPageRegularTabs:
-      base::RecordAction(
-          base::UserMetricsAction("MobileTabGridCreateRegularTab"));
-      break;
-    case TabGridPageRemoteTabs:
-      // No-op.
-      break;
-  }
-}
-
 - (void)closeSelectedTabs:(id)sender {
   GridViewController* gridViewController =
       [self gridViewControllerForPage:self.currentPage];
-  NSArray<NSString*>* items = gridViewController.selectedItemIDsForEditing;
+  CHECK(gridViewController);
+  const std::set<web::WebStateID> itemIDs =
+      gridViewController.selectedItemIDsForEditing;
 
   switch (self.currentPage) {
     case TabGridPageIncognitoTabs:
       [self.incognitoTabsDelegate
-          showCloseItemsConfirmationActionSheetWithItems:items
+          showCloseItemsConfirmationActionSheetWithItems:itemIDs
                                                   anchor:sender];
       break;
     case TabGridPageRegularTabs:
       [self.regularTabsDelegate
-          showCloseItemsConfirmationActionSheetWithItems:items
+          showCloseItemsConfirmationActionSheetWithItems:itemIDs
                                                   anchor:sender];
       break;
     case TabGridPageRemoteTabs:
@@ -2354,15 +2340,16 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 - (void)shareSelectedTabs:(id)sender {
   GridViewController* gridViewController =
       [self gridViewControllerForPage:self.currentPage];
-  NSArray<NSString*>* items =
+  CHECK(gridViewController);
+  const std::set<web::WebStateID> itemIDs =
       gridViewController.selectedShareableItemIDsForEditing;
 
   switch (self.currentPage) {
     case TabGridPageIncognitoTabs:
-      [self.incognitoTabsDelegate shareItems:items anchor:sender];
+      [self.incognitoTabsDelegate shareItems:itemIDs anchor:sender];
       break;
     case TabGridPageRegularTabs:
-      [self.regularTabsDelegate shareItems:items anchor:sender];
+      [self.regularTabsDelegate shareItems:itemIDs anchor:sender];
       break;
     case TabGridPageRemoteTabs:
       NOTREACHED() << "Multiple tab selection invalid on remote tabs.";
@@ -2787,6 +2774,21 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
                      self.regularTabsViewController.gridView.contentInset =
                          inset;
                    }];
+}
+
+#pragma mark - GridConsumer
+
+- (void)setPageIdleStatus:(BOOL)status {
+  [self setCurrentIdlePageStatus:status];
+}
+
+- (void)setActivePageFromPage:(TabGridPage)page {
+  self.activePage = page;
+}
+
+- (void)prepareForDismissal {
+  [self.incognitoTabsViewController prepareForDismissal];
+  [self.regularTabsViewController prepareForDismissal];
 }
 
 @end

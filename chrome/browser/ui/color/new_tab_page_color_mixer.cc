@@ -156,11 +156,12 @@ void AddGeneratedThemeComprehensiveColors(ui::ColorMixer& mixer) {
   if (base::FeatureList::IsEnabled(ntp_features::kNtpModulesRedesigned)) {
     mixer[kColorNewTabPageModuleBackground] = SelectBasedOnWhiteInput(
         {kColorNewTabPageBackground}, gfx::kGoogleGrey100,
-        element_background_color);
+        kColorNewTabPageBackground);
+    mixer[kColorNewTabPageModuleItemBackground] = element_background_color;
   } else {
     mixer[kColorNewTabPageModuleBackground] = element_background_color;
+    mixer[kColorNewTabPageModuleItemBackground] = {kColorNewTabPageBackground};
   }
-  mixer[kColorNewTabPageModuleItemBackground] = {kColorNewTabPageBackground};
 
   mixer[kColorNewTabPageHistoryClustersModuleItemBackground] =
       SelectBasedOnWhiteInput(element_background_color, gfx::kGoogleGrey100,
@@ -442,7 +443,7 @@ void AddWebThemeNewTabPageColors(ui::ColorMixer& mixer, bool dark_mode) {
 
   if (base::FeatureList::IsEnabled(ntp_features::kNtpModulesRedesigned)) {
     if (dark_mode) {
-      mixer[kColorNewTabPageModuleBackground] = {gfx::kGoogleGrey800};
+      mixer[kColorNewTabPageModuleBackground] = {kColorNewTabPageBackground};
     } else {
       mixer[kColorNewTabPageModuleBackground] = {gfx::kGoogleGrey100};
     }

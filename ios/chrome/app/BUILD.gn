@@ -111,6 +111,8 @@ source_set("unit_tests") {
     "//ios/chrome/browser/shared/model/prefs:browser_prefs",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/signin:fake_system_identity",
+    "//ios/chrome/browser/signin:fake_system_identity_manager",
     "//ios/chrome/browser/signin:signin_util",
     "//ios/chrome/browser/signin:test_support",
     "//ios/chrome/browser/tabs",
@@ -206,7 +208,7 @@ if (ios_enable_credential_provider_extension) {
       "//components/keyed_service/core",
       "//ios/chrome/app/application_delegate:app_state_header",
       "//ios/chrome/app/application_delegate:observing_app_state_agent",
-      "//ios/chrome/browser/credential_provider",
+      "//ios/chrome/browser/credential_provider/model",
       "//ios/chrome/browser/passwords:store_factory",
       "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
       "//ios/chrome/browser/shared/model/browser_state",
@@ -327,7 +329,7 @@ source_set("first_run_app_state_agent") {
     "//ios/chrome/app:blocking_scene_commands",
     "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/app/application_delegate:application_delegate_internal",
-    "//ios/chrome/browser/browsing_data",
+    "//ios/chrome/browser/browsing_data/model",
     "//ios/chrome/browser/geolocation",
     "//ios/chrome/browser/shared/coordinator/scene:observing_scene_agent",
     "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
@@ -350,6 +352,8 @@ source_set("post_restore_app_agent") {
   ]
   deps = [
     "//base",
+    "//components/signin/public/identity_manager",
+    "//components/signin/public/identity_manager/objc",
     "//ios/chrome/app/application_delegate:app_state_header",
     "//ios/chrome/app/application_delegate:application_delegate_internal",
     "//ios/chrome/browser/promos_manager:constants",
@@ -451,7 +455,6 @@ source_set("app_internal") {
     "//components/proxy_config",
     "//components/signin/internal/identity_manager",
     "//components/sync",
-    "//components/sync/base",
     "//components/web_resource",
     "//ios/chrome/app/application_delegate",
     "//ios/chrome/app/application_delegate:application_delegate_internal",
@@ -464,13 +467,13 @@ source_set("app_internal") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/accessibility/model",
     "//ios/chrome/browser/bookmarks/model",
-    "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/browsing_data",
-    "//ios/chrome/browser/commerce/push_notification",
-    "//ios/chrome/browser/crash_report",
-    "//ios/chrome/browser/crash_report:crash_report_internal",
-    "//ios/chrome/browser/crash_report/breadcrumbs",
-    "//ios/chrome/browser/credential_provider:buildflags",
+    "//ios/chrome/browser/browser_state/model",
+    "//ios/chrome/browser/browsing_data/model",
+    "//ios/chrome/browser/commerce/model/push_notification",
+    "//ios/chrome/browser/crash_report/model",
+    "//ios/chrome/browser/crash_report/model:model_internal",
+    "//ios/chrome/browser/crash_report/model/breadcrumbs",
+    "//ios/chrome/browser/credential_provider/model:buildflags",
     "//ios/chrome/browser/default_browser:utils",
     "//ios/chrome/browser/download",
     "//ios/chrome/browser/download/background_service:background_service",
@@ -556,7 +559,7 @@ source_set("app_internal") {
   if (ios_enable_credential_provider_extension) {
     deps += [
       ":credential_provider_migrator_app_agent",
-      "//ios/chrome/browser/credential_provider",
+      "//ios/chrome/browser/credential_provider/model",
     ]
   }
 
@@ -595,7 +598,7 @@ source_set("main") {
     "//components/crash/core/common",
     "//ios/chrome/app/startup:ios_enable_sandbox_dump_buildflags",
     "//ios/chrome/app/startup:startup_basic",
-    "//ios/chrome/browser/crash_report",
+    "//ios/chrome/browser/crash_report/model",
     "//ios/chrome/browser/shared/model/paths",
     "//ios/chrome/common",
     "//ios/public/provider/chrome/browser/primes:primes_api",
@@ -682,6 +685,9 @@ chrome_app("chrome") {
     if (ios_enable_share_extension) {
       deps += [ ":share_extension_bundle" ]
     }
+    if (ios_enable_open_extension) {
+      deps += [ ":open_extension_bundle" ]
+    }
     if (ios_enable_credential_provider_extension) {
       deps += [ ":credential_provider_extension_bundle" ]
     }
@@ -759,6 +765,14 @@ if (current_toolchain == default_toolchain) {
       extension_name = "share_extension.appex"
       extension_target =
           "//ios/chrome/share_extension/appex(${_extension_toolchain})"
+    }
+  }
+
+  if (ios_enable_open_extension) {
+    extension_bundle_data("open_extension_bundle") {
+      extension_name = "open_extension.appex"
+      extension_target =
+          "//ios/chrome/open_extension/appex(${_extension_toolchain})"
     }
   }
 

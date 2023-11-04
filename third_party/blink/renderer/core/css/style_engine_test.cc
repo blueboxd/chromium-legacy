@@ -78,6 +78,7 @@
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/size_f.h"
 
 namespace blink {
@@ -172,7 +173,10 @@ StyleEngineTest::ScheduleInvalidationsForRules(TreeScope& tree_scope,
     return kRuleSetInvalidationFullRecalc;
   }
   rule_sets.insert(&rule_set);
-  GetStyleEngine().ScheduleInvalidationsForRuleSets(tree_scope, rule_sets);
+  SelectorFilter selector_filter;
+  selector_filter.PushAllParentsOf(tree_scope);
+  GetStyleEngine().ApplyRuleSetInvalidation(tree_scope, tree_scope.RootNode(),
+                                            selector_filter, rule_sets);
   return kRuleSetInvalidationsScheduled;
 }
 
@@ -353,9 +357,9 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   FontSelectionCapabilities capabilities =
       font_face->GetFontSelectionCapabilities();
   ASSERT_EQ(capabilities.weight,
-            FontSelectionRange({BoldWeightValue(), BoldWeightValue()}));
+            FontSelectionRange({kBoldWeightValue, kBoldWeightValue}));
   ASSERT_EQ(capabilities.slope,
-            FontSelectionRange({NormalSlopeValue(), NormalSlopeValue()}));
+            FontSelectionRange({kNormalSlopeValue, kNormalSlopeValue}));
 
   auto* font_face_parsed_sheet = MakeGarbageCollected<StyleSheetContents>(
       MakeGarbageCollected<CSSParserContext>(GetDocument()));
@@ -382,9 +386,9 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   EXPECT_TRUE(font_face);
   capabilities = font_face->GetFontSelectionCapabilities();
   ASSERT_EQ(capabilities.weight,
-            FontSelectionRange({BoldWeightValue(), BoldWeightValue()}));
+            FontSelectionRange({kBoldWeightValue, kBoldWeightValue}));
   ASSERT_EQ(capabilities.slope,
-            FontSelectionRange({ItalicSlopeValue(), ItalicSlopeValue()}));
+            FontSelectionRange({kItalicSlopeValue, kItalicSlopeValue}));
 
   auto* style_element = MakeGarbageCollected<HTMLStyleElement>(GetDocument());
   style_element->setInnerHTML(
@@ -408,9 +412,9 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   EXPECT_TRUE(font_face);
   capabilities = font_face->GetFontSelectionCapabilities();
   ASSERT_EQ(capabilities.weight,
-            FontSelectionRange({BoldWeightValue(), BoldWeightValue()}));
+            FontSelectionRange({kBoldWeightValue, kBoldWeightValue}));
   ASSERT_EQ(capabilities.slope,
-            FontSelectionRange({ItalicSlopeValue(), ItalicSlopeValue()}));
+            FontSelectionRange({kItalicSlopeValue, kItalicSlopeValue}));
 
   GetStyleEngine().RemoveInjectedSheet(font_face_key, WebCssOrigin::kUser);
   UpdateAllLifecyclePhases();
@@ -427,9 +431,9 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   EXPECT_TRUE(font_face);
   capabilities = font_face->GetFontSelectionCapabilities();
   ASSERT_EQ(capabilities.weight,
-            FontSelectionRange({NormalWeightValue(), NormalWeightValue()}));
+            FontSelectionRange({kNormalWeightValue, kNormalWeightValue}));
   ASSERT_EQ(capabilities.slope,
-            FontSelectionRange({ItalicSlopeValue(), ItalicSlopeValue()}));
+            FontSelectionRange({kItalicSlopeValue, kItalicSlopeValue}));
 
   // @keyframes rules
 
@@ -906,7 +910,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationCustomPseudo) {
             kRuleSetInvalidationsScheduled);
   UpdateAllLifecyclePhases();
   unsigned after_count = GetStyleEngine().StyleForElementCount();
-  EXPECT_EQ(3u, after_count - before_count);
+  EXPECT_EQ(1u, after_count - before_count);
 }
 
 TEST_F(StyleEngineTest, RuleSetInvalidationHost) {
@@ -981,7 +985,8 @@ TEST_F(StyleEngineTest, RuleSetInvalidationSlotted) {
 }
 
 TEST_F(StyleEngineTest, RuleSetInvalidationHostContext) {
-  GetDocument().body()->setInnerHTML("<div id=host></div>");
+  GetDocument().body()->setInnerHTML(
+      "<div class=match><div id=host></div></div>");
   Element* host = GetDocument().getElementById(AtomicString("host"));
   ASSERT_TRUE(host);
 
@@ -997,6 +1002,14 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHostContext) {
             kRuleSetInvalidationsScheduled);
   UpdateAllLifecyclePhases();
   unsigned after_count = GetStyleEngine().StyleForElementCount();
+  EXPECT_EQ(0u, after_count - before_count);
+
+  before_count = after_count;
+  EXPECT_EQ(ScheduleInvalidationsForRules(
+                shadow_root, ":host-context(.match) .a { background: green}"),
+            kRuleSetInvalidationsScheduled);
+  UpdateAllLifecyclePhases();
+  after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(1u, after_count - before_count);
 
   EXPECT_EQ(ScheduleInvalidationsForRules(
@@ -1181,15 +1194,9 @@ TEST_F(StyleEngineTest, ScheduleInvalidationAfterSubtreeRecalc) {
   ASSERT_TRUE(t1);
   ASSERT_TRUE(t2);
 
-  // Sanity test.
-  t1->setAttribute(blink::html_names::kClassAttr, AtomicString("t1"));
-  EXPECT_FALSE(GetDocument().NeedsStyleInvalidation());
-  EXPECT_TRUE(GetDocument().ChildNeedsStyleInvalidation());
-  EXPECT_TRUE(t1->NeedsStyleInvalidation());
-
   UpdateAllLifecyclePhases();
 
-  // platformColorsChanged() triggers SubtreeStyleChange on document(). If that
+  // PlatformColorsChanged() triggers SubtreeStyleChange on document(). If that
   // for some reason should change, this test will start failing and the
   // SubtreeStyleChange must be set another way.
   // Calling setNeedsStyleRecalc() explicitly with an arbitrary reason instead
@@ -1199,68 +1206,50 @@ TEST_F(StyleEngineTest, ScheduleInvalidationAfterSubtreeRecalc) {
   // Check that no invalidations sets are scheduled when the document node is
   // already SubtreeStyleChange.
   t2->setAttribute(blink::html_names::kClassAttr, AtomicString("t2"));
-  EXPECT_FALSE(GetDocument().NeedsStyleInvalidation());
-  EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
+  EXPECT_FALSE(GetDocument().NeedsStyleRecalc());
+  EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
+  UpdateAllLifecyclePhases();  // Mark everything as clean.
 
-  UpdateAllLifecyclePhases();
+  // Toggling the s2 style sheet should normally touch t1 and t2...
   auto* s2 =
       To<HTMLStyleElement>(GetDocument().getElementById(AtomicString("s2")));
   ASSERT_TRUE(s2);
   s2->setDisabled(true);
   GetStyleEngine().UpdateActiveStyle();
-  EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
-  EXPECT_TRUE(GetDocument().NeedsStyleInvalidation());
+  EXPECT_TRUE(GetDocument().documentElement()->ChildNeedsStyleRecalc());
+  EXPECT_TRUE(t1->NeedsStyleRecalc());
+  EXPECT_TRUE(t2->NeedsStyleRecalc());
+  UpdateAllLifecyclePhases();  // Mark everything as clean.
 
-  UpdateAllLifecyclePhases();
+  // ...but if the root is marked as kSubtreeRecalc, it should not visit them,
+  // and thus not mark them for recalc.
   GetStyleEngine().PlatformColorsChanged();
   s2->setDisabled(false);
   GetStyleEngine().UpdateActiveStyle();
-  EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
-  EXPECT_FALSE(GetDocument().NeedsStyleInvalidation());
+  EXPECT_FALSE(GetDocument().documentElement()->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(t1->NeedsStyleRecalc());
+  EXPECT_FALSE(t2->NeedsStyleRecalc());
+  UpdateAllLifecyclePhases();  // Mark everything as clean.
 
-  UpdateAllLifecyclePhases();
+  // Toggling the s1 stylesheet shouldn't touch either, since it matches
+  // nothing.
   auto* s1 =
       To<HTMLStyleElement>(GetDocument().getElementById(AtomicString("s1")));
   ASSERT_TRUE(s1);
   s1->setDisabled(true);
   GetStyleEngine().UpdateActiveStyle();
-  EXPECT_TRUE(GetDocument().ChildNeedsStyleInvalidation());
-  EXPECT_FALSE(GetDocument().NeedsStyleInvalidation());
-  EXPECT_TRUE(t1->NeedsStyleInvalidation());
-  EXPECT_TRUE(t2->NeedsStyleInvalidation());
+  EXPECT_FALSE(GetDocument().documentElement()->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(t1->NeedsStyleRecalc());
+  EXPECT_FALSE(t2->NeedsStyleRecalc());
+  UpdateAllLifecyclePhases();  // Mark everything as clean.
 
-  UpdateAllLifecyclePhases();
+  // And thus, kSubtreeRecalc on the root shouldn't make any difference.
   GetStyleEngine().PlatformColorsChanged();
   s1->setDisabled(false);
   GetStyleEngine().UpdateActiveStyle();
-  EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
-  EXPECT_FALSE(GetDocument().NeedsStyleInvalidation());
-  EXPECT_FALSE(t1->NeedsStyleInvalidation());
-  EXPECT_FALSE(t2->NeedsStyleInvalidation());
-}
-
-TEST_F(StyleEngineTest, ScheduleRuleSetInvalidationsOnNewShadow) {
-  GetDocument().body()->setInnerHTML("<div id='host'></div>");
-  Element* host = GetDocument().getElementById(AtomicString("host"));
-  ASSERT_TRUE(host);
-
-  UpdateAllLifecyclePhases();
-  ShadowRoot& shadow_root =
-      host->AttachShadowRootInternal(ShadowRootType::kOpen);
-
-  shadow_root.setInnerHTML(R"HTML(
-    <style>
-      span { color: green }
-      t1 { color: green }
-    </style>
-    <div id='t1'></div>
-    <span></span>
-  )HTML");
-
-  GetStyleEngine().UpdateActiveStyle();
-  EXPECT_TRUE(GetDocument().ChildNeedsStyleInvalidation());
-  EXPECT_FALSE(GetDocument().NeedsStyleInvalidation());
-  EXPECT_TRUE(shadow_root.NeedsStyleInvalidation());
+  EXPECT_FALSE(GetDocument().documentElement()->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(t1->NeedsStyleRecalc());
+  EXPECT_FALSE(t2->NeedsStyleRecalc());
 }
 
 TEST_F(StyleEngineTest, EmptyHttpEquivDefaultStyle) {
@@ -3639,6 +3628,94 @@ TEST_F(StyleEngineTest, DynamicViewportUnitsInMediaQuery) {
     document.DynamicViewportUnitsChanged();
     EXPECT_TRUE(document.GetStyleEngine().NeedsActiveStyleUpdate());
   }
+}
+
+TEST_F(StyleEngineTest, MediaQueriesChangeDisplayState) {
+  ScopedDesktopPWAsAdditionalWindowingControlsForTest scoped_feature(true);
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      body {
+        background-color: white;
+      }
+      @media (display-state: normal) {
+        body {
+          background-color: yellow;
+        }
+      }
+      @media (display-state: minimized) {
+        body {
+          background-color: cyan;
+        }
+      }
+      @media (display-state: maximized) {
+        body {
+          background-color: red;
+        }
+      }
+      @media (display-state: fullscreen) {
+        body {
+          background-color: blue;
+        }
+      }
+    </style>
+    <body></body>
+  )HTML");
+
+  // display-state: normal
+  // Default is set in /third_party/blink/renderer/core/frame/settings.json5.
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(Color::FromRGB(/*yellow*/ 255, 255, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyBackgroundColor()));
+
+  WTF::Vector<std::pair<ui::WindowShowState, Color>> test_cases = {
+      {ui::SHOW_STATE_MINIMIZED, Color::FromRGB(/*cyan*/ 0, 255, 255)},
+      {ui::SHOW_STATE_MAXIMIZED, Color::FromRGB(/*red*/ 255, 0, 0)},
+      {ui::SHOW_STATE_FULLSCREEN, Color::FromRGB(/*blue*/ 0, 0, 255)}};
+
+  for (const auto& [show_state, color] : test_cases) {
+    GetFrame().GetSettings()->SetWindowShowState(show_state);
+    UpdateAllLifecyclePhases();
+    EXPECT_EQ(color,
+              GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                  GetCSSPropertyBackgroundColor()));
+  }
+}
+
+TEST_F(StyleEngineTest, MediaQueriesChangeResizable) {
+  ScopedDesktopPWAsAdditionalWindowingControlsForTest scoped_feature(true);
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      body {
+        background-color: white;
+      }
+      @media (resizable: true) {
+        body {
+          background-color: yellow;
+        }
+      }
+      @media (resizable: false) {
+        body {
+          background-color: cyan;
+        }
+      }
+    </style>
+    <body></body>
+  )HTML");
+
+  // resizable: true
+  // Default is set in /third_party/blink/renderer/core/frame/settings.json5.
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(Color::FromRGB(/*yellow*/ 255, 255, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyBackgroundColor()));
+
+  // resizable: false
+  GetFrame().GetSettings()->SetResizable(false);
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(Color::FromRGB(/*cyan*/ 0, 255, 255),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyBackgroundColor()));
 }
 
 namespace {

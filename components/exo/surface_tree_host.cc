@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "base/memory/raw_ptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
@@ -17,7 +18,8 @@
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
-#include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/features.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "components/viz/common/quads/compositor_render_pass.h"
@@ -26,7 +28,7 @@
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/common/surfaces/child_local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/raster_interface.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -46,6 +48,8 @@
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
+#include "ui/gfx/geometry/rrect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/presentation_feedback.h"
@@ -116,7 +120,7 @@ SurfaceTreeHost::SurfaceTreeHost(const std::string& window_name,
   InitHostWindow(window_name);
   context_provider_ = aura::Env::GetInstance()
                           ->context_factory()
-                          ->SharedMainThreadContextProvider();
+                          ->SharedMainThreadRasterContextProvider();
   DCHECK(context_provider_);
   context_provider_->AddObserver(this);
 }
@@ -333,7 +337,7 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
       std::move(presentation_callbacks);
 
   root_surface_->AppendSurfaceHierarchyContentsToFrame(
-      gfx::PointF(root_surface_origin_),
+      gfx::PointF(root_surface_origin_pixel_),
       layer_tree_frame_sink_holder_->NeedsFullDamageForNextFrame(),
       layer_tree_frame_sink_holder_->resource_manager(),
       client_submits_surfaces_in_pixel_coordinates()
@@ -352,8 +356,8 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
     }
     sync_tokens.push_back(resource.mailbox_holder.sync_token.GetData());
   }
-  gpu::gles2::GLES2Interface* gles2 = context_provider_->ContextGL();
-  gles2->VerifySyncTokensCHROMIUM(sync_tokens.data(), sync_tokens.size());
+  gpu::InterfaceBase* rii = context_provider_->RasterInterface();
+  rii->VerifySyncTokensCHROMIUM(sync_tokens.data(), sync_tokens.size());
 
   prev_frame_verified_tokens_.clear();
   for (auto& resource : frame.resource_list) {
@@ -387,7 +391,8 @@ void SurfaceTreeHost::SubmitEmptyCompositorFrame() {
                      /*filter_info=*/gfx::MaskFilterInfo(),
                      /*clip=*/absl::nullopt,
                      /*contents_opaque=*/true, /*opacity_f=*/1.f,
-                     /*blend=*/SkBlendMode::kSrcOver, /*sorting_context=*/0);
+                     /*blend=*/SkBlendMode::kSrcOver, /*sorting_context=*/0,
+                     /*layer_id=*/0u, /*fast_rounded_corner=*/false);
 
   viz::SolidColorDrawQuad* solid_quad =
       render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
@@ -431,10 +436,19 @@ void SurfaceTreeHost::UpdateHostWindowSizeAndRootSurfaceOrigin() {
       root_surface_->FillsBoundsOpaquely();
   host_window_->SetTransparent(!fills_bounds_opaquely);
 
-  root_surface_origin_ = gfx::Point() - bounds.OffsetFromOrigin();
+  root_surface_origin_pixel_ = gfx::Point() - bounds.OffsetFromOrigin();
+  gfx::Point root_surface_origin_dp =
+      client_submits_surfaces_in_pixel_coordinates_
+          ? ToFlooredPoint(
+                gfx::PointF() +
+                ScaleVector2d(root_surface_origin_pixel_.OffsetFromOrigin(),
+                              1.f / GetScaleFactor()))
+          : root_surface_origin_pixel_;
+
   const gfx::Rect& window_bounds = root_surface_->window()->bounds();
-  if (root_surface_origin_ != window_bounds.origin()) {
-    gfx::Rect updated_bounds(root_surface_origin_, window_bounds.size());
+  if (root_surface_origin_dp != window_bounds.origin()) {
+    // Set DP origin to root surface.
+    gfx::Rect updated_bounds(root_surface_origin_dp, window_bounds.size());
     root_surface_->window()->SetBounds(updated_bounds);
   }
 }
@@ -483,6 +497,10 @@ SurfaceTreeHost::CreateLayerTreeFrameSink() {
       aura::Env::GetInstance()->context_factory()->GetGpuMemoryBufferManager();
   params.pipes.compositor_frame_sink_remote = std::move(sink_remote);
   params.pipes.client_receiver = std::move(client_receiver);
+
+  params.auto_needs_begin_frame =
+      base::FeatureList::IsEnabled(kExoReactiveFrameSubmission) &&
+      features::IsAutoNeedsBeginFrameEnabled();
   auto frame_sink =
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
           nullptr /* context_provider */, nullptr /* worker_context_provider */,
@@ -610,7 +628,7 @@ void SurfaceTreeHost::HandleContextLost() {
   // Get new context and start observing it.
   context_provider_ = aura::Env::GetInstance()
                           ->context_factory()
-                          ->SharedMainThreadContextProvider();
+                          ->SharedMainThreadRasterContextProvider();
   DCHECK(context_provider_);
   context_provider_->AddObserver(this);
 
@@ -628,10 +646,6 @@ float SurfaceTreeHost::GetScaleFactor() const {
 
 float SurfaceTreeHost::GetPendingScaleFactor() const {
   return CalculateScaleFactor(pending_scale_factor_);
-}
-
-bool SurfaceTreeHost::HasDoubleBufferedPendingScaleFactor() const {
-  return pending_scale_factor_.has_value();
 }
 
 void SurfaceTreeHost::CleanUpCallbacks() {
@@ -671,6 +685,43 @@ float SurfaceTreeHost::CalculateScaleFactor(
     return scale_factor.value();
   }
   return host_window_->layer()->device_scale_factor();
+}
+
+void SurfaceTreeHost::ApplyRoundedCornersToSurfaceTree(
+    const gfx::RectF& bounds,
+    const gfx::RoundedCornersF& radii_in_dps) {
+  gfx::RoundedCornersF radii = radii_in_dps;
+  if (client_submits_surfaces_in_pixel_coordinates()) {
+    float scale_factor = GetScaleFactor();
+    radii = gfx::RoundedCornersF{
+        radii_in_dps.upper_left() * scale_factor,
+        radii_in_dps.upper_right() * scale_factor,
+        radii_in_dps.lower_right() * scale_factor,
+        radii_in_dps.lower_left() * scale_factor,
+    };
+  }
+
+  gfx::RRectF rounded_corners_bounds(bounds, radii);
+  ApplyAndPropagateRoundedCornersToSurfaceTree(root_surface(),
+                                               rounded_corners_bounds);
+}
+
+void SurfaceTreeHost::ApplyAndPropagateRoundedCornersToSurfaceTree(
+    Surface* surface,
+    const gfx::RRectF& rounded_corners_bounds) {
+  surface->SetRoundedCorners(rounded_corners_bounds,
+                             /*is_root_coordinates=*/false,
+                             /*commit_override=*/true);
+  for (auto& sub_surface_entry : surface->sub_surfaces()) {
+    // Convert the rounded corners bounds to sub_surface local coordinates by
+    // subtracting the sub_surface origin. The origin is the offset of the
+    // subsurface from its parent's surface.
+    const gfx::RRectF rounded_bounds_in_sub_surface_coords =
+        rounded_corners_bounds - sub_surface_entry.second.OffsetFromOrigin();
+    ApplyAndPropagateRoundedCornersToSurfaceTree(
+        /*surface=*/sub_surface_entry.first,
+        rounded_bounds_in_sub_surface_coords);
+  }
 }
 
 void SurfaceTreeHost::SetScaleFactorTransform(float scale_factor) {

@@ -71,7 +71,6 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
   WaitForEntitiesOnFakeServer(0, syncer::AUTOFILL_PROFILE);
   WaitForEntitiesOnFakeServer(0, syncer::BOOKMARKS);
   WaitForEntitiesOnFakeServer(0, syncer::HISTORY);
-  WaitForEntitiesOnFakeServer(0, syncer::TYPED_URLS);
 
   [super tearDown];
 }
@@ -86,24 +85,12 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
   WaitForEntitiesOnFakeServer(0, syncer::AUTOFILL_PROFILE);
   WaitForEntitiesOnFakeServer(0, syncer::BOOKMARKS);
   WaitForEntitiesOnFakeServer(0, syncer::HISTORY);
-  WaitForEntitiesOnFakeServer(0, syncer::TYPED_URLS);
 }
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config = [super appConfigurationForTestCase];
   config.additional_args.push_back(std::string("--") +
                                    syncer::kSyncShortNudgeDelayForTest);
-  if ([self isRunningTest:@selector(testSyncTypedURLUpload)] ||
-      [self isRunningTest:@selector(testSyncTypedUrlDownload)] ||
-      [self isRunningTest:@selector(testSyncTypedURLDeleteFromClient)] ||
-      [self isRunningTest:@selector(testSyncTypedURLDeleteFromServer)]) {
-    // TypedURL tests need to disable the History data type, since that one
-    // replaced TypedURLs.
-    config.features_disabled.push_back(syncer::kSyncEnableHistoryDataType);
-  } else if ([self isRunningTest:@selector(testSyncHistoryUpload)] ||
-             [self isRunningTest:@selector(testSyncHistoryDownload)]) {
-    config.features_enabled.push_back(syncer::kSyncEnableHistoryDataType);
-  }
 
   // Several datatypes, as well as logic related to initial sync, become
   // unused and cannot be tested if kReplaceSyncPromosWithSignInPromos is
@@ -111,11 +98,7 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
   if ([self isRunningTest:@selector(testSyncUploadBookmarkOnFirstSync)] ||
       [self isRunningTest:@selector(testSyncDeleteAutofillProfile)] ||
       [self isRunningTest:@selector(testSyncDownloadAutofillProfile)] ||
-      [self isRunningTest:@selector(testSyncUpdateAutofillProfile)] ||
-      [self isRunningTest:@selector(testSyncTypedURLDeleteFromClient)] ||
-      [self isRunningTest:@selector(testSyncTypedURLDeleteFromServer)] ||
-      [self isRunningTest:@selector(testSyncTypedURLUpload)] ||
-      [self isRunningTest:@selector(testSyncTypedUrlDownload)]) {
+      [self isRunningTest:@selector(testSyncUpdateAutofillProfile)]) {
     config.features_disabled.push_back(
         syncer::kReplaceSyncPromosWithSignInPromos);
   }
@@ -340,129 +323,6 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
   [ChromeEarlGrey verifySyncServerSessionURLs:specs];
 }
 
-// Tests that a typed URL (after Sync is enabled) is uploaded to the Sync
-// server.
-- (void)testSyncTypedURLUpload {
-  const GURL mockURL("http://not-a-real-site/");
-
-  [ChromeEarlGrey clearBrowsingHistory];
-  [self setTearDownHandler:^{
-    [ChromeEarlGrey clearBrowsingHistory];
-  }];
-  [ChromeEarlGrey addHistoryServiceTypedURL:mockURL];
-
-  // Sign in to sync.
-  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGrey addFakeIdentity:fakeIdentity];
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
-
-  [ChromeEarlGrey waitForSyncEngineInitialized:YES
-                                   syncTimeout:kSyncOperationTimeout];
-
-  // Trigger sync and verify the typed URL is on the fake sync server.
-  [ChromeEarlGrey triggerSyncCycleForType:syncer::TYPED_URLS];
-  [ChromeEarlGrey waitForSyncServerEntitiesWithType:syncer::TYPED_URLS
-                                               name:mockURL.spec()
-                                              count:1
-                                            timeout:kSyncOperationTimeout];
-}
-
-// Tests that typed url is downloaded from sync server.
-- (void)testSyncTypedUrlDownload {
-  const GURL mockURL("http://not-a-real-site/");
-
-  [ChromeEarlGrey clearBrowsingHistory];
-  [self setTearDownHandler:^{
-    [ChromeEarlGrey clearBrowsingHistory];
-  }];
-
-  // Inject typed url on server.
-  [ChromeEarlGrey addFakeSyncServerTypedURL:mockURL];
-
-  // Sign in to sync.
-  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGrey addFakeIdentity:fakeIdentity];
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
-
-  [ChromeEarlGrey waitForSyncEngineInitialized:YES
-                                   syncTimeout:kSyncOperationTimeout];
-
-  // Wait for typed url to appear on client.
-  [ChromeEarlGrey waitForHistoryURL:mockURL
-                      expectPresent:YES
-                            timeout:kSyncOperationTimeout];
-}
-
-// Tests that when typed url is deleted on the client, sync the change gets
-// propagated to server.
-- (void)testSyncTypedURLDeleteFromClient {
-  const GURL mockURL("http://not-a-real-site/");
-
-  [ChromeEarlGrey clearBrowsingHistory];
-  [self setTearDownHandler:^{
-    [ChromeEarlGrey clearBrowsingHistory];
-  }];
-
-  // Inject typed url on server.
-  [ChromeEarlGrey addFakeSyncServerTypedURL:mockURL];
-
-  // Sign in to sync.
-  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGrey addFakeIdentity:fakeIdentity];
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
-
-  [ChromeEarlGrey waitForSyncEngineInitialized:YES
-                                   syncTimeout:kSyncOperationTimeout];
-
-  // Wait for typed url to appear on client.
-  [ChromeEarlGrey waitForHistoryURL:mockURL
-                      expectPresent:YES
-                            timeout:kSyncOperationTimeout];
-  GREYAssert(
-      [ChromeEarlGrey numberOfSyncEntitiesWithType:syncer::TYPED_URLS] == 1,
-      @"There should be 1 typed URL entity");
-
-  // Delete typed URL from client.
-  [ChromeEarlGrey deleteHistoryServiceTypedURL:mockURL];
-
-  // Trigger sync and wait for typed URL to be deleted.
-  [ChromeEarlGrey triggerSyncCycleForType:syncer::TYPED_URLS];
-  WaitForEntitiesOnFakeServer(0, syncer::TYPED_URLS);
-}
-
-// Test that typed url is deleted from client after server sends tombstone for
-// that typed url.
-- (void)testSyncTypedURLDeleteFromServer {
-  const GURL mockURL("http://not-a-real-site/");
-
-  [ChromeEarlGrey clearBrowsingHistory];
-  [self setTearDownHandler:^{
-    [ChromeEarlGrey clearBrowsingHistory];
-  }];
-  [ChromeEarlGrey addHistoryServiceTypedURL:mockURL];
-
-  // Sign in to sync.
-  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGrey addFakeIdentity:fakeIdentity];
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
-
-  [ChromeEarlGrey waitForSyncEngineInitialized:YES
-                                   syncTimeout:kSyncOperationTimeout];
-  [ChromeEarlGrey triggerSyncCycleForType:syncer::TYPED_URLS];
-
-  [ChromeEarlGrey waitForSyncServerEntitiesWithType:syncer::TYPED_URLS
-                                               name:mockURL.spec()
-                                              count:1
-                                            timeout:kSyncOperationTimeout];
-  [ChromeEarlGrey deleteHistoryServiceTypedURL:mockURL];
-
-  // Trigger sync and wait for fake server to be updated.
-  [ChromeEarlGrey triggerSyncCycleForType:syncer::TYPED_URLS];
-  [ChromeEarlGrey waitForHistoryURL:mockURL
-                      expectPresent:NO
-                            timeout:kSyncOperationTimeout];
-}
-
 // Tests that browsing history is uploaded to the Sync server.
 - (void)testSyncHistoryUpload {
   const GURL preSyncURL = self.testServer->GetURL("/console.html");
@@ -502,7 +362,7 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
                                        timeout:kSyncOperationTimeout];
 }
 
-// Tests that typed url is downloaded from sync server.
+// Tests that history is downloaded from the sync server.
 - (void)testSyncHistoryDownload {
   const GURL mockURL("http://not-a-real-site/");
 

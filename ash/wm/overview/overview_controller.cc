@@ -18,6 +18,7 @@
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
+#include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_wallpaper_controller.h"
 #include "ash/wm/raster_scale/raster_scale_controller.h"
@@ -27,13 +28,11 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/trace_event/trace_event.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/presentation_time_recorder.h"
@@ -425,8 +424,6 @@ void OverviewController::ToggleOverview(OverviewEnterExitType type) {
         paint_as_active_lock_ = active_widget->LockPaintAsActive();
     }
 
-    Shell::Get()->frame_throttling_controller()->StartThrottling(windows);
-
     // Clear any animations that may be running from last overview end.
     for (const auto& animation : delayed_animations_)
       animation->Shutdown();
@@ -484,6 +481,8 @@ void OverviewController::ToggleOverview(OverviewEnterExitType type) {
     for (auto& observer : observers_)
       observer.OnOverviewModeStarting();
     overview_session_->Init(windows, hide_windows);
+
+    overview_session_->UpdateFrameThrottling();
 
     // When fading in from home, start animating blur immediately (if animation
     // is required) - with this transition the item widgets are positioned in

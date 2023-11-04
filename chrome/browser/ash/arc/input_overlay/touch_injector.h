@@ -133,6 +133,7 @@ class TouchInjector : public ui::EventRewriter {
   // the reference action.
   void ChangeActionType(Action* reference_action, ActionType action_type);
   void ChangeActionName(Action* action, int index);
+  void RemoveActionNewState(Action* action);
 
   void AddObserver(TouchInjectorObserver* observer);
   void RemoveObserver(TouchInjectorObserver* observer);
@@ -203,12 +204,12 @@ class TouchInjector : public ui::EventRewriter {
 
   class KeyCommand;
 
-  // Clean up active touch events before entering into other mode from `kView`
-  // mode.
+  // Clean up active touch events when there are pending touch events
+  // (`has_pending_touch_events_`== true) or to unlock the mouse if the mouse is
+  // locked. This is usually called when:
+  // 1. Exits from `kView` mode.
+  // 2. Mouse is not locked and it interrupts into the process.
   void CleanupTouchEvents();
-  // If the window is destroying or focusing out, releasing the active touch
-  // event.
-  void DispatchTouchCancelEvent();
   void SendExtraEvent(const ui::EventRewriter::Continuation continuation,
                       const ui::Event& event);
   void DispatchTouchReleaseEventOnMouseUnLock();
@@ -276,6 +277,7 @@ class TouchInjector : public ui::EventRewriter {
   void NotifyActionInputBindingUpdated(const Action& action);
   void NotifyActionNameUpdated(const Action& action);
   void NotifyContentBoundsSizeChanged();
+  void NotifyActionNewStateRemoved(Action& action);
 
   // For test.
   int GetRewrittenTouchIdForTesting(ui::PointerId original_id);
@@ -309,6 +311,10 @@ class TouchInjector : public ui::EventRewriter {
   bool input_mapping_visible_ = true;
 
   bool can_rewrite_event_ = true;
+
+  // It is true when the touch injector rewrites events to touch events and
+  // there might be pending touch events not released.
+  bool has_pending_touch_events_ = false;
 
   // Used for UMA stats. Don't record the stats when users just switch the
   // toggle back and forth and finish at the same state. Only record the state

@@ -32,6 +32,7 @@ n * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_FETCH_CONTEXT_H_
 
 #include "base/task/single_thread_task_runner.h"
+#include "base/types/optional_ref.h"
 #include "services/network/public/mojom/web_client_hints_types.mojom-blink-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/subresource_load_metrics.h"
@@ -84,14 +85,13 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext,
                     const DetachableResourceFetcherProperties&);
   ~FrameFetchContext() override = default;
 
-  void AddAdditionalRequestHeaders(ResourceRequest&) override;
   absl::optional<ResourceRequestBlockedReason> CanRequest(
       ResourceType type,
       const ResourceRequest& resource_request,
       const KURL& url,
       const ResourceLoaderOptions& options,
       ReportingDisposition reporting_disposition,
-      const absl::optional<ResourceRequest::RedirectInfo>& redirect_info)
+      base::optional_ref<const ResourceRequest::RedirectInfo> redirect_info)
       const override;
   mojom::FetchCacheMode ResourceRequestCachePolicy(
       const ResourceRequest&,
@@ -128,7 +128,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext,
 
   bool CalculateIfAdSubresource(
       const ResourceRequestHead& resource_request,
-      const absl::optional<KURL>& alias_url,
+      base::optional_ref<const KURL> alias_url,
       ResourceType type,
       const FetchInitiatorInfo& initiator_info) override;
 
@@ -178,10 +178,10 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext,
   bool ShouldBlockFetchByMixedContentCheck(
       mojom::blink::RequestContextType request_context,
       network::mojom::blink::IPAddressSpace target_address_space,
-      const absl::optional<ResourceRequest::RedirectInfo>& redirect_info,
+      base::optional_ref<const ResourceRequest::RedirectInfo> redirect_info,
       const KURL& url,
       ReportingDisposition reporting_disposition,
-      const absl::optional<String>& devtools_id) const override;
+      base::optional_ref<const String> devtools_id) const override;
   bool ShouldBlockFetchAsCredentialedSubresource(const ResourceRequest&,
                                                  const KURL&) const override;
 

@@ -37,9 +37,9 @@
 #import "ios/web_view/internal/cwv_ssl_status_internal.h"
 #import "ios/web_view/internal/cwv_ssl_util.h"
 #import "ios/web_view/internal/cwv_web_view_internal.h"
+#import "ios/web_view/internal/js_messaging/web_view_scripts_java_script_feature.h"
 #import "ios/web_view/internal/safe_browsing/cwv_unsafe_url_handler_internal.h"
 #import "ios/web_view/internal/web_view_browser_state.h"
-#import "ios/web_view/internal/web_view_early_page_script_provider.h"
 #import "ios/web_view/internal/web_view_message_handler_java_script_feature.h"
 #import "ios/web_view/internal/web_view_web_main_parts.h"
 #import "ios/web_view/public/cwv_navigation_delegate.h"
@@ -101,21 +101,8 @@ std::vector<web::JavaScriptFeature*> WebViewWebClient::GetJavaScriptFeatures(
       security_interstitials::IOSSecurityInterstitialJavaScriptFeature::
           GetInstance(),
       translate::TranslateJavaScriptFeature::GetInstance(),
-      WebViewMessageHandlerJavaScriptFeature::FromBrowserState(browser_state)};
-}
-
-NSString* WebViewWebClient::GetDocumentStartScriptForAllFrames(
-    web::BrowserState* browser_state) const {
-  WebViewEarlyPageScriptProvider& provider =
-      WebViewEarlyPageScriptProvider::FromBrowserState(browser_state);
-  return provider.GetAllFramesScript();
-}
-
-NSString* WebViewWebClient::GetDocumentStartScriptForMainFrame(
-    web::BrowserState* browser_state) const {
-  WebViewEarlyPageScriptProvider& provider =
-      WebViewEarlyPageScriptProvider::FromBrowserState(browser_state);
-  return provider.GetMainFrameScript();
+      WebViewMessageHandlerJavaScriptFeature::FromBrowserState(browser_state),
+      WebViewScriptsJavaScriptFeature::FromBrowserState(browser_state)};
 }
 
 void WebViewWebClient::PrepareErrorPage(
@@ -183,6 +170,11 @@ void WebViewWebClient::PrepareErrorPage(
 
 bool WebViewWebClient::EnableLongPressUIContextMenu() const {
   return CWVWebView.chromeContextMenuEnabled;
+}
+
+bool WebViewWebClient::EnableWebInspector(
+    web::BrowserState* browser_state) const {
+  return CWVWebView.webInspectorEnabled;
 }
 
 bool WebViewWebClient::IsMixedContentAutoupgradeEnabled(

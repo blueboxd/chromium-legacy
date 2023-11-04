@@ -36,12 +36,18 @@ class FakeQuickStartDecoder : public mojom::QuickStartDecoder {
   void DecodeNotifySourceOfUpdateResponse(
       const absl::optional<std::vector<uint8_t>>& data,
       DecodeNotifySourceOfUpdateResponseCallback callback) override;
+  void DecodeUserVerificationMethod(
+      const absl::optional<std::vector<uint8_t>>& data,
+      DecodeUserVerificationMethodCallback callback) override;
   void DecodeUserVerificationRequested(
       const absl::optional<std::vector<uint8_t>>& data,
       DecodeUserVerificationRequestedCallback callback) override;
   void DecodeUserVerificationResult(
       const absl::optional<std::vector<uint8_t>>& data,
       DecodeUserVerificationResultCallback callback) override;
+  void DecodeQuickStartMessage(
+      const absl::optional<std::vector<uint8_t>>& data,
+      DecodeQuickStartMessageCallback callback) override;
 
   void SetExpectedData(std::vector<uint8_t> expected_data);
   void SetAssertionResponse(mojom::FidoAssertionResponsePtr fido_assertion);
@@ -57,20 +63,25 @@ class FakeQuickStartDecoder : public mojom::QuickStartDecoder {
       mojom::WifiCredentialsPtr credentials,
       absl::optional<mojom::QuickStartDecoderError> error);
 
-  void SetNotifySourceOfUpdateResponse(absl::optional<bool> ack_received);
+  void SetNotifySourceOfUpdateResponse(
+      mojom::NotifySourceOfUpdateResponsePtr notify_source_of_update_response);
 
   void SetBootstrapConfigurationsResponse(
       const std::string& cryptauth_device_id,
       absl::optional<mojom::QuickStartDecoderError> error);
 
+  void SetQuickStartMessage(mojom::QuickStartMessagePtr quick_start_message);
+
  private:
   std::vector<uint8_t> expected_data_;
   mojo::ReceiverSet<ash::quick_start::mojom::QuickStartDecoder> receiver_set_;
-  absl::optional<bool> notify_source_of_update_response_;
+  mojom::NotifySourceOfUpdateResponsePtr notify_source_of_update_response_;
   mojom::WifiCredentialsPtr credentials_;
   mojom::FidoAssertionResponsePtr fido_assertion_;
+  mojom::UserVerificationMethodPtr user_verification_method_;
   mojom::UserVerificationRequestedPtr user_verification_request_;
   mojom::UserVerificationResponsePtr user_verification_response_;
+  mojom::QuickStartMessagePtr quick_start_message_;
   absl::optional<mojom::QuickStartDecoderError> error_;
   std::string response_cryptauth_device_id_;
 };

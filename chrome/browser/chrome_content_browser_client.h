@@ -353,6 +353,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context,
       const url::Origin& top_frame_origin,
       const url::Origin& reporting_origin) override;
+  bool IsPrivateAggregationDebugModeAllowed(
+      content::BrowserContext* browser_context,
+      const url::Origin& top_frame_origin,
+      const url::Origin& reporting_origin) override;
   bool IsCookieDeprecationLabelAllowed(
       content::BrowserContext* browser_context) override;
   bool IsCookieDeprecationLabelAllowedForContext(
@@ -521,6 +525,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const content::ServiceWorkerVersionBaseInfo& service_worker_version_info,
       mojo::BinderMapWithContext<const content::ServiceWorkerVersionBaseInfo&>*
           map) override;
+  void RegisterAssociatedInterfaceBindersForServiceWorker(
+      const content::ServiceWorkerVersionBaseInfo& service_worker_version_info,
+      blink::AssociatedInterfaceRegistry& associated_registry) override;
   void RegisterAssociatedInterfaceBindersForRenderFrameHost(
       content::RenderFrameHost& render_frame_host,
       blink::AssociatedInterfaceRegistry& associated_registry) override;
@@ -935,6 +942,16 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool ShouldAllowBackForwardCacheForCacheControlNoStorePage(
       content::BrowserContext* browser_context) override;
 
+  void SetIsMinimalMode(bool minimal) override;
+
+#if !BUILDFLAG(IS_ANDROID)
+  void BindVideoEffectsManager(
+      const std::string& device_id,
+      content::BrowserContext* browser_context,
+      mojo::PendingReceiver<video_capture::mojom::VideoEffectsManager>
+          video_effects_manager) override;
+#endif  // !BUILDFLAG(IS_ANDROID)
+
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);
   static bool HandleWebUIReverse(GURL* url,
@@ -1088,6 +1105,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 #if BUILDFLAG(IS_MAC)
   std::string GetChildProcessSuffix(int child_flags) override;
 #endif  // BUILDFLAG(IS_MAC)
+
+  // Tracks whether the browser was started in "minimal" mode (as opposed to
+  // full browser mode), where most subsystems are not initialized.
+  bool is_minimal_mode_ = false;
 
   base::WeakPtrFactory<ChromeContentBrowserClient> weak_factory_{this};
 };

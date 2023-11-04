@@ -88,7 +88,7 @@ bool DualLayerUserPrefStore::UnderlyingPrefStoreObserver::
 DualLayerUserPrefStore::DualLayerUserPrefStore(
     scoped_refptr<PersistentPrefStore> local_pref_store,
     scoped_refptr<PersistentPrefStore> account_pref_store,
-    const PrefModelAssociatorClient* pref_model_associator_client)
+    scoped_refptr<PrefModelAssociatorClient> pref_model_associator_client)
     : local_pref_store_(std::move(local_pref_store)),
       account_pref_store_(std::move(account_pref_store)),
       local_pref_store_observer_(this, /*is_account_store=*/false),
@@ -544,15 +544,21 @@ bool DualLayerUserPrefStore::IsPrefKeyMergeable(const std::string& key) const {
   if (!pref_model_associator_client_) {
     return false;
   }
-  // TODO(crbug.com/1416479): Also cover prefs with custom merge logic.
-  return pref_model_associator_client_->IsMergeableListPreference(key) ||
-         pref_model_associator_client_->IsMergeableDictionaryPreference(key);
+  const auto& syncable_prefs_database =
+      pref_model_associator_client_->GetSyncablePrefsDatabase();
+  return syncable_prefs_database.IsPreferenceSyncable(key) &&
+         syncable_prefs_database.IsPreferenceMergeable(key);
 }
 
 const base::Value* DualLayerUserPrefStore::MaybeMerge(
     const std::string& pref_name,
     const base::Value& local_value,
     const base::Value& account_value) const {
+  // Return the account value if `pref_name` is not mergeable.
+  if (!IsPrefKeyMergeable(pref_name)) {
+    return &account_value;
+  }
+
   // Note: The merged value is evaluated every time and not re-used from
   // `merged_prefs_`. This is to:
   // 1. Handle the cases where SetValueSilently() or
@@ -560,19 +566,9 @@ const base::Value* DualLayerUserPrefStore::MaybeMerge(
   // without a corresponding call to ReportValueChanged().
   // 2. Avoid removing the entry from `merged_prefs_` every time pref is
   // updated.
-  base::Value merged_value = helper::MergePreference(
-      pref_model_associator_client_, pref_name, local_value, account_value);
-
-  if (merged_value == account_value) {
-    // Most likely this is not a mergeable pref. Should be safe to just return
-    // the account value.
-    // This check is workaround as there doesn't exist a reliable way to check
-    // if a pref is mergeable.
-    // TODO(crbug.com/1416479): Use IsPrefKeyMergeable() instead once it covers
-    // custom prefs with custom merge logic.
-    return &account_value;
-  }
-  // Now it is definitely a mergeable pref.
+  base::Value merged_value =
+      helper::MergePreference(pref_model_associator_client_.get(), pref_name,
+                              local_value, account_value);
 
   // Add to `merged_prefs_` only if value doesn't already exist. This is done
   // because the previously returned value might be in use and replacing the

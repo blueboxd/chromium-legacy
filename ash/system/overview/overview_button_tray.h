@@ -61,10 +61,6 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
   // views::Button:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  // ActionableView:
-  void HandlePerformActionResult(bool action_performed,
-                                 const ui::Event& event) override;
-
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
 
@@ -86,6 +82,7 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
   void HandleLocaleChange() override;
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override;
   void OnThemeChanged() override;
+  void HideBubble(const TrayBubbleView* bubble_view) override;
 
  private:
   friend class OverviewButtonTrayTest;

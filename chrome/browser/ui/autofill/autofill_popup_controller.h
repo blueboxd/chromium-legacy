@@ -34,11 +34,6 @@ class AutofillPopupController : public AutofillPopupViewDelegate {
   // (crbug.com/1279268).
   virtual void AcceptSuggestion(int index, base::TimeTicks event_time) = 0;
 
-  // Accepts the suggestion at `index` without requiring a minimum show
-  // threshold. This should only be used in cases in which user intent is
-  // certain (e.g. the keyboard accessory).
-  virtual void AcceptSuggestionWithoutThreshold(int index) = 0;
-
   // Removes the suggestion at the given index.
   virtual bool RemoveSuggestion(int index) = 0;
 
@@ -96,7 +91,8 @@ class AutofillPopupController : public AutofillPopupViewDelegate {
   // the parent dies the child dies also.
   virtual base::WeakPtr<AutofillPopupController> OpenSubPopup(
       const gfx::RectF& anchor_bounds,
-      std::vector<Suggestion> suggestions) = 0;
+      std::vector<Suggestion> suggestions,
+      AutoselectFirstSuggestion autoselect_first_suggestion) = 0;
 
   // Hides open by `OpenSubPopup()` popup, noop if there is no open sub-popup.
   virtual void HideSubPopup() = 0;

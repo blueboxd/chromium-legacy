@@ -17,6 +17,7 @@
 #include "components/commerce/content/browser/commerce_tab_helper.h"
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/proto/commerce_subscription_db_content.pb.h"
+#include "components/commerce/core/proto/parcel_tracking_db_content.pb.h"
 #include "components/commerce/core/shopping_service.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/storage_partition.h"
@@ -65,6 +66,8 @@ ShoppingServiceFactory::ShoppingServiceFactory()
   DependsOn(SessionProtoDBFactory<
             commerce_subscription_db::CommerceSubscriptionContentProto>::
                 GetInstance());
+  DependsOn(SessionProtoDBFactory<
+            parcel_tracking_db::ParcelTrackingContent>::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
 #if !BUILDFLAG(IS_ANDROID)
   DependsOn(SessionProtoDBFactory<
@@ -81,7 +84,7 @@ ShoppingServiceFactory::BuildServiceInstanceForBrowserContext(
       GetCurrentCountryCode(g_browser_process->variations_service()),
       g_browser_process->GetApplicationLocale(),
       BookmarkModelFactory::GetInstance()->GetForBrowserContext(context),
-      OptimizationGuideKeyedServiceFactory::GetForProfile(profile),
+      nullptr, OptimizationGuideKeyedServiceFactory::GetForProfile(profile),
       profile->GetPrefs(), IdentityManagerFactory::GetForProfile(profile),
       SyncServiceFactory::GetForProfile(profile),
       profile->GetDefaultStoragePartition()
@@ -96,6 +99,9 @@ ShoppingServiceFactory::BuildServiceInstanceForBrowserContext(
 #else
       nullptr,
 #endif
+      SessionProtoDBFactory<
+          parcel_tracking_db::ParcelTrackingContent>::GetInstance()
+          ->GetForProfile(context),
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS));
 }

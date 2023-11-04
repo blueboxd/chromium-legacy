@@ -27,6 +27,7 @@
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller_impl.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_options.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
+#include "components/plus_addresses/plus_address_types.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -111,6 +112,7 @@ class ChromeAutofillClient : public ContentAutofillClient,
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
   IbanManager* GetIbanManager() override;
   plus_addresses::PlusAddressService* GetPlusAddressService() override;
+  compose::ComposeManager* GetComposeManager() override;
   void OfferPlusAddressCreation(
       const url::Origin& main_frame_origin,
       plus_addresses::PlusAddressCallback callback) override;
@@ -217,7 +219,9 @@ class ChromeAutofillClient : public ContentAutofillClient,
   void CreditCardUploadCompleted(bool card_saved) override;
   void ConfirmCreditCardFillAssist(const CreditCard& card,
                                    base::OnceClosure callback) override;
-  void ShowEditAddressProfileDialog(const AutofillProfile& profile) override;
+  void ShowEditAddressProfileDialog(
+      const AutofillProfile& profile,
+      AddressProfileSavePromptCallback on_user_decision_callback) override;
   void ShowDeleteAddressProfileDialog() override;
   void ConfirmSaveAddressProfile(
       const AutofillProfile& profile,
@@ -261,9 +265,6 @@ class ChromeAutofillClient : public ContentAutofillClient,
       base::OnceClosure no_interactive_authentication_callback) override;
   bool IsAutocompleteEnabled() const override;
   bool IsPasswordManagerEnabled() override;
-  void PropagateAutofillPredictionsDeprecated(
-      AutofillDriver* driver,
-      const std::vector<FormStructure*>& forms) override;
   void DidFillOrPreviewForm(mojom::AutofillActionPersistence action_persistence,
                             AutofillTriggerSource trigger_source,
                             bool is_refill) override;
@@ -273,8 +274,8 @@ class ChromeAutofillClient : public ContentAutofillClient,
   void OpenPromoCodeOfferDetailsURL(const GURL& url) override;
   LogManager* GetLogManager() const override;
   FormInteractionsFlowId GetCurrentFormInteractionsFlowId() override;
-  scoped_refptr<device_reauth::DeviceAuthenticator> GetDeviceAuthenticator()
-      const override;
+  std::unique_ptr<device_reauth::DeviceAuthenticator> GetDeviceAuthenticator()
+      override;
 
   // RiskDataLoader:
   void LoadRiskData(

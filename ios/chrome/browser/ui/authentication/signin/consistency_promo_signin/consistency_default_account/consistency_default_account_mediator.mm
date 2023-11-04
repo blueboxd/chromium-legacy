@@ -19,7 +19,7 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
 #import "ios/chrome/browser/signin/system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_default_account/consistency_default_account_consumer.h"
-#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
 
@@ -136,6 +136,7 @@ NSString* GetPromoLabelString(
     case signin_metrics::AccessPoint::ACCESS_POINT_SEARCH_COMPANION:
     case signin_metrics::AccessPoint::
         ACCESS_POINT_PASSWORD_MIGRATION_WARNING_ANDROID:
+    case signin_metrics::AccessPoint::ACCESS_POINT_SAVE_TO_PHOTOS_IOS:
       // Nothing prevents instantiating ConsistencyDefaultAccountViewController
       // with an arbitrary entry point, API-wise. In doubt, no label is a good,
       // generic default that fits all entry points.

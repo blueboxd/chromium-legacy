@@ -482,6 +482,9 @@ class GTestTest(RemoteTest):
     super().__init__(args, unknown_args)
 
     self._test_cmd = ['vpython3'] + self._test_cmd
+    if not args.clean:
+      self._test_cmd += ['--no-clean']
+
     self._test_exe = args.test_exe
     self._runtime_deps_path = args.runtime_deps_path
     self._vpython_dir = args.vpython_dir
@@ -490,6 +493,7 @@ class GTestTest(RemoteTest):
     self._env_vars = args.env_var
     self._stop_ui = args.stop_ui
     self._trace_dir = args.trace_dir
+    self._run_test_sudo_helper = args.run_test_sudo_helper
 
   @property
   def suite_name(self):
@@ -578,6 +582,15 @@ class GTestTest(RemoteTest):
       ])
       test_invocation += ' --trace-dir=%s' % device_trace_dir
 
+    if self._run_test_sudo_helper:
+      device_test_script_contents.extend([
+          'TEST_SUDO_HELPER_PATH=$(mktemp)',
+          './test_sudo_helper.py --socket-path=${TEST_SUDO_HELPER_PATH} &',
+          'TEST_SUDO_HELPER_PID=$!'
+      ])
+      test_invocation += (
+          ' --test-sudo-helper-socket-path=${TEST_SUDO_HELPER_PATH}')
+
     if self._additional_args:
       test_invocation += ' %s' % ' '.join(self._additional_args)
 
@@ -615,6 +628,13 @@ class GTestTest(RemoteTest):
       device_test_script_contents += [
           'start ui',
       ]
+
+    # Stop the crosier helper.
+    if self._run_test_sudo_helper:
+      device_test_script_contents.extend([
+          'kill $TEST_SUDO_HELPER_PID',
+          'unlink ${TEST_SUDO_HELPER_PATH}',
+      ])
 
     self._on_device_script = self.write_test_script_to_disk(
         device_test_script_contents)
@@ -904,6 +924,18 @@ def main():
       help='Env var to set on the device for the duration of the test. '
       'Expected format is "--env-var SOME_VAR_NAME some_var_value". Specify '
       'multiple times for more than one var.')
+  gtest_parser.add_argument(
+      '--run-test-sudo-helper',
+      action='store_true',
+      help='When set, will run test_sudo_helper before the test and stop it '
+      'after test finishes.')
+  gtest_parser.add_argument(
+      "--no-clean",
+      action="store_false",
+      dest="clean",
+      default=True,
+      help="Do not clean up the deployed files after running the test. "
+      "Only supported for --remote-cmd tests")
 
   # Tast test args.
   # pylint: disable=line-too-long

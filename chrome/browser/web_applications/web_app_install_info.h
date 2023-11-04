@@ -13,9 +13,11 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
+#include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/scope_extension_info.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
@@ -23,6 +25,7 @@
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "components/services/app_service/public/cpp/share_target.h"
 #include "components/services/app_service/public/cpp/url_handler_info.h"
+#include "components/webapps/common/web_app_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
@@ -31,6 +34,9 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
+
+static_assert(BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
+              BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA));
 
 class SkBitmap;
 
@@ -205,11 +211,11 @@ struct WebAppInstallInfo {
   // TODO(b/280862254): Remove this constructor to force users to use specify
   // both the manifest_id and start_url (or call
   // `CreateWithStartUrlForTesting`).
-  explicit WebAppInstallInfo(const web_app::ManifestId& manifest_id);
+  explicit WebAppInstallInfo(const webapps::ManifestId& manifest_id);
 
   // The `manifest_id` and the `start_url` MUST be valid. The `manifest_id` MUST
   // be created properly, and cannot contain refs (e.g. '#refs').
-  WebAppInstallInfo(const web_app::ManifestId& manifest_id,
+  WebAppInstallInfo(const webapps::ManifestId& manifest_id,
                     const GURL& start_url);
 
   // Deleted to prevent accidental copying. Use Clone() to deep copy explicitly.
@@ -226,7 +232,7 @@ struct WebAppInstallInfo {
   // TODO(b/280862254): After the manifest id constructor is required, this can
   // be guaranteed to be valid & non-empty.
   // https://www.w3.org/TR/appmanifest/#id-member
-  web_app::ManifestId manifest_id;
+  webapps::ManifestId manifest_id;
 
   // Title of the application.
   std::u16string title;
@@ -380,7 +386,7 @@ struct WebAppInstallInfo {
   // Id of the app that called the SUB_APP API to install this app. This field
   // is only used when the app is installed as a sub app through the SUB_APP
   // API.
-  absl::optional<web_app::AppId> parent_app_id;
+  absl::optional<webapps::AppId> parent_app_id;
 
   // A list of additional terms to use when matching this app against
   // identifiers in admin policies (for shelf pinning, default file handlers,
@@ -391,6 +397,10 @@ struct WebAppInstallInfo {
 
   // Used to specify the version of an Isolated Web App that is being installed.
   base::Version isolated_web_app_version;
+
+  // Bookkeeping details about attempts to fix broken icons from sync installed
+  // web apps.
+  absl::optional<GeneratedIconFix> generated_icon_fix;
 
  private:
   // Used this method in Clone() method. Use Clone() to deep copy explicitly.

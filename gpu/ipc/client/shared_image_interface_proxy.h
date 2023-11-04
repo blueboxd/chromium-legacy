@@ -15,6 +15,8 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/buffer.h"
+#include "gpu/command_buffer/common/shared_image_capabilities.h"
+#include "gpu/ipc/common/gpu_memory_buffer_handle_info.h"
 
 namespace viz {
 class SharedImageFormat;
@@ -26,42 +28,11 @@ class GpuChannelHost;
 // Proxy that sends commands over GPU channel IPCs for managing shared images.
 class SharedImageInterfaceProxy {
  public:
-  explicit SharedImageInterfaceProxy(GpuChannelHost* host, int32_t route_id);
+  explicit SharedImageInterfaceProxy(
+      GpuChannelHost* host,
+      int32_t route_id,
+      const gpu::SharedImageCapabilities& capabilities);
   ~SharedImageInterfaceProxy();
-
-  struct GpuMemoryBufferHandleInfo {
-    GpuMemoryBufferHandleInfo() = default;
-    GpuMemoryBufferHandleInfo(gfx::GpuMemoryBufferHandle handle,
-                              viz::SharedImageFormat format,
-                              gfx::Size size,
-                              gfx::BufferUsage buffer_usage)
-        : handle(std::move(handle)),
-          format(format),
-          size(size),
-          buffer_usage(buffer_usage) {}
-    ~GpuMemoryBufferHandleInfo() = default;
-
-    GpuMemoryBufferHandleInfo(const GpuMemoryBufferHandleInfo& other) {
-      handle = other.handle.Clone();
-      format = other.format;
-      size = other.size;
-      buffer_usage = other.buffer_usage;
-    }
-
-    GpuMemoryBufferHandleInfo& operator=(
-        const GpuMemoryBufferHandleInfo& other) {
-      handle = other.handle.Clone();
-      format = other.format;
-      size = other.size;
-      buffer_usage = other.buffer_usage;
-      return *this;
-    }
-
-    gfx::GpuMemoryBufferHandle handle;
-    viz::SharedImageFormat format;
-    gfx::Size size;
-    gfx::BufferUsage buffer_usage;
-  };
 
   struct SharedImageInfo {
     SharedImageInfo();
@@ -165,6 +136,10 @@ class SharedImageInterfaceProxy {
   GpuMemoryBufferHandleInfo GetGpuMemoryBufferHandleInfo(
       const Mailbox& mailbox);
 
+  const gpu::SharedImageCapabilities& GetCapabilities() {
+    return capabilities_;
+  }
+
  private:
   bool GetSHMForPixelData(base::span<const uint8_t> pixel_data,
                           size_t* shm_offset,
@@ -190,6 +165,8 @@ class SharedImageInterfaceProxy {
   size_t upload_buffer_offset_ GUARDED_BY(lock_) = 0;
 
   base::flat_map<Mailbox, SharedImageInfo> mailbox_infos_ GUARDED_BY(lock_);
+
+  const gpu::SharedImageCapabilities capabilities_;
 };
 
 }  // namespace gpu

@@ -91,6 +91,9 @@ class BrowsingDataModelTest : public testing::Test {
   MockNetworkContext* mock_network_context() {
     return mock_network_context_.get();
   }
+  BrowsingDataModel::BrowsingDataEntries& browsing_data_entries() {
+    return model_->browsing_data_entries_;
+  }
 
   const url::Origin kSubdomainOrigin =
       url::Origin::Create(GURL("https://subsite.example.com"));
@@ -107,6 +110,10 @@ class BrowsingDataModelTest : public testing::Test {
 
   const url::Origin kTestOrigin = url::Origin::Create(GURL("https://a.test"));
   const std::string kTestOriginHost = "a.test";
+
+  const url::Origin kAnotherTestOrigin =
+      url::Origin::Create(GURL("https://b.test"));
+  const std::string kAnotherTestOriginHost = "b.test";
 
  private:
   content::BrowserTaskEnvironment task_environment_;
@@ -416,21 +423,54 @@ TEST_F(BrowsingDataModelTest, DelegateDataCanBeOriginOwned) {
                                                              expected_entries);
 }
 
-TEST_F(BrowsingDataModelTest, RemovePartitionedBrowsingData) {
+// Tests that the BrowsingDataModel::Iterator can handle when the outer map
+// contains an empty inner map.
+//
+// This is done by inserting an outer map element with an empty value
+// for the inner map and then attempting to iterate over the entire model.
+TEST_F(BrowsingDataModelTest, IteratorCanHandleEmptyDataKeyEntriesMaps) {
+  // The BrowsingDataModel is currently empty.
+
+  // Insert an outer map element with an empty inner map as its value. We can do
+  // this by using operator[] which will default construct a key/value pair if
+  // it can't find the key.
+  browsing_data_entries()[kSiteOrigin];
+
+  // Now iterate over the model. The distance should be 1 because we have our
+  // empty outer element.
+  EXPECT_EQ(1, std::distance(model()->begin(), model()->end()));
+}
+
+TEST_F(BrowsingDataModelTest, RemoveBasedOnPartitioning) {
+  // TODO(crbug/1455899): Use helpers so this test can be broken up, likely
+  // done alongside moving partition key detection to a visitor pattern.
   std::unique_ptr<BrowsingDataModel> model = BrowsingDataModel::BuildEmpty(
       storage_partition(),
       std::make_unique<browsing_data::TestBrowsingDataModelDelegate>());
 
+  // Setup 4 storage keys, partitioned and unpartitioned storage for 2 sites.
   auto first_party_storage_key =
       blink::StorageKey::CreateFirstParty(kSiteOrigin);
   auto partitioned_storage_key =
       blink::StorageKey::Create(kSiteOrigin, net::SchemefulSite(kTestOrigin),
                                 blink::mojom::AncestorChainBit::kCrossSite,
                                 /*third_party_partitioning_allowed=*/true);
+  auto another_first_party_storage_key =
+      blink::StorageKey::CreateFirstParty(kAnotherSiteOrigin);
+  auto another_partitioned_storage_key = blink::StorageKey::Create(
+      kAnotherSiteOrigin, net::SchemefulSite(kAnotherTestOrigin),
+      blink::mojom::AncestorChainBit::kCrossSite,
+      /*third_party_partitioning_allowed=*/true);
 
+  // Add all the keys to the model and ensure they are present as 4 different
+  // browsing data entries.
   model->AddBrowsingData(first_party_storage_key,
                          BrowsingDataModel::StorageType::kLocalStorage, 0);
   model->AddBrowsingData(partitioned_storage_key,
+                         BrowsingDataModel::StorageType::kLocalStorage, 0);
+  model->AddBrowsingData(another_first_party_storage_key,
+                         BrowsingDataModel::StorageType::kLocalStorage, 0);
+  model->AddBrowsingData(another_partitioned_storage_key,
                          BrowsingDataModel::StorageType::kLocalStorage, 0);
 
   auto expected_entries = std::vector<BrowsingDataEntry>{
@@ -440,10 +480,19 @@ TEST_F(BrowsingDataModelTest, RemovePartitionedBrowsingData) {
       {kSiteOriginHost,
        partitioned_storage_key,
        {{BrowsingDataModel::StorageType::kLocalStorage}, 0, 0}},
+      {kAnotherSiteOriginHost,
+       another_first_party_storage_key,
+       {{BrowsingDataModel::StorageType::kLocalStorage}, 0, 0}},
+      {kAnotherSiteOriginHost,
+       another_partitioned_storage_key,
+       {{BrowsingDataModel::StorageType::kLocalStorage}, 0, 0}},
   };
 
   browsing_data_model_test_util::ValidateBrowsingDataEntries(model.get(),
                                                              expected_entries);
+
+  // Remove partitioned storage for one host, confirm that unpartitioned
+  // storage for that host, and all storage for other hosts, are untouched.
   {
     base::RunLoop run_loop;
     model->RemovePartitionedBrowsingData(kSiteOriginHost,
@@ -455,6 +504,32 @@ TEST_F(BrowsingDataModelTest, RemovePartitionedBrowsingData) {
   expected_entries = std::vector<BrowsingDataEntry>{
       {kSiteOriginHost,
        first_party_storage_key,
+       {{BrowsingDataModel::StorageType::kLocalStorage}, 0, 0}},
+      {kAnotherSiteOriginHost,
+       another_first_party_storage_key,
+       {{BrowsingDataModel::StorageType::kLocalStorage}, 0, 0}},
+      {kAnotherSiteOriginHost,
+       another_partitioned_storage_key,
+       {{BrowsingDataModel::StorageType::kLocalStorage}, 0, 0}},
+  };
+  browsing_data_model_test_util::ValidateBrowsingDataEntries(model.get(),
+                                                             expected_entries);
+
+  // Remove unpartitioned storage for the other host, ensure that partitioned
+  // storage for that host, and storage for first host, is unaffected.
+  {
+    base::RunLoop run_loop;
+    model->RemoveUnpartitionedBrowsingData(kAnotherSiteOriginHost,
+                                           run_loop.QuitWhenIdleClosure());
+    run_loop.Run();
+  }
+
+  expected_entries = std::vector<BrowsingDataEntry>{
+      {kSiteOriginHost,
+       first_party_storage_key,
+       {{BrowsingDataModel::StorageType::kLocalStorage}, 0, 0}},
+      {kAnotherSiteOriginHost,
+       another_partitioned_storage_key,
        {{BrowsingDataModel::StorageType::kLocalStorage}, 0, 0}},
   };
   browsing_data_model_test_util::ValidateBrowsingDataEntries(model.get(),
@@ -506,6 +581,79 @@ TEST_F(BrowsingDataModelTest, ThirdPartyCookieTypes) {
       static_cast<BrowsingDataModel::StorageType>(
           browsing_data::TestBrowsingDataModelDelegate::StorageType::
               kTestDelegateTypePartitioned)));
+}
+
+TEST_F(BrowsingDataModelTest, HasThirdPartyPartitioningSite_True) {
+  // Check the logic for determining whether data is partitioned.
+  std::unique_ptr<BrowsingDataModel> model = BrowsingDataModel::BuildEmpty(
+      storage_partition(),
+      std::make_unique<browsing_data::TestBrowsingDataModelDelegate>());
+
+  // Create a set of storage keys which all represent partitioned versions of
+  // their data.
+  auto partitioned_storage_key =
+      blink::StorageKey::Create(kSiteOrigin, net::SchemefulSite(kTestOrigin),
+                                blink::mojom::AncestorChainBit::kCrossSite,
+                                /*third_party_partitioning_allowed=*/true);
+  auto partitioned_session_storage_usage =
+      content::SessionStorageUsageInfo{partitioned_storage_key, "example"};
+  auto partitioned_shared_dictionary_key = net::SharedDictionaryIsolationKey{
+      kSiteOrigin, net::SchemefulSite(kTestOrigin)};
+  auto partitioned_shared_worker_info = browsing_data::SharedWorkerInfo(
+      kSiteOrigin.GetURL(), "example", partitioned_storage_key);
+
+  model->AddBrowsingData(partitioned_storage_key,
+                         BrowsingDataModel::StorageType::kQuotaStorage, 0, 0);
+  model->AddBrowsingData(partitioned_session_storage_usage,
+                         BrowsingDataModel::StorageType::kSessionStorage, 0, 0);
+  model->AddBrowsingData(partitioned_shared_dictionary_key,
+                         BrowsingDataModel::StorageType::kSharedDictionary, 0,
+                         0);
+  model->AddBrowsingData(partitioned_shared_worker_info,
+                         BrowsingDataModel::StorageType::kSharedWorker, 0, 0);
+
+  // Check that every model entry is partitioned, and the site matches.
+  for (const auto& entry : *model) {
+    EXPECT_EQ(partitioned_storage_key.top_level_site(),
+              *entry.GetThirdPartyPartitioningSite());
+  }
+}
+
+TEST_F(BrowsingDataModelTest, HasThirdPartyPartitioningSite_False) {
+  // Check the logic for determining whether data is partitioned.
+  std::unique_ptr<BrowsingDataModel> model = BrowsingDataModel::BuildEmpty(
+      storage_partition(),
+      std::make_unique<browsing_data::TestBrowsingDataModelDelegate>());
+
+  // Create a set of storage keys which all represent un-partitioned versions of
+  // their data.
+  auto unpartitioned_storage_key =
+      blink::StorageKey::CreateFirstParty(kSiteOrigin);
+  auto unpartitioned_session_storage_usage =
+      content::SessionStorageUsageInfo{unpartitioned_storage_key, "example"};
+  auto unpartitioned_shared_dictionary_key = net::SharedDictionaryIsolationKey{
+      kSubdomainOrigin, net::SchemefulSite(kSiteOrigin)};
+  auto unpartitioned_shared_worker_info = browsing_data::SharedWorkerInfo(
+      kSiteOrigin.GetURL(), "example", unpartitioned_storage_key);
+  auto non_partition_key = kAnotherTestOrigin;
+
+  model->AddBrowsingData(unpartitioned_storage_key,
+                         BrowsingDataModel::StorageType::kQuotaStorage, 0, 0);
+  model->AddBrowsingData(unpartitioned_session_storage_usage,
+                         BrowsingDataModel::StorageType::kSessionStorage, 0, 0);
+  model->AddBrowsingData(unpartitioned_shared_dictionary_key,
+                         BrowsingDataModel::StorageType::kSharedDictionary, 0,
+                         0);
+  model->AddBrowsingData(unpartitioned_shared_worker_info,
+                         BrowsingDataModel::StorageType::kSharedWorker, 0, 0);
+  model->AddBrowsingData(non_partition_key,
+                         BrowsingDataModel::StorageType::kTrustTokens, 0, 0);
+
+  // Check that every model entry is not partitioned, and so has no
+  // partitioning site.
+  for (const auto& entry : *model) {
+    EXPECT_FALSE(entry.GetThirdPartyPartitioningSite().has_value());
+  }
 }
 
 class BrowsingDataModelSharedDictionaryTest : public BrowsingDataModelTest {

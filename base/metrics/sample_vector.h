@@ -113,7 +113,7 @@ class BASE_EXPORT SampleVectorBase : public HistogramSamples {
   mutable std::atomic<HistogramBase::AtomicCount*> counts_{nullptr};
 
   // Shares the same BucketRanges with Histogram object.
-  const raw_ptr<const BucketRanges, LeakedDanglingUntriaged> bucket_ranges_;
+  const raw_ptr<const BucketRanges> bucket_ranges_;
 };
 
 // A sample vector that uses local memory for the counts array.
@@ -124,6 +124,9 @@ class BASE_EXPORT SampleVector : public SampleVectorBase {
   SampleVector(const SampleVector&) = delete;
   SampleVector& operator=(const SampleVector&) = delete;
   ~SampleVector() override;
+
+  // HistogramSamples:
+  bool IsDefinitelyEmpty() const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SampleVectorTest, GetPeakBucketSize);
@@ -164,6 +167,9 @@ class BASE_EXPORT PersistentSampleVector : public SampleVectorBase {
   PersistentSampleVector(const PersistentSampleVector&) = delete;
   PersistentSampleVector& operator=(const PersistentSampleVector&) = delete;
   ~PersistentSampleVector() override;
+
+  // HistogramSamples:
+  bool IsDefinitelyEmpty() const override;
 
  private:
   // SampleVectorBase:

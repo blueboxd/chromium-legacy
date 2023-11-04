@@ -90,8 +90,8 @@
 #include "chrome/browser/ash/arc/tracing/arc_app_performance_tracing_session.h"
 #include "chrome/browser/ash/assistant/assistant_util.h"
 #include "chrome/browser/ash/borealis/borealis_installer.h"
-#include "chrome/browser/ash/borealis/borealis_metrics.h"
 #include "chrome/browser/ash/borealis/borealis_service.h"
+#include "chrome/browser/ash/borealis/borealis_types.mojom.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_installer.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_service.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_util.h"
@@ -2083,7 +2083,12 @@ ExtensionFunction::ResponseAction AutotestPrivateGetLacrosInfoFunction::Run() {
           .Set("state", api::autotest_private::ToString(
                             ToLacrosState(browser_manager->state_)))
           .Set("isKeepAlive", browser_manager->IsKeepAliveEnabled())
-          .Set("lacrosPath", browser_manager->lacros_path().MaybeAsASCII())
+          // TODO(neis): Rename lacrosPath to avoid confusion, or make it be the
+          // binary path. Either requires changes in tast-tests.
+          .Set("lacrosPath",
+               browser_manager->lacros_path().empty()
+                   ? ""
+                   : browser_manager->lacros_path().DirName().MaybeAsASCII())
           .Set("mode", api::autotest_private::ToString(ToLacrosMode(
                            crosapi::browser_util::GetLacrosMode())))));
 }
@@ -2246,36 +2251,54 @@ AutotestPrivateGetCryptohomeRecoveryDataFunction::Run() {
   if (!context) {
     return RespondNow(Error("WizardContext is not available"));
   }
-  ash::UserContext* user_context;
   if (ash::features::ShouldUseAuthSessionStorage()) {
     if (!context->extra_factors_token.has_value()) {
       return RespondNow(Error("UserContext is not available"));
     }
     auto* storage = ash::AuthSessionStorage::Get();
     auto& token = context->extra_factors_token.value();
-    if (!storage->IsValid(token)) {
-      return RespondNow(Error("UserContext is not available"));
-    }
-    user_context = storage->Peek(token);
+    storage->BorrowAsync(
+        FROM_HERE, token,
+        base::BindOnce(
+            &AutotestPrivateGetCryptohomeRecoveryDataFunction::RunWithContext,
+            this, token));
+    return RespondLater();
   } else {
-    user_context = context->extra_factors_auth_session.get();
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &AutotestPrivateGetCryptohomeRecoveryDataFunction::RunWithContext,
+            this, std::string(),
+            std::make_unique<ash::UserContext>(
+                *context->extra_factors_auth_session)));
+    return RespondLater();
+  }
+}
+
+void AutotestPrivateGetCryptohomeRecoveryDataFunction::RunWithContext(
+    const std::string& auth_token,
+    std::unique_ptr<ash::UserContext> context) {
+  if (!context) {
+    Respond(Error("UserContext is not available"));
+    return;
   }
 
-  if (!user_context) {
-    return RespondNow(Error("UserContext is not available"));
+  const std::string reauth_proof_token = context->GetReauthProofToken();
+  const std::string refresh_token = context->GetRefreshToken();
+  if (ash::features::ShouldUseAuthSessionStorage()) {
+    ash::AuthSessionStorage::Get()->Return(auth_token, std::move(context));
   }
 
-  std::string reauth_proof_token = user_context->GetReauthProofToken();
-  std::string refresh_token = user_context->GetRefreshToken();
   if (reauth_proof_token.empty() || refresh_token.empty()) {
-    return RespondNow(Error("Tokens are empty"));
+    Respond(Error("Tokens are empty"));
+    return;
   }
 
   api::autotest_private::CryptohomeRecoveryDataDict result;
   result.reauth_proof_token = reauth_proof_token;
   result.refresh_token = refresh_token;
 
-  return RespondNow(WithArguments(result.ToValue()));
+  Respond(WithArguments(result.ToValue()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2348,7 +2371,7 @@ void AutotestPrivateGetRegisteredSystemWebAppsFunction::
         delegate->GetInstallUrl().DeprecatedGetOriginAsURL().spec();
     system_web_app.name = base::UTF16ToUTF8(delegate->GetWebAppInfo()->title);
 
-    absl::optional<web_app::AppId> app_id =
+    absl::optional<webapps::AppId> app_id =
         swa_manager->GetAppIdForSystemApp(type_and_info.first);
     if (app_id) {
       system_web_app.start_url =
@@ -2878,10 +2901,10 @@ class AutotestPrivateInstallBorealisFunction::InstallationObserver
   void OnStateUpdated(
       borealis::BorealisInstaller::InstallingState new_state) override {}
 
-  void OnInstallationEnded(borealis::BorealisInstallResult result,
+  void OnInstallationEnded(borealis::mojom::InstallResult result,
                            const std::string& error_description) override {
     std::move(completion_callback_)
-        .Run(result == borealis::BorealisInstallResult::kSuccess
+        .Run(result == borealis::mojom::InstallResult::kSuccess
                  ? ""
                  : "Failed to install Borealis: " + error_description);
   }
@@ -4910,7 +4933,7 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWAInstallManagerObserver
  public:
   PWAInstallManagerObserver(
       Profile* profile,
-      base::OnceCallback<void(const web_app::AppId&)> callback)
+      base::OnceCallback<void(const webapps::AppId&)> callback)
       : provider_(web_app::WebAppProvider::GetForWebApps(profile)),
         callback_(std::move(callback)) {
     if (!provider_) {
@@ -4933,7 +4956,7 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWAInstallManagerObserver
     observation_.Observe(&provider_->install_manager());
   }
 
-  void OnWebAppInstalled(const web_app::AppId& app_id) override {
+  void OnWebAppInstalled(const webapps::AppId& app_id) override {
     observation_.Reset();
     std::move(callback_).Run(app_id);
   }
@@ -4945,7 +4968,7 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWAInstallManagerObserver
                           web_app::WebAppInstallManagerObserver>
       observation_{this};
   raw_ptr<web_app::WebAppProvider, ExperimentalAsh> provider_;
-  base::OnceCallback<void(const web_app::AppId&)> callback_;
+  base::OnceCallback<void(const webapps::AppId&)> callback_;
   base::WeakPtrFactory<
       AutotestPrivateInstallPWAForCurrentURLFunction::PWAInstallManagerObserver>
       weak_factory_{this};
@@ -5009,7 +5032,7 @@ void AutotestPrivateInstallPWAForCurrentURLFunction::PWALoaded() {
 }
 
 void AutotestPrivateInstallPWAForCurrentURLFunction::PWAInstalled(
-    const web_app::AppId& app_id) {
+    const webapps::AppId& app_id) {
   chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
   Respond(WithArguments(app_id));
   timeout_timer_.AbandonAndStop();

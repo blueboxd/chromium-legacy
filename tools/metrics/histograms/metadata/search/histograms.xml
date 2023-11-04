@@ -41,11 +41,12 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Search.AuxiliarySearch.DeleteTime" units="ms"
-    expires_after="M130">
+<histogram name="Search.AuxiliarySearch.DeleteTime{AuxiliarySearchDataType}"
+    units="ms" expires_after="M130">
   <owner>gangwu@chromium.org</owner>
   <owner>chrome-mobile-search@google.com</owner>
   <summary>Time taken for deleting contents from the auxiliary search.</summary>
+  <token key="AuxiliarySearchDataType" variants="AuxiliarySearchDataType"/>
 </histogram>
 
 <histogram
@@ -59,7 +60,8 @@ chromium-metrics-reviews@google.com.
   <token key="AuxiliarySearchDataType" variants="AuxiliarySearchDataType"/>
 </histogram>
 
-<histogram name="Search.AuxiliarySearch.DeletionRequestStatus"
+<histogram
+    name="Search.AuxiliarySearch.DeletionRequestStatus{AuxiliarySearchDataType}"
     enum="AuxiliarySearchRequestStatus" expires_after="M130">
   <owner>gangwu@chromium.org</owner>
   <owner>chrome-mobile-search@google.com</owner>
@@ -68,6 +70,7 @@ chromium-metrics-reviews@google.com.
     Recorded twice for every deletion request: once to capture the request sent,
     and once to capture the consumer's response.
   </summary>
+  <token key="AuxiliarySearchDataType" variants="AuxiliarySearchDataType"/>
 </histogram>
 
 <histogram name="Search.AuxiliarySearch.DonateTime" units="ms"
@@ -115,6 +118,19 @@ chromium-metrics-reviews@google.com.
   <owner>chrome-mobile-search@google.com</owner>
   <summary>Time taken for query contents for the auxiliary search.</summary>
   <token key="AuxiliarySearchDataType" variants="AuxiliarySearchDataType"/>
+</histogram>
+
+<histogram name="Search.ChoiceScreenEvents"
+    enum="SearchEngineChoiceScreenEvents" expires_after="2024-02-04">
+  <owner>samarchehade@chromium.org</owner>
+  <owner>chrome-waffle-eng@google.com</owner>
+  <summary>
+    Records that the search engine choice screen was displayed, and whether this
+    happened as part of the FRE. Also records when the user clicks/taps the 'Set
+    as Default' button and if this selection was in the FRE or not. On Desktop,
+    if the choice screen is shown simultaneously in multiple browsers that all
+    have the same profile, the display event is only recorded once.
+  </summary>
 </histogram>
 
 <histogram name="Search.ContextualSearch.All.ResultsSeen" enum="Boolean"
@@ -216,7 +232,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearch.NetError" enum="NetErrorCodes"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>donnd@chromium.org</owner>
   <owner>basiaz@google.com</owner>
   <summary>
@@ -407,7 +423,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearch.SelectionExpanded"
-    enum="ContextualSearchGestureIsTap" expires_after="2024-01-14">
+    enum="ContextualSearchGestureIsTap" expires_after="2024-03-17">
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -1440,7 +1456,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.Image.Camera.Result" enum="CameraResult"
-    expires_after="2024-01-24">
+    expires_after="2024-03-24">
   <owner>juanmojica@google.com</owner>
   <owner>schechter@google.com</owner>
   <owner>stanfield@google.com</owner>
@@ -1666,7 +1682,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.QueryTiles.TrendingTileEvent" enum="TrendingTileEvent"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>qinmin@chromium.org</owner>
   <owner>chrome-upboarding-eng@google.com</owner>
   <summary>

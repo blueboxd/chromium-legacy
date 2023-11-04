@@ -17,10 +17,6 @@ namespace metrics::features {
 // service can close a log starting from when the first log is opened.
 BASE_DECLARE_FEATURE(kMetricsServiceAllowEarlyLogClose);
 
-// Determines whether logs stored in Local State are cleared when the Chrome
-// install is detected as cloned.
-BASE_DECLARE_FEATURE(kMetricsClearLogsOnClonedInstall);
-
 // This can be used to disable structured metrics as a whole.
 BASE_DECLARE_FEATURE(kStructuredMetrics);
 
@@ -61,6 +57,11 @@ BASE_DECLARE_FEATURE(kMetricsServiceAsyncIndependentLogs);
 // Determines whether to schedule a flush of persistent histogram memory
 // immediately after writing a system profile to it.
 BASE_DECLARE_FEATURE(kFlushPersistentSystemProfileOnWrite);
+
+// Determines whether to perform histogram delta snapshots in a background
+// thread (in contrast to snapshotting unlogged samples in the background, then
+// marking them as logged on the main thread).
+BASE_DECLARE_FEATURE(kMetricsServiceDeltaSnapshotInBg);
 
 }  // namespace metrics::features
 

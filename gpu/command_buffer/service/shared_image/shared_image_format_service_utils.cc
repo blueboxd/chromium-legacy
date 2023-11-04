@@ -16,6 +16,60 @@
 
 namespace gpu {
 
+namespace {
+
+#if BUILDFLAG(ENABLE_VULKAN)
+VkFormat ToVkFormatSinglePlanarInternal(viz::SharedImageFormat format) {
+  CHECK(format.is_single_plane());
+  if (format == viz::SinglePlaneFormat::kRGBA_8888) {
+    return VK_FORMAT_R8G8B8A8_UNORM;  // or VK_FORMAT_R8G8B8A8_SRGB
+  } else if (format == viz::SinglePlaneFormat::kRGBA_4444) {
+    return VK_FORMAT_R4G4B4A4_UNORM_PACK16;
+  } else if (format == viz::SinglePlaneFormat::kBGRA_8888) {
+    return VK_FORMAT_B8G8R8A8_UNORM;
+  } else if (format == viz::SinglePlaneFormat::kR_8) {
+    return VK_FORMAT_R8_UNORM;
+  } else if (format == viz::SinglePlaneFormat::kRGB_565) {
+    return VK_FORMAT_R5G6B5_UNORM_PACK16;
+  } else if (format == viz::SinglePlaneFormat::kBGR_565) {
+    return VK_FORMAT_B5G6R5_UNORM_PACK16;
+  } else if (format == viz::SinglePlaneFormat::kRG_88) {
+    return VK_FORMAT_R8G8_UNORM;
+  } else if (format == viz::SinglePlaneFormat::kRGBA_F16) {
+    return VK_FORMAT_R16G16B16A16_SFLOAT;
+  } else if (format == viz::SinglePlaneFormat::kR_16) {
+    return VK_FORMAT_R16_UNORM;
+  } else if (format == viz::SinglePlaneFormat::kRG_1616) {
+    return VK_FORMAT_R16G16_UNORM;
+  } else if (format == viz::SinglePlaneFormat::kRGBX_8888) {
+    return VK_FORMAT_R8G8B8A8_UNORM;
+  } else if (format == viz::SinglePlaneFormat::kBGRX_8888) {
+    return VK_FORMAT_B8G8R8A8_UNORM;
+  } else if (format == viz::SinglePlaneFormat::kRGBA_1010102) {
+    return VK_FORMAT_A2B10G10R10_UNORM_PACK32;
+  } else if (format == viz::SinglePlaneFormat::kBGRA_1010102) {
+    return VK_FORMAT_A2R10G10B10_UNORM_PACK32;
+  } else if (format == viz::SinglePlaneFormat::kALPHA_8) {
+    return VK_FORMAT_R8_UNORM;
+  } else if (format == viz::SinglePlaneFormat::kLUMINANCE_8) {
+    return VK_FORMAT_R8_UNORM;
+  } else if (format == viz::LegacyMultiPlaneFormat::kYV12) {
+    return VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM;
+  } else if (format == viz::LegacyMultiPlaneFormat::kNV12) {
+    return VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+  } else if (format == viz::SinglePlaneFormat::kETC1) {
+    return VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK;
+  } else if (format == viz::SinglePlaneFormat::kLUMINANCE_F16) {
+    return VK_FORMAT_R16_SFLOAT;
+  } else if (format == viz::LegacyMultiPlaneFormat::kP010) {
+    return VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16;
+  }
+  return VK_FORMAT_UNDEFINED;
+}
+#endif
+
+}  // namespace
+
 // Wraps functions from shared_image_format_utils.h that are made private with
 // friending to prevent their existing client-side usage (which is an
 // anti-pattern) from growing within a class that
@@ -129,16 +183,6 @@ class SharedImageFormatRestrictedUtilsAccessor {
         return num_channels == 2 ? GL_RG16F_EXT : GL_R16F_EXT;
     }
   }
-
-#if BUILDFLAG(ENABLE_VULKAN)
-  static bool HasVkFormat(viz::SharedImageFormat format) {
-    return viz::SharedImageFormatRestrictedSinglePlaneUtils::HasVkFormat(
-        format);
-  }
-  static VkFormat ToVkFormat(viz::SharedImageFormat format) {
-    return viz::SharedImageFormatRestrictedSinglePlaneUtils::ToVkFormat(format);
-  }
-#endif
 };
 
 gfx::BufferFormat ToBufferFormat(viz::SharedImageFormat format) {
@@ -242,7 +286,7 @@ GLFormatDesc ToGLFormatDesc(viz::SharedImageFormat format,
 #if BUILDFLAG(ENABLE_VULKAN)
 bool HasVkFormat(viz::SharedImageFormat format) {
   if (format.is_single_plane()) {
-    return SharedImageFormatRestrictedUtilsAccessor::HasVkFormat(format);
+    return ToVkFormatSinglePlanarInternal(format) != VK_FORMAT_UNDEFINED;
   } else if (format == viz::MultiPlaneFormat::kYV12 ||
              format == viz::MultiPlaneFormat::kNV12 ||
              format == viz::MultiPlaneFormat::kP010 ||
@@ -253,18 +297,41 @@ bool HasVkFormat(viz::SharedImageFormat format) {
   return false;
 }
 
+VkFormat ToVkFormatExternalSampler(viz::SharedImageFormat format) {
+  CHECK(format.PrefersExternalSampler());
+  if (format == viz::MultiPlaneFormat::kYV12 ||
+      format == viz::MultiPlaneFormat::kI420) {
+    return VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM;
+  } else if (format == viz::MultiPlaneFormat::kNV12) {
+    return VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+  } else if (format == viz::MultiPlaneFormat::kP010) {
+    return VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16;
+  }
+
+  NOTREACHED() << "Unsupported format: " << format.ToString();
+  return VK_FORMAT_UNDEFINED;
+}
+
+VkFormat ToVkFormatSinglePlanar(viz::SharedImageFormat format) {
+  CHECK(format.is_single_plane());
+  auto result = ToVkFormatSinglePlanarInternal(format);
+  DCHECK_NE(result, VK_FORMAT_UNDEFINED)
+      << "Unsupported format " << format.ToString();
+  return result;
+}
+
 VkFormat ToVkFormat(viz::SharedImageFormat format, int plane_index) {
   DCHECK(format.IsValidPlaneIndex(plane_index));
 
   if (format.is_single_plane()) {
-    return SharedImageFormatRestrictedUtilsAccessor::ToVkFormat(format);
+    return ToVkFormatSinglePlanar(format);
   }
 
   // The following SharedImageFormat constants have PrefersExternalSampler()
   // false so they create a separate VkImage per plane and return the single
-  // planar equivalents.
-  // TODO(crbug.com/1366495): Add external sampler support if needed for
-  // platforms with Vulkan.
+  // planar equivalents. NOTE: Callsites that handle formats with external
+  // sampling need to call ToVkFormatExternalSampler() if external sampling is
+  // being used.
   CHECK(!format.PrefersExternalSampler());
   if (format == viz::MultiPlaneFormat::kYV12 ||
       format == viz::MultiPlaneFormat::kI420) {
@@ -298,6 +365,12 @@ wgpu::TextureFormat ToDawnFormat(viz::SharedImageFormat format) {
     return wgpu::TextureFormat::R8Unorm;
   } else if (format == viz::SinglePlaneFormat::kRG_88) {
     return wgpu::TextureFormat::RG8Unorm;
+  } else if (format == viz::SinglePlaneFormat::kR_16) {
+    return wgpu::TextureFormat::R16Unorm;
+  } else if (format == viz::SinglePlaneFormat::kLUMINANCE_F16) {
+    return wgpu::TextureFormat::R16Float;
+  } else if (format == viz::SinglePlaneFormat::kRG_1616) {
+    return wgpu::TextureFormat::RG16Unorm;
   } else if (format == viz::SinglePlaneFormat::kRGBA_F16) {
     return wgpu::TextureFormat::RGBA16Float;
   } else if (format == viz::SinglePlaneFormat::kRGBA_1010102) {
@@ -309,10 +382,7 @@ wgpu::TextureFormat ToDawnFormat(viz::SharedImageFormat format) {
              format == viz::MultiPlaneFormat::kP010) {
     return wgpu::TextureFormat::R10X6BG10X6Biplanar420Unorm;
   }
-
   // TODO(crbug.com/1175525): Add R8BG8A8Triplanar420Unorm format for dawn.
-  // TODO(crbug.com/1445450): Add support for other multiplane formats.
-
   NOTREACHED() << "Unsupported format: " << format.ToString();
   return wgpu::TextureFormat::Undefined;
 }
@@ -321,33 +391,35 @@ wgpu::TextureFormat ToDawnFormat(viz::SharedImageFormat format,
                                  int plane_index) {
   CHECK(format.is_multi_plane() || format.IsLegacyMultiplanar() ||
         (plane_index == 0));
-
-  wgpu::TextureFormat wgpu_format = ToDawnFormat(format);
-  if (wgpu_format == wgpu::TextureFormat::R8BG8Biplanar420Unorm) {
-    // kNV12 creates a separate image per plane and returns the single planar
-    // equivalents.
-    // TODO(crbug.com/1449108): The above reasoning does not hold unilaterally
-    // on Android, and this function will need more information to determine the
-    // correct operation to take on that platform.
+  // The multi plane formats create a separate image per plane and return the
+  // single planar equivalents.
+  // TODO(crbug.com/1449108): The above reasoning does not hold unilaterally
+  // on Android, and this function will need more information to determine the
+  // correct operation to take on that platform.
 #if BUILDFLAG(IS_ANDROID)
-    CHECK(false);
+  CHECK(format.is_single_plane() && !format.IsLegacyMultiplanar());
 #endif
-    return plane_index == 0 ? wgpu::TextureFormat::R8Unorm
-                            : wgpu::TextureFormat::RG8Unorm;
-  } else if (wgpu_format == wgpu::TextureFormat::R10X6BG10X6Biplanar420Unorm) {
-    // kP010 creates a separate image per plane and returns the single planar
-    // equivalents.
-    // TODO(crbug.com/1449108): The above reasoning does not hold unilaterally
-    // on Android, and this function will need more information to determine the
-    // correct operation to take on that platform.
-#if BUILDFLAG(IS_ANDROID)
-    CHECK(false);
-#endif
+  if (format == viz::LegacyMultiPlaneFormat::kNV12 ||
+      format == viz::MultiPlaneFormat::kNV12 ||
+      format == viz::LegacyMultiPlaneFormat::kNV12A ||
+      format == viz::MultiPlaneFormat::kNV12A) {
+    // Y and A planes are R8, UV is RG8.
+    return plane_index == 1 ? wgpu::TextureFormat::RG8Unorm
+                            : wgpu::TextureFormat::R8Unorm;
+  } else if (format == viz::LegacyMultiPlaneFormat::kP010 ||
+             format == viz::MultiPlaneFormat::kP010) {
+    // Y plane is R16, UV is RG16.
     return plane_index == 0 ? wgpu::TextureFormat::R16Unorm
                             : wgpu::TextureFormat::RG16Unorm;
+  } else if (format == viz::LegacyMultiPlaneFormat::kYV12 ||
+             format == viz::MultiPlaneFormat::kYV12 ||
+             format == viz::MultiPlaneFormat::kI420) {
+    // All planes are R8.
+    return wgpu::TextureFormat::R8Unorm;
+  } else {
+    // Fallback to return single-plane format.
+    return ToDawnFormat(format);
   }
-
-  return wgpu_format;
 }
 
 WGPUTextureFormat ToWGPUFormat(viz::SharedImageFormat format) {
@@ -358,13 +430,9 @@ WGPUTextureFormat ToWGPUFormat(viz::SharedImageFormat format, int plane_index) {
   return static_cast<WGPUTextureFormat>(ToDawnFormat(format, plane_index));
 }
 
-wgpu::TextureUsage GetSupportedDawnTextureUsage(viz::SharedImageFormat format,
-                                                bool is_yuv_plane,
+wgpu::TextureUsage GetSupportedDawnTextureUsage(bool is_yuv_plane,
                                                 bool is_dcomp_surface) {
   if (is_dcomp_surface) {
-    DCHECK(format.is_single_plane());
-    DCHECK(!is_yuv_plane);
-    DCHECK(!format.IsLegacyMultiplanar());
     // Textures from DComp surfaces cannot be used as TextureBinding, however
     // DCompSurfaceImageBacking creates a textureable intermediate texture.
     // TODO(crbug.com/1468844): Remove TextureBinding usage when the
@@ -379,8 +447,7 @@ wgpu::TextureUsage GetSupportedDawnTextureUsage(viz::SharedImageFormat format,
   // correct usages. This needs support in Skia to loosen TextureUsage
   // validation. Alternatively, add support in Dawn for multiplanar formats to
   // be Renderable.
-  if (format.is_single_plane() && !format.IsLegacyMultiplanar() &&
-      !is_yuv_plane) {
+  if (!is_yuv_plane) {
     return wgpu::TextureUsage::RenderAttachment |
            wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopySrc |
            wgpu::TextureUsage::CopyDst;
@@ -436,11 +503,10 @@ skgpu::graphite::DawnTextureInfo GetGraphiteDawnTextureInfo(
   skgpu::graphite::DawnTextureInfo dawn_texture_info;
   wgpu::TextureFormat wgpu_format = ToDawnFormat(format, plane_index);
   if (wgpu_format != wgpu::TextureFormat::Undefined) {
-    wgpu::TextureUsage wgpu_usage = GetSupportedDawnTextureUsage(
-        format, is_yuv_plane, scanout_dcomp_surface);
     dawn_texture_info.fSampleCount = 1;
     dawn_texture_info.fFormat = wgpu_format;
-    dawn_texture_info.fUsage = wgpu_usage;
+    dawn_texture_info.fUsage =
+        GetSupportedDawnTextureUsage(is_yuv_plane, scanout_dcomp_surface);
     dawn_texture_info.fMipmapped =
         mipmapped ? skgpu::Mipmapped::kYes : skgpu::Mipmapped::kNo;
   }

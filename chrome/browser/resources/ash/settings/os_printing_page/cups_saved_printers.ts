@@ -64,7 +64,7 @@ const MAX_PRINTER_QUERYING_TIME_IN_SECONDS: number = 300;
  * Move a printer's position in |printerArr| from |fromIndex| to |toIndex|.
  */
 function moveEntryInPrinters(
-    printerArr: PrinterListEntry[], fromIndex: number, toIndex: number) {
+    printerArr: PrinterListEntry[], fromIndex: number, toIndex: number): void {
   const element = printerArr[fromIndex];
   printerArr.splice(fromIndex, 1);
   printerArr.splice(toIndex, 0, element);
@@ -75,7 +75,7 @@ const SettingsCupsSavedPrintersElementBase =
 
 export class SettingsCupsSavedPrintersElement extends
     SettingsCupsSavedPrintersElementBase {
-  static get is(): string {
+  static get is() {
     return 'settings-cups-saved-printers';
   }
 
@@ -166,6 +166,14 @@ export class SettingsCupsSavedPrintersElement extends
       },
 
       /**
+       * Stores the timeout ID from each invocation of setTimeout().
+       */
+      timeoutIds_: {
+        type: Array,
+        value: () => [],
+      },
+
+      /**
        * True when the "printer-settings-printer-status" feature flag is
        * enabled.
        */
@@ -214,6 +222,8 @@ export class SettingsCupsSavedPrintersElement extends
   private visiblePrinterCounter_: number;
   private printerStatusReasonCache_: Map<string, PrinterStatusReason>;
   private pageStartTime_: number;
+  private timeoutIds_: number[];
+  private onFocusListener_: () => void;
   private isPrinterSettingsPrinterStatusEnabled_: boolean;
 
   constructor() {
@@ -225,6 +235,8 @@ export class SettingsCupsSavedPrintersElement extends
     // MIN_VISIBLE_PRINTERS is the default value and we never show fewer
     // printers if the Show more button is visible.
     this.visiblePrinterCounter_ = MIN_VISIBLE_PRINTERS;
+
+    this.onFocusListener_ = () => this.resetPrinterStatusQueryTimers();
   }
 
   override ready(): void {
@@ -239,6 +251,18 @@ export class SettingsCupsSavedPrintersElement extends
     if (this.isPrinterSettingsPrinterStatusEnabled_) {
       this.startPrinterStatusQueryTimer_(/*forErrorStatePrinters=*/ true);
       this.startPrinterStatusQueryTimer_(/*forErrorStatePrinters=*/ false);
+    }
+  }
+
+  addFocusListener(): void {
+    if (this.isPrinterSettingsPrinterStatusEnabled_) {
+      window.addEventListener('focus', this.onFocusListener_);
+    }
+  }
+
+  removeFocusListener(): void {
+    if (this.isPrinterSettingsPrinterStatusEnabled_) {
+      window.removeEventListener('focus', this.onFocusListener_);
     }
   }
 
@@ -259,7 +283,7 @@ export class SettingsCupsSavedPrintersElement extends
   }
 
   private onOpenActionMenu_(
-      e: CustomEvent<{target: HTMLElement, item: PrinterListEntry}>) {
+      e: CustomEvent<{target: HTMLElement, item: PrinterListEntry}>): void {
     const item = e.detail.item;
     this.activePrinterListEntryIndex_ = this.savedPrinters.findIndex(
         (printer: PrinterListEntry) =>
@@ -340,7 +364,7 @@ export class SettingsCupsSavedPrintersElement extends
     return !!this.searchTerm && !this.filteredPrinters_.length;
   }
 
-  override onSavedPrintersAdded(addedPrinters: PrinterListEntry[]) {
+  override onSavedPrintersAdded(addedPrinters: PrinterListEntry[]): void {
     const currArr = this.newPrinters_.slice();
     for (const printer of addedPrinters) {
       this.visiblePrinterCounter_++;
@@ -350,7 +374,7 @@ export class SettingsCupsSavedPrintersElement extends
     this.set('newPrinters_', currArr);
   }
 
-  override onSavedPrintersRemoved(removedPrinters: PrinterListEntry[]) {
+  override onSavedPrintersRemoved(removedPrinters: PrinterListEntry[]): void {
     const currArr = this.newPrinters_.slice();
     for (const printer of removedPrinters) {
       const newPrinterRemovedIdx = currArr.findIndex(
@@ -401,7 +425,7 @@ export class SettingsCupsSavedPrintersElement extends
    * printer list.
    */
   private moveNewlyAddedPrinters_(
-      printerArr: PrinterListEntry[], toIndex: number) {
+      printerArr: PrinterListEntry[], toIndex: number): void {
     if (!this.newPrinters_.length) {
       return;
     }
@@ -500,9 +524,10 @@ export class SettingsCupsSavedPrintersElement extends
     const maxDelay = currentInterval[1];
     const randomizedDelayMs =
         ((Math.random() * (maxDelay - minDelay)) + minDelay) * 1000;
-    setTimeout(
+    const timeoutId = setTimeout(
         () => this.onPrinterStatusQueryTimerElapsed_(forErrorStatePrinters),
         randomizedDelayMs);
+    this.timeoutIds_.push(timeoutId);
   }
 
   /**
@@ -534,6 +559,18 @@ export class SettingsCupsSavedPrintersElement extends
     return printerStatusReason !== undefined && printerStatusReason !== null &&
         computePrinterState(printerStatusReason) ===
         PrinterState.HIGH_SEVERITY_ERROR;
+  }
+
+  // Used to reset any existing timers for printer status querying and restart
+  // querying printers when the Saved printers section regains focus.
+  // TODO(b/298474359): Add browser test for below logic.
+  private resetPrinterStatusQueryTimers(): void {
+    assert(this.isPrinterSettingsPrinterStatusEnabled_);
+    this.timeoutIds_.forEach(timeoutId => clearTimeout(timeoutId));
+    this.pageStartTime_ = Date.now();
+
+    this.startPrinterStatusQueryTimer_(/*forErrorStatePrinters=*/ true);
+    this.startPrinterStatusQueryTimer_(/*forErrorStatePrinters=*/ false);
   }
 
   getPrinterStatusReasonCacheForTesting(): Map<string, PrinterStatusReason> {

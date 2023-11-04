@@ -10,13 +10,22 @@
 #include "ui/events/event.h"
 #include "ui/views/view.h"
 
+namespace views {
+class Label;
+class ScrollView;
+}  // namespace views
+
+namespace ash {
+class IconButton;
+}  // namespace ash
+
 namespace arc::input_overlay {
 
 class DisplayOverlayController;
 
 // EditingList contains the list of controls.
 //    _________________________________
-//   |icon        "Editing"        icon|
+//   |icon|       "Editing"       |icon|
 //   |   ___________________________   |
 //   |  |                           |  |
 //   |  |    zero-state or          |  |
@@ -30,6 +39,10 @@ class EditingList : public views::View, public TouchInjectorObserver {
   EditingList(const EditingList&) = delete;
   EditingList& operator=(const EditingList&) = delete;
   ~EditingList() override;
+
+  void UpdateWidget();
+
+  void ShowEduNudgeForEditingTip();
 
   // views::View:
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -56,9 +69,24 @@ class EditingList : public views::View, public TouchInjectorObserver {
   // Functions related to buttons.
   void OnAddButtonPressed();
   void OnDoneButtonPressed();
+  void UpdateAddButtonState();
+
+  // Drag operations.
+  void OnDragStart(const ui::LocatedEvent& event);
+  void OnDragUpdate(const ui::LocatedEvent& event);
+  void OnDragEnd(const ui::LocatedEvent& event);
+
+  // The attached widget should be magnetic to the left or right and inside or
+  // outside of the attached sibling game window inside or outside.
+  gfx::Point GetWidgetMagneticPositionLocal();
+
+  // Clips the height of `scroll_view_` based on it is located inside or outside
+  // of the game window.
+  void ClipScrollViewHeight(bool is_outside);
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
+  void VisibilityChanged(View* starting_from, bool is_visible) override;
 
   // TouchInjectorObserver:
   void OnActionAdded(Action& action) override;
@@ -66,28 +94,23 @@ class EditingList : public views::View, public TouchInjectorObserver {
   void OnActionTypeChanged(Action* action, Action* new_action) override;
   void OnActionInputBindingUpdated(const Action& action) override;
   void OnActionNameUpdated(const Action& action) override;
-
-  // Drag operations.
-  void OnDragStart(const ui::LocatedEvent& event);
-  void OnDragUpdate(const ui::LocatedEvent& event);
-  void OnDragEnd(const ui::LocatedEvent& event);
-
-  // Clamp position.
-  void ClampPosition(gfx::Point& position);
+  void OnActionNewStateRemoved(const Action& action) override;
 
   raw_ptr<DisplayOverlayController> controller_;
+
   // It wraps ActionViewListItem.
   raw_ptr<views::View> scroll_content_;
+  // It wraps `scroll_content_` and adds scrolling feature.
+  raw_ptr<views::ScrollView> scroll_view_;
+  // Label for list header.
+  raw_ptr<views::Label> editing_header_label_;
+  raw_ptr<ash::IconButton> add_button_;
 
-  // For test. Used to tell if the zero state view shows up.
+  // Used to tell if the zero state view shows up.
   bool is_zero_state_ = false;
 
   // LocatedEvent's position when drag starts.
   gfx::Point start_drag_event_pos_;
-  // Initial position when drag starts.
-  gfx::Point start_drag_pos_;
-  // Window bounds, relative to the initial position of the editing list.
-  gfx::Rect window_bounds_;
 };
 
 }  // namespace arc::input_overlay

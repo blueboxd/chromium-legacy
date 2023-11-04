@@ -56,6 +56,13 @@ const char kAutofillEnableCardArtImageDescription[] =
     "When enabled, card product images (instead of network icons) will be "
     "shown in Payments Autofill UI.";
 
+const char kAutofillEnableMerchantDomainInUnmaskCardRequestName[] =
+    "Enable sending merchant domain in server card unmask requests";
+const char kAutofillEnableMerchantDomainInUnmaskCardRequestDescription[] =
+    "When enabled, requests to unmask cards will include a top-level "
+    "merchant_domain parameter populated with the last origin of the main "
+    "frame.";
+
 const char kAutofillEnablePaymentsMandatoryReauthOnBlingName[] =
     "Enable mandatory re-auth for payments autofill on Bling";
 const char kAutofillEnablePaymentsMandatoryReauthOnBlingDescription[] =
@@ -106,6 +113,12 @@ const char kAutofillEnableCardProductNameDescription[] =
     "When enabled, card product name (instead of issuer network) will be shown "
     "in Payments UI.";
 
+const char kAutofillEnableVirtualCardsName[] =
+    "Enable virtual card enrollment and retrieval";
+const char kAutofillEnableVirtualCardsDescription[] =
+    "When enabled, virtual card enrollment and retrieval will be available on "
+    "Bling.";
+
 const char kAutofillIOSDelayBetweenFieldsName[] = "Autofill delay";
 const char kAutofillIOSDelayBetweenFieldsDescription[] =
     "Delay between the different fields of a form being autofilled. In "
@@ -135,6 +148,12 @@ const char kAutofillSuggestServerCardInsteadOfLocalCardDescription[] =
     "When enabled, Autofill suggestions that consist of a local and server "
     "version of the same card will attempt to fill the server card upon "
     "selection instead of the local card.";
+
+const char kAutofillUpdateChromeSettingsLinkToGPayWebName[] =
+    "Update Chrome Settings Link to GPay Web";
+const char kAutofillUpdateChromeSettingsLinkToGPayWebDescription[] =
+    "When enabled, Chrome Settings link directs to GPay Web rather than "
+    "Payments Center for payment methods management.";
 
 const char kAutofillUpstreamAllowAdditionalEmailDomainsName[] =
     "Allow Autofill credit card upload save for select non-Google-based "
@@ -191,6 +210,10 @@ const char kBottomOmniboxSteadyStateName[] = "Bottom Omnibox (Steady)";
 const char kBottomOmniboxSteadyStateDescription[] =
     "Move the omnibox to the bottom in steady state";
 
+const char kSpotlightDonateNewIntentsName[] = "Donate New Spotlight Intents";
+const char kSpotlightDonateNewIntentsDescription[] =
+    "Donates relevant intents to Siri when corresponding features are used";
+
 const char kBreakpadNoDelayInitialUploadName[] =
     "Remove delay on initial crash upload";
 const char kBreakpadNoDelayInitialUploadDescription[] =
@@ -215,11 +238,6 @@ extern const char kAppleCalendarExperienceKitDescription[] =
 const char kContentPushNotificationsName[] = "Content Push Notifications";
 const char kContentPushNotificationsDescription[] =
     "Enables the content push notifications.";
-
-extern const char kEmailName[] = "Email experience enable";
-extern const char kEmailDescription[] =
-    "When enabled, one tapping or long pressing on an email address will "
-    "trigger the email experience.";
 
 extern const char kPhoneNumberName[] = "Phone number experience enable";
 extern const char kPhoneNumberDescription[] =
@@ -267,6 +285,12 @@ const char kCredentialProviderExtensionPromoName[] =
 const char kCredentialProviderExtensionPromoDescription[] =
     "When enabled, Credential Provider Extension promo will be "
     "presented to eligible users.";
+
+const char kDBVideoInSettingsName[] =
+    "Show default browser video in settings experiment";
+const char kDBVideoInSettingsDescription[] =
+    "When enabled, default browser video will be displayed to user in "
+    "settings.";
 
 const char kDefaultBrowserBlueDotPromoName[] = "Default Browser Blue Dot Promo";
 const char kDefaultBrowserBlueDotPromoDescription[] =
@@ -432,9 +456,6 @@ const char kEnablePreferencesAccountStorageDescription[] =
     "Enables storing preferences in a second, Gaia-account-scoped storage for "
     "syncing users";
 
-const char kEnablePinnedTabsName[] = "Enable Pinned Tabs";
-const char kEnablePinnedTabsDescription[] = "Allows users to pin tabs.";
-
 const char kEnableReadingListAccountStorageName[] =
     "Enable Reading List Account Storage";
 const char kEnableReadingListAccountStorageDescription[] =
@@ -491,12 +512,6 @@ const char kEnableWebChannelsName[] = "Enable WebFeed";
 const char kEnableWebChannelsDescription[] =
     "Enable folowing content from web and display Following feed on NTP based "
     "on sites that users followed.";
-
-const char kTailoredSecurityIntegrationName[] =
-    "Enable Tailored Security Integration";
-const char kTailoredSecurityIntegrationDescription[] =
-    "Enable integration between account level enhanced safe browsing and "
-    "chrome enhanced safe browsing";
 
 const char kFeedBackgroundRefreshName[] = "Enable feed background refresh";
 const char kFeedBackgroundRefreshDescription[] =
@@ -670,6 +685,12 @@ const char kIOSSharedHighlightingV2Description[] =
 const char kIPHForSafariSwitcherName[] = "IPH for Safari Switcher";
 const char kIPHForSafariSwitcherDescription[] =
     "Enables displaying IPH for users who are considered Safari Switcher";
+
+const char kIPHiOSPromoPasswordManagerWidgetName[] =
+    "Password Manager widget promo IPH";
+const char kIPHiOSPromoPasswordManagerWidgetDescription[] =
+    "Enables displaying the Password Manager widget promo IPH when users "
+    "navigate to the Password Manager";
 
 const char kLockBottomToolbarName[] = "Lock bottom toolbar";
 const char kLockBottomToolbarDescription[] =
@@ -1016,11 +1037,6 @@ const char kSpotlightReadingListSourceName[] = "Show Reading List in Spotlight";
 const char kSpotlightReadingListSourceDescription[] =
     "Donate Reading List items to iOS Search Engine Spotlight";
 
-const char kNewOverflowMenuShareChromeActionName[] =
-    "Share Chrome App action in the new overflow menu";
-const char kNewOverflowMenuShareChromeActionDescription[] =
-    "Enables the Share Chrome App action in the new overflow menu.";
-
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =
     "Connects to the testing server for Chrome Sync.";
@@ -1029,12 +1045,6 @@ const char kSyncSegmentsDataName[] = "Use synced segments data";
 const char kSyncSegmentsDataDescription[] =
     "Enables history's segments to include foreign visits from syncing "
     "devices.";
-
-const char kSynthesizedRestoreSessionName[] =
-    "Use a synthesized native WKWebView sesion restoration (iOS15 only).";
-const char kSynthesizedRestoreSessionDescription[] =
-    "Enable instant session restoration by synthesizing WKWebView session "
-    "restoration data (iOS15 only).";
 
 const char kStartSurfaceName[] = "Start Surface";
 const char kStartSurfaceDescription[] =
@@ -1056,9 +1066,15 @@ const char kTFLiteLanguageDetectionIgnoreDescription[] =
     "Computes the TFLite language detection but ignore the result and uses the "
     "CLD3 detection instead.";
 
-const char kThemeColorInToolbarName[] = "Use page's theme color";
-const char kThemeColorInToolbarDescription[] =
-    "When enabled, the omnibox background color is the page's theme color";
+const char kThemeColorInTopToolbarName[] = "Top toolbar use page's theme color";
+const char kThemeColorInTopToolbarDescription[] =
+    "When enabled with bottom omnibox, the top toolbar background color is the "
+    "page's theme color";
+
+const char kIOSLargeFakeboxName[] = "Enable Large Fakebox on Home";
+const char kIOSLargeFakeboxDescription[] =
+    "When enabled, the Fakebox on Home appears larger and has an updated "
+    "design.";
 
 const char kIOSLensUseDirectUploadName[] =
     "Use direct upload for Lens searches";

@@ -12,6 +12,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.atLeastOnce;
@@ -185,7 +186,7 @@ public class ToolbarPhoneTest {
             mToolbar.setMenuButtonCoordinatorForTesting(realMenuButtonCoordinator);
             mToolbar.updateOptionalButton(new ButtonDataImpl(false, drawable, null,
                     mActivityTestRule.getActivity().getString(R.string.share), false, null, false,
-                    AdaptiveToolbarButtonVariant.UNKNOWN));
+                    AdaptiveToolbarButtonVariant.UNKNOWN, 0, false));
             // Make sure the button is visible in the beginning of the test.
             assertEquals(realMenuButtonCoordinator.isVisible(), true);
 
@@ -210,7 +211,7 @@ public class ToolbarPhoneTest {
             realMenuButtonCoordinator.getMenuButton().setVisibility(View.INVISIBLE);
             assertEquals(realMenuButtonCoordinator.isVisible(), false);
             float offsetWhenButtonInvisible = mToolbar.getLocationBarWidthOffsetForOptionalButton();
-            Assert.assertNotEquals("Offset should be different when menu button is invisible",
+            assertNotEquals("Offset should be different when menu button is invisible",
                     offsetWhenButtonInvisible, offsetWhenParentVisible);
         });
     }
@@ -392,7 +393,7 @@ public class ToolbarPhoneTest {
         }
         LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.TAB_SWITCHER);
         CriteriaHelper.pollUiThread(() -> {
-            RecyclerView tabList = cta.findViewById(R.id.tab_list_view);
+            RecyclerView tabList = cta.findViewById(R.id.tab_list_recycler_view);
             RecyclerView.ViewHolder viewHolder =
                     tabList == null ? null : tabList.findViewHolderForAdapterPosition(0);
             if (viewHolder != null) {
@@ -434,7 +435,7 @@ public class ToolbarPhoneTest {
         }
         LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.TAB_SWITCHER);
         CriteriaHelper.pollUiThread(() -> {
-            RecyclerView tabList = cta.findViewById(R.id.tab_list_view);
+            RecyclerView tabList = cta.findViewById(R.id.tab_list_recycler_view);
             RecyclerView.ViewHolder viewHolder =
                     tabList == null ? null : tabList.findViewHolderForAdapterPosition(0);
             if (viewHolder != null) {
@@ -470,7 +471,7 @@ public class ToolbarPhoneTest {
         CriteriaHelper.pollUiThread(() -> mToolbar.getVisibility() != View.VISIBLE);
         LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.TAB_SWITCHER);
         CriteriaHelper.pollUiThread(() -> {
-            RecyclerView tabList = cta.findViewById(R.id.tab_list_view);
+            RecyclerView tabList = cta.findViewById(R.id.tab_list_recycler_view);
             RecyclerView.ViewHolder viewHolder =
                     tabList == null ? null : tabList.findViewHolderForAdapterPosition(0);
             if (viewHolder != null) {
@@ -510,7 +511,7 @@ public class ToolbarPhoneTest {
         CriteriaHelper.pollUiThread(() -> mToolbar.getVisibility() != View.VISIBLE);
         LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.TAB_SWITCHER);
         CriteriaHelper.pollUiThread(() -> {
-            RecyclerView tabList = cta.findViewById(R.id.tab_list_view);
+            RecyclerView tabList = cta.findViewById(R.id.tab_list_recycler_view);
             RecyclerView.ViewHolder viewHolder =
                     tabList == null ? null : tabList.findViewHolderForAdapterPosition(0);
             if (viewHolder != null) {
@@ -564,7 +565,7 @@ public class ToolbarPhoneTest {
         CriteriaHelper.pollUiThread(() -> mToolbar.getVisibility() != View.VISIBLE);
         LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.TAB_SWITCHER);
         CriteriaHelper.pollUiThread(() -> {
-            RecyclerView tabList = cta.findViewById(R.id.tab_list_view);
+            RecyclerView tabList = cta.findViewById(R.id.tab_list_recycler_view);
             RecyclerView.ViewHolder viewHolder =
                     tabList == null ? null : tabList.findViewHolderForAdapterPosition(0);
             if (viewHolder != null) {
@@ -617,7 +618,7 @@ public class ToolbarPhoneTest {
         CriteriaHelper.pollUiThread(() -> mToolbar.getVisibility() != View.VISIBLE);
         LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.TAB_SWITCHER);
         CriteriaHelper.pollUiThread(() -> {
-            RecyclerView tabList = cta.findViewById(R.id.tab_list_view);
+            RecyclerView tabList = cta.findViewById(R.id.tab_list_recycler_view);
             RecyclerView.ViewHolder viewHolder =
                     tabList == null ? null : tabList.findViewHolderForAdapterPosition(0);
             if (viewHolder != null) {
@@ -651,7 +652,7 @@ public class ToolbarPhoneTest {
                 mActivityTestRule.getActivity(), R.drawable.ic_toolbar_share_offset_24dp);
         ButtonData buttonData = new ButtonDataImpl(true, drawable, null,
                 mActivityTestRule.getActivity().getString(R.string.share), false, null, true,
-                AdaptiveToolbarButtonVariant.UNKNOWN);
+                AdaptiveToolbarButtonVariant.UNKNOWN, 0, false);
 
         // Show a button, this will inflate the optional button view and create its coordinator.
         TestThreadUtils.runOnUiThreadBlocking(() -> { mToolbar.updateOptionalButton(buttonData); });
@@ -684,7 +685,7 @@ public class ToolbarPhoneTest {
                 mActivityTestRule.getActivity(), R.drawable.ic_toolbar_share_offset_24dp);
         ButtonData buttonData = new ButtonDataImpl(true, drawable, null,
                 mActivityTestRule.getActivity().getString(R.string.share), false, null, true,
-                AdaptiveToolbarButtonVariant.UNKNOWN);
+                AdaptiveToolbarButtonVariant.UNKNOWN, 0, false);
 
         // Show a button, this will inflate the optional button view and create its coordinator.
         TestThreadUtils.runOnUiThreadBlocking(() -> { mToolbar.updateOptionalButton(buttonData); });
@@ -718,7 +719,7 @@ public class ToolbarPhoneTest {
                 mActivityTestRule.getActivity(), R.drawable.ic_toolbar_share_offset_24dp);
         ButtonData buttonData = new ButtonDataImpl(true, drawable, null,
                 mActivityTestRule.getActivity().getString(R.string.share), false, null, true,
-                AdaptiveToolbarButtonVariant.UNKNOWN);
+                AdaptiveToolbarButtonVariant.UNKNOWN, 0, false);
 
         // Show a button, this will inflate the optional button view and create its coordinator.
         TestThreadUtils.runOnUiThreadBlocking(() -> { mToolbar.updateOptionalButton(buttonData); });
@@ -779,6 +780,31 @@ public class ToolbarPhoneTest {
         assertTrue(mToolbar.getActiveLocationBarBackgroundForTesting() != null);
         assertTrue(mToolbar.getActiveLocationBarBackgroundForTesting()
                            instanceof NtpSearchBoxDrawable);
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.SURFACE_POLISH})
+    public void testToolbarBackgroundChanged() {
+        ColorDrawable toolbarBackgroundDrawable = mToolbar.getBackgroundDrawable();
+        int expectColor = androidx.core.graphics.ColorUtils.setAlphaComponent(
+                ChromeColors.getSurfaceColor(
+                        mToolbar.getContext(), R.dimen.home_surface_background_color_elevation),
+                0);
+
+        assertEquals(false, mToolbar.isLocationBarShownInNTP());
+        assertNotEquals(expectColor, toolbarBackgroundDrawable.getColor());
+
+        // Load the new tab page.
+        mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        NewTabPageTestUtils.waitForNtpLoaded(tab);
+        assertEquals(true, mToolbar.isLocationBarShownInNTP());
+        assertEquals(expectColor, toolbarBackgroundDrawable.getColor());
+
+        // Focus on the Omnibox.
+        mOmnibox.requestFocus();
+        assertNotEquals(expectColor, toolbarBackgroundDrawable.getColor());
     }
 
     private static class TestControlsVisibilityDelegate

@@ -118,6 +118,7 @@ class NoStatePrefetchManager::OnCloseWebContentsDeleter
   OnCloseWebContentsDeleter(NoStatePrefetchManager* manager,
                             std::unique_ptr<WebContents> tab)
       : manager_(manager), tab_(std::move(tab)) {
+    tab_->SetOwnerLocationForDebug(FROM_HERE);
     tab_->SetDelegate(this);
     base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
@@ -140,6 +141,7 @@ class NoStatePrefetchManager::OnCloseWebContentsDeleter
   void ScheduleWebContentsForDeletion(bool timeout) {
     UMA_HISTOGRAM_BOOLEAN("Prerender.TabContentsDeleterTimeout", timeout);
     tab_->SetDelegate(nullptr);
+    tab_->SetOwnerLocationForDebug(absl::nullopt);
     manager_->ScheduleDeleteOldWebContents(std::move(tab_), this);
     // |this| is deleted at this point.
   }
@@ -250,7 +252,8 @@ NoStatePrefetchManager::StartPrefetchingFromLinkRelPrerender(
         content::preloading_predictor::kLinkRel, confidence, same_url_matcher);
     attempt = preloading_data->AddPreloadingAttempt(
         content::preloading_predictor::kLinkRel,
-        content::PreloadingType::kNoStatePrefetch, same_url_matcher);
+        content::PreloadingType::kNoStatePrefetch, same_url_matcher,
+        source_web_contents->GetPrimaryMainFrame()->GetPageUkmSourceId());
   }
   return StartPrefetchingWithPreconnectFallback(
       origin, url, referrer, initiator_origin, gfx::Rect(size),
@@ -982,6 +985,9 @@ void NoStatePrefetchManager::CleanUpOldNavigations(
 void NoStatePrefetchManager::ScheduleDeleteOldWebContents(
     std::unique_ptr<WebContents> tab,
     OnCloseWebContentsDeleter* deleter) {
+  if (tab) {
+    tab->SetOwnerLocationForDebug(FROM_HERE);
+  }
   old_web_contents_list_.push_back(std::move(tab));
   PostCleanupTask();
 

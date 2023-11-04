@@ -206,6 +206,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="1775598828170459419">Se'n mostren <ph name="NUM_SHOWN_ITEMS" /> de <ph name="NUM_TOTAL_ITEMS" /></translation>
 <translation id="178347895271755507">Configura la visualització de les notificacions, dels fitxers multimèdia i de les fotos recents del telèfon</translation>
 <translation id="1787955149152357925">Desactivat</translation>
+<translation id="1797271123677381264">He oblidat la contrasenya</translation>
 <translation id="181103072419391116"><ph name="SIGNAL_STRENGTH" /> d'intensitat del senyal, xarxa gestionada per l'administrador</translation>
 <translation id="1815245884418711390">Commuta el punt d'accés Wi‐Fi. Està desactivat.</translation>
 <translation id="1816896987747843206">Permet l'accés a la càmera a totes les aplicacions i llocs web amb permís per accedir a la càmera</translation>
@@ -224,6 +225,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="1831565490995294689">Selecciona per obrir <ph name="APP_TO_OPEN" />.</translation>
 <translation id="1838895407229022812">La funció Llum nocturna està desactivada.</translation>
 <translation id="1854180393107901205">Atura l'emissió</translation>
+<translation id="1862077610023398675">Amaga els controls</translation>
 <translation id="1862380676329487333">Actualitza i tanca la sessió</translation>
 <translation id="1864454756846565995">Dispositiu USB-C (port posterior)</translation>
 <translation id="1869497990620230175">Fitxers ràpids</translation>
@@ -298,7 +300,6 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="2227179592712503583">Suprimeix el suggeriment</translation>
 <translation id="2248634276911611268">Obre l'enllaç en una pestanya nova i canvia a aquesta pestanya nova</translation>
 <translation id="225680501294068881">S'estan cercant dispositius...</translation>
-<translation id="225716114209817872">Màxim</translation>
 <translation id="2257486738914982088">S'ha produït un error en baixar <ph name="FILENAME" /></translation>
 <translation id="2258734398699965611">Fitxers suggerits</translation>
 <translation id="2268130516524549846">S'ha desactivat el Bluetooth</translation>
@@ -451,6 +452,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="2891209721153296020">"Desselecciona"</translation>
 <translation id="2894949423239620203">És possible que el cable afecti el rendiment</translation>
 <translation id="2914580577416829331">Captures de pantalla</translation>
+<translation id="2924416280450782352">No es poden mostrar els elements. Prova de tornar a obrir aquest tauler.</translation>
 <translation id="2931572158271115754">No hi ha res en aquesta llista de tasques pendents.</translation>
 <translation id="2941112035454246133">Baixa</translation>
 <translation id="2942350706960889382">Lupa acoblada</translation>
@@ -696,7 +698,6 @@ Connecta el dispositiu a l'alimentació.</translation>
 <translation id="385300504083504382">Principi</translation>
 <translation id="3859364108019690">No es poden reproduir aplicacions en continu</translation>
 <translation id="3861651314799684201">Prem Retorn per gravar la pantalla completa</translation>
-<translation id="3871092408932389764">El més baix</translation>
 <translation id="3886872229787704059">Obert avui</translation>
 <translation id="3891340733213178823">Premeu Ctrl+Maj+Q dues vegades per tancar la sessió.</translation>
 <translation id="3893630138897523026">ChromeVox (avisos de veu)</translation>
@@ -738,6 +739,7 @@ Connecta el dispositiu a l'alimentació.</translation>
 <translation id="4028481283645788203">Cal introduir la contrasenya per disposar de més seguretat</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4032988577476260673"><ph name="LAUNCHER_KEY_NAME" />+fletxa esquerra</translation>
+<translation id="4039699481424758547">Prem Retorn per fer una captura de pantalla de la finestra: <ph name="WINDOW_TITLE" /></translation>
 <translation id="4042660782729322247">Estàs compartint la pantalla</translation>
 <translation id="404437169852192935">Les actualitzacions han finalitzat</translation>
 <translation id="4049230407053723315">Configuració ràpida</translation>
@@ -785,6 +787,7 @@ Connecta el dispositiu a l'alimentació.</translation>
 <translation id="4215497585250573029">Configuració de VPN</translation>
 <translation id="4217571870635786043">Dictat</translation>
 <translation id="4221957499226645091"><ph name="APP_NAME" />, aplicació instal·lada, en pausa</translation>
+<translation id="4228078597006700451">Els controls no s'han configurat</translation>
 <translation id="4231053948789591973">Actualment l'emissió està en pausa. Pots reprendre o aturar l'emissió de la pantalla en qualsevol moment.</translation>
 <translation id="423685346499232137">En aquests moments no es pot copiar ni enganxar contingut</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -833,7 +836,6 @@ Connecta el dispositiu a l'alimentació.</translation>
 <translation id="4406883609789734330">Subtítols instantanis</translation>
 <translation id="4412944820643904175">La funció <ph name="FEATURE_NAME" /> està desactivada.</translation>
 <translation id="4424159417645388645">Escriptori 5</translation>
-<translation id="4427695046139341014">Tauler de joc</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4441283832827406317">Les aplicacions estan ordenades per nom</translation>
 <translation id="4445159312344259901">Inicia sessió per desbloquejar</translation>
@@ -1214,12 +1216,12 @@ Connecta el dispositiu a l'alimentació.</translation>
 <translation id="5961960957587052807">Lleuger</translation>
 <translation id="5965524703725988602">Commuta el tema fosc. <ph name="STATE_TEXT" />.</translation>
 <translation id="5975235751479998104">Avança per les finestres</translation>
-<translation id="5976112937189445008">Prem Retorn per gravar la finestra</translation>
 <translation id="5978382165065462689">Es comparteix el control de la pantalla mitjançant l'Assistència remota.</translation>
 <translation id="5980301590375426705">Tanca com a convidat</translation>
 <translation id="5983567367406220847">A causa de la inactivitat, el punt d'accés Wi‐Fi s'ha desactivat.</translation>
 <translation id="598407983968395253">Utilitza la plantilla</translation>
 <translation id="598882571027504733">Per obtenir l'actualització, reinicia Chromebook amb el teclat connectat.</translation>
+<translation id="6000279412553873020">Tecles, botons i més</translation>
 <translation id="6012623610530968780">Pàgina <ph name="SELECTED_PAGE" /> de <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="601304062528754300">Marca l'element següent al prestatge</translation>
 <translation id="6015573907265691211">Marca com a completada</translation>
@@ -1417,6 +1419,7 @@ Instal·lació nova</translation>
 <translation id="6802196538183166658">Obre la configuració ràpida seleccionant l'hora</translation>
 <translation id="6802687695197837794">Permet l'accés a <ph name="APP1_NAME" />, <ph name="APP2_NAME" />  i a totes les aplicacions i tots els llocs web amb permisos per accedir a la càmera i al micròfon.</translation>
 <translation id="6803622936009808957">No s'han pogut projectar les pantalles, perquè no s'ha trobat cap resolució compatible. S'ha entrat al mode d'escriptori ampliat.</translation>
+<translation id="6809556495807506746">Els controls no estan disponibles</translation>
 <translation id="6812232930908427253">No s'ha pogut desar l'escriptori. Hi ha massa finestres o pestanyes.</translation>
 <translation id="6818242057446442178">Enrere per paraula</translation>
 <translation id="6819327813400217281">La càmera s'ha ajustat a l'extrem inferior esquerre</translation>
@@ -1436,12 +1439,12 @@ Instal·lació nova</translation>
 <translation id="6886172995547742638">És possible que el rendiment del teu dispositiu <ph name="DEVICE_TYPE" /> es vegi disminuït. Utilitza un adaptador de corrent USB-C certificat de <ph name="PREFERRED_MINIMUM_POWER" /> W o superior.</translation>
 <translation id="688631446150864480">Prem la tecla de fletxa avall per canviar de finestra</translation>
 <translation id="6896758677409633944">Copia</translation>
-<translation id="6901883536534621389">Prova els gestos per navegar</translation>
 <translation id="6912841030378044227">Posa el focus a la barra d'adreces</translation>
 <translation id="6912901278692845878">Visita guiada ràpida</translation>
 <translation id="6919251195245069855">No s'ha reconegut la targeta intel·ligent. Torna-ho a provar.</translation>
 <translation id="6920245099716267363">Commuta el punt d'accés Wi‐Fi. Està activat i hi ha 1 dispositiu connectat.</translation>
 <translation id="692135145298539227">suprimeix</translation>
+<translation id="6929081673585394903">Mostra els controls</translation>
 <translation id="6931576957638141829">Desa a</translation>
 <translation id="6942518653766415536">Menú de format de gravació</translation>
 <translation id="6945221475159498467">Selecciona</translation>
@@ -1636,6 +1639,7 @@ Per apagar el dispositiu, torna a mantenir premut el botó d'engegada.</translat
 <translation id="7773536009433685931">Activa la Wi-Fi</translation>
 <translation id="7780094051999721182">dreceres</translation>
 <translation id="7780159184141939021">Gira la pantalla</translation>
+<translation id="7792590255364786396">Visible</translation>
 <translation id="7796735576426975947">S'ha amagat una altra notificació</translation>
 <translation id="7798302898096527229">Prem Cerca o Maj per cancel·lar.</translation>
 <translation id="780301667611848630">No, gràcies</translation>
@@ -1739,7 +1743,6 @@ Per apagar el dispositiu, torna a mantenir premut el botó d'engegada.</translat
 <translation id="8167567890448493835">S'està utilitzant <ph name="LOCALE_NAME" /></translation>
 <translation id="8185090165691050712">Activa/Desactiva el menú per canviar la mida del mode de bloqueig</translation>
 <translation id="8192202700944119416">S'han amagat les notificacions.</translation>
-<translation id="8196787716797768628">Utilitza gestos per canviar ràpidament entre aplicacions i interaccionar amb el teu Chromebook en mode de tauleta.</translation>
 <translation id="8198456017687137612">S'està emetent la pestanya</translation>
 <translation id="8200772114523450471">Reprèn</translation>
 <translation id="8203795194971602413">Fes clic amb el botó dret</translation>
@@ -1749,7 +1752,6 @@ Per apagar el dispositiu, torna a mantenir premut el botó d'engegada.</translat
 <translation id="8230305195727960608">Mode d'inversió de colors</translation>
 <translation id="8236042855478648955">Ara toca fer una pausa</translation>
 <translation id="8239034820133090126">Activa l'escriptori a la dreta</translation>
-<translation id="8246282815785366524">Et donem la benvinguda de nou, <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, <ph name="SIGNAL_STRENGTH" /> d'intensitat del senyal, <ph name="BATTERY_STATUS" /> de bateria al telèfon</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, aplicació</translation>
 <translation id="8255234195843591763">Restableix per actualitzar</translation>
@@ -1848,6 +1850,7 @@ Per apagar el dispositiu, torna a mantenir premut el botó d'engegada.</translat
 <translation id="8703634754197148428">Inicia la gravació. Quan la gravació hagi començat, prem Alt+Maj+L per navegar fins al prestatge i trobar el botó per aturar-la.</translation>
 <translation id="8704155109538237473">Posa el focus a la finestra d'imatge sobre imatge</translation>
 <translation id="870917907284186124">Activa/Desactiva el dictat (escriu amb la veu)</translation>
+<translation id="8714138378966541668">Bloquejada pel proveïdor</translation>
 <translation id="8717459106217102612">Selecciona la paraula o la lletra anterior</translation>
 <translation id="8721053961083920564">Activa o desactiva el volum. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Captura de pantalla completa</translation>
@@ -1866,7 +1869,6 @@ Per apagar el dispositiu, torna a mantenir premut el botó d'engegada.</translat
 <translation id="878215960996152260"><ph name="APP_NAME" />, aplicació instal·lada, bloquejada</translation>
 <translation id="8785070478575117577">Connecta't a <ph name="NETWORK_NAME" /></translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
-<translation id="8790998409862094015">Intens</translation>
 <translation id="8792626944327216835">micròfon</translation>
 <translation id="8801802992492329306">5G</translation>
 <translation id="8806053966018712535">Carpeta <ph name="FOLDER_NAME" /></translation>
@@ -1879,6 +1881,7 @@ Per apagar el dispositiu, torna a mantenir premut el botó d'engegada.</translat
 <translation id="8834539327799336565">Connectats actualment</translation>
 <translation id="8841375032071747811">Botó Enrere</translation>
 <translation id="8843682306134542540">Activa o desactiva el bloqueig de rotació. <ph name="STATE_TEXT" /></translation>
+<translation id="8849001918648564819">Amagat</translation>
 <translation id="8853703225951107899">El PIN o la contrasenya continuen sense poder-se verificar. Nota: si fa poc que has canviat la contrasenya, fes servir l'antiga. La contrasenya nova s'aplicarà un cop hagis tancat la sessió.</translation>
 <translation id="8855885154700222542">Tecla de pantalla completa</translation>
 <translation id="8858369206579825206">Controls de privadesa</translation>
@@ -1898,7 +1901,6 @@ Per apagar el dispositiu, torna a mantenir premut el botó d'engegada.</translat
 <translation id="8909138438987180327">La bateria està a un <ph name="PERCENTAGE" />%.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">L'Assistent de Google no parla aquest idioma.</translation>
-<translation id="8924458948354692166">Prem Retorn per fer una captura de pantalla de la finestra</translation>
 <translation id="8926951137623668982">El prestatge està sempre amagat</translation>
 <translation id="8934926665751933910">{NUM_FILES,plural, =1{1 fitxer}other{# fitxers}}</translation>
 <translation id="8936501819958976551">desactivada</translation>
@@ -1963,6 +1965,7 @@ Per apagar el dispositiu, torna a mantenir premut el botó d'engegada.</translat
 <translation id="9211490828691860325">Tots els escriptoris</translation>
 <translation id="9211681782751733685">Temps restant perquè es carregui totalment la bateria: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Estableix el fons de pantalla</translation>
+<translation id="9216699844945104164">Prem Retorn per gravar la finestra: <ph name="WINDOW_TITLE" /></translation>
 <translation id="9219103736887031265">Imatges</translation>
 <translation id="921989828232331238">El teu pare o mare han bloquejat el dispositiu per a tot el dia</translation>
 <translation id="9220525904950070496">Suprimir el compte</translation>

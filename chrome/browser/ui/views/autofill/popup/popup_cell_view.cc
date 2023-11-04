@@ -13,6 +13,7 @@
 #include "components/autofill/core/common/aliases.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -24,6 +25,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/style/typography_provider.h"
 #include "ui/views/view.h"
 
 namespace autofill {
@@ -232,16 +234,19 @@ void PopupCellView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void PopupCellView::RefreshStyle() {
-  ui::ColorId kBackgroundColorId = IsHighlighted()
-                                       ? ui::kColorDropdownBackgroundSelected
-                                       : ui::kColorDropdownBackground;
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillShowAutocompleteDeleteButton)) {
-    SetBackground(views::CreateThemedRoundedRectBackground(
-        kBackgroundColorId, ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-                                views::Emphasis::kMedium)));
+  if (IsHighlighted()) {
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillShowAutocompleteDeleteButton)) {
+      SetBackground(views::CreateThemedRoundedRectBackground(
+          ui::kColorDropdownBackgroundSelected,
+          ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+              views::Emphasis::kMedium)));
+    } else {
+      SetBackground(views::CreateThemedSolidBackground(
+          ui::kColorDropdownBackgroundSelected));
+    }
   } else {
-    SetBackground(views::CreateThemedSolidBackground(kBackgroundColorId));
+    SetBackground(nullptr);
   }
 
   // Set style for each label in this cell depending on its current selection
@@ -256,8 +261,8 @@ void PopupCellView::RefreshStyle() {
                     ? (GetSelected() ? views::style::STYLE_SELECTED
                                      : label->GetTextStyle())
                     : views::style::STYLE_DISABLED;
-    label->SetEnabledColorId(
-        views::style::GetColorId(label->GetTextContext(), style));
+    label->SetEnabledColorId(views::TypographyProvider::Get().GetColorId(
+        label->GetTextContext(), style));
   }
 
   SchedulePaint();

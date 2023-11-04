@@ -5,10 +5,12 @@
 #include "chrome/browser/ui/safety_hub/unused_site_permissions_service.h"
 
 #include <memory>
+#include <string>
 
 #include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/json/values_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial_params.h"
@@ -20,17 +22,26 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/ui/safety_hub/safety_hub_service.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/permissions/constants.h"
+#include "components/permissions/pref_names.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -111,6 +122,39 @@ UnusedSitePermissionsService::UnusedSitePermissionsResult::
 UnusedSitePermissionsService::UnusedSitePermissionsResult::
     ~UnusedSitePermissionsResult() = default;
 
+UnusedSitePermissionsService::UnusedSitePermissionsResult::
+    UnusedSitePermissionsResult(const UnusedSitePermissionsResult&) = default;
+
+UnusedSitePermissionsService::UnusedSitePermissionsResult::
+    UnusedSitePermissionsResult(const base::Value::Dict& dict)
+    : SafetyHubService::Result(dict) {
+  content_settings::WebsiteSettingsRegistry* registry =
+      content_settings::WebsiteSettingsRegistry::GetInstance();
+  for (const base::Value& permission :
+       *dict.FindList(kUnusedSitePermissionsResultKey)) {
+    const base::Value::Dict& revoked_permission = permission.GetDict();
+    ContentSettingsPattern origin = ContentSettingsPattern::FromString(
+        *revoked_permission.FindString(kSafetyHubOriginKey));
+    std::set<ContentSettingsType> permission_types;
+    for (const base::Value& cst : *revoked_permission.FindList(
+             kUnusedSitePermissionsResultPermissionTypesKey)) {
+      const content_settings::WebsiteSettingsInfo* info =
+          registry->GetByName(cst.GetString());
+      permission_types.insert(info->type());
+    }
+    base::Time expiration =
+        base::ValueToTime(
+            *revoked_permission.Find(kUnusedSitePermissionsResultExpirationKey))
+            .value();
+    AddRevokedPermission(origin, permission_types, expiration);
+  }
+}
+
+std::unique_ptr<SafetyHubService::Result>
+UnusedSitePermissionsService::UnusedSitePermissionsResult::Clone() const {
+  return std::make_unique<UnusedSitePermissionsResult>(*this);
+}
+
 void UnusedSitePermissionsService::UnusedSitePermissionsResult::
     AddRevokedPermission(ContentSettingsPattern origin,
                          std::set<ContentSettingsType> permission_types,
@@ -128,6 +172,78 @@ UnusedSitePermissionsService::UnusedSitePermissionsResult::
   return result;
 }
 
+std::set<ContentSettingsPattern>
+UnusedSitePermissionsService::UnusedSitePermissionsResult::GetRevokedOrigins()
+    const {
+  std::set<ContentSettingsPattern> origins;
+  for (auto permission : revoked_permissions_) {
+    origins.insert(permission.origin);
+  }
+  return origins;
+}
+
+base::Value::Dict
+UnusedSitePermissionsService::UnusedSitePermissionsResult::ToDictValue() const {
+  base::Value::Dict result = BaseToDictValue();
+  base::Value::List revoked_permissions;
+  content_settings::WebsiteSettingsRegistry* registry =
+      content_settings::WebsiteSettingsRegistry::GetInstance();
+  for (auto permission : revoked_permissions_) {
+    base::Value::Dict permission_dict;
+    permission_dict.Set(kSafetyHubOriginKey, permission.origin.ToString());
+    base::Value::List permission_types;
+    for (ContentSettingsType cst : permission.permission_types) {
+      permission_types.Append(registry->Get(cst)->name());
+    }
+    permission_dict.Set(kUnusedSitePermissionsResultPermissionTypesKey,
+                        std::move(permission_types));
+    permission_dict.Set(kUnusedSitePermissionsResultExpirationKey,
+                        base::TimeToValue(permission.expiration));
+    revoked_permissions.Append(std::move(permission_dict));
+  }
+  result.Set(kUnusedSitePermissionsResultKey, std::move(revoked_permissions));
+  return result;
+}
+
+bool UnusedSitePermissionsService::UnusedSitePermissionsResult::
+    IsTriggerForMenuNotification() const {
+  // A menu notification should be shown when there is at least one permission
+  // that was revoked.
+  return revoked_permissions_.size() > 0;
+}
+
+bool UnusedSitePermissionsService::UnusedSitePermissionsResult::
+    WarrantsNewMenuNotification(const Result& previousResult) const {
+  const auto& previous = static_cast<
+      const UnusedSitePermissionsService::UnusedSitePermissionsResult&>(
+      previousResult);
+  std::set<ContentSettingsPattern> old_origins = previous.GetRevokedOrigins();
+  std::set<ContentSettingsPattern> new_origins = GetRevokedOrigins();
+  for (auto new_origin : new_origins) {
+    // A new notification should be shown whenever there is a new origin for
+    // which permissions were revoked.
+    if (!old_origins.contains(new_origin)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+std::u16string UnusedSitePermissionsService::UnusedSitePermissionsResult::
+    GetNotificationString() const {
+  if (revoked_permissions_.empty()) {
+    return std::u16string();
+  }
+  return l10n_util::GetPluralStringFUTF16(
+      IDS_SETTINGS_SAFETY_HUB_UNUSED_SITE_PERMISSIONS_MENU_NOTIFICATION,
+      revoked_permissions_.size());
+}
+
+int UnusedSitePermissionsService::UnusedSitePermissionsResult::
+    GetNotificationCommandId() const {
+  return IDC_OPEN_SAFETY_HUB;
+}
+
 void UnusedSitePermissionsService::TabHelper::PrimaryPageChanged(
     content::Page& page) {
   if (unused_site_permission_service_) {
@@ -139,18 +255,38 @@ void UnusedSitePermissionsService::TabHelper::PrimaryPageChanged(
 WEB_CONTENTS_USER_DATA_KEY_IMPL(UnusedSitePermissionsService::TabHelper);
 
 UnusedSitePermissionsService::UnusedSitePermissionsService(
-    HostContentSettingsMap* hcsm)
+    HostContentSettingsMap* hcsm,
+    PrefService* prefs)
     : hcsm_(hcsm), clock_(base::DefaultClock::GetInstance()) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content_settings_observation_.Observe(hcsm);
-  StartRepeatedUpdates();
+
+  DCHECK(prefs);
+  if (base::FeatureList::IsEnabled(features::kSafetyHub)) {
+    pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+    pref_change_registrar_->Init(prefs);
+
+    pref_change_registrar_->Add(
+        permissions::prefs::kUnusedSitePermissionsRevocationEnabled,
+        base::BindRepeating(&UnusedSitePermissionsService::
+                                OnPermissionsAutorevocationControlChanged,
+                            base::Unretained(this)));
+  }
+
   InitializeLatestResult();
+
+  if (!IsAutoRevocationEnabled()) {
+    return;
+  }
+
+  StartRepeatedUpdates();
 }
 
 UnusedSitePermissionsService::~UnusedSitePermissionsService() = default;
 
-void UnusedSitePermissionsService::InitializeLatestResult() {
-  latest_result_ = GetRevokedPermissions();
+std::unique_ptr<SafetyHubService::Result>
+UnusedSitePermissionsService::InitializeLatestResultImpl() {
+  return GetRevokedPermissions();
 }
 
 void UnusedSitePermissionsService::OnContentSettingChanged(
@@ -179,7 +315,6 @@ void UnusedSitePermissionsService::OnContentSettingChanged(
 }
 
 void UnusedSitePermissionsService::Shutdown() {
-  update_timer_.Stop();
   content_settings_observation_.Reset();
 }
 
@@ -393,8 +528,7 @@ UnusedSitePermissionsService::GetRevokedPermissions() {
 }
 
 void UnusedSitePermissionsService::RevokeUnusedPermissions() {
-  if (!base::FeatureList::IsEnabled(
-          content_settings::features::kSafetyCheckUnusedSitePermissions)) {
+  if (!IsAutoRevocationEnabled()) {
     return;
   }
 
@@ -525,6 +659,14 @@ void UnusedSitePermissionsService::StorePermissionInRevokedPermissionSetting(
       constraint.has_value() ? constraint.value() : default_constraint);
 }
 
+void UnusedSitePermissionsService::OnPermissionsAutorevocationControlChanged() {
+  if (IsAutoRevocationEnabled()) {
+    StartRepeatedUpdates();
+  } else {
+    StopTimer();
+  }
+}
+
 std::vector<UnusedSitePermissionsService::ContentSettingEntry>
 UnusedSitePermissionsService::GetTrackedUnusedPermissionsForTesting() {
   std::vector<ContentSettingEntry> result;
@@ -542,4 +684,21 @@ void UnusedSitePermissionsService::SetClockForTesting(base::Clock* clock) {
 
 base::WeakPtr<SafetyHubService> UnusedSitePermissionsService::GetAsWeakRef() {
   return weak_factory_.GetWeakPtr();
+}
+
+std::unique_ptr<SafetyHubService::Result>
+UnusedSitePermissionsService::GetResultFromDictValue(
+    const base::Value::Dict& dict) {
+  return std::make_unique<UnusedSitePermissionsResult>(dict);
+}
+
+bool UnusedSitePermissionsService::IsAutoRevocationEnabled() {
+  // If kSafetyHub is disabled, then the auto-revocation directly depends on
+  // kSafetyCheckUnusedSitePermissions.
+  if (!base::FeatureList::IsEnabled(features::kSafetyHub)) {
+    return base::FeatureList::IsEnabled(
+        content_settings::features::kSafetyCheckUnusedSitePermissions);
+  }
+  return pref_change_registrar_->prefs()->GetBoolean(
+      permissions::prefs::kUnusedSitePermissionsRevocationEnabled);
 }

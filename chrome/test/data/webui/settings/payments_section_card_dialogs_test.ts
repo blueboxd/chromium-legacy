@@ -21,7 +21,6 @@ suite('PaymentsSectionCardDialogs', function() {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
     loadTimeData.overrideValues({
       migrationEnabled: true,
-      virtualCardEnrollmentEnabled: true,
       showIbansSettings: true,
     });
   });
@@ -252,7 +251,7 @@ suite('PaymentsSectionCardDialogs', function() {
     creditCard.metadata!.isVirtualCardEnrolled = false;
 
     const section = await createPaymentsSection(
-        [creditCard], /*ibans=*/[], /*upiIds=*/[], /*prefValues=*/ {});
+        [creditCard], /*ibans=*/[], /*prefValues=*/ {});
     assertEquals(1, getLocalAndServerCreditCardListItems().length);
 
     const rowShadowRoot = getCardRowShadowRoot(section.$.paymentsList);
@@ -300,7 +299,7 @@ suite('PaymentsSectionCardDialogs', function() {
     creditCard.metadata!.isVirtualCardEnrolled = false;
 
     const section = await createPaymentsSection(
-        [creditCard], /*ibans=*/[], /*upiIds=*/[], /*prefValues=*/ {});
+        [creditCard], /*ibans=*/[], /*prefValues=*/ {});
     assertEquals(1, getLocalAndServerCreditCardListItems().length);
 
     const rowShadowRoot = getCardRowShadowRoot(section.$.paymentsList);

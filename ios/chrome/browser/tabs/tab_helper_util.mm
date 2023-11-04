@@ -24,13 +24,13 @@
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
 #import "ios/chrome/browser/autofill/bottom_sheet/autofill_bottom_sheet_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
-#import "ios/chrome/browser/commerce/price_alert_util.h"
-#import "ios/chrome/browser/commerce/price_notifications/price_notifications_tab_helper.h"
-#import "ios/chrome/browser/commerce/push_notification/push_notification_feature.h"
-#import "ios/chrome/browser/commerce/shopping_persisted_data_tab_helper.h"
-#import "ios/chrome/browser/commerce/shopping_service_factory.h"
-#import "ios/chrome/browser/complex_tasks/ios_task_tab_helper.h"
-#import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_tab_helper.h"
+#import "ios/chrome/browser/commerce/model/price_alert_util.h"
+#import "ios/chrome/browser/commerce/model/price_notifications/price_notifications_tab_helper.h"
+#import "ios/chrome/browser/commerce/model/push_notification/push_notification_feature.h"
+#import "ios/chrome/browser/commerce/model/shopping_persisted_data_tab_helper.h"
+#import "ios/chrome/browser/commerce/model/shopping_service_factory.h"
+#import "ios/chrome/browser/complex_tasks/model/ios_task_tab_helper.h"
+#import "ios/chrome/browser/crash_report/model/breadcrumbs/breadcrumb_manager_tab_helper.h"
 #import "ios/chrome/browser/download/ar_quick_look_tab_helper.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
@@ -98,8 +98,8 @@
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
 #import "ios/chrome/browser/web/session_state/web_session_state_tab_helper.h"
 #import "ios/chrome/browser/web/web_performance_metrics/web_performance_metrics_tab_helper.h"
-#import "ios/chrome/browser/web_selection/web_selection_tab_helper.h"
-#import "ios/chrome/browser/webui/net_export_tab_helper.h"
+#import "ios/chrome/browser/web_selection/model/web_selection_tab_helper.h"
+#import "ios/chrome/browser/webui/model/net_export_tab_helper.h"
 #import "ios/components/security_interstitials/https_only_mode/feature.h"
 #import "ios/components/security_interstitials/https_only_mode/https_only_mode_container.h"
 #import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
@@ -165,9 +165,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     BreadcrumbManagerTabHelper::CreateForWebState(web_state);
   }
 
-  if (web::WebPageAnnotationsEnabled()) {
-    AnnotationsTabHelper::CreateForWebState(web_state);
-  }
+  AnnotationsTabHelper::CreateForWebState(web_state);
 
   SafeBrowsingClient* client =
       SafeBrowsingClientFactory::GetForBrowserState(browser_state);
@@ -176,12 +174,9 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   SafeBrowsingUrlAllowList::CreateForWebState(web_state);
   SafeBrowsingUnsafeResourceContainer::CreateForWebState(web_state);
 
-  if (base::FeatureList::IsEnabled(
-          safe_browsing::kTailoredSecurityIntegration)) {
-    TailoredSecurityTabHelper::CreateForWebState(
-        web_state,
-        TailoredSecurityServiceFactory::GetForBrowserState(browser_state));
-  }
+  TailoredSecurityTabHelper::CreateForWebState(
+      web_state,
+      TailoredSecurityServiceFactory::GetForBrowserState(browser_state));
 
   PolicyUrlBlockingTabHelper::CreateForWebState(web_state);
 

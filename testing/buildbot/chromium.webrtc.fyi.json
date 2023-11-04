@@ -641,10 +641,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "15a5229m",
+          "15a240d",
           "--xctest"
         ],
-        "isolate_name": "ios_remoting_unittests",
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
@@ -667,7 +666,7 @@
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15a5229m",
+              "name": "xcode_ios_15a240d",
               "path": "Xcode.app"
             },
             {
@@ -677,6 +676,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test": "ios_remoting_unittests",
         "test_id_prefix": "ninja://remoting/ios:ios_remoting_unittests/",
         "variant_id": "iPad Air (5th generation) 16.4"
       },
@@ -689,10 +689,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "15a5229m",
+          "15a240d",
           "--xctest"
         ],
-        "isolate_name": "ios_remoting_unittests",
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
@@ -715,7 +714,7 @@
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15a5229m",
+              "name": "xcode_ios_15a240d",
               "path": "Xcode.app"
             },
             {
@@ -725,6 +724,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test": "ios_remoting_unittests",
         "test_id_prefix": "ninja://remoting/ios:ios_remoting_unittests/",
         "variant_id": "iPad Air (5th generation) 17.0"
       },
@@ -737,10 +737,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "15a5229m",
+          "15a240d",
           "--xctest"
         ],
-        "isolate_name": "ios_remoting_unittests",
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
@@ -763,7 +762,7 @@
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15a5229m",
+              "name": "xcode_ios_15a240d",
               "path": "Xcode.app"
             },
             {
@@ -773,6 +772,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test": "ios_remoting_unittests",
         "test_id_prefix": "ninja://remoting/ios:ios_remoting_unittests/",
         "variant_id": "iPhone 14 16.4"
       },
@@ -785,10 +785,9 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "15a5229m",
+          "15a240d",
           "--xctest"
         ],
-        "isolate_name": "ios_remoting_unittests",
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
@@ -811,7 +810,7 @@
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15a5229m",
+              "name": "xcode_ios_15a240d",
               "path": "Xcode.app"
             },
             {
@@ -821,6 +820,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test": "ios_remoting_unittests",
         "test_id_prefix": "ninja://remoting/ios:ios_remoting_unittests/",
         "variant_id": "iPhone 14 17.0"
       }

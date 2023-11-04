@@ -16,6 +16,27 @@ extern const char kChromeUIShoppingInsightsSidePanelHost[];
 // The url for the shopping insights side panel page.
 extern const char kChromeUIShoppingInsightsSidePanelUrl[];
 
+// Http DELETE method.
+extern const char kDeleteHttpMethod[];
+
+// Http GET method.
+extern const char kGetHttpMethod[];
+
+// Http POST method.
+extern const char kPostHttpMethod[];
+
+// OAuth name used for network request.
+extern const char kOAuthName[];
+
+// OAuth scope used for network request.
+extern const char kOAuthScope[];
+
+// Content type for network request.
+extern const char kContentType[];
+
+// Empty data for POST request.
+extern const char kEmptyPostData[];
+
 // Please do not use below UTM constants beyond commerce use cases.
 // UTM source label.
 extern const char kUTMSourceLabel[];
@@ -34,9 +55,6 @@ extern const char kUTMMediumValue[];
 
 // UTM campaign value for discounts in history clusters.
 extern const char kUTMCampaignValueForDiscounts[];
-
-// Prefix of UTM labels, including the underscore.
-extern const char kUTMPrefix[];
 }  // namespace commerce
 
 #endif  // COMPONENTS_COMMERCE_CORE_COMMERCE_CONSTANTS_H_

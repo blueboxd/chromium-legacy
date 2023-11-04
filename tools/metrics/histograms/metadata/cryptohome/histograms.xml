@@ -86,7 +86,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.DeletedUserProfiles" units="profiles"
-    expires_after="2023-10-15">
+    expires_after="2024-09-20">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -214,7 +214,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.HomedirEncryptionType" enum="HomedirEncryptionType"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>dspaid@chromium.org</owner>
   <summary>
     The encryption type used for a user's cryptohome directory. This is logged
@@ -223,7 +223,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.LECredential.LogReplayEntryCount" units="count"
-    expires_after="2024-01-11">
+    expires_after="2024-03-17">
   <owner>hcyang@google.com</owner>
   <owner>cros-hwsec+uma@google.com</owner>
   <summary>
@@ -238,7 +238,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.LECredential.Replay.{ReplayType}"
-    enum="CryptohomeLEReplayError" expires_after="2024-01-11">
+    enum="CryptohomeLEReplayError" expires_after="2024-03-17">
   <owner>hcyang@google.com</owner>
   <owner>cros-hwsec+uma@google.com</owner>
   <summary>
@@ -258,7 +258,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.LECredential.{Operation}{Action}"
-    enum="CryptohomeLECredError" expires_after="2024-01-11">
+    enum="CryptohomeLECredError" expires_after="2024-03-17">
   <owner>hcyang@google.com</owner>
   <owner>cros-hwsec+uma@google.com</owner>
   <summary>
@@ -369,7 +369,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.MigrationUI.ConsumedBatteryPercent" units="%"
-    expires_after="2023-10-01">
+    expires_after="2024-10-01">
   <owner>dlunev@chromium.org</owner>
   <summary>
     The amount of consumed battery level during cryptohome encryption migration.
@@ -380,7 +380,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.MigrationUI.FirstScreen"
-    enum="MigrationUIFirstScreen" expires_after="2023-10-01">
+    enum="MigrationUIFirstScreen" expires_after="2024-10-01">
   <owner>dlunev@chromium.org</owner>
   <summary>
     The first screen in the encryption migration UI, which is shown when a user
@@ -389,7 +389,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.MigrationUI.MigrationResult"
-    enum="MigrationUIMigrationResult" expires_after="2023-10-01">
+    enum="MigrationUIMigrationResult" expires_after="2024-10-01">
   <owner>dlunev@chromium.org</owner>
   <summary>
     The result of encryption migration from eCryptfs to Ext4 dircrypto. The
@@ -399,7 +399,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.MigrationUI.RemoveCryptohomeResult"
-    enum="MigrationUIRemoveCryptohomeResult" expires_after="2023-10-01">
+    enum="MigrationUIRemoveCryptohomeResult" expires_after="2024-10-01">
   <owner>dlunev@chromium.org</owner>
   <summary>
     The result of the removal of user's cryptohome. When the migration UI is
@@ -410,7 +410,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.MigrationUI.UserChoice"
-    enum="MigrationUIUserChoice" expires_after="2023-10-01">
+    enum="MigrationUIUserChoice" expires_after="2024-10-01">
   <owner>dlunev@chromium.org</owner>
   <summary>
     User's choice when the system is ready to migrate encryption. The user can
@@ -420,7 +420,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.MigrationUI.VisibleScreen" enum="MigrationUIScreen"
-    expires_after="2023-10-01">
+    expires_after="2024-10-01">
   <owner>dlunev@chromium.org</owner>
   <summary>
     How many times each screen in migration UI is shown to the user. A screen is
@@ -485,7 +485,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.TimeToAuthSessionRemoveAuthFactorUSS" units="ms"
-    expires_after="2023-11-01">
+    expires_after="2024-08-01">
   <owner>thomascedeno@google.com</owner>
   <owner>cros-security-cryptohome+uma@google.com</owner>
   <summary>
@@ -497,7 +497,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.TimeToAuthSessionRemoveAuthFactorVK" units="ms"
-    expires_after="2023-11-01">
+    expires_after="2024-08-01">
   <owner>thomascedeno@google.com</owner>
   <owner>cros-security-cryptohome+uma@google.com</owner>
   <summary>
@@ -509,7 +509,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.TimeToCreatePersistentUser" units="ms"
-    expires_after="2023-11-01">
+    expires_after="2024-08-01">
   <owner>thomascedeno@google.com</owner>
   <owner>cros-security-cryptohome+uma@google.com</owner>
   <summary>
@@ -535,7 +535,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.TimeToInitPkcs11" units="ms"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>apronin@chromium.org</owner>
   <owner>cros-hwsec+uma@google.com</owner>
   <summary>
@@ -782,7 +782,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.{AuthSessionLifetime}.{Type}" units="ms"
-    expires_after="2023-11-01">
+    expires_after="2024-08-01">
   <owner>thomascedeno@google.com</owner>
   <owner>cros-security-cryptohome+uma@google.com</owner>
   <summary>

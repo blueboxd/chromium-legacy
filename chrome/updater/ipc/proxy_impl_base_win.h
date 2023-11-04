@@ -11,13 +11,14 @@
 #include <utility>
 
 #include "base/check.h"
+#include "base/debug/alias.h"
 #include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
+#include "base/strings/string_util.h"
 #include "base/task/bind_post_task.h"
-#include "base/task/single_thread_task_runner.h"
-#include "base/task/single_thread_task_runner_thread_mode.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
@@ -41,17 +42,20 @@ class ProxyImplBase {
  public:
   // Releases `impl` on `task_runner_`.
   static void Destroy(scoped_refptr<Derived> impl) {
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        impl->task_runner_;
+    scoped_refptr<base::SequencedTaskRunner> task_runner = impl->task_runner_;
     task_runner->PostTask(FROM_HERE,
                           base::BindOnce([](scoped_refptr<Derived> /*impl*/) {},
                                          std::move(impl)));
   }
 
  protected:
-  explicit ProxyImplBase(UpdaterScope scope) : scope_(scope) {
+  explicit ProxyImplBase(UpdaterScope scope, const std::vector<IID>& iids = {})
+      : scope_(scope), iids_(iids) {
     DETACH_FROM_SEQUENCE(sequence_checker_);
-    VLOG(2) << __func__;
+    VLOG(3) << __func__ << ": Interface: " << typeid(Interface).name()
+            << ": iid_user: " << base::win::WStringFromGUID(iid_user)
+            << ": iid_system: " << base::win::WStringFromGUID(iid_system)
+            << ": scope: " << scope;
   }
 
   ~ProxyImplBase() {
@@ -100,6 +104,44 @@ class ProxyImplBase {
     if (FAILED(hr)) {
       VLOG(2) << "Failed to query the interface: "
               << base::win::WStringFromGUID(iid) << ": " << std::hex << hr;
+      [&]() {
+        if (hr != E_NOINTERFACE) {
+          return;
+        }
+        static bool dumped_once = false;
+        if (dumped_once) {
+          return;
+        }
+        dumped_once = true;
+
+        base::ThreadPool::PostTask(
+            FROM_HERE, {base::MayBlock(), base::WithBaseSyncPrimitives()},
+            base::BindOnce(
+                [](const std::wstring& hkey_root,
+                   const std::vector<IID>& interface_iids) {
+                  for (const auto& iid : interface_iids) {
+                    const std::wstring interface_iid =
+                        base::win::WStringFromGUID(iid);
+                    const auto reg_key =
+                        base::StrCat({hkey_root,
+                                      L"\\SOFTWARE\\WOW6432Node\\Classes"
+                                      L"\\Interface\\",
+                                      interface_iid});
+                    absl::optional<std::wstring> contents =
+                        GetRegKeyContents(reg_key);
+                    LOG(ERROR)
+                        << reg_key << ": "
+                        << (contents && !base::ContainsOnlyChars(
+                                            *contents, base::kWhitespaceWide)
+                                ? *contents
+                                : L"*Missing*");
+                  }
+                  DUMP_WILL_BE_CHECK(false);
+                },
+                IsSystemInstall(scope_) ? L"HKLM" : L"HKCU", iids_));
+
+        base::PlatformThread::Sleep(base::Seconds(10));
+      }();
       return base::unexpected(hr);
     }
 
@@ -131,17 +173,16 @@ class ProxyImplBase {
   SEQUENCE_CHECKER(sequence_checker_);
 
  private:
-  // Runs the tasks which invoke outbound COM calls and receive inbound COM
-  // callbacks. This task runner is thread-affine with the platform COM STA.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_ =
-      base::ThreadPool::CreateCOMSTATaskRunner(
+  // Sequences the outbound calls so that the main sequence is not blocked on an
+  // RPC call.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_ =
+      base::ThreadPool::CreateSequencedTaskRunner(
           {base::TaskPriority::USER_BLOCKING,
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-          base::SingleThreadTaskRunnerThreadMode::DEDICATED);
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 
   const UpdaterScope scope_;
+  const std::vector<IID> iids_;
 
-  // Interface owned by the STA. It must be created and released by the STA.
   HResultOr<Microsoft::WRL::ComPtr<Interface>> interface_ =
       base::unexpected(S_OK);
 };

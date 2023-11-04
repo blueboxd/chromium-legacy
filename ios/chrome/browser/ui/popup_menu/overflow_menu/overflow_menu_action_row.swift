@@ -57,15 +57,18 @@ struct OverflowMenuActionRow: View {
 
   var body: some View {
     button
-      .if(action.highlighted) { view in
-        view.listRowBackground(Color("destination_highlight_color"))
-          .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + Self.highlightDuration) {
-              withAnimation {
-                action.highlighted = false
-              }
-            }
+      .listRowBackground(background)
+      .onChange(of: action.highlighted) { _ in
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.highlightDuration) {
+          action.highlighted = false
+        }
+      }
+      .onAppear {
+        if action.highlighted {
+          DispatchQueue.main.asyncAfter(deadline: .now() + Self.highlightDuration) {
+            action.highlighted = false
           }
+        }
       }
       .accessibilityIdentifier(action.accessibilityIdentifier)
       .disabled(!action.enabled || action.enterpriseDisabled)
@@ -92,22 +95,26 @@ struct OverflowMenuActionRow: View {
   private var rowContent: some View {
     if isEditing {
       HStack {
-        Toggle(isOn: $action.shown.animation()) {}
-          .toggleStyle(OverflowMenuActionToggleStyle())
-          .labelsHidden()
-          .tint(.chromeBlue)
+        Toggle(isOn: $action.shown.animation()) {
+          Text(action.name)
+        }
+        .toggleStyle(OverflowMenuActionToggleStyle())
+        .labelStyle(.iconOnly)
+        .tint(.chromeBlue)
+        .accessibilityRemoveTraits(.isSelected)
         rowIcon
-        name
+        centerTextView
         Spacer()
       }
       .padding([.trailing], Self.editRowEndPadding)
+      .accessibilityElement(children: .combine)
     } else {
       HStack {
         // If there is no icon, the text should be centered.
         if rowIcon == nil {
           Spacer()
         }
-        name
+        centerTextView
         if action.displayNewLabelIcon {
           newLabelIconView
         }
@@ -117,6 +124,15 @@ struct OverflowMenuActionRow: View {
         }
       }
       .padding([.trailing], Self.rowEndPadding)
+    }
+  }
+
+  /// The row's middle text content
+  @ViewBuilder
+  private var centerTextView: some View {
+    VStack(alignment: .leading, spacing: 4) {
+      name
+      subtitle
     }
   }
 
@@ -130,6 +146,7 @@ struct OverflowMenuActionRow: View {
       Button(
         action: {
           metricsHandler?.popupMenuTookAction()
+          metricsHandler?.popupMenuUserSelectedAction()
           action.handler()
         },
         label: {
@@ -144,12 +161,28 @@ struct OverflowMenuActionRow: View {
     Text(action.name).lineLimit(1)
   }
 
+  @ViewBuilder
+  private var subtitle: some View {
+    if let subtitle = action.subtitle {
+      Text(subtitle).lineLimit(1).font(.caption).foregroundColor(.textTertiary)
+    }
+  }
+
   private var rowIcon: OverflowMenuRowIcon? {
     action.symbolName.flatMap { symbolName in
       OverflowMenuRowIcon(
         symbolName: symbolName, systemSymbol: action.systemSymbol,
         monochromeSymbol: action.monochromeSymbol)
     }
+  }
+
+  /// The background color for this row.
+  var background: some View {
+    let color =
+      action.highlighted
+      ? Color("destination_highlight_color") : Color(.secondarySystemGroupedBackground)
+    // `.listRowBackground cannot be animated, so apply the animation to the color directly.
+    return color.animation(.default)
   }
 
   // The "N" IPH icon view.

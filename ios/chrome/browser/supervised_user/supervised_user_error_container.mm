@@ -109,8 +109,6 @@ void SupervisedUserErrorContainer::HandleCommand(
                        interstitial.url()));
   } else if (command == security_interstitials::SecurityInterstitialCommand::
                             CMD_DONT_PROCEED) {
-    // TODO (b/279766168): Use `GoBack` from IOSBlockingPageControllerClient
-    // once implemented.
     interstitial.GoBack();
   }
 }
@@ -168,17 +166,13 @@ void SupervisedUserErrorContainer::URLFilterCheckCallback(
 }
 
 void SupervisedUserErrorContainer::OnURLFilterChanged() {
-  // TODO (b/279766168): Skip parent filtering for the same exceptions as in
-  // native.
-  bool skip_manual_parent_filter = false;
-
   supervised_user_service_->GetURLFilter()
       ->GetFilteringBehaviorForURLWithAsyncChecks(
           web_state_->GetLastCommittedURL(),
           base::BindOnce(&SupervisedUserErrorContainer::URLFilterCheckCallback,
                          weak_ptr_factory_.GetWeakPtr(),
                          web_state_->GetLastCommittedURL()),
-          skip_manual_parent_filter);
+          /*skip_manual_parent_filter=*/false);
 
   MaybeUpdatePendingApprovals();
 }

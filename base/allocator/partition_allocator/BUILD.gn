@@ -134,6 +134,7 @@ source_set("allocator_core") {
     "compressed_pointer.h",
     "dangling_raw_ptr_checks.cc",
     "dangling_raw_ptr_checks.h",
+    "flags.h",
     "freeslot_bitmap.h",
     "freeslot_bitmap_constants.h",
     "gwp_asan_support.cc",
@@ -285,6 +286,7 @@ source_set("allocator_core") {
   configs += [
     ":partition_alloc_implementation",
     ":memory_tagging",
+    "//build/config/compiler:wexit_time_destructors",
   ]
   deps = [ ":allocator_base" ]
   public_configs = []
@@ -321,7 +323,6 @@ source_set("allocator_core") {
     ]
   }
 
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
   configs -= _remove_configs
   configs += _add_configs
 
@@ -503,7 +504,10 @@ source_set("allocator_base") {
     ":partition_alloc_buildflags",
   ]
 
-  configs += [ ":partition_alloc_implementation" ]
+  configs += [
+    ":partition_alloc_implementation",
+    "//build/config/compiler:wexit_time_destructors",
+  ]
 
   deps = []
   if (is_fuchsia) {
@@ -528,7 +532,10 @@ source_set("allocator_shim") {
   sources = []
   deps = [ ":allocator_base" ]
   all_dependent_configs = []
-  configs += [ ":partition_alloc_implementation" ]
+  configs += [
+    ":partition_alloc_implementation",
+    "//build/config/compiler:wexit_time_destructors",
+  ]
 
   configs -= _remove_configs
   configs += _add_configs
@@ -632,6 +639,8 @@ source_set("raw_ptr") {
     "pointers/raw_ref.h",
   ]
   sources = []
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   if (enable_backup_ref_ptr_support) {
     sources += [
       "pointers/raw_ptr_backup_ref_impl.cc",
@@ -706,6 +715,7 @@ buildflag_header("partition_alloc_buildflags") {
     "ENABLE_DANGLING_RAW_PTR_FEATURE_FLAG=$enable_dangling_raw_ptr_feature_flag",
     "ENABLE_DANGLING_RAW_PTR_PERF_EXPERIMENT=$enable_dangling_raw_ptr_perf_experiment",
     "ENABLE_POINTER_SUBTRACTION_CHECK=$enable_pointer_subtraction_check",
+    "ENABLE_POINTER_ARITHMETIC_TRAIT_CHECK=$enable_pointer_arithmetic_trait_check",
     "BACKUP_REF_PTR_POISON_OOB_PTR=$backup_ref_ptr_poison_oob_ptr",
     "PUT_REF_COUNT_IN_PREVIOUS_SLOT=$put_ref_count_in_previous_slot",
     "USE_ASAN_BACKUP_REF_PTR=$use_asan_backup_ref_ptr",
@@ -729,13 +739,16 @@ buildflag_header("partition_alloc_buildflags") {
     "ENABLE_PKEYS=$enable_pkeys",
     "ENABLE_THREAD_ISOLATION=$enable_pkeys",
   ]
+}
 
-  if (is_apple) {
-    # TODO(crbug.com/1414153): once TimeTicks::Now behavior is unified on iOS,
-    # this should be removed.
-    flags += [ "PARTITION_ALLOC_ENABLE_MACH_ABSOLUTE_TIME_TICKS=" +
-               "$partition_alloc_enable_mach_absolute_time_ticks" ]
-  }
+buildflag_header("raw_ptr_buildflags") {
+  header = "raw_ptr_buildflags.h"
+
+  flags = [
+    "RAW_PTR_ZERO_ON_CONSTRUCT=$raw_ptr_zero_on_construct",
+    "RAW_PTR_ZERO_ON_MOVE=$raw_ptr_zero_on_move",
+    "RAW_PTR_ZERO_ON_DESTRUCT=$raw_ptr_zero_on_destruct",
+  ]
 }
 
 buildflag_header("chromecast_buildflags") {
@@ -775,6 +788,7 @@ group("buildflags") {
     ":chromeos_buildflags",
     ":debugging_buildflags",
     ":partition_alloc_buildflags",
+    ":raw_ptr_buildflags",
   ]
 }
 # TODO(crbug.com/1151236): After making partition_alloc a standalone library,

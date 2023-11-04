@@ -867,10 +867,8 @@ export class Output {
         continue;
       }
 
-      const parentRole = roleInfo.inherits || CustomRole.NO_ROLE;
       const rule = new AncestryOutputRule(
-          type, formatNode.role, parentRole, navigationType,
-          this.formatAsBraille);
+          type, formatNode.role, navigationType, this.formatAsBraille);
       if (!rule.defined) {
         continue;
       }
@@ -917,22 +915,18 @@ export class Output {
     }
 
     const rule = new OutputRule(type);
-    const eventBlock = OutputRule.RULES[rule.event];
-    const parentRole =
-        (OutputRoleInfo[node.role] || {}).inherits || CustomRole.NO_ROLE;
     rule.output = outputTypes.OutputFormatType.SPEAK;
-    rule.populateRole(node.role, parentRole, rule.output);
+    rule.populateRole(node.role, rule.output);
     if (this.formatOptions_.braille) {
       // Overwrite rule by braille rule if exists.
-      if (rule.populateRole(
-              node.role, parentRole, outputTypes.OutputFormatType.BRAILLE)) {
+      if (rule.populateRole(node.role, outputTypes.OutputFormatType.BRAILLE)) {
         rule.output = outputTypes.OutputFormatType.BRAILLE;
       }
     }
     formatLog.writeRule(rule.specifier);
     OutputFormatter.format(this, {
       node,
-      outputFormat: eventBlock[rule.role][rule.output],
+      outputFormat: rule.formatString,
       outputBuffer: buff,
       outputFormatLogger: formatLog,
       opt_prevNode: prevNode,

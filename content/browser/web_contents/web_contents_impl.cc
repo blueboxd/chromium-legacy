@@ -36,6 +36,7 @@
 #include "base/observer_list.h"
 #include "base/process/process.h"
 #include "base/ranges/algorithm.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -46,6 +47,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/attribution_reporting/features.h"
 #include "components/download/public/common/download_stats.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/viz/common/features.h"
@@ -829,6 +831,9 @@ void WebContentsImpl::WebContentsTreeNode::AttachInnerWebContents(
   inner_web_contents_node.outer_contents_frame_tree_node_id_ =
       render_frame_host->frame_tree_node()->frame_tree_node_id();
 
+  if (inner_web_contents) {
+    inner_web_contents->SetOwnerLocationForDebug(FROM_HERE);
+  }
   inner_web_contents_.push_back(std::move(inner_web_contents));
 
   render_frame_host->frame_tree_node()->AddObserver(&inner_web_contents_node);
@@ -848,6 +853,9 @@ WebContentsImpl::WebContentsTreeNode::DetachInnerWebContents(
       std::swap(web_contents, inner_web_contents_.back());
       inner_web_contents_.pop_back();
       current_web_contents_->InnerWebContentsDetached(inner_web_contents);
+      if (detached_contents) {
+        detached_contents->SetOwnerLocationForDebug(absl::nullopt);
+      }
       return detached_contents;
     }
   }
@@ -956,12 +964,28 @@ class WebContentsOfBrowserContext : public base::SupportsUserData::Data {
     // RenderFrameHosts, SiteInstances, etc.) risk causing
     // use-after-free bugs.  For more discussion about managing the
     // lifetime of WebContents please see https://crbug.com/1376879#c44.
-    for (WebContents* web_contents_with_dangling_ptr_to_browser_context :
+    for (WebContentsImpl* web_contents_with_dangling_ptr_to_browser_context :
          web_contents_set_) {
       std::string creator = web_contents_with_dangling_ptr_to_browser_context
                                 ->GetCreatorLocation()
                                 .ToString();
       SCOPED_CRASH_KEY_STRING256("shutdown", "web_contents/creator", creator);
+
+      const absl::optional<base::Location>& ownership_location =
+          web_contents_with_dangling_ptr_to_browser_context
+              ->ownership_location();
+      std::string owner;
+      if (ownership_location) {
+        if (ownership_location->has_source_info()) {
+          owner = std::string(ownership_location->function_name()) + "@" +
+                  ownership_location->file_name();
+        } else {
+          owner = "no_source_info";
+        }
+      } else {
+        owner = "unknown";
+      }
+      SCOPED_CRASH_KEY_STRING256("shutdown", "web_contents/owner", owner);
 
 #if BUILDFLAG(IS_ANDROID)
       // On Android, also report the Java stack trace from WebContents's
@@ -1008,7 +1032,7 @@ class WebContentsOfBrowserContext : public base::SupportsUserData::Data {
   // Usage of `raw_ptr` below is okay (i.e. it shouldn't dangle), because
   // when `WebContentsImpl`'s destructor runs, then it removes the set entry
   // (by calling `Detach`).
-  std::set<raw_ptr<WebContents>> web_contents_set_;
+  std::set<raw_ptr<WebContentsImpl>> web_contents_set_;
 };
 
 }  // namespace
@@ -3348,7 +3372,8 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params,
 
   // AttributionHost must be created after `view_->CreateView()` is called as it
   // may invoke `WebContentsAndroid::AddObserver()`.
-  if (base::FeatureList::IsEnabled(blink::features::kConversionMeasurement)) {
+  if (base::FeatureList::IsEnabled(
+          attribution_reporting::features::kConversionMeasurement)) {
     AttributionHost::CreateForWebContents(this);
   }
 
@@ -3816,26 +3841,58 @@ void WebContentsImpl::FullscreenStateChanged(
 
 #if defined(USE_AURA)
 void WebContentsImpl::Maximize() {
-  aura::Window* window = GetTopLevelNativeWindow();
-  // TODO(isandrk, b/289028460): This API function currently works only on Aura
-  // platforms (Win/Lin/CrOS/Fuchsia), make it also work on Mac.
-  wm::SetWindowState(window, ui::SHOW_STATE_MAXIMIZED);
+  SetWindowShowState(ui::SHOW_STATE_MAXIMIZED);
 }
 
 void WebContentsImpl::Minimize() {
-  aura::Window* window = GetTopLevelNativeWindow();
-  // TODO(isandrk, b/289028460): This API function currently works only on Aura
-  // platforms (Win/Lin/CrOS/Fuchsia), make it also work on Mac.
-  wm::SetWindowState(window, ui::SHOW_STATE_MINIMIZED);
+  SetWindowShowState(ui::SHOW_STATE_MINIMIZED);
 }
 
 void WebContentsImpl::Restore() {
+  SetWindowShowState(ui::SHOW_STATE_NORMAL);
+}
+
+void WebContentsImpl::SetWindowShowState(ui::WindowShowState state) {
   aura::Window* window = GetTopLevelNativeWindow();
-  // TODO(isandrk, b/289028460): This API function currently works only on Aura
-  // platforms (Win/Lin/CrOS/Fuchsia), make it also work on Mac.
-  wm::SetWindowState(window, ui::SHOW_STATE_NORMAL);
+
+  // TODO(isandrk, crbug.com/1466855): This API function currently works only on
+  // Aura platforms (Win/Lin/CrOS/Fuchsia), make it also work on Mac.
+  wm::SetWindowState(window, state);
+
+  // This is needed to update `display-state` CSS @media query value.
+  if (RenderWidgetHost* render_widget_host =
+          GetPrimaryMainFrame()->GetRenderWidgetHost()) {
+    render_widget_host->SynchronizeVisualProperties();
+  }
+}
+
+ui::WindowShowState WebContentsImpl::GetWindowShowState() {
+  aura::Window* window = GetTopLevelNativeWindow();
+  return wm::GetWindowState(window);
 }
 #endif
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+bool WebContentsImpl::GetResizable() {
+  return resizable_;
+}
+#endif
+
+void WebContentsImpl::UpdateResizable(bool resizable) {
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+  return;
+#else
+  if (resizable_ == resizable) {
+    return;
+  }
+
+  resizable_ = resizable;
+  if (RenderWidgetHost* render_widget_host =
+          GetPrimaryMainFrame()->GetRenderWidgetHost()) {
+    render_widget_host->SynchronizeVisualProperties();
+  }
+#endif
+}
 
 void WebContentsImpl::FullscreenFrameSetUpdated() {
   OPTIONAL_TRACE_EVENT0("content",
@@ -4025,8 +4082,7 @@ void WebContentsImpl::RequestToLockMouse(
   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::RequestToLockMouse",
                         "render_widget_host", render_widget_host, "privileged",
                         privileged);
-  if (render_widget_host->frame_tree()->type() ==
-      FrameTree::Type::kFencedFrame) {
+  if (render_widget_host->frame_tree()->is_fenced_frame()) {
     // The renderer should have checked and disallowed the request for fenced
     // frames in PointerLockController and dispatched pointerlockerror. Ignore
     // the request and mark it as bad if it didn't happen for some reason.
@@ -4193,7 +4249,7 @@ FrameTree* WebContentsImpl::CreateNewWindow(
                "opener", opener, "params", params);
   DCHECK(opener);
 
-  if (base::FeatureList::IsEnabled(kWindowOpenFileSelectFix) &&
+  if (base::FeatureList::IsEnabled(features::kWindowOpenFileSelectFix) &&
       active_file_chooser_) {
     // Do not allow opening a new window or tab while a file select is active
     // file chooser to avoid user confusion over which tab triggered the file
@@ -5069,7 +5125,7 @@ WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {
       // frame tree Navigation controller should be used for navigating.
       // Instead, we just navigate directly on the relevant frame
       // tree.
-      if (frame_tree.type() == FrameTree::Type::kPrerender ||
+      if (frame_tree.is_prerendering() ||
           frame_tree_node->IsInFencedFrameTree()) {
         DCHECK_EQ(params.disposition, WindowOpenDisposition::CURRENT_TAB);
         frame_tree.controller().LoadURLWithParams(
@@ -6666,7 +6722,7 @@ void WebContentsImpl::EnumerateDirectory(
   base::ScopedClosureRunner cancel_chooser(base::BindOnce(
       &FileChooserImpl::FileSelectListenerImpl::FileSelectionCanceled,
       listener));
-  if (base::FeatureList::IsEnabled(kWindowOpenFileSelectFix)) {
+  if (base::FeatureList::IsEnabled(features::kWindowOpenFileSelectFix)) {
     if (visibility_ == Visibility::HIDDEN) {
       // Do not allow background tab to open file chooser.
       return;
@@ -6683,7 +6739,7 @@ void WebContentsImpl::EnumerateDirectory(
   listener->SetFullscreenBlock(std::move(fullscreen_block));
 
   if (delegate_) {
-    if (base::FeatureList::IsEnabled(kWindowOpenFileSelectFix)) {
+    if (base::FeatureList::IsEnabled(features::kWindowOpenFileSelectFix)) {
       active_file_chooser_ = std::move(file_chooser);
     }
     delegate_->EnumerateDirectory(this, std::move(listener), directory_path);
@@ -7446,7 +7502,7 @@ void WebContentsImpl::RunFileChooser(
   base::ScopedClosureRunner cancel_chooser(base::BindOnce(
       &FileChooserImpl::FileSelectListenerImpl::FileSelectionCanceled,
       listener));
-  if (base::FeatureList::IsEnabled(kWindowOpenFileSelectFix)) {
+  if (base::FeatureList::IsEnabled(features::kWindowOpenFileSelectFix)) {
     if (visibility_ == Visibility::HIDDEN) {
       // Do not allow background tab to open file chooser.
       return;
@@ -7463,7 +7519,7 @@ void WebContentsImpl::RunFileChooser(
   listener->SetFullscreenBlock(std::move(fullscreen_block));
 
   if (delegate_) {
-    if (base::FeatureList::IsEnabled(kWindowOpenFileSelectFix)) {
+    if (base::FeatureList::IsEnabled(features::kWindowOpenFileSelectFix)) {
       active_file_chooser_ = std::move(file_chooser);
     }
     delegate_->RunFileChooser(render_frame_host, std::move(listener), params);
@@ -8560,7 +8616,7 @@ void WebContentsImpl::CreateRenderWidgetHostViewForRenderManager(
   // TODO(crbug.com/1254770): Fix this for portals.
   bool is_inner_frame_tree = static_cast<RenderViewHostImpl*>(render_view_host)
                                  ->frame_tree()
-                                 ->type() == FrameTree::Type::kFencedFrame;
+                                 ->is_fenced_frame();
   if (is_inner_frame_tree) {
     WebContentsViewChildFrame::CreateRenderWidgetHostViewForInnerFrameTree(
         this, render_view_host->GetWidget());
@@ -9206,9 +9262,13 @@ void WebContentsImpl::OnXrHasRenderTarget(
   observers_.NotifyObservers(&WebContentsObserver::CaptureTargetChanged);
 }
 
-viz::FrameSinkId WebContentsImpl::GetCaptureFrameSinkId() {
-  if (xr_render_target_.is_valid())
-    return xr_render_target_;
+WebContentsImpl::CaptureTarget WebContentsImpl::GetCaptureTarget() {
+  // We don't provide a view for the Android AR capturer. This is not a problem
+  // because it is currently only used by the MouseCursorOverlayController,
+  // which isn't used on Android anyway.
+  if (xr_render_target_.is_valid()) {
+    return CaptureTarget{.sink_id = xr_render_target_};
+  }
 
   RenderWidgetHostView* host_view = GetRenderWidgetHostView();
   if (!host_view) {
@@ -9217,7 +9277,8 @@ viz::FrameSinkId WebContentsImpl::GetCaptureFrameSinkId() {
 
   RenderWidgetHostViewBase* base_view =
       static_cast<RenderWidgetHostViewBase*>(host_view);
-  return base_view->GetFrameSinkId();
+  return CaptureTarget{.sink_id = base_view->GetFrameSinkId(),
+                       .view = host_view->GetNativeView()};
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -9883,6 +9944,11 @@ void WebContentsImpl::UpdateBrowserControlsState(
   GetPrimaryPage().UpdateBrowserControlsState(constraints, current, animate);
 }
 
+void WebContentsImpl::SetV8CompileHints(base::ReadOnlySharedMemoryRegion data) {
+  GetPrimaryMainFrame()->GetAssociatedLocalMainFrame()->SetV8CompileHints(
+      std::move(data));
+}
+
 void WebContentsImpl::SetTabSwitchStartTime(base::TimeTicks start_time,
                                             bool destination_is_loaded) {
   GetVisibleTimeRequestTrigger().UpdateRequest(
@@ -9950,6 +10016,11 @@ void WebContentsImpl::BackNavigationLikely(PreloadingPredictor predictor,
   }
 
   GetPrerenderHostRegistry()->BackNavigationLikely(predictor);
+}
+
+void WebContentsImpl::SetOwnerLocationForDebug(
+    absl::optional<base::Location> owner_location) {
+  ownership_location_ = owner_location;
 }
 
 void WebContentsImpl::AboutToBeDiscarded(WebContents* new_contents) {

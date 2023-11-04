@@ -175,6 +175,7 @@
 <translation id="19288952978244135">‏Chrome را دوباره باز کنید.</translation>
 <translation id="1933845786846280168">برگه انتخاب‌شده</translation>
 <translation id="1943432128510653496">ذخیره گذرواژه‌ها</translation>
+<translation id="1944535645109964458">گذرکلیدی موجود نیست</translation>
 <translation id="1952172573699511566">درصورت امکان، وب‌سایت‌ها نوشتار را به زبان ترجیحی شما نمایش می‌دهند.</translation>
 <translation id="1959679933317802873">درانتظار محتوا</translation>
 <translation id="1960290143419248813">‏به‌روزرسانی‌های Chrome دیگر در این نسخه Android پشتیبانی نمی‌شوند</translation>
@@ -222,6 +223,7 @@
 <translation id="2189903024544168260">علاقه برداشته شد</translation>
 <translation id="2194856509914051091">مواردی که باید درنظر داشت</translation>
 <translation id="2200113223741723867">مدیریت هم‌رسانی داده‌های استفاده</translation>
+<translation id="221494669172414749">‏باز کردن Chrome بدون قفل نمایه باعث می‌شود گذرواژه‌ها و روش‌های پرداخت ذخیره‌شده‌تان از خودرو حذف شود. استفاده از قفل نمایه امنیت این داده‌ها را حفظ می‌کند.</translation>
 <translation id="2218567645332692482">‏پیمایش‌ها به HTTPS ارتقا می‌یابد و پیش‌از بار شدن سایت‌هایی که از HTTPS پشتیبانی نمی‌کنند، هشدار دریافت می‌کنید</translation>
 <translation id="2227444325776770048">ادامه دادن به‌عنوان <ph name="USER_FULL_NAME" /></translation>
 <translation id="2230777942707397948">پنجره خالی</translation>
@@ -262,6 +264,7 @@
 <translation id="2461822463642141190">فعلی</translation>
 <translation id="2472163211318554013">‏برای بردن بیشترین بهره از Chrome، به سیستم وارد شوید</translation>
 <translation id="247737702124049222">توضیحات تصویر روشن است</translation>
+<translation id="2479148705183875116">رفتن به تنظیمات</translation>
 <translation id="2482878487686419369">اعلان‌ها</translation>
 <translation id="2496180316473517155">سابقه مرور</translation>
 <translation id="2497852260688568942">سرپرستتان همگام‌سازی را غیرفعال کرده است</translation>
@@ -338,6 +341,7 @@
 <translation id="2840810876587895427">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> برگه ناشناس بسته خواهد شد}one{<ph name="TAB_COUNT_MANY" /> برگه ناشناس بسته خواهد شد}other{<ph name="TAB_COUNT_MANY" /> برگه ناشناس بسته خواهد شد}}</translation>
 <translation id="2841216154655874070">{NUM_DAYS,plural, =1{آخرین بررسی: ۱ روز قبل}one{آخرین بررسی: # روز قبل}other{آخرین بررسی: # روز قبل}}</translation>
 <translation id="2842985007712546952">پوشه اصلی</translation>
+<translation id="2853415089995957805">‏‫Chrome صفحه‌هایی را که احتمالاً از آن‌ها بازدید خواهید کرد پیش‌بارگیری می‌کند تا وقتی از آن‌ها بازدید می‌کنید سریع‌تر بارگیری شوند</translation>
 <translation id="2856503607207334158">ورود به سیستم ناموفق بود</translation>
 <translation id="2860954141821109167">مطمئن شوید برنامه تلفن در این دستگاه فعال باشد</translation>
 <translation id="2861923151411510142">‏برخی‌از ویژگی‌های Chrome دیگر دردسترس نخواهد بود</translation>
@@ -555,7 +559,6 @@
 <translation id="3958287878205277013">برای پاک کردن سابقه مرور «حالت ناشناس» از دستگاه، همه برگه‌های ناشناس را ببندید.</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{‏وقتی آماده شدید، Chrome صفحه را بار می‌کند}one{‏وقتی آماده شدید، Chrome صفحه‌ها را بار می‌کند}other{‏وقتی آماده شدید، Chrome صفحه‌ها را بار می‌کند}}</translation>
 <translation id="3962119236270174787">محافظت استاندارد دربرابر وب‌سایت‌ها، بارگیری‌ها، و افزونه‌هایی که خطرناک بودنشان مشخص شده است</translation>
-<translation id="3963007978381181125">‏رمزگذاری گذرعبارت شامل روش‌های پرداخت و نشانی‌های موجود در Google Pay نمی‌شود. فقط افرادی که گذرعبارتتان را داشته باشند می‌توانند داده‌های رمزگذاری‌شده‌تان را بخوانند. گذرعبارت به Google ارسال یا در سرورهای آن ذخیره نمی‌شود. اگر گذرعبارتتان را فراموش کنید یا بخواهید این تنظیم را تغییر دهید، باید همگام‌سازی را بازنشانی کنید. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="3969142555815019568">‏Chrome نمی‌تواند گذرواژه‌هایتان را بررسی کند</translation>
 <translation id="3969863827134279083">حرکت به بالا</translation>
 <translation id="397105322502079400">در حال محاسبه…</translation>
@@ -583,6 +586,7 @@
 <translation id="4084712963632273211">‏از<ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />توسط Google ارائه می‌شود<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="409109920254068737">بااستفاده از این رایانه لوحی می‌توانید در دستگاهی که این رمزینه پاسخ‌سریع را نمایش می‌دهد به سیستم وارد شوید.</translation>
 <translation id="4095146165863963773">داده‌های برنامه پاک شود؟</translation>
+<translation id="4095425503313512126">مرور و جستجو کردن سریع‌تر است</translation>
 <translation id="4096227151372679484">جریان ذخیره نشانک به‌صورت نیمه باز شده است</translation>
 <translation id="4101475238162928417">برای دریافت گذرواژه‌ها، نشانک‌ها، و سایر داده‌هایتان در دستگاه‌های دیگرتان، همگام‌سازی کنید</translation>
 <translation id="4106587138345390261">‏Chrome درحال کاوش ویژگی‌های جدیدی است که به سایت‌های امکان می‌دهد تجربه مرور یکسانی را با مصرف اطلاعات شخصی کمتر ارائه دهند</translation>
@@ -624,6 +628,7 @@
 <translation id="4257230861809842349">‏گذرواژه‌ها از «مدیر گذرواژه Google» حذف شود؟</translation>
 <translation id="4262915912852657291">‏<ph name="BEGIN_BOLD" />انواع داده‌ای که استفاده می‌شود:<ph name="END_BOLD" /> سابقه مرور شما، سابقه سایت‌هایی که بااستفاده از Chrome در این دستگاه از آن‌ها بازدید کرده‌اید.</translation>
 <translation id="4269820728363426813">کپی نشانی پیوند</translation>
+<translation id="4277529130885813215">استفاده از دستگاهی دیگر</translation>
 <translation id="4283102315569707115">به‌طور پیش‌فرض از سایت‌های ویژه رایانه درخواست شود؟</translation>
 <translation id="4285846616383034558">کوکی‌ها، حافظه نهان، و دیگر داده‌های سایت</translation>
 <translation id="4291407919474070700">‏<ph name="BEGIN_LINK" />روشن کردن قفل صفحه در تنظیمات Android<ph name="END_LINK" /></translation>
@@ -792,6 +797,7 @@
 <translation id="5054455334322721892">‏وقتی به سیستم وارد شده باشید، ممکن است <ph name="BEGIN_LINK1" />انواع دیگر فعالیت<ph name="END_LINK1" /> در «حساب Google» شما ذخیره شوند. هر زمان خواستید می‌توانید آن‌ها را حذف کنید.</translation>
 <translation id="506254248375231072">برگه‌ای باز نیست</translation>
 <translation id="5062960805900435602">به‌روزرسانی مربوط به ادغام گذرواژه بسته شد</translation>
+<translation id="5081960376148623587">انتخاب کنید صفحه‌ها پیش‌بارگیری شوند یا نه</translation>
 <translation id="5091199029769593641">‏به‌زودی وقتی برگه جدیدی باز می‌کنید، داستان‌هایی از <ph name="SITE_NAME" /> را خواهید دید. سایت‌هایی که دنبال می‌کنید در «حساب Google» شما ذخیره می‌شوند. می‌توانید در تنظیمات «یافته‌ها»، آن‌ها را مدیریت کنید.</translation>
 <translation id="5091249083535528968">داده‌های استفاده گسترده</translation>
 <translation id="509429900233858213">خطایی روی داد.</translation>
@@ -832,6 +838,7 @@
 <translation id="5308380583665731573">متصل کردن</translation>
 <translation id="5317780077021120954">ذخیره</translation>
 <translation id="5319359161174645648">‏Google،‏ Chrome را توصیه می‌کند</translation>
+<translation id="5320351714793324716">‏اگر کوکی‌ها را مجاز کنید، ممکن است Chrome از آن‌ها هنگام پیش‌بارگیری استفاده کند</translation>
 <translation id="5321849971085220133">‏Chrome به‌دنبال راه‌های جدیدی برای کاهش ردیابی و افزایش امنیت شما درحین مرور است. Chrome همچنین <ph name="BEGIN_LINK" />علایقتان را برآورد می‌کند<ph name="END_LINK" /> و به شما امکان می‌دهد آن‌ها را مدیریت کنید. سپس سایت‌هایی که بازدید می‌کنید می‌توانند برای نمایش آگهی به شما، علایقتان را از Chrome درخواست کنند.</translation>
 <translation id="5326921373682845375">‏ازآنجایی‌که صفحات پیش‌بارگذاری‌شده رمزگذاری شده‌اند و سایت پیوندشده با آن صفحات یک سایت Google است، سرورهای Google هنگام پیش‌بارگذاری خصوصی این صفحات، اطلاعات جدیدی دریافت نمی‌کنند.</translation>
 <translation id="5329858041417644019">مرورگرتان مدیریت نمی‌شود</translation>
@@ -1010,6 +1017,7 @@
 <translation id="6295158916970320988">همه سایت‌ها</translation>
 <translation id="6303969859164067831">خروج از سیستم و خاموش کردن همگام‌سازی</translation>
 <translation id="6312687380483398334">برنامه‌های وب (بی‌صدا)</translation>
+<translation id="6315386555979018699">حذف و ادامه</translation>
 <translation id="6316139424528454185">‏نسخه Android پشتیبانی نمی‌شود</translation>
 <translation id="6324916366299863871">ویرایش میان‌بر</translation>
 <translation id="6324977638108296054">نمی‌توان پیوند به مورد برجسته‌شده ایجاد کرد</translation>
@@ -1161,6 +1169,7 @@
 <translation id="6955535239952325894">این تنظیم در مرورگرهای مدیریت‌شده غیرفعال است</translation>
 <translation id="6963766334940102469">حذف نشانک‌ها</translation>
 <translation id="696447261358045621">خروج از «حالت ناشناس»</translation>
+<translation id="6965382102122355670">تأیید</translation>
 <translation id="6971862865055170158">تأیید نکردن</translation>
 <translation id="6978717888677691380">سایت‌هایی که مسدود کرده‌اید</translation>
 <translation id="6979737339423435258">از ابتدا تا الآن</translation>
@@ -1319,6 +1328,7 @@
 <translation id="7757787379047923882">نوشتار هم‌رسانی‌شده از <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">‏کارت SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">افزودن آدرس</translation>
+<translation id="7766587497031415281">گزینه‌های بیشتر برای پاک کردن داده‌های مرور</translation>
 <translation id="7772032839648071052">تأیید گذرعبارت</translation>
 <translation id="7772375229873196092">بستن <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش پرداخت دیگر}one{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش پرداخت دیگر}other{‏<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش پرداخت دیگر}}</translation>
@@ -1572,6 +1582,7 @@
 <translation id="8998289560386111590">در دستگاهتان دردسترس نیست</translation>
 <translation id="8998729206196772491">‏هم‌اکنون درحال ورود به سیستم با یک حساب مدیریت‌شده توسط <ph name="MANAGED_DOMAIN" /> و ارائه کنترل داده‌های Chrome خودتان به سرپرست این حساب هستید. داده‌هایتان به‌طور دائم به این حساب مرتبط می‌شوند. با خروج از Chrome، داده‌هایتان از این دستگاه حذف می‌شوند اما همچنان در حساب Google شما باقی می‌ماند.</translation>
 <translation id="9012585441087414258">‏دربرابر سایت‌ها، بارگیری‌ها، و افزونه‌هایی که خطرناک بودنشان مشخص شده است از شما محافظت می‌کند. اگر صفحه‌ای کار مشکوکی انجام دهد، نشانی‌های وب و بیت‌های محتوای صفحه به «مرور ایمن Google» ارسال می‌شود.</translation>
+<translation id="9019199799064251516">بدون قفل نمایه خودرو ادامه می‌دهید؟</translation>
 <translation id="9022774213089566801">اغلب از آن‌ها بازدید شده است</translation>
 <translation id="9022871169049522985">سایت‌ها و تبلیغ‌کنندگان می‌توانند عملکرد آگهی‌هایشان را بسنجند</translation>
 <translation id="9035378196785279980">‏انتقال به\u2026</translation>
@@ -1634,5 +1645,6 @@
 <translation id="983192555821071799">بستن همه برگه‌ها</translation>
 <translation id="987264212798334818">موارد کلی</translation>
 <translation id="992745192656291733"><ph name="TAB_COUNT" /> برگه</translation>
+<translation id="993520549480398880">نشانک‌ها، سابقه، و موارد دیگر نیز از این خودرو پاک شود</translation>
 <translation id="996149300115483134">منوی کارت فید بسته شد</translation>
 </translationbundle>

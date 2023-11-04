@@ -79,7 +79,8 @@ The following arguments are supported:
                         supported with --codec=vp9 and only runs in NV12Dmabuf
                         test cases. The valid svc mode is "L1T1", "L1T2",
                         "L1T3", "L2T1_KEY", "L2T2_KEY", "L2T3_KEY", "L3T1_KEY",
-                        "L3T2_KEY", "L3T3_KEY". The default value is "L1T1".
+                        "L3T2_KEY", "L3T3_KEY", "S2T1", "S2T2", "S2T3", "S3T1",
+                        "S3T2", "S3T3". The default value is "L1T1".
   --bitrate             bitrate (bits in second) of a produced bitstram.
                         If not specified, a proper value for the video
                         resolution is selected by the test.
@@ -176,6 +177,7 @@ class VideoEncoderTest : public ::testing::Test {
       VideoFrameValidator::GetModelFrameCB get_model_frame_cb,
       absl::optional<size_t> spatial_layer_index_to_decode,
       absl::optional<size_t> temporal_layer_index_to_decode,
+      SVCInterLayerPredMode inter_layer_pred_mode,
       const std::vector<gfx::Size>& spatial_layer_resolutions) {
     std::vector<std::unique_ptr<VideoFrameProcessor>> video_frame_processors;
 
@@ -189,12 +191,15 @@ class VideoEncoderTest : public ::testing::Test {
       base::FilePath::StringType output_file_prefix;
       if (spatial_layer_index_to_decode) {
         output_file_prefix +=
-            FILE_PATH_LITERAL("SL") +
+            (inter_layer_pred_mode == SVCInterLayerPredMode::kOff &&
+                     spatial_layer_resolutions.size() > 1
+                 ? FILE_PATH_LITERAL("S")
+                 : FILE_PATH_LITERAL("L")) +
             base::NumberToString(*spatial_layer_index_to_decode);
       }
       if (temporal_layer_index_to_decode) {
         output_file_prefix +=
-            FILE_PATH_LITERAL("TL") +
+            FILE_PATH_LITERAL("T") +
             base::NumberToString(*temporal_layer_index_to_decode);
       }
 
@@ -266,7 +271,7 @@ class VideoEncoderTest : public ::testing::Test {
 
     bitstream_processors.emplace_back(DecoderBufferValidator::Create(
         config.output_profile, visible_rect, config.num_spatial_layers,
-        config.num_temporal_layers));
+        config.num_temporal_layers, config.inter_layer_pred_mode));
 
     raw_data_helper_ = std::make_unique<RawDataHelper>(video, g_env->Reverse());
     if (!spatial_layer_resolutions.empty()) {
@@ -292,7 +297,7 @@ class VideoEncoderTest : public ::testing::Test {
               video, decoder_config, config.num_frames_to_encode - 1,
               validator_threshold, get_model_frame_cb,
               spatial_layer_index_to_decode, temporal_layer_index_to_decode,
-              spatial_layer_resolutions));
+              config.inter_layer_pred_mode, spatial_layer_resolutions));
           LOG_ASSERT(bitstream_processors.back());
         }
       }
@@ -313,7 +318,7 @@ class VideoEncoderTest : public ::testing::Test {
       bitstream_processors.emplace_back(CreateBitstreamValidator(
           video, decoder_config, config.num_frames_to_encode - 1,
           validator_threshold, get_model_frame_cb, absl::nullopt, absl::nullopt,
-          /*spatial_layer_resolutions=*/{}));
+          config.inter_layer_pred_mode, /*spatial_layer_resolutions=*/{}));
       LOG_ASSERT(bitstream_processors.back());
     }
     return bitstream_processors;
@@ -403,6 +408,38 @@ TEST_F(VideoEncoderTest, ForceKeyFrame) {
   EXPECT_TRUE(encoder->WaitForFlushDone());
   // Check if there are two key frames, first frame and one on ForceKeyFrame().
   EXPECT_EQ(encoder->GetEventCount(VideoEncoder::kKeyFrame), 2u);
+  EXPECT_EQ(encoder->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(encoder->GetFrameReleasedCount(), config.num_frames_to_encode);
+  EXPECT_TRUE(encoder->WaitForBitstreamProcessors());
+}
+
+// Test forcing key frame to the first and second frames.
+TEST_F(VideoEncoderTest, ForceTheFirstAndSecondKeyFrames) {
+  if (g_env->SpatialLayers().size() > 1) {
+    GTEST_SKIP() << "Skip SHMEM input test cases in spatial SVC encoding";
+  }
+
+  auto config = GetDefaultConfig();
+  CHECK_GT(config.num_frames_to_encode, 1u);
+
+  // The two keyframes impairs the video quality. We use the default tolerance
+  // in order to keep the psnr threshold high that is specified by
+  // --psnr_threshold in video.EncodeAccel tast tests.
+  auto encoder = CreateVideoEncoder(g_env->Video(), config,
+                                    PSNRVideoFrameValidator::kDefaultTolerance);
+
+  // Encode until the first frame and request force_keyframe.
+  encoder->EncodeUntil(VideoEncoder::kFrameReleased, 1u);
+  EXPECT_TRUE(encoder->WaitUntilIdle());
+  encoder->ForceKeyFrame();
+  // Check if the first and second frames are key frames.
+  encoder->EncodeUntil(VideoEncoder::kBitstreamReady, 2u);
+  EXPECT_TRUE(encoder->WaitUntilIdle());
+  EXPECT_EQ(encoder->GetEventCount(VideoEncoder::kKeyFrame), 2u);
+
+  // Encode until the end of stream.
+  encoder->Encode();
+  EXPECT_TRUE(encoder->WaitForFlushDone());
   EXPECT_EQ(encoder->GetFlushDoneCount(), 1u);
   EXPECT_EQ(encoder->GetFrameReleasedCount(), config.num_frames_to_encode);
   EXPECT_TRUE(encoder->WaitForBitstreamProcessors());

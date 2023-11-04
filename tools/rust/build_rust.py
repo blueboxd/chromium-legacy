@@ -79,10 +79,18 @@ EXCLUDED_TESTS = [
     # https://github.com/rust-lang/rust/issues/94322 large output from
     # compiletests is breaking json parsing of the results.
     os.path.join('tests', 'ui', 'numeric', 'numeric-cast.rs'),
+    # https://github.com/rust-lang/rust/pull/116018
+    # disable temporarily for the clang roll
+    os.path.join('tests', 'codegen', 'simd', 'simd-wide-sum.rs'),
 ]
 EXCLUDED_TESTS_WINDOWS = [
     # https://github.com/rust-lang/rust/issues/96464
     os.path.join('tests', 'codegen', 'vec-shrink-panik.rs'),
+]
+EXCLUDED_TESTS_MAC = [
+    # https://crbug.com/1479875 This fails on Mac. It relates to the large code
+    # model which we don't use, so suppress it for now.
+    os.path.join('tests', 'ui', 'thread-local', 'thread-local-issue-37508.rs'),
 ]
 
 CLANG_SCRIPTS_DIR = os.path.join(CHROMIUM_DIR, 'tools', 'clang', 'scripts')
@@ -477,6 +485,10 @@ def GetTestArgs():
         for excluded in EXCLUDED_TESTS_WINDOWS:
             args.append('--exclude')
             args.append(excluded)
+    if sys.platform == 'darwin':
+        for excluded in EXCLUDED_TESTS_MAC:
+            args.append('--exclude')
+            args.append(excluded)
     return args
 
 
@@ -733,12 +745,6 @@ def main():
 
     if not args.skip_checkout:
         CheckoutGitRepo('Rust', RUST_GIT_URL, checkout_revision, RUST_SRC_DIR)
-
-        # NOTE(b/276962533): We patch in riscv64-linux-android support
-        # (https://github.com/rust-lang/rust/commit/0081d64e4b8413219ddec5d1).
-        # TODO(crbug.com/1472655): Remove this cherrypicking after the
-        # cherrypicked commit is included in the checkout.
-        GitCherryPick(RUST_SRC_DIR, '0081d64e4b8413219ddec5d1013d522edbf132')
 
         path = FetchBetaPackage('cargo', checkout_revision)
         if sys.platform == 'win32':

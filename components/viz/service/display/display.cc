@@ -613,7 +613,12 @@ namespace {
 
 DBG_FLAG_FBOOL("frame.debug.non_root_passes", debug_non_root_passes)
 
-void DebugDrawFrame(const AggregatedFrame& frame) {
+DBG_FLAG_FBOOL("frame.render_pass.non_root_passes_in_root_space",
+               non_root_passes_in_root_space)
+
+void DebugDrawFrame(
+    const AggregatedFrame& frame,
+    const std::unique_ptr<DisplayResourceProvider>& resource_provider) {
   bool is_debugger_connected = false;
   DBG_CONNECTED_OR_TRACING(is_debugger_connected);
   if (!is_debugger_connected) {
@@ -626,10 +631,16 @@ void DebugDrawFrame(const AggregatedFrame& frame) {
       continue;
     }
 
+    auto output_rect = render_pass->output_rect;
+    auto damage_rect = render_pass->damage_rect;
+    if (non_root_passes_in_root_space()) {
+      output_rect = render_pass->transform_to_root_target.MapRect(output_rect);
+      damage_rect = render_pass->transform_to_root_target.MapRect(damage_rect);
+    }
+
     DBG_DRAW_RECT_OPT("frame.render_pass.output_rect", DBG_OPT_BLUE,
-                      render_pass->output_rect);
-    DBG_DRAW_RECT_OPT("frame.render_pass.damage", DBG_OPT_RED,
-                      render_pass->damage_rect);
+                      output_rect);
+    DBG_DRAW_RECT_OPT("frame.render_pass.damage", DBG_OPT_RED, damage_rect);
 
     DBG_LOG_OPT("frame.render_pass.meta", DBG_OPT_BLUE,
                 "Render pass id=%" PRIu64
@@ -646,8 +657,13 @@ void DebugDrawFrame(const AggregatedFrame& frame) {
 
     for (auto* quad : render_pass->quad_list) {
       auto* sqs = quad->shared_quad_state;
-      auto& transform = sqs->quad_to_target_transform;
-      auto display_rect = transform.MapRect(gfx::RectF(quad->rect));
+      auto quad_to_root_transform = sqs->quad_to_target_transform;
+      if (non_root_passes_in_root_space()) {
+        quad_to_root_transform.PostConcat(
+            render_pass->transform_to_root_target);
+      }
+      auto display_rect =
+          quad_to_root_transform.MapRect(gfx::RectF(quad->rect));
       DBG_DRAW_TEXT_OPT("frame.render_pass.material", DBG_OPT_GREEN,
                         display_rect.origin(),
                         base::NumberToString(static_cast<int>(quad->material)));
@@ -660,6 +676,22 @@ void DebugDrawFrame(const AggregatedFrame& frame) {
           "frame.render_pass.resource_id", DBG_OPT_RED, display_rect.origin(),
           base::NumberToString(quad->resources.ids[0].GetUnsafeValue()));
 
+      if (quad->resources.ids[0] != kInvalidResourceId) {
+        DBG_DRAW_TEXT_OPT(
+            "frame.render_pass.buf_format", DBG_OPT_BLUE, display_rect.origin(),
+            base::NumberToString(static_cast<int>(
+                resource_provider->GetBufferFormat(quad->resources.ids[0]))));
+        DBG_DRAW_TEXT_OPT(
+            "frame.render_pass.buf_sampled_color_space", DBG_OPT_RED,
+            display_rect.origin(),
+            resource_provider->GetSamplerColorSpace(quad->resources.ids[0])
+                .ToString());
+        DBG_DRAW_TEXT_OPT(
+            "frame.render_pass.buf_overlay_color_space", DBG_OPT_GREEN,
+            display_rect.origin(),
+            resource_provider->GetOverlayColorSpace(quad->resources.ids[0])
+                .ToString());
+      }
       DBG_DRAW_RECT("frame.render_pass.quad", display_rect);
     }
   }
@@ -794,7 +826,7 @@ bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
       VLOG(3) << "Post-aggregation\n" << frame.ToString();
     }
   }
-  DebugDrawFrame(frame);
+  DebugDrawFrame(frame, resource_provider_);
 
   if (frame.delegated_ink_metadata) {
     TRACE_EVENT_INSTANT1(

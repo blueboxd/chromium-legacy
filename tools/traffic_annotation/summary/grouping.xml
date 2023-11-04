@@ -28,7 +28,6 @@ after discussions on the right group.
       <annotation id="minidump_uploader_android"/>
       <annotation id="oma_download_handler_android"/>
       <annotation id="partner_bookmarks_reader_get_favicon"/>
-      <annotation id="permission_request_creator"/>
       <annotation id="rlz"/>
       <annotation id="webapk_create"/>
       <annotation id="webapk_create_for_service"/>
@@ -38,7 +37,6 @@ after discussions on the right group.
     <sender name="Feed Library">
       <annotation id="interest_feedv2_send"/>
       <annotation id="interest_feedv2_image_send"/>
-      <annotation id="interest_feedv2_resource_send"/>
     </sender>
     <sender name="Phone as a Security Key">
       <annotation id="cablev2_websocket_from_client"/>
@@ -99,11 +97,11 @@ after discussions on the right group.
       <annotation id="printing_oauth2_token_exchange_request"/>
       <annotation id="printing_server_printers_query"/>
     </sender>
-    <sender name="Device Activity">
-      <annotation id="device_activity_client_health_check"/>
-      <annotation id="device_activity_client_check_membership"/>
-      <annotation id="device_activity_client_check_in"/>
+    <sender name="Report using PSM">
+      <annotation id="report_check_membership"/>
+      <annotation id="report_check_in"/>
     </sender>
+    <sender name="Device Activity"/>
     <sender name="Enhanced Network TTS">
       <annotation id="enhanced_network_tts"/>
     </sender>
@@ -225,9 +223,6 @@ after discussions on the right group.
       <annotation id="download_bubble_retry_download"/>
       <annotation id="quick_answers_loader"/>
       <annotation id="chrome_search_suggest_service"/>
-      <annotation id="chrome_commerce_subscriptions_create"/>
-      <annotation id="chrome_commerce_subscriptions_delete"/>
-      <annotation id="chrome_commerce_subscriptions_get"/>
       <annotation id="cryptauth_get_my_devices"/>
       <annotation id="chrome_commerce_waa_fetcher"/>
       <annotation id="shopping_list_ui_image_fetcher"/>
@@ -312,9 +307,7 @@ after discussions on the right group.
     </sender>
   </group>
   <group name="Apps and Content" hidden="true">
-    <sender name="Chrome Cleanup">
-      <annotation id="chrome_cleaner"/>
-    </sender>
+    <sender name="Chrome Cleanup"/>
     <sender name="Extension and App Management">
       <annotation id="chrome_apps_socket_api"/>
       <annotation id="extension_blacklist"/>
@@ -364,6 +357,19 @@ after discussions on the right group.
       <annotation id="tailored_security_service"/>
     </sender>
   </group>
+  <group name="Chrome Commerce" hidden="true">
+    <sender name="Parcel Tracking">
+      <annotation id="chrome_commerce_parcels_status"/>
+      <annotation id="chrome_commerce_start_tracking_parcel"/>
+      <annotation id="chrome_commerce_stop_tracking_parcel"/>
+      <annotation id="chrome_commerce_stop_tracking_all_parcel"/>
+    </sender>
+    <sender name="Subscription">
+      <annotation id="chrome_commerce_subscriptions_create"/>
+      <annotation id="chrome_commerce_subscriptions_delete"/>
+      <annotation id="chrome_commerce_subscriptions_get"/>
+    </sender>
+  </group>
   <group name="Cookieless Ads" hidden="true">
     <sender name="Conversion Measurements">
       <annotation id="conversion_measurement_report"/>
@@ -393,10 +399,8 @@ after discussions on the right group.
       <annotation id="fedcm_account_profile_image_fetcher"/>
       <annotation id="gaia_auth_check_connection_info"/>
       <annotation id="gaia_auth_exchange_device_id"/>
-      <annotation id="gaia_auth_fetch_for_uber"/>
       <annotation id="gaia_auth_list_accounts"/>
       <annotation id="gaia_auth_log_out"/>
-      <annotation id="gaia_auth_merge_sessions"/>
       <annotation id="gaia_auth_revoke_token"/>
       <annotation id="gaia_auth_rotate_bound_cookies"/>
       <annotation id="gaia_auth_multilogin"/>
@@ -566,6 +570,14 @@ after discussions on the right group.
     </sender>
     <sender name="Whats New">
       <annotation id="whats_new_handler"/>
+    </sender>
+  </group>
+  <group name="PlusAddresses" hidden="true">
+    <sender name="PlusAddresses">
+      <annotation id="plus_address_creation"/>
+      <annotation id="get_all_plus_addresses"/>
+      <annotation id="plus_address_reservation"/>
+      <annotation id="plus_address_confirmation"/>
     </sender>
   </group>
 </groups>

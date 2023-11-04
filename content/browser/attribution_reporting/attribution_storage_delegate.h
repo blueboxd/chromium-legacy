@@ -12,6 +12,7 @@
 #include "base/sequence_checker.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
+#include "base/types/expected.h"
 #include "components/attribution_reporting/source_type.mojom-forward.h"
 #include "content/browser/attribution_reporting/attribution_config.h"
 #include "content/browser/attribution_reporting/attribution_reporting.mojom-forward.h"
@@ -34,7 +35,6 @@ namespace content {
 
 class AttributionReport;
 class AttributionTrigger;
-class CommonSourceInfo;
 class StoredSource;
 
 // Storage delegate that can supplied to extend basic attribution storage
@@ -62,6 +62,29 @@ class CONTENT_EXPORT AttributionStorageDelegate {
   // non-empty vector -> `StoredSource::AttributionLogic::kFalsely`
   using RandomizedResponse = absl::optional<std::vector<FakeReport>>;
 
+  class CONTENT_EXPORT RandomizedResponseData {
+   public:
+    RandomizedResponseData(double rate, RandomizedResponse);
+
+    ~RandomizedResponseData();
+
+    RandomizedResponseData(const RandomizedResponseData&);
+    RandomizedResponseData& operator=(const RandomizedResponseData&);
+
+    RandomizedResponseData(RandomizedResponseData&&);
+    RandomizedResponseData& operator=(RandomizedResponseData&&);
+
+    double rate() const { return rate_; }
+
+    const RandomizedResponse& response() const { return response_; }
+
+   private:
+    double rate_;
+    RandomizedResponse response_;
+  };
+
+  struct ExceedsChannelCapacityLimit {};
+
   struct NullAggregatableReport {
     base::Time fake_source_time;
   };
@@ -88,14 +111,6 @@ class CONTENT_EXPORT AttributionStorageDelegate {
   // time.
   virtual base::Time GetAggregatableReportTime(
       base::Time trigger_time) const = 0;
-
-  // This limit is used to determine if a source is allowed to schedule
-  // a new report. When a source reaches this limit it is
-  // marked inactive and no new reports will be created for it.
-  // Sources will be checked against this limit after they schedule a new
-  // report.
-  int GetDefaultAttributionsPerSource(
-      attribution_reporting::mojom::SourceType) const;
 
   // These limits are designed solely to avoid excessive disk / memory usage.
   // In particular, they do not correspond with any privacy parameters.
@@ -159,32 +174,21 @@ class CONTENT_EXPORT AttributionStorageDelegate {
   // by`GetRandomizedResponse()`.Must be in the range [0, 1] and remain constant
   // for the lifetime of the delegate for calls with identical inputs.
   virtual double GetRandomizedResponseRate(
-      const attribution_reporting::EventReportWindows& event_report_windows,
       attribution_reporting::mojom::SourceType,
+      const attribution_reporting::EventReportWindows&,
       int max_event_level_reports) const = 0;
 
+  using GetRandomizedResponseResult =
+      base::expected<RandomizedResponseData, ExceedsChannelCapacityLimit>;
+
   // Returns a randomized response for the given source, consisting of zero or
-  // more fake reports. Returns `absl::nullopt` to indicate that the response
-  // should not be randomized.
-  virtual RandomizedResponse GetRandomizedResponse(
-      const CommonSourceInfo& source,
-      const attribution_reporting::EventReportWindows& event_report_windows,
-      base::Time source_time,
+  // more fake reports. Returns an error if the channel capacity exceeds the
+  // limit.
+  virtual GetRandomizedResponseResult GetRandomizedResponse(
+      attribution_reporting::mojom::SourceType,
+      const attribution_reporting::EventReportWindows&,
       int max_event_level_reports,
-      double randomized_response_rate) = 0;
-
-  // Computes the capacity of the q-ary symmetric channel.
-  virtual double ComputeChannelCapacity(
-      const CommonSourceInfo& source,
-      const attribution_reporting::EventReportWindows& event_report_windows,
-      base::Time source_time,
-      int max_event_level_reports,
-      double randomized_response_rate) = 0;
-
-  virtual base::Time GetExpiryTime(
-      absl::optional<base::TimeDelta> declared_expiry,
-      base::Time source_time,
-      attribution_reporting::mojom::SourceType) = 0;
+      base::Time source_time) const = 0;
 
   virtual absl::optional<base::Time> GetReportWindowTime(
       absl::optional<base::TimeDelta> declared_window,

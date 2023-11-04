@@ -236,6 +236,24 @@ void BrowserDesktopWindowTreeHostLacros::OnImmersiveModeChanged(bool enabled) {
   browser_view_->browser()->FullscreenTopUIStateChanged();
 }
 
+void BrowserDesktopWindowTreeHostLacros::OnFullscreenModeChanged() {
+  // Finalizing full screen mode transition after Ash has also asynchronously
+  // entered the full screen mode state for this window.
+  browser_view_->FullscreenStateChanged();
+}
+
+void BrowserDesktopWindowTreeHostLacros::OnOverviewModeChanged(
+    bool in_overview) {
+  DesktopWindowTreeHostLacros::OnOverviewModeChanged(in_overview);
+
+  // Window corner radius depends on weather the window is in overview mode or
+  // not. Once the overview property has been updated, the browser window
+  // corners needs to be updated.
+  // See `chromeos::GetFrameCornerRadius()` for more details.
+  // TODO(b/301501363): Rename to UpdateWindowHints.
+  UpdateFrameHints();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserDesktopWindowTreeHostLacros,
 //     DesktopWindowTreeHostPlatform implementation:

@@ -153,28 +153,23 @@ class CORE_EXPORT CanvasRenderingContext
   CanvasRenderingContextHost* Host() const { return host_; }
   virtual SkColorInfo CanvasRenderingContextSkColorInfo() const;
 
-  virtual scoped_refptr<StaticBitmapImage> GetImage(
-      CanvasResourceProvider::FlushReason) = 0;
+  virtual scoped_refptr<StaticBitmapImage> GetImage(FlushReason) = 0;
   virtual bool IsComposited() const = 0;
-  virtual bool IsAccelerated() const = 0;
   virtual bool IsOriginTopLeft() const {
     // Canvas contexts have the origin of coordinates on the top left corner.
     // Accelerated resources (e.g. GPU textures) have their origin of
-    // coordinates in the upper left corner.
-    return !IsAccelerated();
+    // coordinates in the bottom left corner.
+    return Host()->GetRasterMode() == RasterMode::kCPU;
   }
   virtual bool ShouldAntialias() const { return false; }
-  // Indicates whether the entire tab is backgrounded. Passing false
-  // to this method may cause some canvas context implementations to
-  // aggressively discard resources, which is not desired for canvases
+  // Called when the entire tab is backgrounded or unbackgrounded.
+  // The page's visibility status can be queried at any time via
+  // Host()->IsPageVisible().
+  // Some canvas context implementations may aggressively discard
+  // when the page is not visible, which is not desired for canvases
   // which are being rendered to, just not being displayed in the
   // page.
-  virtual void SetIsInHiddenPage(bool) = 0;
-  // Indicates whether the canvas is being displayed in the page;
-  // i.e., doesn't have display:none, and is visible. The initial
-  // value for all context types is assumed to be false; this will be
-  // called when the context is first displayed.
-  virtual void SetIsBeingDisplayed(bool) = 0;
+  virtual void PageVisibilityChanged() = 0;
   virtual bool isContextLost() const { return true; }
   // TODO(fserb): remove AsV8RenderingContext and AsV8OffscreenRenderingContext.
   virtual V8UnionCanvasRenderingContext2DOrGPUCanvasContextOrImageBitmapRenderingContextOrWebGL2RenderingContextOrWebGLRenderingContext*
@@ -240,7 +235,7 @@ class CORE_EXPORT CanvasRenderingContext
   // This method gets called at the end of script tasks that modified
   // the contents of the canvas (called didDraw). It marks the completion
   // of a presentable frame.
-  virtual void FinalizeFrame(CanvasResourceProvider::FlushReason) {}
+  virtual void FinalizeFrame(FlushReason) {}
 
   // Thread::TaskObserver implementation
   void DidProcessTask(const base::PendingTask&) override;

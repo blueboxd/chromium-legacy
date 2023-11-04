@@ -159,6 +159,7 @@ id<GREYMatcher> notPracticallyVisible() {
   config.features_disabled.push_back(kEnableFeedAblation);
   // TODO(crbug.com/1403077): Scrolling issues when promo is enabled.
   config.features_disabled.push_back(kEnableDiscoverFeedTopSyncPromo);
+  config.features_disabled.push_back(kIOSSetUpList);
   return config;
 }
 
@@ -175,8 +176,7 @@ id<GREYMatcher> notPracticallyVisible() {
 }
 
 - (void)tearDown {
-  [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
-                                error:nil];
+  [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait error:nil];
   [SearchEnginesAppInterface setSearchEngineTo:self.defaultSearchEngine];
 
   [super tearDown];
@@ -194,7 +194,6 @@ id<GREYMatcher> notPracticallyVisible() {
 - (void)testCollectionShortcuts {
   AppLaunchConfiguration config = self.appConfigurationForTestCase;
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
-
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
   // Check the Bookmarks.
@@ -642,6 +641,15 @@ id<GREYMatcher> notPracticallyVisible() {
 // and moved up, the scroll position restored is the position before the omnibox
 // is selected.
 - (void)testPositionRestoredWithShiftingOffset {
+  // With Magic Stack and Segmentation enabled, the Magic Stack is added later
+  // to the View Hierarchy. Thus, -heightAboveFeed is inaccurate and is greater
+  // than the saved scrollState, so the scroll offset is just set to the top of
+  // the surface.
+  AppLaunchConfiguration config = self.appConfigurationForTestCase;
+  config.relaunch_policy = ForceRelaunchByCleanShutdown;
+  config.features_disabled.push_back(kMagicStack);
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
+
   // Scroll a bit to have a position to restore.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
       performAction:grey_scrollInDirection(kGREYDirectionDown, 20)];
@@ -677,6 +685,18 @@ id<GREYMatcher> notPracticallyVisible() {
     EARL_GREY_TEST_SKIPPED(
         @"Pinning Fake Omnibox to top of surface is only on iphone");
   }
+
+  // With Magic Stack and Segmentation enabled, the Magic Stack is added later
+  // to the View Hierarchy. Thus, -heightAboveFeed is inaccurate and is greater
+  // than the saved scrollState, so the scroll offset is just set to the top of
+  // the surface.
+  AppLaunchConfiguration config = self.appConfigurationForTestCase;
+  config.relaunch_policy = ForceRelaunchByCleanShutdown;
+  config.features_disabled.push_back(kMagicStack);
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
+  [[self class] closeAllTabs];
+  [ChromeEarlGrey openNewTab];
+
   // Scroll enough to naturally pin the omnibox to the top.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
       performAction:grey_swipeFastInDirection(kGREYDirectionUp)];
@@ -1148,6 +1168,13 @@ id<GREYMatcher> notPracticallyVisible() {
 
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
+                                  error:nil];
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
+        performAction:grey_scrollInDirection(kGREYDirectionDown, 100)];
+  }
+
   // Verify Most Visited Tiles module title is visible.
   [[EarlGrey selectElementWithMatcher:
                  grey_accessibilityID(l10n_util::GetNSString(
@@ -1158,7 +1185,7 @@ id<GREYMatcher> notPracticallyVisible() {
   [[EarlGrey
       selectElementWithMatcher:
           grey_accessibilityID(kMagicStackScrollViewAccessibilityIdentifier)]
-      performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
+      performAction:grey_scrollInDirection(kGREYDirectionRight, 343)];
 
   // Verify Shortcuts module title is visible.
   [[EarlGrey selectElementWithMatcher:

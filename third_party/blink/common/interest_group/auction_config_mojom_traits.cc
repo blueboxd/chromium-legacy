@@ -238,16 +238,26 @@ bool StructTraits<blink::mojom::AuctionAdConfigDataView, blink::AuctionConfig>::
       !data.ReadAuctionAdConfigNonSharedParams(&out->non_shared_params) ||
       !data.ReadDirectFromSellerSignals(&out->direct_from_seller_signals) ||
       !data.ReadPerBuyerExperimentGroupIds(
-          &out->per_buyer_experiment_group_ids)) {
+          &out->per_buyer_experiment_group_ids) ||
+      !data.ReadAggregationCoordinatorOrigin(
+          &out->aggregation_coordinator_origin)) {
     return false;
   }
 
   out->expects_additional_bids = data.expects_additional_bids();
+  // An auction that expects additional bids must have an auction nonce provided
+  // on the config.
   if (out->expects_additional_bids &&
       !out->non_shared_params.auction_nonce.has_value()) {
     return false;
   }
 
+  // An auction that expects additional bids must have the anticipated buyers of
+  // those additional bids included in `interest_group_buyers`. This is
+  // necessary so that the negative interest groups of those buyers are loaded,
+  // and, as such, the auction rejects any additional bid whose buyer is not
+  // included in `interest_group_buyers`. This asserts the weaker expectation
+  // that the config must provide at least some `interest_group_buyers`.
   if (out->expects_additional_bids &&
       (!out->non_shared_params.interest_group_buyers.has_value() ||
        out->non_shared_params.interest_group_buyers->empty())) {

@@ -100,6 +100,7 @@
 <translation id="2653659639078652383">सबमिट करा</translation>
 <translation id="2677748264148917807">सोडा</translation>
 <translation id="2678468611080193228">तृतीय पक्ष कुकीना तात्पुरती अनुमती देऊन पहा, ज्यामुळे कमी संरक्षण मिळेल, पण साइटची वैशिष्ट्ये काम करण्याची अधिक शक्यता आहे</translation>
+<translation id="2683434792633810741">हटवायचे आणि रीसेट करायचे आहे का?</translation>
 <translation id="2687403674020088961">सर्व कुकी ब्लॉक करा (शिफारस केली जात नाही)</translation>
 <translation id="2713106313042589954">कॅमेरा बंद करा</translation>
 <translation id="2717722538473713889">ईमेल ॲड्रेस</translation>
@@ -179,6 +180,7 @@
 <translation id="4008040567710660924">विशिष्ट साइटसाठी कुकीना अनुमती द्या.</translation>
 <translation id="4046123991198612571">पुढील ट्रॅक</translation>
 <translation id="4053720452172726777">Google Chrome कस्टमाइझ करा आणि नियंत्रित करा</translation>
+<translation id="4149890623864272035">तुम्हाला नक्की कुकीसह सर्व स्थानिक डेटा हटवायचा आणि या वेबसाइटसाठी सर्व परवानग्या रीसेट करायच्या आहेत का?</translation>
 <translation id="4149994727733219643">वेब पेजसाठी सोपा केलेला व्ह्यू</translation>
 <translation id="4151930093518524179">डीफॉल्ट झूम</translation>
 <translation id="4165986682804962316">साइट सेटिंग्ज</translation>
@@ -196,6 +198,7 @@
 <translation id="4412992751769744546">तृतीय-पक्ष कुकीजना अनुमती द्या</translation>
 <translation id="4428065317363009941">जाहिरात पर्सनलायझेशन</translation>
 <translation id="4434045419905280838">पॉप-अप आणि रीडिरेक्ट</translation>
+<translation id="443552056913301231">ही कृती कुकीसह सर्व स्थानिक डेटा हटवेल आणि <ph name="ORIGIN" /> साठी सर्व परवानग्या रीसेट करेल</translation>
 <translation id="4468959413250150279">विशिष्ट साइटसाठी ध्वनी म्यूट करा.</translation>
 <translation id="4475912480633855319">{COOKIES,plural, =1{# कुकी}other{# कुकी}}</translation>
 <translation id="4478158430052450698">वेगवेगळ्या साइटसाठी झूम कस्टमाइझ करणे सोपे करा</translation>
@@ -205,6 +208,7 @@
 <translation id="4566417217121906555">मायक्रोफोन म्यूट करा</translation>
 <translation id="4570913071927164677">तपशील</translation>
 <translation id="4598549027014564149">गुप्त मोडमध्ये असताना सर्व साइटवरील, अगदी संबंधित साइटवरील तुमची ब्राउझिंग अ‍ॅक्टिव्हिटी पाहण्यासाठी साइट तुमच्या कुकी वापरू शकत नाहीत. जाहिराती पर्सनलाइझ करणे यासारख्या गोष्टींसाठी तुमची ब्राउझिंग अ‍ॅक्टिव्हिटी वापरली जात नाही. काही साइटवरील वैशिष्ट्ये कदाचित काम करणार नाहीत.</translation>
+<translation id="4644713492825682049">हटवा आणि रीसेट करा</translation>
 <translation id="4645575059429386691">आपल्या पालकांद्वारे व्यवस्थापित करण्यात आले</translation>
 <translation id="4670064810192446073">आभासी वास्तविकता</translation>
 <translation id="4751476147751820511">मोशन किंवा प्रकाश सेन्सर</translation>
@@ -235,6 +239,7 @@
 <translation id="5216942107514965959">आज शेवटची भेट दिली</translation>
 <translation id="5225463052809312700">कॅमेरा सुरू करा</translation>
 <translation id="5234764350956374838">डिसमिस करा</translation>
+<translation id="5246825184569358663">ही कृती कुकीसह सर्व स्थानिक डेटा हटवेल आणि <ph name="DOMAIN" /> त्याच्या अंतर्गत असलेल्या सर्व साइटसाठी सर्व परवानग्या रीसेट करेल</translation>
 <translation id="5264323282659631142">'<ph name="CHIP_LABEL" />' काढून टाका</translation>
 <translation id="528192093759286357">शीर्ष पासून ड्रॅग करा आणि फुलस्क्रीन मधून बाहेर पडण्यासाठी परत बटणास स्पर्श करा.</translation>
 <translation id="5300589172476337783">दर्शवा</translation>
@@ -278,11 +283,11 @@
 <translation id="5922853908706496913">तुमची स्क्रीन शेअर करत आहे</translation>
 <translation id="5922967540311291836">तृतीय पक्ष कुकी ब्लॉक करा:</translation>
 <translation id="5939518447894949180">रीसेट करा</translation>
+<translation id="5964247741333118902">एंबेड केलेला आशय</translation>
 <translation id="5968921426641056619">वेब अ‍ॅड्रेस एंटर करा</translation>
 <translation id="5975083100439434680">झूम कमी करा</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">या साइटला तुमच्‍या डिव्हाइसचा असलेला अ‍ॅक्सेस नियंत्रित करा</translation>
-<translation id="6018815681665454784">साफ आणि रीसेट करायचे आहे का?</translation>
 <translation id="6040143037577758943">बंद करा</translation>
 <translation id="6042308850641462728">अधिक</translation>
 <translation id="6064125863973209585">डाउनलोड पूर्ण झाले</translation>
@@ -294,6 +299,7 @@
 <translation id="6192792657125177640">अपवाद</translation>
 <translation id="6196640612572343990">तृतीय पक्ष कुकी ब्लॉक करा</translation>
 <translation id="6205314730813004066">जाहिरातींशी संबंधित गोपनीयता</translation>
+<translation id="6207207788774442484">डेटा हटवा आणि परवानग्या रीसेट करा</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> पर्याय</translation>
 <translation id="6231752747840485235">'<ph name="APP_NAME" />' अनइंस्टॉल करायचे आहे का?</translation>
 <translation id="6262191102408817757">तुमच्या शेवटच्या टॅबवर आधारित</translation>
@@ -302,13 +308,11 @@
 <translation id="6295158916970320988">सर्व साइट</translation>
 <translation id="6320088164292336938">कंपन</translation>
 <translation id="6367753977865761591">विशिष्ट साइटसाठी तृतीय पक्ष साइन-इन ब्लॉक करा.</translation>
-<translation id="6388207532828177975">साफ आणि रीसेट करा</translation>
 <translation id="6398765197997659313">पूर्ण स्क्रीनमधून निर्गमन करा</translation>
 <translation id="640163077447496506">आज एक्स्पायर होईल</translation>
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">साइटना तुमचे आभासी वास्तविकता डिव्हाइस आणि डेटा वापरण्यापासून ब्लॉक करा</translation>
 <translation id="6447842834002726250">कुकीज</translation>
-<translation id="6467852467360539617">डेटा साफ करा आणि परवानग्या रीसेट करा</translation>
 <translation id="6500423977866688905">विंडो अरुंद असते, तेव्हा मोबाइल दृश्याची विनंती करा</translation>
 <translation id="6527303717912515753">शेअर करा</translation>
 <translation id="652937045869844725">तृतीय पक्ष कुकीना अनुमती देऊन पहा, ज्यामुळे कमी संरक्षण मिळेल, पण साइटची वैशिष्ट्ये काम करण्याची अधिक शक्यता आहे</translation>
@@ -381,11 +385,9 @@
 <translation id="7846076177841592234">निवड रद्द करा</translation>
 <translation id="7882806643839505685">विशिष्ट साइटसाठी ध्वनीची परवानगी द्या.</translation>
 <translation id="789180354981963912">गुप्त मोडमधील तृतीय पक्ष कुकी ब्लॉक करा:</translation>
-<translation id="7895868624847501462">ही कृती कुकीसह सर्व स्थानिक डेटा साफ करेल आणि <ph name="DOMAIN" />व त्याखालील सर्व साइटसाठी सर्व परवानग्या रीसेट करेल</translation>
 <translation id="7940722705963108451">मला आठवण करून द्या</translation>
 <translation id="7974024493641668069">{COUNT,plural, =1{<ph name="FPS_OWNER" /> च्या साइटच्या गटातीतल <ph name="FPS_MEMBERS_COUNT" /> साइट तुमची अ‍ॅक्टिव्हिटी पाहू शकते}other{<ph name="FPS_OWNER" /> च्या साइटच्या गटातीतल <ph name="FPS_MEMBERS_COUNT" /> साइट तुमची अ‍ॅक्टिव्हिटी पाहू शकतात}}</translation>
 <translation id="7986741934819883144">संपर्क निवडा</translation>
-<translation id="7999064672810608036">तुम्ही कुकीजसह, सर्व स्थानिक डेटा साफ करू इच्छिता आणि या वेबसाइटसाठी सर्व परवानग्या रीसेट करू इच्छिता?</translation>
 <translation id="8007176423574883786">या डिव्हाइससाठी बंद करा</translation>
 <translation id="802154636333426148">डाउनलोड अयशस्वी झाले</translation>
 <translation id="8042586301629853791">यानुसार क्रमाने लावा:</translation>
@@ -409,7 +411,6 @@
 <translation id="8284326494547611709">मथळे</translation>
 <translation id="8300705686683892304">ॲपद्वारे व्यवस्थापित</translation>
 <translation id="8324158725704657629">पुन्हा विचारू नका</translation>
-<translation id="8338445138528827481">ही कृती कुकीसह सर्व स्थानिक डेटा साफ करेल आणि <ph name="ORIGIN" /> साठी सर्व परवानग्या रीसेट करेल</translation>
 <translation id="8362795839483915693">तुम्ही भेट देता त्या साइटवर झूम इन किंवा आउट करू शकता</translation>
 <translation id="8372893542064058268">विशिष्ट साइटसाठी पार्श्वभूमी संकालनासाठी अनुमती द्या.</translation>
 <translation id="8376384591331888629">या साइटवरील तृतीय-पक्ष कुकीच्या समावेशासह</translation>

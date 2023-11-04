@@ -280,7 +280,6 @@
 <translation id="3226405216343213872">ກຳລັງຊອກຫາເຄື່ອງສະແກນ</translation>
 <translation id="3226657629376379887">ເມນູຄຳສັ່ງໂຄງຮ່າງ</translation>
 <translation id="3246869037381808805">ວຽກພິມທີ່ເກົ່າກວ່າ 1 ມື້ຈະຖືກລຶບອອກ</translation>
-<translation id="3248223063252096240">ພິເສດສະເພາະຂອງ <ph name="PRODUCT_NAME" /></translation>
 <translation id="3268178239013324452">ບໍ່ສຳເລັດ, ຝາເປີດຢູ່</translation>
 <translation id="3275729367986477355">ຮູບແທນຕົວ</translation>
 <translation id="3283504360622356314">{0,plural, =1{ແກ້ໄຂໄຟລ໌}other{ແກ້ໄຂໄຟລ໌}}</translation>
@@ -922,6 +921,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">ເລືອກ <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
 <translation id="8151185429379586178">ເຄື່ອງ​ມື​ຜູ້ພັດ​ທະ​ນາ</translation>
+<translation id="8152370627892825"><ph name="DESCRIPTION" />, <ph name="ACCELERATOR_INFO" />.</translation>
 <translation id="8179976553408161302">ປ້ອນເຂົ້າ</translation>
 <translation id="8183974620058026102">ແນບໄຟລ໌</translation>
 <translation id="8206859287963243715">ເຊວລູລາ</translation>

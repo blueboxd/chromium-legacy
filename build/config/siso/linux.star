@@ -5,30 +5,33 @@
 """Siso configuration for linux."""
 
 load("@builtin//struct.star", "module")
+load("./android.star", "android")
 load("./clang_linux.star", "clang")
 load("./config.star", "config")
-load("./mojo.star", "mojo")
 load("./nacl_linux.star", "nacl")
 load("./nasm_linux.star", "nasm")
 load("./proto_linux.star", "proto")
 load("./reproxy.star", "reproxy")
-load("./android.star", "android")
+load("./rust_linux.star", "rust")
+load("./typescript_linux.star", "typescript")
 
 __filegroups = {}
 __filegroups.update(android.filegroups)
 __filegroups.update(clang.filegroups)
-__filegroups.update(mojo.filegroups)
 __filegroups.update(nacl.filegroups)
 __filegroups.update(nasm.filegroups)
 __filegroups.update(proto.filegroups)
+__filegroups.update(rust.filegroups)
+__filegroups.update(typescript.filegroups)
 
 __handlers = {}
 __handlers.update(android.handlers)
 __handlers.update(clang.handlers)
-__handlers.update(mojo.handlers)
 __handlers.update(nacl.handlers)
 __handlers.update(nasm.handlers)
 __handlers.update(proto.handlers)
+__handlers.update(rust.handlers)
+__handlers.update(typescript.handlers)
 
 def __disable_remote_b289968566(ctx, step_config):
     rule = {
@@ -39,6 +42,7 @@ def __disable_remote_b289968566(ctx, step_config):
             "./android_clang_arm/obj/third_party/distributed_point_functions/distributed_point_functions/evaluate_prg_hwy.o",
             "./obj/chrome/browser/ash/ash/autotest_private_api.o",
             "./obj/chrome/browser/ash/ash/chrome_browser_main_parts_ash.o",
+            "./obj/chrome/browser/ash/system_web_apps/browser_tests/system_web_app_manager_browsertest.o",
             "./obj/chrome/browser/browser/browser_prefs.o",
             "./obj/chrome/browser/browser/chrome_browser_interface_binders.o",
             "./obj/chrome/browser/ui/ash/holding_space/browser_tests/holding_space_ui_browsertest.o",
@@ -47,6 +51,15 @@ def __disable_remote_b289968566(ctx, step_config):
             "./obj/chrome/test/browser_tests/device_local_account_browsertest.o",
             "./obj/chrome/test/browser_tests/file_manager_browsertest_base.o",
             "./obj/chrome/test/browser_tests/remote_apps_manager_browsertest.o",
+            "./obj/chrome/test/browser_tests/spoken_feedback_browsertest.o",
+            "./obj/chrome/test/unit_tests/chrome_browsing_data_remover_delegate_unittest.o",
+            "./obj/chrome/test/unit_tests/site_settings_handler_unittest.o",
+            "./obj/fuchsia_web/runners/cast_runner_integration_tests__exec/cast_runner_integration_test.o",
+            "./obj/fuchsia_web/webengine/web_engine_core/frame_impl.o",
+            "./ash_clang_x64/obj/chrome/browser/ash/ash/autotest_private_api.o",
+            "./ash_clang_x64/obj/chrome/browser/ash/ash/chrome_browser_main_parts_ash.o",
+            "./ash_clang_x64/obj/chrome/browser/browser/browser_prefs.o",
+            "./ash_clang_x64/obj/chrome/browser/browser/chrome_browser_interface_binders.o",
         ],
         "remote": False,
     }
@@ -70,11 +83,12 @@ def __step_config(ctx, step_config):
     if android.enabled(ctx):
         step_config = android.step_config(ctx, step_config)
 
+    step_config = clang.step_config(ctx, step_config)
     step_config = nacl.step_config(ctx, step_config)
     step_config = nasm.step_config(ctx, step_config)
     step_config = proto.step_config(ctx, step_config)
-    step_config = mojo.step_config(ctx, step_config)
-    step_config = clang.step_config(ctx, step_config)
+    step_config = rust.step_config(ctx, step_config)
+    step_config = typescript.step_config(ctx, step_config)
 
     return step_config
 

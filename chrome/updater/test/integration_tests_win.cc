@@ -51,6 +51,7 @@
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
 #include "base/win/win_util.h"
+#include "base/win/window_enumerator.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/updater/app/server/win/com_classes.h"
@@ -473,67 +474,6 @@ base::Process LaunchOfflineInstallProcess(bool is_legacy_install,
                            : launch_offline_install();
 }
 
-class WindowEnumerator {
- public:
-  WindowEnumerator(HWND parent,
-                   base::RepeatingCallback<bool(HWND hwnd)> filter,
-                   base::RepeatingCallback<void(HWND hwnd)> action)
-      : parent_(parent), filter_(filter), action_(action) {}
-
-  WindowEnumerator(const WindowEnumerator&) = delete;
-  WindowEnumerator& operator=(const WindowEnumerator&) = delete;
-
-  void Run() const {
-    ::EnumChildWindows(parent_, &OnWindowProc, reinterpret_cast<LPARAM>(this));
-  }
-
-  static std::wstring GetWindowClass(HWND hwnd) {
-    constexpr int kMaxWindowClassNameLength = 256;
-    wchar_t buffer[kMaxWindowClassNameLength + 1] = {0};
-    int name_len = ::GetClassName(hwnd, buffer, std::size(buffer));
-    if (name_len <= 0 || name_len > kMaxWindowClassNameLength) {
-      return std::wstring();
-    }
-
-    return std::wstring(&buffer[0], name_len);
-  }
-
-  static bool IsSystemDialog(HWND hwnd) {
-    constexpr wchar_t kSystemDialogClass[] = L"#32770";
-    return GetWindowClass(hwnd) == kSystemDialogClass;
-  }
-
-  static std::wstring GetWindowText(HWND hwnd) {
-    const int num_chars = ::GetWindowTextLength(hwnd);
-    if (!num_chars) {
-      return std::wstring();
-    }
-    std::vector<wchar_t> text(num_chars + 1);
-    if (!::GetWindowText(hwnd, &text.front(), text.size())) {
-      return std::wstring();
-    }
-    return std::wstring(text.begin(), text.end());
-  }
-
- private:
-  bool OnWindow(HWND hwnd) const {
-    if (filter_.Run(hwnd)) {
-      action_.Run(hwnd);
-    }
-
-    // Returns true to keep enumerating.
-    return true;
-  }
-
-  static BOOL CALLBACK OnWindowProc(HWND hwnd, LPARAM lparam) {
-    return reinterpret_cast<WindowEnumerator*>(lparam)->OnWindow(hwnd);
-  }
-
-  const HWND parent_;
-  base::RepeatingCallback<bool(HWND hwnd)> filter_;
-  base::RepeatingCallback<void(HWND hwnd)> action_;
-};
-
 DISPID GetDispId(Microsoft::WRL::ComPtr<IDispatch> dispatch,
                  std::wstring name) {
   DISPID id = 0;
@@ -710,44 +650,16 @@ void RunOfflineInstallWithManifest(UpdaterScope scope,
                   offline_dir_guid, is_silent_install)
                   .IsValid());
 
-  if (is_silent_install) {
+  // * Silent installs do not show any UI.
+  // * Successful interactive installs show a progress UI, but once the install
+  //   completes, the `InstallerSuccessLaunchCmdLine` is launched and the UI
+  //   closes automatically.
+  // * Unsuccessful interactive installs show an install error dialog that needs
+  //   to be explicitly closed via `CloseInstallCompleteDialog`.
+  if (is_silent_install || expect_success) {
     EXPECT_TRUE(WaitForUpdaterExit(scope));
   } else {
-    // Dismiss the installation completion dialog, then wait for the process
-    // exit.
-    EXPECT_TRUE(WaitFor(
-        [string_resource_id_to_find] {
-          // Enumerate the top-level dialogs to find the setup dialog.
-          WindowEnumerator(
-              ::GetDesktopWindow(), base::BindRepeating([](HWND hwnd) {
-                return WindowEnumerator::IsSystemDialog(hwnd) &&
-                       base::Contains(WindowEnumerator::GetWindowText(hwnd),
-                                      GetLocalizedStringF(
-                                          IDS_INSTALLER_DISPLAY_NAME_BASE,
-                                          GetLocalizedString(
-                                              IDS_FRIENDLY_COMPANY_NAME_BASE)));
-              }),
-              base::BindLambdaForTesting(
-                  [string_resource_id_to_find](HWND hwnd) {
-                    // Enumerates the dialog items to search for installation
-                    // complete message. Once found, close the dialog.
-                    WindowEnumerator(
-                        hwnd,
-                        base::BindLambdaForTesting([string_resource_id_to_find](
-                                                       HWND hwnd) {
-                          return base::Contains(
-                              WindowEnumerator::GetWindowText(hwnd),
-                              GetLocalizedString(string_resource_id_to_find));
-                        }),
-                        base::BindRepeating([](HWND hwnd) {
-                          ::PostMessage(::GetParent(hwnd), WM_CLOSE, 0, 0);
-                        }))
-                        .Run();
-                  }))
-              .Run();
-          return !IsUpdaterRunning();
-        },
-        [] { VLOG(0) << "Still waiting for the process exit."; }));
+    CloseInstallCompleteDialog(GetLocalizedString(string_resource_id_to_find));
   }
 
   const base::Version pv =
@@ -1295,10 +1207,10 @@ HRESULT DoUpdate(UpdaterScope scope,
         state->get_totalBytesToDownload(&total_bytes_to_download);
         LONG download_time_remaining_ms = 0;
         state->get_downloadTimeRemainingMs(&download_time_remaining_ms);
-        extra_data = base::StringPrintf(
-            L"[Bytes downloaded: %d][Bytes total: %d][Time remaining: %d]",
+        extra_data = base::ASCIIToWide(base::StringPrintf(
+            "[Bytes downloaded: %lu][Bytes total: %lu][Time remaining: %ld]",
             bytes_downloaded, total_bytes_to_download,
-            download_time_remaining_ms);
+            download_time_remaining_ms));
         break;
       }
 
@@ -1311,9 +1223,9 @@ HRESULT DoUpdate(UpdaterScope scope,
         state->get_bytesDownloaded(&bytes_downloaded);
         ULONG total_bytes_to_download = 0;
         state->get_totalBytesToDownload(&total_bytes_to_download);
-        extra_data =
-            base::StringPrintf(L"[Bytes downloaded: %d][Bytes total: %d]",
-                               bytes_downloaded, total_bytes_to_download);
+        extra_data = base::ASCIIToWide(
+            base::StringPrintf("[Bytes downloaded: %lu][Bytes total: %lu]",
+                               bytes_downloaded, total_bytes_to_download));
         EXPECT_HRESULT_SUCCEEDED(bundle->install());
         break;
       }
@@ -1325,9 +1237,9 @@ HRESULT DoUpdate(UpdaterScope scope,
         state->get_installProgress(&install_progress);
         LONG install_time_remaining_ms = 0;
         state->get_installTimeRemainingMs(&install_time_remaining_ms);
-        extra_data =
-            base::StringPrintf(L"[Install Progress: %d][Time remaining: %d]",
-                               install_progress, install_time_remaining_ms);
+        extra_data = base::ASCIIToWide(
+            base::StringPrintf("[Install Progress: %ld][Time remaining: %ld]",
+                               install_progress, install_time_remaining_ms));
         break;
       }
 
@@ -1352,9 +1264,10 @@ HRESULT DoUpdate(UpdaterScope scope,
         LONG installer_result_code = 0;
         EXPECT_HRESULT_SUCCEEDED(
             state->get_installerResultCode(&installer_result_code));
-        extra_data = base::StringPrintf(
-            L"[errorCode: %d][completionMessage: %ls][installerResultCode: %d]",
-            error_code, completion_message.Get(), installer_result_code);
+        extra_data = base::ASCIIToWide(base::StringPrintf(
+            "[errorCode: %ld][completionMessage: %ls][installerResultCode: "
+            "%ld]",
+            error_code, completion_message.Get(), installer_result_code));
         break;
       }
 
@@ -1597,26 +1510,26 @@ void ExpectLegacyPolicyStatusSucceeds(UpdaterScope scope) {
   Microsoft::WRL::ComPtr<IPolicyStatusValue> policy_status_value;
   ASSERT_HRESULT_SUCCEEDED(
       policy_status2->get_lastCheckPeriodMinutes(&policy_status_value));
-  ExpectPolicyStatusValues(policy_status_value, L"default", L"270",
+  ExpectPolicyStatusValues(policy_status_value, L"Default", L"270",
                            VARIANT_FALSE);
 
   const base::win::ScopedBstr test_app(L"test1");
   policy_status_value.Reset();
   ASSERT_HRESULT_SUCCEEDED(policy_status2->get_effectivePolicyForAppInstalls(
       test_app.Get(), &policy_status_value));
-  ExpectPolicyStatusValues(policy_status_value, L"default", L"1",
+  ExpectPolicyStatusValues(policy_status_value, L"Default", L"1",
                            VARIANT_FALSE);
 
   policy_status_value.Reset();
   ASSERT_HRESULT_SUCCEEDED(policy_status2->get_effectivePolicyForAppUpdates(
       test_app.Get(), &policy_status_value));
-  ExpectPolicyStatusValues(policy_status_value, L"default", L"1",
+  ExpectPolicyStatusValues(policy_status_value, L"Default", L"1",
                            VARIANT_FALSE);
 
   policy_status_value.Reset();
   ASSERT_HRESULT_SUCCEEDED(policy_status2->get_isRollbackToTargetVersionAllowed(
       test_app.Get(), &policy_status_value));
-  ExpectPolicyStatusValues(policy_status_value, L"default", L"false",
+  ExpectPolicyStatusValues(policy_status_value, L"Default", L"false",
                            VARIANT_FALSE);
 
   ASSERT_HRESULT_SUCCEEDED(policy_status2->refreshPolicies());
@@ -1844,6 +1757,45 @@ void RunFakeLegacyUpdater(UpdaterScope scope) {
       ASSERT_TRUE(process.IsValid());
     }
   }
+}
+
+void CloseInstallCompleteDialog(const std::wstring& child_window_text_to_find) {
+  const std::wstring window_title =
+      GetLocalizedStringF(IDS_INSTALLER_DISPLAY_NAME_BASE,
+                          GetLocalizedString(IDS_FRIENDLY_COMPANY_NAME_BASE));
+  bool found = false;
+  ASSERT_TRUE(WaitFor(
+      [&]() {
+        if (!found) {
+          // Enumerate the top-level dialogs to find the setup dialog.
+          base::win::EnumerateChildWindows(
+              ::GetDesktopWindow(), base::BindLambdaForTesting([&](HWND hwnd) {
+                if (!base::win::IsSystemDialog(hwnd) ||
+                    !base::Contains(base::win::GetWindowTextString(hwnd),
+                                    window_title)) {
+                  return false;
+                }
+                // Enumerate the child windows to search for
+                // `child_window_text_to_find`. If found, close the dialog.
+                base::win::EnumerateChildWindows(
+                    hwnd, base::BindLambdaForTesting([&](HWND hwnd) {
+                      if (!base::Contains(base::win::GetWindowTextString(hwnd),
+                                          child_window_text_to_find)) {
+                        return false;
+                      }
+                      found = true;
+                      ::PostMessage(::GetParent(hwnd), WM_CLOSE, 0, 0);
+                      return found;
+                    }));
+                return found;
+              }));
+        }
+        return found && !IsUpdaterRunning();
+      },
+      [&] {
+        VLOG(0) << "Still waiting, `found`: " << found
+                << ": `!IsUpdaterRunning()`: " << !IsUpdaterRunning();
+      }));
 }
 
 void ExpectLegacyUpdaterMigrated(UpdaterScope scope) {

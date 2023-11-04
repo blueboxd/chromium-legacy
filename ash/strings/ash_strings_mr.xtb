@@ -206,6 +206,7 @@
 <translation id="1775598828170459419"><ph name="NUM_TOTAL_ITEMS" /> पैकी <ph name="NUM_SHOWN_ITEMS" /> दाखवत आहे</translation>
 <translation id="178347895271755507">तुमच्या फोनमधील अलीकडील फोटो, मीडिया आणि सूचना पाहणे सेट करा</translation>
 <translation id="1787955149152357925">बंद करा</translation>
+<translation id="1797271123677381264">पासवर्ड विसरलात</translation>
 <translation id="181103072419391116">सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />, तुमच्या अ‍ॅडमिनिस्ट्रेटरने व्यवस्थापित केलेले</translation>
 <translation id="1815245884418711390">हॉटस्पॉट टॉगल करा. हॉटस्पॉट बंद आहे.</translation>
 <translation id="1816896987747843206">हे कॅमेरा परवानगी असलेल्या सर्व अ‍ॅप्स आणि वेबसाइटना कॅमेराच्या अ‍ॅक्सेसची अनुमती देते</translation>
@@ -298,7 +299,6 @@
 <translation id="2227179592712503583">सूचना काढून टाका</translation>
 <translation id="2248634276911611268">नवीन टॅबमध्ये लिंक उघडा आणि या नवीन टॅबवर स्विच करा</translation>
 <translation id="225680501294068881">डिव्हाइसेससाठी स्कॅन करत आहे...</translation>
-<translation id="225716114209817872">कमाल</translation>
 <translation id="2257486738914982088"><ph name="FILENAME" /> डाउनलोड करताना काहीतरी चूक झाली</translation>
 <translation id="2258734398699965611">सुचवलेल्या फाइल</translation>
 <translation id="2268130516524549846">ब्लूटूथ अक्षम</translation>
@@ -451,6 +451,7 @@
 <translation id="2891209721153296020">"निवड रद्द करा"</translation>
 <translation id="2894949423239620203">केबलमुळे परफॉर्मन्सवर परिणाम होऊ शकतो</translation>
 <translation id="2914580577416829331">स्क्रीन कॅप्चर</translation>
+<translation id="2924416280450782352">आयटम दाखवू शकत नाही. हे पॅनल पुन्हा उघडण्याचा प्रयत्न करा.</translation>
 <translation id="2931572158271115754">कामांच्या या सूचीमध्ये काहीही नाही.</translation>
 <translation id="2941112035454246133">निम्न</translation>
 <translation id="2942350706960889382">डॉक केलेले मॅग्निफायर</translation>
@@ -696,7 +697,6 @@
 <translation id="385300504083504382">सुरुवातीला</translation>
 <translation id="3859364108019690">ॲप्स स्ट्रीम करू शकत नाही</translation>
 <translation id="3861651314799684201">फुल स्क्रीन रेकॉर्ड करण्यासाठी एंटर प्रेस करा</translation>
-<translation id="3871092408932389764">सर्वात कमी</translation>
 <translation id="3886872229787704059">आज उघडलेली</translation>
 <translation id="3891340733213178823">साइन आउट करण्यासाठी Ctrl+Shift+Q दोनदा प्रेस करा.</translation>
 <translation id="3893630138897523026">ChromeVox (वाचिक अभिप्राय)</translation>
@@ -738,6 +738,7 @@
 <translation id="4028481283645788203">आणखी सुरक्षिततेसाठी पासवर्ड आवश्यक आहे</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4032988577476260673"><ph name="LAUNCHER_KEY_NAME" /> + left arrow</translation>
+<translation id="4039699481424758547">विंडोचा स्क्रीनशॉट कॅप्चर करण्यासाठी एंटर प्रेस करा: <ph name="WINDOW_TITLE" /></translation>
 <translation id="4042660782729322247">तुम्ही तुमची स्क्रीन शेअर करत आहात</translation>
 <translation id="404437169852192935">अपडेट संपली आहेत</translation>
 <translation id="4049230407053723315">क्विक सेटिंग्ज</translation>
@@ -833,7 +834,6 @@
 <translation id="4406883609789734330">लाइव्ह कॅप्शन</translation>
 <translation id="4412944820643904175"><ph name="FEATURE_NAME" /> बंद आहे.</translation>
 <translation id="4424159417645388645">डेस्‍क ५</translation>
-<translation id="4427695046139341014">गेम डॅशबोर्ड</translation>
 <translation id="4430019312045809116">व्हॉल्यूम</translation>
 <translation id="4441283832827406317">अ‍ॅप्स नावानुसार क्रमाने लावली जातात</translation>
 <translation id="4445159312344259901">अनलॉक करण्यासाठी साइन इन करा</translation>
@@ -1214,12 +1214,12 @@
 <translation id="5961960957587052807">फिकट</translation>
 <translation id="5965524703725988602">गडद थीम टॉगल करा. <ph name="STATE_TEXT" />.</translation>
 <translation id="5975235751479998104">विंडोदरम्यान पुढे जा</translation>
-<translation id="5976112937189445008">विंडो रेकॉर्ड करण्यासाठी एंटर प्रेस करा</translation>
 <translation id="5978382165065462689">दूरस्थ सहाय्याद्वारे आपल्या स्क्रीनचे नियंत्रण शेअर करत आहे.</translation>
 <translation id="5980301590375426705">अतिथी निर्गमन करा</translation>
 <translation id="5983567367406220847">इनॅक्टिव्हिटीमुळे हॉटस्पॉट बंद करण्यात आला आहे.</translation>
 <translation id="598407983968395253">टेंप्लेट वापरा</translation>
 <translation id="598882571027504733">अपडेट करण्यासाठी, संलग्न केलेल्या कीबोर्डसह तुमचे Chromebook रीस्टार्ट करा.</translation>
+<translation id="6000279412553873020">की, बटण आणि आणखी बरेच काही</translation>
 <translation id="6012623610530968780"><ph name="TOTAL_PAGE_NUM" /> पैकी <ph name="SELECTED_PAGE" /> पेज</translation>
 <translation id="601304062528754300">शेल्फवरील पुढील आयटम हायलाइट करा</translation>
 <translation id="6015573907265691211">पूर्ण झाले म्हणून मार्क करा</translation>
@@ -1436,7 +1436,6 @@
 <translation id="6886172995547742638">तुमच्या <ph name="DEVICE_TYPE" /> चा परफॉर्मन्स कमी होऊ शकतो. प्रमाणित <ph name="PREFERRED_MINIMUM_POWER" />W किंवा त्यावरील USB-C पॉवर अडॅप्टर वापरा.</translation>
 <translation id="688631446150864480">विंडो स्विच करण्यासाठी डाउन अ‍ॅरो की प्रेस करा</translation>
 <translation id="6896758677409633944">कॉपी करा</translation>
-<translation id="6901883536534621389">नेव्हिगेट करण्यासाठी जेश्चर वापरून पहा</translation>
 <translation id="6912841030378044227">ॲड्रेस बारवर फोकस करा</translation>
 <translation id="6912901278692845878">झटपट फेरफटका</translation>
 <translation id="6919251195245069855">तुमचे स्मार्ट कार्ड ओळखू शकलो नाही. पुन्हा प्रयत्न करा.</translation>
@@ -1742,7 +1741,6 @@
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> वापरत आहे</translation>
 <translation id="8185090165691050712">लॉक मोडचा आकार बदलण्यासाठी मेनू सुरू/बंद करा</translation>
 <translation id="8192202700944119416">सूचना लपवलेल्या आहेत.</translation>
-<translation id="8196787716797768628">टॅबलेट मोडमध्ये अ‍ॅप्सदरम्यान झटपट स्विच करण्यासाठी आणि तुमच्या Chromebook सोबत परस्परसंवाद साधण्यासाठी जेश्चर वापरा.</translation>
 <translation id="8198456017687137612">टॅब कास्‍ट करत आहे</translation>
 <translation id="8200772114523450471">रेझ्युमे</translation>
 <translation id="8203795194971602413">राइट क्लिक</translation>
@@ -1752,7 +1750,6 @@
 <translation id="8230305195727960608">कलर इन्व्हर्जन मोड</translation>
 <translation id="8236042855478648955">विश्रांतीची वेळ</translation>
 <translation id="8239034820133090126">उजवीकडील डेस्‍क अ‍ॅक्टिव्हेट करा</translation>
-<translation id="8246282815785366524"><ph name="GIVEN_NAME" />, तुमचे पुन्हा स्वागत आहे</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />, फोन बॅटरी <ph name="BATTERY_STATUS" /></translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, ॲप</translation>
 <translation id="8255234195843591763">अपडेट करण्यासाठी रीसेट करा</translation>
@@ -1851,6 +1848,7 @@
 <translation id="8703634754197148428">रेकॉर्डिंग सुरू करा. रेकॉर्डिंग सुरू झाल्यानंतर शेल्फवर नेव्हिगेट करण्यासाठी Alt + Shift + L वापरा आणि रेकॉर्डिंग थांबवा बटण शोधा</translation>
 <translation id="8704155109538237473">चित्रात-चित्र च्या विंडोवर फोकस करा</translation>
 <translation id="870917907284186124">डिक्टेशन सुरू/बंद करा (तुमचा आवाज वापरून टाइप करा)</translation>
+<translation id="8714138378966541668">पुरवठादाराने लॉक केले आहे</translation>
 <translation id="8717459106217102612">आधीचा शब्द किंवा अक्षर निवडा</translation>
 <translation id="8721053961083920564">व्‍हॉल्‍यूम टॉगल करा. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">फुल स्‍क्रीन कॅप्‍चर</translation>
@@ -1869,7 +1867,6 @@
 <translation id="878215960996152260"><ph name="APP_NAME" />, इंस्टॉल केलेले अ‍ॅप, ब्लॉक केले</translation>
 <translation id="8785070478575117577"><ph name="NETWORK_NAME" /> शी कनेक्ट करा</translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
-<translation id="8790998409862094015">जास्त</translation>
 <translation id="8792626944327216835">मायक्रोफोन</translation>
 <translation id="8801802992492329306">5G</translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> फोल्डर</translation>
@@ -1882,6 +1879,7 @@
 <translation id="8834539327799336565">सध्या कनेक्ट केलेली</translation>
 <translation id="8841375032071747811">मागे जा बटण</translation>
 <translation id="8843682306134542540">रोटेशन लॉक टॉगल करा. <ph name="STATE_TEXT" /></translation>
+<translation id="8849001918648564819">लपवलेली</translation>
 <translation id="8853703225951107899">तुमच्या पिन किंवा पासवर्डची अद्याप पडताळणी करता आली नाही. टीप: तुम्ही अलीकडेच तुमचा पासवर्ड बदलला असल्यास, जुना पासवर्ड वापरा. तुम्ही साइन आउट केल्यानंतर तुमचा नवीन पासवर्ड लागू केला जाईल.</translation>
 <translation id="8855885154700222542">क्षेत्रे की</translation>
 <translation id="8858369206579825206">गोपनीयता नियंत्रणे</translation>
@@ -1901,7 +1899,6 @@
 <translation id="8909138438987180327">बॅटरी <ph name="PERCENTAGE" /> टक्के आहे.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistant ही भाषा बोलत नाही.</translation>
-<translation id="8924458948354692166">विंडोचा स्क्रीनशॉट कॅप्चर करण्यासाठी एंटर प्रेस करा</translation>
 <translation id="8926951137623668982">शेल्फ नेहमी लपवलेले आहे</translation>
 <translation id="8934926665751933910">{NUM_FILES,plural, =1{१ फाइल}other{# फाइल}}</translation>
 <translation id="8936501819958976551">डीॲक्टिव्हेट केले आहे</translation>
@@ -1966,6 +1963,7 @@
 <translation id="9211490828691860325">सर्व डेस्क</translation>
 <translation id="9211681782751733685">बॅटरी पूर्णपणे चार्ज होण्यासाठी <ph name="TIME_REMAINING" /> तास बाकी.</translation>
 <translation id="9215934040295798075">वॉलपेपर सेट करा</translation>
+<translation id="9216699844945104164">विंडो रेकॉर्ड करण्यासाठी एंटर प्रेस करा: <ph name="WINDOW_TITLE" /></translation>
 <translation id="9219103736887031265">इमेज</translation>
 <translation id="921989828232331238">तुमच्या पालकाने आज दिवसभरासाठी तुमचे डिव्हाइस लॉक केले</translation>
 <translation id="9220525904950070496">खाते काढून टाका</translation>

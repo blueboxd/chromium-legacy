@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -15,7 +16,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/strings/strcat.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -25,9 +27,11 @@
 #include "ui/base/default_style.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/color/color_provider_key.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animator.h"
@@ -436,8 +440,8 @@ BubbleDialogDelegate::BubbleDialogDelegate(View* anchor_view,
                                            BubbleBorder::Shadow shadow)
     : arrow_(arrow),
       shadow_(shadow),
-      close_on_deactivate_pins_(
-          std::make_unique<CloseOnDeactivatePin::Pins>()) {
+      close_on_deactivate_pins_(std::make_unique<CloseOnDeactivatePin::Pins>()),
+      bubble_created_time_(base::TimeTicks::Now()) {
   SetOwnedByWidget(true);
   SetAnchorView(anchor_view);
   SetArrow(arrow);
@@ -459,6 +463,29 @@ BubbleDialogDelegate::BubbleDialogDelegate(View* anchor_view,
         bubble_delegate->UpdateColorsFromTheme();
       },
       this));
+
+  // Bind a callback to the compositor for logging time from bubble creation to
+  // successful presentation of the next frame.
+  RegisterWidgetInitializedCallback(base::BindOnce(
+      [](BubbleDialogDelegate* delegate, base::TimeTicks bubble_created_time) {
+        delegate->GetWidget()
+            ->GetCompositor()
+            ->RequestSuccessfulPresentationTimeForNextFrame(base::BindOnce(
+                [](base::WeakPtr<BubbleDialogDelegate::BubbleUmaLogger>
+                       uma_logger,
+                   base::TimeTicks bubble_created_time,
+                   base::TimeTicks presentation_timestamp) {
+                  if (!uma_logger) {
+                    return;
+                  }
+                  uma_logger->LogMetric(
+                      base::UmaHistogramTimes, "CreateToPresentationTime",
+                      presentation_timestamp - bubble_created_time);
+                },
+                delegate->bubble_uma_logger().GetWeakPtr(),
+                bubble_created_time));
+      },
+      base::Unretained(this), *bubble_created_time_));
 }
 
 BubbleDialogDelegate::~BubbleDialogDelegate() {
@@ -495,17 +522,14 @@ Widget* BubbleDialogDelegate::CreateBubble(
   return bubble_widget;
 }
 
-Widget* BubbleDialogDelegateView::CreateBubble(
-    std::unique_ptr<BubbleDialogDelegateView> delegate) {
-  return BubbleDialogDelegate::CreateBubble(std::move(delegate));
-}
-
 Widget* BubbleDialogDelegateView::CreateBubble(BubbleDialogDelegateView* view) {
   return CreateBubble(base::WrapUnique(view));
 }
 
 BubbleDialogDelegateView::BubbleDialogDelegateView()
-    : BubbleDialogDelegateView(nullptr, BubbleBorder::TOP_LEFT) {}
+    : BubbleDialogDelegateView(nullptr, BubbleBorder::TOP_LEFT) {
+  bubble_uma_logger().set_bubble_name(GetClassName());
+}
 
 BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
                                                    BubbleBorder::Arrow arrow,
@@ -588,8 +612,19 @@ void BubbleDialogDelegate::OnBubbleWidgetClosing() {
   // focus traversal path. Don't reset kAnchoredDialogKey or we risk detaching
   // a widget from the traversal path.
   if (GetAnchorView() &&
-      GetAnchorView()->GetProperty(kAnchoredDialogKey) == this)
+      GetAnchorView()->GetProperty(kAnchoredDialogKey) == this) {
     GetAnchorView()->ClearProperty(kAnchoredDialogKey);
+  }
+
+  if (bubble_shown_time_.has_value()) {
+    bubble_shown_duration_ += base::TimeTicks::Now() - *bubble_shown_time_;
+    bubble_shown_time_.reset();
+  }
+  bubble_uma_logger().LogMetric(base::UmaHistogramLongTimes, "TimeVisible",
+                                bubble_shown_duration_);
+
+  bubble_uma_logger().LogMetric(base::UmaHistogramEnumeration, "CloseReason",
+                                GetWidget()->closed_reason());
 }
 
 void BubbleDialogDelegate::OnAnchorWidgetDestroying() {
@@ -811,6 +846,28 @@ void BubbleDialogDelegate::UpdateInputProtectorsTimeStamp() {
   GetBubbleFrameView()->UpdateInputProtectorTimeStamp();
 }
 
+BubbleDialogDelegate::BubbleUmaLogger::BubbleUmaLogger() = default;
+
+BubbleDialogDelegate::BubbleUmaLogger::~BubbleUmaLogger() = default;
+
+base::WeakPtr<BubbleDialogDelegate::BubbleUmaLogger>
+BubbleDialogDelegate::BubbleUmaLogger::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
+template <typename Value>
+void BubbleDialogDelegate::BubbleUmaLogger::LogMetric(
+    void (*uma_func)(const std::string&, Value),
+    std::string histogram_name,
+    Value value) const {
+  uma_func(base::StrCat({"Bubble.All.", histogram_name}), value);
+  if (bubble_name_.has_value() &&
+      base::FeatureList::IsEnabled(::features::kBubbleMetricsApi)) {
+    uma_func(base::StrCat({"Bubble.", *bubble_name_, ".", histogram_name}),
+             value);
+  }
+}
+
 gfx::Rect BubbleDialogDelegate::GetBubbleBounds() {
   // The argument rect has its origin at the bubble's arrow anchor point;
   // its size is the preferred size of the bubble's client view (this view).
@@ -952,6 +1009,35 @@ void BubbleDialogDelegate::UpdateColorsFromTheme() {
 }
 
 void BubbleDialogDelegate::OnBubbleWidgetVisibilityChanged(bool visible) {
+  // Log time from bubble dialog delegate creation to bubble becoming
+  // visible.
+  if (visible) {
+    if (bubble_created_time_.has_value()) {
+      GetWidget()
+          ->GetCompositor()
+          ->RequestSuccessfulPresentationTimeForNextFrame(base::BindOnce(
+              [](base::WeakPtr<BubbleDialogDelegate::BubbleUmaLogger>
+                     uma_logger,
+                 base::TimeTicks bubble_created_time,
+                 base::TimeTicks presentation_timestamp) {
+                if (!uma_logger) {
+                  return;
+                }
+                uma_logger->LogMetric(
+                    base::UmaHistogramMediumTimes, "CreateToVisibleTime",
+                    presentation_timestamp - bubble_created_time);
+              },
+              bubble_uma_logger().GetWeakPtr(), *bubble_created_time_));
+      bubble_created_time_.reset();
+    }
+    bubble_shown_time_ = base::TimeTicks::Now();
+  } else {
+    if (bubble_shown_time_.has_value()) {
+      bubble_shown_duration_ += base::TimeTicks::Now() - *bubble_shown_time_;
+      bubble_shown_time_.reset();
+    }
+  }
+
   UpdateHighlightedButton(visible);
 
   // Fire ax::mojom::Event::kAlert for bubbles marked as

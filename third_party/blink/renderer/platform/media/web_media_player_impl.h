@@ -35,7 +35,6 @@
 #include "media/base/renderer_factory_selector.h"
 #include "media/base/routing_token_callback.h"
 #include "media/base/simple_watch_timer.h"
-#include "media/base/text_track.h"
 #include "media/filters/demuxer_manager.h"
 #include "media/mojo/mojom/media_metrics_provider.mojom.h"
 #include "media/mojo/mojom/playback_events_recorder.mojom.h"
@@ -399,8 +398,6 @@ class PLATFORM_EXPORT WebMediaPlayerImpl
       media::BufferingState state,
       media::BufferingStateChangeReason reason) override;
   void OnDurationChange() override;
-  void OnAddTextTrack(const media::TextTrackConfig& config,
-                      media::AddTextTrackDoneCB done_cb) override;
   void OnWaiting(media::WaitingReason reason) override;
   void OnAudioConfigChange(const media::AudioDecoderConfig& config) override;
   void OnVideoConfigChange(const media::VideoDecoderConfig& config) override;
@@ -927,12 +924,6 @@ class PLATFORM_EXPORT WebMediaPlayerImpl
   // started; prevents us from spuriously logging errors that are transient or
   // unimportant.
   bool suppress_destruction_errors_ = false;
-
-  // TODO(dalecurtis): The following comment is inaccurate as this value is also
-  // used for, for example, data URLs.
-  // Used for HLS playback and in certain fallback paths (e.g. on older devices
-  // that can't support the unified media pipeline).
-  GURL loaded_url_ ALLOW_DISCOURAGED_TYPE("Avoids conversion in media code");
 
   // NOTE: |using_media_player_renderer_| is set based on the usage of a
   // MediaResource::Type::URL in StartPipeline(). This works because

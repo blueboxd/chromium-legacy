@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.TabUtils.LoadIfNeededCaller;
-import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
 import org.chromium.components.browser_ui.site_settings.SingleCategorySettingsConstants;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
@@ -60,6 +59,7 @@ import org.chromium.content_public.browser.ContentFeatureMap;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayAndroidManager;
+import org.chromium.ui.display.DisplayUtil;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
@@ -260,7 +260,7 @@ public class RequestDesktopUtils {
         RequestDesktopUtils.setRequestDesktopSiteContentSettingsForUrl(
                 profile, url, tabUserAgent == TabUserAgent.DESKTOP);
         // Reset the tab level setting after upgrade.
-        CriticalPersistedTabData.from(tab).setUserAgent(TabUserAgent.DEFAULT);
+        tab.setUserAgent(TabUserAgent.DEFAULT);
     }
 
     /**
@@ -470,6 +470,28 @@ public class RequestDesktopUtils {
         SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceKeys.DEFAULT_ENABLED_DESKTOP_SITE_GLOBAL_SETTING, true);
         return true;
+    }
+
+    /**
+     * Default-enables the desktop site window setting if Chrome is opened on a tablet-sized
+     * internal display.
+     * @param activity The current {@link Activity}.
+     * @param profile The current {@link Profile}.
+     */
+    public static void maybeDefaultEnableWindowSetting(Activity activity, Profile profile) {
+        if (!ContentFeatureMap.isEnabled(ContentFeatureList.REQUEST_DESKTOP_SITE_WINDOW_SETTING)) {
+            return;
+        }
+        int smallestScreenWidthDp = DisplayUtil.getCurrentSmallestScreenWidth(activity);
+        boolean isOnExternalDisplay = isOnExternalDisplay(activity);
+        if (isOnExternalDisplay
+                || smallestScreenWidthDp < DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP) {
+            return;
+        }
+        PrefService prefService = UserPrefs.get(profile);
+        if (prefService.isDefaultValuePreference(DESKTOP_SITE_WINDOW_SETTING_ENABLED)) {
+            prefService.setBoolean(DESKTOP_SITE_WINDOW_SETTING_ENABLED, /*newValue*/ true);
+        }
     }
 
     /**

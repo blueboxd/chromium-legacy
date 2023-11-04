@@ -3,18 +3,21 @@
 # found in the LICENSE file.
 
 import("//build/config/android/rules.gni")
+import("//third_party/jni_zero/jni_zero.gni")
 
 android_library("java") {
   sources = [
-    "android/java/src/org/chromium/chrome/browser/preferences/BaseChromePreferenceKeyChecker.java",
-    "android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeyChecker.java",
+    "android/java/src/org/chromium/chrome/browser/preferences/AllPreferenceKeyRegistries.java",
     "android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeys.java",
+    "android/java/src/org/chromium/chrome/browser/preferences/ChromeSharedPreferences.java",
     "android/java/src/org/chromium/chrome/browser/preferences/DeprecatedChromePreferenceKeys.java",
-    "android/java/src/org/chromium/chrome/browser/preferences/KeyPrefix.java",
     "android/java/src/org/chromium/chrome/browser/preferences/LegacyChromePreferenceKeys.java",
     "android/java/src/org/chromium/chrome/browser/preferences/PrefChangeRegistrar.java",
     "android/java/src/org/chromium/chrome/browser/preferences/SharedPreferencesManager.java",
   ]
+
+  public_deps = [ "//base:base_shared_preferences_java" ]
+
   deps = [
     "//base:base_java",
     "//base:jni_java",
@@ -47,6 +50,7 @@ java_cpp_strings("java_pref_names_srcjar") {
     "//components/payments/core/payment_prefs.cc",
     "//components/policy/core/common/policy_pref_names.cc",
     "//components/privacy_sandbox/privacy_sandbox_prefs.h",
+    "//components/privacy_sandbox/tracking_protection_prefs.h",
     "//components/safe_browsing/core/common/safe_browsing_prefs.cc",
     "//components/signin/public/base/signin_pref_names.cc",
     "//components/supervised_user/core/common/pref_names.h",
@@ -58,23 +62,34 @@ java_cpp_strings("java_pref_names_srcjar") {
 
 generate_jni("jni_headers") {
   sources = [
+    "android/java/src/org/chromium/chrome/browser/preferences/ChromeSharedPreferences.java",
     "android/java/src/org/chromium/chrome/browser/preferences/PrefChangeRegistrar.java",
-    "android/java/src/org/chromium/chrome/browser/preferences/SharedPreferencesManager.java",
+  ]
+}
+
+source_set("android") {
+  sources = [
+    "android/chrome_shared_preferences.cc",
+    "android/chrome_shared_preferences.h",
+  ]
+  deps = [
+    ":jni_headers",
+    "//base",
   ]
 }
 
 robolectric_library("preferences_junit_tests") {
   sources = [
-    "android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeyCheckerTest.java",
     "android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeysTest.java",
-    "android/java/src/org/chromium/chrome/browser/preferences/KeyPrefixTest.java",
     "android/java/src/org/chromium/chrome/browser/preferences/SharedPreferencesManagerTest.java",
   ]
   deps = [
     ":java",
+    "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
     "//base/test:test_support_java",
+    "//third_party/android_deps:com_google_guava_guava_java",
     "//third_party/androidx:androidx_test_runner_java",
     "//third_party/junit:junit",
     "//third_party/mockito:mockito_java",

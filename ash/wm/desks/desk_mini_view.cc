@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/accelerators/keyboard_code_util.h"
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -62,7 +63,7 @@ constexpr int kShortcutViewHeight = 20;
 constexpr int kShortcutViewIconSize = 14;
 constexpr int kShortcutViewDistanceFromBottom = 4;
 
-// TODO(https://b/291622042): After CrOS Next is launched, remove
+// TODO(http://b/291622042): After CrOS Next is launched, remove
 // `kPreviewFocusRingRadiusOld`.
 constexpr int kPreviewFocusRingRadius = 10;
 
@@ -218,7 +219,7 @@ DeskMiniView::DeskMiniView(DeskBarViewBase* owner_bar,
     desk_shortcut_view_->AddChildView(std::make_unique<views::Label>(u"+"));
     desk_shortcut_view_->AddChildView(
         std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
-            kDeskBarSearchIcon, cros_tokens::kIconColorPrimary,
+            *GetSearchOrLauncherVectorIcon(), cros_tokens::kIconColorPrimary,
             kShortcutViewIconSize)));
     desk_shortcut_view_->AddChildView(std::make_unique<views::Label>(u"+"));
     desk_shortcut_label_ =

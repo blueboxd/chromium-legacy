@@ -42,7 +42,7 @@ export interface DraggableTileListInterface {
   // initialIndex: is the index of the tile that was dragged.
   // finalIndex: is the index of the tile that was targeted, the location at
   // which the dragging tile was dropped.
-  onDradEnd(initialIndex: number, finalIndex: number): void;
+  onDragEnd(initialIndex: number, finalIndex: number): void;
 }
 
 // This delegate class allows any Polymer list container of tiles to add the
@@ -118,12 +118,30 @@ export class DragDropReorderTileListDelegate {
         this.onDragOver_(event);
       }, false);
 
-      // TODO(http://crbug/1466146): check if this event delay can be removed
-      // for MacOS. It is making the drop have an awkward movement.
       this.eventTracker_.add(tile, 'dragend', (event: DragEvent) => {
         this.onDragEnd_(event);
       });
     }
+
+    // React to all elements being dragged over. We need this global polymer
+    // element listener in order to allow dropping an element on top of another
+    // one. For that, we need a call to `preventDefault()` with the proper
+    // event/element (it could be any sub-element, potentially not the tile
+    // since the tile we are replacing is potentially moved and therefore not
+    // triggering any more drag over events that will be associated with the
+    // dragend of our drag event cycle of interest).
+    // Therefore, we only use this listener to allow properly dropping the tile.
+    this.eventTracker_.add(
+        this.polymerElement_, 'dragover', (event: DragEvent) => {
+          // Only react if we are part of our drag event cycle. This event will
+          // trigger for any element being dragged over within the polymer
+          // element.
+          if (!this.isDragging_) {
+            return;
+          }
+
+          event.preventDefault();
+        });
   }
 
   // Clear all drag events listeners and reset tiles drag state.
@@ -288,7 +306,7 @@ export class DragDropReorderTileListDelegate {
       this.applyChanges_();
 
       // Notfiy the list of the changes.
-      this.tileListInterface_.onDradEnd(
+      this.tileListInterface_.onDragEnd(
           this.dragStartIndex_, this.dropTargetIndex_);
     }
 

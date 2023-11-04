@@ -176,21 +176,17 @@ void AddNativeUiColorMixer(ColorProvider* provider,
       const bool dark_mode =
           key.color_mode == ColorProviderKey::ColorMode::kDark;
 
-      mixer[kColorScrollbarArrowForeground] = {
+      mixer[kColorWebNativeControlScrollbarArrowForeground] = {
           dark_mode ? SkColorSetA(SK_ColorWHITE, 0x8B)
                     : SkColorSetA(SK_ColorBLACK, 0x72)};
-      mixer[kColorScrollbarArrowForegroundPressed] = {
+      mixer[kColorWebNativeControlScrollbarArrowForegroundPressed] = {
           dark_mode ? SkColorSetA(SK_ColorWHITE, 0xC8)
                     : SkColorSetA(SK_ColorBLACK, 0x9B)};
-      mixer[kColorScrollbarCorner] = {dark_mode
-                                          ? SkColorSetRGB(0x2C, 0x2C, 0x2C)
-                                          : SkColorSetRGB(0xFC, 0xFC, 0xFC)};
-    } else {
-      mixer[kColorScrollbarArrowForeground] = {kColorNativeBtnText};
-      mixer[kColorScrollbarArrowForegroundPressed] = {kColorNativeHighlight};
-      mixer[kColorScrollbarCorner] = {kColorNativeBtnFace};
+      mixer[kColorWebNativeControlScrollbarCorner] = {
+          dark_mode ? SkColorSetRGB(0x2C, 0x2C, 0x2C)
+                    : SkColorSetRGB(0xFC, 0xFC, 0xFC)};
     }
-    CompleteFluentScrollbarColorsDefinition(mixer);
+    CompleteScrollbarColorsDefinition(mixer);
   }
 
   if (key.contrast_mode == ColorProviderKey::ContrastMode::kNormal) {
@@ -206,10 +202,11 @@ void AddNativeUiColorMixer(ColorProvider* provider,
   mixer[kColorSliderTrack] = AlphaBlend(
       kColorNativeHighlight, kColorNativeWindow, gfx::kGoogleGreyAlpha400);
 
+  CompleteControlsForcedColorsDefinition(mixer);
+
   // Window Background
   mixer[kColorBubbleFooterBackground] = {kColorNativeWindow};
   mixer[kColorButtonBackgroundProminentDisabled] = {kColorNativeWindow};
-  mixer[kColorForcedWindow] = {kColorNativeWindow};
   mixer[kColorFrameActive] = {kColorNativeWindow};
   mixer[kColorFrameInactive] = {kColorNativeWindow};
   mixer[kColorPrimaryBackground] = {kColorNativeWindow};
@@ -220,7 +217,6 @@ void AddNativeUiColorMixer(ColorProvider* provider,
   mixer[kColorAlertMediumSeverityIcon] = {kColorNativeWindowText};
   mixer[kColorAlertMediumSeverityText] = {kColorNativeWindowText};
   mixer[kColorAlertHighSeverity] = {kColorNativeWindowText};
-  mixer[kColorForcedWindowText] = {kColorNativeWindowText};
   mixer[kColorIcon] = {kColorNativeWindowText};
   mixer[kColorMidground] = {kColorNativeWindowText};
   mixer[kColorPrimaryForeground] = {kColorNativeWindowText};
@@ -230,14 +226,12 @@ void AddNativeUiColorMixer(ColorProvider* provider,
   mixer[kColorTooltipForeground] = {kColorNativeWindowText};
 
   // Hyperlinks
-  mixer[kColorForcedHotlight] = {kColorNativeHotlight};
   mixer[kColorLinkForegroundDefault] = {kColorNativeHotlight};
   mixer[kColorLinkForegroundPressedDefault] = {kColorNativeHotlight};
   mixer[kColorMenuItemForegroundHighlighted] = {kColorNativeHotlight};
 
   // Gray/Disabled Text
   mixer[kColorDisabledForeground] = {kColorNativeGrayText};
-  mixer[kColorForcedGrayText] = {kColorNativeGrayText};
   mixer[kColorMenuItemForegroundDisabled] = {kColorNativeGrayText};
   mixer[kColorLinkForegroundDisabled] = {kColorNativeGrayText};
   mixer[kColorLabelForegroundDisabled] = {kColorNativeGrayText};
@@ -247,7 +241,6 @@ void AddNativeUiColorMixer(ColorProvider* provider,
   // Button Background
   mixer[kColorButtonBackground] = {kColorNativeBtnFace};
   mixer[kColorComboboxBackground] = {kColorNativeBtnFace};
-  mixer[kColorForcedBtnFace] = {kColorNativeBtnFace};
   mixer[kColorMenuBackground] = {kColorNativeBtnFace};
   mixer[kColorSliderTrack] = {kColorNativeBtnFace};
   mixer[kColorSliderTrackMinimal] = {kColorNativeBtnFace};
@@ -260,7 +253,6 @@ void AddNativeUiColorMixer(ColorProvider* provider,
   mixer[kColorCheckboxForegroundChecked] = {kColorNativeBtnText};
   mixer[kColorFocusableBorderFocused] = {kColorNativeBtnText};
   mixer[kColorFocusableBorderUnfocused] = {kColorNativeBtnText};
-  mixer[kColorForcedBtnText] = {kColorNativeBtnText};
   mixer[kColorMenuBorder] = {kColorNativeBtnText};
   mixer[kColorMenuItemForeground] = {kColorNativeBtnText};
   mixer[kColorMenuItemForegroundSecondary] = {kColorNativeBtnText};
@@ -280,7 +272,6 @@ void AddNativeUiColorMixer(ColorProvider* provider,
   mixer[kColorButtonBackgroundProminent] = {kColorNativeHighlight};
   mixer[kColorButtonBorder] = {kColorNativeHighlight};
   mixer[kColorButtonBackgroundProminentFocused] = {kColorNativeHighlight};
-  mixer[kColorForcedHighlight] = {kColorNativeHighlight};
   mixer[kColorHelpIconActive] = {kColorNativeHighlight};
   mixer[kColorItemSelectionBackground] = {kColorNativeHighlight};
   mixer[kColorMenuSelectionBackground] = {kColorNativeHighlight};
@@ -290,7 +281,6 @@ void AddNativeUiColorMixer(ColorProvider* provider,
 
   // Highlight/Selected Text Foreground
   mixer[kColorButtonForegroundProminent] = {kColorNativeHighlightText};
-  mixer[kColorForcedHighlightText] = {kColorNativeHighlightText};
   mixer[kColorMenuItemForegroundSelected] = {kColorNativeHighlightText};
   mixer[kColorNotificationInputForeground] = {kColorNativeHighlightText};
   mixer[kColorTableForegroundSelectedFocused] = {kColorNativeHighlightText};
@@ -300,12 +290,6 @@ void AddNativeUiColorMixer(ColorProvider* provider,
   mixer[kColorTreeNodeForegroundSelectedUnfocused] = {
       kColorNativeHighlightText};
   mixer[kColorButtonForegroundProminent] = {kColorNativeHighlightText};
-
-  // Menu Highlight
-  mixer[kColorForcedMenuHilight] = {kColorNativeMenuHilight};
-
-  // Scrollbar
-  mixer[kColorForcedScrollbar] = {kColorNativeScrollbar};
 }
 
 }  // namespace ui

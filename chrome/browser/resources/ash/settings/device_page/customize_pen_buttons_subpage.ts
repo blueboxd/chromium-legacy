@@ -21,6 +21,7 @@ import {RouteObserverMixin} from '../route_observer_mixin.js';
 import {Route, Router, routes} from '../router.js';
 
 import {getTemplate} from './customize_pen_buttons_subpage.html.js';
+import {FakeInputDeviceSettingsProvider} from './fake_input_device_settings_provider.js';
 import {getInputDeviceSettingsProvider} from './input_device_mojo_interface_provider.js';
 import {ActionChoice, GraphicsTablet, InputDeviceSettingsProviderInterface} from './input_device_settings_types.js';
 
@@ -60,17 +61,37 @@ export class SettingsCustomizePenButtonsSubpageElement extends
   private buttonActionList_: ActionChoice[];
   private inputDeviceSettingsProvider_: InputDeviceSettingsProviderInterface =
       getInputDeviceSettingsProvider();
+  private previousRoute_: Route|null = null;
 
-  override currentRouteChanged(route: Route): void {
+  override connectedCallback(): void {
+    super.connectedCallback();
+
+    this.addEventListener('button-remapping-changed', this.onSettingsChanged);
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+
+    this.removeEventListener(
+        'button-remapping-changed', this.onSettingsChanged);
+  }
+
+  override async currentRouteChanged(route: Route): Promise<void> {
     // Does not apply to this page.
     if (route !== routes.CUSTOMIZE_PEN_BUTTONS) {
+      if (this.previousRoute_ === routes.CUSTOMIZE_PEN_BUTTONS) {
+        this.inputDeviceSettingsProvider_.stopObserving();
+      }
+      this.previousRoute_ = route;
       return;
     }
+    this.previousRoute_ = route;
     if (this.hasGraphicsTablets() &&
         (!this.selectedTablet ||
          this.selectedTablet.id !== this.getGraphicsTabletIdFromUrl())) {
-      this.initializePen();
+      await this.initializePen();
     }
+    this.inputDeviceSettingsProvider_.startObserving(this.selectedTablet.id);
   }
 
   /**
@@ -79,15 +100,10 @@ export class SettingsCustomizePenButtonsSubpageElement extends
    */
   private async initializePen(): Promise<void> {
     const tabletId = this.getGraphicsTabletIdFromUrl();
-
-    // TODO(yyhyyh@): Remove the if condition after getActions functions is
-    // added in the mojo.
-    if (this.inputDeviceSettingsProvider_
-            .getActionsForGraphicsTabletButtonCustomization) {
-      this.buttonActionList_ =
-          await this.inputDeviceSettingsProvider_
-              .getActionsForGraphicsTabletButtonCustomization();
-    }
+    this.buttonActionList_ =
+        (await this.inputDeviceSettingsProvider_
+             .getActionsForGraphicsTabletButtonCustomization())
+            ?.options;
     const searchedGraphicsTablet = this.graphicsTablets.find(
         (graphicsTablet: GraphicsTablet) => graphicsTablet.id === tabletId);
     this.selectedTablet = castExists(searchedGraphicsTablet);
@@ -106,8 +122,8 @@ export class SettingsCustomizePenButtonsSubpageElement extends
     return !!this.graphicsTablets.find(tablet => tablet.id === id);
   }
 
-  onGraphicsTabletListUpdated(): void {
-    if (Router.getInstance().currentRoute !== routes.CUSTOMIZE_TABLET_BUTTONS) {
+  async onGraphicsTabletListUpdated(): Promise<void> {
+    if (Router.getInstance().currentRoute !== routes.CUSTOMIZE_PEN_BUTTONS) {
       return;
     }
 
@@ -116,7 +132,25 @@ export class SettingsCustomizePenButtonsSubpageElement extends
       Router.getInstance().navigateTo(routes.DEVICE);
       return;
     }
-    this.initializePen();
+    await this.initializePen();
+    this.inputDeviceSettingsProvider_.startObserving(this.selectedTablet.id);
+  }
+
+  onSettingsChanged(): void {
+    // TODO(yyhyyh@): Remove the if-condition after mojo api is done.
+    if (this.inputDeviceSettingsProvider_ instanceof
+        FakeInputDeviceSettingsProvider) {
+      this.inputDeviceSettingsProvider_.setGraphicsTabletSettings(
+          this.selectedTablet!.id, this.selectedTablet!.settings);
+    }
+  }
+
+  private getDescription_(): string {
+    if (!this.selectedTablet?.name) {
+      return '';
+    }
+    return this.i18n(
+        'customizeButtonSubpageDescription', this.selectedTablet!.name);
   }
 }
 

@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 
+#include "base/feature_list.h"
 #include "base/functional/overloaded.h"
 #include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
@@ -21,6 +22,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/browsing_data/content/browsing_data_model.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
+#include "components/browsing_data/core/features.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -284,21 +286,24 @@ class PageSpecificSiteDataDialogModelDelegate : public ui::DialogModelDelegate {
     DeleteMatchingHostNodeFromModel(allowed_cookies_tree_model_.get(), origin);
     DeleteMatchingHostNodeFromModel(blocked_cookies_tree_model_.get(), origin);
 
-    // Correctly remove partitioned storage (needs to be done separately), since
-    // the existing calls don't apply the necessary filtering.
-    DeletePartitionedStorage(origin);
+    if (!base::FeatureList::IsEnabled(
+            browsing_data::features::kMigrateStorageToBDM)) {
+      DeletePartitionedStorage(origin);
+    }
 
     // Removing origin from Browsing Data Model to support new storage types.
     // The UI assumes deletion completed successfully, so we're passing
     // `base::DoNothing` callback.
     // TODO(crbug.com/1394352): Future tests will need to know when the deletion
     // is completed, this will require a callback to be passed here.
-    // TODO(crbug.com/1468277): Step 7 - This needs to be updated to clear
-    // browsing data where the top-site on a StorageKey matches `origin`.
     allowed_browsing_data_model()->RemoveBrowsingData(origin.host(),
                                                       base::DoNothing());
+    allowed_browsing_data_model()->RemovePartitionedBrowsingData(
+        origin.host(), net::SchemefulSite(origin), base::DoNothing());
     blocked_browsing_data_model()->RemoveBrowsingData(origin.host(),
                                                       base::DoNothing());
+    blocked_browsing_data_model()->RemovePartitionedBrowsingData(
+        origin.host(), net::SchemefulSite(origin), base::DoNothing());
 
     RecordPageSpecificSiteDataDialogAction(
         PageSpecificSiteDataDialogAction::kSiteDeleted);
@@ -340,9 +345,6 @@ class PageSpecificSiteDataDialogModelDelegate : public ui::DialogModelDelegate {
     }
   }
 
-  // TODO(crbug.com/1468277): Step 7 - This function is a shim that clears
-  // partitioned storage as though it were unpartitioned to keep the UI working.
-  // The need for it will go away when Step 7 is completed.
   void DeletePartitionedStorage(const url::Origin& origin) {
     Profile* profile =
         Profile::FromBrowserContext(web_contents_->GetBrowserContext());
@@ -393,13 +395,7 @@ class PageSpecificSiteDataDialogModelDelegate : public ui::DialogModelDelegate {
 
   bool IsBrowsingDataEntryViewFullyPartitioned(
       const BrowsingDataModel::BrowsingDataEntryView& entry) {
-    // We consider the browsing data entry view to be fully partitioned if the
-    // storage is backed by a StorageKey and the StorageKey is third-party.
-    // Unlike for cookies, we can be sure that given context is partitioned if
-    // its storage keys are as that determines the scope of access.
-    const blink::StorageKey* storage_key =
-        absl::get_if<blink::StorageKey>(&entry.data_key.get());
-    return storage_key != nullptr && storage_key->IsThirdPartyContext();
+    return entry.GetThirdPartyPartitioningSite().has_value();
   }
 
   bool IsCookieTreeNodeFullyPartitioned(CookieTreeNode* node) {

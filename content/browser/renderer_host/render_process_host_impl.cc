@@ -944,7 +944,7 @@ RenderProcessHostImpl::DomStorageBinder& GetDomStorageBinder() {
   return *binder;
 }
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_ANDROID)
 static constexpr size_t kUnknownPlatformProcessLimit = 0;
 
 // Returns the process limit from the system. Use |kUnknownPlatformProcessLimit|
@@ -964,7 +964,7 @@ size_t GetPlatformProcessLimit() {
   return kUnknownPlatformProcessLimit;
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 }
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 RenderProcessHost::BindHostReceiverInterceptor&
 GetBindHostReceiverInterceptor() {
@@ -1195,7 +1195,7 @@ RenderProcessHostImpl::GetInProcessRendererThreadTaskRunnerForTesting() {
   return g_in_process_thread->task_runner();
 }
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_ANDROID)
 // static
 size_t RenderProcessHostImpl::GetPlatformMaxRendererProcessCount() {
   // Set the limit to half of the system limit to leave room for other programs.
@@ -1225,13 +1225,6 @@ size_t RenderProcessHost::GetMaxRendererProcessCount() {
   // happy with keeping a lot of these, as long as the number of live renderer
   // processes remains reasonable, and on Android the OS takes care of that.
   return std::numeric_limits<size_t>::max();
-#elif BUILDFLAG(IS_CHROMEOS_ASH)
-  // On Chrome OS new renderer processes are very cheap and there's no OS
-  // driven constraint on the number of processes, and the effectiveness
-  // of the tab discarder is very poor when we have tabs sharing a
-  // renderer process.  So, set a high limit, and based on UMA stats
-  // for CrOS the 99.9th percentile of Tabs.MaxTabsInADay is around 100.
-  return 100;
 #else
   // On other platforms, calculate the maximum number of renderer process hosts
   // according to the amount of installed memory as reported by the OS, along
@@ -2161,7 +2154,8 @@ RenderProcessHostImpl::GetInfoForBrowserContextDestructionCrashReporting() {
     ret += " dcn";
 
   if (keep_alive_ref_count_ != 0) {
-    CHECK(!blink::features::IsKeepAliveInBrowserMigrationEnabled());
+    CHECK(!base::FeatureList::IsEnabled(
+        blink::features::kKeepAliveInBrowserMigration));
     ret += " karc=" + base::NumberToString(keep_alive_ref_count_);
   }
 
@@ -2610,14 +2604,16 @@ void RenderProcessHostImpl::IncrementKeepAliveRefCount(uint64_t handle_id) {
   if (base::FeatureList::IsEnabled(kCheckNoNewRefCountsWhenRphDeletingSoon)) {
     CHECK(!deleting_soon_);
   }
-  CHECK(!blink::features::IsKeepAliveInBrowserMigrationEnabled());
+  CHECK(!base::FeatureList::IsEnabled(
+      blink::features::kKeepAliveInBrowserMigration));
   ++keep_alive_ref_count_;
   DCHECK(!keep_alive_start_times_.contains(handle_id));
   keep_alive_start_times_[handle_id] = base::Time::Now();
 }
 
 bool RenderProcessHostImpl::AreAllRefCountsZero() {
-  if (blink::features::IsKeepAliveInBrowserMigrationEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          blink::features::kKeepAliveInBrowserMigration)) {
     CHECK_EQ(keep_alive_ref_count_, 0);
   }
   return keep_alive_ref_count_ == 0 && worker_ref_count_ == 0 &&
@@ -2627,7 +2623,8 @@ bool RenderProcessHostImpl::AreAllRefCountsZero() {
 void RenderProcessHostImpl::DecrementKeepAliveRefCount(uint64_t handle_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(!are_ref_counts_disabled_);
-  CHECK(!blink::features::IsKeepAliveInBrowserMigrationEnabled());
+  CHECK(!base::FeatureList::IsEnabled(
+      blink::features::kKeepAliveInBrowserMigration));
   CHECK_GT(keep_alive_ref_count_, 0);
   --keep_alive_ref_count_;
   DCHECK(keep_alive_start_times_.contains(handle_id));
@@ -3234,13 +3231,11 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
     command_line->AppendSwitchASCII(blink::switches::kJavaScriptFlags,
                                     "--jitless");
 
-#if BUILDFLAG(IS_CHROMEOS)
   if (features::IsTouchTextEditingRedesignEnabled()) {
     command_line->AppendSwitchASCII(
         blink::switches::kTouchTextSelectionStrategy,
         blink::switches::kTouchTextSelectionStrategy_Direction);
   }
-#endif
 
 #if BUILDFLAG(IS_WIN)
   command_line->AppendSwitchASCII(
@@ -3321,6 +3316,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableSpeechAPI,
     switches::kDisableThreadedCompositing,
     switches::kDisableTouchDragDrop,
+    switches::kDisableUseSharedImagesForPepperVideo,
     switches::kDisableV8IdleTasks,
     switches::kDisableVideoCaptureUseGpuMemoryBuffer,
     switches::kDisableWebGLImageChromium,
@@ -3621,7 +3617,8 @@ bool RenderProcessHostImpl::FastShutdownIfPossible(size_t page_count,
 
   // TODO(crbug.com/1356128): Remove this block once the migration is launched.
   if (keep_alive_ref_count_ != 0) {
-    CHECK(!blink::features::IsKeepAliveInBrowserMigrationEnabled());
+    CHECK(!base::FeatureList::IsEnabled(
+        blink::features::kKeepAliveInBrowserMigration));
     LogDelayReasonForFastShutdown(DelayShutdownReason::kFetchKeepAlive);
     return false;
   }
@@ -3913,7 +3910,8 @@ void RenderProcessHostImpl::Cleanup() {
     LogDelayReasonForCleanup(DelayShutdownReason::kListener);
     return;
   } else if (keep_alive_ref_count_ != 0) {
-    CHECK(!blink::features::IsKeepAliveInBrowserMigrationEnabled());
+    CHECK(!base::FeatureList::IsEnabled(
+        blink::features::kKeepAliveInBrowserMigration));
     TRACE_EVENT(
         "shutdown", "RenderProcessHostImpl::Cleanup : Have keep_alive_ref.",
         ChromeTrackEvent::kRenderProcessHost, *this,
@@ -4123,6 +4121,10 @@ bool RenderProcessHostImpl::SuddenTerminationAllowed() {
 
 base::TimeDelta RenderProcessHostImpl::GetChildProcessIdleTime() {
   return base::TimeTicks::Now() - child_process_activity_time_;
+}
+
+viz::GpuClient* RenderProcessHostImpl::GetGpuClient() {
+  return gpu_client_.get();
 }
 
 RenderProcessHost::FilterURLResult RenderProcessHostImpl::FilterURL(

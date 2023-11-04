@@ -124,10 +124,6 @@ extern const base::FeatureParam<int>
 extern const base::FeatureParam<int>
     kExtensionTelemetryFileDataStartupDelaySeconds;
 
-// Enables data collected by the kExtensionTelemetry to be written and read to
-// disk. This data will be uploaded for analysis.
-BASE_DECLARE_FEATURE(kExtensionTelemetryPersistence);
-
 // Specifies the upload interval for extension telemetry reports.
 extern const base::FeatureParam<int> kExtensionTelemetryUploadIntervalSeconds;
 
@@ -158,28 +154,9 @@ BASE_DECLARE_FEATURE(
 // telemetry reports to SB servers.
 BASE_DECLARE_FEATURE(kExtensionTelemetryPotentialPasswordTheft);
 
-// Enables collection of arguments whenever an extension invokes the
-// cookies.getAll API call.
-BASE_DECLARE_FEATURE(kExtensionTelemetryCookiesGetAllSignal);
-
-// Enables collection of arguments whenever an extension invokes the
-// cookies.get API call.
-BASE_DECLARE_FEATURE(kExtensionTelemetryCookiesGetSignal);
-
-// Enables collection of DeclarativeNetRequest rules when an extension invokes
-// the updateDynamicRules()/updateSessionRules() APIs.
-BASE_DECLARE_FEATURE(kExtensionTelemetryDeclarativeNetRequestSignal);
-
 // Enables remotely disabling of malicious off-store extensions identified in
 // Extension Telemetry service reports.
 BASE_DECLARE_FEATURE(kExtensionTelemetryDisableOffstoreExtensions);
-
-// Determines the tag to pass to Omaha to get a file type policy.
-BASE_DECLARE_FEATURE(kFileTypePoliciesTag);
-
-// The parameter name used for getting the tag value from
-// `kFileTypePoliciesTag`.
-const char kFileTypePoliciesTagParamName[] = "policy_omaha_tag";
 
 // Enables the new text, layout, links, and icons on both the privacy guide
 // and on the security settings page for the enhanced protection security
@@ -341,10 +318,6 @@ base::Value::List GetFeatureStatusList();
 // Returns the tag used for Client Side Phishing Detection models, as
 // computed from the current feature flags.
 std::string GetClientSideDetectionTag();
-
-// Returns the tag used for file type policies, as computed from the current
-// feature flag.
-std::string GetFileTypePoliciesTag();
 
 // Enables new ESB specific threshold fields in Visual TF Lite model files
 BASE_DECLARE_FEATURE(kSafeBrowsingPhishingClassificationESBThreshold);

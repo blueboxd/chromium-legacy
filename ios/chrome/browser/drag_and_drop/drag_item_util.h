@@ -7,23 +7,24 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/window_activities/window_activity_helpers.h"
+#import "ios/chrome/browser/window_activities/model/window_activity_helpers.h"
 
 class GURL;
 
 namespace web {
 class WebState;
+class WebStateID;
 }
 
 // Information that allows the receiver to locate a tab and also to decide
 // whether to allow a drop.
 @interface TabInfo : NSObject
 // The unique identifier of the tab.
-@property(nonatomic, copy, readonly) NSString* tabID;
+@property(nonatomic, assign, readonly) web::WebStateID tabID;
 // If YES, the tab is currently in an incognito profile.
 @property(nonatomic, assign, readonly) BOOL incognito;
 // Default initializer.
-- (instancetype)initWithTabID:(NSString*)tabID incognito:(BOOL)incognito;
+- (instancetype)initWithTabID:(web::WebStateID)tabID incognito:(BOOL)incognito;
 - (instancetype)init NS_UNAVAILABLE;
 @end
 

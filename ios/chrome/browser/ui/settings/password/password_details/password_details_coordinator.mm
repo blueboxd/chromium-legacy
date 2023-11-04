@@ -14,6 +14,7 @@
 #import "components/password_manager/core/browser/ui/affiliated_group.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/common/password_manager_features.h"
+#import "components/prefs/pref_service.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/credential_provider_promo/features.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
@@ -25,11 +26,11 @@
 #import "ios/chrome/browser/shared/model/browser/browser_list.h"
 #import "ios/chrome/browser/shared/model/browser/browser_list_factory.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/credential_provider_promo_commands.h"
-#import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
@@ -44,6 +45,8 @@
 #import "ios/chrome/browser/ui/settings/password/password_manager_ui_features.h"
 #import "ios/chrome/browser/ui/settings/password/password_sharing/password_sharing_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_sharing/password_sharing_coordinator_delegate.h"
+#import "ios/chrome/browser/ui/settings/password/password_sharing/password_sharing_first_run_coordinator.h"
+#import "ios/chrome/browser/ui/settings/password/password_sharing/password_sharing_first_run_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/reauthentication/reauthentication_coordinator.h"
 #import "ios/chrome/browser/ui/settings/utils/password_utils.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
@@ -53,10 +56,12 @@
 
 using password_manager::features::IsAuthOnEntryV2Enabled;
 
-@interface PasswordDetailsCoordinator () <PasswordDetailsHandler,
-                                          PasswordDetailsMediatorDelegate,
-                                          ReauthenticationCoordinatorDelegate,
-                                          PasswordSharingCoordinatorDelegate> {
+@interface PasswordDetailsCoordinator () <
+    PasswordDetailsHandler,
+    PasswordDetailsMediatorDelegate,
+    ReauthenticationCoordinatorDelegate,
+    PasswordSharingCoordinatorDelegate,
+    PasswordSharingFirstRunCoordinatorDelegate> {
   password_manager::AffiliatedGroup _affiliatedGroup;
   password_manager::CredentialUIEntry _credential;
 
@@ -84,6 +89,10 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
 // Coordinator for the password sharing flow.
 @property(nonatomic, strong)
     PasswordSharingCoordinator* passwordSharingCoordinator;
+
+// Coordinator for the password sharing first run flow.
+@property(nonatomic, strong)
+    PasswordSharingFirstRunCoordinator* passwordSharingFirstRunCoordinator;
 
 // Coordinator for blocking password details until Local Authentication is
 // successful.
@@ -206,44 +215,6 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
 - (void)dismissPasswordDetailsTableViewController {
   [self.delegate passwordDetailsCancelButtonWasTapped];
   [self.delegate passwordDetailsCoordinatorDidRemove:self];
-}
-
-- (void)showPasscodeDialog {
-  NSString* title =
-      l10n_util::GetNSString(IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_TITLE);
-  NSString* message =
-      l10n_util::GetNSString(IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_CONTENT);
-  self.alertCoordinator =
-      [[AlertCoordinator alloc] initWithBaseViewController:self.viewController
-                                                   browser:self.browser
-                                                     title:title
-                                                   message:message];
-
-  __weak __typeof(self) weakSelf = self;
-  OpenNewTabCommand* command =
-      [OpenNewTabCommand commandWithURLFromChrome:GURL(kPasscodeArticleURL)];
-
-  [self.alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_OK)
-                                   action:^{
-                                     [weakSelf dismissAlertCoordinator];
-                                   }
-                                    style:UIAlertActionStyleCancel];
-
-  [self.alertCoordinator
-      addItemWithTitle:l10n_util::GetNSString(
-                           IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_LEARN_HOW)
-                action:^{
-                  id<ApplicationCommands> applicationCommandsHandler =
-                      HandlerForProtocol(
-                          weakSelf.browser->GetCommandDispatcher(),
-                          ApplicationCommands);
-                  [applicationCommandsHandler
-                      closeSettingsUIAndOpenURL:command];
-                  [weakSelf dismissAlertCoordinator];
-                }
-                 style:UIAlertActionStyleDefault];
-
-  [self.alertCoordinator start];
 }
 
 - (void)showPasswordEditDialogWithOrigin:(NSString*)origin {
@@ -390,13 +361,18 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
 }
 
 - (void)onShareButtonPressed {
-  [self.passwordSharingCoordinator stop];
-  self.passwordSharingCoordinator = [[PasswordSharingCoordinator alloc]
-      initWithBaseViewController:self.viewController
-                         browser:self.browser
-                     credentials:self.mediator.credentials];
-  self.passwordSharingCoordinator.delegate = self;
-  [self.passwordSharingCoordinator start];
+  if (self.browser->GetBrowserState()->GetPrefs()->GetBoolean(
+          prefs::kPasswordSharingFlowHasBeenEntered)) {
+    [self startPasswordSharingCoordinator];
+  } else {
+    [self.passwordSharingFirstRunCoordinator stop];
+    self.passwordSharingFirstRunCoordinator =
+        [[PasswordSharingFirstRunCoordinator alloc]
+            initWithBaseViewController:self.baseViewController
+                               browser:self.browser];
+    self.passwordSharingFirstRunCoordinator.delegate = self;
+    [self.passwordSharingFirstRunCoordinator start];
+  }
 }
 
 #pragma mark - PasswordDetailsMediatorDelegate
@@ -475,6 +451,27 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
   }
 }
 
+#pragma mark - PasswordSharingFirstRunCoordinatorDelegate
+
+- (void)passwordSharingFirstRunCoordinatorDidAccept:
+    (PasswordSharingFirstRunCoordinator*)coordinator {
+  self.browser->GetBrowserState()->GetPrefs()->SetBoolean(
+      prefs::kPasswordSharingFlowHasBeenEntered, true);
+
+  if (self.passwordSharingFirstRunCoordinator == coordinator) {
+    [self stopPasswordSharingFirstRunCoordinatorWithCompletion:^{
+      [self startPasswordSharingCoordinator];
+    }];
+  }
+}
+
+- (void)passwordSharingFirstRunCoordinatorWasDismissed:
+    (PasswordSharingFirstRunCoordinator*)coordinator {
+  if (self.passwordSharingFirstRunCoordinator == coordinator) {
+    [self stopPasswordSharingFirstRunCoordinatorWithCompletion:nil];
+  }
+}
+
 #pragma mark - Private
 
 - (void)dismissActionSheetCoordinator {
@@ -505,6 +502,27 @@ using password_manager::features::IsAuthOnEntryV2Enabled;
                            authOnStart:[self shouldRequireAuthOnStart]];
   _reauthCoordinator.delegate = self;
   [_reauthCoordinator start];
+}
+
+// Starts the main coordinator for the password sharing flow.
+- (void)startPasswordSharingCoordinator {
+  [self.passwordSharingCoordinator stop];
+  self.passwordSharingCoordinator = [[PasswordSharingCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser
+                     credentials:self.mediator.credentials
+         savedPasswordsPresenter:self.mediator.savedPasswordsPresenter];
+  self.passwordSharingCoordinator.delegate = self;
+  [self.passwordSharingCoordinator start];
+}
+
+// Stops the first run coordinator for the password sharing flow and calls
+// `completion` on its vc dismissal.
+- (void)stopPasswordSharingFirstRunCoordinatorWithCompletion:
+    (ProceduralBlock)completion {
+  [self.passwordSharingFirstRunCoordinator stopWithCompletion:completion];
+  self.passwordSharingFirstRunCoordinator.delegate = nil;
+  self.passwordSharingFirstRunCoordinator = nil;
 }
 
 // Whether Local Authentication should be required before displaying the

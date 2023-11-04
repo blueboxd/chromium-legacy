@@ -82,7 +82,8 @@ void BrowserLoader::SelectRootfsLacros(LoadCompletionCallback callback,
 
   rootfs_lacros_loader_->Load(
       base::BindOnce(&BrowserLoader::OnLoadComplete, weak_factory_.GetWeakPtr(),
-                     std::move(callback), LacrosSelection::kRootfs));
+                     std::move(callback), LacrosSelection::kRootfs),
+      source == LacrosSelectionSource::kForced);
 }
 
 void BrowserLoader::SelectStatefulLacros(LoadCompletionCallback callback,
@@ -91,7 +92,8 @@ void BrowserLoader::SelectStatefulLacros(LoadCompletionCallback callback,
 
   stateful_lacros_loader_->Load(
       base::BindOnce(&BrowserLoader::OnLoadComplete, weak_factory_.GetWeakPtr(),
-                     std::move(callback), LacrosSelection::kStateful));
+                     std::move(callback), LacrosSelection::kStateful),
+      source == LacrosSelectionSource::kForced);
 
   // Unmount the rootfs lacros-chrome when using stateful lacros-chrome.
   // This will keep stateful lacros-chrome only mounted and not hold the rootfs
@@ -128,11 +130,11 @@ void BrowserLoader::Load(LoadCompletionCallback callback) {
     // too.
     switch (lacros_selection.value()) {
       case browser_util::LacrosSelection::kRootfs:
-        SelectRootfsLacros(std::move(callback), LacrosSelectionSource::kPolicy);
+        SelectRootfsLacros(std::move(callback), LacrosSelectionSource::kForced);
         return;
       case browser_util::LacrosSelection::kStateful:
         SelectStatefulLacros(std::move(callback),
-                             LacrosSelectionSource::kPolicy);
+                             LacrosSelectionSource::kForced);
         return;
       case browser_util::LacrosSelection::kDeployedLocally:
         NOTREACHED();
@@ -240,6 +242,19 @@ void BrowserLoader::Unload() {
   rootfs_lacros_loader_->Unload();
 }
 
+base::FilePath DetermineLacrosBinaryPath(const base::FilePath& path) {
+  // Interpret path as directory. If that fails, interpret it as the executable.
+  base::FilePath expanded =
+      path.Append(LacrosSelectionLoader::kLacrosChromeBinary);
+  if (base::PathExists(expanded)) {
+    return expanded;
+  }
+  if (base::PathExists(path)) {
+    return path;
+  }
+  return {};
+}
+
 void BrowserLoader::OnLoadComplete(LoadCompletionCallback callback,
                                    LacrosSelection selection,
                                    base::Version version,
@@ -260,8 +275,7 @@ void BrowserLoader::OnLoadComplete(LoadCompletionCallback callback,
   // that resulted in /run/lacros being empty at this point.
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&base::PathExists,
-                     path.Append(LacrosSelectionLoader::kLacrosChromeBinary)),
+      base::BindOnce(&DetermineLacrosBinaryPath, path),
       base::BindOnce(&BrowserLoader::FinishOnLoadComplete,
                      weak_factory_.GetWeakPtr(), std::move(callback), path,
                      selection, std::move(version)));
@@ -271,11 +285,11 @@ void BrowserLoader::FinishOnLoadComplete(LoadCompletionCallback callback,
                                          const base::FilePath& path,
                                          LacrosSelection selection,
                                          base::Version version,
-                                         bool lacros_binary_exists) {
+                                         const base::FilePath& lacros_binary) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!lacros_binary_exists) {
-    LOG(ERROR) << "Failed to find chrome binary at " << path;
+  if (lacros_binary.empty()) {
+    LOG(ERROR) << "Failed to find binary at " << path;
     std::move(callback).Run(base::FilePath(), selection, base::Version());
     return;
   }
@@ -285,8 +299,8 @@ void BrowserLoader::FinishOnLoadComplete(LoadCompletionCallback callback,
       base::TimeTicks::Now() - lacros_start_load_time_);
 
   // Log the path on success.
-  LOG(WARNING) << "Loaded lacros image at " << path;
-  std::move(callback).Run(path, selection, std::move(version));
+  LOG(WARNING) << "Loaded lacros image with binary " << lacros_binary;
+  std::move(callback).Run(lacros_binary, selection, std::move(version));
 }
 
 std::ostream& operator<<(std::ostream& ostream,
@@ -296,8 +310,8 @@ std::ostream& operator<<(std::ostream& ostream,
       return ostream << "Unknown";
     case BrowserLoader::LacrosSelectionSource::kCompatibilityCheck:
       return ostream << "CompatibilityCheck";
-    case BrowserLoader::LacrosSelectionSource::kPolicy:
-      return ostream << "Policy";
+    case BrowserLoader::LacrosSelectionSource::kForced:
+      return ostream << "Forced";
     case BrowserLoader::LacrosSelectionSource::kDeployedPath:
       return ostream << "DeployedPath";
   }

@@ -164,6 +164,11 @@ class FloatLayoutManager : public WmDefaultLayoutManager {
     window_state->OnWMEvent(&event);
   }
 
+  void OnWillRemoveWindowFromLayout(aura::Window* child) override {
+    WindowState::Get(child)->set_pre_added_to_workspace_window_bounds(
+        child->bounds());
+  }
+
   void SetChildBounds(aura::Window* child,
                       const gfx::Rect& requested_bounds) override {
     // This should result in sending a bounds change WMEvent to properly support
@@ -314,6 +319,14 @@ class FloatController::FloatedWindowInfo : public aura::WindowObserver {
                                intptr_t old) override {
     CHECK_EQ(floated_window_, window);
     if (key != aura::client::kResizeBehaviorKey) {
+      return;
+    }
+
+    // If `window` is in transitional snapped state, `window` is going to be
+    // snapped very soon so we don't need to apply the float bounds policies.
+    // Otherwise, the bounds change request may be queued and applied after
+    // `window` is snapped.
+    if (SplitViewController::Get(window)->IsWindowInTransitionalState(window)) {
       return;
     }
 
@@ -786,13 +799,9 @@ void FloatController::OnDisplayMetricsChanged(const display::Display& display,
       // Let the state object handle the display change. This is normally
       // handled by the `WorkspaceLayoutManager`, but the float container does
       // not have one attached.
-      if (metrics & display::DisplayObserver::DISPLAY_METRIC_BOUNDS) {
+      if (metrics & display::DisplayObserver::DISPLAY_METRIC_BOUNDS ||
+          metrics & display::DisplayObserver::DISPLAY_METRIC_WORK_AREA) {
         const DisplayMetricsChangedWMEvent wm_event(metrics);
-        WindowState::Get(window)->OnWMEvent(&wm_event);
-      }
-
-      if (metrics & display::DisplayObserver::DISPLAY_METRIC_WORK_AREA) {
-        const WMEvent wm_event(WM_EVENT_WORKAREA_BOUNDS_CHANGED);
         WindowState::Get(window)->OnWMEvent(&wm_event);
       }
     }

@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.app.tab_activity_glue.ReparentingTask;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
+import org.chromium.chrome.browser.new_tab_url.DseNewTabUrlManager;
 import org.chromium.chrome.browser.ntp.NewTabPageLaunchOrigin;
 import org.chromium.chrome.browser.ntp.NewTabPageUtils;
 import org.chromium.chrome.browser.prefetch.settings.PreloadPagesSettingsBridge;
@@ -42,7 +43,6 @@ import org.chromium.chrome.browser.tab.TabParentIntent;
 import org.chromium.chrome.browser.tab.TabResolver;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tab.TabUtils;
-import org.chromium.chrome.browser.tab.state.SerializedCriticalPersistedTabData;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.url_formatter.UrlFormatter;
@@ -83,12 +83,15 @@ public class ChromeTabCreator extends TabCreator {
     private final AsyncTabParamsManager mAsyncTabParamsManager;
     private final Supplier<TabModelSelector> mTabModelSelectorSupplier;
     private final Supplier<CompositorViewHolder> mCompositorViewHolderSupplier;
+    @Nullable
+    private final DseNewTabUrlManager mDseNewTabUrlManager;
 
     public ChromeTabCreator(Activity activity, WindowAndroid nativeWindow,
             Supplier<TabDelegateFactory> tabDelegateFactory, boolean incognito,
             OverviewNTPCreator overviewNTPCreator, AsyncTabParamsManager asyncTabParamsManager,
             Supplier<TabModelSelector> tabModelSelectorSupplier,
-            Supplier<CompositorViewHolder> compositorViewHolderSupplier) {
+            Supplier<CompositorViewHolder> compositorViewHolderSupplier,
+            @Nullable DseNewTabUrlManager dseNewTabUrlManager) {
         mActivity = activity;
         mNativeWindow = nativeWindow;
         mTabDelegateFactorySupplier = tabDelegateFactory;
@@ -97,6 +100,7 @@ public class ChromeTabCreator extends TabCreator {
         mAsyncTabParamsManager = asyncTabParamsManager;
         mTabModelSelectorSupplier = tabModelSelectorSupplier;
         mCompositorViewHolderSupplier = compositorViewHolderSupplier;
+        mDseNewTabUrlManager = dseNewTabUrlManager;
     }
 
     /**
@@ -298,6 +302,9 @@ public class ChromeTabCreator extends TabCreator {
             int parentId = parent != null ? parent.getId() : Tab.INVALID_TAB_ID;
 
             GURL url = UrlFormatter.fixupUrl(loadUrlParams.getUrl());
+            if (mDseNewTabUrlManager != null) {
+                url = mDseNewTabUrlManager.maybeGetOverrideUrl(url);
+            }
 
             // Sanitize the url.
             loadUrlParams.setUrl(url.getValidSpecOrEmpty());
@@ -556,9 +563,7 @@ public class ChromeTabCreator extends TabCreator {
     }
 
     @Override
-    public Tab createFrozenTab(TabState state,
-            SerializedCriticalPersistedTabData serializedCriticalPersistedTabData, int id,
-            boolean isIncognito, int index) {
+    public Tab createFrozenTab(TabState state, int id, boolean isIncognito, int index) {
         TabModelSelector selector = mTabModelSelectorSupplier.get();
         TabResolver resolver = (tabId) -> {
             return selector != null ? selector.getTabById(tabId) : null;
@@ -603,7 +608,6 @@ public class ChromeTabCreator extends TabCreator {
                           .setDelegateFactory(createDefaultTabDelegateFactory())
                           .setInitiallyHidden(!selectTab)
                           .setTabState(state)
-                          .setSerializedCriticalPersistedTabData(serializedCriticalPersistedTabData)
                           .build();
         }
 

@@ -23,7 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "content/public/browser/desktop_capture.h"
 #include "content/public/browser/desktop_streams_registry.h"
 #include "content/public/browser/render_frame_host.h"
@@ -150,7 +150,8 @@ DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
   DesktopMediaPickerController::DoneCallback callback = base::BindOnce(
       &DesktopCaptureChooseDesktopMediaFunctionBase::OnPickerDialogResults,
       this, origin, render_frame_host->GetGlobalId());
-  DesktopMediaPickerController::Params picker_params;
+  DesktopMediaPickerController::Params picker_params(
+      DesktopMediaPickerController::Params::RequestSource::kExtension);
   picker_params.web_contents = web_contents;
   picker_params.context = parent_window;
   picker_params.parent = parent_window;

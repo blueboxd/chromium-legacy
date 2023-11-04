@@ -11,6 +11,7 @@
 #include "base/functional/callback_forward.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
+#include "base/one_shot_event.h"
 #include "base/types/expected.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
@@ -58,16 +59,13 @@ class IsolatedWebAppInstallationManager {
 
   void Start();
 
-  // Install an IWA from command line, if the command line specifies the
-  // appropriate switches.
-  void InstallFromCommandLine(
-      const base::CommandLine& command_line,
-      std::unique_ptr<ScopedKeepAlive> keep_alive,
-      std::unique_ptr<ScopedProfileKeepAlive> optional_profile_keep_alive,
-      base::TaskPriority task_priority);
-
   void InstallIsolatedWebAppFromDevModeProxy(
       const GURL& gurl,
+      base::OnceCallback<void(MaybeInstallIsolatedWebAppCommandSuccess)>
+          callback);
+
+  void InstallIsolatedWebAppFromDevModeBundle(
+      const base::FilePath& path,
       base::OnceCallback<void(MaybeInstallIsolatedWebAppCommandSuccess)>
           callback);
 
@@ -76,6 +74,8 @@ class IsolatedWebAppInstallationManager {
           on_report_installation_result) {
     on_report_installation_result_ = std::move(on_report_installation_result);
   }
+
+  static bool HasIwaInstallSwitch(const base::CommandLine& command_line);
 
   // Attempts to install an IWA if the respective command line parameters are
   // provided. It might silently fail for multiple reasons, such as:
@@ -86,14 +86,34 @@ class IsolatedWebAppInstallationManager {
       const base::CommandLine& command_line_,
       Profile& profile);
 
-  static bool HasIwaInstallSwitch(const base::CommandLine& command_line);
-
   static void GetIsolatedWebAppLocationFromCommandLine(
       const base::CommandLine& command_line,
       base::OnceCallback<void(MaybeIwaLocation)> callback);
 
+  base::OneShotEvent& on_garbage_collect_storage_partitions_done_for_testing() {
+    return on_garbage_collect_storage_partitions_done_for_testing_;
+  }
+
  private:
-  void MaybeScheduleGarbageCollection();
+  FRIEND_TEST_ALL_PREFIXES(IsolatedWebAppInstallationManagerTest,
+                           NoInstallationWhenFeatureDisabled);
+  FRIEND_TEST_ALL_PREFIXES(IsolatedWebAppInstallationManagerTest,
+                           NoInstallationWhenDevModeFeatureDisabled);
+  FRIEND_TEST_ALL_PREFIXES(IsolatedWebAppInstallationManagerTest,
+                           NoInstallationWhenDevModePolicyDisabled);
+
+  // Install an IWA from command line, if the command line specifies the
+  // appropriate switches.
+  void InstallFromCommandLine(
+      const base::CommandLine& command_line,
+      std::unique_ptr<ScopedKeepAlive> keep_alive,
+      std::unique_ptr<ScopedProfileKeepAlive> optional_profile_keep_alive,
+      base::TaskPriority task_priority);
+
+  void InstallIsolatedWebAppFromLocation(
+      MaybeIwaLocation location,
+      base::OnceCallback<void(MaybeInstallIsolatedWebAppCommandSuccess)>
+          callback);
 
   void InstallIsolatedWebAppFromLocation(
       std::unique_ptr<ScopedKeepAlive> keep_alive,
@@ -125,6 +145,8 @@ class IsolatedWebAppInstallationManager {
   void ReportInstallationResult(
       MaybeInstallIsolatedWebAppCommandSuccess result);
 
+  void MaybeScheduleGarbageCollection();
+
   raw_ref<Profile> profile_;
 
   raw_ptr<WebAppProvider> provider_ = nullptr;
@@ -132,6 +154,10 @@ class IsolatedWebAppInstallationManager {
   base::RepeatingCallback<void(
       base::expected<InstallIsolatedWebAppCommandSuccess, std::string>)>
       on_report_installation_result_ = base::DoNothing();
+
+  // Signals when `GarbageCollectStoragePartitionsCommand` completes
+  // successfully.
+  base::OneShotEvent on_garbage_collect_storage_partitions_done_for_testing_;
 
   base::WeakPtrFactory<IsolatedWebAppInstallationManager> weak_ptr_factory_{
       this};

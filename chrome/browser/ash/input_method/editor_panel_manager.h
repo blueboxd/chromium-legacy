@@ -10,86 +10,69 @@
 #include <vector>
 
 #include "base/functional/callback.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/ash/input_method/editor_consent_enums.h"
+#include "chromeos/ash/services/orca/public/mojom/orca_service.mojom.h"
+#include "chromeos/crosapi/mojom/editor_panel.mojom.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash::input_method {
-
-enum class EditorPanelMode {
-  // Editor panel should not be shown (due to consent rejected or other
-  // restrictions).
-  kBlocked = 0,
-  // Editor panel should be shown in write mode.
-  kWrite,
-  // Editor panel should be shown in rewrite mode.
-  kRewrite,
-  // Editor panel feature promo card should be shown (to inform the user about
-  // the feature and ask if they want to learn more).
-  kPromoCard,
-};
-
-// Categories of preset text prompts to be shown on editor panel chips.
-enum class EditorPanelPresetQueryCategory {
-  kUnknown = 0,
-};
-
-struct EditorPanelPresetTextQuery {
-  EditorPanelPresetTextQuery();
-  EditorPanelPresetTextQuery(const EditorPanelPresetTextQuery&) = delete;
-  EditorPanelPresetTextQuery& operator=(const EditorPanelPresetTextQuery&) =
-      delete;
-  ~EditorPanelPresetTextQuery();
-
-  std::string text_query_id;
-  std::string name;
-  std::string description;
-  EditorPanelPresetQueryCategory category =
-      EditorPanelPresetQueryCategory::kUnknown;
-};
-
-// Context to determine what should be shown on the editor panel.
-struct EditorPanelContext {
-  EditorPanelContext();
-  EditorPanelContext(const EditorPanelContext&) = delete;
-  EditorPanelContext& operator=(const EditorPanelContext&) = delete;
-  ~EditorPanelContext();
-
-  EditorPanelMode editor_panel_mode = EditorPanelMode::kPromoCard;
-  std::vector<EditorPanelPresetTextQuery> preset_text_queries;
-};
 
 // Interface to handle communication between the context menu editor panel entry
 // point and the backend of the editor feature. This includes providing context
 // to determine what should be shown on the editor panel and handling events
 // from the editor panel.
-class EditorPanelManager {
+class EditorPanelManager : public crosapi::mojom::EditorPanelManager {
  public:
-  using GetEditorPanelContextCallback =
-      base::OnceCallback<void(const EditorPanelContext&)>;
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
 
-  EditorPanelManager();
+    virtual void BindEditorClient(
+        mojo::PendingReceiver<orca::mojom::EditorClient> pending_receiver) = 0;
+
+    virtual void OnPromoCardDeclined() = 0;
+    virtual void HandleTrigger(
+        absl::optional<std::string_view> preset_query_id,
+        absl::optional<std::string_view> freeform_text) = 0;
+    virtual EditorMode GetEditorMode() const = 0;
+  };
+
+  explicit EditorPanelManager(Delegate* delegate);
   EditorPanelManager(const EditorPanelManager&) = delete;
   EditorPanelManager& operator=(const EditorPanelManager&) = delete;
-  ~EditorPanelManager();
+  ~EditorPanelManager() override;
 
-  // Gets the context required to determine what should be shown on the editor
-  // panel.
-  void GetEditorPanelContext(GetEditorPanelContextCallback callback);
+  // crosapi::mojom::EditorPanelManager:
+  void GetEditorPanelContext(GetEditorPanelContextCallback callback) override;
+  void OnPromoCardDismissed() override;
+  void OnPromoCardDeclined() override;
+  void StartEditingFlow() override;
+  void StartEditingFlowWithPreset(const std::string& text_query_id) override;
+  void StartEditingFlowWithFreeform(const std::string& text) override;
+  void OnEditorMenuVisibilityChanged(bool visible) override;
 
-  // Should be called when a consent screen is dismissed (e.g. the user clicked
-  // out of a consent window).
-  void OnConsentScreenDismissed();
+  void BindReceiver(mojo::PendingReceiver<crosapi::mojom::EditorPanelManager>
+                        pending_receiver);
 
-  // Should be called when the user explicitly rejects the editor feature (e.g.
-  // by clicking "No/Disagree" from a consent window).
-  void OnConsentDeclined();
+  void BindEditorClient();
 
-  // Starts the editing flow, showing the consent form if needed.
-  void StartEditingFlow();
+  bool IsEditorMenuVisible() const;
 
-  // Starts the rewrite flow with a preset text query.
-  void StartEditingFlowWithPreset(std::string_view text_query_id);
+ private:
+  void OnGetPresetTextQueriesResult(
+      GetEditorPanelContextCallback callback,
+      std::vector<orca::mojom::PresetTextQueryPtr> queries);
 
-  // Starts the write/rewrite flow with a freeform query.
-  void StartEditingFlowWithFreeform(std::string_view text);
+  raw_ptr<Delegate> delegate_;
+  mojo::ReceiverSet<crosapi::mojom::EditorPanelManager> receivers_;
+  mojo::Remote<orca::mojom::EditorClient> editor_client_remote_;
+
+  bool is_editor_menu_visible_ = false;
+
+  base::WeakPtrFactory<EditorPanelManager> weak_ptr_factory_{this};
 };
 
 }  // namespace ash::input_method

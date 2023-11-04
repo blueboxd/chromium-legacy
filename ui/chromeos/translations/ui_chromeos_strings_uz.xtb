@@ -8,6 +8,7 @@
 <translation id="1056898198331236512">Ogohlantirish</translation>
 <translation id="1060368002126861100">Fayllarni <ph name="APP_NAME" /> ilovasidan ochishdan avval ularni Windows fayllari jildiga oling.</translation>
 <translation id="1062407476771304334">Almashtirish</translation>
+<translation id="1119383441774809183">Matnli xabarlarni chiqarish</translation>
 <translation id="1119447706177454957">Ichki xatolik</translation>
 <translation id="1120073797882051782">Koreys kiritish usuli (Romaja)</translation>
 <translation id="112387589102719461">Ingliz (AQSH) va Dvorak dasturchilar klaviaturasi</translation>
@@ -149,7 +150,7 @@
 <translation id="2198315389084035571">Xitoy (soddalashtirilgan) klaviaturasi</translation>
 <translation id="22085916256174561">Koreys</translation>
 <translation id="2208919847696382164">Linux bilan oʻrnatish</translation>
-<translation id="2215692307449050019">Batareya quvvati kam qoldi. Qurilma elektr quvvatiga ulanganida fayllar sinxronlanishda davom etadi.</translation>
+<translation id="2215692307449050019">Batareya quvvati kam qoldi. Tokka ulasangiz, fayllar sinxronlanishda davom etadi.</translation>
 <translation id="2225536596944493418"><ph name="NUMBER_OF_ITEMS" /> ta element oʻchirib tashlansinmi?</translation>
 <translation id="2230062665678605299">“<ph name="FOLDER_NAME" />” jildini yaratib bo‘lmadi. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="2239068707900391003">Qahvasi bor odam</translation>

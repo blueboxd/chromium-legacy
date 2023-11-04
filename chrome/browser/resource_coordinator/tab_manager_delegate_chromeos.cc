@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/arc/arc_features.h"
 #include "ash/components/arc/arc_util.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/components/arc/session/arc_service_manager.h"
@@ -327,17 +328,23 @@ void TabManagerDelegate::ScheduleEarlyOomPrioritiesAdjustment() {
 void TabManagerDelegate::LowMemoryKill(
     ::mojom::LifecycleUnitDiscardReason reason,
     TabManager::TabDiscardDoneCB tab_discard_done) {
-  arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
   base::TimeTicks now = base::TimeTicks::Now();
-  // ARCVM defers to Android's LMK to kill apps in low memory situations because
-  // memory can't be reclaimed directly to ChromeOS.
-  if (arc_process_service && !arc::IsArcVmEnabled()) {
-    arc_process_service->RequestAppProcessList(base::BindOnce(
-        &TabManagerDelegate::LowMemoryKillImpl, weak_ptr_factory_.GetWeakPtr(),
-        now, reason, std::move(tab_discard_done)));
-  } else {
-    LowMemoryKillImpl(now, reason, std::move(tab_discard_done), absl::nullopt);
+
+  // ARCVM defers to Android's LMK to kill apps in low memory situations
+  // because memory can't be reclaimed directly to ChromeOS.
+  if (!arc::IsArcVmEnabled() &&
+      !base::FeatureList::IsEnabled(arc::kContainerAppKiller)) {
+    arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
+    if (arc_process_service) {
+      arc_process_service->RequestAppProcessList(
+          base::BindOnce(&TabManagerDelegate::LowMemoryKillImpl,
+                         weak_ptr_factory_.GetWeakPtr(), now, reason,
+                         std::move(tab_discard_done)));
+      return;
+    }
   }
+
+  LowMemoryKillImpl(now, reason, std::move(tab_discard_done), absl::nullopt);
 }
 
 int TabManagerDelegate::GetCachedOomScore(ProcessHandle process_handle) {
@@ -455,17 +462,23 @@ void TabManagerDelegate::AdjustOomPriorities() {
   if (g_browser_process->IsShuttingDown())
     return;
 
-  arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
   // ARCVM defers to Android's LMK to manage low memory situations, so don't
-  // adjust OOM scores for VM processes.
-  if (arc_process_service && !arc::IsArcVmEnabled()) {
-    arc_process_service->RequestAppProcessList(
-        base::BindOnce(&TabManagerDelegate::AdjustOomPrioritiesImpl,
-                       weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    // Pass in nullopt if unable to get ARC processes.
-    AdjustOomPrioritiesImpl(absl::nullopt);
+  // assign oom_score_adj for VM processes. When feature kContainerAppKiller
+  // is enabled, ARC container process oom_score_adj assignment is handled by
+  // ContainerOomScoreManager.
+  if (!arc::IsArcVmEnabled() &&
+      !base::FeatureList::IsEnabled(arc::kContainerAppKiller)) {
+    arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
+    if (arc_process_service) {
+      arc_process_service->RequestAppProcessList(
+          base::BindOnce(&TabManagerDelegate::AdjustOomPrioritiesImpl,
+                         weak_ptr_factory_.GetWeakPtr()));
+      return;
+    }
   }
+
+  // Pass in nullopt if unable to get ARC container processes.
+  AdjustOomPrioritiesImpl(absl::nullopt);
 }
 
 // Get a list of candidates to kill, sorted by descending importance.
@@ -598,6 +611,13 @@ void TabManagerDelegate::LowMemoryKillImpl(
     } else if (candidate.lifecycle_unit()) {
       if (candidate.process_type() == ProcessType::FOCUSED_TAB) {
         MEMORY_LOG(ERROR) << "Skipped killing focused tab (id: "
+                          << candidate.lifecycle_unit()->GetID() << ")";
+        continue;
+      }
+
+      if (candidate.lifecycle_unit()->GetState() ==
+          LifecycleUnitState::DISCARDED) {
+        MEMORY_LOG(ERROR) << "Skipped tab that is already discarded (id: "
                           << candidate.lifecycle_unit()->GetID() << ")";
         continue;
       }

@@ -26,7 +26,7 @@
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/common/ui/util/image_util.h"
-#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "third_party/abseil-cpp/absl/types/optional.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -98,7 +98,7 @@ typedef NS_ENUM(NSInteger, ModelLoadStatus) {
 
 // Indicates the state of the account storage switch.
 @property(nonatomic, assign)
-    PasswordSettingsAccountStorageState accountStorageState;
+    AccountStorageSwitchState accountStorageSwitchState;
 
 // The amount of local passwords present on device.
 @property(nonatomic, assign) int localPasswordsCount;
@@ -230,7 +230,7 @@ typedef NS_ENUM(NSInteger, ModelLoadStatus) {
   [model addSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
   [self addSavePasswordsSwitchOrManagedInfo];
 
-  if (self.accountStorageState != PasswordSettingsAccountStorageStateNotShown) {
+  if (self.accountStorageSwitchState != AccountStorageSwitchState::kHidden) {
     [self updateAccountStorageSwitch];
   }
 
@@ -426,8 +426,6 @@ typedef NS_ENUM(NSInteger, ModelLoadStatus) {
   _bulkMovePasswordsToAccountDescriptionItem.enabled = NO;
   _bulkMovePasswordsToAccountDescriptionItem.accessibilityIdentifier =
       kPasswordSettingsBulkMovePasswordsToAccountDescriptionTableViewId;
-  _bulkMovePasswordsToAccountDescriptionItem.accessibilityTraits |=
-      UIAccessibilityTraitLink;
 
   std::u16string pattern = l10n_util::GetStringUTF16(
       IDS_IOS_PASSWORD_SETTINGS_BULK_UPLOAD_PASSWORDS_SECTION_DESCRIPTION);
@@ -514,8 +512,6 @@ typedef NS_ENUM(NSInteger, ModelLoadStatus) {
   _onDeviceEncryptionOptInDescriptionItem.enabled = NO;
   _onDeviceEncryptionOptInDescriptionItem.accessibilityIdentifier =
       kPasswordSettingsOnDeviceEncryptionOptInId;
-  _onDeviceEncryptionOptInDescriptionItem.accessibilityTraits |=
-      UIAccessibilityTraitLink;
   return _onDeviceEncryptionOptInDescriptionItem;
 }
 
@@ -629,12 +625,12 @@ typedef NS_ENUM(NSInteger, ModelLoadStatus) {
   }
 }
 
-- (void)setAccountStorageState:(PasswordSettingsAccountStorageState)state {
-  if (_accountStorageState == state) {
+- (void)setAccountStorageSwitchState:(AccountStorageSwitchState)state {
+  if (_accountStorageSwitchState == state) {
     return;
   }
 
-  _accountStorageState = state;
+  _accountStorageSwitchState = state;
 
   if (self.modelLoadStatus != ModelNotLoaded) {
     [self updateAccountStorageSwitch];
@@ -762,8 +758,8 @@ typedef NS_ENUM(NSInteger, ModelLoadStatus) {
   const BOOL hadItem = [self.tableViewModel
       hasItemForItemType:ItemTypeAccountStorageSwitch
        sectionIdentifier:SectionIdentifierSavePasswordsSwitch];
-  switch (self.accountStorageState) {
-    case PasswordSettingsAccountStorageStateNotShown: {
+  switch (self.accountStorageSwitchState) {
+    case AccountStorageSwitchState::kHidden: {
       if (!hadItem) {
         return;
       }
@@ -781,19 +777,19 @@ typedef NS_ENUM(NSInteger, ModelLoadStatus) {
       }
       return;
     }
-    case PasswordSettingsAccountStorageStateOptedIn:
-    case PasswordSettingsAccountStorageStateOptedOut:
-    case PasswordSettingsAccountStorageStateDisabledByPolicy: {
+    case AccountStorageSwitchState::kOn:
+    case AccountStorageSwitchState::kOff:
+    case AccountStorageSwitchState::kDisabledByPolicy: {
       if (!hadItem) {
         [self.tableViewModel addItem:self.accountStorageItem
              toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
       }
 
-      self.accountStorageItem.on = self.accountStorageState ==
-                                   PasswordSettingsAccountStorageStateOptedIn;
+      self.accountStorageItem.on =
+          self.accountStorageSwitchState == AccountStorageSwitchState::kOn;
       self.accountStorageItem.enabled =
-          self.accountStorageState !=
-          PasswordSettingsAccountStorageStateDisabledByPolicy;
+          self.accountStorageSwitchState !=
+          AccountStorageSwitchState::kDisabledByPolicy;
 
       if (self.modelLoadStatus != ModelLoadComplete) {
         return;

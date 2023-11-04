@@ -42,17 +42,17 @@ typedef NS_ENUM(NSUInteger, UserSigninPromoAction) {
 
 #pragma mark - Public
 
-+ (void)logSigninStartedWithAccessPoint:(signin_metrics::AccessPoint)accessPoint
-                  accountManagerService:
-                      (ChromeAccountManagerService*)accountManagerService {
-  if (!accountManagerService) {
+- (void)logSigninStarted {
+  [super logSigninStarted];
+  if (!self.accountManagerService) {
     return;
   }
-  RecordSigninUserActionForAccessPoint(accessPoint);
+
+  RecordSigninUserActionForAccessPoint(self.accessPoint);
 
   // Records in user defaults that the promo has been shown as well as the
   // number of times it's been displayed.
-  signin::RecordUpgradePromoSigninStarted(accountManagerService,
+  signin::RecordUpgradePromoSigninStarted(self.accountManagerService,
                                           version_info::GetVersion());
   NSUserDefaults* standardDefaults = [NSUserDefaults standardUserDefaults];
   int promoSeenCount =
@@ -61,13 +61,17 @@ typedef NS_ENUM(NSUInteger, UserSigninPromoAction) {
   [standardDefaults setInteger:promoSeenCount
                         forKey:kDisplayedSSORecallPromoCountKey];
 
-  NSArray* identities = accountManagerService->GetAllIdentities();
+  NSArray* identities = self.accountManagerService->GetAllIdentities();
   UMA_HISTOGRAM_COUNTS_100(kUMASSORecallAccountsAvailable, [identities count]);
   UMA_HISTOGRAM_COUNTS_100(kUMASSORecallPromoSeenCount, promoSeenCount);
 }
 
-+ (void)logSigninCompletedWithResult:(SigninCoordinatorResult)signinResult
-                        addedAccount:(BOOL)addedAccount {
+- (void)logSigninCompletedWithResult:(SigninCoordinatorResult)signinResult
+                        addedAccount:(BOOL)addedAccount
+               advancedSettingsShown:(BOOL)advancedSettingsShown {
+  [super logSigninCompletedWithResult:signinResult
+                         addedAccount:addedAccount
+                advancedSettingsShown:advancedSettingsShown];
   switch (signinResult) {
     case SigninCoordinatorResultSuccess: {
       UserSigninPromoAction promoAction = addedAccount
@@ -89,23 +93,6 @@ typedef NS_ENUM(NSUInteger, UserSigninPromoAction) {
       break;
     }
   }
-}
-
-- (void)logSigninStarted {
-  [super logSigninStarted];
-  [UpgradeSigninLogger
-      logSigninStartedWithAccessPoint:self.accessPoint
-                accountManagerService:self.accountManagerService];
-}
-
-- (void)logSigninCompletedWithResult:(SigninCoordinatorResult)signinResult
-                        addedAccount:(BOOL)addedAccount
-               advancedSettingsShown:(BOOL)advancedSettingsShown {
-  [super logSigninCompletedWithResult:signinResult
-                         addedAccount:addedAccount
-                advancedSettingsShown:advancedSettingsShown];
-  [UpgradeSigninLogger logSigninCompletedWithResult:signinResult
-                                       addedAccount:addedAccount];
 }
 
 @end

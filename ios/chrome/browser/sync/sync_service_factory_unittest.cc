@@ -4,25 +4,20 @@
 
 #include "ios/chrome/browser/sync/sync_service_factory.h"
 
-#include <stddef.h>
-
-#include <vector>
-
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
-#include "components/browser_sync/browser_sync_switches.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/supervised_user/core/common/buildflags.h"
 #include "components/sync/base/command_line_switches.h"
 #include "components/sync/base/features.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/pref_names.h"
 #include "components/sync/service/data_type_controller.h"
 #include "components/sync/service/sync_service_impl.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/webdata_services/web_data_service_factory.h"
+#include "ios/chrome/browser/webdata_services/model/web_data_service_factory.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -54,7 +49,7 @@ class SyncServiceFactoryTest : public PlatformTest {
  protected:
   // Returns the collection of default datatypes.
   syncer::ModelTypeSet DefaultDatatypes() {
-    static_assert(49 == syncer::GetNumModelTypes(),
+    static_assert(48 == syncer::GetNumModelTypes(),
                   "When adding a new type, you probably want to add it here as "
                   "well (assuming it is already enabled).");
 
@@ -74,9 +69,7 @@ class SyncServiceFactoryTest : public PlatformTest {
     datatypes.Put(syncer::BOOKMARKS);
     datatypes.Put(syncer::CONTACT_INFO);
     datatypes.Put(syncer::DEVICE_INFO);
-    if (base::FeatureList::IsEnabled(syncer::kSyncEnableHistoryDataType)) {
-      datatypes.Put(syncer::HISTORY);
-    }
+    datatypes.Put(syncer::HISTORY);
     datatypes.Put(syncer::HISTORY_DELETE_DIRECTIVES);
     datatypes.Put(syncer::PREFERENCES);
     datatypes.Put(syncer::PRIORITY_PREFERENCES);
@@ -92,12 +85,18 @@ class SyncServiceFactoryTest : public PlatformTest {
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
     datatypes.Put(syncer::PROXY_TABS);
-    datatypes.Put(syncer::TYPED_URLS);
     datatypes.Put(syncer::USER_EVENTS);
     datatypes.Put(syncer::USER_CONSENTS);
     datatypes.Put(syncer::SEND_TAB_TO_SELF);
-    // TODO(crbug.com/1445868): Add *_PASSWORD_SHARING_INVITATION once
-    // implemented.
+    if (base::FeatureList::IsEnabled(
+            password_manager::features::
+                kPasswordManagerEnableReceiverService)) {
+      datatypes.Put(syncer::INCOMING_PASSWORD_SHARING_INVITATION);
+    }
+    if (base::FeatureList::IsEnabled(
+            password_manager::features::kPasswordManagerEnableSenderService)) {
+      datatypes.Put(syncer::OUTGOING_PASSWORD_SHARING_INVITATION);
+    }
 
     return datatypes;
   }

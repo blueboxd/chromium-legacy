@@ -30,7 +30,7 @@
 #include "chrome/browser/ui/views/commerce/price_tracking_email_dialog_view.h"
 #include "chrome/browser/ui/views/commerce/price_tracking_view.h"
 #include "chrome/browser/ui/views/commerce/shopping_collection_iph_view.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -116,7 +116,8 @@ gfx::ImageSkia GetFaviconForWebContents(content::WebContents* web_contents) {
   constexpr int kMainImageDimension = 112;
   gfx::ImageSkia centered_favicon =
       gfx::ImageSkiaOperations::CreateImageWithRoundRectBackground(
-          kMainImageDimension, 0, background_color, favicon);
+          gfx::SizeF(kMainImageDimension, kMainImageDimension), /*radius=*/0,
+          background_color, favicon);
   return centered_favicon;
 }
 
@@ -536,7 +537,8 @@ void BookmarkBubbleView::ShowBubble(
   if (highlighted_button)
     bubble->SetHighlightedButton(highlighted_button);
 
-  if (ShouldShowShoppingCollectionFootnote(profile, bookmark_model, bookmark_node)) {
+  if (ShouldShowShoppingCollectionFootnote(profile, bookmark_model,
+                                           bookmark_node)) {
     bubble->SetFootnoteView(
         std::make_unique<commerce::ShoppingCollectionIphView>());
   } else if (SyncPromoUI::ShouldShowSyncPromo(profile)) {

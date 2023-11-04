@@ -28,10 +28,10 @@
 #include "chrome/browser/nearby_sharing/nearby_share_settings.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_impl.h"
+#include "chrome/browser/ui/webui/ash/settings/pages/apps/app_notification_handler.h"
 #include "chrome/browser/ui/webui/ash/settings/search/search_handler.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/device_storage_handler.h"
-#include "chrome/browser/ui/webui/settings/ash/os_apps_page/app_notification_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_hats_manager.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_hats_manager_factory.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_manager.h"
@@ -97,8 +97,8 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   manager->AddHandlers(web_ui);
   manager->AddLoadTimeData(html_source);
 
-  // TODO(khorimoto): Move to DeviceSection::AddHandler() once |html_source|
-  // parameter is removed.
+  // TODO(b/300151715): Move to StorageSection::AddHandler() once/if
+  // |html_source| parameter is removed.
   web_ui->AddMessageHandler(
       std::make_unique<StorageHandler>(profile, html_source));
 
@@ -263,9 +263,13 @@ void OSSettingsUI::BindInterface(
 void OSSettingsUI::BindInterface(
     mojo::PendingReceiver<mojom::InputDeviceSettingsProvider> receiver) {
   DCHECK(features::IsInputDeviceSettingsSplitEnabled());
-  OsSettingsManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()))
-      ->input_device_settings_provider()
-      ->BindInterface(std::move(receiver));
+  auto* provider =
+      OsSettingsManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()))
+          ->input_device_settings_provider();
+  if (features::IsPeripheralCustomizationEnabled()) {
+    provider->Initialize(web_ui());
+  }
+  provider->BindInterface(std::move(receiver));
 }
 
 void OSSettingsUI::BindInterface(

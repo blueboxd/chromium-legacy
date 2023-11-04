@@ -5,110 +5,161 @@
 #include "chrome/browser/ui/views/editor_menu/editor_menu_controller_impl.h"
 
 #include <string_view>
+#include <vector>
 
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/views/editor_menu/editor_menu_promo_card_view.h"
 #include "chrome/browser/ui/views/editor_menu/editor_menu_view.h"
+#include "chrome/browser/ui/views/editor_menu/utils/preset_text_query.h"
+#include "chromeos/crosapi/mojom/editor_panel.mojom.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/view_utils.h"
+#include "ui/views/widget/widget.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "base/strings/utf_string_conversions.h"
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/lacros/lacros_service.h"
+#else
 #include "chrome/browser/ash/input_method/editor_mediator.h"
-#include "chrome/browser/ash/input_method/editor_panel_manager.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace chromeos::editor_menu {
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 namespace {
 
-using ash::input_method::EditorMediator;
-using ash::input_method::EditorPanelManager;
-using ash::input_method::EditorPanelMode;
+using crosapi::mojom::EditorPanelMode;
+using crosapi::mojom::EditorPanelPresetTextQuery;
+using crosapi::mojom::EditorPanelPresetTextQueryPtr;
 
-EditorPanelManager& GetEditorPanelManager() {
-  CHECK(EditorMediator::Get());
-  return EditorMediator::Get()->panel_manager();
+crosapi::mojom::EditorPanelManager& GetEditorPanelManager() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  chromeos::LacrosService* const lacros_service =
+      chromeos::LacrosService::Get();
+  CHECK(lacros_service->IsAvailable<crosapi::mojom::EditorPanelManager>());
+  return *lacros_service->GetRemote<crosapi::mojom::EditorPanelManager>().get();
+#else
+  CHECK(ash::input_method::EditorMediator::Get());
+  return ash::input_method::EditorMediator::Get()->panel_manager();
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+}
+
+PresetQueryCategory GetPresetQueryCategory(
+    const crosapi::mojom::EditorPanelPresetQueryCategory category) {
+  switch (category) {
+    case crosapi::mojom::EditorPanelPresetQueryCategory::kUnknown:
+      return PresetQueryCategory::kUnknown;
+    case crosapi::mojom::EditorPanelPresetQueryCategory::kShorten:
+      return PresetQueryCategory::kShorten;
+    case crosapi::mojom::EditorPanelPresetQueryCategory::kElaborate:
+      return PresetQueryCategory::kElaborate;
+    case crosapi::mojom::EditorPanelPresetQueryCategory::kRephrase:
+      return PresetQueryCategory::kRephrase;
+    case crosapi::mojom::EditorPanelPresetQueryCategory::kFormalize:
+      return PresetQueryCategory::kFormalize;
+    case crosapi::mojom::EditorPanelPresetQueryCategory::kEmojify:
+      return PresetQueryCategory::kEmojify;
+  }
+}
+
+PresetTextQueries GetPresetTextQueries(
+    const std::vector<EditorPanelPresetTextQueryPtr>& preset_text_queries) {
+  PresetTextQueries queries;
+  for (const auto& query : preset_text_queries) {
+    queries.emplace_back(query->text_query_id, base::UTF8ToUTF16(query->name),
+                         GetPresetQueryCategory(query->category));
+  }
+  return queries;
 }
 
 }  // namespace
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 EditorMenuControllerImpl::EditorMenuControllerImpl() = default;
 
 EditorMenuControllerImpl::~EditorMenuControllerImpl() = default;
 
-void EditorMenuControllerImpl::MaybeShowEditorMenu(
-    const gfx::Rect& anchor_bounds) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+void EditorMenuControllerImpl::OnContextMenuShown() {}
+
+void EditorMenuControllerImpl::OnTextAvailable(
+    const gfx::Rect& anchor_bounds,
+    const std::string& selected_text,
+    const std::string& surrounding_text) {
   GetEditorPanelManager().GetEditorPanelContext(
       base::BindOnce(&EditorMenuControllerImpl::OnGetEditorPanelContextResult,
                      weak_factory_.GetWeakPtr(), anchor_bounds));
-#else
-  // TODO(b/295059934): Implement crosapi to call EditorPanelManager before
-  // showing views in lacros.
-  editor_menu_widget_ =
-      EditorMenuPromoCardView::CreateWidget(anchor_bounds, this);
-  editor_menu_widget_->ShowInactive();
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
-void EditorMenuControllerImpl::DismissEditorMenu() {
-  if (editor_menu_widget_) {
-    editor_menu_widget_.reset();
-  }
-}
-
-void EditorMenuControllerImpl::UpdateAnchorBounds(
+void EditorMenuControllerImpl::OnAnchorBoundsChanged(
     const gfx::Rect& anchor_bounds) {
   if (!editor_menu_widget_) {
     return;
   }
 
-  // Update the bounds of the shown view.
-  // TODO(b/295060733): The main view.
-  // TODO(b/295061567): The consent view.
+  auto* editor_menu_view = editor_menu_widget_->GetContentsView();
+  if (views::IsViewClass<EditorMenuView>(editor_menu_view)) {
+    views::AsViewClass<EditorMenuView>(editor_menu_view)
+        ->UpdateBounds(anchor_bounds);
+  } else if (views::IsViewClass<EditorMenuPromoCardView>(editor_menu_view)) {
+    views::AsViewClass<EditorMenuPromoCardView>(editor_menu_view)
+        ->UpdateBounds(anchor_bounds);
+  }
+}
+
+void EditorMenuControllerImpl::OnDismiss(bool is_other_command_executed) {
+  if (editor_menu_widget_ && !editor_menu_widget_->IsActive()) {
+    editor_menu_widget_.reset();
+  }
 }
 
 void EditorMenuControllerImpl::OnSettingsButtonPressed() {}
 
-void EditorMenuControllerImpl::OnChipButtonPressed(int button_id,
-                                                   const std::u16string& text) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  GetEditorPanelManager().StartEditingFlowWithPreset("");
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+void EditorMenuControllerImpl::OnChipButtonPressed(
+    std::string_view text_query_id) {
+  GetEditorPanelManager().StartEditingFlowWithPreset(
+      std::string(text_query_id));
 }
 
 void EditorMenuControllerImpl::OnTextfieldArrowButtonPressed(
-    const std::u16string& text) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+    std::u16string_view text) {
   GetEditorPanelManager().StartEditingFlowWithFreeform(base::UTF16ToUTF8(text));
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
-void EditorMenuControllerImpl::OnPromoCardDismissButtonPressed() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  GetEditorPanelManager().OnConsentDeclined();
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+void EditorMenuControllerImpl::OnPromoCardWidgetClosed(
+    views::Widget::ClosedReason closed_reason) {
+  switch (closed_reason) {
+    case views::Widget::ClosedReason::kAcceptButtonClicked:
+      GetEditorPanelManager().StartEditingFlow();
+      break;
+    case views::Widget::ClosedReason::kCloseButtonClicked:
+      GetEditorPanelManager().OnPromoCardDeclined();
+      break;
+    default:
+      GetEditorPanelManager().OnPromoCardDismissed();
+      break;
+  }
 }
 
-void EditorMenuControllerImpl::OnPromoCardTellMeMoreButtonPressed() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  GetEditorPanelManager().StartEditingFlow();
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+void EditorMenuControllerImpl::OnEditorMenuVisibilityChanged(bool visible) {
+  GetEditorPanelManager().OnEditorMenuVisibilityChanged(visible);
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+void EditorMenuControllerImpl::OnGetEditorPanelContextResultForTesting(
+    const gfx::Rect& anchor_bounds,
+    crosapi::mojom::EditorPanelContextPtr context) {
+  OnGetEditorPanelContextResult(anchor_bounds, std::move(context));
+}
+
 void EditorMenuControllerImpl::OnGetEditorPanelContextResult(
-    gfx::Rect anchor_bounds,
-    const EditorPanelContext& context) {
-  switch (context.editor_panel_mode) {
+    const gfx::Rect& anchor_bounds,
+    crosapi::mojom::EditorPanelContextPtr context) {
+  switch (context->editor_panel_mode) {
     case EditorPanelMode::kBlocked:
       break;
     case EditorPanelMode::kWrite:
     case EditorPanelMode::kRewrite:
-      editor_menu_widget_ = EditorMenuView::CreateWidget(anchor_bounds, this);
+      editor_menu_widget_ = EditorMenuView::CreateWidget(
+          GetPresetTextQueries(context->preset_text_queries), anchor_bounds,
+          this);
       editor_menu_widget_->ShowInactive();
       break;
     case EditorPanelMode::kPromoCard:
@@ -118,6 +169,5 @@ void EditorMenuControllerImpl::OnGetEditorPanelContextResult(
       break;
   }
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace chromeos::editor_menu

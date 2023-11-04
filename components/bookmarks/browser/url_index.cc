@@ -91,8 +91,7 @@ void UrlIndex::GetNodesWithIconUrl(const GURL& icon_url,
 void UrlIndex::GetNodesByUrl(const GURL& url,
                              std::vector<const BookmarkNode*>* nodes) {
   base::AutoLock url_lock(url_lock_);
-  BookmarkNode tmp_node(/*id=*/0, base::Uuid::GenerateRandomV4(), url);
-  auto i = nodes_ordered_by_url_set_.find(&tmp_node);
+  auto i = nodes_ordered_by_url_set_.find<GURL>(url);
   while (i != nodes_ordered_by_url_set_.end() && (*i)->url() == url) {
     nodes->push_back(*i);
     ++i;
@@ -124,7 +123,8 @@ bool UrlIndex::IsBookmarked(const GURL& url) {
   return IsBookmarkedNoLock(url);
 }
 
-void UrlIndex::GetBookmarks(std::vector<UrlAndTitle>* bookmarks) {
+std::vector<UrlAndTitle> UrlIndex::GetUniqueUrls() {
+  std::vector<UrlAndTitle> bookmarks;
   base::AutoLock url_lock(url_lock_);
   const GURL* last_url = nullptr;
   for (auto i = nodes_ordered_by_url_set_.begin();
@@ -135,10 +135,11 @@ void UrlIndex::GetBookmarks(std::vector<UrlAndTitle>* bookmarks) {
       UrlAndTitle bookmark;
       bookmark.url = *url;
       bookmark.title = (*i)->GetTitle();
-      bookmarks->push_back(bookmark);
+      bookmarks.push_back(bookmark);
     }
     last_url = url;
   }
+  return bookmarks;
 }
 
 UrlIndex::~UrlIndex() = default;

@@ -302,9 +302,15 @@ MinMaxSizesResult NGBlockLayoutAlgorithm::ComputeMinMaxSizes(
     // We don't check IsRubyText() here intentionally. RubyText width should
     // affect this width.
     if (child.IsOutOfFlowPositioned() ||
-        (child.IsColumnSpanAll() && ConstraintSpace().IsInColumnBfc()) ||
-        child.IsTextControlPlaceholder())
+        (child.IsColumnSpanAll() && ConstraintSpace().IsInColumnBfc())) {
       continue;
+    }
+
+    if (child.IsTextControlPlaceholder()) {
+      if (Style().ApplyControlFixedSize()) {
+        continue;
+      }
+    }
 
     const ComputedStyle& child_style = child.Style();
     const EClear child_clear = child_style.Clear(Style());
@@ -709,8 +715,8 @@ inline const NGLayoutResult* NGBlockLayoutAlgorithm::Layout(
 
   NGBlockNode ruby_text_child(nullptr);
   NGBlockNode placeholder_child(nullptr);
-  for (auto entry = child_iterator.NextChild();
-       NGLayoutInputNode child = entry.node;
+  NGBlockChildIterator::Entry entry;
+  for (entry = child_iterator.NextChild(); NGLayoutInputNode child = entry.node;
        entry = child_iterator.NextChild(previous_inline_break_token)) {
     const NGBreakToken* child_break_token = entry.token;
 
@@ -841,10 +847,31 @@ inline const NGLayoutResult* NGBlockLayoutAlgorithm::Layout(
     }
   }
 
+#if DCHECK_IS_ON()
+  // Assert that we have made actual progress. Breaking before we're done with
+  // all parallel flows from incoming break tokens means that we'll never get
+  // the opportunity to handle them again. We don't repropagate unhandled
+  // incoming break tokens, and there should be no need to.
+  if (auto* inline_token = DynamicTo<NGInlineBreakToken>(entry.token)) {
+    DCHECK(!inline_token->IsInParallelBlockFlow());
+  } else if (auto* block_token = DynamicTo<NGBlockBreakToken>(entry.token)) {
+    // A column spanner forces all content preceding it to stay in the same
+    // flow, so we can (and must) skip the check. Even if IsAtBlockEnd() is true
+    // in such cases, it doesn't mean that a parallel flow is established.
+    if (!container_builder_.FoundColumnSpanner() &&
+        !container_builder_.ShouldForceSameFragmentationFlow()) {
+      DCHECK(!block_token->IsAtBlockEnd());
+    }
+  }
+#endif
+
   if (ruby_text_child)
     HandleRubyText(ruby_text_child);
-  if (placeholder_child)
-    HandleTextControlPlaceholder(placeholder_child, previous_inflow_position);
+  if (placeholder_child) {
+    previous_inflow_position.logical_block_offset =
+        HandleTextControlPlaceholder(placeholder_child,
+                                     previous_inflow_position);
+  }
 
   if (UNLIKELY(ConstraintSpace().IsNewFormattingContext() &&
                !ignore_line_clamp_ && lines_until_clamp_ == 0 &&
@@ -1342,16 +1369,15 @@ void NGBlockLayoutAlgorithm::HandleFloat(
   NGPositionedFloat positioned_float =
       PositionFloat(&unpositioned_float, &ExclusionSpace());
 
-  if (positioned_float.need_break_before) {
-    DCHECK(ConstraintSpace().HasBlockFragmentation());
-    LayoutUnit fragmentainer_block_offset =
-        FragmentainerOffsetAtBfc(ConstraintSpace()) +
-        positioned_float.bfc_offset.block_offset;
-    BreakBeforeChild(ConstraintSpace(), child, positioned_float.layout_result,
-                     fragmentainer_block_offset,
-                     /* appeal */ absl::nullopt,
-                     /* is_forced_break */ false, &container_builder_);
+  if (positioned_float.minimum_space_shortage > LayoutUnit()) {
+    container_builder_.PropagateSpaceShortage(
+        positioned_float.minimum_space_shortage);
+  }
 
+  if (positioned_float.break_before_token) {
+    DCHECK(ConstraintSpace().HasBlockFragmentation());
+    container_builder_.AddBreakToken(positioned_float.break_before_token,
+                                     /* is_in_parallel_flow */ true);
     // After breaking before the float, carry on with layout of this
     // container. The float constitutes a parallel flow, and there may be
     // siblings that could still fit in the current fragmentainer.
@@ -1709,11 +1735,7 @@ const NGLayoutResult* NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
     // should be returned.
     DCHECK(layout_result->ExclusionSpace().IsEmpty());
 
-    if (layout_result->Status() != NGLayoutResult::kSuccess) {
-      DCHECK_EQ(layout_result->Status(),
-                NGLayoutResult::kOutOfFragmentainerSpace);
-      return layout_result;
-    }
+    DCHECK_EQ(layout_result->Status(), NGLayoutResult::kSuccess);
 
     // Check if we can fit in the opportunity block direction.
     NGFragment fragment(writing_direction, layout_result->PhysicalFragment());
@@ -2121,7 +2143,8 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
     }
 
     if (inline_child_layout_context) {
-      for (auto token : inline_child_layout_context->PropagatedBreakTokens()) {
+      for (auto token :
+           inline_child_layout_context->ParallelFlowBreakTokens()) {
         container_builder_.AddBreakToken(std::move(token),
                                          /* is_in_parallel_flow */ true);
       }
@@ -2184,7 +2207,7 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
                                     logical_offset.block_offset);
   }
 
-  if (auto* block_child = DynamicTo<NGBlockNode>(child)) {
+  if (IsA<NGBlockNode>(child)) {
     container_builder_.AddResult(*layout_result, logical_offset,
                                  child_data->margins);
   } else {
@@ -2197,20 +2220,8 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
       self_collapsing_child_had_clearance);
 
   if (child.IsInline()) {
-    const auto* inline_break_token =
+    *previous_inline_break_token =
         To<NGInlineBreakToken>(physical_fragment.BreakToken());
-    if (UNLIKELY(inline_break_token &&
-                 inline_break_token->BlockInInlineBreakToken())) {
-      if (inline_break_token->BlockInInlineBreakToken()->IsAtBlockEnd()) {
-        // We resumed a block in inline in a parallel flow, and broke
-        // again. This will have to wait until we get to the next
-        // fragmentainer. The break token has already been added to the fragment
-        // builder.
-        DCHECK(child_break_token);
-        inline_break_token = nullptr;
-      }
-    }
-    *previous_inline_break_token = inline_break_token;
   } else {
     *previous_inline_break_token = nullptr;
   }
@@ -3273,17 +3284,19 @@ void NGBlockLayoutAlgorithm::HandleRubyText(NGBlockNode ruby_text_child) {
                                LogicalOffset(LayoutUnit(), ruby_text_box_top));
 }
 
-void NGBlockLayoutAlgorithm::HandleTextControlPlaceholder(
+LayoutUnit NGBlockLayoutAlgorithm::HandleTextControlPlaceholder(
     NGBlockNode placeholder,
     const NGPreviousInflowPosition& previous_inflow_position) {
   DCHECK(Node().IsTextControl()) << Node().GetLayoutBox();
 
+  const wtf_size_t kTextBlockIndex = 0u;
   LogicalSize available_size = ChildAvailableSize();
-  // The placeholder should have the width same as "editing-view-port" element,
-  // which is the first grandchild of the text control.
-  if (container_builder_.Children().size() > 0) {
+  bool apply_fixed_size = Style().ApplyControlFixedSize();
+  if (container_builder_.Children().size() > 0 && apply_fixed_size) {
+    // The placeholder should have the width same as "editing-view-port"
+    // element, which is the first grandchild of the text control.
     const NGPhysicalFragment& child =
-        *container_builder_.Children()[0].fragment;
+        *container_builder_.Children()[kTextBlockIndex].fragment;
     if (child.IsTextControlContainer()) {
       const auto& grand_children = child.PostLayoutChildren();
       const auto begin = grand_children.begin();
@@ -3306,14 +3319,14 @@ void NGBlockLayoutAlgorithm::HandleTextControlPlaceholder(
   const NGLayoutResult* result = placeholder.Layout(space);
   LogicalOffset offset = BorderScrollbarPadding().StartOffset();
   if (Node().IsTextArea()) {
-    container_builder_.AddResult(*result, offset);
-    return;
+    return FinishTextControlPlaceholder(result, offset, apply_fixed_size,
+                                        previous_inflow_position);
   }
   // Usually another child provides the baseline. However it doesn't if
   // another child is out-of-flow.
   if (!container_builder_.FirstBaseline()) {
-    container_builder_.AddResult(*result, offset);
-    return;
+    return FinishTextControlPlaceholder(result, offset, apply_fixed_size,
+                                        previous_inflow_position);
   }
   NGBoxFragment fragment(ConstraintSpace().GetWritingDirection(),
                          To<NGPhysicalBoxFragment>(result->PhysicalFragment()));
@@ -3322,13 +3335,43 @@ void NGBlockLayoutAlgorithm::HandleTextControlPlaceholder(
   // might be the block-end margin.
   // |fragment| has no FirstBaseline() if it consists of only white-spaces.
   if (fragment.FirstBaseline().has_value()) {
-    offset.block_offset =
-        *container_builder_.FirstBaseline() - *fragment.FirstBaseline();
+    LayoutUnit first_baseline = *container_builder_.FirstBaseline();
+    const LayoutUnit border_padding_block_start =
+        BorderScrollbarPadding().block_start;
+    const LayoutUnit placeholder_baseline = *fragment.FirstBaseline();
+    offset.block_offset = first_baseline - placeholder_baseline;
+    if (!apply_fixed_size && offset.block_offset < border_padding_block_start) {
+      // The placeholder is taller. We should shift down the existing child.
+      const LayoutUnit new_baseline =
+          placeholder_baseline + border_padding_block_start;
+      container_builder_.SetFirstBaseline(new_baseline);
+      container_builder_.SetLastBaseline(new_baseline);
+      const NGLogicalLink& first_child =
+          container_builder_.Children()[kTextBlockIndex];
+      LogicalOffset first_child_offset = first_child.offset;
+      first_child_offset.block_offset += new_baseline - first_baseline;
+      container_builder_.ReplaceChild(kTextBlockIndex, *first_child.fragment,
+                                      first_child_offset);
+      offset.block_offset = border_padding_block_start;
+    }
   }
-  container_builder_.AddResult(*result, offset);
+  return FinishTextControlPlaceholder(result, offset, apply_fixed_size,
+                                      previous_inflow_position);
+}
 
-  // This function doesn't update previous_inflow_position. Other children in
-  // this container should ignore |placeholder|.
+LayoutUnit NGBlockLayoutAlgorithm::FinishTextControlPlaceholder(
+    const NGLayoutResult* result,
+    const LogicalOffset& offset,
+    bool apply_fixed_size,
+    const NGPreviousInflowPosition& previous_inflow_position) {
+  container_builder_.AddResult(*result, offset);
+  LayoutUnit block_offset = previous_inflow_position.logical_block_offset;
+  if (apply_fixed_size) {
+    return block_offset;
+  }
+  NGBoxFragment fragment(ConstraintSpace().GetWritingDirection(),
+                         To<NGPhysicalBoxFragment>(result->PhysicalFragment()));
+  return std::max(block_offset, offset.block_offset + fragment.BlockSize());
 }
 
 LogicalOffset NGBlockLayoutAlgorithm::AdjustSliderThumbInlineOffset(

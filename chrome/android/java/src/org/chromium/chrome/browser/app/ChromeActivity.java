@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.app;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.SearchManager;
 import android.app.assist.AssistContent;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -67,8 +66,6 @@ import org.chromium.chrome.browser.ChromeKeyboardVisibilityDelegate;
 import org.chromium.chrome.browser.ChromeWindow;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.IntentHandler.IntentHandlerDelegate;
-import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.PlayServicesVersionInfo;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.app.appmenu.AppMenuPropertiesDelegateImpl;
@@ -109,7 +106,6 @@ import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSessionState;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.flags.IntCachedFieldTrialParameter;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManagerSupplier;
 import org.chromium.chrome.browser.fullscreen.FullscreenBackPressHandler;
@@ -126,7 +122,6 @@ import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponent;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponentFactory;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponentSupplier;
 import org.chromium.chrome.browser.layouts.LayoutManagerAppUtils;
-import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.media.FullscreenVideoPictureInPictureController;
 import org.chromium.chrome.browser.metrics.ActivityTabStartupMetricsTracker;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
@@ -183,6 +178,7 @@ import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuBlocker;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuDelegate;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.ui.device_lock.MissingDeviceLockLauncher;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarManageable;
@@ -264,9 +260,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                    MenuOrKeyboardActionController, CompositorViewHolder.Initializer,
                    TabModelInitializer {
     private static final String TAG = "ChromeActivity";
-    public static final IntCachedFieldTrialParameter CONTENT_VIS_DELAY_MS =
-            new IntCachedFieldTrialParameter(
-                    ChromeFeatureList.FOLDABLE_JANK_FIX, "content_visibility_delay", 5);
+    private static final int CONTENT_VIS_DELAY_MS = 5;
     public static final String UNFOLD_LATENCY_BEGIN_TIMESTAMP = "unfold_latency_begin_timestamp";
     private C mComponent;
 
@@ -304,8 +298,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private ContextReporter mContextReporter;
 
     private boolean mPartnerBrowserRefreshNeeded;
-
-    protected final IntentHandler mIntentHandler;
 
     /** Set if {@link #postDeferredStartupIfNeeded()} is called before native has loaded. */
     private boolean mDeferredStartupQueued;
@@ -406,9 +398,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private boolean mBlockingDrawForAppRestart;
     private Runnable mShowContentRunnable;
     private boolean mIsRecreatingForTabletModeChange;
+    // This is only used on automotive.
+    private @Nullable MissingDeviceLockLauncher mMissingDeviceLockLauncher;
 
     protected ChromeActivity() {
-        mIntentHandler = new IntentHandler(this, createIntentHandlerDelegate());
         mManualFillingComponentSupplier.set(ManualFillingComponentFactory.createComponent());
     }
 
@@ -1122,8 +1115,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private static void reportSyncStatus(@Nullable SyncService syncService) {
         if (syncService == null || !syncService.isEngineInitialized()) {
             ContextReporter.reportStatus(ContextReporter.STATUS_SYNC_NOT_INITIALIZED);
-        } else if (!syncService.getActiveDataTypes().contains(ModelType.TYPED_URLS)
-                && !syncService.getActiveDataTypes().contains(ModelType.HISTORY)) {
+        } else if (!syncService.getActiveDataTypes().contains(ModelType.HISTORY)) {
             ContextReporter.reportStatus(ContextReporter.STATUS_SYNC_NOT_SYNCING_URLS);
         } else if (syncService.getPassphraseType() != PassphraseType.KEYSTORE_PASSPHRASE
                 && syncService.getPassphraseType() != PassphraseType.TRUSTED_VAULT_PASSPHRASE) {
@@ -1178,6 +1170,17 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
 
         getManualFillingComponent().onResume();
+        checkForMissingDeviceLockOnAutomotive();
+    }
+
+    private void checkForMissingDeviceLockOnAutomotive() {
+        if (BuildInfo.getInstance().isAutomotive) {
+            if (mMissingDeviceLockLauncher == null) {
+                mMissingDeviceLockLauncher = new MissingDeviceLockLauncher(this,
+                        Profile.getLastUsedRegularProfile(), getModalDialogManagerSupplier().get());
+            }
+            mMissingDeviceLockLauncher.checkPrivateDataIsProtectedByDeviceLock();
+        }
     }
 
     private void ensureFullscreenVideoPictureInPictureController() {
@@ -1269,11 +1272,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         super.onNewIntentWithNative(intent);
         getLaunchCauseMetrics().onReceivedIntent();
-        if (mIntentHandler.shouldIgnoreIntent(intent, isCustomTab())) {
-            return;
-        }
-
-        mIntentHandler.onNewIntent(intent);
     }
 
     /**
@@ -1725,8 +1723,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
             @Override
             public void onCurrentModeChanged(Mode currentMode) {
-                if (ChromeFeatureList.isEnabled(ChromeFeatureList.FOLDABLE_JANK_FIX)
-                        && !mBlockingDrawForAppRestart && getTabletMode().changed) {
+                if (!mBlockingDrawForAppRestart && getTabletMode().changed) {
                     mBlockingDrawForAppRestart = true;
                     findViewById(android.R.id.content).setVisibility(View.INVISIBLE);
                     showContent();
@@ -1796,31 +1793,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
 
         return true;
-    }
-
-    protected IntentHandlerDelegate createIntentHandlerDelegate() {
-        return new IntentHandlerDelegate() {
-            @Override
-            public void processWebSearchIntent(String query) {
-                final Intent searchIntent = new Intent(Intent.ACTION_WEB_SEARCH);
-                searchIntent.putExtra(SearchManager.QUERY, query);
-                Callback<Boolean> callback = result -> {
-                    if (result != null && result) startActivity(searchIntent);
-                };
-                LocaleManager.getInstance().showSearchEnginePromoIfNeeded(
-                        ChromeActivity.this, callback);
-            }
-
-            @Override
-            public long getIntentHandlingTimeMs() {
-                return 0;
-            }
-
-            @Override
-            public void processUrlViewIntent(LoadUrlParams loadUrlParams,
-                    @TabOpenType int tabOpenType, String externalAppId, int tabIdToBringToFront,
-                    Intent intent) {}
-        };
     }
 
     /**
@@ -2033,7 +2005,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         ApplicationViewportInsetSupplier insetSupplier =
                 getWindowAndroid().getApplicationBottomInsetSupplier();
         insetSupplier.setKeyboardInsetSupplier(
-                mInsetObserverViewSupplier.get().getSupplierForBottomInset());
+                mInsetObserverViewSupplier.get().getSupplierForKeyboardInset());
         insetSupplier.setKeyboardAccessoryInsetSupplier(
                 mManualFillingComponentSupplier.get().getBottomInsetSupplier());
         compositorViewHolder.setApplicationViewportInsetSupplier(insetSupplier);
@@ -2129,7 +2101,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     // Triggers runnable that makes content visible.
     private void showContent() {
         if (!mBlockingDrawForAppRestart || mShowContentRunnable == null) return;
-        mHandler.postDelayed(mShowContentRunnable, CONTENT_VIS_DELAY_MS.getValue());
+        mHandler.postDelayed(mShowContentRunnable, CONTENT_VIS_DELAY_MS);
     }
 
     // Checks whether the given uiModeTypes were present on oldUiMode or newUiMode but not the
@@ -2791,7 +2763,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     public TabletMode getTabletMode() {
         assert mConfig
                 != null : "Can not determine the tablet mode when mConfig is not initialized";
-        int smallestWidth = getCurrentSmallestScreenWidth(this);
+        int smallestWidth = DisplayUtil.getCurrentSmallestScreenWidth(this);
         boolean isTablet = smallestWidth >= DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP;
         boolean wasTablet =
                 mConfig.smallestScreenWidthDp >= DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP;

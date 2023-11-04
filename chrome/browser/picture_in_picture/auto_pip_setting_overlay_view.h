@@ -5,45 +5,52 @@
 #ifndef CHROME_BROWSER_PICTURE_IN_PICTURE_AUTO_PIP_SETTING_OVERLAY_VIEW_H_
 #define CHROME_BROWSER_PICTURE_IN_PICTURE_AUTO_PIP_SETTING_OVERLAY_VIEW_H_
 
+#include "base/check_is_test.h"
 #include "base/functional/callback.h"
+#include "chrome/browser/picture_in_picture/auto_pip_setting_view.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/view.h"
+#include "ui/views/view_targeter_delegate.h"
 
 // Creates and manages the content setting overlay for autopip.  This is used
 // both for video-only and document pip on desktop.  It is not used on Android.
-class AutoPipSettingOverlayView : public views::View {
+class AutoPipSettingOverlayView : public views::View,
+                                  public views::ViewTargeterDelegate {
  public:
-  enum class UiResult {
-    // User selected 'Allow'.
-    kAllow,
+  METADATA_HEADER(AutoPipSettingOverlayView);
+  using ResultCb =
+      base::OnceCallback<void(AutoPipSettingView::UiResult result)>;
 
-    // User selected 'Block'.
-    kBlock,
-
-    // UI was dismissed without the user selecting anything.
-    // TODO(crbug.com/1465527): Call back with `kDismissed` sometimes.
-    kDismissed,
-  };
-  using ResultCb = base::OnceCallback<void(UiResult result)>;
-
-  explicit AutoPipSettingOverlayView(ResultCb result_cb);
+  explicit AutoPipSettingOverlayView(
+      ResultCb result_cb,
+      const GURL& origin,
+      const gfx::Rect& browser_view_overridden_bounds,
+      views::View* anchor_view,
+      views::BubbleBorder::Arrow arrow);
   ~AutoPipSettingOverlayView() override;
 
   AutoPipSettingOverlayView(const AutoPipSettingOverlayView&) = delete;
   AutoPipSettingOverlayView(AutoPipSettingOverlayView&&) = delete;
 
-  const views::View* get_block_button_for_testing() const {
-    return block_button_;
-  }
-  const views::View* get_allow_button_for_testing() const {
-    return allow_button_;
+  // Create and show the AutoPipSettingView bubble. The parent parameter will be
+  // set as the bubble's parent window.
+  virtual void ShowBubble(gfx::NativeView parent);
+
+  views::View* get_background_for_testing() const {
+    CHECK_IS_TEST();
+    return background_;
   }
 
  private:
-  void OnButtonPressed(UiResult result);
+  std::unique_ptr<AutoPipSettingView> auto_pip_setting_view_;
+  raw_ptr<views::View> background_ = nullptr;
+  base::WeakPtrFactory<AutoPipSettingOverlayView> weak_factory_{this};
 
-  ResultCb result_cb_;
-  raw_ptr<views::View> block_button_ = nullptr;
-  raw_ptr<views::View> allow_button_ = nullptr;
+  // Callback used to hide the semi-opaque background layer.
+  void OnHideView();
+
+  // Perform a linear fade in of |layer|.
+  void FadeInLayer(ui::Layer* layer);
 };
 
 #endif  // CHROME_BROWSER_PICTURE_IN_PICTURE_AUTO_PIP_SETTING_OVERLAY_VIEW_H_

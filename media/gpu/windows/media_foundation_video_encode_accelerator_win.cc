@@ -66,8 +66,8 @@ constexpr size_t kNumInputBuffers = 3;
 constexpr size_t kOneMicrosecondInMFSampleTimeUnits = 10;
 constexpr size_t kPrefixNALLocatedBytePos = 3;
 constexpr uint64_t kH264MaxQp = 51;
-constexpr uint64_t kVP9MaxQp = 63;
-constexpr uint64_t kAV1MaxQp = 63;
+constexpr uint64_t kVP9MaxQIndex = 255;
+constexpr uint64_t kAV1MaxQIndex = 255;
 
 // Quantizer parameter used in libvpx vp9 rate control, whose range is 0-63.
 // These are based on WebRTC's defaults, cite from
@@ -130,14 +130,16 @@ uint8_t QindextoAVEncQP(uint8_t q_index) {
   return 63;
 }
 
+// According to AV1/VP9's bitstream specification, the valid range of qp
+// value (defined as base_q_idx) should be 0-255.
 bool IsValidQp(VideoCodec codec, uint64_t qp) {
   switch (codec) {
     case VideoCodec::kH264:
       return qp <= kH264MaxQp;
     case VideoCodec::kVP9:
-      return qp <= kVP9MaxQp;
+      return qp <= kVP9MaxQIndex;
     case VideoCodec::kAV1:
-      return qp <= kAV1MaxQp;
+      return qp <= kAV1MaxQIndex;
     default:
       return false;
   }
@@ -376,30 +378,16 @@ VideoRateControlWrapper::RateControlConfig CreateRateControllerConfig(
 
 class MediaFoundationVideoEncodeAccelerator::EncodeOutput {
  public:
-  EncodeOutput(uint32_t size,
-               bool key_frame,
-               base::TimeDelta timestamp,
-               int temporal_id,
-               gfx::ColorSpace color_space)
-      : keyframe(key_frame),
-        capture_timestamp(timestamp),
-        temporal_layer_id(temporal_id),
-        color_space(color_space),
-        data_(size) {}
+  EncodeOutput(uint32_t size, const BitstreamBufferMetadata& md)
+      : metadata(md), data_(size) {}
 
   EncodeOutput(const EncodeOutput&) = delete;
   EncodeOutput& operator=(const EncodeOutput&) = delete;
 
   uint8_t* memory() { return data_.data(); }
-
   int size() const { return static_cast<int>(data_.size()); }
-  void SetQp(int32_t qp_val) { frame_qp.emplace(qp_val); }
 
-  const bool keyframe;
-  const base::TimeDelta capture_timestamp;
-  const int temporal_layer_id;
-  absl::optional<int32_t> frame_qp;
-  const gfx::ColorSpace color_space;
+  BitstreamBufferMetadata metadata;
 
  private:
   std::vector<uint8_t> data_;
@@ -829,19 +817,7 @@ void MediaFoundationVideoEncodeAccelerator::UseOutputBitstreamBuffer(
   memcpy(buffer_ref->mapping.memory(), encode_output->memory(),
          encode_output->size());
 
-  BitstreamBufferMetadata md(encode_output->size(), encode_output->keyframe,
-                             encode_output->capture_timestamp);
-  if (encode_output->frame_qp) {
-    md.qp = *encode_output->frame_qp;
-  }
-  if (temporal_scalable_coding()) {
-    md.h264.emplace().temporal_idx = encode_output->temporal_layer_id;
-  }
-  if (encode_output->color_space.IsValid()) {
-    md.encoded_color_space = encode_output->color_space;
-  }
-
-  client_->BitstreamBufferReady(buffer_ref->id, md);
+  client_->BitstreamBufferReady(buffer_ref->id, encode_output->metadata);
 }
 
 void MediaFoundationVideoEncodeAccelerator::RequestEncodingParametersChange(
@@ -1287,6 +1263,7 @@ HRESULT MediaFoundationVideoEncodeAccelerator::ProcessInput(
                "timestamp", input.frame->timestamp(), "discard_output",
                input.discard_output);
 
+  absl::optional<int> metadata_qp;
   if (has_prepared_input_sample_) {
     if (DCHECK_IS_ON()) {
       // Let's validate that prepared sample actually matches the frame
@@ -1314,7 +1291,10 @@ HRESULT MediaFoundationVideoEncodeAccelerator::ProcessInput(
           input.options.key_frame
               ? VideoRateControlWrapper::FrameParams::FrameType::kKeyFrame
               : VideoRateControlWrapper::FrameParams::FrameType::kInterFrame;
-      quantizer = QindextoAVEncQP(rate_ctrl_->ComputeQP(frame_params));
+      // If there exists a rate_ctrl_, the qp computed by rate_ctrl_ should be
+      // set on sample metadata and carried over from input to output.
+      metadata_qp = rate_ctrl_->ComputeQP(frame_params);
+      quantizer = QindextoAVEncQP(metadata_qp.value());
     } else if (input.discard_output) {
       // Set up encoder for maximum speed if we're anyway going to discard the
       // output.
@@ -1335,7 +1315,8 @@ HRESULT MediaFoundationVideoEncodeAccelerator::ProcessInput(
     // it can actually break some encoders; see https://crbug.com/1446081.
     sample_metadata_queue_.push_back(
         OutOfBandMetadata{.color_space = input.frame->ColorSpace(),
-                          .discard_output = input.discard_output});
+                          .discard_output = input.discard_output,
+                          .qp = metadata_qp});
 
     has_prepared_input_sample_ = true;
   }
@@ -1784,32 +1765,34 @@ void MediaFoundationVideoEncodeAccelerator::ProcessOutput() {
         base::Microseconds(sample_time / kOneMicrosecondInMFSampleTimeUnits);
   }
 
+  DCHECK(!sample_metadata_queue_.empty());
+  const auto metadata = sample_metadata_queue_.front();
+  sample_metadata_queue_.pop_front();
+  if (metadata.discard_output) {
+    return;
+  }
+
   // If `frame_qp` is set here, it will be plumbed down to WebRTC.
   // If not set, the QP may be parsed by WebRTC from the bitstream but only if
   // the QP is trusted (`encoder_info_.reports_average_qp` is true, which it is
   // by default).
   absl::optional<int32_t> frame_qp;
   bool should_notify_encoder_info_change = false;
-  // In the case of VP9, `frame_qp_from_sample` is always 0 here
-  // (https://crbug.com/1434633) so we prefer WebRTC to parse the bitstream for
-  // us by leaving `frame_qp` unset.
-  if (codec_ != VideoCodec::kVP9) {
+  // If there exists a valid qp in sample metadata, do not query HMFT for
+  // MFSampleExtension_VideoEncodeQP.
+  if (metadata.qp.has_value()) {
+    frame_qp = metadata.qp.value();
+  } else {
     // For HMFT that continuously reports valid QP, update encoder info so that
     // WebRTC will not use bandwidth quality scaler for resolution adaptation.
     uint64_t frame_qp_from_sample = 0xfffful;
     hr = output_data_buffer.pSample->GetUINT64(MFSampleExtension_VideoEncodeQP,
                                                &frame_qp_from_sample);
     if (vendor_ == DriverVendor::kIntel) {
-      if (codec_ == VideoCodec::kH264) {
-        if ((FAILED(hr) || !IsValidQp(codec_, frame_qp_from_sample)) &&
-            encoder_info_.reports_average_qp) {
-          should_notify_encoder_info_change = true;
-          encoder_info_.reports_average_qp = false;
-        }
-      } else if (codec_ == VideoCodec::kAV1) {
-        if (!rate_ctrl_) {
-          encoder_info_.reports_average_qp = false;
-        }
+      if ((FAILED(hr) || !IsValidQp(codec_, frame_qp_from_sample)) &&
+          encoder_info_.reports_average_qp) {
+        should_notify_encoder_info_change = true;
+        encoder_info_.reports_average_qp = false;
       }
     }
     // Bits 0-15: Default QP.
@@ -1835,12 +1818,6 @@ void MediaFoundationVideoEncodeAccelerator::ProcessOutput() {
     return;
   }
 
-  DCHECK(!sample_metadata_queue_.empty());
-  const auto metadata = sample_metadata_queue_.front();
-  sample_metadata_queue_.pop_front();
-  if (metadata.discard_output) {
-    return;
-  }
 
   if (rate_ctrl_) {
     VideoRateControlWrapper::FrameParams frame_params{};
@@ -1853,19 +1830,29 @@ void MediaFoundationVideoEncodeAccelerator::ProcessOutput() {
   }
   DVLOG(3) << "Encoded data with size:" << size << " keyframe " << keyframe;
 
+  BitstreamBufferMetadata md(size, keyframe, timestamp);
+  if (frame_qp.has_value() && IsValidQp(codec_, *frame_qp)) {
+    md.qp = *frame_qp;
+  }
+  if (temporal_scalable_coding()) {
+    if (codec_ == VideoCodec::kH264) {
+      md.h264.emplace().temporal_idx = temporal_id;
+    } else if (codec_ == VideoCodec::kHEVC) {
+      md.h265.emplace().temporal_idx = temporal_id;
+    }
+  }
+  if (metadata.color_space.IsValid()) {
+    md.encoded_color_space = metadata.color_space;
+  }
   // If no bit stream buffer presents, queue the output first.
   if (bitstream_buffer_queue_.empty()) {
     DVLOG(3) << "No bitstream buffers.";
 
     // We need to copy the output so that encoding can continue.
-    auto encode_output = std::make_unique<EncodeOutput>(
-        size, keyframe, timestamp, temporal_id, metadata.color_space);
+    auto encode_output = std::make_unique<EncodeOutput>(size, md);
     {
       MediaBufferScopedPointer scoped_buffer(output_buffer.Get());
       memcpy(encode_output->memory(), scoped_buffer.get(), size);
-      if (frame_qp.has_value() && IsValidQp(codec_, *frame_qp)) {
-        encode_output->SetQp(*frame_qp);
-      }
     }
     encoder_output_queue_.push_back(std::move(encode_output));
     output_data_buffer.pSample->Release();
@@ -1889,22 +1876,6 @@ void MediaFoundationVideoEncodeAccelerator::ProcessOutput() {
 
   output_data_buffer.pSample->Release();
   output_data_buffer.pSample = nullptr;
-
-  BitstreamBufferMetadata md(size, keyframe, timestamp);
-  if (frame_qp.has_value() && IsValidQp(codec_, *frame_qp)) {
-    md.qp = *frame_qp;
-  }
-
-  if (temporal_scalable_coding()) {
-    if (codec_ == VideoCodec::kH264) {
-      md.h264.emplace().temporal_idx = temporal_id;
-    } else if (codec_ == VideoCodec::kHEVC) {
-      md.h265.emplace().temporal_idx = temporal_id;
-    }
-  }
-  if (metadata.color_space.IsValid()) {
-    md.encoded_color_space = metadata.color_space;
-  }
 
   client_->BitstreamBufferReady(buffer_ref->id, md);
 }

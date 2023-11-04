@@ -5,11 +5,14 @@
 #include "chrome/browser/ui/safety_hub/safety_hub_service.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
+#include "base/json/values_util.h"
 #include "base/observer_list_types.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "chrome/browser/ui/safety_hub/safety_hub_test_util.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -21,9 +24,33 @@ constexpr base::TimeDelta kUpdateIntervalForTest = base::Days(7);
 
 class MockSafetyHubResult : public SafetyHubService::Result {
  public:
+  explicit MockSafetyHubResult(base::Time timestamp = base::Time::Now())
+      : SafetyHubService::Result(timestamp) {}
   ~MockSafetyHubResult() override = default;
 
-  int GetVal() { return val_; }
+  explicit MockSafetyHubResult(const base::Value::Dict& dict)
+      : SafetyHubService::Result(dict) {}
+
+  std::unique_ptr<SafetyHubService::Result> Clone() const override {
+    return std::make_unique<MockSafetyHubResult>(*this);
+  }
+
+  base::Value::Dict ToDictValue() const override { return BaseToDictValue(); }
+
+  bool IsTriggerForMenuNotification() const override { return true; }
+
+  bool WarrantsNewMenuNotification(
+      const Result& previousResult) const override {
+    return true;
+  }
+
+  std::u16string GetNotificationString() const override {
+    return std::u16string();
+  }
+
+  int GetNotificationCommandId() const override { return 0; }
+
+  int GetVal() const { return val_; }
 
   void SetVal(int val) { val_ = val; }
 
@@ -35,6 +62,13 @@ class MockSafetyHubResult : public SafetyHubService::Result {
 
 class MockSafetyHubService : public SafetyHubService {
  public:
+  MockSafetyHubService() {
+    // Note: for testing purposes, the repeated updates are not started in the
+    // constructor.
+
+    InitializeLatestResult();
+  }
+
   // Returns the number of times that the UpdateOnBackgroundThread function was
   // called.
   int GetNumBackgroundUpdates() const { return num_updates_background_; }
@@ -44,10 +78,16 @@ class MockSafetyHubService : public SafetyHubService {
   int GetNumUIUpdates() const { return num_updates_ui_; }
 
   // Set the latest result to a specific value - 42 in this case.
-  void InitializeLatestResult() override {
+  std::unique_ptr<SafetyHubService::Result> InitializeLatestResultImpl()
+      override {
     auto init_result = std::make_unique<MockSafetyHubResult>();
     init_result->SetVal(42);
-    latest_result_ = std::move(init_result);
+    return init_result;
+  }
+
+  std::unique_ptr<SafetyHubService::Result> GetResultFromDictValue(
+      const base::Value::Dict& dict) override {
+    return std::make_unique<MockSafetyHubResult>(dict);
   }
 
  protected:
@@ -187,18 +227,26 @@ TEST_F(SafetyHubServiceTest, UpdateOnBackgroundThread) {
 }
 
 TEST_F(SafetyHubServiceTest, GetCachedResult) {
-  // The mock service does not initialize the latest result on construction, so
-  // the cached result should be null.
-  absl::optional<SafetyHubService::Result*> opt_result1 =
+  // The mock service initializes the latest result on construction, so its
+  // value should be those that we'd expect.
+  absl::optional<std::unique_ptr<SafetyHubService::Result>> opt_result =
       service()->GetCachedResult();
-  EXPECT_FALSE(opt_result1.has_value());
-
-  // We have to call InitializeLatestResult here as the service is not created
-  // using a factory (which usually calls it).
-  service()->InitializeLatestResult();
-  absl::optional<SafetyHubService::Result*> opt_result2 =
-      service()->GetCachedResult();
-  EXPECT_TRUE(opt_result2.has_value());
-  auto* result = static_cast<MockSafetyHubResult*>(opt_result2.value());
+  EXPECT_TRUE(opt_result.has_value());
+  MockSafetyHubResult* result =
+      static_cast<MockSafetyHubResult*>(opt_result.value().get());
   EXPECT_EQ(result->GetVal(), 42);
+}
+
+TEST_F(SafetyHubServiceTest, ResultBaseToFromDict) {
+  base::Time time = base::Time::Now() - base::Days(5);
+  auto result = std::make_unique<MockSafetyHubResult>(time);
+  EXPECT_EQ(result->timestamp(), time);
+  // The timestamp saved in the dict should be the Value of time.
+  base::Value::Dict dict = result->ToDictValue();
+  EXPECT_EQ(*dict.Find(kSafetyHubTimestampResultKey), base::TimeToValue(time));
+  // When in the future we update from the dict again, the timestamp should be
+  // set to whatever is in the dict.
+  std::unique_ptr<SafetyHubService::Result> new_result =
+      service()->GetResultFromDictValue(dict);
+  EXPECT_EQ(result->timestamp(), time);
 }

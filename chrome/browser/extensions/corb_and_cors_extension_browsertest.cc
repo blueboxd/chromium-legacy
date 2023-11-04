@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/to_vector.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
@@ -46,7 +47,6 @@
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/service_worker_context_observer.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/test/browser_test.h"
@@ -58,6 +58,7 @@
 #include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/permissions_manager.h"
+#include "extensions/browser/service_worker/service_worker_test_utils.h"
 #include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
@@ -144,9 +145,8 @@ class ServiceWorkerConsoleObserver
  public:
   explicit ServiceWorkerConsoleObserver(
       content::BrowserContext* browser_context) {
-    content::StoragePartition* partition =
-        browser_context->GetDefaultStoragePartition();
-    scoped_observation_.Observe(partition->GetServiceWorkerContext());
+    scoped_observation_.Observe(
+        service_worker_test_utils::GetServiceWorkerContext(browser_context));
   }
   ~ServiceWorkerConsoleObserver() override = default;
 
@@ -252,15 +252,10 @@ class CorbAndCorsExtensionBrowserTest : public CorbAndCorsExtensionTestBase {
   // - content::WebContentsConsoleObserver
   template <typename TConsoleObserver>
   void VerifyFetchWasBlockedByCors(const TConsoleObserver& console_observer) {
-    using ConsoleMessage = typename TConsoleObserver::Message;
-    const std::vector<ConsoleMessage>& console_messages =
-        console_observer.messages();
-
-    std::vector<std::string> messages;
-    base::ranges::transform(console_messages, std::back_inserter(messages),
-                            [](const auto& console_message) {
-                              return base::UTF16ToUTF8(console_message.message);
-                            });
+    std::vector<std::string> messages = base::test::ToVector(
+        console_observer.messages(), [](const auto& console_message) {
+          return base::UTF16ToUTF8(console_message.message);
+        });
 
     // We allow more than 1 console message, because the test might flakily see
     // extra console messages - see https://crbug.com/1085629.

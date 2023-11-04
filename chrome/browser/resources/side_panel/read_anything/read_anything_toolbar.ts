@@ -12,32 +12,40 @@ import './icons.html.js';
 import {AnchorAlignment, CrActionMenuElement, ShowAtPositionConfig} from '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {WebUiListenerMixin} from '//resources/cr_elements/web_ui_listener_mixin.js';
 import {assert} from '//resources/js/assert_ts.js';
-import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {loadTimeData} from '//resources/js/load_time_data.js';
+import {IronIconElement} from '//resources/polymer/v3_0/iron-icon/iron-icon.js';
+import {DomRepeat, DomRepeatEvent, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {ReadAnythingElement} from './app.js';
 import {getTemplate} from './read_anything_toolbar.html.js';
 
 export interface ReadAnythingToolbar {
   $: {
-    colorSubmenu: CrActionMenuElement,
-    lineSpacingSubmenu: CrActionMenuElement,
-    letterSpacingSubmenu: CrActionMenuElement,
-    fontSubmenu: CrActionMenuElement,
+    rateMenu: CrActionMenuElement,
+    colorMenu: CrActionMenuElement,
+    lineSpacingMenu: CrActionMenuElement,
+    letterSpacingMenu: CrActionMenuElement,
+    fontMenu: CrActionMenuElement,
     fontSizeMenu: CrActionMenuElement,
+    moreOptionsMenu: CrActionMenuElement,
+    voiceSelectionMenu: CrActionMenuElement,
+    fontTemplate: DomRepeat,
   };
 }
 
-enum MenuStateValue {
-  LINE_STANDARD = 0,
-  LOOSE = 1,
-  VERY_LOOSE = 2,
-  DEFAULT_COLOR = 3,
-  LIGHT = 4,
-  DARK = 5,
-  YELLOW = 6,
-  BLUE = 7,
-  LETTER_STANDARD = 8,
-  WIDE = 9,
-  VERY_WIDE = 10,
+interface MenuStateItem<T> {
+  title: string;
+  icon: string;
+  data: T;
+  callback: () => void;
+}
+
+interface MenuButton {
+  id: string;
+  icon: string;
+  // This is a function instead of just the menu itself because the menu isn't
+  // ready by the time we create the MenuButton entries.
+  menuToOpen: () => CrActionMenuElement;
 }
 
 // Enum for logging when a text style setting is changed.
@@ -70,12 +78,190 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
 
   static get properties() {
     return {
-      menuStateEnum_: {
-        type: Object,
-        value: MenuStateValue,
-      },
+      fontOptions_: Array,
+      letterSpacingOptions_: Array,
+      lineSpacingOptions_: Array,
+      colorOptions_: Array,
+      rateOptions_: Array,
+      textStyleOptions_: Array,
     };
   }
+
+  // This function has to be static because it's called from the ResizeObserver
+  // callback which doesn't have access to "this"
+  static maybeUpdateMoreOptions(toolbar: HTMLElement) {
+    // Hide the more options button first to calculate if we need it
+    const moreOptionsButton = toolbar.querySelector('#more') as HTMLElement;
+    assert(moreOptionsButton);
+    ReadAnythingToolbar.hideElement(moreOptionsButton, false);
+    const moreOptionsMenu = toolbar.querySelector('#moreOptionsMenu');
+    assert(moreOptionsMenu);
+    Array.from(moreOptionsMenu.children).forEach(child => {
+      ReadAnythingToolbar.hideElement(child as HTMLElement, false);
+    });
+
+    // Show all the buttons before deciding which ones to hide
+    const buttons = toolbar.querySelectorAll('.toolbar-button');
+    assert(buttons);
+    buttons.forEach(btn => {
+      ReadAnythingToolbar.showElement(btn as HTMLElement);
+    });
+
+    // When scroll width and client width are the different, then the content
+    // has overflowed
+    if (toolbar.scrollWidth !== toolbar.clientWidth) {
+      // If x buttons are pushed off screen, put the more options button before
+      // the last x + 1 buttons since adding it will push another button off
+      // screen
+      for (let i = buttons.length - 1; i >= 0; i--) {
+        // Hide the overflowed button in case it's still partially on screen
+        const button = buttons[i] as HTMLElement;
+        ReadAnythingToolbar.hideElement(button, true);
+        // Show the button that was pushed off screen in the more options menu
+        const styleButtonInMoreOptions =
+            moreOptionsMenu.querySelector('#' + button.id) as HTMLElement;
+        if (!styleButtonInMoreOptions) {
+          break;
+        }
+        ReadAnythingToolbar.showElement(styleButtonInMoreOptions);
+        if (button.getBoundingClientRect().right < toolbar.clientWidth) {
+          ReadAnythingToolbar.showElement(moreOptionsButton);
+          toolbar.insertBefore(moreOptionsButton, button);
+          break;
+        }
+      }
+    }
+  }
+
+  static hideElement(element: HTMLElement, keepSpace: boolean) {
+    if (keepSpace) {
+      element.style.visibility = 'hidden';
+    } else {
+      element.style.display = 'none';
+    }
+  }
+
+  static showElement(element: HTMLElement) {
+    element.style.visibility = 'visible';
+    element.style.display = 'inline-block';
+  }
+
+  // If you change these fonts, please also update read_anything_constants.h
+  private fontOptions_: string[] = [];
+
+  private letterSpacingOptions_: Array<MenuStateItem<number>> = [
+    {
+      title: loadTimeData.getString('letterSpacingStandardTitle'),
+      icon: 'read-anything:letter-spacing-standard',
+      data: chrome.readingMode.getLetterSpacingValue(
+          chrome.readingMode.standardLetterSpacing),
+      callback: () => chrome.readingMode.onStandardLetterSpacing(),
+    },
+    {
+      title: loadTimeData.getString('letterSpacingWideTitle'),
+      icon: 'read-anything:letter-spacing-wide',
+      data: chrome.readingMode.getLetterSpacingValue(
+          chrome.readingMode.wideLetterSpacing),
+      callback: () => chrome.readingMode.onWideLetterSpacing(),
+    },
+    {
+      title: loadTimeData.getString('letterSpacingVeryWideTitle'),
+      icon: 'read-anything:letter-spacing-very-wide',
+      data: chrome.readingMode.getLetterSpacingValue(
+          chrome.readingMode.veryWideLetterSpacing),
+      callback: () => chrome.readingMode.onVeryWideLetterSpacing(),
+    },
+  ];
+
+  private lineSpacingOptions_: Array<MenuStateItem<number>> = [
+    {
+      title: loadTimeData.getString('lineSpacingStandardTitle'),
+      icon: 'read-anything:line-spacing-standard',
+      data: chrome.readingMode.getLineSpacingValue(
+          chrome.readingMode.standardLineSpacing),
+      callback: () => chrome.readingMode.onStandardLineSpacing(),
+    },
+    {
+      title: loadTimeData.getString('lineSpacingLooseTitle'),
+      icon: 'read-anything:line-spacing-loose',
+      data: chrome.readingMode.getLineSpacingValue(
+          chrome.readingMode.looseLineSpacing),
+      callback: () => chrome.readingMode.onLooseLineSpacing(),
+    },
+    {
+      title: loadTimeData.getString('lineSpacingVeryLooseTitle'),
+      icon: 'read-anything:line-spacing-very-loose',
+      data: chrome.readingMode.getLineSpacingValue(
+          chrome.readingMode.veryLooseLineSpacing),
+      callback: () => chrome.readingMode.onVeryLooseLineSpacing(),
+    },
+  ];
+
+  private colorOptions_: Array<MenuStateItem<string>> = [
+    {
+      title: loadTimeData.getString('defaultColorTitle'),
+      icon: 'read-anything:default-theme',
+      data: '',
+      callback: () => chrome.readingMode.onDefaultTheme(),
+    },
+    {
+      title: loadTimeData.getString('lightColorTitle'),
+      icon: 'read-anything:light-theme',
+      data: '-light',
+      callback: () => chrome.readingMode.onLightTheme(),
+    },
+    {
+      title: loadTimeData.getString('darkColorTitle'),
+      icon: 'read-anything:dark-theme',
+      data: '-dark',
+      callback: () => chrome.readingMode.onDarkTheme(),
+    },
+    {
+      title: loadTimeData.getString('yellowColorTitle'),
+      icon: 'read-anything:yellow-theme',
+      data: '-yellow',
+      callback: () => chrome.readingMode.onYellowTheme(),
+    },
+    {
+      title: loadTimeData.getString('blueColorTitle'),
+      icon: 'read-anything:blue-theme',
+      data: '-blue',
+      callback: () => chrome.readingMode.onBlueTheme(),
+    },
+  ];
+
+  private voiceSelectionOptions_: Array<MenuStateItem<SpeechSynthesisVoice>> =
+      [];
+
+  private rateOptions_: number[] = [0.5, 0.8, 1, 1.2, 1.5, 2, 3, 4];
+
+  private textStyleOptions_: MenuButton[] = [
+    {
+      id: 'font-size',
+      icon: 'read-anything:font-size',
+      menuToOpen: () => this.$.fontSizeMenu,
+    },
+    {
+      id: 'font',
+      icon: 'read-anything:font',
+      menuToOpen: () => this.$.fontMenu,
+    },
+    {
+      id: 'color',
+      icon: 'read-anything:color',
+      menuToOpen: () => this.$.colorMenu,
+    },
+    {
+      id: 'line-spacing',
+      icon: 'read-anything:line-spacing',
+      menuToOpen: () => this.$.lineSpacingMenu,
+    },
+    {
+      id: 'letter-spacing',
+      icon: 'read-anything:letter-spacing',
+      menuToOpen: () => this.$.letterSpacingMenu,
+    },
+  ];
 
   private showAtPositionConfig_: ShowAtPositionConfig = {
     top: 20,
@@ -84,150 +270,83 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
   };
 
   private isReadAloudEnabled_: boolean;
+  private isHighlightOn_: boolean = true;
 
   // If Read Aloud is in the paused state.
-  isPaused = true;
-
-  // This is needed to keep a reference to any dynamically added callbacks so
-  // that they can be removed with #removeEventListener.
-  private elementCallbackMap = new Map<any, () => void>();
+  private isPaused_: boolean = true;
 
   override connectedCallback() {
     super.connectedCallback();
     this.isReadAloudEnabled_ = chrome.readingMode.isReadAloudEnabled;
 
-    const onFontClick = (fontName: string) => {
-      this.onFontClick_(fontName);
-    };
+    this.updateFonts();
 
-    const fontNodes = Array.from(this.$.fontSubmenu.children);
+    const shadowRoot = this.shadowRoot;
+    assert(shadowRoot);
+    const toolbar = shadowRoot.getElementById('toolbar-container');
+    assert(toolbar);
+    new ResizeObserver(this.onToolbarResize_).observe(toolbar);
+  }
+
+  private onToolbarResize_(entries: ResizeObserverEntry[]) {
+    assert(entries.length === 1);
+    const toolbar = entries[0].target as HTMLElement;
+    ReadAnythingToolbar.maybeUpdateMoreOptions(toolbar);
+  }
+
+  restoreSettingsFromPrefs(colorSuffix?: string) {
+    const fontNodes = Array.from(this.$.fontMenu.children);
     fontNodes.forEach((element) => {
       if (element instanceof HTMLButtonElement) {
-        if (element.classList.contains('back') || !element.innerText) {
+        if (!element.innerText) {
           return;
         }
         // Update the font of each button to be the same as the font text.
         element.style.fontFamily = element.innerText;
-        // Set the onclick listener for each button so that the content
-        // page font updates when a button is clicked.
-        const callback = () => {
-          onFontClick(element.innerText);
-        };
-        element.addEventListener('click', callback);
-        this.elementCallbackMap.set(element, callback);
       }
     });
 
-    // Configure on-click listeners for line spacing.
-    const onLineSpacingClick = (element: number) => {
-      let data: number|undefined;
+    if (this.isReadAloudEnabled_) {
+      const speechRate = parseFloat(chrome.readingMode.speechRate.toFixed(1));
+      this.setRateIcon_(speechRate);
+      this.setCheckMarkForMenu_(
+          this.$.rateMenu, this.rateOptions_.indexOf(speechRate));
 
-      switch (element) {
-        case MenuStateValue.LINE_STANDARD:
-          chrome.readingMode.onStandardLineSpacing();
-          data = chrome.readingMode.standardLineSpacing;
-          break;
-        case MenuStateValue.LOOSE:
-          chrome.readingMode.onLooseLineSpacing();
-          data = chrome.readingMode.looseLineSpacing;
-          break;
-        case MenuStateValue.VERY_LOOSE:
-          chrome.readingMode.onVeryLooseLineSpacing();
-          data = chrome.readingMode.veryLooseLineSpacing;
-          break;
-        default:
-          // Do nothing;
-      }
-
-      chrome.metricsPrivate.recordEnumerationValue(
-          SETTINGS_CHANGE_UMA, ReadAnythingSettingsChange.LINE_HEIGHT_CHANGE,
-          ReadAnythingSettingsChange.COUNT);
-      if (this.contentPage && data) {
-        this.contentPage.updateLineSpacing(
-            chrome.readingMode.getLineSpacingValue(data));
-      }
-      this.closeMenus_();
-    };
-
-    // Configure on-click listeners for letter spacing.
-    const onLetterSpacingClick = (element: number) => {
-      let data: number|undefined;
-
-      switch (element) {
-        case MenuStateValue.LETTER_STANDARD:
-          chrome.readingMode.onStandardLetterSpacing();
-          data = chrome.readingMode.standardLetterSpacing;
-          break;
-        case MenuStateValue.WIDE:
-          chrome.readingMode.onWideLetterSpacing();
-          data = chrome.readingMode.wideLetterSpacing;
-          break;
-        case MenuStateValue.VERY_WIDE:
-          chrome.readingMode.onVeryWideLetterSpacing();
-          data = chrome.readingMode.veryWideLetterSpacing;
-          break;
-        default:
-          // Do nothing;
-      }
-
-      chrome.metricsPrivate.recordEnumerationValue(
-          SETTINGS_CHANGE_UMA, ReadAnythingSettingsChange.LETTER_SPACING_CHANGE,
-          ReadAnythingSettingsChange.COUNT);
-      if (this.contentPage && data) {
-        this.contentPage.updateLetterSpacing(
-            chrome.readingMode.getLetterSpacingValue(data));
-      }
-      this.closeMenus_();
-    };
-
-    // Configure on-click listeners for theme.
-    const onThemeClick = (element: number) => {
-      let colorSuffix: string|undefined;
-
-      switch (element) {
-        case MenuStateValue.DEFAULT_COLOR:
-          chrome.readingMode.onDefaultTheme();
-          colorSuffix = '';
-          break;
-        case MenuStateValue.LIGHT:
-          chrome.readingMode.onLightTheme();
-          colorSuffix = '-light';
-          break;
-        case MenuStateValue.DARK:
-          chrome.readingMode.onDarkTheme();
-          colorSuffix = '-dark';
-          break;
-        case MenuStateValue.YELLOW:
-          chrome.readingMode.onYellowTheme();
-          colorSuffix = '-yellow';
-          break;
-        case MenuStateValue.BLUE:
-          chrome.readingMode.onBlueTheme();
-          colorSuffix = '-blue';
-          break;
-        default:
-          // Do nothing;
-      }
-
-      chrome.metricsPrivate.recordEnumerationValue(
-          SETTINGS_CHANGE_UMA, ReadAnythingSettingsChange.THEME_CHANGE,
-          ReadAnythingSettingsChange.COUNT);
-      if (this.contentPage && (colorSuffix !== undefined)) {
-        this.contentPage.updateThemeFromWebUi(colorSuffix);
-      }
-      this.closeMenus_();
-    };
-    this.addOnClickListeners(this.$.lineSpacingSubmenu, onLineSpacingClick);
-    this.addOnClickListeners(this.$.colorSubmenu, onThemeClick);
-    this.addOnClickListeners(this.$.letterSpacingSubmenu, onLetterSpacingClick);
+      this.setHighlightState_(
+          chrome.readingMode.highlightGranularity ===
+          chrome.readingMode.highlightOn);
+    }
+    this.setCheckMarkForMenu_(
+        this.$.fontMenu,
+        this.fontOptions_.indexOf(chrome.readingMode.fontName));
+    this.setCheckMarkForMenu_(
+        this.$.colorMenu,
+        this.getIndexOfSetting_(this.colorOptions_, colorSuffix));
+    this.setCheckMarkForMenu_(
+        this.$.lineSpacingMenu,
+        this.getIndexOfSetting_(
+            this.lineSpacingOptions_,
+            parseFloat(chrome.readingMode.lineSpacing.toFixed(2))));
+    this.setCheckMarkForMenu_(
+        this.$.letterSpacingMenu,
+        this.getIndexOfSetting_(
+            this.letterSpacingOptions_,
+            parseFloat(chrome.readingMode.letterSpacing.toFixed(2))));
   }
 
-  override disconnectedCallback() {
-    super.disconnectedCallback();
-    this.removeOnClickListeners(this.$.fontSubmenu);
-    this.removeOnClickListeners(this.$.lineSpacingSubmenu);
-    this.removeOnClickListeners(this.$.colorSubmenu);
-    this.removeOnClickListeners(this.$.letterSpacingSubmenu);
+  private getIndexOfSetting_(
+      menuArray: Array<MenuStateItem<any>>, dataToFind: any): number {
+    return menuArray.findIndex((item) => (item.data === dataToFind));
+  }
+
+  updateFonts() {
+    const fonts = chrome.readingMode.supportedFonts;
+    this.fontOptions_ = [];
+    fonts.forEach(element => {
+      this.fontOptions_.push(element);
+    });
+
+    this.$.fontTemplate.render();
   }
 
   updateUiForPlaying() {
@@ -236,7 +355,15 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
     const button = shadowRoot.getElementById('play-pause');
     assert(button);
     button.setAttribute('iron-icon', 'read-anything-20:pause');
-    this.isPaused = false;
+    this.isPaused_ = false;
+
+    this.updateStyles({
+      '--audio-controls-background': 'var(--color-sys-tonal-container)',
+    });
+
+    const toolbar = shadowRoot.getElementById('toolbar-container');
+    assert(toolbar);
+    ReadAnythingToolbar.maybeUpdateMoreOptions(toolbar);
   }
 
   updateUiForPausing() {
@@ -245,65 +372,69 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
     const button = shadowRoot.getElementById('play-pause');
     assert(button);
     button.setAttribute('iron-icon', 'read-anything-20:play');
-    this.isPaused = true;
-  }
+    this.isPaused_ = true;
 
-  private removeOnClickListeners(menu: CrActionMenuElement) {
-    const nodes = Array.from(menu.children);
-    nodes.forEach((element) => {
-      if ((element instanceof HTMLButtonElement) &&
-          !element.classList.contains('back') &&
-          (element.className === 'dropdown-item')) {
-        const callback = this.elementCallbackMap.get(element);
-        if (callback) {
-          element.removeEventListener('click', callback);
-        }
-        this.elementCallbackMap.delete(element);
-      }
+    this.updateStyles({
+      '--audio-controls-background': 'transparent',
     });
-  }
 
-  private addOnClickListeners(
-      menu: CrActionMenuElement,
-      onMenuElementClick: (element: number) => void) {
-    const nodes = Array.from(menu.children);
-    nodes.forEach((element) => {
-      if ((element instanceof HTMLButtonElement) &&
-          !element.classList.contains('back') && element.hasAttribute('data')) {
-        const callback = () => {
-          onMenuElementClick(parseInt(element.getAttribute('data')!));
-        };
-        this.elementCallbackMap.set(element, callback);
-        element.addEventListener('click', callback);
-      }
-    });
+    const toolbar = shadowRoot.getElementById('toolbar-container');
+    assert(toolbar);
+    ReadAnythingToolbar.maybeUpdateMoreOptions(toolbar);
   }
 
   private closeMenus_() {
-    this.$.colorSubmenu.close();
-    this.$.lineSpacingSubmenu.close();
-    this.$.letterSpacingSubmenu.close();
-    this.$.fontSubmenu.close();
+    this.$.rateMenu.close();
+    this.$.colorMenu.close();
+    this.$.lineSpacingMenu.close();
+    this.$.letterSpacingMenu.close();
+    this.$.fontMenu.close();
   }
 
-  private onShowColorSubMenuClick_(event: MouseEvent) {
-    this.openMenu_(this.$.colorSubmenu, event.target as HTMLElement);
+  private onNextGranularityClick_() {
+    if (this.contentPage) {
+      this.contentPage.playNextGranularity();
+    }
   }
 
-  private onShowLineSpacingSubMenuClick_(event: MouseEvent) {
-    this.openMenu_(this.$.lineSpacingSubmenu, event.target as HTMLElement);
+  private onPreviousGranularityClick_() {
+    if (this.contentPage) {
+      this.contentPage.playPreviousGranularity();
+    }
   }
 
-  private onShowLetterSpacingSubMenuClick_(event: MouseEvent) {
-    this.openMenu_(this.$.letterSpacingSubmenu, event.target as HTMLElement);
+  private onTextStyleMenuButtonClick_(event: DomRepeatEvent<MenuButton>) {
+    this.openMenu_(event.model.item.menuToOpen(), event.target as HTMLElement);
   }
 
-  private onShowFontSubMenuClick_(event: MouseEvent) {
-    this.openMenu_(this.$.fontSubmenu, event.target as HTMLElement);
+  private onShowRateMenuClick_(event: MouseEvent) {
+    this.openMenu_(this.$.rateMenu, event.target as HTMLElement);
   }
 
-  private onShowFontSizeMenuClick_(event: MouseEvent) {
-    this.openMenu_(this.$.fontSizeMenu, event.target as HTMLElement);
+  // TODO(crbug.com/1474951): Add unit tests
+  private onVoiceSelectionMenuClick_(event: MouseEvent) {
+    if (this.contentPage) {
+      const voices = this.contentPage.getVoices();
+      this.voiceSelectionOptions_ = Object.entries(voices).reduce(
+          (aggregateVoiceList: Array<MenuStateItem<SpeechSynthesisVoice>>,
+           [_, voiceListForLang]) =>
+              ([
+                ...aggregateVoiceList,
+                ...(voiceListForLang).map(speechSynthesisVoice => ({
+                                            title: speechSynthesisVoice.name,
+                                            icon: '',
+                                            data: speechSynthesisVoice,
+                                            callback: () => {},
+                                          })),
+              ]),
+          []);
+
+      this.openMenu_(this.$.voiceSelectionMenu, event.target as HTMLElement);
+    }
+  }
+
+  private onMoreOptionsClick_(event: MouseEvent) {
+    this.openMenu_(this.$.moreOptionsMenu, event.target as HTMLElement);
   }
 
   private openMenu_(menuToOpen: CrActionMenuElement, target: HTMLElement) {
@@ -318,16 +449,136 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
     });
   }
 
-  private onFontClick_(fontName: string) {
+  private onHighlightClick_() {
+    const shadowRoot = this.shadowRoot;
+    assert(shadowRoot);
+    const button = shadowRoot.getElementById('highlight');
+    assert(button);
+    if (this.isHighlightOn_) {
+      chrome.readingMode.turnedHighlightOff();
+    } else {
+      chrome.readingMode.turnedHighlightOn();
+    }
+    this.setHighlightState_(!this.isHighlightOn_);
+  }
+
+  private setHighlightState_(turnOn: boolean) {
+    const shadowRoot = this.shadowRoot;
+    assert(shadowRoot);
+    const button = shadowRoot.getElementById('highlight');
+    assert(button);
+    this.isHighlightOn_ = turnOn;
+    if (this.isHighlightOn_) {
+      button.setAttribute('iron-icon', 'read-anything:highlight-on');
+      button.setAttribute('title', loadTimeData.getString('turnHighlightOff'));
+    } else {
+      button.setAttribute('iron-icon', 'read-anything:highlight-off');
+      button.setAttribute('title', loadTimeData.getString('turnHighlightOn'));
+    }
+
+    if (this.contentPage) {
+      this.contentPage.updateHighlight(this.isHighlightOn_);
+    }
+  }
+
+  private onLetterSpacingClick_(event: DomRepeatEvent<MenuStateItem<number>>) {
+    this.onTextStyleClick_(
+        event, ReadAnythingSettingsChange.LETTER_SPACING_CHANGE,
+        this.$.letterSpacingMenu,
+        ReadAnythingElement.prototype.updateLetterSpacing);
+  }
+
+  private onLineSpacingClick_(event: DomRepeatEvent<MenuStateItem<number>>) {
+    this.onTextStyleClick_(
+        event, ReadAnythingSettingsChange.LINE_HEIGHT_CHANGE,
+        this.$.lineSpacingMenu,
+        ReadAnythingElement.prototype.updateLineSpacing);
+  }
+
+  private onColorClick_(event: DomRepeatEvent<MenuStateItem<string>>) {
+    this.onTextStyleClick_(
+        event, ReadAnythingSettingsChange.THEME_CHANGE, this.$.colorMenu,
+        ReadAnythingElement.prototype.updateThemeFromWebUi);
+  }
+
+  private onVoiceSelectClick_(
+      event: DomRepeatEvent<MenuStateItem<SpeechSynthesisVoice>>) {
+    // TODO(crbug.com/1474951): Save voice to prefs.
+    if (this.contentPage) {
+      this.contentPage.setSpeechSynthesisVoice(event.model.item.data);
+    }
+  }
+
+  private onVoicePreviewClick_(
+      event: DomRepeatEvent<MenuStateItem<SpeechSynthesisVoice>>) {
+    // Because the preview button is layered onto the voice-selection button,
+    // the onVoiceSelectClick_() listener is also subscribed to this event. This
+    // line is to make sure that the voice-selection callback is not triggered.
+    event.stopImmediatePropagation();
+
+    if (this.contentPage) {
+      this.contentPage.previewSpeechSynthesisVoice(
+          event.model.item.data as SpeechSynthesisVoice);
+    }
+  }
+
+  private onTextStyleClick_(
+      event: DomRepeatEvent<MenuStateItem<any>>,
+      logVal: ReadAnythingSettingsChange, menuClicked: CrActionMenuElement,
+      contentPageCallback: ((data: any) => void)) {
+    event.model.item.callback();
+    chrome.metricsPrivate.recordEnumerationValue(
+        SETTINGS_CHANGE_UMA, logVal, ReadAnythingSettingsChange.COUNT);
+    if (this.contentPage) {
+      contentPageCallback.call(this.contentPage, event.model.item.data);
+    }
+    this.setCheckMarkForMenu_(menuClicked, event.model.index);
+    this.closeMenus_();
+  }
+
+  private onFontClick_(event: DomRepeatEvent<string>) {
     chrome.metricsPrivate.recordEnumerationValue(
         SETTINGS_CHANGE_UMA, ReadAnythingSettingsChange.FONT_CHANGE,
         ReadAnythingSettingsChange.COUNT);
+    const fontName = event.model.item;
     chrome.readingMode.onFontChange(fontName);
     if (this.contentPage) {
       this.contentPage.updateFont(fontName);
     }
+    this.setCheckMarkForMenu_(this.$.fontMenu, event.model.index);
 
     this.closeMenus_();
+  }
+
+  private onRateClick_(event: DomRepeatEvent<number>) {
+    chrome.readingMode.onSpeechRateChange(event.model.item);
+    if (this.contentPage) {
+      this.contentPage.onSpeechRateChange(event.model.item);
+      this.setRateIcon_(event.model.item);
+    }
+    this.setCheckMarkForMenu_(this.$.rateMenu, event.model.index);
+
+    this.closeMenus_();
+  }
+
+  private setRateIcon_(rate: number) {
+    const shadowRoot = this.shadowRoot;
+    assert(shadowRoot);
+    const button = shadowRoot.getElementById('rate');
+    assert(button);
+    button.setAttribute('iron-icon', 'voice-rate:' + rate);
+  }
+
+  private setCheckMarkForMenu_(menu: CrActionMenuElement, index: number) {
+    const checkMarks = Array.from(menu.getElementsByClassName('check-mark'));
+    assert((index < checkMarks.length) && (index >= 0));
+    checkMarks.forEach((element) => {
+      assert(element instanceof HTMLElement);
+      // TODO(crbug.com/1465029): Ensure this works with screen readers
+      ReadAnythingToolbar.hideElement(element, true);
+    });
+    const checkMark = checkMarks[index] as IronIconElement;
+    ReadAnythingToolbar.showElement(checkMark);
   }
 
   private onFontSizeIncreaseClick_() {
@@ -360,7 +611,7 @@ export class ReadAnythingToolbar extends ReadAnythingToolbarBase {
   }
 
   private onPlayPauseClick_() {
-    if (this.isPaused) {
+    if (this.isPaused_) {
       this.updateUiForPlaying();
       if (this.contentPage) {
         this.contentPage.playSpeech();

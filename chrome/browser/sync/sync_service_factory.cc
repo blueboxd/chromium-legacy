@@ -15,7 +15,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -49,7 +48,7 @@
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
-#include "components/network_time/network_time_tracker.h"
+#include "components/password_manager/core/browser/sharing/password_receiver_service.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/supervised_user/core/common/buildflags.h"
 #include "components/sync/base/command_line_switches.h"
@@ -103,17 +102,13 @@ std::unique_ptr<KeyedService> BuildSyncService(
 
   Profile* profile = Profile::FromBrowserContext(context);
 
-  DCHECK(!profile->IsOffTheRecord());
   // Incognito, guest, or system profiles aren't relevant for Sync, and
-  // eventually no SyncService should even be created for those types of
-  // profiles. For now, they're just excluded from some startup metrics.
-  init_params.is_regular_profile_for_uma = profile->IsRegularProfile();
+  // no SyncService should be created for those types of profiles.
+  CHECK(profile->IsRegularProfile());
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // On Ash, there are additional non-interesting profile types (sign-in
   // profile and lockscreen profile).
-  init_params.is_regular_profile_for_uma =
-      init_params.is_regular_profile_for_uma &&
-      ash::ProfileHelper::IsUserProfile(profile);
+  CHECK(ash::ProfileHelper::IsUserProfile(profile));
 #endif
 
   init_params.sync_client =
@@ -135,10 +130,7 @@ std::unique_ptr<KeyedService> BuildSyncService(
     (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
   syncer::SyncPrefs prefs(profile->GetPrefs());
   local_sync_backend_enabled = prefs.IsLocalSyncEnabled();
-  if (init_params.is_regular_profile_for_uma) {
-    base::UmaHistogramBoolean("Sync.Local.Enabled2",
-                              local_sync_backend_enabled);
-  }
+  base::UmaHistogramBoolean("Sync.Local.Enabled2", local_sync_backend_enabled);
 
   if (local_sync_backend_enabled) {
     base::FilePath local_sync_backend_folder =
@@ -146,10 +138,8 @@ std::unique_ptr<KeyedService> BuildSyncService(
 
     // If the user has not specified a folder and we can't get the default
     // roaming profile location the sync service will not be created.
-    if (init_params.is_regular_profile_for_uma) {
-      base::UmaHistogramBoolean("Sync.Local.RoamingProfileUnavailable2",
-                                local_sync_backend_folder.empty());
-    }
+    base::UmaHistogramBoolean("Sync.Local.RoamingProfileUnavailable2",
+                              local_sync_backend_folder.empty());
     if (local_sync_backend_folder.empty()) {
       return nullptr;
     }
@@ -182,6 +172,14 @@ std::unique_ptr<KeyedService> BuildSyncService(
   // PasswordStoreInterface may be null in tests.
   if (password_store) {
     password_store->OnSyncServiceInitialized(sync_service.get());
+  }
+
+  // Notify PasswordReceiverService of complete initialization to resolve a
+  // circular dependency.
+  password_manager::PasswordReceiverService* password_receiver_service =
+      PasswordReceiverServiceFactory::GetForProfile(profile);
+  if (password_receiver_service) {
+    password_receiver_service->OnSyncServiceInitialized(sync_service.get());
   }
 
   SendTabToSelfSyncServiceFactory::GetForProfile(profile)
@@ -224,9 +222,7 @@ SyncServiceFactory::SyncServiceFactory()
           "SyncService",
           ProfileSelections::Builder()
               .WithRegular(ProfileSelection::kOriginalOnly)
-              // TODO(crbug.com/1418376): Check if this service is needed in
-              // Guest mode.
-              .WithGuest(ProfileSelection::kOriginalOnly)
+              .WithAshInternals(ProfileSelection::kNone)
               .Build()) {
   // The SyncServiceImpl depends on various SyncableServices being around
   // when it is shut down.  Specify those dependencies here to build the proper
@@ -294,9 +290,10 @@ SyncServiceFactory::SyncServiceFactory()
 
 SyncServiceFactory::~SyncServiceFactory() = default;
 
-KeyedService* SyncServiceFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService>
+SyncServiceFactory::BuildServiceInstanceForBrowserContext(
     content::BrowserContext* context) const {
-  return BuildSyncService(context).release();
+  return BuildSyncService(context);
 }
 
 bool SyncServiceFactory::ServiceIsNULLWhileTesting() const {

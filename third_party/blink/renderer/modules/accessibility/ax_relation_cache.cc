@@ -62,7 +62,7 @@ void AXRelationCache::CacheRelationIds(Element& element) {
 #if DCHECK_IS_ON()
   // Register that the relations for this element have been cached, to
   // help enforce that relations are never missed.
-  DOMNodeId node_id = DOMNodeIds::IdForNode(&element);
+  DOMNodeId node_id = element.GetDomNodeId();
   DCHECK(node_id);
   processed_elements_.insert(node_id);
 #endif
@@ -238,7 +238,7 @@ void AXRelationCache::UpdateReverseRelations(
   // Add entries to reverse map.
   for (const String& target_id : target_ids) {
     auto result = id_attr_to_node_map.insert(target_id, HashSet<DOMNodeId>());
-    result.stored_value->value.insert(DOMNodeIds::IdForNode(relation_source));
+    result.stored_value->value.insert(relation_source->GetDomNodeId());
   }
 }
 
@@ -502,6 +502,8 @@ void AXRelationCache::UpdateAriaOwnsFromAttrAssociatedElementsWithCleanLayout(
     const HeapVector<Member<Element>>& attr_associated_elements,
     HeapVector<Member<AXObject>>& validated_owned_children_result,
     bool force) {
+  CHECK(!object_cache_->IsFrozen());
+
   // attr-associated elements have already had their scope validated, but they
   // need to be further validated to determine if they introduce a cycle or are
   // already owned by another element.
@@ -557,6 +559,7 @@ void AXRelationCache::ValidatedAriaOwnedChildren(
 
 void AXRelationCache::UpdateAriaOwnsWithCleanLayout(AXObject* owner,
                                                     bool force) {
+  CHECK(!object_cache_->IsFrozen());
   DCHECK(owner);
   Element* element = owner->GetElement();
   if (!element)
@@ -883,7 +886,11 @@ void AXRelationCache::MaybeRestoreParentOfOwnedChild(AXObject* child) {
   if (child->IsDetached())
     return;
   if (AXObject* new_parent = object_cache_->RestoreParentOrPrune(child)) {
-    object_cache_->ChildrenChanged(new_parent);
+    if (object_cache_->IsProcessingDeferredEvents()) {
+      object_cache_->ChildrenChangedWithCleanLayout(new_parent);
+    } else {
+      object_cache_->ChildrenChanged(new_parent);
+    }
   }
 }
 

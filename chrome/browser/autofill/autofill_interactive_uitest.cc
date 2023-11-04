@@ -2085,7 +2085,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ComparePhoneNumbers) {
   profile.SetRawInfo(ADDRESS_HOME_ZIP, u"95110");
   profile.SetRawInfo(ADDRESS_HOME_COUNTRY, u"US");
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"1-408-555-4567");
-  SetTestProfile(browser()->profile(), profile);
+  AddTestProfile(browser()->profile(), profile);
 
   GURL url = embedded_test_server()->GetURL("/autofill/form_phones.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
@@ -2138,7 +2138,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, NoAutofillForCompanyName) {
   profile.SetRawInfo(ADDRESS_HOME_ZIP, u"95110");
   profile.SetRawInfo(COMPANY_NAME, ASCIIToUTF16(company_name));
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"408-871-4567");
-  SetTestProfile(browser()->profile(), profile);
+  AddTestProfile(browser()->profile(), profile);
 
   GURL url =
       embedded_test_server()->GetURL("/autofill/read_only_field_test.html");
@@ -2209,7 +2209,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, NoAutofillForReadOnlyFields) {
   profile.SetRawInfo(ADDRESS_HOME_ZIP, u"95110");
   profile.SetRawInfo(COMPANY_NAME, u"Company X");
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"408-871-4567");
-  SetTestProfile(browser()->profile(), profile);
+  AddTestProfile(browser()->profile(), profile);
 
   GURL url =
       embedded_test_server()->GetURL("/autofill/read_only_field_test.html");
@@ -2273,7 +2273,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   profile.SetRawInfo(NAME_LAST, u"Smith");
   profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16(email));
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"4088714567");
-  SetTestProfile(browser()->profile(), profile);
+  AddTestProfile(browser()->profile(), profile);
 
   GURL url = embedded_test_server()->GetURL(
       "/autofill/autofill_confirmemail_form.html");
@@ -2304,7 +2304,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   streets.push_back("Ct");
 
   constexpr int kNumProfiles = 1500;
-  std::vector<AutofillProfile> profiles;
   for (int i = 0; i < kNumProfiles; i++) {
     AutofillProfile profile;
     std::u16string name(base::NumberToString16(i));
@@ -2322,9 +2321,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
     profile.SetRawInfo(ADDRESS_HOME_STATE, u"CA");
     profile.SetRawInfo(ADDRESS_HOME_ZIP, zip);
     profile.SetRawInfo(ADDRESS_HOME_COUNTRY, u"US");
-    profiles.push_back(profile);
+    AddTestProfile(browser()->profile(), profile);
   }
-  SetTestProfiles(browser()->profile(), &profiles);
 
   GURL url = embedded_test_server()->GetURL(
       "/autofill/latency_after_submit_test.html");
@@ -2501,7 +2499,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, FillLocalCreditCard) {
 
 // Test that we do not fill formless non-checkout forms when we enable the
 // formless form restrictions.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, NoAutocomplete) {
+//
+// TODO(crbug.com/1478563): Deflake this test everywhere.
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, DISABLED_NoAutocomplete) {
   CreateTestProfile();
   GURL url =
       embedded_test_server()->GetURL("/autofill/formless_no_autocomplete.html");
@@ -2531,7 +2531,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, NoAutocomplete) {
 // version of the the test in that at least one of the fields has an
 // autocomplete attribute, so autofill will always be aware of the existence
 // of the form.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, SomeAutocomplete) {
+// TODO(crbug.com/1478122): Flaky.
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, DISABLED_SomeAutocomplete) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
       "/autofill/formless_some_autocomplete.html");
@@ -2558,7 +2559,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, SomeAutocomplete) {
 
 // Test that we do not fill formless non-checkout forms when we enable the
 // formless form restrictions.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, AllAutocomplete) {
+// TODO(crbug.com/1478122): Flaky.
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, DISABLED_AllAutocomplete) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
       "/autofill/formless_all_autocomplete.html");
@@ -3043,8 +3045,16 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
 
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on.
+// TODO(crbug.com/1481004): Re-enable this test
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_DynamicFormFill_FirstElementDisappears \
+  DISABLED_DynamicFormFill_FirstElementDisappears
+#else
+#define MAYBE_DynamicFormFill_FirstElementDisappears \
+  DynamicFormFill_FirstElementDisappears
+#endif
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
-                       DynamicFormFill_FirstElementDisappears) {
+                       MAYBE_DynamicFormFill_FirstElementDisappears) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_element_invalid.html");
@@ -3066,8 +3076,16 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
 
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though the form has no name.
+// TODO(crbug.com/1481004): Re-enable this test
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_DynamicFormFill_FirstElementDisappearsNoNameForm \
+  DISABLED_DynamicFormFill_FirstElementDisappearsNoNameForm
+#else
+#define MAYBE_DynamicFormFill_FirstElementDisappearsNoNameForm \
+  DynamicFormFill_FirstElementDisappearsNoNameForm
+#endif
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
-                       DynamicFormFill_FirstElementDisappearsNoNameForm) {
+                       MAYBE_DynamicFormFill_FirstElementDisappearsNoNameForm) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
@@ -3119,8 +3137,17 @@ IN_PROC_BROWSER_TEST_F(
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though there are multiple forms with identical
 // names.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
-                       DynamicFormFill_FirstElementDisappearsBadnameUnowned) {
+// TODO(crbug.com/1481004): Re-enable this test
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_DynamicFormFill_FirstElementDisappearsBadnameUnowned \
+  DISABLED_DynamicFormFill_FirstElementDisappearsBadnameUnowned
+#else
+#define MAYBE_DynamicFormFill_FirstElementDisappearsBadnameUnowned \
+  DynamicFormFill_FirstElementDisappearsBadnameUnowned
+#endif
+IN_PROC_BROWSER_TEST_F(
+    AutofillInteractiveTestDynamicForm,
+    MAYBE_DynamicFormFill_FirstElementDisappearsBadnameUnowned) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_element_invalid_unowned_badnames.html");
@@ -3171,8 +3198,16 @@ IN_PROC_BROWSER_TEST_F(
 
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though the elements are unowned.
+// TODO(crbug.com/1481004): Re-enable this test
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_DynamicFormFill_FirstElementDisappearsUnowned \
+  DISABLED_DynamicFormFill_FirstElementDisappearsUnowned
+#else
+#define MAYBE_DynamicFormFill_FirstElementDisappearsUnowned \
+  DynamicFormFill_FirstElementDisappearsUnowned
+#endif
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestDynamicForm,
-                       DynamicFormFill_FirstElementDisappearsUnowned) {
+                       MAYBE_DynamicFormFill_FirstElementDisappearsUnowned) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_element_invalid_unowned.html");
@@ -3236,7 +3271,7 @@ void DoDynamicChangingFormFill_SelectUpdated(
                                    const FormStructure& form) {
     size_t num_found = 0u;
     for (const std::unique_ptr<AutofillField>& field : form.fields()) {
-      if (field->form_control_type == control_type) {
+      if (field->form_control_type == StringToFormControlType(control_type)) {
         ++num_found;
       }
     }

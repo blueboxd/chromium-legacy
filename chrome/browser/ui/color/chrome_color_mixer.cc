@@ -84,9 +84,6 @@ ui::ColorTransform GetToolbarTopSeparatorColorTransform(
                              std::move(frame_color_transform));
 }
 
-// Alpha of 61 = 24% opacity. Opacity of tab group chips in the bookmarks bar.
-constexpr SkAlpha kTabGroupChipAlpha = 61;
-
 // Apply updates to the Omnibox background color tokens per GM3 spec.
 void ApplyGM3OmniboxBackgroundColor(ui::ColorMixer& mixer,
                                     const ui::ColorProviderKey& key) {
@@ -152,6 +149,7 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
       kColorBookmarkDragImageForeground};
   mixer[kColorCaptionButtonBackground] = {SK_ColorTRANSPARENT};
   mixer[kColorCapturedTabContentsBorder] = {ui::kColorAccent};
+  mixer[kColorCastDialogHelpIcon] = {ui::kColorAccent};
   mixer[kColorDesktopMediaTabListBorder] = {ui::kColorMidground};
   mixer[kColorDesktopMediaTabListPreviewBackground] = {ui::kColorMidground};
   mixer[kColorDownloadBubbleInfoBackground] = {
@@ -533,40 +531,73 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
       dark_mode, kColorBookmarkBarForeground, gfx::kGoogleYellow300,
       gfx::kGoogleYellow600);
 
-  mixer[kColorTabGroupBookmarkBarBlue] = SelectColorBasedOnDarkInputOrMode(
-      dark_mode, kColorBookmarkBarForeground,
-      ui::SetAlpha(gfx::kGoogleBlue300, kTabGroupChipAlpha),
+  mixer[kColorSavedTabGroupForegroundBlue] = ui::SelectBasedOnDarkInput(
+      kColorBookmarkBarBackground, gfx::kGoogleBlue100, gfx::kGoogleBlue700);
+  mixer[kColorSavedTabGroupForegroundGrey] = ui::SelectBasedOnDarkInput(
+      kColorBookmarkBarBackground, gfx::kGoogleGrey100, gfx::kGoogleGrey700);
+  mixer[kColorSavedTabGroupForegroundRed] = ui::SelectBasedOnDarkInput(
+      kColorBookmarkBarBackground, gfx::kGoogleRed100, gfx::kGoogleRed700);
+  mixer[kColorSavedTabGroupForegroundGreen] = ui::SelectBasedOnDarkInput(
+      kColorBookmarkBarBackground, gfx::kGoogleGreen100, gfx::kGoogleGreen800);
+  mixer[kColorSavedTabGroupForegroundYellow] = ui::SelectBasedOnDarkInput(
+      kColorBookmarkBarBackground, gfx::kGoogleYellow100, gfx::kGoogleGrey800);
+  mixer[kColorSavedTabGroupForegroundCyan] = ui::SelectBasedOnDarkInput(
+      kColorBookmarkBarBackground, gfx::kGoogleCyan100, gfx::kGoogleCyan900);
+  mixer[kColorSavedTabGroupForegroundPurple] =
+      ui::SelectBasedOnDarkInput(kColorBookmarkBarBackground,
+                                 gfx::kGooglePurple100, gfx::kGooglePurple700);
+  mixer[kColorSavedTabGroupForegroundPink] = ui::SelectBasedOnDarkInput(
+      kColorBookmarkBarBackground, gfx::kGooglePink100, gfx::kGooglePink800);
+  mixer[kColorSavedTabGroupForegroundOrange] = ui::SelectBasedOnDarkInput(
+      kColorBookmarkBarBackground, gfx::kGoogleOrange100, gfx::kGoogleGrey800);
+
+  mixer[kColorSavedTabGroupOutlineBlue] = ui::SelectBasedOnDarkInput(
+      kColorBookmarkBarBackground, gfx::kGoogleBlue300, gfx::kGoogleBlue700);
+  mixer[kColorSavedTabGroupOutlineGrey] = ui::SelectBasedOnDarkInput(
+      kColorBookmarkBarBackground, gfx::kGoogleGrey300, gfx::kGoogleGrey700);
+  mixer[kColorSavedTabGroupOutlineRed] = ui::SelectBasedOnDarkInput(
+      kColorBookmarkBarBackground, gfx::kGoogleRed300, gfx::kGoogleRed700);
+  mixer[kColorSavedTabGroupOutlineGreen] = ui::SelectBasedOnDarkInput(
+      kColorBookmarkBarBackground, gfx::kGoogleGreen300, gfx::kGoogleGreen800);
+  mixer[kColorSavedTabGroupOutlineYellow] =
+      ui::SelectBasedOnDarkInput(kColorBookmarkBarBackground,
+                                 gfx::kGoogleYellow300, gfx::kGoogleYellow600);
+  mixer[kColorSavedTabGroupOutlineCyan] = ui::SelectBasedOnDarkInput(
+      kColorBookmarkBarBackground, gfx::kGoogleCyan300, gfx::kGoogleCyan900);
+  mixer[kColorSavedTabGroupOutlinePurple] =
+      ui::SelectBasedOnDarkInput(kColorBookmarkBarBackground,
+                                 gfx::kGooglePurple300, gfx::kGooglePurple700);
+  mixer[kColorSavedTabGroupOutlinePink] = ui::SelectBasedOnDarkInput(
+      kColorBookmarkBarBackground, gfx::kGooglePink300, gfx::kGooglePink700);
+  mixer[kColorSavedTabGroupOutlineOrange] =
+      ui::SelectBasedOnDarkInput(kColorBookmarkBarBackground,
+                                 gfx::kGoogleOrange300, gfx::kGoogleOrange800);
+  mixer[kColorTabGroupBookmarkBarBlue] = ui::SelectBasedOnDarkInput(
+      kColorBookmarkBarBackground, SkColorSetRGB(0x39, 0x43, 0x54),
       gfx::kGoogleBlue050);
-  mixer[kColorTabGroupBookmarkBarCyan] = SelectColorBasedOnDarkInputOrMode(
-      dark_mode, kColorBookmarkBarForeground,
-      ui::SetAlpha(gfx::kGoogleCyan300, kTabGroupChipAlpha),
+  mixer[kColorTabGroupBookmarkBarCyan] = ui::SelectBasedOnDarkInput(
+      kColorBookmarkBarBackground, SkColorSetRGB(0x35, 0x4C, 0x51),
       gfx::kGoogleCyan050);
-  mixer[kColorTabGroupBookmarkBarGreen] = SelectColorBasedOnDarkInputOrMode(
-      dark_mode, kColorBookmarkBarForeground,
-      ui::SetAlpha(gfx::kGoogleGreen300, kTabGroupChipAlpha),
+  mixer[kColorTabGroupBookmarkBarGreen] = ui::SelectBasedOnDarkInput(
+      kColorBookmarkBarBackground, SkColorSetRGB(0x37, 0x48, 0x3C),
       gfx::kGoogleGreen050);
-  mixer[kColorTabGroupBookmarkBarGrey] = SelectColorBasedOnDarkInputOrMode(
-      dark_mode, kColorBookmarkBarForeground,
-      ui::SetAlpha(gfx::kGoogleGrey300, kTabGroupChipAlpha),
+  mixer[kColorTabGroupBookmarkBarGrey] = ui::SelectBasedOnDarkInput(
+      kColorBookmarkBarBackground, SkColorSetRGB(0x4C, 0x4D, 0x4E),
       gfx::kGoogleGrey100);
-  mixer[kColorTabGroupBookmarkBarPink] = SelectColorBasedOnDarkInputOrMode(
-      dark_mode, kColorBookmarkBarForeground,
-      ui::SetAlpha(gfx::kGooglePink300, kTabGroupChipAlpha),
+  mixer[kColorTabGroupBookmarkBarPink] = ui::SelectBasedOnDarkInput(
+      kColorBookmarkBarBackground, SkColorSetRGB(0x55, 0x39, 0x49),
       gfx::kGooglePink050);
-  mixer[kColorTabGroupBookmarkBarPurple] = SelectColorBasedOnDarkInputOrMode(
-      dark_mode, kColorBookmarkBarForeground,
-      ui::SetAlpha(gfx::kGooglePurple300, kTabGroupChipAlpha),
+  mixer[kColorTabGroupBookmarkBarPurple] = ui::SelectBasedOnDarkInput(
+      kColorBookmarkBarBackground, SkColorSetRGB(0x47, 0x39, 0x54),
       gfx::kGooglePurple050);
-  mixer[kColorTabGroupBookmarkBarRed] = SelectColorBasedOnDarkInputOrMode(
-      dark_mode, kColorBookmarkBarForeground,
-      ui::SetAlpha(gfx::kGoogleRed300, kTabGroupChipAlpha), gfx::kGoogleRed050);
-  mixer[kColorTabGroupBookmarkBarYellow] = SelectColorBasedOnDarkInputOrMode(
-      dark_mode, kColorBookmarkBarForeground,
-      ui::SetAlpha(gfx::kGoogleYellow300, kTabGroupChipAlpha),
+  mixer[kColorTabGroupBookmarkBarRed] = ui::SelectBasedOnDarkInput(
+      kColorBookmarkBarBackground, SkColorSetRGB(0x52, 0x39, 0x37),
+      gfx::kGoogleRed050);
+  mixer[kColorTabGroupBookmarkBarYellow] = ui::SelectBasedOnDarkInput(
+      kColorBookmarkBarBackground, SkColorSetRGB(0x55, 0x4B, 0x30),
       gfx::kGoogleYellow050);
-  mixer[kColorTabGroupBookmarkBarOrange] = SelectColorBasedOnDarkInputOrMode(
-      dark_mode, kColorBookmarkBarForeground,
-      ui::SetAlpha(gfx::kGoogleOrange300, kTabGroupChipAlpha),
+  mixer[kColorTabGroupBookmarkBarOrange] = ui::SelectBasedOnDarkInput(
+      kColorBookmarkBarBackground, SkColorSetRGB(0x54, 0x42, 0x33),
       gfx::kGoogleOrange050);
 
   mixer[kColorTabHoverCardBackground] = {dark_mode ? gfx::kGoogleGrey900
@@ -733,26 +764,33 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorReadAnythingBackgroundDark] = {gfx::kGoogleGrey900};
   mixer[kColorReadAnythingBackgroundLight] = {gfx::kGoogleGrey100};
   mixer[kColorReadAnythingBackgroundYellow] = {gfx::kGoogleYellow100};
+  // The Read Anything themes need to be hard coded because they do not
+  // change with the chrome theme, which is the purpose of the Read Anything
+  // feature.
   mixer[kColorReadAnythingForeground] = {
       dark_mode ? kColorReadAnythingForegroundDark
                 : kColorReadAnythingForegroundLight};
-  mixer[kColorReadAnythingForegroundBlue] = ui::PickGoogleColorTwoBackgrounds(
-      kColorReadAnythingForegroundLight,
-      kColorReadAnythingDropdownBackgroundBlue,
-      kColorReadAnythingDropdownSelectedBlue,
-      color_utils::kMinimumReadableContrastRatio);
-  mixer[kColorReadAnythingForegroundDark] = ui::PickGoogleColorTwoBackgrounds(
-      gfx::kGoogleGrey200, kColorReadAnythingDropdownBackgroundDark,
-      kColorReadAnythingDropdownSelectedDark,
-      color_utils::kMinimumReadableContrastRatio);
-  mixer[kColorReadAnythingForegroundLight] = ui::PickGoogleColorTwoBackgrounds(
-      gfx::kGoogleGrey800, kColorReadAnythingBackgroundLight,
-      kColorReadAnythingDropdownSelectedLight,
-      color_utils::kMinimumReadableContrastRatio);
-  mixer[kColorReadAnythingForegroundYellow] = ui::PickGoogleColorTwoBackgrounds(
-      kColorReadAnythingForegroundLight, kColorReadAnythingBackgroundYellow,
-      kColorReadAnythingDropdownSelectedYellow,
-      color_utils::kMinimumReadableContrastRatio);
+  mixer[kColorReadAnythingForegroundBlue] = {SkColorSetRGB(31, 31, 31)};
+  mixer[kColorReadAnythingForegroundDark] = {SkColorSetRGB(227, 227, 227)};
+  mixer[kColorReadAnythingForegroundLight] = {SkColorSetRGB(31, 31, 31)};
+  mixer[kColorReadAnythingForegroundYellow] = {SkColorSetRGB(31, 31, 31)};
+  mixer[kColorCurrentReadAloudHighlight] = {
+      dark_mode ? kColorCurrentReadAloudHighlightDark
+                : kColorCurrentReadAloudHighlightLight};
+  mixer[kColorCurrentReadAloudHighlightDark] = {
+      SkColorSetARGB(25, 253, 252, 251)};
+  mixer[kColorCurrentReadAloudHighlightLight] = {
+      SkColorSetARGB(15, 31, 31, 31)};
+  mixer[kColorCurrentReadAloudHighlightBlue] = {SkColorSetARGB(15, 31, 31, 31)};
+  mixer[kColorCurrentReadAloudHighlightYellow] = {
+      SkColorSetARGB(15, 31, 31, 31)};
+  mixer[kColorPreviousReadAloudHighlight] = {
+      dark_mode ? kColorPreviousReadAloudHighlightDark
+                : kColorPreviousReadAloudHighlightLight};
+  mixer[kColorPreviousReadAloudHighlightDark] = {SkColorSetRGB(199, 199, 199)};
+  mixer[kColorPreviousReadAloudHighlightLight] = {SkColorSetRGB(71, 71, 71)};
+  mixer[kColorPreviousReadAloudHighlightBlue] = {SkColorSetRGB(71, 71, 71)};
+  mixer[kColorPreviousReadAloudHighlightYellow] = {SkColorSetRGB(71, 71, 71)};
   mixer[kColorReadAnythingSeparator] = {dark_mode
                                             ? kColorReadAnythingSeparatorDark
                                             : kColorReadAnythingSeparatorLight};

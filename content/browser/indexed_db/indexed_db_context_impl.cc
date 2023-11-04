@@ -64,8 +64,6 @@
 #include "third_party/zlib/google/zip.h"
 #include "url/origin.h"
 
-using storage::DatabaseUtil;
-
 namespace content {
 
 namespace {
@@ -76,10 +74,6 @@ static MockBrowserTestIndexedDBClassFactory* GetTestClassFactory() {
   return s_factory.Pointer();
 }
 
-static IndexedDBClassFactory* GetTestIDBClassFactory() {
-  return GetTestClassFactory();
-}
-
 bool IsAllowedPath(const std::vector<base::FilePath>& allowed_paths,
                    const base::FilePath& candidate_path) {
   for (const base::FilePath& allowed_path : allowed_paths) {
@@ -87,6 +81,15 @@ bool IsAllowedPath(const std::vector<base::FilePath>& allowed_paths,
       return true;
   }
   return false;
+}
+
+storage::BucketInfo ToBucketInfoForTesting(
+    const storage::BucketLocator& bucket_locator) {
+  storage::BucketInfo bucket_info;
+  bucket_info.id = bucket_locator.id;
+  bucket_info.storage_key = bucket_locator.storage_key;
+  bucket_info.name = storage::kDefaultBucketName;
+  return bucket_info;
 }
 
 }  // namespace
@@ -118,7 +121,8 @@ IndexedDBContextImpl::IndexedDBContextImpl(
                      base::TaskPriority::USER_VISIBLE,
                      // BLOCK_SHUTDOWN to support clearing session-only storage.
                      base::TaskShutdownBehavior::BLOCK_SHUTDOWN}))),
-      dispatcher_host_(this, std::move(io_task_runner)),
+      io_task_runner_(std::move(io_task_runner)),
+      dispatcher_host_(this),
       base_data_path_(base_data_path.empty() ? base::FilePath()
                                              : base_data_path),
       force_keep_session_state_(false),
@@ -707,14 +711,13 @@ void IndexedDBContextImpl::WriteToIndexedDBForTesting(
   IndexedDBBucketContextHandle handle;
   leveldb::Status s;
   std::tie(handle, s, std::ignore, std::ignore, std::ignore) =
-      GetIDBFactory()->GetOrOpenBucketFactory(bucket_locator,
-                                              GetDataPath(bucket_locator),
-                                              /*create_if_missing=*/true);
+      GetIDBFactory()->GetOrCreateBucketContext(
+          ToBucketInfoForTesting(bucket_locator), GetDataPath(bucket_locator),
+          /*create_if_missing=*/true);
   CHECK(s.ok()) << s.ToString();
   CHECK(handle.IsHeld());
 
-  TransactionalLevelDBDatabase* db =
-      handle.bucket_state()->backing_store()->db();
+  TransactionalLevelDBDatabase* db = handle->backing_store()->db();
   std::string value_copy = value;
   s = db->Put(key, &value_copy);
   CHECK(s.ok()) << s.ToString();
@@ -736,14 +739,13 @@ void IndexedDBContextImpl::GetNextBlobNumberForTesting(
   IndexedDBBucketContextHandle handle;
   leveldb::Status s;
   std::tie(handle, s, std::ignore, std::ignore, std::ignore) =
-      GetIDBFactory()->GetOrOpenBucketFactory(bucket_locator,
-                                              GetDataPath(bucket_locator),
-                                              /*create_if_missing=*/true);
+      GetIDBFactory()->GetOrCreateBucketContext(
+          ToBucketInfoForTesting(bucket_locator), GetDataPath(bucket_locator),
+          /*create_if_missing=*/true);
   CHECK(s.ok()) << s.ToString();
   CHECK(handle.IsHeld());
 
-  TransactionalLevelDBDatabase* db =
-      handle.bucket_state()->backing_store()->db();
+  TransactionalLevelDBDatabase* db = handle->backing_store()->db();
 
   const std::string key_gen_key = DatabaseMetaDataKey::Encode(
       database_id, DatabaseMetaDataKey::BLOB_KEY_GENERATOR_CURRENT_NUMBER);
@@ -768,13 +770,13 @@ void IndexedDBContextImpl::GetPathForBlobForTesting(
   IndexedDBBucketContextHandle handle;
   leveldb::Status s;
   std::tie(handle, s, std::ignore, std::ignore, std::ignore) =
-      GetIDBFactory()->GetOrOpenBucketFactory(bucket_locator,
-                                              GetDataPath(bucket_locator),
-                                              /*create_if_missing=*/true);
+      GetIDBFactory()->GetOrCreateBucketContext(
+          ToBucketInfoForTesting(bucket_locator), GetDataPath(bucket_locator),
+          /*create_if_missing=*/true);
   CHECK(s.ok()) << s.ToString();
   CHECK(handle.IsHeld());
 
-  IndexedDBBackingStore* backing_store = handle.bucket_state()->backing_store();
+  IndexedDBBackingStore* backing_store = handle->backing_store();
   base::FilePath path =
       backing_store->GetBlobFileName(database_id, blob_number);
   std::move(callback).Run(path);
@@ -800,6 +802,7 @@ void IndexedDBContextImpl::CompactBackingStoreForTesting(
 
 void IndexedDBContextImpl::BindMockFailureSingletonForTesting(
     mojo::PendingReceiver<storage::mojom::MockFailureInjector> receiver) {
+  IndexedDBTransaction::DisableInactivityTimeoutForTesting();  // IN-TEST
   // Lazily instantiate the GetTestClassFactory.
   if (!mock_failure_injector_.has_value())
     mock_failure_injector_.emplace(GetTestClassFactory());
@@ -807,12 +810,11 @@ void IndexedDBContextImpl::BindMockFailureSingletonForTesting(
   // TODO(enne): this should really not be a static setter.
   CHECK(!mock_failure_injector_->is_bound());
   GetTestClassFactory()->Reset();
-  IndexedDBClassFactory::SetIndexedDBClassFactoryGetter(GetTestIDBClassFactory);
+  IndexedDBClassFactory::Get()
+      ->SetTransactionalLevelDBFactoryForTesting(  // IN-TEST
+          GetTestClassFactory());
 
   mock_failure_injector_->Bind(std::move(receiver));
-  mock_failure_injector_->set_disconnect_handler(base::BindOnce([]() {
-    IndexedDBClassFactory::SetIndexedDBClassFactoryGetter(nullptr);
-  }));
 }
 
 void IndexedDBContextImpl::GetDatabaseKeysForTesting(
@@ -823,8 +825,7 @@ void IndexedDBContextImpl::GetDatabaseKeysForTesting(
 IndexedDBFactory* IndexedDBContextImpl::GetIDBFactory() {
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
   if (!indexeddb_factory_.get()) {
-    indexeddb_factory_ = std::make_unique<IndexedDBFactory>(
-        this, IndexedDBClassFactory::Get(), clock_);
+    indexeddb_factory_ = std::make_unique<IndexedDBFactory>(this, clock_);
   }
   return indexeddb_factory_.get();
 }
@@ -934,29 +935,6 @@ void IndexedDBContextImpl::FactoryOpened(
   } else {
     EnsureDiskUsageCacheInitialized(bucket_locator);
   }
-}
-
-void IndexedDBContextImpl::ConnectionOpened(
-    const storage::BucketLocator& bucket_locator) {
-  DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
-  quota_manager_proxy()->NotifyBucketAccessed(bucket_locator,
-                                              base::Time::Now());
-  if (bucket_set_.insert(bucket_locator).second) {
-    // A newly created db, notify the quota system.
-    QueryDiskAndUpdateQuotaUsage(bucket_locator);
-  } else {
-    EnsureDiskUsageCacheInitialized(bucket_locator);
-  }
-}
-
-void IndexedDBContextImpl::ConnectionClosed(
-    const storage::BucketLocator& bucket_locator) {
-  DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
-  quota_manager_proxy()->NotifyBucketAccessed(bucket_locator,
-                                              base::Time::Now());
-  if (indexeddb_factory_.get() &&
-      indexeddb_factory_->GetConnectionCount(bucket_locator.id) == 0)
-    QueryDiskAndUpdateQuotaUsage(bucket_locator);
 }
 
 void IndexedDBContextImpl::TransactionComplete(
@@ -1213,16 +1191,20 @@ IndexedDBContextImpl::FindLegacyIndexedDBFiles() {
                                        base::FileEnumerator::DIRECTORIES);
   for (base::FilePath file_path = file_enumerator.Next(); !file_path.empty();
        file_path = file_enumerator.Next()) {
-    if (file_path.Extension() == indexed_db::kLevelDBExtension &&
-        file_path.RemoveExtension().Extension() ==
+    if (file_path.Extension() != indexed_db::kLevelDBExtension ||
+        file_path.RemoveExtension().Extension() !=
             indexed_db::kIndexedDBExtension) {
-      std::string storage_key_id = file_path.BaseName()
-                                       .RemoveExtension()
-                                       .RemoveExtension()
-                                       .MaybeAsASCII();
-      storage_key_to_file_path[blink::StorageKey::CreateFirstParty(
-          storage::GetOriginFromIdentifier(storage_key_id))] = file_path;
+      continue;
     }
+
+    std::string origin_id =
+        file_path.BaseName().RemoveExtension().RemoveExtension().MaybeAsASCII();
+    url::Origin origin = storage::GetOriginFromIdentifier(origin_id);
+    if (origin.opaque()) {
+      continue;
+    }
+    storage_key_to_file_path[blink::StorageKey::CreateFirstParty(origin)] =
+        file_path;
   }
   return storage_key_to_file_path;
 }

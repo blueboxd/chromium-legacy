@@ -5,15 +5,75 @@
 #include "chrome/browser/ui/webui/settings/ash/input_device_settings/input_device_settings_provider.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/accelerator_actions.h"
 #include "ash/public/cpp/input_device_settings_controller.h"
 #include "ash/public/mojom/input_device_settings.mojom.h"
 #include "base/containers/flat_set.h"
 #include "base/ranges/algorithm.h"
+#include "chrome/browser/ui/webui/settings/ash/input_device_settings/input_device_settings_provider.mojom-forward.h"
+#include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/clone_traits.h"
+#include "mojo/public/cpp/bindings/struct_ptr.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash::settings {
 
 namespace {
+
+using ActionTypeVariant =
+    absl::variant<AcceleratorAction, ::ash::mojom::StaticShortcutAction>;
+
+// Used to represent a constant version of the mojom::ActionChoice struct.
+struct ActionChoice {
+  const char* name;
+  ActionTypeVariant action_variant;
+};
+
+// TODO(dpad): Update list to official list of actions.
+// TODO(b/286930911): Translate action string names.
+constexpr ActionChoice kMouseButtonOptions[] = {
+    {"Volume mute", AcceleratorAction::kVolumeMuteToggle},
+    {"Microphone mute", AcceleratorAction::kMicrophoneMuteToggle},
+    {"Play/Pause media", AcceleratorAction::kMediaPlayPause},
+    {"Overview", AcceleratorAction::kToggleOverview},
+    {"Screenshot", AcceleratorAction::kTakeScreenshot},
+    {"Emoji Picker", AcceleratorAction::kShowEmojiPicker},
+    {"Turn on high contrast", AcceleratorAction::kToggleHighContrast},
+    {"Turn on magnifier", AcceleratorAction::kToggleFullscreenMagnifier},
+    {"Turn on dictation", AcceleratorAction::kEnableOrToggleDictation},
+    {"Copy", ::ash::mojom::StaticShortcutAction::kCopy},
+    {"Paste", ::ash::mojom::StaticShortcutAction::kPaste},
+};
+
+// TODO(dpad): Update list to official list of actions.
+// TODO(b/286930911): Translate action string names.
+constexpr ActionChoice kGraphicsTabletOptions[] = {
+    {"Volume mute", AcceleratorAction::kVolumeMuteToggle},
+    {"Microphone mute", AcceleratorAction::kMicrophoneMuteToggle},
+    {"Play/Pause media", AcceleratorAction::kMediaPlayPause},
+    {"Overview", AcceleratorAction::kToggleOverview},
+    {"Screenshot", AcceleratorAction::kTakeScreenshot},
+    {"Emoji Picker", AcceleratorAction::kShowEmojiPicker},
+    {"Turn on high contrast", AcceleratorAction::kToggleHighContrast},
+    {"Turn on magnifier", AcceleratorAction::kToggleFullscreenMagnifier},
+    {"Turn on dictation", AcceleratorAction::kEnableOrToggleDictation},
+    {"Copy", ::ash::mojom::StaticShortcutAction::kCopy},
+    {"Paste", ::ash::mojom::StaticShortcutAction::kPaste},
+};
+
+mojom::ActionTypePtr GetActionType(AcceleratorAction accelerator_action) {
+  return mojom::ActionType::NewAcceleratorAction(accelerator_action);
+}
+
+mojom::ActionTypePtr GetActionType(
+    ::ash::mojom::StaticShortcutAction static_shortcut_action) {
+  return mojom::ActionType::NewStaticShortcutAction(static_shortcut_action);
+}
+
+mojom::ActionTypePtr GetActionTypeFromVariant(ActionTypeVariant variant) {
+  return absl::visit([](auto&& value) { return GetActionType(value); },
+                     variant);
+}
 
 template <typename T>
 struct CustomDeviceKeyComparator {
@@ -23,24 +83,33 @@ struct CustomDeviceKeyComparator {
 };
 
 template <typename T>
+bool CompareDevices(const T& device1, const T& device2) {
+  // Guarantees that external devices appear first in the
+  // list.
+  if (device1->is_external != device2->is_external) {
+    return device1->is_external;
+  }
+
+  // Otherwise sort by most recently connected device (aka
+  // id in descending order).
+  return device1->id > device2->id;
+}
+
+template <>
+bool CompareDevices(const ::ash::mojom::GraphicsTabletPtr& device1,
+                    const ::ash::mojom::GraphicsTabletPtr& device2) {
+  // Sort by most recently connected device (aka id in descending order).
+  return device1->id > device2->id;
+}
+
+template <typename T>
 std::vector<T> SanitizeAndSortDeviceList(std::vector<T> devices) {
   // Remove devices with duplicate `device_key`.
   base::flat_set<T, CustomDeviceKeyComparator<T>> devices_no_duplicates_set(
       std::move(devices));
   std::vector<T> devices_no_duplicates =
       std::move(devices_no_duplicates_set).extract();
-  base::ranges::sort(devices_no_duplicates,
-                     [](const auto& device1, const auto& device2) {
-                       // Guarantees that external devices appear first in the
-                       // list.
-                       if (device1->is_external != device2->is_external) {
-                         return device1->is_external;
-                       }
-
-                       // Otherwise sort by most recently connected device (aka
-                       // id in descending order).
-                       return device1->id > device2->id;
-                     });
+  base::ranges::sort(devices_no_duplicates, CompareDevices<T>);
   return devices_no_duplicates;
 }
 
@@ -48,16 +117,102 @@ std::vector<T> SanitizeAndSortDeviceList(std::vector<T> devices) {
 
 InputDeviceSettingsProvider::InputDeviceSettingsProvider() {
   auto* controller = InputDeviceSettingsController::Get();
-  if (features::IsInputDeviceSettingsSplitEnabled() && controller) {
+  if (!controller) {
+    return;
+  }
+
+  if (features::IsInputDeviceSettingsSplitEnabled()) {
     controller->AddObserver(this);
   }
 }
 
 InputDeviceSettingsProvider::~InputDeviceSettingsProvider() {
   auto* controller = InputDeviceSettingsController::Get();
-  if (features::IsInputDeviceSettingsSplitEnabled() && controller) {
+  if (!controller) {
+    return;
+  }
+
+  if (features::IsPeripheralCustomizationEnabled()) {
+    controller->StopObservingButtons();
+    if (widget_) {
+      widget_->RemoveObserver(this);
+    }
+  }
+
+  if (features::IsInputDeviceSettingsSplitEnabled()) {
     controller->RemoveObserver(this);
   }
+}
+
+void InputDeviceSettingsProvider::Initialize(content::WebUI* web_ui) {
+  if (features::IsPeripheralCustomizationEnabled() && !widget_) {
+    widget_ = views::Widget::GetWidgetForNativeWindow(
+        web_ui->GetWebContents()->GetTopLevelNativeWindow());
+    if (widget_) {
+      widget_->AddObserver(this);
+      HandleObserving();
+    }
+  }
+}
+
+void InputDeviceSettingsProvider::HandleObserving() {
+  if (!widget_) {
+    return;
+  }
+
+  bool previous = observing_paused_;
+  const bool widget_open = !widget_->IsClosed();
+  const bool widget_active = widget_->IsActive();
+  const bool widget_visible = widget_->IsVisible();
+  observing_paused_ = !(widget_open && widget_visible && widget_active);
+
+  if (observing_paused_ == previous) {
+    return;
+  }
+
+  if (observing_paused_) {
+    InputDeviceSettingsController::Get()->StopObservingButtons();
+    return;
+  }
+
+  for (const auto& id : observing_devices_) {
+    InputDeviceSettingsController::Get()->StartObservingButtons(id);
+  }
+}
+
+void InputDeviceSettingsProvider::OnWidgetVisibilityChanged(
+    views::Widget* widget,
+    bool visible) {
+  HandleObserving();
+}
+
+void InputDeviceSettingsProvider::OnWidgetActivationChanged(
+    views::Widget* widget,
+    bool active) {
+  HandleObserving();
+}
+
+void InputDeviceSettingsProvider::OnWidgetDestroyed(views::Widget* widget) {
+  widget_->RemoveObserver(this);
+  widget_ = nullptr;
+  // Reset observing paused since context was lost on the current state of the
+  // settings app window.
+  observing_paused_ = true;
+  InputDeviceSettingsController::Get()->StopObservingButtons();
+}
+
+void InputDeviceSettingsProvider::StartObserving(uint32_t device_id) {
+  DCHECK(features::IsPeripheralCustomizationEnabled());
+  observing_devices_.insert(device_id);
+  if (!observing_paused_) {
+    InputDeviceSettingsController::Get()->StartObservingButtons(device_id);
+  }
+}
+
+void InputDeviceSettingsProvider::StopObserving() {
+  DCHECK(features::IsPeripheralCustomizationEnabled());
+  observing_devices_.clear();
+  InputDeviceSettingsController::Get()->StopObservingButtons();
 }
 
 void InputDeviceSettingsProvider::BindInterface(
@@ -113,6 +268,15 @@ void InputDeviceSettingsProvider::SetTouchpadSettings(
       device_id, std::move(settings));
 }
 
+void InputDeviceSettingsProvider::SetGraphicsTabletSettings(
+    uint32_t device_id,
+    ::ash::mojom::GraphicsTabletSettingsPtr settings) {
+  DCHECK(features::IsPeripheralCustomizationEnabled());
+  DCHECK(InputDeviceSettingsController::Get());
+  InputDeviceSettingsController::Get()->SetGraphicsTabletSettings(
+      device_id, std::move(settings));
+}
+
 void InputDeviceSettingsProvider::ObserveKeyboardSettings(
     mojo::PendingRemote<mojom::KeyboardSettingsObserver> observer) {
   DCHECK(features::IsInputDeviceSettingsSplitEnabled());
@@ -155,6 +319,60 @@ void InputDeviceSettingsProvider::ObserveMouseSettings(
       InputDeviceSettingsController::Get()->GetConnectedMice()));
   mouse_settings_observer->OnMousePoliciesUpdated(
       InputDeviceSettingsController::Get()->GetMousePolicies().Clone());
+}
+
+void InputDeviceSettingsProvider::ObserveGraphicsTabletSettings(
+    mojo::PendingRemote<mojom::GraphicsTabletSettingsObserver> observer) {
+  DCHECK(features::IsInputDeviceSettingsSplitEnabled());
+  DCHECK(InputDeviceSettingsController::Get());
+  const auto id = graphics_tablet_settings_observers_.Add(std::move(observer));
+  auto* graphics_tablet_settings_observer =
+      graphics_tablet_settings_observers_.Get(id);
+  graphics_tablet_settings_observer->OnGraphicsTabletListUpdated(
+      SanitizeAndSortDeviceList(
+          InputDeviceSettingsController::Get()->GetConnectedGraphicsTablets()));
+}
+
+void InputDeviceSettingsProvider::ObserveButtonPresses(
+    mojo::PendingRemote<mojom::ButtonPressObserver> observer) {
+  DCHECK(features::IsPeripheralCustomizationEnabled());
+  button_press_observers_.Add(std::move(observer));
+}
+
+void InputDeviceSettingsProvider::OnCustomizableMouseButtonPressed(
+    const ::ash::mojom::Mouse& mouse,
+    const ::ash::mojom::Button& button) {
+  if (observing_paused_) {
+    return;
+  }
+
+  for (const auto& observer : button_press_observers_) {
+    observer->OnButtonPressed(button.Clone());
+  }
+}
+
+void InputDeviceSettingsProvider::OnCustomizablePenButtonPressed(
+    const ::ash::mojom::GraphicsTablet& graphics_tablet,
+    const ::ash::mojom::Button& button) {
+  if (observing_paused_) {
+    return;
+  }
+
+  for (const auto& observer : button_press_observers_) {
+    observer->OnButtonPressed(button.Clone());
+  }
+}
+
+void InputDeviceSettingsProvider::OnCustomizableTabletButtonPressed(
+    const ::ash::mojom::GraphicsTablet& graphics_tablet,
+    const ::ash::mojom::Button& button) {
+  if (observing_paused_) {
+    return;
+  }
+
+  for (const auto& observer : button_press_observers_) {
+    observer->OnButtonPressed(button.Clone());
+  }
 }
 
 void InputDeviceSettingsProvider::OnKeyboardConnected(
@@ -224,6 +442,21 @@ void InputDeviceSettingsProvider::OnMouseSettingsUpdated(
   NotifyMiceUpdated();
 }
 
+void InputDeviceSettingsProvider::OnGraphicsTabletConnected(
+    const ::ash::mojom::GraphicsTablet& graphics_tablet) {
+  NotifyGraphicsTabletUpdated();
+}
+
+void InputDeviceSettingsProvider::OnGraphicsTabletDisconnected(
+    const ::ash::mojom::GraphicsTablet& graphics_tablet) {
+  NotifyGraphicsTabletUpdated();
+}
+
+void InputDeviceSettingsProvider::OnGraphicsTabletSettingsUpdated(
+    const ::ash::mojom::GraphicsTablet& graphics_tablet) {
+  NotifyGraphicsTabletUpdated();
+}
+
 void InputDeviceSettingsProvider::OnMousePoliciesUpdated(
     const ::ash::mojom::MousePolicies& mouse) {
   for (const auto& observer : mouse_settings_observers_) {
@@ -266,6 +499,43 @@ void InputDeviceSettingsProvider::NotifyMiceUpdated() {
   for (const auto& observer : mouse_settings_observers_) {
     observer->OnMouseListUpdated(mojo::Clone(mice));
   }
+}
+
+void InputDeviceSettingsProvider::NotifyGraphicsTabletUpdated() {
+  CHECK(features::IsPeripheralCustomizationEnabled());
+  DCHECK(InputDeviceSettingsController::Get());
+  auto graphics_tablets = SanitizeAndSortDeviceList(
+      InputDeviceSettingsController::Get()->GetConnectedGraphicsTablets());
+  for (const auto& observer : graphics_tablet_settings_observers_) {
+    observer->OnGraphicsTabletListUpdated(mojo::Clone(graphics_tablets));
+  }
+}
+
+void InputDeviceSettingsProvider::SetWidgetForTesting(views::Widget* widget) {
+  widget_ = widget;
+  widget_->AddObserver(this);
+  HandleObserving();
+}
+
+void InputDeviceSettingsProvider::
+    GetActionsForGraphicsTabletButtonCustomization(
+        GetActionsForGraphicsTabletButtonCustomizationCallback callback) {
+  std::vector<mojom::ActionChoicePtr> choices;
+  for (const auto& choice : kGraphicsTabletOptions) {
+    choices.push_back(mojom::ActionChoice::New(
+        GetActionTypeFromVariant(choice.action_variant), choice.name));
+  }
+  std::move(callback).Run(std::move(choices));
+}
+
+void InputDeviceSettingsProvider::GetActionsForMouseButtonCustomization(
+    GetActionsForMouseButtonCustomizationCallback callback) {
+  std::vector<mojom::ActionChoicePtr> choices;
+  for (const auto& choice : kMouseButtonOptions) {
+    choices.push_back(mojom::ActionChoice::New(
+        GetActionTypeFromVariant(choice.action_variant), choice.name));
+  }
+  std::move(callback).Run(std::move(choices));
 }
 
 }  // namespace ash::settings

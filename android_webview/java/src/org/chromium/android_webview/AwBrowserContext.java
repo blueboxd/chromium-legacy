@@ -71,8 +71,7 @@ public class AwBrowserContext implements BrowserContextHandle {
 
         try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
             // Prefs dir will be created if it doesn't exist, so must allow writes.
-            mSharedPreferences = ContextUtils.getApplicationContext().getSharedPreferences(
-                    getSharedPrefsFilename(relativePath), Context.MODE_PRIVATE);
+            mSharedPreferences = createSharedPrefs(relativePath);
 
             if (isDefaultAwBrowserContext()) {
                 // Migration requires disk writes.
@@ -83,16 +82,17 @@ public class AwBrowserContext implements BrowserContextHandle {
         // Register MemoryPressureMonitor callbacks and make sure it polls only if there is at
         // least one WebView around.
         MemoryPressureMonitor.INSTANCE.registerComponentCallbacks();
-        AwContentsLifecycleNotifier.addObserver(new AwContentsLifecycleNotifier.Observer() {
-            @Override
-            public void onFirstWebViewCreated() {
-                MemoryPressureMonitor.INSTANCE.enablePolling();
-            }
-            @Override
-            public void onLastWebViewDestroyed() {
-                MemoryPressureMonitor.INSTANCE.disablePolling();
-            }
-        });
+        AwContentsLifecycleNotifier.getInstance().addObserver(
+                new AwContentsLifecycleNotifier.Observer() {
+                    @Override
+                    public void onFirstWebViewCreated() {
+                        MemoryPressureMonitor.INSTANCE.enablePolling();
+                    }
+                    @Override
+                    public void onLastWebViewDestroyed() {
+                        MemoryPressureMonitor.INSTANCE.disablePolling();
+                    }
+                });
     }
 
     @VisibleForTesting
@@ -232,10 +232,15 @@ public class AwBrowserContext implements BrowserContextHandle {
      * <p>
      * Name must be non-null and valid Unicode.
      *
-     * @throws IllegalStateException if trying to delete the default profile or a profile which is
-     *                               in use.
+     * @throws IllegalArgumentException if trying to delete the default profile.
+     * @throws IllegalStateException if trying to delete a profile which is in use.
      */
-    public static boolean deleteNamedContext(String name) {
+    public static boolean deleteNamedContext(String name)
+            throws IllegalArgumentException, IllegalStateException {
+        final String defaultContextName = AwBrowserContextJni.get().getDefaultContextName();
+        if (name.equals(defaultContextName)) {
+            throw new IllegalArgumentException("Cannot delete the default profile");
+        }
         return AwBrowserContextJni.get().deleteNamedContext(name);
     }
 
@@ -273,11 +278,30 @@ public class AwBrowserContext implements BrowserContextHandle {
         AwBrowserContextJni.get().clearFormData(mNativeAwBrowserContext);
     }
 
+    public void setServiceWorkerIoThreadClient(AwContentsIoThreadClient ioThreadClient) {
+        AwBrowserContextJni.get().setServiceWorkerIoThreadClient(
+                mNativeAwBrowserContext, ioThreadClient);
+    }
+
+    private static SharedPreferences createSharedPrefs(String relativePath) {
+        return ContextUtils.getApplicationContext().getSharedPreferences(
+                getSharedPrefsFilename(relativePath), Context.MODE_PRIVATE);
+    }
+
     @CalledByNative
     public static AwBrowserContext create(long nativeAwBrowserContext, String name,
             String relativePath, AwCookieManager cookieManager, boolean isDefault) {
         return new AwBrowserContext(
                 nativeAwBrowserContext, name, relativePath, cookieManager, isDefault);
+    }
+
+    @CalledByNative
+    public static void deleteSharedPreferences(String relativePath) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
+            final String sharedPrefsFilename = getSharedPrefsFilename(relativePath);
+            SharedPreferences.Editor prefsEditor = createSharedPrefs(sharedPrefsFilename).edit();
+            prefsEditor.clear().apply();
+        }
     }
 
     @NativeMethods
@@ -297,5 +321,7 @@ public class AwBrowserContext implements BrowserContextHandle {
         void clearPersistentOriginTrialStorageForTesting(long nativeAwBrowserContext);
         boolean hasFormData(long nativeAwBrowserContext);
         void clearFormData(long nativeAwBrowserContext);
+        void setServiceWorkerIoThreadClient(
+                long nativeAwBrowserContext, AwContentsIoThreadClient ioThreadClient);
     }
 }

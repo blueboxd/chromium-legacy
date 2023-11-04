@@ -13,6 +13,7 @@
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
+#include "components/autofill/core/browser/personal_data_manager_test_utils.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/service/sync_service.h"
@@ -34,9 +35,6 @@ ACTION_P(QuitMessageLoop, loop) {
   loop->Quit();
 }
 
-const syncer::SyncFirstSetupCompleteSource kSetSourceFromTest =
-    syncer::SyncFirstSetupCompleteSource::BASIC_FLOW;
-
 }  // namespace
 
 class SingleClientOfferSyncTest : public SyncTest {
@@ -51,7 +49,8 @@ class SingleClientOfferSyncTest : public SyncTest {
 
  protected:
   void WaitForOnPersonalDataChanged(autofill::PersonalDataManager* pdm) {
-    testing::NiceMock<PersonalDataLoadedObserverMock> personal_data_observer;
+    testing::NiceMock<autofill::PersonalDataLoadedObserverMock>
+        personal_data_observer;
     pdm->AddObserver(&personal_data_observer);
     base::RunLoop run_loop;
     EXPECT_CALL(personal_data_observer, OnPersonalDataChanged())
@@ -102,10 +101,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientOfferSyncTest, ClearOnDisableSync) {
 
   // Turn sync on again, the data should come back.
   GetSyncService(0)->SetSyncFeatureRequested();
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   // StopAndClear() also clears the "first setup complete" flag, so set it
   // again.
   GetSyncService(0)->GetUserSettings()->SetInitialSyncFeatureSetupComplete(
-      kSetSourceFromTest);
+      syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+
   // Wait until Sync restores the card and it arrives at PDM.
   WaitForNumberOfOffers(1, pdm);
   EXPECT_EQ(1uL, pdm->GetAutofillOffers().size());

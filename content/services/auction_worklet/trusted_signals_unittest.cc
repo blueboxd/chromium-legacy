@@ -19,8 +19,10 @@
 #include "base/test/task_environment.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
 #include "content/services/auction_worklet/worklet_test_util.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/http/http_status_code.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "v8/include/v8-context.h"
@@ -83,7 +85,7 @@ const char kBaseBiddingJson[] = R"(
 )";
 
 // Common JSON used for most scoring signals tests.
-const char kBaseScoringJson[] = R"(
+const char kBaseScoringJsonOldNames[] = R"(
   {
     "renderUrls": {
       "https://foo.test/": 1,
@@ -100,7 +102,7 @@ const char kBaseScoringJson[] = R"(
   }
 )";
 
-const char kBaseScoringJsonNewNames[] = R"(
+const char kBaseScoringJson[] = R"(
   {
     "renderURLs": {
       "https://foo.test/": 1,
@@ -186,8 +188,10 @@ class TrustedSignalsTest : public testing::Test {
     CHECK(!load_signals_run_loop_);
 
     DCHECK(!load_signals_result_);
+
     auto bidding_signals = TrustedSignals::LoadBiddingSignals(
-        &url_loader_factory_, std::move(interest_group_names),
+        &url_loader_factory_, auction_network_events_handler_.CreateRemote(),
+        std::move(interest_group_names),
         std::move(trusted_bidding_signals_keys), hostname, base_url_,
         experiment_group_id, v8_helper_,
         base::BindOnce(&TrustedSignalsTest::LoadSignalsCallback,
@@ -222,9 +226,9 @@ class TrustedSignalsTest : public testing::Test {
 
     DCHECK(!load_signals_result_);
     auto scoring_signals = TrustedSignals::LoadScoringSignals(
-        &url_loader_factory_, std::move(render_urls),
-        std::move(ad_component_render_urls), hostname, base_url_,
-        experiment_group_id, v8_helper_,
+        &url_loader_factory_, auction_network_events_handler_.CreateRemote(),
+        std::move(render_urls), std::move(ad_component_render_urls), hostname,
+        base_url_, experiment_group_id, v8_helper_,
         base::BindOnce(&TrustedSignalsTest::LoadSignalsCallback,
                        base::Unretained(this)));
     WaitForLoadComplete();
@@ -332,6 +336,8 @@ class TrustedSignalsTest : public testing::Test {
   // LoadSignalsCallback().
   bool expect_nonfatal_error_ = false;
 
+  TestAuctionNetworkEventsHandler auction_network_events_handler_;
+
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<AuctionV8Helper> v8_helper_;
 };
@@ -348,6 +354,19 @@ TEST_F(TrustedSignalsTest, BiddingSignalsNetworkError) {
       "https://url.test/?hostname=publisher&keys=key1&interestGroupNames=name1 "
       "HTTP status = 404 Not Found.",
       error_msg_.value());
+
+  // Wait until idle to ensure all requests have been observed within the
+  // `auction_network_events_handler_`.
+  task_environment_.RunUntilIdle();
+  EXPECT_THAT(auction_network_events_handler_.GetObservedRequests(),
+              testing::ElementsAre(
+                  "Sent URL: "
+                  "https://url.test/"
+                  "?hostname=publisher&keys=key1&interestGroupNames=name1",
+                  "Received URL: "
+                  "https://url.test/"
+                  "?hostname=publisher&keys=key1&interestGroupNames=name1",
+                  "Completion Status: net::ERR_HTTP_RESPONSE_CODE_FAILURE"));
 }
 
 TEST_F(TrustedSignalsTest, ScoringSignalsNetworkError) {
@@ -366,6 +385,19 @@ TEST_F(TrustedSignalsTest, ScoringSignalsNetworkError) {
       "?hostname=publisher&renderUrls=https%3A%2F%2Ffoo.test%2F "
       "HTTP status = 404 Not Found.",
       error_msg_.value());
+
+  // Wait until idle to ensure all requests have been observed within the
+  // `auction_network_events_handler_`.
+  task_environment_.RunUntilIdle();
+  EXPECT_THAT(auction_network_events_handler_.GetObservedRequests(),
+              testing::ElementsAre(
+                  "Sent URL: "
+                  "https://url.test/"
+                  "?hostname=publisher&renderUrls=https%3A%2F%2Ffoo.test%2F",
+                  "Received URL: "
+                  "https://url.test/"
+                  "?hostname=publisher&renderUrls=https%3A%2F%2Ffoo.test%2F",
+                  "Completion Status: net::ERR_HTTP_RESPONSE_CODE_FAILURE"));
 }
 
 TEST_F(TrustedSignalsTest, BiddingSignalsResponseNotJsonObject) {
@@ -577,7 +609,7 @@ TEST_F(TrustedSignalsTest, ScoringSignalsNestedEntriesNotObjects) {
           GURL("https://url.test/?hostname=publisher"
                "&renderUrls=https%3A%2F%2Ffoo.test%2F"
                "&adComponentRenderUrls=https%3A%2F%2Fbar.test%2F"),
-          R"({"renderUrls":4,"adComponentRenderUrls":5})",
+          R"({"renderUrls":4,"adComponentRenderURLs":5})",
           /*render_urls=*/{"https://foo.test/"},
           /*ad_component_render_urls=*/{"https://bar.test/"}, kHostname,
           /*experiment_group_id=*/absl::nullopt);
@@ -626,7 +658,7 @@ TEST_F(TrustedSignalsTest, ScoringSignalsKeysMissing) {
                "&renderUrls=https%3A%2F%2Ffoo.test%2F"
                "&adComponentRenderUrls=https%3A%2F%2Fbar.test%2F"),
           R"({"renderUrls":{"these":"are not"},")"
-          R"(adComponentRenderUrls":{"the values":"you're looking for"}})",
+          R"(adComponentRenderURLs":{"the values":"you're looking for"}})",
           /*render_urls=*/{"https://foo.test/"},
           /*ad_component_render_urls=*/{"https://bar.test/"}, kHostname,
           /*experiment_group_id=*/absl::nullopt);
@@ -654,9 +686,39 @@ TEST_F(TrustedSignalsTest, BiddingSignalsOneKey) {
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 1}}),
             *priority_vector);
+
+  // Wait until idle to ensure all requests have been observed within the
+  // `auction_network_events_handler_`.
+  task_environment_.RunUntilIdle();
+  EXPECT_THAT(auction_network_events_handler_.GetObservedRequests(),
+              testing::ElementsAre(
+                  "Sent URL: https://url.test/"
+                  "?hostname=publisher&keys=key1&interestGroupNames=name1",
+                  "Received URL: https://url.test/"
+                  "?hostname=publisher&keys=key1&interestGroupNames=name1",
+                  "Completion Status: net::OK"));
 }
 
-TEST_F(TrustedSignalsTest, BiddingSignalsOneKeyNewHeaderName) {
+TEST_F(TrustedSignalsTest, BiddingSignalsOneKeyOldHeaderName) {
+  AddResponse(
+      &url_loader_factory_,
+      GURL("https://url.test/"
+           "?hostname=publisher&keys=key1&interestGroupNames=name1"),
+      kJsonMimeType, absl::nullopt, kBaseBiddingJson,
+      base::StringPrintf("%s\nX-Fledge-Bidding-Signals-Format-Version: 2",
+                         kAllowFledgeHeader));
+  scoped_refptr<TrustedSignals::Result> signals =
+      FetchBiddingSignals({"name1"}, {"key1"}, kHostname,
+                          /*experiment_group_id=*/absl::nullopt);
+  ASSERT_TRUE(signals);
+  EXPECT_EQ(R"({"key1":1})", ExtractBiddingSignals(signals.get(), {"key1"}));
+  const auto* priority_vector = signals->GetPriorityVector("name1");
+  ASSERT_TRUE(priority_vector);
+  EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 1}}),
+            *priority_vector);
+}
+
+TEST_F(TrustedSignalsTest, BiddingSignalsOneKeyHeaderName) {
   AddResponse(
       &url_loader_factory_,
       GURL("https://url.test/"
@@ -711,6 +773,17 @@ TEST_F(TrustedSignalsTest, ScoringSignalsForOneRenderUrl) {
                                   /*render_url=*/GURL("https://foo.test/"),
                                   /*ad_component_render_urls=*/{}));
   EXPECT_FALSE(error_msg_.has_value());
+
+  // Wait until idle to ensure all requests have been observed within the
+  // `auction_network_events_handler_`.
+  task_environment_.RunUntilIdle();
+  EXPECT_THAT(auction_network_events_handler_.GetObservedRequests(),
+              testing::ElementsAre(
+                  "Sent URL: https://url.test/"
+                  "?hostname=publisher&renderUrls=https%3A%2F%2Ffoo.test%2F",
+                  "Received URL: https://url.test/"
+                  "?hostname=publisher&renderUrls=https%3A%2F%2Ffoo.test%2F",
+                  "Completion Status: net::OK"));
 }
 
 TEST_F(TrustedSignalsTest, BiddingSignalsMultipleKeys) {
@@ -779,7 +852,7 @@ TEST_F(TrustedSignalsTest, ScoringSignalsMultipleUrls) {
                  "https://bazsub.test/"}));
 }
 
-TEST_F(TrustedSignalsTest, ScoringSignalsNewNames) {
+TEST_F(TrustedSignalsTest, ScoringSignalsOldNames) {
   // URLs are currently added in lexical order.
   scoped_refptr<TrustedSignals::Result> signals =
       FetchScoringSignalsWithResponse(
@@ -788,7 +861,7 @@ TEST_F(TrustedSignalsTest, ScoringSignalsNewNames) {
                "https%3A%2F%2Fbaz.test%2F,https%3A%2F%2Ffoo.test%2F"
                "&adComponentRenderUrls=https%3A%2F%2Fbarsub.test%2F,"
                "https%3A%2F%2Fbazsub.test%2F,https%3A%2F%2Ffoosub.test%2F"),
-          kBaseScoringJsonNewNames,
+          kBaseScoringJsonOldNames,
           /*render_urls=*/
           {"https://foo.test/", "https://bar.test/", "https://baz.test/"},
           /*ad_component_render_urls=*/
@@ -957,7 +1030,7 @@ TEST_F(TrustedSignalsTest, ScoringSignalsEscapeQueryParams) {
     "renderUrls": {
       "https://foo.test/?&=": 4
     },
-    "adComponentRenderUrls": {
+    "adComponentRenderURLs": {
       "https://bar.test/?&=": 5
     }
   }
@@ -991,7 +1064,8 @@ TEST_F(TrustedSignalsTest, BiddingSignalsDeleteBeforeCallback) {
   base::WaitableEvent* event_handle = WedgeV8Thread(v8_helper_.get());
 
   auto bidding_signals = TrustedSignals::LoadBiddingSignals(
-      &url_loader_factory_, {"name1"}, {"key1"}, "publisher", base_url_,
+      &url_loader_factory_, auction_network_events_handler_.CreateRemote(),
+      {"name1"}, {"key1"}, "publisher", base_url_,
       /*experiment_group_id=*/absl::nullopt, v8_helper_,
       base::BindOnce([](scoped_refptr<TrustedSignals::Result> result,
                         absl::optional<std::string> error_msg) {
@@ -1014,7 +1088,7 @@ TEST_F(TrustedSignalsTest, ScoringSignalsDeleteBeforeCallback) {
   // Wedge the V8 thread to control when the JSON parsing takes place.
   base::WaitableEvent* event_handle = WedgeV8Thread(v8_helper_.get());
   auto scoring_signals = TrustedSignals::LoadScoringSignals(
-      &url_loader_factory_,
+      &url_loader_factory_, auction_network_events_handler_.CreateRemote(),
       /*render_urls=*/{"http://foo.test/"},
       /*ad_component_render_urls=*/{}, "publisher", base_url_,
       /*experiment_group_id=*/absl::nullopt, v8_helper_,
@@ -1063,7 +1137,7 @@ TEST_F(TrustedSignalsTest, ScoringSignalsWithInvalidDataVersion) {
         GURL("https://url.test/"
              "?hostname=publisher&renderUrls=https%3A%2F%2Ffoo.test%2F"),
         kJsonMimeType, absl::nullopt, kBaseScoringJson,
-        "X-Allow-FLEDGE: true\nData-Version: " + test_case);
+        "Ad-Auction-Allowed: true\nData-Version: " + test_case);
     scoped_refptr<TrustedSignals::Result> signals =
         FetchScoringSignals(/*render_urls=*/{"https://foo.test/"},
                             /*ad_component_render_urls=*/{}, kHostname,

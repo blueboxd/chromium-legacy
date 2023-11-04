@@ -11,6 +11,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise/util/managed_browser_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/profiles/profile_picker.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -39,16 +41,26 @@ const net::BackoffEntry::Policy kForceSigninVerifierBackoffPolicy = {
     false           // Do not always use initial delay.
 };
 
+signin::ConsentLevel GetProfileConsentLevelToVerify(Profile* profile) {
+  // TODO(https://crbug.com/1478102): Condition to remove when we decide to
+  // align requirements for Managed vs Consumer accounts.
+  return chrome::enterprise_util::UserAcceptedAccountManagement(profile)
+             ? signin::ConsentLevel::kSignin
+             : signin::ConsentLevel::kSync;
+}
+
 }  // namespace
 
 ForceSigninVerifier::ForceSigninVerifier(
     Profile* profile,
-    signin::IdentityManager* identity_manager)
+    signin::IdentityManager* identity_manager,
+    base::OnceCallback<void(bool)> on_token_fetch_complete)
     : has_token_verified_(false),
       backoff_entry_(&kForceSigninVerifierBackoffPolicy),
       creation_time_(base::TimeTicks::Now()),
       profile_(profile),
-      identity_manager_(identity_manager) {
+      identity_manager_(identity_manager),
+      on_token_fetch_complete_(std::move(on_token_fetch_complete)) {
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
   // Most of time (~94%), sign-in token can be verified with server.
   SendRequest();
@@ -69,10 +81,11 @@ void ForceSigninVerifier::OnAccessTokenFetchComplete(
       // about 7% verifications are failed. Most of them are finished within
       // 113ms but some of them (<3%) could take longer than 3 minutes.
       has_token_verified_ = true;
-      CloseAllBrowserWindows();
       content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(
           this);
       Cancel();
+      std::move(on_token_fetch_complete_).Run(false);
+      // Do nothing after this point, as `this` might be deleted.
     } else {
       backoff_entry_.InformOfRequest(false);
       backoff_request_timer_.Start(
@@ -90,6 +103,8 @@ void ForceSigninVerifier::OnAccessTokenFetchComplete(
   has_token_verified_ = true;
   content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
   Cancel();
+  std::move(on_token_fetch_complete_).Run(true);
+  // Do nothing after this point, as `this` might be deleted.
 }
 
 void ForceSigninVerifier::OnConnectionChanged(
@@ -109,10 +124,6 @@ void ForceSigninVerifier::Cancel() {
   backoff_request_timer_.Stop();
   access_token_fetcher_.reset();
   content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
-}
-
-bool ForceSigninVerifier::HasTokenBeenVerified() {
-  return has_token_verified_;
 }
 
 void ForceSigninVerifier::SendRequest() {
@@ -141,40 +152,14 @@ void ForceSigninVerifier::SendRequestIfNetworkAvailable(
           base::BindOnce(&ForceSigninVerifier::OnAccessTokenFetchComplete,
                          weak_factory_.GetWeakPtr()),
           signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate,
-          signin::ConsentLevel::kSync);
+          GetProfileConsentLevelToVerify(profile_));
 }
 
 bool ForceSigninVerifier::ShouldSendRequest() {
   return !has_token_verified_ && access_token_fetcher_.get() == nullptr &&
          identity_manager_ &&
-         identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSync);
-}
-
-void ForceSigninVerifier::CloseAllBrowserWindows() {
-  // Do not sign the user out to allow them to reauthenticate from the profile
-  // picker.
-  BrowserList::CloseAllBrowsersWithProfile(
-      profile_,
-      base::BindRepeating(&ForceSigninVerifier::OnCloseBrowsersSuccess,
-                          weak_factory_.GetWeakPtr()),
-      /*on_close_aborted=*/base::DoNothing(),
-      /*skip_beforeunload=*/true);
-}
-
-void ForceSigninVerifier::OnCloseBrowsersSuccess(
-    const base::FilePath& profile_path) {
-  Cancel();
-
-  ProfileAttributesEntry* entry =
-      g_browser_process->profile_manager()
-          ->GetProfileAttributesStorage()
-          .GetProfileAttributesWithPath(profile_path);
-  if (!entry) {
-    return;
-  }
-  entry->LockForceSigninProfile(true);
-  ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
-      ProfilePicker::EntryPoint::kProfileLocked));
+         identity_manager_->HasPrimaryAccount(
+             GetProfileConsentLevelToVerify(profile_));
 }
 
 signin::PrimaryAccountAccessTokenFetcher*

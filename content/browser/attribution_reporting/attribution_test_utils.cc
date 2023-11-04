@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "components/attribution_reporting/aggregatable_dedup_key.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
+#include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/destination_set.h"
 #include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/event_trigger_data.h"
@@ -65,18 +66,10 @@ const char kDefaultSourceOrigin[] = "https://impression.test/";
 const char kDefaultDestinationOrigin[] = "https://sub.conversion.test/";
 const char kDefaultReportOrigin[] = "https://report.test/";
 
-// Default expiry time for impressions for testing.
-const int64_t kExpiryTime = 30;
-
 }  // namespace
 
 base::Uuid DefaultExternalReportID() {
   return base::Uuid::ParseLowercase("21abd97f-73e8-4b88-9389-a9fee6abda5e");
-}
-
-base::Time GetExpiryTimeForTesting(base::TimeDelta declared_expiry,
-                                   base::Time source_time) {
-  return source_time + declared_expiry;
 }
 
 absl::optional<base::Time> GetReportWindowTimeForTesting(
@@ -120,11 +113,14 @@ AttributionConfig AttributionConfigWith(
 // all values needed to be provided at construction time.
 SourceBuilder::SourceBuilder(base::Time time)
     : source_time_(time),
-      expiry_(base::Milliseconds(kExpiryTime)),
       source_origin_(*SuitableOrigin::Deserialize(kDefaultSourceOrigin)),
-      destination_sites_(*attribution_reporting::DestinationSet::Create(
+      registration_(*attribution_reporting::DestinationSet::Create(
           {net::SchemefulSite::Deserialize(kDefaultDestinationOrigin)})),
-      reporting_origin_(*SuitableOrigin::Deserialize(kDefaultReportOrigin)) {}
+      reporting_origin_(*SuitableOrigin::Deserialize(kDefaultReportOrigin)) {
+  registration_.source_event_id = 123;
+  registration_.max_event_level_reports =
+      attribution_reporting::kMaxSettableEventLevelAttributions;
+}
 
 SourceBuilder::~SourceBuilder() = default;
 
@@ -137,18 +133,18 @@ SourceBuilder& SourceBuilder::operator=(const SourceBuilder&) = default;
 SourceBuilder& SourceBuilder::operator=(SourceBuilder&&) = default;
 
 SourceBuilder& SourceBuilder::SetExpiry(base::TimeDelta delta) {
-  expiry_ = delta;
+  registration_.expiry = delta;
   return *this;
 }
 
 SourceBuilder& SourceBuilder::SetAggregatableReportWindow(
     base::TimeDelta delta) {
-  aggregatable_report_window_ = delta;
+  registration_.aggregatable_report_window = delta;
   return *this;
 }
 
 SourceBuilder& SourceBuilder::SetSourceEventId(uint64_t source_event_id) {
-  source_event_id_ = source_event_id;
+  registration_.source_event_id = source_event_id;
   return *this;
 }
 
@@ -159,7 +155,7 @@ SourceBuilder& SourceBuilder::SetSourceOrigin(SuitableOrigin origin) {
 
 SourceBuilder& SourceBuilder::SetDestinationSites(
     base::flat_set<net::SchemefulSite> sites) {
-  destination_sites_ =
+  registration_.destination_set =
       *attribution_reporting::DestinationSet::Create(std::move(sites));
   return *this;
 }
@@ -175,18 +171,18 @@ SourceBuilder& SourceBuilder::SetSourceType(SourceType source_type) {
 }
 
 SourceBuilder& SourceBuilder::SetPriority(int64_t priority) {
-  priority_ = priority;
+  registration_.priority = priority;
   return *this;
 }
 
 SourceBuilder& SourceBuilder::SetFilterData(
     attribution_reporting::FilterData filter_data) {
-  filter_data_ = std::move(filter_data);
+  registration_.filter_data = std::move(filter_data);
   return *this;
 }
 
 SourceBuilder& SourceBuilder::SetDebugKey(absl::optional<uint64_t> debug_key) {
-  debug_key_ = debug_key;
+  registration_.debug_key = debug_key;
   return *this;
 }
 
@@ -214,7 +210,7 @@ SourceBuilder& SourceBuilder::SetDedupKeys(std::vector<uint64_t> dedup_keys) {
 
 SourceBuilder& SourceBuilder::SetAggregationKeys(
     attribution_reporting::AggregationKeys aggregation_keys) {
-  aggregation_keys_ = std::move(aggregation_keys);
+  registration_.aggregation_keys = std::move(aggregation_keys);
   return *this;
 }
 
@@ -243,19 +239,19 @@ SourceBuilder& SourceBuilder::SetIsWithinFencedFrame(
 }
 
 SourceBuilder& SourceBuilder::SetDebugReporting(bool debug_reporting) {
-  debug_reporting_ = debug_reporting;
+  registration_.debug_reporting = debug_reporting;
   return *this;
 }
 
 SourceBuilder& SourceBuilder::SetEventReportWindows(
     attribution_reporting::EventReportWindows event_report_windows) {
-  event_report_windows_ = std::move(event_report_windows);
+  registration_.event_report_windows = std::move(event_report_windows);
   return *this;
 }
 
 SourceBuilder& SourceBuilder::SetMaxEventLevelReports(
     int max_event_level_reports) {
-  max_event_level_reports_ = max_event_level_reports;
+  registration_.max_event_level_reports = max_event_level_reports;
   return *this;
 }
 
@@ -264,37 +260,26 @@ CommonSourceInfo SourceBuilder::BuildCommonInfo() const {
 }
 
 StorableSource SourceBuilder::Build() const {
-  attribution_reporting::SourceRegistration registration(destination_sites_);
-  registration.source_event_id = source_event_id_;
-  registration.expiry = expiry_;
-  registration.aggregatable_report_window = aggregatable_report_window_;
-  registration.event_report_windows = event_report_windows_;
-  registration.max_event_level_reports = max_event_level_reports_;
-  registration.priority = priority_;
-  registration.filter_data = filter_data_;
-  registration.debug_key = debug_key_;
-  registration.aggregation_keys = aggregation_keys_;
-  registration.debug_reporting = debug_reporting_;
-  return StorableSource(reporting_origin_, std::move(registration),
-                        source_origin_, source_type_, is_within_fenced_frame_);
+  return StorableSource(reporting_origin_, registration_, source_origin_,
+                        source_type_, is_within_fenced_frame_);
 }
 
 StoredSource SourceBuilder::BuildStored() const {
-  base::Time expiry_time = GetExpiryTimeForTesting(expiry_, source_time_);
+  base::Time expiry_time = source_time_ + registration_.expiry;
   StoredSource source(
-      BuildCommonInfo(), source_event_id_, destination_sites_, source_time_,
-      expiry_time,
-      event_report_windows_.value_or(
+      BuildCommonInfo(), registration_.source_event_id,
+      registration_.destination_set, source_time_, expiry_time,
+      registration_.event_report_windows.value_or(
           *attribution_reporting::EventReportWindows::CreateWindows(
-              base::Milliseconds(0), {event_report_window_.value_or(expiry_)})),
-      ComputeReportWindowTime(GetReportWindowTimeForTesting(
-                                  aggregatable_report_window_, source_time_),
-                              expiry_time),
-      max_event_level_reports_.value_or(
-          source_type_ == SourceType::kNavigation ? 3 : 1),
-      priority_, filter_data_, debug_key_, aggregation_keys_,
-      attribution_logic_, active_state_, source_id_,
-      aggregatable_budget_consumed_, randomized_response_rate_);
+              base::Milliseconds(0), {registration_.expiry})),
+      ComputeReportWindowTime(
+          GetReportWindowTimeForTesting(
+              registration_.aggregatable_report_window, source_time_),
+          expiry_time),
+      registration_.max_event_level_reports, registration_.priority,
+      registration_.filter_data, registration_.debug_key,
+      registration_.aggregation_keys, attribution_logic_, active_state_,
+      source_id_, aggregatable_budget_consumed_, randomized_response_rate_);
   source.SetDedupKeys(dedup_keys_);
   source.SetAggregatableDedupKeys(aggregatable_dedup_keys_);
   return source;
@@ -321,12 +306,6 @@ TriggerBuilder& TriggerBuilder::operator=(TriggerBuilder&&) = default;
 
 TriggerBuilder& TriggerBuilder::SetTriggerData(uint64_t trigger_data) {
   trigger_data_ = trigger_data;
-  return *this;
-}
-
-TriggerBuilder& TriggerBuilder::SetEventSourceTriggerData(
-    uint64_t event_source_trigger_data) {
-  event_source_trigger_data_ = event_source_trigger_data;
   return *this;
 }
 
@@ -406,30 +385,34 @@ TriggerBuilder& TriggerBuilder::SetVerifications(
   return *this;
 }
 
+TriggerBuilder& TriggerBuilder::SetFilterPair(
+    attribution_reporting::FilterPair filter_pair) {
+  filter_pair_ = std::move(filter_pair);
+  return *this;
+}
+
+TriggerBuilder& TriggerBuilder::SetAggregatableDedupKeyFilterPair(
+    attribution_reporting::FilterPair filter_pair) {
+  aggregatable_dedup_key_filter_pair_ = std::move(filter_pair);
+  return *this;
+}
+
 AttributionTrigger TriggerBuilder::Build(
     bool generate_event_trigger_data) const {
   std::vector<attribution_reporting::EventTriggerData> event_triggers;
 
   if (generate_event_trigger_data) {
-    event_triggers.emplace_back(
-        trigger_data_, priority_, dedup_key_,
-        FilterPair(/*positive=*/attribution_reporting::FiltersForSourceType(
-                       SourceType::kNavigation),
-                   /*negative=*/{}));
-
-    event_triggers.emplace_back(
-        event_source_trigger_data_, priority_, dedup_key_,
-        FilterPair(/*positive=*/attribution_reporting::FiltersForSourceType(
-                       SourceType::kEvent),
-                   /*negative=*/{}));
+    event_triggers.emplace_back(trigger_data_, priority_, dedup_key_,
+                                FilterPair());
   }
 
   return AttributionTrigger(
       reporting_origin_,
       attribution_reporting::TriggerRegistration(
-          FilterPair(), debug_key_,
+          filter_pair_, debug_key_,
           {attribution_reporting::AggregatableDedupKey(
-              /*dedup_key=*/aggregatable_dedup_key_, FilterPair())},
+              /*dedup_key=*/aggregatable_dedup_key_,
+              aggregatable_dedup_key_filter_pair_)},
           std::move(event_triggers), aggregatable_trigger_data_,
           aggregatable_values_, debug_reporting_,
           aggregation_coordinator_origin_, source_registration_time_config_),
@@ -700,8 +683,8 @@ std::ostream& operator<<(std::ostream& out,
       return out << "excessiveAttributions";
     case AttributionTrigger::EventLevelResult::kPriorityTooLow:
       return out << "priorityTooLow";
-    case AttributionTrigger::EventLevelResult::kDroppedForNoise:
-      return out << "noised";
+    case AttributionTrigger::EventLevelResult::kNeverAttributedSource:
+      return out << "neverAttributedSource";
     case AttributionTrigger::EventLevelResult::kExcessiveReportingOrigins:
       return out << "excessiveReportingOrigins";
     case AttributionTrigger::EventLevelResult::kNoMatchingSourceFilterData:

@@ -70,12 +70,16 @@ const base::FeatureParam<int> kUserBypassUIReloadCount{&kUserBypassUI,
 const base::FeatureParam<base::TimeDelta> kUserBypassUIReloadTime{
     &kUserBypassUI, "reload-time", base::Seconds(30)};
 
+BASE_FEATURE(kUserBypassFeedback,
+             "UserBypassFeedback",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kImprovedSemanticsActivityIndicators,
              "ImprovedSemanticsActivityIndicators",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kThirdPartyCookieDeprecationCookieSettings,
-             "ThirdPartyCookieDeprecationCookieSettings",
+BASE_FEATURE(kTrackingProtection3pcd,
+             "TrackingProtection3pcd",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/public/renderer/worker_thread.h"
 #include "extensions/common/api/automation.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
@@ -46,12 +47,16 @@ namespace extensions {
 
 AutomationInternalCustomBindings::AutomationInternalCustomBindings(
     ScriptContext* context,
-    NativeExtensionBindingsSystem* bindings_system)
+    NativeExtensionBindingsSystem* bindings_system,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    int worker_thread_id)
     : ObjectBackedNativeHandler(context),
       bindings_system_(bindings_system),
       should_ignore_context_(false),
       automation_v8_bindings_(
-          std::make_unique<ui::AutomationV8Bindings>(this, this)) {
+          std::make_unique<ui::AutomationV8Bindings>(this, this)),
+      io_task_runner_(io_task_runner),
+      worker_thread_id_(worker_thread_id) {
   // We will ignore this instance if the extension has a background page and
   // this context is not that background page. In all other cases, we will have
   // multiple instances floating around in the same process.
@@ -168,8 +173,25 @@ std::string AutomationInternalCustomBindings::GetOffscreenStateString() const {
 void AutomationInternalCustomBindings::DispatchEvent(
     const std::string& event_name,
     const base::Value::List& event_args) const {
-  bindings_system_->DispatchEventInContext(event_name, event_args, nullptr,
-                                           context());
+  if (worker_thread_id_ == kMainThreadId) {
+    bindings_system_->DispatchEventInContext(event_name, event_args, nullptr,
+                                             context());
+    return;
+  }
+
+  // If the extension is a service worker, post the task to that thread.
+  // This includes all manifest v3 extensions, as they are required to be
+  // service workers.
+  content::WorkerThread::PostTask(
+      worker_thread_id_,
+      base::BindOnce(
+          [](NativeExtensionBindingsSystem* bindings,
+             const std::string& event_name, const base::Value::List& event_args,
+             ScriptContext* context) {
+            bindings->DispatchEventInContext(event_name, event_args, nullptr,
+                                             context);
+          },
+          bindings_system_, event_name, event_args.Clone(), context()));
 }
 
 std::string
@@ -221,9 +243,7 @@ std::string AutomationInternalCustomBindings::GetEventTypeString(
 }
 
 void AutomationInternalCustomBindings::NotifyTreeEventListenersChanged() {
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      context()->web_frame()->GetTaskRunner(blink::TaskType::kInternalDefault);
-  task_runner->PostTask(
+  io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&AutomationInternalCustomBindings::
                          MaybeSendOnAllAutomationEventListenersRemoved,

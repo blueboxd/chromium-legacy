@@ -34,6 +34,10 @@ declare namespace chrome {
     // The current color theme value.
     let colorTheme: number;
 
+    // Current audio settings values.
+    let speechRate: number;
+    let highlightGranularity: number;
+
     // Enum values for various visual theme changes.
     let standardLineSpacing: number;
     let looseLineSpacing: number;
@@ -46,6 +50,7 @@ declare namespace chrome {
     let darkTheme: number;
     let yellowTheme: number;
     let blueTheme: number;
+    let highlightOn: number;
 
     // Whether the WebUI toolbar feature flag is enabled.
     let isWebUIToolbarVisible: boolean;
@@ -56,6 +61,12 @@ declare namespace chrome {
     // Indicates if select-to-distill works on the web page. Used to
     // determine which empty state to display.
     let isSelectable: boolean;
+
+    // Fonts supported by the browser's preferred language.
+    let supportedFonts: string[];
+
+    // The language code that should be used for speech synthesis voices.
+    let speechSynthesisLanguageCode: string;
 
     // Returns a list of AXNodeIDs corresponding to the unignored children of
     // the AXNode for the provided AXNodeID. If there is a selection contained
@@ -125,6 +136,13 @@ declare namespace chrome {
     // Called when the font is changed via the webui toolbar.
     function onFontChange(font: string): void;
 
+    // Called when the speech rate is changed via the webui toolbar.
+    function onSpeechRateChange(rate: number): void;
+
+    // Called when the highlight granularity is changed via the webui toolbar.
+    function turnedHighlightOn(): void;
+    function turnedHighlightOff(): void;
+
     // Returns the actual spacing value to use based on the given lineSpacing
     // category.
     function getLineSpacingValue(lineSpacing: number): number;
@@ -169,6 +187,9 @@ declare namespace chrome {
         backgroundColor: number, lineSpacing: number,
         letterSpacing: number): void;
 
+    // Sets the default language. Used by tests only.
+    function setLanguageForTesting(code: string): void;
+
     ////////////////////////////////////////////////////////////////
     // Implemented in read_anything/app.ts and called by native c++.
     ////////////////////////////////////////////////////////////////
@@ -193,5 +214,16 @@ declare namespace chrome {
     // Ping that the theme choices of the user have been retrieved from
     // preferences and can be used to set up the page.
     function restoreSettingsFromPrefs(): void;
+
+    // Returns the index of the next sentence of the given text, such that the
+    // next sentence is equivalent to text.substr(0, <returned_index>).
+    // If the sentence exceeds the maximum text length, the sentence will be
+    // cropped to the nearest word boundary that doesn't exceed the maximum
+    // text length.
+    function getNextSentence(value: string, maxTextLength: number): number;
+
+    // Signal that the supported fonts should be updated i.e. that the brower's
+    // preferred language has changed.
+    function updateFonts(): void;
   }
 }

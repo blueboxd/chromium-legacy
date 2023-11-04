@@ -14,7 +14,6 @@
 <translation id="1491435845014430217">Activa Bloquear pestanas do modo de incógnito ao pechar Chrome.</translation>
 <translation id="1493827051843127077">Define Chrome como predeterminado para sincronizar as pestanas, os contrasinais e a información de pago con todos os teus dispositivos</translation>
 <translation id="1504372625950710826">Chrome non puido buscar actualizacións. Verifica a conexión a Internet.</translation>
-<translation id="1511320244449497906">Tes a sesión iniciada e estás sincronizando os teus datos cunha conta xestionada por <ph name="DOMAIN" /> cuxo administrador xa pode definir políticas de usuario específicas para esa conta que poden modificar o comportamento de Chrome.</translation>
 <translation id="1516692594929310090">Abre a grade de pestanas de Chrome.</translation>
 <translation id="1526327845902180576">Cando esta opción está activada:
 <ph name="BEGIN_INDENT" />  • Axuda a mellorar Chrome para as persoas que o usan do mesmo xeito ca ti.<ph name="END_INDENT" />
@@ -31,7 +30,6 @@ Cuestións que debes ter en conta:
 <translation id="1675955119303651351">Algúns dos teus datos Chrome aínda non se gardaron na túa Conta de Google.
         Espera uns minutiños antes de pechar a sesión. Se a pechas agora, estes datos eliminaranse.</translation>
 <translation id="1682483655351012182">Sincronizar os teus datos de Chrome</translation>
-<translation id="1733654336159102143">Bloquea o modo de incógnito ao saír de Chrome ou cambiar de aplicación.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1843217788865538014">Usa Chrome automaticamente cando toques ligazóns en mensaxes, en documentos e noutras aplicacións.</translation>
 <translation id="1917964099031477364">Esta conta e os datos que estean sen gardar quitaranse de Chrome e das aplicacións de Google deste dispositivo.</translation>
@@ -58,7 +56,6 @@ Cuestións que debes ter en conta:
 <translation id="2732745070297234559">Chrome non puido comprobar todos os contrasinais. Téntao de novo mañá.</translation>
 <translation id="2736805085127235148">As notificacións de Chrome están desactivadas actualmente na configuración do dispositivo.</translation>
 <translation id="2767464022270041271">Non hai contrasinais gardados. O xestor de contrasinais de Google poderá comprobar os teus contrasinais cando os gardes.</translation>
-<translation id="2840432500933227975">Abre a configuración de Chrome en iOS, toca Default Browser App (Aplicación de navegador predeterminada) e selecciona Chrome.</translation>
 <translation id="2868822340714096138">Borra os datos de navegación en Chrome</translation>
 <translation id="2869959624320573933">Inicia sesión en Chrome</translation>
 <translation id="2876628302275096482">Máis información sobre <ph name="BEGIN_LINK" />como protexe Chrome a privacidade dos teus datos<ph name="END_LINK" /></translation>
@@ -72,6 +69,7 @@ Cuestións que debes ter en conta:
 <translation id="3345341804167540816">Usar Chrome en todas partes</translation>
 <translation id="3472587960215700950">Chrome usa Google Maps para darche indicacións e información local sobre os enderezos detectados.</translation>
 <translation id="3503014945441706099">Activa tamén neste perfil de Chrome a función Navegación segura mellorada</translation>
+<translation id="3506309791702511623">Chrome pode detectar os números de seguimento que indiques e levar un control dos teus paquetes na páxina Nova pestana, ademais de axudarche con outras experiencias de compra de Google.</translation>
 <translation id="3522659714780527202">Para ver as túas pestanas desde calquera dispositivo no que utilices Chrome, activa a sincronización</translation>
 <translation id="3533694711092285624">Non hai contrasinais gardados. Chrome pode comprobar os teus contrasinais cando os gardes.</translation>
 <translation id="3594076341410558780">Ocultar a mensaxe Tirar o máximo proveito de Chrome</translation>
@@ -106,6 +104,7 @@ Cuestións que debes ter en conta:
         Espera uns minutiños antes de pechar a sesión. Se a pechas agora, estes datos eliminaranse.</translation>
 <translation id="484033449593719797">Non compatible na versión beta de Chrome</translation>
 <translation id="4840404732697892756">O xestor de contrasinais de Google pode comprobar os teus contrasinais cando inicies sesión coa Conta de Google.</translation>
+<translation id="4860330141789125848">{COUNT,plural, =1{Chrome axudarache a facer un seguimento deste paquete na páxina Nova pestana.}other{Chrome axudarache a facer un seguimento destes paquetes na páxina Nova pestana.}}</translation>
 <translation id="4903674399067644695">Esta tarxeta móstrache suxestións sobre como tirar o máximo proveito de Chrome.</translation>
 <translation id="49200511069271369">A túa organización, <ph name="DOMAIN" />, xestiona a conta na que estás iniciando sesión e o xeito no que se usa Chrome. A persoa administradora pode configurar ou restrinxir determinadas funcións.</translation>
 <translation id="5030102366287574140">Chrome pode protexerte contra violacións da seguranza dos datos, sitios web que non son seguros e moito máis.</translation>
@@ -115,10 +114,12 @@ Cuestións que debes ter en conta:
 <translation id="5156818928311866442">Abre a configuración de Chrome para definir este navegador como predeterminado.</translation>
 <translation id="5162467219239570114">A versión de Chrome está desactualizada. Se non hai dispoñible ningunha actualización na <ph name="BEGIN_LINK" />tenda de aplicacións<ph name="END_LINK" />, é posible que o teu dispositivo xa non sexa compatible coas novas versións de Chrome.</translation>
 <translation id="5190139289262548459">A túa organización, <ph name="DOMAIN" />, xestiona a conta na que tes a sesión iniciada e o xeito no que se usa Chrome.</translation>
+<translation id="5278862365980079760">Pecha as pestanas do modo de incógnito ao saír de Chrome ou ao cambiar de aplicación.</translation>
 <translation id="5389212809648216794">Google Chrome non pode usar a cámara porque a está usando outra aplicación</translation>
 <translation id="5395376160638294582">Asegúrate de poder usar sempre os datos de Chrome na túa Conta de Google</translation>
 <translation id="5439191312780166229">Analiza máis datos de sitios que a protección estándar para avisarte sobre os sitios perigosos (mesmo sobre os que Google non coñeza ata ese momento). Se queres, podes omitir as advertencias de Chrome.</translation>
 <translation id="5460571915754665838">4. Selecciona Chrome</translation>
+<translation id="546541279759910616">{COUNT,plural, =1{Chrome axudarache a facer un seguimento deste paquete na páxina Nova pestana.}other{Chrome axudarache a facer un seguimento destes paquetes na páxina Nova pestana.}}</translation>
 <translation id="5492504007368565877">O xestor de contrasinais de Google non puido comprobar os teus contrasinais.</translation>
 <translation id="5527026824954593399">Toca Ver con Google Maps en Chrome.</translation>
 <translation id="5552137475244467770">Chrome comproba periodicamente se os teus contrasinais aparecen nas listas que se publican en liña. Cando o fai, os teus contrasinais e os teus nomes de usuario están encriptados, polo que ninguén pode lelos, nin sequera Google.</translation>
@@ -136,17 +137,18 @@ Cuestións que debes ter en conta:
 <translation id="6063091872902370735">Permitir inicio de sesión en Chrome</translation>
 <translation id="6110625574506755980">Algunhas funcións de Chrome deixarán de estar dispoñibles.</translation>
 <translation id="6181930887571472871">Pásate a Chrome</translation>
-<translation id="6228768456496298352">Chrome usa Google Maps para detectar enderezos e darche indicacións e información local.</translation>
 <translation id="6238746320622508509">Permite que Chrome bloquee as pestanas do modo de incógnito.</translation>
 <translation id="6247557882553405851">Xestor de contrasinais de Google</translation>
 <translation id="6412673304250309937">Comproba enderezos URL cunha lista de sitios non seguros almacenada en Chrome. Se un sitio tenta roubarche o contrasinal ou se descargas un ficheiro daniño, Chrome tamén pode comprobar os enderezos URL, entre os que se inclúen fragmentos de contido das páxinas, a través da función Navegación segura.</translation>
 <translation id="6427126399757991875">A túa organización está configurando Chrome…</translation>
+<translation id="6545449117344801102">Chrome detecta enderezos e usa Google Maps para darche indicacións e información local.</translation>
 <translation id="6600954340915313787">Copiouse en Chrome</translation>
 <translation id="6634107063912726160">Cando peches sesión, Chrome non sincronizará datos novos coa túa Conta de Google. Os datos que se sincronizasen antes permanecerán na conta.</translation>
 <translation id="6646696210740573446">Envíalle unha parte confusa do URL a Google mediante un servidor de privacidade que oculta o teu enderezo IP. Se un sitio tenta roubarche o contrasinal ou se descargas un ficheiro daniño, Chrome tamén pode enviarlle a Google os URL, así como fragmentos do contido das páxinas.</translation>
 <translation id="6648150602980899529">Estás iniciando sesión cunha conta xestionada por <ph name="DOMAIN" /> e proporcionándolle ao seu administrador o control dos teus datos de Chrome, que quedarán ligados permanentemente a esta conta. Se pechas sesión en Chrome, eliminaranse os teus datos deste dispositivo, pero seguirán almacenados na túa conta de Google.</translation>
 <translation id="6676840375528380067">Queres borrar os teus datos de Chrome deste dispositivo?</translation>
 <translation id="6683891932310469419">Abre a páxina do teu historial de Chrome.</translation>
+<translation id="6698978507424537043">Facer un seguimento automático dos teus paquetes en Chrome</translation>
 <translation id="6709398533399187136">O teu contrasinal púxose en risco debido a unha violación da seguranza dos datos. O xestor de contrasinais de Google recomenda que o cambies de inmediato.</translation>
 <translation id="6815466750807582739">Os enderezos e os métodos de pago non se encriptarán. Non se sincronizará o historial de navegación de Chrome.
 
@@ -163,6 +165,7 @@ Só poderá ler os teus datos encriptados quen teña a túa frase de acceso (Goo
 <translation id="7165736900384873061">Comeza a usar o escáner de códigos QR de Google Chrome</translation>
 <translation id="7173660919484573146">Chrome utiliza Face ID para garantir o acceso autorizado aos contrasinais.</translation>
 <translation id="7187993566681480880">Protéxete en Chrome e pode utilizarse para mellorar a túa seguranza noutras aplicacións de Google cando teñas a sesión iniciada.</translation>
+<translation id="7200524487407690471">Chrome executa automaticamente Comprobación de seguranza todos os días para protexerte das violacións da seguranza dos datos e dos sitios web pouco seguros, entre outras cousas. Podes consultar máis información sobre esta función en Configuración.</translation>
 <translation id="72119412072970160">Podes utilizar os contrasinais que gardaches no xestor de contrasinais de Google noutras aplicacións do teu iPad.</translation>
 <translation id="7254380941803999489">Define Chrome como navegador predeterminado</translation>
 <translation id="7261678641327190792">Chrome non puido comprobar os teus contrasinais</translation>

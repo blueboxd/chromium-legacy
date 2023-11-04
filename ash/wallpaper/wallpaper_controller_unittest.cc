@@ -1693,6 +1693,37 @@ TEST_P(WallpaperControllerTest,
                                       1);
 }
 
+TEST_P(
+    WallpaperControllerTest,
+    ActiveUserPrefServiceChanged_OOBEForSecondUser_SetPolicyWallpaper_TimeOfDayEnabled) {
+  if (!IsTimeOfDayEnabled()) {
+    return;
+  }
+  auto images = TimeOfDayImageSet();
+  client_.AddCollection(wallpaper_constants::kTimeOfDayWallpaperCollectionId,
+                        images);
+  WallpaperInfo local_info = InfoWithType(WallpaperType::kDefault);
+  pref_manager_->SetLocalWallpaperInfo(kAccountId1, local_info);
+  SetSessionState(SessionState::LOGIN_PRIMARY);
+  LoginScreen::Get()->GetModel()->NotifyOobeDialogState(
+      OobeDialogState::GAIA_SIGNIN);
+  // Log in and trigger `OnActiveUserPrefServiceChange`.
+  SimulateUserLogin(kAccountId1);
+  controller_->SetPolicyWallpaper(kAccountId1, user_manager::USER_TYPE_REGULAR,
+                                  "some-image-data");
+  RunAllTasksUntilIdle();
+  WallpaperInfo actual_info;
+  EXPECT_TRUE(pref_manager_->GetUserWallpaperInfo(kAccountId1, &actual_info));
+  WallpaperInfo policy_wallpaper_info(base::FilePath(kWallpaperFilesId1)
+                                          .Append("policy-controlled.jpeg")
+                                          .value(),
+                                      WALLPAPER_LAYOUT_CENTER_CROPPED,
+                                      WallpaperType::kPolicy,
+                                      base::Time::Now().LocalMidnight());
+  EXPECT_TRUE(actual_info.MatchesSelection(policy_wallpaper_info));
+  EXPECT_TRUE(controller_->IsWallpaperControlledByPolicy(kAccountId1));
+}
+
 TEST_P(WallpaperControllerTest,
        ActiveUserPrefServiceChanged_NonOOBE_SetTimeOfDayWallpaper) {
   if (!IsTimeOfDayEnabled()) {
@@ -3439,8 +3470,7 @@ TEST_P(WallpaperControllerTest, CancelPreviewWallpaper) {
       kAccountId1, kAssetId, online_wallpaper, kDummyUrl,
       TestWallpaperControllerClient::kDummyCollectionId, layout,
       /*preview_mode=*/true, /*from_user=*/true, kUnitId,
-      /*variants=*/std::vector<OnlineWallpaperVariant>(),
-      WallpaperController::SetWallpaperCallback());
+      /*variants=*/std::vector<OnlineWallpaperVariant>(), base::DoNothing());
   RunAllTasksUntilIdle();
   EXPECT_EQ(1, GetWallpaperCount());
   EXPECT_EQ(online_wallpaper_color, GetWallpaperColor());
@@ -3547,8 +3577,7 @@ TEST_P(WallpaperControllerTest, WallpaperSyncedDuringPreview) {
       kAccountId1, kAssetId, online_wallpaper, kDummyUrl,
       TestWallpaperControllerClient::kDummyCollectionId, layout,
       /*preview_mode=*/true, /*from_user=*/true, kUnitId,
-      /*variants=*/std::vector<OnlineWallpaperVariant>(),
-      WallpaperController::SetWallpaperCallback());
+      /*variants=*/std::vector<OnlineWallpaperVariant>(), base::DoNothing());
   RunAllTasksUntilIdle();
   EXPECT_EQ(1, GetWallpaperCount());
   EXPECT_EQ(kWallpaperColor, GetWallpaperColor());
@@ -3569,8 +3598,7 @@ TEST_P(WallpaperControllerTest, WallpaperSyncedDuringPreview) {
       TestWallpaperControllerClient::kDummyCollectionId, layout,
       /*preview_mode=*/false,
       /*from_user=*/true, kUnitId,
-      /*variants=*/std::vector<OnlineWallpaperVariant>(),
-      WallpaperController::SetWallpaperCallback());
+      /*variants=*/std::vector<OnlineWallpaperVariant>(), base::DoNothing());
   RunAllTasksUntilIdle();
   EXPECT_EQ(0, GetWallpaperCount());
   EXPECT_EQ(kWallpaperColor, GetWallpaperColor());
@@ -4324,6 +4352,8 @@ TEST_P(WallpaperControllerTest, UpdateDailyRefreshWallpaper_NoCollectionId) {
 
 TEST_P(WallpaperControllerTest,
        UpdateDailyRefreshWallpaper_TimerStartsOnPrefServiceChange) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kWallpaperRefreshRevamp);
   using base::Time;
 
   SimulateUserLogin(kAccountId1);
@@ -4349,6 +4379,8 @@ TEST_P(WallpaperControllerTest,
 
 TEST_P(WallpaperControllerTest,
        UpdateDailyRefreshWallpaper_RetryTimerTriggersOnFailedFetchInfo) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kWallpaperRefreshRevamp);
   using base::Time;
 
   client_.set_fetch_daily_refresh_info_fails(true);
@@ -4373,6 +4405,8 @@ TEST_P(WallpaperControllerTest,
 
 TEST_P(WallpaperControllerTest,
        UpdateDailyRefreshWallpaper_RetryTimerTriggersOnFailedFetchData) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kWallpaperRefreshRevamp);
   using base::Time;
 
   SimulateUserLogin(kAccountId1);
@@ -4490,6 +4524,8 @@ TEST_P(WallpaperControllerTest, OnGoogleDriveMounted_NewLocalInfo) {
 
 TEST_P(WallpaperControllerTest,
        SetDailyRefreshCollectionId_UpdatesDailyRefreshTimer) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kWallpaperRefreshRevamp);
   using base::Time;
 
   pref_manager_->SetUserWallpaperInfo(
@@ -4838,6 +4874,8 @@ TEST_P(WallpaperControllerTest,
 
 TEST_P(WallpaperControllerTest,
        UpdateDailyWallpaperVariantOnColorModeChanged_RefreshTimerDoesntReset) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kWallpaperRefreshRevamp);
   using base::Time;
 
   SimulateUserLogin(kAccountId1);
@@ -5253,6 +5291,8 @@ TEST_P(WallpaperControllerTest, SetGooglePhotosWallpaperFails) {
 
 TEST_P(WallpaperControllerTest,
        RetryTimerTriggersOnFailedFetchPhotoForStalenessCheck) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kWallpaperRefreshRevamp);
   using base::Time;
 
   SimulateUserLogin(kAccountId1);
@@ -5602,6 +5642,8 @@ TEST_P(WallpaperControllerTest, UpdateGooglePhotosDailyRefreshWallpaper) {
 }
 
 TEST_P(WallpaperControllerTest, DailyRefreshTimerStartsForDailyGooglePhotos) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kWallpaperRefreshRevamp);
   SimulateUserLogin(kAccountId1);
 
   GooglePhotosWallpaperParams params(
@@ -5625,6 +5667,8 @@ TEST_P(WallpaperControllerTest, DailyRefreshTimerStartsForDailyGooglePhotos) {
 }
 
 TEST_P(WallpaperControllerTest, DailyRefreshRetryTimerStartsOnFailedFetch) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kWallpaperRefreshRevamp);
   SimulateUserLogin(kAccountId1);
 
   GooglePhotosWallpaperParams params(
@@ -5733,6 +5777,8 @@ TEST_P(WallpaperControllerTest, DailyGooglePhotosAreCached) {
 
 TEST_P(WallpaperControllerTest,
        SetGooglePhotosDailyRefreshAlbumId_UpdatesDailyRefreshTimer) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kWallpaperRefreshRevamp);
   using base::Time;
 
   pref_manager_->SetUserWallpaperInfo(
@@ -5823,7 +5869,7 @@ TEST_P(WallpaperControllerTest,
   EXPECT_EQ(0, observer.daily_refresh_checkpoint_count());
   // User's wallpaper info should exist.
   pref_manager_->SetUserWallpaperInfo(kAccountId1,
-                                      InfoWithType(WallpaperType::kDaily));
+                                      InfoWithType(WallpaperType::kDefault));
   SimulateUserLogin(kAccountId1);
   // Clears signal on login.
   observer.ClearDailyRefreshCheckpointCount();

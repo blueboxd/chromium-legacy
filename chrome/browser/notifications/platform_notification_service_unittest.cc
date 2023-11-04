@@ -25,7 +25,6 @@
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/platform_notification_service_factory.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
-#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_service.h"
@@ -57,6 +56,7 @@
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
@@ -371,7 +371,7 @@ TEST_F(PlatformNotificationServiceTest, IncomingCallWebApp) {
   // installed web app for the provided URL.
   std::unique_ptr<web_app::WebApp> web_app = web_app::test::CreateWebApp();
   const GURL installed_web_app_url = web_app->start_url();
-  const web_app::AppId app_id = web_app->app_id();
+  const webapps::AppId app_id = web_app->app_id();
   web_app->SetName("Web App Title");
 
   provider->GetRegistrarMutable().registry().emplace(app_id,
@@ -435,9 +435,9 @@ class PlatformNotificationServiceTest_WebApps
   const PlatformNotificationData kNotificationData =
       CreateDummyNotificationData();
 
-  web_app::AppId installed_app_id;
-  web_app::AppId nested_installed_app_id;
-  web_app::AppId not_installed_app_id;
+  webapps::AppId installed_app_id;
+  webapps::AppId nested_installed_app_id;
+  webapps::AppId not_installed_app_id;
 };
 
 TEST_F(PlatformNotificationServiceTest_WebApps, PopulateWebAppId_MatchesScope) {
@@ -579,7 +579,7 @@ TEST_F(PlatformNotificationServiceTest_WebAppNotificationIconAndTitle,
 
   std::unique_ptr<web_app::WebApp> web_app = web_app::test::CreateWebApp();
   const GURL web_app_url = web_app->start_url();
-  const web_app::AppId app_id = web_app->app_id();
+  const webapps::AppId app_id = web_app->app_id();
   web_app->SetName("Web App Title");
 
   IconManagerWriteGeneratedIcons(icon_manager, app_id,
@@ -595,7 +595,7 @@ TEST_F(PlatformNotificationServiceTest_WebAppNotificationIconAndTitle,
   base::RunLoop run_loop;
   icon_manager.SetFaviconMonochromeReadCallbackForTesting(
       base::BindLambdaForTesting(
-          [&](const web_app::AppId& cached_app_id) { run_loop.Quit(); }));
+          [&](const webapps::AppId& cached_app_id) { run_loop.Quit(); }));
   icon_manager.Start();
   run_loop.Run();
 

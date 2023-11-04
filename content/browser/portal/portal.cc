@@ -20,6 +20,7 @@
 #include "content/browser/renderer_host/render_frame_host_manager.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/web_contents/web_contents_view.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/page_type.h"
@@ -644,6 +645,7 @@ void Portal::ActivateImpl(blink::TransferableMessage data,
         outer_contents_main_frame_view);
     touch_events =
         outer_contents_main_frame_view->ExtractAndCancelActiveTouches();
+    outer_contents->GetView()->CancelDragDropForPortalActivation();
     FlushTouchEventQueues(outer_contents_main_frame_view->host());
   }
 
@@ -732,6 +734,9 @@ void Portal::WebContentsHolder::SetOwned(
     std::unique_ptr<WebContents> web_contents) {
   SetUnowned(static_cast<WebContentsImpl*>(web_contents.get()));
   owned_contents_ = std::move(web_contents);
+  if (owned_contents_) {
+    owned_contents_->SetOwnerLocationForDebug(FROM_HERE);
+  }
 }
 
 void Portal::WebContentsHolder::Clear() {

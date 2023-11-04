@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.customtabs.CustomTabObserver;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
@@ -221,11 +220,9 @@ public class CustomTabActivityNavigationController
         params.setTransitionType(IntentHandler.getTransitionTypeFromIntent(
                 mIntentDataProvider.getIntent(), transition));
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OPAQUE_ORIGIN_FOR_INCOMING_INTENTS)) {
-            // The sender of an intent can't be trusted, so we navigate from an opaque Origin to
-            // avoid sending same-site cookies.
-            params.setInitiatorOrigin(Origin.createOpaqueOrigin());
-        }
+        // The sender of an intent can't be trusted, so we navigate from an opaque Origin to
+        // avoid sending same-site cookies.
+        params.setInitiatorOrigin(Origin.createOpaqueOrigin());
 
         tab.loadUrl(params);
     }
@@ -303,11 +300,10 @@ public class CustomTabActivityNavigationController
 
     /**
      * Opens the URL currently being displayed in the Custom Tab in the regular browser.
-     * @param forceReparenting Whether tab reparenting should be forced for testing.
      *
      * @return Whether or not the tab was sent over successfully.
      */
-    public boolean openCurrentUrlInBrowser(boolean forceReparenting) {
+    public boolean openCurrentUrlInBrowser() {
         Tab tab = mTabProvider.getTab();
         if (tab == null) return false;
 
@@ -343,7 +339,7 @@ public class CustomTabActivityNavigationController
         Bundle startActivityOptions = ActivityOptionsCompat.makeCustomAnimation(
                 mActivity, R.anim.abc_fade_in, R.anim.abc_fade_out).toBundle();
 
-        if (canFinishActivity && willChromeHandleIntent || forceReparenting) {
+        if (canFinishActivity && willChromeHandleIntent) {
             // Remove observer to not trigger finishing in onAllTabsClosed() callback - we'll use
             // reparenting finish callback instead.
             mTabProvider.removeObserver(mTabObserver);

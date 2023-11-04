@@ -104,7 +104,8 @@ void UserPolicySigninServiceBase::FetchPolicyForSignedInUser(
   }
 
   // Now initiate a policy fetch.
-  manager->core()->service()->RefreshPolicy(std::move(callback));
+  manager->core()->service()->RefreshPolicy(std::move(callback),
+                                            PolicyFetchReason::kSignin);
 }
 
 void UserPolicySigninServiceBase::OnPolicyFetched(CloudPolicyClient* client) {}
@@ -154,6 +155,7 @@ void UserPolicySigninServiceBase::PrepareForCloudPolicyManagerShutdown() {
     manager->core()->client()->RemoveObserver(this);
   if (manager && manager->core()->service())
     manager->core()->service()->RemoveObserver(this);
+  registration_callback_.Cancel();
 }
 
 base::OnceCallbackList<void(bool)>&
@@ -386,11 +388,11 @@ void UserPolicySigninServiceBase::
     // immediately without queueing a task. This is the case for Desktop.
     RegisterCloudPolicyService();
   } else {
-    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
-        FROM_HERE,
+    registration_callback_.Reset(
         base::BindOnce(&UserPolicySigninServiceBase::RegisterCloudPolicyService,
-                       weak_factory_for_registration_.GetWeakPtr()),
-        try_registration_delay);
+                       weak_factory_for_registration_.GetWeakPtr()));
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
+        FROM_HERE, registration_callback_.callback(), try_registration_delay);
   }
 
   ProhibitSignoutIfNeeded();

@@ -13,7 +13,8 @@
 #             android-sm-a235m
 #         chromeos-board-amd64-generic chromeos-board-kevin chromeos-board-eve
 #             chromeos-board-jacuzzi chromeos-board-octopus
-#         fuchsia-board-astro fuchsia-board-sherlock fuchsia-board-qemu-x64 ]
+#         fuchsia-board-astro fuchsia-board-nelson fuchsia-board-sherlock
+#             fuchsia-board-qemu-x64 ]
 # Platform
 # tags: [ desktop
 #         mobile ]
@@ -71,7 +72,7 @@
 # WebGPU Compat Mode
 # tags: [ webgpu-compat webgpu-not-compat ]
 # WebGPU DXC
-# tags: [ webgpu-dxc-enabled webgpu-dxc-disabled webgpu-dxc-default ]
+# tags: [ webgpu-dxc-enabled webgpu-dxc-disabled ]
 # Clang coverage
 # tags: [ clang-coverage no-clang-coverage ]
 # Skia Graphite
@@ -242,7 +243,9 @@ crbug.com/1453832 [ win nvidia ] OverlayModeTraceTest_DirectComposition_Video_VP
 # Win AMD failure since test added
 crbug.com/1446057 [ win10 amd-0x7340 angle-d3d11 ] VideoPathTraceTest_DirectComposition_Video_SW_Decode [ Failure ]
 
-crbug.com/1475318 [ monterey amd-0x679e ] TraceTest_ReflectedDiv [ Failure ]
+# Android devices
+crbug.com/1487723 [ android android-shield-android-tv ] TraceTest_CSS3DBlueBox [ RetryOnFailure ]
+crbug.com/1487723 [ android android-shield-android-tv ] TraceTest_SolidColorBackground [ RetryOnFailure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

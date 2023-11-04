@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -88,15 +89,16 @@ class WebAppPolicyManager {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Gets ids of web apps disabled by SystemFeaturesDisableList policy.
-  const std::set<AppId>& GetDisabledWebAppsIds() const;
+  const std::set<webapps::AppId>& GetDisabledWebAppsIds() const;
 
   // Checks if web app is disabled by SystemFeaturesDisableList policy.
-  bool IsWebAppInDisabledList(const AppId& app_id) const;
+  bool IsWebAppInDisabledList(const webapps::AppId& app_id) const;
 
   // Checks if UI mode of disabled web apps is hidden.
   bool IsDisabledAppsModeHidden() const;
 
-  RunOnOsLoginPolicy GetUrlRunOnOsLoginPolicy(const AppId& app_id) const;
+  RunOnOsLoginPolicy GetUrlRunOnOsLoginPolicy(
+      const webapps::AppId& app_id) const;
 
   void SetOnAppsSynchronizedCompletedCallbackForTesting(
       base::OnceClosure callback);
@@ -108,7 +110,7 @@ class WebAppPolicyManager {
   void MaybeOverrideManifest(content::RenderFrameHost* frame_host,
                              blink::mojom::ManifestPtr& manifest) const;
 
-  bool IsPreventCloseEnabled(const AppId& app_id) const;
+  bool IsPreventCloseEnabled(const webapps::AppId& app_id) const;
 
   void RefreshPolicyInstalledAppsForTesting();
 
@@ -184,6 +186,18 @@ class WebAppPolicyManager {
   void PopulateDisabledWebAppsIdsLists();
   void OnWebAppForceInstallPolicyParsed();
 
+  // An error loaded policy app is one that:
+  // 1. Is installed as a legit non-placeholder app from a policy install URL.
+  // 2. Has a start_url that matches the policy install URL.
+  // 3. Has an empty manifest URL.
+  // This usually happened before crbug.com/1440946 was fixed, when URL loading
+  // failures of 4xx and 5xx HTTP errors were not treated erroneously, leading
+  // to an app that is installed with an invalid start URL. This has an unique
+  // id compared to its default app counterpart (if any), and is hence treated
+  // as a valid app w.r.t to the web apps system even though it is invalid.
+  bool IsMaybeErrorLoadedPolicyApp(const webapps::AppId& app_id,
+                                   const GURL& policy_install_url);
+
   raw_ptr<Profile> profile_ = nullptr;
   raw_ptr<PrefService> pref_service_ = nullptr;
   raw_ptr<WebAppProvider> provider_ = nullptr;
@@ -201,7 +215,7 @@ class WebAppPolicyManager {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // List of disabled system and progressive web apps, containing app ids.
-  std::set<AppId> disabled_web_apps_;
+  std::set<webapps::AppId> disabled_web_apps_;
 
   // Testing callbacks
   base::OnceClosure refresh_policy_settings_completed_;

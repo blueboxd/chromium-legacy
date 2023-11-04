@@ -22,7 +22,7 @@
 #include "chrome/browser/extensions/pref_mapping.h"
 #include "chrome/browser/extensions/pref_transformer_interface.h"
 #include "chrome/browser/prefetch/pref_names.h"
-#include "chrome/browser/prefetch/prefetch_prefs.h"
+#include "chrome/browser/preloading/preloading_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -71,6 +71,8 @@ constexpr char kPermissionErrorMessage[] =
     "You do not have permission to access the preference '*'. "
     "Be sure to declare in your manifest what permissions you need.";
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+constexpr char kInvalidPrefPathErrorMessage[] =
+    "Invalid PrefPath '*' for getting extension pref with control.";
 constexpr char kPrimaryProfileOnlyErrorMessage[] =
     "You may only access the preference '*' in the primary profile.";
 constexpr char kAshDoesNotSupportPreference[] =
@@ -342,6 +344,14 @@ void PreferenceEventRouter::OnAshGetSuccess(
     const std::string& browser_pref,
     absl::optional<::base::Value> opt_value,
     crosapi::mojom::PrefControlState control_state) {
+  // Note: crosapi::mojom::prefs::GetExtensionPrefWithControl could be called
+  // with an invalid pref path, and returns empty opt_value.
+  if (!opt_value.has_value()) {
+    LOG(ERROR) << ErrorUtils::FormatErrorMessage(kInvalidPrefPathErrorMessage,
+                                                 browser_pref);
+    return;
+  }
+
   bool incognito = false;
 
   std::string event_name;
@@ -574,26 +584,6 @@ BrowserContextKeyedAPIFactory<PreferenceAPI>::DeclareFactoryDependencies() {
 
 PreferenceFunction::~PreferenceFunction() = default;
 
-// Auxiliary function to build an InspectorInfoPtr to create a Deprecation
-// Issue when the deprecated privacySandboxEnabled API is used
-// TODO(b/263568309): Remove this once the deprecated API is retired.
-blink::mojom::InspectorIssueInfoPtr
-BuildPrivacySandboxDeprecationInspectorIssueInfo(const GURL& source_url) {
-  auto issue_info = blink::mojom::InspectorIssueInfo::New();
-  issue_info->code = blink::mojom::InspectorIssueCode::kDeprecationIssue;
-  issue_info->details = blink::mojom::InspectorIssueDetails::New();
-  auto deprecation_details = blink::mojom::DeprecationIssueDetails::New();
-  deprecation_details->type =
-      blink::mojom::DeprecationIssueType::kPrivacySandboxExtensionsAPI;
-  auto affected_location = blink::mojom::AffectedLocation::New();
-  affected_location->url = source_url.spec();
-  deprecation_details->affected_location = std::move(affected_location);
-  issue_info->details->deprecation_issue_details =
-      std::move(deprecation_details);
-
-  return issue_info;
-}
-
 GetPreferenceFunction::~GetPreferenceFunction() = default;
 
 ExtensionFunction::ResponseAction GetPreferenceFunction::Run() {
@@ -660,14 +650,6 @@ ExtensionFunction::ResponseAction GetPreferenceFunction::Run() {
     return RespondLater();
   }
 #endif
-
-  // Deprecation issue to developers in the issues tab in Chrome DevTools that
-  // the API chrome.privacy.websites.privacySandboxEnabled is being deprecated.
-  // TODO(b/263568309): Remove this once the deprecated API is retired.
-  if (prefs::kPrivacySandboxApisEnabled == browser_pref) {
-    ReportInspectorIssue(
-        BuildPrivacySandboxDeprecationInspectorIssueInfo(source_url()));
-  }
 
   PrefService* prefs =
       extensions::preference_helpers::GetProfilePrefService(profile, incognito);
@@ -880,41 +862,6 @@ ExtensionFunction::ResponseAction SetPreferenceFunction::Run() {
                                              scope, base::Value(false));
   }
 
-  // Deprecation issue to developers in the issues tab in Chrome DevTools that
-  // the API chrome.privacy.websites.privacySandboxEnabled is being deprecated.
-  // TODO(b/263568309): Remove this once the deprecated API is retired.
-  if (prefs::kPrivacySandboxApisEnabled == browser_pref) {
-    ReportInspectorIssue(
-        BuildPrivacySandboxDeprecationInspectorIssueInfo(source_url()));
-  }
-
-  // Clear the new Privacy Sandbox APIs if an extension sets to true the
-  // deprecated pref |kPrivacySandboxApisEnabled| and set to false the new
-  // Privacy Sandbox APIs if an extension sets to false the deprecated pref
-  // |kPrivacySandboxApisEnabled| in order to maintain backward compatibility
-  // during the migration period.
-  // TODO(b/263568309): Remove this once the deprecated API is retired.
-  if (prefs::kPrivacySandboxApisEnabled == browser_pref) {
-    if (browser_pref_value->GetBool()) {
-      prefs_helper->RemoveExtensionControlledPref(
-          extension_id(), prefs::kPrivacySandboxM1TopicsEnabled, scope);
-      prefs_helper->RemoveExtensionControlledPref(
-          extension_id(), prefs::kPrivacySandboxM1FledgeEnabled, scope);
-      prefs_helper->RemoveExtensionControlledPref(
-          extension_id(), prefs::kPrivacySandboxM1AdMeasurementEnabled, scope);
-    } else {
-      prefs_helper->SetExtensionControlledPref(
-          extension_id(), prefs::kPrivacySandboxM1TopicsEnabled, scope,
-          base::Value(false));
-      prefs_helper->SetExtensionControlledPref(
-          extension_id(), prefs::kPrivacySandboxM1FledgeEnabled, scope,
-          base::Value(false));
-      prefs_helper->SetExtensionControlledPref(
-          extension_id(), prefs::kPrivacySandboxM1AdMeasurementEnabled, scope,
-          base::Value(false));
-    }
-  }
-
   prefs_helper->SetExtensionControlledPref(extension_id(), browser_pref, scope,
                                            browser_pref_value->Clone());
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -1000,27 +947,6 @@ ExtensionFunction::ResponseAction ClearPreferenceFunction::Run() {
 
   prefs_helper->RemoveExtensionControlledPref(extension_id(), browser_pref,
                                               scope);
-
-  // Deprecation issue to developers in the issues tab in Chrome DevTools that
-  // the API chrome.privacy.websites.privacySandboxEnabled is being deprecated.
-  // TODO(b/263568309): Remove this once the deprecated API is retired.
-  if (prefs::kPrivacySandboxApisEnabled == browser_pref) {
-    ReportInspectorIssue(
-        BuildPrivacySandboxDeprecationInspectorIssueInfo(source_url()));
-  }
-
-  // Clear the new Privacy Sandbox APIs if an extension clears the deprecated
-  // pref |kPrivacySandboxApisEnabled| in order to maintain backward
-  // compatibility during the migration period.
-  // TODO(b/263568309): Remove this once the deprecated API is retired.
-  if (prefs::kPrivacySandboxApisEnabled == browser_pref) {
-    prefs_helper->RemoveExtensionControlledPref(
-        extension_id(), prefs::kPrivacySandboxM1TopicsEnabled, scope);
-    prefs_helper->RemoveExtensionControlledPref(
-        extension_id(), prefs::kPrivacySandboxM1FledgeEnabled, scope);
-    prefs_helper->RemoveExtensionControlledPref(
-        extension_id(), prefs::kPrivacySandboxM1AdMeasurementEnabled, scope);
-  }
 
   // Whenever an extension clears the |kSafeBrowsingEnabled| preference,
   // it must also clear |kSafeBrowsingEnhanced|. See crbug.com/1064722 for

@@ -53,6 +53,12 @@ struct SVCConfig {
     {"L3T1_KEY", 3, 1, SVCInterLayerPredMode::kOnKeyPic},
     {"L3T2_KEY", 3, 2, SVCInterLayerPredMode::kOnKeyPic},
     {"L3T3_KEY", 3, 3, SVCInterLayerPredMode::kOnKeyPic},
+    {"S2T1", 2, 1, SVCInterLayerPredMode::kOff},
+    {"S2T2", 2, 2, SVCInterLayerPredMode::kOff},
+    {"S2T3", 2, 3, SVCInterLayerPredMode::kOff},
+    {"S3T1", 3, 1, SVCInterLayerPredMode::kOff},
+    {"S3T2", 3, 2, SVCInterLayerPredMode::kOff},
+    {"S3T3", 3, 3, SVCInterLayerPredMode::kOff},
 };
 
 uint32_t GetDefaultTargetBitrate(const VideoCodec codec,
@@ -289,6 +295,8 @@ VideoEncoderTestEnvironment* VideoEncoderTestEnvironment::Create(
 #if BUILDFLAG(IS_CHROMEOS) && BUILDFLAG(USE_VAAPI)
   // TODO(crbug.com/1186051): remove once enabled by default.
   combined_enabled_features.push_back(media::kVaapiVp9kSVCHWEncoding);
+  // TODO(b/292462186): remove once enabled by default.
+  combined_enabled_features.push_back(media::kVaapiVp9SModeHWEncoding);
   // TODO(b/202926617): remove once enabled by default.
   combined_enabled_features.push_back(media::kVaapiVp8TemporalLayerHWEncoding);
 #endif

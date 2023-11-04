@@ -68,6 +68,39 @@ class ReadAnythingAppToolbarTest : public InProcessBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+IN_PROC_BROWSER_TEST_F(ReadAnythingAppToolbarTest, SupportedFonts_Correct) {
+  ASSERT_TRUE(RunTest("supported_fonts.js"));
+}
+
+IN_PROC_BROWSER_TEST_F(ReadAnythingAppToolbarTest,
+                       FontSizeCallback_ChangesFontSize) {
+  ASSERT_TRUE(RunTest("font_size_callback_changes_font_size.js"));
+}
+
+IN_PROC_BROWSER_TEST_F(ReadAnythingAppToolbarTest,
+                       FontNameCallback_ChangesFont) {
+  ASSERT_TRUE(RunTest("font_name_callback_changes_font.js"));
+}
+
+IN_PROC_BROWSER_TEST_F(ReadAnythingAppToolbarTest, ColorCallback_ChangesColor) {
+  ASSERT_TRUE(RunTest("color_callback_changes_color.js"));
+}
+
+IN_PROC_BROWSER_TEST_F(ReadAnythingAppToolbarTest,
+                       LineSpacingCallback_ChangesLineSpacing) {
+  ASSERT_TRUE(RunTest("line_spacing_callback_changes_line_spacing.js"));
+}
+
+IN_PROC_BROWSER_TEST_F(ReadAnythingAppToolbarTest,
+                       LetterSpacingCallback_ChangesLetterSpacing) {
+  ASSERT_TRUE(RunTest("letter_spacing_callback_changes_letter_spacing.js"));
+}
+
+IN_PROC_BROWSER_TEST_F(ReadAnythingAppToolbarTest,
+                       PlayPauseCallback_PlaysAndPausesSpeech) {
+  ASSERT_TRUE(RunTest("play_pause_callback_play_pause_speech.js"));
+}
+
 IN_PROC_BROWSER_TEST_F(ReadAnythingAppToolbarTest,
                        ReadAnythingToolbar_Visible) {
   ASSERT_TRUE(RunTest("toolbar_visible_with_flag.js"));

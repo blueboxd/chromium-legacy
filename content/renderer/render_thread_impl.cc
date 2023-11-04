@@ -72,6 +72,7 @@
 #include "content/common/buildflags.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/content_switches_internal.h"
+#include "content/common/features.h"
 #include "content/common/main_frame_counter.h"
 #include "content/common/process_visibility_tracker.h"
 #include "content/common/pseudonymization_salt.h"
@@ -271,44 +272,6 @@ static_assert(
 // requiring thread affinity.
 BASE_DECLARE_FEATURE(kUseThreadPoolForMediaTaskRunner){
     "UseThreadPoolForMediaTaskRunner", base::FEATURE_DISABLED_BY_DEFAULT};
-
-void AddCrashKey(v8::CrashKeyId id, const std::string& value) {
-  using base::debug::AllocateCrashKeyString;
-  using base::debug::CrashKeySize;
-  using base::debug::SetCrashKeyString;
-
-  switch (id) {
-    case v8::CrashKeyId::kIsolateAddress:
-      static auto* const isolate_address =
-          AllocateCrashKeyString("v8_isolate_address", CrashKeySize::Size32);
-      SetCrashKeyString(isolate_address, value);
-      break;
-    case v8::CrashKeyId::kReadonlySpaceFirstPageAddress:
-      static auto* const ro_space_firstpage_address = AllocateCrashKeyString(
-          "v8_ro_space_firstpage_address", CrashKeySize::Size32);
-      SetCrashKeyString(ro_space_firstpage_address, value);
-      break;
-    case v8::CrashKeyId::kMapSpaceFirstPageAddress:
-      static auto* const map_space_firstpage_address = AllocateCrashKeyString(
-          "v8_map_space_firstpage_address", CrashKeySize::Size32);
-      SetCrashKeyString(map_space_firstpage_address, value);
-      break;
-    case v8::CrashKeyId::kCodeSpaceFirstPageAddress:
-      static auto* const code_space_firstpage_address = AllocateCrashKeyString(
-          "v8_code_space_firstpage_address", CrashKeySize::Size32);
-      SetCrashKeyString(code_space_firstpage_address, value);
-      break;
-    case v8::CrashKeyId::kDumpType:
-      static auto* const dump_type =
-          AllocateCrashKeyString("dump-type", CrashKeySize::Size32);
-      SetCrashKeyString(dump_type, value);
-      break;
-    default:
-      // Doing nothing for new keys is a valid option. Having this case allows
-      // to introduce new CrashKeyId's without triggering a build break.
-      break;
-  }
-}
 
 // Updates the crash key for whether this renderer is foregrounded.
 void UpdateForegroundCrashKey(bool foreground) {
@@ -890,7 +853,6 @@ void RenderThreadImpl::InitializeWebKit(mojo::BinderMap* binders) {
                     main_thread_scheduler_.get());
 
   v8::Isolate* isolate = blink::MainThreadIsolate();
-  isolate->SetAddCrashKeyCallback(AddCrashKey);
 
   if (!command_line.HasSwitch(switches::kDisableThreadedCompositing))
     InitializeCompositorThread();
@@ -1577,8 +1539,10 @@ void RenderThreadImpl::OnSystemColorsChanged(int32_t aqua_color_variant) {
 
 void RenderThreadImpl::UpdateSystemColorInfo(
     mojom::UpdateSystemColorInfoParamsPtr params) {
-  if (blink_platform_impl_->ThemeEngine()->UpdateColorProviders(
-          params->light_colors, params->dark_colors)) {
+  bool color_providers_changed =
+      blink_platform_impl_->ThemeEngine()->UpdateColorProviders(
+          params->light_colors, params->dark_colors, params->forced_colors_map);
+  if (color_providers_changed) {
     // Notify blink that the global ColorProvider instances for this renderer
     // have changed. These color providers are only used to paint native
     // controls and only require us to invalidate paint for local frames in this

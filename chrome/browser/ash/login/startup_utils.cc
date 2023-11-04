@@ -99,6 +99,7 @@ void CreateOobeCompleteFlagFile() {
 void StartupUtils::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kOobeComplete, false);
   registry->RegisterStringPref(prefs::kOobeScreenPending, "");
+  registry->RegisterTimePref(prefs::kOobeStartTime, base::Time());
   registry->RegisterIntegerPref(::prefs::kDeviceRegistered, -1);
   registry->RegisterBooleanPref(::prefs::kEnrollmentRecoveryRequired, false);
   registry->RegisterStringPref(::prefs::kInitialLocale, "en-US");
@@ -148,7 +149,7 @@ void StartupUtils::RegisterOobeProfilePrefs(PrefRegistrySimple* registry) {
     registry->RegisterListPref(prefs::kChoobeCompletedScreens);
   }
 
-  if (drive::util::IsOobeDrivePinningScreenEnabled()) {
+  if (drive::util::IsOobeDrivePinningAvailable(nullptr)) {
     registry->RegisterBooleanPref(prefs::kOobeDrivePinningEnabledDeferred,
                                   false);
   }

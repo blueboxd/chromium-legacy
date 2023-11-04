@@ -34,8 +34,10 @@ namespace syncer {
 class SyncPrefObserver {
  public:
   virtual void OnSyncManagedPrefChange(bool is_sync_managed) = 0;
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   virtual void OnFirstSetupCompletePrefChange(
       bool is_initial_sync_feature_setup_complete) = 0;
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
   virtual void OnPreferredDataTypesPrefChange(
       bool payments_integration_enabled_changed) = 0;
 
@@ -72,8 +74,12 @@ class SyncPrefs {
   // First-Setup-Complete is conceptually similar to the user's consent to
   // enable sync-the-feature.
   bool IsInitialSyncFeatureSetupComplete() const;
+
+  // ChromeOS Ash, IsInitialSyncFeatureSetupComplete() always returns true.
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   void SetInitialSyncFeatureSetupComplete();
   void ClearInitialSyncFeatureSetupComplete();
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Whether the user wants Sync to run. This is false by default, but gets set
   // to true early in the Sync setup flow, after the user has pressed "turn on
@@ -221,14 +227,16 @@ class SyncPrefs {
   // syncing users, no migration is necessary - this also covers new users (or
   // more precisely, new profiles).
   // This should be called early during browser startup.
-  void MaybeMigratePrefsForSyncToSigninPart1(SyncAccountState account_state,
+  // Returns whether the migration ran, i.e. whether any user settings were set.
+  bool MaybeMigratePrefsForSyncToSigninPart1(SyncAccountState account_state,
                                              signin::GaiaIdHash gaia_id_hash);
 
   // Second part of the above migration, which depends on the user's passphrase
   // type, which isn't known yet during browser startup. This should be called
   // as soon as the passphrase type is known, and will only do any migration if
   // the above method has flagged that it's necessary.
-  void MaybeMigratePrefsForSyncToSigninPart2(signin::GaiaIdHash gaia_id_hash,
+  // Returns whether the migration ran, i.e. whether any user settings were set.
+  bool MaybeMigratePrefsForSyncToSigninPart2(signin::GaiaIdHash gaia_id_hash,
                                              bool is_using_explicit_passphrase);
 
   // Should be called when Sync gets disabled / the user signs out. Clears any
@@ -249,7 +257,10 @@ class SyncPrefs {
   static bool IsTypeSupportedInTransportMode(UserSelectableType type);
 
   void OnSyncManagedPrefChanged();
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   void OnFirstSetupCompletePrefChange();
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Never null.
   const raw_ptr<PrefService> pref_service_;
@@ -260,7 +271,9 @@ class SyncPrefs {
   // configuration management.
   BooleanPrefMember pref_sync_managed_;
 
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   BooleanPrefMember pref_initial_sync_feature_setup_complete_;
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
   bool local_sync_enabled_;
 

@@ -191,8 +191,8 @@ class TestNavigationDelegate : public content::WebContentsDelegate {
 #if BUILDFLAG(IS_CHROMEOS)
 class MockDlpRulesManager : public policy::DlpRulesManagerImpl {
  public:
-  explicit MockDlpRulesManager(PrefService* local_state)
-      : DlpRulesManagerImpl(local_state) {}
+  explicit MockDlpRulesManager(PrefService* local_state, Profile* profile)
+      : DlpRulesManagerImpl(local_state, profile) {}
 };
 #endif
 
@@ -749,7 +749,8 @@ TEST_F(RenderViewContextMenuDlpPrefsTest,
 
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
 
-  MockDlpRulesManager mock_dlp_rules_manager(local_state());
+  TestingProfile profile;
+  MockDlpRulesManager mock_dlp_rules_manager(local_state(), &profile);
   menu->set_dlp_rules_manager(&mock_dlp_rules_manager);
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
 
@@ -776,7 +777,8 @@ TEST_F(RenderViewContextMenuDlpPrefsTest,
 
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
 
-  MockDlpRulesManager mock_dlp_rules_manager(local_state());
+  TestingProfile profile;
+  MockDlpRulesManager mock_dlp_rules_manager(local_state(), &profile);
   menu->set_dlp_rules_manager(&mock_dlp_rules_manager);
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
 
@@ -803,7 +805,8 @@ TEST_F(RenderViewContextMenuDlpPrefsTest,
 
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKINPROFILE));
 
-  MockDlpRulesManager mock_dlp_rules_manager(local_state());
+  TestingProfile profile;
+  MockDlpRulesManager mock_dlp_rules_manager(local_state(), &profile);
   menu->set_dlp_rules_manager(&mock_dlp_rules_manager);
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKINPROFILE));
 
@@ -830,7 +833,8 @@ TEST_F(RenderViewContextMenuDlpPrefsTest,
   EXPECT_TRUE(
       menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
 
-  MockDlpRulesManager mock_dlp_rules_manager(local_state());
+  TestingProfile profile;
+  MockDlpRulesManager mock_dlp_rules_manager(local_state(), &profile);
   menu->set_dlp_rules_manager(&mock_dlp_rules_manager);
   EXPECT_TRUE(
       menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
@@ -859,7 +863,8 @@ TEST_F(RenderViewContextMenuDlpPrefsTest,
 
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_GOTOURL));
 
-  MockDlpRulesManager mock_dlp_rules_manager(local_state());
+  TestingProfile profile;
+  MockDlpRulesManager mock_dlp_rules_manager(local_state(), &profile);
   menu->set_dlp_rules_manager(&mock_dlp_rules_manager);
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_GOTOURL));
 
@@ -882,7 +887,8 @@ TEST_F(RenderViewContextMenuDlpPrefsTest,
 
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_SEARCHWEBFOR));
 
-  MockDlpRulesManager mock_dlp_rules_manager(local_state());
+  TestingProfile profile;
+  MockDlpRulesManager mock_dlp_rules_manager(local_state(), &profile);
   menu->set_dlp_rules_manager(&mock_dlp_rules_manager);
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_SEARCHWEBFOR));
 
@@ -906,7 +912,8 @@ TEST_F(RenderViewContextMenuDlpPrefsTest,
 
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_SEARCHWEBFORNEWTAB));
 
-  MockDlpRulesManager mock_dlp_rules_manager(local_state());
+  TestingProfile profile;
+  MockDlpRulesManager mock_dlp_rules_manager(local_state(), &profile);
   menu->set_dlp_rules_manager(&mock_dlp_rules_manager);
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_SEARCHWEBFORNEWTAB));
 
@@ -1676,8 +1683,16 @@ TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearchChromeUIScheme) {
 
 // Verify that the adding the companion image search option to the menu
 // issues a preconnection request to lens.google.com.
+// TODO(crbug.com/1486497): Test is flaky on ChromeOS.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_CompanionImageSearchIssuesGoogleLensPreconnect \
+  DISABLED_CompanionImageSearchIssuesGoogleLensPreconnect
+#else
+#define MAYBE_CompanionImageSearchIssuesGoogleLensPreconnect \
+  CompanionImageSearchIssuesGoogleLensPreconnect
+#endif
 TEST_F(RenderViewContextMenuPrefsTest,
-       CompanionImageSearchIssuesGoogleLensPreconnect) {
+       MAYBE_CompanionImageSearchIssuesGoogleLensPreconnect) {
   BeginPreresolveListening();
   base::test::ScopedFeatureList features;
   features.InitWithFeaturesAndParameters(
@@ -1705,8 +1720,16 @@ TEST_F(RenderViewContextMenuPrefsTest,
 
 // Verify that the adding the companion region search option to the menu
 // issues a preconnection request to lens.google.com.
+// TODO(crbug.com/1486497): Test is flaky on ChromeOS.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_CompanionRegionSearchIssuesGoogleLensPreconnect \
+  DISABLED_CompanionRegionSearchIssuesGoogleLensPreconnect
+#else
+#define MAYBE_CompanionRegionSearchIssuesGoogleLensPreconnect \
+  CompanionRegionSearchIssuesGoogleLensPreconnect
+#endif
 TEST_F(RenderViewContextMenuPrefsTest,
-       CompanionRegionSearchIssuesGoogleLensPreconnect) {
+       MAYBE_CompanionRegionSearchIssuesGoogleLensPreconnect) {
   BeginPreresolveListening();
   base::test::ScopedFeatureList features;
   features.InitWithFeaturesAndParameters(
@@ -1761,8 +1784,16 @@ TEST_F(RenderViewContextMenuPrefsTest,
 
 // Verify that the adding the Lens region search option to the menu
 // issues a preconnection request to lens.google.com.
+// TODO(crbug.com/1486497): Test is flaky on ChromeOS.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_LensRegionSearchIssuesGoogleLensPreconnect \
+  DISABLED_LensRegionSearchIssuesGoogleLensPreconnect
+#else
+#define MAYBE_LensRegionSearchIssuesGoogleLensPreconnect \
+  LensRegionSearchIssuesGoogleLensPreconnect
+#endif
 TEST_F(RenderViewContextMenuPrefsTest,
-       LensRegionSearchIssuesGoogleLensPreconnect) {
+       MAYBE_LensRegionSearchIssuesGoogleLensPreconnect) {
   BeginPreresolveListening();
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(lens::features::kLensStandalone);

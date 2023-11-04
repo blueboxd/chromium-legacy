@@ -7,13 +7,16 @@
 #include <algorithm>
 #include <memory>
 
-#include "ash/glanceables/classroom/glanceables_classroom_client.h"
+#include "ash/constants/ash_features.h"
 #include "ash/glanceables/classroom/glanceables_classroom_item_view.h"
 #include "ash/glanceables/classroom/glanceables_classroom_types.h"
+#include "ash/glanceables/common/glanceables_error_message_view.h"
 #include "ash/glanceables/common/glanceables_list_footer_view.h"
 #include "ash/glanceables/common/glanceables_progress_bar_view.h"
 #include "ash/glanceables/common/glanceables_view_id.h"
-#include "ash/glanceables/glanceables_v2_controller.h"
+#include "ash/glanceables/glanceables_controller.h"
+#include "ash/glanceables/glanceables_metrics.h"
+#include "ash/public/cpp/new_window_delegate.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -52,9 +55,8 @@ ClassroomBubbleBaseView::ClassroomBubbleBaseView(
     DetailedViewDelegate* delegate,
     std::unique_ptr<ui::ComboboxModel> combobox_model)
     : GlanceableTrayChildBubble(delegate, /*for_glanceables_container=*/true) {
-  auto* layout_manager =
-      SetLayoutManager(std::make_unique<views::FlexLayout>());
-  layout_manager
+  layout_manager_ = SetLayoutManager(std::make_unique<views::FlexLayout>());
+  layout_manager_
       ->SetInteriorMargin(gfx::Insets::TLBR(kInteriorGlanceableBubbleMargin,
                                             kInteriorGlanceableBubbleMargin, 0,
                                             kInteriorGlanceableBubbleMargin))
@@ -135,6 +137,7 @@ void ClassroomBubbleBaseView::CancelUpdates() {
 }
 
 void ClassroomBubbleBaseView::AboutToRequestAssignments() {
+  assignments_requested_time_ = base::TimeTicks::Now();
   progress_bar_->UpdateProgressBarVisibility(/*visible=*/true);
   combo_box_view_->SetAccessibleDescription(u"");
 }
@@ -189,32 +192,38 @@ void ClassroomBubbleBaseView::OnGetAssignments(
     }
   }
 
-  // TODO(anasalazar): Record delay for non-initial updates on the bubble.
-  if (initial_update) {
-    auto* controller = Shell::Get()->glanceables_v2_controller();
-    base::TimeDelta initial_load_time =
-        base::TimeTicks::Now() - controller->last_bubble_show_time();
+  auto* controller = Shell::Get()->glanceables_controller();
 
-    if (controller->bubble_shown_count() == 1) {
-      base::UmaHistogramMediumTimes(
-          "Ash.Glanceables.TimeManagement.Classroom."
-          "OpenToInitialLoadTime.FirstOcurrence",
-          initial_load_time);
+  if (initial_update) {
+    RecordClassromInitialLoadTime(
+        /* first_occurrence=*/controller->bubble_shown_count() == 1,
+        base::TimeTicks::Now() - controller->last_bubble_show_time());
+  } else {
+    RecordClassroomChangeLoadTime(
+        success, base::TimeTicks::Now() - assignments_requested_time_);
+  }
+
+  list_shown_start_time_ = base::TimeTicks::Now();
+  first_assignment_list_shown_ = true;
+
+  if (features::IsGlanceablesV2ErrorMessageEnabled()) {
+    if (success) {
+      MaybeDismissErrorMessage();
     } else {
-      base::UmaHistogramMediumTimes(
-          "Ash.Glanceables.TimeManagement.Classroom."
-          "OpenToInitialLoadTime.SubsequentOccurence",
-          initial_load_time);
+      ShowErrorMessage(
+          l10n_util::GetStringUTF16(IDS_GLANCEABLES_CLASSROOM_FETCH_ERROR));
+
+      // Explicitly signal to the layout manager to ignore the view.
+      layout_manager_->SetChildViewIgnoredByLayout(error_message(),
+                                                   /*ignored=*/true);
     }
   }
 }
 
 void ClassroomBubbleBaseView::OpenUrl(const GURL& url) const {
-  const auto* const client =
-      Shell::Get()->glanceables_v2_controller()->GetClassroomClient();
-  if (client) {
-    client->OpenUrl(url);
-  }
+  NewWindowDelegate::GetPrimary()->OpenUrl(
+      url, NewWindowDelegate::OpenUrlFrom::kUserInteraction,
+      NewWindowDelegate::Disposition::kNewForegroundTab);
 }
 
 void ClassroomBubbleBaseView::AnnounceListStateOnComboBoxAccessibility() {

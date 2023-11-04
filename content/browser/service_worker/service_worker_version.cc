@@ -94,7 +94,7 @@ void RunCallbackAfterStartWorker(base::WeakPtr<ServiceWorkerVersion> version,
                                  ServiceWorkerVersion::StatusCallback callback,
                                  blink::ServiceWorkerStatusCode status) {
   if (status == blink::ServiceWorkerStatusCode::kOk &&
-      version->running_status() != EmbeddedWorkerStatus::RUNNING) {
+      version->running_status() != blink::EmbeddedWorkerStatus::kRunning) {
     // We've tried to start the worker (and it has succeeded), but
     // it looks it's not running yet.
     NOTREACHED() << "The worker's not running after successful StartWorker";
@@ -127,14 +127,14 @@ void OnConnectionError(base::WeakPtr<EmbeddedWorkerInstance> embedded_worker) {
     return;
 
   switch (embedded_worker->status()) {
-    case EmbeddedWorkerStatus::STARTING:
-    case EmbeddedWorkerStatus::RUNNING:
+    case blink::EmbeddedWorkerStatus::kStarting:
+    case blink::EmbeddedWorkerStatus::kRunning:
       // In this case the disconnection might be happening because of sudden
       // renderer shutdown like crash.
       embedded_worker->Detach();
       break;
-    case EmbeddedWorkerStatus::STOPPING:
-    case EmbeddedWorkerStatus::STOPPED:
+    case blink::EmbeddedWorkerStatus::kStopping:
+    case blink::EmbeddedWorkerStatus::kStopped:
       // Do nothing
       break;
   }
@@ -591,14 +591,14 @@ void ServiceWorkerVersion::StopWorker(base::OnceClosure callback) {
                        "Status", VersionStatusToString(status_));
 
   switch (running_status()) {
-    case EmbeddedWorkerStatus::STARTING:
-    case EmbeddedWorkerStatus::RUNNING: {
+    case blink::EmbeddedWorkerStatus::kStarting:
+    case blink::EmbeddedWorkerStatus::kRunning: {
       // EmbeddedWorkerInstance::Stop() may synchronously call
       // ServiceWorkerVersion::OnStopped() and destroy |this|. This protection
       // avoids it.
       scoped_refptr<ServiceWorkerVersion> protect = this;
       embedded_worker_->Stop();
-      if (running_status() == EmbeddedWorkerStatus::STOPPED) {
+      if (running_status() == blink::EmbeddedWorkerStatus::kStopped) {
         RunSoon(std::move(callback));
         return;
       }
@@ -615,10 +615,10 @@ void ServiceWorkerVersion::StopWorker(base::OnceClosure callback) {
           [](scoped_refptr<content::ServiceWorkerVersion>) {}, protect));
       return;
     }
-    case EmbeddedWorkerStatus::STOPPING:
+    case blink::EmbeddedWorkerStatus::kStopping:
       stop_callbacks_.push_back(std::move(callback));
       return;
-    case EmbeddedWorkerStatus::STOPPED:
+    case blink::EmbeddedWorkerStatus::kStopped:
       RunSoon(std::move(callback));
       return;
   }
@@ -631,9 +631,10 @@ void ServiceWorkerVersion::TriggerIdleTerminationAsap() {
 }
 
 bool ServiceWorkerVersion::OnRequestTermination() {
-  if (running_status() == EmbeddedWorkerStatus::STOPPING)
+  if (running_status() == blink::EmbeddedWorkerStatus::kStopping) {
     return true;
-  DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, running_status());
+  }
+  DCHECK_EQ(blink::EmbeddedWorkerStatus::kRunning, running_status());
 
   worker_is_idle_on_renderer_ = true;
 
@@ -712,8 +713,8 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
     StatusCallback error_callback,
     const base::TimeDelta& timeout,
     TimeoutBehavior timeout_behavior) {
-  DCHECK(EmbeddedWorkerStatus::RUNNING == running_status() ||
-         EmbeddedWorkerStatus::STARTING == running_status())
+  DCHECK(blink::EmbeddedWorkerStatus::kRunning == running_status() ||
+         blink::EmbeddedWorkerStatus::kStarting == running_status())
       << "Can only start a request with a running or starting worker.";
   DCHECK(event_type == ServiceWorkerMetrics::EventType::INSTALL ||
          event_type == ServiceWorkerMetrics::EventType::ACTIVATE ||
@@ -776,15 +777,15 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
 ServiceWorkerExternalRequestResult ServiceWorkerVersion::StartExternalRequest(
     const base::Uuid& request_uuid,
     ServiceWorkerExternalRequestTimeoutType timeout_type) {
-  if (running_status() == EmbeddedWorkerStatus::STARTING) {
+  if (running_status() == blink::EmbeddedWorkerStatus::kStarting) {
     return pending_external_requests_.insert({request_uuid, timeout_type})
                    .second
                ? ServiceWorkerExternalRequestResult::kOk
                : ServiceWorkerExternalRequestResult::kBadRequestId;
   }
 
-  if (running_status() == EmbeddedWorkerStatus::STOPPING ||
-      running_status() == EmbeddedWorkerStatus::STOPPED) {
+  if (running_status() == blink::EmbeddedWorkerStatus::kStopping ||
+      running_status() == blink::EmbeddedWorkerStatus::kStopped) {
     return ServiceWorkerExternalRequestResult::kWorkerNotRunning;
   }
 
@@ -841,7 +842,7 @@ bool ServiceWorkerVersion::FinishRequestWithFetchCount(int request_id,
 
 ServiceWorkerExternalRequestResult ServiceWorkerVersion::FinishExternalRequest(
     const base::Uuid& request_uuid) {
-  if (running_status() == EmbeddedWorkerStatus::STARTING) {
+  if (running_status() == blink::EmbeddedWorkerStatus::kStarting) {
     auto iter = pending_external_requests_.find(request_uuid);
     if (iter == pending_external_requests_.end())
       return ServiceWorkerExternalRequestResult::kBadRequestId;
@@ -852,8 +853,9 @@ ServiceWorkerExternalRequestResult ServiceWorkerVersion::FinishExternalRequest(
   // If it's STOPPED, there is no request to finish. We could just consider this
   // a success, but the caller may want to know about it. (If it's STOPPING,
   // proceed with finishing the request as normal.)
-  if (running_status() == EmbeddedWorkerStatus::STOPPED)
+  if (running_status() == blink::EmbeddedWorkerStatus::kStopped) {
     return ServiceWorkerExternalRequestResult::kWorkerNotRunning;
+  }
 
   auto iter = external_request_uuid_to_request_id_.find(request_uuid);
   if (iter != external_request_uuid_to_request_id_.end()) {
@@ -867,7 +869,7 @@ ServiceWorkerExternalRequestResult ServiceWorkerVersion::FinishExternalRequest(
     // Also checks running status. Idle timeout is not meaningful if the worker
     // is stopping or stopped.
     if (ok && !HasWorkInBrowser() &&
-        running_status() == EmbeddedWorkerStatus::RUNNING) {
+        running_status() == blink::EmbeddedWorkerStatus::kRunning) {
       // If SW event queue request termination at this very moment, then SW can
       // be terminated before waiting for the next idle timeout. Details are
       // described in crbug/1399324.
@@ -901,7 +903,7 @@ void ServiceWorkerVersion::RunAfterStartWorker(
     StatusCallback callback) {
   ServiceWorkerMetrics::RecordRunAfterStartWorkerStatus(running_status(),
                                                         purpose);
-  if (running_status() == EmbeddedWorkerStatus::RUNNING) {
+  if (running_status() == blink::EmbeddedWorkerStatus::kRunning) {
     DCHECK(start_callbacks_.empty());
     std::move(callback).Run(blink::ServiceWorkerStatusCode::kOk);
     return;
@@ -1135,8 +1137,8 @@ void ServiceWorkerVersion::Doom() {
   DCHECK(!HasControllee());
 
   SetStatus(REDUNDANT);
-  if (running_status() == EmbeddedWorkerStatus::STARTING ||
-      running_status() == EmbeddedWorkerStatus::RUNNING) {
+  if (running_status() == blink::EmbeddedWorkerStatus::kStarting ||
+      running_status() == blink::EmbeddedWorkerStatus::kRunning) {
     // |start_worker_status_| == kErrorExists means that this version was
     // created for update but the script was identical to the incumbent version.
     // In this case we should stop the worker immediately even when DevTools is
@@ -1162,7 +1164,21 @@ void ServiceWorkerVersion::Doom() {
 void ServiceWorkerVersion::InitializeGlobalScope() {
   TRACE_EVENT0("ServiceWorker", "ServiceWorkerVersion::InitializeGlobalScope");
   receiver_.reset();
-  receiver_.Bind(service_worker_host_.InitWithNewEndpointAndPassReceiver());
+  associated_interface_receiver_.reset();
+  mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerHost>
+      service_worker_host;
+  receiver_.Bind(service_worker_host.InitWithNewEndpointAndPassReceiver());
+
+  mojo::PendingAssociatedRemote<blink::mojom::AssociatedInterfaceProvider>
+      associated_remote_from_browser;
+  associated_interface_receiver_.Bind(
+      associated_remote_from_browser.InitWithNewEndpointAndPassReceiver());
+
+  mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterfaceProvider>
+      associated_receiver_to_renderer;
+  associated_interface_provider_ =
+      std::make_unique<blink::AssociatedInterfaceProvider>(
+          associated_receiver_to_renderer.InitWithNewEndpointAndPassRemote());
 
   scoped_refptr<ServiceWorkerRegistration> registration =
       context_->GetLiveRegistration(registration_id_);
@@ -1172,7 +1188,8 @@ void ServiceWorkerVersion::InitializeGlobalScope() {
   DCHECK(worker_host_);
   DCHECK(service_worker_remote_);
   service_worker_remote_->InitializeGlobalScope(
-      std::move(service_worker_host_),
+      std::move(service_worker_host), std::move(associated_remote_from_browser),
+      std::move(associated_receiver_to_renderer),
       worker_host_->container_host()->CreateServiceWorkerRegistrationObjectInfo(
           std::move(registration)),
       worker_host_->container_host()->CreateServiceWorkerObjectInfoToSend(this),
@@ -1180,6 +1197,16 @@ void ServiceWorkerVersion::InitializeGlobalScope() {
       ancestor_frame_type_, key_);
 
   is_endpoint_ready_ = true;
+  associated_registry_ = std::make_unique<blink::AssociatedInterfaceRegistry>();
+
+  // If we have allocated the process we can tell the client to register
+  // services.
+  if (embedded_worker()->process_id() != ChildProcessHost::kInvalidUniqueID) {
+    GetContentClient()
+        ->browser()
+        ->RegisterAssociatedInterfaceBindersForServiceWorker(
+            GetInfo(), *associated_registry_);
+  }
 }
 
 bool ServiceWorkerVersion::IsControlleeProcessID(int process_id) const {
@@ -1193,8 +1220,8 @@ bool ServiceWorkerVersion::IsControlleeProcessID(int process_id) const {
 void ServiceWorkerVersion::ExecuteScriptForTest(
     const std::string& script,
     ServiceWorkerScriptExecutionCallback callback) {
-  DCHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
-         running_status() == EmbeddedWorkerStatus::RUNNING)
+  DCHECK(running_status() == blink::EmbeddedWorkerStatus::kStarting ||
+         running_status() == blink::EmbeddedWorkerStatus::kRunning)
       << "Cannot execute a script in a non-running worker!";
   bool wants_result = !callback.is_null();
   endpoint()->ExecuteScriptForTest(  // IN-TEST
@@ -1202,7 +1229,7 @@ void ServiceWorkerVersion::ExecuteScriptForTest(
 }
 
 bool ServiceWorkerVersion::IsWarmingUp() const {
-  if (running_status() != EmbeddedWorkerStatus::STARTING ||
+  if (running_status() != blink::EmbeddedWorkerStatus::kStarting ||
       !embedded_worker_->pause_initializing_global_scope()) {
     return false;
   }
@@ -1210,7 +1237,7 @@ bool ServiceWorkerVersion::IsWarmingUp() const {
 }
 
 bool ServiceWorkerVersion::IsWarmedUp() const {
-  if (running_status() != EmbeddedWorkerStatus::STARTING ||
+  if (running_status() != blink::EmbeddedWorkerStatus::kStarting ||
       !embedded_worker_->pause_initializing_global_scope()) {
     return false;
   }
@@ -1241,8 +1268,8 @@ void ServiceWorkerVersion::SetDevToolsAttached(bool attached) {
 
   if (stop_when_devtools_detached_ && !attached) {
     DCHECK_EQ(REDUNDANT, status());
-    if (running_status() == EmbeddedWorkerStatus::STARTING ||
-        running_status() == EmbeddedWorkerStatus::RUNNING) {
+    if (running_status() == blink::EmbeddedWorkerStatus::kStarting ||
+        running_status() == blink::EmbeddedWorkerStatus::kRunning) {
       embedded_worker_->Stop();
     }
     return;
@@ -1263,8 +1290,8 @@ void ServiceWorkerVersion::SetDevToolsAttached(bool attached) {
   if (!start_callbacks_.empty()) {
     // Reactivate the timer for start timeout.
     DCHECK(timeout_timer_.IsRunning());
-    DCHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
-           running_status() == EmbeddedWorkerStatus::STOPPING)
+    DCHECK(running_status() == blink::EmbeddedWorkerStatus::kStarting ||
+           running_status() == blink::EmbeddedWorkerStatus::kStopping)
         << static_cast<int>(running_status());
     RestartTick(&start_time_);
   }
@@ -1349,7 +1376,7 @@ ServiceWorkerVersion::InflightRequest::InflightRequest(
 ServiceWorkerVersion::InflightRequest::~InflightRequest() {}
 
 void ServiceWorkerVersion::OnScriptEvaluationStart() {
-  DCHECK_EQ(EmbeddedWorkerStatus::STARTING, running_status());
+  DCHECK_EQ(blink::EmbeddedWorkerStatus::kStarting, running_status());
   // Activate ping/pong now that JavaScript execution will start.
   ping_controller_.Activate();
 }
@@ -1362,6 +1389,17 @@ void ServiceWorkerVersion::OnScriptLoaded() {
   }
 }
 
+void ServiceWorkerVersion::OnProcessAllocated() {
+  // If we have not initialized the global scope yet, return early.
+  if (!is_endpoint_ready_) {
+    return;
+  }
+  GetContentClient()
+      ->browser()
+      ->RegisterAssociatedInterfaceBindersForServiceWorker(
+          GetInfo(), *associated_registry_);
+}
+
 void ServiceWorkerVersion::OnStarting() {
   for (auto& observer : observers_)
     observer.OnRunningStateChanged(this);
@@ -1372,7 +1410,7 @@ void ServiceWorkerVersion::OnStarted(
     FetchHandlerType new_fetch_handler_type,
     bool new_has_hid_event_handlers,
     bool new_has_usb_event_handlers) {
-  DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, running_status());
+  DCHECK_EQ(blink::EmbeddedWorkerStatus::kRunning, running_status());
 
   // TODO(falken): This maps kAbruptCompletion to kErrorScriptEvaluated, which
   // most start callbacks will consider to be a failure. But the worker thread
@@ -1467,11 +1505,11 @@ void ServiceWorkerVersion::OnStopping() {
     observer.OnRunningStateChanged(this);
 }
 
-void ServiceWorkerVersion::OnStopped(EmbeddedWorkerStatus old_status) {
+void ServiceWorkerVersion::OnStopped(blink::EmbeddedWorkerStatus old_status) {
   OnStoppedInternal(old_status);
 }
 
-void ServiceWorkerVersion::OnDetached(EmbeddedWorkerStatus old_status) {
+void ServiceWorkerVersion::OnDetached(blink::EmbeddedWorkerStatus old_status) {
   OnStoppedInternal(old_status);
 }
 
@@ -1813,6 +1851,8 @@ void ServiceWorkerVersion::NavigateClient(const std::string& client_uuid,
   service_worker_client_utils::NavigateClient(
       url, script_url_, key_, container_host->GetRenderFrameHostId(), context_,
       base::BindOnce(&DidNavigateClient, std::move(callback), url));
+
+  NotifyClientNavigated(script_url_, url);
 }
 
 void ServiceWorkerVersion::SkipWaiting(SkipWaitingCallback callback) {
@@ -1938,6 +1978,8 @@ void ServiceWorkerVersion::OpenWindow(
       url, script_url_, key_, embedded_worker_->embedded_worker_id(),
       embedded_worker_->process_id(), context_, type,
       base::BindOnce(&OnOpenWindowFinished, std::move(callback)));
+
+  NotifyWindowOpened(script_url_, url);
 }
 
 bool ServiceWorkerVersion::HasWorkInBrowser() const {
@@ -2102,11 +2144,11 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
   MarkIfStale();
 
   switch (running_status()) {
-    case EmbeddedWorkerStatus::RUNNING:
+    case blink::EmbeddedWorkerStatus::kRunning:
       RunSoon(base::BindOnce(std::move(callback),
                              blink::ServiceWorkerStatusCode::kOk));
       return;
-    case EmbeddedWorkerStatus::STARTING:
+    case blink::EmbeddedWorkerStatus::kStarting:
       DCHECK(!start_callbacks_.empty());
       if (embedded_worker_->pause_initializing_global_scope()) {
         CHECK(IsWarmingUp() || IsWarmedUp());
@@ -2139,9 +2181,9 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
         }
       }
       break;
-    case EmbeddedWorkerStatus::STOPPING:
-    case EmbeddedWorkerStatus::STOPPED:
-      if (running_status() == EmbeddedWorkerStatus::STOPPED &&
+    case blink::EmbeddedWorkerStatus::kStopping:
+    case blink::EmbeddedWorkerStatus::kStopped:
+      if (running_status() == blink::EmbeddedWorkerStatus::kStopped &&
           purpose == ServiceWorkerMetrics::EventType::WARM_UP) {
         // Postpone initializing the global scope.
         embedded_worker_->SetPauseInitializingGlobalScope();
@@ -2203,13 +2245,14 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
         std::move(callback), protect));
   }
 
-  if (running_status() == EmbeddedWorkerStatus::STOPPED)
+  if (running_status() == blink::EmbeddedWorkerStatus::kStopped) {
     StartWorkerInternal();
+  }
   // Warning: StartWorkerInternal() might have deleted `this` on failure.
 }
 
 void ServiceWorkerVersion::StartWorkerInternal() {
-  DCHECK_EQ(EmbeddedWorkerStatus::STOPPED, running_status());
+  DCHECK_EQ(blink::EmbeddedWorkerStatus::kStopped, running_status());
   DCHECK(inflight_requests_.IsEmpty());
   DCHECK(request_timeouts_.empty());
 
@@ -2345,9 +2388,9 @@ void ServiceWorkerVersion::SetTimeoutTimerInterval(base::TimeDelta interval) {
 
 void ServiceWorkerVersion::OnTimeoutTimer() {
   // TODO(horo): This CHECK is for debugging crbug.com/759938.
-  CHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
-        running_status() == EmbeddedWorkerStatus::RUNNING ||
-        running_status() == EmbeddedWorkerStatus::STOPPING)
+  CHECK(running_status() == blink::EmbeddedWorkerStatus::kStarting ||
+        running_status() == blink::EmbeddedWorkerStatus::kRunning ||
+        running_status() == blink::EmbeddedWorkerStatus::kStopping)
       << static_cast<int>(running_status());
 
   if (!context_)
@@ -2362,7 +2405,7 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
 
   // Stopping the worker hasn't finished within a certain period.
   if (GetTickDuration(stop_time_) > kStopWorkerTimeout) {
-    DCHECK_EQ(EmbeddedWorkerStatus::STOPPING, running_status());
+    DCHECK_EQ(blink::EmbeddedWorkerStatus::kStopping, running_status());
     ReportError(blink::ServiceWorkerStatusCode::kErrorTimeout,
                 "DETACH_STALLED_IN_STOPPING");
 
@@ -2372,7 +2415,7 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
     embedded_worker_->AddObserver(this);
 
     // Call OnStoppedInternal to fail callbacks and possibly restart.
-    OnStoppedInternal(EmbeddedWorkerStatus::STOPPING);
+    OnStoppedInternal(blink::EmbeddedWorkerStatus::kStopping);
     return;
   }
 
@@ -2395,12 +2438,13 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
   }
 
   if (GetTickDuration(start_time_) > start_limit) {
-    DCHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
-           running_status() == EmbeddedWorkerStatus::STOPPING)
+    DCHECK(running_status() == blink::EmbeddedWorkerStatus::kStarting ||
+           running_status() == blink::EmbeddedWorkerStatus::kStopping)
         << static_cast<int>(running_status());
     FinishStartWorker(blink::ServiceWorkerStatusCode::kErrorTimeout);
-    if (running_status() == EmbeddedWorkerStatus::STARTING)
+    if (running_status() == blink::EmbeddedWorkerStatus::kStarting) {
       embedded_worker_->Stop();
+    }
     return;
   }
 
@@ -2438,14 +2482,15 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
   DCHECK_EQ(request_timeouts_.size(), inflight_requests_.size());
 
   if (has_kill_on_timeout &&
-      running_status() != EmbeddedWorkerStatus::STOPPING) {
+      running_status() != blink::EmbeddedWorkerStatus::kStopping) {
     embedded_worker_->Stop();
   }
 
   // For the timeouts below, there are no callbacks to timeout so there is
   // nothing more to do if the worker is already stopping.
-  if (running_status() == EmbeddedWorkerStatus::STOPPING)
+  if (running_status() == blink::EmbeddedWorkerStatus::kStopping) {
     return;
+  }
 
   // If an request is expired and there is no other requests, we ask event
   // queue to check if idle timeout should be scheduled. Event queue may
@@ -2460,8 +2505,8 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
 
 void ServiceWorkerVersion::PingWorker() {
   // TODO(horo): This CHECK is for debugging crbug.com/759938.
-  CHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
-        running_status() == EmbeddedWorkerStatus::RUNNING);
+  CHECK(running_status() == blink::EmbeddedWorkerStatus::kStarting ||
+        running_status() == blink::EmbeddedWorkerStatus::kRunning);
   // base::Unretained here is safe because endpoint() is owned by
   // |this|.
   endpoint()->Ping(base::BindOnce(&ServiceWorkerVersion::OnPongFromWorker,
@@ -2469,8 +2514,8 @@ void ServiceWorkerVersion::PingWorker() {
 }
 
 void ServiceWorkerVersion::OnPingTimeout() {
-  DCHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
-         running_status() == EmbeddedWorkerStatus::RUNNING);
+  DCHECK(running_status() == blink::EmbeddedWorkerStatus::kStarting ||
+         running_status() == blink::EmbeddedWorkerStatus::kRunning);
   MaybeReportConsoleMessageToInternals(
       blink::mojom::ConsoleMessageLevel::kVerbose, kNotRespondingErrorMesage);
   embedded_worker_->StopIfNotAttachedToDevTools();
@@ -2508,11 +2553,11 @@ void ServiceWorkerVersion::RecordStartWorkerResult(
     return;
   EmbeddedWorkerInstance::StartingPhase phase =
       EmbeddedWorkerInstance::NOT_STARTING;
-  EmbeddedWorkerStatus running_status = embedded_worker_->status();
-  // Build an artifical JavaScript exception to show in the ServiceWorker
+  blink::EmbeddedWorkerStatus running_status = embedded_worker_->status();
+  // Build an artificial JavaScript exception to show in the ServiceWorker
   // log for developers; it's not user-facing so it's not a localized resource.
   std::string message = "ServiceWorker startup timed out. ";
-  if (running_status != EmbeddedWorkerStatus::STARTING) {
+  if (running_status != blink::EmbeddedWorkerStatus::kStarting) {
     message.append("The worker had unexpected status: ");
     message.append(EmbeddedWorkerInstance::StatusToString(running_status));
   } else {
@@ -2626,8 +2671,9 @@ void ServiceWorkerVersion::FoundRegistrationForUpdate(
       registration.get(), false /* force_bypass_cache */);
 }
 
-void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
-  DCHECK_EQ(EmbeddedWorkerStatus::STOPPED, running_status());
+void ServiceWorkerVersion::OnStoppedInternal(
+    blink::EmbeddedWorkerStatus old_status) {
+  DCHECK_EQ(blink::EmbeddedWorkerStatus::kStopped, running_status());
   scoped_refptr<ServiceWorkerVersion> protect;
   if (!in_dtor_)
     protect = this;
@@ -2642,7 +2688,7 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   } else if (ping_controller_.IsTimedOut()) {
     // This worker exhausted its time to run, don't let it restart.
     should_restart = false;
-  } else if (old_status == EmbeddedWorkerStatus::STARTING) {
+  } else if (old_status == blink::EmbeddedWorkerStatus::kStarting) {
     // This worker unexpectedly stopped because start failed.  Attempting to
     // restart on start failure could cause an endless loop of start attempts,
     // so don't try to restart now.
@@ -2700,6 +2746,8 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   DCHECK(!controller_receiver_.is_valid());
   installed_scripts_sender_.reset();
   receiver_.reset();
+  associated_interface_receiver_.reset();
+  associated_interface_provider_.reset();
   pending_external_requests_.clear();
   worker_is_idle_on_renderer_ = true;
   worker_host_.reset();
@@ -2800,6 +2848,20 @@ void ServiceWorkerVersion::NotifyControlleeNavigationCommitted(
     context_->OnControlleeNavigationCommitted(this, uuid, render_frame_host_id);
 }
 
+void ServiceWorkerVersion::NotifyWindowOpened(const GURL& script_url,
+                                              const GURL& url) {
+  if (context_) {
+    context_->OnWindowOpened(script_url, url);
+  }
+}
+
+void ServiceWorkerVersion::NotifyClientNavigated(const GURL& script_url,
+                                                 const GURL& url) {
+  if (context_) {
+    context_->OnClientNavigated(script_url, url);
+  }
+}
+
 void ServiceWorkerVersion::PrepareForUpdate(
     std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
         compared_script_info_map,
@@ -2875,8 +2937,8 @@ void ServiceWorkerVersion::UpdateForegroundPriority() {
 void ServiceWorkerVersion::AddMessageToConsole(
     blink::mojom::ConsoleMessageLevel message_level,
     const std::string& message) {
-  if (running_status() == EmbeddedWorkerStatus::STARTING ||
-      running_status() == EmbeddedWorkerStatus::RUNNING) {
+  if (running_status() == blink::EmbeddedWorkerStatus::kStarting ||
+      running_status() == blink::EmbeddedWorkerStatus::kRunning) {
     endpoint()->AddMessageToConsole(message_level, message);
   }
 }
@@ -2946,6 +3008,19 @@ bool ServiceWorkerVersion::IsStaticRouterEnabled() {
     return true;
   }
   return false;
+}
+
+void ServiceWorkerVersion::GetAssociatedInterface(
+    const std::string& name,
+    mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterface>
+        receiver) {
+  // `associated_interface_provider_receiver_` and `associated_registry_` are
+  // both reset at the same time, so we should never get a request for an
+  // associated interface when `associated_registry_` is not valid.
+  DCHECK(associated_registry_);
+
+  mojo::ScopedInterfaceEndpointHandle handle = receiver.PassHandle();
+  associated_registry_->TryBindInterface(name, &handle);
 }
 
 base::WeakPtr<ServiceWorkerVersion> ServiceWorkerVersion::GetWeakPtr() {

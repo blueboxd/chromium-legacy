@@ -17,6 +17,7 @@ if (is_win) {
 }
 if (is_android) {
   import("//build/config/android/rules.gni")
+  import("//third_party/jni_zero/jni_zero.gni")
 }
 
 mojom("ax_constants_mojo") {
@@ -63,6 +64,8 @@ component("ax_base") {
     "ax_event_intent.h",
     "ax_mode.cc",
     "ax_mode.h",
+    "ax_mode_histogram_logger.cc",
+    "ax_mode_histogram_logger.h",
     "ax_node_data.cc",
     "ax_node_data.h",
     "ax_node_id_forward.h",
@@ -183,8 +186,8 @@ component("accessibility_internal") {
     "ax_tree_update_util.h",
     "null_ax_action_target.cc",
     "null_ax_action_target.h",
-    "single_ax_tree_manager.cc",
-    "single_ax_tree_manager.h",
+    "test_single_ax_tree_manager.cc",
+    "test_single_ax_tree_manager.h",
   ]
 
   deps = [
@@ -266,6 +269,7 @@ test("accessibility_unittests") {
     "ax_event_generator_unittest.cc",
     "ax_generated_tree_unittest.cc",
     "ax_language_detection_unittest.cc",
+    "ax_mode_histogram_logger_unittest.cc",
     "ax_node_data_unittest.cc",
     "ax_node_position_unittest.cc",
     "ax_node_unittest.cc",
@@ -348,7 +352,6 @@ test("accessibility_unittests") {
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.math:fuchsia.math_hlcpp",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.views:fuchsia.ui.views_cpp_hlcpp_conversion",
       "//third_party/fuchsia-sdk/sdk/pkg/inspect",
-      "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
       "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     ]
   }

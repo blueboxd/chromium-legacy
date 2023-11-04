@@ -18,6 +18,7 @@
 #include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/parsed_cookie.h"
+#include "net/http/http_util.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -920,7 +921,7 @@ TEST(CanonicalCookieTest, CreateWithExpires) {
   // Expires in the past
   base::Time past_date = base::Time::Now() - base::Days(10);
   std::unique_ptr<CanonicalCookie> cookie = CanonicalCookie::Create(
-      url, "A=1; expires=" + base::TimeFormatHTTP(past_date), creation_time,
+      url, "A=1; expires=" + HttpUtil::TimeFormatHTTP(past_date), creation_time,
       server_time, absl::nullopt /* cookie_partition_key */);
   EXPECT_TRUE(cookie.get());
   EXPECT_TRUE(cookie->IsPersistent());
@@ -932,8 +933,8 @@ TEST(CanonicalCookieTest, CreateWithExpires) {
   // Expires in the future
   base::Time future_date = base::Time::Now() + base::Days(10);
   cookie = CanonicalCookie::Create(
-      url, "A=1; expires=" + base::TimeFormatHTTP(future_date), creation_time,
-      server_time, absl::nullopt /* cookie_partition_key */);
+      url, "A=1; expires=" + HttpUtil::TimeFormatHTTP(future_date),
+      creation_time, server_time, absl::nullopt /* cookie_partition_key */);
   EXPECT_TRUE(cookie.get());
   EXPECT_TRUE(cookie->IsPersistent());
   EXPECT_FALSE(cookie->IsExpired(creation_time));
@@ -944,8 +945,8 @@ TEST(CanonicalCookieTest, CreateWithExpires) {
   // Expires in the far future
   future_date = base::Time::Now() + base::Days(800);
   cookie = CanonicalCookie::Create(
-      url, "A=1; expires=" + base::TimeFormatHTTP(future_date), creation_time,
-      server_time, absl::nullopt /* cookie_partition_key */);
+      url, "A=1; expires=" + HttpUtil::TimeFormatHTTP(future_date),
+      creation_time, server_time, absl::nullopt /* cookie_partition_key */);
   EXPECT_TRUE(cookie.get());
   EXPECT_TRUE(cookie->IsPersistent());
   EXPECT_FALSE(cookie->IsExpired(creation_time));
@@ -3028,11 +3029,16 @@ TEST(CanonicalCookieTest, IsCanonical) {
                    ->IsCanonical());
 
   // Separator in domain.
-  EXPECT_FALSE(CanonicalCookie::CreateUnsafeCookieForTesting(
-                   "A", "B", ";x.y", "/path", base::Time(), base::Time(),
-                   base::Time(), base::Time(), false, false,
-                   CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_LOW, false)
-                   ->IsCanonical());
+  //
+  // TODO(https://crbug.com/1416013): The character ';' is permitted in the URL
+  // host. That makes IsCanonical() return true here. However, previously,
+  // IsCanonical() used to false because ';' was a forbidden character. We need
+  // to verify whether this change is acceptable or not.
+  EXPECT_TRUE(CanonicalCookie::CreateUnsafeCookieForTesting(
+                  "A", "B", ";x.y", "/path", base::Time(), base::Time(),
+                  base::Time(), base::Time(), false, false,
+                  CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_LOW, false)
+                  ->IsCanonical());
 
   // Garbage in domain.
   EXPECT_FALSE(CanonicalCookie::CreateUnsafeCookieForTesting(
@@ -4025,7 +4031,7 @@ TEST(CanonicalCookieTest, CreateSanitizedCookie_Logic) {
       CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT,
       false /*same_party*/, absl::nullopt /*partition_key*/, &status));
   EXPECT_TRUE(status.HasExactlyExclusionReasonsForTesting(
-      {CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE}));
+      {CookieInclusionStatus::EXCLUDE_NO_COOKIE_CONTENT}));
 
   // Check that value can contain an equal sign, even when no name is present.
   // Note that in newer drafts of RFC6265bis, it is specified that a cookie with
@@ -4361,7 +4367,8 @@ TEST(CanonicalCookieTest, CreateSanitizedCookie_Logic) {
       COOKIE_PRIORITY_DEFAULT, true /*same_party*/,
       absl::nullopt /*partition_key*/, &status));
   EXPECT_TRUE(status.HasExactlyExclusionReasonsForTesting(
-      {CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE,
+      {CookieInclusionStatus::EXCLUDE_NO_COOKIE_CONTENT,
+       CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE,
        CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN}));
 
   // Check that RFC6265bis name + value string length limits are enforced.

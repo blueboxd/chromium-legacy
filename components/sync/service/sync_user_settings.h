@@ -23,15 +23,17 @@ class Nigori;
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 enum class SyncFirstSetupCompleteSource {
   BASIC_FLOW = 0,
   ADVANCED_FLOW_CONFIRM = 1,
   ADVANCED_FLOW_INTERRUPTED_TURN_SYNC_ON = 2,
   ADVANCED_FLOW_INTERRUPTED_LEAVE_SYNC_OFF = 3,
-  ENGINE_INITIALIZED_WITH_AUTO_START = 4,
+  // Deprecated: ENGINE_INITIALIZED_WITH_AUTO_START = 4,
   ANDROID_BACKUP_RESTORE = 5,
   kMaxValue = ANDROID_BACKUP_RESTORE,
 };
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 // This class encapsulates all the user-configurable bits of Sync.
 class SyncUserSettings {
@@ -43,8 +45,11 @@ class SyncUserSettings {
   // NOTE: On ChromeOS, this gets set automatically, so it doesn't really mean
   // anything.
   virtual bool IsInitialSyncFeatureSetupComplete() const = 0;
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   virtual void SetInitialSyncFeatureSetupComplete(
       SyncFirstSetupCompleteSource source) = 0;
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Getting selected types, for both Sync-the-feature and Sync-the-transport
   // users.

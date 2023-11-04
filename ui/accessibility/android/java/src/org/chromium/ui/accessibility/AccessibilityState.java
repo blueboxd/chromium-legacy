@@ -6,6 +6,7 @@ package org.chromium.ui.accessibility;
 
 import static android.accessibilityservice.AccessibilityServiceInfo.CAPABILITY_CAN_PERFORM_GESTURES;
 import static android.accessibilityservice.AccessibilityServiceInfo.FEEDBACK_SPOKEN;
+import static android.accessibilityservice.AccessibilityServiceInfo.FLAG_REQUEST_TOUCH_EXPLORATION_MODE;
 import static android.view.accessibility.AccessibilityManager.FLAG_CONTENT_CONTROLS;
 import static android.view.accessibility.AccessibilityManager.FLAG_CONTENT_ICONS;
 import static android.view.accessibility.AccessibilityManager.FLAG_CONTENT_TEXT;
@@ -646,7 +647,8 @@ public class AccessibilityState {
         boolean isScreenReaderEnabled =
                 (0 != (screenReaderCheckEventTypeMask & SCREEN_READER_EVENT_TYPE_MASK));
         boolean isSpokenFeedbackServicePresent = (0 != (sFeedbackTypeMask & FEEDBACK_SPOKEN));
-        boolean isTouchExplorationEnabled = sAccessibilityManager.isTouchExplorationEnabled();
+        boolean isTouchExplorationEnabled =
+                (0 != (sFlagsMask & FLAG_REQUEST_TOUCH_EXPLORATION_MODE));
         boolean isPerformGesturesEnabled =
                 (0 != (sCapabilitiesMask & CAPABILITY_CAN_PERFORM_GESTURES));
         updateAndNotifyStateChange(new State(isScreenReaderEnabled, isTouchExplorationEnabled,
@@ -823,7 +825,6 @@ public class AccessibilityState {
         contentResolver.unregisterContentObserver(sDisplayInversionEnabledObserver);
         contentResolver.unregisterContentObserver(sTextContrastObserver);
         sState = null;
-        sPreInitCachedValuePerformGesturesEnabled = null;
         sInitialized = false;
         sExtraStateInitialized = false;
         sDisplayInversionEnabled = false;

@@ -1390,13 +1390,23 @@ void NearbySharingServiceImpl::OnLockStateChanged(bool locked) {
       << __func__ << ": Screen lock state changed. (" << locked << ")";
   is_screen_locked_ = locked;
 
-  // Set visibility to 'Your Devices' if the screen is locked.
-  if (features::IsSelfShareEnabled()) {
+  // Set visibility to 'Your Devices' if the screen is locked and visibility is
+  // not Hidden.
+  nearby_share::mojom::Visibility current_visibility =
+      settings_.GetVisibility();
+  if (features::IsSelfShareEnabled() &&
+      current_visibility != nearby_share::mojom::Visibility::kNoOne) {
     if (locked) {
-      user_visibility_ = settings_.GetVisibility();
+      // Store old visibility setting.
+      user_visibility_ = current_visibility;
+      user_allowed_contacts_ = contact_manager_->GetAllowedContacts();
+
+      // Set visibility to Your Devices.
       settings_.SetVisibility(nearby_share::mojom::Visibility::kYourDevices);
+      contact_manager_->SetAllowedContacts(std::set<std::string>());
     } else {
       settings_.SetVisibility(user_visibility_);
+      contact_manager_->SetAllowedContacts(user_allowed_contacts_);
     }
   }
 
@@ -3159,7 +3169,7 @@ void NearbySharingServiceImpl::OnIncomingTransferUpdate(
     RecordNearbyShareTransferFinalStatusMetric(
         &feature_usage_metrics_,
         /*is_incoming=*/true, share_target.type, metadata.status(),
-        share_target.is_known);
+        share_target.is_known, share_target.for_self_share, is_screen_locked_);
 
     ShareTargetInfo* info = GetShareTargetInfo(share_target);
     CHECK(info->endpoint_id().has_value());
@@ -3203,7 +3213,7 @@ void NearbySharingServiceImpl::OnOutgoingTransferUpdate(
     RecordNearbyShareTransferFinalStatusMetric(
         &feature_usage_metrics_,
         /*is_incoming=*/false, share_target.type, metadata.status(),
-        share_target.is_known);
+        share_target.is_known, share_target.for_self_share, is_screen_locked_);
 
     ShareTargetInfo* info = GetShareTargetInfo(share_target);
     CHECK(info->endpoint_id().has_value());
@@ -3848,10 +3858,13 @@ void NearbySharingServiceImpl::OnStorageCheckCompleted(
   }
 
   if (base::FeatureList::IsEnabled(features::kNearbySharingSelfShare)) {
-    // Auto-accept self shares when not in high-visibility mode.
-    if (share_target.for_self_share && !IsInHighVisibility()) {
+    // Auto-accept self shares when not in high-visibility mode, unless the
+    // filetype includes WiFi credentials.
+    if (share_target.CanAutoAccept() && !IsInHighVisibility()) {
       CD_LOG(INFO, Feature::NS) << __func__ << ": Auto-accepting self share.";
       Accept(share_target, base::DoNothing());
+    } else {
+      CD_LOG(INFO, Feature::NS) << __func__ << ": Can't auto-accept transfer.";
     }
   }
 

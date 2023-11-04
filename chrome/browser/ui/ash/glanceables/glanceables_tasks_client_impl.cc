@@ -23,15 +23,19 @@
 #include "google_apis/common/api_error_codes.h"
 #include "google_apis/common/request_sender.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/tasks/tasks_api_request_types.h"
 #include "google_apis/tasks/tasks_api_requests.h"
 #include "google_apis/tasks/tasks_api_response_types.h"
+#include "google_apis/tasks/tasks_api_task_status.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/models/list_model.h"
 
 namespace ash {
 namespace {
 
 using ::google_apis::ApiErrorCode;
+using ::google_apis::tasks::InsertTaskRequest;
 using ::google_apis::tasks::ListTaskListsRequest;
 using ::google_apis::tasks::ListTasksRequest;
 using ::google_apis::tasks::PatchTaskRequest;
@@ -39,7 +43,9 @@ using ::google_apis::tasks::Task;
 using ::google_apis::tasks::TaskLink;
 using ::google_apis::tasks::TaskList;
 using ::google_apis::tasks::TaskLists;
+using ::google_apis::tasks::TaskRequestPayload;
 using ::google_apis::tasks::Tasks;
+using ::google_apis::tasks::TaskStatus;
 
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotationTag =
     net::DefineNetworkTrafficAnnotation("glanceables_tasks_integration", R"(
@@ -105,7 +111,7 @@ std::vector<std::unique_ptr<GlanceablesTask>> ConvertTasks(
   std::vector<std::unique_ptr<GlanceablesTask>> converted_tasks;
   converted_tasks.reserve(root_tasks.size());
   for (const auto* const root_task : root_tasks) {
-    const bool completed = root_task->status() == Task::Status::kCompleted;
+    const bool completed = root_task->status() == TaskStatus::kCompleted;
     const bool has_subtasks = tasks_with_subtasks.contains(root_task->id());
     const bool has_email_link =
         std::find_if(root_task->links().begin(), root_task->links().end(),
@@ -200,6 +206,21 @@ void GlanceablesTasksClientImpl::MarkAsCompleted(
   }
 }
 
+void GlanceablesTasksClientImpl::AddTask(const std::string& task_list_id,
+                                         const std::string& title) {
+  CHECK(!task_list_id.empty());
+  CHECK(!title.empty());
+
+  auto* const request_sender = GetRequestSender();
+  // TODO(b/299317602): update `previous_task_id` parameter if new tasks need to
+  // be added to the end of the list.
+  request_sender->StartRequestWithAuthRetry(std::make_unique<InsertTaskRequest>(
+      request_sender, task_list_id, /*previous_task_id=*/"",
+      TaskRequestPayload{.title = title, .status = TaskStatus::kNeedsAction},
+      base::BindOnce(&GlanceablesTasksClientImpl::OnTaskAdded,
+                     weak_factory_.GetWeakPtr(), task_list_id)));
+}
+
 void GlanceablesTasksClientImpl::OnGlanceablesBubbleClosed(
     GlanceablesTasksClient::OnAllPendingCompletedTasksSavedCallback callback) {
   weak_factory_.InvalidateWeakPtrs();
@@ -224,7 +245,8 @@ void GlanceablesTasksClientImpl::OnGlanceablesBubbleClosed(
                              weak_factory_.GetWeakPtr(), base::Time::Now(),
                              barrier_closure),
               /*task_list_id=*/task_list_ids,
-              /*task_id=*/task_id, Task::Status::kCompleted));
+              /*task_id=*/task_id,
+              TaskRequestPayload{.status = TaskStatus::kCompleted}));
     }
   }
 
@@ -389,6 +411,29 @@ void GlanceablesTasksClientImpl::OnMarkedAsCompleted(
   base::UmaHistogramSparse("Ash.Glanceables.Api.Tasks.PatchTask.Status",
                            status_code);
   on_done.Run();
+}
+
+void GlanceablesTasksClientImpl::OnTaskAdded(
+    const std::string& task_list_id,
+    base::expected<std::unique_ptr<Task>, ApiErrorCode> result) {
+  if (!result.has_value()) {
+    // TODO(b/299317602): propagate `result.error()` to the UI layer.
+    return;
+  }
+
+  const auto iter = tasks_in_task_lists_.find(task_list_id);
+  if (iter == tasks_in_task_lists_.end()) {
+    return;
+  }
+
+  // TODO(b/299317602): update `index` parameter if new tasks need to be added
+  // to the end of the list.
+  iter->second.AddAt(
+      /*index=*/0,
+      std::make_unique<GlanceablesTask>(
+          result.value()->id(), result.value()->title(),
+          /*completed=*/false, /*due=*/absl::nullopt, /*has_subtasks=*/false,
+          /*has_email_link=*/false, /*has_notes=*/false));
 }
 
 google_apis::RequestSender* GlanceablesTasksClientImpl::GetRequestSender() {

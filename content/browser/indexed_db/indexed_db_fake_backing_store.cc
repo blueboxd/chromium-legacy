@@ -8,11 +8,11 @@
 
 #include "base/files/file_path.h"
 #include "base/no_destructor.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task/sequenced_task_runner.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_factory.h"
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
-#include "content/browser/indexed_db/indexed_db_leveldb_env.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 
 namespace content {
@@ -21,11 +21,6 @@ namespace {
 using blink::IndexedDBKey;
 using blink::IndexedDBKeyRange;
 using leveldb::Status;
-
-TransactionalLevelDBFactory* GetTransactionalLevelDBFactory() {
-  static base::NoDestructor<DefaultTransactionalLevelDBFactory> factory;
-  return factory.get();
-}
 
 const storage::BucketLocator GetBucketLocator(blink::StorageKey storage_key) {
   auto bucket_locator = storage::BucketLocator();
@@ -37,14 +32,11 @@ const storage::BucketLocator GetBucketLocator(blink::StorageKey storage_key) {
 
 IndexedDBFakeBackingStore::IndexedDBFakeBackingStore()
     : IndexedDBBackingStore(IndexedDBBackingStore::Mode::kInMemory,
-                            GetTransactionalLevelDBFactory(),
                             storage::BucketLocator(GetBucketLocator(
                                 blink::StorageKey::CreateFromStringForTesting(
                                     "http://localhost:81"))),
                             base::FilePath(),
                             std::unique_ptr<TransactionalLevelDBDatabase>(),
-                            /*blob_storage_context=*/nullptr,
-                            /*file_system_access_context=*/nullptr,
                             std::make_unique<storage::FilesystemProxy>(
                                 storage::FilesystemProxy::UNRESTRICTED,
                                 base::FilePath()),
@@ -56,14 +48,11 @@ IndexedDBFakeBackingStore::IndexedDBFakeBackingStore(
     ReportOutstandingBlobsCallback report_outstanding_blobs,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : IndexedDBBackingStore(IndexedDBBackingStore::Mode::kOnDisk,
-                            GetTransactionalLevelDBFactory(),
                             storage::BucketLocator(GetBucketLocator(
                                 blink::StorageKey::CreateFromStringForTesting(
                                     "http://localhost:81"))),
                             base::FilePath(),
                             std::unique_ptr<TransactionalLevelDBDatabase>(),
-                            /*blob_storage_context=*/nullptr,
-                            /*file_system_access_context=*/nullptr,
                             std::make_unique<storage::FilesystemProxy>(
                                 storage::FilesystemProxy::UNRESTRICTED,
                                 base::FilePath()),
@@ -71,6 +60,11 @@ IndexedDBFakeBackingStore::IndexedDBFakeBackingStore(
                             std::move(report_outstanding_blobs),
                             task_runner) {}
 IndexedDBFakeBackingStore::~IndexedDBFakeBackingStore() = default;
+
+void IndexedDBFakeBackingStore::TearDown(
+    base::WaitableEvent* signal_on_destruction) {
+  signal_on_destruction->Signal();
+}
 
 Status IndexedDBFakeBackingStore::CreateDatabase(
     blink::IndexedDBDatabaseMetadata& metadata) {

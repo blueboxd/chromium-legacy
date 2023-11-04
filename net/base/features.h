@@ -213,10 +213,6 @@ NET_EXPORT BASE_DECLARE_FEATURE(kShortLaxAllowUnsafeThreshold);
 // This only has an effect if the cookie defaults to SameSite=Lax.
 NET_EXPORT BASE_DECLARE_FEATURE(kSameSiteDefaultChecksMethodRigorously);
 
-#if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
-NET_EXPORT BASE_DECLARE_FEATURE(kCertDualVerificationTrialFeature);
-#endif  // BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
-
 #if BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
 // When enabled, use the Chrome Root Store instead of the system root store
 NET_EXPORT BASE_DECLARE_FEATURE(kChromeRootStoreUsed);
@@ -308,12 +304,6 @@ NET_EXPORT BASE_DECLARE_FEATURE(kWaitForFirstPartySetsInit);
 // the cookie was set.
 NET_EXPORT BASE_DECLARE_FEATURE(kPartitionedCookies);
 
-// When enabled, then we allow partitioned cookies even if kPartitionedCookies
-// is disabled only if the cookie partition key contains a nonce. So far, this
-// is used to create temporary cookie jar partitions for fenced and anonymous
-// frames.
-NET_EXPORT BASE_DECLARE_FEATURE(kNoncedPartitionedCookies);
-
 // When enabled, cookie-related code will treat cookies containing '\0', '\r',
 // and '\n' as invalid and reject the cookie.
 NET_EXPORT BASE_DECLARE_FEATURE(kBlockTruncatedCookies);
@@ -383,9 +373,6 @@ NET_EXPORT BASE_DECLARE_FEATURE(kAsyncMultiPortPath);
 // Enables custom proxy configuration for the IP Protection experimental proxy.
 NET_EXPORT BASE_DECLARE_FEATURE(kEnableIpProtectionProxy);
 
-// Sets the name of the IP protection proxy.
-NET_EXPORT extern const base::FeatureParam<std::string> kIpPrivacyProxyServer;
-
 // Sets the name of the IP protection auth token server.
 NET_EXPORT extern const base::FeatureParam<std::string> kIpPrivacyTokenServer;
 
@@ -452,10 +439,6 @@ NET_EXPORT BASE_DECLARE_FEATURE(kEnableSchemeBoundCookies);
 // Enables enabling third-party cookie blocking from the command line.
 NET_EXPORT BASE_DECLARE_FEATURE(kForceThirdPartyCookieBlocking);
 
-// If the HTTP Cache Transaction write lock should be acquired async with
-// sending the HTTP request.
-NET_EXPORT BASE_DECLARE_FEATURE(kAsyncCacheLock);
-
 // Enables Early Hints on HTTP/1.1.
 NET_EXPORT BASE_DECLARE_FEATURE(kEnableEarlyHintsOnHttp11);
 
@@ -470,12 +453,19 @@ NET_EXPORT BASE_DECLARE_FEATURE(kDigestAuthEnableSecureAlgorithms);
 
 NET_EXPORT BASE_DECLARE_FEATURE(kThirdPartyPartitionedStorageAllowedByDefault);
 
-// Gate access to cookie deprecation API which allows developers to opt in
-// server side testing without cookies. This doesn't actually do anything in
-// terms of deprecating cookies.
-// (See
-// https://developer.chrome.com/en/docs/privacy-sandbox/chrome-testing/#mode-a)
-NET_EXPORT BASE_DECLARE_FEATURE(kCookieDeprecationFacilitatedTestingLabels);
+// Enables the HTTP extensible priorities "priority" header.
+// RFC 9218
+NET_EXPORT BASE_DECLARE_FEATURE(kPriorityHeader);
+
+// Enables a more efficient implementation of SpdyHeadersToHttpResponse().
+NET_EXPORT BASE_DECLARE_FEATURE(kSpdyHeadersToHttpResponseUseBuilder);
+
+// Enables comparison of old and new implementations of
+// SpdyHeadersToHttpResponse at runtime and calls DumpWithoutCrashing() if they
+// differ. This is slow, so should never be enabled in Beta or Stable channels.
+// TODO(https://crbug.com/1485670): Remove this once we have run an experiment
+// for two weeks on Dev.
+NET_EXPORT BASE_DECLARE_FEATURE(kSpdyHeadersToHttpResponseVerifyCorrectness);
 
 }  // namespace net::features
 

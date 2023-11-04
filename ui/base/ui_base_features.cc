@@ -62,18 +62,6 @@ BASE_FEATURE(kSettingsShowsPerKeyboardSettings,
              "InputMethodIntegratedSettings",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Experimental shortcut handling and mapping to address i18n issues.
-// https://crbug.com/1067269
-BASE_FEATURE(kNewShortcutMapping,
-             "NewShortcutMapping",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-bool IsNewShortcutMappingEnabled() {
-  // kImprovedKeyboardShortcuts supercedes kNewShortcutMapping.
-  return !IsImprovedKeyboardShortcutsEnabled() &&
-         base::FeatureList::IsEnabled(kNewShortcutMapping);
-}
-
 BASE_FEATURE(kDeprecateAltClick,
              "DeprecateAltClick",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -134,12 +122,6 @@ bool AreF11AndF12ShortcutsEnabled() {
   return base::FeatureList::IsEnabled(features::kSupportF11AndF12KeyShortcuts);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
-BASE_FEATURE(kRedundantImeCompositionClearing,
-             "RedundantImeCompositionClearing",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
 
 // Update of the virtual keyboard settings UI as described in
 // https://crbug.com/876901.
@@ -377,6 +359,17 @@ bool IsKeyboardAccessibleTooltipEnabled() {
   return keyboard_accessible_tooltip_enabled;
 }
 
+// Enables trackpad gestures to dismiss notifications. Also, updates gestures to
+// only dismiss notifications when swiping towards the notification center.
+// TODO(https://b/288337080): Remove this flag once the feature is ready.
+BASE_FEATURE(kNotificationGesturesUpdate,
+             "NotificationGesturesUpdate",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsNotificationGesturesUpdateEnabled() {
+  return base::FeatureList::IsEnabled(kNotificationGesturesUpdate);
+}
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 BASE_FEATURE(kHandwritingGesture,
              "HandwritingGesture",
@@ -564,6 +557,10 @@ ChromeRefresh2023Level GetChromeRefresh2023Level() {
       GetChromeRefresh2023LevelUncached();
   return level;
 }
+
+BASE_FEATURE(kBubbleMetricsApi,
+             "BubbleMetricsApi",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if !BUILDFLAG(IS_LINUX)
 BASE_FEATURE(kWebUiSystemFont,

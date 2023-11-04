@@ -143,7 +143,8 @@ void PreloadingAttemptImpl::SetTriggeringOutcome(
     case PreloadingTriggeringOutcome::kReady:
       CHECK(preloading_type_ == PreloadingType::kPrefetch ||
             preloading_type_ == PreloadingType::kPrerender ||
-            preloading_type_ == PreloadingType::kNoStatePrefetch);
+            preloading_type_ == PreloadingType::kNoStatePrefetch ||
+            preloading_type_ == PreloadingType::kLinkPreview);
       if (!ready_time_) {
         ready_time_ = elapsed_timer_.Elapsed();
       }
@@ -260,6 +261,17 @@ void PreloadingAttemptImpl::RecordPreloadingAttemptMetrics(
     if (eagerness_) {
       builder.SetSpeculationEagerness(static_cast<int64_t>(eagerness_.value()));
     }
+    if (service_worker_registered_check_) {
+      builder.SetPrefetchServiceWorkerRegisteredCheck(
+          static_cast<int64_t>(service_worker_registered_check_.value()));
+    }
+    if (service_worker_registered_check_duration_) {
+      builder.SetPrefetchServiceWorkerRegisteredForURLCheckDuration(
+          ukm::GetExponentialBucketMin(
+              service_worker_registered_check_duration_.value()
+                  .InMicroseconds(),
+              kServiceWorkerRegisteredCheckDurationBucketSpacing));
+    }
     builder.Record(ukm_recorder);
   }
 
@@ -284,6 +296,17 @@ void PreloadingAttemptImpl::RecordPreloadingAttemptMetrics(
     }
     if (eagerness_) {
       builder.SetSpeculationEagerness(static_cast<int64_t>(eagerness_.value()));
+    }
+    if (service_worker_registered_check_) {
+      builder.SetPrefetchServiceWorkerRegisteredCheck(
+          static_cast<int64_t>(service_worker_registered_check_.value()));
+    }
+    if (service_worker_registered_check_duration_) {
+      builder.SetPrefetchServiceWorkerRegisteredForURLCheckDuration(
+          ukm::GetExponentialBucketMin(
+              service_worker_registered_check_duration_.value()
+                  .InMicroseconds(),
+              kServiceWorkerRegisteredCheckDurationBucketSpacing));
     }
     builder.Record(ukm_recorder);
   }
@@ -325,6 +348,16 @@ void PreloadingAttemptImpl::SetSpeculationEagerness(
       << "predictor_type_: " << predictor_type_.name()
       << " (ukm_value = " << predictor_type_.ukm_value() << ")";
   eagerness_ = eagerness;
+}
+
+void PreloadingAttemptImpl::SetServiceWorkerRegisteredCheck(
+    ServiceWorkerRegisteredCheck check) {
+  service_worker_registered_check_ = check;
+}
+
+void PreloadingAttemptImpl::SetServiceWorkerRegisteredCheckDuration(
+    base::TimeDelta duration) {
+  service_worker_registered_check_duration_ = duration;
 }
 
 // Used for StateTransitions matching.

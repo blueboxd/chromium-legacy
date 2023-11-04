@@ -27,13 +27,11 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
-import org.chromium.base.UserDataHost;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabSelectionType;
-import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
@@ -105,10 +103,6 @@ public class ImplicitPriceDropSubscriptionsManagerUnitTest {
     TabModelSelector mTabModelSelector;
     @Mock
     ShoppingService mShoppingService;
-    @Mock
-    CriticalPersistedTabData mCriticalPersistedTabData1;
-    @Mock
-    CriticalPersistedTabData mCriticalPersistedTabData2;
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
     @Captor
@@ -123,14 +117,14 @@ public class ImplicitPriceDropSubscriptionsManagerUnitTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mTab1 = prepareTab(TAB1_ID, URL1, POSITION1, mCriticalPersistedTabData1);
-        mTab2 = prepareTab(TAB2_ID, URL2, POSITION2, mCriticalPersistedTabData2);
+        mTab1 = prepareTab(TAB1_ID, URL1, POSITION1);
+        mTab2 = prepareTab(TAB2_ID, URL2, POSITION2);
         // Mock that tab1 and tab2 are both stale tabs.
         long fakeTimestamp = System.currentTimeMillis()
                 - TimeUnit.SECONDS.toMillis(ShoppingPersistedTabData.getStaleTabThresholdSeconds())
                 + TimeUnit.DAYS.toMillis(7);
-        doReturn(fakeTimestamp).when(mCriticalPersistedTabData1).getTimestampMillis();
-        doReturn(fakeTimestamp).when(mCriticalPersistedTabData2).getTimestampMillis();
+        doReturn(fakeTimestamp).when(mTab1).getTimestampMillis();
+        doReturn(fakeTimestamp).when(mTab2).getTimestampMillis();
         mSubscription1 = new CommerceSubscription(SubscriptionType.PRICE_TRACK,
                 IdentifierType.OFFER_ID, OFFER1_ID, ManagementType.CHROME_MANAGED, null);
         mSubscription2 = new CommerceSubscription(SubscriptionType.PRICE_TRACK,
@@ -157,8 +151,13 @@ public class ImplicitPriceDropSubscriptionsManagerUnitTest {
 
     @Test
     public void testInitialSubscription_WithDuplicateURL() {
-        mTab1 = prepareTab(TAB1_ID, URL1, POSITION1, mCriticalPersistedTabData1);
-        mTab2 = prepareTab(TAB2_ID, URL1, POSITION2, mCriticalPersistedTabData2);
+        mTab1 = prepareTab(TAB1_ID, URL1, POSITION1);
+        mTab2 = prepareTab(TAB2_ID, URL1, POSITION2);
+        long fakeTimestamp = System.currentTimeMillis()
+                - TimeUnit.SECONDS.toMillis(ShoppingPersistedTabData.getStaleTabThresholdSeconds())
+                + TimeUnit.DAYS.toMillis(7);
+        doReturn(fakeTimestamp).when(mTab1).getTimestampMillis();
+        doReturn(fakeTimestamp).when(mTab2).getTimestampMillis();
         mImplicitSubscriptionsManager.setupForFetchOfferId(mTab1, mTab2, OFFER1_ID, OFFER2_ID);
 
         initializeSubscriptionsAndVerify(true, false);
@@ -177,7 +176,7 @@ public class ImplicitPriceDropSubscriptionsManagerUnitTest {
         doReturn(System.currentTimeMillis()
                 - TimeUnit.SECONDS.toMillis(ShoppingPersistedTabData.getStaleTabThresholdSeconds())
                 - TimeUnit.DAYS.toMillis(7))
-                .when(mCriticalPersistedTabData1)
+                .when(mTab1)
                 .getTimestampMillis();
 
         initializeSubscriptionsAndVerify(false, true);
@@ -186,7 +185,7 @@ public class ImplicitPriceDropSubscriptionsManagerUnitTest {
 
     @Test
     public void testInitialSubscription_TabTooNew() {
-        doReturn(System.currentTimeMillis()).when(mCriticalPersistedTabData1).getTimestampMillis();
+        doReturn(System.currentTimeMillis()).when(mTab1).getTimestampMillis();
 
         initializeSubscriptionsAndVerify(false, true);
         verifyEligibleSubscriptionMetrics(1, 2);
@@ -218,8 +217,8 @@ public class ImplicitPriceDropSubscriptionsManagerUnitTest {
 
     @Test
     public void testUnsubscribe_NotUnique() {
-        mTab1 = prepareTab(TAB1_ID, URL1, POSITION1, mCriticalPersistedTabData1);
-        mTab2 = prepareTab(TAB2_ID, URL1, POSITION2, mCriticalPersistedTabData2);
+        mTab1 = prepareTab(TAB1_ID, URL1, POSITION1);
+        mTab2 = prepareTab(TAB2_ID, URL1, POSITION2);
         mImplicitSubscriptionsManager.setupForFetchOfferId(mTab1, mTab2, OFFER1_ID, OFFER2_ID);
 
         mTabModelObserverCaptor.getValue().tabClosureCommitted(mTab1);
@@ -241,17 +240,13 @@ public class ImplicitPriceDropSubscriptionsManagerUnitTest {
         verify(mTabModel).removeObserver(any(TabModelObserver.class));
     }
 
-    private TabImpl prepareTab(int id, String urlString, int position,
-            CriticalPersistedTabData criticalPersistedTabData) {
+    private TabImpl prepareTab(int id, String urlString, int position) {
         TabImpl tab = mock(TabImpl.class);
         doReturn(id).when(tab).getId();
         GURL gurl = new GURL(urlString);
         doReturn(gurl).when(tab).getUrl();
         doReturn(gurl).when(tab).getOriginalUrl();
         doReturn(tab).when(mTabModel).getTabAt(position);
-        UserDataHost userDataHost = new UserDataHost();
-        userDataHost.setUserData(CriticalPersistedTabData.class, criticalPersistedTabData);
-        doReturn(userDataHost).when(tab).getUserDataHost();
         return tab;
     }
 

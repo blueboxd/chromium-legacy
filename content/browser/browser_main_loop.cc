@@ -102,6 +102,7 @@
 #include "content/browser/webui/content_web_ui_configs.h"
 #include "content/browser/webui/url_data_manager.h"
 #include "content/common/content_switches_internal.h"
+#include "content/common/features.h"
 #include "content/common/pseudonymization_salt.h"
 #include "content/common/skia_utils.h"
 #include "content/common/thread_pool_util.h"
@@ -766,6 +767,13 @@ void BrowserMainLoop::CreateMessageLoopForEarlyShutdown() {
 int BrowserMainLoop::PreCreateThreads() {
   TRACE_EVENT0("startup", "BrowserMainLoop::PreCreateThreads");
 
+  // This must occur before metrics recording initialization in
+  // ChromeBrowserMainParts::PreCreateThreads() because it's used in
+  // BackgroundTracingMetricsProvider.
+  tracing_controller_ = std::make_unique<content::TracingControllerImpl>();
+  background_tracing_manager_ =
+      content::BackgroundTracingManagerImpl::CreateInstance();
+
   // Make sure no accidental call to initialize GpuDataManager earlier.
   DCHECK(!GpuDataManagerImpl::Initialized());
   if (parts_) {
@@ -956,9 +964,6 @@ int BrowserMainLoop::CreateThreads() {
 int BrowserMainLoop::PostCreateThreads() {
   TRACE_EVENT0("startup", "BrowserMainLoop::PostCreateThreads");
 
-  tracing_controller_ = std::make_unique<content::TracingControllerImpl>();
-  background_tracing_manager_ =
-      content::BackgroundTracingManagerImpl::CreateInstance();
   content::BackgroundTracingManagerImpl::GetInstance()
       .AddMetadataGeneratorFunction();
 

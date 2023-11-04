@@ -39,7 +39,7 @@ absl::optional<std::string> DecodeBase64Fixed(std::string_view field,
                                               const std::string& in,
                                               std::array<uint8_t, N>& out) {
   std::string decoded;
-  if (!base::Base64Decode(in, &decoded)) {
+  if (!base::Base64Decode(in, &decoded, base::Base64DecodePolicy::kForgiving)) {
     return base::StrCat({"Field '", field, "' is not valid base64."});
   }
   if (decoded.size() != N) {
@@ -162,8 +162,6 @@ base::expected<AdditionalBidDecodeResult, std::string> DecodeAdditionalBid(
   }
 
   auto synth_interest_group = std::make_unique<StorageInterestGroup>();
-  synth_interest_group->interest_group.owner =
-      url::Origin::Create(ig_bidding_url);
   synth_interest_group->interest_group.name = *ig_name;
   synth_interest_group->interest_group.owner = std::move(ig_owner).value();
   synth_interest_group->interest_group.bidding_url = std::move(ig_bidding_url);

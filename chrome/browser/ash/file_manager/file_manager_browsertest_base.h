@@ -20,8 +20,8 @@
 #include "chrome/browser/ash/login/test/logged_in_user_mixin.h"
 #include "chrome/browser/extensions/mixin_based_extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/test/base/devtools_listener.h"
+#include "components/webapps/common/web_app_id.h"
 #include "content/public/browser/devtools_agent_host_observer.h"
 
 class NotificationDisplayServiceTester;
@@ -179,17 +179,11 @@ class FileManagerBrowserTestBase
     // Whether test should use report-only mode for the file transfer connector.
     bool file_transfer_connector_report_only = false;
 
-    // Whether tests should enable V2 of search.
-    bool enable_search_v2 = false;
-
     // Whether tests should enable image content search.
     bool enable_image_content_search = false;
 
     // Whether test should run with the fsps-in-recents flag.
     bool enable_fsps_in_recents = false;
-
-    // Whether tests should enable OS Feedback.
-    bool enable_os_feedback = false;
 
     // Whether tests should enable Google One offer Files banner.
     bool enable_google_one_offer_files_banner = false;
@@ -313,9 +307,6 @@ class FileManagerBrowserTestBase
   // Returns the WebContents associated the last open window of the
   // File Manager app.
   content::WebContents* GetLastOpenWindowWebContents();
-
-  // Loads the test utils in the WebContents.
-  void LoadSwaTestUtils(content::WebContents*);
 
   // Returns appId from its WebContents.
   std::string GetSwaAppId(content::WebContents*);

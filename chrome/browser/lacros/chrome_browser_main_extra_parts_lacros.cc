@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/unguessable_token.h"
 #include "build/chromeos_buildflags.h"
@@ -53,19 +54,26 @@
 #include "chrome/browser/memory/oom_kills_monitor.h"
 #include "chrome/browser/metrics/structured/chrome_structured_metrics_recorder.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/ui/quick_answers/quick_answers_controller_impl.h"
+#include "chrome/browser/ui/quick_answers/read_write_cards_manager_impl.h"
 #include "chromeos/components/kiosk/kiosk_utils.h"
-#include "chromeos/components/quick_answers/public/cpp/controller/quick_answers_controller.h"
-#include "chromeos/components/quick_answers/quick_answers_client.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
 #include "chromeos/startup/browser_params_proxy.h"
 #include "chromeos/ui/clipboard_history/clipboard_history_util.h"
 #include "components/arc/common/intent_helper/arc_icon_cache_delegate.h"
+#include "components/nacl/common/buildflags.h"
 #include "extensions/common/features/feature_session_type.h"
 #include "services/device/public/cpp/geolocation/geolocation_manager.h"
 #include "ui/views/controls/views_text_services_context_menu_chromeos.h"
+
+#if BUILDFLAG(ENABLE_NACL)
+#include "base/base_paths.h"
+#include "base/files/file_util.h"
+#include "base/path_service.h"
+#include "chrome/common/chrome_paths.h"
+#include "chromeos/lacros/lacros_paths.h"
+#endif  // BUILDFLAG(ENABLE_NACL)
 
 namespace {
 
@@ -134,6 +142,23 @@ void ChromeBrowserMainExtraPartsLacros::PreProfileInit() {
   DCHECK(!device::GeolocationManager::GetInstance());
   device::GeolocationManager::SetInstance(
       SystemGeolocationSourceLacros::CreateGeolocationManagerOnLacros());
+
+#if BUILDFLAG(ENABLE_NACL)
+  // Ash ships PNaCl as part of rootfs, but Lacros doesn't ship it at all.
+  // Since the required binaries are guaranteed to be the same, even on
+  // different Chrome versions (since 2016), just use the PNaCl binaries shipped
+  // with Ash.
+  base::FilePath ash_resources_dir;
+  if (!base::PathService::Get(chromeos::lacros_paths::ASH_RESOURCES_DIR,
+                              &ash_resources_dir)) {
+    LOG(WARNING) << "Could not find Ash PNaCl - PNaCl may be unavailable";
+    base::debug::DumpWithoutCrashing();
+  } else {
+    base::FilePath ash_pnacl =
+        ash_resources_dir.Append(FILE_PATH_LITERAL("pnacl"));
+    base::PathService::Override(chrome::DIR_PNACL_COMPONENT, ash_pnacl);
+  }
+#endif  // BUILDFLAG(ENABLE_NACL)
 }
 
 void ChromeBrowserMainExtraPartsLacros::PostBrowserStart() {
@@ -271,11 +296,8 @@ void ChromeBrowserMainExtraPartsLacros::PostProfileInit(
     return;
   }
 
-  quick_answers_controller_ = std::make_unique<QuickAnswersControllerImpl>();
-  QuickAnswersController::Get()->SetClient(
-      std::make_unique<quick_answers::QuickAnswersClient>(
-          g_browser_process->shared_url_loader_factory(),
-          QuickAnswersController::Get()->GetQuickAnswersDelegate()));
+  read_write_cards_manager_ =
+      std::make_unique<chromeos::ReadWriteCardsManagerImpl>();
 
   // Initialize the metric reporting manager so we can start recording relevant
   // telemetry metrics and events on managed devices. The reporting manager

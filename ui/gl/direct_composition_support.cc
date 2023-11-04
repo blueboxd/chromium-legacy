@@ -76,7 +76,7 @@ void SetOverlayCapsValid(bool valid) {
   g_overlay_caps_valid = valid;
 }
 
-// A warpper of IDXGIOutput4::CheckOverlayColorSpaceSupport()
+// A wrapper of IDXGIOutput4::CheckOverlayColorSpaceSupport()
 bool CheckOverlayColorSpaceSupport(
     DXGI_FORMAT dxgi_format,
     DXGI_COLOR_SPACE_TYPE dxgi_color_space,
@@ -582,6 +582,62 @@ bool DirectCompositionScaledOverlaysSupported() {
     // Assume scaling is supported for BGRA overlays.
     return true;
   }
+}
+
+bool CheckVideoProcessorFormatSupport(DXGI_FORMAT dxgi_format) {
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device = g_d3d11_device;
+  if (!d3d11_device) {
+    DLOG(ERROR) << "Failed to retrieve D3D11 device";
+    return false;
+  }
+
+  Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device;
+  if (FAILED(d3d11_device.As(&video_device))) {
+    DLOG(ERROR) << "Failed to retrieve video device";
+    return false;
+  }
+
+  UINT device = 0;
+  if (!SUCCEEDED(d3d11_device->CheckFormatSupport(dxgi_format, &device))) {
+    DLOG(ERROR) << "Failed to check supported format";
+    return false;
+  }
+
+  D3D11_VIDEO_PROCESSOR_CONTENT_DESC desc;
+  desc.InputFrameFormat = D3D11_VIDEO_FRAME_FORMAT_PROGRESSIVE;
+  desc.InputFrameRate.Numerator = 60;
+  desc.InputFrameRate.Denominator = 1;
+  desc.InputWidth = 1920;
+  desc.InputHeight = 1080;
+  desc.OutputFrameRate.Numerator = 60;
+  desc.OutputFrameRate.Denominator = 1;
+  desc.OutputWidth = 1920;
+  desc.OutputHeight = 1080;
+  desc.Usage = D3D11_VIDEO_USAGE_PLAYBACK_NORMAL;
+
+  Microsoft::WRL::ComPtr<ID3D11VideoProcessorEnumerator> video_enumerator;
+  if (!SUCCEEDED(video_device->CreateVideoProcessorEnumerator(
+          &desc, &video_enumerator))) {
+    DLOG(ERROR) << "Failed to create video processor enumerator";
+    return false;
+  }
+
+  if (!video_enumerator) {
+    DLOG(ERROR) << "Failed to locate video enumerator";
+    return false;
+  }
+
+  UINT enumerator = 0;
+  if (!SUCCEEDED(video_enumerator->CheckVideoProcessorFormat(dxgi_format,
+                                                             &enumerator))) {
+    DLOG(ERROR) << "Failed to check video processor format";
+    video_enumerator.Reset();
+    return false;
+  }
+
+  video_enumerator.Reset();
+  return (enumerator & D3D11_VIDEO_PROCESSOR_FORMAT_SUPPORT_OUTPUT) &&
+         (device & D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_OUTPUT);
 }
 
 UINT GetDirectCompositionOverlaySupportFlags(DXGI_FORMAT format) {

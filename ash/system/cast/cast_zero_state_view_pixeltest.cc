@@ -46,12 +46,14 @@ TEST_F(CastZeroStateViewPixelTest, Basics) {
       ->unified_system_tray_controller()
       ->ShowCastDetailedView();
   TrayDetailedView* detailed_view =
-      system_tray->bubble()->quick_settings_view()->GetDetailedViewForTest();
+      system_tray->bubble()
+          ->quick_settings_view()
+          ->GetDetailedViewForTest<TrayDetailedView>();
   ASSERT_TRUE(detailed_view);
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "cast_zero_state_view",
-      /*revision_number=*/7, detailed_view));
+      /*revision_number=*/9, detailed_view));
 }
 
 }  // namespace ash

@@ -30,9 +30,6 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
                                 false);
   registry->RegisterBooleanPref(prefs::kPrivacySandboxM1Restricted, false);
 
-  registry->RegisterBooleanPref(
-      prefs::kPrivacySandboxManuallyControlled, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(prefs::kPrivacySandboxManuallyControlledV2,
                                 false);
   registry->RegisterBooleanPref(prefs::kPrivacySandboxPageViewed, false);
@@ -58,7 +55,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(
       prefs::kPrivacySandboxFirstPartySetsDataAccessAllowedInitialized, false);
   registry->RegisterBooleanPref(
-      prefs::kPrivacySandboxFirstPartySetsEnabled, true,
+      prefs::kPrivacySandboxRelatedWebsiteSetsEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
   registry->RegisterBooleanPref(prefs::kPrivacySandboxTopicsConsentGiven,

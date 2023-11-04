@@ -280,7 +280,6 @@
 <translation id="3226405216343213872">מתבצע חיפוש של סורקים</translation>
 <translation id="3226657629376379887">תפריט הפעולות בפריסה</translation>
 <translation id="3246869037381808805">משימות הדפסה בנות יותר מיום אחד יוסרו</translation>
-<translation id="3248223063252096240">בלעדי ל-<ph name="PRODUCT_NAME" /></translation>
 <translation id="3268178239013324452">נכשלה – דלת המדפסת פתוחה</translation>
 <translation id="3275729367986477355">תמונת הדמות</translation>
 <translation id="3283504360622356314">{0,plural, =1{עריכת הקובץ}one{עריכת הקבצים}two{עריכת הקבצים}other{עריכת הקבצים}}</translation>
@@ -921,6 +920,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">בחירת <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
 <translation id="8151185429379586178">כלים למפתחים</translation>
+<translation id="8152370627892825"><ph name="DESCRIPTION" />,‏ <ph name="ACCELERATOR_INFO" />.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183974620058026102">צירוף</translation>
 <translation id="8206859287963243715">סלולארי</translation>

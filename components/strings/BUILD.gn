@@ -6,6 +6,7 @@ import("//build/config/features.gni")
 import("//build/config/locales.gni")
 import("//components/feed/features.gni")
 import("//components/services/screen_ai/buildflags/features.gni")
+import("//components/signin/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//pdf/features.gni")
 import("//ppapi/buildflags/buildflags.gni")
@@ -23,7 +24,7 @@ if (is_android) {
 
 group("strings") {
   public_deps = [
-    ":components_chromium_strings",
+    ":components_branded_strings",
     ":components_locale_settings",
     ":components_strings",
   ]
@@ -38,6 +39,7 @@ grit("components_strings") {
     "enable_plugins=$enable_plugins",
     "enable_print_preview=$enable_print_preview",
     "enable_screen_ai_service=$enable_screen_ai_service",
+    "enable_search_engine_choice=$enable_search_engine_choice",
     "enable_vr=$enable_vr",
     "use_blink=$use_blink",
   ]
@@ -61,9 +63,9 @@ if (is_android) {
   }
 }
 
-grit("components_chromium_strings") {
+grit("components_branded_strings") {
   source = "../components_${branding_path_product}_strings.grd"
-  outputs = [ "grit/components_chromium_strings.h" ]
+  outputs = [ "grit/components_branded_strings.h" ]
   foreach(locale, all_chrome_locales) {
     outputs += [ "components_${branding_path_product}_strings_$locale.pak" ]
   }

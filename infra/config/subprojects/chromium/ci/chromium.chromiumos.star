@@ -92,45 +92,6 @@ ci.builder(
 )
 
 ci.builder(
-    name = "Linux ChromiumOS Full",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "chromeos",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-            target_platform = builder_config.target_platform.CHROMEOS,
-        ),
-        build_gs_bucket = "chromium-chromiumos-archive",
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "default",
-        short_name = "ful",
-    ),
-    main_console_view = "main",
-    properties = {
-        # The format of these properties is defined at archive/properties.proto
-        "$build/archive": {
-            "source_side_spec_path": [
-                "src",
-                "infra",
-                "archive_config",
-                "linux-chromiumos-full.json",
-            ],
-        },
-    },
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
-)
-
-ci.builder(
     name = "chromeos-amd64-generic-asan-rel",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
@@ -458,66 +419,6 @@ ci.builder(
 )
 
 ci.builder(
-    name = "lacros-amd64-generic-binary-size-rel",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "checkout_lacros_sdk",
-                "chromeos",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_arch = builder_config.target_arch.INTEL,
-            target_bits = 64,
-            target_platform = builder_config.target_platform.CHROMEOS,
-            target_cros_boards = [
-                "amd64-generic",
-            ],
-        ),
-        build_gs_bucket = "chromium-chromiumos-archive",
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "lacros|size",
-    ),
-    main_console_view = "main",
-    properties = {
-        # The format of these properties is defined at archive/properties.proto
-        "$build/archive": {
-            "archive_datas": [
-                # The list of files and dirs should be synched with
-                # _TRACKED_ITEMS in //build/lacros/lacros_resource_sizes.py.
-                {
-                    "files": [
-                        "chrome",
-                        "chrome_100_percent.pak",
-                        "chrome_200_percent.pak",
-                        "chrome_crashpad_handler",
-                        "headless_lib_data.pak",
-                        "headless_lib_strings.pak",
-                        "icudtl.dat",
-                        "nacl_helper",
-                        "nacl_irt_x86_64.nexe",
-                        "resources.pak",
-                        "snapshot_blob.bin",
-                    ],
-                    "dirs": ["locales"],
-                    "gcs_bucket": "chromium-lacros-fishfood",
-                    "gcs_path": "x86_64/{%position%}/lacros.zip",
-                    "archive_type": "ARCHIVE_TYPE_ZIP",
-                },
-            ],
-        },
-    },
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
-)
-
-ci.builder(
     name = "lacros-amd64-generic-rel",
     branch_selector = branches.selector.CROS_BRANCHES,
     builder_spec = builder_config.builder_spec(
@@ -557,6 +458,7 @@ ci.builder(
 
 ci.builder(
     name = "lacros-amd64-generic-rel-skylab",
+    branch_selector = branches.selector.CROS_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -583,9 +485,6 @@ ci.builder(
             gs_bucket = "chromium-ci-skylab",
         ),
     ),
-    sheriff_rotations = args.ignore_default(None),
-    # TODO(crbug.com/1399674): Enable tree closing when stable.
-    tree_closing = False,
     console_view_entry = consoles.console_view_entry(
         category = "lacros|x64",
         short_name = "skylab",
@@ -612,7 +511,7 @@ ci.builder(
             target_arch = builder_config.target_arch.ARM,
             target_bits = 32,
             target_platform = builder_config.target_platform.CHROMEOS,
-            target_cros_boards = "jacuzzi:arm-generic",
+            target_cros_boards = "arm-generic",
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
         skylab_upload_location = builder_config.skylab_upload_location(
@@ -646,7 +545,7 @@ ci.builder(
             target_arch = builder_config.target_arch.ARM,
             target_bits = 64,
             target_platform = builder_config.target_platform.CHROMEOS,
-            target_cros_boards = "kevin:arm64-generic",
+            target_cros_boards = "arm64-generic",
         ),
         build_gs_bucket = "chromium-chromiumos-archive",
         skylab_upload_location = builder_config.skylab_upload_location(
@@ -931,5 +830,6 @@ ci.builder(
         short_name = "cfm",
     ),
     main_console_view = "main",
+    contact_team_email = "core-devices-eng@google.com",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )

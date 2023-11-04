@@ -390,8 +390,8 @@ class CONTENT_EXPORT NavigationRequest
   bool WasStartedFromContextMenu() override;
   const GURL& GetSearchableFormURL() override;
   const std::string& GetSearchableFormEncoding() override;
-  ReloadType GetReloadType() override;
-  RestoreType GetRestoreType() override;
+  ReloadType GetReloadType() const override;
+  RestoreType GetRestoreType() const override;
   const GURL& GetBaseURLForDataURL() override;
   const GlobalRequestID& GetGlobalRequestID() override;
   bool IsDownload() override;
@@ -410,7 +410,7 @@ class CONTENT_EXPORT NavigationRequest
   const absl::optional<GURL>& GetInitiatorBaseUrl() override;
   const std::vector<std::string>& GetDnsAliases() override;
   bool IsSameProcess() override;
-  NavigationEntry* GetNavigationEntry() override;
+  NavigationEntry* GetNavigationEntry() const override;
   int GetNavigationEntryOffset() override;
   void RegisterSubresourceOverride(
       blink::mojom::TransferrableURLLoaderPtr transferrable_loader) override;
@@ -1274,7 +1274,8 @@ class CONTENT_EXPORT NavigationRequest
     kNone = 0,
     kInitialFrame = 1,
     kCrashedFrame = 2,
-    kMaxValue = kCrashedFrame,
+    kNavigationTransition = 3,
+    kMaxValue = kNavigationTransition,
   };
 
   // Remember if this navigation triggered an early swap of a speculative
@@ -1283,6 +1284,9 @@ class CONTENT_EXPORT NavigationRequest
   void set_early_render_frame_host_swap_type(
       EarlyRenderFrameHostSwapType type) {
     early_render_frame_host_swap_type_ = type;
+  }
+  EarlyRenderFrameHostSwapType early_render_frame_host_swap_type() {
+    return early_render_frame_host_swap_type_;
   }
 
  private:
@@ -1796,7 +1800,7 @@ class CONTENT_EXPORT NavigationRequest
 
   // Convenience function to return the NavigationControllerImpl this
   // NavigationRequest is in.
-  NavigationControllerImpl* GetNavigationController();
+  NavigationControllerImpl* GetNavigationController() const;
 
   // Convenience function to return the PrerenderHostRegistry this
   // NavigationRequest can be associated with.

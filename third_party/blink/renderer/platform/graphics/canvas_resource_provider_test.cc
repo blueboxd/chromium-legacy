@@ -50,7 +50,6 @@ class CanvasResourceProviderTest : public Test {
     test_context_provider_ = viz::TestContextProvider::Create();
     auto* test_gl = test_context_provider_->UnboundTestContextGL();
     test_gl->set_max_texture_size(kMaxTextureSize);
-    test_gl->set_supports_scanout_shared_images(true);
     test_gl->set_supports_shared_image_swap_chain(true);
     test_gl->set_supports_gpu_memory_buffer_format(gfx::BufferFormat::RGBA_8888,
                                                    true);
@@ -58,8 +57,14 @@ class CanvasResourceProviderTest : public Test {
                                                    true);
     test_gl->set_supports_gpu_memory_buffer_format(gfx::BufferFormat::RGBA_F16,
                                                    true);
-    InitializeSharedGpuContext(test_context_provider_.get(),
-                               &image_decode_cache_);
+
+    gpu::SharedImageCapabilities shared_image_caps;
+    shared_image_caps.supports_scanout_shared_images = true;
+    test_context_provider_->SharedImageInterface()->SetCapabilities(
+        shared_image_caps);
+
+    InitializeSharedGpuContextGLES2(test_context_provider_.get(),
+                                    &image_decode_cache_);
     context_provider_wrapper_ = SharedGpuContext::ContextProviderWrapper();
   }
 
@@ -182,18 +187,15 @@ TEST_F(CanvasResourceProviderTest,
 #endif
 
   // Same resource and sync token if we query again without updating.
-  auto resource = provider->ProduceCanvasResource(
-      CanvasResourceProvider::FlushReason::kTesting);
+  auto resource = provider->ProduceCanvasResource(FlushReason::kTesting);
   auto sync_token = resource->GetSyncToken();
   ASSERT_TRUE(resource);
-  EXPECT_EQ(resource, provider->ProduceCanvasResource(
-                          CanvasResourceProvider::FlushReason::kTesting));
+  EXPECT_EQ(resource, provider->ProduceCanvasResource(FlushReason::kTesting));
   EXPECT_EQ(sync_token, resource->GetSyncToken());
 
   // Resource updated after draw.
   provider->Canvas()->clear(SkColors::kWhite);
-  auto new_resource = provider->ProduceCanvasResource(
-      CanvasResourceProvider::FlushReason::kTesting);
+  auto new_resource = provider->ProduceCanvasResource(FlushReason::kTesting);
   EXPECT_NE(resource, new_resource);
   EXPECT_NE(sync_token, new_resource->GetSyncToken());
 
@@ -206,8 +208,7 @@ TEST_F(CanvasResourceProviderTest,
   std::move(release_callback).Run(std::move(resource), sync_token, false);
 
   provider->Canvas()->clear(SkColors::kBlack);
-  auto resource_again = provider->ProduceCanvasResource(
-      CanvasResourceProvider::FlushReason::kTesting);
+  auto resource_again = provider->ProduceCanvasResource(FlushReason::kTesting);
   EXPECT_EQ(resource_ptr, resource_again);
   EXPECT_NE(sync_token, resource_again->GetSyncToken());
 }
@@ -227,23 +228,19 @@ TEST_F(CanvasResourceProviderTest,
   ASSERT_TRUE(provider->IsValid());
 
   // Same resource returned until the canvas is updated.
-  auto image =
-      provider->Snapshot(CanvasResourceProvider::FlushReason::kTesting);
+  auto image = provider->Snapshot(FlushReason::kTesting);
   ASSERT_TRUE(image);
-  auto new_image =
-      provider->Snapshot(CanvasResourceProvider::FlushReason::kTesting);
+  auto new_image = provider->Snapshot(FlushReason::kTesting);
   EXPECT_EQ(image->GetMailboxHolder().mailbox,
             new_image->GetMailboxHolder().mailbox);
-  EXPECT_EQ(
-      provider
-          ->ProduceCanvasResource(CanvasResourceProvider::FlushReason::kTesting)
-          ->GetOrCreateGpuMailbox(kOrderingBarrier),
-      image->GetMailboxHolder().mailbox);
+  EXPECT_EQ(provider->ProduceCanvasResource(FlushReason::kTesting)
+                ->GetOrCreateGpuMailbox(kOrderingBarrier),
+            image->GetMailboxHolder().mailbox);
 
   // Resource updated after draw.
   provider->Canvas()->clear(SkColors::kWhite);
-  provider->FlushCanvas(CanvasResourceProvider::FlushReason::kTesting);
-  new_image = provider->Snapshot(CanvasResourceProvider::FlushReason::kTesting);
+  provider->FlushCanvas(FlushReason::kTesting);
+  new_image = provider->Snapshot(FlushReason::kTesting);
   EXPECT_NE(new_image->GetMailboxHolder().mailbox,
             image->GetMailboxHolder().mailbox);
 
@@ -251,11 +248,10 @@ TEST_F(CanvasResourceProviderTest,
   auto original_mailbox = image->GetMailboxHolder().mailbox;
   image.reset();
   provider->Canvas()->clear(SkColors::kBlack);
-  provider->FlushCanvas(CanvasResourceProvider::FlushReason::kTesting);
-  EXPECT_EQ(original_mailbox,
-            provider->Snapshot(CanvasResourceProvider::FlushReason::kTesting)
-                ->GetMailboxHolder()
-                .mailbox);
+  provider->FlushCanvas(FlushReason::kTesting);
+  EXPECT_EQ(
+      original_mailbox,
+      provider->Snapshot(FlushReason::kTesting)->GetMailboxHolder().mailbox);
 }
 
 TEST_F(CanvasResourceProviderTest, NoRecycleIfLastRefCallback) {
@@ -272,29 +268,29 @@ TEST_F(CanvasResourceProviderTest, NoRecycleIfLastRefCallback) {
   ASSERT_TRUE(provider->IsValid());
 
   scoped_refptr<StaticBitmapImage> snapshot1 =
-      provider->Snapshot(CanvasResourceProvider::FlushReason::kTesting);
+      provider->Snapshot(FlushReason::kTesting);
   ASSERT_TRUE(snapshot1);
 
   // Set up a LastUnrefCallback that recycles the resource asynchronously,
   // similarly to what OffscreenCanvasPlaceholder would do.
-  provider->ProduceCanvasResource(CanvasResourceProvider::FlushReason::kTesting)
+  provider->ProduceCanvasResource(FlushReason::kTesting)
       ->SetLastUnrefCallback(
           base::BindOnce([](scoped_refptr<CanvasResource> resource) {}));
 
   // Resource updated after draw.
   provider->Canvas()->clear(SkColors::kWhite);
-  provider->FlushCanvas(CanvasResourceProvider::FlushReason::kTesting);
+  provider->FlushCanvas(FlushReason::kTesting);
   scoped_refptr<StaticBitmapImage> snapshot2 =
-      provider->Snapshot(CanvasResourceProvider::FlushReason::kTesting);
+      provider->Snapshot(FlushReason::kTesting);
   EXPECT_NE(snapshot2->GetMailboxHolder().mailbox,
             snapshot1->GetMailboxHolder().mailbox);
 
   auto snapshot1_mailbox = snapshot1->GetMailboxHolder().mailbox;
   snapshot1.reset();  // resource not recycled due to LastUnrefCallback
   provider->Canvas()->clear(SkColors::kBlack);
-  provider->FlushCanvas(CanvasResourceProvider::FlushReason::kTesting);
+  provider->FlushCanvas(FlushReason::kTesting);
   scoped_refptr<StaticBitmapImage> snapshot3 =
-      provider->Snapshot(CanvasResourceProvider::FlushReason::kTesting);
+      provider->Snapshot(FlushReason::kTesting);
   // confirm resource is not recycled.
   EXPECT_NE(snapshot3->GetMailboxHolder().mailbox, snapshot1_mailbox);
 }
@@ -320,13 +316,10 @@ TEST_F(CanvasResourceProviderTest,
   ASSERT_TRUE(provider->IsValid());
 
   // Disabling copy-on-write forces a copy each time the resource is queried.
-  auto resource = provider->ProduceCanvasResource(
-      CanvasResourceProvider::FlushReason::kTesting);
-  EXPECT_NE(
-      resource->GetOrCreateGpuMailbox(kOrderingBarrier),
-      provider
-          ->ProduceCanvasResource(CanvasResourceProvider::FlushReason::kTesting)
-          ->GetOrCreateGpuMailbox(kOrderingBarrier));
+  auto resource = provider->ProduceCanvasResource(FlushReason::kTesting);
+  EXPECT_NE(resource->GetOrCreateGpuMailbox(kOrderingBarrier),
+            provider->ProduceCanvasResource(FlushReason::kTesting)
+                ->GetOrCreateGpuMailbox(kOrderingBarrier));
 }
 
 TEST_F(CanvasResourceProviderTest, CanvasResourceProviderBitmap) {
@@ -573,9 +566,8 @@ TEST_F(CanvasResourceProviderTest, FlushForImage) {
   MemoryManagedPaintCanvas* dst_canvas =
       static_cast<MemoryManagedPaintCanvas*>(dst_provider->Canvas());
 
-  PaintImage paint_image =
-      src_provider->Snapshot(CanvasResourceProvider::FlushReason::kTesting)
-          ->PaintImageForCurrentFrame();
+  PaintImage paint_image = src_provider->Snapshot(FlushReason::kTesting)
+                               ->PaintImageForCurrentFrame();
   PaintImage::ContentId src_content_id = paint_image.GetContentIdForFrame(0u);
 
   EXPECT_FALSE(dst_canvas->IsCachingImage(src_content_id));
@@ -587,8 +579,7 @@ TEST_F(CanvasResourceProviderTest, FlushForImage) {
   // Modify the canvas to trigger OnFlushForImage
   src_provider->Canvas()->clear(SkColors::kWhite);
   // So that all the cached draws are executed
-  src_provider->ProduceCanvasResource(
-      CanvasResourceProvider::FlushReason::kTesting);
+  src_provider->ProduceCanvasResource(FlushReason::kTesting);
 
   // The paint canvas may have moved
   dst_canvas = static_cast<MemoryManagedPaintCanvas*>(dst_provider->Canvas());

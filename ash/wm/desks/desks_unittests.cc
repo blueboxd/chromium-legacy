@@ -27,6 +27,8 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/system/toast_data.h"
 #include "ash/public/cpp/test/test_shelf_item_delegate.h"
+#include "ash/public/cpp/window_finder.h"
+#include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/hotseat_widget.h"
@@ -174,8 +176,9 @@ std::unique_ptr<aura::Window> CreateTransientWindow(
   window->Init(ui::LAYER_NOT_DRAWN);
   window->SetBounds(bounds);
   ::wm::AddTransientChild(transient_parent, window.get());
-  aura::client::ParentWindowWithContext(
-      window.get(), transient_parent->GetRootWindow(), bounds);
+  aura::client::ParentWindowWithContext(window.get(),
+                                        transient_parent->GetRootWindow(),
+                                        bounds, display::kInvalidDisplayId);
   window->Show();
   return window;
 }
@@ -4057,6 +4060,8 @@ TEST_P(DesksTest, DragAllOverviewWindowsToOtherDesksNotEndClamshellSplitView) {
   auto* split_view_controller =
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
+  EXPECT_TRUE(RootWindowController::ForWindow(win0.get())
+                  ->split_view_overview_session());
 
   // Drag |win1| to the other desk.
   DragItemToPoint(overview_session->GetOverviewItemForWindow(win1.get()),
@@ -5405,6 +5410,12 @@ class DesksAcceleratorsTest : public DesksTest,
       ui::mojom::SixPackShortcutModifier blocked_modifier,
       ui::mojom::SixPackShortcutModifier active_modifier,
       int device_id) override {}
+
+  absl::optional<ui::mojom::ExtendedFkeysModifier> GetExtendedFkeySetting(
+      int device_id,
+      ui::KeyboardCode key_code) override {
+    return absl::nullopt;
+  }
 
   void SendAccelerator(ui::KeyboardCode key_code, int flags) {
     ui::test::EventGenerator* generator = GetEventGenerator();
@@ -9039,38 +9050,6 @@ TEST_P(DesksCloseAllTest,
   EXPECT_TRUE(window.window()->transform().IsIdentity());
 }
 
-// Tests that we can undo close-all solely via keyboard navigation (tabbing to
-// the undo toast and pressing enter).
-TEST_P(DesksCloseAllTest, CanUndoDeskClosureThroughKeyboardNavigation) {
-  NewDesk();
-  Shell::Get()->accessibility_controller()->spoken_feedback().SetEnabled(true);
-  EnterOverview();
-  OverviewSession* overview_session =
-      Shell::Get()->overview_controller()->overview_session();
-  ASSERT_TRUE(overview_session);
-
-  // Tab to the first mini view and perform close-all on it.
-  SendKey(ui::VKEY_TAB);
-  ASSERT_EQ(GetPrimaryRootDesksBarView()->mini_views()[0]->desk_preview(),
-            overview_session->focus_cycler()->focused_view());
-
-  SendKey(ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
-  ASSERT_EQ(1u, DesksController::Get()->desks().size());
-
-  // Tab to the undo toast.
-  SendKey(ui::VKEY_TAB);
-  SendKey(ui::VKEY_TAB);
-  SendKey(ui::VKEY_TAB);
-
-  // If the focus cycler returns a nullptr after tabbing, then the undo toast's
-  // button should be focused.
-  ASSERT_FALSE(overview_session->focus_cycler()->focused_view());
-
-  // Pressing enter should restore the desk.
-  SendKey(ui::VKEY_RETURN);
-  EXPECT_EQ(2u, DesksController::Get()->desks().size());
-}
-
 // Tests that we can create the maximum number of desks, remove one, and add one
 // before the toast asking if the user would like to undo goes away.
 TEST_P(DesksCloseAllTest, CanAddLastDeskWhileUndoToastIsBeingDisplayed) {
@@ -9601,8 +9580,11 @@ struct DeskBarTestBasicCase {
   // Indicates if there are any saved desks.
   bool has_saved_desks;
 
-  // The expected bar widget bounds for desk button desk bar.
-  gfx::Rect desk_button_bar_widget_bounds;
+  // The expected bar widget bounds for desk button desk bar without jelly.
+  gfx::Rect desk_button_bar_widget_bounds_no_jelly;
+
+  // The expected bar widget bounds for desk button desk bar with jelly.
+  gfx::Rect desk_button_bar_widget_bounds_with_jelly;
 
   // The expected bar view bounds for desk button desk bar without jelly.
   gfx::Rect desk_button_bar_view_bounds_no_jelly;
@@ -9632,9 +9614,10 @@ TEST_P(DeskBarTest, Basic) {
        .active_desk = 0,
        .shelf_alignment = ShelfAlignment::kBottom,
        .has_saved_desks = true,
-       .desk_button_bar_widget_bounds = {0, 446, 800, 98},
-       .desk_button_bar_view_bounds_no_jelly = {269, 0, 262, 98},
-       .desk_button_bar_view_bounds_with_jelly = {299, 0, 202, 98},
+       .desk_button_bar_widget_bounds_no_jelly = {269, 446, 262, 98},
+       .desk_button_bar_widget_bounds_with_jelly = {299, 446, 202, 98},
+       .desk_button_bar_view_bounds_no_jelly = {0, 0, 262, 98},
+       .desk_button_bar_view_bounds_with_jelly = {0, 0, 202, 98},
        .overview_bar_widget_bounds = {0, 0, 800, 40},
        .overview_bar_view_bounds = {0, 0, 800, 40}},
       {.test_name = "single desk + bottom shelf",
@@ -9642,9 +9625,10 @@ TEST_P(DeskBarTest, Basic) {
        .active_desk = 0,
        .shelf_alignment = ShelfAlignment::kBottom,
        .has_saved_desks = false,
-       .desk_button_bar_widget_bounds = {0, 446, 800, 98},
-       .desk_button_bar_view_bounds_no_jelly = {308, 0, 184, 98},
-       .desk_button_bar_view_bounds_with_jelly = {323, 0, 154, 98},
+       .desk_button_bar_widget_bounds_no_jelly = {308, 446, 184, 98},
+       .desk_button_bar_widget_bounds_with_jelly = {323, 446, 154, 98},
+       .desk_button_bar_view_bounds_no_jelly = {0, 0, 184, 98},
+       .desk_button_bar_view_bounds_with_jelly = {0, 0, 154, 98},
        .overview_bar_widget_bounds = {0, 0, 800, 40},
        .overview_bar_view_bounds = {0, 0, 800, 40}},
       {.test_name = "single desk + left shelf + saved desks",
@@ -9652,7 +9636,8 @@ TEST_P(DeskBarTest, Basic) {
        .active_desk = 0,
        .shelf_alignment = ShelfAlignment::kLeft,
        .has_saved_desks = true,
-       .desk_button_bar_widget_bounds = {56, 254, 744, 98},
+       .desk_button_bar_widget_bounds_no_jelly = {56, 254, 262, 98},
+       .desk_button_bar_widget_bounds_with_jelly = {56, 254, 202, 98},
        .desk_button_bar_view_bounds_no_jelly = {0, 0, 262, 98},
        .desk_button_bar_view_bounds_with_jelly = {0, 0, 202, 98},
        .overview_bar_widget_bounds = {48, 0, 752, 40},
@@ -9662,9 +9647,10 @@ TEST_P(DeskBarTest, Basic) {
        .active_desk = 0,
        .shelf_alignment = ShelfAlignment::kRight,
        .has_saved_desks = true,
-       .desk_button_bar_widget_bounds = {0, 254, 744, 98},
-       .desk_button_bar_view_bounds_no_jelly = {482, 0, 262, 98},
-       .desk_button_bar_view_bounds_with_jelly = {542, 0, 202, 98},
+       .desk_button_bar_widget_bounds_no_jelly = {482, 254, 262, 98},
+       .desk_button_bar_widget_bounds_with_jelly = {542, 254, 202, 98},
+       .desk_button_bar_view_bounds_no_jelly = {0, 0, 262, 98},
+       .desk_button_bar_view_bounds_with_jelly = {0, 0, 202, 98},
        .overview_bar_widget_bounds = {0, 0, 752, 40},
        .overview_bar_view_bounds = {0, 0, 752, 40}},
       {.test_name = "multiple desks + bottom shelf + saved desks",
@@ -9672,9 +9658,10 @@ TEST_P(DeskBarTest, Basic) {
        .active_desk = 0,
        .shelf_alignment = ShelfAlignment::kBottom,
        .has_saved_desks = true,
-       .desk_button_bar_widget_bounds = {0, 446, 800, 98},
-       .desk_button_bar_view_bounds_no_jelly = {191, 0, 418, 98},
-       .desk_button_bar_view_bounds_with_jelly = {221, 0, 358, 98},
+       .desk_button_bar_widget_bounds_no_jelly = {191, 446, 418, 98},
+       .desk_button_bar_widget_bounds_with_jelly = {221, 446, 358, 98},
+       .desk_button_bar_view_bounds_no_jelly = {0, 0, 418, 98},
+       .desk_button_bar_view_bounds_with_jelly = {0, 0, 358, 98},
        .overview_bar_widget_bounds = {0, 0, 800, 98},
        .overview_bar_view_bounds = {0, 0, 800, 98}},
   };
@@ -9717,7 +9704,9 @@ TEST_P(DeskBarTest, Basic) {
       EXPECT_THAT(desk_bar_view->IsZeroState(), test.desks.size() == 1);
     } else {
       EXPECT_THAT(desk_bar_widget->GetWindowBoundsInScreen(),
-                  test.desk_button_bar_widget_bounds);
+                  enable_jellyroll_
+                      ? test.desk_button_bar_widget_bounds_with_jelly
+                      : test.desk_button_bar_widget_bounds_no_jelly);
       EXPECT_THAT(desk_bar_view->bounds(),
                   enable_jellyroll_
                       ? test.desk_button_bar_view_bounds_with_jelly
@@ -9773,10 +9762,11 @@ TEST_P(DeskBarTest, BasicSecondaryDisplay) {
     EXPECT_FALSE(desk_bar_view->IsZeroState());
   } else {
     EXPECT_THAT(desk_bar_widget->GetWindowBoundsInScreen(),
-                gfx::Rect(800, 446, 800, 98));
+                enable_jellyroll_ ? gfx::Rect(1084, 446, 232, 98)
+                                  : gfx::Rect(1069, 446, 262, 98));
     EXPECT_THAT(desk_bar_view->bounds(), enable_jellyroll_
-                                             ? gfx::Rect(284, 0, 232, 98)
-                                             : gfx::Rect(269, 0, 262, 98));
+                                             ? gfx::Rect(0, 0, 232, 98)
+                                             : gfx::Rect(0, 0, 262, 98));
     EXPECT_FALSE(desk_bar_view->IsZeroState());
   }
 
@@ -10879,6 +10869,150 @@ TEST_P(DeskBarTest, BottomLockedShelf) {
   GetPrimaryShelf()->SetAlignment(ShelfAlignment::kBottomLocked);
 }
 
+// Tests that we can undo close-all solely via keyboard navigation (tabbing to
+// the undo toast and pressing enter).
+TEST_P(DeskBarTest, CanUndoDeskClosureThroughKeyboardNavigation) {
+  // Scenarios in which we can try to undo desk closure. If the active desk is
+  // removed, we close the desk bar and immediately focus the undo button.
+  enum class DeskRemovalMethod {
+    kInactiveDeskRemovedForwardTab,
+    kInactiveDeskRemovedReverseTab,
+    kActiveDeskRemoved,
+  };
+
+  struct {
+    const std::string scope_trace;
+    const DeskRemovalMethod desk_removal_method;
+    const int expected_tab_count;
+  } kTestCases[] = {
+      {base::StringPrintf("Forward tabbing to the undo button after removing "
+                          "an inactive desk %s",
+                          (bar_type_ == DeskBarViewBase::Type::kDeskButton
+                               ? "in desk button desk bar"
+                               : "in overview desk bar")),
+       DeskRemovalMethod::kInactiveDeskRemovedForwardTab,
+       bar_type_ == DeskBarViewBase::Type::kDeskButton ? 8 : 4},
+      {base::StringPrintf("Reverse tabbing to the undo button after removing "
+                          "an inactive desk %s",
+                          (bar_type_ == DeskBarViewBase::Type::kDeskButton
+                               ? "in desk button desk bar"
+                               : "in overview desk bar")),
+       DeskRemovalMethod::kInactiveDeskRemovedReverseTab,
+       bar_type_ == DeskBarViewBase::Type::kDeskButton ? 1 : 4},
+      {base::StringPrintf(
+           "Activating the undo button after removing the active desk %s",
+           (bar_type_ == DeskBarViewBase::Type::kDeskButton
+                ? "in desk button desk bar"
+                : "in overview desk bar")),
+       DeskRemovalMethod::kActiveDeskRemoved,
+       bar_type_ == DeskBarViewBase::Type::kDeskButton ? 0 : 6},
+  };
+
+  NewDesk();
+  NewDesk();
+  Shell::Get()->accessibility_controller()->spoken_feedback().SetEnabled(true);
+
+  OpenDeskBar();
+  auto* desk_bar = GetDeskBarView();
+  const auto& mini_views = desk_bar->mini_views();
+
+  DesksController* desks_controller = DesksController::Get();
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(test_case.scope_trace);
+
+    // Tab to the first mini view.
+    SendKey(ui::VKEY_TAB);
+
+    // If we are not closing the active desk, close the next desk instead.
+    if (test_case.desk_removal_method !=
+        DeskRemovalMethod::kActiveDeskRemoved) {
+      SendKey(ui::VKEY_TAB);
+      SendKey(ui::VKEY_TAB);
+
+      // The desk button desk bar adds the close-all button to the tab order, so
+      // we need to include an extra tab for that.
+      if (bar_type_ == DeskBarViewBase::Type::kDeskButton) {
+        SendKey(ui::VKEY_TAB);
+
+        ASSERT_EQ(mini_views[1]->desk_preview(),
+                  desk_bar->GetWidget()->GetFocusManager()->GetFocusedView());
+      } else {
+        ASSERT_EQ(mini_views[1]->desk_preview(), Shell::Get()
+                                                     ->overview_controller()
+                                                     ->overview_session()
+                                                     ->focus_cycler()
+                                                     ->focused_view());
+      }
+
+      SendKey(ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+    } else if (bar_type_ == DeskBarViewBase::Type::kDeskButton) {
+      if (bar_type_ == DeskBarViewBase::Type::kDeskButton) {
+        ASSERT_EQ(mini_views[0]->desk_preview(),
+                  desk_bar->GetWidget()->GetFocusManager()->GetFocusedView());
+      } else {
+        ASSERT_EQ(mini_views[0]->desk_preview(), Shell::Get()
+                                                     ->overview_controller()
+                                                     ->overview_session()
+                                                     ->focus_cycler()
+                                                     ->focused_view());
+      }
+
+      // In the desk button desk bar, we run the desk switch animation when
+      // removing the active desk.
+      DeskSwitchAnimationWaiter waiter;
+      SendKey(ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+      waiter.Wait();
+    } else {
+      if (bar_type_ == DeskBarViewBase::Type::kDeskButton) {
+        ASSERT_EQ(mini_views[0]->desk_preview(),
+                  desk_bar->GetWidget()->GetFocusManager()->GetFocusedView());
+      } else {
+        ASSERT_EQ(mini_views[0]->desk_preview(), Shell::Get()
+                                                     ->overview_controller()
+                                                     ->overview_session()
+                                                     ->focus_cycler()
+                                                     ->focused_view());
+      }
+
+      SendKey(ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+    }
+
+    ASSERT_EQ(2u, desks_controller->desks().size());
+
+    // Tab to the undo toast.
+    for (int i = 0; i < test_case.expected_tab_count; i++) {
+      SendKey(ui::VKEY_TAB,
+              test_case.desk_removal_method ==
+                      DeskRemovalMethod::kInactiveDeskRemovedReverseTab
+                  ? ui::EF_SHIFT_DOWN
+                  : ui::EF_NONE);
+    }
+
+    ASSERT_TRUE(bar_type_ == DeskBarViewBase::Type::kDeskButton
+                    ? desks_controller->IsUndoToastHighlighted()
+                    : !Shell::Get()
+                           ->overview_controller()
+                           ->overview_session()
+                           ->focus_cycler()
+                           ->focused_view());
+
+    // Pressing undo in the desk button desk bar after closing the active desk
+    // will switch us back to the removed desk.
+    if (test_case.desk_removal_method ==
+            DeskRemovalMethod::kActiveDeskRemoved &&
+        bar_type_ == DeskBarViewBase::Type::kDeskButton) {
+      DeskSwitchAnimationWaiter waiter;
+      SendKey(ui::VKEY_RETURN);
+      waiter.Wait();
+    } else {
+      SendKey(ui::VKEY_RETURN);
+    }
+
+    ASSERT_EQ(3u, desks_controller->desks().size());
+  }
+}
+
 namespace {
 
 struct DeskButtonTestParams {
@@ -11431,14 +11565,7 @@ TEST_P(DeskButtonTest, BarBoundsWithRTL) {
   ASSERT_TRUE(base::i18n::IsRTL());
 
   OpenDeskBar();
-  gfx::Rect bounds = GetDeskBarView()->bounds();
-  if (GetParam().alignment == ShelfAlignment::kBottom) {
-    EXPECT_EQ(bounds, gfx::Rect(323, 0, 154, 98));
-  } else if (GetParam().alignment == ShelfAlignment::kLeft) {
-    EXPECT_EQ(bounds, gfx::Rect(590, 0, 154, 98));
-  } else {
-    EXPECT_EQ(bounds, gfx::Rect(0, 0, 154, 98));
-  }
+  EXPECT_EQ(GetDeskBarView()->bounds(), gfx::Rect(0, 0, 154, 98));
 
   CloseDeskBar();
 
@@ -11486,6 +11613,24 @@ TEST_P(DeskButtonTest, TabOrder) {
   // Focus should have been passed to the hotseat widget now that the next desk
   // button isn't visible.
   ASSERT_FALSE(GetDeskButton()->next_desk_button()->GetEnabled());
+}
+
+// Tests that desk bar is on top of floated window.
+TEST_P(DeskButtonTest, BarAboveFloatWindow) {
+  // Create a floated window.
+  std::unique_ptr<aura::Window> floated_window = CreateAppWindow();
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  ASSERT_TRUE(WindowState::Get(floated_window.get())->IsFloated());
+
+  // Open desk bar, set the floated window to be the same bounds, then check if
+  // the bar is above the floated window.
+  OpenDeskBar();
+  auto* desk_bar_view = GetDeskBarView();
+  floated_window->SetBounds(desk_bar_view->GetBoundsInScreen());
+  EXPECT_EQ(
+      GetTopmostWindowAtPoint(desk_bar_view->GetBoundsInScreen().CenterPoint(),
+                              /*ignore=*/{}),
+      desk_bar_view->GetWidget()->GetNativeWindow());
 }
 
 // TODO(afakhry): Add more tests:

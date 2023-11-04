@@ -187,7 +187,7 @@ void SavedTabGroupButton::PaintButtonContents(gfx::Canvas* canvas) {
   // header when there is no title.
   const ui::ColorProvider* const cp = GetColorProvider();
   SkColor text_and_outline_color =
-      cp->GetColor(GetTabGroupDialogColorId(tab_group_color_id_));
+      cp->GetColor(GetSavedTabGroupForegroundColorId(tab_group_color_id_));
 
   // Draw squircle (rounded rect).
   cc::PaintFlags flags;
@@ -224,12 +224,11 @@ void SavedTabGroupButton::SetTextProperties(const SavedTabGroup& group) {
 
 void SavedTabGroupButton::UpdateButtonLayout() {
   // Relies on logic in theme_helper.cc to determine dark/light palette.
-  ui::ColorId text_and_outline_color =
-      GetTabGroupDialogColorId(tab_group_color_id_);
   ui::ColorId background_color =
       GetTabGroupBookmarkColorId(tab_group_color_id_);
 
-  SetEnabledTextColorIds(GetTabGroupDialogColorId(tab_group_color_id_));
+  SetEnabledTextColorIds(
+      GetSavedTabGroupForegroundColorId(tab_group_color_id_));
   SetBackground(views::CreateThemedRoundedRectBackground(background_color,
                                                          kButtonRadius));
 
@@ -241,8 +240,9 @@ void SavedTabGroupButton::UpdateButtonLayout() {
     SetBorder(views::CreateEmptyBorder(insets));
   } else {
     std::unique_ptr<views::Border> border =
-        views::CreateThemedRoundedRectBorder(kBorderThickness, kButtonRadius,
-                                             text_and_outline_color);
+        views::CreateThemedRoundedRectBorder(
+            kBorderThickness, kButtonRadius,
+            GetSavedTabGroupOutlineColorId(tab_group_color_id_));
     SetBorder(views::CreatePaddedBorder(std::move(border), insets));
   }
 
@@ -362,16 +362,31 @@ SavedTabGroupButton::CreateDialogModelForContextMenu() {
           : l10n_util::GetStringUTF16(
                 IDS_TAB_GROUP_HEADER_CXMENU_OPEN_GROUP_IN_NEW_WINDOW);
 
+  bool should_enable_move_menu_item = true;
+  if (local_group_id_.has_value()) {
+    const Browser* const browser_with_local_group_id =
+        SavedTabGroupUtils::GetBrowserWithTabGroupId(local_group_id_.value());
+    const TabStripModel* const tab_strip_model =
+        browser_with_local_group_id->tab_strip_model();
+
+    // Show the menu item if there are tabs outside of the saved group.
+    should_enable_move_menu_item =
+        tab_strip_model->count() != tab_strip_model->group_model()
+                                        ->GetTabGroup(local_group_id_.value())
+                                        ->tab_count();
+  }
+
   dialog_model
       .AddMenuItem(
-          ui::ImageModel::FromVectorIcon(kMoveGroupToNewWindowIcon),
+          ui::ImageModel::FromVectorIcon(kMoveGroupToNewWindowRefreshIcon),
           move_or_open_group_text,
           base::BindRepeating(&SavedTabGroupButton::MoveGroupToNewWindowPressed,
                               base::Unretained(this)),
-          ui::DialogModelMenuItem::Params().SetId(
-              kMoveGroupToNewWindowMenuItem))
+          ui::DialogModelMenuItem::Params()
+              .SetId(kMoveGroupToNewWindowMenuItem)
+              .SetIsEnabled(should_enable_move_menu_item))
       .AddMenuItem(
-          ui::ImageModel::FromVectorIcon(kCloseGroupIcon),
+          ui::ImageModel::FromVectorIcon(kCloseGroupRefreshIcon),
           l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_DELETE_GROUP),
           base::BindRepeating(&SavedTabGroupButton::DeleteGroupPressed,
                               base::Unretained(this)),

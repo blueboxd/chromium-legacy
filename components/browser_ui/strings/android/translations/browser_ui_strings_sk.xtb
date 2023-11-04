@@ -100,6 +100,7 @@
 <translation id="2653659639078652383">Odoslať</translation>
 <translation id="2677748264148917807">Odísť</translation>
 <translation id="2678468611080193228">Vyskúšajte dočasne povoliť súbory cookie tretích strán, čo znamená nižšiu ochranu, ale funkcie webu budú s väčšou pravdepodobnosťou k dispozícii</translation>
+<translation id="2683434792633810741">Chcete odstrániť a resetovať?</translation>
 <translation id="2687403674020088961">Blokovať všetky súbory cookie (neodporúča sa)</translation>
 <translation id="2713106313042589954">Vypnúť kameru</translation>
 <translation id="2717722538473713889">E‑mailové adresy</translation>
@@ -179,6 +180,7 @@
 <translation id="4008040567710660924">Povoliť súbory cookie na konkrétnom webe.</translation>
 <translation id="4046123991198612571">Ďalšia skladba</translation>
 <translation id="4053720452172726777">Prispôsobiť a ovládať Google Chrome</translation>
+<translation id="4149890623864272035">Naozaj chcete odstrániť všetky miestne údaje vrátane súborov cookie a resetovať všetky povolenia pre tento web?</translation>
 <translation id="4149994727733219643">Jednoduché zobrazenie webových stránok</translation>
 <translation id="4151930093518524179">Predvolená lupa</translation>
 <translation id="4165986682804962316">Nastavenia webu</translation>
@@ -196,6 +198,7 @@
 <translation id="4412992751769744546">Povoliť súbory cookie tretích strán</translation>
 <translation id="4428065317363009941">Prispôsobenie reklám</translation>
 <translation id="4434045419905280838">Vyskakovacie okná a presmerovania</translation>
+<translation id="443552056913301231">Touto akciou odstránite všetky miestne údaje vrátane súborov cookie a resetujete všetky povolenia pre <ph name="ORIGIN" /></translation>
 <translation id="4468959413250150279">Vypnúť zvuk na konkrétnom webe.</translation>
 <translation id="4475912480633855319">{COOKIES,plural, =1{# súbor cookie}few{# súbory cookie}many{# cookies}other{# súborov cookie}}</translation>
 <translation id="4478158430052450698">Zjednodušenie prispôsobenia lupy pre rôzne weby</translation>
@@ -205,6 +208,7 @@
 <translation id="4566417217121906555">Vypnúť mikrofón</translation>
 <translation id="4570913071927164677">Podrobnosti</translation>
 <translation id="4598549027014564149">Keď ste v režime inkognito, weby nemôžu pomocou súborov cookie zobraziť vašu aktivitu prehliadania na nich (ani súvisiace weby). Aktivita prehliadania sa nepoužíva ani na prispôsobenie reklám. Funkcie na niektorých weboch nemusia fungovať.</translation>
+<translation id="4644713492825682049">Odstrániť a resetovať</translation>
 <translation id="4645575059429386691">Spravované vaším rodičom</translation>
 <translation id="4670064810192446073">Virtuálna realita</translation>
 <translation id="4751476147751820511">Senzory pohybu alebo svetla</translation>
@@ -235,6 +239,7 @@
 <translation id="5216942107514965959">Naposledy navštívený dnes</translation>
 <translation id="5225463052809312700">Zapnúť kameru</translation>
 <translation id="5234764350956374838">Ignorovať</translation>
+<translation id="5246825184569358663">Touto akciou odstránite všetky miestne údaje vrátane súborov cookie a resetujete všetky povolenia pre doménu <ph name="DOMAIN" /> aj všetky jej podradené weby</translation>
 <translation id="5264323282659631142">Odstrániť <ph name="CHIP_LABEL" /></translation>
 <translation id="528192093759286357">Režim celej obrazovky ukončíte potiahnutím z hornej časti a klepnutím na tlačidlo Späť.</translation>
 <translation id="5300589172476337783">Zobraziť</translation>
@@ -278,11 +283,11 @@
 <translation id="5922853908706496913">Zdieľate obrazovku</translation>
 <translation id="5922967540311291836">Blokovať súbory cookie tretích strán:</translation>
 <translation id="5939518447894949180">Resetovať</translation>
+<translation id="5964247741333118902">Vložený obsah</translation>
 <translation id="5968921426641056619">Zadajte webovú adresu</translation>
 <translation id="5975083100439434680">Oddialiť</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Ovládajte prístup tohto webu do vášho zariadenia</translation>
-<translation id="6018815681665454784">Chcete vymazať a resetovať?</translation>
 <translation id="6040143037577758943">Zavrieť</translation>
 <translation id="6042308850641462728">Viac</translation>
 <translation id="6064125863973209585">Sťahovanie bolo dokončené</translation>
@@ -294,6 +299,7 @@
 <translation id="6192792657125177640">Výnimky</translation>
 <translation id="6196640612572343990">Blokovať súbory cookie tretích strán</translation>
 <translation id="6205314730813004066">Ochrana súkromia pri reklamách</translation>
+<translation id="6207207788774442484">Odstrániť údaje a resetovať povolenia</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> – možnosti</translation>
 <translation id="6231752747840485235">Chcete odinštalovať aplikáciu <ph name="APP_NAME" />?</translation>
 <translation id="6262191102408817757">Na základe vašej poslednej karty</translation>
@@ -302,13 +308,11 @@
 <translation id="6295158916970320988">Všetky weby</translation>
 <translation id="6320088164292336938">Vibrovanie</translation>
 <translation id="6367753977865761591">Na konkrétnom webe môžete blokovať prihlasovanie tretích strán.</translation>
-<translation id="6388207532828177975">Vymazať a resetovať</translation>
 <translation id="6398765197997659313">Ukončiť zobrazenie na celú obrazovku</translation>
 <translation id="640163077447496506">Vyprší dnes</translation>
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Brániť webom používať zariadenie a dáta pre virtuálnu realitu</translation>
 <translation id="6447842834002726250">Súbory cookie</translation>
-<translation id="6467852467360539617">Vymazať údaje a resetovať povolenia</translation>
 <translation id="6500423977866688905">Keď je okno úzke, požiadajte o zobrazenie v mobile</translation>
 <translation id="6527303717912515753">Zdieľať</translation>
 <translation id="652937045869844725">Vyskúšajte povoliť súbory cookie tretích strán, čo znamená nižšiu ochranu, ale funkcie webu budú s väčšou pravdepodobnosťou k dispozícii</translation>
@@ -381,11 +385,9 @@
 <translation id="7846076177841592234">Zrušiť výber</translation>
 <translation id="7882806643839505685">Povoliť zvuk na konkrétnom webe.</translation>
 <translation id="789180354981963912">Blokovať súbory cookie tretích strán v režime inkognito:</translation>
-<translation id="7895868624847501462">Touto akciou vymažete všetky miestne údaje vrátane súborov cookie a resetujete všetky povolenia pre <ph name="DOMAIN" /> aj všetky jej podradené weby</translation>
 <translation id="7940722705963108451">Pripomenúť mi</translation>
 <translation id="7974024493641668069">{COUNT,plural, =1{<ph name="FPS_MEMBERS_COUNT" /> web v skupine webov vlastníka <ph name="FPS_OWNER" />, ktorým sa zobrazuje vaša aktivita v nej}few{<ph name="FPS_MEMBERS_COUNT" /> weby v skupine webov vlastníka <ph name="FPS_OWNER" />, ktorým sa zobrazuje vaša aktivita v nej}many{<ph name="FPS_MEMBERS_COUNT" /> sites in <ph name="FPS_OWNER" />'s group of sites that can see your activity in the group}other{<ph name="FPS_MEMBERS_COUNT" /> webov v skupine webov vlastníka <ph name="FPS_OWNER" />, ktorým sa zobrazuje vaša aktivita v nej}}</translation>
 <translation id="7986741934819883144">Výber kontaktu</translation>
-<translation id="7999064672810608036">Naozaj chcete vymazať všetky miestne dáta tohto webu, vrátane súborov cookie, a resetovať všetky jeho povolenia?</translation>
 <translation id="8007176423574883786">Vypnuté v tomto zariadení</translation>
 <translation id="802154636333426148">Stiahnutie zlyhalo</translation>
 <translation id="8042586301629853791">Zoradiť podľa:</translation>
@@ -409,7 +411,6 @@
 <translation id="8284326494547611709">Titulky</translation>
 <translation id="8300705686683892304">Spravované aplikáciou</translation>
 <translation id="8324158725704657629">Nabudúce sa nepýtať</translation>
-<translation id="8338445138528827481">Touto akciou vymažete všetky miestne údaje vrátane súborov cookie a resetujete všetky povolenia pre <ph name="ORIGIN" /></translation>
 <translation id="8362795839483915693">Navštevované weby môžete priblížiť alebo oddialiť</translation>
 <translation id="8372893542064058268">Povoliť synchronizáciu na pozadí na konkrétnom webe.</translation>
 <translation id="8376384591331888629">Vrátane súborov cookie tretích strán na tomto webe</translation>

@@ -4,9 +4,9 @@
 
 #import "ios/chrome/browser/ui/settings/password/password_sharing/family_picker_view_controller.h"
 
+#import "base/check.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_link_header_footer_item.h"
-#import "ios/chrome/browser/ui/authentication/authentication_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/password/password_sharing/family_picker_view_controller_presentation_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_sharing/password_sharing_constants.h"
@@ -33,7 +33,7 @@ const CGFloat kAccessorySymbolSize = 22;
 
 }  // namespace
 
-@interface FamilyPickerViewController ()
+@interface FamilyPickerViewController () <PopoverLabelViewControllerDelegate>
 
 @property(nonatomic, strong) NSArray<RecipientInfoForIOSDisplay*>* recipients;
 
@@ -46,12 +46,6 @@ const CGFloat kAccessorySymbolSize = 22;
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]
-      initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
-                           target:self
-                           action:@selector(cancelButtonTapped)];
-  self.navigationItem.leftBarButtonItem.accessibilityIdentifier =
-      kFamilyPickerCancelButtonId;
   self.navigationItem.title =
       l10n_util::GetNSString(IDS_IOS_PASSWORD_SHARING_TITLE);
   UIBarButtonItem* shareButton = [[UIBarButtonItem alloc]
@@ -62,8 +56,11 @@ const CGFloat kAccessorySymbolSize = 22;
              action:@selector(shareButtonTapped)];
   shareButton.enabled = NO;
   self.navigationItem.rightBarButtonItem = shareButton;
+  self.navigationItem.rightBarButtonItem.accessibilityIdentifier =
+      kFamilyPickerShareButtonId;
 
   self.tableView.allowsMultipleSelection = YES;
+  self.tableView.accessibilityIdentifier = kFamilyPickerTableViewId;
 
   [self loadModel];
 }
@@ -93,7 +90,7 @@ const CGFloat kAccessorySymbolSize = 22;
   if (_recipients[indexPath.row].isEligible) {
     [tableView cellForRowAtIndexPath:indexPath].accessoryView =
         [[UIImageView alloc] initWithImage:[self checkmarkCircleIcon]];
-    self.navigationItem.rightBarButtonItem.enabled = YES;
+    [self setShareButtonStatus];
   }
 }
 
@@ -102,9 +99,7 @@ const CGFloat kAccessorySymbolSize = 22;
   if (_recipients[indexPath.row].isEligible) {
     [tableView cellForRowAtIndexPath:indexPath].accessoryView =
         [[UIImageView alloc] initWithImage:[self circleIcon]];
-    if (tableView.indexPathsForSelectedRows.count == 0) {
-      self.navigationItem.rightBarButtonItem.enabled = NO;
-    }
+    [self setShareButtonStatus];
   }
 }
 
@@ -132,6 +127,7 @@ const CGFloat kAccessorySymbolSize = 22;
   cell.userInteractionEnabled = YES;
   cell.textLabel.numberOfLines = 1;
   cell.detailTextLabel.numberOfLines = 1;
+  cell.accessibilityIdentifier = _recipients[indexPath.row].email;
   if (_recipients[indexPath.row].isEligible) {
     cell.accessoryView = [[UIImageView alloc]
         initWithImage:cell.isSelected ? [self checkmarkCircleIcon]
@@ -142,6 +138,9 @@ const CGFloat kAccessorySymbolSize = 22;
     [infoButton addTarget:self
                    action:@selector(infoButtonTapped:)
          forControlEvents:UIControlEventTouchUpInside];
+    infoButton.accessibilityIdentifier =
+        [NSString stringWithFormat:@"%@ %@", kFamilyPickerInfoButtonId,
+                                   _recipients[indexPath.row].email];
     cell.accessoryView = infoButton;
   }
 
@@ -178,10 +177,37 @@ const CGFloat kAccessorySymbolSize = 22;
       [[SettingsImageDetailTextItem alloc] initWithType:ItemTypeRecipient];
   item.text = recipient.fullName;
   item.detailText = recipient.email;
-  // TODO(crbug.com/1463882): Replace with the actual image of the recipient.
-  item.image = DefaultSymbolTemplateWithPointSize(
-      kPersonCropCircleSymbol, kAccountProfilePhotoDimension);
+  item.image = recipient.profileImage;
   return item;
+}
+
+#pragma mark - Public
+
+- (void)setupLeftBackButton {
+  UIBarButtonItem* backButton = [[UIBarButtonItem alloc]
+      initWithTitle:l10n_util::GetNSString(
+                        IDS_IOS_PASSWORD_SHARING_FAMILY_PICKER_BACK_BUTTON)
+              style:UIBarButtonItemStylePlain
+             target:self
+             action:@selector(backButtonTapped)];
+  self.navigationItem.leftBarButtonItem = backButton;
+  self.navigationItem.leftBarButtonItem.accessibilityIdentifier =
+      kFamilyPickerBackButtonId;
+}
+
+- (void)setupLeftCancelButton {
+  self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
+                           target:self
+                           action:@selector(cancelButtonTapped)];
+  self.navigationItem.leftBarButtonItem.accessibilityIdentifier =
+      kFamilyPickerCancelButtonId;
+}
+
+#pragma mark - PopoverLabelViewControllerDelegate
+
+- (void)didTapLinkURL:(NSURL*)URL {
+  [self.delegate learnMoreLinkWasTapped];
 }
 
 #pragma mark - Private
@@ -213,7 +239,7 @@ const CGFloat kAccessorySymbolSize = 22;
     NSForegroundColorAttributeName : [UIColor colorNamed:kBlueColor],
     NSFontAttributeName :
         [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline],
-    // TODO(crbug.com/1463882): Add HC article link once it's ready.
+    // Opening HC article is handled by the delegate.
     NSLinkAttributeName : @"",
   };
 
@@ -223,7 +249,7 @@ const CGFloat kAccessorySymbolSize = 22;
                                               text, textAttributes,
                                               linkAttributes)
                 secondaryAttributedString:nil];
-
+  popoverViewController.delegate = self;
   popoverViewController.popoverPresentationController.sourceView = button;
   popoverViewController.popoverPresentationController.sourceRect =
       button.bounds;
@@ -235,12 +261,30 @@ const CGFloat kAccessorySymbolSize = 22;
                    completion:nil];
 }
 
+- (void)backButtonTapped {
+  [self.delegate familyPickerNavigatedBack:self];
+}
+
 - (void)cancelButtonTapped {
   [self.delegate familyPickerWasDismissed:self];
 }
 
 - (void)shareButtonTapped {
-  // TODO(crbug.com/1463882): Handle share tap.
+  CHECK(self.tableView.indexPathsForSelectedRows.count > 0u);
+
+  NSMutableArray<RecipientInfoForIOSDisplay*>* selectedRecipients =
+      [NSMutableArray array];
+  for (NSIndexPath* indexPath in self.tableView.indexPathsForSelectedRows) {
+    [selectedRecipients addObject:_recipients[indexPath.row]];
+  }
+  [self.delegate familyPickerClosed:self
+             withSelectedRecipients:selectedRecipients];
+}
+
+// Enables share button if any row is selected or disables it otherwise.
+- (void)setShareButtonStatus {
+  self.navigationItem.rightBarButtonItem.enabled =
+      self.tableView.indexPathsForSelectedRows.count > 0;
 }
 
 @end

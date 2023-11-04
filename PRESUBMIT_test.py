@@ -4716,8 +4716,9 @@ class CheckRawPtrUsageTest(unittest.TestCase):
         # Non-C++ files are allowed.
         MockAffectedFile('test20/renderer/foo.md', ['raw_ptr<int>']),
 
-        # Mentions in a comment are allowed.
-        MockAffectedFile('test30/renderer/foo.cc', ['//raw_ptr<int>']),
+        # Renderer code is generally allowed (except specifically
+        # disallowed directories).
+        MockAffectedFile('test30/renderer/foo.cc', ['raw_ptr<int>']),
     ]
     mock_output_api = MockOutputApi()
     errors = PRESUBMIT.CheckRawPtrUsage(mock_input_api, mock_output_api)
@@ -4726,18 +4727,53 @@ class CheckRawPtrUsageTest(unittest.TestCase):
   def testDisallowedCases(self):
     mock_input_api = MockInputApi()
     mock_input_api.files = [
-        MockAffectedFile('test1/renderer/foo.h', ['raw_ptr<int>']),
-        MockAffectedFile('test2/renderer/foo.cc', ['raw_ptr<int>']),
-        MockAffectedFile('test3/blink/public/web/foo.cc', ['raw_ptr<int>']),
+        MockAffectedFile('test1/third_party/blink/renderer/core/foo.h',
+                         ['raw_ptr<int>']),
+        MockAffectedFile(
+            'test2/third_party/blink/renderer/platform/heap/foo.cc',
+            ['raw_ptr<int>']),
+        MockAffectedFile(
+            'test3/third_party/blink/renderer/platform/wtf/foo.cc',
+            ['raw_ptr<int>']),
+        MockAffectedFile('test4/blink/public/web/foo.cc', ['raw_ptr<int>']),
     ]
     mock_output_api = MockOutputApi()
     errors = PRESUBMIT.CheckRawPtrUsage(mock_input_api, mock_output_api)
     self.assertEqual(len(mock_input_api.files), len(errors))
     for error in errors:
       self.assertTrue(
-          'raw_ptr<T> should not be used in Renderer-only code' in
+          'raw_ptr<T> should not be used in this renderer code' in
           error.message)
 
+class CheckAdvancedMemorySafetyChecksUsageTest(unittest.TestCase):
+  def testAllowedCases(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+        # Non-C++ files are allowed.
+        MockAffectedFile(
+          'test20/renderer/foo.md', ['ADVANCED_MEMORY_SAFETY_CHECKS()']),
+
+        # Mentions in a comment are allowed.
+        MockAffectedFile(
+          'test30/renderer/foo.cc', ['//ADVANCED_MEMORY_SAFETY_CHECKS()']),
+    ]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT.CheckAdvancedMemorySafetyChecksUsage(
+      mock_input_api, mock_output_api)
+    self.assertFalse(errors)
+
+  def testDisallowedCases(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+        MockAffectedFile('test1/foo.h', ['ADVANCED_MEMORY_SAFETY_CHECKS()']),
+        MockAffectedFile('test2/foo.cc', ['ADVANCED_MEMORY_SAFETY_CHECKS()']),
+    ]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT.CheckAdvancedMemorySafetyChecksUsage(mock_input_api, mock_output_api)
+    self.assertEqual(1, len(errors))
+    self.assertTrue(
+        'ADVANCED_MEMORY_SAFETY_CHECKS() macro is managed by' in
+        errors[0].message)
 
 class AssertPythonShebangTest(unittest.TestCase):
     def testError(self):

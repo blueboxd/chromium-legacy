@@ -131,6 +131,9 @@ BASE_DECLARE_FEATURE(kDMServerOAuthForChildUser);
 
 #if !BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kMigrateErrorLoadedPolicyApps);
+
+COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kPreinstalledWebAppInstallation);
 
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -223,18 +226,11 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<std::string> kDnsOverHttpsTemplatesParam;
 COMPONENT_EXPORT(CHROME_FEATURES)
 
-#if BUILDFLAG(IS_ANDROID)
-COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kEarlyLibraryLoad);
-#endif
-
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kEnableAmbientAuthenticationInGuestSession);
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kEnableAmbientAuthenticationInIncognito);
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-BASE_DECLARE_FEATURE(kEnableRestrictedWebApis);
 
 #if !BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -474,6 +470,8 @@ COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kIsolatedWebAppDevMode);
 
 #if BUILDFLAG(IS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kKioskEnableAppService);
+COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kKioskEnableSystemWebApps);
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kKAnonymityService);
@@ -498,6 +496,11 @@ BASE_DECLARE_FEATURE(kKAnonymityServiceOHTTPRequests);
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kKAnonymityServiceStorage);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kLacrosSharedComponentsDir);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kLinuxLowMemoryMonitor);
@@ -836,7 +839,13 @@ extern const base::FeatureParam<double>
     kTrustSafetySentimentSurveyV2ControlGroupProbability;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyV2DownloadWarningUIProbability;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<double>
     kTrustSafetySentimentSurveyV2PasswordCheckProbability;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyV2PasswordProtectionUIProbability;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<double>
     kTrustSafetySentimentSurveyV2SafetyCheckProbability;
@@ -869,7 +878,13 @@ extern const base::FeatureParam<std::string>
     kTrustSafetySentimentSurveyV2ControlGroupTriggerId;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyV2DownloadWarningUITriggerId;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<std::string>
     kTrustSafetySentimentSurveyV2PasswordCheckTriggerId;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyV2PasswordProtectionUITriggerId;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<std::string>
     kTrustSafetySentimentSurveyV2SafetyCheckTriggerId;

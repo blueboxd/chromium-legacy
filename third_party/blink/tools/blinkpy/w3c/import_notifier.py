@@ -18,16 +18,18 @@ from typing import NamedTuple, Optional, Set, Tuple
 from urllib.parse import urljoin
 
 from blinkpy.common import path_finder
+from blinkpy.common.memoized import memoized
 from blinkpy.common.net.luci_auth import LuciAuth
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.w3c import wpt_metadata
 from blinkpy.w3c.common import WPT_GH_URL, WPT_GH_RANGE_URL_TEMPLATE
 from blinkpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
 from blinkpy.w3c.monorail import MonorailAPI, MonorailIssue
+from blinkpy.w3c.buganizer import BuganizerClient
 from blinkpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater
 
 path_finder.bootstrap_wpt_imports()
-from wptrunner import manifestexpected, metadata
+from wptrunner import manifestexpected
 from wptrunner.wptmanifest.backends import static
 
 _log = logging.getLogger(__name__)
@@ -35,8 +37,10 @@ _log = logging.getLogger(__name__)
 GITHUB_COMMIT_PREFIX = WPT_GH_URL + 'commit/'
 SHORT_GERRIT_PREFIX = 'https://crrev.com/c/'
 
-MetadataChange = Tuple[manifestexpected.ExpectedManifest,
-                       manifestexpected.ExpectedManifest]
+USE_BUGANIZER = False
+BUGANIZER_WPT_COMPONENT = "1415957"
+
+MetadataChange = Tuple[io.BytesIO, io.BytesIO]
 
 
 class ImportNotifier:
@@ -52,6 +56,7 @@ class ImportNotifier:
             self.host)
 
         self._monorail_api = MonorailAPI
+        self._buganizer_api = BuganizerClient
         self.default_port = host.port_factory.get()
         self.default_port.set_option_default(
             'test_types', typing.get_args(wpt_metadata.TestType))
@@ -187,11 +192,21 @@ class ImportNotifier:
                     and not self.host.project_config.switched_to_wptrunner):
                 continue
             failing_tests = set()
+            contents_before, contents_after = self._load_metadata_change(
+                test_path)
             for config in self._configs:
-                exp_before, exp_after = self._load_metadata_change(
-                    test_path, config)
-                exp_before.set('type', test_type)
-                exp_after.set('type', test_type)
+                for contents in (contents_before, contents_after):
+                    contents.seek(0)
+                exp_before = static.compile(contents_before,
+                                            config.data,
+                                            manifestexpected.data_cls_getter,
+                                            test_path=test_path)
+                exp_after = static.compile(contents_after,
+                                           config.data,
+                                           manifestexpected.data_cls_getter,
+                                           test_path=test_path)
+                for exp in (exp_before, exp_after):
+                    exp.set('type', test_type)
                 failing_tests.update(
                     self._detect_new_metadata_failures(exp_before, exp_after))
             for test_name in failing_tests:
@@ -202,27 +217,18 @@ class ImportNotifier:
                     TestFailure.from_file(test_name, changed_file,
                                           gerrit_url_with_ps))
 
-    def _load_metadata_change(self, test_path: str,
-                              config: metadata.RunInfo) -> MetadataChange:
+    @memoized
+    def _load_metadata_change(self, test_path: str) -> MetadataChange:
         try:
             rel_test_path = path_finder.RELATIVE_WEB_TESTS + test_path
             contents_before = self.git.show_blob(
                 rel_test_path + wpt_metadata.METADATA_EXTENSION)
         except ScriptError:
             contents_before = b''
-        exp_before = static.compile(io.BytesIO(contents_before),
-                                    config.data,
-                                    manifestexpected.data_cls_getter,
-                                    test_path=test_path)
         metadata_path = self.finder.path_from_web_tests(
             test_path + wpt_metadata.METADATA_EXTENSION)
-        with self.host.filesystem.open_binary_file_for_reading(
-                metadata_path) as metadata_file:
-            exp_after = static.compile(metadata_file,
-                                       config.data,
-                                       manifestexpected.data_cls_getter,
-                                       test_path=test_path)
-        return exp_before, exp_after
+        contents_after = self.host.filesystem.read_binary_file(metadata_path)
+        return io.BytesIO(contents_before), io.BytesIO(contents_after)
 
     def _detect_new_metadata_failures(
             self, exp_before: manifestexpected.ExpectedManifest,
@@ -330,7 +336,11 @@ class ImportNotifier:
                              'was not added to the CC list.')
 
             # component could be None.
-            components = [metadata.component] if metadata.component else None
+            components = [metadata.monorail_component
+                          ] if metadata.monorail_component else None
+            buganizer_public_components = [
+                metadata.buganizer_public_component
+            ] if metadata.buganizer_public_component else None
 
             prologue = ('WPT import {} introduced new failures in {}:\n\n'
                         'List of new failures:\n'.format(
@@ -370,6 +380,10 @@ class ImportNotifier:
                                                    labels=['Test-WebTest'])
             _log.info(bug)
             _log.info("WPT-NOTIFY enabled in %s; adding the bug to the pending list." % full_directory)
+
+            # TODO(crbug.com/1487196): refactor this so we use a common issue which is converted later to
+            # buganizer or monorail specific issue.
+            bug.buganizer_public_components = buganizer_public_components
             bugs.append(bug)
         return bugs
 
@@ -440,10 +454,32 @@ class ImportNotifier:
 
         _log.info('Filing %d bugs in the pending list to Monorail', len(bugs))
         api = self._get_monorail_api(service_account_key_json)
+        buganizer_api = None
+        try:
+            buganizer_api = self._get_buganizer_api()
+        except Exception as e:
+            _log.warning('buganizer instantiation failed')
+            _log.warning(e)
+
         for index, bug in enumerate(bugs, start=1):
-            response = api.insert_issue(bug)
-            _log.info('[%d] Filed bug: %s', index,
-                      MonorailIssue.crbug_link(response['id']))
+            buganizer_component_id = BUGANIZER_WPT_COMPONENT
+            if buganizer_api and USE_BUGANIZER:
+                if bug.buganizer_public_components:
+                    buganizer_component_id = bug.buganizer_public_components[0]
+                buganizer_res = buganizer_api.NewIssue(
+                    title=bug.summary,
+                    description=bug.description,
+                    cc=bug.cc,
+                    status="New",
+                    componentId=buganizer_component_id)
+            else:
+                # using monorail
+                response = api.insert_issue(bug)
+                _log.info('[%d] Filed bug: %s', index,
+                          MonorailIssue.crbug_link(response['id']))
+
+    def _get_buganizer_api(self):
+        return self._buganizer_api()
 
     def _get_monorail_api(self, service_account_key_json):
         if service_account_key_json:

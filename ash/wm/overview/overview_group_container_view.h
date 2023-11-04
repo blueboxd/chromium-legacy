@@ -14,7 +14,7 @@ namespace ash {
 class OverviewGroupItem;
 
 // A view that contains individual overview item widgets that constitute the
-// group item view. This class also implements `OverviewHighlightableView` so
+// group item view. This class also implements `OverviewFocusableView` so
 // that this will be focused in overview.
 class OverviewGroupContainerView : public views::View,
                                    public OverviewFocusableView {
@@ -34,12 +34,23 @@ class OverviewGroupContainerView : public views::View,
   void MaybeSwapFocusedView(bool right) override;
   bool MaybeActivateFocusedViewOnOverviewExit(
       OverviewSession* overview_session) override;
-  gfx::Point GetMagnifierFocusPointInScreen() override;
   void OnFocusableViewFocused() override;
   void OnFocusableViewBlurred() override;
 
+ protected:
+  // views::View:
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+
  private:
+  // Shows or hides the focus ring on `this`.
+  void UpdateFocusState(bool focus);
+
   const raw_ptr<OverviewGroupItem> overview_group_item_;
+
+  bool is_focused_ = false;
 };
 
 }  // namespace ash

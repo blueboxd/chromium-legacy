@@ -26,6 +26,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplicationImpl;
 import org.chromium.chrome.browser.DeferredStartupHandler;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.app.tabmodel.TabModelOrchestrator;
@@ -53,6 +54,7 @@ import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.night_mode.PowerSavingModeMonitor;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
+import org.chromium.chrome.browser.page_insights.PageInsightsCoordinator;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
@@ -200,7 +202,7 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
 
         // mIntentHandler comes from the base class.
         IntentIgnoringCriterion intentIgnoringCriterion =
-                (intent) -> mIntentHandler.shouldIgnoreIntent(intent, isCustomTab());
+                (intent) -> IntentHandler.shouldIgnoreIntent(intent, isCustomTab());
 
         BaseCustomTabActivityModule baseCustomTabsModule = overridenBaseCustomTabFactory != null
                 ? overridenBaseCustomTabFactory.create(mIntentDataProvider,
@@ -515,6 +517,13 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
 
     @Override
     public int getBaseStatusBarColor(Tab tab) {
+        // TODO(b/300419189): Pass the CCT Top Bar Color in AGSA intent after the Chrome side LE for
+        // Page Insights Hub
+        if (PageInsightsCoordinator.isFeatureEnabled()
+                && CustomTabsConnection.getInstance().shouldEnablePageInsightsForIntent(
+                        mIntentDataProvider)) {
+            return getWindow().getContext().getColor(R.color.gm3_baseline_surface_container);
+        }
         return mStatusBarColorProvider.getBaseStatusBarColor(tab);
     }
 

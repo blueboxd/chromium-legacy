@@ -14,7 +14,6 @@
 #import "components/password_manager/core/browser/password_manager_metrics_util.h"
 #import "components/password_manager/core/common/password_manager_constants.h"
 #import "components/password_manager/core/common/password_manager_features.h"
-#import "components/sync/base/features.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_link_header_footer_item.h"
@@ -31,12 +30,13 @@
 #import "ios/chrome/browser/ui/settings/password/password_details/add_password_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_constants.h"
+#import "ios/chrome/browser/ui/settings/password/password_manager_ui_features.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/elements/popover_label_view_controller.h"
-#import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
+#import "ios/chrome/common/ui/reauthentication/reauthentication_protocol.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
-#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
@@ -213,12 +213,10 @@ const int kMinNoteCharAmountForWarning = 901;
   [model addItem:self.passwordTextItem
       toSectionWithIdentifier:SectionIdentifierPassword];
 
-  if (base::FeatureList::IsEnabled(syncer::kPasswordNotesWithBackup)) {
-    self.noteTextItem = [self noteItem];
-    [model addItem:self.noteTextItem
-        toSectionWithIdentifier:SectionIdentifierPassword];
-    [model addSectionWithIdentifier:SectionIdentifierNoteFooter];
-  }
+  self.noteTextItem = [self noteItem];
+  [model addItem:self.noteTextItem
+      toSectionWithIdentifier:SectionIdentifierPassword];
+  [model addSectionWithIdentifier:SectionIdentifierNoteFooter];
 
   [model addSectionWithIdentifier:SectionIdentifierFooter];
   [model setFooter:[self footerItem]
@@ -395,7 +393,15 @@ const int kMinNoteCharAmountForWarning = 901;
           password_manager::metrics_util::
               AddCredentialFromSettingsUserInteractions::
                   kDuplicateCredentialViewed);
-  [self reauthAndShowExistingCredential];
+
+  if (password_manager::features::IsAuthOnEntryV2Enabled()) {
+    NSString* usernameTextValue = _usernameTextItem.textFieldValue;
+    [_delegate showExistingCredential:usernameTextValue];
+  } else {
+    // Require auth before showing existing credential if authentication wasn't
+    // required to open the password manager in the first place.
+    [self reauthAndShowExistingCredential];
+  }
 }
 
 - (UITableViewCellEditingStyle)tableView:(UITableView*)tableView

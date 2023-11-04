@@ -18,7 +18,6 @@
 <translation id="1647558790457890304">„Chromium“ nustatymai</translation>
 <translation id="1722370509450468186">Slaptažodis bus išsaugotas „Google“ paskyroje (<ph name="EMAIL" />).</translation>
 <translation id="1736662517232558588">Išvalyti „Chromium“ duomenys</translation>
-<translation id="1758508597843173586">Užrakinkite inkognito skirtukus, išėję iš „Chromium“ ar perjungę į kitą programą.</translation>
 <translation id="1791845338122684020">Atidaromas „Chromium“ istorijos puslapis.</translation>
 <translation id="1838412507805038478">„Chromium“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šios svetainės sertifikatą.</translation>
 <translation id="1843424232666537147">„Chromium“ yra funkcijų, kurias naudojant lengva tvarkyti internetinius duomenis ir tinklalapių įkėlimo spartą.
@@ -26,7 +25,6 @@
 <translation id="1847960401032164406">Žemėlapiai naršyklėje „Chromium“</translation>
 <translation id="186734497270163706">Palieskite „Chromium“, tada – „Numatytoji naršyklės programa“.</translation>
 <translation id="1867772173333403444">4. Pasirinkite „Chromium“</translation>
-<translation id="1940441310478179027">„Chromium“ aptinka adresus, naudodama „Google“ žemėlapius, kad pateiktų jums nuorodų ir vietinės informacijos.</translation>
 <translation id="2006345422933397527">„Chromium“ nepavyko patikrinti, ar yra naujinių. Pabandykite patikrinti interneto ryšį.</translation>
 <translation id="2042889939382983733">„Chromium“ istorijos peržiūra</translation>
 <translation id="2052320862053429062">„Chromium“ periodiškai tikrina, ar jūsų slaptažodžiai nebuvo įtraukti į internete paskelbtus sąrašus. Tai atliekant, slaptažodžiai ir naudotojų vardai užšifruojami, kad niekas negalėtų jų perskaityti, įskaitant „Google“.</translation>
@@ -45,6 +43,7 @@
 <translation id="2574528844022712255">Žr. „Chromium“ žymes</translation>
 <translation id="2590893390871230428">Sinchronizuoti „Chromium“ duomenis</translation>
 <translation id="2618596336309823556">Įrenginio nustatymų skiltyje atidarykite „<ph name="TEXT_OF_THE_SETTINGS_MENU_ITEM" />“ ir pasirinkite „Chromium“</translation>
+<translation id="2618757400690011108">{COUNT,plural, =1{„Chromium“ padės stebėti šį paketą „Naujo skirtuko“ puslapyje.}one{„Chromium“ padės stebėti šiuos paketus „Naujo skirtuko“ puslapyje.}few{„Chromium“ padės stebėti šiuos paketus „Naujo skirtuko“ puslapyje.}many{„Chromium“ padės stebėti šiuos paketus „Naujo skirtuko“ puslapyje.}other{„Chromium“ padės stebėti šiuos paketus „Naujo skirtuko“ puslapyje.}}</translation>
 <translation id="2650312721222849884">Kad matytumėte skirtukus iš visų įrenginių, kuriuose naudojate „Chromium“, įjunkite sinchronizavimą</translation>
 <translation id="2684230048001240293">Nustatykite „Chromium“ kaip numatytąjį nustatymą, kad būtų sinchronizuojami skirtukai, slaptažodžiai ir mokėjimo informacija visuose įrenginiuose</translation>
 <translation id="2730884209570016437">„Chromium“ negali naudoti fotoaparato, nes jį naudoja kita programa</translation>
@@ -54,6 +53,7 @@
 <translation id="2918709798697875261">Jūsų organizacija reikalauja likti atsijungus nuo „Chromium“.</translation>
 <translation id="2942241131342758843">Naudokite „Chromium“ pagal numatytuosius nustatymus, kad atidarytumėte nuorodas, ieškotumėte iš valdiklių ir automatiškai pildytumėte slaptažodžius kitose programose</translation>
 <translation id="2977470724722393594">„Chromium“ naujausios versijos</translation>
+<translation id="3078941082359356771">{COUNT,plural, =1{„Chromium“ gali padėti stebėti šį paketą „Naujo skirtuko“ puslapyje.}one{„Chromium“ gali padėti stebėti šiuos paketus „Naujo skirtuko“ puslapyje.}few{„Chromium“ gali padėti stebėti šiuos paketus „Naujo skirtuko“ puslapyje.}many{„Chromium“ gali padėti stebėti šiuos paketus „Naujo skirtuko“ puslapyje.}other{„Chromium“ gali padėti stebėti šiuos paketus „Naujo skirtuko“ puslapyje.}}</translation>
 <translation id="3102849287235003384">Jei norite atsijungti nuo „Google“ paskyros visose svetainėse, <ph name="BEGIN_LINK" />atsijunkite nuo „Chromium“<ph name="END_LINK" />.</translation>
 <translation id="3219277919172823720">Paieška balsu naršyklėje „Chromium“</translation>
 <translation id="3228349498066165585">Kai kurie „Chromium“ duomenys dar neišsaugoti „Google“ paskyroje.
@@ -66,12 +66,12 @@
 <translation id="3567399274263440288">Jei norite išnaudoti visas „Chromium“ galimybes, prisijunkite prie „Chromium“ naudodami „Google“ paskyrą.</translation>
 <translation id="3639997914391704523">„Chromium“ gali tikrinti jūsų slaptažodžius, kai prisijungiate naudodami „Google“ paskyrą.</translation>
 <translation id="3650632991272923014"><ph name="USER_EMAIL1" /> naudojo „Chromium“ ir paliko žymes, slaptažodžius bei kitus nustatymus šiame įrenginyje.</translation>
-<translation id="3661862315467204831">Atidarykite „Chromium“ nustatymus sistemoje „iOS“, tada palieskite „Browser Default APP“ ir pasirinkite „Chromium“.</translation>
 <translation id="372658070733623520">Jei norite naudoti ir išsaugoti „Chromium“ duomenis „Google“ paskyroje, patvirtinkite savo tapatybę.</translation>
 <translation id="3780779443901618967">Įspėjama apie pavojingas svetaines, net ir apie tas, apie kurias anksčiau „Google“ nežinojo, analizuojant daugiau duomenų iš svetainių, nei taikant įprastą apsaugą. Galite pasirinkti praleisti „Chromium“ įspėjimus.</translation>
 <translation id="3784369638459513223">Atidaromas naujas „Chromium“ inkognito skirtukas.</translation>
 <translation id="3805899903892079518">„Chromium“ nepasiekia nuotraukų ar vaizdo įr. Įgalinkite prieigą apsil. „iOS“ nustatymai“ &gt; „Privatumas“ &gt; „Nuotraukos“.</translation>
 <translation id="3827545470516145620">Šiame įrenginyje naudojate įprastos apsaugos funkciją</translation>
+<translation id="3833326979834193417">„Chromium“ kasdien automatiškai vykdo saugos patikrą, kad būtumėte apsaugoti nuo duomenų saugos pažeidimų, nesaugių svetainių ir kt. Daugiau apie saugos patikrą rasite skiltyje „Nustatymai“.</translation>
 <translation id="3886689467633467988">Prisijunkite prie šios svetainės ir „Chromium“, kad gautumėte žymes ir kt. visuose savo įrenginiuose.</translation>
 <translation id="394413318816989199">Slaptafrazės šifruotė neapima mokėjimo metodų ir adresų.
 
@@ -94,10 +94,12 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />išvalykite „Chro
 <translation id="4736424910885271643">Jūsų paskyrą tvarko <ph name="HOSTED_DOMAIN" />, todėl jūsų „Chromium“ duomenys bus išvalyti iš šio įrenginio</translation>
 <translation id="4790638144988730920">Toliau naudokite „Chromium“ duomenis „Google“ paskyroje.</translation>
 <translation id="4828317641996116749">„Chromium“ nepavyko patikrinti visų slaptažodžių. Bandykite dar kartą vėliau.</translation>
+<translation id="4935539884203837577">„Chromium“ gali aptikti įvestus stebėjimo numerius ir stebėti jūsų paketus naujo skirtuko puslapyje, padėdama naudotis kitomis „Chromium“ apsipirkimo funkcijomis.</translation>
 <translation id="4985291216379576555">Neprisijungta, todėl „Chromium“ nepavyko patikrinti, ar yra naujinių</translation>
 <translation id="4996471330284142407">Nuveikite daugiau naudodami paprastą, saugią ir spartesnę nei bet kada anksčiau „Chromium“.</translation>
 <translation id="4999538639245140991">Atsijungiate nuo paskyros, kurią valdo <ph name="SIGNOUT_MANAGED_DOMAIN" />, todėl „Chromium“ duomenys bus ištrinti iš šio įrenginio. Duomenys išliks jūsų „Google“ paskyroje.</translation>
 <translation id="5042011327527167688">Palieskite „Peržiūrėti naudojant „Google“ žemėlapius naršyklėje „Chromium“.</translation>
+<translation id="5044871537677053278">„Chromium“ aptinka adresus ir naudoja „Google“ žemėlapius, kad pateiktų jums nuorodų ir vietinės informacijos.</translation>
 <translation id="5048795749726991615">Lengvai gaukite išsaugotus slaptažodžius kitose programose naudodami automatinio pildymo funkciją naršyklėje „Chromium“</translation>
 <translation id="5076601183701536878">Išvalyti naršymo duomenis naršyklėje „Chromium“</translation>
 <translation id="5131565040785979529">Jūsų organizacija (<ph name="DOMAIN" />) tvarko paskyrą, prie kurios esate prisijungę, ir tai, kaip naudojama „Chromium“.</translation>
@@ -113,9 +115,11 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />išvalykite „Chro
 <translation id="5521125884468363740">Kad matytumėte skirtukus iš visų įrenginių, kuriuose naudojate „Chromium“, prisijunkite ir įjunkite sinchronizavimą</translation>
 <translation id="5522297504975449419">Kai kurios „Chromium“ funkcijos nebebus pasiekiamos.</translation>
 <translation id="5571094606370987472">Atidaromi „Chromium“ naujausi skirtukai.</translation>
+<translation id="5623083843656850677">Užrakinkite inkognito skirtukus, išėję iš „Chromium“ ar perjungę į kitą programą.</translation>
 <translation id="5688047395118852662">Šioje kortelėje pateikiami pasiūlymai, kaip išnaudoti visas „Chromium“ galimybes.</translation>
 <translation id="5700709190537129682">„Chromium“ negali patikrinti jūsų slaptažodžių</translation>
 <translation id="5777187867430702742">„Chromium“ puslapis</translation>
+<translation id="584303319228224680">Automatinis paketų stebėjimas naršyklėje „Chromium“</translation>
 <translation id="5889847953983052353">Kai įjungta
 <ph name="BEGIN_INDENT" />  • Padėkite tobulinti „Chromium“ žmonėms, naudojantiems ją kaip jūs.<ph name="END_INDENT" />
 
@@ -174,7 +178,6 @@ Tik jūsų slaptafrazę turintis asmuo galės perskaityti šifruotus duomenis. S
 <translation id="7674213385180944843">Atidarykite „Nustatymai“ &gt; „Privatumas“ &gt; „Fotoaparatas“ &gt; „Chromium“ ir įjunkite fotoaparatą.</translation>
 <translation id="7710137812207066069">Atidaromas naujas „Chromium“ skirtukas.</translation>
 <translation id="7763454117143368771">Naudokite „Chromium“ kaip numatytąją naršyklę, kad apsisaugotumėte nuo pavojingų svetainių ir užtikrintumėte slaptažodžių apsaugą</translation>
-<translation id="7812317783196516890">Esate prisijungę ir sinchronizuojate duomenis naudodami paskyrą, valdomą <ph name="DOMAIN" />, kur jos administratorius dabar gali nustatyti tos paskyros naudotojo politiką, pagal kurią galima keisti „Chromium“ veikimą.</translation>
 <translation id="7859018312476869945">Kai įvedate tekstą adreso juostoje ar paieškos laukelyje, „Chromium“ siunčia tai, ką įvedate, į numatytąjį paieškos variklį, kad gautų geresnių pasiūlymų. Ši funkcija inkognito režimu išjungta.</translation>
 <translation id="786327964234957808">Perjungiate sinchronizuojamas paskyras iš <ph name="USER_EMAIL1" /> į <ph name="USER_EMAIL2" />. Esamus „Chromium“ duomenis tvarko <ph name="DOMAIN" />. Tai atlikus bus ištrinti duomenys iš šio įrenginio, bet duomenys liks <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Pradėkite naudoti „Chromium“ skaitytuvą</translation>

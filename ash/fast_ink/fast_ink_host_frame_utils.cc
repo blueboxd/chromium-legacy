@@ -70,7 +70,8 @@ void AppendQuad(const viz::TransferableResource& resource,
                      /*clip=*/absl::nullopt, /*contents_opaque=*/false,
                      /*opacity_f=*/1.f,
                      /*blend=*/SkBlendMode::kSrcOver,
-                     /*sorting_context=*/0);
+                     /*sorting_context=*/0,
+                     /*layer_id=*/0u, /*fast_rounded_corner=*/false);
 
   viz::TextureDrawQuad* texture_quad =
       render_pass_out.CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
@@ -128,7 +129,7 @@ std::unique_ptr<UiResource> CreateUiResource(
 
   resource->context_provider = aura::Env::GetInstance()
                                    ->context_factory()
-                                   ->SharedMainThreadContextProvider();
+                                   ->SharedMainThreadRasterContextProvider();
 
   if (!resource->context_provider) {
     LOG(ERROR) << "Failed to acquire a context provider";

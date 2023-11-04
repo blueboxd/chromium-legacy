@@ -23,6 +23,7 @@ class Window;
 
 namespace gfx {
 class RectF;
+class RoundedCornersF;
 }  // namespace gfx
 
 namespace ui {
@@ -47,7 +48,7 @@ class SystemShadow;
 // Defines the interface for the overview item which will be implemented by
 // `OverviewItem` and `OverviewGroupItem`. The `OverviewGrid` creates and owns
 // the instance of this interface.
-class OverviewItemBase {
+class ASH_EXPORT OverviewItemBase {
  public:
   OverviewItemBase(OverviewSession* overview_session,
                    OverviewGrid* overview_grid,
@@ -64,11 +65,22 @@ class OverviewItemBase {
       OverviewGrid* overview_grid);
 
   // Checks if this item is currently being dragged.
-  ASH_EXPORT bool IsDragItem() const;
+  bool IsDragItem() const;
+
+  // Handles events forwarded from the contents view.
+  void OnFocusedViewActivated();
+  void OnFocusedViewClosed();
+  void HandleMouseEvent(const ui::MouseEvent& event);
+  void HandleGestureEvent(ui::GestureEvent* event);
+
+  // If in tablet mode, maybe forward events to `OverviewGridEventHandler` as we
+  // might want to process scroll events on the item.
+  void HandleGestureEventForTabletModeLayout(ui::GestureEvent* event);
 
   void set_should_animate_when_entering(bool should_animate) {
     should_animate_when_entering_ = should_animate;
   }
+
   bool should_animate_when_entering() const {
     return should_animate_when_entering_;
   }
@@ -104,6 +116,7 @@ class OverviewItemBase {
   void set_scrolling_bounds(absl::optional<gfx::RectF> scrolling_bounds) {
     scrolling_bounds_ = scrolling_bounds;
   }
+
   absl::optional<gfx::RectF> scrolling_bounds() const {
     return scrolling_bounds_;
   }
@@ -111,6 +124,7 @@ class OverviewItemBase {
   void set_should_use_spawn_animation(bool value) {
     should_use_spawn_animation_ = value;
   }
+
   bool should_use_spawn_animation() const {
     return should_use_spawn_animation_;
   }
@@ -150,6 +164,10 @@ class OverviewItemBase {
   // bounds change will be animated as specified by `animation_type`.
   virtual void SetBounds(const gfx::RectF& target_bounds,
                          OverviewAnimationType animation_type) = 0;
+
+  // TODO(http://b/297923747): Integrate continuous animation with snap groups.
+  virtual gfx::Transform ComputeTargetTransform(
+      const gfx::RectF& target_bounds) = 0;
 
   // Returns the union of the original target bounds of all transformed windows
   // managed by `this`, i.e. all regular (normal or panel transient descendants
@@ -209,30 +227,26 @@ class OverviewItemBase {
   // them immediately.
   virtual void RevertHideForSavedDeskLibrary(bool animate) = 0;
 
-  // Closes `transform_window_`.
-  // TODO(michelefan): This is temporarily added to reduce the scope of the
-  // task, which will be replaced by `CloseWindows()` in a follow-up cl.
-  virtual void CloseWindow() = 0;
+  // Closes window(s) hosted by `this`.
+  virtual void CloseWindows() = 0;
 
   // Inserts the item back to its original stacking order so that the order of
   // overview items is the same as when entering overview.
   virtual void Restack() = 0;
 
-  // Handles events forwarded from the contents view.
-  virtual void HandleMouseEvent(const ui::MouseEvent& event) = 0;
-  virtual void HandleGestureEvent(ui::GestureEvent* event) = 0;
-  virtual void OnFocusedViewActivated() = 0;
-  virtual void OnFocusedViewClosed() = 0;
+  // Called before dragging. Scales up the windows(s) hosted by `this` a little
+  // bit to indicate its selection and stacks the window(s) at the top of the Z
+  // order in order to keep them visible while being dragged around.
+  virtual void StartDrag() = 0;
 
   virtual void OnOverviewItemDragStarted(OverviewItemBase* item) = 0;
   virtual void OnOverviewItemDragEnded(bool snap) = 0;
 
-  // Called when performing the continuous scroll on overview item to set bounds
-  // and opacity with pre-calculated `target_bounds`. `first_scroll` is used to
-  // decide if any special handlings are needed for first scroll update.
-  virtual void OnOverviewItemContinuousScroll(const gfx::RectF& target_bouns,
-                                              bool first_scroll,
-                                              float scroll_ratio) = 0;
+  // Called when performing the continuous scroll on overview item to set
+  // transform and opacity with pre-calculated `target_transform`.
+  virtual void OnOverviewItemContinuousScroll(
+      const gfx::Transform& target_transform,
+      float scroll_ratio) = 0;
 
   // Shows/Hides window item during window dragging. Used when swiping up a
   // window from shelf.
@@ -280,6 +294,8 @@ class OverviewItemBase {
   // Returns the point the accessibility magnifiers should focus when this is
   // focused.
   virtual gfx::Point GetMagnifierFocusPointInScreen() const = 0;
+
+  virtual const gfx::RoundedCornersF GetRoundedCorners() const = 0;
 
   void set_target_bounds_for_testing(const gfx::RectF& target_bounds) {
     target_bounds_ = target_bounds;
@@ -375,6 +391,20 @@ class OverviewItemBase {
 
  private:
   friend class OverviewTestBase;
+
+  // TODO(sammiequon): Current events go from OverviewItemView to
+  // OverviewItem to OverviewSession to OverviewWindowDragController. We may be
+  // able to shorten this pipeline.
+  void HandlePressEvent(const gfx::PointF& location_in_screen,
+                        bool from_touch_gesture);
+  void HandleReleaseEvent(const gfx::PointF& location_in_screen);
+  void HandleDragEvent(const gfx::PointF& location_in_screen);
+  void HandleLongPressEvent(const gfx::PointF& location_in_screen);
+  void HandleFlingStartEvent(const gfx::PointF& location_in_screen,
+                             float velocity_x,
+                             float velocity_y);
+  void HandleTapEvent();
+  void HandleGestureEndEvent();
 };
 
 }  // namespace ash

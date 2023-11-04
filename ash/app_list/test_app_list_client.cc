@@ -29,6 +29,11 @@ TestAppListClient::TestAppListClient() = default;
 
 TestAppListClient::~TestAppListClient() = default;
 
+std::vector<AppListSearchControlCategory>
+TestAppListClient::GetToggleableCategories() const {
+  return toggleable_categories_for_test_;
+}
+
 void TestAppListClient::StartZeroStateSearch(base::OnceClosure on_done,
                                              base::TimeDelta timeout) {
   start_zero_state_search_count_++;
@@ -121,13 +126,6 @@ std::vector<std::u16string> TestAppListClient::GetAndResetPastSearchQueries() {
 ash::AppListSortOrder TestAppListClient::GetPermanentSortingOrder() const {
   NOTIMPLEMENTED();
   return ash::AppListSortOrder::kCustom;
-}
-
-void TestAppListClient::CommitTemporarySortOrder() {
-  // Committing the temporary sort order should not introduce item reorder so
-  // reset the sort order without reorder animation.
-  AppListController::Get()->UpdateAppListWithNewTemporarySortOrder(
-      /*new_order=*/absl::nullopt, /*animate=*/false, base::NullCallback());
 }
 
 void TestAppListClient::OnZeroStateSearchDone(base::OnceClosure on_done) {

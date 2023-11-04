@@ -60,19 +60,17 @@ TEST(ExperimentLabels, SetValueForLabel) {
 }
 
 TEST(ExperimentLabels, TimeFormatting) {
-  base::Time::Exploded exploded = {};
-  exploded.year = 2015;
-  exploded.month = 8;
-  exploded.day_of_week = 5;
-  exploded.day_of_month = 14;
-  exploded.hour = 16;
-  exploded.minute = 13;
-  exploded.second = 3;
-
+  static constexpr base::Time::Exploded kExploded = {.year = 2015,
+                                                     .month = 8,
+                                                     .day_of_week = 5,
+                                                     .day_of_month = 14,
+                                                     .hour = 16,
+                                                     .minute = 13,
+                                                     .second = 3};
   base::Time time;
-  ASSERT_TRUE(base::Time::FromUTCExploded(exploded, &time));
+  ASSERT_TRUE(base::Time::FromUTCExploded(kExploded, &time));
 
-  ExperimentLabels label(L"");
+  ExperimentLabels label{std::wstring()};
   label.SetValueForLabel(L"name", L"value", time);
   EXPECT_THAT(label.value(),
               StrEq(L"name=value|Fri, 14 Aug 2015 16:13:03 GMT"));

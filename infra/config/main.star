@@ -23,6 +23,7 @@ lucicfg.config(
     config_dir = "generated",
     tracked_files = [
         "builders/*/*/*",
+        "builders/gn_args_locations.json",
         "cq-builders.md",
         "cq-usage/default.cfg",
         "cq-usage/full.cfg",
@@ -237,6 +238,10 @@ luci.builder.defaults.test_presentation.set(resultdb.test_presentation(grouping_
 exec("//swarming.star")
 
 exec("//recipes.star")
+exec("//gn_args/gn_args.star")
+exec("//targets/basic_suites.star")
+exec("//targets/compound_suites.star")
+exec("//targets/matrix_compound_suites.star")
 exec("//targets/mixins.star")
 exec("//targets/targets.star")
 exec("//targets/variants.star")

@@ -1639,11 +1639,19 @@ TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_LvmSupported) {
   EXPECT_EQ(GetTestConciergeClient()->create_disk_image_call_count(), 0);
 
   // StartArcVmRequest should contain the LVM-provided disk path.
+  const auto& req = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_TRUE(req.enable_virtio_blk_data());
   const std::string expected_lvm_disk_path =
       base::StringPrintf("/dev/mapper/vm/dmcrypt-%s-arcvm",
                          std::string(kUserIdHash).substr(0, 8).c_str());
-  const auto& req = GetTestConciergeClient()->start_arc_vm_request();
-  EXPECT_TRUE(HasDiskImage(req, expected_lvm_disk_path));
+  const auto& disks = req.disks();
+  auto it =
+      base::ranges::find_if(disks, [&expected_lvm_disk_path](const auto& disk) {
+        return disk.path() == expected_lvm_disk_path;
+      });
+  EXPECT_NE(it, disks.end());
+  // O_DIRECT option should always be enabled on LVM-provided disk images.
+  EXPECT_TRUE(it->o_direct());
 }
 
 TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_OverrideUseLvm) {
@@ -1664,12 +1672,19 @@ TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_OverrideUseLvm) {
   EXPECT_EQ(GetTestConciergeClient()->create_disk_image_call_count(), 0);
 
   // StartArcVmRequest should contain the LVM-provided disk path.
+  const auto& req = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_TRUE(req.enable_virtio_blk_data());
   const std::string expected_lvm_disk_path =
       base::StringPrintf("/dev/mapper/vm/dmcrypt-%s-arcvm",
                          std::string(kUserIdHash).substr(0, 8).c_str());
-  const auto& req = GetTestConciergeClient()->start_arc_vm_request();
-  EXPECT_TRUE(HasDiskImage(req, expected_lvm_disk_path));
-  EXPECT_TRUE(req.enable_virtio_blk_data());
+  const auto& disks = req.disks();
+  auto it =
+      base::ranges::find_if(disks, [&expected_lvm_disk_path](const auto& disk) {
+        return disk.path() == expected_lvm_disk_path;
+      });
+  EXPECT_NE(it, disks.end());
+  // O_DIRECT option should always be enabled on LVM-provided disk images.
+  EXPECT_TRUE(it->o_direct());
 }
 
 TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_NoLvmForEphemeralCryptohome) {
@@ -2140,6 +2155,37 @@ TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeEnabledMax) {
   StartMiniArcWithParams(true, std::move(start_params));
   const auto& request = GetTestConciergeClient()->start_arc_vm_request();
   EXPECT_EQ(request.memory_mib(), 2049u);
+}
+
+// Test that ARCMVM size is set by ram_percentage.
+TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeWithPercentageParam) {
+  base::test::ScopedFeatureList feature_list;
+  base::FieldTrialParams params;
+  params["ram_percentage"] = "25";
+  feature_list.InitAndEnableFeatureWithParameters(kVmMemorySize, params);
+  base::SystemMemoryInfoKB info;
+  ASSERT_TRUE(base::GetSystemMemoryInfo(&info));
+  const uint32_t total_mib = info.total / 1024;
+  StartParams start_params(GetPopulatedStartParams());
+  StartMiniArcWithParams(true, std::move(start_params));
+  const auto& request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_EQ(request.memory_mib(), total_mib / 4);
+}
+
+// Test that ARCMVM size is set by both ram_percentage and shift_mib.
+TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeWithPercentageParamAndShiftMiB) {
+  base::test::ScopedFeatureList feature_list;
+  base::FieldTrialParams params;
+  params["ram_percentage"] = "25";
+  params["shift_mib"] = "-512";
+  feature_list.InitAndEnableFeatureWithParameters(kVmMemorySize, params);
+  base::SystemMemoryInfoKB info;
+  ASSERT_TRUE(base::GetSystemMemoryInfo(&info));
+  const uint32_t total_mib = info.total / 1024;
+  StartParams start_params(GetPopulatedStartParams());
+  StartMiniArcWithParams(true, std::move(start_params));
+  const auto& request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_EQ(request.memory_mib(), total_mib / 4 - 512);
 }
 
 // Test that StartArcVmRequest has no memory_mib field when getting system

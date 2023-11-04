@@ -57,6 +57,7 @@
 #import "ios/chrome/browser/ui/bubble/bubble_view_controller_presenter.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_mediator.h"
+#import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_metrics.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_orderer.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_swift.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_action_handler.h"
@@ -77,20 +78,6 @@
 
 using base::RecordAction;
 using base::UserMetricsAction;
-
-namespace {
-
-// Enum for IOS.OverflowMenu.ActionType histogram.
-// Entries should not be renumbered and numeric values should never be reused.
-enum class IOSOverflowMenuActionType {
-  kNoScrollNoAction = 0,
-  kScrollNoAction = 1,
-  kNoScrollAction = 2,
-  kScrollAction = 3,
-  kMaxValue = kScrollAction,
-};
-
-}  // namespace
 
 @interface PopupMenuCoordinator () <MenuCustomizationEventHandler,
                                     OverflowMenuCustomizationCommands,
@@ -124,6 +111,11 @@ enum class IOSOverflowMenuActionType {
 @property(nonatomic, assign) BOOL toolsMenuWasScrolledHorizontally;
 // Whether the user took an action on the tools menu while it was open.
 @property(nonatomic, assign) BOOL toolsMenuUserTookAction;
+// Whether the user selected an Action on the overflow menu (the vertical list).
+@property(nonatomic, assign) BOOL overflowMenuUserSelectedAction;
+// Whether the user selected a Destination on the overflow menu (the horizontal
+// list).
+@property(nonatomic, assign) BOOL overflowMenuUserSelectedDestination;
 
 @property(nonatomic, strong) PopupMenuHelpCoordinator* popupMenuHelpCoordinator;
 
@@ -133,6 +125,10 @@ enum class IOSOverflowMenuActionType {
   OverflowMenuModel* _overflowMenuModel;
 
   OverflowMenuOrderer* _overflowMenuOrderer;
+
+  // Stores whether certain events occured during an overflow menu session for
+  // logs.
+  OverflowMenuVisitedEvent _event;
 }
 
 @synthesize mediator = _mediator;
@@ -375,6 +371,9 @@ enum class IOSOverflowMenuActionType {
 
       [self setupSheetForMenu:menu isCustomizationScreen:NO animated:NO];
 
+      // Reset event before presenting.
+      _event = OverflowMenuVisitedEvent();
+
       __weak __typeof(self) weakSelf = self;
       [self.baseViewController
           presentViewController:menu
@@ -463,9 +462,24 @@ enum class IOSOverflowMenuActionType {
 
 - (void)dismissPopupMenuAnimated:(BOOL)animated {
   if (self.toolsMenuOpenTime != 0) {
+    OverflowMenuVisitedEvent event;
     base::TimeDelta elapsed = base::Seconds(
         [NSDate timeIntervalSinceReferenceDate] - self.toolsMenuOpenTime);
     UMA_HISTOGRAM_MEDIUM_TIMES("IOS.OverflowMenu.TimeOpen", elapsed);
+    if (self.toolsMenuUserTookAction && self.overflowMenuUserSelectedAction) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("IOS.OverflowMenu.TimeOpen.ActionChosen",
+                                 elapsed);
+    } else if (self.toolsMenuUserTookAction &&
+               self.overflowMenuUserSelectedDestination) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("IOS.OverflowMenu.TimeOpen.DestinationChosen",
+                                 elapsed);
+    }
+
+    event.PutOrRemove(OverflowMenuVisitedEventFields::kUserSelectedDestination,
+                      self.overflowMenuUserSelectedDestination);
+    event.PutOrRemove(OverflowMenuVisitedEventFields::kUserSelectedAction,
+                      self.overflowMenuUserSelectedAction);
+
     // Reset the start time to ensure that whatever happens, we only record
     // this once.
     self.toolsMenuOpenTime = 0;
@@ -490,9 +504,16 @@ enum class IOSOverflowMenuActionType {
         !self.toolsMenuUserTookAction) {
       [self trackToolsMenuNoHorizontalScrollOrAction];
     }
+
+    RecordOverflowMenuVisitedEvent(_event);
+
+    _event = OverflowMenuVisitedEvent();
+
     self.toolsMenuWasScrolledVertically = NO;
     self.toolsMenuWasScrolledHorizontally = NO;
     self.toolsMenuUserTookAction = NO;
+    self.overflowMenuUserSelectedAction = NO;
+    self.overflowMenuUserSelectedDestination = NO;
   }
 
   if (self.overflowMenuMediator) {
@@ -515,6 +536,7 @@ enum class IOSOverflowMenuActionType {
 #pragma mark - OverflowMenuCustomizationCommands
 
 - (void)showMenuCustomization {
+  _event.Put(OverflowMenuVisitedEventFields::kUserStartedCustomization);
   [_overflowMenuModel
       startCustomizationWithActions:_overflowMenuOrderer
                                         .actionCustomizationModel
@@ -534,15 +556,8 @@ enum class IOSOverflowMenuActionType {
       action.highlighted = YES;
     }
   }
-  [_overflowMenuModel
-      startCustomizationWithActions:_overflowMenuOrderer
-                                        .actionCustomizationModel
-                       destinations:_overflowMenuOrderer
-                                        .destinationCustomizationModel];
 
-  [self setupSheetForMenu:self.baseViewController.presentedViewController
-      isCustomizationScreen:YES
-                   animated:YES];
+  [self showMenuCustomization];
 }
 
 - (void)hideMenuCustomization {
@@ -556,6 +571,13 @@ enum class IOSOverflowMenuActionType {
 #pragma mark - MenuCustomizationEventHandler
 
 - (void)doneWasTapped {
+  if (_overflowMenuOrderer.destinationCustomizationModel.hasChanged) {
+    _event.Put(OverflowMenuVisitedEventFields::kUserCustomizedDestinations);
+  }
+  if (_overflowMenuOrderer.actionCustomizationModel.hasChanged) {
+    _event.Put(OverflowMenuVisitedEventFields::kUserCustomizedActions);
+  }
+
   [_overflowMenuOrderer commitActionsUpdate];
   [_overflowMenuOrderer commitDestinationsUpdate];
 
@@ -565,6 +587,8 @@ enum class IOSOverflowMenuActionType {
 - (void)cancelWasTapped {
   [_overflowMenuOrderer cancelActionsUpdate];
   [_overflowMenuOrderer cancelDestinationsUpdate];
+
+  _event.Put(OverflowMenuVisitedEventFields::kUserCancelledCustomization);
 
   [self hideMenuCustomization];
 }
@@ -615,14 +639,26 @@ enum class IOSOverflowMenuActionType {
 
 - (void)popupMenuScrolledVertically {
   self.toolsMenuWasScrolledVertically = YES;
+  _event.Put(OverflowMenuVisitedEventFields::kUserScrolledVertically);
 }
 
 - (void)popupMenuScrolledHorizontally {
   self.toolsMenuWasScrolledHorizontally = YES;
+  _event.Put(OverflowMenuVisitedEventFields::kUserScrolledHorizontally);
 }
 
 - (void)popupMenuTookAction {
   self.toolsMenuUserTookAction = YES;
+}
+
+- (void)popupMenuUserSelectedAction {
+  self.overflowMenuUserSelectedAction = YES;
+  _event.Put(OverflowMenuVisitedEventFields::kUserSelectedAction);
+}
+
+- (void)popupMenuUserSelectedDestination {
+  self.overflowMenuUserSelectedDestination = YES;
+  _event.Put(OverflowMenuVisitedEventFields::kUserSelectedDestination);
 }
 
 #pragma mark - Notification callback

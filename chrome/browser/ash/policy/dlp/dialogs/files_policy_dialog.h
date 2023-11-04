@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ash/policy/dlp/files_policy_warn_settings.h"
 #include "chrome/browser/chromeos/policy/dlp/dialogs/policy_dialog_base.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_file.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
@@ -18,6 +19,8 @@
 #include "ui/views/widget/widget.h"
 
 namespace policy {
+
+class FilesPolicyDialogFactory;
 
 // Dialog type (warning or error).
 enum class FilesDialogType {
@@ -32,30 +35,28 @@ enum class Policy {
   kEnterpriseConnectors,  // Enterprise Connectors policy.
 };
 
-// Interface for creating warn and error FilesPolicyDialogs.
-// Used in tests.
-class FilesPolicyDialogFactory {
- public:
-  virtual ~FilesPolicyDialogFactory() = default;
-
-  virtual views::Widget* CreateWarnDialog(
-      OnDlpRestrictionCheckedCallback callback,
-      const std::vector<DlpConfidentialFile>& files,
-      dlp::FileAction action,
-      gfx::NativeWindow modal_parent,
-      absl::optional<DlpFileDestination> destination) = 0;
-
-  virtual views::Widget* CreateErrorDialog(
-      const std::map<DlpConfidentialFile, Policy>& files,
-      dlp::FileAction action,
-      gfx::NativeWindow modal_parent) = 0;
-};
-
 // FilesPolicyDialog is a window modal dialog used to show detailed overview of
 // warnings and files blocked by data protection policies.
 class FilesPolicyDialog : public PolicyDialogBase {
  public:
   METADATA_HEADER(FilesPolicyDialog);
+
+  // Reasons for which a file can be blocked either because of an Enterprise
+  // Connectors or DLP policy.
+  enum class BlockReason {
+    // File was blocked because of Data Leak Prevention policies.
+    kDlp,
+    // File was blocked but the reason is not known.
+    kEnterpriseConnectorsUnknown,
+    // File was blocked because it contains sensitive data (e.g., SSNs).
+    kEnterpriseConnectorsSensitiveData,
+    // File was blocked because it's a malware.
+    kEnterpriseConnectorsMalware,
+    // File was blocked because it could not be scanned due to encryption.
+    kEnterpriseConnectorsEncryptedFile,
+    // File was blocked because it could not be uploaded due to its size.
+    kEnterpriseConnectorsLargeFile,
+  };
 
   FilesPolicyDialog() = delete;
   FilesPolicyDialog(size_t file_count,
@@ -68,16 +69,17 @@ class FilesPolicyDialog : public PolicyDialogBase {
   // Creates and shows an instance of FilesPolicyWarnDialog. Returns owning
   // Widget.
   static views::Widget* CreateWarnDialog(
-      OnDlpRestrictionCheckedCallback callback,
+      OnDlpRestrictionCheckedWithJustificationCallback callback,
       const std::vector<DlpConfidentialFile>& files,
       dlp::FileAction action,
       gfx::NativeWindow modal_parent,
-      absl::optional<DlpFileDestination> destination = absl::nullopt);
+      absl::optional<DlpFileDestination> destination = absl::nullopt,
+      FilesPolicyWarnSettings settings = FilesPolicyWarnSettings());
 
   // Creates and shows an instance of FilesPolicyErrorDialog. Returns owning
   // Widget.
   static views::Widget* CreateErrorDialog(
-      const std::map<DlpConfidentialFile, Policy>& files,
+      const std::map<DlpConfidentialFile, BlockReason>& files,
       dlp::FileAction action,
       gfx::NativeWindow modal_parent);
 
@@ -97,6 +99,27 @@ class FilesPolicyDialog : public PolicyDialogBase {
   // PolicyDialogBase overrides:
   views::Label* AddTitle(const std::u16string& title) override;
   views::Label* AddMessage(const std::u16string& message) override;
+};
+
+// Interface for creating warn and error FilesPolicyDialogs.
+// Used in tests.
+class FilesPolicyDialogFactory {
+ public:
+  virtual ~FilesPolicyDialogFactory() = default;
+
+  virtual views::Widget* CreateWarnDialog(
+      OnDlpRestrictionCheckedWithJustificationCallback callback,
+      const std::vector<DlpConfidentialFile>& files,
+      dlp::FileAction action,
+      gfx::NativeWindow modal_parent,
+      absl::optional<DlpFileDestination> destination,
+      FilesPolicyWarnSettings settings) = 0;
+
+  virtual views::Widget* CreateErrorDialog(
+      const std::map<DlpConfidentialFile, FilesPolicyDialog::BlockReason>&
+          files,
+      dlp::FileAction action,
+      gfx::NativeWindow modal_parent) = 0;
 };
 
 }  // namespace policy

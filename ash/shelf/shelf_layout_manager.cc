@@ -529,7 +529,7 @@ void ShelfLayoutManager::InitObservers() {
   shell->activation_client()->AddObserver(this);
   shell->locale_update_controller()->AddObserver(this);
   state_.session_state = shell->session_controller()->GetSessionState();
-  shelf_background_type_ = GetShelfBackgroundType();
+  shelf_background_type_ = ComputeShelfBackgroundType();
   wallpaper_controller_observation_.Observe(shell->wallpaper_controller());
 
   // DesksController could be null when virtual desks feature is not enabled.
@@ -1132,7 +1132,7 @@ void ShelfLayoutManager::ProcessMouseWheelEventFromShelf(
   ProcessScrollOffset(y_offset, *event);
 }
 
-ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
+ShelfBackgroundType ShelfLayoutManager::ComputeShelfBackgroundType() const {
   if (state_.pre_lock_screen_animation_active)
     return ShelfBackgroundType::kDefaultBg;
 
@@ -1196,10 +1196,10 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
 }
 
 void ShelfLayoutManager::MaybeUpdateShelfBackground(AnimationChangeType type) {
-  const ShelfBackgroundType new_background_type(GetShelfBackgroundType());
-
-  if (new_background_type == shelf_background_type_)
+  const ShelfBackgroundType new_background_type = ComputeShelfBackgroundType();
+  if (new_background_type == shelf_background_type_) {
     return;
+  }
 
   shelf_background_type_ = new_background_type;
   for (auto& observer : observers_)
@@ -2013,7 +2013,8 @@ void ShelfLayoutManager::UpdateWorkAreaInsetsAndNotifyObservers(
 }
 
 void ShelfLayoutManager::HandleScrollableShelfContainerBoundsChange() const {
-  if (DeskButtonWidget* desk_button = shelf_widget_->desk_button_widget()) {
+  DeskButtonWidget* desk_button = shelf_widget_->desk_button_widget();
+  if (desk_button && desk_button->IsVisible()) {
     // The desk button widget bounds depend on the scrollable shelf container
     // bounds.
     ScrollableShelfView* scrollable_shelf_view =
@@ -2024,12 +2025,14 @@ void ShelfLayoutManager::HandleScrollableShelfContainerBoundsChange() const {
     // bounds because we want to avoid a cycle where the button shrinks, the
     // shelf is no longer overflown, the button expands because the shelf is no
     // longer overflown, the shelf is overflown again, etc.
-    if (shelf_->IsHorizontalAlignment()) {
-      desk_button->SetExpanded(
-          !scrollable_shelf_view->CalculateShelfOverflowForAvailableLength(
-              scrollable_shelf_view->GetLocalBounds().width() +
-              desk_button->GetPreferredLength() -
-              desk_button->GetPreferredExpandedWidth()));
+    bool should_expand =
+        shelf_->IsHorizontalAlignment() &&
+        !scrollable_shelf_view->CalculateShelfOverflowForAvailableLength(
+            scrollable_shelf_view->GetLocalBounds().width() +
+            desk_button->GetPreferredLength() -
+            desk_button->GetPreferredExpandedWidth());
+    if (desk_button->is_expanded() != should_expand) {
+      desk_button->SetExpanded(should_expand);
     } else {
       // `SetExpanded` already calculates and sets the target bounds, so we only
       // have to do this when the shelf is vertical.
@@ -2467,7 +2470,7 @@ float ShelfLayoutManager::ComputeTargetOpacity(const State& state) const {
   float opacity_when_visible = kDefaultShelfOpacity;
   if (dimmed_for_inactivity_) {
     opacity_when_visible =
-        (GetShelfBackgroundType() == ShelfBackgroundType::kMaximized)
+        (ComputeShelfBackgroundType() == ShelfBackgroundType::kMaximized)
             ? kMaximizedShelfDimOpacity
             : kFloatingShelfDimOpacity;
   }

@@ -34,7 +34,7 @@ class XDGToplevelWrapperImpl : public ShellToplevelWrapper {
   void SetMaximized() override;
   void UnSetMaximized() override;
   void SetCanFullscreen(bool can_fullscreen) override;
-  void SetFullscreen() override;
+  void SetFullscreen(WaylandOutput* wayland_output) override;
   void UnSetFullscreen() override;
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   void SetUseImmersiveMode(bool immersive) override;
@@ -54,7 +54,8 @@ class XDGToplevelWrapperImpl : public ShellToplevelWrapper {
   void SetDecoration(DecorationMode decoration) override;
   void Lock(WaylandOrientationLockType lock_type) override;
   void Unlock() override;
-  void RequestWindowBounds(const gfx::Rect& bounds) override;
+  void RequestWindowBounds(const gfx::Rect& bounds,
+                           int64_t display_id) override;
   void SetRestoreInfo(int32_t, int32_t) override;
   void SetRestoreInfoWithWindowIdSource(int32_t, const std::string&) override;
   void SetSystemModal(bool modal) override;
@@ -62,7 +63,8 @@ class XDGToplevelWrapperImpl : public ShellToplevelWrapper {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   void EnableScreenCoordinates() override;
 #endif
-  void SetFloat() override;
+  void SetFloatToLocation(
+      WaylandFloatStartLocation float_start_location) override;
   void UnSetFloat() override;
   void SetZOrder(ZOrderLevel z_order) override;
   bool SupportsActivation() override;

@@ -16,6 +16,7 @@
 #include "ash/style/system_shadow.h"
 #include "ash/style/tab_slider.h"
 #include "ash/style/tab_slider_button.h"
+#include "ash/utility/occlusion_tracker_pauser.h"
 #include "ash/wm/snap_group/snap_group.h"
 #include "ash/wm/snap_group/snap_group_controller.h"
 #include "ash/wm/window_cycle/window_cycle_controller.h"
@@ -79,7 +80,7 @@ constexpr int kBetweenChildPaddingDp = 10;
 
 // Padding between the window previews within the alt-tab bandshield when
 // feature flag Jellyroll is enabled.
-// TODO(https://b/291622042): Rename this to `kBetweenChildPaddingDp`, and
+// TODO(http://b/291622042): Rename this to `kBetweenChildPaddingDp`, and
 // remove `kBetweenChildPaddingDp` above.
 constexpr int kBetweenChildPaddingDpCrOSNext = 12;
 
@@ -157,8 +158,8 @@ WindowCycleView::WindowCycleView(aura::Window* root_window,
   // Start the occlusion tracker pauser. It's used to increase smoothness for
   // the fade in but we also create windows here which may occlude other
   // windows.
-  occlusion_tracker_pauser_ =
-      std::make_unique<aura::WindowOcclusionTracker::ScopedPause>();
+  Shell::Get()->occlusion_tracker_pauser()->PauseUntilAnimationsEnd(
+      /*timeout*/ base::Seconds(2));
 
   // The layer for `this` is responsible for showing background blur and fade
   // and clip animations.
@@ -712,6 +713,7 @@ void WindowCycleView::Layout() {
     gfx::RectF bounds(view->GetLocalBounds());
     views::View::ConvertRectToTarget(view, this, &bounds);
     if (bounds.Intersects(local_bounds)) {
+      view->SetShowPreview(/*show=*/true);
       view->RefreshItemVisuals();
       it = no_previews_list_.erase(it);
     } else {
@@ -721,7 +723,6 @@ void WindowCycleView::Layout() {
 }
 
 void WindowCycleView::OnImplicitAnimationsCompleted() {
-  occlusion_tracker_pauser_.reset();
   layer()->SetClipRect(gfx::Rect());
   if (defer_widget_bounds_update_) {
     // This triggers a `Layout()` so reset `defer_widget_bounds_update_` after

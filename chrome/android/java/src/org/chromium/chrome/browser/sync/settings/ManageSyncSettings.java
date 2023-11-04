@@ -26,7 +26,6 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
-import androidx.preference.PreferenceFragmentCompat;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
@@ -37,11 +36,11 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.back_press.BackPressHelper;
-import org.chromium.chrome.browser.feedback.FragmentHelpAndFeedbackLauncher;
-import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.settings.ChromeBaseSettingsFragment;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.ProfileDataCache;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
@@ -75,12 +74,11 @@ import java.util.stream.Collectors;
  * chrome://settings/syncSetup/advanced and parts of chrome://settings/syncSetup on desktop.
  * This fragment is accessible from the main settings view.
  */
-public class ManageSyncSettings extends PreferenceFragmentCompat
+public class ManageSyncSettings extends ChromeBaseSettingsFragment
         implements PassphraseDialogFragment.Listener, PassphraseCreationDialogFragment.Listener,
                    PassphraseTypeDialogFragment.Listener, Preference.OnPreferenceChangeListener,
                    SyncService.SyncStateChangedListener, BackPressHelper.ObsoleteBackPressedHandler,
-                   Listener, SyncErrorCardPreference.SyncErrorCardPreferenceListener,
-                   FragmentHelpAndFeedbackLauncher {
+                   Listener, SyncErrorCardPreference.SyncErrorCardPreferenceListener {
     private static final String IS_FROM_SIGNIN_SCREEN = "ManageSyncSettings.isFromSigninScreen";
     private static final String CLEAR_DATA_PROGRESS_DIALOG_TAG = "clear_data_progress";
 
@@ -148,7 +146,6 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     private ChromeSwitchPreference mUrlKeyedAnonymizedData;
 
     private SyncService.SyncSetupInProgressHandle mSyncSetupInProgressHandle;
-    private HelpAndFeedbackLauncher mHelpAndFeedbackLauncher;
 
     /**
      * Creates an argument bundle for this fragment.
@@ -162,7 +159,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
 
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, String rootKey) {
-        Profile profile = Profile.getLastUsedRegularProfile();
+        Profile profile = getProfile();
         mSyncService = SyncServiceFactory.getForProfile(profile);
 
         mIsFromSigninScreen =
@@ -175,7 +172,10 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
 
         mSyncErrorCardPreference =
                 (SyncErrorCardPreference) findPreference(PREF_SYNC_ERROR_CARD_PREFERENCE);
-        mSyncErrorCardPreference.setSyncErrorCardPreferenceListener(this);
+        mSyncErrorCardPreference.initialize(
+                ProfileDataCache.createWithDefaultImageSize(
+                        getContext(), R.drawable.ic_sync_badge_error_20dp),
+                mSyncService, IdentityServicesProvider.get().getIdentityManager(profile), this);
 
         mSyncingCategory = (PreferenceCategory) findPreference(PREF_SYNCING_CATEGORY);
 
@@ -242,9 +242,14 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
                 !UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionManaged(profile)
                 || UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionEnabled(profile);
         mUrlKeyedAnonymizedData.setChecked(urlKeyedAnonymizedDataShouldBeEnabled);
-        mUrlKeyedAnonymizedData.setManagedPreferenceDelegate((
-                ChromeManagedPreferenceDelegate) (preference
-                -> UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionManaged(profile)));
+        mUrlKeyedAnonymizedData.setManagedPreferenceDelegate(new ChromeManagedPreferenceDelegate(
+                profile) {
+            @Override
+            public boolean isPreferenceControlledByPolicy(Preference preference) {
+                return UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionManaged(
+                        profile);
+            }
+        });
     }
 
     @Override
@@ -271,7 +276,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_id_targeted_help) {
-            mHelpAndFeedbackLauncher.show(
+            getHelpAndFeedbackLauncher().show(
                     getActivity(), getString(R.string.help_context_sync_and_services), null);
             return true;
         }
@@ -348,10 +353,10 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
      * from this state.
      */
     private void updateSyncPreferences() {
-        String signedInAccountName = CoreAccountInfo.getEmailFrom(
-                IdentityServicesProvider.get()
-                        .getIdentityManager(Profile.getLastUsedRegularProfile())
-                        .getPrimaryAccountInfo(ConsentLevel.SYNC));
+        String signedInAccountName =
+                CoreAccountInfo.getEmailFrom(IdentityServicesProvider.get()
+                                                     .getIdentityManager(getProfile())
+                                                     .getPrimaryAccountInfo(ConsentLevel.SYNC));
         // May happen if account is removed from the device while this screen is shown.
         if (signedInAccountName == null) {
             if (getActivity() != null) getActivity().finish();
@@ -534,7 +539,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
 
     private void onSignOutAndTurnOffSyncClicked() {
         if (!IdentityServicesProvider.get()
-                        .getIdentityManager(Profile.getLastUsedRegularProfile())
+                        .getIdentityManager(getProfile())
                         .hasPrimaryAccount(ConsentLevel.SYNC)) {
             return;
         }
@@ -546,7 +551,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
 
     private void onTurnOffSyncClicked() {
         if (!IdentityServicesProvider.get()
-                        .getIdentityManager(Profile.getLastUsedRegularProfile())
+                        .getIdentityManager(getProfile())
                         .hasPrimaryAccount(ConsentLevel.SYNC)) {
             return;
         }
@@ -562,10 +567,9 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
         if (mSyncService.isPassphraseRequiredForPreferredDataTypes()) {
             displayPassphraseDialog();
         } else if (mSyncService.isTrustedVaultKeyRequired()) {
-            CoreAccountInfo primaryAccountInfo =
-                    IdentityServicesProvider.get()
-                            .getIdentityManager(Profile.getLastUsedRegularProfile())
-                            .getPrimaryAccountInfo(ConsentLevel.SYNC);
+            CoreAccountInfo primaryAccountInfo = IdentityServicesProvider.get()
+                                                         .getIdentityManager(getProfile())
+                                                         .getPrimaryAccountInfo(ConsentLevel.SYNC);
             if (primaryAccountInfo != null) {
                 SyncSettingsUtils.openTrustedVaultKeyRetrievalDialog(
                         this, primaryAccountInfo, REQUEST_CODE_TRUSTED_VAULT_KEY_RETRIEVAL);
@@ -605,7 +609,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
                 pref.setChecked(selectedSyncTypes.contains(type));
             }
 
-            pref.setManagedPreferenceDelegate(new ChromeManagedPreferenceDelegate() {
+            pref.setManagedPreferenceDelegate(new ChromeManagedPreferenceDelegate(getProfile()) {
                 @Override
                 public boolean isPreferenceControlledByPolicy(Preference preference) {
                     return managed;
@@ -655,7 +659,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     public void onSyncErrorCardPrimaryButtonClicked() {
         @SyncError
         int syncError = mSyncErrorCardPreference.getSyncError();
-        Profile profile = Profile.getLastUsedRegularProfile();
+        Profile profile = getProfile();
         final CoreAccountInfo primaryAccountInfo =
                 IdentityServicesProvider.get().getIdentityManager(profile).getPrimaryAccountInfo(
                         ConsentLevel.SYNC);
@@ -710,7 +714,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     public void onSyncErrorCardSecondaryButtonClicked() {
         assert mSyncErrorCardPreference.getSyncError() == SyncError.SYNC_SETUP_INCOMPLETE;
         IdentityServicesProvider.get()
-                .getSigninManager(Profile.getLastUsedRegularProfile())
+                .getSigninManager(getProfile())
                 .signOut(SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS);
         getActivity().finish();
     }
@@ -720,7 +724,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
         mSyncService.setInitialSyncFeatureSetupComplete(
                 SyncFirstSetupCompleteSource.ADVANCED_FLOW_CONFIRM);
 
-        Profile profile = Profile.getLastUsedRegularProfile();
+        Profile profile = getProfile();
         UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
                 profile, mUrlKeyedAnonymizedData.isChecked());
         UnifiedConsentServiceBridge.recordSyncSetupDataTypesHistogram(profile);
@@ -730,7 +734,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
 
     private void cancelSync() {
         RecordUserAction.record("Signin_Signin_CancelAdvancedSyncSettings");
-        Profile profile = Profile.getLastUsedRegularProfile();
+        Profile profile = getProfile();
         SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(profile);
         if (profile.isChild()) {
             // Child users cannot sign out, so we revoke the sync consent to return to the
@@ -747,7 +751,7 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
     // SignOutDialogListener implementation:
     @Override
     public void onSignOutClicked(boolean forceWipeUserData) {
-        final Profile profile = Profile.getLastUsedRegularProfile();
+        final Profile profile = getProfile();
         // In case sign-out happened while the dialog was displayed, we guard the sign out so
         // we do not hit a native crash.
         if (!IdentityServicesProvider.get().getIdentityManager(profile).hasPrimaryAccount(
@@ -786,10 +790,5 @@ public class ManageSyncSettings extends PreferenceFragmentCompat
                     SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS, dataWipeCallback,
                     forceWipeUserData);
         }
-    }
-
-    @Override
-    public void setHelpAndFeedbackLauncher(HelpAndFeedbackLauncher helpAndFeedbackLauncher) {
-        mHelpAndFeedbackLauncher = helpAndFeedbackLauncher;
     }
 }

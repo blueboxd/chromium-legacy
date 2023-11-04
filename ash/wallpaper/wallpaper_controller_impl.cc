@@ -78,7 +78,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_util.h"
 #include "url/gurl.h"
-#include "wallpaper_metrics_manager.h"
 
 using color_utils::ColorProfile;
 
@@ -1007,6 +1006,9 @@ void WallpaperControllerImpl::SetPolicyWallpaper(
                              CreateSolidColorWallpaper(kDefaultWallpaperColor));
     return;
   }
+
+  // Invalidate weak ptrs to cancel prior requests to set wallpaper.
+  set_wallpaper_weak_factory_.InvalidateWeakPtrs();
   image_util::DecodeImageData(
       base::BindOnce(&WallpaperControllerImpl::OnPolicyWallpaperDecoded,
                      weak_factory_.GetWeakPtr(), account_id, user_type,
@@ -1459,7 +1461,9 @@ void WallpaperControllerImpl::OnShellInitialized() {
   shell->overview_controller()->AddObserver(this);
   shell->dark_light_mode_controller()->AddCheckpointObserver(this);
   daily_refresh_scheduler_ = std::make_unique<WallpaperDailyRefreshScheduler>();
-  daily_refresh_scheduler_->AddCheckpointObserver(this);
+  if (!daily_refresh_observation_.IsObserving()) {
+    daily_refresh_observation_.Observe(daily_refresh_scheduler_.get());
+  }
 }
 
 void WallpaperControllerImpl::OnShellDestroying() {
@@ -1467,7 +1471,7 @@ void WallpaperControllerImpl::OnShellDestroying() {
   shell->tablet_mode_controller()->RemoveObserver(this);
   shell->overview_controller()->RemoveObserver(this);
   shell->dark_light_mode_controller()->RemoveCheckpointObserver(this);
-  daily_refresh_scheduler_->RemoveCheckpointObserver(this);
+  daily_refresh_observation_.Reset();
 }
 
 void WallpaperControllerImpl::OnWallpaperResized() {
@@ -1581,21 +1585,10 @@ void WallpaperControllerImpl::OnCheckpointChanged(
     if (!features::IsWallpaperRefreshRevampEnabled()) {
       return;
     }
-    // Checks whether daily wallpaper should be refreshed by evaluating whether
-    // 23 hours (roughly a day) have elapsed since `info.date`.
-    if (info.type == WallpaperType::kDaily ||
-        info.type == WallpaperType::kDailyGooglePhotos) {
-      // When `features::IsWallpaperFastRefreshEnabled()` is enabled, the
-      // wallpaper may swap quickly back to back due to how ScheduledFeature
-      // stabilizes its schedule state.
-      bool should_fetch_wallpaper =
-          features::IsWallpaperFastRefreshEnabled()
-              ? true
-              : info.date + base::Hours(23) <= base::Time::Now();
-      if (should_fetch_wallpaper) {
-        UpdateDailyRefreshWallpaper();
-      }
-    } else if (info.type == WallpaperType::kOnceGooglePhotos) {
+    if (daily_refresh_scheduler_->ShouldRefreshWallpaper(info)) {
+      UpdateDailyRefreshWallpaper();
+    }
+    if (info.type == WallpaperType::kOnceGooglePhotos) {
       CheckGooglePhotosStaleness(account_id, info);
     }
     return;
@@ -1953,11 +1946,9 @@ void WallpaperControllerImpl::OnOnlineWallpaperDecoded(
     const OnlineWallpaperParams& params,
     SetWallpaperCallback callback,
     const gfx::ImageSkia& image) {
-  bool success = !image.isNull();
-  if (callback) {
-    std::move(callback).Run(success);
-  }
-  if (!success) {
+  DCHECK(callback);
+  if (image.isNull()) {
+    std::move(callback).Run(/*success=*/false);
     wallpaper_metrics_manager_->LogWallpaperResult(
         params.daily_refresh_enabled ? WallpaperType::kDaily
                                      : WallpaperType::kOnline,
@@ -1986,6 +1977,7 @@ void WallpaperControllerImpl::OnOnlineWallpaperDecoded(
   }
   if (params.preview_mode) {
     DCHECK(is_active_user);
+    std::move(callback).Run(/*success=*/true);
     confirm_preview_wallpaper_callback_ = base::BindOnce(
         &WallpaperControllerImpl::SetWallpaperImpl, weak_factory_.GetWeakPtr(),
         params.account_id, wallpaper_info, image, /*show_wallpaper=*/false);
@@ -1996,6 +1988,7 @@ void WallpaperControllerImpl::OnOnlineWallpaperDecoded(
     // Show the preview wallpaper.
     reload_preview_wallpaper_callback_.Run();
   } else {
+    std::move(callback).Run(/*success=*/true);
     SetWallpaperImpl(params.account_id, wallpaper_info, image,
                      /*show_wallpaper=*/is_active_user);
   }
@@ -2162,7 +2155,7 @@ void WallpaperControllerImpl::OnDailyGooglePhotosWallpaperDecoded(
   // Image returned successfully. We can reliably assume success from here, and
   // we need to call the callback before `ShowWallpaperImage()` to ensure proper
   // propagation of `CurrentWallpaper` to the WebUI.
-  std::move(callback).Run(true);
+  std::move(callback).Run(/*success=*/true);
   wallpaper_metrics_manager_->LogWallpaperResult(
       WallpaperType::kDailyGooglePhotos, SetWallpaperResult::kSuccess);
 
@@ -2172,11 +2165,6 @@ void WallpaperControllerImpl::OnDailyGooglePhotosWallpaperDecoded(
        /*preview_mode=*/false, /*dedup_key=*/absl::nullopt});
   wallpaper_info.location = photo_id;
   wallpaper_info.dedup_key = dedup_key;
-
-  if (!SetUserWallpaperInfo(account_id, wallpaper_info)) {
-    LOG(ERROR) << "Setting user wallpaper info fails. This should never happen "
-                  "except in tests.";
-  }
 
   StartDailyRefreshTimer();
 
@@ -2691,6 +2679,10 @@ void WallpaperControllerImpl::OnDailyRefreshWallpaperUpdated(
         TimeOfDay::FromTime(second_check_time));
   }
   std::move(callback).Run(success);
+  // Resume observing daily refresh scheduler if necessary.
+  if (!daily_refresh_observation_.IsObserving()) {
+    daily_refresh_observation_.Observe(daily_refresh_scheduler_.get());
+  }
 }
 
 void WallpaperControllerImpl::SetDailyRefreshCollectionId(
@@ -2789,6 +2781,9 @@ void WallpaperControllerImpl::UpdateDailyRefreshWallpaper(
     return;
   }
 
+  // Temporarily pause observing the scheduler to avoid unnecessary
+  // `OnCheckpointChanged()` call after `on_done` callback is run.
+  daily_refresh_observation_.Reset();
   auto on_done =
       base::BindOnce(&WallpaperControllerImpl::OnDailyRefreshWallpaperUpdated,
                      weak_factory_.GetWeakPtr(), std::move(callback));

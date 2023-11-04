@@ -6,11 +6,11 @@ import {TestRunner} from 'test_runner';
 import {SourcesTestRunner} from 'sources_test_runner';
 
 import * as Common from 'devtools/core/common/common.js';
+import * as SourcesModule from 'devtools/panels/sources/sources.js';
 
 (async function() {
   TestRunner.addResult(
       `Tests debugger does not fail when stopped while a panel other than scripts was opened. Both valid and invalid expressions are added to watch expressions.\n`);
-  await TestRunner.loadLegacyModule('sources');
   await TestRunner.showPanel('sources');
   await TestRunner.evaluateInPagePromise(`
       function testFunction()
@@ -38,7 +38,7 @@ import * as Common from 'devtools/core/common/common.js';
   function waitForUpdate() {
     return new Promise(resolve => {
       TestRunner.addSniffer(
-          Sources.WatchExpression.prototype, 'createWatchExpression',
+          SourcesModule.WatchExpressionsSidebarPane.WatchExpression.prototype, 'createWatchExpression',
           watchExpressionsUpdated);
       let updateCount = 2;
       function watchExpressionsUpdated(result, wasThrown) {
@@ -50,7 +50,7 @@ import * as Common from 'devtools/core/common/common.js';
           }
         }
         TestRunner.addSniffer(
-            Sources.WatchExpression.prototype, 'createWatchExpression',
+            SourcesModule.WatchExpressionsSidebarPane.WatchExpression.prototype, 'createWatchExpression',
             watchExpressionsUpdated);
       }
     });

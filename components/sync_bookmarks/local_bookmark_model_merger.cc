@@ -9,7 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "base/containers/contains.h"
 #include "base/hash/hash.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/uuid.h"
@@ -83,24 +82,6 @@ bool NodesCompatibleForMatchByUuid(const bookmarks::BookmarkNode* node1,
   return true;
 }
 
-std::unordered_map<base::Uuid, const bookmarks::BookmarkNode*, base::UuidHash>
-BuildAccountUuidLookupTable(const bookmarks::BookmarkModel* model) {
-  std::unordered_map<base::Uuid, const bookmarks::BookmarkNode*, base::UuidHash>
-      nodes_per_uuid;
-  ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
-      model->root_node());
-  while (iterator.has_next()) {
-    const bookmarks::BookmarkNode* const node = iterator.Next();
-    CHECK(node->uuid().is_valid());
-    // Managed nodes are not expected to exist in the account BookmarkModel
-    // instance.
-    CHECK(model->client()->CanSyncNode(node));
-    const bool success = nodes_per_uuid.emplace(node->uuid(), node).second;
-    CHECK(success);
-  }
-  return nodes_per_uuid;
-}
-
 }  // namespace
 
 LocalBookmarkModelMerger::LocalBookmarkModelMerger(
@@ -108,11 +89,7 @@ LocalBookmarkModelMerger::LocalBookmarkModelMerger(
     bookmarks::BookmarkModel* account_model)
     : local_model_(local_model),
       account_model_(account_model),
-      initial_uuid_to_account_node_map_(
-          BuildAccountUuidLookupTable(account_model)),
-      uuid_to_match_map_(FindGuidMatches(local_model,
-                                         account_model,
-                                         initial_uuid_to_account_node_map_)) {}
+      uuid_to_match_map_(FindGuidMatches(local_model, account_model)) {}
 
 LocalBookmarkModelMerger::~LocalBookmarkModelMerger() = default;
 
@@ -143,10 +120,7 @@ std::unordered_map<base::Uuid,
                    base::UuidHash>
 LocalBookmarkModelMerger::FindGuidMatches(
     const bookmarks::BookmarkModel* local_model,
-    const bookmarks::BookmarkModel* account_model,
-    const std::unordered_map<base::Uuid,
-                             const bookmarks::BookmarkNode*,
-                             base::UuidHash>& uuid_to_account_node_map) {
+    const bookmarks::BookmarkModel* account_model) {
   CHECK(local_model);
   CHECK(account_model);
 
@@ -163,17 +137,17 @@ LocalBookmarkModelMerger::FindGuidMatches(
 
     // Exclude managed nodes.
     if (!local_node->is_permanent_node() &&
-        !local_model->client()->CanSyncNode(local_node)) {
+        local_model->client()->IsNodeManaged(local_node)) {
       continue;
     }
 
-    const auto account_it = uuid_to_account_node_map.find(local_node->uuid());
-    if (account_it == uuid_to_account_node_map.end()) {
+    const bookmarks::BookmarkNode* const account_node =
+        account_model->GetNodeByUuid(local_node->uuid());
+    if (!account_node) {
       // No match found by UUID.
       continue;
     }
 
-    const bookmarks::BookmarkNode* const account_node = account_it->second;
     if (NodesCompatibleForMatchByUuid(account_node, local_node)) {
       const bool success = uuid_to_match_map
                                .emplace(account_node->uuid(),
@@ -207,7 +181,7 @@ void LocalBookmarkModelMerger::MergeSubtree(
 
     // Managed nodes are not expected to exist in the account BookmarkModel
     // instance.
-    CHECK(account_model_->client()->CanSyncNode(account_child));
+    CHECK(!account_model_->client()->IsNodeManaged(account_child));
 
     // If a UUID match exists, it takes precedence over semantic matching.
     if (FindMatchingLocalNodeByUuid(account_child)) {
@@ -229,7 +203,7 @@ void LocalBookmarkModelMerger::MergeSubtree(
 
     // Special-case managed bookmarks, which don't need merging into the account
     // model.
-    if (!local_model_->client()->CanSyncNode(local_child)) {
+    if (local_model_->client()->IsNodeManaged(local_child)) {
       continue;
     }
 
@@ -308,13 +282,9 @@ LocalBookmarkModelMerger::CopyLocalNodeToAccountModel(
 
   // See if the same UUID can be carried over or a random one generated.
   const base::Uuid new_node_uuid =
-      base::Contains(initial_uuid_to_account_node_map_, local_node->uuid())
+      (account_model_->GetNodeByUuid(local_node->uuid()) != nullptr)
           ? base::Uuid::GenerateRandomV4()
           : local_node->uuid();
-
-  // `initial_uuid_to_account_node_map_` could be updated to make sure the new
-  // UUID is included, but random UUID collisions are practically impossible and
-  // equivalent safeguards don't exist elsewhere in the codebase.
 
   // Note that this function is not expected to copy children recursively. The
   // caller is responsible for dealing with children.

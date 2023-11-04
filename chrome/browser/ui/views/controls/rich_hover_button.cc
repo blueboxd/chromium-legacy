@@ -18,6 +18,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/table_layout.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/style/typography_provider.h"
 #include "ui/views/view_class_properties.h"
 
 namespace {
@@ -91,8 +92,8 @@ RichHoverButton::RichHoverButton(
       .AddRows(1, views::TableLayout::kFixedSize,
                // Force row to have sufficient height for full line-height of
                // the title.
-               views::style::GetLineHeight(text_context,
-                                           views::style::STYLE_PRIMARY));
+               views::TypographyProvider::Get().GetLineHeight(
+                   text_context, views::style::STYLE_PRIMARY));
 
   // TODO(pkasting): This class should subclass Button, not HoverButton.
   table_layout->SetChildViewIgnoredByLayout(image(), true);
@@ -116,6 +117,7 @@ RichHoverButton::RichHoverButton(
   if (features::IsChromeRefresh2023()) {
     title_->SetTextStyle(views::style::STYLE_BODY_3_MEDIUM);
     secondary_label_->SetTextStyle(views::style::STYLE_BODY_5);
+    secondary_label_->SetEnabledColorId(ui::kColorLabelForegroundSecondary);
   }
 
   // State icon is optional and column is created only when it is set.
@@ -144,6 +146,7 @@ RichHoverButton::RichHoverButton(
         views::style::STYLE_SECONDARY));
     if (features::IsChromeRefresh2023()) {
       subtitle_->SetTextStyle(views::style::STYLE_BODY_5);
+      subtitle_->SetEnabledColorId(ui::kColorLabelForegroundSecondary);
     }
     subtitle_->SetMultiLine(true);
     subtitle_->SetHorizontalAlignment(gfx::ALIGN_LEFT);

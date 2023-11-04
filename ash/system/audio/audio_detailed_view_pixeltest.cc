@@ -51,12 +51,14 @@ TEST_F(AudioDetailedViewPixelTest, Basics) {
       ->ShowAudioDetailedView();
 
   TrayDetailedView* detailed_view =
-      system_tray->bubble()->quick_settings_view()->GetDetailedViewForTest();
+      system_tray->bubble()
+          ->quick_settings_view()
+          ->GetDetailedViewForTest<TrayDetailedView>();
   ASSERT_TRUE(detailed_view);
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "qs_audio_detailed_view",
-      /*revision_number=*/6, detailed_view));
+      /*revision_number=*/9, detailed_view));
 }
 
 TEST_F(AudioDetailedViewPixelTest, ShowNoiseCancellationButton) {
@@ -84,12 +86,14 @@ TEST_F(AudioDetailedViewPixelTest, ShowNoiseCancellationButton) {
       ->ShowAudioDetailedView();
 
   TrayDetailedView* detailed_view =
-      system_tray->bubble()->quick_settings_view()->GetDetailedViewForTest();
+      system_tray->bubble()
+          ->quick_settings_view()
+          ->GetDetailedViewForTest<TrayDetailedView>();
   ASSERT_TRUE(detailed_view);
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "qs_audio_detailed_view",
-      /*revision_number=*/0, detailed_view));
+      /*revision_number=*/3, detailed_view));
 }
 
 }  // namespace ash

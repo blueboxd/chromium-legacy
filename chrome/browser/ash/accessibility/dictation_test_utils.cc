@@ -172,6 +172,10 @@ void DictationTestUtils::EnableDictation(Browser* browser) {
   ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
       nullptr, ui::KeyboardCode::VKEY_TAB, false, false, false, false)));
 
+  // Dictation test support references the main Dictation object, so wait for
+  // the main object to be created before installing test support.
+  WaitForDictationJSReady();
+
   // Create an instance of the DictationTestSupport JS class, which can be
   // used from these tests to interact with Dictation JS. For more
   // information, see kTestSupportPath.
@@ -271,9 +275,9 @@ std::vector<base::test::FeatureRef> DictationTestUtils::GetDisabledFeatures() {
   return test_helper_->GetDisabledFeatures();
 }
 
-std::string DictationTestUtils::ExecuteAccessibilityCommonScript(
+void DictationTestUtils::ExecuteAccessibilityCommonScript(
     const std::string& script) {
-  return extensions::browsertest_util::ExecuteScriptInBackgroundPageDeprecated(
+  extensions::browsertest_util::ExecuteScriptInBackgroundPage(
       /*context=*/profile_,
       /*extension_id=*/extension_misc::kAccessibilityCommonExtensionId,
       /*script=*/script);
@@ -359,6 +363,18 @@ void DictationTestUtils::SetUpTestSupport() {
   std::string script;
   ASSERT_TRUE(base::ReadFileToString(test_support_path, &script))
       << test_support_path;
+  ExecuteAccessibilityCommonScript(script);
+}
+
+void DictationTestUtils::WaitForDictationJSReady() {
+  std::string script = base::StringPrintf(R"JS(
+    (async function() {
+      window.accessibilityCommon.setFeatureLoadCallbackForTest('dictation',
+          () => {
+            chrome.test.sendScriptResult('ready');
+          });
+    })();
+  )JS");
   ExecuteAccessibilityCommonScript(script);
 }
 

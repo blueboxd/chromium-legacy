@@ -21,12 +21,6 @@ class PrefChangeRegistrar;
 
 namespace commerce {
 
-extern const char kOAuthScope[];
-extern const char kOAuthName[];
-extern const char kGetHttpMethod[];
-extern const char kPostHttpMethod[];
-extern const char kContentType[];
-extern const char kEmptyPostData[];
 extern const char kNotificationsPrefUrl[];
 
 // Used to check user account status.
@@ -35,7 +29,7 @@ class AccountChecker : public signin::IdentityManager::Observer {
   AccountChecker(const AccountChecker&) = delete;
   ~AccountChecker() override;
 
-  virtual bool IsOptedIntoSync();
+  virtual bool IsSignedIn();
 
   // Returns whether bookmarks is currently syncing. This will return true in
   // cases where sync is still initializing, but the sync feature itself is

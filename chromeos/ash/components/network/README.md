@@ -277,7 +277,7 @@ additional information beyond the value. This information includes:
   will be forced to have this value.
 
 While the `ManagedNetworkConfigurationHandler` class does provide an API to set
-the active policy this API should not be called outside of tests. The [`NetworkConfigurationUpdated`](https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/policy/networking/network_configuration_updater.h;drc=148f8a073813914fe0de89b7785d5750b3bb5520) class
+the active policy this API should not be called outside of tests. The [`NetworkConfigurationUpdater`](https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/policy/networking/network_configuration_updater.h;drc=148f8a073813914fe0de89b7785d5750b3bb5520) class
 is the class responsible for tracking device and user policies and applying them
 to the device. When there are policy changes this class will use
 [`ManagedNetworkConfigurationHandler::SetPolicy()`](https://source.chromium.org/chromium/chromium/src/+/main:chromeos/ash/components/network/managed_network_configuration_handler.h;l=145-154;drc=5e476d249f1b36460280115db38fdc37b1c37128)
@@ -609,5 +609,31 @@ Device properties, which a cellular Shill Service is associated with.
 * In Shill, SIM lock information is stored in [`kSIMLockStatusProperty`](https://source.chromium.org/chromium/chromium/src/+/main:third_party/cros_system_api/dbus/Shill/dbus-constants.h;l=533-538;drc=d83e99de89c0ccc6fee4ced1e450739b142d4b2c;bpv=0;bpt=1)
   which is a Cellular device property
 * `kSIMLockStatusProperty` is used to populate cellular-specific [`DeviceState properties`](https://source.chromium.org/chromium/chromium/src/+/main:chromeos/ash/components/network/device_state.cc;l=100-127;drc=d83e99de89c0ccc6fee4ced1e450739b142d4b2c;bpv=1;bpt=1)
+
+## Persisting eSIM Profiles
+
+eSIM profiles are displayed in some cellular UI surfaces. However, they can
+only be retrieved from the device hardware when an EUICC is the "active" slot
+on the device, and only one slot can be active at a time. This means that if
+the physical SIM slot is active, we cannot fetch an updated list of profiles
+without switching slots, which can be disruptive if the user is utilizing a
+cellular connection from the physical SIM slot.
+
+To ensure that clients can access eSIM metadata regardless of the active slot,
+[`CellularESimProfileHandler`](https://source.chromium.org/chromium/chromium/src/+/main:chromeos/ash/components/network/cellular_esim_profile_handler.h;l=31;drc=28eec300d12693725de66c979962d9b8a4209a7d)
+stores all known eSIM profiles persistently in prefs. It does this when the
+available EUICC list changes, when an EUICC property changes, a carrier profile
+property changes or when an profile is installed.
+
+Clients can access these eSIM profiles through the
+[`GetESimProfiles()`](https://source.chromium.org/chromium/chromium/src/+/main:chromeos/ash/components/network/cellular_esim_profile_handler.h;l=87-90;drc=28eec300d12693725de66c979962d9b8a4209a7d)
+and can observe changes to the list by observing
+[`CellularESimProfileHandler`](https://source.chromium.org/chromium/chromium/src/+/main:chromeos/ash/components/network/cellular_esim_profile_handler.h;l=40-41;drc=28eec300d12693725de66c979962d9b8a4209a7d).
+Additionally, `CellularESimProfileHandlerImpl` tracks all known EUICC
+paths. If it detects a new EUICC which it previously had not known about, it
+automatically refreshes profile metadata from that slot. This ensures that
+after a powerwash, since all local data will be erased and we will no longer
+have information on which slots we have metadata for, we will refresh the
+metadata for all slots. This is done in [`AutoRefreshEuiccsIfNecessary()`](https://source.chromium.org/chromium/chromium/src/+/main:chromeos/ash/components/network/cellular_esim_profile_handler_impl.h;l=69;drc=d8468bb60e224d8797b843ee9d0258862bcbe87f).
 
 TODO: Finish README

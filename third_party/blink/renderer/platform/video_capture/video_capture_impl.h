@@ -80,11 +80,14 @@ class PLATFORM_EXPORT VideoCaptureImpl
   // |crop_version_cb| will be called when it is guaranteed that all
   // subsequent frames |deliver_frame_cb| is called for, have a crop version
   // that is equal-to-or-greater-than the given crop version.
+  // |frame_dropped_cb| will be called when a frame was dropped prior to
+  // delivery (i.e. |deliver_frame_cb| was not called for this frame).
   void StartCapture(int client_id,
                     const media::VideoCaptureParams& params,
                     const VideoCaptureStateUpdateCB& state_update_cb,
                     const VideoCaptureDeliverFrameCB& deliver_frame_cb,
-                    const VideoCaptureCropVersionCB& crop_version_cb);
+                    const VideoCaptureCropVersionCB& crop_version_cb,
+                    const VideoCaptureNotifyFrameDroppedCB& frame_dropped_cb);
 
   // Stop capturing. |client_id| is the identifier used to call StartCapture.
   void StopCapture(int client_id);
@@ -104,7 +107,6 @@ class PLATFORM_EXPORT VideoCaptureImpl
   // |callback| will be invoked with the results.
   void GetDeviceFormatsInUse(VideoCaptureDeviceFormatsCallback callback);
 
-  void OnFrameDropped(media::VideoCaptureFrameDropReason reason);
   void OnLog(const String& message);
 
   const media::VideoCaptureSessionId& session_id() const { return session_id_; }
@@ -126,6 +128,7 @@ class PLATFORM_EXPORT VideoCaptureImpl
       media::mojom::blink::ReadyBufferPtr buffer,
       Vector<media::mojom::blink::ReadyBufferPtr> scaled_buffers) override;
   void OnBufferDestroyed(int32_t buffer_id) override;
+  void OnFrameDroppedEarly(media::VideoCaptureFrameDropReason reason) override;
   void OnNewCropVersion(uint32_t crop_version) override;
 
   void ProcessFeedback(const media::VideoCaptureFeedback& feedback);

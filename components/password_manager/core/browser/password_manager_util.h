@@ -25,7 +25,6 @@ class NetworkContext;
 
 namespace password_manager {
 class CredentialsCleanerRunner;
-struct GroupedFacets;
 class PasswordManagerDriver;
 class PasswordManagerClient;
 }  // namespace password_manager
@@ -33,10 +32,6 @@ class PasswordManagerClient;
 namespace autofill {
 class AutofillClient;
 }  // namespace autofill
-
-namespace syncer {
-class SyncService;
-}
 
 class PrefService;
 
@@ -57,11 +52,6 @@ enum class GetLoginMatchType {
 
 // Update |credential| to reflect usage.
 void UpdateMetadataForUsage(password_manager::PasswordForm* credential);
-
-// Reports whether and how passwords are currently synced. In particular, for a
-// null |sync_service| returns NOT_SYNCING.
-password_manager::SyncState GetPasswordSyncState(
-    const syncer::SyncService* sync_service);
 
 // Removes Android username-only credentials from |android_credentials|.
 // Transforms federated credentials into non zero-click ones.
@@ -206,23 +196,6 @@ bool IsCredentialProviderEnabledOnStartup(const PrefService* prefs);
 // provider in their iOS settings at startup.
 void SetCredentialProviderEnabledOnStartup(PrefService* prefs, bool enabled);
 #endif
-
-// Retrieves the extended top level domain for a given |url|
-// ("https://www.facebook.com/" => "facebook.com"). If the calculated top
-// private domain matches an entry from the |psl_extensions| (e.g. "app.link"),
-// the domain is extended by one level ("https://facebook.app.link/" =>
-// "facebook.app.link"). If the |url| is not a valid URI or has an unsupported
-// schema (e.g. "android://"), empty string is returned.
-std::string GetExtendedTopLevelDomain(
-    const GURL& url,
-    const base::flat_set<std::string>& psl_extensions);
-
-// This functions merges groups together if one of the following applies:
-// * the same facet is present in both groups.
-// * eTLD+1 of a facet in one group matches eTLD+1 of a facet in another group.
-std::vector<password_manager::GroupedFacets> MergeRelatedGroups(
-    const base::flat_set<std::string>& psl_extensions,
-    const std::vector<password_manager::GroupedFacets>& groups);
 
 // Contains all special symbols considered for password-generation.
 inline constexpr char kSpecialSymbols[] = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~";

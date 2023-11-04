@@ -81,7 +81,7 @@
 #include "chrome/browser/net/stub_resolver_config_reader.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/ui/webui/management/management_ui_handler_chromeos.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/proxy/proxy_config_handler.h"
 #include "chromeos/ash/components/network/proxy/ui_proxy_config_service.h"
@@ -1113,7 +1113,7 @@ base::Value::List ManagementUIHandler::GetApplicationsInfo(
 
   auto& registrar = provider->registrar_unsafe();
 
-  for (const web_app::AppId& app_id : registrar.GetAppIds()) {
+  for (const webapps::AppId& app_id : registrar.GetAppIds()) {
     base::Value::List permission_messages;
     // Display RunOnOsLogin if it is set to autostart by admin policy.
     web_app::ValueWithPolicy<web_app::RunOnOsLoginMode> policy =

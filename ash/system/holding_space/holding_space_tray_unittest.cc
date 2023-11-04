@@ -426,13 +426,13 @@ class HoldingSpaceTrayTestBase : public AshTestBase {
       HoldingSpaceItem::Type type,
       const base::FilePath& path,
       const HoldingSpaceProgress& progress = HoldingSpaceProgress()) {
-    GURL file_system_url(
-        base::StrCat({"filesystem:", path.BaseName().value()}));
     std::unique_ptr<HoldingSpaceItem> item =
         HoldingSpaceItem::CreateFileBackedItem(
-            type, HoldingSpaceFile(HoldingSpaceFile::FileSystemType::kTest),
-            path, file_system_url, progress,
-            base::BindOnce(&CreateStubHoldingSpaceImage));
+            type,
+            HoldingSpaceFile(
+                path, HoldingSpaceFile::FileSystemType::kTest,
+                GURL(base::StrCat({"filesystem:", path.BaseName().value()}))),
+            progress, base::BindOnce(&CreateStubHoldingSpaceImage));
     HoldingSpaceItem* item_ptr = item.get();
     target_model->AddItem(std::move(item));
     return item_ptr;
@@ -444,8 +444,9 @@ class HoldingSpaceTrayTestBase : public AshTestBase {
     // dictionary.
     std::unique_ptr<HoldingSpaceItem> item =
         HoldingSpaceItem::CreateFileBackedItem(
-            type, HoldingSpaceFile(HoldingSpaceFile::FileSystemType::kTest),
-            path, GURL("filesystem:ignored"),
+            type,
+            HoldingSpaceFile(path, HoldingSpaceFile::FileSystemType::kTest,
+                             GURL("filesystem:ignored")),
             base::BindOnce(&CreateStubHoldingSpaceImage));
     const base::Value::Dict serialized_holding_space_item = item->Serialize();
     std::unique_ptr<HoldingSpaceItem> deserialized_item =
@@ -807,8 +808,9 @@ TEST_F(HoldingSpaceTrayTest, TrayButtonNotShownForPartialItemsOnly) {
 
   // Initialize one item, and verify the tray button gets shown.
   model()->InitializeOrRemoveItem(
-      item_2->id(), HoldingSpaceFile(HoldingSpaceFile::FileSystemType::kTest),
-      GURL("filesystem:fake_2"));
+      item_2->id(), HoldingSpaceFile(item_2->file().file_path,
+                                     HoldingSpaceFile::FileSystemType::kTest,
+                                     GURL("filesystem:fake_2")));
 
   GetTray()->FirePreviewsUpdateTimerIfRunningForTesting();
   EXPECT_TRUE(test_api()->IsShowingInShelf());
@@ -916,8 +918,9 @@ TEST_F(HoldingSpaceTrayTest,
   // Initialize the screen recording item and verify it is not shown.
   model()->InitializeOrRemoveItem(
       screen_recording_item->id(),
-      HoldingSpaceFile(HoldingSpaceFile::FileSystemType::kTest),
-      GURL("filesystem:screen_recording"));
+      HoldingSpaceFile(screen_recording_item->file().file_path,
+                       HoldingSpaceFile::FileSystemType::kTest,
+                       GURL("filesystem:screen_recording")));
 
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetSuggestionChips().empty());
@@ -961,8 +964,9 @@ TEST_F(HoldingSpaceTrayTest,
   // Initialize the screen recording item and verify it is shown first.
   model()->InitializeOrRemoveItem(
       screen_recording_item_last->id(),
-      HoldingSpaceFile(HoldingSpaceFile::FileSystemType::kTest),
-      GURL("filesystem:screen_recording"));
+      HoldingSpaceFile(screen_recording_item_last->file().file_path,
+                       HoldingSpaceFile::FileSystemType::kTest,
+                       GURL("filesystem:screen_recording")));
 
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetSuggestionChips().empty());
@@ -1020,8 +1024,9 @@ TEST_F(HoldingSpaceTrayTest,
   // Initialize the screenshot item and verify it is not shown.
   model()->InitializeOrRemoveItem(
       screenshot_item->id(),
-      HoldingSpaceFile(HoldingSpaceFile::FileSystemType::kTest),
-      GURL("filesystem:fake_1"));
+      HoldingSpaceFile(screenshot_item->file().file_path,
+                       HoldingSpaceFile::FileSystemType::kTest,
+                       GURL("filesystem:fake_1")));
 
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetSuggestionChips().empty());
@@ -2474,8 +2479,9 @@ TEST_F(HoldingSpacePreviewsTrayTest, ScreenCapturesSection) {
   // Fully initialize partially initialized item, and verify it gets added to
   // the section, in the order of addition, replacing the oldest item.
   model()->InitializeOrRemoveItem(
-      item_2->id(), HoldingSpaceFile(HoldingSpaceFile::FileSystemType::kTest),
-      GURL("filesystem:fake_2"));
+      item_2->id(), HoldingSpaceFile(item_2->file().file_path,
+                                     HoldingSpaceFile::FileSystemType::kTest,
+                                     GURL("filesystem:fake_2")));
 
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetSuggestionChips().empty());
@@ -2606,8 +2612,9 @@ TEST_F(HoldingSpacePreviewsTrayTest,
   // Fully initialize partially initialized item, and verify it's not added to
   // the section.
   model()->InitializeOrRemoveItem(
-      item_1->id(), HoldingSpaceFile(HoldingSpaceFile::FileSystemType::kTest),
-      GURL("filesystem:fake_1"));
+      item_1->id(), HoldingSpaceFile(item_1->file().file_path,
+                                     HoldingSpaceFile::FileSystemType::kTest,
+                                     GURL("filesystem:fake_1")));
 
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetSuggestionChips().empty());
@@ -2740,8 +2747,9 @@ TEST_F(HoldingSpacePreviewsTrayTest, PinnedFilesSection) {
 
   // Full initialize partially initialized item, and verify it gets shown.
   model()->InitializeOrRemoveItem(
-      item_2->id(), HoldingSpaceFile(HoldingSpaceFile::FileSystemType::kTest),
-      GURL("filesystem:fake_2"));
+      item_2->id(), HoldingSpaceFile(item_2->file().file_path,
+                                     HoldingSpaceFile::FileSystemType::kTest,
+                                     GURL("filesystem:fake_2")));
 
   EXPECT_TRUE(test_api()->GetSuggestionChips().empty());
   EXPECT_TRUE(test_api()->GetDownloadChips().empty());
@@ -3041,8 +3049,9 @@ TEST_P(HoldingSpaceTrayDownloadsSectionTest, DownloadsSection) {
   // Fully initialize partially initialized item, and verify it gets added to
   // the section, in the order of addition, replacing the oldest item.
   model()->InitializeOrRemoveItem(
-      items[1]->id(), HoldingSpaceFile(HoldingSpaceFile::FileSystemType::kTest),
-      GURL("filesystem:fake_2"));
+      items[1]->id(), HoldingSpaceFile(items[1]->file().file_path,
+                                       HoldingSpaceFile::FileSystemType::kTest,
+                                       GURL("filesystem:fake_2")));
 
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetSuggestionChips().empty());
@@ -3161,8 +3170,9 @@ TEST_P(HoldingSpaceTrayDownloadsSectionTest,
   // Fully initialize partially initialized item, and verify it's not added to
   // the section.
   model()->InitializeOrRemoveItem(
-      items[0]->id(), HoldingSpaceFile(HoldingSpaceFile::FileSystemType::kTest),
-      GURL("filesystem:fake_1"));
+      items[0]->id(), HoldingSpaceFile(items[0]->file().file_path,
+                                       HoldingSpaceFile::FileSystemType::kTest,
+                                       GURL("filesystem:fake_1")));
 
   EXPECT_TRUE(test_api()->GetPinnedFileChips().empty());
   EXPECT_TRUE(test_api()->GetSuggestionChips().empty());
@@ -4154,9 +4164,11 @@ TEST_P(HoldingSpaceTrayVisibilityTest, TrayShowsForCorrectItemTypes) {
 
   // Once initialized, the item should show the tray if appropriate.
   model()->InitializeOrRemoveItem(
-      item->id(), HoldingSpaceFile(HoldingSpaceFile::FileSystemType::kTest),
-      GURL(
-          base::StrCat({"filesystem:", item->file_path().BaseName().value()})));
+      item->id(),
+      HoldingSpaceFile(
+          item->file().file_path, HoldingSpaceFile::FileSystemType::kTest,
+          GURL(base::StrCat(
+              {"filesystem:", item->file().file_path.BaseName().value()}))));
 
   if (IsHoldingSpacePredictabilityEnabled()) {
     // In the predictability experiment, the tray should always be showing.

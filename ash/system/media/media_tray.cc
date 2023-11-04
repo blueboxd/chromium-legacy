@@ -223,8 +223,11 @@ void MediaTray::PinButton::ButtonPressed() {
 
 MediaTray::MediaTray(Shelf* shelf)
     : TrayBackgroundView(shelf, TrayBackgroundViewCatalogName::kMediaPlayer) {
-  if (MediaNotificationProvider::Get())
+  SetCallback(base::BindRepeating(&MediaTray::OnTrayButtonPressed,
+                                  base::Unretained(this)));
+  if (MediaNotificationProvider::Get()) {
     MediaNotificationProvider::Get()->AddObserver(this);
+  }
 
   Shell::Get()->session_controller()->AddObserver(this);
 
@@ -265,6 +268,10 @@ void MediaTray::OnNotificationListViewSizeChanged() {
 std::u16string MediaTray::GetAccessibleNameForTray() {
   return l10n_util::GetStringUTF16(
       IDS_ASH_GLOBAL_MEDIA_CONTROLS_BUTTON_TOOLTIP_TEXT);
+}
+
+void MediaTray::HideBubble(const TrayBubbleView* bubble_view) {
+  CloseBubble();
 }
 
 void MediaTray::UpdateAfterLoginStatusChange() {
@@ -327,6 +334,15 @@ void MediaTray::OnActiveUserPrefServiceChanged(PrefService* pref_service) {
       base::BindRepeating(&MediaTray::OnGlobalMediaControlsPinPrefChanged,
                           base::Unretained(this)));
   OnGlobalMediaControlsPinPrefChanged();
+}
+
+void MediaTray::OnTrayButtonPressed() {
+  if (GetBubbleWidget()) {
+    CloseBubble();
+    return;
+  }
+
+  ShowBubble();
 }
 
 void MediaTray::UpdateDisplayState() {

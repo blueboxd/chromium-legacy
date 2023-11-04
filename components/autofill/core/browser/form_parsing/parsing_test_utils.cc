@@ -53,7 +53,7 @@ void FormFieldTestBase::AddFormFieldDataWithLength(
     int max_length,
     ServerFieldType expected_type) {
   FormFieldData field_data;
-  field_data.form_control_type = control_type;
+  field_data.form_control_type = StringToFormControlType(control_type);
   field_data.name = base::UTF8ToUTF16(name);
   field_data.label = base::UTF8ToUTF16(label);
   field_data.max_length = max_length;
@@ -68,18 +68,8 @@ void FormFieldTestBase::AddSelectOneFormFieldData(
     std::string label,
     const std::vector<SelectOption>& options,
     ServerFieldType expected_type) {
-  AddSelectOneFormFieldDataWithLength(name, label, 0, options, expected_type);
-}
-
-void FormFieldTestBase::AddSelectOneFormFieldDataWithLength(
-    std::string name,
-    std::string label,
-    int max_length,
-    const std::vector<SelectOption>& options,
-    ServerFieldType expected_type) {
   AddFormFieldData("select-one", name, label, expected_type);
   FormFieldData* field_data = list_.back().get();
-  field_data->max_length = max_length;
   field_data->options = options;
 }
 
@@ -98,7 +88,7 @@ void FormFieldTestBase::AddTextFormFieldData(
 void FormFieldTestBase::ClassifyAndVerify(ParseResult parse_result,
                                           const LanguageCode& page_language) {
   AutofillScanner scanner(list_);
-  field_ = Parse(&scanner, page_language);
+  field_ = Parse(&scanner, GeoIpCountryCode(""), page_language);
 
   if (parse_result == ParseResult::NOT_PARSED) {
     ASSERT_EQ(nullptr, field_.get());
@@ -118,10 +108,9 @@ void FormFieldTestBase::TestClassificationExpectations() {
             ? field_candidates_map_[field_id].BestHeuristicType()
             : UNKNOWN_TYPE;
     SCOPED_TRACE(testing::Message()
-                 << "Found type "
-                 << AutofillType::ServerFieldTypeToString(actual_field_type)
+                 << "Found type " << FieldTypeToStringPiece(actual_field_type)
                  << ", expected type "
-                 << AutofillType::ServerFieldTypeToString(expected_field_type));
+                 << FieldTypeToStringPiece(expected_field_type));
     EXPECT_EQ(expected_field_type, actual_field_type);
     num_classifications += expected_field_type != UNKNOWN_TYPE;
   }

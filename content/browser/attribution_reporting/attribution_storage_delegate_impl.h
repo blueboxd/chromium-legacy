@@ -31,7 +31,6 @@ class TriggerVerification;
 namespace content {
 
 struct AttributionConfig;
-class CommonSourceInfo;
 
 enum class AttributionNoiseMode {
   // Various aspects of the API are subject to noise:
@@ -91,24 +90,14 @@ class CONTENT_EXPORT AttributionStorageDelegateImpl
   void ShuffleTriggerVerifications(
       std::vector<network::TriggerVerification>& verifications) override;
   double GetRandomizedResponseRate(
-      const attribution_reporting::EventReportWindows& event_report_windows,
       attribution_reporting::mojom::SourceType,
+      const attribution_reporting::EventReportWindows&,
       int max_event_level_reports) const override;
-  RandomizedResponse GetRandomizedResponse(
-      const CommonSourceInfo& source,
-      const attribution_reporting::EventReportWindows& event_report_windows,
-      base::Time source_time,
+  GetRandomizedResponseResult GetRandomizedResponse(
+      attribution_reporting::mojom::SourceType,
+      const attribution_reporting::EventReportWindows&,
       int max_event_level_reports,
-      double randomized_response_rate) override;
-  double ComputeChannelCapacity(
-      const CommonSourceInfo& source,
-      const attribution_reporting::EventReportWindows& event_report_windows,
-      base::Time source_time,
-      int max_event_level_reports,
-      double randomized_response_rate) override;
-  base::Time GetExpiryTime(absl::optional<base::TimeDelta> declared_expiry,
-                           base::Time source_time,
-                           attribution_reporting::mojom::SourceType) override;
+      base::Time source_time) const override;
   absl::optional<base::Time> GetReportWindowTime(
       absl::optional<base::TimeDelta> declared_window,
       base::Time source_time) override;
@@ -120,15 +109,21 @@ class CONTENT_EXPORT AttributionStorageDelegateImpl
       attribution_reporting::mojom::SourceType source_type,
       base::TimeDelta last_report_window) const override;
 
+  // Exposed for testing.
+  int64_t GetNumStates(attribution_reporting::mojom::SourceType,
+                       const attribution_reporting::EventReportWindows&,
+                       int max_event_level_reports) const;
+
   // Generates fake reports using a random "stars and bars" sequence index of a
   // possible output of the API.
   //
   // Exposed for testing.
   std::vector<FakeReport> GetRandomFakeReports(
-      const CommonSourceInfo& source,
-      const attribution_reporting::EventReportWindows& event_report_windows,
+      attribution_reporting::mojom::SourceType,
+      const attribution_reporting::EventReportWindows&,
+      int max_event_level_reports,
       base::Time source_time,
-      int max_event_level_reports);
+      int64_t num_states) const;
 
   // Generates fake reports from the "stars and bars" sequence index of a
   // possible output of the API. This output is determined by the following
@@ -141,10 +136,10 @@ class CONTENT_EXPORT AttributionStorageDelegateImpl
   //
   // Exposed for testing.
   std::vector<FakeReport> GetFakeReportsForSequenceIndex(
-      const CommonSourceInfo& source,
-      base::Time source_time,
-      const attribution_reporting::EventReportWindows& event_report_windows,
+      attribution_reporting::mojom::SourceType,
+      const attribution_reporting::EventReportWindows&,
       int max_event_level_reports,
+      base::Time source_time,
       int64_t random_stars_and_bars_sequence_index) const;
 
  private:

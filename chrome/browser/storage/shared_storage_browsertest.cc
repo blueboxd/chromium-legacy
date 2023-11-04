@@ -124,8 +124,8 @@ constexpr char kWorkletNumPerPageHistogram[] =
     "Storage.SharedStorage.Worklet.NumPerPage";
 constexpr char kTimingRemainingBudgetHistogram[] =
     "Storage.SharedStorage.Worklet.Timing.RemainingBudget";
-constexpr char kPrivateAggregationSendHistogramReportHistogram[] =
-    "PrivacySandbox.PrivateAggregation.Host.SendHistogramReportResult";
+constexpr char kPrivateAggregationHostPipeResultHistogram[] =
+    "PrivacySandbox.PrivateAggregation.Host.PipeResult";
 
 const double kBudgetAllowed = 5.0;
 
@@ -2137,8 +2137,9 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
       blink::SharedStorageWorkletErrorType::kSelectURLWebVisible, 1);
 }
 
+// TODO(https://crbug.com/1484437): Fix flakes.
 IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
-                       SelectUrl_NotRegisteredError) {
+                       DISABLED_SelectUrl_NotRegisteredError) {
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   GURL script_url =
@@ -2231,7 +2232,9 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
   histogram_tester_.ExpectUniqueSample(kWorkletNumPerPageHistogram, 1, 1);
 }
 
-IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest, SelectUrl_ScriptError) {
+// TODO(https://crbug.com/1484437): Fix flakes.
+IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
+                       DISABLED_SelectUrl_ScriptError) {
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   GURL script_url =
@@ -2277,8 +2280,9 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest, SelectUrl_ScriptError) {
   histogram_tester_.ExpectUniqueSample(kWorkletNumPerPageHistogram, 1, 1);
 }
 
+// TODO(https://crbug.com/1484437): Fix flakes.
 IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
-                       SelectUrl_UnexpectedCustomDataError) {
+                       DISABLED_SelectUrl_UnexpectedCustomDataError) {
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   GURL script_url =
@@ -2324,8 +2328,9 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
   histogram_tester_.ExpectUniqueSample(kWorkletNumPerPageHistogram, 1, 1);
 }
 
+// TODO(https://crbug.com/1484437): Fix flakes.
 IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
-                       SelectUrl_OutOfRangeError) {
+                       DISABLED_SelectUrl_OutOfRangeError) {
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   GURL script_url =
@@ -2371,8 +2376,9 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
   histogram_tester_.ExpectUniqueSample(kWorkletNumPerPageHistogram, 1, 1);
 }
 
+// TODO(https://crbug.com/1484437): Fix flakes.
 IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
-                       SelectUrl_ReturnValueToIntError) {
+                       DISABLED_SelectUrl_ReturnValueToIntError) {
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   GURL script_url =
@@ -2947,13 +2953,13 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrivateAggregationChromeBrowserTest,
   EXPECT_TRUE(content::NavigateToURL(GetActiveWebContents(),
                                      GURL(url::kAboutBlankURL)));
   WaitForHistograms({kWorkletNumPerPageHistogram,
-                     kPrivateAggregationSendHistogramReportHistogram});
+                     kPrivateAggregationHostPipeResultHistogram});
   histogram_tester_.ExpectUniqueSample(kWorkletNumPerPageHistogram, 1, 1);
   histogram_tester_.ExpectUniqueSample(
-      kPrivateAggregationSendHistogramReportHistogram,
+      kPrivateAggregationHostPipeResultHistogram,
       SuccessExpected()
-          ? content::GetPrivateAggregationSendHistogramSuccessValue()
-          : content::GetPrivateAggregationSendHistogramApiDisabledValue(),
+          ? content::GetPrivateAggregationHostPipeReportSuccessValue()
+          : content::GetPrivateAggregationHostPipeApiDisabledValue(),
       1);
 }
 
@@ -2976,13 +2982,13 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrivateAggregationChromeBrowserTest,
   EXPECT_TRUE(content::NavigateToURL(GetActiveWebContents(),
                                      GURL(url::kAboutBlankURL)));
   WaitForHistograms({kWorkletNumPerPageHistogram,
-                     kPrivateAggregationSendHistogramReportHistogram});
+                     kPrivateAggregationHostPipeResultHistogram});
   histogram_tester_.ExpectUniqueSample(kWorkletNumPerPageHistogram, 1, 1);
   histogram_tester_.ExpectUniqueSample(
-      kPrivateAggregationSendHistogramReportHistogram,
+      kPrivateAggregationHostPipeResultHistogram,
       SuccessExpected()
-          ? content::GetPrivateAggregationSendHistogramSuccessValue()
-          : content::GetPrivateAggregationSendHistogramApiDisabledValue(),
+          ? content::GetPrivateAggregationHostPipeReportSuccessValue()
+          : content::GetPrivateAggregationHostPipeApiDisabledValue(),
       1);
 }
 
@@ -3005,13 +3011,13 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrivateAggregationChromeBrowserTest,
   EXPECT_TRUE(content::NavigateToURL(GetActiveWebContents(),
                                      GURL(url::kAboutBlankURL)));
   WaitForHistograms({kWorkletNumPerPageHistogram,
-                     kPrivateAggregationSendHistogramReportHistogram});
+                     kPrivateAggregationHostPipeResultHistogram});
   histogram_tester_.ExpectUniqueSample(kWorkletNumPerPageHistogram, 1, 1);
   histogram_tester_.ExpectUniqueSample(
-      kPrivateAggregationSendHistogramReportHistogram,
+      kPrivateAggregationHostPipeResultHistogram,
       SuccessExpected()
-          ? content::GetPrivateAggregationSendHistogramSuccessValue()
-          : content::GetPrivateAggregationSendHistogramApiDisabledValue(),
+          ? content::GetPrivateAggregationHostPipeReportSuccessValue()
+          : content::GetPrivateAggregationHostPipeApiDisabledValue(),
       1);
 }
 

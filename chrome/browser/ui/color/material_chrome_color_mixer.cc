@@ -94,8 +94,16 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
   // Side Panel colors.
   mixer[kColorSidePanelBackground] = {ui::kColorSysBaseContainer};
 
+  // Read Anything (in the side panel) colors.
+  mixer[kColorReadAnythingForeground] = {ui::kColorSysOnSurface};
+  mixer[kColorCurrentReadAloudHighlight] = {ui::kColorSysStateHoverOnSubtle};
+  mixer[kColorPreviousReadAloudHighlight] = {ui::kColorSysOnSurfaceSecondary};
+
   // Tab Group Dialog colors.
   mixer[kColorTabGroupDialogIconEnabled] = {ui::kColorSysOnSurfaceSubtle};
+
+  // Cast Dialog colors.
+  mixer[kColorCastDialogHelpIcon] = {ui::kColorSysPrimary};
 
   if (!ShouldApplyChromeMaterialOverrides(key)) {
     return;

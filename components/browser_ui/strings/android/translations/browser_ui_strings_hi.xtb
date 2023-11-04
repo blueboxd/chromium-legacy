@@ -100,6 +100,7 @@
 <translation id="2653659639078652383">सबमिट करें</translation>
 <translation id="2677748264148917807">छोड़ें</translation>
 <translation id="2678468611080193228">कुछ समय के लिए तीसरे पक्ष की कुकी को अनुमति दें. इसका मतलब है कि साइट की सुविधाएं काम करेंगी, लेकिन आपकी सुरक्षा का स्तर कम हो जाएगा</translation>
+<translation id="2683434792633810741">क्या आपको डेटा मिटाना और अनुमतियां रीसेट करनी हैं?</translation>
 <translation id="2687403674020088961">सभी कुकी ब्लॉक करें (हम ऐसा करने का सुझाव नहीं देते)</translation>
 <translation id="2713106313042589954">कैमरा बंद करें</translation>
 <translation id="2717722538473713889">ईमेल पते</translation>
@@ -179,6 +180,7 @@
 <translation id="4008040567710660924">किसी खास साइट के लिए कुकी की मंज़ूरी दें.</translation>
 <translation id="4046123991198612571">अगला ट्रैक</translation>
 <translation id="4053720452172726777">Google Chrome को पसंद के मुताबिक बनाएं और कंट्रोल करें</translation>
+<translation id="4149890623864272035">क्या आपको वाकई कुकी के साथ-साथ पूरा स्थानीय डेटा मिटाना है और इस वेबसाइट के लिए सभी अनुमतियां रीसेट करनी हैं?</translation>
 <translation id="4149994727733219643">वेब पेजों के लिए सरल बनाया गया व्यू</translation>
 <translation id="4151930093518524179">डिफ़ॉल्ट ज़ूम</translation>
 <translation id="4165986682804962316">साइट सेटिंग</translation>
@@ -196,6 +198,7 @@
 <translation id="4412992751769744546">तृतीय-पक्ष कुकी को अनुमति दें</translation>
 <translation id="4428065317363009941">दिलचस्पी के मुताबिक विज्ञापन</translation>
 <translation id="4434045419905280838">पॉप-अप और रीडायरेक्ट</translation>
+<translation id="443552056913301231">इस कार्रवाई से, कुकी के साथ-साथ पूरा स्थानीय डेटा मिट जाएगा. साथ ही, <ph name="ORIGIN" /> की सभी अनुमतियां रीसेट हो जाएंगी</translation>
 <translation id="4468959413250150279">किसी खास साइट के लिए आवाज़ बंद करें.</translation>
 <translation id="4475912480633855319">{COOKIES,plural, =1{# कुकी}one{# कुकी}other{# कुकी}}</translation>
 <translation id="4478158430052450698">अलग-अलग साइटों के लिए, ज़ूम को पसंद के मुताबिक बनाना आसान हो जाता है</translation>
@@ -205,6 +208,7 @@
 <translation id="4566417217121906555">माइक्रोफ़ोन को म्यूट करें</translation>
 <translation id="4570913071927164677">विवरण</translation>
 <translation id="4598549027014564149">गुप्त मोड इस्तेमाल करने पर, साइटें अलग-अलग साइटों यहां तक कि मिलती-जुलती साइटों पर आपकी ब्राउज़िंग गतिविधि को देखने के लिए, कुकी इस्तेमाल नहीं कर सकतीं. आपकी ब्राउज़िंग गतिविधि का इस्तेमाल, आपके हिसाब से विज्ञापन दिखाने जैसे कामों के लिए नहीं किया जाता. ऐसा हो सकता है कि कुछ साइटों पर सभी सुविधाएं काम न करें.</translation>
+<translation id="4644713492825682049">मिटाएं और रीसेट करें</translation>
 <translation id="4645575059429386691">आपके अभिभावक द्वारा प्रबंधित</translation>
 <translation id="4670064810192446073">वर्चुअल रिएलिटी</translation>
 <translation id="4751476147751820511">गति या लाइट सेंसर</translation>
@@ -235,6 +239,7 @@
 <translation id="5216942107514965959">साइट पर पिछली बार आज गए</translation>
 <translation id="5225463052809312700">कैमरा चालू करें</translation>
 <translation id="5234764350956374838">खारिज करें</translation>
+<translation id="5246825184569358663">ऐसा करने से, कुकी के साथ-साथ लोकल डेटा भी मिट जाएगा. साथ ही, <ph name="DOMAIN" /> और इसके तहत आने वाली सभी साइटों के लिए, सभी अनुमतियां रीसेट हो जाएंगी</translation>
 <translation id="5264323282659631142">'<ph name="CHIP_LABEL" />' हटाएं</translation>
 <translation id="528192093759286357">फ़ुल स्क्रीन से बाहर निकलने के लिए ऊपर से खींचें और वापस जाएं स्पर्श करें.</translation>
 <translation id="5300589172476337783">दिखाएं</translation>
@@ -249,7 +254,7 @@
 <translation id="5412236728747081950">यह साइट आपकी दिलचस्पी के बारे में Chrome से पता करती है, ताकि आपको ज़्यादा काम के विज्ञापन दिखा सके</translation>
 <translation id="5438097262470833822">यह विकल्प <ph name="WEBSITE" /> के लिए अनुमतियां रीसेट करेगा</translation>
 <translation id="5489227211564503167"><ph name="TOTAL_TIME" /> में से <ph name="ELAPSED_TIME" /> का समय बीत चुका है.</translation>
-<translation id="5494752089476963479">परेशाान या गुमराह करने वाले विज्ञापन दिखाने वाली साइटों पर विज्ञापन ब्लॉक करें</translation>
+<translation id="5494752089476963479">तंग करने वाले या गुमराह करने वाले विज्ञापन दिखाने वाली साइटों पर विज्ञापन ब्लॉक करें</translation>
 <translation id="5502860503640766021"><ph name="PERMISSION_1" /> इस्तेमाल करने की अनुमति दी गई और <ph name="PERMISSION_2" /> को ब्लॉक किया गया</translation>
 <translation id="5505264765875738116">साइटें आपको सूचनाएं भेजने के लिए नहीं पूछ सकती हैं</translation>
 <translation id="5516455585884385570">सूचना सेटिंग खोलें</translation>
@@ -258,7 +263,7 @@
 <translation id="5553374991681107062">नए विकल्प</translation>
 <translation id="5556459405103347317">फिर लोड करें</translation>
 <translation id="5649053991847567735">अपने-आप होने वाले डाउनलोड</translation>
-<translation id="5668404140385795438">किसी वेबसाइट का, वेबपेज को ज़ूम इन न करने का अनुरोध अमान्य हो जाता है</translation>
+<translation id="5668404140385795438">किसी वेबसाइट के वेबपेज ज़ूम इन न करने के नियम को बदल देता है</translation>
 <translation id="5677928146339483299">ब्लॉक किया गया है</translation>
 <translation id="5689516760719285838">जगह की जानकारी</translation>
 <translation id="5690795753582697420">Android की सेटिंग में कैमरा बंद है</translation>
@@ -278,11 +283,11 @@
 <translation id="5922853908706496913">आपकी स्क्रीन शेयर की जा रही है</translation>
 <translation id="5922967540311291836">तीसरे पक्ष की कुकी ब्लॉक करें:</translation>
 <translation id="5939518447894949180">रीसेट करें</translation>
+<translation id="5964247741333118902">एम्बेड किया गया कॉन्टेंट</translation>
 <translation id="5968921426641056619">वेब पता डालें</translation>
 <translation id="5975083100439434680">ज़ूम आउट</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">इस साइट के लिए अपने डिवाइस का ऐक्सेस नियंत्रित करें</translation>
-<translation id="6018815681665454784">क्या साफ़ करके रीसेट करना है?</translation>
 <translation id="6040143037577758943">बंद करें</translation>
 <translation id="6042308850641462728">और ज़्यादा</translation>
 <translation id="6064125863973209585">पूरे हो चुके डाउनलोड</translation>
@@ -294,21 +299,20 @@
 <translation id="6192792657125177640">अपवाद</translation>
 <translation id="6196640612572343990">तीसरे पक्ष की कुकी ब्लॉक करें</translation>
 <translation id="6205314730813004066">विज्ञापन से जुड़ी निजता सेटिंग</translation>
+<translation id="6207207788774442484">डेटा मिटाएं और अनुमतियां रीसेट करें</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> विकल्प</translation>
 <translation id="6231752747840485235">क्या आपको '<ph name="APP_NAME" />' अनइंस्टॉल करना है?</translation>
 <translation id="6262191102408817757">आपके आखिरी टैब के आधार पर</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> और <ph name="PERMISSION_2" /> को ब्लॉक किया गया</translation>
-<translation id="6270391203985052864">साइटें, सूचनाएं भेजने के लिए आपकी अनुमति मांग सकती हैं</translation>
+<translation id="6270391203985052864">साइटें आपको सूचनाएं भेजने के लिए पूछ सकती हैं</translation>
 <translation id="6295158916970320988">सभी साइटें</translation>
 <translation id="6320088164292336938">कंपन</translation>
 <translation id="6367753977865761591">किसी साइट पर, तीसरे पक्ष के खाते से साइन इन को ब्लॉक करें.</translation>
-<translation id="6388207532828177975">साफ़ करें और रीसेट करें</translation>
 <translation id="6398765197997659313">फ़ुल स्क्रीन से बाहर निकलें</translation>
 <translation id="640163077447496506">समयसीमा आज खत्म हो जाएगी</translation>
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">साइटों को अपने वर्चुअल रिएलिटी वाले डिवाइस और डेटा का इस्तेमाल करने से रोकें</translation>
 <translation id="6447842834002726250">कुकी</translation>
-<translation id="6467852467360539617">डेटा मिटाएं और अनुमतियां रीसेट करें</translation>
 <translation id="6500423977866688905">जब विंडो छोटी हो, तब साइट को मोबाइल व्यू में दिखाने का अनुरोध करें</translation>
 <translation id="6527303717912515753">शेयर करें</translation>
 <translation id="652937045869844725">तीसरे पक्ष की कुकी को अनुमति दें. इसका मतलब है कि साइट की सुविधाएं काम करेंगी, लेकिन आपकी सुरक्षा का स्तर कम हो जाएगा</translation>
@@ -381,11 +385,9 @@
 <translation id="7846076177841592234">चुना गया हटाएं</translation>
 <translation id="7882806643839505685">किसी खास साइट के लिए आवाज़ की अनुमति दें.</translation>
 <translation id="789180354981963912">गुप्त मोड में, तीसरे पक्ष की कुकी ब्लॉक करें:</translation>
-<translation id="7895868624847501462">ऐसा करने से, कुकी के साथ-साथ लोकल डेटा भी मिट जाएगा. साथ ही, <ph name="DOMAIN" /> और इसके तहत आने वाली सभी साइटों के लिए, सभी अनुमतियां रीसेट हो जाएंगी</translation>
 <translation id="7940722705963108451">मुझे याद दिलाएं</translation>
 <translation id="7974024493641668069">{COUNT,plural, =1{<ph name="FPS_OWNER" /> की साइटों के ग्रुप में मौजूद <ph name="FPS_MEMBERS_COUNT" /> साइट, ग्रुप में आपकी गतिविधि देख सकती है}one{<ph name="FPS_OWNER" /> की साइटों के ग्रुप में मौजूद <ph name="FPS_MEMBERS_COUNT" /> साइट, ग्रुप में आपकी गतिविधि देख सकती है}other{<ph name="FPS_OWNER" /> की साइटों के ग्रुप में मौजूद <ph name="FPS_MEMBERS_COUNT" /> साइटें, ग्रुप में आपकी गतिविधि देख सकती हैं}}</translation>
 <translation id="7986741934819883144">कोई संपर्क चुनें</translation>
-<translation id="7999064672810608036">क्‍या आप वाकई कुकी सहित इस वेबसाइट का सभी स्‍थानीय डेटा साफ़ करना और इसकी सभी अनुमतियों को रीसेट करना चाहते हैं?</translation>
 <translation id="8007176423574883786">इस डिवाइस के लिए बंद कर दिया गया है</translation>
 <translation id="802154636333426148">डाउनलोड विफल रहा</translation>
 <translation id="8042586301629853791">इसके अनुसार क्रम से लगाएं:</translation>
@@ -409,7 +411,6 @@
 <translation id="8284326494547611709">कैप्शन</translation>
 <translation id="8300705686683892304">ऐप्लिकेशन मैनेज करता है</translation>
 <translation id="8324158725704657629">दोबारा न पूछें</translation>
-<translation id="8338445138528827481">इस कार्रवाई से, कुकी के साथ-साथ पूरा स्थानीय डेटा मिट जाएगा. साथ ही, <ph name="ORIGIN" /> की सभी अनुमतियां रीसेट हो जाएंगी</translation>
 <translation id="8362795839483915693">उन साइटों पर ज़ूम इन या ज़ूम आउट किया जा सकता है जिन पर आपने विज़िट किया है</translation>
 <translation id="8372893542064058268">किसी विशिष्ट साइट के लिए पृष्ठभूमि समन्वयन की अनुमति दें.</translation>
 <translation id="8376384591331888629">इस साइट पर मौजूद तीसरे पक्ष की कुकी शामिल करें</translation>
@@ -435,7 +436,7 @@
 <translation id="857943718398505171">अनुमति दी गई (सुझाया गया)</translation>
 <translation id="8609465669617005112">ऊपर जाएं</translation>
 <translation id="8676374126336081632">इनपुट साफ़ करें</translation>
-<translation id="8681886425883659911">परेशाान या गुमराह करने वाले विज्ञापन दिखाने वाली साइटों पर विज्ञापन ब्लॉक कर दिए जाते हैं</translation>
+<translation id="8681886425883659911">तंग या गुमराह करने वाले विज्ञापन दिखाने वाली साइटों पर विज्ञापन ब्लॉक कर दिए जाते हैं</translation>
 <translation id="868929229000858085">अपने संपर्क खोजें</translation>
 <translation id="8712637175834984815">समझ लिया</translation>
 <translation id="8719283222052720129"><ph name="BEGIN_LINK" />Android की सेटिंग<ph name="END_LINK" /> में जाकर, <ph name="APP_NAME" /> के लिए अनुमति चालू करें.</translation>
@@ -452,7 +453,7 @@
 <translation id="8823559166155093873">कुकी ब्लॉक करें</translation>
 <translation id="8847988622838149491">यूएसबी</translation>
 <translation id="8889294078294184559">आपके ब्राउज़ करने के दौरान, साइटें Chrome की मदद से यह जांच कर सकती हैं कि आप असली उपयोगकर्ता हैं या नहीं. ऐसा, आपकी पहले विज़िट की गई साइट की जानकारी से किया जाता है</translation>
-<translation id="8899807382908246773">परेशान करने वाले विज्ञापन</translation>
+<translation id="8899807382908246773">तंग करने वाले विज्ञापन</translation>
 <translation id="8903921497873541725">ज़ूम इन करें</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">इस डिवाइस पर NFC बंद है. <ph name="BEGIN_LINK" />Android सेटिंग<ph name="END_LINK" /> में इसे चालू करें.</translation>
@@ -472,6 +473,6 @@
 <translation id="9162462602695099906">यह पेज सुरक्षित नहीं है</translation>
 <translation id="9201023452444595544">ऑफ़लाइन डेटा को मिटा दिया जाएगा</translation>
 <translation id="930525582205581608">क्या आप इस साइट की सेव की गई जानकारी मिटाना चाहते हैं?</translation>
-<translation id="947156494302904893">किसी साइट को विज़िट करने पर, वह इस बात की पुष्टि कर सकती है कि आप बॉट के बजाय असली उपयोगकर्ता हैं</translation>
+<translation id="947156494302904893">किसी साइट को विज़िट करने पर, वह इस बात पुष्टि कर सकती है कि आप बॉट के बजाय असली उपयोगकर्ता हैं</translation>
 <translation id="967624055006145463">डेटा सेव किया गया</translation>
 </translationbundle>

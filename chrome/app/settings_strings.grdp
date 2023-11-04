@@ -195,7 +195,7 @@
   </if>
   <if expr="is_macosx">
     <message name="IDS_SETTINGS_OVERSCROLL_HISTORY_NAVIGATION_SUBTITLE" desc="Subtitle for the overscroll history navigation setting, which allows you to navigate back and forward by swiping left or right with a touch device.">
-      Turn on to navigate back and forward
+      Select the More Gestures tab, then turn on Swipe between pages to navigate back and forward
     </message>
   </if>
 
@@ -458,8 +458,8 @@
   <message name="IDS_SETTINGS_ADDRESS_REMOVED_MESSAGE" desc="Hidden text that is read to screen readers to confirm that an address was removed.">
     Address deleted
   </message>
-  <message name="IDS_SETTINGS_CREDIT_CARD_CLEAR" desc="Label for a context menu item clears the locally cached credit card that is also saved on Google Payments. Clicking this will NOT remove the credit card from Google Payments.">
-    Clear copy
+  <message name="IDS_SETTINGS_CREDIT_CARD_REMOVE" desc="Label for a context menu item removes the locally cached credit card that is also saved on Google Payments. Clicking this will NOT remove the credit card from Google Payments.">
+    Remove copy
   </message>
   <message name="IDS_SETTINGS_EDIT_CREDIT_CARD_TITLE" desc="The title for the dialog that's shown when editing a card. This can be either credit, debit, or prepaid card..">
     Edit card
@@ -488,7 +488,7 @@
   <message name="IDS_SETTINGS_MULTIPLE_MIGRATABLE_CARDS_INFO" desc="Display text under the save cards to Google Pay label. This text indicates user has multiple migratable cards on this device.">
     Right now, you have some cards that can only be used on this device
   </message>
-  <message name="IDS_SETTINGS_REMOTE_CREDIT_CARD_LINK_LABEL" desc="The title and ARIA (accessibility) label for a link in chrome://settings/payments that opens the credit card settings on https://pay.google.com. Note that the ARIA role and the link icon already convey that this is a link that will be opened when you click on it. Therefore, the message does not contain a verb.">
+  <message name="IDS_SETTINGS_REMOTE_PAYMENT_METHODS_LINK_LABEL" desc="The title and ARIA (accessibility) label for a link in chrome://settings/payments that opens the payment methods settings on https://pay.google.com. Note that the ARIA role and the link icon already convey that this is a link that will be opened when you click on it. Therefore, the message does not contain a verb.">
     Your payment methods in Google Pay
   </message>
   <message name="IDS_SETTINGS_NAME_ON_CREDIT_CARD" desc="The title for the input that lets users modify the name on the credit card.">
@@ -1946,8 +1946,8 @@
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_SECONDARY_LABEL" desc="'Unused Site Permissions' shows unused websites for which permissions have been revoked. This label is the description of the module in the site settings page.">
     {NUM_SITES, plural,
-     =1 {To protect your data, permissions were removed from a site you haven't visited in 2 months}
-     other {To protect your data, permissions were removed from sites you haven't visited in 2 months}}
+     =1 {To protect your data, permissions were removed from a site you haven't visited in recently}
+     other {To protect your data, permissions were removed from sites you haven't visited in recently}}
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_TOAST_BULK_LABEL" desc="'Unused Site Permissions' shows unused websites for which permissions have been revoked. This label is shown in a toast popup message after a user has clicked a button to acknowledge all revoked permissions.">
     {NUM_SITES, plural,
@@ -1957,13 +1957,11 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_TOAST_LABEL" desc="'Unused Site Permissions' shows unused websites for which permissions have been revoked. This label is shown after a user has taken action to allow some permissions again.">
     Permissions allowed again for <ph name="WEBSITE">$1<ex>www.example.com</ex></ph>
   </message>
-  <!-- TODO(crbug/1443466): Change the string to translatable once it's final. -->
-  <message name="IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_SETTING_LABEL" translateable="false" desc="By default Chrome auto-revokes (disables) permissions (e.g. Camera, Location, etc.) for websites that were not visited for a while. This label is for the toggle that allows users to switch off/on this functionality.">
+  <message name="IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_SETTING_LABEL" desc="By default Chrome auto-revokes (disables) permissions (e.g. Camera, Location, etc.) for websites that were not visited for a while. This label is for the toggle that allows users to switch off/on this functionality.">
     Automatically remove permissions from unused sites
   </message>
-  <!-- TODO(crbug/1443466): Change the string to translatable once it's final. -->
-  <message name="IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_SETTING_SUBLABEL" translateable="false" desc="By default Chrome auto-revokes (disables) permissions (e.g. Camera, Location, etc.) for websites that were not visited for a while. This sublabel is for the toggle that allows users to switch off/on this functionality.">
-    To protect your data, remove permissions from sites you haven't visited in 2 months. Doesn't stop notifications.
+  <message name="IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_SETTING_SUBLABEL" desc="By default Chrome auto-revokes (disables) permissions (e.g. Camera, Location, etc.) for websites that were not visited for a while. This sublabel is for the toggle that allows users to switch off/on this functionality.">
+    To protect your data, remove permissions from sites you haven't visited in recently. Doesn't stop notifications.
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_UPDATES_PRIMARY_LABEL" desc="'Updates' is an element in safety check that shows the update status of Chrome.">
     Updates
@@ -2030,8 +2028,8 @@
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_REVIEW_EXTENSIONS" desc="This text describes that potentially harmful extensions need to be reviewed by the user. The placeholder will be a numeral.">
     {NUM_EXTENSIONS, plural,
-     =1 {Review <ph name="BEGIN_BOLD">&lt;b&gt;</ph>1 extension<ph name="END_BOLD">&lt;/b&gt;</ph> that was taken down from the Chrome Web Store}
-     other {Review <ph name="BEGIN_BOLD">&lt;b&gt;</ph>{NUM_EXTENSIONS} extensions<ph name="END_BOLD">&lt;/b&gt;</ph> that were taken down from the Chrome Web Store}}
+     =1 {Review 1 extension that was taken down from the Chrome Web Store}
+     other {Review {NUM_EXTENSIONS} extensions that were taken down from the Chrome Web Store}}
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_PRIMARY_LABEL" desc="'Review Notification Permissions' shows the websites that send a lot of notifications. This label is the header of the module in the site settings notification page. The number represents the number of notification permissions to be reviewed.">
     {NUM_SITES, plural,
@@ -2258,14 +2256,15 @@
   <message name="IDS_SETTINGS_MANAGE_CERTIFICATES_DESCRIPTION" desc="Secondary, continued explanation of how to manage SSL certificates and settings in Privacy options">
     Manage HTTPS/SSL certificates and settings
   </message>
-  <if expr="chrome_root_store_supported">
-    <message name="IDS_SETTINGS_MANAGE_DEVICE_CERTIFICATES" desc="Text for manage device certificates button in Privacy options">
-      Manage device certificates
-    </message>
-    <message name="IDS_SETTINGS_MANAGE_DEVICE_CERTIFICATES_DESCRIPTION" desc="Secondary, continued explanation of how to manage SSL device certificates and settings in Privacy options">
-      Manage HTTPS/SSL certificates on your device
-    </message>
-  </if>
+
+  <!-- Chrome Root Store -->
+  <message name="IDS_SETTINGS_MANAGE_DEVICE_CERTIFICATES" desc="Text for manage device certificates button in Privacy options">
+    Manage device certificates
+  </message>
+  <message name="IDS_SETTINGS_MANAGE_DEVICE_CERTIFICATES_DESCRIPTION" desc="Secondary, continued explanation of how to manage SSL device certificates and settings in Privacy options">
+    Manage HTTPS/SSL certificates on your device
+  </message>
+
   <message name="IDS_SETTINGS_MANAGE" desc="Text displayed on a button, which when clicked opens the Extensions subpage for managing an extension">
     Manage
   </message>
@@ -2589,8 +2588,14 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_CUSTOMIZED_BEHAVIORS" desc="Label for the site settings exceptions.">
     Customized behaviors
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_3PCD_BEHAVIORS" desc="Label for the site settings exceptions if 3PCD enabled." translateable="false">
+    Sites allowed to use third-party cookies
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_CUSTOMIZED_BEHAVIORS_DESCRIPTION" desc="Description for the site settings exceptions.">
     Sites listed below follow a custom setting instead of the default
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_3PCD_BEHAVIORS_DESCRIPTION" desc="Description for the site settings exceptions if 3PCD enabled." translateable="false">
+   Affects the sites listed here and their subdomains. For example, adding “google.com” means that third-party cookies can also be active for mail.google.com, because it’s part of google.com.
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_CUSTOMIZED_BEHAVIORS_DESCRIPTION_SHORT" desc="Short description for the site settings exceptions.">
     Sites listed below follow a custom setting
@@ -2641,19 +2646,19 @@
     Not allowed to automatically download multiple files
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_AUTO_PICTURE_IN_PICTURE_DESCRIPTION" desc="Description of the auto-picture-in-picture content setting.">
-    Sites might open a picture-in-picture window when you change to a different tab
+    Sites use this setting to enter picture-in-picture automatically. This lets you continue watching a video, while freeing up your screen for other tasks.
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_AUTO_PICTURE_IN_PICTURE_ALLOWED" desc="Label for the enabled option of the auto-picture-in-picture content setting.">
-    Sites can open a picture-in-picture window when you change to a different tab
+    Sites can enter picture-in-picture automatically
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_AUTO_PICTURE_IN_PICTURE_BLOCKED" desc="Label for the disabled option of the auto-picture-in-picture content setting.">
-    Don't allow sites to open a picture-in-picture window when you change to a different tab
+    Don't allow sites to enter picture-in-picture automatically
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_AUTO_PICTURE_IN_PICTURE_ALLOWED_EXCEPTIONS" desc="Label for the allowed exceptions site list of the auto-picture-in-picture content setting.">
-    Allowed to open a picture-in-picture window when you change to a different tab
+    Allowed to enter picture-in-picture automatically
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_AUTO_PICTURE_IN_PICTURE_BLOCKED_EXCEPTIONS" desc="Label for the blocked exceptions site list of the auto-picture-in-picture content setting.">
-    Not allowed to open a picture-in-picture window when you change to a different tab
+    Not allowed to enter picture-in-picture automatically
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_BACKGROUND_SYNC_DESCRIPTION" desc="Description of the background sync content setting.">
     After you leave a site, it can keep syncing to finish tasks, like uploading photos or sending a chat message
@@ -2829,10 +2834,10 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_LOCATION_ALLOWED" desc="Label for the enabled option of the location content setting.">
     Sites can ask for your location
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_LOCATION_BLOCKED" desc="Label for the disabled option of the location content setting.">
+  <message name="IDS_SETTINGS_SITE_SETTINGS_LOCATION_BLOCKED" desc="Label for the blocked option of the location content setting.">
     Don't allow sites to see your location
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_LOCATION_BLOCKED_SUB_LABEL" desc="Sub-label for the disabled option of the location content setting.">
+  <message name="IDS_SETTINGS_SITE_SETTINGS_LOCATION_BLOCKED_SUB_LABEL" desc="Sub-label for the blocked option of the location content setting.">
     Features that need your location won't work
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_LOCATION_ALLOWED_EXCEPTIONS" desc="Label for the allowed exceptions site list of the location content setting.">
@@ -2860,19 +2865,19 @@
     Not allowed to use your microphone
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_MIDI_DESCRIPTION" desc="Description of the MIDI devices content setting.">
-    Sites usually connect to MIDI devices for creating and editing music
+    Sites usually use MIDI devices for features for creating and editing music
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_MIDI_ALLOWED" desc="Label for the enabled option of the MIDI devices content setting.">
-    Sites can ask to connect to MIDI devices
+    Sites can ask to use your MIDI devices
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_MIDI_BLOCKED" desc="Label for the disabled option of the MIDI devices content setting.">
-    Don't allow sites to connect to MIDI devices
+    Don't allow sites to use your MIDI devices
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_MIDI_ALLOWED_EXCEPTIONS" desc="Label for the allowed exceptions site list of the MIDI devices content setting.">
-    Allowed to connect to MIDI devices
+    Allowed to use your MIDI devices
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_MIDI_BLOCKED_EXCEPTIONS" desc="Label for the blocked exceptions site list of the MIDI devices content setting.">
-    Not allowed to connect to MIDI devices
+    Not allowed to use your MIDI devices
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_MOTION_SENSORS_DESCRIPTION" desc="Description of the motion sensors content setting.">
     Sites usually use your device's motion sensors for features like virtual reality or fitness tracking
@@ -2903,6 +2908,18 @@
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS_PARTIAL_SUB_LABEL" desc="Sub-label for the partial option of the notifications content setting.">
     Sites are blocked from interrupting you when they ask to send notifications
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS_ASK_STATE" desc="Label for the top level enabled option of the notifications content setting.">
+    Sites can ask to send notifications
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_PERMISSION_QUIET" desc="Label for the quiet version of the permission prompt.">
+    Collapse all requests in the address bar
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_PERMISSION_CPSS" desc="Label for the CPSS version of the permission prompt. Chrome decides to show either the loud or quiet version.">
+   Collapse unwanted requests (recommended)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_PERMISSION_LOUD" desc="Label for the loud version of the permission prompt.">
+   Expand all requests
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS_BLOCKED" desc="Label for the blocked option of the notifications content setting.">
     Don't allow sites to send notifications
@@ -3215,6 +3232,42 @@
   </message>
   <message name="IDS_SETTINGS_COOKIES_BLOCK_EXCEPTIONS" desc="Title of the list containing site exceptions always blocking them from using cookies">
     Sites that can never use cookies
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_LINK_ROW_LABEL" desc="Label for the 'Tracking Protection' page entry point." translateable="false">
+    Tracking Protection
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_LINK_ROW_SUB_LABEL" desc="Sub-label for the 'Tracking Protection' page entry point." translateable="false">
+    Manage third-party cookies and tracking protections
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_PAGE_TITLE" translateable="false" desc="The title of a new settings page that allows users to manage settings related to tracking, for example third-party cookies. This settings page will replace the existing cookie settings page at chrome://settings/cookies.">
+    Tracking Protection
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_PAGE_DESCRIPTION" translateable="false" desc="Explanatory text for the tracking protection settings page.">
+    Chrome limits the type of information sites can use to track you as you browse. You can change your settings to choose your own level of protection.
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_BULLET_ONE" translateable="false" desc="The first bullet for tracking protection settings. Informs users that Chrome will limit third-party cookies.">
+    Chrome automatically limits third-party cookies
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_BULLET_ONE_DESCRIPTION" translateable="false" desc="Description of the first bullet for tracking protection settings. Explains what limiting third-party cookies means.">
+    Most sites can’t use third-party cookies to track you as you browse, and sites can’t use third-party cookies in Incognito mode.
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_BULLET_TWO" translateable="false" desc="The second bullet for tracking protection settings. Informs users that most sites should work as expected.">
+    Most sites should work as expected
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_BULLET_TWO_DESCRIPTION" translateable="false" desc="Description of the second bullet for tracking protection settings. Explains that you can temporarilty allow a site to use third-party cookies if it isn't working.">
+    If a site isn’t working, you can try giving it temporary permission to use third-party cookies. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_THIRD_PARTY_COOKIES_TOGGLE_LABEL" translateable="false" desc="Label for a toggle that allows the user to block all third-party cookies.">
+    Block all third-party cookies
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_THIRD_PARTY_COOKIES_TOGGLE_SUB_LABEL" translateable="false" desc="Sub-label for the third-party cookie blocking toggle. Explains that features on some sites may not work.">
+    Features on some sites may not work.
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_DO_NOT_TRACK_TOGGLE_SUB_LABEL" translateable="false" desc="Sub-label for the 'do not track' toggle. Explains that sites may not respond to the 'do not track' request even when enabled.">
+    Sites use their discretion when responding to this request
+  </message>
+  <message name="IDS_SETTINGS_TRACKING_PROTECTION_ADVANCED_LABEL" translateable="false" desc="Label for an expandable section containing advanced tracking protection options.">
+    Advanced
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_APP_PROTOCOL_HANDLERS" desc="Label for the app protocol handlers (e.g. mailto) in site settings.">
     Apps
@@ -3698,11 +3751,6 @@
   <message name="IDS_SETTINGS_ADD_SITE" desc="The label for the input box for adding a site">
     Site
   </message>
-  <if expr="chromeos_ash">
-    <message name="IDS_SETTINGS_ANDROID_SMS_NOTE" desc="Special note shown below Messages for Android entry in notification permissions to indicate use in ChromeOS Multidevice features.">
-      Allows Android Messages to relay texts from your phone to your Chromebook
-    </message>
-  </if>
 
   <!-- Cookies Window -->
   <message name="IDS_SETTINGS_SITE_SETTINGS_NUM_COOKIES" desc="A label showing the number of cookies set on a site.">
@@ -3735,10 +3783,10 @@
     Turn off sync and personalization?
   </message>
   <message name="IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_MANAGED_CONFIRM" desc="The text to display on the confirm button of the dialog to turn off sync, when the profile is managed by admin.">
-    Clear and continue
+    Delete and continue
   </message>
-  <message name="IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_CHECKBOX" desc="The text to display next to the checkbox of the dialog to turn off sync, asking users if they want to clear these data from the device.">
-    Clear bookmarks, history, passwords, and more from this device
+  <message name="IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_CHECKBOX" desc="The text to display next to the checkbox of the dialog to turn off sync, asking users if they want to delete these data from the device.">
+    Remove bookmarks, history, passwords, and more from this device
   </message>
   <message name="IDS_SETTINGS_SYNC_SETTINGS_SAVED_TOAST_LABEL" desc="The notification shown to user after they saved sync settings, and sync is now started.">
     Settings saved. Sync started.
@@ -3793,9 +3841,6 @@
     Uses content on sites you visit, plus browser activity and interactions, for personalization
   </message>
   <message name="IDS_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LABEL" desc="Label for the radio button which, when selected, causes synced settings to be encrypted with a user-provided password.">
-    Encrypt synced data with your own <ph name="BEGIN_LINK">&lt;a href="$1" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$1" target=&quot;_blank&quot;&gt;</ex></ph>sync passphrase<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>. This doesn't include payment methods and addresses from Google Pay.
-  </message>
-  <message name="IDS_NEW_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LABEL" desc="Label for the radio button which, when selected, causes synced settings to be encrypted with a user-provided password.">
     Encrypt synced data with your own <ph name="BEGIN_LINK">&lt;a href="$1" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$1" target=&quot;_blank&quot;&gt;</ex></ph>sync passphrase<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>. Payment methods and addresses from Google Pay won’t be encrypted. Browsing history from Chrome won’t sync.
   </message>
   <message name="IDS_SETTINGS_PASSPHRASE_EXPLANATION_TEXT" desc="Message shown when explicit passphrase is selected.">
@@ -3858,6 +3903,32 @@
       No supported browser found
     </message>
   </if>
+
+  <!-- Page content -->
+  <message name="IDS_SETTINGS_PAGE_CONTENT_LINK_ROW_SUBLABEL_ON" desc="Sublabel of the entry point that leads to the setting that enables features that provide contextual help for currently opened pages. This label is shown when the setting is enabled.">
+    Contextual help is on. These features can send open pages to Google.
+  </message>
+  <message name="IDS_SETTINGS_PAGE_CONTENT_LINK_ROW_SUBLABEL_OFF" desc="Sublabel of the entry point that leads to the setting that enables features that provide contextual help for currently opened pages. This label is shown when the setting is disabled.">
+    Contextual help is off
+  </message>
+  <message name="IDS_SETTINGS_PAGE_CONTENT_PAGE_TITLE" desc="Title of the page of the setting that enables features that provide contextual help for currently opened pages.">
+    Contextual help in features
+  </message>
+  <message name="IDS_SETTINGS_PAGE_CONTENT_TOGGLE_LABEL" desc="Label of the setting that enables features that provide contextual help for currently opened pages.">
+    Get contextual help from some features
+  </message>
+  <message name="IDS_SETTINGS_PAGE_CONTENT_TOGGLE_SUBLABEL" desc="Sublabel of the setting that enables features that provide contextual help for currently opened pages.">
+    Some features can use the content of open pages and related recent pages to provide more useful information or suggestions
+  </message>
+  <message name="IDS_SETTINGS_PAGE_CONTENT_WHEN_ON_BULLET_ONE" desc="Bullet point in the 'When on' column of the description of the setting that enables features that provide contextual help for currently opened pages.">
+    You'll see more useful information or suggestions in features like the Google Search side panel
+  </message>
+  <message name="IDS_SETTINGS_PAGE_CONTENT_THINGS_TO_CONSIDER_BULLET_ONE" desc="Bullet point in the 'Things to consider' column of the description of the setting that enables features that provide contextual help for currently opened pages.">
+    When you use some features, they can send parts of open pages, related recent pages, and their URLs to Google
+  </message>
+  <message name="IDS_SETTINGS_PAGE_CONTENT_THINGS_TO_CONSIDER_BULLET_TWO" desc="Bullet point in the 'Things to consider' column of the description of the setting that enables features that provide contextual help for currently opened pages.">
+    This setting doesn't change the availability of Google Translate or Lens
+  </message>
 
   <!-- Web Content -->
   <message name="IDS_SETTINGS_PAGE_ZOOM_LABEL" desc="Label for the page zoom dropdown menu in settings.">
@@ -4245,7 +4316,6 @@
   </message>
 
   <!-- Safety Hub -->
-  <!-- TODO(crbug/1443466): Change all strings to translatable once it's final. -->
   <message name="IDS_SETTINGS_SAFETY_HUB" desc="Name of a page in settings that gives users an overview over their safety status and where users can take action to improve their safety.">
     Safety Hub
   </message>
@@ -4258,10 +4328,7 @@
   <message name="IDS_SETTINGS_SAFETY_HUB_PAGE_MODULE_SECTION_HEADER" desc="The title of the second section in the Safety Hub page. The 'Safety recommendation' section shows actionable modules about permissions and extensions based on the current state of the browser.">
     Safety recommendation
   </message>
-  <message name="IDS_SETTINGS_SAFETY_HUB_PAGE_USER_EDU_SECTION_HEADER" desc="The title of the last section in the Safety Hub page. The 'Safety tips' section shows three safety related features to provide user education on how Chrome keeps the user safe.">
-    Safety tips
-  </message>
-  <message name="IDS_SETTINGS_SAFETY_HUB_EMPTY_STATE_MODULE_HEADER" translateable="false" desc="The header of the 'Empty State Module' in the Safety Hub page. The 'Empty State Module' is visible if there is no safety recommendation.">
+  <message name="IDS_SETTINGS_SAFETY_HUB_EMPTY_STATE_MODULE_HEADER" desc="The header of the 'Empty State Module' in the Safety Hub page. The 'Empty State Module' is visible if there is no safety recommendation.">
     Nothing else needs your attention right now
   </message>
   <message name="IDS_SETTINGS_SAFETY_HUB_PASSWORD_CHECK_SUBHEADER_RECENTLY" desc="Subtitle of the passwords card in the Safety Hub page which explains how recently passwords were checked for issues. The passwords card contains information about password issues which are detected automatically. This text is shown below a header which explains there are no issues and indicates that passwords were checked for issues very recently.">
@@ -4269,5 +4336,74 @@
   </message>
   <message name="IDS_SETTINGS_SAFETY_HUB_PASSWORD_CHECK_SUBHEADER_SOME_TIME_AGO" desc="Subtitle of the passwords card in the Safety Hub page which explains how recently passwords were checked for issues. The passwords card contains information about password issues which are detected automatically. This text is shown below a header which explains there are no issues and indicates that passwords were checked for issues some time ago.">
     Checked <ph name="NUM_DAYS_HOURS_MINUTES">$1<ex>2 days</ex></ph> ago
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_PASSWORD_CHECK_HEADER_NO_WEAK_OR_REUSED" desc="SafetyHub has checked the user's passwords for issues and has determined the passwords are not weak or reused, which is positive. However we cannot state that there are no issues with the passwords, because one of Chrome's password checks (whether a password is known to be leaked) was not performed. The string should explicitly specify weak and reused passwords. These are Chrome Password Manager terms and should be translated the same way. This text is shown as the header of the passwords card in SafetyHub which is in a neutral state. The subheader below this explains why not all of Chrome's protections were applied here and a call to action on how to do that (e.g. 'To check for compromised passwords, sign in').">
+    No weak or reused passwords
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_PASSWORD_CHECK_SUBHEADER_SIGN_IN" desc="This text conveys to the user that they currently do not have the full protection for their passwords and informs the user that additional protection (in form of Chrome checking whether saved passwords are compromised) is available by signing into Chrome. Compromised passwords are concepts in Chrome Password Manager, this should be translated the same way. It is shown only to signed-out users. This text appears in the subtitle of the passwords card on the Safety Hub page, below a title that lists already known password issues. The title above this may read e.g. '2 weak passwords', or 'No weak or reused passwords').">
+    To check for compromised passwords, sign in to your Google Account
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_PASSWORD_CHECK_SUBHEADER_GO_TO_PASSWORD_MANAGER" desc="This text conveys to the user that they currently do not have the full protection for their passwords and informs the user that additional protection (in form of Chrome checking whether saved passwords are compromised) is available by clicking on the card containing this text, which will redirect to Google Password Manager. Compromised passwords are a concept in Chrome password manager, this should be translated the same way. This text appears in the subtitle of the passwords card one the Safety Hub page, below the title 'No weak or reused passwords'.">
+    To check for compromised passwords, go to Google Password Manager
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_PASSWORD_CHECK_HEADER_NO_PASSWORDS" desc="This text is the header of the passwords card of SafetyHub when the user has no passwords saved in Chrome. Below this text there is a subheader that give the user more details: 'Chrome can check your passwords when you save them' or 'Your organization turned off saving passwords'. The card this text is part of is in a neutral state.">
+    No saved passwords
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_PASSWORD_CHECK_SUBHEADER_NO_PASSWORDS_POLICY" desc="Subtitle of the passwords card in SafetyHub when there are no saved passwords and saving of passwords is disabled through enterprise policy. This text is shown below the header 'No saved passwords'. It explains that the SafetyHub features for passwords are not available since the user's organization has a policy in place that prevents the user from saving passwords in Chrome.">
+    Your organization turned off saving passwords
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_SB_ON_ENHANCED_HEADER" desc="Safety Hub settings page (chrome://settings/safetyHub) gives users an overview over their safety status. Safe browsing card in this page shows the current state of Safe browsing setting (chrome://settings/security). This string is the headline of the Safe Browsing card when the current state is Enhanced protection.">
+    Enhanced Safe Browsing is on
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_SB_ON_ENHANCED_SUBHEADER" desc="Safety Hub settings page (chrome://settings/safetyHub) gives users an overview over their safety status. Safe browsing card in this page shows the current state of Safe browsing setting (chrome://settings/security). This string is the body text of the Safe Browsing card when the current state is Enhanced protection.">
+    You have Chrome's strongest security
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_SB_ON_STANDARD_HEADER" desc="Safety Hub settings page (chrome://settings/safetyHub) gives users an overview over their safety status. Safe browsing card in this page shows the current state of Safe browsing setting (chrome://settings/security). This string is the headline of the Safe Browsing card when the current state is Standard protection.">
+    Safe Browsing is on
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_SB_ON_STANDARD_SUBHEADER" desc="Safety Hub settings page (chrome://settings/safetyHub) gives users an overview over their safety status. Safe browsing card in this page shows the current state of Safe browsing setting (chrome://settings/security). This string is the body text of the Safe Browsing card when the current state is Standard protection.">
+    You're getting standard protection
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_SB_OFF_HEADER" desc="Safety Hub settings page(chrome://settings/safetyHub) gives users an overview over their safety status. Safe browsing card in this page shows the current state of Safe browsing setting(chrome://settings/security). This string is the headline of the Safe Browsing card when the current state is No protection.">
+    Safe Browsing is off
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_SB_OFF_MANAGED_SUBHEADER" desc="Safety Hub settings page (chrome://settings/safetyHub) gives users an overview over their safety status. Safe browsing card in this page shows the current state of Safe browsing setting (chrome://settings/security). This string is the body text of the Safe Browsing card when the current state is No protection because the user's organization (e.g. employer, university, etc.) has turned it off.">
+    Your organization turned off Safe Browsing
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_SB_OFF_EXTENSION_SUBHEADER" desc="Safety Hub settings page (chrome://settings/safetyHub) gives users an overview over their safety status. Safe browsing card in this page shows the current state of Safe browsing setting (chrome://settings/security). This string is the body text of the Safe Browsing card when the current state is No protection because one of the extensions installed on the user's browser has turned it off.">
+    An extension turned off Safe Browsing
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_SB_OFF_USER_SUBHEADER" desc="Safety Hub settings page (chrome://settings/safetyHub) gives users an overview over their safety status. Safe browsing card in this page shows the current state of Safe browsing setting (chrome://settings/security). This string is the body text of the Safe Browsing card when the current state is No protection because the user has turned it off.">
+    Turn on Safe Browsing to get protection against dangerous sites
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_GO_SITE_SETTINGS_ITEM" desc="Safety Hub settings page (chrome://settings/safetyHub) gives users an overview over their safety status. 'Unused Site Permissions' in this page shows unused websites for which permissions have been revoked. This label is for the action menu item that navigates users to the site settings page.">
+    Go to site settings
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_GO_NOTIFICATION_SETTINGS_ITEM" desc="Safety Hub settings page (chrome://settings/safetyHub) gives users an overview over their safety status. 'Review Notification Permissions' in this page shows the websites that send a lot of notifications. This label is for the action menu item that navigates users to notification the settings page.">
+    Go to notification settings
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_USER_EDU_INCOGNITO_SUBHEADER" desc="The subheader of the second item in the 'User Education Module' in the Safety Hub page. This item explains Incognito mode.">
+    Incognito mode keeps <ph name="BEGIN_LINK">&lt;a href="$1" target="_blank"&gt;</ph>your browsing private from others<ph name="END_LINK">&lt;/a&gt;</ph> who use your device
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_USER_EDU_SAFE_BROWSING_HEADER" desc="The header of the second item in the 'User Education Module' in the Safety Hub page. This item explains Safe Browsing.">
+    Safe Browsing
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_UNUSED_SITE_PERMISSIONS_MENU_NOTIFICATION" desc="The unused site permissions module of Safety Hub revokes permissions of sites that the user hasn't visited in a while. This label is for the notification in Chrome's three-dot menu indicating for how many sites the permission was revoked.">
+    {NUM_SITES, plural,
+      =1 {Permissions removed from 1 unused site}
+      other {Permissions removed from {NUM_SITES} sites}}
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_VERSION_CARD_SUBHEADER_RESTART" desc="Safety Hub settings page (chrome://settings/safetyHub) gives users an overview over their safety status. The version card, which this text is a part of, informs the user whether their Chrome is up to date. This text is shown when Chrome is not up to date but there is an update available and the user needs to restart their browser to finish the update. Shown below the title 'Chrome is out of date'.">
+    Relaunch to finish update. Your tabs will reopen.
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_HUB_REVIEW_NOTIFICATION_PERMISSIONS_MENU_NOTIFICATION" desc="The review notification permissions module of Safety Hub marks sites that send a lot of notifications for review by the user. This label is for the notification in Chrome's three-dot menu indicating how many sites should be reviewed.">
+    {NUM_SITES, plural,
+      =1 {Review 1 website with lots of notifications}
+      other {Review {NUM_SITES} websites with lots of notifications}}
+  </message>
+
+  <!-- Experimental enterprise plus_addresses settings strings -->
+  <message name="IDS_PLUS_ADDRESS_SETTINGS_LABEL" desc="A button in settings for management of experimental enterprise plus addresses" translateable="false">
+    Lorem Ipsum
   </message>
 </grit-part>

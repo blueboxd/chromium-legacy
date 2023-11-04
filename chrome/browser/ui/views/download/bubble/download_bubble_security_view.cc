@@ -39,6 +39,8 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_view.h"
+#include "ui/views/style/typography.h"
+#include "ui/views/style/typography_provider.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -156,7 +158,8 @@ class ParagraphsView : public views::View {
   }
 
   int GetLineHeight() {
-    return views::style::GetLineHeight(text_context_, default_text_style_);
+    return views::TypographyProvider::Get().GetLineHeight(text_context_,
+                                                          default_text_style_);
   }
 
   void SetAfterParagraph(int spacing) {
@@ -185,6 +188,7 @@ class ParagraphsView : public views::View {
       label->SetProperty(views::kMarginsKey,
                          gfx::Insets().set_bottom(after_paragraph_));
       label->SizeToFit(fixed_width_);
+      label->PreferredSizeChanged();
     }
 
     if (!paragraphs_.empty()) {
@@ -232,9 +236,9 @@ void DownloadBubbleSecurityView::AddHeader() {
   back_button_->SetProperty(views::kCrossAxisAlignmentKey,
                             views::LayoutAlignment::kStart);
 
-  title_ = header->AddChildView(std::make_unique<views::Label>(
-      std::u16string(), views::style::CONTEXT_DIALOG_TITLE,
-      views::style::STYLE_PRIMARY));
+  title_ = header->AddChildView(std::make_unique<views::StyledLabel>());
+  title_->SetDefaultTextStyle(views::style::STYLE_PRIMARY);
+  title_->SetTextContext(views::style::CONTEXT_DIALOG_TITLE);
   title_->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
@@ -245,10 +249,8 @@ void DownloadBubbleSecurityView::AddHeader() {
   title_->SetProperty(views::kMarginsKey,
                       gfx::Insets::VH(0, icon_label_spacing));
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_->SetMultiLine(true);
-  title_->SetAllowCharacterBreak(true);
   if (features::IsChromeRefresh2023()) {
-    title_->SetTextStyle(views::style::STYLE_HEADLINE_4);
+    title_->SetDefaultTextStyle(views::style::STYLE_HEADLINE_4);
   }
 
   auto* close_button =
@@ -266,11 +268,14 @@ void DownloadBubbleSecurityView::AddHeader() {
 }
 
 void DownloadBubbleSecurityView::BackButtonPressed() {
-  delegate_->AddSecuritySubpageWarningActionEvent(
-      content_id_, DownloadItemWarningData::WarningAction::BACK);
-  did_log_action_ = true;
-  base::UmaHistogramEnumeration(
-      kSubpageActionHistogram, DownloadBubbleSubpageAction::kPressedBackButton);
+  if (IsInitialized()) {
+    delegate_->AddSecuritySubpageWarningActionEvent(
+        content_id_, DownloadItemWarningData::WarningAction::BACK);
+    did_log_action_ = true;
+    base::UmaHistogramEnumeration(
+        kSubpageActionHistogram,
+        DownloadBubbleSubpageAction::kPressedBackButton);
+  }
   Reset();
   navigation_handler_->OpenPrimaryDialog();
 }
@@ -278,12 +283,15 @@ void DownloadBubbleSecurityView::BackButtonPressed() {
 void DownloadBubbleSecurityView::UpdateHeader() {
   title_->SetText(title_text_);
   title_->SizeToFit(GetMinimumTitleWidth());
+  title_->PreferredSizeChanged();
 }
 
 void DownloadBubbleSecurityView::CloseBubble() {
-  delegate_->AddSecuritySubpageWarningActionEvent(
-      content_id_, DownloadItemWarningData::WarningAction::CLOSE);
-  did_log_action_ = true;
+  if (IsInitialized()) {
+    delegate_->AddSecuritySubpageWarningActionEvent(
+        content_id_, DownloadItemWarningData::WarningAction::CLOSE);
+    did_log_action_ = true;
+  }
   // CloseDialog will delete the object. Do not access any members below.
   navigation_handler_->CloseDialog(
       views::Widget::ClosedReason::kCloseButtonClicked);
@@ -337,6 +345,7 @@ void DownloadBubbleSecurityView::UpdateIconAndText() {
     deep_scanning_link_->AddStyleRange(link_range, link_style);
     deep_scanning_link_->SetVisible(true);
     deep_scanning_link_->SizeToFit(GetMinimumLabelWidth());
+    deep_scanning_link_->PreferredSizeChanged();
   } else {
     deep_scanning_link_->SetVisible(false);
   }
@@ -359,6 +368,7 @@ void DownloadBubbleSecurityView::UpdateIconAndText() {
     learn_more_link_->AddStyleRange(link_range, link_style);
     learn_more_link_->SetVisible(true);
     learn_more_link_->SizeToFit(GetMinimumLabelWidth());
+    learn_more_link_->PreferredSizeChanged();
   } else {
     learn_more_link_->SetVisible(false);
   }
@@ -682,6 +692,9 @@ void DownloadBubbleSecurityView::UpdateProgressBar() {
 }
 
 void DownloadBubbleSecurityView::UpdatePasswordPrompt() {
+  if (!IsInitialized()) {
+    return;
+  }
   if (!base::FeatureList::IsEnabled(
           safe_browsing::kDeepScanningEncryptedArchives)) {
     return;
@@ -716,6 +729,7 @@ void DownloadBubbleSecurityView::ClearWideFields() {
   paragraphs_->SizeToFit(200);
   secondary_styled_label_->SetText(std::u16string());
   secondary_styled_label_->SizeToFit(200);
+  secondary_styled_label_->PreferredSizeChanged();
 
   title_->SetText(std::u16string());
   deep_scanning_link_->SetText(std::u16string());
@@ -902,6 +916,9 @@ int DownloadBubbleSecurityView::GetMinimumLabelWidth() const {
 
 bool DownloadBubbleSecurityView::ProcessDeepScanClick() {
   absl::optional<std::string> password;
+  if (!IsInitialized()) {
+    return true;
+  }
   if (base::FeatureList::IsEnabled(
           safe_browsing::kDeepScanningEncryptedArchives)) {
     password = base::UTF16ToUTF8(password_prompt_->GetText());

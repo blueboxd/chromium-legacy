@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/heap/heap_test_objects.h"
-#include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
@@ -176,6 +175,8 @@ TEST_F(NGAbstractInlineTextBoxTest, CharacterWidths) {
 }
 
 TEST_F(NGAbstractInlineTextBoxTest, HeapCompactionNoCrash) {
+  // Regression test: https://crbug.com/1360006
+
   using TestVector = HeapVector<Member<LinkedObject>>;
   Persistent<TestVector> vector(MakeGarbageCollected<TestVector>(100));
   SetBodyInnerHTML(R"HTML(<div id="div">012 345</div>)HTML");

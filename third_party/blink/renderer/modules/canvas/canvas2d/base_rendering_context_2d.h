@@ -49,6 +49,11 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
  public:
   static constexpr unsigned kFallbackToCPUAfterReadbacks = 2;
 
+  // Try to restore context 4 times in the event that the context is lost. If
+  // the context is unable to be restored after 4 attempts, we discard the
+  // backing storage of the context and allocate a new one.
+  static const unsigned kMaxTryRestoreContextAttempts = 4;
+
   BaseRenderingContext2D(const BaseRenderingContext2D&) = delete;
   BaseRenderingContext2D& operator=(const BaseRenderingContext2D&) = delete;
 
@@ -257,10 +262,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
   virtual int Width() const = 0;
   virtual int Height() const = 0;
 
-  virtual bool IsAccelerated() const {
-    NOTREACHED();
-    return false;
-  }
+  bool IsAccelerated() const;
   virtual bool CanCreateCanvas2dResourceProvider() const = 0;
 
   virtual RespectImageOrientationEnum RespectImageOrientation() const = 0;
@@ -283,7 +285,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
   virtual sk_sp<PaintFilter> StateGetFilter() = 0;
   void SnapshotStateForFilter();
 
-  CanvasRenderingContextHost* GetCanvasRenderingContextHost() override {
+  virtual CanvasRenderingContextHost* GetCanvasRenderingContextHost() const {
     return nullptr;
   }
 
@@ -487,8 +489,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
     NOTREACHED();
     return false;
   }
-  virtual scoped_refptr<StaticBitmapImage> GetImage(
-      CanvasResourceProvider::FlushReason) {
+  virtual scoped_refptr<StaticBitmapImage> GetImage(FlushReason) {
     NOTREACHED();
     return nullptr;
   }
@@ -503,7 +504,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
   int layer_count_ = 0;
   AntiAliasingMode clip_antialiasing_;
 
-  virtual void FinalizeFrame(CanvasResourceProvider::FlushReason) {}
+  virtual void FinalizeFrame(FlushReason) {}
 
   float GetFontBaseline(const SimpleFontData&) const;
   virtual void DispatchContextLostEvent(TimerBase*);
@@ -694,7 +695,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
     return false;
   }
 
-  virtual void FlushCanvas(CanvasResourceProvider::FlushReason) = 0;
+  virtual void FlushCanvas(FlushReason) = 0;
 
   // Only call if identifiability_study_helper_.ShouldUpdateBuilder() returns
   // true.
@@ -892,7 +893,7 @@ void BaseRenderingContext2D::DrawInternal(
     // This happens if draw_func called flush() on the PaintCanvas. The flush
     // cannot be performed inside the scope of draw_func because it would break
     // the logic of CompositedDraw.
-    FlushCanvas(CanvasResourceProvider::FlushReason::kVolatileSourceImage);
+    FlushCanvas(FlushReason::kVolatileSourceImage);
   }
 }
 

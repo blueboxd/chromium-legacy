@@ -17,13 +17,13 @@
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/prefetch/pref_names.h"
-#include "chrome/browser/prefetch/prefetch_prefs.h"
 #include "chrome/browser/preloading/chrome_preloading.h"
 #include "chrome/browser/preloading/prefetch/search_prefetch/cache_alias_search_prefetch_url_loader.h"
 #include "chrome/browser/preloading/prefetch/search_prefetch/field_trial_settings.h"
 #include "chrome/browser/preloading/prefetch/search_prefetch/search_prefetch_request.h"
 #include "chrome/browser/preloading/prefetch/search_prefetch/search_prefetch_url_loader.h"
 #include "chrome/browser/preloading/prefetch/search_prefetch/streaming_search_prefetch_url_loader.h"
+#include "chrome/browser/preloading/preloading_prefs.h"
 #include "chrome/browser/preloading/prerender/prerender_manager.h"
 #include "chrome/browser/preloading/prerender/prerender_utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -181,7 +181,13 @@ content::PreloadingFailureReason ToPreloadingFailureReason(
   // non-overlapping range after kPreloadingFailureReasonContentEnd. It is
   // probably a good idea to centralize the allocation of enum ranges whenever a
   // second case emerges.
-  // TODO(sreejakshetty): Assert that the reasons do not overlap.
+  // Ensure that the enums do not overlap.
+  static_assert(static_cast<int>(SearchPrefetchServingReason::kServed) !=
+                    static_cast<int>(content::PreloadingFailureReason::
+                                         kPreloadingFailureReasonContentEnd),
+                "Enum values overlap! Update enum values.");
+
+  // Calculate and return the result.
   return static_cast<content::PreloadingFailureReason>(
       static_cast<int>(reason) +
       static_cast<int>(content::PreloadingFailureReason::
@@ -277,7 +283,8 @@ bool SearchPrefetchService::MaybePrefetchURL(
   // this DefaultSearchEngine or OmniboxSearchPredictor prefetch attempt when
   // |navigation_prefetch| is true.
   attempt = preloading_data->AddPreloadingAttempt(
-      predictor, content::PreloadingType::kPrefetch, same_url_matcher);
+      predictor, content::PreloadingType::kPrefetch, same_url_matcher,
+      web_contents->GetPrimaryMainFrame()->GetPageUkmSourceId());
 
   if (!search_with_terms) {
     recorder.reason_ =
@@ -1074,7 +1081,8 @@ void SearchPrefetchService::CoordinatePrefetchWithPrerender(
   content::PreloadingAttempt* preloading_attempt =
       preloading_data->AddPreloadingAttempt(
           chrome_preloading_predictor::kDefaultSearchEngine,
-          content::PreloadingType::kPrerender, same_url_matcher);
+          content::PreloadingType::kPrerender, same_url_matcher,
+          web_contents->GetPrimaryMainFrame()->GetPageUkmSourceId());
 
   auto prefetch_request_iter = prefetches_.find(canonical_search_url);
   if (prefetch_request_iter == prefetches_.end()) {

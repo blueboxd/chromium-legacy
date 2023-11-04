@@ -25,6 +25,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/style/typography_provider.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_utils.h"
 
@@ -104,9 +105,7 @@ TEST_F(PopupCellViewTest, SetSelectedUpdatesBackground) {
   // The unselected background.
   EXPECT_FALSE(view().GetSelected());
   views::Background* background = view().GetBackground();
-  ASSERT_TRUE(background);
-  EXPECT_EQ(background->get_color(),
-            view().GetColorProvider()->GetColor(ui::kColorDropdownBackground));
+  ASSERT_FALSE(background);
 
   view().SetSelected(true);
   EXPECT_TRUE(view().GetSelected());
@@ -144,7 +143,8 @@ TEST_F(PopupCellViewTest, SetSelectedUpdatesTrackedLabels) {
 
   auto get_expected_color = [](views::Label& label, int style) {
     return label.GetColorProvider()->GetColor(
-        views::style::GetColorId(label.GetTextContext(), style));
+        views::TypographyProvider::Get().GetColorId(label.GetTextContext(),
+                                                    style));
   };
 
   // The unselected state.

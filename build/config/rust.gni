@@ -78,11 +78,11 @@ declare_args() {
 declare_args() {
   # Individual Rust components.
 
-  # Conversions between Rust types and C++ types.
-  #
-  # TODO(crbug.com/1463749): Enable on ChromeOS.
+  # Conversions between Rust types and C++ types. iOS remains excluded because
+  # the only dependency of `enable_rust_base_conversions` (`enable_rust_qr`)
+  # does not apply to iOS.
   enable_rust_base_conversions =
-      enable_rust && (!(is_chromeos || is_ios) || enable_all_rust_features)
+      enable_rust && (!is_ios || enable_all_rust_features)
 
   # The base::JSONReader implementation. Requires base conversions.
   enable_rust_json = enable_rust && enable_all_rust_features
@@ -95,10 +95,7 @@ declare_args() {
   # Per go/rusty-qr-code-generator the feature is not actually used on iOS, but
   # `is_ios` below is checked for parity with `enable_rust_base_conversions`
   # (which is a dependency of `enable_rust_qr`).
-  #
-  # TODO(crbug.com/1463749): Enable on ChromeOS.
-  enable_rust_qr =
-      enable_rust && (!(is_chromeos || is_ios) || enable_all_rust_features)
+  enable_rust_qr = enable_rust && (!is_ios || enable_all_rust_features)
 
   # Support for Rust mojo bindings.
   enable_rust_mojo = enable_rust && enable_all_rust_features
@@ -108,6 +105,9 @@ declare_args() {
 
   # Enable Boringssl Rust bindings generation
   enable_rust_boringssl = enable_rust && enable_all_rust_features
+
+  # Enable experimental Fontations Rust font stack.
+  use_typeface_fontations = enable_rust && enable_all_rust_features
 }
 
 # Use the Rust toolchain built in-tree. When false, we use the prebuilt Rust
@@ -149,6 +149,17 @@ if (enable_rust) {
 # them as a dylib and put them into an APK. We should reuse all the same logic
 # for gtests from the `//testing/test:test` template.
 can_build_rust_unit_tests = toolchain_has_rust && !is_android
+
+# Whether artifacts produced by the Rust compiler can participate in ThinLTO.
+#
+# One important consideration is whether the linker uses the same LLVM
+# version as `rustc` (i.e. if it can understand the LLVM-IR from the
+# compilation artifacts produced by `rustc`).  In LaCrOS and ash builds this may
+# not be true - see b/299483903.
+#
+# TODO(https://crbug.com/1482525): Re-enable ThinLTO for Rust on LaCrOS
+# TODO(b/300937673): Re-enable ThinLTO for Rust on ash-chrome
+toolchain_supports_rust_thin_lto = !is_chromeos
 
 # We want to store rust_sysroot as a source-relative variable for ninja
 # portability. In practice if an external toolchain was specified, it might

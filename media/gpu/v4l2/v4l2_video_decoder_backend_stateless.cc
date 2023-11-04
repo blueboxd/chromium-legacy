@@ -222,12 +222,14 @@ void V4L2StatelessVideoDecoderBackend::OnOutputBufferDequeued(
 }
 
 scoped_refptr<V4L2DecodeSurface>
-V4L2StatelessVideoDecoderBackend::CreateSurface() {
+V4L2StatelessVideoDecoderBackend::CreateSecureSurface(uint64_t secure_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOGF(4);
 
   // Request V4L2 input and output buffers.
-  auto input_buf = input_queue_->GetFreeBuffer();
+  auto input_buf =
+      secure_handle ? input_queue_->GetFreeBufferForSecureHandle(secure_handle)
+                    : input_queue_->GetFreeBuffer();
   auto output_buf = output_queue_->GetFreeBuffer();
   if (!input_buf || !output_buf) {
     DVLOGF(3) << "There is no free V4L2 buffer.";
@@ -286,6 +288,13 @@ V4L2StatelessVideoDecoderBackend::CreateSurface() {
                                       std::move(*request_ref));
 }
 
+scoped_refptr<V4L2DecodeSurface>
+V4L2StatelessVideoDecoderBackend::CreateSurface() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DVLOGF(4);
+  return CreateSecureSurface(0);
+}
+
 bool V4L2StatelessVideoDecoderBackend::SubmitSlice(
     V4L2DecodeSurface* dec_surface,
     const uint8_t* data,
@@ -303,8 +312,12 @@ bool V4L2StatelessVideoDecoderBackend::SubmitSlice(
     return false;
   }
 
-  void* mapping = dec_surface->input_buffer().GetPlaneMapping(0);
-  memcpy(reinterpret_cast<uint8_t*>(mapping) + bytes_used, data, size);
+  // Secure playback will submit a nullptr for |data|, the target data already
+  // will exist in the secure buffer.
+  if (data) {
+    void* mapping = dec_surface->input_buffer().GetPlaneMapping(0);
+    memcpy(reinterpret_cast<uint8_t*>(mapping) + bytes_used, data, size);
+  }
   dec_surface->input_buffer().SetPlaneBytesUsed(0, bytes_used + size);
   return true;
 }
@@ -673,15 +686,18 @@ bool V4L2StatelessVideoDecoderBackend::StopInputQueueOnResChange() const {
   return true;
 }
 
-size_t V4L2StatelessVideoDecoderBackend::GetNumOUTPUTQueueBuffers() const {
+size_t V4L2StatelessVideoDecoderBackend::GetNumOUTPUTQueueBuffers(
+    bool secure_mode) const {
   // Some H.264 test vectors (CAPCM*1_Sand_E.h264) need 16 reference frames; add
   // one to calculate the number of OUTPUT buffers, to account for the frame
   // being decoded.
+  // For secure mode, we are very memory constrained so only allocate 8 buffers.
   // TODO(b/249325255): reduce this number to e.g. 8 or even less when it does
   // not artificially limit the size of the CAPTURE (decoded video frames)
   // queue.
   constexpr size_t kNumInputBuffers = 16 + 1;
-  return kNumInputBuffers;
+  constexpr size_t kNumInputBuffersSecureMode = 8;
+  return secure_mode ? kNumInputBuffersSecureMode : kNumInputBuffers;
 }
 
 bool V4L2StatelessVideoDecoderBackend::IsSupportedProfile(

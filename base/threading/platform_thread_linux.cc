@@ -4,6 +4,7 @@
 // Description: Linux specific functionality. Other Linux-derivatives layer on
 // top of this translation unit.
 
+#include "base/no_destructor.h"
 #include "base/threading/platform_thread.h"
 
 #include <errno.h>
@@ -103,27 +104,47 @@ void SetThreadCgroupForThreadType(PlatformThreadId thread_id,
 namespace internal {
 
 const ThreadPriorityToNiceValuePairForTest
-    kThreadPriorityToNiceValueMapForTest[5] = {
+    kThreadPriorityToNiceValueMapForTest[7] = {
         {ThreadPriorityForTest::kRealtimeAudio, -10},
         {ThreadPriorityForTest::kDisplay, -8},
+#if BUILDFLAG(IS_CHROMEOS)
+        {ThreadPriorityForTest::kCompositing, -8},
+#else
+        // TODO(1329208): Experiment with bringing IS_LINUX inline with
+        // IS_CHROMEOS.
+        {ThreadPriorityForTest::kCompositing, -1},
+#endif
         {ThreadPriorityForTest::kNormal, 0},
-        {ThreadPriorityForTest::kUtility, 1},
+        {ThreadPriorityForTest::kResourceEfficient, 1},
+        {ThreadPriorityForTest::kUtility, 2},
         {ThreadPriorityForTest::kBackground, 10},
 };
 
+// These nice values are shared with ChromeOS platform code
+// (platform_thread_cros.cc) and have to be unique as ChromeOS has a unique
+// type -> nice value mapping. An exception is kCompositing and
+// kDisplayCritical where aliasing is OK as they have the same scheduler
+// attributes (cpusets, latency_sensitive etc) including nice value.
+// The uniqueness of the nice value per-type helps to change and restore the
+// scheduling params of threads when their process toggles between FG and BG.
 const ThreadTypeToNiceValuePair kThreadTypeToNiceValueMap[7] = {
-    {ThreadType::kBackground, 10},       {ThreadType::kUtility, 1},
-    {ThreadType::kResourceEfficient, 0}, {ThreadType::kDefault, 0},
+    {ThreadType::kBackground, 10},       {ThreadType::kUtility, 2},
+    {ThreadType::kResourceEfficient, 1}, {ThreadType::kDefault, 0},
 #if BUILDFLAG(IS_CHROMEOS)
     {ThreadType::kCompositing, -8},
 #else
     // TODO(1329208): Experiment with bringing IS_LINUX inline with IS_CHROMEOS.
-    {ThreadType::kCompositing, 0},
+    {ThreadType::kCompositing, -1},
 #endif
     {ThreadType::kDisplayCritical, -8},  {ThreadType::kRealtimeAudio, -10},
 };
 
 bool CanSetThreadTypeToRealtimeAudio() {
+  // Check if root
+  if (geteuid() == 0) {
+    return true;
+  }
+
   // A non-zero soft-limit on RLIMIT_RTPRIO is required to be allowed to invoke
   // pthread_setschedparam in SetCurrentThreadTypeForPlatform().
   struct rlimit rlim;
@@ -139,7 +160,7 @@ bool SetCurrentThreadTypeForPlatform(ThreadType thread_type,
     return true;
   }
 
-  PlatformThread::SetThreadType(getpid(), tid, thread_type);
+  PlatformThread::SetThreadType(getpid(), tid, thread_type, IsViaIPC(false));
   return true;
 }
 
@@ -158,6 +179,54 @@ GetCurrentThreadPriorityForPlatformForTest() {
 }
 
 }  // namespace internal
+
+// Determine if thread_id is a background thread by looking up whether
+// it is in the urgent or non-urgent cpuset.
+bool PlatformThreadLinux::IsThreadBackgroundedForTest(
+    PlatformThreadId thread_id) {
+  FilePath cgroup_filepath(kCgroupDirectory);
+
+  FilePath urgent_cgroup_directory =
+      cgroup_filepath.Append(FILE_PATH_LITERAL("cpuset"))
+          .Append(FILE_PATH_LITERAL("chrome"))
+          .Append(FILE_PATH_LITERAL("urgent"));
+  FilePath non_urgent_cgroup_directory =
+      cgroup_filepath.Append(FILE_PATH_LITERAL("cpuset"))
+          .Append(FILE_PATH_LITERAL("chrome"))
+          .Append(FILE_PATH_LITERAL("non-urgent"));
+
+  // Silently ignore request if cgroup directory doesn't exist.
+  if (!DirectoryExists(urgent_cgroup_directory) ||
+      !DirectoryExists(non_urgent_cgroup_directory)) {
+    return false;
+  }
+
+  FilePath urgent_tasks_filepath =
+      urgent_cgroup_directory.Append(FILE_PATH_LITERAL("tasks"));
+  FilePath non_urgent_tasks_filepath =
+      non_urgent_cgroup_directory.Append(FILE_PATH_LITERAL("tasks"));
+
+  std::string tid = NumberToString(thread_id);
+  // Check if thread_id is in the urgent cpuset
+  std::string urgent_tasks;
+  if (!ReadFileToString(urgent_tasks_filepath, &urgent_tasks)) {
+    return false;
+  }
+  if (urgent_tasks.find(tid) != std::string::npos) {
+    return false;
+  }
+
+  // Check if thread_id is in the non-urgent cpuset
+  std::string non_urgent_tasks;
+  if (!ReadFileToString(non_urgent_tasks_filepath, &non_urgent_tasks)) {
+    return false;
+  }
+  if (non_urgent_tasks.find(tid) != std::string::npos) {
+    return true;
+  }
+
+  return false;
+}
 
 void PlatformThreadBase::SetName(const std::string& name) {
   SetNameCommon(name);
@@ -205,7 +274,8 @@ void PlatformThreadLinux::SetThreadCgroupsForThreadType(
 // static
 void PlatformThreadLinux::SetThreadType(ProcessId process_id,
                                         PlatformThreadId thread_id,
-                                        ThreadType thread_type) {
+                                        ThreadType thread_type,
+                                        IsViaIPC via_ipc) {
   SetThreadCgroupsForThreadType(thread_id, thread_type);
 
   // Some scheduler syscalls require thread ID of 0 for current thread.

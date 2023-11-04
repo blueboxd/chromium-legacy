@@ -175,6 +175,7 @@ Quan suprimeixes l'historial de navegació (sigui per complet o un lloc web espe
 <translation id="19288952978244135">Torna a obrir Chrome.</translation>
 <translation id="1933845786846280168">Pestanya seleccionada</translation>
 <translation id="1943432128510653496">Desa les contrasenyes</translation>
+<translation id="1944535645109964458">No hi ha cap clau d'accés disponible</translation>
 <translation id="1952172573699511566">Quan sigui possible, els llocs web mostraran el text en el teu idioma preferit.</translation>
 <translation id="1959679933317802873">S'està esperant el contingut</translation>
 <translation id="1960290143419248813">Aquesta versió d'Android ja no admet les actualitzacions de Chrome</translation>
@@ -222,6 +223,7 @@ Quan suprimeixes l'historial de navegació (sigui per complet o un lloc web espe
 <translation id="2189903024544168260">S'ha suprimit l'interès</translation>
 <translation id="2194856509914051091">Aspectes que cal tenir en compte</translation>
 <translation id="2200113223741723867">Gestiona la compartició de les dades d'ús</translation>
+<translation id="221494669172414749">Si obres Chrome sense un bloqueig de perfil, se suprimiran del cotxe les formes de pagament i les contrasenyes desades. Utilitza un bloqueig de perfil per protegir aquestes dades.</translation>
 <translation id="2218567645332692482">Actualitza les navegacions a HTTPS i t'avisa abans de carregar llocs web que no l'admeten</translation>
 <translation id="2227444325776770048">Continua com a <ph name="USER_FULL_NAME" /></translation>
 <translation id="2230777942707397948">Finestra buida</translation>
@@ -262,6 +264,7 @@ Quan suprimeixes l'historial de navegació (sigui per complet o un lloc web espe
 <translation id="2461822463642141190">Actual</translation>
 <translation id="2472163211318554013">Inicia la sessió per treure el màxim profit de Chrome</translation>
 <translation id="247737702124049222">Les descripcions de les imatges estan activades</translation>
+<translation id="2479148705183875116">Ves a Configuració</translation>
 <translation id="2482878487686419369">Notificacions</translation>
 <translation id="2496180316473517155">Historial de navegació</translation>
 <translation id="2497852260688568942">L'administrador ha desactivat la sincronització</translation>
@@ -338,6 +341,7 @@ Els testimonis d'estat privat milloren la privadesa al web i no poden utilitzar-
 <translation id="2840810876587895427">{TAB_COUNT,plural, =1{Es tancarà <ph name="TAB_COUNT_ONE" /> pestanya d'incògnit}other{Es tancaran <ph name="TAB_COUNT_MANY" /> pestanyes d'incògnit}}</translation>
 <translation id="2841216154655874070">{NUM_DAYS,plural, =1{S'ha comprovat fa 1 dia}other{S'ha comprovat fa # dies}}</translation>
 <translation id="2842985007712546952">Carpeta principal</translation>
+<translation id="2853415089995957805">Chrome precarrega les pàgines que és probable que visitis perquè es carreguin més ràpidament quan les visitis</translation>
 <translation id="2856503607207334158">No s'ha pogut iniciar la sessió</translation>
 <translation id="2860954141821109167">Comprova que hi hagi una aplicació de telèfon activada en aquest dispositiu</translation>
 <translation id="2861923151411510142">Algunes funcions de Chrome ja no estaran disponibles</translation>
@@ -555,7 +559,6 @@ Els testimonis d'estat privat milloren la privadesa al web i no poden utilitzar-
 <translation id="3958287878205277013">Per esborrar l'historial de navegació d'incògnit del dispositiu, tanca totes les pestanyes d'incògnit.</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome carregarà la pàgina quan estigui a punt}other{Chrome carregarà les pàgines quan estiguin a punt}}</translation>
 <translation id="3962119236270174787">Protecció estàndard contra llocs web, baixades i extensions que se sap que són perillosos</translation>
-<translation id="3963007978381181125">L'encriptació de frases de contrasenya no inclou les formes de pagament ni les adreces de Google Pay. Només els usuaris que sàpiguen la teva frase de contrasenya poden llegir les dades que encriptes. La frase de contrasenya no s'envia a Google, i Google tampoc no l'emmagatzema. Si l'oblides o vols canviar aquesta opció, has de restablir la sincronització. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="3969142555815019568">Chrome no pot comprovar les teves contrasenyes</translation>
 <translation id="3969863827134279083">Mou cap amunt</translation>
 <translation id="397105322502079400">S’està calculant...</translation>
@@ -583,6 +586,7 @@ Els testimonis d'estat privat milloren la privadesa al web i no poden utilitzar-
 <translation id="4084712963632273211">Publicada originalment per <ph name="PUBLISHER_ORIGIN" />, <ph name="BEGIN_DEEMPHASIZED" />oferida per Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="409109920254068737">Pots utilitzar aquesta tauleta per iniciar la sessió al dispositiu que està mostrant aquest codi QR.</translation>
 <translation id="4095146165863963773">Vols suprimir les dades de l'aplicació?</translation>
+<translation id="4095425503313512126">Navegar i fer cerques és més ràpid</translation>
 <translation id="4096227151372679484">Flux per desar l'adreça d'interès obert a mitja alçada</translation>
 <translation id="4101475238162928417">Sincronitza per obtenir les contrasenyes, les adreces d'interès i altres elements als teus altres dispositius</translation>
 <translation id="4106587138345390261">Chrome està explorant noves funcions que permetin als llocs web oferir la mateixa experiència de navegació utilitzant menys informació teva</translation>
@@ -624,6 +628,7 @@ Els testimonis d'estat privat milloren la privadesa al web i no poden utilitzar-
 <translation id="4257230861809842349">Vols suprimir les contrasenyes del gestor de contrasenyes de Google?</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Quines dades s'utilitzen<ph name="END_BOLD" />: el teu historial de navegació, que és un registre dels llocs web que has visitat amb Chrome en aquest dispositiu.</translation>
 <translation id="4269820728363426813">Copia l'adreça de l'enllaç</translation>
+<translation id="4277529130885813215">Utilitza un altre dispositiu</translation>
 <translation id="4283102315569707115">Vols sol·licitar els llocs web per a ordinadors de manera predeterminada?</translation>
 <translation id="4285846616383034558">Galetes, memòria cau i altres dades dels llocs web</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Activa el bloqueig de pantalla a la configuració d'Android<ph name="END_LINK" /></translation>
@@ -792,6 +797,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5054455334322721892">És possible que es desin <ph name="BEGIN_LINK1" />altres tipus d'activitats<ph name="END_LINK1" /> al teu Compte de Google quan tinguis la sessió iniciada. Les pots suprimir en qualsevol moment.</translation>
 <translation id="506254248375231072">No hi ha cap pestanya</translation>
 <translation id="5062960805900435602">L'actualització sobre la combinació de contrasenyes s'ha tancat</translation>
+<translation id="5081960376148623587">Tria si vols precarregar les pàgines</translation>
 <translation id="5091199029769593641">Aviat, quan obris una pestanya nova, veuràs històries de: <ph name="SITE_NAME" />. Els llocs web que segueixes es desen al teu Compte de Google. Pots gestionar-los a la configuració de Discover.</translation>
 <translation id="5091249083535528968">Dades d'ús ampliades</translation>
 <translation id="509429900233858213">S'ha produït un error.</translation>
@@ -832,6 +838,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5308380583665731573">Connecta</translation>
 <translation id="5317780077021120954">Desa</translation>
 <translation id="5319359161174645648">Google recomana Chrome</translation>
+<translation id="5320351714793324716">Si permets les galetes, Chrome pot utilitzar-les en la precàrrega</translation>
 <translation id="5321849971085220133">Chrome està investigant noves maneres de reduir el seguiment i de protegir-te encara més quan navegues. Chrome també <ph name="BEGIN_LINK" />fa una estimació dels teus interessos<ph name="END_LINK" /> i et permet gestionar-los. Així, els llocs web que visitis poden demanar a Chrome els teus interessos per mostrar-te anuncis.</translation>
 <translation id="5326921373682845375">Com que les pàgines precarregades estan encriptades i el lloc que enllaça a les pàgines és un lloc web de Google, els servidors de Google no reben informació nova quan aquestes pàgines es precarreguen de manera privada.</translation>
 <translation id="5329858041417644019">El navegador no està gestionat</translation>
@@ -1010,6 +1017,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6295158916970320988">Tots els llocs web</translation>
 <translation id="6303969859164067831">Tanca la sessió i desactiva la sincronització</translation>
 <translation id="6312687380483398334">Aplicacions web (en mode silenciós)</translation>
+<translation id="6315386555979018699">Suprimeix i continua</translation>
 <translation id="6316139424528454185">Versió d'Android no admesa</translation>
 <translation id="6324916366299863871">Edita la drecera</translation>
 <translation id="6324977638108296054">No es pot crear un enllaç que dirigeixi al contingut marcat</translation>
@@ -1161,6 +1169,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6955535239952325894">Aquesta opció de configuració està desactivada als navegadors gestionats</translation>
 <translation id="6963766334940102469">Suprimeix les adreces d'interès</translation>
 <translation id="696447261358045621">Surt del mode d'incògnit</translation>
+<translation id="6965382102122355670">D'acord</translation>
 <translation id="6971862865055170158">No aprovis</translation>
 <translation id="6978717888677691380">Llocs web que has bloquejat</translation>
 <translation id="6979737339423435258">Sempre</translation>
@@ -1319,6 +1328,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7757787379047923882">Text compartit des del dispositiu <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">Targeta SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Afegeix una adreça</translation>
+<translation id="7766587497031415281">Més opcions per esborrar les dades de navegació</translation>
 <translation id="7772032839648071052">Confirmeu la frase de contrasenya</translation>
 <translation id="7772375229873196092">Tanca <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 i <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> més}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 i <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> més}}</translation>
@@ -1572,6 +1582,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8998289560386111590">No disponible al teu dispositiu</translation>
 <translation id="8998729206196772491">Estàs iniciant la sessió amb un compte gestionat per <ph name="MANAGED_DOMAIN" /> i estàs donant a l'administrador el control de les teves dades de Chrome. Les dades passaran a estar vinculades a aquest compte permanentment. Si tanques la sessió de Chrome, se suprimiran les teves dades d'aquest dispositiu, però continuaran emmagatzemades al teu compte de Google.</translation>
 <translation id="9012585441087414258">Protegeix contra llocs web, baixades i extensions que se sap que són perillosos. Si una pàgina fa res sospitós, els URL i els fragments de contingut de les pàgines s'envien a Navegació segura de Google.</translation>
+<translation id="9019199799064251516">Vols continuar sense un bloqueig de perfil del cotxe?</translation>
 <translation id="9022774213089566801">Visitats amb freqüència</translation>
 <translation id="9022871169049522985">Els llocs web i els anunciants poden mesurar el rendiment dels seus anuncis</translation>
 <translation id="9035378196785279980">Mou a\u2026</translation>
@@ -1634,5 +1645,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="983192555821071799">Tanca totes les pestanyes</translation>
 <translation id="987264212798334818">General</translation>
 <translation id="992745192656291733"><ph name="TAB_COUNT" /> pestanyes</translation>
+<translation id="993520549480398880">Esborra també les adreces d'interès, l'historial i altres dades d'aquest cotxe</translation>
 <translation id="996149300115483134">El menú de la targeta del tauler està tancat</translation>
 </translationbundle>

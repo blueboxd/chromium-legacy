@@ -1,13 +1,16 @@
 {
   "$build/chromium_tests_builder_config": {
     "builder_config": {
+      "additional_exclusions": [
+        "infra/config/generated/builders/ci/linux-official/gn-args.json"
+      ],
       "builder_db": {
         "entries": [
           {
             "builder_id": {
               "bucket": "ci",
               "builder": "linux-official",
-              "project": "chromium-m118"
+              "project": "chromium"
             },
             "builder_spec": {
               "builder_group": "chromium",
@@ -33,7 +36,7 @@
         {
           "bucket": "ci",
           "builder": "linux-official",
-          "project": "chromium-m118"
+          "project": "chromium"
         }
       ],
       "mirroring_builder_group_and_names": [
@@ -58,8 +61,5 @@
     ]
   },
   "builder_group": "chromium",
-  "recipe": "chromium",
-  "sheriff_rotations": [
-    "chrome_browser_release"
-  ]
+  "recipe": "chromium"
 }

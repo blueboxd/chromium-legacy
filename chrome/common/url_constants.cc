@@ -93,6 +93,8 @@ const char kIsolatedAppScheme[] = "isolated-app";
 
 const char kChromeNativeScheme[] = "chrome-native";
 
+const char kChromeSafePageURL[] = "https://www.google.com/chrome/#safe";
+
 const char kChromeSearchLocalNtpHost[] = "local-ntp";
 
 const char kChromeSearchMostVisitedHost[] = "most-visited";
@@ -154,10 +156,15 @@ const char kExtensionControlledSettingLearnMoreURL[] =
 
 const char kExtensionInvalidRequestURL[] = "chrome-extension://invalid/";
 
-const char kFamilyGroupSiteURL[] = "https://families.google.com/families/";
+const char kFamilyGroupCreateURL[] =
+    "https://myaccount.google.com/family/create?utm_source=cpwd";
+
+const char kFamilyGroupViewURL[] =
+    "https://myaccount.google.com/family/details?utm_source=cpwd";
 
 const char kFirstPartySetsLearnMoreURL[] =
-    "https://developer.chrome.com/docs/privacy-sandbox/first-party-sets/";
+    "https://support.google.com/chrome?p=cpn_cookies"
+    "#zippy=%2Callow-related-sites-to-access-your-activity";
 
 const char kFlashDeprecationLearnMoreURL[] =
     "https://blog.chromium.org/2017/07/so-long-and-thanks-for-all-flash.html";
@@ -190,8 +197,18 @@ const char kHighEfficiencyModeLearnMoreUrl[] =
 const char kHighEfficiencyModeTabDiscardingHelpUrl[] =
     "https://support.google.com/chrome/?p=performance_site_exclusion";
 
+const char kIncognitoHelpCenterURL[] =
+    "https://support.google.com/chrome/answer/9845881";
+
+// TODO(crbug.com/1480695): Update this URL with proper user-facing explainer.
+const char kIsolatedWebAppsLearnMoreUrl[] =
+    "https://github.com/WICG/isolated-web-apps/blob/main/README.md";
+
 const char kLearnMoreReportingURL[] =
     "https://support.google.com/chrome/?p=ui_usagestat";
+
+const char kManage3pcHelpCenterURL[] =
+    "https://support.google.com/chrome/?p=manage_tp_cookies";
 
 const char kManagedUiLearnMoreUrl[] =
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -242,6 +259,12 @@ const char kPasswordManagerLearnMoreURL[] =
 const char kPasswordManagerImportLearnMoreURL[] =
     "https://support.google.com/chrome/?p=import-passwords-desktop";
 
+const char kPasswordSharingLearnMoreURL[] =
+    "https://support.google.com/chrome/?p=password_sharing";
+
+const char kPasswordSharingTroubleshootURL[] =
+    "https://support.google.com/chrome/?p=password_sharing_troubleshoot";
+
 const char kPaymentMethodsURL[] =
     "https://pay.google.com/payments/"
     "home?utm_source=chrome&utm_medium=settings&utm_campaign=chrome-payment#"
@@ -277,6 +300,9 @@ const char kSafeBrowsingHelpCenterUpdatedURL[] =
 
 const char kSafeBrowsingInChromeHelpCenterURL[] =
     "https://support.google.com/chrome?p=safebrowsing_in_chrome";
+
+const char kSafeBrowsingPTourURL[] =
+    "https://support.google.com/chrome/answer/13844634";
 
 const char kSafetyTipHelpCenterURL[] =
     "https://support.google.com/chrome/?p=safety_tip";
@@ -320,6 +346,12 @@ const char kSyncTrustedVaultOptInURL[] =
 
 const char kSyncTrustedVaultLearnMoreURL[] =
     "https://support.google.com/accounts?p=settings_password_ode";
+
+const char kTrackingProtectionHelpCenterURL[] =
+    "https://support.google.com/chrome/?p=tracking_protection";
+
+const char kUserBypassHelpCenterURL[] =
+    "https://support.google.com/chrome/?p=user_bypass";
 
 const char kUpgradeHelpCenterBaseURL[] =
     "https://support.google.com/installer/?product="
@@ -449,7 +481,7 @@ const char kNaturalScrollHelpURL[] =
     "https://support.google.com/chromebook/?p=simple_scrolling";
 
 // TODO(zhangwenyu): Update link once confirmed.
-const char kScrollAccelerationHelpURL[] =
+const char kControlledScrollingHelpURL[] =
     "https://support.google.com/chromebook/?p=simple_scrolling";
 
 const char kHapticFeedbackHelpURL[] =

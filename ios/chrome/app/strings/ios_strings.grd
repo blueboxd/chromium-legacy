@@ -288,6 +288,12 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_AUTOFILL_ADDRESS2" desc="Title of the field of a profile address representing the second line of the address. [Length: 15em] [iOS only]">
         Address 2
       </message>
+      <message name="IDS_IOS_AUTOFILL_DEPENDENT_LOCALITY" desc="Title of the field of a profile address representing the neighborhood. A dependent locality is a subunit of a locality, where a 'locality' is roughly equivalent to a city. Examples of dependent localities include inner-city districts and suburbs. Only used in certain countries, like Brazil and Mexico, for example. [Length: 15em] [iOS only]">
+        Neighborhood
+      </message>
+      <message name="IDS_IOS_AUTOFILL_ADMIN_LEVEL2" desc="Title of the field of a profile address representing the administrative area level 2. A sub-division of a state, e.g. a Municipio in Brazil or Mexico. [Length: 15em] [iOS only]">
+        Municipality
+      </message>
       <message name="IDS_IOS_AUTOFILL_CARDHOLDER" desc="Title of the field representing the full name of a credit card holder. [Length: 15em] [iOS only]">
         Name on Card
       </message>
@@ -853,6 +859,45 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_CONTENT_SUGGESTIONS_MOST_VISITED_MODULE_TITLE" desc="The Most Visited module title on the new tab page [Length: 10em]">
         Most Visited Sites
       </message>
+      <message name="IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_TITLE" desc="The Parcel Tracking module title on the Home surface [Length: 10em]">
+        Package Tracking
+      </message>
+      <message name="IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_PACKAGE_INFORMATION" desc="The Parcel Tracking module package information on the Home surface [Length: 10em]">
+        <ph name="Carrier_Name"><ex>USPS</ex>$1</ph> • #<ph name="Parcel_Identifier"><ex>1237834578495</ex>$2</ph>
+      </message>
+      <message name="IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_PACKAGE_ARRIVING_STATUS" desc="The Parcel Tracking module package arriving status description on the Home surface [Length: 10em]">
+        Arriving <ph name="Date"><ex>Monday, September 13</ex>$1</ph>
+      </message>
+      <message name="IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_PACKAGE_DELIVERED_STATUS" desc="The Parcel Tracking module package delivered status description on the Home surface [Length: 10em]">
+        Delivered
+      </message>
+      <message name="IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_PACKAGE_DELIVERED_TODAY" desc="When the tracked parcel was delivered today [Length: 10em]">
+        Today
+      </message>
+      <message name="IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_PACKAGE_LABEL_CREATED_STATUS" desc="The Parcel Tracking module package label created status description on the Home surface [Length: 10em]">
+        Label Created. Date Pending
+      </message>
+      <message name="IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_PACKAGE_NEW_STATUS" desc="The Parcel Tracking module package new status description on the Home surface [Length: 10em]">
+        Getting Package Status
+      </message>
+      <message name="IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_PACKAGE_DELIVERY_ATTEMPTED_STATUS" desc="The Parcel Tracking module package delivery attempted status description on the Home surface [Length: 10em]">
+        Delivery Attempted. Will retry
+      </message>
+      <message name="IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_PACKAGE_READY_PICKUP_STATUS" desc="The Parcel Tracking module package delivery ready for pickup status description on the Home surface [Length: 10em]">
+        Ready for Pickup
+      </message>
+      <message name="IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_PACKAGE_ERROR_STATUS" desc="The Parcel Tracking module package delivery error status description on the Home surface [Length: 10em]">
+        Needs attention
+      </message>
+      <message name="IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_PACKAGE_UNDELIVERABLE_STATUS" desc="The Parcel Tracking module package delivery undeliverable status description on the Home surface [Length: 10em]">
+        Your package can't be delivered
+      </message>
+      <message name="IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_PACKAGE_RETURNED_TO_SENDER_STATUS" desc="The Parcel Tracking module package delivery returned to sender status description on the Home surface [Length: 10em]">
+        Return to sender
+      </message>
+      <message name="IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_PACKAGE_CANCELLED_STATUS" desc="The Parcel Tracking module package delivery cancelled status description on the Home surface [Length: 10em]">
+        Your delivery was cancelled
+      </message>
       <message name="IDS_IOS_CONTENT_SUGGESTIONS_READING_LIST" desc="The Reading List title on the new tab page [Length: 10em]">
         Reading List
       </message>
@@ -1183,8 +1228,8 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_FIRST_FOLLOW_BODY_UPDATE" desc="The body of the first follow surface for the follow UI update.">
         The sites and searches you follow are saved in your Google Account. You can manage your follows in settings at any time.
       </message>
-      <message name="IDS_IOS_FIRST_FOLLOW_GO_TO_FEED" desc="The action button to see the feed in the first follow surface.">
-        Go To Feed
+      <message name="IDS_IOS_FIRST_FOLLOW_GO_TO_FOLLOWING" desc="The action button to see the Following feed in the first follow surface.">
+        Go to Following
       </message>
       <message name="IDS_IOS_FIRST_FOLLOW_GOT_IT" desc="The action button to dismiss the first follow surface.">
         Got It
@@ -1716,6 +1761,9 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_MAGIC_STACK_SEE_MORE" desc="The See More button in Magic Stack modules to show a detailed view. [Length: 10em]">
         See More
       </message>
+      <message name="IDS_IOS_MAGIC_STACK_EDIT_MODAL_TITLE" desc="The title of the edit modal for the Magic Stack. [Length: 10em]">
+        Edit Cards
+      </message>
       <message name="IDS_IOS_MANAGE_YOUR_GOOGLE_ACCOUNT_TITLE" desc="Title for the view in the Settings to open 'Google Account' web page.">
         Manage Your Google Account
       </message>
@@ -1880,6 +1928,9 @@ See your search engine’s instructions for deleting your search history, if app
       </message>
       <message name="IDS_IOS_NET_EXPORT_NO_EMAIL_ACCOUNTS_ALERT_TITLE" desc="The title of the alert informing a user with no email accounts that they need to configure an email account to send net-export data. [Length: 20em]">
         No Email Accounts
+      </message>
+      <message name="IDS_IOS_NEW_FEATURE_ACCESSIBILITY_HINT" desc="Accessibility hint spoken by VoiceOver to let the user know there is a new feature. This string will be appended to an existing accesibility label when the UI is showing a 'new' badge to attract the user's attention. For example, the label 'Default Browser' would become 'Default Browser, new feature', which is why the string is not capitalized at its start. [iOS/iPadOS only]">
+        new feature
       </message>
       <message name="IDS_IOS_NEW_INCOGNITO_TAB" desc="Label for text saying the tab is a new Incognito tab.">
         New Incognito Tab
@@ -2122,7 +2173,38 @@ While in Incognito, sites can't use cookies to see your browsing activity across
         Tab Suggestions
       </message>
       <message name="IDS_IOS_OPTIONS_TAB_PICKUP_SCREEN_FOOTER" desc="Footer for the screen setting displaying tab suggestion settings.">
-        Gives you tab suggestions based on your browsing activity on your other devices using your Google account. Your devices must be signed in and synced using the same Google account.
+        Gives you tab suggestions based on your browsing activity on your other devices using your Google Account. Your devices must be signed in and synced using the same Google Account.
+      </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_INFOBAR_ASK_TO_TRACK_TITLE" desc="Text for the title string of the infobar that is displayed to prompt user to track a package.">
+        {COUNT, plural,
+        =1 {Track This Package?}
+        other {Track {COUNT} Packages?}}
+      </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_INFOBAR_NEW_PACKAGE_TRACKED_TITLE" desc="Text for the title string of the infobar that is displayed after a new package is tracked.">
+        {COUNT, plural,
+        =1 {New Package Tracked}
+        other {New Packages Tracked}}
+      </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_INFOBAR_TRACK_BUTTON" desc="Text for the button on the Parcel Tracking infobars that tracks a package.">
+        Track
+      </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_INFOBAR_VIEW_BUTTON" desc="Text for the button on the Parcel Tracking infobars that shows the Parcel Tracking module in the NTP.">
+        View
+      </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_INFOBAR_PACKAGE_UNTRACKED_TITLE" desc="Text for the title string of the infobar that is displayed after a package is untracked.">
+        Package Untracked
+      </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_INFOBAR_PACKAGE_UNTRACKED_SUBTITLE" desc="Text for the subtitle string of the infobar that is displayed after a package is untracked.">
+        This package has been successfully untracked.
+      </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_OPT_IN_PRIMARY_ACTION" desc="Text for the primary action string of the parcel tracking opt-in half-sheet screen.">
+        Always Track Detected Packages
+      </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_OPT_IN_SECONDARY_ACTION" desc="Text for the secondary action string of the parcel tracking opt-in half-sheet screen.">
+        No, Thanks
+      </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_OPT_IN_TERTIARY_ACTION" desc="Text for the tertiary action string of the parcel tracking opt-in half-sheet screen.">
+        Ask me Every Time
       </message>
       <message name="IDS_IOS_PARTIAL_TRANSLATE_ACTION_TRANSLATE_FULL_PAGE" desc="The action button to translate the full page (Title Case).">
         Translate Full Page
@@ -2996,6 +3078,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_LOCAL_PASSWORD_ACCESSIBILITY_LABEL" desc="Screenreader label when a password is saved only locally and not backed up to any account.">
         Password saved only on this device
       </message>
+      <message name="IDS_IOS_LOCAL_ADDRESS_ACCESSIBILITY_LABEL" desc="Screenreader label when an address is saved only locally">
+        Address saved only on this device
+      </message>
       <message name="IDS_IOS_PASSWORD_SETTINGS_SAVE_BUTTON" desc="Save button text for adding a new credential manually via settings [Length: 10em]">
         Save
       </message>
@@ -3029,6 +3114,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_PASSWORD_SHARING_FAMILY_MEMBER_INELIGIBLE" desc="Info text in the recipient picker view of the password sharing flow explaining why one of the family members is not eligible to be a recipient. [iOS Only]">
         Your family member can't receive passwords right now. Ask them to update Chrome and sync their passwords. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
+      <message name="IDS_IOS_PASSWORD_SHARING_FAMILY_PICKER_BACK_BUTTON" desc="Button text for the navigation back action in the family picker view in the password sharing flow. [iOS only]">
+        Back
+      </message>
       <message name="IDS_IOS_PASSWORD_SHARING_FAMILY_PICKER_SUBTITLE" desc="Header text in the view that allows to choose recipients for password sharing from a list of family members explaining what happens when the user shares their password with them. [iOS Only]">
         When you share a copy of your username and password, your family member can fill them using Google Password Manager.
       </message>
@@ -3041,6 +3129,12 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_PASSWORD_SHARING_FETCHING_RECIPIENTS_LABEL" desc="Text describing what is happening at the beginning of the password sharing flow. [iOS only]">
         Checking your family members…
       </message>
+      <message name="IDS_IOS_PASSWORD_SHARING_FIRST_RUN_TITLE" desc="Title text describing the password sharing feature displayed in the first run experience view. [iOS only]">
+        Share a Copy of Your Password
+      </message>
+      <message name="IDS_IOS_PASSWORD_SHARING_FIRST_RUN_SUBTITLE" desc="Subtitle text describing the password sharing feature displayed in the first run experience view. [iOS only]">
+        You can securely share a copy of your password with someone in your family group. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
+      </message>
       <message name="IDS_IOS_PASSWORD_SHARING_PASSWORD_PICKER_NEXT_BUTTON" desc="Button text for the confirm action in the password picker view in the password sharing flow. [iOS only]">
         Next
       </message>
@@ -3052,6 +3146,12 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_PASSWORD_SHARING_FAMILY_PROMO_BUTTON" desc="Button text for the confirm action in the password sharing family promo view. [iOS only]">
         Got It
+      </message>
+      <message name="IDS_IOS_PASSWORD_SHARING_FAMILY_PROMO_INVITE_MEMBERS_SUBTITLE" desc="Subtitle text displayed in the family promo view of the password sharing flow describing that the user needs other family members in order to use the feature. [iOS only]">
+        For now, you can only share passwords with family members. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Invite family members<ph name="END_LINK">END_LINK</ph> to join your group and get more from your products and subscriptions across Google.
+      </message>
+      <message name="IDS_IOS_PASSWORD_SHARING_FAMILY_PROMO_INVITE_MEMBERS_TITLE" desc="Title text of the family promo view in the password sharing flow in the case where user has a family group with no other members. [iOS only]">
+        Invite Family Members
       </message>
       <message name="IDS_IOS_PASSWORD_SHARING_FAMILY_PROMO_SUBTITLE" desc="Subtitle text displayed in the family promo view of the password sharing flow describing what are the prerequisites to use the feature. [iOS only]">
         For now, you can only share passwords with family members. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Create a family group<ph name="END_LINK">END_LINK</ph> with up to 6 members and get more from your products and subscriptions across Google.
@@ -4289,11 +4389,6 @@ Try to use a unique password for every site.
 
 To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>clear the Chrome data in your account<ph name="END_LINK">END_LINK</ph>.
       </message>
-      <message name="IDS_IOS_SYNC_ENCRYPTION_PASSPHRASE_INFO" desc="The information text for encrypting sync using a passphrase, shown on the passphrase screen [iOS only]">
-        Passphrase encryption doesn’t include payment methods and addresses from Google Pay.
-
-Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>clear the Chrome data in your account<ph name="END_LINK">END_LINK</ph>.
-      </message>
       <message name="IDS_IOS_NEW_SYNC_ENCRYPTION_PASSPHRASE_INFO" desc="The information text for encrypting sync using a passphrase, shown on the passphrase screen [iOS only]">
         Payment methods and addresses from Google Pay won’t be encrypted. Browsing history from Chrome won’t sync.
 
@@ -4465,7 +4560,7 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       </message>
       <message name="IDS_IOS_TAB_GRID_SUPERVISED_INCOGNITO_MESSAGE" desc="Message shown in the Incognito Tabs page of the tab grid when a supervised user tries to access incognito mode. [iOS only]">
         Your account is managed by your parent.
-<ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn More<ph name="END_LINK">END_LINK</ph>
+<ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
       <message name="IDS_IOS_TAB_GRID_INCOGNITO_TABS_UNAVAILABLE_TITLE" desc="Title shown above a message in the Incognito Tabs page of the tab grid when the IncognitoModeAvailability enterprise policy is set to disabled. [iOS only]">
         Incognito Mode is Unavailable
@@ -4513,6 +4608,27 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       </message>
       <message name="IDS_IOS_TAB_RESUMPTION_CONTEXT_MENU_TITLE" desc="Title for the long-press context menu of the module that presents the last opened tab, on the new tab page.">
           This card shows your last used open tab across all your synced devices within the last 24 hours.
+      </message>
+      <message name="IDS_IOS_TAB_RESUMPTION_TAB_TITLE_PLACEHOLDER" desc="Label displayed when the last opened tab title is empty. This module presents the last open tab, on the new tab page.">
+        Your Last Open Tab
+      </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_CONTEXT_MENU_DESCRIPTION" desc="Descripiton for the long-press context menu of the parcel tracking module.">
+        Hide "<ph name="Module_Name"><ex>Package Tracking</ex>$1</ph>"
+      </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_CONTEXT_MENU_TITLE" desc="Title for the long-press context menu of the parcel tracking module.">
+          This card helps you keep track of your packages and give you important delivery updates.
+      </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_MODULE_HIDE_ALERT_TITLE" desc="Title for the alert dialog warning the user they are about to hide the parcel tracking module.">
+          Hiding this Card will Turn Off Auto-Tracking for Future Packages
+      </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_CARRIER_FEDEX" desc="Name of FEDEX Carrier">
+          FEDEX
+      </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_CARRIER_UPS" desc="Name of UPS Carrier">
+          UPS
+      </message>
+      <message name="IDS_IOS_PARCEL_TRACKING_CARRIER_USPS" desc="Name of USPS Carrier">
+          USPS
       </message>
       <message name="IDS_IOS_TAB_RESUMPTION_TITLE" desc="Title for the module that presents the last opened tab, on the new tab page.">
         Continue Browsing
@@ -4766,6 +4882,15 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       <message name="IDS_IOS_OVERFLOW_MENU_CUSTOMIZE_MENU_TITLE" desc="The title of the screen on the overflow menu where users can customize the items in the menu." meaning="[In Title case] [iOS only]">
         Customize Menu
       </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDDEN_BOOKMARKS_SUBTITLE" desc="The subtitle of the Add to Bookmarks action alerting users that the Bookmark destination is hidden." meaning="[In Title case] [iOS only]">
+        Bookmarks are hidden
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDDEN_READING_LIST_SUBTITLE" desc="The subtitle of the Add to Reading List action alerting users that the Reading List destination is hidden." meaning="[In Title case] [iOS only]">
+        Reading List is hidden
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ITEM_ACCESSIBILITY_HINT" desc="Accessibility hint telling users what will happen if they take action on an item." meaning="[In Title case] [iOS only]">
+        Hides this item
+      </message>
       <message name="IDS_IOS_OVERFLOW_MENU_SHARE_CHROME" desc="The iOS menu item for opening a share sheet with the URL to the Chrome app in the iOS app store" meaning="[In Title case] [iOS only] [Length: Unlimited]">
         Share Chrome
       </message>
@@ -4780,6 +4905,63 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       </message>
       <message name="IDS_IOS_OVERFLOW_MENU_EDIT_SECTION_HIDDEN_TITLE" desc="The title for the overflow menu edit section showing hidden destinations" meaning="[In Title case] [iOS only] [Length: Unlimited]">
         Hidden
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_ADD_TO_BOOKMARKS" desc="The title for the context menu item to hide Add to Bookmarks. This should match the title of the Add to Bookmarks action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Add to Bookmarks
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_CLEAR_BROWSING_DATA" desc="The title for the context menu item to hide Clear Browsing Data. This should match the title of the Clear Browsing Data action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Clear Browsing Data
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_DESKTOP_SITE" desc="The title for the context menu item to hide Request Desktop Site. This should match the title of the Request Desktop Site action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Request Desktop Site
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_EDIT_BOOKMARK" desc="The title for the context menu item to hide Edit Bookmarks. This should match the title of the Edit Bookmarks action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Edit Bookmark
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_FIND_IN_PAGE" desc="The title for the context menu item to hide Find in Page. This should match the title of the Find in Page action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Find in Page
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_FOLLOW" desc="The title for the context menu item to hide Follow. This should match the title of the Follow action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Follow <ph name="DOMAIN_NAME">$1<ex>google.com</ex></ph>
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_MOBILE_SITE" desc="The title for the context menu item to hide Request Mobile Site. This should match the title of the Request Mobile Site action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Request Mobile Site
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_READING_LIST" desc="The title for the context menu item to hide Add to Reading List. This should match the title of the Add to Reading List action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Add to Reading List
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_TEXT_ZOOM" desc="The title for the context menu item to hide Zoom Text. This should match the title of the Zoom Text action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Zoom Text
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_TRANSLATE" desc="The title for the context menu item to hide Translate. This should match the title of the Translate action in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Translate
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_ACTION_UNFOLLOW" desc="The title for the context menu item to hide Unfollow. This should match the title of the Unfollow action in the menu. [iOS only]">
+        Hide Unfollow <ph name="DOMAIN_NAME">$1<ex>google.com</ex></ph>
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_DESTINATION_BOOKMARKS" desc="The title for the context menu item to hide Bookmarks. This should match the title of the Bookmarks destination in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Bookmarks
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_DESTINATION_DOWNLOADS" desc="The title for the context menu item to hide Downloads. This should match the title of the Downloads destination in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Downloads
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_DESTINATION_HISTORY" desc="The title for the context menu item to hide History. This should match the title of the History destination in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide History
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_DESTINATION_READING_LIST" desc="The title for the context menu item to hide Reading List. This should match the title of the Reading List destination in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Reading List
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_DESTINATION_RECENT_TABS" desc="The title for the context menu item to hide Recent Tabs. This should match the title of the Recent Tabs destination in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Recent Tabs
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_DESTINATION_PASSWORDS" desc="The title for the context menu item to hide Passwords. This should match the title of the Passwords destination in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Password Manager
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_DESTINATION_PRICE_NOTIFICATIONS" desc="The title for the context menu item to hide Price Tracking. This should match the title of the Price Tracking destination in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide Track Price
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_HIDE_DESTINATION_WHATS_NEW" desc="The title for the context menu item to hide What's New. This should match the title of the What's New destination in the menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hide What's New
       </message>
       <message name="IDS_IOS_OVERFLOW_MENU_SORT_TITLE" desc="The title of the overflow menu option where the menu will be auto-sorted by frequency." meaning="[iOS only] [Length: Unlimited]">
         Smart Sort Menu Bar
@@ -4969,9 +5151,6 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       </message>
       <message name="IDS_IOS_SIGNIN_PROMO_RECENT_TABS_WITH_UNITY" desc="Text to inform the user that they can sign in and sync to get tabs shared between devices. [iOS only]">
         To get your tabs from your other devices, turn on sync.
-      </message>
-      <message name="IDS_IOS_SIGNIN_PROMO_SETTINGS_WITH_UNITY" desc="Text to inform the user that they can sign in and sync to get tabs shared between devices. [iOS only]">
-        To sync and personalize across devices, turn on sync.
       </message>
       <message name="IDS_IOS_SIGNIN_SNACKBAR_SIGNED_IN_AS" desc="This confirmation message is intended to help users understand that they have signed in to Chrome with their Google Account. The confirmation message appears at the bottom of the Bookmarks page after users choose an account to sign in to. The tone should be informative. [iOS only]">
         Signed in as <ph name="USER_EMAIL">$1<ex>johndoe@gmail.com</ex></ph>
@@ -5331,6 +5510,69 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       </message>
       <message name="IDS_IOS_SAFETY_CHECK_LAST_COMPLETED_CHECK" desc="Subtitle for Safety Check (Magic Stack) module which shows the timestamp of the last check." meaning="Time when the Safety Check was last run.">
         Last run <ph name="TIME">$1<ex>10 minutes ago</ex></ph>
+      </message>
+      <message name="IDS_IOS_SAVE_TO_PHOTOS_THIS_FILE_COULD_NOT_BE_UPLOADED_TITLE" desc="Title of an alert that is presented if the user's attempt to upload an image to Google Photos fails. [iOS only]">
+        This File Could Not Be Uploaded
+      </message>
+      <message name="IDS_IOS_SAVE_TO_PHOTOS_THIS_FILE_COULD_NOT_BE_UPLOADED_MESSAGE" desc="Message of an alert that is presented if the user's attempt to upload an image to Google Photos fails. [iOS only]">
+        <ph name="FILENAME">$1<ex>image.jpeg</ex></ph> (<ph name="FILESIZE">$2<ex>4 MB</ex></ph>) could not be uploaded
+      </message>
+      <message name="IDS_IOS_SAVE_TO_PHOTOS_THIS_FILE_COULD_NOT_BE_UPLOADED_TRY_AGAIN" desc="Button in an alert that is presented if the user's attempt to upload an image to Google Photos fails. The button lets the user try to upload the image again. [iOS only]">
+        Try Again
+      </message>
+      <message name="IDS_IOS_SAVE_TO_PHOTOS_SNACKBAR_SAVING_IMAGE_MESSAGE" desc="Message of snackbar that is shown when the user started saving an image to Google Photos. [iOS only]">
+        Saving image in Google Photos for <ph name="USER_EMAIL">$1<ex>peter.parker@gmail.com</ex></ph>...
+      </message>
+      <message name="IDS_IOS_SAVE_TO_PHOTOS_SNACKBAR_IMAGE_SAVED_MESSAGE" desc="Message of snackbar that is shown when the image selected by the user to be saved in Google Photos has been saved successfully. [iOS only]">
+        Image saved in Google Photos for <ph name="USER_EMAIL">$1<ex>peter.parker@gmail.com</ex></ph>
+      </message>
+      <message name="IDS_IOS_SAVE_TO_PHOTOS_SNACKBAR_IMAGE_SAVED_OPEN_BUTTON" desc="Label of snackbar button that is shown when the image selected by the user to be saved in Google Photos has been saved successfully. The button opens the saved image i.e. it either shows the Google Photos app in the App Store if it is not installed, or opens the image in the Google Photos app. [iOS only]">
+        Open
+      </message>
+      <message name="IDS_IOS_SAVE_TO_PHOTOS_ACCOUNT_PICKER_TITLE" desc="Dialog title to invite the user to pick an account to save an image to Google Photos. [iOS only]">
+        Save in Google Photos
+      </message>
+      <message name="IDS_IOS_SAVE_TO_PHOTOS_ACCOUNT_PICKER_BODY" desc="Text when a user attempts to save an image to Google Photos, then is presented with the account picker dialog to select which account they want to use to save the image. [iOS only]">
+        Select the account you want to use to save <ph name="FILENAME">$1<ex>image.jpeg</ex></ph> - <ph name="FILESIZE">$2<ex>4 MB</ex></ph>
+      </message>
+      <message name="IDS_IOS_SAVE_TO_PHOTOS_ACCOUNT_PICKER_ASK_EVERY_TIME" desc="Switch label to let the user choose whether they want to pick an account every time. [iOS only]">
+        Ask which account to use every time
+      </message>
+      <message name="IDS_IOS_SAVE_TO_PHOTOS_ACCOUNT_PICKER_SUBMIT" desc="Dialog primary button label to validate the account picked to save an image to Google Photos. [iOS only]" meaning="This button saves the image to the user's Google Photos library i.e. this means 'Save' as in 'Save in Google Photos'.">
+        Save
+      </message>
+      <message name="IDS_IOS_SETTINGS_DOWNLOADS_TITLE" desc="Title for the Downloads settings dialog [iOS only]" meaning="Title for the Downloads settings dialog [Length: 29em] [iOS only]">
+        Downloads
+      </message>
+      <message name="IDS_IOS_SETTINGS_DOWNLOADS_SAVE_TO_PHOTOS_HEADER" desc="Header of Save to Photos settings section in Downloads settings. This should be the name of the Google branded application Google Photos. [iOS only]">
+        Google Photos
+      </message>
+      <message name="IDS_IOS_SETTINGS_DOWNLOADS_ACCOUNT_SELECTION_HEADER" desc="Header of Google Photos account selection section in Downloads settings. The section contains the list of accounts on the device among which the user can choose to save images to Google Photos. [iOS only]">
+        Accounts on this Device
+</message>
+      <message name="IDS_IOS_PASSWORD_MANAGER_WIDGET_PROMO_TEXT" desc="Descriptive text for the Password Manager widget promo shown in the Password Manager.">
+        Securely access your passwords from the home screen with the Password Manager widget.
+      </message>
+      <message name="IDS_IOS_PASSWORD_MANAGER_WIDGET_PROMO_BUTTON_TITLE" desc="Title of the button for the Password Manager widget promo shown in the Password Manager." meaning="Title-cased">
+        Show Me How
+      </message>
+      <message name="IDS_IOS_WIDGET_PROMO_INSTRUCTIONS_TITLE" desc="Title of the instruction screen for the Password Manager widget's installation.">
+        Get to passwords from the home screen
+      </message>
+      <message name="IDS_IOS_WIDGET_PROMO_INSTRUCTIONS_SUBTITLE" desc="Subtitle of the instruction screen for the Password Manager widget's installation.">
+        Easy and secure access with the Google Password Manager widget.
+      </message>
+      <message name="IDS_IOS_WIDGET_PROMO_INSTRUCTIONS_STEP_1" desc="First step of the instructions for the Password Manager widget's installation.">
+        Touch and hold the home screen
+      </message>
+      <message name="IDS_IOS_WIDGET_PROMO_INSTRUCTIONS_STEP_2" desc="Second step of the instructions for the Password Manager widget's installation.">
+        At the top of the screen, tap +
+      </message>
+      <message name="IDS_IOS_WIDGET_PROMO_INSTRUCTIONS_STEP_3" desc="Third step of the instructions for the Password Manager widget's installation.">
+        In the Search Widgets box, enter Chrome
+      </message>
+      <message name="IDS_IOS_WIDGET_PROMO_INSTRUCTIONS_STEP_4" desc="Fourth step of the instructions for the Password Manager widget's installation.">
+        Select Password Manager, then tap Add Widget
       </message>
     </messages>
   </release>

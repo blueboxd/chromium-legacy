@@ -4,48 +4,56 @@
 
 #include "chrome/browser/ash/input_method/editor_text_actuator.h"
 
-#include "base/strings/utf_string_conversions.h"
-#include "ui/base/ime/ash/ime_bridge.h"
-#include "ui/base/ime/ash/text_input_target.h"
-#include "ui/base/ime/text_input_client.h"
+#include "ash/public/cpp/new_window_delegate.h"
+#include "url/url_constants.h"
 
-namespace ash {
-namespace input_method {
+namespace ash::input_method {
 namespace {
 
-void InsertText(std::string_view text) {
-  TextInputTarget* input = IMEBridge::Get()->GetInputContextHandler();
-  if (!input) {
-    return;
-  }
-  input->CommitText(
-      base::UTF8ToUTF16(text),
-      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
+bool IsUrlAllowed(const GURL& url) {
+  return url.SchemeIs(url::kHttpsScheme) ||
+         url.spec().starts_with("chrome://os-settings/osLanguages/input");
 }
 
 }  // namespace
 
-EditorTextActuator::EditorTextActuator() = default;
+EditorTextActuator::EditorTextActuator(
+    mojo::PendingAssociatedReceiver<orca::mojom::TextActuator> receiver,
+    Delegate* delegate)
+    : text_actuator_receiver_(this, std::move(receiver)), delegate_(delegate) {}
+
 EditorTextActuator::~EditorTextActuator() = default;
 
-void EditorTextActuator::InsertTextOnNextFocus(std::string_view text) {
-  pending_text_insert_ = PendingTextInsert{std::string(text)};
+void EditorTextActuator::InsertText(const std::string& text) {
+  // We queue the text to be inserted here rather then insert it directly into
+  // the input.
+  inserter_.InsertTextOnNextFocus(text);
+  delegate_->OnTextInserted();
+}
+
+void EditorTextActuator::ApproveConsent() {
+  delegate_->ProcessConsentAction(ConsentAction::kApproved);
+}
+
+void EditorTextActuator::DeclineConsent() {
+  delegate_->ProcessConsentAction(ConsentAction::kDeclined);
+}
+
+void EditorTextActuator::OpenUrlInNewWindow(const GURL& url) {
+  if (!IsUrlAllowed(url)) {
+    mojo::ReportBadMessage("Invalid URL scheme. Only HTTPS is allowed.");
+    return;
+  }
+  ash::NewWindowDelegate::GetPrimary()->OpenUrl(
+      url, ash::NewWindowDelegate::OpenUrlFrom::kUnspecified,
+      ash::NewWindowDelegate::Disposition::kNewForegroundTab);
 }
 
 void EditorTextActuator::OnFocus(int context_id) {
-  if (focused_client_.has_value() && focused_client_->id == context_id) {
-    return;
-  }
-  focused_client_ = TextClientContext{context_id};
-  if (pending_text_insert_) {
-    InsertText(pending_text_insert_->text);
-    pending_text_insert_ = absl::nullopt;
-  }
+  inserter_.OnFocus(context_id);
 }
 
 void EditorTextActuator::OnBlur() {
-  focused_client_ = absl::nullopt;
+  inserter_.OnBlur();
 }
-
-}  // namespace input_method
-}  // namespace ash
+}  // namespace ash::input_method

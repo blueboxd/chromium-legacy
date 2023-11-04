@@ -72,7 +72,7 @@ BASE_FEATURE(kEnableFeedExperimentTagging,
              "EnableFeedExperimentTagging",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kIOSSetUpList, "IOSSetUpList", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIOSSetUpList, "IOSSetUpList", base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kFeedDisableHotStartRefresh,
              "FeedDisableHotStartRefresh",
@@ -88,6 +88,10 @@ BASE_FEATURE(kDiscoverFeedSportCard,
 
 BASE_FEATURE(kContentPushNotifications,
              "ContentPushNotifications",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kIOSLargeFakebox,
+             "IOSLargeFakebox",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Key for NSUserDefaults containing a bool indicating whether the next run
@@ -367,4 +371,8 @@ bool IsFollowUIUpdateEnabled() {
 
 bool IsContentPushNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kContentPushNotifications);
+}
+
+bool IsIOSLargeFakeboxEnabled() {
+  return base::FeatureList::IsEnabled(kIOSLargeFakebox);
 }

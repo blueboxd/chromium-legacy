@@ -132,6 +132,14 @@ class MockPersonalDataManager : public TestPersonalDataManager {
               AddServerCvc,
               (int64_t instrument_id, const std::u16string& cvc),
               (override));
+  MOCK_METHOD(void,
+              UpdateLocalCvc,
+              (const std::string& guid, const std::u16string& cvc),
+              (override));
+  MOCK_METHOD(void,
+              UpdateServerCvc,
+              (int64_t instrument_id, const std::u16string& cvc),
+              (override));
 };
 
 class MockAutofillClient : public TestAutofillClient {
@@ -240,9 +248,21 @@ class CreditCardSaveManagerTest : public testing::Test {
         form, false, mojom::SubmissionSource::FORM_SUBMISSION);
   }
 
-  void UserHasAcceptedUpload(
+  void UserHasAcceptedCardUpload(
       AutofillClient::UserProvidedCardDetails user_provided_card_details) {
     credit_card_save_manager_->OnUserDidDecideOnUploadSave(
+        AutofillClient::SaveCardOfferUserDecision::kAccepted,
+        user_provided_card_details);
+  }
+
+  void UserDidDecideCvcLocalSave(
+      AutofillClient::SaveCardOfferUserDecision user_decision) {
+    credit_card_save_manager_->OnUserDidDecideOnCvcLocalSave(user_decision);
+  }
+
+  void UserHasAcceptedCvcUpload(
+      AutofillClient::UserProvidedCardDetails user_provided_card_details) {
+    credit_card_save_manager_->OnUserDidDecideOnCvcUploadSave(
         AutofillClient::SaveCardOfferUserDecision::kAccepted,
         user_provided_card_details);
   }
@@ -583,7 +603,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_OnlyCountryInAddresses) {
   ExpectCardUploadDecisionUkm(autofill_metrics::UPLOAD_OFFERED);
 
   // Simulate that the user has accepted the upload from the prompt.
-  UserHasAcceptedUpload({});
+  UserHasAcceptedCardUpload({});
   // We should find that full addresses are included in the UploadCard request,
   // even though only countries were included in GetUploadDetails.
   EXPECT_THAT(
@@ -861,6 +881,207 @@ TEST_F(CreditCardSaveManagerTest,
   EXPECT_FALSE(
       autofill_client_.get_save_credit_card_options().has_non_focusable_field);
 }
+
+#if !BUILDFLAG(IS_ANDROID)
+// Tests that when triggering AttemptToOfferCvcLocalSave function, SaveCard
+// dialog will be triggered with `kCvcSaveOnly` option.
+TEST_F(CreditCardSaveManagerTest,
+       AttemptToOfferCvcLocalSave_ShouldShowSaveCardLocallyWithCvcSaveOnly) {
+  CreditCard local_card = test::GetCreditCard();
+  credit_card_save_manager_->AttemptToOfferCvcLocalSave(
+      /*from_dynamic_change_form=*/true, /*has_non_focusable_field=*/true,
+      local_card);
+
+  EXPECT_TRUE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_TRUE(
+      autofill_client_.get_offer_to_save_credit_card_bubble_was_shown());
+  EXPECT_EQ(AutofillClient::CardSaveType::kCvcSaveOnly,
+            autofill_client_.get_save_credit_card_options().card_save_type);
+  EXPECT_TRUE(
+      autofill_client_.get_save_credit_card_options().has_non_focusable_field);
+  EXPECT_TRUE(
+      autofill_client_.get_save_credit_card_options().from_dynamic_change_form);
+}
+
+// Tests that when triggering AttemptToOfferCvcLocalSave function,
+// `from_dynamic_change_form` and `has_non_focusable_field` should match what we
+// passed in AttemptToOfferCvcLocalSave function.
+TEST_F(CreditCardSaveManagerTest,
+       AttemptToOfferCvcLocalSave_NonFocusableAndDynamicChangeIsFalse) {
+  CreditCard local_card = test::GetCreditCard();
+  credit_card_save_manager_->AttemptToOfferCvcLocalSave(
+      /*from_dynamic_change_form=*/false, /*has_non_focusable_field=*/false,
+      local_card);
+
+  EXPECT_TRUE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_TRUE(
+      autofill_client_.get_offer_to_save_credit_card_bubble_was_shown());
+  EXPECT_EQ(AutofillClient::CardSaveType::kCvcSaveOnly,
+            autofill_client_.get_save_credit_card_options().card_save_type);
+  EXPECT_FALSE(
+      autofill_client_.get_save_credit_card_options().has_non_focusable_field);
+  EXPECT_FALSE(
+      autofill_client_.get_save_credit_card_options().from_dynamic_change_form);
+}
+
+// Tests that when triggering AttemptToOfferCvcUploadSave function, SaveCard
+// dialog will be triggered with `kCvcSaveOnly` option.
+TEST_F(CreditCardSaveManagerTest,
+       AttemptToOfferCvcUploadSave_ShouldShowSaveCardWithCvcSaveOnly) {
+  CreditCard credit_card = test::WithCvc(test::GetMaskedServerCard());
+  credit_card_save_manager_->AttemptToOfferCvcUploadSave(
+      /*from_dynamic_change_form=*/true, /*has_non_focusable_field=*/true,
+      credit_card);
+
+  EXPECT_TRUE(autofill_client_.ConfirmSaveCardToCloudWasCalled());
+  EXPECT_EQ(AutofillClient::CardSaveType::kCvcSaveOnly,
+            autofill_client_.get_save_credit_card_options().card_save_type);
+  EXPECT_TRUE(
+      autofill_client_.get_save_credit_card_options().has_non_focusable_field);
+  EXPECT_TRUE(
+      autofill_client_.get_save_credit_card_options().from_dynamic_change_form);
+}
+
+// Tests that when triggering AttemptToOfferCvcUploadSave function,
+// `from_dynamic_change_form` and `has_non_focusable_field` should match what we
+// passed in AttemptToOfferCvcUploadSave function.
+TEST_F(CreditCardSaveManagerTest,
+       AttemptToOfferCvcUploadSave_NonFocusableAndDynamicChangeIsFalse) {
+  CreditCard credit_card = test::WithCvc(test::GetMaskedServerCard());
+  credit_card_save_manager_->AttemptToOfferCvcUploadSave(
+      /*from_dynamic_change_form=*/false, /*has_non_focusable_field=*/false,
+      credit_card);
+
+  EXPECT_TRUE(autofill_client_.ConfirmSaveCardToCloudWasCalled());
+  EXPECT_EQ(AutofillClient::CardSaveType::kCvcSaveOnly,
+            autofill_client_.get_save_credit_card_options().card_save_type);
+  EXPECT_FALSE(
+      autofill_client_.get_save_credit_card_options().has_non_focusable_field);
+  EXPECT_FALSE(
+      autofill_client_.get_save_credit_card_options().from_dynamic_change_form);
+}
+
+// Tests that when triggering AttemptToOfferCvcLocalSave function and user
+// accept, UpdateCreditCard function will be triggered.
+TEST_F(CreditCardSaveManagerTest,
+       AttemptToOfferCvcLocalSave_ShouldUpdateCreditCardWhenUserAccept) {
+  CreditCard local_card = test::GetCreditCard();
+  const std::u16string kCvc = u"123";
+  local_card.set_cvc(kCvc);
+  credit_card_save_manager_->AttemptToOfferCvcLocalSave(
+      /*from_dynamic_change_form=*/true, /*has_non_focusable_field=*/true,
+      local_card);
+
+  EXPECT_TRUE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_TRUE(
+      autofill_client_.get_offer_to_save_credit_card_bubble_was_shown());
+  EXPECT_CALL(personal_data(), UpdateLocalCvc(local_card.guid(), kCvc));
+  UserDidDecideCvcLocalSave(
+      AutofillClient::SaveCardOfferUserDecision::kAccepted);
+}
+
+// Tests that adding a CVC clears all strikes for that card.
+TEST_F(CreditCardSaveManagerTest,
+       AttemptToOfferCvcLocalSave_ClearStrikesOnAdd) {
+  CreditCard local_card = test::GetCreditCard();
+
+  // Add 2 strike for the card and advance the required delay time.
+  TestAutofillClock test_autofill_clock(AutofillClock::Now());
+  CvcStorageStrikeDatabase cvc_storage_strike_database =
+      CvcStorageStrikeDatabase(&strike_database());
+  cvc_storage_strike_database.AddStrikes(2, local_card.guid());
+  EXPECT_EQ(2, cvc_storage_strike_database.GetStrikes(local_card.guid()));
+  test_autofill_clock.Advance(
+      cvc_storage_strike_database.GetRequiredDelaySinceLastStrike().value());
+  autofill_client_.set_save_card_offer_user_decision(
+      AutofillClient::SaveCardOfferUserDecision::kAccepted);
+
+  credit_card_save_manager_->AttemptToOfferCvcLocalSave(
+      /*from_dynamic_change_form=*/true, /*has_non_focusable_field=*/true,
+      local_card);
+
+  // Verify that the CVC prompt is offered and reset the strike count for that
+  // CVC.
+  EXPECT_TRUE(
+      autofill_client_.get_offer_to_save_credit_card_bubble_was_shown());
+  EXPECT_EQ(0, cvc_storage_strike_database.GetStrikes(local_card.guid()));
+}
+
+// Tests that a CVC with max strikes does not offer save at all.
+TEST_F(CreditCardSaveManagerTest,
+       AttemptToOfferCvcLocalSave_NotOfferSaveWithMaxStrikes) {
+  CreditCard local_card = test::GetCreditCard();
+
+  // Add 3 strikes to reach StrikeDatabase limit.
+  CvcStorageStrikeDatabase cvc_storage_strike_database =
+      CvcStorageStrikeDatabase(&strike_database());
+  cvc_storage_strike_database.AddStrikes(3, local_card.guid());
+  EXPECT_EQ(3, cvc_storage_strike_database.GetStrikes(local_card.guid()));
+
+  credit_card_save_manager_->AttemptToOfferCvcLocalSave(
+      /*from_dynamic_change_form=*/true, /*has_non_focusable_field=*/true,
+      local_card);
+
+  // Verify that CVC prompt is not offered.
+  EXPECT_FALSE(
+      autofill_client_.get_offer_to_save_credit_card_bubble_was_shown());
+}
+
+// Tests that 1 strike will be added if user decline or ignore save CVC offer.
+TEST_F(CreditCardSaveManagerTest,
+       AttemptToOfferCvcLocalSave_AddStrikeIfDecline) {
+  CvcStorageStrikeDatabase cvc_storage_strike_database =
+      CvcStorageStrikeDatabase(&strike_database());
+  CreditCard local_card = test::GetCreditCard();
+  autofill_client_.set_save_card_offer_user_decision(
+      AutofillClient::SaveCardOfferUserDecision::kDeclined);
+
+  credit_card_save_manager_->AttemptToOfferCvcLocalSave(
+      /*from_dynamic_change_form=*/true, /*has_non_focusable_field=*/true,
+      local_card);
+
+  // Verify that user decline a offer will add a strike count for that CVC.
+  EXPECT_EQ(1, cvc_storage_strike_database.GetStrikes(local_card.guid()));
+}
+
+// Tests that when triggering AttemptToOfferCvcUploadSave function and user
+// accept, AddServerCvc function will be triggered with old empty CVC.
+TEST_F(
+    CreditCardSaveManagerTest,
+    AttemptToOfferCvcUploadSave_UserAccept_ShouldAddServerCvcWithOldEmptyCvc) {
+  CreditCard credit_card = test::GetMaskedServerCard();
+  personal_data().AddServerCreditCard(credit_card);
+  const std::u16string kCvc = u"555";
+  credit_card.set_cvc(kCvc);
+  credit_card_save_manager_->AttemptToOfferCvcUploadSave(
+      /*from_dynamic_change_form=*/true, /*has_non_focusable_field=*/true,
+      credit_card);
+
+  EXPECT_TRUE(autofill_client_.ConfirmSaveCardToCloudWasCalled());
+  EXPECT_CALL(personal_data(), AddServerCvc(credit_card.instrument_id(), kCvc));
+  UserHasAcceptedCvcUpload({});
+}
+
+// Tests that when triggering AttemptToOfferCvcUploadSave function and user
+// accept, UpdateServerCvc function will be triggered with different non-empty
+// CVC.
+TEST_F(
+    CreditCardSaveManagerTest,
+    AttemptToOfferCvcUploadSave_UserAccept_ShouldUpdateServerCvcWithDifferentCvc) {
+  CreditCard credit_card = test::WithCvc(test::GetMaskedServerCard(), u"123");
+  personal_data().AddServerCreditCard(credit_card);
+  const std::u16string kNewCvc = u"555";
+  credit_card.set_cvc(kNewCvc);
+  credit_card_save_manager_->AttemptToOfferCvcUploadSave(
+      /*from_dynamic_change_form=*/true, /*has_non_focusable_field=*/true,
+      credit_card);
+
+  EXPECT_TRUE(autofill_client_.ConfirmSaveCardToCloudWasCalled());
+  EXPECT_CALL(personal_data(),
+              UpdateServerCvc(credit_card.instrument_id(), kNewCvc));
+  UserHasAcceptedCvcUpload({});
+}
+#endif
 
 // Tests that |from_dynamic_change_form| is correctly sent to AutofillClient
 // when offering local save.
@@ -4847,7 +5068,7 @@ TEST_F(CreditCardSaveManagerTest, OnUserDidAcceptUpload_NotifiesPDM) {
   EXPECT_CALL(personal_data(), OnUserAcceptedUpstreamOffer);
 
   // Simulate that the user has accepted the upload from the prompt.
-  UserHasAcceptedUpload({});
+  UserHasAcceptedCardUpload({});
 }
 
 // Tests that if a card doesn't fall in any of the supported bin ranges, local
@@ -5171,8 +5392,7 @@ TEST_F(CreditCardSaveManagerTest,
   prefs::SetPaymentCvcStorage(autofill_client_.GetPrefs(), true);
 
   // Set up upload_request card.
-  CreditCard card = test::GetCreditCard();
-  card.set_cvc(u"111");
+  CreditCard card = test::WithCvc(test::GetCreditCard());
   credit_card_save_manager_->set_upload_request_card(card);
 
   // Set up upload card response without instrument_id and upload.

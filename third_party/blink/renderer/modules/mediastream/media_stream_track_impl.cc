@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_long_range.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_capabilities.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_constraints.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_frame_stats.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_settings.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_point_2d.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -259,14 +258,6 @@ MediaStreamTrackImpl::MediaStreamTrackImpl(
   DCHECK(component_);
   component_->AddSourceObserver(this);
 
-  // Set discarded/dropped frames baselines to the snapshot at construction.
-  if (component_->GetSourceType() == MediaStreamSource::kTypeVideo) {
-    MediaStreamVideoSource* source =
-        MediaStreamVideoSource::GetVideoSource(component_->Source());
-    video_source_discarded_frames_baseline_ = source->discarded_frames();
-    video_source_dropped_frames_baseline_ = source->dropped_frames();
-  }
-
   // If the source is already non-live at this point, the observer won't have
   // been called. Update the muted state manually.
   muted_ = ready_state_ == MediaStreamSource::kReadyStateMuted;
@@ -331,27 +322,6 @@ void MediaStreamTrackImpl::setEnabled(bool enabled) {
   }
 
   component_->SetEnabled(enabled);
-
-  if (component_->GetSourceType() == MediaStreamSource::kTypeVideo) {
-    MediaStreamVideoSource* video_source =
-        MediaStreamVideoSource::GetVideoSource(component_->Source());
-    CHECK(video_source);
-    if (!enabled) {
-      // Upon disabling, take a snapshot of the current frame counters. This
-      // ensures frames does not increment while we are disabled.
-      discarded_frames_at_last_disable_ =
-          video_source->discarded_frames() -
-          video_source_discarded_frames_baseline_;
-      dropped_frames_at_last_disable_ = video_source->dropped_frames() -
-                                        video_source_dropped_frames_baseline_;
-    } else {
-      // Upon enabling, refresh our baseline to exclude the disabled period.
-      video_source_discarded_frames_baseline_ =
-          video_source->discarded_frames() - discarded_frames_at_last_disable_;
-      video_source_dropped_frames_baseline_ =
-          video_source->dropped_frames() - dropped_frames_at_last_disable_;
-    }
-  }
 
   SendLogMessage(
       String::Format("%s({enabled=%s})", __func__, enabled ? "true" : "false"));
@@ -695,54 +665,26 @@ MediaTrackSettings* MediaStreamTrackImpl::getSettings() const {
   return settings;
 }
 
-ScriptPromise MediaStreamTrackImpl::getFrameStats(
-    ScriptState* script_state) const {
-  if (!script_state->ContextIsValid()) {
-    return ScriptPromise();
-  }
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
+MediaStreamTrackVideoStats* MediaStreamTrackImpl::stats(
+    ExceptionState& exception_state) {
   switch (component_->GetSourceType()) {
     case MediaStreamSource::kTypeAudio:
-      resolver->Reject(MakeGarbageCollected<DOMException>(
+      exception_state.ThrowDOMException(
           DOMExceptionCode::kNotSupportedError,
-          "MediaStreamTrack.getFrameStats() is not supported for audio "
-          "tracks."));
-      break;
+          "MediaStreamTrack.stats is not supported on audio tracks.");
+      return nullptr;
     case MediaStreamSource::kTypeVideo:
-      component_->GetPlatformTrack()->AsyncGetDeliverableVideoFramesCount(
-          WTF::BindOnce(&MediaStreamTrackImpl::OnDeliverableVideoFramesCount,
-                        WrapPersistent(this), WrapPersistent(resolver)));
-      break;
+      if (!video_stats_) {
+        video_stats_ = MakeGarbageCollected<MediaStreamTrackVideoStats>(this);
+      }
+      return video_stats_;
   }
-  return promise;
 }
 
-void MediaStreamTrackImpl::OnDeliverableVideoFramesCount(
-    Persistent<ScriptPromiseResolver> resolver,
-    size_t deliverable_frames) const {
-  MediaStreamVideoSource* video_source =
-      MediaStreamVideoSource::GetVideoSource(component_->Source());
-  CHECK(video_source);
-
-  MediaTrackFrameStats* track_stats = MediaTrackFrameStats::Create();
-  track_stats->setDeliveredFrames(deliverable_frames);
-  size_t discarded_frames, dropped_frames;
-  if (enabled()) {
-    // The dropped/discarded counters are relative to our baseline.
-    discarded_frames = video_source->discarded_frames() -
-                       video_source_discarded_frames_baseline_;
-    dropped_frames =
-        video_source->dropped_frames() - video_source_dropped_frames_baseline_;
-  } else {
-    // The track is disabled, so we return the frozen disabled snapshots.
-    discarded_frames = discarded_frames_at_last_disable_;
-    dropped_frames = dropped_frames_at_last_disable_;
-  }
-  track_stats->setDiscardedFrames(discarded_frames);
-  track_stats->setTotalFrames(deliverable_frames + discarded_frames +
-                              dropped_frames);
-  resolver->Resolve(track_stats);
+MediaStreamTrackPlatform::VideoFrameStats
+MediaStreamTrackImpl::GetVideoFrameStats() const {
+  CHECK_EQ(component_->GetSourceType(), MediaStreamSource::kTypeVideo);
+  return component_->GetPlatformTrack()->GetVideoFrameStats();
 }
 
 CaptureHandle* MediaStreamTrackImpl::getCaptureHandle() const {
@@ -1066,6 +1008,7 @@ void MediaStreamTrackImpl::Trace(Visitor* visitor) const {
   visitor->Trace(image_capture_);
   visitor->Trace(execution_context_);
   visitor->Trace(observers_);
+  visitor->Trace(video_stats_);
   EventTarget::Trace(visitor);
   MediaStreamTrack::Trace(visitor);
 }

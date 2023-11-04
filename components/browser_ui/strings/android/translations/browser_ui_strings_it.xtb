@@ -100,6 +100,7 @@
 <translation id="2653659639078652383">Invia</translation>
 <translation id="2677748264148917807">Esci</translation>
 <translation id="2678468611080193228">Prova a consentire temporaneamente i cookie di terze parti, il che significa meno protezione, ma è più probabile che le funzionalità del sito funzionino.</translation>
+<translation id="2683434792633810741">Vuoi eliminare e reimpostare?</translation>
 <translation id="2687403674020088961">Blocca tutti i cookie (non consigliato)</translation>
 <translation id="2713106313042589954">Disattiva fotocamera</translation>
 <translation id="2717722538473713889">Indirizzi email</translation>
@@ -179,6 +180,7 @@
 <translation id="4008040567710660924">Consenti i cookie per un sito specifico.</translation>
 <translation id="4046123991198612571">Traccia successiva</translation>
 <translation id="4053720452172726777">Personalizza e controlla Google Chrome</translation>
+<translation id="4149890623864272035">Vuoi eliminare tutti i dati locali, compresi i cookie, e reimpostare tutte le autorizzazioni per questo sito web?</translation>
 <translation id="4149994727733219643">Visualizzazione semplificata delle pagine web</translation>
 <translation id="4151930093518524179">Zoom predefinito</translation>
 <translation id="4165986682804962316">Impostazioni sito</translation>
@@ -196,6 +198,7 @@
 <translation id="4412992751769744546">Consenti cookie di terze parti</translation>
 <translation id="4428065317363009941">Personalizzazione degli annunci</translation>
 <translation id="4434045419905280838">Popup e reindirizzamenti</translation>
+<translation id="443552056913301231">Questa azione eliminerà tutti i dati locali, compresi i cookie, e reimposterà tutte le autorizzazioni per <ph name="ORIGIN" /></translation>
 <translation id="4468959413250150279">Disattiva l'audio per un sito specifico.</translation>
 <translation id="4475912480633855319">{COOKIES,plural, =1{# cookie}other{# cookie}}</translation>
 <translation id="4478158430052450698">Semplifica la personalizzazione dello zoom per diversi siti</translation>
@@ -205,6 +208,7 @@
 <translation id="4566417217121906555">Disattiva microfono</translation>
 <translation id="4570913071927164677">Dettagli</translation>
 <translation id="4598549027014564149">In modalità di navigazione in incognito, i siti non possono utilizzare i cookie per conoscere la tua attività di navigazione sui siti, inclusi quelli correlati. La tua attività di navigazione non viene usata, ad esempio, per personalizzare gli annunci. Le funzionalità su alcuni siti potrebbero non essere disponibili.</translation>
+<translation id="4644713492825682049">Elimina e reimposta</translation>
 <translation id="4645575059429386691">Gestito da un genitore</translation>
 <translation id="4670064810192446073">Realtà virtuale</translation>
 <translation id="4751476147751820511">Sensori di movimento o della luce</translation>
@@ -235,6 +239,7 @@
 <translation id="5216942107514965959">Ultima visita: oggi</translation>
 <translation id="5225463052809312700">Attiva fotocamera</translation>
 <translation id="5234764350956374838">Ignora</translation>
+<translation id="5246825184569358663">Questa azione eliminerà tutti i dati locali, compresi i cookie, e reimposterà tutte le autorizzazioni per <ph name="DOMAIN" /> e per tutti i siti secondari</translation>
 <translation id="5264323282659631142">Rimuovi "<ph name="CHIP_LABEL" />"</translation>
 <translation id="528192093759286357">Trascina dall'alto e tocca il pulsante Indietro per uscire dalla modalità a schermo intero.</translation>
 <translation id="5300589172476337783">Mostra</translation>
@@ -278,11 +283,11 @@
 <translation id="5922853908706496913">Condivisione dello schermo</translation>
 <translation id="5922967540311291836">Blocca cookie di terze parti:</translation>
 <translation id="5939518447894949180">Reimposta</translation>
+<translation id="5964247741333118902">Contenuti incorporati</translation>
 <translation id="5968921426641056619">Inserisci l'indirizzo web</translation>
 <translation id="5975083100439434680">Diminuisci lo zoom</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Controlla l'accesso di questo sito al tuo dispositivo</translation>
-<translation id="6018815681665454784">Annullare e reimpostare?</translation>
 <translation id="6040143037577758943">Chiudi</translation>
 <translation id="6042308850641462728">Altro</translation>
 <translation id="6064125863973209585">Download completati</translation>
@@ -294,6 +299,7 @@
 <translation id="6192792657125177640">Eccezioni</translation>
 <translation id="6196640612572343990">Blocca cookie di terze parti</translation>
 <translation id="6205314730813004066">Privacy per gli annunci</translation>
+<translation id="6207207788774442484">Elimina dati e reimposta autorizzazioni</translation>
 <translation id="6216432067784365534">Opzioni <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6231752747840485235">Vuoi disinstallare "<ph name="APP_NAME" />"?</translation>
 <translation id="6262191102408817757">In base all'ultima scheda</translation>
@@ -302,13 +308,11 @@
 <translation id="6295158916970320988">Tutti i siti</translation>
 <translation id="6320088164292336938">Vibrazione</translation>
 <translation id="6367753977865761591">Blocca l'accesso di terze parti per un sito specifico.</translation>
-<translation id="6388207532828177975">Cancella e reimposta</translation>
 <translation id="6398765197997659313">Esci da schermo intero</translation>
 <translation id="640163077447496506">Scade oggi</translation>
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Impedisci ai siti di usare i dati e dispositivi della realtà virtuale</translation>
 <translation id="6447842834002726250">Cookie</translation>
-<translation id="6467852467360539617">Cancella i dati e reimposta le autorizzazioni</translation>
 <translation id="6500423977866688905">Quando la finestra è stretta, richiedi una visualizzazione mobile</translation>
 <translation id="6527303717912515753">Condividi</translation>
 <translation id="652937045869844725">Prova a consentire i cookie di terze parti, il che significa meno protezione, ma è più probabile che le funzionalità del sito funzionino.</translation>
@@ -381,11 +385,9 @@
 <translation id="7846076177841592234">Annulla selezione</translation>
 <translation id="7882806643839505685">Consenti l'audio per un sito specifico.</translation>
 <translation id="789180354981963912">Blocca cookie di terze parti nella modalità di navigazione in incognito:</translation>
-<translation id="7895868624847501462">Questa azione cancellerà tutti i dati locali, inclusi i cookie, e reimposterà tutte le autorizzazioni per <ph name="DOMAIN" /> e per tutti i siti secondari</translation>
 <translation id="7940722705963108451">Ricordami</translation>
 <translation id="7974024493641668069">{COUNT,plural, =1{<ph name="FPS_MEMBERS_COUNT" /> sito del gruppo di siti di <ph name="FPS_OWNER" /> può vedere le tue attività nel gruppo}other{<ph name="FPS_MEMBERS_COUNT" /> siti del gruppo di siti di <ph name="FPS_OWNER" /> possono vedere le tue attività nel gruppo}}</translation>
 <translation id="7986741934819883144">Seleziona un contatto</translation>
-<translation id="7999064672810608036">Vuoi cancellare tutti i dati locali, inclusi i cookie, e reimpostare tutte le autorizzazioni relative al sito web?</translation>
 <translation id="8007176423574883786">Disattivata per questo dispositivo</translation>
 <translation id="802154636333426148">Download non riuscito</translation>
 <translation id="8042586301629853791">Ordina per:</translation>
@@ -409,7 +411,6 @@
 <translation id="8284326494547611709">Sottotitoli</translation>
 <translation id="8300705686683892304">Gestiti dall'app</translation>
 <translation id="8324158725704657629">Non chiedermelo più</translation>
-<translation id="8338445138528827481">Questa azione cancellerà tutti i dati locali, compresi i cookie, e reimposterà tutte le autorizzazioni per <ph name="ORIGIN" /></translation>
 <translation id="8362795839483915693">Puoi aumentare o diminuire lo zoom sui siti che visiti</translation>
 <translation id="8372893542064058268">Consenti la sincronizzazione in background per un sito specifico.</translation>
 <translation id="8376384591331888629">Inclusi i cookie di terze parti su questo sito</translation>

@@ -11,12 +11,15 @@
 #include "base/strings/string_piece_forward.h"
 #include "content/browser/interest_group/subresource_url_authorizations.h"
 #include "content/common/content_export.h"
+#include "content/services/auction_worklet/public/mojom/auction_network_events_handler.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/base/isolation_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/client_security_state.mojom.h"
+#include "services/network/public/mojom/devtools_observer.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -31,7 +34,8 @@ namespace content {
 // Proxy URLLoaderFactoryFactory, to limit the requests that an auction worklet
 // can make.
 class CONTENT_EXPORT AuctionURLLoaderFactoryProxy
-    : public network::mojom::URLLoaderFactory {
+    : public network::mojom::URLLoaderFactory,
+      public auction_worklet::mojom::AuctionNetworkEventsHandler {
  public:
   using GetUrlLoaderFactoryCallback =
       base::RepeatingCallback<network::mojom::URLLoaderFactory*()>;
@@ -82,6 +86,8 @@ class CONTENT_EXPORT AuctionURLLoaderFactoryProxy
   // via an additional bid, so additional checks are needed.
   AuctionURLLoaderFactoryProxy(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> pending_receiver,
+      mojo::PendingReceiver<auction_worklet::mojom::AuctionNetworkEventsHandler>
+          auction_network_events_handler,
       GetUrlLoaderFactoryCallback get_frame_url_loader_factory,
       GetUrlLoaderFactoryCallback get_trusted_url_loader_factory,
       PreconnectSocketCallback preconnect_socket_callback,
@@ -94,7 +100,8 @@ class CONTENT_EXPORT AuctionURLLoaderFactoryProxy
       const GURL& script_url,
       const absl::optional<GURL>& wasm_url,
       const absl::optional<GURL>& trusted_signals_base_url,
-      bool needs_cors_for_additional_bid);
+      bool needs_cors_for_additional_bid,
+      int frame_tree_node_id);
   AuctionURLLoaderFactoryProxy(const AuctionURLLoaderFactoryProxy&) = delete;
   AuctionURLLoaderFactoryProxy& operator=(const AuctionURLLoaderFactoryProxy&) =
       delete;
@@ -116,6 +123,24 @@ class CONTENT_EXPORT AuctionURLLoaderFactoryProxy
   void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
       override;
 
+  // auction_worklet::mojom::AuctionNetworkEventsHandler implementation.
+  void Clone(
+      mojo::PendingReceiver<auction_worklet::mojom::AuctionNetworkEventsHandler>
+          receiver) override;
+
+  void OnNetworkSendRequest(const ::network::ResourceRequest& request,
+                            ::base::TimeTicks timestamp) override;
+
+  void OnNetworkResponseReceived(
+      const std::string& request_id,
+      const std::string& loader_id,
+      const ::GURL& request_url,
+      ::network::mojom::URLResponseHeadPtr headers) override;
+
+  void OnNetworkRequestComplete(
+      const std::string& request_id,
+      const ::network::URLLoaderCompletionStatus& status) override;
+
  private:
   // Returns `url` could be a valid trusted signals URL. In particular,
   // 1) It needs to start with
@@ -124,7 +149,13 @@ class CONTENT_EXPORT AuctionURLLoaderFactoryProxy
   //     form: &, #, =.
   bool CouldBeTrustedSignalsUrl(const GURL& url) const;
 
+  mojo::PendingRemote<network::mojom::DevToolsObserver>
+  CreateDevtoolsObserver();
+
   mojo::Receiver<network::mojom::URLLoaderFactory> receiver_;
+
+  mojo::ReceiverSet<auction_worklet::mojom::AuctionNetworkEventsHandler>
+      auction_network_events_handlers_;
 
   const GetUrlLoaderFactoryCallback get_frame_url_loader_factory_;
   const GetUrlLoaderFactoryCallback get_trusted_url_loader_factory_;
@@ -144,6 +175,7 @@ class CONTENT_EXPORT AuctionURLLoaderFactoryProxy
   // bidders.
   const net::IsolationInfo isolation_info_;
 
+  const int owner_frame_tree_node_id_;
   const GURL script_url_;
   const absl::optional<GURL> wasm_url_;
   const absl::optional<GURL> trusted_signals_base_url_;

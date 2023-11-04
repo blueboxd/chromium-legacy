@@ -9,10 +9,12 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "new_tab_button.h"
 #include "tab_search_button.h"
 #include "tab_strip_control_button.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -23,16 +25,20 @@ namespace {
 constexpr int kCRTabSearchCornerRadius = 10;
 }
 
-TabSearchButton::TabSearchButton(TabStrip* tab_strip)
+TabSearchButton::TabSearchButton(TabStrip* tab_strip, Edge flat_edge)
     : TabStripControlButton(tab_strip,
                             PressedCallback(),
                             features::IsChromeRefresh2023()
                                 ? vector_icons::kExpandMoreIcon
-                                : vector_icons::kCaretDownIcon),
+                                : vector_icons::kCaretDownIcon,
+                            flat_edge),
       tab_search_bubble_host_(std::make_unique<TabSearchBubbleHost>(
           this,
           tab_strip->controller()->GetProfile())) {
   SetProperty(views::kElementIdentifierKey, kTabSearchButtonElementId);
+
+  SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_TAB_SEARCH));
+  SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_TAB_SEARCH));
 
   UpdateForegroundFrameActiveColorId(kColorNewTabButtonForegroundFrameActive);
   UpdateForegroundFrameInactiveColorId(
@@ -43,11 +49,6 @@ TabSearchButton::TabSearchButton(TabStrip* tab_strip)
     UpdateBackgroundFrameInactiveColorId(
         kColorNewTabButtonCRBackgroundFrameInactive);
   }
-
-  const bool paint_transparent_for_custom_image_theme =
-      features::IsChromeRefresh2023() ? false : true;
-  SetPaintTransparentForCustomImageTheme(
-      paint_transparent_for_custom_image_theme);
 
   UpdateColors();
 }

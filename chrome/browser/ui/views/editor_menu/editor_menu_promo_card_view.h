@@ -10,9 +10,11 @@
 #include "base/scoped_observation.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/widget/unique_widget_ptr.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace views {
+class Label;
 class MdTextButton;
 }
 
@@ -47,6 +49,7 @@ class EditorMenuPromoCardView : public views::View,
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   void UpdateBounds(const gfx::Rect& anchor_view_bounds);
 
@@ -56,14 +59,17 @@ class EditorMenuPromoCardView : public views::View,
   void AddDescription(views::View* main_view);
   void AddButtonBar(views::View* main_view);
 
-  void OnDismissButtonPressed();
-  void OnTellMeMoreButtonPressed();
+  void CloseWidgetWithReason(views::Widget::ClosedReason closed_reason);
+
+  void ResetPreTargetHandler();
 
   std::unique_ptr<PreTargetHandler> pre_target_handler_;
 
   // `delegate_` outlives `this`.
   raw_ptr<EditorMenuViewDelegate> delegate_ = nullptr;
 
+  raw_ptr<views::Label> title_ = nullptr;
+  raw_ptr<views::Label> description_ = nullptr;
   raw_ptr<views::MdTextButton> dismiss_button_ = nullptr;
   raw_ptr<views::MdTextButton> tell_me_more_button_ = nullptr;
 

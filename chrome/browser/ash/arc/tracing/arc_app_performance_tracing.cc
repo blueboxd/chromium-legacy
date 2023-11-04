@@ -83,6 +83,7 @@ class AppToCategoryMapper {
     Add("niajncocfieigpbiamllekeadpgbhkke", "GarenaFreeFire");
     Add("icloenboalgjkknjdficgpgpcedmmojn", "Netflix");
     Add("nlhkolcnehphdkaljhgcbkmahloeacoj", "PUBGMobile");
+    Add("gihmggjjlnjaldngedmnegjmhccccahg", "MinecraftConsumerEdition");
   }
 
   static AppToCategoryMapper& GetInstance() {
@@ -441,7 +442,7 @@ void ArcAppPerformanceTracing::MaybeStartTracing() {
   const syncer::SyncUserSettings* sync_user_settings =
       sync_service->GetUserSettings();
 
-  const bool apps_sync_enabled = sync_service->CanSyncFeatureStart() &&
+  const bool apps_sync_enabled = sync_service->IsSyncFeatureEnabled() &&
                                  sync_user_settings->GetSelectedOsTypes().Has(
                                      syncer::UserSelectableOsType::kOsApps);
 

@@ -8,11 +8,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "media/base/media_switches.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/color/color_id.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/paint_vector_icon.h"
 
@@ -45,11 +47,27 @@ std::u16string ChromeMediaSessionClient::GetAlbumPlaceholder() const {
 }
 
 SkBitmap ChromeMediaSessionClient::GetThumbnailPlaceholder() const {
-  // TODO(crbug.com/1447545): This "dip_size" might be changed later on.
-  const gfx::ImageSkia incognito_icon = gfx::CreateVectorIcon(
-      kIncognitoWhiteCircleIcon, /*dip_size=*/48, /*color=*/ui::kColorIcon);
+  // Dip size of one side of the thumbnail placeholder including padding.
+  const int kThumbnailDipSize = 100;
+
+  const gfx::ImageSkia incognito_icon =
+      gfx::CreateVectorIcon(kIncognitoRefreshMenuIcon,
+                            /*dip_size=*/kThumbnailDipSize / 2, SK_ColorBLACK);
+  const gfx::ImageSkia incognito_icon_with_circle =
+      gfx::ImageSkiaOperations::CreateImageWithCircleBackground(
+          /*radius=*/kThumbnailDipSize / 3, SK_ColorWHITE, incognito_icon);
+
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(kThumbnailDipSize, kThumbnailDipSize);
+  bitmap.eraseColor(SK_ColorTRANSPARENT);
+  const gfx::ImageSkia background = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+
+  const gfx::ImageSkia thumbnail_with_padding =
+      gfx::ImageSkiaOperations::CreateSuperimposedImage(
+          background, incognito_icon_with_circle);
+
   const float dsf =
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
 
-  return incognito_icon.GetRepresentation(dsf).GetBitmap();
+  return thumbnail_with_padding.GetRepresentation(dsf).GetBitmap();
 }

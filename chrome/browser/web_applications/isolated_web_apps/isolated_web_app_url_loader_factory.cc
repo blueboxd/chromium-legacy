@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/overloaded.h"
+#include "base/location.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_reader_registry.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_reader_registry_factory.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_response_reader.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_update_manager.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/isolated_web_apps/pending_install_info.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -166,13 +168,9 @@ void LogErrorMessageToConsole(absl::optional<int> frame_tree_node_id,
 }
 
 base::expected<std::reference_wrapper<const WebApp>, std::string>
-FindIsolatedWebApp(Profile* profile, const IsolatedWebAppUrlInfo& url_info) {
-  // TODO(b/242738845): Defer navigation in IsolatedWebAppThrottle until
-  // WebAppProvider is ready to ensure we never fail these DCHECKs.
-  auto* web_app_provider = WebAppProvider::GetForWebApps(profile);
-  DCHECK(web_app_provider);
-  DCHECK(web_app_provider->is_registry_ready());
-  const WebAppRegistrar& registrar = web_app_provider->registrar_unsafe();
+FindIsolatedWebApp(WebAppProvider& provider,
+                   const IsolatedWebAppUrlInfo& url_info) {
+  const WebAppRegistrar& registrar = provider.registrar_unsafe();
   const WebApp* iwa = registrar.GetAppById(url_info.app_id());
 
   if (iwa == nullptr || !iwa->is_locally_installed()) {
@@ -349,77 +347,30 @@ void IsolatedWebAppURLLoaderFactory::CreateLoaderAndStart(
   DCHECK(resource_request.url.SchemeIs(chrome::kIsolatedAppScheme));
   DCHECK(resource_request.url.IsStandard());
 
+  auto* provider = WebAppProvider::GetForWebApps(profile_);
+  if (!provider) {
+    LogErrorAndFail("Web Apps are not available for this profile.",
+                    std::move(loader_client));
+    return;
+  }
+  if (!provider->on_registry_ready().is_signaled()) {
+    provider->on_registry_ready().Post(
+        FROM_HERE,
+        base::BindOnce(&IsolatedWebAppURLLoaderFactory::CreateLoaderAndStart,
+                       weak_factory_.GetWeakPtr(),
+
+                       std::move(loader_receiver), request_id, options,
+                       resource_request, std::move(loader_client),
+                       traffic_annotation));
+    return;
+  }
+
   ASSIGN_OR_RETURN(IsolatedWebAppUrlInfo url_info,
                    IsolatedWebAppUrlInfo::Create(resource_request.url),
                    [&](std::string error) {
                      LogErrorAndFail(std::move(error),
                                      std::move(loader_client));
                    });
-
-  auto handle_request =
-      [&](const IsolatedWebAppLocation& location, bool is_pending_install) {
-        if (!absl::holds_alternative<InstalledBundle>(location)) {
-          if (!IsIwaDevModeEnabled(&*profile_)) {
-            LogErrorAndFail(
-                base::StrCat({"Unable to load Isolated Web App that was "
-                              "installed in Developer Mode: ",
-                              kIwaDevModeNotEnabledMessage}),
-                std::move(loader_client));
-            return;
-          }
-        }
-
-        if (!IsSupportedHttpMethod(resource_request.method)) {
-          CompleteWithGeneratedHtmlResponse(
-              mojo::Remote<network::mojom::URLLoaderClient>(
-                  std::move(loader_client)),
-              net::HTTP_METHOD_NOT_ALLOWED, /*body=*/absl::nullopt);
-          return;
-        }
-
-        if (is_pending_install &&
-            resource_request.url.path() == kInstallPagePath) {
-          CompleteWithGeneratedHtmlResponse(
-              mojo::Remote<network::mojom::URLLoaderClient>(
-                  std::move(loader_client)),
-              net::HTTP_OK, kInstallPageContent);
-          return;
-        }
-
-        absl::visit(
-            base::Overloaded{
-                [&](const InstalledBundle& location) {
-                  DCHECK_EQ(
-                      url_info.web_bundle_id().type(),
-                      web_package::SignedWebBundleId::Type::kEd25519PublicKey);
-                  HandleSignedBundle(location.path, url_info.web_bundle_id(),
-                                     std::move(loader_receiver),
-                                     resource_request,
-                                     std::move(loader_client));
-                },
-                [&](const DevModeBundle& location) {
-                  DCHECK_EQ(
-                      url_info.web_bundle_id().type(),
-                      web_package::SignedWebBundleId::Type::kEd25519PublicKey);
-                  // A Signed Web Bundle installed in dev mode is treated just
-                  // like a properly installed Signed Web Bundle, with the only
-                  // difference being that we implicitly trust its public
-                  // key(s) when developer mode is enabled.
-                  HandleSignedBundle(location.path, url_info.web_bundle_id(),
-                                     std::move(loader_receiver),
-                                     resource_request,
-                                     std::move(loader_client));
-                },
-                [&](const DevModeProxy& location) {
-                  DCHECK_EQ(url_info.web_bundle_id().type(),
-                            web_package::SignedWebBundleId::Type::kDevelopment);
-                  HandleDevModeProxy(url_info, location,
-                                     std::move(loader_receiver),
-                                     resource_request, std::move(loader_client),
-                                     traffic_annotation);
-                }},
-            location);
-      };
 
   if (frame_tree_node_id_.has_value()) {
     auto* web_contents =
@@ -442,20 +393,104 @@ void IsolatedWebAppURLLoaderFactory::CreateLoaderAndStart(
             .location();
 
     if (pending_install_app_location.has_value()) {
-      handle_request(*pending_install_app_location,
-                     /*is_pending_install=*/true);
+      HandleRequest(url_info, *pending_install_app_location,
+                    /*is_pending_install=*/true, std::move(loader_receiver),
+                    resource_request, std::move(loader_client),
+                    traffic_annotation);
       return;
     }
   }
 
-  ASSIGN_OR_RETURN(const WebApp& iwa, FindIsolatedWebApp(profile_, url_info),
+  ASSIGN_OR_RETURN(const WebApp& iwa, FindIsolatedWebApp(*provider, url_info),
                    [&](std::string error) {
                      LogErrorAndFail(std::move(error),
                                      std::move(loader_client));
                    });
+  const IsolatedWebAppLocation& location = iwa.isolation_data()->location;
 
-  handle_request(iwa.isolation_data()->location,
-                 /*is_pending_install=*/false);
+// TODO(crbug.com/1444407): Make this work on all platform as soon as we support
+// updates (be it production or dev mode updates) on platforms other than
+// ChromeOS.
+#if BUILDFLAG(IS_CHROMEOS)
+  IsolatedWebAppUpdateManager& update_manager = provider->iwa_update_manager();
+  auto pass_key = base::PassKey<IsolatedWebAppURLLoaderFactory>();
+  if (update_manager.IsUpdateBeingApplied(pass_key, url_info.app_id())) {
+    update_manager.PrioritizeUpdateAndWait(
+        pass_key, url_info.app_id(),
+        base::BindOnce(&IsolatedWebAppURLLoaderFactory::HandleRequest,
+                       weak_factory_.GetWeakPtr(), url_info, location,
+                       /*is_pending_install=*/false, std::move(loader_receiver),
+                       resource_request, std::move(loader_client),
+                       traffic_annotation));
+    return;
+  }
+#endif
+
+  HandleRequest(url_info, location,
+                /*is_pending_install=*/false, std::move(loader_receiver),
+                resource_request, std::move(loader_client), traffic_annotation);
+}
+
+void IsolatedWebAppURLLoaderFactory::HandleRequest(
+    const IsolatedWebAppUrlInfo& url_info,
+    const IsolatedWebAppLocation& location,
+    bool is_pending_install,
+    mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
+    const network::ResourceRequest& resource_request,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> loader_client,
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+  if (!absl::holds_alternative<InstalledBundle>(location)) {
+    if (!IsIwaDevModeEnabled(&*profile_)) {
+      LogErrorAndFail(base::StrCat({"Unable to load Isolated Web App that was "
+                                    "installed in Developer Mode: ",
+                                    kIwaDevModeNotEnabledMessage}),
+                      std::move(loader_client));
+      return;
+    }
+  }
+
+  if (!IsSupportedHttpMethod(resource_request.method)) {
+    CompleteWithGeneratedHtmlResponse(
+        mojo::Remote<network::mojom::URLLoaderClient>(std::move(loader_client)),
+        net::HTTP_METHOD_NOT_ALLOWED, /*body=*/absl::nullopt);
+    return;
+  }
+
+  if (is_pending_install && resource_request.url.path() == kInstallPagePath) {
+    CompleteWithGeneratedHtmlResponse(
+        mojo::Remote<network::mojom::URLLoaderClient>(std::move(loader_client)),
+        net::HTTP_OK, kInstallPageContent);
+    return;
+  }
+
+  absl::visit(
+      base::Overloaded{
+          [&](const InstalledBundle& location) {
+            DCHECK_EQ(url_info.web_bundle_id().type(),
+                      web_package::SignedWebBundleId::Type::kEd25519PublicKey);
+            HandleSignedBundle(location.path, url_info.web_bundle_id(),
+                               std::move(loader_receiver), resource_request,
+                               std::move(loader_client));
+          },
+          [&](const DevModeBundle& location) {
+            DCHECK_EQ(url_info.web_bundle_id().type(),
+                      web_package::SignedWebBundleId::Type::kEd25519PublicKey);
+            // A Signed Web Bundle installed in dev mode is treated just
+            // like a properly installed Signed Web Bundle, with the only
+            // difference being that we implicitly trust its public
+            // key(s) when developer mode is enabled.
+            HandleSignedBundle(location.path, url_info.web_bundle_id(),
+                               std::move(loader_receiver), resource_request,
+                               std::move(loader_client));
+          },
+          [&](const DevModeProxy& location) {
+            DCHECK_EQ(url_info.web_bundle_id().type(),
+                      web_package::SignedWebBundleId::Type::kDevelopment);
+            HandleDevModeProxy(url_info, location, std::move(loader_receiver),
+                               resource_request, std::move(loader_client),
+                               traffic_annotation);
+          }},
+      location);
 }
 
 void IsolatedWebAppURLLoaderFactory::OnProfileWillBeDestroyed(

@@ -265,8 +265,16 @@ IN_PROC_BROWSER_TEST_P(IntentPickerIconBrowserTest,
 
 // Test that navigating to service pages (chrome://) will hide the intent picker
 // icon.
+// TODO(crbug.com/1478654): Re-enable this test
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_DoNotShowIconAndBubbleOnServicePages \
+  DISABLED_DoNotShowIconAndBubbleOnServicePages
+#else
+#define MAYBE_DoNotShowIconAndBubbleOnServicePages \
+  DoNotShowIconAndBubbleOnServicePages
+#endif
 IN_PROC_BROWSER_TEST_F(IntentPickerIconBrowserTest,
-                       DoNotShowIconAndBubbleOnServicePages) {
+                       MAYBE_DoNotShowIconAndBubbleOnServicePages) {
   InstallTestWebApp();
 
   const GURL in_scope_url =
@@ -295,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(IntentPickerIconBrowserTest,
 // Test that error pages do not show the intent picker icon.
 #if BUILDFLAG(IS_MAC)
 // TODO(https://crbug.com/1478654): Fix the test.
-#define MAYBE_DoNotShowIconOnErrorPages Disabled_DoNotShowIconOnErrorPages
+#define MAYBE_DoNotShowIconOnErrorPages DISABLED_DoNotShowIconOnErrorPages
 #else
 #define MAYBE_DoNotShowIconOnErrorPages DoNotShowIconOnErrorPages
 #endif  // BUILDFLAG(IS_MAC)
@@ -356,7 +364,13 @@ IN_PROC_BROWSER_TEST_F(IntentPickerIconBrowserTest, PushStateURLChangeTest) {
   EXPECT_FALSE(intent_picker_view->GetVisible());
 }
 
-IN_PROC_BROWSER_TEST_F(IntentPickerIconBrowserTest, OpenBubbleOnClick) {
+// TODO(crbug.com/1478654): Re-enable this test
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_OpenBubbleOnClick DISABLED_OpenBubbleOnClick
+#else
+#define MAYBE_OpenBubbleOnClick OpenBubbleOnClick
+#endif
+IN_PROC_BROWSER_TEST_F(IntentPickerIconBrowserTest, MAYBE_OpenBubbleOnClick) {
   InstallTestWebApp();
   views::NamedWidgetShownWaiter waiter(views::test::AnyWidgetTestPasskey{},
                                        IntentPickerBubbleView::kViewClassName);

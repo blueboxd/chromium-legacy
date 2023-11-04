@@ -231,9 +231,11 @@ SK_API void SkDebugf_FileLine(const char* file,
 
 #define SK_SUPPORT_LEGACY_CONIC_CHOP
 
+#define SK_RESOLVE_FILTERS_BEFORE_RESTORE
+
 #define SK_ENABLE_SKSL_IN_RASTER_PIPELINE
 
-#define SK_USE_LEGACY_BLUR_IMAGEFILTER
+#define SK_USE_SAFE_INSET_FOR_TEXTURE_SAMPLING
 
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 

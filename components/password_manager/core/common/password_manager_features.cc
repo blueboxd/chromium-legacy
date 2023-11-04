@@ -138,15 +138,26 @@ BASE_FEATURE(kUnifiedPasswordManagerAndroid,
              "UnifiedPasswordManagerAndroid_LAUNCHED",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables use of Google Mobile services for non-sycned password storage.
-BASE_FEATURE(kUnifiedPasswordManagerLocalPasswordsAndroid,
-             "UnifiedPasswordManagerLocalPasswordsAndroid",
+// Enables use of Google Mobile services for non-synced password storage.
+BASE_FEATURE(kUnifiedPasswordManagerLocalPasswordsAndroidWithMigration,
+             "kUnifiedPasswordManagerLocalPasswordsAndroidWithMigration",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables use of Google Mobile services for non-synced password storage that
+// contains no passwords, so no migration will be necessary.
+// UnifiedPasswordManagerLocalPasswordsAndroidWithMigration will replace this
+// feature once UPM starts to be rolled out to local users who have saved
+// passwords.
+BASE_FEATURE(kUnifiedPasswordManagerLocalPasswordsAndroidWithoutMigration,
+             "kUnifiedPasswordManagerLocalPasswordsAndroidWithoutMigration",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables showing the warning about UPM migrating local passwords.
+// The feature is limited to Canary/Dev/Beta by a check in
+// local_passwords_migration_warning_util::ShouldShowWarning.
 BASE_FEATURE(kUnifiedPasswordManagerLocalPasswordsMigrationWarning,
              "UnifiedPasswordManagerLocalPasswordsMigrationWarning",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, the built-in sync functionality in PasswordSyncBridge becomes
 // unused, meaning that SyncService/SyncEngine will no longer download or
@@ -155,13 +166,6 @@ BASE_FEATURE(kUnifiedPasswordManagerLocalPasswordsMigrationWarning,
 BASE_FEATURE(kUnifiedPasswordManagerSyncUsingAndroidBackendOnly,
              "UnifiedPasswordManagerSyncUsingAndroidBackendOnly",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables all UI branding changes related to Unified Password Manager:
-// the strings containing 'Password Manager' and the password manager
-// icon.
-BASE_FEATURE(kUnifiedPasswordManagerAndroidBranding,
-             "UnifiedPasswordManagerAndroidBranding",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kPasswordsInCredMan,
              "PasswordsInCredMan",
@@ -182,6 +186,12 @@ BASE_FEATURE(kUsernameFirstFlowFallbackCrowdsourcing,
 BASE_FEATURE(kUsernameFirstFlowHonorAutocomplete,
              "UsernameFirstFlowHonorAutocomplete",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables storing more possible username values in the LRU cache. Part of the
+// `kUsernameFirstFlowWithIntermediateValues` feature.
+BASE_FEATURE(kUsernameFirstFlowStoreSeveralValues,
+             "UsernameFirstFlowStoreSeveralValues",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables tolerating intermediate fields like OTP or CAPTCHA
 // between username and password fields in Username First Flow.
@@ -206,7 +216,7 @@ BASE_FEATURE(kPasswordManagerPasskeys,
 extern const base::FeatureParam<int>
     kLocalPasswordMigrationWarningPrefsVersion = {
         &kUnifiedPasswordManagerLocalPasswordsMigrationWarning,
-        "pwd_migration_warning_prefs_version", 0};
+        "pwd_migration_warning_prefs_version", 1};
 #endif
 
 // Field trial identifier for password generation requirements.
@@ -245,11 +255,6 @@ bool UsesUnifiedPasswordManagerUi() {
   }
   NOTREACHED() << "Define explicitly whether UI is required!";
   return false;
-}
-
-bool UsesUnifiedPasswordManagerBranding() {
-  return (UsesUnifiedPasswordManagerUi() ||
-          base::FeatureList::IsEnabled(kUnifiedPasswordManagerAndroidBranding));
 }
 
 bool RequiresMigrationForUnifiedPasswordManager() {

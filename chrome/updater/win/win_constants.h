@@ -144,19 +144,32 @@ extern const wchar_t kLegacyTaskNamePrefixUser[];
 // `InstallerResult` values defined by the Installer API.
 enum class InstallerResult {
   // The installer succeeded, unconditionally.
+  // - if a launch command was provided via the installer API, the command will
+  //   be launched and the updater UI will exit silently. Otherwise, the updater
+  //   will show an install success dialog.
   kSuccess = 0,
 
-  // The installer returned a specific error using the Installer API mechanism.
+  // All the error installer results below are treated the same.
+  // - if an installer error was not provided via the installer API or the exit
+  //   code, generic error `kErrorApplicationInstallerFailed` will be reported.
+  // - the installer extra code is used if reported via the installer API.
+  // - the text description of the error is used if reported via the installer
+  //   API.
+  // If an installer result is not explicitly reported by the installer, the
+  // installer API values are internally set based on whether the exit code from
+  // the installer process is a success or an error:
+  // - If the exit code is a success, the installer result is set to success. If
+  //   a launch command was provided via the installer API, the command will be
+  //   launched and the updater UI will exit silently. Otherwise, the updater
+  //   will show an install success dialog.
+  // - If the exit code is a failure, the installer result is set to
+  //   `kExitCode`, the installer error is set to
+  //   `kErrorApplicationInstallerFailed`, and the installer extra code is set
+  //   to the exit code.
+  // - If a text description is reported via the installer API, it will be used.
   kCustomError = 1,
-
-  // The MSI installer failed, with a system error.
   kMsiError = 2,
-
-  // The installer failed with a a system error.
   kSystemError = 3,
-
-  // The installer failed. The exit code of the installer process contains
-  // the error.
   kExitCode = 4,
 };
 

@@ -186,15 +186,12 @@ class TestDataSourceDelegate : public DataSourceDelegate {
   }
 };
 
-class PointerTest : public test::ExoTestBase,
-                    public testing::WithParamInterface<bool> {
+class PointerTest
+    : public test::ExoTestBase,
+      public testing::WithParamInterface<test::FrameSubmissionType> {
  public:
   PointerTest() {
-    if (GetParam()) {
-      feature_list_.InitAndEnableFeature(kExoReactiveFrameSubmission);
-    } else {
-      feature_list_.InitAndDisableFeature(kExoReactiveFrameSubmission);
-    }
+    test::SetFrameSubmissionFeatureFlags(&feature_list_, GetParam());
   }
 
   PointerTest(const PointerTest&) = delete;
@@ -277,12 +274,19 @@ class PointerConstraintTest : public PointerTest {
       focus_client_;
 };
 
-// Instantiate the values of disabling/enabling reactive frame submission in the
-// parameterized tests.
-INSTANTIATE_TEST_SUITE_P(All, PointerTest, testing::Values(false, true));
-INSTANTIATE_TEST_SUITE_P(All,
-                         PointerConstraintTest,
-                         testing::Values(false, true));
+// Instantiate the values of frame submission types in the parameterized tests.
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    PointerTest,
+    testing::Values(test::FrameSubmissionType::kNoReactive,
+                    test::FrameSubmissionType::kReactive_NoAutoNeedsBeginFrame,
+                    test::FrameSubmissionType::kReactive_AutoNeedsBeginFrame));
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    PointerConstraintTest,
+    testing::Values(test::FrameSubmissionType::kNoReactive,
+                    test::FrameSubmissionType::kReactive_NoAutoNeedsBeginFrame,
+                    test::FrameSubmissionType::kReactive_AutoNeedsBeginFrame));
 
 TEST_P(PointerTest, SetCursor) {
   auto shell_surface = test::ShellSurfaceBuilder({10, 10}).BuildShellSurface();
@@ -811,13 +815,13 @@ TEST_P(PointerTest, OnPointerScrollDiscrete) {
 TEST_P(PointerTest, RegisterPointerEventsOnModal) {
   // Create modal surface.
   auto shell_surface = test::ShellSurfaceBuilder({5, 5})
+                           .SetCentered()
                            .SetCanMinimize(false)
                            .SetUseSystemModalContainer()
                            .SetDisableMovement()
                            .BuildShellSurface();
   auto* surface = shell_surface->surface_for_testing();
 
-  ash::CenterWindow(shell_surface->GetWidget()->GetNativeWindow());
   // Make the window modal.
   shell_surface->SetSystemModal(true);
   EXPECT_TRUE(ash::Shell::IsSystemModalWindowOpen());
@@ -864,13 +868,13 @@ TEST_P(PointerTest, IgnorePointerEventsOnNonModalWhenModalIsOpen) {
 
   // Create surface for modal window.
   auto shell_surface2 = test::ShellSurfaceBuilder({5, 5})
+                            .SetCentered()
                             .SetCanMinimize(false)
                             .SetUseSystemModalContainer()
                             .SetDisableMovement()
                             .BuildShellSurface();
   auto* surface2 = shell_surface->surface_for_testing();
 
-  ash::CenterWindow(shell_surface2->GetWidget()->GetNativeWindow());
   // Make the window modal.
   shell_surface2->SetSystemModal(true);
   EXPECT_TRUE(ash::Shell::IsSystemModalWindowOpen());
@@ -923,13 +927,13 @@ TEST_P(PointerTest, IgnorePointerEventsOnNonModalWhenModalIsOpen) {
 TEST_P(PointerTest, IgnorePointerLeaveOnModal) {
   // Create modal surface.
   auto shell_surface = test::ShellSurfaceBuilder({5, 5})
+                           .SetCentered()
                            .SetCanMinimize(false)
                            .SetUseSystemModalContainer()
                            .SetDisableMovement()
                            .BuildShellSurface();
   auto* surface = shell_surface->surface_for_testing();
 
-  ash::CenterWindow(shell_surface->GetWidget()->GetNativeWindow());
   // Make the window modal.
   shell_surface->SetSystemModal(true);
   EXPECT_TRUE(ash::Shell::IsSystemModalWindowOpen());
@@ -968,13 +972,12 @@ TEST_P(PointerTest, RegisterPointerEventsOnNonModal) {
 
   // Create another surface for a non-modal window.
   auto shell_surface2 = test::ShellSurfaceBuilder({5, 5})
+                            .SetCentered()
                             .SetCanMinimize(false)
                             .SetUseSystemModalContainer()
                             .SetDisableMovement()
                             .BuildShellSurface();
   auto* surface2 = shell_surface2->surface_for_testing();
-
-  ash::CenterWindow(shell_surface2->GetWidget()->GetNativeWindow());
 
   MockPointerDelegate delegate;
   Seat seat;

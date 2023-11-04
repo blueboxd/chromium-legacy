@@ -10,6 +10,7 @@
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "chrome/browser/manta/manta_status.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/endpoint_fetcher/mock_endpoint_fetcher.h"
@@ -90,11 +91,11 @@ class SnapperProviderTest : public testing::Test {
                                net::Error error) {
     auto head = network::mojom::URLResponseHead::New();
     std::string headers(base::StringPrintf(
-        "HTTP/1.1 %d %s\nContent-type: application/json\n\n",
+        "HTTP/1.1 %d %s\nContent-type: application/x-protobuf\n\n",
         static_cast<int>(response_code), GetHttpReasonPhrase(response_code)));
     head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         net::HttpUtil::AssembleRawHeaders(headers));
-    head->mime_type = "application/json";
+    head->mime_type = "application/x-protobuf";
     network::URLLoaderCompletionStatus status(error);
     status.decoded_body_length = response_data.size();
     test_url_loader_factory_.AddResponse(request_url, std::move(head),
@@ -121,20 +122,34 @@ class SnapperProviderTest : public testing::Test {
 
 // Test POST data is correctly passed from SnapperProvider to EndpointFetcher.
 TEST_F(SnapperProviderTest, SimpleRequestPayload) {
-  std::string post_data = "{\"data\":\"simple post data\"}";
-  SetEndpointMockResponse(GURL{kMockEndpoint}, post_data, net::HTTP_OK,
+  manta::proto::Response response;
+  manta::proto::OutputData& output_data = *response.add_output_data();
+  manta::proto::Image& image = *output_data.mutable_image();
+  image.set_serialized_bytes("foo");
+  std::string response_data;
+  response.SerializeToString(&response_data);
+
+  SetEndpointMockResponse(GURL{kMockEndpoint}, response_data, net::HTTP_OK,
                           net::OK);
   std::unique_ptr<FakeSnapperProvider> snapper_provider =
       CreateSnapperProvider();
   auto quit_closure = task_environment_.QuitClosure();
 
   snapper_provider->Call(
-      post_data, base::BindLambdaForTesting(
-                     [&quit_closure,
-                      &post_data](std::unique_ptr<EndpointResponse> response) {
-                       EXPECT_EQ(response->response, post_data);
-                       quit_closure.Run();
-                     }));
+      manta::proto::Request(),
+      base::BindLambdaForTesting(
+          [&quit_closure](std::unique_ptr<manta::proto::Response> response,
+                          MantaStatus manta_status) {
+            ASSERT_EQ(manta_status.status_code, MantaStatusCode::kOk);
+            ASSERT_TRUE(response);
+            ASSERT_EQ(1, response->output_data_size());
+            ASSERT_TRUE(response->output_data(0).has_image());
+            ASSERT_TRUE(
+                response->output_data(0).image().has_serialized_bytes());
+            EXPECT_EQ("foo",
+                      response->output_data(0).image().serialized_bytes());
+            quit_closure.Run();
+          }));
   task_environment_.RunUntilQuit();
 }
 

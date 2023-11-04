@@ -106,6 +106,8 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
  public:
   void Trace(Visitor*) const override;
 
+  bool IsLayoutNGObject() const override;
+
   LayoutObject* FirstChild() const {
     NOT_DESTROYED();
     DCHECK_EQ(Children(), VirtualChildren());
@@ -171,6 +173,8 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
       const LayoutObject* parent) const override;
 
  public:
+  RecalcLayoutOverflowResult RecalcLayoutOverflow() override;
+
   void RecalcChildVisualOverflow();
   void RecalcVisualOverflow() override;
 
@@ -209,6 +213,11 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   // Returns baseline offset if we can get |SimpleFontData| from primary font.
   // Or returns no value if we can't get font data.
   absl::optional<LayoutUnit> BaselineForEmptyLine() const;
+
+  bool NodeAtPoint(HitTestResult&,
+                   const HitTestLocation&,
+                   const PhysicalOffset& accumulated_offset,
+                   HitTestPhase) override;
 
  protected:
   bool HitTestChildren(HitTestResult&,

@@ -65,6 +65,8 @@ absl::optional<ui::KeyboardDevice> GetPriorityExternalKeyboard() {
       case DeviceType::kDeviceExternalChromeOsKeyboard:
       case DeviceType::kDeviceExternalAppleKeyboard:
       case DeviceType::kDeviceExternalGenericKeyboard:
+      case ui::KeyboardCapability::DeviceType::
+          kDeviceExternalNullTopRowChromeOsKeyboard:
       case DeviceType::kDeviceExternalUnknown:
       case DeviceType::kDeviceHotrodRemote:
       case DeviceType::kDeviceVirtualCoreKeyboard:
@@ -98,6 +100,8 @@ absl::optional<ui::KeyboardDevice> GetInternalKeyboard() {
       case DeviceType::kDeviceExternalChromeOsKeyboard:
       case DeviceType::kDeviceExternalAppleKeyboard:
       case DeviceType::kDeviceExternalGenericKeyboard:
+      case ui::KeyboardCapability::DeviceType::
+          kDeviceExternalNullTopRowChromeOsKeyboard:
       case DeviceType::kDeviceExternalUnknown:
       case DeviceType::kDeviceHotrodRemote:
       case DeviceType::kDeviceVirtualCoreKeyboard:
@@ -161,10 +165,7 @@ bool MetaFKeyRewritesAreSuppressed(const ui::InputDevice& keyboard) {
   const auto* settings =
       Shell::Get()->input_device_settings_controller()->GetKeyboardSettings(
           keyboard.id);
-  if (!settings) {
-    return false;
-  }
-  return settings->suppress_meta_fkey_rewrites;
+  return settings && settings->suppress_meta_fkey_rewrites;
 }
 
 bool AreTopRowFKeys(const ui::InputDevice& keyboard) {
@@ -205,10 +206,14 @@ ui::mojom::SixPackShortcutModifier GetSixPackShortcutModifier(
     return ui::mojom::SixPackShortcutModifier::kSearch;
   }
   CHECK(ui::KeyboardCapability::IsSixPackKey(key_code));
+
   const auto* settings =
       Shell::Get()->input_device_settings_controller()->GetKeyboardSettings(
           device_id.value());
-  CHECK(settings);
+  if (!settings) {
+    return ui::mojom::SixPackShortcutModifier::kSearch;
+  }
+
   switch (key_code) {
     case ui::VKEY_DELETE:
       return settings->six_pack_key_remappings->del;

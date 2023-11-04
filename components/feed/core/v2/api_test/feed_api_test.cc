@@ -368,6 +368,8 @@ TestSingleWebFeedSurface::TestSingleWebFeedSurface(
           StreamType(StreamKind::kSingleWebFeed, web_feed_id, entry_point),
           stream,
           entry_point) {}
+TestSupervisedFeedSurface::TestSupervisedFeedSurface(FeedStream* stream)
+    : TestSurfaceBase(StreamType(StreamKind::kSupervisedUser), stream) {}
 
 TestReliabilityLoggingBridge::TestReliabilityLoggingBridge() = default;
 TestReliabilityLoggingBridge::~TestReliabilityLoggingBridge() = default;
@@ -987,9 +989,6 @@ AccountInfo FeedApiTest::GetAccountInfo() {
 bool FeedApiTest::IsSigninAllowed() {
   return is_signin_allowed_;
 }
-bool FeedApiTest::IsSyncOn() {
-  return is_sync_on_;
-}
 void FeedApiTest::RegisterFollowingFeedFollowCountFieldTrial(
     size_t follow_count) {
   register_following_feed_follow_count_field_trial_calls_.push_back(
@@ -1021,15 +1020,19 @@ void FeedApiTest::PrefetchImage(const GURL& url) {
   prefetch_image_call_count_++;
 }
 
-void FeedApiTest::CreateStream(bool wait_for_initialization,
-                               bool start_surface) {
+void FeedApiTest::CreateStream(
+    bool wait_for_initialization,
+    bool start_surface,
+    bool is_new_tab_search_engine_url_android_enabled) {
   ChromeInfo chrome_info;
   chrome_info.channel = version_info::Channel::STABLE;
   chrome_info.version = base::Version({99, 1, 9911, 2});
   chrome_info.start_surface = start_surface;
+  chrome_info.is_new_tab_search_engine_url_android_enabled =
+      is_new_tab_search_engine_url_android_enabled;
   stream_ = std::make_unique<FeedStream>(
       &refresh_scheduler_, metrics_reporter_.get(), this, &profile_prefs_,
-      &network_, image_fetcher_.get(), nullptr, store_.get(),
+      &network_, image_fetcher_.get(), store_.get(),
       persistent_key_value_store_.get(), template_url_service_.get(),
       chrome_info);
   stream_->SetWireResponseTranslatorForTesting(&response_translator_);

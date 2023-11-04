@@ -194,9 +194,9 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupViewViews* popup_view,
       suggestion_and_buttons
           ->SetLayoutManager(std::make_unique<views::FlexLayout>())
           ->SetOrientation(views::LayoutOrientation::kVertical);
+      suggestion_and_buttons->SetProperty(views::kMarginsKey,
+                                          gfx::Insets::VH(6, 0));
     }
-    suggestion_and_buttons->SetProperty(views::kMarginsKey,
-                                        gfx::Insets::VH(6, 0));
     suggestion_and_buttons->SetProperty(
         views::kFlexBehaviorKey,
         views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
@@ -204,11 +204,21 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupViewViews* popup_view,
 
     suggestion_view_ = suggestion_and_buttons->AddChildView(
         std::make_unique<OmniboxMatchCellView>(this));
-    suggestion_view_->SetProperty(
-        views::kFlexBehaviorKey,
-        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
-                                 views::MaximumFlexSizeRule::kUnbounded)
-            .WithWeight(4));
+    if (OmniboxFieldTrial::IsActionsUISimplificationEnabled()) {
+      // Allocate space for the suggestion text only after accounting
+      // for the space needed to render the inline action chip row.
+      suggestion_view_->SetProperty(
+          views::kFlexBehaviorKey,
+          views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                                   views::MaximumFlexSizeRule::kPreferred)
+              .WithOrder(2));
+    } else {
+      suggestion_view_->SetProperty(
+          views::kFlexBehaviorKey,
+          views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                                   views::MaximumFlexSizeRule::kUnbounded)
+              .WithWeight(4));
+    }
 
     remove_suggestion_button_ = right->AddChildView(
         std::make_unique<OmniboxRemoveSuggestionButton>(base::BindRepeating(
@@ -232,6 +242,18 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupViewViews* popup_view,
     button_row_ = suggestion_and_buttons->AddChildView(
         std::make_unique<OmniboxSuggestionButtonRowView>(popup_view_,
                                                          model_index));
+    if (OmniboxFieldTrial::IsActionsUISimplificationEnabled()) {
+      // If there's insufficient space for rendering both the suggestion text
+      // and the action chip row together, then allow the inline action chip row
+      // to disappear entirely.
+      // TODO(crbug/1479721): Finalize proper width shrinkage behavior once
+      //   we've received detailed UX guidance.
+      button_row_->SetProperty(
+          views::kFlexBehaviorKey,
+          views::FlexSpecification(
+              views::MinimumFlexSizeRule::kPreferredSnapToZero,
+              views::MaximumFlexSizeRule::kPreferred));
+    }
 
     mouse_enter_exit_handler_.ObserveMouseEnterExitOn(this);
 
@@ -388,7 +410,7 @@ void OmniboxResultView::ApplyThemeAndRefreshIcons(bool force_reapply_styles) {
   if (icon.IsEmpty())
     suggestion_view_->ClearIcon();
   else
-    suggestion_view_->SetIcon(*icon.ToImageSkia());
+    suggestion_view_->SetIcon(*icon.ToImageSkia(), match_);
 
   // We must reapply colors for all the text fields here. If we don't, we can
   // break theme changes for ZeroSuggest. See https://crbug.com/1095205.
@@ -635,6 +657,15 @@ gfx::Image OmniboxResultView::GetIcon() const {
     vector_icon_color_id = GetMatchSelected() ? kColorOmniboxResultsIconSelected
                                               : kColorOmniboxResultsIcon;
   }
+
+  if (OmniboxFieldTrial::IsActionsUISimplificationEnabled() &&
+      match_.type != AutocompleteMatchType::STARTER_PACK) {
+    // When `kOmniboxActionsUISimplification` is enabled, (non-starter pack)
+    // vector icons will need a distinctive foreground color in order to stand
+    // out against the blue square background they are painted upon.
+    vector_icon_color_id = kColorOmniboxAnswerIconGM3Foreground;
+  }
+
   return popup_view_->GetMatchIcon(
       match_, GetColorProvider()->GetColor(vector_icon_color_id));
 }

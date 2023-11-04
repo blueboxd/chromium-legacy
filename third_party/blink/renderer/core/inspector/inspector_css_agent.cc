@@ -331,6 +331,7 @@ class InspectorCSSAgent::ModifyRuleAction final
     kSetContainerRuleText,
     kSetSupportsRuleText,
     kSetKeyframeKey,
+    kSetPropertyName,
     kSetScopeRuleText,
   };
 
@@ -371,6 +372,9 @@ class InspectorCSSAgent::ModifyRuleAction final
       case kSetKeyframeKey:
         return style_sheet_->SetKeyframeKey(new_range_, old_text_, nullptr,
                                             nullptr, exception_state);
+      case kSetPropertyName:
+        return style_sheet_->SetPropertyName(new_range_, old_text_, nullptr,
+                                             nullptr, exception_state);
       case kSetScopeRuleText:
         return style_sheet_->SetScopeRuleText(new_range_, old_text_, nullptr,
                                               nullptr, exception_state);
@@ -406,6 +410,10 @@ class InspectorCSSAgent::ModifyRuleAction final
         css_rule_ = style_sheet_->SetKeyframeKey(
             old_range_, new_text_, &new_range_, &old_text_, exception_state);
         break;
+      case kSetPropertyName:
+        css_rule_ = style_sheet_->SetPropertyName(
+            old_range_, new_text_, &new_range_, &old_text_, exception_state);
+        break;
       case kSetScopeRuleText:
         css_rule_ = style_sheet_->SetScopeRuleText(
             old_range_, new_text_, &new_range_, &old_text_, exception_state);
@@ -432,6 +440,9 @@ class InspectorCSSAgent::ModifyRuleAction final
       return style_sheet_->BuildObjectForStyle(keyframe_rule->style());
     if (auto* try_rule = DynamicTo<CSSTryRule>(rule)) {
       return style_sheet_->BuildObjectForStyle(try_rule->style());
+    }
+    if (auto* property_rule = DynamicTo<CSSPropertyRule>(rule)) {
+      return style_sheet_->BuildObjectForStyle(property_rule->Style());
     }
     return nullptr;
   }
@@ -1352,8 +1363,7 @@ InspectorCSSAgent::FindKeyframesRuleFromUAViewTransitionStylesheet(
     StyleRuleKeyframes* keyframes_style_rule) {
   // This function should only be called for transition pseudo elements.
   CHECK(IsTransitionPseudoElement(element->GetPseudoId()));
-  auto* transition =
-      ViewTransitionUtils::GetActiveTransition(element->GetDocument());
+  auto* transition = ViewTransitionUtils::GetTransition(element->GetDocument());
 
   // There must be a transition and an active UAStyleSheet for the
   // transition when the queried element is a transition pseudo element.
@@ -1749,6 +1759,46 @@ protocol::Response InspectorCSSAgent::setRuleSelector(
           "Failed to get inspector style sheet for rule.");
     }
     *result = inspector_style_sheet->BuildObjectForSelectorList(rule);
+  }
+  return InspectorDOMAgent::ToResponse(exception_state);
+}
+
+protocol::Response InspectorCSSAgent::setPropertyRulePropertyName(
+    const String& in_styleSheetId,
+    std::unique_ptr<protocol::CSS::SourceRange> in_range,
+    const String& in_propertyName,
+    std::unique_ptr<protocol::CSS::Value>* out_propertyName) {
+  FrontendOperationScope scope;
+  InspectorStyleSheet* inspector_style_sheet = nullptr;
+  protocol::Response response =
+      AssertInspectorStyleSheetForId(in_styleSheetId, inspector_style_sheet);
+  if (!response.IsSuccess())
+    return response;
+  SourceRange name_range;
+  response = JsonRangeToSourceRange(inspector_style_sheet, in_range.get(),
+                                    &name_range);
+  if (!response.IsSuccess())
+    return response;
+  DummyExceptionStateForTesting exception_state;
+  ModifyRuleAction* action = MakeGarbageCollected<ModifyRuleAction>(
+      ModifyRuleAction::kSetPropertyName, inspector_style_sheet, name_range,
+      in_propertyName);
+  bool success = dom_agent_->History()->Perform(action, exception_state);
+  if (success) {
+    auto* rule = To<CSSPropertyRule>(action->TakeRule());
+    inspector_style_sheet = BindStyleSheet(rule->parentStyleSheet());
+    if (!inspector_style_sheet) {
+      return protocol::Response::ServerError(
+          "Failed to get inspector style sheet for rule.");
+    }
+    CSSRuleSourceData* source_data =
+        inspector_style_sheet->SourceDataForRule(rule);
+    *out_propertyName =
+        protocol::CSS::Value::create()
+            .setText(rule->name())
+            .setRange(inspector_style_sheet->BuildSourceRangeObject(
+                source_data->rule_header_range))
+            .build();
   }
   return InspectorDOMAgent::ToResponse(exception_state);
 }
@@ -3161,7 +3211,7 @@ void InspectorCSSAgent::SetCoverageEnabled(bool enabled) {
 }
 
 void InspectorCSSAgent::WillChangeStyleElement(Element* element) {
-  resource_container_->EraseStyleElementContent(DOMNodeIds::IdForNode(element));
+  resource_container_->EraseStyleElementContent(element->GetDomNodeId());
 }
 
 protocol::Response InspectorCSSAgent::startRuleUsageTracking() {

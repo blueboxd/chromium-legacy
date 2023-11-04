@@ -8,6 +8,8 @@
 #include <map>
 #include <string>
 
+#include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/functional/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/strcat.h"
@@ -15,6 +17,7 @@
 #include "base/types/id_type.h"
 #include "content/browser/fenced_frame/fenced_frame_reporter.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/fenced_frame/fenced_frame_utils.h"
 #include "third_party/blink/public/common/frame/fenced_frame_permissions_policies.h"
 #include "third_party/blink/public/common/interest_group/ad_display_size.h"
@@ -68,10 +71,20 @@ GURL SubstituteSizeIntoURL(const blink::AdDescriptor& ad_descriptor) {
   // Convert dimensions to pixels.
   gfx::Size size = AdSizeToGfxSize(ad_descriptor.size.value());
 
-  return GURL(SubstituteMappedStrings(
-      ad_descriptor.url.spec(),
-      {std::make_pair("{%AD_WIDTH%}", base::NumberToString(size.width())),
-       std::make_pair("{%AD_HEIGHT%}", base::NumberToString(size.height()))}));
+  std::string width = base::NumberToString(size.width());
+  std::string height = base::NumberToString(size.height());
+  std::vector<std::pair<std::string, std::string>> substitutions;
+
+  // Set up the width and height macros, in two formats.
+  substitutions.emplace_back("{%AD_WIDTH%}", width);
+  substitutions.emplace_back("{%AD_HEIGHT%}", height);
+  if (base::FeatureList::IsEnabled(
+          blink::features::kFencedFramesM119Features)) {
+    substitutions.emplace_back("${AD_WIDTH}", width);
+    substitutions.emplace_back("${AD_HEIGHT}", height);
+  }
+
+  return GURL(SubstituteMappedStrings(ad_descriptor.url.spec(), substitutions));
 }
 
 }  // namespace
@@ -406,12 +419,11 @@ FencedFrameURLMapping::Id FencedFrameURLMapping::GetNextId() {
 }
 
 bool FencedFrameURLMapping::IsMapped(const GURL& urn_uuid) const {
-  return urn_uuid_to_url_map_.find(urn_uuid) != urn_uuid_to_url_map_.end();
+  return base::Contains(urn_uuid_to_url_map_, urn_uuid);
 }
 
 bool FencedFrameURLMapping::IsPendingMapped(const GURL& urn_uuid) const {
-  return pending_urn_uuid_to_url_map_.find(urn_uuid) !=
-         pending_urn_uuid_to_url_map_.end();
+  return base::Contains(pending_urn_uuid_to_url_map_, urn_uuid);
 }
 
 bool FencedFrameURLMapping::IsFull() const {

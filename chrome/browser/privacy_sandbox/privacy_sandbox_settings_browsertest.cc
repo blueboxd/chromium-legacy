@@ -46,8 +46,8 @@ constexpr char kReportingURL[] = "/_report_event_server.html";
 // Used for event reporting to custom destination URLs.
 constexpr char kCustomReportingURL[] = "/_custom_report_event_server.html";
 
-constexpr char kPrivateAggregationSendHistogramReportHistogram[] =
-    "PrivacySandbox.PrivateAggregation.Host.SendHistogramReportResult";
+constexpr char kPrivateAggregationHostPipeResultHistogram[] =
+    "PrivacySandbox.PrivateAggregation.Host.PipeResult";
 
 }  // namespace
 
@@ -309,7 +309,7 @@ class PrivacySandboxSettingsEventReportingBrowserTest
 IN_PROC_BROWSER_TEST_F(PrivacySandboxSettingsEventReportingBrowserTest,
                        AutomaticBeaconDestinationEnrolled) {
   privacy_sandbox_settings()->SetAllPrivacySandboxAllowedForTesting();
-  EXPECT_TRUE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+  EXPECT_TRUE(privacy_sandbox_settings()->IsAttributionReportingEverAllowed());
 
   // In order to check events reported over the network, we register an HTTP
   // response interceptor for each reportEvent request we expect.
@@ -350,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(PrivacySandboxSettingsEventReportingBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrivacySandboxSettingsEventReportingBrowserTest,
                        AutomaticBeaconDestinationNotEnrolled) {
   privacy_sandbox_settings()->SetAllPrivacySandboxAllowedForTesting();
-  EXPECT_TRUE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+  EXPECT_TRUE(privacy_sandbox_settings()->IsAttributionReportingEverAllowed());
 
   // In order to check events reported over the network, we register an HTTP
   // response interceptor for each reportEvent request we expect.
@@ -393,7 +393,7 @@ IN_PROC_BROWSER_TEST_F(PrivacySandboxSettingsEventReportingBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrivacySandboxSettingsEventReportingBrowserTest,
                        ReportEventDestinationEnrolled) {
   privacy_sandbox_settings()->SetAllPrivacySandboxAllowedForTesting();
-  EXPECT_TRUE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+  EXPECT_TRUE(privacy_sandbox_settings()->IsAttributionReportingEverAllowed());
 
   // In order to check events reported over the network, we register an HTTP
   // response interceptor for each reportEvent request we expect.
@@ -430,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(PrivacySandboxSettingsEventReportingBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrivacySandboxSettingsEventReportingBrowserTest,
                        ReportEventCustomURLDestinationEnrolled) {
   privacy_sandbox_settings()->SetAllPrivacySandboxAllowedForTesting();
-  EXPECT_TRUE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+  EXPECT_TRUE(privacy_sandbox_settings()->IsAttributionReportingEverAllowed());
 
   // In order to check events reported over the network, we register an HTTP
   // response interceptor for each reportEvent request we expect.
@@ -463,7 +463,7 @@ IN_PROC_BROWSER_TEST_F(PrivacySandboxSettingsEventReportingBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrivacySandboxSettingsEventReportingBrowserTest,
                        ReportEventDestinationNotEnrolled) {
   privacy_sandbox_settings()->SetAllPrivacySandboxAllowedForTesting();
-  EXPECT_TRUE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+  EXPECT_TRUE(privacy_sandbox_settings()->IsAttributionReportingEverAllowed());
 
   // In order to check events reported over the network, we register an HTTP
   // response interceptor for each reportEvent request we expect.
@@ -503,7 +503,7 @@ IN_PROC_BROWSER_TEST_F(PrivacySandboxSettingsEventReportingBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrivacySandboxSettingsEventReportingBrowserTest,
                        ReportEventCustomURLDestinationNotEnrolled) {
   privacy_sandbox_settings()->SetAllPrivacySandboxAllowedForTesting();
-  EXPECT_TRUE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+  EXPECT_TRUE(privacy_sandbox_settings()->IsAttributionReportingEverAllowed());
 
   // In order to check events reported over the network, we register an HTTP
   // response interceptor for each reportEvent request we expect.
@@ -626,7 +626,7 @@ IN_PROC_BROWSER_TEST_F(
     PrivacySandboxSettingsAttestPrivateAggregationInProtectedAudienceBrowserTest,
     SameOrigin_Enrolled_Success) {
   privacy_sandbox_settings()->SetAllPrivacySandboxAllowedForTesting();
-  EXPECT_TRUE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+  EXPECT_TRUE(privacy_sandbox_settings()->IsAttributionReportingEverAllowed());
 
   SetAttestations({std::make_pair(
       "a.test", AttestedApiStatus::kProtectedAudienceAndPrivateAggregation)});
@@ -637,17 +637,17 @@ IN_PROC_BROWSER_TEST_F(
           /*fenced_frame_hostname=*/"a.test");
   ASSERT_NE(fenced_frame_node, nullptr);
 
-  WaitForHistogram(kPrivateAggregationSendHistogramReportHistogram, 2);
+  WaitForHistogram(kPrivateAggregationHostPipeResultHistogram, 2);
   histogram_tester_.ExpectUniqueSample(
-      kPrivateAggregationSendHistogramReportHistogram,
-      content::GetPrivateAggregationSendHistogramSuccessValue(), 2);
+      kPrivateAggregationHostPipeResultHistogram,
+      content::GetPrivateAggregationHostPipeReportSuccessValue(), 2);
 }
 
 IN_PROC_BROWSER_TEST_F(
     PrivacySandboxSettingsAttestPrivateAggregationInProtectedAudienceBrowserTest,
     SameOrigin_NotEnrolled_Failure) {
   privacy_sandbox_settings()->SetAllPrivacySandboxAllowedForTesting();
-  EXPECT_TRUE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+  EXPECT_TRUE(privacy_sandbox_settings()->IsAttributionReportingEverAllowed());
 
   SetAttestations(
       {std::make_pair("a.test", AttestedApiStatus::kProtectedAudience)});
@@ -658,17 +658,17 @@ IN_PROC_BROWSER_TEST_F(
           /*fenced_frame_hostname=*/"a.test");
   ASSERT_NE(fenced_frame_node, nullptr);
 
-  WaitForHistogram(kPrivateAggregationSendHistogramReportHistogram, 2);
+  WaitForHistogram(kPrivateAggregationHostPipeResultHistogram, 2);
   histogram_tester_.ExpectUniqueSample(
-      kPrivateAggregationSendHistogramReportHistogram,
-      content::GetPrivateAggregationSendHistogramApiDisabledValue(), 2);
+      kPrivateAggregationHostPipeResultHistogram,
+      content::GetPrivateAggregationHostPipeApiDisabledValue(), 2);
 }
 
 IN_PROC_BROWSER_TEST_F(
     PrivacySandboxSettingsAttestPrivateAggregationInProtectedAudienceBrowserTest,
     CrossOrigin_Enrolled_Success) {
   privacy_sandbox_settings()->SetAllPrivacySandboxAllowedForTesting();
-  EXPECT_TRUE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+  EXPECT_TRUE(privacy_sandbox_settings()->IsAttributionReportingEverAllowed());
 
   SetAttestations(
       {std::make_pair(
@@ -684,17 +684,17 @@ IN_PROC_BROWSER_TEST_F(
           /*fenced_frame_hostname=*/"b.test");
   ASSERT_NE(fenced_frame_node, nullptr);
 
-  WaitForHistogram(kPrivateAggregationSendHistogramReportHistogram, 2);
+  WaitForHistogram(kPrivateAggregationHostPipeResultHistogram, 2);
   histogram_tester_.ExpectUniqueSample(
-      kPrivateAggregationSendHistogramReportHistogram,
-      content::GetPrivateAggregationSendHistogramSuccessValue(), 2);
+      kPrivateAggregationHostPipeResultHistogram,
+      content::GetPrivateAggregationHostPipeReportSuccessValue(), 2);
 }
 
 IN_PROC_BROWSER_TEST_F(
     PrivacySandboxSettingsAttestPrivateAggregationInProtectedAudienceBrowserTest,
     CrossOrigin_NotEnrolled_Failure) {
   privacy_sandbox_settings()->SetAllPrivacySandboxAllowedForTesting();
-  EXPECT_TRUE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+  EXPECT_TRUE(privacy_sandbox_settings()->IsAttributionReportingEverAllowed());
 
   SetAttestations(
       {std::make_pair(
@@ -708,8 +708,8 @@ IN_PROC_BROWSER_TEST_F(
           /*fenced_frame_hostname=*/"b.test");
   ASSERT_NE(fenced_frame_node, nullptr);
 
-  WaitForHistogram(kPrivateAggregationSendHistogramReportHistogram, 2);
+  WaitForHistogram(kPrivateAggregationHostPipeResultHistogram, 2);
   histogram_tester_.ExpectUniqueSample(
-      kPrivateAggregationSendHistogramReportHistogram,
-      content::GetPrivateAggregationSendHistogramApiDisabledValue(), 2);
+      kPrivateAggregationHostPipeResultHistogram,
+      content::GetPrivateAggregationHostPipeApiDisabledValue(), 2);
 }

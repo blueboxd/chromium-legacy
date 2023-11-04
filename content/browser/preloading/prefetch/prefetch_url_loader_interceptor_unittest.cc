@@ -21,7 +21,6 @@
 #include "content/browser/preloading/prefetch/prefetch_params.h"
 #include "content/browser/preloading/prefetch/prefetch_probe_result.h"
 #include "content/browser/preloading/prefetch/prefetch_service.h"
-#include "content/browser/preloading/prefetch/prefetch_streaming_url_loader.h"
 #include "content/browser/preloading/prefetch/prefetch_test_utils.h"
 #include "content/browser/preloading/prefetch/prefetch_type.h"
 #include "content/browser/preloading/prefetch/prefetch_url_loader_helper.h"
@@ -999,8 +998,16 @@ TEST_F(PrefetchURLLoaderInterceptorTest, DISABLE_ASAN(ProbeFailure)) {
                        PreloadingTriggeringOutcome::kReady);
 }
 
-TEST_F(PrefetchURLLoaderInterceptorTest,
-       DISABLE_ASAN(PrefetchStreamingURLLoaderReleased)) {
+enum class NotServableReason {
+  kOnCompleteFailure,
+  kAnotherRequest,
+};
+
+class PrefetchURLLoaderInterceptorBecomeNotServableTest
+    : public PrefetchURLLoaderInterceptorTest,
+      public ::testing::WithParamInterface<NotServableReason> {};
+
+TEST_P(PrefetchURLLoaderInterceptorBecomeNotServableTest, DISABLE_ASAN(Basic)) {
   // It is possible for a prefetch to initially be marked as servable, but
   // becomes not servable at some point between PrefetchURLLoaderInterceptor
   // gets the prefetch and when it tries to serve it. This can happen when
@@ -1019,9 +1026,24 @@ TEST_F(PrefetchURLLoaderInterceptorTest,
           /*prefetch_document_manager=*/nullptr);
   prefetch_container->SimulateAttemptAtInterceptorForTest();
 
-  MakeServableStreamingURLLoaderForTest(prefetch_container.get(),
-                                        network::mojom::URLResponseHead::New(),
-                                        "test body");
+  auto pending_request =
+      MakeManuallyServableStreamingURLLoaderForTest(prefetch_container.get());
+
+  mojo::ScopedDataPipeProducerHandle producer_handle;
+  {
+    mojo::ScopedDataPipeConsumerHandle consumer_handle;
+    std::string content = "test body";
+    CHECK_EQ(
+        mojo::CreateDataPipe(content.size(), producer_handle, consumer_handle),
+        MOJO_RESULT_OK);
+    uint32_t bytes_written = content.size();
+    CHECK_EQ(MOJO_RESULT_OK,
+             producer_handle->WriteData(content.data(), &bytes_written,
+                                        MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
+    pending_request.client->OnReceiveResponse(
+        network::mojom::URLResponseHead::New(), std::move(consumer_handle),
+        absl::nullopt);
+  }
 
   // Simulate the cookie copy process starting, but not finishing until after
   // |MaybeCreateLoader| is called.
@@ -1055,7 +1077,22 @@ TEST_F(PrefetchURLLoaderInterceptorTest,
   task_environment()->FastForwardBy(base::Milliseconds(20));
 
   // Simulate the prefetch becoming not servable anymore.
-  prefetch_container->ResetAllStreamingURLLoaders();
+  PrefetchRequestHandler another_request;
+  switch (GetParam()) {
+    case NotServableReason::kOnCompleteFailure:
+      producer_handle.reset();
+      pending_request.client->OnComplete(
+          network::URLLoaderCompletionStatus(net::ERR_FAILED));
+      break;
+
+    case NotServableReason::kAnotherRequest:
+      // Another request is created for the same PrefetchContainer while
+      // prefetching is still ongoing.
+      another_request =
+          prefetch_container->CreateReader().CreateRequestHandler();
+      break;
+  }
+
   task_environment()->RunUntilIdle();
 
   reader.OnIsolatedCookieCopyComplete();
@@ -1064,14 +1101,33 @@ TEST_F(PrefetchURLLoaderInterceptorTest,
   EXPECT_TRUE(was_intercepted(kTestUrl).has_value());
   EXPECT_FALSE(was_intercepted(kTestUrl).value());
 
+  switch (GetParam()) {
+    case NotServableReason::kOnCompleteFailure:
+      ExpectCorrectUkmLogs(kTestUrl, /*is_accurate_trigger=*/true,
+                           PreloadingTriggeringOutcome::kReady);
+      break;
+
+    case NotServableReason::kAnotherRequest:
+      ExpectCorrectUkmLogs(kTestUrl, /*is_accurate_trigger=*/true,
+                           PreloadingTriggeringOutcome::kSuccess);
+      producer_handle.reset();
+      pending_request.client->OnComplete(
+          network::URLLoaderCompletionStatus(net::OK));
+      base::RunLoop().RunUntilIdle();
+      break;
+  }
+
   histogram_tester().ExpectUniqueTimeSample(
       "PrefetchProxy.AfterClick.Mainframe.CookieWaitTime",
       base::Milliseconds(20), 1);
 
   EXPECT_EQ(GetPrefetchService()->num_probes(), 0);
-  ExpectCorrectUkmLogs(kTestUrl, /*is_accurate_trigger=*/true,
-                       PreloadingTriggeringOutcome::kReady);
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         PrefetchURLLoaderInterceptorBecomeNotServableTest,
+                         testing::Values(NotServableReason::kOnCompleteFailure,
+                                         NotServableReason::kAnotherRequest));
 
 TEST_F(PrefetchURLLoaderInterceptorTest, DISABLE_ASAN(HandleRedirects)) {
   const GURL kTestUrl("https://example.com");

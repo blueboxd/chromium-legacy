@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ML_ML_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ML_ML_CONTEXT_H_
 
+#include "services/webnn/public/mojom/webnn_context_provider.mojom-blink.h"
 #include "services/webnn/public/mojom/webnn_graph.mojom-blink.h"
-#include "services/webnn/public/mojom/webnn_service.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_device_preference.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_model_format.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_power_preference.h"
@@ -63,15 +63,10 @@ class MODULES_EXPORT MLContext final : public ScriptWrappable {
                    const MLNamedArrayBufferViews& outputs,
                    ExceptionState& exception_state);
 
-  enum CreateWebNNGraphResult { kOk, kUnknownError, kNotSupported };
-  // Return `kNotSupported` with `mojo::NullRemote` if the input configuration
-  // of creating `WebNNContext` is not supported.
-  using CreateWebNNGraphCallback = base::OnceCallback<void(
-      CreateWebNNGraphResult result,
-      mojo::PendingRemote<webnn::mojom::blink::WebNNGraph>)>;
-  void CreateWebNNGraph(ScriptState* script_state,
-                        webnn::mojom::blink::GraphInfoPtr graph_info,
-                        CreateWebNNGraphCallback callback);
+  void CreateWebNNGraph(
+      ScriptState* script_state,
+      webnn::mojom::blink::GraphInfoPtr graph_info,
+      webnn::mojom::blink::WebNNContext::CreateGraphCallback callback);
 
  private:
   V8MLDevicePreference device_preference_;
@@ -87,10 +82,8 @@ class MODULES_EXPORT MLContext final : public ScriptWrappable {
   void OnCreateWebNNContext(
       ScriptState* script_state,
       webnn::mojom::blink::GraphInfoPtr graph_info,
-      CreateWebNNGraphCallback callback,
-      webnn::mojom::blink::CreateContextResult result,
-      mojo::PendingRemote<webnn::mojom::blink::WebNNContext>
-          pending_remote_context);
+      webnn::mojom::blink::WebNNContext::CreateGraphCallback callback,
+      webnn::mojom::blink::CreateContextResultPtr result);
   // WebNN support multiple types of neural network inference hardware
   // acceleration, the context of WebNN in server side is used to map different
   // device and represent a state of graph execution processes.

@@ -79,8 +79,7 @@ void FloatingAccessibilityController::Show(FloatingMenuPosition position) {
   menu_view_->SetBorder(views::CreateEmptyBorder(
       gfx::Insets::TLBR(kUnifiedTopShortcutSpacing, 0, 0, 0)));
   bubble_view_->AddChildView(menu_view_.get());
-  bubble_view_->SetFocusBehavior(
-      ActionableView::FocusBehavior::ACCESSIBLE_ONLY);
+  bubble_view_->SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
 
   bubble_widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
   bubble_view_->SetCanActivate(true);
@@ -163,6 +162,7 @@ void FloatingAccessibilityController::OnDetailedMenuEnabled(bool enabled) {
     Shell::Get()
         ->accessibility_controller()
         ->UpdateAutoclickMenuBoundsIfNeeded();
+    bubble_view_->GetFocusManager()->ClearFocus();
   }
 }
 
@@ -195,6 +195,9 @@ void FloatingAccessibilityController::BubbleViewDestroyed() {
 std::u16string FloatingAccessibilityController::GetAccessibleNameForBubble() {
   return l10n_util::GetStringUTF16(IDS_ASH_FLOATING_ACCESSIBILITY_MAIN_MENU);
 }
+
+void FloatingAccessibilityController::HideBubble(
+    const TrayBubbleView* bubble_view) {}
 
 void FloatingAccessibilityController::OnLocaleChanged() {
   // Layout update is needed when language changes between LTR and RTL, if the

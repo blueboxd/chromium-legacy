@@ -46,6 +46,8 @@ const char kEmbeddedSetupWindowsUrlSuffix[] = "embedded/setup/windows";
 // signs in to Chrome. Note that Gaia will pass this client specified parameter
 // to all URLs that are loaded as part of thi sign-in flow.
 const char kSigninChromeSyncDice[] = "signin/chrome/sync?ssp=1";
+// Opens the "Verify it's you" reauth gaia page.
+const char kAccountChooser[] = "AccountChooser";
 
 #if BUILDFLAG(IS_ANDROID)
 const char kSigninChromeSyncKeysRetrievalUrl[] = "encryption/unlock/android";
@@ -64,8 +66,6 @@ const char kSigninChromeSyncKeysRecoverabilityUrlSuffix[] =
 
 const char kServiceLogoutUrlSuffix[] = "Logout";
 const char kBlankPageSuffix[] = "chrome/blank.html";
-const char kMergeSessionUrlSuffix[] = "MergeSession";
-const char kOAuth1LoginUrlSuffix[] = "OAuthLogin";
 const char kOAuthMultiloginSuffix[] = "oauth/multilogin";
 const char kListAccountsSuffix[] = "ListAccounts?json=standard";
 const char kEmbeddedSigninSuffix[] = "embedded/setup/chrome/usermenu";
@@ -221,6 +221,10 @@ const GURL& GaiaUrls::signin_chrome_sync_dice() const {
   return signin_chrome_sync_dice_;
 }
 
+const GURL& GaiaUrls::reauth_chrome_dice() const {
+  return reauth_chrome_dice_;
+}
+
 const GURL& GaiaUrls::signin_chrome_sync_keys_retrieval_url() const {
   return signin_chrome_sync_keys_retrieval_url_;
 }
@@ -234,20 +238,12 @@ const GURL& GaiaUrls::service_logout_url() const {
   return service_logout_url_;
 }
 
-const GURL& GaiaUrls::merge_session_url() const {
-  return merge_session_url_;
-}
-
 const GURL& GaiaUrls::oauth_multilogin_url() const {
   return oauth_multilogin_url_;
 }
 
 const GURL& GaiaUrls::oauth_user_info_url() const {
   return oauth_user_info_url_;
-}
-
-const GURL& GaiaUrls::oauth1_login_url() const {
-  return oauth1_login_url_;
 }
 
 const GURL& GaiaUrls::embedded_signin_url() const {
@@ -386,6 +382,7 @@ void GaiaUrls::InitializeDefault() {
                       kEmbeddedReauthChromeOsUrlSuffix);
   ResolveURLIfInvalid(&signin_chrome_sync_dice_, gaia_url,
                       kSigninChromeSyncDice);
+  ResolveURLIfInvalid(&reauth_chrome_dice_, gaia_url, kAccountChooser);
   ResolveURLIfInvalid(&signin_chrome_sync_keys_retrieval_url_, gaia_url,
                       kSigninChromeSyncKeysRetrievalUrl);
   ResolveURLIfInvalid(
@@ -394,9 +391,7 @@ void GaiaUrls::InitializeDefault() {
                     kSigninChromeSyncKeysRecoverabilityUrlSuffix}));
   ResolveURLIfInvalid(&service_logout_url_, gaia_url, kServiceLogoutUrlSuffix);
   ResolveURLIfInvalid(&blank_page_url_, gaia_url, kBlankPageSuffix);
-  ResolveURLIfInvalid(&merge_session_url_, gaia_url, kMergeSessionUrlSuffix);
   ResolveURLIfInvalid(&oauth_multilogin_url_, gaia_url, kOAuthMultiloginSuffix);
-  ResolveURLIfInvalid(&oauth1_login_url_, gaia_url, kOAuth1LoginUrlSuffix);
   ResolveURLIfInvalid(&list_accounts_url_, gaia_url, kListAccountsSuffix);
   ResolveURLIfInvalid(&embedded_signin_url_, gaia_url, kEmbeddedSigninSuffix);
   ResolveURLIfInvalid(&add_account_url_, gaia_url, kAddAccountSuffix);
@@ -457,16 +452,15 @@ void GaiaUrls::InitializeFromConfig() {
   config->GetURLIfExists(URL_KEY_AND_PTR(embedded_setup_windows_url));
   config->GetURLIfExists(URL_KEY_AND_PTR(embedded_reauth_chromeos_url));
   config->GetURLIfExists(URL_KEY_AND_PTR(signin_chrome_sync_dice));
+  config->GetURLIfExists(URL_KEY_AND_PTR(reauth_chrome_dice));
   config->GetURLIfExists(
       URL_KEY_AND_PTR(signin_chrome_sync_keys_retrieval_url));
   config->GetURLIfExists(
       URL_KEY_AND_PTR(signin_chrome_sync_keys_recoverability_degraded_url));
   config->GetURLIfExists(URL_KEY_AND_PTR(service_logout_url));
   config->GetURLIfExists(URL_KEY_AND_PTR(blank_page_url));
-  config->GetURLIfExists(URL_KEY_AND_PTR(merge_session_url));
   config->GetURLIfExists(URL_KEY_AND_PTR(oauth_multilogin_url));
   config->GetURLIfExists(URL_KEY_AND_PTR(oauth_user_info_url));
-  config->GetURLIfExists(URL_KEY_AND_PTR(oauth1_login_url));
   config->GetURLIfExists(URL_KEY_AND_PTR(list_accounts_url));
   config->GetURLIfExists(URL_KEY_AND_PTR(embedded_signin_url));
   config->GetURLIfExists(URL_KEY_AND_PTR(add_account_url));

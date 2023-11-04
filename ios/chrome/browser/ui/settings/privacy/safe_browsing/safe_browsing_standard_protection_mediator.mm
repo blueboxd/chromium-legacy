@@ -13,6 +13,8 @@
 #import "components/safe_browsing/core/common/features.h"
 #import "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_backed_boolean.h"
+#import "ios/chrome/browser/shared/model/utils/observable_boolean.h"
 #import "ios/chrome/browser/shared/ui/list_model/list_model.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_info_button_item.h"
@@ -22,10 +24,8 @@
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/privacy/safe_browsing/safe_browsing_constants.h"
 #import "ios/chrome/browser/ui/settings/privacy/safe_browsing/safe_browsing_standard_protection_consumer.h"
-#import "ios/chrome/browser/ui/settings/utils/observable_boolean.h"
-#import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
-#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
 
@@ -282,11 +282,9 @@ const CGFloat kSymbolSize = 20;
   if (!status) {
     managedItem.iconTintColor = [UIColor colorNamed:kGrey300Color];
 
-    // This item is not controllable, then set the color opacity to 40%.
-    managedItem.textColor =
-        [[UIColor colorNamed:kTextPrimaryColor] colorWithAlphaComponent:0.4f];
-    managedItem.detailTextColor =
-        [[UIColor colorNamed:kTextSecondaryColor] colorWithAlphaComponent:0.4f];
+    // This item is not controllable; set to lighter colors.
+    managedItem.textColor = [UIColor colorNamed:kTextSecondaryColor];
+    managedItem.detailTextColor = [UIColor colorNamed:kTextTertiaryColor];
 
     managedItem.accessibilityHint = l10n_util::GetNSString(
         IDS_IOS_TOGGLE_SETTING_MANAGED_ACCESSIBILITY_HINT);

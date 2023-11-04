@@ -82,7 +82,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.CommitProblem" enum="CookieCommitProblem"
-    expires_after="2024-01-21">
+    expires_after="2024-03-24">
   <owner>morlovich@chromium.org</owner>
   <summary>
     Recorded when a problem occurs trying to commit changes to the cookie store
@@ -111,7 +111,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.CookiePrefix.CaseVariant" enum="CookiePrefix"
-    expires_after="2023-09-17">
+    expires_after="2024-03-17">
   <owner>bingler@chromium.org</owner>
   <owner>miketaylr@chromium.org</owner>
   <summary>
@@ -129,7 +129,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.CookiePrefix.CaseVariantCount" enum="Boolean"
-    expires_after="2023-09-17">
+    expires_after="2024-03-17">
   <owner>bingler@chromium.org</owner>
   <owner>miketaylr@chromium.org</owner>
   <summary>
@@ -144,7 +144,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.CookiePrefix.CaseVariantValid" enum="Boolean"
-    expires_after="2023-09-17">
+    expires_after="2024-03-17">
   <owner>bingler@chromium.org</owner>
   <owner>miketaylr@chromium.org</owner>
   <summary>
@@ -191,7 +191,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Cookie.Count2" units="units" expires_after="2024-01-14">
+<histogram name="Cookie.Count2" units="units" expires_after="2024-03-17">
   <owner>bingler@chromium.org</owner>
   <owner>morlovich@chromium.org</owner>
   <summary>
@@ -223,7 +223,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.CrossSiteRedirectDowngradeChangesInclusionAge"
-    units="minutes" expires_after="2024-01-21">
+    units="minutes" expires_after="2024-03-24">
   <owner>bingler@chromium.org</owner>
   <owner>miketaylr@chromium.org</owner>
   <summary>
@@ -254,7 +254,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.CrossSiteRedirectType.{AccessType}"
-    enum="ContextRedirectTypeBug1221316" expires_after="2023-11-15">
+    enum="ContextRedirectTypeBug1221316" expires_after="2024-03-24">
   <owner>bingler@chromium.org</owner>
   <owner>miketaylr@chromium.org</owner>
   <summary>
@@ -297,7 +297,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Cookie.DomainSet" enum="Boolean" expires_after="2024-01-21">
+<histogram name="Cookie.DomainSet" enum="Boolean" expires_after="2024-03-24">
   <owner>bingler@chromium.org</owner>
   <owner>miketaylr@chromium.org</owner>
   <summary>
@@ -321,7 +321,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.ErrorInitializeDB" enum="SqliteLoggedResultCode"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>wfh@chromium.org</owner>
   <owner>src/net/cookies/OWNERS</owner>
   <summary>
@@ -575,7 +575,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.HasNonASCII.{CookieField}" enum="Boolean"
-    expires_after="2023-10-01">
+    expires_after="2024-04-01">
   <owner>bingler@chromium.org</owner>
   <owner>miketaylr@chromium.org</owner>
   <summary>
@@ -623,7 +623,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.LoadProblem" enum="CookieLoadProblem"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>morlovich@chromium.org</owner>
   <summary>
     Recorded when a problem is recorded when loading the persistent cookie
@@ -674,6 +674,27 @@ chromium-metrics-reviews@google.com.
     Records the number of distinct keys (eTLD+1's) that have any stored cookies
     (which may or may not be expired). Recorded every 10 minutes of active
     browsing time.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.OnCookiesAccessed.BatchSize" units="accesses"
+    expires_after="2024-10-05">
+  <owner>olivierli@chromium.org</owner>
+  <owner>chrome-catan@chromium.org</owner>
+  <summary>
+    Records the number of cookie access details batches received in
+    RenderFrameHostImpl. Recorded every time accesses are reported from the
+    network service.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.OnCookiesAccessed.TotalAccesses" units="accesses"
+    expires_after="2024-10-05">
+  <owner>olivierli@chromium.org</owner>
+  <owner>chrome-catan@chromium.org</owner>
+  <summary>
+    Records the number of cookie access details received in RenderFrameHostImpl.
+    Recorded every time accesses are reported from the network service.
   </summary>
 </histogram>
 
@@ -893,7 +914,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.SameSiteAttributeValue" enum="CookieSameSiteString"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>bingler@chromium.org</owner>
   <owner>miketaylr@chromium.org</owner>
   <summary>
@@ -927,7 +948,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.TimeBlockedOnLoad" units="ms"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>nharper@chromium.org</owner>
   <summary>
     The amount of time (ms) between the cookie store load starting and
@@ -936,7 +957,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.TimeDatabaseMigrationToV18" units="ms"
-    expires_after="2023-10-22">
+    expires_after="2024-03-11">
   <owner>arichiv@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
   <summary>
@@ -945,7 +966,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Cookie.TimeInitializeDB" units="ms" expires_after="2024-01-14">
+<histogram name="Cookie.TimeDatabaseMigrationToV19" units="ms"
+    expires_after="2024-09-22">
+  <owner>arichiv@chromium.org</owner>
+  <owner>bingler@chromium.org</owner>
+  <summary>
+    The amount of time (ms) to migrate a v18 cookie database to v19. Migration
+    occurs upon first startup of a browser version with v18 database code.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.TimeInitializeDB" units="ms" expires_after="2024-03-17">
   <owner>bingler@chromium.org</owner>
   <owner>src/net/cookies/OWNERS</owner>
   <summary>The amount of time (ms) to initialize the cookies database.</summary>
@@ -971,13 +1002,13 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Cookie.Type" enum="CookieType" expires_after="2024-01-14">
+<histogram name="Cookie.Type" enum="CookieType" expires_after="2024-03-17">
   <owner>mkwst@chromium.org</owner>
   <summary>For each cookie added to the store, record it's type(s).</summary>
 </histogram>
 
 <histogram name="Cookie.WinGetLastErrorInitializeDB" enum="WinGetLastError"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>wfh@chromium.org</owner>
   <owner>src/net/cookies/OWNERS</owner>
   <summary>

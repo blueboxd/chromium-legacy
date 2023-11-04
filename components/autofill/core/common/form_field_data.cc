@@ -14,6 +14,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/types/cxx23_to_underlying.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -92,13 +93,18 @@ bool ReadAsInt(base::PickleIterator* iter, T* target_value) {
 
 bool DeserializeSection1(base::PickleIterator* iter,
                          FormFieldData* field_data) {
-  return iter->ReadString16(&field_data->label) &&
-         iter->ReadString16(&field_data->name) &&
-         iter->ReadString16(&field_data->value) &&
-         iter->ReadString(&field_data->form_control_type) &&
-         iter->ReadString(&field_data->autocomplete_attribute) &&
-         iter->ReadUInt64(&field_data->max_length) &&
-         iter->ReadBool(&field_data->is_autofilled);
+  std::string form_control_type;
+  bool success = iter->ReadString16(&field_data->label) &&
+                 iter->ReadString16(&field_data->name) &&
+                 iter->ReadString16(&field_data->value) &&
+                 iter->ReadString(&form_control_type) &&
+                 iter->ReadString(&field_data->autocomplete_attribute) &&
+                 iter->ReadUInt64(&field_data->max_length) &&
+                 iter->ReadBool(&field_data->is_autofilled);
+  if (success) {
+    field_data->form_control_type = StringToFormControlType(form_control_type);
+  }
+  return success;
 }
 
 bool DeserializeSection5(base::PickleIterator* iter,
@@ -178,62 +184,13 @@ bool DeserializeSection11(base::PickleIterator* iter,
   return iter->ReadString16(&field_data->name_attribute);
 }
 
-// LabelInfo is used to implement that "a.label == b.label" can be weakened to
-// "a.label == b.label OR a certain feature is enabled and {a,b}.label_source !=
-// kLabelTag and a.label_source == b.label_source".
-// Beware of the StringPiece member and resulting lifetime issues. Deleted copy
-// and move ctors/operators to reduce risk potential.
-struct LabelInfo {
-  explicit LabelInfo(const FormFieldData& f)
-      : label(f.label), source(f.label_source) {}
-  LabelInfo(const LabelInfo&) = delete;
-  LabelInfo& operator=(const LabelInfo&) = delete;
-  LabelInfo(LabelInfo&&) = default;
-  LabelInfo& operator=(LabelInfo&&) = default;
-
-  bool operator==(const LabelInfo& that) const {
-    if (label == that.label)
-      return true;
-
-    // Feature |kAutofillSkipComparingInferredLabels| weakens equivalence of
-    // labels: two labels are equivalent if they were inferred from the same
-    // type of tag other than a LABEL tag.
-    // TODO(crbug.com/1211834): The experiment seems dead; remove?
-    return base::FeatureList::IsEnabled(
-               features::kAutofillSkipComparingInferredLabels) &&
-           source != FormFieldData::LabelSource::kLabelTag &&
-           source == that.source;
-  }
-
-  bool operator<(const LabelInfo& that) const { return label < that.label; }
-
-  base::StringPiece16 label;
-  FormFieldData::LabelSource source = FormFieldData::LabelSource::kLabelTag;
-};
-
-// `CommonTuple()`, `SimilarityTuple()`, and `IdentityTuple()` return values
-// should be used as temporaries only because they include a `std::string_view`.
-
-auto CommonTuple(const FormFieldData& f) {
-  return std::tuple_cat(
-      std::make_tuple(LabelInfo(f)),
-      std::tie(f.name, f.name_attribute, f.id_attribute, f.form_control_type));
-}
-
-auto SimilarityTuple(const FormFieldData& f) {
-  return std::tuple_cat(CommonTuple(f),
-                        std::make_tuple(IsCheckable(f.check_status)));
-}
-
 auto IdentityTuple(const FormFieldData& f) {
-  // |unique_renderer_id| uniquely identifies the field, if and only if it is
-  // set; the other members compared below (excluding label_source) together
-  // uniquely identify the field as well.
   return std::tuple_cat(
-      SimilarityTuple(f),
-      std::tie(f.autocomplete_attribute, f.placeholder, f.max_length,
-               f.css_classes, f.is_focusable, f.should_autocomplete, f.role,
-               f.text_direction, f.options));
+      std::tie(f.label, f.name, f.name_attribute, f.id_attribute,
+               f.form_control_type, f.autocomplete_attribute, f.placeholder,
+               f.max_length, f.css_classes, f.is_focusable,
+               f.should_autocomplete, f.role, f.text_direction, f.options),
+      std::make_tuple(IsCheckable(f.check_status)));
 }
 
 }  // namespace
@@ -374,6 +331,10 @@ std::ostream& operator<<(std::ostream& os, const Section& section) {
   return os << section.ToString();
 }
 
+LogBuffer& operator<<(LogBuffer& buffer, FormControlType type) {
+  return buffer << FormControlTypeToString(type);
+}
+
 FormFieldData::FormFieldData() = default;
 
 FormFieldData::FormFieldData(const FormFieldData&) = default;
@@ -390,27 +351,26 @@ bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
   return IdentityTuple(*this) == IdentityTuple(field);
 }
 
-bool FormFieldData::SimilarFieldAs(const FormFieldData& field) const {
-  return SimilarityTuple(*this) == SimilarityTuple(field);
-}
-
 bool FormFieldData::IsTextInputElement() const {
-  return form_control_type == "text" || form_control_type == "password" ||
-         form_control_type == "search" || form_control_type == "tel" ||
-         form_control_type == "url" || form_control_type == "email" ||
-         form_control_type == "number";
+  return form_control_type == StringToFormControlType("text") ||
+         form_control_type == StringToFormControlType("password") ||
+         form_control_type == StringToFormControlType("search") ||
+         form_control_type == StringToFormControlType("tel") ||
+         form_control_type == StringToFormControlType("url") ||
+         form_control_type == StringToFormControlType("email") ||
+         form_control_type == StringToFormControlType("number");
 }
 
 bool FormFieldData::IsPasswordInputElement() const {
-  return form_control_type == "password";
+  return form_control_type == StringToFormControlType("password");
 }
 
 bool FormFieldData::IsSelectElement() const {
-  return form_control_type == "select-one";
+  return form_control_type == StringToFormControlType("select-one");
 }
 
 bool FormFieldData::IsSelectListElement() const {
-  return form_control_type == "selectlist";
+  return form_control_type == StringToFormControlType("selectlist");
 }
 
 bool FormFieldData::IsSelectOrSelectListElement() const {
@@ -429,10 +389,105 @@ bool FormFieldData::WasPasswordAutofilled() const {
   return properties_mask & kAutofilled;
 }
 
+std::u16string FormFieldData::GetSelection() const {
+  return std::u16string(GetSelectionAsStringView());
+}
+
+std::u16string_view FormFieldData::GetSelectionAsStringView() const {
+  size_t offset = std::min(static_cast<size_t>(selection_start), value.size());
+  size_t length = selection_end - selection_start;
+  return std::u16string_view(value).substr(offset, length);
+}
+
 // static
 bool FormFieldData::DeepEqual(const FormFieldData& a, const FormFieldData& b) {
   return a.unique_renderer_id == b.unique_renderer_id &&
          IdentityTuple(a) == IdentityTuple(b);
+}
+
+std::string_view FormControlTypeToString(FormControlType type) {
+  switch (type) {
+    case FormControlType::kInputCheckbox:
+      return "checkbox";
+    case FormControlType::kInputEmail:
+      return "email";
+    case FormControlType::kInputMonth:
+      return "month";
+    case FormControlType::kInputNumber:
+      return "number";
+    case FormControlType::kInputPassword:
+      return "password";
+    case FormControlType::kInputRadio:
+      return "radio";
+    case FormControlType::kInputSearch:
+      return "search";
+    case FormControlType::kInputTelephone:
+      return "tel";
+    case FormControlType::kInputText:
+      return "text";
+    case FormControlType::kInputUrl:
+      return "url";
+    case FormControlType::kSelectOne:
+      return "select-one";
+    case FormControlType::kSelectMultiple:
+      return "select-multiple";
+    case FormControlType::kSelectList:
+      return "selectlist";
+    case FormControlType::kTextArea:
+      return "textarea";
+    case FormControlType::kEmpty:
+      return "";
+  }
+  return "invalid";
+}
+
+FormControlType StringToFormControlType(std::string_view type) {
+  if (type == "checkbox") {
+    return FormControlType::kInputCheckbox;
+  }
+  if (type == "email") {
+    return FormControlType::kInputEmail;
+  }
+  if (type == "month") {
+    return FormControlType::kInputMonth;
+  }
+  if (type == "number") {
+    return FormControlType::kInputNumber;
+  }
+  if (type == "password") {
+    return FormControlType::kInputPassword;
+  }
+  if (type == "radio") {
+    return FormControlType::kInputRadio;
+  }
+  if (type == "search") {
+    return FormControlType::kInputSearch;
+  }
+  if (type == "tel") {
+    return FormControlType::kInputTelephone;
+  }
+  if (type == "text") {
+    return FormControlType::kInputText;
+  }
+  if (type == "url") {
+    return FormControlType::kInputUrl;
+  }
+  if (type == "select-one") {
+    return FormControlType::kSelectOne;
+  }
+  if (type == "select-multiple") {
+    return FormControlType::kSelectMultiple;
+  }
+  if (type == "selectlist") {
+    return FormControlType::kSelectList;
+  }
+  if (type == "textarea") {
+    return FormControlType::kTextArea;
+  }
+  if (type == "") {
+    return FormControlType::kEmpty;
+  }
+  return FormControlType::kEmpty;
 }
 
 void SerializeFormFieldData(const FormFieldData& field_data,
@@ -441,7 +496,7 @@ void SerializeFormFieldData(const FormFieldData& field_data,
   pickle->WriteString16(field_data.label);
   pickle->WriteString16(field_data.name);
   pickle->WriteString16(field_data.value);
-  pickle->WriteString(field_data.form_control_type);
+  pickle->WriteString(FormControlTypeToString(field_data.form_control_type));
   // We don't serialize the `parsed_autocomplete`. See http://crbug.com/1353392.
   pickle->WriteString(field_data.autocomplete_attribute);
   pickle->WriteUInt64(field_data.max_length);

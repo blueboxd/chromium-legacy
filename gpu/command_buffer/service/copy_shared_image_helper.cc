@@ -29,6 +29,7 @@
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
+#include "third_party/skia/include/gpu/GrTypes.h"
 #include "third_party/skia/include/gpu/GrYUVABackendTextures.h"
 #include "third_party/skia/include/gpu/ganesh/SkImageGanesh.h"
 #include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
@@ -227,7 +228,7 @@ void SubmitIfNecessary(std::vector<GrBackendSemaphore> signal_semaphores,
 
   if (need_submit) {
     CHECK(context->gr_context());
-    context->gr_context()->submit(sync_cpu);
+    context->gr_context()->submit(sync_cpu ? GrSyncCpu::kYes : GrSyncCpu::kNo);
   }
 
   if (context->graphite_context()) {
@@ -710,8 +711,6 @@ base::expected<void, GLError> CopySharedImageHelper::CopySharedImage(
                                  dest_shared_image->surface_origin());
     if (dest_format.is_single_plane()) {
       auto* canvas = dest_scoped_access->surface()->getCanvas();
-      SkPaint paint;
-      paint.setBlendMode(SkBlendMode::kSrc);
 
       // Reinterpret the source image as being in the destination color space,
       // to disable color conversion.
@@ -720,19 +719,14 @@ base::expected<void, GLError> CopySharedImageHelper::CopySharedImage(
         source_image_reinterpreted = source_image->reinterpretColorSpace(
             canvas->imageInfo().refColorSpace());
       }
-      // Flip via canvas as Graphite doesn't support bottom left origin images.
-      // TODO(crbug.com/1449764): Remove this once Graphite supports bottom left
-      // origin images and we remove bottom left destination surfaces.
-      const int save_count = canvas->save();
-      if (shared_context_state_->graphite_context() && unpack_flip_y) {
-        canvas->translate(0.0f, static_cast<float>(dest_rect.height()));
-        canvas->scale(1.0f, -1.0f);
-      }
+
+      SkPaint paint;
+      paint.setBlendMode(SkBlendMode::kSrc);
+
       canvas->drawImageRect(source_image_reinterpreted,
                             gfx::RectToSkRect(source_rect),
                             gfx::RectToSkRect(dest_rect), SkSamplingOptions(),
                             &paint, SkCanvas::kStrict_SrcRectConstraint);
-      canvas->restoreToCount(save_count);
     } else {
       // TODO(crbug.com/1450879): Make this path work for Graphite after Dawn
       // supports multiplanar rendering and we integrate it into Chrome.
@@ -842,7 +836,7 @@ base::expected<void, GLError> CopySharedImageHelper::CopySharedImageToGLTexture(
     canvas->clipRect(dest_rect);
     canvas->clear(SkColors::kBlack);
 
-    direct_context->flush(dest_surface);
+    direct_context->flush(dest_surface.get());
     SubmitIfNecessary({}, shared_context_state_, is_drdc_enabled_);
 
     // Note, that we still generate error for the client to indicate there was
@@ -873,7 +867,7 @@ base::expected<void, GLError> CopySharedImageHelper::CopySharedImageToGLTexture(
   }
   if (!source_scoped_access) {
     // We still need to flush surface for begin semaphores above.
-    direct_context->flush(dest_surface);
+    direct_context->flush(dest_surface.get());
     SubmitIfNecessary(std::move(end_semaphores), shared_context_state_,
                       is_drdc_enabled_);
 
@@ -906,7 +900,7 @@ base::expected<void, GLError> CopySharedImageHelper::CopySharedImageToGLTexture(
         SkSamplingOptions(), &paint, SkCanvas::kStrict_SrcRectConstraint);
   }
 
-  direct_context->flush(dest_surface);
+  direct_context->flush(dest_surface.get());
   source_scoped_access->ApplyBackendSurfaceEndState();
   SubmitIfNecessary(std::move(end_semaphores), shared_context_state_,
                     is_drdc_enabled_);

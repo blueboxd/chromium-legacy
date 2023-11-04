@@ -93,7 +93,6 @@ class FakePasswordStoreBackend : public PasswordStoreBackend {
   SmartBubbleStatsStore* GetSmartBubbleStatsStore() override;
   std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
   CreateSyncControllerDelegate() override;
-  void ClearAllLocalPasswords() override;
   void OnSyncServiceInitialized(syncer::SyncService* sync_service) override;
 
   // Returns the task runner. Defaults to
@@ -112,6 +111,9 @@ class FakePasswordStoreBackend : public PasswordStoreBackend {
   void DisableAutoSignInForOriginsInternal(
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter);
   PasswordStoreChangeList RemoveLoginInternal(const PasswordForm& form);
+  PasswordStoreChangeList RemoveLoginsCreatedBetweenInternal(
+      base::Time delete_begin,
+      base::Time delete_end);
 
   const IsAccountStore is_account_store_{false};
   const UpdateAlwaysSucceeds update_always_succeeds_{false};

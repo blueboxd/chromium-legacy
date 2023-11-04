@@ -25,8 +25,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #import "chrome/browser/ui/cocoa/touchbar/browser_window_touch_bar_controller.h"
-#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
-#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
+#include "chrome/browser/ui/fullscreen_util_mac.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/vector_icons.h"
@@ -301,10 +300,7 @@ class API_AVAILABLE(macos(10.12.2)) TouchBarNotificationBridge
   // When in tab or extension fullscreen, we should show a touch bar containing
   // only items associated with that mode. Since the toolbar is hidden, only
   // the option to exit fullscreen should show up.
-  FullscreenController* controller =
-      _browser->exclusive_access_manager()->fullscreen_controller();
-  if (controller->IsWindowFullscreenForTabOrPending() ||
-      controller->IsExtensionFullscreenOrPending()) {
+  if (fullscreen_utils::IsInContentFullscreen(_browser)) {
     return [self createTabFullscreenTouchBar];
   }
 

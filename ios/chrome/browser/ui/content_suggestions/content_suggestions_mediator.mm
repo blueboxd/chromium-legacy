@@ -38,8 +38,8 @@
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
-#import "ios/chrome/app/application_delegate/app_state_observer.h"
 #import "ios/chrome/browser/default_browser/utils.h"
+#import "ios/chrome/browser/intents/intents_donation_helper.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/set_up_list.h"
@@ -134,8 +134,7 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 
 }  // namespace
 
-@interface ContentSuggestionsMediator () <AppStateObserver,
-                                          AuthenticationServiceObserving,
+@interface ContentSuggestionsMediator () <AuthenticationServiceObserving,
                                           SyncObserverModelBridge,
                                           IdentityManagerObserverBridgeDelegate,
                                           MostVisitedSitesObserving,
@@ -245,6 +244,8 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   TabResumptionItem* _tabResumptionItem;
   // The latest module ranking returned from the SegmentationService.
   NSArray<NSNumber*>* _magicStackOrderFromSegmentation;
+  // YES if the module ranking has been received from the SegmentationService.
+  BOOL _magicStackOrderFromSegmentationReceived;
   // The latest Magic Stack module order sent up to the consumer. This includes
   // any omissions due to filtering from `_magicStackOrderFromSegmentation` (or
   // `magicStackOrder:` if kSegmentationPlatformIosModuleRanker is disabled) and
@@ -339,11 +340,7 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 
     SceneState* sceneState =
         SceneStateBrowserAgent::FromBrowser(browser)->GetSceneState();
-
     [sceneState addObserver:self];
-
-    [sceneState.appState addObserver:self];
-
     _browser = browser;
 
     if (IsSafetyCheckMagicStackEnabled() &&
@@ -364,19 +361,17 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
           prefs::kIosSafetyCheckManagerSafeBrowsingCheckResult,
           &_prefChangeRegistrar);
 
+      IOSChromeSafetyCheckManager* safetyCheckManager =
+          IOSChromeSafetyCheckManagerFactory::GetForBrowserState(
+              browser->GetBrowserState());
+
       _safetyCheckState = [self initialSafetyCheckState];
 
       _safetyCheckManagerObserver = std::make_unique<SafetyCheckObserverBridge>(
           self, IOSChromeSafetyCheckManagerFactory::GetForBrowserState(
                     browser->GetBrowserState()));
 
-      if (sceneState.appState.initStage > InitStageNormalUI &&
-          sceneState.appState.firstSceneHasInitializedUI &&
-          _safetyCheckState.runningState == RunningSafetyCheckState::kRunning) {
-        IOSChromeSafetyCheckManager* safetyCheckManager =
-            IOSChromeSafetyCheckManagerFactory::GetForBrowserState(
-                browser->GetBrowserState());
-
+      if (_safetyCheckState.runningState == RunningSafetyCheckState::kRunning) {
         safetyCheckManager->StartSafetyCheck();
       }
     }
@@ -407,7 +402,6 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   _setUpList = nil;
   SceneState* sceneState =
       SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
-  [sceneState.appState removeObserver:self];
   [sceneState removeObserver:self];
   _localState = nullptr;
 }
@@ -497,28 +491,8 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   MagicStackOrderChange change{MagicStackOrderChange::Type::kRemove};
   change.old_module = type;
   change.index = [self indexForMagicStackModule:type];
+  CHECK(change.index != NSNotFound);
   [self.consumer updateMagicStackOrder:change];
-}
-
-#pragma mark - AppStateObserver
-
-// Conditionally starts the Safety Check if the upcoming init stage is
-// `InitStageFinal` and the Safety Check state indicates it's running.
-//
-// NOTE: It's safe to call `StartSafetyCheck()` multiple times, because calling
-// `StartSafetyCheck()` on an already-running Safety Check is a no-op.
-- (void)appState:(AppState*)appState
-    willTransitionToInitStage:(InitStage)nextInitStage {
-  if (IsSafetyCheckMagicStackEnabled() &&
-      !safety_check_prefs::IsSafetyCheckInMagicStackDisabled(_localState) &&
-      nextInitStage == InitStageFinal && appState.firstSceneHasInitializedUI &&
-      _safetyCheckState.runningState == RunningSafetyCheckState::kRunning) {
-    IOSChromeSafetyCheckManager* safetyCheckManager =
-        IOSChromeSafetyCheckManagerFactory::GetForBrowserState(
-            _browser->GetBrowserState());
-
-    safetyCheckManager->StartSafetyCheck();
-  }
 }
 
 #pragma mark - IdentityManagerObserverBridgeDelegate
@@ -620,6 +594,7 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 - (void)openMostRecentTab {
   [self.NTPMetricsDelegate recentTabTileOpened];
   [self.contentSuggestionsMetricsRecorder recordMostRecentTabOpened];
+  [IntentDonationHelper donateIntent:DonatedIntentType::kOpenLatestTab];
   [self hideRecentTabTile];
   WebStateList* web_state_list = self.browser->GetWebStateList();
   web::WebState* web_state =
@@ -798,6 +773,9 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 
 #pragma mark - Private
 
+// Creates the initial `SafetyCheckState` based on the previous check states
+// stored in Prefs, or (for development builds) the overridden check states via
+// Experimental settings.
 - (SafetyCheckState*)initialSafetyCheckState {
   SafetyCheckState* state = [[SafetyCheckState alloc]
       initWithUpdateChromeState:UpdateChromeSafetyCheckState::kDefault
@@ -810,46 +788,59 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
           _browser->GetBrowserState());
 
   // Update Chrome check.
-  state.updateChromeState = safetyCheckManager->GetUpdateChromeCheckState();
-
   absl::optional<UpdateChromeSafetyCheckState> overrideUpdateChromeState =
       experimental_flags::GetUpdateChromeSafetyCheckState();
 
-  if (overrideUpdateChromeState.has_value()) {
-    state.updateChromeState = overrideUpdateChromeState.value();
-  }
+  state.updateChromeState = overrideUpdateChromeState.value_or(
+      safetyCheckManager->GetUpdateChromeCheckState());
 
   // Password check.
-  state.passwordState = safetyCheckManager->GetPasswordCheckState();
-
   absl::optional<PasswordSafetyCheckState> overridePasswordState =
       experimental_flags::GetPasswordSafetyCheckState();
 
-  if (overridePasswordState.has_value()) {
-    state.passwordState = overridePasswordState.value();
-  }
+  state.passwordState = overridePasswordState.value_or(
+      safetyCheckManager->GetPasswordCheckState());
 
   // Safe Browsing check.
-  state.safeBrowsingState = safetyCheckManager->GetSafeBrowsingCheckState();
-
   absl::optional<SafeBrowsingSafetyCheckState> overrideSafeBrowsingState =
       experimental_flags::GetSafeBrowsingSafetyCheckState();
 
-  if (overrideSafeBrowsingState.has_value()) {
-    state.safeBrowsingState = overrideSafeBrowsingState.value();
-  }
+  state.safeBrowsingState = overrideSafeBrowsingState.value_or(
+      safetyCheckManager->GetSafeBrowsingCheckState());
 
   // Insecure credentials.
-  std::vector<password_manager::CredentialUIEntry> insecureCredentials =
-      safetyCheckManager->GetInsecureCredentials();
+  absl::optional<int> overrideWeakPasswordsCount =
+      experimental_flags::GetSafetyCheckWeakPasswordsCount();
 
-  password_manager::InsecurePasswordCounts counts =
-      password_manager::CountInsecurePasswordsPerInsecureType(
-          insecureCredentials);
+  absl::optional<int> overrideReusedPasswordsCount =
+      experimental_flags::GetSafetyCheckReusedPasswordsCount();
 
-  state.weakPasswordsCount = counts.weak_count;
-  state.reusedPasswordsCount = counts.reused_count;
-  state.compromisedPasswordsCount = counts.compromised_count;
+  absl::optional<int> overrideCompromisedPasswordsCount =
+      experimental_flags::GetSafetyCheckCompromisedPasswordsCount();
+
+  bool passwordCountsOverride = overrideWeakPasswordsCount.has_value() ||
+                                overrideReusedPasswordsCount.has_value() ||
+                                overrideCompromisedPasswordsCount.has_value();
+
+  // NOTE: If any password counts are overriden via Experimental
+  // settings, all password counts will be considered overriden.
+  if (passwordCountsOverride) {
+    state.weakPasswordsCount = overrideWeakPasswordsCount.value_or(0);
+    state.reusedPasswordsCount = overrideReusedPasswordsCount.value_or(0);
+    state.compromisedPasswordsCount =
+        overrideCompromisedPasswordsCount.value_or(0);
+  } else {
+    std::vector<password_manager::CredentialUIEntry> insecureCredentials =
+        safetyCheckManager->GetInsecureCredentials();
+
+    password_manager::InsecurePasswordCounts counts =
+        password_manager::CountInsecurePasswordsPerInsecureType(
+            insecureCredentials);
+
+    state.weakPasswordsCount = counts.weak_count;
+    state.reusedPasswordsCount = counts.reused_count;
+    state.compromisedPasswordsCount = counts.compromised_count;
+  }
 
   state.lastRunTime = [self latestSafetyCheckRunTimestamp];
 
@@ -939,7 +930,6 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   }
 
   if (IsSafetyCheckMagicStackEnabled() &&
-      !safety_check_prefs::IsSafetyCheckInMagicStackDisabled(_localState) &&
       _safetyCheckState.runningState == RunningSafetyCheckState::kDefault) {
     [self.consumer showSafetyCheck:_safetyCheckState];
   }
@@ -1135,8 +1125,11 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
         }
         break;
       case ContentSuggestionsModuleType::kSafetyCheck:
+      case ContentSuggestionsModuleType::kSafetyCheckMultiRow:
+      case ContentSuggestionsModuleType::kSafetyCheckMultiRowOverflow:
         if (!IsSafetyCheckMagicStackEnabled() ||
-          safety_check_prefs::IsSafetyCheckInMagicStackDisabled(_localState)) {
+            safety_check_prefs::IsSafetyCheckInMagicStackDisabled(
+                _localState)) {
           break;
         }
         // If ShouldHideIrrelevantModules() is enabled and it is not the first
@@ -1226,6 +1219,7 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
           addObject:@(int(ContentSuggestionsModuleType::kTabResumption))];
     }
   }
+  _magicStackOrderFromSegmentationReceived = YES;
   _magicStackOrderFromSegmentation = magicStackOrder;
   _latestMagicStackOrder = [self segmentationMagicStackOrder];
   [self.consumer setMagicStackOrder:_latestMagicStackOrder];
@@ -1246,6 +1240,8 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   }
 }
 
+// Adds the Safety Check module to `order` based on the current Safety Check
+// state.
 - (void)addSafetyCheckToMagicStackOrder:(NSMutableArray*)order {
   CHECK(IsSafetyCheckMagicStackEnabled());
 
@@ -1379,14 +1375,20 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
           segmentation_platform::features::kSegmentationPlatformIosModuleRanker)
           ? [self segmentationMagicStackOrder]
           : [self magicStackOrder];
-  if ([_latestMagicStackOrder count] > 0) {
+  if ([self isMagicStackOrderReady]) {
     // Only indicate the need for an explicit insertion if the tab resumption
     // item was received after building the initial Magic Stack order or getting
     // the Magic Stack Order from Segmentation.
+    NSUInteger insertionIndex = [self
+        indexForMagicStackModule:ContentSuggestionsModuleType::kTabResumption];
+    if (insertionIndex == NSNotFound) {
+      return;
+    }
+    // Only continue on to insert Tab Resumption after `isMagicStackOrderReady`
+    // if it is in the Magic Stack order
     MagicStackOrderChange change{MagicStackOrderChange::Type::kInsert,
                                  ContentSuggestionsModuleType::kTabResumption};
-    change.index = [self
-        indexForMagicStackModule:ContentSuggestionsModuleType::kTabResumption];
+    change.index = insertionIndex;
     [self.consumer updateMagicStackOrder:change];
   }
   [self.consumer showTabResumptionWithItem:_tabResumptionItem];
@@ -1399,11 +1401,31 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 }
 
 // Returns the index rank of `moduleType`.
+// Callers of this need to handle a NSNotFound return case and do nothing in
+// that case.
 - (NSUInteger)indexForMagicStackModule:
     (ContentSuggestionsModuleType)moduleType {
   NSUInteger index = [_latestMagicStackOrder indexOfObject:@(int(moduleType))];
-  CHECK(index != NSNotFound);
+  if (index == NSNotFound) {
+    // It is possible that a feature is enabled but the segmentation model being
+    // used didn't return the feature's module (i.e. first browser session after
+    // enabling a feature, so the latest model will not be downloaded until the
+    // following session since experiment models are tied via finch). It is also
+    // possible that the segmentation result has not returned yet.
+    CHECK(base::FeatureList::IsEnabled(
+        segmentation_platform::features::kSegmentationPlatformIosModuleRanker));
+  }
   return index;
+}
+
+// Returns NO if client is expecting the order from Segmentation and it has not
+// returned yet.
+- (BOOL)isMagicStackOrderReady {
+  if (base::FeatureList::IsEnabled(segmentation_platform::features::
+                                       kSegmentationPlatformIosModuleRanker)) {
+    return _magicStackOrderFromSegmentationReceived;
+  }
+  return YES;
 }
 
 #pragma mark - Properties

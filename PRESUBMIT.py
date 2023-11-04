@@ -321,7 +321,9 @@ _BANNED_JAVASCRIPT_FUNCTIONS : Sequence [BanRule] = (
           'ash/webui/multidevice_debug/resources/webui.js',
           'ash/webui/projector_app/resources/annotator/trusted/annotator_browser_proxy.js',
           'ash/webui/projector_app/resources/app/trusted/projector_browser_proxy.js',
-          'ash/webui/scanning/resources/scanning_browser_proxy.js',
+          # TODO(b/301634378): Remove violation exception once Scanning App
+          # migrated off usage of `chrome.send`.
+          'ash/webui/scanning/resources/scanning_browser_proxy.ts',
       ),
     ),
 )
@@ -634,8 +636,9 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
         'deprecated (http://crbug.com/634507). Please avoid converting away',
         'from the Time types in Chromium code, especially if any math is',
         'being done on time values. For interfacing with platform/library',
-        'APIs, use FromMicroseconds() or InMicroseconds(), or one of the other',
-        'type converter methods instead. For faking TimeXXX values (for unit',
+        'APIs, use base::Time::(From,To)DeltaSinceWindowsEpoch() or',
+        'base::{TimeDelta::In}Microseconds(), or one of the other type',
+        'converter methods instead. For faking TimeXXX values (for unit',
         'testing only), use TimeXXX() + Microseconds(N). For',
         'other use cases, please contact base/time/OWNERS.',
       ),
@@ -914,6 +917,19 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
     ),
     BanRule(
+      r'/\babsl::FixedArray\b',
+      (
+        'absl::FixedArray is banned. Use base::FixedArray instead.',
+      ),
+      True,
+      [
+        # base::FixedArray provides canonical access.
+        r'^base/types/fixed_array.h',
+        # Not an error in third_party folders.
+        _THIRD_PARTY_EXCEPT_BLINK,
+      ],
+    ),
+    BanRule(
       r'/\babsl::FunctionRef\b',
       (
         'absl::FunctionRef is banned. Use base::FunctionRef instead.',
@@ -1005,6 +1021,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       [
         # Needed to use QUICHE API.
         r'chrome/browser/ip_protection/.*',
+        r'services/network/web_transport.*',
         _THIRD_PARTY_EXCEPT_BLINK  # Not an error in third_party folders.
       ],
     ),
@@ -1028,7 +1045,13 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
         '<chrono> is banned. Use base/time instead.',
       ),
       True,
-      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+      [
+          # Not an error in third_party folders:
+          _THIRD_PARTY_EXCEPT_BLINK,
+          # PartitionAlloc's starscan, doesn't depend on base/. It can't use
+          # base::ConditionalVariable::TimedWait(..).
+          "base/allocator/partition_allocator/starscan/pcscan_internal.cc",
+      ]
     ),
     BanRule(
       r'/#include <exception>',
@@ -1656,6 +1679,17 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       ),
     ),
     BanRule(
+      pattern = r'/raw_ptr<[^;}]*\w{};',
+      explanation = (
+        'Do not use {} for raw_ptr initialization, use = nullptr instead.',
+      ),
+      treat_as_error = True,
+      excluded_paths = (
+        '^base/',
+        '^tools/',
+      ),
+    ),
+    BanRule(
       pattern = r'/#include "base/allocator/.*/raw_'
                 r'(ptr|ptr_cast|ptr_exclusion|ref).h"',
       explanation = (
@@ -1863,7 +1897,10 @@ _KNOWN_ROBOTS = set(
           for s in ('swarming-tasks',)
   ) | set('%s@fuchsia-infra.iam.gserviceaccount.com' % s
           for s in ('global-integration-try-builder',
-                    'global-integration-ci-builder'))
+                    'global-integration-ci-builder')
+  ) | set('%s@prod.google.com' % s
+          for s in ('chops-security-borg',
+                    'chops-security-cronjobs-cpesuggest'))
 
 _INVALID_GRD_FILE_LINE = [
         (r'<file lang=.* path=.*', 'Path should come before lang in GRD files.')
@@ -6711,13 +6748,16 @@ def CheckAssertAshOnlyCode(input_api, output_api):
     return errors
 
 
-def _IsRendererOnlyCppFile(input_api, affected_file):
+def _IsMiraclePtrDisallowed(input_api, affected_file):
     path = affected_file.LocalPath()
     if not _IsCPlusPlusFile(input_api, path):
         return False
 
-    # Any code under a "renderer" subdirectory is assumed to be Renderer-only.
-    if "/renderer/" in path:
+    # Renderer code is generally allowed to use MiraclePtr.
+    # These directories, however, are specifically disallowed.
+    if ("third_party/blink/renderer/core/" in path
+            or "third_party/blink/renderer/platform/heap/" in path
+            or "third_party/blink/renderer/platform/wtf/" in path):
         return True
 
     # Blink's public/web API is only used/included by Renderer-only code.  Note
@@ -6738,18 +6778,39 @@ def CheckRawPtrUsage(input_api, output_api):
     # The regex below matches "raw_ptr<" following a word boundary, but not in a
     # C++ comment.
     raw_ptr_matcher = input_api.re.compile(r'^((?!//).)*\braw_ptr<')
-    file_filter = lambda f: _IsRendererOnlyCppFile(input_api, f)
+    file_filter = lambda f: _IsMiraclePtrDisallowed(input_api, f)
     for f, line_num, line in input_api.RightHandSideLines(file_filter):
         if raw_ptr_matcher.search(line):
             errors.append(
                 output_api.PresubmitError(
                     'Problem on {path}:{line} - '\
-                    'raw_ptr<T> should not be used in Renderer-only code '\
+                    'raw_ptr<T> should not be used in this renderer code '\
                     '(as documented in the "Pointers to unprotected memory" '\
                     'section in //base/memory/raw_ptr.md)'.format(
                         path=f.LocalPath(), line=line_num)))
     return errors
 
+def CheckAdvancedMemorySafetyChecksUsage(input_api, output_api):
+    """Checks that ADVANCED_MEMORY_SAFETY_CHECKS() macro is neither added nor
+    removed as it is managed by the memory safety team internally.
+    Do not add / remove it manually."""
+    paths = set([])
+    # The regex below matches "ADVANCED_MEMORY_SAFETY_CHECKS(" following a word
+    # boundary, but not in a C++ comment.
+    macro_matcher = input_api.re.compile(
+        r'^((?!//).)*\bADVANCED_MEMORY_SAFETY_CHECKS\(', input_api.re.MULTILINE)
+    for f in input_api.AffectedFiles():
+        if not _IsCPlusPlusFile(input_api, f.LocalPath()):
+            continue
+        if macro_matcher.search(f.GenerateScmDiff()):
+            paths.add(f.LocalPath())
+    if not paths:
+        return []
+    return [output_api.PresubmitPromptWarning(
+              'ADVANCED_MEMORY_SAFETY_CHECKS() macro is managed by ' \
+              'the memory safety team (chrome-memory-safety@). ' \
+              'Please contact us to add/delete the uses of the macro.',
+              paths)]
 
 def CheckPythonShebang(input_api, output_api):
     """Checks that python scripts use #!/usr/bin/env instead of hardcoding a
@@ -6833,10 +6894,11 @@ def CheckBatchAnnotation(input_api, output_api):
         results.append(
             output_api.PresubmitPromptWarning(
                 """
-Instrumentation tests should use either @Batch or @DoNotBatch. Use
-@Batch(Batch.PER_CLASS) in most cases. Use @Batch(Batch.UNIT_TESTS) when tests
-have no side-effects. If the tests are not safe to run in batch, please use
-@DoNotBatch with reasons.
+A change was made to an on-device test that has neither been annotated with
+@Batch nor @DoNotBatch. If this is a new test, please add the annotation. If
+this is an existing test, please consider adding it if you are sufficiently
+familiar with the test (but do so as a separate change).
+
 See https://source.chromium.org/chromium/chromium/src/+/main:docs/testing/batching_instrumentation_tests.md
 """, missing_annotation_errors))
     if extra_annotation_errors:

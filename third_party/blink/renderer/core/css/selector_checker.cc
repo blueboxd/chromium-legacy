@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/dom/nth_index_cache.h"
 #include "third_party/blink/renderer/core/dom/popover_data.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/slot_assignment_engine.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -62,6 +63,7 @@
 #include "third_party/blink/renderer/core/html/html_dialog_element.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
+#include "third_party/blink/renderer/core/html/html_permission_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
@@ -1269,6 +1271,24 @@ bool SelectorChecker::CheckPseudoHas(const SelectorCheckingContext& context,
     CheckPseudoHasCacheScope::Context cache_scope_context(&document,
                                                           argument_context);
 
+    // In case that the :has() pseudo class checks a relationship to a sibling
+    // element at fixed distance (e.g. '.a:has(+ .b)') or a sibling subtree at
+    // fixed distance (e.g. '.a:has(+ .b .c)'), set the parent of the :has()
+    // anchor element as ChildrenAffectedByDirectAdjacentRules to indicate
+    // that removing a child from the parent may affect a :has() testing result
+    // on a child of the parent.
+    // (e.g. When we have a style rule '.a:has(+ .b) {}' we always need :has()
+    // invalidation if the preceding element of '.b' is removed)
+    // Please refer the :has() invalidation for element removal:
+    //  - StyleEngine::ScheduleInvalidationsForHasPseudoAffectedByRemoval()
+    if (argument_context.AdjacentDistanceLimit() > 0 &&
+        argument_context.AdjacentDistanceFixed()) {
+      if (ContainerNode* parent =
+              has_anchor_element->ParentElementOrShadowRoot()) {
+        parent->SetChildrenAffectedByDirectAdjacentRules();
+      }
+    }
+
     if (update_affected_by_has_flags) {
       SetAffectedByHasFlagsForHasAnchorElement(argument_context,
                                                has_anchor_element);
@@ -1434,7 +1454,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         DCHECK(context.pseudo_argument);
 
         auto* transition =
-            ViewTransitionUtils::GetActiveTransition(element.GetDocument());
+            ViewTransitionUtils::GetTransition(element.GetDocument());
         DCHECK(transition);
         return transition->MatchForOnlyChild(context.pseudo_id,
                                              *context.pseudo_argument);
@@ -1747,6 +1767,15 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       }
 
       if (auto* html_element = DynamicTo<HTMLElement>(element)) {
+        // Recomputing the slot assignment can update cached directionality.
+        // This should already have been done unless this an API call like
+        // Element.matches().
+        Document& document = element.GetDocument();
+        if (document.IsSlotAssignmentDirty()) {
+          CHECK_EQ(mode_, kQueryingRules);
+          document.GetSlotAssignmentEngine().RecalcSlotAssignments();
+        }
+
         return html_element->CachedDirectionality() == direction;
       }
       break;
@@ -1813,6 +1842,11 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       DCHECK(RuntimeEnabledFeatures::CSSPseudoPlayingPausedEnabled());
       auto* media_element = DynamicTo<HTMLMediaElement>(element);
       return media_element && media_element->paused();
+    }
+    case CSSSelector::kPseudoPermissionGranted: {
+      DCHECK(RuntimeEnabledFeatures::PermissionElementEnabled());
+      auto* permission_element = DynamicTo<HTMLPermissionElement>(element);
+      return permission_element && permission_element->granted();
     }
     case CSSSelector::kPseudoPictureInPicture:
       return PictureInPictureController::IsElementInPictureInPicture(&element);
@@ -2005,7 +2039,8 @@ bool SelectorChecker::CheckPseudoAutofill(CSSSelector::PseudoType pseudo_type,
   switch (pseudo_type) {
     case CSSSelector::kPseudoAutofill:
     case CSSSelector::kPseudoWebKitAutofill:
-      return html_form_element->IsAutofilled();
+      return html_form_element->IsAutofilled() ||
+             html_form_element->IsPreviewed();
     case CSSSelector::kPseudoAutofillPreviewed:
       return html_form_element->GetAutofillState() ==
              WebAutofillState::kPreviewed;

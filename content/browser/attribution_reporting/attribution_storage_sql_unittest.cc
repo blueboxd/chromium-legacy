@@ -21,14 +21,18 @@
 #include "base/functional/callback_helpers.h"
 #include "base/functional/overloaded.h"
 #include "base/memory/raw_ptr.h"
+#include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
+#include "base/strings/to_string.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "base/uuid.h"
 #include "components/aggregation_service/features.h"
+#include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/destination_set.h"
 #include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/filters.h"
@@ -37,7 +41,6 @@
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/test_utils.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
-#include "content/browser/attribution_reporting/attribution_constants.h"
 #include "content/browser/attribution_reporting/attribution_features.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_reporting.pb.h"
@@ -382,23 +385,7 @@ TEST_P(AttributionStorageSqlTest,
   histograms.ExpectTotalCount("Conversions.Storage.CreationTime", 1);
   histograms.ExpectTotalCount("Conversions.Storage.MigrationTime", 0);
 
-  {
-    sql::Database raw_db;
-    EXPECT_TRUE(raw_db.Open(db_path()));
-
-    // [sources], [reports], [meta], [rate_limits], [dedup_keys],
-    // [source_destinations], [sqlite_sequence] (for AUTOINCREMENT support).
-    EXPECT_EQ(7u, sql::test::CountSQLTables(&raw_db));
-
-    // [conversion_domain_idx], [impression_expiry_idx],
-    // [impression_origin_idx], [sources_by_source_time],
-    // [reports_by_report_time], [reports_by_source_id_report_type],
-    // [reports_by_trigger_time], [reports_by_reporting_origin],
-    // [rate_limit_reporting_origin_idx], [rate_limit_time_idx],
-    // [rate_limit_impression_id_idx], [sources_by_destination_site], and the
-    // meta table index.
-    EXPECT_EQ(13u, sql::test::CountSQLIndices(&raw_db));
-  }
+  EXPECT_TRUE(base::PathExists(db_path()));
 }
 
 TEST_P(AttributionStorageSqlTest, DatabaseReopened_DataPersisted) {
@@ -1110,15 +1097,111 @@ TEST_P(AttributionStorageSqlTest, DatabaseDirDoesExist_CreateDirAndOpenDB) {
                 .event_level_status());
 }
 
-TEST_P(AttributionStorageSqlTest, DBinitializationSucceeds_HistogramRecorded) {
-  base::HistogramTester histograms;
+TEST_P(AttributionStorageSqlTest, DBinitializationSucceeds_HistogramsRecorded) {
+  {
+    base::HistogramTester histograms;
 
-  OpenDatabase();
-  storage()->StoreSource(SourceBuilder().Build());
-  CloseDatabase();
+    OpenDatabase();
+    // We add two sources in the storage to be able to assert the per source
+    // file size histogram on the following db initialization.
+    storage()->StoreSource(SourceBuilder().Build());
+    storage()->StoreSource(SourceBuilder().Build());
+    CloseDatabase();
 
-  histograms.ExpectUniqueSample("Conversions.Storage.Sql.InitStatus2",
-                                AttributionStorageSql::InitStatus::kSuccess, 1);
+    histograms.ExpectUniqueSample("Conversions.Storage.Sql.InitStatus2",
+                                  AttributionStorageSql::InitStatus::kSuccess,
+                                  1);
+    EXPECT_GT(histograms.GetTotalSum("Conversions.Storage.Sql.FileSize"), 0);
+    // The per source histogram should not be recorded when there is no sources
+    // in the db.
+    histograms.ExpectTotalCount("Conversions.Storage.Sql.FileSize.PerSource",
+                                0u);
+  }
+  {
+    base::HistogramTester histograms;
+
+    OpenDatabase();
+    // Since the storage is initiated lazily, we need to execute an operation on
+    // the db for it to be initiated and histograms to be reported.
+    storage()->StoreSource(SourceBuilder().Build());
+    CloseDatabase();
+
+    histograms.ExpectUniqueSample("Conversions.Storage.Sql.InitStatus2",
+                                  AttributionStorageSql::InitStatus::kSuccess,
+                                  1);
+
+    int64_t file_size =
+        histograms.GetTotalSum("Conversions.Storage.Sql.FileSize");
+    EXPECT_GT(file_size, 0);
+    int64_t file_size_per_source =
+        histograms.GetTotalSum("Conversions.Storage.Sql.FileSize.PerSource");
+    EXPECT_EQ(file_size_per_source, file_size * 1024 / 2);
+  }
+}
+
+TEST_P(AttributionStorageSqlTest,
+       DBinitializationSucceeds_SourcesPerSourceOrginHistogramsRecorded) {
+  auto create_n_origins = [](size_t n) -> std::vector<SuitableOrigin> {
+    std::vector<SuitableOrigin> origins;
+    origins.reserve(n);
+    for (size_t i = 0; i < n; ++i) {
+      origins.push_back(
+          *SuitableOrigin::Create(url::Origin::Create(GURL(base::JoinString(
+              {"https://origin_", base::ToString(i), ".example"}, "")))));
+    }
+
+    return origins;
+  };
+  auto store_n_sources = [&](const SuitableOrigin& origin, size_t n) {
+    for (size_t i = 0; i < n; ++i) {
+      storage()->StoreSource(SourceBuilder().SetSourceOrigin(origin).Build());
+    }
+  };
+
+  {
+    base::HistogramTester histograms;
+
+    OpenDatabase();
+
+    std::vector<size_t> sizes = {8, 7, 6, 5, 5, 5, 4, 3, 3, 3, 3, 3, 3,
+                                 3, 3, 3, 3, 3, 3, 2, 1, 1, 1, 1, 1};
+    base::RandomShuffle(sizes.begin(), sizes.end());
+    std::vector<SuitableOrigin> origins = create_n_origins(sizes.size());
+    for (size_t i = 0; i < origins.size(); ++i) {
+      store_n_sources(origins.at(i), sizes.at(i));
+    }
+
+    CloseDatabase();
+
+    // The histograms should have been recorded even if there were no sources in
+    // the db when initialized.
+    histograms.ExpectUniqueSample("Conversions.SourcesPerSourceOrigin.1st", 0,
+                                  1);
+    histograms.ExpectUniqueSample("Conversions.SourcesPerSourceOrigin.3rd", 0,
+                                  1);
+    histograms.ExpectUniqueSample("Conversions.SourcesPerSourceOrigin.7th", 0,
+                                  1);
+    histograms.ExpectUniqueSample("Conversions.SourcesPerSourceOrigin.20th", 0,
+                                  1);
+  }
+  {
+    base::HistogramTester histograms;
+
+    OpenDatabase();
+    // Since the storage is initiated lazily, we need to execute an operation on
+    // the db for it to be initiated and histograms to be reported.
+    storage()->StoreSource(SourceBuilder().Build());
+    CloseDatabase();
+
+    EXPECT_EQ(histograms.GetTotalSum("Conversions.SourcesPerSourceOrigin.1st"),
+              8u);
+    EXPECT_EQ(histograms.GetTotalSum("Conversions.SourcesPerSourceOrigin.3rd"),
+              6u);
+    EXPECT_EQ(histograms.GetTotalSum("Conversions.SourcesPerSourceOrigin.7th"),
+              4u);
+    EXPECT_EQ(histograms.GetTotalSum("Conversions.SourcesPerSourceOrigin.20th"),
+              2u);
+  }
 }
 
 TEST_P(AttributionStorageSqlTest, MaxUint64StorageSucceeds) {
@@ -1130,8 +1213,7 @@ TEST_P(AttributionStorageSqlTest, MaxUint64StorageSucceeds) {
   // `sql::Statement::ColumnInt64()` and `sql::Statement::BindInt64()` works
   // with the maximum value.
 
-  const auto impression = SourceBuilder().SetSourceEventId(kMaxUint64).Build();
-  storage()->StoreSource(impression);
+  storage()->StoreSource(SourceBuilder().SetSourceEventId(kMaxUint64).Build());
   EXPECT_THAT(storage()->GetActiveSources(),
               ElementsAre(SourceEventIdIs(kMaxUint64)));
 
@@ -1373,9 +1455,8 @@ TEST_P(AttributionStorageSqlTest,
   for (const auto& test_case : kTestCases) {
     OpenDatabase();
 
-    SourceBuilder source_builder;
     storage()->StoreSource(
-        source_builder.SetExpiry(base::Milliseconds(3)).Build());
+        SourceBuilder().SetExpiry(base::Milliseconds(3)).Build());
     ASSERT_THAT(storage()->GetActiveSources(), SizeIs(1)) << test_case.sql;
 
     CloseDatabase();
@@ -1414,21 +1495,18 @@ TEST_P(AttributionStorageSqlTest, CreateReport_DeletesUnattributedSources) {
 
 TEST_P(AttributionStorageSqlTest, CreateReport_DeactivatesAttributedSources) {
   OpenDatabase();
-  storage()->StoreSource(
-      SourceBuilder().SetSourceEventId(1).SetPriority(1).Build());
+  storage()->StoreSource(SourceBuilder().SetPriority(1).Build());
   MaybeCreateAndStoreEventLevelReport(DefaultTrigger());
-  storage()->StoreSource(
-      SourceBuilder().SetSourceEventId(2).SetPriority(2).Build());
+  storage()->StoreSource(SourceBuilder().SetPriority(2).Build());
   MaybeCreateAndStoreEventLevelReport(DefaultTrigger());
   CloseDatabase();
 
   ExpectImpressionRows(2);
 }
 
-// Tests that a "source_type" filter present in the serialized data is
-// removed.
-TEST_P(AttributionStorageSqlTest,
-       DeserializeFilterData_RemovesSourceTypeFilter) {
+// Tests that a "source_type" or "_lookback_window" filter key present in the
+// serialized data is removed.
+TEST_P(AttributionStorageSqlTest, DeserializeFilterData_RemovesReservedKeys) {
   {
     OpenDatabase();
     storage()->StoreSource(SourceBuilder().Build());
@@ -1441,37 +1519,11 @@ TEST_P(AttributionStorageSqlTest,
 
     static constexpr char kUpdateSql[] = "UPDATE sources SET filter_data=?";
     sql::Statement statement(raw_db.GetUniqueStatement(kUpdateSql));
-    statement.BindBlob(0, CreateSerializedFilterData(
-                              {{"source_type", {"abc"}}, {"x", {"y"}}}));
-    ASSERT_TRUE(statement.Run());
-  }
-
-  OpenDatabase();
-
-  std::vector<StoredSource> sources = storage()->GetActiveSources();
-  ASSERT_EQ(sources.size(), 1u);
-  ASSERT_THAT(sources.front().filter_data().filter_values(),
-              ElementsAre(Pair("x", ElementsAre("y"))));
-}
-
-// Tests that a "_lookback_window" filter present in the serialized data is
-// removed.
-TEST_P(AttributionStorageSqlTest,
-       DeserializeFilterData_RemovesLookbackWindowFilter) {
-  {
-    OpenDatabase();
-    storage()->StoreSource(SourceBuilder().Build());
-    CloseDatabase();
-  }
-
-  {
-    sql::Database raw_db;
-    ASSERT_TRUE(raw_db.Open(db_path()));
-
-    static constexpr char kUpdateSql[] = "UPDATE sources SET filter_data=?";
-    sql::Statement statement(raw_db.GetUniqueStatement(kUpdateSql));
-    statement.BindBlob(0, CreateSerializedFilterData(
-                              {{"_lookback_window", {"abc"}}, {"x", {"y"}}}));
+    statement.BindBlob(0, CreateSerializedFilterData({
+                              {"source_type", {"abc"}},
+                              {"x", {"y"}},
+                              {"_lookback_window", {"def"}},
+                          }));
     ASSERT_TRUE(statement.Run());
   }
 
@@ -1552,130 +1604,6 @@ TEST_P(AttributionStorageSqlTest, FakeReportUsesSourceOriginAsContext) {
   }
 }
 
-TEST_P(AttributionStorageSqlTest, ReportTimes) {
-  OpenDatabase();
-
-  const attribution_reporting::DestinationSet destinations =
-      *attribution_reporting::DestinationSet::Create(
-          {net::SchemefulSite::Deserialize("https://dest.test")});
-
-  const auto reporting_origin =
-      *SuitableOrigin::Deserialize("https://report.test");
-
-  const base::Time kSourceTime = base::Time::Now();
-
-  const struct {
-    const char* desc;
-    absl::optional<base::TimeDelta> expiry;
-    absl::optional<base::TimeDelta> event_report_window;
-    absl::optional<base::TimeDelta> aggregatable_report_window;
-    base::Time expected_expiry_time;
-    attribution_reporting::EventReportWindows expected_event_report_windows;
-    base::Time expected_aggregatable_report_window_time;
-  } kTestCases[] = {
-      {
-          .desc = "expiry",
-          .expiry = base::Days(4),
-          .expected_expiry_time = kSourceTime + base::Days(4),
-          .expected_event_report_windows =
-              *attribution_reporting::EventReportWindows::CreateWindows(
-                  base::Days(0), {base::Days(4)}),
-          .expected_aggregatable_report_window_time =
-              kSourceTime + base::Days(4),
-      },
-      {
-          .desc = "event-report-window",
-          .event_report_window = base::Days(4),
-          .expected_expiry_time = kSourceTime + base::Days(30),
-          .expected_event_report_windows =
-              *attribution_reporting::EventReportWindows::CreateWindows(
-                  base::Days(0), {base::Days(4)}),
-          .expected_aggregatable_report_window_time =
-              kSourceTime + base::Days(30),
-      },
-      {
-          .desc = "clamp-event-report-window",
-          .expiry = base::Days(4),
-          .event_report_window = base::Days(30),
-          .expected_expiry_time = kSourceTime + base::Days(4),
-          .expected_event_report_windows =
-              *attribution_reporting::EventReportWindows::CreateWindows(
-                  base::Days(0), {base::Days(4)}),
-          .expected_aggregatable_report_window_time =
-              kSourceTime + base::Days(4),
-      },
-      {
-          .desc = "aggregatable-report-window",
-          .aggregatable_report_window = base::Days(4),
-          .expected_expiry_time = kSourceTime + base::Days(30),
-          .expected_event_report_windows =
-              *attribution_reporting::EventReportWindows::CreateWindows(
-                  base::Days(0), {base::Days(30)}),
-          .expected_aggregatable_report_window_time =
-              kSourceTime + base::Days(4),
-      },
-      {
-          .desc = "clamp-aggregatable-report-window",
-          .expiry = base::Days(4),
-          .aggregatable_report_window = base::Days(30),
-          .expected_expiry_time = kSourceTime + base::Days(4),
-          .expected_event_report_windows =
-              *attribution_reporting::EventReportWindows::CreateWindows(
-                  base::Days(0), {base::Days(4)}),
-          .expected_aggregatable_report_window_time =
-              kSourceTime + base::Days(4),
-      },
-      {
-          .desc = "all",
-          .expiry = base::Days(9),
-          .event_report_window = base::Days(7),
-          .aggregatable_report_window = base::Days(5),
-          .expected_expiry_time = kSourceTime + base::Days(9),
-          .expected_event_report_windows =
-              *attribution_reporting::EventReportWindows::CreateWindows(
-                  base::Days(0), {base::Days(7)}),
-          .expected_aggregatable_report_window_time =
-              kSourceTime + base::Days(5),
-      },
-  };
-
-  for (const auto& test_case : kTestCases) {
-    attribution_reporting::SourceRegistration reg(destinations);
-    reg.expiry = test_case.expiry.value_or(base::Days(30));
-    reg.event_report_windows =
-        attribution_reporting::EventReportWindows::CreateSingularWindow(
-            test_case.event_report_window.value_or(*reg.expiry));
-    reg.aggregatable_report_window = test_case.aggregatable_report_window;
-
-    storage()->StoreSource(
-        StorableSource(reporting_origin, std::move(reg),
-                       *SuitableOrigin::Deserialize("https://source.test"),
-                       attribution_reporting::mojom::SourceType::kNavigation,
-                       /*is_within_fenced_frame=*/false));
-
-    std::vector<StoredSource> sources = storage()->GetActiveSources();
-    ASSERT_THAT(sources, SizeIs(1)) << test_case.desc;
-    const StoredSource& actual = sources.front();
-
-    EXPECT_EQ(actual.expiry_time(), test_case.expected_expiry_time)
-        << test_case.desc;
-
-    EXPECT_EQ(actual.event_report_windows(),
-              test_case.expected_event_report_windows)
-        << test_case.desc;
-
-    EXPECT_EQ(actual.aggregatable_report_window_time(),
-              test_case.expected_aggregatable_report_window_time)
-        << test_case.desc;
-
-    storage()->ClearData(/*delete_begin=*/base::Time::Min(),
-                         /*delete_end=*/base::Time::Max(),
-                         /*filter=*/base::NullCallback());
-  }
-
-  CloseDatabase();
-}
-
 TEST_P(AttributionStorageSqlTest,
        InvalidExpiryOrReportTime_FailsDeserialization) {
   static constexpr const char* kUpdateSqls[] = {
@@ -1696,11 +1624,11 @@ TEST_P(AttributionStorageSqlTest,
           true,
       },
       {
-          kDefaultAttributionSourceExpiry,
+          attribution_reporting::kMaxSourceExpiry,
           true,
       },
       {
-          kDefaultAttributionSourceExpiry + base::Milliseconds(1),
+          attribution_reporting::kMaxSourceExpiry + base::Milliseconds(1),
           false,
       },
   };

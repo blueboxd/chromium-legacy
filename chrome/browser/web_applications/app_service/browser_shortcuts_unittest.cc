@@ -8,6 +8,8 @@
 #include "base/scoped_observation.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_icon/icon_effects.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
@@ -15,7 +17,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/fake_web_app_ui_manager.h"
+#include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
@@ -144,6 +149,9 @@ TEST_F(BrowserShortcutsTest, PublishExistingBrowserShortcut) {
   EXPECT_EQ(stored_shortcut->shortcut_source, apps::ShortcutSource::kUser);
   EXPECT_EQ(stored_shortcut->host_app_id, app_constants::kChromeAppId);
   EXPECT_EQ(stored_shortcut->local_id, local_shortcut_id);
+  EXPECT_TRUE(stored_shortcut->icon_key.has_value());
+  EXPECT_EQ(stored_shortcut->icon_key->icon_effects,
+            apps::IconEffects::kCrOsStandardMask);
 }
 
 TEST_F(BrowserShortcutsTest, WebAppNotPublishedAsShortcut) {
@@ -183,6 +191,9 @@ TEST_F(BrowserShortcutsTest, PublishNewBrowserShortcut) {
   EXPECT_EQ(stored_shortcut->shortcut_source, apps::ShortcutSource::kUser);
   EXPECT_EQ(stored_shortcut->host_app_id, app_constants::kChromeAppId);
   EXPECT_EQ(stored_shortcut->local_id, local_shortcut_id);
+  EXPECT_TRUE(stored_shortcut->icon_key.has_value());
+  EXPECT_EQ(stored_shortcut->icon_key->icon_effects,
+            apps::IconEffects::kCrOsStandardMask);
 }
 
 TEST_F(BrowserShortcutsTest, LaunchShortcut) {
@@ -270,10 +281,56 @@ TEST_F(BrowserShortcutsTest, RemoveShortcut) {
   base::test::TestFuture<apps::ShortcutId> future;
 
   SetOnShortcutRemovedCallback(future.GetCallback());
-  proxy->RemoveShortcut(shortcut_id, apps::UninstallSource::kUnknown, nullptr);
+  proxy->RemoveShortcutSilently(shortcut_id, apps::UninstallSource::kUnknown);
 
   apps::ShortcutId removed_shortcut_id = future.Get();
   EXPECT_EQ(removed_shortcut_id, shortcut_id);
+}
+
+TEST_F(BrowserShortcutsTest, GetCompressedShortcutIcon) {
+  const std::string kShortcutName = "Shortcut";
+
+  auto local_shortcut_id = CreateShortcut(kShortcutName);
+  apps::ShortcutId shortcut_id =
+      apps::GenerateShortcutId(app_constants::kChromeAppId, local_shortcut_id);
+  InitializeBrowserShortcutPublisher();
+
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile());
+
+  // Add icon in icon manager.
+  IconBitmaps icon_bitmaps;
+  constexpr int icon_size = 1000;
+  web_app::AddGeneratedIcon(&icon_bitmaps.any, icon_size, SK_ColorGREEN);
+  base::test::TestFuture<bool> future;
+  WebAppProvider::GetForTest(profile())->icon_manager().WriteData(
+      local_shortcut_id, std::move(icon_bitmaps), {}, {}, future.GetCallback());
+  bool success = future.Get();
+  EXPECT_TRUE(success);
+
+  FakeWebAppProvider* fake_provider =
+      static_cast<FakeWebAppProvider*>(WebAppProvider::GetForTest(profile()));
+  WebApp* web_app =
+      fake_provider->GetRegistrarMutable().GetAppByIdMutable(local_shortcut_id);
+  web_app->SetDownloadedIconSizes(IconPurpose::ANY, {icon_size});
+
+  ASSERT_TRUE(WebAppProvider::GetForTest(profile())->icon_manager().HasIcons(
+      local_shortcut_id, IconPurpose::ANY, {icon_size}));
+
+  base::test::TestFuture<apps::IconValuePtr> expect_result;
+  apps::GetWebAppCompressedIconData(profile(), local_shortcut_id, icon_size,
+                                    ui::ResourceScaleFactor::k100Percent,
+                                    expect_result.GetCallback());
+  apps::IconValuePtr expected_icon = expect_result.Take();
+
+  base::test::TestFuture<apps::IconValuePtr> result;
+  auto* shortcut_publisher =
+      proxy->GetShortcutPublisherForTesting(apps::AppType::kChromeApp);
+  shortcut_publisher->GetCompressedIconData(
+      shortcut_id.value(), icon_size, ui::ResourceScaleFactor::k100Percent,
+      result.GetCallback());
+  apps::IconValuePtr icon = result.Take();
+  ASSERT_EQ(expected_icon->compressed, icon->compressed);
 }
 
 }  // namespace web_app

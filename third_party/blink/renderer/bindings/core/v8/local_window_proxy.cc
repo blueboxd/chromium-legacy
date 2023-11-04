@@ -109,7 +109,8 @@ void LocalWindowProxy::DisposeContext(Lifecycle next_status,
   // willReleaseScriptContext callback, so all disposing should happen after
   // it returns.
   GetFrame()->Client()->WillReleaseScriptContext(context, world_->GetWorldId());
-  MainThreadDebugger::Instance()->ContextWillBeDestroyed(script_state_);
+  MainThreadDebugger::Instance(script_state_->GetIsolate())
+      ->ContextWillBeDestroyed(script_state_);
   if (next_status == Lifecycle::kV8MemoryIsForciblyPurged ||
       next_status == Lifecycle::kGlobalObjectIsDetached) {
     // Clean up state on the global proxy, which will be reused.
@@ -133,7 +134,8 @@ void LocalWindowProxy::DisposeContext(Lifecycle next_status,
   // garbage. Notify V8 about this so it'll have a chance of cleaning
   // it up when idle.
   V8GCForContextDispose::Instance().NotifyContextDisposed(
-      GetFrame()->IsMainFrame(), frame_reuse_status);
+      script_state_->GetIsolate(), GetFrame()->IsMainFrame(),
+      frame_reuse_status);
 
   DCHECK_EQ(lifecycle_, Lifecycle::kContextIsInitialized);
   lifecycle_ = next_status;
@@ -194,8 +196,8 @@ void LocalWindowProxy::Initialize() {
     TRACE_EVENT2("v8", "ContextCreatedNotification", "IsMainFrame",
                  GetFrame()->IsMainFrame(), "IsOutermostMainFrame",
                  GetFrame()->IsOutermostMainFrame());
-    MainThreadDebugger::Instance()->ContextCreated(script_state_, GetFrame(),
-                                                   origin.get());
+    MainThreadDebugger::Instance(script_state_->GetIsolate())
+        ->ContextCreated(script_state_, GetFrame(), origin.get());
     GetFrame()->Client()->DidCreateScriptContext(context, world_->GetWorldId());
   }
 

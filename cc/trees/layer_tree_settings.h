@@ -210,6 +210,11 @@ class CC_EXPORT LayerTreeSettings {
   // Whether Fluent scrollbar is enabled. Please check https://crbug.com/1292117
   // to find the link to the Fluent Scrollbar spec and related CLs.
   bool enable_fluent_scrollbar = false;
+  // This feature overrides enable_fluent_scrollbar by enabling them in overlay
+  // mode. Overlay Fluent scrollbars have disappearance animation transitions
+  // and are rendered over page's content.
+  // For more information please check https://crbug.com/1479146
+  bool enable_fluent_overlay_scrollbar = false;
 
   // Whether to disable the frame rate limit in the scheduler.
   bool disable_frame_rate_limit = false;
@@ -217,9 +222,6 @@ class CC_EXPORT LayerTreeSettings {
   // Enables shared image cache for gpu.
   // TODO(crbug.com/1378251): not ready to be used by renderer cc instance yet.
   bool enable_shared_image_cache_for_gpu = false;
-
-  // True if we are running a web test using threaded compositing.
-  bool is_threaded_web_test = false;
 
   // Maximum size for buffers allocated for rendering when GPU compositing is
   // disabled. This size is equivalent to the max texture size in GPU mode.

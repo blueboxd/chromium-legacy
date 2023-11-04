@@ -10,6 +10,7 @@
 #include "components/feature_engagement/public/feature_list.h"
 #include "components/feature_engagement/public/group_list.h"
 #include "components/user_education/common/feature_promo_registry.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 // Provides feature engagement configuration based on IPH registered in the
 // browser.
@@ -38,6 +39,7 @@ class UserEducationConfigurationProvider
 
  private:
   user_education::FeaturePromoRegistry registry_;
+  const bool overwrite_valid_configurations_;
 };
 
 #endif  // CHROME_BROWSER_USER_EDUCATION_USER_EDUCATION_CONFIGURATION_PROVIDER_H_

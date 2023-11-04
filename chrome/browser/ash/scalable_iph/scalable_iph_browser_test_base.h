@@ -16,6 +16,7 @@
 #include "chrome/browser/ash/scalable_iph/customizable_test_env_browser_test_base.h"
 #include "chrome/browser/ash/scalable_iph/mock_scalable_iph_delegate.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/ash/components/scalable_iph/logger.h"
 #include "chromeos/ash/components/scalable_iph/scalable_iph.h"
 #include "chromeos/services/network_config/public/cpp/fake_cros_network_config.h"
 #include "components/feature_engagement/test/mock_tracker.h"
@@ -57,6 +58,8 @@ class ScalableIphBrowserTestBase : public CustomizableTestEnvBrowserTestBase {
   void TearDownOnMainThread() override;
 
  protected:
+  void SetUpMocks();
+
   // Allow sub-classes to initialize scoped feature list with different values.
   // TODO(b/297565024): Abstract this as we initialize more than just IPH
   //                    configs in this method.
@@ -101,6 +104,9 @@ class ScalableIphBrowserTestBase : public CustomizableTestEnvBrowserTestBase {
   // A sub-class might override this from `InitializeScopedFeatureList`.
   base::test::ScopedFeatureList scoped_feature_list_;
 
+  // Set false in the constructor to disable `ash::features::kScalableIph`.
+  bool enable_scalable_iph_ = true;
+
   // Set false in the constructor to disable `ash::features::kScalableIphDebug`.
   bool enable_scalable_iph_debug_ = true;
 
@@ -109,13 +115,14 @@ class ScalableIphBrowserTestBase : public CustomizableTestEnvBrowserTestBase {
   static std::unique_ptr<KeyedService> CreateMockTracker(
       content::BrowserContext* browser_context);
   static std::unique_ptr<scalable_iph::ScalableIphDelegate> CreateMockDelegate(
-      Profile* profile);
+      Profile* profile,
+      scalable_iph::Logger* logger);
 
   chromeos::network_config::FakeCrosNetworkConfig fake_cros_network_config_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::CallbackListSubscription subscription_;
-  raw_ptr<feature_engagement::test::MockTracker> mock_tracker_;
-  raw_ptr<test::MockScalableIphDelegate> mock_delegate_;
+  raw_ptr<feature_engagement::test::MockTracker> mock_tracker_ = nullptr;
+  raw_ptr<test::MockScalableIphDelegate> mock_delegate_ = nullptr;
 };
 
 }  // namespace ash

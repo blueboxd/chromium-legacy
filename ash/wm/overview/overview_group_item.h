@@ -7,14 +7,17 @@
 
 #include <memory>
 
+#include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_item_base.h"
 #include "base/memory/raw_ptr.h"
-#include "ui/aura/window.h"
+
+namespace aura {
+class Window;
+}  // namespace aura
 
 namespace ash {
 
 class OverviewGroupContainerView;
-class OverviewItem;
 class OverviewSession;
 
 // This class implements `OverviewItemBase` and represents a window group in
@@ -22,7 +25,8 @@ class OverviewSession;
 // contains two individual `OverviewItem`s. It is responsible to place the group
 // item in the correct bounds calculated by `OverviewGrid`. It will also be the
 // target when handling overview group item drag events.
-class OverviewGroupItem : public OverviewItemBase {
+class OverviewGroupItem : public OverviewItemBase,
+                          public OverviewItem::WindowDestructionDelegate {
  public:
   using Windows = aura::Window::Windows;
 
@@ -41,6 +45,8 @@ class OverviewGroupItem : public OverviewItemBase {
   void RestoreWindow(bool reset_transform, bool animate) override;
   void SetBounds(const gfx::RectF& target_bounds,
                  OverviewAnimationType animation_type) override;
+  gfx::Transform ComputeTargetTransform(
+      const gfx::RectF& target_bounds) override;
   gfx::RectF GetTargetBoundsInScreen() const override;
   gfx::RectF GetWindowTargetBoundsWithInsets() const override;
   gfx::RectF GetTransformedBounds() const override;
@@ -57,16 +63,12 @@ class OverviewGroupItem : public OverviewItemBase {
   void OnStartingAnimationComplete() override;
   void HideForSavedDeskLibrary(bool animate) override;
   void RevertHideForSavedDeskLibrary(bool animate) override;
-  void CloseWindow() override;
+  void CloseWindows() override;
   void Restack() override;
-  void HandleMouseEvent(const ui::MouseEvent& event) override;
-  void HandleGestureEvent(ui::GestureEvent* event) override;
-  void OnFocusedViewActivated() override;
-  void OnFocusedViewClosed() override;
+  void StartDrag() override;
   void OnOverviewItemDragStarted(OverviewItemBase* item) override;
   void OnOverviewItemDragEnded(bool snap) override;
-  void OnOverviewItemContinuousScroll(const gfx::RectF& target_bouns,
-                                      bool first_scroll,
+  void OnOverviewItemContinuousScroll(const gfx::Transform& target_transform,
                                       float scroll_ratio) override;
   void SetVisibleDuringItemDragging(bool visible, bool animate) override;
   void UpdateShadowTypeForDrag(bool is_dragging) override;
@@ -81,8 +83,14 @@ class OverviewGroupItem : public OverviewItemBase {
   OverviewGridWindowFillMode GetWindowDimensionsType() const override;
   void UpdateWindowDimensionsType() override;
   gfx::Point GetMagnifierFocusPointInScreen() const override;
+  const gfx::RoundedCornersF GetRoundedCorners() const override;
+
+  // OverviewItem::WindowDestructionDelegate:
+  void OnOverviewItemWindowDestroying(OverviewItem* overview_item,
+                                      bool reposition) override;
 
  protected:
+  // OverviewItemBase:
   void CreateItemWidget() override;
 
  private:

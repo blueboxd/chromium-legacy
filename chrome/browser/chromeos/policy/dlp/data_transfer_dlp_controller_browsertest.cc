@@ -27,6 +27,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/policy_constants.h"
@@ -170,8 +171,8 @@ class FakeDlpController : public DataTransferDlpController,
 
 class MockDlpRulesManager : public DlpRulesManagerImpl {
  public:
-  explicit MockDlpRulesManager(PrefService* local_state)
-      : DlpRulesManagerImpl(local_state) {}
+  explicit MockDlpRulesManager(PrefService* local_state, Profile* profile)
+      : DlpRulesManagerImpl(local_state, profile) {}
   ~MockDlpRulesManager() override = default;
 
   MOCK_CONST_METHOD0(GetReportingManager, DlpReportingManager*());
@@ -228,7 +229,8 @@ class DataTransferDlpBrowserTest : public InProcessBrowserTest {
       content::BrowserContext* context) {
     auto mock_rules_manager =
         std::make_unique<testing::NiceMock<MockDlpRulesManager>>(
-            g_browser_process->local_state());
+            g_browser_process->local_state(),
+            Profile::FromBrowserContext(context));
     rules_manager_ = mock_rules_manager.get();
     return mock_rules_manager;
   }
@@ -469,21 +471,34 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_WarnDestination) {
   FlushMessageLoop();
 }
 
-class DataTransferDlpBlinkBrowserTest : public InProcessBrowserTest {
+// TODO(b/300198284): Reenable.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_DataTransferDlpBlinkBrowserTest \
+  DISABLED_DataTransferDlpBlinkBrowserTest
+#else
+#define MAYBE_DataTransferDlpBlinkBrowserTest DataTransferDlpBlinkBrowserTest
+#endif
+class MAYBE_DataTransferDlpBlinkBrowserTest : public InProcessBrowserTest {
  public:
-  DataTransferDlpBlinkBrowserTest() = default;
-  DataTransferDlpBlinkBrowserTest(const DataTransferDlpBlinkBrowserTest&) =
-      delete;
-  DataTransferDlpBlinkBrowserTest& operator=(
-      const DataTransferDlpBlinkBrowserTest&) = delete;
-  ~DataTransferDlpBlinkBrowserTest() override = default;
+  MAYBE_DataTransferDlpBlinkBrowserTest() = default;
+  MAYBE_DataTransferDlpBlinkBrowserTest(
+      const MAYBE_DataTransferDlpBlinkBrowserTest&) = delete;
+  MAYBE_DataTransferDlpBlinkBrowserTest& operator=(
+      const MAYBE_DataTransferDlpBlinkBrowserTest&) = delete;
+  ~MAYBE_DataTransferDlpBlinkBrowserTest() override = default;
 
  protected:
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
 
+    TestingProfile::Builder builder;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    builder.SetIsMainProfile(true);
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+    profile_ = builder.Build();
+
     rules_manager_ = std::make_unique<::testing::NiceMock<MockDlpRulesManager>>(
-        g_browser_process->local_state());
+        g_browser_process->local_state(), profile_.get());
 
     reporting_manager_ = std::make_unique<DlpReportingManager>();
     auto reporting_queue = std::unique_ptr<::reporting::MockReportQueue,
@@ -505,6 +520,7 @@ class DataTransferDlpBlinkBrowserTest : public InProcessBrowserTest {
     dlp_controller_.reset();
     reporting_manager_.reset();
     rules_manager_.reset();
+    profile_.reset();
   }
 
   content::WebContents* GetActiveWebContents() {
@@ -539,6 +555,7 @@ class DataTransferDlpBlinkBrowserTest : public InProcessBrowserTest {
             });
   }
 
+  std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<::testing::NiceMock<MockDlpRulesManager>> rules_manager_;
   std::unique_ptr<DlpReportingManager> reporting_manager_;
   raw_ptr<reporting::MockReportQueue> reporting_queue_;
@@ -546,7 +563,7 @@ class DataTransferDlpBlinkBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<FakeDlpController> dlp_controller_;
 };
 
-IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, ProceedOnWarn) {
+IN_PROC_BROWSER_TEST_F(MAYBE_DataTransferDlpBlinkBrowserTest, ProceedOnWarn) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/title1.html")));
@@ -620,7 +637,7 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, ProceedOnWarn) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, CancelWarn) {
+IN_PROC_BROWSER_TEST_F(MAYBE_DataTransferDlpBlinkBrowserTest, CancelWarn) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/title1.html")));
@@ -686,7 +703,8 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, CancelWarn) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, ShouldProceedWarn) {
+IN_PROC_BROWSER_TEST_F(MAYBE_DataTransferDlpBlinkBrowserTest,
+                       ShouldProceedWarn) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/title1.html")));
@@ -746,7 +764,7 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, ShouldProceedWarn) {
 }
 
 // Test case for crbug.com/1213143
-IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, Reporting) {
+IN_PROC_BROWSER_TEST_F(MAYBE_DataTransferDlpBlinkBrowserTest, Reporting) {
   base::HistogramTester histogram_tester;
 
   ASSERT_TRUE(embedded_test_server()->Start());

@@ -26,6 +26,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/interaction/interactive_browser_test.h"
 #include "components/signin/public/base/consent_level.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "content/public/test/browser_test.h"
@@ -115,7 +116,7 @@ class FirstRunInteractiveUiTest
     {
       auto process_dice_header_delegate_impl =
           ProcessDiceHeaderDelegateImpl::Create(web_contents());
-      process_dice_header_delegate_impl->EnableSync(account_info.account_id);
+      process_dice_header_delegate_impl->EnableSync(account_info);
     }
   }
 
@@ -154,7 +155,9 @@ class FirstRunInteractiveUiTest
 
   auto PressJsButton(const ui::ElementIdentifier web_contents_id,
                      const DeepQuery& button_query) {
-    return ExecuteJsAt(web_contents_id, button_query, "(btn) => btn.click()");
+    // This can close/navigate the current page, so don't wait for success.
+    return ExecuteJsAt(web_contents_id, button_query, "(btn) => btn.click()",
+                       ExecuteJsMode::kFireAndForget);
   }
 
   // Waits for the intro buttons to be shown and presses to proceed according

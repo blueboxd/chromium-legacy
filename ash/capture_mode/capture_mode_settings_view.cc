@@ -200,8 +200,7 @@ CaptureModeSettingsView::CaptureModeSettingsView(
                      camera_managed_by_policy);
   }
 
-  if (features::AreCaptureModeDemoToolsEnabled() &&
-      !controller->is_recording_in_progress()) {
+  if (!controller->is_recording_in_progress()) {
     separator_2_ =
         contents()->AddChildView(std::make_unique<views::Separator>());
     separator_2_->SetColorId(ui::kColorAshSystemUIMenuSeparator);
@@ -249,9 +248,7 @@ CaptureModeSettingsView::CaptureModeSettingsView(
 
   capture_mode_util::SetHighlightBorder(
       this, kCornerRadius,
-      chromeos::features::IsJellyrollEnabled()
-          ? views::HighlightBorder::Type::kHighlightBorderOnShadow
-          : views::HighlightBorder::Type::kHighlightBorder1);
+      views::HighlightBorder::Type::kHighlightBorderOnShadow);
 
   shadow_->SetRoundedCornerRadius(kCornerRadius);
 }

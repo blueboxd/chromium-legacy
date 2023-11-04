@@ -80,6 +80,13 @@ class InspectorIssue;
 
 namespace devtools_instrumentation {
 
+// Applies network request overrides to the auction worklet's network
+// request. Will set `network_instrumentation_enabled` to true if there is a
+// network handler listening. Also handles whether cache is disabled or not.
+void ApplyAuctionNetworkRequestOverrides(FrameTreeNode* frame_tree_node,
+                                         network::ResourceRequest* request,
+                                         bool* network_instrumentation_enabled);
+
 // If this function caused the User-Agent header to be overridden,
 // `devtools_user_agent_overridden` will be set to true; otherwise, it will be
 // set to false. If this function caused the Accept-Language header to be
@@ -180,6 +187,24 @@ void OnNavigationResponseReceived(
 void OnNavigationRequestFailed(
     const NavigationRequest& nav_request,
     const network::URLLoaderCompletionStatus& status);
+
+void OnAuctionWorkletNetworkRequestWillBeSent(
+    int frame_tree_node_id,
+    const network::ResourceRequest& request,
+    base::TimeTicks timestamp);
+
+void OnAuctionWorkletNetworkResponseReceived(
+    int frame_tree_node_id,
+    const std::string& request_id,
+    const std::string& loader_id,
+    const GURL& request_url,
+    const network::mojom::URLResponseHead& headers);
+
+void OnAuctionWorkletNetworkRequestComplete(
+    int frame_tree_node_id,
+    const std::string& request_id,
+    const network::URLLoaderCompletionStatus& status);
+
 bool ShouldBypassCSP(const NavigationRequest& nav_request);
 
 void ApplyNetworkOverridesForDownload(
@@ -201,17 +226,6 @@ void WillInitiatePrerender(FrameTree& frame_tree);
 void DidActivatePrerender(const NavigationRequest& nav_request,
                           const absl::optional<base::UnguessableToken>&
                               initiator_devtools_navigation_token);
-// This function reports cancellation status to DevTools with the
-// `disallowed_api_method`, which is used to give users more information about
-// the cancellation details if the prerendering uses disallowed API method, and
-// disallowed_api_method will be formatted for display in the DevTools. See the
-// DevTools implementation for the format.
-void DidCancelPrerender(
-    FrameTreeNode* ftn,
-    const GURL& prerendering_url,
-    const base::UnguessableToken& initiator_devtools_navigation_token,
-    PrerenderFinalStatus status,
-    const std::string& disallowed_api_method);
 
 void DidUpdatePrefetchStatus(
     FrameTreeNode* ftn,

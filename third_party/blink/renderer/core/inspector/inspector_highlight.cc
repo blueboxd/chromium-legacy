@@ -310,7 +310,7 @@ void AppendStyleInfo(Element* element,
     if (value->IsColorValue()) {
       Color color = static_cast<const cssvalue::CSSColor*>(value)->Value();
       computed_style->setArray(name + "-unclamped-rgba", ToRGBAList(color));
-      if (!color.IsLegacyColor()) {
+      if (!Color::IsLegacyColorSpace(color.GetColorSpace())) {
         computed_style->setString(name + "-css-text", value->CssText());
       }
       computed_style->setString(name, ToHEXA(color));
@@ -1021,8 +1021,7 @@ Vector<String> GetAuthoredGridTrackSizes(const CSSValue* value,
     return result;
 
   for (auto list_value : *value_list) {
-    if (auto* grid_auto_repeat_value =
-            DynamicTo<cssvalue::CSSGridAutoRepeatValue>(list_value.Get())) {
+    if (IsA<cssvalue::CSSGridAutoRepeatValue>(list_value.Get())) {
       Vector<String> repeated_track_sizes;
       for (auto auto_repeat_value : To<CSSValueList>(*list_value)) {
         if (!auto_repeat_value->IsGridLineNamesValue())

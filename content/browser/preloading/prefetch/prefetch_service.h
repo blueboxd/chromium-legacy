@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/preloading/prefetch/prefetch_container.h"
 #include "content/browser/preloading/prefetch/prefetch_status.h"
-#include "content/browser/preloading/prefetch/prefetch_streaming_url_loader_status.h"
+#include "content/browser/preloading/prefetch/prefetch_streaming_url_loader_common_types.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/service_worker_context.h"
@@ -99,11 +99,10 @@ class CONTENT_EXPORT PrefetchService {
 
   // Called when a navigation to `url` that will be served by
   // `prefetch_container` is likely to occur in the immediate future.
-  // |url| and |prefetch_container->GetURL()| might not be the same
+  // |url| and |prefetch_container.GetURL()| might not be the same
   // because of No-Vary-Search non-exact url match.
-  virtual void PrepareToServe(
-      const GURL& url,
-      base::WeakPtr<PrefetchContainer> prefetch_container);
+  virtual void PrepareToServe(const GURL& url,
+                              PrefetchContainer& prefetch_container);
 
   // Finds the prefetch (if any) that can be used to serve a navigation to
   // |url|, and then calls |on_prefetch_to_serve_ready| with that prefetch.
@@ -171,6 +170,7 @@ class CONTENT_EXPORT PrefetchService {
   void OnGotServiceWorkerResult(
       const GURL& url,
       base::WeakPtr<PrefetchContainer> prefetch_container,
+      base::Time check_has_service_worker_start_time,
       OnEligibilityResultCallback result_callback,
       ServiceWorkerCapability service_worker_capability) const;
 
@@ -283,11 +283,33 @@ class CONTENT_EXPORT PrefetchService {
       const net::CookieAccessResultList& cookie_list,
       const net::CookieAccessResultList& excluded_cookies);
 
+  enum class HandlePrefetchContainerResult {
+    // No prefetch was available to be used.
+    kNotAvailable,
+    // There was a prefetch available but it is not usable.
+    kNotUsable,
+    // The prefetch will be served.
+    kToBeServed,
+    // The prefetch cannot be served because Cookies have changed.
+    kNotToBeServedCookiesChanged,
+    // The prefetch's head has not yet been received.
+    kWaitForHead
+  };
+
+  using FallbackToRegularNavigationWhenPrefetchNotUsable = base::StrongAlias<
+      class FallbackToRegularNavigationWhenPrefetchNotUsableTag,
+      bool>;
   // Helper function for |GetPrefetchToServe| to return |prefetch_container| via
-  // |on_prefetch_to_serve_ready|. Starts the cookie copy process for the given
-  // prefetch if needed, and updates its state.
-  void ReturnPrefetchToServe(PrefetchContainer::Reader reader,
-                             OnPrefetchToServeReady on_prefetch_to_serve_ready);
+  // |on_prefetch_to_serve_ready| callback in |prefetch_match_resolver|. Starts
+  // the cookie copy process for the given prefetch if needed, and updates its
+  // state.
+  HandlePrefetchContainerResult ReturnPrefetchToServe(
+      const GURL& prefetch_url,
+      PrefetchContainer::Reader reader,
+      PrefetchMatchResolver& prefetch_match_resolver,
+      FallbackToRegularNavigationWhenPrefetchNotUsable
+          when_prefetch_not_used_fallback_to_regular_navigation =
+              FallbackToRegularNavigationWhenPrefetchNotUsable(true));
 
   // Helper function for |GetPrefetchToServe| to wait for head of a
   // potentially matching CL in order to decide if we can use it or not for
@@ -298,20 +320,19 @@ class CONTENT_EXPORT PrefetchService {
   void WaitOnPrefetchToServeHead(
       const PrefetchContainer::Key& key,
       base::WeakPtr<PrefetchMatchResolver> prefetch_match_resolver,
+      const GURL& prefetch_url,
       base::WeakPtr<PrefetchContainer> prefetch_container);
 
   // Helper function for |GetPrefetchToServe| which identifies the
-  // |prefetch_container|'s that could potentially be served and uses them to
-  // populate `prefetch_match_resolver`.
-  void FindPrefetchContainerToServe(
-      const PrefetchContainer::Key& key,
-      PrefetchMatchResolver& prefetch_match_resolver);
+  // |prefetch_container|'s that could potentially be served.
+  std::vector<PrefetchContainer*> FindPrefetchContainerToServe(
+      const PrefetchContainer::Key& key);
 
   // Helper function for |GetPrefetchToServe| which handles a
   // |prefetch_container| that could potentially be served to the navigation.
-  void HandlePrefetchContainerToServe(
+  HandlePrefetchContainerResult HandlePrefetchContainerToServe(
       const PrefetchContainer::Key& key,
-      PrefetchContainer* prefetch_container,
+      PrefetchContainer& prefetch_container,
       PrefetchMatchResolver& prefetch_match_resolver);
 
   // Checks if there is a prefetch in |all_prefetches_| with the same URL as
@@ -362,6 +383,8 @@ class CONTENT_EXPORT PrefetchService {
   // response, and have started the cookie copy process. A prefetch is added to
   // this map when |PrepareToServe| is called on it, and once in this map, it
   // can be returned by |GetPrefetchToServe|.
+  // The other way a prefetch could be in this map is if the prefetch matches
+  // exactly by URL and we're waiting for head.
   //
   // Unlike other maps, the URL in `PrefetchContainer::Key` can be different
   // from `PrefetchContainer::GetURL()` due to No-Vary-Search.

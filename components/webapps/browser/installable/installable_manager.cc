@@ -14,6 +14,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/strings/string_util.h"
 #include "base/task/sequenced_task_runner.h"
+#include "build/build_config.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "components/webapps/browser/webapps_client.h"
 #include "content/public/browser/browser_context.h"
@@ -22,7 +23,6 @@
 #include "content/public/browser/page.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
-// #include "content/public/common/origin_util.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
@@ -101,7 +101,7 @@ void InstallableManager::GetAllErrors(
   DCHECK(callback);
   InstallableParams params;
   params.check_eligibility = true;
-  params.valid_manifest = true;
+  params.installable_criteria = InstallableCriteria::kValidManifestWithIcons;
   params.check_webapp_manifest_display = true;
   params.fetch_screenshots = true;
   params.valid_primary_icon = true;

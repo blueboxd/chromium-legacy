@@ -14,7 +14,6 @@ import static org.chromium.chrome.browser.download.DownloadSnackbarController.IN
 import android.app.Notification;
 
 import androidx.annotation.IntDef;
-import androidx.core.app.ServiceCompat;
 import androidx.test.filters.SmallTest;
 
 import org.junit.Before;
@@ -50,18 +49,15 @@ public class DownloadForegroundServiceTest {
      * Mimics behavior of DownloadForegroundService except for calls to the actual service.
      */
     public static class MockDownloadForegroundService extends DownloadForegroundServiceImpl {
-        @IntDef({MethodID.START_FOREGROUND, MethodID.STOP_FOREGROUND_FLAGS,
-                MethodID.RELAUNCH_NOTIFICATION})
+        @IntDef({MethodID.START_FOREGROUND, MethodID.STOP_FOREGROUND_FLAGS})
         @Retention(RetentionPolicy.SOURCE)
         public @interface MethodID {
             int START_FOREGROUND = 0;
             int STOP_FOREGROUND_FLAGS = 1;
-            int RELAUNCH_NOTIFICATION = 2;
         }
 
-        int mTargetSdk = 20;
+        int mTargetSdk = 34;
         int mStopForegroundFlags = -1;
-        int mRelaunchedNotificationId = INVALID_NOTIFICATION_ID;
         int mNextNotificationId = INVALID_NOTIFICATION_ID;
 
         // Used for saving MethodID values.
@@ -74,7 +70,6 @@ public class DownloadForegroundServiceTest {
         // Clears stored flags/boolean/id/method calls. Call between tests runs.
         void clearStoredState() {
             mStopForegroundFlags = -1;
-            mRelaunchedNotificationId = INVALID_NOTIFICATION_ID;
             mMethodCalls.clear();
             mNextNotificationId = INVALID_NOTIFICATION_ID;
         }
@@ -88,12 +83,6 @@ public class DownloadForegroundServiceTest {
         void stopForegroundInternal(int flags) {
             mMethodCalls.add(MethodID.STOP_FOREGROUND_FLAGS);
             mStopForegroundFlags = flags;
-        }
-
-        @Override
-        void relaunchOldNotification(int notificationId, Notification notification) {
-            mMethodCalls.add(MethodID.RELAUNCH_NOTIFICATION);
-            mRelaunchedNotificationId = notificationId;
         }
 
         @Override
@@ -137,7 +126,6 @@ public class DownloadForegroundServiceTest {
         mForegroundService.startOrUpdateForegroundService(
                 FAKE_DOWNLOAD_ID1, mNotification, INVALID_NOTIFICATION_ID, null, false);
         assertEquals(expectedMethodCalls, mForegroundService.mMethodCalls);
-        assertEquals(INVALID_NOTIFICATION_ID, mForegroundService.mRelaunchedNotificationId);
 
         mForegroundService.clearStoredState();
 
@@ -149,7 +137,6 @@ public class DownloadForegroundServiceTest {
                         MockDownloadForegroundService.MethodID.START_FOREGROUND);
         assertEquals(expectedMethodCalls, mForegroundService.mMethodCalls);
         assertEquals(STOP_FOREGROUND_DETACH, mForegroundService.mStopForegroundFlags);
-        assertEquals(INVALID_NOTIFICATION_ID, mForegroundService.mRelaunchedNotificationId);
 
         mForegroundService.clearStoredState();
 
@@ -161,45 +148,6 @@ public class DownloadForegroundServiceTest {
                         MockDownloadForegroundService.MethodID.START_FOREGROUND);
         assertEquals(expectedMethodCalls, mForegroundService.mMethodCalls);
         assertEquals(STOP_FOREGROUND_REMOVE, mForegroundService.mStopForegroundFlags);
-        assertEquals(INVALID_NOTIFICATION_ID, mForegroundService.mRelaunchedNotificationId);
-    }
-
-    /**
-     * The expected behavior for start foreground when API < 24 is that the foreground is stopped
-     * and, in cases there is a previously pinned notification, it is relaunched.
-     */
-    @Test
-    @SmallTest
-    @Feature({"Download"})
-    public void testStartForeground_sdkLessThan24() {
-        List<Integer> expectedMethodCalls =
-                Arrays.asList(MockDownloadForegroundService.MethodID.START_FOREGROUND);
-
-        // Test the case where there is no other pinned notification and the service starts.
-        mForegroundService.startOrUpdateForegroundService(
-                FAKE_DOWNLOAD_ID1, mNotification, INVALID_NOTIFICATION_ID, null, false);
-        assertEquals(expectedMethodCalls, mForegroundService.mMethodCalls);
-        assertEquals(INVALID_NOTIFICATION_ID, mForegroundService.mRelaunchedNotificationId);
-
-        mForegroundService.clearStoredState();
-
-        // Test the case where there is another pinned notification and the service needs to start.
-        mForegroundService.startOrUpdateForegroundService(
-                FAKE_DOWNLOAD_ID2, mNotification, FAKE_DOWNLOAD_ID1, mNotification, false);
-        expectedMethodCalls = Arrays.asList(MockDownloadForegroundService.MethodID.START_FOREGROUND,
-                MockDownloadForegroundService.MethodID.RELAUNCH_NOTIFICATION);
-        assertEquals(expectedMethodCalls, mForegroundService.mMethodCalls);
-        assertEquals(FAKE_DOWNLOAD_ID1, mForegroundService.mRelaunchedNotificationId);
-
-        mForegroundService.clearStoredState();
-
-        /// Test the case where there is another pinned notification but we are killing it.
-        mForegroundService.startOrUpdateForegroundService(
-                FAKE_DOWNLOAD_ID2, mNotification, FAKE_DOWNLOAD_ID1, mNotification, true);
-        expectedMethodCalls =
-                Arrays.asList(MockDownloadForegroundService.MethodID.START_FOREGROUND);
-        assertEquals(expectedMethodCalls, mForegroundService.mMethodCalls);
-        assertEquals(INVALID_NOTIFICATION_ID, mForegroundService.mRelaunchedNotificationId);
     }
 
     /**
@@ -246,172 +194,5 @@ public class DownloadForegroundServiceTest {
                 INVALID_NOTIFICATION_ID, null);
         assertEquals(expectedMethodCalls, mForegroundService.mMethodCalls);
         assertEquals(STOP_FOREGROUND_REMOVE, mForegroundService.mStopForegroundFlags);
-    }
-
-    /**
-     * The expected behavior for stop foreground when 24 > API >= 23 is:
-     *  - paused: the notification does not get killed and is not handled properly so is persisted.
-     *  - complete/failed: the notification gets killed but relaunched.
-     *  - cancel: the notification gets killed and not relaunched.
-     */
-    @Test
-    @SmallTest
-    @Feature({"Download"})
-    public void testStopForeground_sdkAtLeast23() {
-        mForegroundService.mTargetSdk = 23;
-
-        // When the service gets stopped with request to detach but not kill notification (pause).
-        mForegroundService.startOrUpdateForegroundService(
-                FAKE_DOWNLOAD_ID1, mNotification, INVALID_NOTIFICATION_ID, null, false);
-        mForegroundService.clearStoredState();
-
-        mForegroundService.stopDownloadForegroundService(
-                DownloadForegroundServiceImpl.StopForegroundNotification.DETACH, FAKE_DOWNLOAD_ID1,
-                mNotification);
-        List<Integer> expectedMethodCalls =
-                Arrays.asList(MockDownloadForegroundService.MethodID.STOP_FOREGROUND_FLAGS,
-                        MockDownloadForegroundService.MethodID.RELAUNCH_NOTIFICATION);
-        assertEquals(expectedMethodCalls, mForegroundService.mMethodCalls);
-        assertEquals(ServiceCompat.STOP_FOREGROUND_REMOVE, mForegroundService.mStopForegroundFlags);
-
-        mForegroundService.clearStoredState();
-
-        // When the service gets stopped with request to detach and kill (complete/failed).
-        mForegroundService.startOrUpdateForegroundService(
-                FAKE_DOWNLOAD_ID1, mNotification, INVALID_NOTIFICATION_ID, null, false);
-        mForegroundService.clearStoredState();
-
-        mForegroundService.stopDownloadForegroundService(
-                DownloadForegroundServiceImpl.StopForegroundNotification.DETACH, FAKE_DOWNLOAD_ID1,
-                mNotification);
-        expectedMethodCalls =
-                Arrays.asList(MockDownloadForegroundService.MethodID.STOP_FOREGROUND_FLAGS,
-                        MockDownloadForegroundService.MethodID.RELAUNCH_NOTIFICATION);
-        assertEquals(expectedMethodCalls, mForegroundService.mMethodCalls);
-        assertEquals(ServiceCompat.STOP_FOREGROUND_REMOVE, mForegroundService.mStopForegroundFlags);
-        assertEquals(FAKE_DOWNLOAD_ID1, mForegroundService.mRelaunchedNotificationId);
-
-        // When the service gets stopped with request to not detach but to kill (cancel).
-        mForegroundService.startOrUpdateForegroundService(
-                FAKE_DOWNLOAD_ID1, mNotification, INVALID_NOTIFICATION_ID, null, false);
-        mForegroundService.clearStoredState();
-
-        mForegroundService.stopDownloadForegroundService(
-                DownloadForegroundServiceImpl.StopForegroundNotification.KILL, FAKE_DOWNLOAD_ID1,
-                mNotification);
-        expectedMethodCalls =
-                Arrays.asList(MockDownloadForegroundService.MethodID.STOP_FOREGROUND_FLAGS);
-        assertEquals(expectedMethodCalls, mForegroundService.mMethodCalls);
-        assertEquals(ServiceCompat.STOP_FOREGROUND_REMOVE, mForegroundService.mStopForegroundFlags);
-    }
-
-    /**
-     * The expected behavior for stop foreground when 23 > API >= 21 is similar to the previous case
-     * except that in the case where a relaunch is needed (complete/failed), the relaunch needs to
-     * happen before the service is stopped and requires a "new" notification id.
-     */
-    @Test
-    @SmallTest
-    @Feature({"Download"})
-    public void testStopForeground_sdkAtLeast21() {
-        mForegroundService.mTargetSdk = 21;
-
-        // When the service gets stopped with request to detach but not kill notification (pause).
-        mForegroundService.startOrUpdateForegroundService(
-                FAKE_DOWNLOAD_ID1, mNotification, INVALID_NOTIFICATION_ID, null, false);
-        mForegroundService.clearStoredState();
-
-        mForegroundService.stopDownloadForegroundService(
-                DownloadForegroundServiceImpl.StopForegroundNotification.DETACH, FAKE_DOWNLOAD_ID1,
-                mNotification);
-        List<Integer> expectedMethodCalls =
-                Arrays.asList(MockDownloadForegroundService.MethodID.RELAUNCH_NOTIFICATION,
-                        MockDownloadForegroundService.MethodID.STOP_FOREGROUND_FLAGS);
-        assertEquals(expectedMethodCalls, mForegroundService.mMethodCalls);
-        assertEquals(ServiceCompat.STOP_FOREGROUND_REMOVE, mForegroundService.mStopForegroundFlags);
-
-        // When the service gets stopped with request to detach and kill (complete/failed).
-        mForegroundService.startOrUpdateForegroundService(
-                FAKE_DOWNLOAD_ID1, mNotification, INVALID_NOTIFICATION_ID, null, false);
-        mForegroundService.clearStoredState();
-
-        mForegroundService.mNextNotificationId = FAKE_DOWNLOAD_ID2;
-        mForegroundService.stopDownloadForegroundService(
-                DownloadForegroundServiceImpl.StopForegroundNotification.DETACH, FAKE_DOWNLOAD_ID1,
-                mNotification);
-        expectedMethodCalls =
-                Arrays.asList(MockDownloadForegroundService.MethodID.RELAUNCH_NOTIFICATION,
-                        MockDownloadForegroundService.MethodID.STOP_FOREGROUND_FLAGS);
-        assertEquals(expectedMethodCalls, mForegroundService.mMethodCalls);
-        assertEquals(ServiceCompat.STOP_FOREGROUND_REMOVE, mForegroundService.mStopForegroundFlags);
-        assertEquals(mForegroundService.mNextNotificationId,
-                mForegroundService.mRelaunchedNotificationId);
-
-        // When the service gets stopped with request to not detach but to kill (cancel).
-        mForegroundService.startOrUpdateForegroundService(
-                FAKE_DOWNLOAD_ID1, mNotification, INVALID_NOTIFICATION_ID, null, false);
-        mForegroundService.clearStoredState();
-
-        mForegroundService.stopDownloadForegroundService(
-                DownloadForegroundServiceImpl.StopForegroundNotification.KILL, FAKE_DOWNLOAD_ID1,
-                mNotification);
-        expectedMethodCalls =
-                Arrays.asList(MockDownloadForegroundService.MethodID.STOP_FOREGROUND_FLAGS);
-        assertEquals(expectedMethodCalls, mForegroundService.mMethodCalls);
-        assertEquals(ServiceCompat.STOP_FOREGROUND_REMOVE, mForegroundService.mStopForegroundFlags);
-    }
-
-    /**
-     * The expected behavior of stop foreground when API < 21 is that the notification is killed in
-     * all cases and relaunched in the pause and complete/failed case. When the notification is
-     * relaunched, it is done so before the foreground is stopped and has a new notification id.
-     */
-    @Test
-    @SmallTest
-    @Feature({"Download"})
-    public void testStopForeground_sdkAtLessThan21() {
-        // When the service gets stopped with request to detach but not kill notification (pause).
-        mForegroundService.startOrUpdateForegroundService(
-                FAKE_DOWNLOAD_ID1, mNotification, INVALID_NOTIFICATION_ID, null, false);
-        mForegroundService.clearStoredState();
-
-        mForegroundService.mNextNotificationId = FAKE_DOWNLOAD_ID2;
-        mForegroundService.stopDownloadForegroundService(
-                DownloadForegroundServiceImpl.StopForegroundNotification.DETACH, FAKE_DOWNLOAD_ID1,
-                mNotification);
-        List<Integer> expectedMethodCalls =
-                Arrays.asList(MockDownloadForegroundService.MethodID.RELAUNCH_NOTIFICATION,
-                        MockDownloadForegroundService.MethodID.STOP_FOREGROUND_FLAGS);
-        assertEquals(expectedMethodCalls, mForegroundService.mMethodCalls);
-        assertEquals(ServiceCompat.STOP_FOREGROUND_REMOVE, mForegroundService.mStopForegroundFlags);
-        assertEquals(mForegroundService.mNextNotificationId,
-                mForegroundService.mRelaunchedNotificationId);
-
-        // When the service gets stopped with request to detach and kill (complete/failed).
-        mForegroundService.startOrUpdateForegroundService(
-                FAKE_DOWNLOAD_ID1, mNotification, INVALID_NOTIFICATION_ID, null, false);
-        mForegroundService.clearStoredState();
-
-        mForegroundService.mNextNotificationId = FAKE_DOWNLOAD_ID2;
-        mForegroundService.stopDownloadForegroundService(
-                DownloadForegroundServiceImpl.StopForegroundNotification.DETACH, FAKE_DOWNLOAD_ID1,
-                mNotification);
-        assertEquals(expectedMethodCalls, mForegroundService.mMethodCalls);
-        assertEquals(ServiceCompat.STOP_FOREGROUND_REMOVE, mForegroundService.mStopForegroundFlags);
-        assertEquals(mForegroundService.mNextNotificationId,
-                mForegroundService.mRelaunchedNotificationId);
-
-        // When the service gets stopped with request to not detach but to kill (cancel).
-        mForegroundService.startOrUpdateForegroundService(
-                FAKE_DOWNLOAD_ID1, mNotification, INVALID_NOTIFICATION_ID, null, false);
-        mForegroundService.clearStoredState();
-
-        mForegroundService.stopDownloadForegroundService(
-                DownloadForegroundServiceImpl.StopForegroundNotification.KILL, FAKE_DOWNLOAD_ID1,
-                mNotification);
-        expectedMethodCalls =
-                Arrays.asList(MockDownloadForegroundService.MethodID.STOP_FOREGROUND_FLAGS);
-        assertEquals(expectedMethodCalls, mForegroundService.mMethodCalls);
-        assertEquals(ServiceCompat.STOP_FOREGROUND_REMOVE, mForegroundService.mStopForegroundFlags);
     }
 }

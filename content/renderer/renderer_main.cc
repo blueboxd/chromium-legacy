@@ -30,6 +30,7 @@
 #include "build/chromeos_buildflags.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/content_switches_internal.h"
+#include "content/common/features.h"
 #include "content/common/skia_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -51,6 +52,10 @@
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "third_party/webrtc_overrides/init_webrtc.h"  // nogncheck
 #include "ui/base/ui_base_switches.h"
+
+#if BUILDFLAG(IS_WIN)
+#include "components/startup_metric_utils/renderer/startup_metric_utils.h"
+#endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_ANDROID)
 #include "base/android/library_loader/library_loader_hooks.h"
@@ -112,8 +117,13 @@ std::unique_ptr<base::MessagePump> CreateMainThreadMessagePump() {
 
 void LogTimeToStartRunLoop(const base::CommandLine& command_line,
                            base::TimeTicks run_loop_start_time) {
-  if (!command_line.HasSwitch(switches::kRendererProcessLaunchTimeTicks))
+#if BUILDFLAG(IS_WIN)
+  startup_metric_utils::GetRenderer().RecordRunLoopStart(run_loop_start_time);
+#endif
+
+  if (!command_line.HasSwitch(switches::kRendererProcessLaunchTimeTicks)) {
     return;
+  }
 
   const std::string launch_time_delta_micro_as_string =
       command_line.GetSwitchValueASCII(

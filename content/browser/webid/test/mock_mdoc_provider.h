@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_WEBID_TEST_MOCK_MDOC_PROVIDER_H_
 #define CONTENT_BROWSER_WEBID_TEST_MOCK_MDOC_PROVIDER_H_
 
+#include "base/values.h"
 #include "content/browser/webid/mdocs/mdoc_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -19,11 +20,10 @@ class MockMDocProvider : public MDocProvider {
   MockMDocProvider(const MockMDocProvider&) = delete;
   MockMDocProvider& operator=(const MockMDocProvider&) = delete;
 
-  MOCK_METHOD5(RequestMDoc,
+  MOCK_METHOD4(RequestMDoc,
                void(WebContents*,
-                    const std::string&,
-                    const std::string&,
-                    const std::vector<MDocElementPtr>&,
+                    const url::Origin& origin,
+                    const base::Value::Dict&,
                     MDocCallback));
 };
 

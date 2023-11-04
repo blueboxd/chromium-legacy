@@ -4,12 +4,11 @@
 
 #include "chromeos/ash/components/drivefs/drivefs_host.h"
 
-#include <map>
 #include <memory>
-#include <set>
 #include <utility>
 
 #include "ash/constants/ash_features.h"
+#include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/location.h"
@@ -17,7 +16,6 @@
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "base/unguessable_token.h"
 #include "chromeos/ash/components/drivefs/drivefs_bootstrap.h"
 #include "chromeos/ash/components/drivefs/drivefs_host_observer.h"
 #include "chromeos/ash/components/drivefs/drivefs_http_client.h"
@@ -25,11 +23,9 @@
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/ash/components/drivefs/sync_status_tracker.h"
 #include "chromeos/components/drivefs/mojom/drivefs_native_messaging.mojom.h"
+#include "components/account_id/account_id.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "mojo/public/cpp/platform/platform_channel_endpoint.h"
-#include "mojo/public/cpp/system/invitation.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace drivefs {
 
@@ -385,14 +381,6 @@ DriveFsHost::~DriveFsHost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void DriveFsHost::AddObserver(DriveFsHostObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void DriveFsHost::RemoveObserver(DriveFsHostObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 bool DriveFsHost::Mount() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const AccountId& account_id = delegate_->GetAccountId();
@@ -451,6 +439,10 @@ mojom::QueryParameters::QuerySource DriveFsHost::PerformSearch(
 
 std::string DriveFsHost::GetDefaultMountDirName() const {
   return base::StrCat({"drivefs-", delegate_->GetObfuscatedAccountId()});
+}
+
+DriveFsHostObserver::~DriveFsHostObserver() {
+  CHECK(!IsInObserverList());
 }
 
 }  // namespace drivefs

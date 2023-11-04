@@ -162,6 +162,17 @@ std::string GetServiceWorkerForError(const std::string& error) {
       },
 
       // Diagnostics APIs.
+      async function cancelRoutine() {
+        await chrome.test.assertPromiseRejects(
+            chrome.os.diagnostics.cancelRoutine({
+              uuid: '123',
+            }),
+            'Error: Unauthorized access to ' +
+            'chrome.os.diagnostics.cancelRoutine. ' +
+            '%s'
+        );
+        chrome.test.succeed();
+      },
       async function createMemoryRoutine() {
         await chrome.test.assertPromiseRejects(
             chrome.os.diagnostics.createMemoryRoutine({
@@ -192,6 +203,17 @@ std::string GetServiceWorkerForError(const std::string& error) {
             ),
             'Error: Unauthorized access to ' +
             'chrome.os.diagnostics.getRoutineUpdate. ' +
+            '%s'
+        );
+        chrome.test.succeed();
+      },
+      async function isMemoryRoutineArgumentSupported() {
+        await chrome.test.assertPromiseRejects(
+            chrome.os.diagnostics.isMemoryRoutineArgumentSupported({
+              maxTestingMemKib: 42,
+            }),
+            'Error: Unauthorized access to ' +
+            'chrome.os.diagnostics.isMemoryRoutineArgumentSupported. ' +
             '%s'
         );
         chrome.test.succeed();
@@ -510,6 +532,17 @@ std::string GetServiceWorkerForError(const std::string& error) {
             chrome.os.diagnostics.runUfsLifetimeRoutine(),
             'Error: Unauthorized access to ' +
             'chrome.os.diagnostics.runUfsLifetimeRoutine. ' +
+            '%s'
+        );
+        chrome.test.succeed();
+      },
+      async function startRoutine() {
+        await chrome.test.assertPromiseRejects(
+            chrome.os.diagnostics.startRoutine({
+              uuid: '123',
+            }),
+            'Error: Unauthorized access to ' +
+            'chrome.os.diagnostics.startRoutine. ' +
             '%s'
         );
         chrome.test.succeed();

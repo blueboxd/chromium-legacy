@@ -4,10 +4,11 @@
 
 #include "components/gwp_asan/client/lightweight_detector.h"
 
+#include <algorithm>
 #include <random>
 
-#include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
+#include "components/gwp_asan/client/thread_local_random_bit_generator.h"
 #include "components/gwp_asan/common/allocation_info.h"
 #include "components/gwp_asan/common/pack_stack_trace.h"
 
@@ -21,6 +22,8 @@ LightweightDetector::LightweightDetector(LightweightDetectorMode mode,
                                          size_t num_metadata) {
   CHECK_NE(mode, LightweightDetectorMode::kOff);
   CHECK_LE(num_metadata, LightweightDetectorState::kMaxMetadata);
+
+  ThreadLocalRandomBitGenerator::InitIfNeeded();
 
   state_.mode = mode;
   state_.num_metadata = num_metadata;
@@ -54,7 +57,7 @@ void LightweightDetector::RecordLightweightDeallocation(void* ptr,
     // Perform random eviction while ensuring `metadata_id` keeps increasing.
     std::uniform_int_distribution<LightweightDetectorState::MetadataId>
         distribution(1, state_.num_metadata);
-    base::NonAllocatingRandomBitGenerator generator;
+    ThreadLocalRandomBitGenerator generator;
     metadata_offset = distribution(generator);
   }
 
@@ -67,7 +70,7 @@ void LightweightDetector::RecordLightweightDeallocation(void* ptr,
   slot_metadata.alloc_size = size;
   slot_metadata.alloc_ptr = reinterpret_cast<uintptr_t>(ptr);
 
-  void* trace[LightweightDetectorState::kMaxStackFrames];
+  const void* trace[LightweightDetectorState::kMaxStackFrames];
   size_t len = AllocationInfo::GetStackTrace(
       trace, LightweightDetectorState::kMaxStackFrames);
   slot_metadata.dealloc.trace_len =
@@ -101,6 +104,12 @@ LightweightDetector::GetInternalMemoryRegions() {
       metadata_.get(),
       sizeof(LightweightDetectorState::SlotMetadata) * state_.num_metadata);
   return regions;
+}
+
+bool LightweightDetector::HasAllocationForTesting(uintptr_t address) {
+  return std::any_of(
+      metadata_.get(), metadata_.get() + state_.num_metadata,
+      [&](const auto& metadata) { return metadata.alloc_ptr == address; });
 }
 
 }  // namespace gwp_asan::internal

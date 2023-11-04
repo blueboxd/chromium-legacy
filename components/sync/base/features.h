@@ -91,12 +91,6 @@ BASE_DECLARE_FEATURE(kSyncPersistInvalidations);
 // DeviceInfo has been updated.
 BASE_DECLARE_FEATURE(kSkipInvalidationOptimizationsWhenDeviceInfoUpdated);
 
-// If enabled, the HISTORY data type replaces TYPED_URLS.
-BASE_DECLARE_FEATURE(kSyncEnableHistoryDataType);
-inline constexpr base::FeatureParam<int>
-    kSyncHistoryForeignVisitsToDeletePerBatch{
-        &kSyncEnableHistoryDataType, "foreign_visit_deletions_per_batch", 100};
-
 BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataTypeInTransportMode);
 BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataTypeForCustomPassphraseUsers);
 BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataTypeForDasherUsers);
@@ -112,15 +106,6 @@ BASE_DECLARE_FEATURE(kSyncEnforceBookmarksCountLimit);
 // (Note that opposed to other "account storage" features, this one does not
 // have any effect for signed-in non-syncing users!)
 BASE_DECLARE_FEATURE(kEnablePreferencesAccountStorage);
-
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-// Influences how precisely SyncServiceImpl determines whether Sync-the-feature
-// is enabled. If the feature is on, the new approach is used, which leans on
-// the state reported by IdentityManager. If false, the legacy approach is used,
-// which is based on preference prefs::kSyncRequested.
-// TODO(crbug.com/1219990): Remove this.
-BASE_DECLARE_FEATURE(kSyncIgnoreSyncRequestedPreference);
-#endif  // BUILDFLAG(!IS_CHROMEOS_ASH)
 
 // If enabled, Sync will send a poll GetUpdates request on every browser
 // startup. This is a temporary hack; see crbug.com/1425026.

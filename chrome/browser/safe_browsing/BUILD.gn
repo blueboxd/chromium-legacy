@@ -52,6 +52,7 @@ static_library("safe_browsing") {
     "//components/safe_browsing/core/browser:safe_browsing_metrics_collector",
     "//components/safe_browsing/core/browser/db:database_manager",
     "//components/safe_browsing/core/browser/db:v4_local_database_manager",
+    "//components/safe_browsing/core/browser/password_protection:password_protection_metrics_util",
     "//components/safe_browsing/core/browser/sync",
     "//components/safe_browsing/core/common",
     "//components/safe_browsing/core/common:interfaces",
@@ -67,35 +68,6 @@ static_library("safe_browsing") {
     "//mojo/public/cpp/system",
     "//services/preferences/public/cpp",
   ]
-
-  if (enable_extensions) {
-    sources += [
-      "settings_reset_prompt/default_settings_fetcher.cc",
-      "settings_reset_prompt/default_settings_fetcher.h",
-      "settings_reset_prompt/settings_reset_prompt_config.cc",
-      "settings_reset_prompt/settings_reset_prompt_config.h",
-      "settings_reset_prompt/settings_reset_prompt_controller.cc",
-      "settings_reset_prompt/settings_reset_prompt_controller.h",
-      "settings_reset_prompt/settings_reset_prompt_model.cc",
-      "settings_reset_prompt/settings_reset_prompt_model.h",
-      "settings_reset_prompt/settings_reset_prompt_prefs_manager.cc",
-      "settings_reset_prompt/settings_reset_prompt_prefs_manager.h",
-    ]
-    if (is_win) {
-      sources += [
-        "settings_reset_prompt/settings_reset_prompt_util_win.cc",
-        "settings_reset_prompt/settings_reset_prompt_util_win.h",
-      ]
-    }
-    deps += [
-      # TODO(crbug.com/1216213): Adding ":ntp_background_proto" is a band-aid
-      # fix, figure out a better solution.
-      "//chrome/browser:ntp_background_proto",
-      "//chrome/browser/profiles:profile",
-      "//components/paint_preview/buildflags",
-      "//extensions/browser",
-    ]
-  }
 
   if (safe_browsing_mode != 0) {
     # "Safe Browsing Basic" files used for safe browsing in full mode
@@ -421,6 +393,7 @@ static_library("safe_browsing") {
         "//components/security_interstitials/core:unsafe_resource",
         "//components/sync",
         "//content/public/browser",
+        "//extensions/browser",
         "//net",
         "//services/network/public/cpp:cpp",
       ]

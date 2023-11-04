@@ -18,6 +18,7 @@
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
+#include "base/allocator/partition_allocator/tagging.h"
 #include "build/build_config.h"
 
 #if !BUILDFLAG(HAS_64_BIT_POINTERS)
@@ -70,7 +71,7 @@ struct RawPtrBackupRefImpl {
   // the first two, kMustZeroOnDestruct wouldn't be needed if raw_ptr was used
   // correctly, but we already caught cases where a value is written after
   // destruction.
-  static constexpr bool kMustZeroOnInit = true;
+  static constexpr bool kMustZeroOnConstruct = true;
   static constexpr bool kMustZeroOnMove = true;
   static constexpr bool kMustZeroOnDestruct = true;
 

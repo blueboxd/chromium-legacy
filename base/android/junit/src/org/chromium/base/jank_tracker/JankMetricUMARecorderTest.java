@@ -39,22 +39,24 @@ public class JankMetricUMARecorderTest {
 
     @Test
     public void testRecordMetricsToNative() {
+        long[] timestampsNs = new long[] {5L, 8L, 3L};
         long[] durationsNs = new long[] {5_000_000L, 8_000_000L, 30_000_000L};
         boolean[] jankyFrames = new boolean[] {false, false, true};
 
-        JankMetrics metric = new JankMetrics(durationsNs, jankyFrames);
+        JankMetrics metric = new JankMetrics(timestampsNs, durationsNs, jankyFrames);
 
-        JankMetricUMARecorder.recordJankMetricsToUMA(metric, 0, 1000);
+        JankMetricUMARecorder.recordJankMetricsToUMA(metric, 0, 1000, 1);
 
         // Ensure that the relevant fields are sent down to native.
-        verify(mNativeMock).recordJankMetrics(durationsNs, jankyFrames, 0, 1000);
+        verify(mNativeMock).recordJankMetrics(durationsNs, jankyFrames, 0, 1000, 1);
     }
 
     @Test
     public void testRecordNullMetrics() {
-        JankMetricUMARecorder.recordJankMetricsToUMA(null, 0, 0);
+        JankMetricUMARecorder.recordJankMetricsToUMA(null, 0, 0, 1);
         verify(mNativeMock, never())
                 .recordJankMetrics(ArgumentMatchers.any(), ArgumentMatchers.any(),
-                        ArgumentMatchers.anyLong(), ArgumentMatchers.anyLong());
+                        ArgumentMatchers.anyLong(), ArgumentMatchers.anyLong(),
+                        ArgumentMatchers.anyInt());
     }
 }

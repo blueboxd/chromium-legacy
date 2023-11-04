@@ -33,7 +33,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.Frame.MouseDownCaptionHitTestInReservedGrabHandleSpace"
-    enum="Boolean" expires_after="2023-12-04">
+    enum="Boolean" expires_after="2024-03-24">
   <owner>robliao@chromium.org</owner>
   <owner>pkasting@chromium.org</owner>
   <summary>
@@ -92,7 +92,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.KAnonymityService.QuerySet.Latency" units="ms"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>behamilton@google.com</owner>
   <owner>pauljensen@chromium.org</owner>
   <summary>
@@ -249,7 +249,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.TimeToNotify" units="ms"
-    expires_after="2024-01-21">
+    expires_after="2024-03-24">
   <owner>etienneb@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
@@ -286,7 +286,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.SystemNetworkContextManager.NetworkSandboxState"
-    enum="NetworkSandboxState" expires_after="2024-01-14">
+    enum="NetworkSandboxState" expires_after="2024-03-17">
   <owner>wfh@chromium.org</owner>
   <owner>mmenke@chromium.org</owner>
   <summary>
@@ -318,7 +318,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.Tabs.AnimationSmoothness.TabLoading" units="%"
-    expires_after="2024-01-12">
+    expires_after="2024-03-17">
   <owner>yichenz@chromium.org</owner>
   <owner>chromeos-wmp@google.com</owner>
   <summary>
@@ -364,7 +364,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ChromeColors.ColorType" enum="ChromeColorType"
-    expires_after="2023-12-24">
+    expires_after="2024-03-24">
   <owner>tiborg@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
   <summary>
@@ -379,7 +379,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ChromeColors.DynamicColorOnLoad"
-    enum="DynamicChromeColorsInfo" expires_after="2023-12-24">
+    enum="DynamicChromeColorsInfo" expires_after="2024-03-10">
   <owner>tiborg@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
   <summary>

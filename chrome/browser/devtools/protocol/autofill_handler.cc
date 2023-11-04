@@ -250,15 +250,15 @@ void AutofillHandler::OnFillOrPreviewDataModelForm(
             autofill::mojom::HtmlFieldType::kUnspecified ||
         field.second->html_type() ==
             autofill::mojom::HtmlFieldType::kUnrecognized ||
-        (autofill::AutofillType(field.second->html_type(),
-                                field.second->html_mode())
-             .GetStorableType() != field.second->Type().GetStorableType());
+        (autofill::AutofillType(field.second->html_type()).GetStorableType() !=
+         field.second->Type().GetStorableType());
     filled_fields_to_be_sent_to_devtools->push_back(
         protocol::Autofill::FilledField::Create()
             .SetId(base::UTF16ToASCII(field.second->id_attribute))
             .SetName(base::UTF16ToASCII(field.second->name_attribute))
             .SetValue(base::UTF16ToASCII(field.first->value))
-            .SetHtmlType(field.second->form_control_type)
+            .SetHtmlType(std::string(autofill::FormControlTypeToString(
+                field.second->form_control_type)))
             .SetAutofillType(
                 std::string(FieldTypeToDeveloperRepresentationString(
                     field.second->Type().GetStorableType())))

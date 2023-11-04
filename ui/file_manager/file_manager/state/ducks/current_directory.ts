@@ -12,7 +12,7 @@ import {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../externs/files_ap
 import {CurrentDirectory, DirectoryContent, FileData, FileKey, FileTasks, PropStatus, Selection, State} from '../../externs/ts/state.js';
 import {constants} from '../../foreground/js/constants.js';
 import {PathComponent} from '../../foreground/js/path_component.js';
-import {ActionsProducerGen} from '../../lib/actions_producer.js';
+import type {ActionsProducerGen} from '../../lib/actions_producer.js';
 import {Slice} from '../../lib/base_store.js';
 import {keyedKeepFirst} from '../../lib/concurrency_models.js';
 import {getStore} from '../store.js';
@@ -24,7 +24,7 @@ import {cacheEntries} from './all_entries.js';
  * @suppress {checkTypes}
  */
 
-const slice = new Slice<State>('currentDirectory');
+const slice = new Slice<State, State['currentDirectory']>('currentDirectory');
 export {slice as currentDirectorySlice};
 
 function getEmptySelection(keys: FileKey[] = []): Selection {

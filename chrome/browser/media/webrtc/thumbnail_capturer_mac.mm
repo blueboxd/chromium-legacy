@@ -4,9 +4,7 @@
 
 #include "chrome/browser/media/webrtc/thumbnail_capturer_mac.h"
 
-#include <AvailabilityMacros.h>
 #include <CoreGraphics/CoreGraphics.h>
-#import <Foundation/Foundation.h>
 #import <ScreenCaptureKit/ScreenCaptureKit.h>
 #include <VideoToolbox/VideoToolbox.h>
 
@@ -31,28 +29,6 @@
 #include "media/capture/video_capture_types.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/webrtc/modules/desktop_capture/mac/desktop_frame_utils.h"
-
-// Declaration of SCScreenshotManager that is part of the 14.0 SDK.
-#if !defined(MAC_OS_VERSION_14_0) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_VERSION_14_0
-
-NS_ASSUME_NONNULL_BEGIN
-
-API_AVAILABLE(macos(14.0))
-@interface SCScreenshotManager : NSObject
-
-+ (void)captureImageWithFilter:(SCContentFilter*)contentFilter
-                 configuration:(SCStreamConfiguration*)config
-             completionHandler:
-                 (nullable void (^)(CGImageRef _Nullable sampleBuffer,
-                                    NSError* _Nullable error))completionHandler
-    API_AVAILABLE(macos(14.0));
-
-@end
-
-NS_ASSUME_NONNULL_END
-
-#endif  // MAC_OS_X_VERSION_14_0
 
 using SampleCallback =
     base::RepeatingCallback<void(base::apple::ScopedCFTypeRef<CGImageRef> image,
@@ -399,7 +375,8 @@ void ScreenshotManagerCapturer::OnRecurrentCaptureTimer() {
   }
 }
 
-void ScreenshotManagerCapturer::SCScreenshotCaptureWindow(SCWindow* window) {
+void API_AVAILABLE(macos(14.0))
+    ScreenshotManagerCapturer::SCScreenshotCaptureWindow(SCWindow* window) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   // Create SCStreamConfiguration.
@@ -436,14 +413,9 @@ void ScreenshotManagerCapturer::SCScreenshotCaptureWindow(SCWindow* window) {
     captured_frame_callback.Run(scopedImage, [window windowID]);
   };
 
-  static Class sc_screenshot_manager_class =
-      NSClassFromString(@"SCScreenshotManager");
-  if (!sc_screenshot_manager_class) {
-    return;
-  }
-  [sc_screenshot_manager_class captureImageWithFilter:filter
-                                        configuration:config
-                                    completionHandler:handler];
+  [SCScreenshotManager captureImageWithFilter:filter
+                                configuration:config
+                            completionHandler:handler];
 }
 
 class API_AVAILABLE(macos(13.2)) ThumbnailCapturerMac

@@ -52,6 +52,9 @@ int FakePatchPanelClient::GetAndroidWifiMulticastLockChangeNotifyCount() {
   return notify_android_wifi_multicast_lock_change_count_;
 }
 
+void FakePatchPanelClient::NotifySocketConnectionEvent(
+    const patchpanel::SocketConnectionEvent& msg) {}
+
 void FakePatchPanelClient::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
@@ -64,5 +67,9 @@ void FakePatchPanelClient::NotifyNetworkConfigurationChanged() {
   for (auto& observer : observer_list_)
     observer.NetworkConfigurationChanged();
 }
+
+void FakePatchPanelClient::SetFeatureFlag(
+    patchpanel::SetFeatureFlagRequest::FeatureFlag flag,
+    bool enabled) {}
 
 }  // namespace ash

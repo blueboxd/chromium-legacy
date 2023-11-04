@@ -21,6 +21,7 @@ import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.Pair;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -39,7 +40,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.base.ViewUtils;
@@ -62,18 +62,12 @@ class TabListRecyclerView
     private static final String TAG = "TabListRecyclerView";
     private static final String SHADOW_VIEW_TAG = "TabListViewShadow";
 
-    private static final String MAX_DUTY_CYCLE_PARAM = "max-duty-cycle";
+    // Default values from experimentation.
+    private static final float DEFAULT_DOWNSAMPLING_SCALE = 0.5f;
     private static final float DEFAULT_MAX_DUTY_CYCLE = 0.2f;
 
     public static final long BASE_ANIMATION_DURATION_MS = 218;
     public static final long FINAL_FADE_IN_DURATION_MS = 50;
-
-    /**
-     * Field trial parameter for downsampling scaling factor.
-     */
-    private static final String DOWNSAMPLING_SCALE_PARAM = "downsampling-scale";
-
-    private static final float DEFAULT_DOWNSAMPLING_SCALE = 0.5f;
 
     /**
      * An interface to listen to visibility related changes on this {@link RecyclerView}.
@@ -148,8 +142,8 @@ class TabListRecyclerView
     private VisibilityListener mListener;
     private DynamicResourceLoader mLoader;
     private ViewResourceAdapter mDynamicView;
+    private boolean mBlockTouchInput;
     private boolean mIsDynamicViewRegistered;
-    private long mLastDirtyTime;
     private ImageView mShadowImageView;
     private int mShadowTopOffset;
     private TabListOnScrollListener mScrollListener;
@@ -222,12 +216,29 @@ class TabListRecyclerView
         }
     }
 
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent e) {
+        if (mBlockTouchInput) return true;
+
+        return super.dispatchTouchEvent(e);
+    }
+
     /**
      * Set the {@link VisibilityListener} that will listen on granular visibility events.
      * @param listener The {@link VisibilityListener} to use.
      */
     void setVisibilityListener(VisibilityListener listener) {
         mListener = listener;
+    }
+
+    /**
+     * Set whether to block touch inputs. For example, during an animated transition the
+     * TabListRecyclerView may still be visible, but interacting with it could trigger repeat
+     * animations or unexpected state changes.
+     * @param blockTouchInput Whether the touch inputs should be blocked.
+     */
+    void setBlockTouchInput(boolean blockTouchInput) {
+        mBlockTouchInput = blockTouchInput;
     }
 
     void setDisableItemAnimations(boolean disable) {
@@ -384,18 +395,8 @@ class TabListRecyclerView
         return mResourceId;
     }
 
-    long getLastDirtyTime() {
-        return mLastDirtyTime;
-    }
-
     private float getDownsamplingScale() {
-        String scale = ChromeFeatureList.getFieldTrialParamByFeature(
-                ChromeFeatureList.TAB_TO_GTS_ANIMATION, DOWNSAMPLING_SCALE_PARAM);
-        try {
-            return Float.valueOf(scale);
-        } catch (NumberFormatException e) {
-            return DEFAULT_DOWNSAMPLING_SCALE;
-        }
+        return DEFAULT_DOWNSAMPLING_SCALE;
     }
 
     /**
@@ -403,6 +404,9 @@ class TabListRecyclerView
      * The view resource can be obtained by {@link #getResourceId} in compositor layer.
      */
     void createDynamicView(DynamicResourceLoader loader) {
+        // If there is no resource loader it isn't necessary to create a dynamic view.
+        if (loader == null) return;
+
         // TODO(crbug/1409886): Consider reducing capture frequency or only capturing once. There
         // was some discussion about this in crbug/1386265. However, it was punted on due to mid-end
         // devices having difficulty producing thumbnails before the first capture to avoid the
@@ -414,9 +418,6 @@ class TabListRecyclerView
             @Override
             public boolean isDirty() {
                 boolean dirty = super.isDirty();
-                if (dirty) {
-                    mLastDirtyTime = SystemClock.elapsedRealtime();
-                }
                 if (SystemClock.elapsedRealtime() < mSuppressedUntil || mSuppressCapture) {
                     if (dirty) {
                         Log.d(TAG, "Dynamic View is dirty but suppressed");

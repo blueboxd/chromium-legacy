@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="WebCore.DistillabilityUs" units="microseconds"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>wychen@chromium.org</owner>
   <owner>gilmanmh@google.com</owner>
   <summary>
@@ -60,7 +60,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebCore.FindInPage.DurationBetweenKeystrokes" units="ms"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>jarhar@chromium.org</owner>
   <owner>vmpstr@chromium.org</owner>
   <summary>
@@ -255,7 +255,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebCore.IndexedDB.ErrorDuringForceCloseAborts"
-    enum="LevelDBStatus" expires_after="2024-05-24">
+    enum="LevelDBStatus" expires_after="2023-09-07">
   <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -766,6 +766,16 @@ chromium-metrics-reviews@google.com.
   <owner>leszeks@chromium.org</owner>
   <owner>v8-runtime@google.com</owner>
   <summary>Whether a parsing blocking script was streamed or not.</summary>
+</histogram>
+
+<histogram name="WebCore.Scripts.V8CrowdsourcedCompileHints.ModelQuality"
+    enum="V8CompileHintsModelQuality" expires_after="2024-09-11">
+  <owner>marja@chromium.org</owner>
+  <owner>v8-loading@google.com</owner>
+  <owner>chrome-intelligence-core@google.com</owner>
+  <summary>
+    Whether we got a V8CompileHints model and whether it was good quality.
+  </summary>
 </histogram>
 
 <histogram name="WebCore.WebSocket.SendType" enum="WebSocketSendType"

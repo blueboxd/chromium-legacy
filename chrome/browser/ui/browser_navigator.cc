@@ -182,7 +182,7 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
   Profile* profile = params.initiating_profile;
 
   if (params.open_pwa_window_if_possible) {
-    absl::optional<web_app::AppId> app_id =
+    absl::optional<webapps::AppId> app_id =
         web_app::FindInstalledAppWithUrlInScope(profile, params.url,
                                                 /*window_only=*/true);
     if (!app_id && params.force_open_pwa_window) {
@@ -297,8 +297,10 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
             browser_window ? screen->GetDisplayNearestWindow(native_window)
                            : screen->GetDisplayForNewWindows();
 
-        browser_params.initial_bounds = PictureInPictureWindowManager::
-            CalculateInitialPictureInPictureWindowBounds(*pip_options, display);
+        browser_params.initial_bounds =
+            PictureInPictureWindowManager::GetInstance()
+                ->CalculateInitialPictureInPictureWindowBounds(*pip_options,
+                                                               display);
 
         browser_params.omit_from_session_restore = true;
 
@@ -653,9 +655,18 @@ base::WeakPtr<content::NavigationHandle> Navigate(NavigateParams* params) {
   // the window to function correctly. If we have no source contents to work
   // with (e.g. if an extension popup attempts to open a PiP window), we should
   // cancel the navigation.
-  if (!params->source_contents &&
-      params->disposition == WindowOpenDisposition::NEW_PICTURE_IN_PICTURE) {
-    return nullptr;
+  //
+  // If it does have source contents, only allow the navigation if the scheme of
+  // the URL in the omnibox is either https:// or file://, otherwise the omnibox
+  // displayed in the PiP window may be misleading in certain scenarios (see
+  // https://crbug.com/1460025)
+  if (params->disposition == WindowOpenDisposition::NEW_PICTURE_IN_PICTURE) {
+    const GURL& url = params->source_contents
+                          ? params->source_contents->GetLastCommittedURL()
+                          : GURL();
+    if (!url.SchemeIs(url::kHttpsScheme) && !url.SchemeIsFile()) {
+      return nullptr;
+    }
   }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

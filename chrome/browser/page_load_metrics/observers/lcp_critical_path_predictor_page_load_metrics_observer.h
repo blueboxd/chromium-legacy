@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_LCP_CRITICAL_PATH_PREDICTOR_PAGE_LOAD_METRICS_OBSERVER_H_
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_LCP_CRITICAL_PATH_PREDICTOR_PAGE_LOAD_METRICS_OBSERVER_H_
 
+#include "chrome/browser/predictors/lcp_critical_path_predictor/lcp_critical_path_predictor_util.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "content/public/browser/page_user_data.h"
 
@@ -17,7 +18,8 @@ extern const char kHistogramLCPPLargestContentfulPaint[];
 }  // namespace internal
 
 // PageLoadMetricsObserver responsible for:
-// - Staging LCP element locator information until LCP is finalized, and
+// - Staging LCP element locator, LCP influencer scripts, used fonts and other
+//   information until LCP is finalized, and
 // - Reporting "PageLoad.Clients.LCPP." UMAs
 class LcpCriticalPathPredictorPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver {
@@ -53,9 +55,11 @@ class LcpCriticalPathPredictorPageLoadMetricsObserver
       const LcpCriticalPathPredictorPageLoadMetricsObserver&) = delete;
   ~LcpCriticalPathPredictorPageLoadMetricsObserver() override;
 
-  void SetLcpElementLocator(const std::string& lcp_element_locator) {
-    lcp_element_locator_ = lcp_element_locator;
-  }
+  void SetLcpElementLocator(const std::string& lcp_element_locator);
+  void SetLcpInfluencerScriptUrls(
+      const std::vector<GURL>& lcp_influencer_scripts);
+  // Append fetched font URLs to the list to be passed to LCPP.
+  void AppendFetchedFontUrl(const GURL& font_url);
 
  private:
   // PageLoadMetricsObserver implementation:
@@ -83,10 +87,7 @@ class LcpCriticalPathPredictorPageLoadMetricsObserver
   // Flipped to true iff the navigation had associated non-empty LCPP hint data.
   bool is_lcpp_hinted_navigation_ = false;
 
-  // LCPP write path [1]: Staging area of the proto3 serialized element locator
-  // of the latest LCP candidate element. [1]
-  // https://docs.google.com/document/d/1waakt6bSvedWdaUQ2mC255NF4k8j7LybK2dQ7WptxiE/edit#heading=h.hy4g58pyf548
-  absl::optional<std::string> lcp_element_locator_;
+  absl::optional<predictors::LcppDataInputs> lcpp_data_inputs_;
 
   base::WeakPtrFactory<LcpCriticalPathPredictorPageLoadMetricsObserver>
       weak_factory_{this};

@@ -14,12 +14,12 @@
 #import "base/memory/raw_ptr.h"
 #import "base/ranges/algorithm.h"
 #import "base/strings/sys_string_conversions.h"
+#import "components/password_manager/core/browser/features/password_manager_features_util.h"
 #import "components/password_manager/core/browser/password_form.h"
-#import "components/password_manager/core/browser/password_manager_features_util.h"
+#import "components/password_manager/core/browser/password_sync_util.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/signin/public/identity_manager/account_info.h"
-#import "components/sync/base/features.h"
 #import "components/sync/service/sync_service.h"
 #import "ios/chrome/browser/passwords/password_check_observer_bridge.h"
 #import "ios/chrome/browser/passwords/password_checkup_metrics.h"
@@ -36,10 +36,6 @@ using base::SysNSStringToUTF16;
 using password_manager::CredentialUIEntry;
 
 namespace {
-
-bool IsPasswordNotesWithBackupEnabled() {
-  return base::FeatureList::IsEnabled(syncer::kPasswordNotesWithBackup);
-}
 
 bool MatchesRealmUsernameAndPassword(PasswordDetails* password,
                                      const CredentialUIEntry& credential) {
@@ -167,37 +163,6 @@ bool ShouldDisplayCredentialAsMuted(
   _syncService = syncService;
   _delegate = delegate;
 
-  // TODO(crbug.com/1400692): Improve saved passwords logic when helper is
-  // available in SavedPasswordsPresenter.
-  _usernamesWithSameDomainDict = [[NSMutableDictionary alloc] init];
-  NSMutableSet<NSString*>* signonRealms = [[NSMutableSet alloc] init];
-  auto savedCredentials =
-      manager->GetSavedPasswordsPresenter()->GetSavedCredentials();
-
-  // Store all usernames by domain.
-  for (const auto& credential : self.credentials) {
-    [signonRealms
-        addObject:[NSString
-                      stringWithCString:credential.GetFirstSignonRealm().c_str()
-                               encoding:[NSString defaultCStringEncoding]]];
-  }
-  for (const auto& cred : savedCredentials) {
-    NSString* signonRealm =
-        [NSString stringWithCString:cred.GetFirstSignonRealm().c_str()
-                           encoding:[NSString defaultCStringEncoding]];
-    if ([signonRealms containsObject:signonRealm]) {
-      NSMutableSet* set =
-          [_usernamesWithSameDomainDict objectForKey:signonRealm];
-      if (!set) {
-        set = [[NSMutableSet alloc] init];
-        [set addObject:base::SysUTF16ToNSString(cred.username)];
-        [_usernamesWithSameDomainDict setObject:set forKey:signonRealm];
-
-      } else {
-        [set addObject:base::SysUTF16ToNSString(cred.username)];
-      }
-    }
-  }
   return self;
 }
 
@@ -215,6 +180,10 @@ bool ShouldDisplayCredentialAsMuted(
   if (self.credentials[0].blocked_by_user) {
     DCHECK_EQ(self.credentials.size(), 1u);
     [_consumer setIsBlockedSite:YES];
+  }
+
+  if ([self isUserEligibleForSendingPasswords]) {
+    [_consumer setupRightShareButton];
   }
 }
 
@@ -243,7 +212,7 @@ bool ShouldDisplayCredentialAsMuted(
   }
 
   // Use the iterator before base::Erase() makes it invalid.
-  _manager->GetSavedPasswordsPresenter()->RemoveCredential(*it);
+  self.savedPasswordsPresenter->RemoveCredential(*it);
   // TODO(crbug.com/1359392). Once kPasswordsGrouping launches, the mediator
   // should update the passwords model and receive the updates via
   // SavedPasswordsPresenterObserver, instead of replicating the updates to its
@@ -271,7 +240,7 @@ bool ShouldDisplayCredentialAsMuted(
   }
 
   it->stored_in = {password_manager::PasswordForm::Store::kAccountStore};
-  _manager->GetSavedPasswordsPresenter()->MoveCredentialsToAccount(
+  self.savedPasswordsPresenter->MoveCredentialsToAccount(
       {*it}, password_manager::metrics_util::MoveToAccountStoreTrigger::
                  kExplicitlyTriggeredInSettings);
   [self providePasswordsToConsumer];
@@ -314,6 +283,10 @@ bool ShouldDisplayCredentialAsMuted(
   _manager->MuteCredential(*it);
 }
 
+- (password_manager::SavedPasswordsPresenter*)savedPasswordsPresenter {
+  return _manager->GetSavedPasswordsPresenter();
+}
+
 #pragma mark - PasswordDetailsTableViewControllerDelegate
 
 - (void)passwordDetailsViewController:
@@ -337,9 +310,8 @@ bool ShouldDisplayCredentialAsMuted(
                                                credential.username)] &&
               [oldPassword isEqualToString:base::SysUTF16ToNSString(
                                                credential.password)] &&
-              (!IsPasswordNotesWithBackupEnabled() ||
-               [oldNote
-                   isEqualToString:base::SysUTF16ToNSString(credential.note)]);
+              [oldNote
+                  isEqualToString:base::SysUTF16ToNSString(credential.note)];
         });
 
     // There should be no reason not to find the credential in the vector of
@@ -350,10 +322,8 @@ bool ShouldDisplayCredentialAsMuted(
     CredentialUIEntry updated_credential = original_credential;
     updated_credential.username = SysNSStringToUTF16(password.username);
     updated_credential.password = SysNSStringToUTF16(password.password);
-    if (IsPasswordNotesWithBackupEnabled()) {
-      updated_credential.note = SysNSStringToUTF16(password.note);
-    }
-    if (_manager->GetSavedPasswordsPresenter()->EditSavedCredentials(
+    updated_credential.note = SysNSStringToUTF16(password.note);
+    if (self.savedPasswordsPresenter->EditSavedCredentials(
             original_credential, updated_credential) ==
         password_manager::SavedPasswordsPresenter::EditResult::kSuccess) {
       // Update the usernames by domain dictionary.
@@ -413,7 +383,7 @@ bool ShouldDisplayCredentialAsMuted(
 - (BOOL)isUsernameReused:(NSString*)newUsername forDomain:(NSString*)domain {
   // It is more efficient to check set of the usernames for the same origin
   // instead of delegating this to the `_manager`.
-  return [[_usernamesWithSameDomainDict objectForKey:domain]
+  return [[self.usernamesWithSameDomainDict objectForKey:domain]
       containsObject:newUsername];
 }
 
@@ -445,6 +415,44 @@ bool ShouldDisplayCredentialAsMuted(
 }
 
 #pragma mark - Private
+
+- (NSMutableDictionary<NSString*, NSMutableSet<NSString*>*>*)
+    usernamesWithSameDomainDict {
+  if (!_usernamesWithSameDomainDict) {
+    // TODO(crbug.com/1400692): Improve saved passwords logic when helper is
+    // available in SavedPasswordsPresenter.
+    _usernamesWithSameDomainDict = [[NSMutableDictionary alloc] init];
+    NSMutableSet<NSString*>* signonRealms = [[NSMutableSet alloc] init];
+    auto savedCredentials = self.savedPasswordsPresenter->GetSavedCredentials();
+
+    // Store all usernames by domain.
+    for (const auto& credential : self.credentials) {
+      [signonRealms
+          addObject:[NSString
+                        stringWithCString:credential.GetFirstSignonRealm()
+                                              .c_str()
+                                 encoding:[NSString defaultCStringEncoding]]];
+    }
+    for (const auto& cred : savedCredentials) {
+      NSString* signonRealm =
+          [NSString stringWithCString:cred.GetFirstSignonRealm().c_str()
+                             encoding:[NSString defaultCStringEncoding]];
+      if ([signonRealms containsObject:signonRealm]) {
+        NSMutableSet* set =
+            [_usernamesWithSameDomainDict objectForKey:signonRealm];
+        if (!set) {
+          set = [[NSMutableSet alloc] init];
+          [set addObject:base::SysUTF16ToNSString(cred.username)];
+          [_usernamesWithSameDomainDict setObject:set forKey:signonRealm];
+
+        } else {
+          [set addObject:base::SysUTF16ToNSString(cred.username)];
+        }
+      }
+    }
+  }
+  return _usernamesWithSameDomainDict;
+}
 
 // Pushes password details to the consumer.
 - (void)providePasswordsToConsumer {
@@ -490,7 +498,8 @@ bool ShouldDisplayCredentialAsMuted(
     return;
   }
 
-  NSMutableSet* set = [_usernamesWithSameDomainDict objectForKey:signonRealm];
+  NSMutableSet* set =
+      [self.usernamesWithSameDomainDict objectForKey:signonRealm];
   if (set) {
     [set removeObject:oldUsername];
     [set addObject:newUsername];
@@ -519,6 +528,16 @@ bool ShouldDisplayCredentialAsMuted(
     return absl::nullopt;
   }
   return *it;
+}
+
+// Returns YES if all of the following conditions are met:
+// * User is syncing or signed in and opted in to account storage.
+// * Password sending feature is enabled.
+- (BOOL)isUserEligibleForSendingPasswords {
+  return password_manager::sync_util::GetAccountForSaving(_prefService,
+                                                          _syncService) &&
+         base::FeatureList::IsEnabled(
+             password_manager::features::kSendPasswords);
 }
 
 @end

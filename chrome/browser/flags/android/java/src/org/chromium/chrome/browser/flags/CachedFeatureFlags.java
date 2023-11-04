@@ -4,11 +4,6 @@
 
 package org.chromium.chrome.browser.flags;
 
-import androidx.annotation.AnyThread;
-
-import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-
 import java.util.List;
 import java.util.Map;
 
@@ -32,17 +27,15 @@ import java.util.Map;
  * value in shared preferences.
  */
 public class CachedFeatureFlags {
-    private static ValuesOverridden sValuesOverridden = new ValuesOverridden();
-
     /**
      * Sets the feature flags to use in JUnit and instrumentation tests.
      *
-     * Do not call this from tests; use @EnableFeatures/@DisableFeatures annotations instead.
+     * @deprecated Do not call this from tests; use @EnableFeatures/@DisableFeatures annotations
+     * instead.
      */
+    @Deprecated
     public static void setFeaturesForTesting(Map<String, Boolean> features) {
         assert features != null;
-
-        sValuesOverridden.enableOverrides();
 
         CachedFlag.setFeaturesForTesting(features);
     }
@@ -63,23 +56,6 @@ public class CachedFeatureFlags {
         for (CachedFieldTrialParameter parameter : parameters) {
             parameter.cacheToDisk();
         }
-    }
-
-    // TODO(crbug.com/1442347): Switch downstream usages to call ChromeCachedFlags and inline this.
-    public static void cacheMinimalBrowserFlagsTimeFromNativeTime() {
-        SharedPreferencesManager.getInstance().writeLong(
-                ChromePreferenceKeys.FLAGS_LAST_CACHED_MINIMAL_BROWSER_FLAGS_TIME_MILLIS,
-                System.currentTimeMillis());
-    }
-
-    /**
-     * Returns the time (in millis) the minimal browser flags were cached.
-     *
-     * TODO(crbug.com/1442347): Switch downstream usages to call ChromeCachedFlags and inline this.
-     */
-    public static long getLastCachedMinimalBrowserFlagsTimeMillis() {
-        return SharedPreferencesManager.getInstance().readLong(
-                ChromePreferenceKeys.FLAGS_LAST_CACHED_MINIMAL_BROWSER_FLAGS_TIME_MILLIS, 0);
     }
 
     /**
@@ -107,121 +83,15 @@ public class CachedFeatureFlags {
         return CachedFlagsSafeMode.getInstance().getBehaviorForTesting();
     }
 
-    @AnyThread
-    static boolean getConsistentBooleanValue(String preferenceName, boolean defaultValue) {
-        CachedFlagsSafeMode.getInstance().onFlagChecked();
-
-        if (sValuesOverridden.isEnabled()) {
-            return sValuesOverridden.getBool(preferenceName, defaultValue);
-        }
-
-        Boolean value;
-        synchronized (ValuesReturned.sBoolValues) {
-            value = ValuesReturned.sBoolValues.get(preferenceName);
-            if (value != null) {
-                return value;
-            }
-
-            value = CachedFlagsSafeMode.getInstance().getBooleanFieldTrialParam(
-                    preferenceName, defaultValue);
-            if (value == null) {
-                value = SharedPreferencesManager.getInstance().readBoolean(
-                        preferenceName, defaultValue);
-            }
-
-            ValuesReturned.sBoolValues.put(preferenceName, value);
-        }
-        return value;
-    }
-
-    @AnyThread
-    static String getConsistentStringValue(String preferenceName, String defaultValue) {
-        CachedFlagsSafeMode.getInstance().onFlagChecked();
-
-        if (sValuesOverridden.isEnabled()) {
-            return sValuesOverridden.getString(preferenceName, defaultValue);
-        }
-
-        String value;
-        synchronized (ValuesReturned.sStringValues) {
-            value = ValuesReturned.sStringValues.get(preferenceName);
-            if (value != null) {
-                return value;
-            }
-
-            value = CachedFlagsSafeMode.getInstance().getStringFieldTrialParam(
-                    preferenceName, defaultValue);
-            if (value == null) {
-                value = SharedPreferencesManager.getInstance().readString(
-                        preferenceName, defaultValue);
-            }
-
-            ValuesReturned.sStringValues.put(preferenceName, value);
-        }
-        return value;
-    }
-
-    @AnyThread
-    static int getConsistentIntValue(String preferenceName, int defaultValue) {
-        CachedFlagsSafeMode.getInstance().onFlagChecked();
-
-        if (sValuesOverridden.isEnabled()) {
-            return sValuesOverridden.getInt(preferenceName, defaultValue);
-        }
-
-        Integer value;
-        synchronized (ValuesReturned.sIntValues) {
-            value = ValuesReturned.sIntValues.get(preferenceName);
-            if (value != null) {
-                return value;
-            }
-
-            value = CachedFlagsSafeMode.getInstance().getIntFieldTrialParam(
-                    preferenceName, defaultValue);
-            if (value == null) {
-                value = SharedPreferencesManager.getInstance().readInt(
-                        preferenceName, defaultValue);
-            }
-
-            ValuesReturned.sIntValues.put(preferenceName, value);
-        }
-        return value;
-    }
-
-    @AnyThread
-    static double getConsistentDoubleValue(String preferenceName, double defaultValue) {
-        CachedFlagsSafeMode.getInstance().onFlagChecked();
-
-        if (sValuesOverridden.isEnabled()) {
-            return sValuesOverridden.getDouble(preferenceName, defaultValue);
-        }
-
-        Double value;
-        synchronized (ValuesReturned.sDoubleValues) {
-            value = ValuesReturned.sDoubleValues.get(preferenceName);
-            if (value != null) {
-                return value;
-            }
-
-            value = CachedFlagsSafeMode.getInstance().getDoubleFieldTrialParam(
-                    preferenceName, defaultValue);
-            if (value == null) {
-                value = SharedPreferencesManager.getInstance().readDouble(
-                        preferenceName, defaultValue);
-            }
-
-            ValuesReturned.sDoubleValues.put(preferenceName, value);
-        }
-        return value;
-    }
-
+    /**
+     * Do not call this from tests.
+     *
+     * Features.JUnitProcessor and Features.InstrumentationProcessor already reset this state.
+     *
+     * Exceptions are tests that test the flags infrastructure.
+     */
     public static void resetFlagsForTesting() {
         ValuesReturned.clearForTesting();
-        sValuesOverridden.removeOverrides();
-        CachedFlagsSafeMode.getInstance().clearMemoryForTesting();
-    }
-
-    static void setOverrideForTesting(String preferenceKey, String overrideValue) {
-        sValuesOverridden.setOverrideForTesting(preferenceKey, overrideValue);
+        ValuesOverridden.removeOverrides();
     }
 }

@@ -202,6 +202,8 @@ DEFINE_VARIATION_PARAM(kIPHSharingHubLinkToggleFeature,
 DEFINE_VARIATION_PARAM(kIPHWebFeedFollowFeature, "IPH_WebFeedFollow");
 DEFINE_VARIATION_PARAM(kIPHWebFeedPostFollowDialogFeature,
                        "IPH_WebFeedPostFollowDialog");
+DEFINE_VARIATION_PARAM(kIPHWebFeedPostFollowDialogFeatureWithUIUpdate,
+                       "IPH_WebFeedPostFollowDialogWithUIUpdate");
 DEFINE_VARIATION_PARAM(kIPHSharedHighlightingBuilder,
                        "IPH_SharedHighlightingBuilder");
 DEFINE_VARIATION_PARAM(kIPHSharedHighlightingReceiverFeature,
@@ -256,12 +258,12 @@ DEFINE_VARIATION_PARAM(kIPHiOSPromoPostRestoreDefaultBrowserFeature,
                        "IPH_iOSPromoPostDefaultBrowserRestore");
 DEFINE_VARIATION_PARAM(kIPHiOSPromoPasswordManagerWidgetFeature,
                        "IPH_iOSPromoPasswordManagerWidget");
+DEFINE_VARIATION_PARAM(kIPHiOSChoiceScreenFeature,
+                       "IPH_iOSChoiceScreenFeature");
 #endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
-DEFINE_VARIATION_PARAM(kIPHAutofillFeedbackNewBadgeFeature,
-                       "IPH_AutofillFeedbackNewBadge");
 DEFINE_VARIATION_PARAM(kIPHBatterySaverModeFeature, "IPH_BatterySaverMode");
 DEFINE_VARIATION_PARAM(kIPHCompanionSidePanelFeature, "IPH_CompanionSidePanel");
 DEFINE_VARIATION_PARAM(kIPHCompanionSidePanelRegionSearchFeature,
@@ -321,6 +323,8 @@ DEFINE_VARIATION_PARAM(kIPHSideSearchPageActionLabelFeature,
                        "IPH_SideSearchPageActionLabel");
 DEFINE_VARIATION_PARAM(kIPHTabAudioMutingFeature, "IPH_TabAudioMuting");
 DEFINE_VARIATION_PARAM(kIPHTabSearchFeature, "IPH_TabSearch");
+DEFINE_VARIATION_PARAM(kIPHTrackingProtectionOnboardingFeature,
+                       "IPH_TrackingProtectionOnboarding");
 DEFINE_VARIATION_PARAM(kIPHWebUITabStripFeature, "IPH_WebUITabStrip");
 DEFINE_VARIATION_PARAM(kIPHDesktopPwaInstallFeature, "IPH_DesktopPwaInstall");
 DEFINE_VARIATION_PARAM(kIPHProfileSwitchFeature, "IPH_ProfileSwitch");
@@ -343,6 +347,7 @@ DEFINE_VARIATION_PARAM(kIPHAutofillVirtualCardCVCSuggestionFeature,
 DEFINE_VARIATION_PARAM(kIPHAutofillVirtualCardSuggestionFeature,
                        "IPH_AutofillVirtualCardSuggestion");
 DEFINE_VARIATION_PARAM(kIPHCookieControlsFeature, "IPH_CookieControls");
+DEFINE_VARIATION_PARAM(kIPH3pcdUserBypassFeature, "IPH_3pcdUserBypass");
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) ||
         // BUILDFLAG(IS_FUCHSIA)
@@ -414,6 +419,7 @@ DEFINE_VARIATION_PARAM(kIPHScalableIphHelpAppBasedNineFeature,
                        "IPH_ScalableIphHelpAppBasedNine");
 DEFINE_VARIATION_PARAM(kIPHScalableIphHelpAppBasedTenFeature,
                        "IPH_ScalableIphHelpAppBasedTen");
+DEFINE_VARIATION_PARAM(kIPHScalableIphGamingFeature, "IPH_ScalableIphGaming");
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -510,6 +516,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHWebFeedAwarenessFeature),
         VARIATION_ENTRY(kIPHWebFeedFollowFeature),
         VARIATION_ENTRY(kIPHWebFeedPostFollowDialogFeature),
+        VARIATION_ENTRY(kIPHWebFeedPostFollowDialogFeatureWithUIUpdate),
         VARIATION_ENTRY(kIPHSharedHighlightingBuilder),
         VARIATION_ENTRY(kIPHSharedHighlightingReceiverFeature),
         VARIATION_ENTRY(kIPHSharingHubWebnotesStylizeFeature),
@@ -540,9 +547,9 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHiOSShareToolbarItemFeature),
         VARIATION_ENTRY(kIPHiOSPromoPostRestoreDefaultBrowserFeature),
         VARIATION_ENTRY(kIPHiOSPromoPasswordManagerWidgetFeature),
+        VARIATION_ENTRY(kIPHiOSChoiceScreenFeature),
 #elif BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
-        VARIATION_ENTRY(kIPHAutofillFeedbackNewBadgeFeature),
         VARIATION_ENTRY(kIPHBatterySaverModeFeature),
         VARIATION_ENTRY(kIPHCompanionSidePanelFeature),
         VARIATION_ENTRY(kIPHCompanionSidePanelRegionSearchFeature),
@@ -578,6 +585,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHSideSearchPageActionLabelFeature),
         VARIATION_ENTRY(kIPHTabAudioMutingFeature),
         VARIATION_ENTRY(kIPHTabSearchFeature),
+        VARIATION_ENTRY(kIPHTrackingProtectionOnboardingFeature),
         VARIATION_ENTRY(kIPHWebUITabStripFeature),
         VARIATION_ENTRY(kIPHDesktopPwaInstallFeature),
         VARIATION_ENTRY(kIPHProfileSwitchFeature),
@@ -632,6 +640,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHScalableIphHelpAppBasedEightFeature),
         VARIATION_ENTRY(kIPHScalableIphHelpAppBasedNineFeature),
         VARIATION_ENTRY(kIPHScalableIphHelpAppBasedTenFeature),
+        VARIATION_ENTRY(kIPHScalableIphGamingFeature),
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)

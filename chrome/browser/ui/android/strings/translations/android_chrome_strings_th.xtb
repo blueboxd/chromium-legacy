@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
 <translation id="1011749477052068769">ย้ายมาที่นี่</translation>
+<translation id="1014147525163127655">ไม่มีพาสคีย์สำหรับ <ph name="ORIGIN" /> บนอุปกรณ์นี้</translation>
 <translation id="1016498331642356377">ค้นหาด้วยเสียงอย่างรวดเร็ว หากต้องการแก้ไขทางลัดนี้ ให้แตะค้างไว้</translation>
 <translation id="1024113959924243553">Chrome Dev</translation>
 <translation id="1028699632127661925">กำลังส่งไปที่ <ph name="DEVICE_NAME" />...</translation>
@@ -175,6 +176,7 @@
 <translation id="19288952978244135">เปิด Chrome อีกครั้ง</translation>
 <translation id="1933845786846280168">แท็บที่เลือก</translation>
 <translation id="1943432128510653496">บันทึกรหัสผ่าน</translation>
+<translation id="1944535645109964458">ไม่มีพาสคีย์ที่ใช้งานได้</translation>
 <translation id="1952172573699511566">เมื่อเป็นไปได้ เว็บไซต์จะแสดงในภาษาที่คุณต้องการ</translation>
 <translation id="1959679933317802873">กำลังรอเนื้อหา</translation>
 <translation id="1960290143419248813">Android เวอร์ชันนี้ไม่รองรับการอัปเดต Chrome อีกต่อไปแล้ว</translation>
@@ -222,6 +224,7 @@
 <translation id="2189903024544168260">นำความสนใจออกแล้ว</translation>
 <translation id="2194856509914051091">สิ่งที่ควรพิจารณา</translation>
 <translation id="2200113223741723867">จัดการการแชร์ข้อมูลการใช้งาน</translation>
+<translation id="221494669172414749">การเปิด Chrome โดยไม่ใช้การล็อกโปรไฟล์จะนำรหัสผ่านและวิธีการชำระเงินที่บันทึกไว้ออกจากรถ การใช้การล็อกโปรไฟล์จะช่วยให้ข้อมูลนี้ปลอดภัย</translation>
 <translation id="2218567645332692482">อัปเกรดการนำทางให้เป็นแบบ HTTPS และเตือนคุณก่อนโหลดเว็บไซต์ที่ไม่รองรับโปรโตคอลนี้</translation>
 <translation id="2227444325776770048">ดำเนินการต่อในชื่อ <ph name="USER_FULL_NAME" /></translation>
 <translation id="2230777942707397948">หน้าต่างว่าง</translation>
@@ -262,6 +265,7 @@
 <translation id="2461822463642141190">ปัจจุบัน</translation>
 <translation id="2472163211318554013">ลงชื่อเข้าใช้เพื่อรับประโยชน์สูงสุดจาก Chrome</translation>
 <translation id="247737702124049222">คำอธิบายรูปภาพเปิดอยู่</translation>
+<translation id="2479148705183875116">ไปที่การตั้งค่า</translation>
 <translation id="2482878487686419369">การแจ้งเตือน</translation>
 <translation id="2496180316473517155">ประวัติการเข้าชมที่เรียกดู</translation>
 <translation id="2497852260688568942">ผู้ดูแลระบบปิดใช้การซิงค์</translation>
@@ -338,6 +342,7 @@
 <translation id="2840810876587895427">{TAB_COUNT,plural, =1{ระบบจะปิดแท็บที่ไม่ระบุตัวตน <ph name="TAB_COUNT_ONE" /> แท็บ}other{ระบบจะปิดแท็บที่ไม่ระบุตัวตน <ph name="TAB_COUNT_MANY" /> แท็บ}}</translation>
 <translation id="2841216154655874070">{NUM_DAYS,plural, =1{ตรวจสอบเมื่อ 1 วันที่ผ่านมา}other{ตรวจสอบเมื่อ # วันที่ผ่านมา}}</translation>
 <translation id="2842985007712546952">โฟลเดอร์ระดับบนสุด</translation>
+<translation id="2853415089995957805">Chrome จะโหลดหน้าเว็บที่คุณอาจเข้าชมไว้ล่วงหน้าเพื่อให้หน้าเหล่านั้นโหลดเร็วขึ้นเมื่อคุณเข้าชม</translation>
 <translation id="2856503607207334158">ลงชื่อเข้าใช้ไม่สำเร็จ</translation>
 <translation id="2860954141821109167">ตรวจสอบว่ามีการเปิดใช้แอปโทรศัพท์ในอุปกรณ์นี้แล้ว</translation>
 <translation id="2861923151411510142">ฟีเจอร์บางอย่างของ Chrome จะใช้ไม่ได้อีกต่อไป</translation>
@@ -555,7 +560,6 @@
 <translation id="3958287878205277013">ปิดแท็บที่ไม่ระบุตัวตนทั้งหมดเพื่อล้างประวัติการท่องเว็บแบบไม่ระบุตัวตนออกจากอุปกรณ์</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome จะโหลดหน้าเว็บเมื่อพร้อม}other{Chrome จะโหลดหน้าเว็บเมื่อพร้อม}}</translation>
 <translation id="3962119236270174787">การปกป้องแบบมาตรฐานจากเว็บไซต์ การดาวน์โหลด และส่วนขยายที่ทราบแล้วว่าเป็นอันตราย</translation>
-<translation id="3963007978381181125">การเข้ารหัสลับด้วยรหัสผ่านจะไม่รวมข้อมูลวิธีการชำระเงินและที่อยู่จาก Google Pay เฉพาะผู้ที่มีรหัสผ่านของคุณเท่านั้นจึงจะอ่านข้อมูลที่เข้ารหัสได้ Google จะไม่ได้รับหรือจัดเก็บรหัสผ่านนี้ คุณจะต้องรีเซ็ตการซิงค์หากลืมรหัสผ่านหรือต้องการเปลี่ยนแปลงการตั้งค่านี้ <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="3969142555815019568">Chrome ตรวจสอบรหัสผ่านของคุณไม่ได้</translation>
 <translation id="3969863827134279083">เลื่อนขึ้น</translation>
 <translation id="397105322502079400">กำลังคำนวณ...</translation>
@@ -583,6 +587,7 @@
 <translation id="4084712963632273211">จาก <ph name="PUBLISHER_ORIGIN" /> - <ph name="BEGIN_DEEMPHASIZED" />แสดงโดย Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="409109920254068737">คุณสามารถใช้แท็บเล็ตเครื่องนี้เพื่อลงชื่อเข้าใช้บนอุปกรณ์ที่แสดงคิวอาร์โค้ดนี้</translation>
 <translation id="4095146165863963773">ลบข้อมูลแอปไหม</translation>
+<translation id="4095425503313512126">การท่องเว็บและการค้นหารวดเร็วขึ้น</translation>
 <translation id="4096227151372679484">ขั้นตอนการบันทึกบุ๊กมาร์กเปิดอยู่ที่ระดับความสูงครึ่งหนึ่ง</translation>
 <translation id="4101475238162928417">ซิงค์เพื่อรับรหัสผ่าน บุ๊กมาร์ก และอีกมากมายในอุปกรณ์อื่นๆ ของคุณ</translation>
 <translation id="4106587138345390261">Chrome กำลังพัฒนาฟีเจอร์ใหม่ๆ ที่จะช่วยให้เว็บไซต์มอบประสบการณ์การท่องเว็บได้เหมือนเดิมแต่ใช้ข้อมูลของคุณน้อยลง</translation>
@@ -624,6 +629,7 @@
 <translation id="4257230861809842349">ลบรหัสผ่านจากเครื่องมือจัดการรหัสผ่านบน Google ไหม</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />ข้อมูลใดบ้างที่มีการนำไปใช้:<ph name="END_BOLD" /> ประวัติการท่องเว็บของคุณ บันทึกรายการเว็บไซต์ที่คุณเข้าชมโดยใช้ Chrome ในอุปกรณ์นี้</translation>
 <translation id="4269820728363426813">คัดลอกที่อยู่ลิงก์</translation>
+<translation id="4277529130885813215">ใช้อุปกรณ์อื่น</translation>
 <translation id="4283102315569707115">ขอใช้เว็บไซต์เวอร์ชันเดสก์ท็อปโดยค่าเริ่มต้นไหม</translation>
 <translation id="4285846616383034558">คุกกี้ แคช และข้อมูลเว็บไซต์อื่นๆ</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />เปิดการล็อกหน้าจอในการตั้งค่า Android<ph name="END_LINK" /></translation>
@@ -670,6 +676,7 @@
 <translation id="452750746583162491">ตรวจสอบข้อมูลที่ซิงค์</translation>
 <translation id="4528638190900283934">ลงชื่อเข้าใช้เพื่อรับฟีเจอร์เพิ่มเติม</translation>
 <translation id="4532845899244822526">เลือกโฟลเดอร์</translation>
+<translation id="4543131175509360848">ไม่มีชีตพาสคีย์</translation>
 <translation id="4547551584605870320">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> แท็บ}other{<ph name="TAB_COUNT_MANY" /> แท็บ <ph name="TAB_COUNT_INCOGNITO" /> แท็บที่ไม่ระบุตัวตน}}</translation>
 <translation id="4554077758708533499">เชื่อมต่อด้วยสาย USB แล้ว</translation>
 <translation id="4558311620361989323">แป้นพิมพ์ลัดสำหรับหน้าเว็บ</translation>
@@ -792,6 +799,7 @@
 <translation id="5054455334322721892">ระบบอาจบันทึก<ph name="BEGIN_LINK1" />กิจกรรมรูปแบบอื่น<ph name="END_LINK1" />ในบัญชี Google เมื่อคุณลงชื่อเข้าใช้ คุณลบข้อมูลนี้ได้ทุกเมื่อ</translation>
 <translation id="506254248375231072">ไม่มีแท็บ</translation>
 <translation id="5062960805900435602">การอัปเดตเกี่ยวกับการผสานรหัสผ่านปิดอยู่</translation>
+<translation id="5081960376148623587">เลือกว่าจะโหลดหน้าเว็บล่วงหน้าหรือไม่</translation>
 <translation id="5091199029769593641">เร็วๆ นี้คุณจะเห็นเรื่องราวจาก <ph name="SITE_NAME" /> เมื่อเปิดแท็บใหม่ ระบบจะบันทึกเว็บไซต์ที่คุณติดตามไว้ในบัญชี Google โดยคุณจัดการเว็บไซต์เหล่านี้ได้ในการตั้งค่าของฟีเจอร์สำรวจ</translation>
 <translation id="5091249083535528968">ข้อมูลการใช้งานเพิ่มเติม</translation>
 <translation id="509429900233858213">มีข้อผิดพลาดเกิดขึ้น</translation>
@@ -832,6 +840,7 @@
 <translation id="5308380583665731573">เชื่อมต่อ</translation>
 <translation id="5317780077021120954">บันทึก</translation>
 <translation id="5319359161174645648">Google ขอแนะนำ Chrome</translation>
+<translation id="5320351714793324716">Chrome อาจใช้คุกกี้เมื่อโหลดล่วงหน้าหากคุณอนุญาต</translation>
 <translation id="5321849971085220133">Chrome พบวิธีใหม่ๆ ในการลดการติดตามและช่วยให้การท่องเว็บปลอดภัยยิ่งขึ้น Chrome ยัง<ph name="BEGIN_LINK" />คาดคะเนความสนใจของคุณ<ph name="END_LINK" />และให้คุณจัดการข้อมูลเหล่านั้นด้วย จากนั้นเว็บไซต์ที่คุณเข้าชมจะถาม Chrome ว่าคุณสนใจเรื่องอะไรเพื่อแสดงโฆษณาที่ตรงตามความต้องการ</translation>
 <translation id="5326921373682845375">เซิร์ฟเวอร์ของ Google จะไม่ได้รับข้อมูลใหม่เมื่อโหลดหน้าเว็บล่วงหน้าแบบส่วนตัว เนื่องจากหน้าเว็บที่โหลดล่วงหน้าจะได้รับการเข้ารหัส และเว็บไซต์ที่ลิงก์ไปยังหน้าดังกล่าวเป็นเว็บไซต์ Google</translation>
 <translation id="5329858041417644019">เบราว์เซอร์ของคุณไม่มีการจัดการ</translation>
@@ -942,6 +951,7 @@
 <translation id="5869522115854928033">รหัสผ่านที่บันทึกไว้</translation>
 <translation id="587735546353481577">หากต้องการติดตามเว็บไซต์ ให้ไปที่เว็บไซต์นั้น เปิดเมนู Chrome แล้วแตะ "ติดตาม"</translation>
 <translation id="5879072387416556377">รับคำแนะนำที่ดีกว่า</translation>
+<translation id="5899667542927581604">ไม่ได้ปิดชีตพาสคีย์ใดๆ</translation>
 <translation id="5916664084637901428">เปิด</translation>
 <translation id="5919204609460789179">อัปเดต <ph name="PRODUCT_NAME" /> เพื่อเริ่มซิงค์</translation>
 <translation id="5938820472109305350">เพิ่ม<ph name="INTEREST" /></translation>
@@ -1010,6 +1020,7 @@
 <translation id="6295158916970320988">เว็บไซต์ทั้งหมด</translation>
 <translation id="6303969859164067831">ออกจากระบบและปิดการซิงค์</translation>
 <translation id="6312687380483398334">เว็บแอป (ไม่ส่งเสียงหรือแสดงให้เห็น)</translation>
+<translation id="6315386555979018699">ลบและดำเนินการต่อ</translation>
 <translation id="6316139424528454185">ไม่รองรับ Android เวอร์ชันนี้</translation>
 <translation id="6324916366299863871">แก้ไขทางลัด</translation>
 <translation id="6324977638108296054">สร้างลิงก์ไปยังไฮไลต์ไม่ได้</translation>
@@ -1161,6 +1172,7 @@
 <translation id="6955535239952325894">การตั้งค่านี้ปิดใช้อยู่ในเบราว์เซอร์ที่มีการจัดการ</translation>
 <translation id="6963766334940102469">ลบบุ๊กมาร์ก</translation>
 <translation id="696447261358045621">ออกจากโหมดไม่ระบุตัวตน</translation>
+<translation id="6965382102122355670">ตกลง</translation>
 <translation id="6971862865055170158">ไม่อนุมัติ</translation>
 <translation id="6978717888677691380">เว็บไซต์ที่คุณบล็อก</translation>
 <translation id="6979737339423435258">ตั้งแต่ต้น</translation>
@@ -1319,6 +1331,7 @@
 <translation id="7757787379047923882">ข้อความที่แชร์จาก <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">การ์ด SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">เพิ่มที่อยู่</translation>
+<translation id="7766587497031415281">ตัวเลือกเพิ่มเติมในการล้างข้อมูลการท่องเว็บ</translation>
 <translation id="7772032839648071052">ยืนยันข้อความรหัสผ่าน</translation>
 <translation id="7772375229873196092">ปิด <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> วิธี}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> วิธี}}</translation>
@@ -1572,6 +1585,7 @@
 <translation id="8998289560386111590">ใช้ไม่ได้ในอุปกรณ์ของคุณ</translation>
 <translation id="8998729206196772491">คุณกำลังลงชื่อเข้าใช้ด้วยบัญชีที่จัดการโดย <ph name="MANAGED_DOMAIN" /> และทำให้ผู้ดูแลระบบของโดเมนควบคุมข้อมูล Chrome ของคุณได้ ข้อมูลดังกล่าวจะโยงกับบัญชีนี้อย่างถาวร การออกจากระบบ Chrome จะลบข้อมูลของคุณออกจากอุปกรณ์เครื่องนี้ แต่ข้อมูลจะยังจัดเก็บอยู่ในบัญชี Google</translation>
 <translation id="9012585441087414258">ปกป้องจากเว็บไซต์ การดาวน์โหลด และส่วนขยายที่ทราบแล้วว่าเป็นอันตราย หากหน้าเว็บทำสิ่งที่น่าสงสัย ระบบจะส่ง URL และเนื้อหาของหน้าเว็บบางส่วนไปยัง Google Safe Browsing</translation>
+<translation id="9019199799064251516">ดำเนินการต่อโดยไม่ล็อกโปรไฟล์รถยนต์ใช่ไหม</translation>
 <translation id="9022774213089566801">เข้าชมบ่อย</translation>
 <translation id="9022871169049522985">เว็บไซต์และผู้ลงโฆษณาสามารถวัดประสิทธิภาพโฆษณาของตน</translation>
 <translation id="9035378196785279980">ย้ายไปที่\u2026</translation>
@@ -1582,6 +1596,7 @@
 <translation id="9063523880881406963">ปิดการขอเว็บไซต์เดสก์ท็อป</translation>
 <translation id="9065203028668620118">แก้ไข</translation>
 <translation id="9065383040763568503">ข้อมูลที่จัดเก็บไว้ซึ่ง Chrome คิดว่าไม่สำคัญ (เช่น เว็บไซต์ที่ไม่มีการตั้งค่าที่บันทึกไว้หรือที่คุณไม่ค่อยได้เข้าชม)</translation>
+<translation id="9067341854474068781">ไม่มีชีตพาสคีย์ที่เปิดอยู่แบบเต็มความสูง</translation>
 <translation id="906781307897697745">ใน <ph name="PRODUCT_NAME" /></translation>
 <translation id="9069999660519089861">ไม่มีหน้าที่ยังไม่อ่าน</translation>
 <translation id="9070377983101773829">เริ่มค้นหาด้วยเสียง</translation>
@@ -1634,5 +1649,6 @@
 <translation id="983192555821071799">ปิดแท็บทั้งหมด</translation>
 <translation id="987264212798334818">ทั่วไป</translation>
 <translation id="992745192656291733"><ph name="TAB_COUNT" /> แท็บ</translation>
+<translation id="993520549480398880">ล้างบุ๊กมาร์ก ประวัติการเข้าชม และอื่นๆ จากรถคันนี้ด้วย</translation>
 <translation id="996149300115483134">เมนูของการ์ดฟีดปิดอยู่</translation>
 </translationbundle>

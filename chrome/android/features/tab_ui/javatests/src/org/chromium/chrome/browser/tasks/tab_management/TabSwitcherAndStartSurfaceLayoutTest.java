@@ -81,6 +81,7 @@ import org.chromium.base.test.params.ParameterAnnotations.UseMethodParameterBefo
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.ApplicationTestUtils;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
@@ -97,10 +98,13 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.layouts.LayoutTestUtils;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.TabUtils;
-import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
@@ -150,7 +154,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         "force-fieldtrials=Study/Group"})
-@EnableFeatures(ChromeFeatureList.EMPTY_STATES)
+@EnableFeatures({ChromeFeatureList.DEFER_TAB_SWITCHER_LAYOUT_CREATION, ChromeFeatureList.EMPTY_STATES})
 @Restriction(
         {UiRestriction.RESTRICTION_TYPE_PHONE, Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE})
 public class TabSwitcherAndStartSurfaceLayoutTest {
@@ -208,8 +212,8 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         mActivityTestRule.startMainActivityWithURL(NTP_URL);
 
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        Layout layout = TabUiTestHelper.getTabSwitcherLayoutAndVerify(
-                mIsStartSurfaceRefactorEnabled, cta.getLayoutManager());
+        Layout layout =
+                TabUiTestHelper.getTabSwitcherLayoutAndVerify(cta, mIsStartSurfaceRefactorEnabled);
         if (mIsStartSurfaceRefactorEnabled) {
             mTabSwitcherLayout = (TabSwitcherLayout) layout;
         } else {
@@ -258,7 +262,7 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
 
         ChromeTabUtils.switchTabInCurrentTabModel(cta, 0);
         enterTabSwitcher(cta);
-        mRenderTestRule.render(cta.findViewById(R.id.tab_list_view), "3_web_tabs");
+        mRenderTestRule.render(cta.findViewById(R.id.tab_list_recycler_view), "3_web_tabs");
     }
 
     @Test
@@ -279,8 +283,8 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
 
         ChromeTabUtils.switchTabInCurrentTabModel(cta, 0);
         enterGTSWithThumbnailRetry();
-        mRenderTestRule.render(
-                cta.findViewById(R.id.tab_list_view), "3_web_tabs_thumbnail_cache_refactor");
+        mRenderTestRule.render(cta.findViewById(R.id.tab_list_recycler_view),
+                "3_web_tabs_thumbnail_cache_refactor");
     }
 
     @Test
@@ -301,7 +305,7 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
 
         ChromeTabUtils.switchTabInCurrentTabModel(cta, 0);
         enterTabSwitcher(cta);
-        mRenderTestRule.render(cta.findViewById(R.id.tab_list_view), "10_web_tabs");
+        mRenderTestRule.render(cta.findViewById(R.id.tab_list_recycler_view), "10_web_tabs");
     }
 
     @Test
@@ -319,7 +323,8 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         assertEquals(9, cta.getTabModelSelector().getCurrentModel().index());
         enterGTSWithThumbnailRetry();
         // Make sure the grid tab switcher is scrolled down to show the selected tab.
-        mRenderTestRule.render(cta.findViewById(R.id.tab_list_view), "10_web_tabs-select_last");
+        mRenderTestRule.render(
+                cta.findViewById(R.id.tab_list_recycler_view), "10_web_tabs-select_last");
     }
 
     @Test
@@ -367,8 +372,9 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
 
         ChromeTabUtils.switchTabInCurrentTabModel(cta, 0);
         enterTabSwitcher(cta);
-        ChromeRenderTestRule.sanitize(cta.findViewById(R.id.tab_list_view));
-        mRenderTestRule.render(cta.findViewById(R.id.tab_list_view), "3_incognito_web_tabs");
+        ChromeRenderTestRule.sanitize(cta.findViewById(R.id.tab_list_recycler_view));
+        mRenderTestRule.render(
+                cta.findViewById(R.id.tab_list_recycler_view), "3_incognito_web_tabs");
     }
 
     @Test
@@ -396,7 +402,7 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
 
         ChromeTabUtils.switchTabInCurrentTabModel(cta, 0);
         enterTabSwitcher(cta);
-        mRenderTestRule.render(cta.findViewById(R.id.tab_list_view), "3_incognito_ntps");
+        mRenderTestRule.render(cta.findViewById(R.id.tab_list_recycler_view), "3_incognito_ntps");
     }
 
     @Test
@@ -425,8 +431,8 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
 
         ChromeTabUtils.switchTabInCurrentTabModel(cta, 0);
         enterTabSwitcher(cta);
-        mRenderTestRule.render(
-                cta.findViewById(R.id.tab_list_view), "3_incognito_ntps_thumbnail_cache_refactor");
+        mRenderTestRule.render(cta.findViewById(R.id.tab_list_recycler_view),
+                "3_incognito_ntps_thumbnail_cache_refactor");
     }
 
     @Test
@@ -761,7 +767,7 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         assertEquals(3, mActivityTestRule.tabsCount(false));
 
         TabUiTestHelper.getTabSwitcherLayoutAndVerify(
-                mIsStartSurfaceRefactorEnabled, mActivityTestRule.getActivity().getLayoutManager());
+                mActivityTestRule.getActivity(), mIsStartSurfaceRefactorEnabled);
         assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting() - oldCount);
     }
 
@@ -1873,8 +1879,7 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
                 Arrays.asList(normalTabModel.getTabAt(0), normalTabModel.getTabAt(1)));
         createTabGroup(cta, false, tabGroup);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            TabGroupTitleUtils.storeTabGroupTitle(
-                    CriticalPersistedTabData.from(normalTabModel.getTabAt(0)).getRootId(), "Foo");
+            TabGroupTitleUtils.storeTabGroupTitle(normalTabModel.getTabAt(0).getRootId(), "Foo");
         });
         verifyTabSwitcherCardCount(cta, 2);
         assertTrue(snackbarManager.getCurrentSnackbarForTesting().getController()
@@ -1893,10 +1898,8 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         verifyTabSwitcherCardCount(cta, 2);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             assertEquals("Foo",
-                    TabGroupTitleUtils.getTabGroupTitle(
-                            CriticalPersistedTabData.from(normalTabModel.getTabAt(1)).getRootId()));
-            assertNull(TabGroupTitleUtils.getTabGroupTitle(
-                    CriticalPersistedTabData.from(normalTabModel.getTabAt(2)).getRootId()));
+                    TabGroupTitleUtils.getTabGroupTitle(normalTabModel.getTabAt(1).getRootId()));
+            assertNull(TabGroupTitleUtils.getTabGroupTitle(normalTabModel.getTabAt(2).getRootId()));
         });
     }
 
@@ -1927,10 +1930,8 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         createTabGroup(cta, false, tabGroup2);
         verifyTabSwitcherCardCount(cta, 3);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            TabGroupTitleUtils.storeTabGroupTitle(
-                    CriticalPersistedTabData.from(normalTabModel.getTabAt(3)).getRootId(), "Foo");
-            TabGroupTitleUtils.storeTabGroupTitle(
-                    CriticalPersistedTabData.from(normalTabModel.getTabAt(1)).getRootId(), "Bar");
+            TabGroupTitleUtils.storeTabGroupTitle(normalTabModel.getTabAt(3).getRootId(), "Foo");
+            TabGroupTitleUtils.storeTabGroupTitle(normalTabModel.getTabAt(1).getRootId(), "Bar");
         });
         assertTrue(snackbarManager.getCurrentSnackbarForTesting().getController()
                            instanceof UndoGroupSnackbarController);
@@ -1950,11 +1951,9 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         verifyTabSwitcherCardCount(cta, 3);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             assertEquals("Foo",
-                    TabGroupTitleUtils.getTabGroupTitle(
-                            CriticalPersistedTabData.from(normalTabModel.getTabAt(4)).getRootId()));
+                    TabGroupTitleUtils.getTabGroupTitle(normalTabModel.getTabAt(4).getRootId()));
             assertEquals("Bar",
-                    TabGroupTitleUtils.getTabGroupTitle(
-                            CriticalPersistedTabData.from(normalTabModel.getTabAt(0)).getRootId()));
+                    TabGroupTitleUtils.getTabGroupTitle(normalTabModel.getTabAt(0).getRootId()));
         });
     }
 
@@ -1975,8 +1974,7 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
                 Arrays.asList(normalTabModel.getTabAt(0), normalTabModel.getTabAt(1)));
         createTabGroup(cta, false, tabGroup);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            TabGroupTitleUtils.storeTabGroupTitle(
-                    CriticalPersistedTabData.from(normalTabModel.getTabAt(0)).getRootId(), "Foo");
+            TabGroupTitleUtils.storeTabGroupTitle(normalTabModel.getTabAt(0).getRootId(), "Foo");
         });
         verifyTabSwitcherCardCount(cta, 2);
         assertTrue(snackbarManager.getCurrentSnackbarForTesting().getController()
@@ -1991,8 +1989,7 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         // Check that the old group title was deleted when the group merge is committed.
         TestThreadUtils.runOnUiThreadBlocking(() -> snackbarManager.dismissAllSnackbars());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            assertNull(TabGroupTitleUtils.getTabGroupTitle(
-                    CriticalPersistedTabData.from(normalTabModel.getTabAt(1)).getRootId()));
+            assertNull(TabGroupTitleUtils.getTabGroupTitle(normalTabModel.getTabAt(1).getRootId()));
         });
     }
 
@@ -2059,6 +2056,46 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
                        withParent(withId(TabUiTestHelper.getTabSwitcherParentId(
                                ApplicationProvider.getApplicationContext())))))
                 .check(matches(isDisplayed()));
+    }
+
+    @Test
+    @MediumTest
+    @UseMethodParameter(RefactorTestParams.class)
+    // clang-format off
+    @EnableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study",
+                     ChromeFeatureList.HIDE_TAB_ON_TAB_SWITCHER})
+    @CommandLineFlags.Add({BASE_PARAMS})
+    public void testHideTabOnTabSwitcher(boolean isStartSurfaceRefactorEnabled) throws Exception {
+        // clang-format on
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        mActivityTestRule.loadUrlInNewTab("about:blank");
+        final Tab currentTab = cta.getActivityTab();
+        final CallbackHelper shownHelper = new CallbackHelper();
+        final CallbackHelper hiddenHelper = new CallbackHelper();
+        TabObserver observer = new EmptyTabObserver() {
+            @Override
+            public void onShown(Tab tab, @TabSelectionType int type) {
+                assertEquals("Unexpected tab shown", tab, currentTab);
+                shownHelper.notifyCalled();
+            }
+
+            @Override
+            public void onHidden(Tab tab, @TabHidingType int type) {
+                assertEquals("Unexpected tab hidden", tab, currentTab);
+                assertEquals("Unexpected hiding type", type, TabHidingType.TAB_SWITCHER_SHOWN);
+                hiddenHelper.notifyCalled();
+            }
+        };
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> { currentTab.addObserver(observer); });
+
+        enterTabSwitcher(cta);
+        hiddenHelper.waitForFirst();
+
+        leaveTabSwitcher(cta);
+        shownHelper.waitForFirst();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> { currentTab.removeObserver(observer); });
     }
 
     private TabSwitcher.TabListDelegate getTabListDelegateFromUIThread() {
@@ -2274,6 +2311,6 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     private Matcher<View> tabSwitcherViewMatcher() {
         return allOf(withParent(withId(TabUiTestHelper.getTabSwitcherParentId(
                              mActivityTestRule.getActivity()))),
-                withId(R.id.tab_list_view));
+                withId(R.id.tab_list_recycler_view));
     }
 }

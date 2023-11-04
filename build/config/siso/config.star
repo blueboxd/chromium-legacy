@@ -7,7 +7,8 @@
 load("@builtin//struct.star", "module")
 
 __KNOWN_CONFIG_OPTIONS = [
-    "remote_all",
+    # Indicates that the build runs on a builder.
+    "builder",
 ]
 
 def __check(ctx):

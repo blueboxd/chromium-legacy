@@ -6,6 +6,7 @@
 
 #include <math.h>
 
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/anchor_position_scroll_data.h"
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
@@ -157,6 +158,10 @@ class OOFCandidateStyleIterator {
     Initialize();
   }
 
+  bool UsesFallbackStyle() const {
+    return position_fallback_index_ || HasAutoFallbacks();
+  }
+
   const ComputedStyle& GetStyle() const {
     return auto_anchor_style_ ? *auto_anchor_style_ : *style_;
   }
@@ -203,6 +208,9 @@ class OOFCandidateStyleIterator {
   }
 
  private:
+  bool HasAutoFallbacks() const {
+    return auto_anchor_flippable_in_block_ || auto_anchor_flippable_in_inline_;
+  }
   bool HasNextAutoAnchorFallback() const {
     return auto_anchor_flip_block_ != auto_anchor_flippable_in_block_ ||
            auto_anchor_flip_inline_ != auto_anchor_flippable_in_inline_;
@@ -1752,7 +1760,8 @@ NGOutOfFlowLayoutPart::OffsetInfo NGOutOfFlowLayoutPart::CalculateOffset(
     }
   }
 
-  if (iter.PositionFallbackIndex()) {
+  if (iter.UsesFallbackStyle()) {
+    offset_info->uses_fallback_style = true;
     offset_info->fallback_index = iter.PositionFallbackIndex();
     offset_info->non_overflowing_ranges = std::move(non_overflowing_ranges);
   } else {
@@ -1833,6 +1842,33 @@ NGOutOfFlowLayoutPart::TryCalculateOffset(
   const NGLogicalOutOfFlowInsets insets = ComputeOutOfFlowInsets(
       candidate_style, node_info.constraint_space.AvailableSize(),
       anchor_evaluator);
+
+  {
+    auto& document = node_info.node.GetDocument();
+    if (candidate_style.ResolvedJustifySelf(ItemPosition::kNormal)
+            .GetPosition() != ItemPosition::kNormal) {
+      if (insets.inline_start && insets.inline_end) {
+        UseCounter::Count(document,
+                          WebFeature::kOutOfFlowJustifySelfBothInsets);
+      } else if (insets.inline_start || insets.inline_end) {
+        UseCounter::Count(document,
+                          WebFeature::kOutOfFlowJustifySelfSingleInset);
+      } else {
+        UseCounter::Count(document, WebFeature::kOutOfFlowJustifySelfNoInsets);
+      }
+    }
+
+    if (candidate_style.ResolvedAlignSelf(ItemPosition::kNormal)
+            .GetPosition() != ItemPosition::kNormal) {
+      if (insets.block_start && insets.block_end) {
+        UseCounter::Count(document, WebFeature::kOutOfFlowAlignSelfBothInsets);
+      } else if (insets.block_start || insets.block_end) {
+        UseCounter::Count(document, WebFeature::kOutOfFlowAlignSelfSingleInset);
+      } else {
+        UseCounter::Count(document, WebFeature::kOutOfFlowAlignSelfNoInsets);
+      }
+    }
+  }
 
   const LogicalRect unclamped_available_rect =
       ComputeOutOfFlowAvailableRect(node_info.node, node_info.constraint_space,
@@ -2013,11 +2049,7 @@ const NGLayoutResult* NGOutOfFlowLayoutPart::Layout(
                          is_last_fragmentainer_so_far);
   }
 
-  if (layout_result->Status() != NGLayoutResult::kSuccess) {
-    DCHECK_EQ(layout_result->Status(),
-              NGLayoutResult::kOutOfFragmentainerSpace);
-    return layout_result;
-  }
+  DCHECK_EQ(layout_result->Status(), NGLayoutResult::kSuccess);
 
   layout_result->GetMutableForOutOfFlow().SetOutOfFlowInsetsForGetComputedStyle(
       offset_info.insets_for_get_computed_style,
@@ -2026,9 +2058,9 @@ const NGLayoutResult* NGOutOfFlowLayoutPart::Layout(
   layout_result->GetMutableForOutOfFlow().SetOutOfFlowPositionedOffset(
       offset_info.offset);
 
-  if (offset_info.fallback_index) {
+  if (offset_info.uses_fallback_style) {
     layout_result->GetMutableForOutOfFlow().SetPositionFallbackResult(
-        *offset_info.fallback_index, offset_info.non_overflowing_ranges);
+        offset_info.fallback_index, offset_info.non_overflowing_ranges);
   }
 
   return layout_result;
@@ -2245,16 +2277,7 @@ void NGOutOfFlowLayoutPart::AddOOFToFragmentainer(
     HeapVector<NodeToLayout>* fragmented_descendants) {
   const NGLayoutResult* result = LayoutOOFNode(descendant, fragmentainer_space,
                                                is_last_fragmentainer_so_far);
-
-  if (result->Status() != NGLayoutResult::kSuccess) {
-    DCHECK_EQ(result->Status(), NGLayoutResult::kOutOfFragmentainerSpace);
-    // If we're out of space, continue layout in the next fragmentainer.
-    NodeToLayout fragmented_descendant = descendant;
-    fragmented_descendant.offset_info.offset.block_offset = LayoutUnit();
-    fragmented_descendants->emplace_back(fragmented_descendant);
-    *has_actual_break_inside = true;
-    return;
-  }
+  DCHECK_EQ(result->Status(), NGLayoutResult::kSuccess);
 
   // Apply the relative positioned offset now that fragmentation is complete.
   LogicalOffset oof_offset = result->OutOfFlowPositionedOffset();
@@ -2606,6 +2629,7 @@ void NGOutOfFlowLayoutPart::ReplaceFragment(
     // above all OOFs in the containing block chain, to find the right
     // fragmentation context root.
     containing_block = &box;
+    bool is_inside_spanner = false;
     do {
       // Keep searching up the tree until we have found a containing block
       // that's in-flow and the containing block of that containing block is a
@@ -2614,7 +2638,19 @@ void NGOutOfFlowLayoutPart::ReplaceFragment(
       bool is_out_of_flow = containing_block->IsOutOfFlowPositioned();
       containing_block = containing_block->ContainingNGBox();
       if (containing_block->IsFragmentationContextRoot() && !is_out_of_flow) {
+        // If the OOF element we are searching for has a CB that is nested
+        // within a spanner, that OOF will *not* be laid out in the nearest
+        // multicol container. Instead, it will propagate up to the context in
+        // which the spanner is laid out. Thus, continue searching past the
+        // nearest multicol container for the OOF in question.
+        if (is_inside_spanner) {
+          is_inside_spanner = false;
+          continue;
+        }
         break;
+      }
+      if (containing_block->IsColumnSpanAll()) {
+        is_inside_spanner = true;
       }
     } while (containing_block->MightBeInsideFragmentationContext());
 

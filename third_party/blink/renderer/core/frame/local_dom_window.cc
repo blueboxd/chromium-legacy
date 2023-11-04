@@ -173,7 +173,7 @@ void SetCurrentTaskAsCallbackParent(
   ScriptState* script_state = callback->CallbackRelevantScriptState();
   auto* tracker = ThreadScheduler::Current()->GetTaskAttributionTracker();
   if (tracker && script_state->World().IsMainWorld()) {
-    callback->SetParentTaskId(tracker->RunningTaskAttributionId(script_state));
+    callback->SetParentTask(tracker->RunningTask(script_state));
   }
 }
 
@@ -221,7 +221,7 @@ class LocalDOMWindow::NetworkStateObserver final
 
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame, WindowAgent* agent)
     : DOMWindow(frame),
-      ExecutionContext(V8PerIsolateData::MainThreadIsolate(),
+      ExecutionContext(agent->isolate(),
                        agent,
                        /*Same value as IsWindow(). is_window=*/true),
       script_controller_(MakeGarbageCollected<ScriptController>(
@@ -500,7 +500,7 @@ String LocalDOMWindow::CheckAndGetJavascriptUrl(
 }
 
 void LocalDOMWindow::ExceptionThrown(ErrorEvent* event) {
-  MainThreadDebugger::Instance()->ExceptionThrown(this, event);
+  MainThreadDebugger::Instance(GetIsolate())->ExceptionThrown(this, event);
 }
 
 // https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
@@ -908,20 +908,19 @@ void LocalDOMWindow::EnqueueHashchangeEvent(const String& old_url,
 
 void LocalDOMWindow::DispatchPopstateEvent(
     scoped_refptr<SerializedScriptValue> state_object,
-    absl::optional<scheduler::TaskAttributionId>
-        soft_navigation_heuristics_task_id) {
+    scheduler::TaskAttributionInfo* parent_task) {
   DCHECK(GetFrame());
   // This unique_ptr maintains the TaskScope alive for the lifetime of the
   // method.
   std::unique_ptr<scheduler::TaskAttributionTracker::TaskScope>
       task_attribution_scope;
-  if (soft_navigation_heuristics_task_id) {
+  CHECK(ThreadScheduler::Current());
+  auto* tracker = ThreadScheduler::Current()->GetTaskAttributionTracker();
+  if (parent_task) {
     ScriptState* script_state = ToScriptStateForMainWorld(GetFrame());
-    DCHECK(ThreadScheduler::Current());
-    auto* tracker = ThreadScheduler::Current()->GetTaskAttributionTracker();
     if (script_state && tracker) {
       task_attribution_scope = tracker->CreateTaskScope(
-          script_state, soft_navigation_heuristics_task_id,
+          script_state, parent_task,
           scheduler::TaskAttributionTracker::TaskScopeType::kPopState);
     }
   }
@@ -985,7 +984,8 @@ void LocalDOMWindow::FrameDestroyed() {
   GetAgent()->DetachContext(this);
   NotifyContextDestroyed();
   RemoveAllEventListeners();
-  MainThreadDebugger::Instance()->DidClearContextsForFrame(GetFrame());
+  MainThreadDebugger::Instance(GetIsolate())
+      ->DidClearContextsForFrame(GetFrame());
   DisconnectFromFrame();
 }
 
@@ -2313,6 +2313,15 @@ DOMWindow* LocalDOMWindow::openPictureInPictureWindow(
   LocalDOMWindow* pip_dom_window =
       To<LocalDOMWindow>(result.frame->DomWindow());
   pip_dom_window->SetIsPictureInPictureWindow();
+
+  // Also copy any autoplay flags, since these are set on navigation commit.
+  // The pip window should match whatever the opener has.
+  auto* opener_page = entered_window->document()->GetPage();
+  auto* pip_page = pip_dom_window->document()->GetPage();
+  CHECK(opener_page);
+  CHECK(pip_page);
+  pip_page->ClearAutoplayFlags();
+  pip_page->AddAutoplayFlags(opener_page->AutoplayFlags());
 
   return pip_dom_window;
 }

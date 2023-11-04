@@ -6,13 +6,11 @@
 # Some projects (e.g. V8) do not have non-build directories DEPS'ed in.
 import("//build/config/android/config.gni")
 import("//build/config/android/copy_ex.gni")
-import("//build/config/android/jni.gni")
 import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/coverage/coverage.gni")
 import("//build/config/profiling/profiling.gni")
 import("//build/config/python.gni")
-import("//build/config/rts.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/zip.gni")
 import("//build/toolchain/toolchain.gni")
@@ -120,78 +118,6 @@ template("create_native_executable_dist") {
     }
   }
 }
-
-if (enable_java_templates) {
-  # TODO(crbug.com/1456762) - remove this, move the generate_jni targets into
-  # //third_party/jni_zero, and migirate all usages of it.
-  if (build_with_chromium) {
-    import("//third_party/jni_zero/jni_zero.gni")
-  }
-
-  # Declare a jni target
-  #
-  # This target generates the native jni bindings for a set of .java files.
-  #
-  # See third_party/jni_zero/jni_generator.py for more info about the
-  # format of generating JNI bindings.
-  #
-  # Variables
-  #   sources: list of .java files to generate jni for
-  #   namespace: Specify the namespace for the generated header file.
-  #   deps, public_deps: As normal
-  #
-  # Example
-  #   # Target located in base/BUILD.gn.
-  #   generate_jni("foo_jni") {
-  #     # Generates gen/base/foo_jni/Foo_jni.h
-  #     # To use: #include "base/foo_jni/Foo_jni.h"
-  #     sources = [
-  #       "android/java/src/org/chromium/foo/Foo.java",
-  #       ...,
-  #     ]
-  #   }
-  template("generate_jni") {
-    generate_jni_impl(target_name) {
-      forward_variables_from(invoker, "*", TESTONLY_AND_VISIBILITY)
-      forward_variables_from(invoker, TESTONLY_AND_VISIBILITY)
-      metadata = {
-        jni_source_files = sources
-      }
-    }
-  }
-
-  # Declare a jni target for a prebuilt jar
-  #
-  # This target generates the native jni bindings for a set of classes in a .jar.
-  #
-  # See third_party/jni_zero/jni_generator.py for more info about the
-  # format of generating JNI bindings.
-  #
-  # Variables
-  #   classes: list of .class files in the jar to generate jni for. These should
-  #     include the full path to the .class file.
-  #   jar_file: the path to the .jar. If not provided, will default to the sdk's
-  #     android.jar
-  #   unchecked_exceptions: Don't CHECK() for exceptions in generated stubs.
-  #     This behaves as if every method had @CalledByNativeUnchecked.
-  #   deps, public_deps: As normal
-  #
-  # Example
-  #   # Target located in base/BUILD.gn.
-  #   generate_jar_jni("foo_jni") {
-  #     # Generates gen/base/foo_jni/Runnable_jni.h
-  #     # To use: #include "base/foo_jni/Runnable_jni.h"
-  #     classes = [
-  #       "android/view/Foo.class",
-  #     ]
-  #   }
-  template("generate_jar_jni") {
-    generate_jni_impl(target_name) {
-      forward_variables_from(invoker, "*", TESTONLY_AND_VISIBILITY)
-      forward_variables_from(invoker, TESTONLY_AND_VISIBILITY)
-    }
-  }
-}  # enable_java_templates
 
 # non-robolectric things
 if (enable_java_templates && is_android) {
@@ -1292,6 +1218,10 @@ if (enable_java_templates && is_android) {
           rebase = root_build_dir
         }
       } else {
+        # Needed for generate_jni_registration. Keeping this import guarded so
+        # that projects who import //build but not //third_party/jni_zero don't
+        # have issues.
+        import("//third_party/jni_zero/jni_zero.gni")
         _jni_srcjar_target_name = "${target_name}__final_jni"
         generate_jni_registration(_jni_srcjar_target_name) {
           enable_native_mocks = true
@@ -3553,22 +3483,6 @@ if (enable_java_templates && is_android) {
   #     apk_under_test: ":bar"
   #   }
   template("instrumentation_test_runner") {
-    if (use_rts) {
-      action("${invoker.target_name}__rts_filters") {
-        script = "//build/add_rts_filters.py"
-        rts_file = "${root_build_dir}/gen/rts/${invoker.target_name}.filter"
-        inverted_rts_file =
-            "${root_build_dir}/gen/rts/${invoker.target_name}_inverted.filter"
-        args = [
-          rebase_path(rts_file, root_build_dir),
-          rebase_path(inverted_rts_file, root_build_dir),
-        ]
-        outputs = [
-          rts_file,
-          inverted_rts_file,
-        ]
-      }
-    }
     _incremental_apk = !(defined(invoker.never_incremental) &&
                          invoker.never_incremental) && incremental_install
     _apk_operations_target_name = "${target_name}__apk_operations"
@@ -3681,12 +3595,6 @@ if (enable_java_templates && is_android) {
       }
       if (defined(invoker.additional_apks)) {
         public_deps += invoker.additional_apks
-      }
-      if (use_rts) {
-        if (!defined(data_deps)) {
-          data_deps = []
-        }
-        data_deps += [ ":${invoker.target_name}__rts_filters" ]
       }
     }
   }
@@ -4802,8 +4710,6 @@ if (enable_java_templates && is_android) {
             rebase_path(depfile, root_build_dir),
             "--script",
             rebase_path(_rewriter_path, root_build_dir),
-            "--classpath",
-            "@FileArg($_rebased_build_config:deps_info:javac_full_classpath)",
             "--classpath",
             "@FileArg($_rebased_build_config:android:sdk_jars)",
             "--input-jars",

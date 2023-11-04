@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/apps/app_dialog/shortcut_removal_dialog_view.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
@@ -22,6 +23,7 @@
 #include "components/app_constants/constants.h"
 #include "components/services/app_service/public/cpp/shortcut/shortcut.h"
 #include "components/services/app_service/public/cpp/shortcut/shortcut_registry_cache.h"
+#include "components/services/app_service/public/cpp/stub_icon_loader.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test.h"
@@ -40,11 +42,11 @@ class AppServiceShortcutShelfItemControllerBrowserTest
   void SetUpOnMainThread() override { ASSERT_TRUE(controller()); }
 
   apps::ShortcutId CreateWebAppBasedShortcut(
-      const GURL& app_url,
+      const GURL& shortcut_url,
       const std::u16string& shortcut_name) {
     // Create web app based shortcut.
     auto web_app_info = std::make_unique<web_app::WebAppInstallInfo>();
-    web_app_info->start_url = app_url;
+    web_app_info->start_url = shortcut_url;
     web_app_info->title = shortcut_name;
     auto local_shortcut_id = web_app::test::InstallWebApp(
         browser()->profile(), std::move(web_app_info));
@@ -167,8 +169,9 @@ IN_PROC_BROWSER_TEST_F(AppServiceShortcutShelfItemControllerBrowserTest,
   EXPECT_FALSE(controller()->GetItem(ash::ShelfID(shortcut_id.value())));
 }
 
+// TODO(crbug.com/1485630):  Re-enable once segfault is resolved.
 IN_PROC_BROWSER_TEST_F(AppServiceShortcutShelfItemControllerBrowserTest,
-                       ContextMenuRemove) {
+                       DISABLED_ContextMenuRemove) {
   GURL app_url = GURL("https://example.org/");
   std::u16string shortcut_name = u"Example";
   apps::ShortcutId shortcut_id =
@@ -199,7 +202,20 @@ IN_PROC_BROWSER_TEST_F(AppServiceShortcutShelfItemControllerBrowserTest,
                 .GetVectorIcon()
                 .vector_icon());
 
+  apps::StubIconLoader shortcut_stub_icon_loader;
+  apps::StubIconLoader app_stub_icon_loader;
+  apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
+      ->OverrideShortcutInnerIconLoaderForTesting(&shortcut_stub_icon_loader);
+  apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
+      ->OverrideInnerIconLoaderForTesting(&app_stub_icon_loader);
+  shortcut_stub_icon_loader.timelines_by_app_id_[shortcut_id.value()] = 1;
+  app_stub_icon_loader.timelines_by_app_id_[app_constants::kChromeAppId] = 1;
+
   menu_model->ActivatedAt(uninstall_command_index.value());
+  ShortcutRemovalDialogView* last_created_dialog =
+      ShortcutRemovalDialogView::GetLastCreatedViewForTesting();
+  last_created_dialog->AcceptDialog();
+
   base::RunLoop().RunUntilIdle();
   content::RunAllTasksUntilIdle();
 

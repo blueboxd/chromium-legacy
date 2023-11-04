@@ -38,7 +38,7 @@
 #include "chrome/browser/ui/webui/ash/login/l10n_util.h"
 #include "chrome/browser/ui/webui/ash/login/welcome_screen_handler.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "components/language/core/browser/pref_names.h"
@@ -394,9 +394,11 @@ void WelcomeScreen::ShowImpl() {
     view_->Show();
 
   // Determine the QuickStart button visibility
-  WizardController::default_controller()->quick_start_controller()->IsSupported(
-      base::BindOnce(&WelcomeScreen::SetQuickStartButtonVisibility,
-                     weak_ptr_factory_.GetWeakPtr()));
+  WizardController::default_controller()
+      ->quick_start_controller()
+      ->DetermineEntryPointVisibility(
+          base::BindOnce(&WelcomeScreen::SetQuickStartButtonVisibility,
+                         weak_ptr_factory_.GetWeakPtr()));
 
   if (LoginScreenClientImpl::HasInstance()) {
     LoginScreenClientImpl::Get()->AddSystemTrayObserver(this);
@@ -563,7 +565,7 @@ bool WelcomeScreen::HandleAccelerator(LoginAcceleratorAction action) {
     // Update the entry point button visibility.
     WizardController::default_controller()
         ->quick_start_controller()
-        ->IsSupported(
+        ->DetermineEntryPointVisibility(
             base::BindOnce(&WelcomeScreen::SetQuickStartButtonVisibility,
                            weak_ptr_factory_.GetWeakPtr()));
     return true;

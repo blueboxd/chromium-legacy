@@ -48,6 +48,7 @@
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/browser/ui/touch_to_fill_delegate.h"
+#include "components/autofill/core/common/aliases.h"
 #include "components/autofill/core/common/dense_set.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
@@ -234,6 +235,18 @@ class BrowserAutofillManager : public AutofillManager,
   // Upload the current pending form.
   void ProcessPendingFormForUpload();
 
+  // Checks whether a suggestion accepted by the user was hidden prior to
+  // landing the feature `kAutofillUseAddressRewriterInProfileSubsetComparison`.
+  // `field` is the one that triggered the suggestions. `backend_id` is the
+  // guid of the underlying profile, used to retrieve the suggestion itself.
+  // TODO(crbug/1439742): Remove when
+  // `kAutofillUseAddressRewriterInProfileSubsetComparison` launches.
+  bool WasSuggestionPreviouslyHidden(
+      const FormData& form,
+      const FormFieldData& field,
+      Suggestion::BackendId backend_id,
+      AutofillSuggestionTriggerSource trigger_source);
+
   // AutofillManager:
   base::WeakPtr<AutofillManager> GetWeakPtr() override;
   CreditCardAccessManager* GetCreditCardAccessManager() override;
@@ -347,6 +360,11 @@ class BrowserAutofillManager : public AutofillManager,
     return *autocomplete_unrecognized_fallback_logger_;
   }
 
+  // Sets the value of `consider_form_as_secure_for_testing_`. We want to
+  // set this to true for test purposes only.
+  void SetConsiderFormAsSecureForTesting(
+      absl::optional<bool> consider_form_as_secure_for_testing);
+
  protected:
   // Stores a `callback` for `form_signature`, possibly overriding an older
   // callback for `form_signature` or triggering a pending callback in case too
@@ -369,7 +387,8 @@ class BrowserAutofillManager : public AutofillManager,
       std::unique_ptr<FormStructure> submitted_form,
       base::TimeTicks interaction_time,
       base::TimeTicks submission_time,
-      bool observed_submission);
+      bool observed_submission,
+      ukm::SourceId source_id);
 
   // Returns the card image for `credit_card`. If the `credit_card` has a card
   // art image linked, prefer it. Otherwise fall back to the network icon.
@@ -441,7 +460,7 @@ class BrowserAutofillManager : public AutofillManager,
   };
 
   // Given a `form` (and corresponding `form_structure`) to fill, return a list
-  // of skip statuses for the fields.
+  // of skip reasons for the fields.
   // `optional_credit_card` is the credit card to be filled or nullopt if we're
   // filling an AutofillProfile.
   // `type_group_originally_filled` denotes, in case of a refill, what groups
@@ -449,14 +468,21 @@ class BrowserAutofillManager : public AutofillManager,
   // It is assumed here that `form` and `form_structure` have the same
   // number of fields, and this would be the size of the returned list.
   // TODO(crbug/1331312): Keep only one of 'form' and 'form_structure'.
+  // `field_types_to_fill` denotes a set of field types we are interested in
+  // filling, and the actual fields filled will be the intersection between
+  // `field_types_to_fill` and the classified fields for which we have data
+  // stored.
   // TODO(crbug/1275649): Add the case removed in crrev.com/c/4675831 when the
   // experiment resumes.
-  std::vector<SkipStatus> GetSkipStatuses(
+  // TODO(crbug.com/1481035): Make `optional_type_groups_originally_filled` also
+  // a ServerFieldTypeSet.
+  std::vector<FieldFillingSkipReason> GetFieldFillingSkipReasons(
       const FormData& form,
       const FormStructure& form_structure,
       const FormFieldData& trigger_field,
       const Section& filling_section,
       const CreditCard* optional_credit_card,
+      const ServerFieldTypeSet& field_types_to_fill,
       const DenseSet<FieldTypeGroup>* optional_type_groups_originally_filled,
       bool skip_unrecognized_autocomplete_fields,
       bool is_refill) const;
@@ -759,6 +785,9 @@ class BrowserAutofillManager : public AutofillManager,
   bool has_observed_one_time_code_field_ = false;
   // Is there a field with phone number collection observed?
   bool has_observed_phone_number_field_ = false;
+  // If this is true, we consider the form to be secure. (Only use this for
+  // testing purposes).
+  absl::optional<bool> consider_form_as_secure_for_testing_;
 
   // When the user first interacted with a potentially fillable form on this
   // page.

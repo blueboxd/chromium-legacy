@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {addEntries, ENTRIES, EntryType, formatDate, getCaller, getDateWithDayDiff, pending, repeatUntil, RootPath, sanitizeDate, sendTestMessage, TestEntryInfo} from '../test_util.js';
+import {addEntries, ENTRIES, EntryType, getCaller, getDateWithDayDiff, pending, repeatUntil, RootPath, sanitizeDate, sendTestMessage, TestEntryInfo} from '../test_util.js';
 import {testcase} from '../testcase.js';
 
-import {mountCrostini, navigateWithDirectoryTree, openNewWindow, remoteCall, setupAndWaitUntilReady} from './background.js';
+import {mountCrostini, openNewWindow, remoteCall, setupAndWaitUntilReady} from './background.js';
+import {DirectoryTreePageObject} from './page_objects/directory_tree.js';
 import {BASIC_CROSTINI_ENTRY_SET, BASIC_DRIVE_ENTRY_SET, BASIC_LOCAL_ENTRY_SET, NESTED_ENTRY_SET, RECENT_ENTRY_SET} from './test_data.js';
 
 // Mock files with recently modified dates, be aware the days passed in should
@@ -87,7 +88,8 @@ async function navigateToRecent(appId, type = RecentFilterType.ALL) {
     [RecentFilterType.DOCUMENT]: '/Documents',
   };
 
-  await remoteCall.waitAndClickElement(appId, ['[root-type-icon="recent"]']);
+  const directoryTree = await DirectoryTreePageObject.create(appId, remoteCall);
+  await directoryTree.selectItemByLabel('Recent');
   // "All" button is activated by default, no need to click.
   if (type !== RecentFilterType.ALL) {
     await remoteCall.waitAndClickElement(
@@ -300,7 +302,8 @@ async function renameFile(appId, fileName, newName) {
 async function cutFileAndPasteTo(appId, fileName, newFolder) {
   await rightClickContextMenu(appId, fileName, 'cut');
   // Go to the new folder to paste.
-  await navigateWithDirectoryTree(appId, newFolder);
+  const directoryTree = await DirectoryTreePageObject.create(appId, remoteCall);
+  await directoryTree.navigateToPath(newFolder);
   chrome.test.assertTrue(
       await remoteCall.callRemoteTestUtil('execCommand', appId, ['paste']));
   // Wait for the operation to be completed.
@@ -504,10 +507,9 @@ testcase.recentsNested = async () => {
   await verifyBreadcrumbsPath(appId, '/My files/Downloads/A/B/C');
 
   // Check: The directory should be highlighted in the directory tree.
-  await remoteCall.waitForElement(
-      appId,
-      '.tree-item[full-path-for-testing="/Downloads/A/B/C"] > ' +
-          '.tree-row[selected][active]');
+  const directoryTree = await DirectoryTreePageObject.create(appId, remoteCall);
+  await directoryTree.waitForSelectedItemByLabel('C');
+  await directoryTree.waitForFocusedItemByLabel('C');
 };
 
 /**
@@ -1276,8 +1278,10 @@ testcase.recentsRespectSearchWhenSwitchingFilter = async () => {
   await remoteCall.waitForFiles(
       appId, TestEntryInfo.getExpectedRows([txtFile1]));
 
-  // Switch to "Document" filter.
-  await navigateToRecent(appId, RecentFilterType.DOCUMENT);
+  // Switch to "Document" filter. Since search is active, use search options.
+  chrome.test.assertTrue(
+      !!await remoteCall.selectSearchOption(appId, 'type', 3),
+      'Failed to click "Documents" type selector');
 
   // Check there is still only tall.txt in the file list (no utf8.txt).
   await remoteCall.waitForFiles(

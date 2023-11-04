@@ -86,14 +86,28 @@ void UserContext::CryptohomeContext::SetIsForcingDircrypto(
   is_forcing_dircrypto_ = is_forcing_dircrypto;
 }
 
-void UserContext::CryptohomeContext::SetAuthSessionId(
-    const std::string& authsession_id) {
+void UserContext::CryptohomeContext::SetAuthSessionIds(
+    const std::string& authsession_id,
+    const std::string& broadcast_id) {
+  LOG_IF(WARNING, !authsession_id_.empty())
+      << "Overwriting existing auth session ID";
   DCHECK(authsession_id_.empty());
   authsession_id_ = authsession_id;
+  broadcast_id_ = broadcast_id;
 }
 
-void UserContext::CryptohomeContext::ResetAuthSessionId() {
+void UserContext::CryptohomeContext::ResetAuthSessionIds() {
   authsession_id_.clear();
+  broadcast_id_.clear();
+}
+
+base::Time UserContext::CryptohomeContext::GetSessionLifetime() const {
+  return valid_until_;
+}
+
+void UserContext::CryptohomeContext::SetSessionLifetime(
+    const base::Time& valid_until) {
+  valid_until_ = valid_until;
 }
 
 void UserContext::CryptohomeContext::SetSessionAuthFactors(
@@ -116,7 +130,7 @@ void UserContext::CryptohomeContext::ClearAuthFactorsConfiguration() {
 }
 
 const AuthFactorsConfiguration&
-UserContext::CryptohomeContext::GetAuthFactorsConfiguration() {
+UserContext::CryptohomeContext::GetAuthFactorsConfiguration() const {
   if (!auth_factors_configuration_.has_value()) {
     // Crash with debug assertions, try to stay alive otherwise. This method
     // could be const if we didn't set auth_factors_configuration_ if
@@ -134,6 +148,10 @@ bool UserContext::CryptohomeContext::HasAuthFactorsConfiguration() const {
 
 const std::string& UserContext::CryptohomeContext::GetAuthSessionId() const {
   return authsession_id_;
+}
+
+const std::string& UserContext::CryptohomeContext::GetBroadcastId() const {
+  return broadcast_id_;
 }
 
 AuthSessionIntents UserContext::CryptohomeContext::GetAuthorizedIntents()
@@ -404,12 +422,21 @@ const std::string& UserContext::GetLoginInputMethodIdUsed() const {
   return login_input_method_id_used_;
 }
 
-void UserContext::SetAuthSessionId(const std::string& authsession_id) {
-  cryptohome_.SetAuthSessionId(authsession_id);
+void UserContext::SetAuthSessionIds(const std::string& authsession_id,
+                                    const std::string& broadcast_id) {
+  cryptohome_.SetAuthSessionIds(authsession_id, broadcast_id);
 }
 
-void UserContext::ResetAuthSessionId() {
-  cryptohome_.ResetAuthSessionId();
+void UserContext::ResetAuthSessionIds() {
+  cryptohome_.ResetAuthSessionIds();
+}
+
+base::Time UserContext::GetSessionLifetime() const {
+  return cryptohome_.GetSessionLifetime();
+}
+
+void UserContext::SetSessionLifetime(const base::Time& valid_until) {
+  cryptohome_.SetSessionLifetime(valid_until);
 }
 
 void UserContext::SetSessionAuthFactors(SessionAuthFactors data) {
@@ -429,7 +456,8 @@ void UserContext::ClearAuthFactorsConfiguration() {
   cryptohome_.ClearAuthFactorsConfiguration();
 }
 
-const AuthFactorsConfiguration& UserContext::GetAuthFactorsConfiguration() {
+const AuthFactorsConfiguration& UserContext::GetAuthFactorsConfiguration()
+    const {
   return cryptohome_.GetAuthFactorsConfiguration();
 }
 
@@ -439,6 +467,10 @@ bool UserContext::HasAuthFactorsConfiguration() const {
 
 const std::string& UserContext::GetAuthSessionId() const {
   return cryptohome_.GetAuthSessionId();
+}
+
+const std::string& UserContext::GetBroadcastId() const {
+  return cryptohome_.GetBroadcastId();
 }
 
 AuthSessionIntents UserContext::GetAuthorizedIntents() const {

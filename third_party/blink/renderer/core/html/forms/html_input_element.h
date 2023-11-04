@@ -108,6 +108,9 @@ class CORE_EXPORT HTMLInputElement
   // Returns true if the type is email, number, password, search, tel, text,
   // or url.
   bool IsTextField() const;
+  bool IsTelephone() const;
+  // To override from TextControlElement
+  bool ShouldAutoDirUseValue() const final;
   // Do not add type check predicates for concrete input types; e.g.  isImage,
   // isRadio, isFile.  If you want to check the input type, you may use
   // |input->type() == input_type_names::kImage|, etc.
@@ -436,7 +439,6 @@ class CORE_EXPORT HTMLInputElement
 
   bool IsURLAttribute(const Attribute&) const final;
   bool HasLegalLinkAttribute(const QualifiedName&) const final;
-  const QualifiedName& SubResourceAttributeName() const final;
   bool IsInRange() const final;
   bool IsOutOfRange() const final;
 

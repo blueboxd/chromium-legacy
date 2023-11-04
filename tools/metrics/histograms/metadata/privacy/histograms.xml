@@ -32,16 +32,6 @@ reviewer.
   <variant name="Server" summary="server-side"/>
 </variants>
 
-<histogram name="Privacy.AboutThisSite.PageLoadValidation"
-    enum="AboutThisSiteStatus" expires_after="2023-10-15">
-  <owner>dullweber@chromium.org</owner>
-  <owner>olesiamarukhno@chromium.org</owner>
-  <summary>
-    Whether AboutThisSite had a valid proto. Recorded when optimization hints
-    are available on pageload.
-  </summary>
-</histogram>
-
 <histogram name="Privacy.AccuracyTip.AccuracyTipInteraction"
     enum="AccuracyTipInteraction" expires_after="2022-08-21">
   <obsolete>
@@ -126,7 +116,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.CookieControlsActivated.PageRefreshCount"
-    units="count" expires_after="M120">
+    units="count" expires_after="2024-03-10">
   <owner>olesiamarukhno@google.com</owner>
   <owner>sauski@google.com</owner>
   <owner>kmg@google.com</owner>
@@ -137,7 +127,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.CookieControlsActivated.SaaRequested"
-    enum="BooleanEnabled" expires_after="M120">
+    enum="BooleanEnabled" expires_after="2024-03-10">
   <owner>olesiamarukhno@google.com</owner>
   <owner>sauski@google.com</owner>
   <owner>kmg@google.com</owner>
@@ -148,7 +138,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.CookieControlsActivated.SiteDataAccessType"
-    enum="ThirdPartySiteDataAccessType" expires_after="M120">
+    enum="ThirdPartySiteDataAccessType" expires_after="2024-03-10">
   <owner>olesiamarukhno@google.com</owner>
   <owner>sauski@google.com</owner>
   <owner>kmg@google.com</owner>
@@ -160,7 +150,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.CookieControlsActivated.SiteEngagementScore"
-    units="units" expires_after="M120">
+    units="units" expires_after="2024-03-10">
   <owner>olesiamarukhno@google.com</owner>
   <owner>sauski@google.com</owner>
   <owner>kmg@google.com</owner>
@@ -224,7 +214,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.BounceCategory{DIPSRedirectType}{DIPSCookieMode}"
-    enum="DIPSRedirectCategory" expires_after="2023-11-01">
+    enum="DIPSRedirectCategory" expires_after="2024-05-01">
   <owner>rtarpine@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
   <summary>
@@ -328,7 +318,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.DeletionLatency2" units="ms"
-    expires_after="2023-12-31">
+    expires_after="2024-03-10">
   <owner>wanderview@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
   <summary>
@@ -357,7 +347,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.DIPSErrorCodes" enum="DIPSErrorCode"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>wanderview@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
   <summary>
@@ -391,7 +381,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.TimeFromNavigationCommitToClientBounce"
-    units="ms" expires_after="2023-10-22">
+    units="ms" expires_after="2024-04-22">
   <owner>jdh@chromium.org</owner>
   <owner>rtarpine@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
@@ -607,7 +597,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.AggregationService.ScheduledRequests.NumRetriesBeforeSuccess"
-    units="retries" expires_after="2024-01-14">
+    units="retries" expires_after="2024-03-17">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -618,7 +608,7 @@ reviewer.
 </histogram>
 
 <histogram name="PrivacySandbox.AggregationService.ScheduledRequests.Status"
-    enum="AggregationServiceObserverReportStatus" expires_after="2024-01-14">
+    enum="AggregationServiceObserverReportStatus" expires_after="2024-03-17">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -668,7 +658,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.AggregationService.Storage.Sql.StoreRequestHasCapacity"
-    enum="Boolean" expires_after="2024-01-14">
+    enum="Boolean" expires_after="2024-03-17">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -679,7 +669,7 @@ reviewer.
 </histogram>
 
 <histogram name="PrivacySandbox.AggregationService.UnscheduledRequests.Status"
-    enum="AggregationServiceObserverReportStatus" expires_after="2024-01-14">
+    enum="AggregationServiceObserverReportStatus" expires_after="2024-03-17">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -699,6 +689,45 @@ reviewer.
   </summary>
 </histogram>
 
+<histogram
+    name="PrivacySandbox.Attestations.InitializationDuration.ComponentReadyFromApplicationStart"
+    units="ms" expires_after="M122">
+  <owner>shivanisha@chromium.org</owner>
+  <owner>xiaochenzh@chromium.org</owner>
+  <summary>
+    Records the amount of time taken for the downloaded attestations file to be
+    detected from application starts. The measurement ends when `ComponentReady`
+    is invoked with valid inputs.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.Attestations.InitializationDuration.ComponentReadyFromApplicationStartWithInterruption"
+    units="ms" expires_after="M122">
+  <owner>shivanisha@chromium.org</owner>
+  <owner>xiaochenzh@chromium.org</owner>
+  <summary>
+    Records the amount of time taken for the downloaded attestations file to be
+    detected from application starts with interruption during startup. For
+    example, if the user has multiple profiles, a profile picker will appear
+    during the startup. This is a non-browser UI that interrupts the startup
+    process. The measurement ends when `ComponentReady` is invoked with valid
+    inputs.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.Attestations.InitializationDuration.ComponentReadyFromBrowserWindowFirstPaint"
+    units="ms" expires_after="M122">
+  <owner>shivanisha@chromium.org</owner>
+  <owner>xiaochenzh@chromium.org</owner>
+  <summary>
+    Records the amount of time taken for the downloaded attestations file to be
+    detected from first browser window paint. The measurement ends when
+    `ComponentReady` is invoked with valid inputs.
+  </summary>
+</histogram>
+
 <histogram name="PrivacySandbox.Attestations.InitializationDuration.Parsing"
     units="ms" expires_after="M122">
   <owner>shivanisha@chromium.org</owner>
@@ -709,6 +738,21 @@ reviewer.
     measurement starts from the invocation of the protobuf parsing function and
     ends when the function returns. Note this metric is recorded only if the
     parsing succeeds.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.CookieDeprecationFacilitatedTesting.ProfileEligibility"
+    enum="CookieDeprecationFacilitatedTestingProfileEligibility"
+    expires_after="2024-10-25">
+  <owner>anthonygarant@chromium.org</owner>
+  <owner>linan@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records the profile eligibility to cookie deprecation facilitated testing.
+
+    The metric is only recorded when the client eligibility has not been
+    determined and then the profile eligibility is computed.
   </summary>
 </histogram>
 
@@ -744,9 +788,9 @@ reviewer.
   </summary>
 </histogram>
 
-<histogram name="PrivacySandbox.PrivateAggregation.Budgeter.RequestResult2"
-    enum="PrivacySandboxPrivateAggregationBudgeterRequestResult2"
-    expires_after="2024-02-20">
+<histogram name="PrivacySandbox.PrivateAggregation.Budgeter.RequestResult3"
+    enum="PrivacySandboxPrivateAggregationBudgeterRequestResult3"
+    expires_after="2024-03-13">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -789,7 +833,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.PrivateAggregation.BudgetStorage.ShutdownBeforeFinishingInitialization"
-    enum="Boolean" expires_after="2024-01-14">
+    enum="Boolean" expires_after="2024-03-17">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -800,18 +844,60 @@ reviewer.
 </histogram>
 
 <histogram
-    name="PrivacySandbox.PrivateAggregation.Host.SendHistogramReportResult"
-    enum="PrivacySandboxPrivateAggregationHostSendHistogramReportResult"
+    name="PrivacySandbox.PrivateAggregation.Host.PipeOpenDurationOnShutdown"
+    units="ms" expires_after="2024-02-25">
+  <owner>alexmt@chromium.org</owner>
+  <owner>linnan@chromium.org</owner>
+  <summary>
+    On browser or profile shutdown, records the length of time that each mojo
+    pipe still open has been open for. Recorded for every mojo pipe that is
+    still open during shutdown. This is intended to provide a signal if mojo
+    pipes are not being closed.
+  </summary>
+</histogram>
+
+<histogram name="PrivacySandbox.PrivateAggregation.Host.PipeResult"
+    enum="PrivacySandboxPrivateAggregationHostPipeResult"
     expires_after="2024-02-11">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
-    Records whether a call to PrivateAggregationHost::SendHistogramReport()
-    successfully resulted in the report request being forwarded to the manager
-    and, if not, the reason for failure. Further, breaks out the case of too
-    many contributions, where the request is forwarded but is truncated. Note
-    that, even if successfully forwarded, the report may still be rejected by
-    the budgeter or in the aggregation_service layer. Recorded for every call.
+    Records whether a PrivateAggregationHost mojo pipe successfully resulted in
+    a report request being forwarded to the manager and, if not, the reason for
+    failure or no report. Further, breaks out the case of too many
+    contributions, where the request is forwarded but is truncated. Note that,
+    even if successfully forwarded, the report may still be rejected by the
+    budgeter, manager or in the aggregation_service layer. Recorded for every
+    mojo pipe on disconnection.
+  </summary>
+</histogram>
+
+<histogram name="PrivacySandbox.PrivateAggregation.Host.TimeoutResult"
+    enum="PrivacySandboxPrivateAggregationHostTimeoutResult"
+    expires_after="2024-03-05">
+  <owner>alexmt@chromium.org</owner>
+  <owner>linnan@chromium.org</owner>
+  <summary>
+    Some PrivateAggregation operations have an associated timeout after which a
+    report will be sent unconditionally. This metric records, for every mojo
+    pipe which specifies a timeout, the outcome of the timeout. Recorded at the
+    timeout or disconnection time whichever occurs first, or when it's canceled
+    due to error, or on browser shutdown if it's still scheduled with pipe open.
+  </summary>
+</histogram>
+
+<histogram name="PrivacySandbox.PrivateAggregation.Manager.RequestResult"
+    enum="PrivacySandboxPrivateAggregationManagerRequestResult"
+    expires_after="2024-03-13">
+  <owner>alexmt@chromium.org</owner>
+  <owner>linnan@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records the outcome of a report request sent through the Private Aggregation
+    manager, i.e. whether the report was sent and whether its contributions were
+    cleared due to budget denial. Also breaks out the case of a report that
+    started with no contributions. Recorded for each individual report request
+    (but not each individual histogram contribution).
   </summary>
 </histogram>
 

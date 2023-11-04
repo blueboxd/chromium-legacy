@@ -2470,9 +2470,8 @@ TEST_P(URLRequestSameSiteCookiesTest, SameSiteCookies) {
     std::unique_ptr<URLRequest> req(default_context().CreateRequest(
         test_server.GetURL(kHost, "/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
-    req->set_isolation_info(IsolationInfo::Create(request_type, kOrigin,
-                                                  kOrigin, kSiteForCookies,
-                                                  {} /* party_context */));
+    req->set_isolation_info(
+        IsolationInfo::Create(request_type, kOrigin, kOrigin, kSiteForCookies));
     req->set_site_for_cookies(kSiteForCookies);
     req->set_initiator(kOrigin);
     req->Start();
@@ -2547,9 +2546,9 @@ TEST_P(URLRequestSameSiteCookiesTest, SameSiteCookies) {
     std::unique_ptr<URLRequest> req(default_context().CreateRequest(
         test_server.GetURL(kHost, "/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
-    req->set_isolation_info(IsolationInfo::Create(
-        IsolationInfo::RequestType::kMainFrame, kOrigin, kOrigin,
-        kSiteForCookies, {} /* party_context */));
+    req->set_isolation_info(
+        IsolationInfo::Create(IsolationInfo::RequestType::kMainFrame, kOrigin,
+                              kOrigin, kSiteForCookies));
     req->set_site_for_cookies(kSiteForCookies);
     req->set_initiator(kCrossOrigin);
     req->set_method("GET");
@@ -2572,8 +2571,7 @@ TEST_P(URLRequestSameSiteCookiesTest, SameSiteCookies) {
         test_server.GetURL(kHost, "/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->set_isolation_info(IsolationInfo::Create(
-        IsolationInfo::RequestType::kOther, kOrigin, kOrigin, kSiteForCookies,
-        {} /* party_context */));
+        IsolationInfo::RequestType::kOther, kOrigin, kOrigin, kSiteForCookies));
     req->set_site_for_cookies(kSiteForCookies);
     req->set_initiator(kCrossOrigin);
     req->set_method("GET");
@@ -2596,9 +2594,9 @@ TEST_P(URLRequestSameSiteCookiesTest, SameSiteCookies) {
     std::unique_ptr<URLRequest> req(default_context().CreateRequest(
         test_server.GetURL(kHost, "/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
-    req->set_isolation_info(IsolationInfo::Create(
-        IsolationInfo::RequestType::kMainFrame, kOrigin, kOrigin,
-        kSiteForCookies, {} /* party_context */));
+    req->set_isolation_info(
+        IsolationInfo::Create(IsolationInfo::RequestType::kMainFrame, kOrigin,
+                              kOrigin, kSiteForCookies));
     req->set_site_for_cookies(kSiteForCookies);
     req->set_initiator(kCrossOrigin);
     req->set_method("POST");
@@ -2620,9 +2618,9 @@ TEST_P(URLRequestSameSiteCookiesTest, SameSiteCookies) {
     std::unique_ptr<URLRequest> req(default_context().CreateRequest(
         test_server.GetURL(kHost, "/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
-    req->set_isolation_info(IsolationInfo::Create(
-        IsolationInfo::RequestType::kSubFrame, kOrigin, kOrigin,
-        kSiteForCookies, {} /* party_context */));
+    req->set_isolation_info(
+        IsolationInfo::Create(IsolationInfo::RequestType::kSubFrame, kOrigin,
+                              kOrigin, kSiteForCookies));
     req->set_site_for_cookies(kSiteForCookies);
     req->set_initiator(kCrossOrigin);
     req->set_method("GET");
@@ -2721,9 +2719,9 @@ TEST_P(URLRequestSameSiteCookiesTest, SameSiteCookies_Redirect) {
                    https_server.GetURL(kHost, "/echoheader?Cookie").spec());
     std::unique_ptr<URLRequest> req(default_context().CreateRequest(
         url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    req->set_isolation_info(IsolationInfo::Create(
-        IsolationInfo::RequestType::kMainFrame, kOrigin, kOrigin,
-        kSiteForCookies, {} /* party_context */));
+    req->set_isolation_info(
+        IsolationInfo::Create(IsolationInfo::RequestType::kMainFrame, kOrigin,
+                              kOrigin, kSiteForCookies));
     req->set_first_party_url_policy(
         RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT);
     req->set_site_for_cookies(kSiteForCookies);
@@ -2749,7 +2747,7 @@ TEST_P(URLRequestSameSiteCookiesTest, SameSiteCookies_Redirect) {
         url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->set_isolation_info(IsolationInfo::Create(
         IsolationInfo::RequestType::kMainFrame, kSameSiteOrigin,
-        kSameSiteOrigin, kSiteForCookies, {} /* party_context */));
+        kSameSiteOrigin, kSiteForCookies));
     req->set_first_party_url_policy(
         RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT);
     req->set_site_for_cookies(kSiteForCookies);
@@ -2780,9 +2778,9 @@ TEST_P(URLRequestSameSiteCookiesTest, SameSiteCookies_Redirect) {
                    https_server.GetURL(kHost, "/echoheader?Cookie").spec());
     std::unique_ptr<URLRequest> req(default_context().CreateRequest(
         url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    req->set_isolation_info(IsolationInfo::Create(
-        IsolationInfo::RequestType::kMainFrame, kHttpOrigin, kHttpOrigin,
-        kHttpSiteForCookies, {} /* party_context */));
+    req->set_isolation_info(
+        IsolationInfo::Create(IsolationInfo::RequestType::kMainFrame,
+                              kHttpOrigin, kHttpOrigin, kHttpSiteForCookies));
     req->set_first_party_url_policy(
         RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT);
     req->set_site_for_cookies(kHttpSiteForCookies);
@@ -2804,9 +2802,9 @@ TEST_P(URLRequestSameSiteCookiesTest, SameSiteCookies_Redirect) {
                    https_server.GetURL(kHost, "/echoheader?Cookie").spec());
     std::unique_ptr<URLRequest> req(default_context().CreateRequest(
         url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    req->set_isolation_info(IsolationInfo::Create(
-        IsolationInfo::RequestType::kMainFrame, kHttpOrigin, kHttpOrigin,
-        kHttpSiteForCookies, {} /* party_context */));
+    req->set_isolation_info(
+        IsolationInfo::Create(IsolationInfo::RequestType::kMainFrame,
+                              kHttpOrigin, kHttpOrigin, kHttpSiteForCookies));
     req->set_first_party_url_policy(
         RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT);
     req->set_site_for_cookies(kHttpSiteForCookies);
@@ -2834,7 +2832,7 @@ TEST_P(URLRequestSameSiteCookiesTest, SameSiteCookies_Redirect) {
         url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->set_isolation_info(IsolationInfo::Create(
         IsolationInfo::RequestType::kMainFrame, kCrossSiteOrigin,
-        kCrossSiteOrigin, kCrossSiteForCookies, {} /* party_context */));
+        kCrossSiteOrigin, kCrossSiteForCookies));
     req->set_first_party_url_policy(
         RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT);
     req->set_site_for_cookies(kCrossSiteForCookies);
@@ -2859,9 +2857,9 @@ TEST_P(URLRequestSameSiteCookiesTest, SameSiteCookies_Redirect) {
         https_server.GetURL(kHost, "/server-redirect?" + middle_url.spec());
     std::unique_ptr<URLRequest> req(default_context().CreateRequest(
         url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    req->set_isolation_info(IsolationInfo::Create(
-        IsolationInfo::RequestType::kMainFrame, kOrigin, kOrigin,
-        kSiteForCookies, {} /* party_context */));
+    req->set_isolation_info(
+        IsolationInfo::Create(IsolationInfo::RequestType::kMainFrame, kOrigin,
+                              kOrigin, kSiteForCookies));
     req->set_first_party_url_policy(
         RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT);
     req->set_site_for_cookies(kSiteForCookies);
@@ -2888,8 +2886,7 @@ TEST_P(URLRequestSameSiteCookiesTest, SameSiteCookies_Redirect) {
     std::unique_ptr<URLRequest> req(default_context().CreateRequest(
         url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->set_isolation_info(IsolationInfo::Create(
-        IsolationInfo::RequestType::kOther, kOrigin, kOrigin, kSiteForCookies,
-        {} /* party_context */));
+        IsolationInfo::RequestType::kOther, kOrigin, kOrigin, kSiteForCookies));
     req->set_site_for_cookies(kSiteForCookies);
     req->set_initiator(kOrigin);
     req->Start();
@@ -2915,8 +2912,7 @@ TEST_P(URLRequestSameSiteCookiesTest, SameSiteCookies_Redirect) {
     std::unique_ptr<URLRequest> req(default_context().CreateRequest(
         url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->set_isolation_info(IsolationInfo::Create(
-        IsolationInfo::RequestType::kOther, kOrigin, kOrigin, kSiteForCookies,
-        {} /* party_context */));
+        IsolationInfo::RequestType::kOther, kOrigin, kOrigin, kSiteForCookies));
     req->set_site_for_cookies(kSiteForCookies);
     req->set_initiator(kOrigin);
     req->Start();
@@ -2980,9 +2976,9 @@ TEST_P(URLRequestSameSiteCookiesTest, SettingSameSiteCookies) {
                            "/set-cookie?Strict2=1;SameSite=Strict&"
                            "Lax2=1;SameSite=Lax"),
         DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    req->set_isolation_info(IsolationInfo::Create(
-        IsolationInfo::RequestType::kMainFrame, kOrigin, kOrigin,
-        kSiteForCookies, {} /* party_context */));
+    req->set_isolation_info(
+        IsolationInfo::Create(IsolationInfo::RequestType::kMainFrame, kOrigin,
+                              kOrigin, kSiteForCookies));
     req->set_site_for_cookies(kSiteForCookies);
     req->set_initiator(kCrossOrigin);
 
@@ -3005,9 +3001,9 @@ TEST_P(URLRequestSameSiteCookiesTest, SettingSameSiteCookies) {
                            "/set-cookie?Strict3=1;SameSite=Strict&"
                            "Lax3=1;SameSite=Lax"),
         DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    req->set_isolation_info(IsolationInfo::Create(
-        IsolationInfo::RequestType::kMainFrame, kSubOrigin, kSubOrigin,
-        kSiteForCookies, {} /* party_context */));
+    req->set_isolation_info(
+        IsolationInfo::Create(IsolationInfo::RequestType::kMainFrame,
+                              kSubOrigin, kSubOrigin, kSiteForCookies));
     req->set_site_for_cookies(
         SiteForCookies::FromUrl(test_server.GetURL(kSubHost, "/")));
     req->set_initiator(kCrossOrigin);
@@ -3082,9 +3078,9 @@ TEST_P(URLRequestSameSiteCookiesTest, SettingSameSiteCookies) {
                            "/set-cookie?Strict6=1;SameSite=Strict&"
                            "Lax6=1;SameSite=Lax"),
         DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    req->set_isolation_info(IsolationInfo::Create(
-        IsolationInfo::RequestType::kSubFrame, kOrigin, kOrigin,
-        kSiteForCookies, {} /* party_context */));
+    req->set_isolation_info(
+        IsolationInfo::Create(IsolationInfo::RequestType::kSubFrame, kOrigin,
+                              kOrigin, kSiteForCookies));
     req->set_site_for_cookies(kSiteForCookies);
     req->set_initiator(kCrossOrigin);
 
@@ -3129,8 +3125,7 @@ TEST_P(URLRequestSameSiteCookiesTest, SettingSameSiteCookies) {
                            "Lax7=1;SameSite=Lax"),
         DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->set_isolation_info(IsolationInfo::Create(
-        IsolationInfo::RequestType::kOther, kOrigin, kOrigin, kSiteForCookies,
-        {} /* party_context */));
+        IsolationInfo::RequestType::kOther, kOrigin, kOrigin, kSiteForCookies));
     req->set_site_for_cookies(kSiteForCookies);
     req->set_initiator(kCrossOrigin);
     req->set_force_main_frame_for_same_site_cookies(true);
@@ -3284,9 +3279,9 @@ TEST_P(URLRequestSameSiteCookiesTest, SettingSameSiteCookies_Redirect) {
         https_server.GetURL(kHost, "/server-redirect?" + set_cookie_url.spec());
     std::unique_ptr<URLRequest> req(default_context().CreateRequest(
         url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    req->set_isolation_info(IsolationInfo::Create(
-        IsolationInfo::RequestType::kMainFrame, kOrigin, kOrigin,
-        kSiteForCookies, {} /* party_context */));
+    req->set_isolation_info(
+        IsolationInfo::Create(IsolationInfo::RequestType::kMainFrame, kOrigin,
+                              kOrigin, kSiteForCookies));
     req->set_first_party_url_policy(
         RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT);
     req->set_site_for_cookies(kSiteForCookies);
@@ -3314,7 +3309,7 @@ TEST_P(URLRequestSameSiteCookiesTest, SettingSameSiteCookies_Redirect) {
         url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->set_isolation_info(IsolationInfo::Create(
         IsolationInfo::RequestType::kMainFrame, kSameSiteOrigin,
-        kSameSiteOrigin, kSiteForCookies, {} /* party_context */));
+        kSameSiteOrigin, kSiteForCookies));
     req->set_first_party_url_policy(
         RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT);
     req->set_site_for_cookies(kSiteForCookies);
@@ -3342,7 +3337,7 @@ TEST_P(URLRequestSameSiteCookiesTest, SettingSameSiteCookies_Redirect) {
         url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->set_isolation_info(IsolationInfo::Create(
         IsolationInfo::RequestType::kMainFrame, kCrossSiteOrigin,
-        kCrossSiteOrigin, kCrossSiteForCookies, {} /* party_context */));
+        kCrossSiteOrigin, kCrossSiteForCookies));
     req->set_first_party_url_policy(
         RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT);
     req->set_site_for_cookies(kCrossSiteForCookies);
@@ -3369,8 +3364,7 @@ TEST_P(URLRequestSameSiteCookiesTest, SettingSameSiteCookies_Redirect) {
     std::unique_ptr<URLRequest> req(default_context().CreateRequest(
         url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->set_isolation_info(IsolationInfo::Create(
-        IsolationInfo::RequestType::kOther, kOrigin, kOrigin, kSiteForCookies,
-        {} /* party_context */));
+        IsolationInfo::RequestType::kOther, kOrigin, kOrigin, kSiteForCookies));
     req->set_site_for_cookies(kSiteForCookies);
     req->set_initiator(kOrigin);
 
@@ -3396,7 +3390,7 @@ TEST_P(URLRequestSameSiteCookiesTest, SettingSameSiteCookies_Redirect) {
         url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->set_isolation_info(IsolationInfo::Create(
         IsolationInfo::RequestType::kOther, kSameSiteOrigin, kSameSiteOrigin,
-        kSiteForCookies, {} /* party_context */));
+        kSiteForCookies));
     req->set_site_for_cookies(kSiteForCookies);
     req->set_initiator(kSameSiteOrigin);
 
@@ -3422,8 +3416,7 @@ TEST_P(URLRequestSameSiteCookiesTest, SettingSameSiteCookies_Redirect) {
     std::unique_ptr<URLRequest> req(default_context().CreateRequest(
         url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->set_isolation_info(IsolationInfo::Create(
-        IsolationInfo::RequestType::kOther, kOrigin, kOrigin, kSiteForCookies,
-        {} /* party_context */));
+        IsolationInfo::RequestType::kOther, kOrigin, kOrigin, kSiteForCookies));
     req->set_site_for_cookies(kSiteForCookies);
     req->set_initiator(kOrigin);
 
@@ -3448,8 +3441,7 @@ TEST_P(URLRequestSameSiteCookiesTest, SettingSameSiteCookies_Redirect) {
     std::unique_ptr<URLRequest> req(default_context().CreateRequest(
         url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->set_isolation_info(IsolationInfo::Create(
-        IsolationInfo::RequestType::kOther, kOrigin, kOrigin, kSiteForCookies,
-        {} /* party_context */));
+        IsolationInfo::RequestType::kOther, kOrigin, kOrigin, kSiteForCookies));
     req->set_site_for_cookies(kSiteForCookies);
     req->set_initiator(kOrigin);
 
@@ -3476,9 +3468,9 @@ TEST_P(URLRequestSameSiteCookiesTest, SettingSameSiteCookies_Redirect) {
         http_server.GetURL(kHost, "/server-redirect?" + set_cookie_url.spec());
     std::unique_ptr<URLRequest> req(default_context().CreateRequest(
         url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    req->set_isolation_info(IsolationInfo::Create(
-        IsolationInfo::RequestType::kOther, kHttpOrigin, kHttpOrigin,
-        kHttpSiteForCookies, {} /* party_context */));
+    req->set_isolation_info(
+        IsolationInfo::Create(IsolationInfo::RequestType::kOther, kHttpOrigin,
+                              kHttpOrigin, kHttpSiteForCookies));
     req->set_first_party_url_policy(
         RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT);
     req->set_site_for_cookies(kHttpSiteForCookies);
@@ -3503,9 +3495,9 @@ TEST_P(URLRequestSameSiteCookiesTest, SettingSameSiteCookies_Redirect) {
         http_server.GetURL(kHost, "/server-redirect?" + set_cookie_url.spec());
     std::unique_ptr<URLRequest> req(default_context().CreateRequest(
         url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    req->set_isolation_info(IsolationInfo::Create(
-        IsolationInfo::RequestType::kOther, kHttpOrigin, kHttpOrigin,
-        kHttpSiteForCookies, {} /* party_context */));
+    req->set_isolation_info(
+        IsolationInfo::Create(IsolationInfo::RequestType::kOther, kHttpOrigin,
+                              kHttpOrigin, kHttpSiteForCookies));
     req->set_first_party_url_policy(
         RedirectInfo::FirstPartyURLPolicy::UPDATE_URL_ON_REDIRECT);
     req->set_site_for_cookies(kHttpSiteForCookies);
@@ -12908,8 +12900,7 @@ TEST_F(URLRequestTest, SetIsolationInfoFromNak) {
   IsolationInfo expected_isolation_info_populated_cross_site_nak =
       IsolationInfo::Create(IsolationInfo::RequestType::kOther,
                             url::Origin::Create(GURL("https://a.com/")),
-                            url::Origin(), SiteForCookies(),
-                            /*party_context=*/absl::nullopt, nak_nonce);
+                            url::Origin(), SiteForCookies(), nak_nonce);
 
   auto populated_same_site_nak = NetworkAnonymizationKey::CreateFromParts(
       site_a, /*is_cross_site=*/false, nak_nonce);
@@ -12917,8 +12908,7 @@ TEST_F(URLRequestTest, SetIsolationInfoFromNak) {
       IsolationInfo::Create(IsolationInfo::RequestType::kOther,
                             url::Origin::Create(GURL("https://a.com/")),
                             url::Origin::Create(GURL("https://a.com/")),
-                            SiteForCookies(),
-                            /*party_context=*/absl::nullopt, nak_nonce);
+                            SiteForCookies(), nak_nonce);
 
   NetworkAnonymizationKey empty_nak;
   GURL original_url("http://localhost");
@@ -13027,7 +13017,7 @@ TEST_P(URLRequestMaybeAsyncFirstPartySetsTest, SimpleRequest) {
       TRAFFIC_ANNOTATION_FOR_TESTS));
   req->set_isolation_info(
       IsolationInfo::Create(IsolationInfo::RequestType::kMainFrame, kOrigin,
-                            kOrigin, kSiteForCookies, {} /* party_context */));
+                            kOrigin, kSiteForCookies));
   req->Start();
   d.RunUntilComplete();
 
@@ -13056,7 +13046,7 @@ TEST_P(URLRequestMaybeAsyncFirstPartySetsTest, SingleRedirect) {
       DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
   req->set_isolation_info(
       IsolationInfo::Create(IsolationInfo::RequestType::kMainFrame, kOrigin,
-                            kOrigin, kSiteForCookies, {} /* party_context */));
+                            kOrigin, kSiteForCookies));
   req->Start();
   d.RunUntilComplete();
 

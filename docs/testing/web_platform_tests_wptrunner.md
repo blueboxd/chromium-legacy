@@ -33,7 +33,7 @@ The main differences between `run_web_tests.py` and `wptrunner` are that:
 First, build the [ninja target][1] for the product you wish to test:
 
 ``` sh
-autoninja -C out/Release chrome_wpt
+autoninja -C out/Release chrome_wpt_tests
 autoninja -C out/Release content_shell_wpt
 autoninja -C out/Release system_webview_wpt   # `android_webview`
 autoninja -C out/Release chrome_public_wpt    # `chrome_android` (Clank)
@@ -78,6 +78,7 @@ on different platforms:
 * [`mac11-wpt-content-shell-fyi-rel`](https://ci.chromium.org/p/chromium/builders/ci/mac11-wpt-content-shell-fyi-rel)
 * [`mac12-wpt-content-shell-fyi-rel`](https://ci.chromium.org/p/chromium/builders/ci/mac12-wpt-content-shell-fyi-rel)
 * [`mac13-wpt-content-shell-fyi-rel`](https://ci.chromium.org/p/chromium/builders/ci/mac13-wpt-content-shell-fyi-rel)
+* [`mac11-arm64-wpt-content-shell-fyi-rel`](https://ci.chromium.org/p/chromium/builders/ci/mac11-arm64-wpt-content-shell-fyi-rel)
 * [`mac12-arm64-wpt-content-shell-fyi-rel`](https://ci.chromium.org/p/chromium/builders/ci/mac12-arm64-wpt-content-shell-fyi-rel)
 * [`mac13-arm64-wpt-content-shell-fyi-rel`](https://ci.chromium.org/p/chromium/builders/ci/mac13-arm64-wpt-content-shell-fyi-rel)
 * [`linux-wpt-fyi-rel`](https://ci.chromium.org/p/chromium/builders/ci/linux-wpt-fyi-rel)
@@ -207,7 +208,7 @@ crbug.com/3 external/wpt/a/reftest.html [ Pass Timeout ]
           Deleting the entire metadata file implies an all-`PASS` test.
     * `disabled`: Any nonempty value will skip the test or ignore the subtest
       result. By convention, `disabled` should contain the reason the (sub)test
-      is disabled, with the literal `neverfix` for [`NeverFixTests`][13].
+      is disabled, with the literal `neverfix` for [`NeverFixTests`][5].
 * `#` starts a comment that extends to the end of the line.
 
 *** note
@@ -359,13 +360,24 @@ For example, expectations set by `a/b/c.html.ini` override those of
 The special value `disabled: @False` can selectively reenable tests or
 directories disabled by an ancestor `__dir__.ini`.
 
-### Update Tool
+### Updating Expectations
 
-To update expectations in bulk for all tested configurations,
-[`blink_tool.py`][5] has an [`update-metadata`][6] subcommand that can trigger
-[try builds](#Builders) and update expectations from the results (similar to
-[`rebaseline-cl`][7]).
-The workflow is very similar to [rebaselining]:
+There are several ways to update metadata files:
+
+1. Manually editing `.ini` files, which works best for simple edits:
+    * Marking a timed out test.
+    * Deleting `[subtest]` and `expected: FAIL` lines for a few subtests that
+      pass after a change.
+      (Absent subtests are implied to `PASS`.)
+    * Deleting `.ini` files for tests that become all-pass.
+2. Use `run_wpt_tests.py --reset-results`, which works best for
+   platform-agnostic results.
+3. Use the [`blink_tool.py update-metadata`][6] tool, which can trigger [try
+   builds](#Builders) and update expectations from the results (similar to
+   [`rebaseline-cl`][7]). This is slow but works best for platform-specific or
+   complex expectation updates.
+
+Using `update-metadata` is very similar to [rebaselining]:
 
 ```sh
 # Create a CL, if one has not been created already.
@@ -383,9 +395,6 @@ git cl upload
 git commit -m "Update WPT expectations" && git cl upload
 ```
 
-The [WPT autoroller](web_platform_tests.md#Automatic-import-process) uses
-`update-metadata` to automatically suppress imported tests with new failures.
-
 `update-metadata` can also suppress failures occurring on trunk:
 
 ```sh
@@ -394,9 +403,15 @@ The [WPT autoroller](web_platform_tests.md#Automatic-import-process) uses
 ./blink_tool.py update-metadata --build=ci/linux-wpt-fyi-rel:3000-3005
 ```
 
+The [WPT autoroller](web_platform_tests.md#Automatic-import-process) uses
+`update-metadata` to automatically suppress imported tests that exhibit new
+failures.
+
 [rebaselining]: web_test_expectations.md#Rebaselining-using-try-jobs
 
 ## Debugging Support
+
+### Headful Mode
 
 Passing the `--no-headless` flag to `run_wpt_tests.py` will pause execution
 after running each test headfully.
@@ -406,10 +421,19 @@ You can interact with the paused test page afterwards, including with DevTools:
 
 Closing the tab or window will unpause `wptrunner` and run the next test.
 
-In the future, we intend to support hooking up [text-based debuggers] like `rr`
-to test runs.
+### Text-Based Debuggers
 
-[text-based debuggers]: https://crbug.com/1440021
+You can pass a wrapper command like `rr record` to `run_wpt_tests.py
+--wrapper="cmd arg1 ..."`.
+Note that the wrapper command must forward stdio from `content_shell` running in
+[protocol mode], so `--wrapper` won't work with interactive debuggers.
+
+To interactively debug WPTs, prefix the `run_wpt_tests.py` command with
+[`debug_renderer`][13] to attach a debugger to a desired renderer.
+
+For other use cases, see [these debugging tips].
+
+[these debugging tips]: /docs/linux/debugging.md
 
 ## Known Issues
 
@@ -422,7 +446,7 @@ label](https://bugs.chromium.org/p/chromium/issues/list?q=component%3ABlink%3EIn
 [2]: /third_party/blink/web_tests/VirtualTestSuites
 [3]: /third_party/blink/web_tests/FlagSpecificConfig
 [4]: /third_party/blink/web_tests/SmokeTests
-[5]: /third_party/blink/tools/blink_tool.py
+[5]: /third_party/blink/web_tests/NeverFixTests
 [6]: /third_party/blink/tools/blinkpy/tool/commands/update_metadata.py
 [7]: /third_party/blink/tools/blinkpy/tool/commands/rebaseline_cl.py
 [8]: /third_party/blink/web_tests/wpt_internal
@@ -430,4 +454,4 @@ label](https://bugs.chromium.org/p/chromium/issues/list?q=component%3ABlink%3EIn
 [10]: /third_party/blink/web_tests/FlagExpectations
 [11]: https://web-platform-tests.org/writing-tests/testharness.html#tests-for-other-or-multiple-globals-any-js
 [12]: https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/tools/blinkpy/web_tests/port/base.py;l=152-163;drc=b35e75299a6fda0eb51e9ba3139cce216f7f8db0;bpv=0;bpt=0
-[13]: /third_party/blink/web_tests/NeverFixTests
+[13]: /third_party/blink/tools/debug_renderer

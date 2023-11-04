@@ -93,7 +93,7 @@ TEST_F(HTMLCanvasElementModuleTest, TransferControlToOffscreen) {
   const OffscreenCanvas* offscreen_canvas =
       TransferControlToOffscreen(exception_state);
   const DOMNodeId canvas_id = offscreen_canvas->PlaceholderCanvasId();
-  EXPECT_EQ(canvas_id, DOMNodeIds::IdForNode(&(canvas_element())));
+  EXPECT_EQ(canvas_id, canvas_element().GetDomNodeId());
 }
 
 // Verifies that a desynchronized canvas has the appropriate opacity/blending
@@ -116,7 +116,7 @@ TEST_P(HTMLCanvasElementModuleTest, LowLatencyCanvasCompositorFrameOpacity) {
 
   context_provider->UnboundTestContextGL()
       ->set_supports_gpu_memory_buffer_format(buffer_format, true);
-  InitializeSharedGpuContext(context_provider.get());
+  InitializeSharedGpuContextGLES2(context_provider.get());
 
   // To intercept SubmitCompositorFrame/SubmitCompositorFrameSync messages sent
   // by a canvas's CanvasResourceDispatcher, we have to override the Mojo
@@ -165,9 +165,8 @@ TEST_P(HTMLCanvasElementModuleTest, LowLatencyCanvasCompositorFrameOpacity) {
                       context_alpha);
           })));
   canvas_element().PreFinalizeFrame();
-  context_->FinalizeFrame(CanvasResourceProvider::FlushReason::kTesting);
-  canvas_element().PostFinalizeFrame(
-      CanvasResourceProvider::FlushReason::kTesting);
+  context_->FinalizeFrame(FlushReason::kTesting);
+  canvas_element().PostFinalizeFrame(FlushReason::kTesting);
   platform->RunUntilIdle();
 
   SharedGpuContext::ResetForTesting();

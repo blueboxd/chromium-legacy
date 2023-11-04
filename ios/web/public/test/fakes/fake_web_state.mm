@@ -39,9 +39,9 @@ void FakeWebState::CloseWebState() {
 
 FakeWebState::FakeWebState()
     : stable_identifier_([[NSUUID UUID] UUIDString]),
-      unique_identifier_(SessionID::NewUnique()) {
+      unique_identifier_(web::WebStateID::NewUnique()) {
   DCHECK(stable_identifier_.length);
-  DCHECK(unique_identifier_.is_valid());
+  DCHECK(unique_identifier_.valid());
 }
 
 FakeWebState::~FakeWebState() {
@@ -177,12 +177,13 @@ FakeWebState::GetSessionCertificatePolicyCache() {
 
 CRWSessionStorage* FakeWebState::BuildSessionStorage() const {
   CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
-  session_storage.userData =
-      web::SerializableUserDataManager::FromWebState(this)
-          ->GetUserDataForSession();
   session_storage.itemStorages = @[ [[CRWNavigationItemStorage alloc] init] ];
   session_storage.stableIdentifier = stable_identifier_;
   session_storage.uniqueIdentifier = unique_identifier_;
+  if (const SerializableUserDataManager* manager =
+          SerializableUserDataManager::FromWebState(this)) {
+    session_storage.userData = manager->GetUserDataForSession();
+  }
   return session_storage;
 }
 
@@ -237,7 +238,7 @@ NSString* FakeWebState::GetStableIdentifier() const {
   return stable_identifier_;
 }
 
-SessionID FakeWebState::GetUniqueIdentifier() const {
+WebStateID FakeWebState::GetUniqueIdentifier() const {
   return unique_identifier_;
 }
 

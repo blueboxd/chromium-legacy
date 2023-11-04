@@ -13,6 +13,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.os.Build;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
@@ -54,6 +55,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
+import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.download.ResumeMode;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -87,6 +89,13 @@ public class DownloadUtils {
     private static final String DOCUMENTS_UI_PACKAGE_NAME = "com.android.documentsui";
     public static final String EXTRA_SHOW_PREFETCHED_CONTENT =
             "org.chromium.chrome.browser.download.SHOW_PREFETCHED_CONTENT";
+
+    // TODO(crbug/1483735): Remove this once robolectric support is added.
+    private static Integer sMinSdkVersionForUserInitiatedJobsForTesting;
+
+    public static void setMinSdkVersionForUserInitiatedJobsForTesting(Integer minVersion) {
+        sMinSdkVersionForUserInitiatedJobsForTesting = minVersion;
+    }
 
     /**
      * Displays the download manager UI. Note the UI is different on tablets and on phones.
@@ -229,6 +238,32 @@ public class DownloadUtils {
      */
     public static boolean shouldShowPrefetchContent(Intent intent) {
         return IntentUtils.safeGetBooleanExtra(intent, EXTRA_SHOW_PREFETCHED_CONTENT, false);
+    }
+
+    /**
+     * Called to determine whether to use user initiated Jobs API for ensuring download completion.
+     * @return True for using Jobs. False for using Foreground service.
+     */
+    public static boolean shouldUseUserInitiatedJobs() {
+        int minSupportedVersion = sMinSdkVersionForUserInitiatedJobsForTesting == null
+                ? 34
+                : sMinSdkVersionForUserInitiatedJobsForTesting;
+        return ChromeFeatureList.sDownloadsMigrateToJobsAPI.isEnabled()
+                && Build.VERSION.SDK_INT >= minSupportedVersion;
+    }
+
+    /**
+     * Called to determine whether a given job is a user-initiated job or a regular job.
+     * @return Whether the job is an user initiated job.
+     */
+    public static boolean isUserInitiatedJob(int taskId) {
+        switch (taskId) {
+            case TaskIds.DOWNLOAD_AUTO_RESUMPTION_UNMETERED_JOB_ID:
+            case TaskIds.DOWNLOAD_AUTO_RESUMPTION_ANY_NETWORK_JOB_ID:
+                return DownloadUtils.shouldUseUserInitiatedJobs();
+            default:
+                return false;
+        }
     }
 
     /**

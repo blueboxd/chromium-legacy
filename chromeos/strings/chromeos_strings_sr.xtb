@@ -280,7 +280,6 @@
 <translation id="3226405216343213872">Траже се скенери</translation>
 <translation id="3226657629376379887">Мени са радњама за распоред</translation>
 <translation id="3246869037381808805">Задаци штампања старији од 1 дана се уклањају</translation>
-<translation id="3248223063252096240">Ексклузивно за <ph name="PRODUCT_NAME" /></translation>
 <translation id="3268178239013324452">Није успело – врата су отворена</translation>
 <translation id="3275729367986477355">Слика аватара</translation>
 <translation id="3283504360622356314">{0,plural, =1{Измени фајл}one{Измени фајлове}few{Измени фајлове}other{Измени фајлове}}</translation>
@@ -897,7 +896,7 @@
 <translation id="7955587717700691983">Bluetooth тастатура</translation>
 <translation id="7960831585769876809">Температура</translation>
 <translation id="7971535376154084247">Опште контроле</translation>
-<translation id="7977800524392185497">Да бисте се повезали са <ph name="NETWORK_NAME" /> мрежи, идите у Подешавања</translation>
+<translation id="7977800524392185497">Да бисте се придружили <ph name="NETWORK_NAME" /> мрежи, идите у Подешавања</translation>
 <translation id="7978412674231730200">Приватни кључ</translation>
 <translation id="7994702968232966508">EAP метод</translation>
 <translation id="8004582292198964060">Прегледач</translation>
@@ -921,6 +920,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Изаберите <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
 <translation id="8151185429379586178">Алатке за програмере</translation>
+<translation id="8152370627892825"><ph name="DESCRIPTION" />, <ph name="ACCELERATOR_INFO" />.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183974620058026102">Прилог</translation>
 <translation id="8206859287963243715">Мобилни уређај</translation>

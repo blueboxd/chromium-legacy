@@ -9,6 +9,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/bubble/bubble_contents_wrapper.h"
 #include "chrome/browser/ui/views/bubble/bubble_contents_wrapper_service.h"
 #include "chrome/browser/ui/views/bubble/bubble_contents_wrapper_service_factory.h"
@@ -24,6 +25,8 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/ime/ash/ime_bridge.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/resources/grit/webui_resources.h"
 #include "ui/webui/color_change_listener/color_change_handler.h"
 
@@ -33,16 +36,28 @@ constexpr int kPaddingAroundCursor = 8;
 
 class EmojiiBubbleDialogView : public WebUIBubbleDialogView {
  public:
+  METADATA_HEADER(EmojiiBubbleDialogView);
   EmojiiBubbleDialogView(
       std::unique_ptr<BubbleContentsWrapper> contents_wrapper)
       : WebUIBubbleDialogView(nullptr, contents_wrapper.get()),
         contents_wrapper_(std::move(contents_wrapper)) {
     set_has_parent(false);
+
+    // With jelly support on, update border radius of bubble view.
+    // TODO(b/263055563): Remove this check once Jelly is fully launched in
+    // Emoji Picker.
+    if (base::FeatureList::IsEnabled(
+            ash::features::kImeSystemEmojiPickerJellySupport)) {
+      set_corner_radius(16);
+    }
   }
 
  private:
   std::unique_ptr<BubbleContentsWrapper> contents_wrapper_;
 };
+
+BEGIN_METADATA(EmojiiBubbleDialogView, WebUIBubbleDialogView)
+END_METADATA
 
 }  // namespace
 
@@ -71,7 +86,7 @@ bool EmojiUI::ShouldShow(const ui::TextInputClient* input_client) {
   return input_client != nullptr;
 }
 
-void EmojiUI::Show(Profile* profile) {
+void EmojiUI::Show() {
   if (TabletMode::Get()->InTabletMode()) {
     ui::ShowTabletModeEmojiPanel();
     return;
@@ -84,6 +99,12 @@ void EmojiUI::Show(Profile* profile) {
 
   // Does not show emoji picker if there is no input client.
   if (!ShouldShow(input_client)) {
+    return;
+  }
+
+  auto* profile = ProfileManager::GetActiveUserProfile();
+
+  if (!profile) {
     return;
   }
 

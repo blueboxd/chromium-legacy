@@ -22,9 +22,9 @@
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_device.h"
-#include "media/gpu/v4l2/legacy/v4l2_stateful_workaround.h"
 #include "media/gpu/v4l2/v4l2_vda_helpers.h"
 #include "media/gpu/v4l2/v4l2_video_decoder_backend.h"
+#include "media/gpu/v4l2/v4l2_vp9_helpers.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace media {
@@ -778,7 +778,9 @@ bool V4L2StatefulVideoDecoderBackend::StopInputQueueOnResChange() const {
   return false;
 }
 
-size_t V4L2StatefulVideoDecoderBackend::GetNumOUTPUTQueueBuffers() const {
+size_t V4L2StatefulVideoDecoderBackend::GetNumOUTPUTQueueBuffers(
+    bool secure_mode) const {
+  CHECK(!secure_mode);
   constexpr size_t kNumInputBuffers = 8;
   return kNumInputBuffers;
 }

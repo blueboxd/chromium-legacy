@@ -17,6 +17,7 @@ build_webui("build") {
     "images/checkup_result_banner_running_dark.svg",
     "images/password_manager_logo.svg",
     "images/password_sharing_family_banner.svg",
+    "images/password_sharing_family_banner_dark.svg",
     "images/password_sharing_secure_shield.svg",
     "images/password_sharing_progress_bar.svg",
     "password_manager.html",
@@ -65,11 +66,13 @@ build_webui("build") {
     "settings_section.ts",
     "sharing/share_password_flow.ts",
     "sharing/share_password_dialog_header.ts",
+    "sharing/share_password_group_avatar.ts",
     "sharing/share_password_recipient.ts",
     "sharing/share_password_family_picker_dialog.ts",
     "sharing/share_password_loading_dialog.ts",
     "sharing/share_password_error_dialog.ts",
-    "sharing/share_password_no_members_dialog.ts",
+    "sharing/share_password_no_other_family_members_dialog.ts",
+    "sharing/share_password_not_family_member_dialog.ts",
     "sharing/share_password_confirmation_dialog.ts",
     "side_bar.ts",
     "site_favicon.ts",
@@ -90,6 +93,7 @@ build_webui("build") {
     "sync_browser_proxy.ts",
     "user_utils_mixin.ts",
     "promo_cards/promo_cards_browser_proxy.ts",
+    "sharing/metrics_utils.ts",
   ]
 
   # Files that are passed as input to css_to_wrapper().

@@ -137,13 +137,6 @@ void AutofillKeyboardAccessoryAdapter::AcceptSuggestion(
   }
 }
 
-void AutofillKeyboardAccessoryAdapter::AcceptSuggestionWithoutThreshold(
-    int index) {
-  if (controller_) {
-    controller_->AcceptSuggestionWithoutThreshold(OffsetIndexFor(index));
-  }
-}
-
 int AutofillKeyboardAccessoryAdapter::GetLineCount() const {
   return controller_ ? controller_->GetLineCount() : 0;
 }
@@ -195,7 +188,8 @@ bool AutofillKeyboardAccessoryAdapter::
 base::WeakPtr<AutofillPopupController>
 AutofillKeyboardAccessoryAdapter::OpenSubPopup(
     const gfx::RectF& anchor_bounds,
-    std::vector<Suggestion> suggestions) {
+    std::vector<Suggestion> suggestions,
+    AutoselectFirstSuggestion autoselect_first_suggestion) {
   NOTIMPLEMENTED() << "No sub-popups on Keyboard Accessory";
   return nullptr;
 }

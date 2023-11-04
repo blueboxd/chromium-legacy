@@ -14,7 +14,6 @@
 <translation id="1491435845014430217">Attiva l'opzione "Blocca le schede di navigazione in incognito quando chiudi Chrome".</translation>
 <translation id="1493827051843127077">Imposta Chrome come browser predefinito per la sincronizzazione di schede, password e dati di pagamento su tutti i tuoi dispositivi</translation>
 <translation id="1504372625950710826">Chrome non ha potuto verificare la disponibilità di aggiornamenti. Verifica la tua connessione a Internet.</translation>
-<translation id="1511320244449497906">Hai eseguito l'accesso e stai sincronizzando i tuoi dati con un account gestito da <ph name="DOMAIN" /> il cui amministratore può ora configurare criteri relativi agli utenti specifici per questo account che possono modificare il comportamento di Chrome.</translation>
 <translation id="1516692594929310090">Apre la griglia delle schede di Chrome.</translation>
 <translation id="1526327845902180576">Quando la funzionalità è attiva:
 <ph name="BEGIN_INDENT" /> • Contribuisci a migliorare Chrome per le persone che lo usano come fai tu.<ph name="END_INDENT" />
@@ -31,7 +30,6 @@ Aspetti da considerare:
 <translation id="1675955119303651351">Alcuni dati di Chrome non sono ancora stati salvati nel tuo Account Google.
         Prova ad attendere qualche minuto prima di uscire. Se esci ora, questi dati verranno eliminati.</translation>
 <translation id="1682483655351012182">Sincronizza i tuoi dati di Chrome</translation>
-<translation id="1733654336159102143">Blocca le schede di navigazione in incognito quando esci da Chrome o passi a un'altra app.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1843217788865538014">Usa automaticamente Chrome quando tocchi link in messaggi, documenti e altre app.</translation>
 <translation id="1917964099031477364">Questo account e gli eventuali dati non salvati verranno rimossi da Chrome e da altre app Google su questo dispositivo.</translation>
@@ -58,7 +56,6 @@ Aspetti da considerare:
 <translation id="2732745070297234559">Chrome non ha potuto controllare tutte le password. Riprova domani.</translation>
 <translation id="2736805085127235148">Le notifiche di Chrome sono attualmente disattivate nelle impostazioni del dispositivo.</translation>
 <translation id="2767464022270041271">Nessuna password salvata. Gestore delle password di Google può controllare le tue password quando le salvi.</translation>
-<translation id="2840432500933227975">Apri le Impostazioni di Chrome in iOS, quindi tocca "App predefinita del browser" e seleziona Chrome.</translation>
 <translation id="2868822340714096138">Cancella i dati di navigazione in Chrome</translation>
 <translation id="2869959624320573933">Accedi a Chrome</translation>
 <translation id="2876628302275096482">Scopri di più su <ph name="BEGIN_LINK" />come Chrome mantiene privati i tuoi dati<ph name="END_LINK" /></translation>
@@ -72,6 +69,7 @@ Aspetti da considerare:
 <translation id="3345341804167540816">Utilizza Chrome ovunque</translation>
 <translation id="3472587960215700950">Chrome utilizza Google Maps per fornirti indicazioni stradali e informazioni locali sugli indirizzi rilevati.</translation>
 <translation id="3503014945441706099">Attiva la funzionalità Navigazione sicura avanzata anche per questo profilo Chrome</translation>
+<translation id="3506309791702511623">Chrome può rilevare i numeri di riferimento inseriti e monitorare i pacchi nella pagina Nuova scheda, aiutandoti al contempo con altre esperienze di acquisto di Chrome.</translation>
 <translation id="3522659714780527202">Per visualizzare le tue schede su tutti i dispositivi su cui utilizzi Chrome, attiva la sincronizzazione</translation>
 <translation id="3533694711092285624">Nessuna password salvata. Chrome può controllare le password quando le salvi.</translation>
 <translation id="3594076341410558780">Nascondi "Ottieni il massimo da Chrome"</translation>
@@ -106,6 +104,7 @@ Aspetti da considerare:
         Prova ad attendere qualche minuto prima di uscire. Se esci ora, questi dati verranno eliminati.</translation>
 <translation id="484033449593719797">Non supportata su Chrome beta</translation>
 <translation id="4840404732697892756">Gestore delle password di Google può controllare le tue password quando accedi con il tuo Account Google.</translation>
+<translation id="4860330141789125848">{COUNT,plural, =1{Chrome può aiutarti a monitorare questo pacchetto nella pagina Nuova scheda.}other{Chrome può aiutarti a monitorare questi pacchetti nella pagina Nuova scheda.}}</translation>
 <translation id="4903674399067644695">In questa scheda vengono mostrati suggerimenti su come utilizzare al meglio Chrome.</translation>
 <translation id="49200511069271369">La tua organizzazione, <ph name="DOMAIN" />, gestisce l'account a cui stai accedendo e la modalità di utilizzo di Chrome. L'amministratore può configurare o limitare determinate funzionalità.</translation>
 <translation id="5030102366287574140">Chrome può contribuire a proteggerti da violazioni dei dati, siti web non sicuri e non solo.</translation>
@@ -115,10 +114,12 @@ Aspetti da considerare:
 <translation id="5156818928311866442">Apre l'impostazione di Chrome per impostare Chrome come browser predefinito.</translation>
 <translation id="5162467219239570114">Chrome non è aggiornato. Se non sono disponibili aggiornamenti nell'<ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, è possibile che il dispositivo non supporti più le nuove versioni di Chrome.</translation>
 <translation id="5190139289262548459">La tua organizzazione, <ph name="DOMAIN" />, gestisce l'account a cui hai eseguito l'accesso e la modalità di utilizzo di Chrome.</translation>
+<translation id="5278862365980079760">Blocca le schede di navigazione in incognito quando esci da Chrome o passi a un'altra app.</translation>
 <translation id="5389212809648216794">Google Chrome non può utilizzare la videocamera perché è attualmente utilizzata da un'altra applicazione</translation>
 <translation id="5395376160638294582">Assicurati di poter usare sempre i dati di Chrome nel tuo Account Google</translation>
 <translation id="5439191312780166229">Ricevi un avviso in caso di siti pericolosi, inclusi quelli di cui Google non era a conoscenza, analizzando più dati provenienti dai siti rispetto al livello Protezione standard. Puoi scegliere di ignorare gli avvisi di Chrome.</translation>
 <translation id="5460571915754665838">4. Seleziona Chrome</translation>
+<translation id="546541279759910616">{COUNT,plural, =1{Chrome ti aiuterà a monitorare questo pacchetto nella pagina Nuova scheda.}other{Chrome ti aiuterà a monitorare questi pacchetti nella pagina Nuova scheda.}}</translation>
 <translation id="5492504007368565877">Gestore delle password di Google non può controllare le tue password.</translation>
 <translation id="5527026824954593399">Tocca l'opzione "Visualizza con Google Maps su Chrome".</translation>
 <translation id="5552137475244467770">Chrome confronta periodicamente le tue password con gli elenchi pubblicati online. Durante questa operazione, le tue password e i tuoi nomi utente vengono criptati, quindi non possono essere letti da nessuno, Google compresa.</translation>
@@ -136,17 +137,18 @@ Aspetti da considerare:
 <translation id="6063091872902370735">Consenti l'accesso a Chrome</translation>
 <translation id="6110625574506755980">Alcune funzionalità di Chrome non saranno più disponibili.</translation>
 <translation id="6181930887571472871">Passa a Chrome</translation>
-<translation id="6228768456496298352">Chrome rileva gli indirizzi tramite Google Maps per fornirti indicazioni stradali e informazioni locali.</translation>
 <translation id="6238746320622508509">Consenti a Chrome di bloccare le schede di navigazione in incognito.</translation>
 <translation id="6247557882553405851">Gestore delle password di Google</translation>
 <translation id="6412673304250309937">Verifica gli URL con un elenco di siti non sicuri archiviati in Chrome. Se un sito cerca di rubare la tua password o se scarichi un file dannoso, Chrome potrebbe inviare anche gli URL, inclusi bit e contenuti di pagina, a Navigazione sicura.</translation>
 <translation id="6427126399757991875">La tua organizzazione sta configurando Chrome…</translation>
+<translation id="6545449117344801102">Chrome rileva gli indirizzi e utilizza Google Maps per darti indicazioni stradali e informazioni locali.</translation>
 <translation id="6600954340915313787">Copiata in Chrome</translation>
 <translation id="6634107063912726160">Se esci, Chrome non sincronizzerà gli eventuali nuovi dati con il tuo Account Google. I dati sincronizzati in precedenza rimangono memorizzati nell'account.</translation>
 <translation id="6646696210740573446">Invia una parte offuscata dell'URL a Google tramite un server di tutela della privacy che nasconde il tuo indirizzo IP. Se un sito cerca di rubare la tua password o se scarichi un file dannoso, Chrome potrebbe inviare a Google anche gli URL, inclusi frammenti dei contenuti delle pagine.</translation>
 <translation id="6648150602980899529">Stai per eseguire l'accesso con un account gestito da <ph name="DOMAIN" /> e consentire al relativo amministratore di avere il controllo dei tuoi dati di Chrome. I tuoi dati verranno associati definitivamente a questo account. Se esci da Chrome, i dati verranno eliminati da questo dispositivo, ma rimarranno memorizzati nel tuo Account Google.</translation>
 <translation id="6676840375528380067">Eliminare i dati di Chrome dal dispositivo?</translation>
 <translation id="6683891932310469419">Apre la pagina della cronologia di Chrome.</translation>
+<translation id="6698978507424537043">Monitora automaticamente i tuoi pacchi su Chrome</translation>
 <translation id="6709398533399187136">La tua password è stata compromessa nell'ambito di una violazione dei dati. Gestore delle password di Google consiglia di cambiarla subito.</translation>
 <translation id="6815466750807582739">I metodi di pagamento e gli indirizzi non verranno criptati. La cronologia di navigazione di Chrome non verrà sincronizzata.
 
@@ -163,6 +165,7 @@ Solo chi conosce la tua passphrase può leggere i tuoi dati criptati. La passphr
 <translation id="7165736900384873061">Inizia a utilizzare lo scanner QR di Google Chrome</translation>
 <translation id="7173660919484573146">Chrome utilizza Face ID per garantire accesso autorizzato alle tue password.</translation>
 <translation id="7187993566681480880">Ti protegge su Chrome e potrebbe essere utilizzata per migliorare la sicurezza su altre app Google se esegui l'accesso.</translation>
+<translation id="7200524487407690471">Chrome esegue automaticamente il controllo di sicurezza ogni giorno per proteggerti da violazioni dei dati, siti web non sicuri e altro ancora. Puoi trovare ulteriori informazioni sul controllo di sicurezza nelle Impostazioni.</translation>
 <translation id="72119412072970160">Puoi utilizzare le password salvate con Gestore delle password di Google in altre app sull'iPad.</translation>
 <translation id="7254380941803999489">Imposta Chrome come browser predefinito</translation>
 <translation id="7261678641327190792">Chrome non può controllare le tue password</translation>

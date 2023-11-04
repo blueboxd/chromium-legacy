@@ -291,6 +291,8 @@ bool HUPSearchDatabase();
 
 // Returns true if the OmniboxActionsUISimplification feature is enabled.
 bool IsActionsUISimplificationEnabled();
+// Indicates whether to include changes that affect the NTP realbox.
+extern const base::FeatureParam<bool> kActionsUISimplificationIncludeRealbox;
 // Indicates whether to delete extra matches produced by splitting
 // actions out to become independent suggestions. Note, this will only
 // apply if `IsActionsUISimplificationEnabled` returns true and the
@@ -351,6 +353,8 @@ extern const base::FeatureParam<bool> kSquareSuggestIconEntities;
 // takes up half of the space. Should be (0, 1). No effect if
 // `kSquareSuggestIconEntities` is false or this is 1.
 extern const base::FeatureParam<double> kSquareSuggestIconEntitiesScale;
+// Gray rounded rect background for weather icons.
+extern const base::FeatureParam<bool> kSquareSuggestIconWeather;
 
 // Omnibox UI simplification - uniform row heights.
 // Returns true if the feature to enable uniform row height is enabled.
@@ -479,16 +483,6 @@ extern int kDefaultMinimumTimeBetweenSuggestQueriesMs;
 extern const char kOmniboxUIUnelideURLOnHoverThresholdMsParam[];
 
 // `FeatureParam`s
-
-// Autocomplete stability and related features.
-// Limit how frequently `AutocompleteController::UpdateResult()` will be
-// invoked. See the comments at `AutocompleteController::update_debouncer_`.
-extern const base::FeatureParam<bool>
-    kAutocompleteStabilityUpdateResultDebounceFromLastRun;
-// See `kAutocompleteStabilityUpdateResultDebounceFromLastRun`. No debouncing
-// if set to 0.
-extern const base::FeatureParam<int>
-    kAutocompleteStabilityUpdateResultDebounceDelay;
 
 // Local history zero-prefix (aka zero-suggest) and prefix suggestions.
 

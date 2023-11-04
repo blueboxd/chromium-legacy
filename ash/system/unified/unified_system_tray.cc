@@ -160,9 +160,7 @@ bool UnifiedSystemTray::UiDelegate::ShowPopups() {
   return true;
 }
 
-void UnifiedSystemTray::UiDelegate::HidePopups() {
-  message_popup_collection_->SetBaselineOffset(0);
-}
+void UnifiedSystemTray::UiDelegate::HidePopups() {}
 
 bool UnifiedSystemTray::UiDelegate::ShowMessageCenter() {
   if (owner_->IsBubbleShown()) {
@@ -190,8 +188,8 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
               ? nullptr
               : std::make_unique<NotificationIconsController>(shelf,
                                                               model_.get())) {
-  SetPressedCallback(base::BindRepeating(&UnifiedSystemTray::OnButtonPressed,
-                                         base::Unretained(this)));
+  SetCallback(base::BindRepeating(&UnifiedSystemTray::OnButtonPressed,
+                                  base::Unretained(this)));
 
   if (features::IsUserEducationEnabled()) {
     // NOTE: Set `kHelpBubbleContextKey` before `views::kElementIdentifierKey`
@@ -500,6 +498,10 @@ bool UnifiedSystemTray::ShouldEnableExtraKeyboardAccessibility() {
 
 views::Widget* UnifiedSystemTray::GetBubbleWidget() const {
   return bubble_ ? bubble_->GetBubbleWidget() : nullptr;
+}
+
+TrayBubbleView* UnifiedSystemTray::GetBubbleView() {
+  return bubble_ ? bubble_->GetBubbleView() : nullptr;
 }
 
 const char* UnifiedSystemTray::GetClassName() const {

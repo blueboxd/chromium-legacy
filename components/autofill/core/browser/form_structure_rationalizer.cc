@@ -103,16 +103,15 @@ void FormStructureRationalizer::RationalizeAutocompleteAttributes(
     auto set_html_type = [&field](HtmlFieldType type) {
       field->SetHtmlType(type, field->html_mode());
     };
-    // The following rationalization operates only on text fields.
-    bool is_text_field = field->FormControlType() == FormControlType::kText ||
-                         field->FormControlType() == FormControlType::kTextarea;
-    if (!is_text_field) {
-      continue;
-    }
-    // TODO(crbug.com/1441057) For <select> elements we may rationalize the
-    // HtmlFieldType based on the length of option values.
+    // Some of the following rationalization operates only on text fields.
+    bool is_text_field =
+        field->FormControlType() == DeprecatedFormControlType::kText ||
+        field->FormControlType() == DeprecatedFormControlType::kTextarea;
     switch (field->html_type()) {
       case HtmlFieldType::kAdditionalName:
+        if (!is_text_field) {
+          continue;
+        }
         if (field->max_length == 1) {
           set_html_type(HtmlFieldType::kAdditionalNameInitial);
         }
@@ -125,6 +124,9 @@ void FormStructureRationalizer::RationalizeAutocompleteAttributes(
       case HtmlFieldType::kCreditCardExp:
       case HtmlFieldType::kCreditCardExpDate2DigitYear:
       case HtmlFieldType::kCreditCardExpDate4DigitYear:
+        if (!is_text_field) {
+          continue;
+        }
         if (base::FeatureList::IsEnabled(
                 features::kAutofillEnableExpirationDateImprovements)) {
           ServerFieldType server_hint = field->server_type();
@@ -148,10 +150,29 @@ void FormStructureRationalizer::RationalizeAutocompleteAttributes(
         }
         break;
       case HtmlFieldType::kCreditCardExpYear:
+      case HtmlFieldType::kCreditCardExp2DigitYear:
+      case HtmlFieldType::kCreditCardExp4DigitYear:
+        if (!is_text_field & !field->IsSelectOrSelectListElement()) {
+          continue;
+        }
         if (base::FeatureList::IsEnabled(
                 features::kAutofillEnableExpirationDateImprovements)) {
-          // TODO(crbug.com/1441057) Look for YYYY vs. YY in placeholder/label.
-          set_html_type(field->max_length == 4
+          ServerFieldType server_hint = field->server_type();
+          ServerFieldType forced_field_type =
+              field->server_type_prediction_is_override() ? field->server_type()
+                                                          : NO_SERVER_DATA;
+          // The default for select or list elements does not really matter
+          // because it's practically always chosen from the select options.
+          // The default for text elements was chosen base on statistics from
+          // server side classifications (go/iqwtu).
+          // Keep this in sync with CreditCardField::GetExpirationYearType().
+          ServerFieldType overall_type =
+              CreditCardField::DetermineExpirationYearType(
+                  *field,
+                  /*fallback_type=*/CREDIT_CARD_EXP_4_DIGIT_YEAR,
+                  /*server_hint=*/server_hint,
+                  /*forced_field_type=*/forced_field_type);
+          set_html_type(overall_type == CREDIT_CARD_EXP_4_DIGIT_YEAR
                             ? HtmlFieldType::kCreditCardExp4DigitYear
                             : HtmlFieldType::kCreditCardExp2DigitYear);
         } else {
@@ -429,8 +450,7 @@ void FormStructureRationalizer::RationalizeMultiOriginCreditCardFields(
               << LoggingScope::kRationalization << LogMessage::kRationalization
               << "Multi-origin Credit Card Rationalization: Converting type of "
               << field->global_id() << " from "
-              << AutofillType::ServerFieldTypeToString(relevant_type)
-              << " to UNKNOWN_TYPE";
+              << FieldTypeToStringPiece(relevant_type) << " to UNKNOWN_TYPE";
         }
       }
     }
@@ -573,9 +593,8 @@ void FormStructureRationalizer::RationalizePhoneNumberTrunkTypes(
         field.SetTypeTo(AutofillType(new_type));
         LOG_AF(log_manager)
             << LoggingScope::kRationalization << LogMessage::kRationalization
-            << "Converting "
-            << AutofillType::ServerFieldTypeToString(current_type) << " to "
-            << AutofillType::ServerFieldTypeToString(new_type)
+            << "Converting " << FieldTypeToStringPiece(current_type) << " to "
+            << FieldTypeToStringPiece(new_type)
             << " as part of phone number trunk type rationalization";
       };
 

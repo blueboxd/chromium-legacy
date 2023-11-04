@@ -33,6 +33,8 @@ class CommandRecorder final {
   CommandRecorder(const CommandRecorder&) = delete;
   CommandRecorder& operator=(const CommandRecorder&) = delete;
 
+  IDMLDevice* GetDMLDevice() const;
+
   // Get the command queue that this command recorder submits command list to.
   CommandQueue* GetCommandQueue() const;
 
@@ -47,14 +49,20 @@ class CommandRecorder final {
   // GPU to complete execution of previous recorded commands. The `Open()`
   // method would ensure the command allocator is not reset while the previous
   // command list is still being used by the GPU.
+  //
+  // If there are any failures during the command recording, the caller should
+  // delete this command recorder that ensures to release the references of all
+  // recorded commands and their resources.
   HRESULT Open();
   HRESULT CloseAndExecute();
 
   void ResourceBarrier(base::span<const D3D12_RESOURCE_BARRIER> barriers);
 
-  void CopyBufferRegion(ID3D12Resource* dst_buffer,
+  // Record the buffer copy command. The destination and source buffers will be
+  // referenced until the GPU work has completed.
+  void CopyBufferRegion(ComPtr<ID3D12Resource> dst_buffer,
                         uint64_t dst_offset,
-                        ID3D12Resource* src_buffer,
+                        ComPtr<ID3D12Resource> src_buffer,
                         uint64_t src_offset,
                         uint64_t byte_length);
 
@@ -65,9 +73,7 @@ class CommandRecorder final {
   // If the compiled operator has any input tensors flagged with
   // `DML_TENSOR_FLAG_OWNED_BY_DML`, their corresponding resources binding
   // should be created by the caller and supplied via `input_array_binding` of
-  // `DML_BINDING_TYPE_BUFFER_ARRAY` type. It's the caller's responsibility to
-  // keep these input resources alive until the GPU work is completed, e.g. by
-  // calling `CommandQueue::ReferenceUntilCompleted()`.
+  // `DML_BINDING_TYPE_BUFFER_ARRAY` type.
   //
   // If the compiled operator requires any persistent resources, their resource
   // binding should be created by the caller and supplied via
@@ -76,8 +82,10 @@ class CommandRecorder final {
   // it will be used for the following operator executions.
   //
   // Internally, this method will create necessary temporary resources for the
-  // operator initializer and these temporary resources will be kept alive until
-  // the GPU work is done.
+  // operator initializer.
+  //
+  // This method ensures that all the required GPU resources will be kept alive
+  // until the operator initialization has completed on the GPU.
   HRESULT InitializeOperator(
       IDMLCompiledOperator* compiled_operator,
       const absl::optional<DML_BINDING_DESC>& input_array_binding,
@@ -93,41 +101,43 @@ class CommandRecorder final {
   // be bound to the operator's binding table. The number of bindings should
   // exactly match the number of input and output tensors of this operator. All
   // bound resources need to be in the D3D12_RESOURCE_STATE_UNORDERED_ACCESS
-  // state before calling this method. It's the caller's responsibility to keep
-  // these resources alive until the operator execution work completes on the
-  // GPU.
+  // state before calling this method.
   //
   // If the compiled operator also requires any persistent resources, they
   // should be initialized by `InitializeOperator()` and be supplied via
-  // `persistent_resource_binding`. The lifecycle of the persistent resource
-  // should be the same as other input and output resources.
+  // `persistent_resource_binding`.
   //
   // This method will create necessary temporary resources for the operator
-  // execution and these temporary resources will be kept alive until the GPU
-  // work is done.
+  // execution.
+  //
+  // This method ensures that all the required GPU resources will be kept alive
+  // until the operator execution has completed on the GPU.
   HRESULT ExecuteOperator(
-      IDMLCompiledOperator* compiled_operator,
+      ComPtr<IDMLCompiledOperator> compiled_operator,
       base::span<const DML_BINDING_DESC> input_bindings,
       base::span<const DML_BINDING_DESC> output_bindings,
       const absl::optional<DML_BINDING_DESC>& persistent_resource_binding);
 
-  // TODO(crbug.com/1476375): Associates a name with the default, upload and
-  // readback buffer.
-  //
   // Create a resource with `size` bytes in
   // D3D12_RESOURCE_STATE_UNORDERED_ACCESS state from the default heap of the
   // owned D3D12 device. For this method and the other two, if there are no
   // errors, S_OK is returned and the created resource is returned via
   // `resource`. Otherwise, the corresponding HRESULT error code is returned.
-  HRESULT CreateDefaultBuffer(uint64_t size, ComPtr<ID3D12Resource>& resource);
+  HRESULT CreateDefaultBuffer(uint64_t size,
+                              const wchar_t* name_for_debugging,
+                              ComPtr<ID3D12Resource>& resource);
 
   // Create a resource with `size` bytes in D3D12_RESOURCE_STATE_GENERIC_READ
   // state from the uploading heap of the owned D3D12 device.
-  HRESULT CreateUploadBuffer(uint64_t size, ComPtr<ID3D12Resource>& resource);
+  HRESULT CreateUploadBuffer(uint64_t size,
+                             const wchar_t* name_for_debugging,
+                             ComPtr<ID3D12Resource>& resource);
 
   // Create a resource with `size` bytes in D3D12_RESOURCE_STATE_COPY_DEST state
   // from the reading-back heap of the owned D3D12 device.
-  HRESULT CreateReadbackBuffer(uint64_t size, ComPtr<ID3D12Resource>& resource);
+  HRESULT CreateReadbackBuffer(uint64_t size,
+                               const wchar_t* name_for_debugging,
+                               ComPtr<ID3D12Resource>& resource);
 
  private:
   CommandRecorder(scoped_refptr<CommandQueue> command_queue,
@@ -144,8 +154,12 @@ class CommandRecorder final {
   ComPtr<ID3D12Device> d3d12_device_;
   ComPtr<ID3D12CommandAllocator> command_allocator_;
   ComPtr<ID3D12GraphicsCommandList> command_list_;
-  ComPtr<IDMLOperatorInitializer> operator_initializer_;
   ComPtr<IDMLCommandRecorder> command_recorder_;
+
+  // Keep the resources used by recorded commands. After commands submission,
+  // these resources would be kept alive until the command queue has completed
+  // the execution of these commands on GPU.
+  std::vector<ComPtr<IUnknown>> command_resources_;
 };
 
 }  // namespace webnn::dml

@@ -172,7 +172,7 @@ struct COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) Progress {
 //  - Rebuild the progress of bulk pinned items (if turned off mid way through a
 //    bulk pinning event).
 class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
-    : public DriveFsHostObserver,
+    : DriveFsHost::Observer,
       ash::UserDataAuthClient::Observer,
       ash::SpacedClient::Observer,
       chromeos::PowerManagerClient::Observer {
@@ -219,6 +219,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
   // Observer interface.
   class Observer : public base::CheckedObserver {
    public:
+    ~Observer() override;
+
     // Called when the setup progresses.
     virtual void OnProgress(const Progress& progress) {}
   };
@@ -247,7 +249,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
   // Notify any ongoing syncing events that a delete operation has occurred.
   void NotifyDelete(Id id, const Path& path);
 
-  // drivefs::DriveFsHostObserver
+  // DriveFsHost::Observer implementation.
   void OnSyncingStatusUpdate(const mojom::SyncingStatus& status) override;
   void OnUnmounted() override;
   void OnFilesChanged(const std::vector<mojom::FileChange>& changes) override;
@@ -422,13 +424,13 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
   // Report progress to all the observers.
   void NotifyProgress();
 
-  // ash::UserDataAuthClient::Observer
+  // UserDataAuthClient::Observer implementation.
   void LowDiskSpace(const ::user_data_auth::LowDiskSpace& status) override;
 
-  // ash::SpacedClient::Observer
+  // SpacedClient::Observer implementation.
   void OnSpaceUpdate(const SpaceEvent& event) override;
 
-  // chromeos::PowerManagerClient::Observer
+  // PowerManagerClient::Observer implementation.
   void BatterySaverModeStateChanged(
       const power_manager::BatterySaverModeState& state) override;
 
@@ -520,7 +522,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
   base::Time last_long_listing_files_warning_time_;
 
   GUARDED_BY_CONTEXT(sequence_checker_)
-  base::ScopedObservation<DriveFsHost, DriveFsHostObserver> drivefs_host_{this};
+  base::ScopedObservation<DriveFsHost, DriveFsHost::Observer> drivefs_host_{
+      this};
 
   GUARDED_BY_CONTEXT(sequence_checker_)
   base::ScopedObservation<chromeos::PowerManagerClient,

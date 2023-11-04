@@ -27,9 +27,7 @@ css1/text_properties/line_height.html
 css2.1/t100801-c544-valgn-02-d-agi.html
 css2.1/t100801-c544-valgn-04-d-agi.html
 css2.1/t1202-counter-04-b.html
-css2.1/t1202-counter-09-b.html
 css2.1/t1202-counters-04-b.html
-css2.1/t1202-counters-09-b.html
 css2.1/t1503-c522-font-family-00-b.html
 css2.1/t1507-c526-font-sz-00-b.html
 css2.1/t1508-c527-font-00-b.html
@@ -1140,9 +1138,6 @@ scrollbars/overlay-scrollbars-within-overflow-scroll.html
 scrollbars/resize-scales-with-dpi-150.html
 storage/indexeddb/empty-blob-file.html
 storage/indexeddb/intversion-revert-on-abort.html
-storage/websql/database-lock-after-reload.html
-storage/websql/open-database-set-empty-version.html
-storage/websql/sql-error-codes.html
 svg/W3C-SVG-1.1-SE/color-prop-05-t.svg
 svg/W3C-SVG-1.1-SE/coords-dom-01-f.svg
 svg/W3C-SVG-1.1-SE/coords-dom-02-f.svg
@@ -1507,9 +1502,6 @@ virtual/oopr-canvas2d/fast/canvas/canvas-text-baseline.html
 virtual/oopr-canvas2d/fast/canvas/image-object-in-canvas.html
 virtual/oopr-canvas2d/fast/canvas/quadraticCurveTo.xml
 virtual/overlay-scrollbar/plugin-overlay-scrollbar-mouse-capture.html
-virtual/partitioned-cookies/http/tests/inspector-protocol/network/blocked-cookie-same-site-strict-browser-navigate.js
-virtual/partitioned-cookies/http/tests/inspector-protocol/network/blocked-cookie-same-site-strict-js-navigate.js
-virtual/partitioned-cookies/http/tests/inspector-protocol/network/blocked-cookie-same-site-strict-js-subresource.js
 virtual/plz-dedicated-worker/external/wpt/content-security-policy/inside-worker/serviceworker-report-only.https.sub.html
 virtual/plz-dedicated-worker/external/wpt/fetch/api/basic/http-response-code.any.html
 virtual/plz-dedicated-worker/external/wpt/fetch/api/basic/request-upload.any.html

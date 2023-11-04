@@ -60,6 +60,8 @@
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/anchor_position_scroll_data.h"
 #include "third_party/blink/renderer/core/layout/custom_scrollbar.h"
+#include "third_party/blink/renderer/core/layout/forms/layout_fieldset.h"
+#include "third_party/blink/renderer/core/layout/forms/layout_text_control.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
@@ -68,7 +70,6 @@
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
-#include "third_party/blink/renderer/core/layout/layout_text_control.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/custom_layout_child.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/layout_ng_custom.h"
@@ -76,7 +77,6 @@
 #include "third_party/blink/renderer/core/layout/ng/custom/layout_worklet_global_scope_proxy.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
-#include "third_party/blink/renderer/core/layout/ng/layout_ng_fieldset.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
@@ -110,6 +110,7 @@
 #include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
@@ -546,13 +547,25 @@ void LayoutBox::StyleWillChange(StyleDifference diff,
     if (flow_thread && flow_thread != this)
       flow_thread->FlowThreadDescendantStyleWillChange(this, diff, new_style);
 
-    // The background of the root element or the body element could propagate up
-    // to the canvas. Just dirty the entire canvas when our style changes
-    // substantially.
-    if ((diff.NeedsNormalPaintInvalidation() || diff.NeedsLayout()) &&
-        GetNode() &&
-        (IsDocumentElement() || IsA<HTMLBodyElement>(*GetNode()))) {
-      View()->SetShouldDoFullPaintInvalidation();
+    if (IsDocumentElement() || IsBody()) {
+      // The background of the root element or the body element could propagate
+      // up to the canvas. Just dirty the entire canvas when our style changes
+      // substantially.
+      if (diff.NeedsNormalPaintInvalidation() || diff.NeedsLayout()) {
+        View()->SetShouldDoFullPaintInvalidation();
+      }
+      if (auto* scrollable_area = View()->GetScrollableArea()) {
+        if (old_style->ScrollbarThumbColorResolved() !=
+                new_style.ScrollbarThumbColorResolved() ||
+            old_style->ScrollbarTrackColorResolved() !=
+                new_style.ScrollbarTrackColorResolved()) {
+          // TODO(crbug.com/1481168): For now we duplicate some code in
+          // PaintLayerScrollableArea::UpdateAfterStyleChange() here to
+          // invalidate the LayoutView when the scrollbar styles change on
+          // the document element or the body.
+          scrollable_area->SetScrollControlsNeedFullPaintInvalidation();
+        }
+      }
     }
 
     // When a layout hint happens and an object's position style changes, we
@@ -1049,6 +1062,7 @@ LayoutUnit LayoutBox::ClientHeightFrom(LayoutUnit height) const {
 
 int LayoutBox::PixelSnappedClientWidth() const {
   NOT_DESTROYED();
+  DCHECK(!RuntimeEnabledFeatures::LayoutNewOverflowLogicEnabled());
   LayoutUnit left = RuntimeEnabledFeatures::LayoutNGNoLocationEnabled()
                         ? PhysicalLocation().left
                         : Location().X();
@@ -1058,6 +1072,7 @@ int LayoutBox::PixelSnappedClientWidth() const {
 DISABLE_CFI_PERF
 int LayoutBox::PixelSnappedClientHeight() const {
   NOT_DESTROYED();
+  DCHECK(!RuntimeEnabledFeatures::LayoutNewOverflowLogicEnabled());
   LayoutUnit top = RuntimeEnabledFeatures::LayoutNGNoLocationEnabled()
                        ? PhysicalLocation().top
                        : Location().Y();
@@ -1144,6 +1159,7 @@ LayoutUnit LayoutBox::ScrollHeight() const {
 
 int LayoutBox::PixelSnappedScrollWidth() const {
   NOT_DESTROYED();
+  DCHECK(!RuntimeEnabledFeatures::LayoutNewOverflowLogicEnabled());
   LayoutUnit left = RuntimeEnabledFeatures::LayoutNGNoLocationEnabled()
                         ? PhysicalLocation().left
                         : Location().X();
@@ -1152,6 +1168,7 @@ int LayoutBox::PixelSnappedScrollWidth() const {
 
 int LayoutBox::PixelSnappedScrollHeight() const {
   NOT_DESTROYED();
+  DCHECK(!RuntimeEnabledFeatures::LayoutNewOverflowLogicEnabled());
   LayoutUnit top = RuntimeEnabledFeatures::LayoutNGNoLocationEnabled()
                        ? PhysicalLocation().top
                        : Location().Y();
@@ -1351,14 +1368,17 @@ LayoutUnit LayoutBox::DefaultIntrinsicContentInlineSize() const {
     return kIndefiniteSize;
   const Element& element = *To<Element>(GetNode());
 
+  const bool apply_fixed_size = StyleRef().ApplyControlFixedSize();
   const auto* select = DynamicTo<HTMLSelectElement>(element);
   if (UNLIKELY(select && select->UsesMenuList())) {
-    return MenuListIntrinsicInlineSize(*select, *this);
+    return apply_fixed_size ? MenuListIntrinsicInlineSize(*select, *this)
+                            : kIndefiniteSize;
   }
   const auto* input = DynamicTo<HTMLInputElement>(element);
   if (UNLIKELY(input)) {
-    if (input->IsTextField())
+    if (input->IsTextField() && apply_fixed_size) {
       return TextFieldIntrinsicInlineSize(*input, *this);
+    }
     const AtomicString& type = input->type();
     if (type == input_type_names::kFile)
       return FileUploadControlIntrinsicInlineSize(*input, *this);
@@ -1376,8 +1396,9 @@ LayoutUnit LayoutBox::DefaultIntrinsicContentInlineSize() const {
     return kIndefiniteSize;
   }
   const auto* textarea = DynamicTo<HTMLTextAreaElement>(element);
-  if (UNLIKELY(textarea))
+  if (UNLIKELY(textarea) && apply_fixed_size) {
     return TextAreaIntrinsicInlineSize(*textarea, *this);
+  }
   if (IsSliderContainer(element))
     return SliderIntrinsicInlineSize(*this);
 
@@ -1390,6 +1411,18 @@ LayoutUnit LayoutBox::DefaultIntrinsicContentBlockSize() const {
   // get here.
   DCHECK(!HasOverrideIntrinsicContentLogicalHeight());
 
+  auto effective_appearance = StyleRef().EffectiveAppearance();
+  if (effective_appearance == kCheckboxPart) {
+    return ThemePartIntrinsicSize(*this, WebThemeEngine::kPartCheckbox)
+        .block_size;
+  }
+  if (effective_appearance == kRadioPart) {
+    return ThemePartIntrinsicSize(*this, WebThemeEngine::kPartRadio).block_size;
+  }
+
+  if (!StyleRef().ApplyControlFixedSize()) {
+    return kIndefiniteSize;
+  }
   if (const auto* select = DynamicTo<HTMLSelectElement>(GetNode())) {
     if (select->UsesMenuList())
       return MenuListIntrinsicBlockSize(*select, *this);
@@ -1402,15 +1435,6 @@ LayoutUnit LayoutBox::DefaultIntrinsicContentBlockSize() const {
   if (IsTextArea()) {
     return TextAreaIntrinsicBlockSize(*To<HTMLTextAreaElement>(GetNode()),
                                       *this);
-  }
-
-  auto effective_appearance = StyleRef().EffectiveAppearance();
-  if (effective_appearance == kCheckboxPart) {
-    return ThemePartIntrinsicSize(*this, WebThemeEngine::kPartCheckbox)
-        .block_size;
-  }
-  if (effective_appearance == kRadioPart) {
-    return ThemePartIntrinsicSize(*this, WebThemeEngine::kPartRadio).block_size;
   }
 
   return kIndefiniteSize;
@@ -1440,34 +1464,6 @@ LayoutUnit LayoutBox::LogicalTop() const {
   }
   auto location = Location();
   return StyleRef().IsHorizontalWritingMode() ? location.Y() : location.X();
-}
-
-void LayoutBox::SetLocationAndUpdateOverflowControlsIfNeeded(
-    const LayoutPoint& location) {
-  NOT_DESTROYED();
-  if (!HasLayer() ||
-      RuntimeEnabledFeatures::ScrollableAreaNoSnappingEnabled()) {
-    SetLocation(location);
-    return;
-  }
-  // The Layer does not yet have the up to date subpixel accumulation
-  // so we base the size strictly on the frame rect's location.
-  gfx::Size old_pixel_snapped_border_rect_size =
-      PixelSnappedBorderBoxRect().size();
-  SetLocation(location);
-  // TODO(crbug.com/1020913): This is problematic because this function may be
-  // called after layout of this LayoutBox. Changing scroll container size here
-  // will cause inconsistent layout. Also we should be careful not to set
-  // this LayoutBox NeedsLayout. This will be unnecessary when we support
-  // subpixel layout of scrollable area and overflow controls.
-  if (PixelSnappedBorderBoxSize(PhysicalOffset(location)) !=
-      old_pixel_snapped_border_rect_size) {
-    bool needed_layout = NeedsLayout();
-    PaintLayerScrollableArea::FreezeScrollbarsScope freeze_scrollbar;
-    Layer()->UpdateScrollingAfterLayout();
-    // The above call should not schedule new NeedsLayout.
-    DCHECK(needed_layout || !NeedsLayout());
-  }
 }
 
 gfx::QuadF LayoutBox::AbsoluteContentQuad(MapCoordinatesFlags flags) const {
@@ -4295,6 +4291,19 @@ bool LayoutBox::NeedsScrollNode(
   return GetScrollableArea()->ScrollsOverflow();
 }
 
+bool LayoutBox::UsesCompositedScrolling() const {
+  NOT_DESTROYED();
+  const auto* properties = FirstFragment().PaintProperties();
+  if (!properties || !properties->Scroll()) {
+    return false;
+  }
+  const auto* paint_artifact_compositor =
+      GetFrameView()->GetPaintArtifactCompositor();
+  return paint_artifact_compositor &&
+         paint_artifact_compositor->UsesCompositedScrolling(
+             *properties->Scroll());
+}
+
 void LayoutBox::OverrideTickmarks(Vector<gfx::Rect> tickmarks) {
   NOT_DESTROYED();
   GetScrollableArea()->SetTickmarksOverride(std::move(tickmarks));
@@ -4452,9 +4461,6 @@ BackgroundPaintLocation LayoutBox::ComputeBackgroundPaintLocationIfComposited()
 bool LayoutBox::ComputeCanCompositeBackgroundAttachmentFixed() const {
   NOT_DESTROYED();
   DCHECK(IsBackgroundAttachmentFixedObject());
-  if (!RuntimeEnabledFeatures::CompositeBackgroundAttachmentFixedEnabled()) {
-    return false;
-  }
   if (GetDocument().GetSettings()->GetLCDTextPreference() ==
       LCDTextPreference::kStronglyPreferred) {
     return false;
@@ -4664,6 +4670,17 @@ const NGBoxStrut& LayoutBox::OutOfFlowInsetsForGetComputedStyle() const {
   }
 #endif
   return GetLayoutResults().front()->OutOfFlowInsetsForGetComputedStyle();
+}
+
+bool LayoutBox::UsesPositionFallbackStyle() const {
+  if (!IsOutOfFlowPositioned()) {
+    return false;
+  }
+  if (StyleRef().PositionFallback()) {
+    return true;
+  }
+  // TODO(crbug.com/1475321): Return true for the new auto fallback syntax.
+  return false;
 }
 
 WritingModeConverter LayoutBox::CreateWritingModeConverter() const {

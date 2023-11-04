@@ -152,9 +152,6 @@ class CORE_EXPORT ScriptPromiseResolver
   // promise is pending and the associated ExecutionContext isn't stopped.
   void KeepAliveWhilePending();
 
-  void SetClassLikeName(const char* name) { class_like_name_ = name; }
-  void SetPropertyName(const char* name) { property_like_name_ = name; }
-
   void Trace(Visitor*) const override;
 
  private:
@@ -219,9 +216,8 @@ class CORE_EXPORT ScriptPromiseResolver
   TaskHandle deferred_resolve_task_;
   Resolver resolver_;
   TraceWrapperV8Reference<v8::Value> value_;
-  ExceptionContext exception_context_;
-  const char* class_like_name_ = nullptr;
-  const char* property_like_name_ = nullptr;
+  const ExceptionContext exception_context_;
+  String script_url_;
 
   // To support keepAliveWhilePending(), this object needs to keep itself
   // alive while in that state.

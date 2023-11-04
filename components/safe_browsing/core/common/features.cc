@@ -27,7 +27,7 @@ BASE_FEATURE(kAdSamplerTriggerFeature,
 
 BASE_FEATURE(kAntiPhishingTelemetry,
              "AntiPhishingTelemetry",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kClientSideDetectionKillswitch,
              "ClientSideDetectionKillswitch",
@@ -88,7 +88,7 @@ const base::FeatureParam<bool> kEsbIphBubbleAndCollapseSettingsEnableCollapse{
 
 BASE_FEATURE(kEvaluateProtectedPasswordLengthMinimum,
              "EvaluateProtectedPasswordLengthMinimum",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const base::FeatureParam<int> kEvaluateProtectedPasswordLengthMinimumValue{
     &kEvaluateProtectedPasswordLengthMinimum, "MinimumValue",
@@ -109,14 +109,6 @@ const base::FeatureParam<int> kExtensionTelemetryWritesPerInterval{
 BASE_FEATURE(kExtensionTelemetryConfiguration,
              "SafeBrowsingExtensionTelemetryConfiguration",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kExtensionTelemetryCookiesGetAllSignal,
-             "SafeBrowsingExtensionTelemetryCookiesGetAllSignal",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kExtensionTelemetryPersistence,
-             "SafeBrowsingExtensionTelemetryPersistence",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kExtensionTelemetryFileData,
              "SafeBrowsingExtensionTelemetryFileData",
@@ -164,21 +156,9 @@ BASE_FEATURE(kExtensionTelemetryTabsExecuteScriptSignal,
              "SafeBrowsingExtensionTelemetryTabsExecuteScriptSignal",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kExtensionTelemetryCookiesGetSignal,
-             "SafeBrowsingExtensionTelemetryCookiesGetSignal",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kExtensionTelemetryDeclarativeNetRequestSignal,
-             "SafeBrowsingExtensionTelemetryDeclarativeNetRequestSignal",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kExtensionTelemetryDisableOffstoreExtensions,
              "SafeBrowsingExtensionTelemetryDisableOffstoreExtensions",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kFileTypePoliciesTag,
-             "FileTypePoliciesTag",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kFriendlierSafeBrowsingSettingsEnhancedProtection,
              "FriendlierSafeBrowsingSettingsEnhancedProtection",
@@ -332,11 +312,7 @@ BASE_FEATURE(kTailoredSecurityObserverRetries,
 
 BASE_FEATURE(kTailoredSecurityIntegration,
              "TailoredSecurityIntegration",
-#if BUILDFLAG(IS_IOS)
-             base::FEATURE_DISABLED_BY_DEFAULT
-#else
              base::FEATURE_ENABLED_BY_DEFAULT
-#endif
 );
 
 BASE_FEATURE(kTailoredSecurityUpdatedMessages,
@@ -389,19 +365,14 @@ constexpr struct {
     {&kDownloadTailoredWarnings, true},
     {&kEvaluateProtectedPasswordLengthMinimum, false},
     {&kExtensionTelemetry, true},
-    {&kExtensionTelemetryCookiesGetAllSignal, true},
-    {&kExtensionTelemetryCookiesGetSignal, true},
-    {&kExtensionTelemetryDeclarativeNetRequestSignal, true},
     {&kExtensionTelemetryDisableOffstoreExtensions, true},
     {&kExtensionTelemetryFileData, true},
     {&kExtensionTelemetryInterceptRemoteHostsContactedInRenderer, true},
-    {&kExtensionTelemetryPersistence, true},
     {&kExtensionTelemetryPotentialPasswordTheft, true},
     {&kExtensionTelemetryReportContactedHosts, true},
     {&kExtensionTelemetryReportHostsContactedViaWebSocket, true},
     {&kExtensionTelemetryTabsApiSignal, true},
     {&kExtensionTelemetryTabsExecuteScriptSignal, true},
-    {&kFileTypePoliciesTag, true},
     {&kHashPrefixRealTimeLookups, true},
     {&kHashRealTimeOverOhttp, true},
     {&kImprovedDownloadBubbleWarnings, true},
@@ -452,9 +423,6 @@ base::Value::List GetFeatureStatusList() {
       safe_browsing::kClientSideDetectionModelTag,
       kClientSideDetectionTagParamName));
   param_list.Append(kClientSideDetectionModelTag.name);
-  param_list.Append(base::GetFieldTrialParamValueByFeature(
-      kFileTypePoliciesTag, kFileTypePoliciesTagParamName));
-  param_list.Append(kFileTypePoliciesTag.name);
   param_list.Append(kHashPrefixRealTimeLookupsRelayUrl.Get());
   param_list.Append(kHashPrefixRealTimeLookupsRelayUrl.name);
   param_list.Append(kHashRealTimeOverOhttpRelayUrl.Get());
@@ -476,16 +444,6 @@ std::string GetClientSideDetectionTag() {
 #else
   return "desktop_1_flatbuffer";
 #endif
-}
-
-std::string GetFileTypePoliciesTag() {
-  if (!base::FeatureList::IsEnabled(kFileTypePoliciesTag)) {
-    return "default";
-  }
-  std::string tag_value = base::GetFieldTrialParamValueByFeature(
-      kFileTypePoliciesTag, kFileTypePoliciesTagParamName);
-
-  return tag_value.empty() ? "default" : tag_value;
 }
 
 }  // namespace safe_browsing

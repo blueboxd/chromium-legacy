@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/android/rules.gni")
+import("//third_party/jni_zero/jni_zero.gni")
 
 java_cpp_enum("android_backend_java_enums_srcjar") {
   sources = [
@@ -81,10 +82,11 @@ source_set("backend") {
   deps = [
     ":jni_headers",
     "//components/autofill/core/browser:browser",
-    "//components/password_manager/core/browser:affiliation",
+    "//components/browser_ui/device_lock/android:android",
     "//components/password_manager/core/browser:browser",
     "//components/password_manager/core/browser:password_form",
     "//components/password_manager/core/browser:unified_password_manager_proto",
+    "//components/password_manager/core/browser/affiliation",
     "//components/password_manager/core/browser/features:password_features",
     "//components/password_manager/core/common:common",
     "//components/password_manager/core/common:features",
@@ -477,6 +479,7 @@ source_set("unit_tests") {
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//components/autofill/core/common:features",
+    "//components/browser_ui/device_lock/android:android",
     "//components/device_reauth:device_reauth",
     "//components/device_reauth:test_support",
     "//components/messages/android:test_support",

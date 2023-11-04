@@ -36,6 +36,7 @@ export interface SettingsRoutes {
   LANGUAGES: Route;
   MANAGE_PROFILE: Route;
   ON_STARTUP: Route;
+  PAGE_CONTENT: Route;
   PASSKEYS: Route;
   PAYMENTS: Route;
   PEOPLE: Route;
@@ -101,6 +102,7 @@ export interface SettingsRoutes {
   SYNC: Route;
   SYNC_ADVANCED: Route;
   SYSTEM: Route;
+  TRACKING_PROTECTION: Route;
   TRIGGERED_RESET_DIALOG: Route;
 }
 

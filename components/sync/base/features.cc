@@ -73,10 +73,6 @@ BASE_FEATURE(kSkipInvalidationOptimizationsWhenDeviceInfoUpdated,
              "SkipInvalidationOptimizationsWhenDeviceInfoUpdated",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kSyncEnableHistoryDataType,
-             "SyncEnableHistoryDataType",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kSyncEnableContactInfoDataTypeInTransportMode,
              "SyncEnableContactInfoDataTypeInTransportMode",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -95,13 +91,12 @@ BASE_FEATURE(kSyncEnforceBookmarksCountLimit,
 
 BASE_FEATURE(kEnablePreferencesAccountStorage,
              "EnablePreferencesAccountStorage",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-BASE_FEATURE(kSyncIgnoreSyncRequestedPreference,
-             "SyncIgnoreSyncRequestedPreference",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_IOS) || BUILDFLAG(IS_ANDROID)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 
 BASE_FEATURE(kSyncPollImmediatelyOnEveryStartup,
              "SyncPollImmediatelyOnEveryStartup",
@@ -140,12 +135,7 @@ BASE_FEATURE(kEnableBookmarksAccountStorage,
 
 BASE_FEATURE(kReadingListEnableDualReadingListModel,
              "ReadingListEnableDualReadingListModel",
-#if BUILDFLAG(IS_IOS)
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif  // BUILDFLAG(IS_IOS)
-);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kReadingListEnableSyncTransportModeUponSignIn,
              "ReadingListEnableSyncTransportModeUponSignIn",

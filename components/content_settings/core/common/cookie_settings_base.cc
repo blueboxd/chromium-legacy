@@ -192,8 +192,9 @@ CookieSettingsBase::GetCookieAccessSemanticsForDomain(
 
 bool CookieSettingsBase::ShouldConsider3pcdSupportSettings(
     net::CookieSettingOverrides overrides) const {
-  return base::FeatureList::IsEnabled(net::features::kTpcdSupportSettings) &&
-         overrides.Has(net::CookieSettingOverride::k3pcdSupport);
+  // TODO(crbug.com/1466156): Once able, check that third-party cookie blocking
+  // isn't being forced.
+  return base::FeatureList::IsEnabled(net::features::kTpcdSupportSettings);
 }
 
 bool CookieSettingsBase::ShouldConsider3pcdMetadataGrantsSettings(
@@ -217,9 +218,6 @@ net::CookieSettingOverrides CookieSettingsBase::SettingOverridesForStorage()
   if (is_storage_partitioned_) {
     overrides.Put(
         net::CookieSettingOverride::kTopLevelStorageAccessGrantEligible);
-    // TODO(crbug.com/1466156): Revisit whether the global setting/pref should
-    // be checked here.
-    overrides.Put(net::CookieSettingOverride::k3pcdSupport);
 
     overrides.Put(net::CookieSettingOverride::k3pcdMetadataGrantEligible);
   }

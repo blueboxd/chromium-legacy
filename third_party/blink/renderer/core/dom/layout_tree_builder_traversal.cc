@@ -50,7 +50,7 @@ ContainerNode* LayoutTreeBuilderTraversal::Parent(const Node& node) {
   // LayoutTreeBuilderTraversal::parent() is used only for a node which is
   // connected.
   // DCHECK(node.isConnected());
-  if (auto* element = DynamicTo<PseudoElement>(node)) {
+  if (IsA<PseudoElement>(node)) {
     DCHECK(node.parentNode());
     return node.parentNode();
   }
@@ -411,7 +411,8 @@ int LayoutTreeBuilderTraversal::ComparePreorderTreePosition(const Node& node1,
       return 1;
     }
   }
-  return 1;
+  NOTREACHED();
+  return 0;
 }
 
 }  // namespace blink

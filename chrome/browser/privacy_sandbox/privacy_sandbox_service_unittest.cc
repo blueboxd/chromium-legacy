@@ -20,6 +20,7 @@
 #include "chrome/browser/first_party_sets/scoped_mock_first_party_sets_handler.h"
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
+#include "chrome/browser/privacy_sandbox/tracking_protection_settings_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
@@ -40,6 +41,7 @@
 #include "components/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "components/privacy_sandbox/privacy_sandbox_settings_impl.h"
 #include "components/privacy_sandbox/privacy_sandbox_test_util.h"
+#include "components/privacy_sandbox/tracking_protection_settings.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
@@ -65,9 +67,15 @@
 #include "chrome/browser/ui/hats/mock_trust_safety_sentiment_service.h"
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chromeos/components/kiosk/kiosk_test_utils.h"
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chromeos/ash/components/login/login_state/scoped_test_public_session_login_state.h"
+#include "components/user_manager/fake_user_manager.h"
+#include "components/user_manager/scoped_user_manager.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -738,10 +746,12 @@ void SetupPromptTestState(
     sync_preferences::TestingPrefServiceSyncable* pref_service,
     const PromptTestState& test_state) {
   feature_list->Reset();
-  feature_list->InitAndEnableFeatureWithParameters(
-      privacy_sandbox::kPrivacySandboxSettings3,
-      {{"consent-required", test_state.consent_required ? "true" : "false"},
-       {"notice-required", !test_state.consent_required ? "true" : "false"}});
+  feature_list->InitWithFeaturesAndParameters(
+      {{privacy_sandbox::kPrivacySandboxSettings3,
+        {{"consent-required", test_state.consent_required ? "true" : "false"},
+         {"notice-required",
+          !test_state.consent_required ? "true" : "false"}}}},
+      {privacy_sandbox::kPrivacySandboxSettings4});
 
   pref_service->SetUserPref(
       prefs::kPrivacySandboxApisEnabled,
@@ -768,7 +778,7 @@ void SetupPromptTestState(
 // returning them to their default value.
 void ClearFpsUserPrefs(
     sync_preferences::TestingPrefServiceSyncable* pref_service) {
-  pref_service->RemoveUserPref(prefs::kPrivacySandboxFirstPartySetsEnabled);
+  pref_service->RemoveUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled);
   pref_service->RemoveUserPref(
       prefs::kPrivacySandboxFirstPartySetsDataAccessAllowedInitialized);
 }
@@ -908,7 +918,12 @@ class PrivacySandboxServiceTest : public testing::Test {
     first_party_sets_policy_service_.ResetForTesting();
   }
 
-  virtual void InitializeFeaturesBeforeStart() {}
+  virtual void InitializeFeaturesBeforeStart() {
+    // Setup a default state that can be overridden using the inner scoped
+    // feature list by tests as required.
+    outer_feature_list_.InitAndDisableFeature(
+        privacy_sandbox::kPrivacySandboxSettings4);
+  }
 
   virtual std::unique_ptr<
       privacy_sandbox_test_util::MockPrivacySandboxSettingsDelegate>
@@ -927,7 +942,7 @@ class PrivacySandboxServiceTest : public testing::Test {
     privacy_sandbox_settings_ =
         std::make_unique<privacy_sandbox::PrivacySandboxSettingsImpl>(
             std::move(mock_delegate), host_content_settings_map(),
-            cookie_settings(), prefs());
+            cookie_settings(), tracking_protection_settings(), prefs());
 #if !BUILDFLAG(IS_ANDROID)
     mock_sentiment_service_ =
         std::make_unique<::testing::NiceMock<MockTrustSafetySentimentService>>(
@@ -961,7 +976,7 @@ class PrivacySandboxServiceTest : public testing::Test {
   privacy_sandbox::PrivacySandboxSettings* privacy_sandbox_settings() {
     return privacy_sandbox_settings_.get();
   }
-  base::test::ScopedFeatureList* feature_list() { return &feature_list_; }
+  base::test::ScopedFeatureList* feature_list() { return &inner_feature_list_; }
   sync_preferences::TestingPrefServiceSyncable* prefs() {
     return profile()->GetTestingPrefService();
   }
@@ -970,6 +985,9 @@ class PrivacySandboxServiceTest : public testing::Test {
   }
   content_settings::CookieSettings* cookie_settings() {
     return CookieSettingsFactory::GetForProfile(profile()).get();
+  }
+  privacy_sandbox::TrackingProtectionSettings* tracking_protection_settings() {
+    return TrackingProtectionSettingsFactory::GetForProfile(profile());
   }
   TestInterestGroupManager* test_interest_group_manager() {
     return &test_interest_group_manager_;
@@ -1005,7 +1023,8 @@ class PrivacySandboxServiceTest : public testing::Test {
   content::BrowserTaskEnvironment browser_task_environment_;
 
   TestingProfile profile_;
-  base::test::ScopedFeatureList feature_list_;
+  base::test::ScopedFeatureList outer_feature_list_;
+  base::test::ScopedFeatureList inner_feature_list_;
   TestInterestGroupManager test_interest_group_manager_;
   browsing_topics::MockBrowsingTopicsService mock_browsing_topics_service_;
   raw_ptr<privacy_sandbox_test_util::MockPrivacySandboxSettingsDelegate,
@@ -1668,6 +1687,11 @@ TEST_F(PrivacySandboxServiceTest, SetTopicAllowed) {
 
 #if BUILDFLAG(IS_CHROMEOS)
 TEST_F(PrivacySandboxServiceTest, DeviceLocalAccountUser) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  user_manager::ScopedUserManager user_manager(
+      std::make_unique<user_manager::FakeUserManager>());
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
   // No prompt should be shown if the user is associated with a device local
   // account on CrOS.
   SetupPromptTestState(feature_list(), prefs(),
@@ -1689,19 +1713,6 @@ TEST_F(PrivacySandboxServiceTest, DeviceLocalAccountUser) {
   EXPECT_EQ(PrivacySandboxService::PromptType::kNone,
             privacy_sandbox_service()->GetRequiredPromptType());
 
-  // No prompt should be shown for a web kiosk account.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  ash::LoginState::Get()->SetLoggedInState(
-      ash::LoginState::LoggedInState::LOGGED_IN_ACTIVE,
-      ash::LoginState::LoggedInUserType::LOGGED_IN_USER_KIOSK);
-#elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  init_params = crosapi::mojom::BrowserInitParams::New();
-  init_params->session_type = crosapi::mojom::SessionType::kWebKioskSession;
-  chromeos::BrowserInitParams::SetInitParamsForTests(std::move(init_params));
-#endif
-  EXPECT_EQ(PrivacySandboxService::PromptType::kNone,
-            privacy_sandbox_service()->GetRequiredPromptType());
-
   // A prompt should be shown for a regular user.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ash::LoginState::Get()->SetLoggedInState(
@@ -1713,6 +1724,11 @@ TEST_F(PrivacySandboxServiceTest, DeviceLocalAccountUser) {
   chromeos::BrowserInitParams::SetInitParamsForTests(std::move(init_params));
 #endif
   EXPECT_EQ(PrivacySandboxService::PromptType::kConsent,
+            privacy_sandbox_service()->GetRequiredPromptType());
+
+  // No prompt should be shown for a web kiosk account.
+  chromeos::SetUpFakeKioskSession();
+  EXPECT_EQ(PrivacySandboxService::PromptType::kNone,
             privacy_sandbox_service()->GetRequiredPromptType());
 }
 #endif  // BUILDFLAG(IS_CHROMEOS)
@@ -1818,7 +1834,7 @@ TEST_F(PrivacySandboxServiceTest, PrivacySandboxPromptNoticeWaiting) {
 TEST_F(PrivacySandboxServiceTest,
        FirstPartySetsNotRelevantMetricAllowedCookies) {
   base::HistogramTester histogram_tester;
-  prefs()->SetUserPref(prefs::kPrivacySandboxFirstPartySetsEnabled,
+  prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
                        std::make_unique<base::Value>(true));
   privacy_sandbox_test_util::SetupTestState(
       prefs(), host_content_settings_map(),
@@ -1838,7 +1854,7 @@ TEST_F(PrivacySandboxServiceTest,
 TEST_F(PrivacySandboxServiceTest,
        FirstPartySetsNotRelevantMetricBlockedCookies) {
   base::HistogramTester histogram_tester;
-  prefs()->SetUserPref(prefs::kPrivacySandboxFirstPartySetsEnabled,
+  prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
                        std::make_unique<base::Value>(true));
   privacy_sandbox_test_util::SetupTestState(
       prefs(), host_content_settings_map(),
@@ -1857,7 +1873,7 @@ TEST_F(PrivacySandboxServiceTest,
 
 TEST_F(PrivacySandboxServiceTest, FirstPartySetsEnabledMetric) {
   base::HistogramTester histogram_tester;
-  prefs()->SetUserPref(prefs::kPrivacySandboxFirstPartySetsEnabled,
+  prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
                        std::make_unique<base::Value>(true));
   privacy_sandbox_test_util::SetupTestState(
       prefs(), host_content_settings_map(),
@@ -1876,7 +1892,7 @@ TEST_F(PrivacySandboxServiceTest, FirstPartySetsEnabledMetric) {
 
 TEST_F(PrivacySandboxServiceTest, FirstPartySetsDisabledMetric) {
   base::HistogramTester histogram_tester;
-  prefs()->SetUserPref(prefs::kPrivacySandboxFirstPartySetsEnabled,
+  prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
                        std::make_unique<base::Value>(false));
   privacy_sandbox_test_util::SetupTestState(
       prefs(), host_content_settings_map(),
@@ -2401,7 +2417,7 @@ TEST_F(PrivacySandboxServiceTest, SampleFpsData) {
       prefs::kCookieControlsMode,
       std::make_unique<base::Value>(static_cast<int>(
           content_settings::CookieControlsMode::kBlockThirdParty)));
-  prefs()->SetBoolean(prefs::kPrivacySandboxFirstPartySetsEnabled, true);
+  prefs()->SetBoolean(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled, true);
 
   EXPECT_EQ(u"google.com",
             privacy_sandbox_service()->GetFirstPartySetOwnerForDisplay(
@@ -2446,7 +2462,7 @@ TEST_F(PrivacySandboxServiceTest,
   prefs()->SetUserPref(prefs::kCookieControlsMode,
                        std::make_unique<base::Value>(static_cast<int>(
                            content_settings::CookieControlsMode::kOff)));
-  prefs()->SetUserPref(prefs::kPrivacySandboxFirstPartySetsEnabled,
+  prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
                        std::make_unique<base::Value>(true));
 
   mock_first_party_sets_handler().SetGlobalSets(global_sets.Clone());
@@ -2488,7 +2504,7 @@ TEST_F(PrivacySandboxServiceTest,
   cookie_settings()->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
   CreateService();
   ClearFpsUserPrefs(prefs());
-  prefs()->SetUserPref(prefs::kPrivacySandboxFirstPartySetsEnabled,
+  prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
                        std::make_unique<base::Value>(true));
 
   mock_first_party_sets_handler().SetGlobalSets(global_sets.Clone());
@@ -2532,7 +2548,7 @@ TEST_F(PrivacySandboxServiceTest,
       /*managed_cookie_exceptions=*/{});
   CreateService();
   ClearFpsUserPrefs(prefs());
-  prefs()->SetUserPref(prefs::kPrivacySandboxFirstPartySetsEnabled,
+  prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
                        std::make_unique<base::Value>(true));
 
   mock_first_party_sets_handler().SetGlobalSets(global_sets.Clone());
@@ -2577,7 +2593,7 @@ TEST_F(PrivacySandboxServiceTest,
       /*managed_cookie_exceptions=*/{});
   CreateService();
   ClearFpsUserPrefs(prefs());
-  prefs()->SetUserPref(prefs::kPrivacySandboxFirstPartySetsEnabled,
+  prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
                        std::make_unique<base::Value>(true));
 
   mock_first_party_sets_handler().SetGlobalSets(global_sets.Clone());
@@ -2622,7 +2638,7 @@ TEST_F(PrivacySandboxServiceTest,
       /*managed_cookie_exceptions=*/{});
   CreateService();
   ClearFpsUserPrefs(prefs());
-  prefs()->SetUserPref(prefs::kPrivacySandboxFirstPartySetsEnabled,
+  prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
                        std::make_unique<base::Value>(false));
 
   mock_first_party_sets_handler().SetGlobalSets(global_sets.Clone());
@@ -2659,7 +2675,7 @@ TEST_F(PrivacySandboxServiceTest,
       /*managed_cookie_exceptions=*/{});
   CreateService();
   ClearFpsUserPrefs(prefs());
-  prefs()->SetUserPref(prefs::kPrivacySandboxFirstPartySetsEnabled,
+  prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
                        std::make_unique<base::Value>(true));
 
   // Verify `GetFirstPartySetOwner` returns empty if FPS is enabled but the
@@ -2695,7 +2711,7 @@ TEST_F(PrivacySandboxServiceTest,
       /*managed_cookie_exceptions=*/{});
   CreateService();
   ClearFpsUserPrefs(prefs());
-  prefs()->SetUserPref(prefs::kPrivacySandboxFirstPartySetsEnabled,
+  prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
                        std::make_unique<base::Value>(true));
 
   // Simulate that the Global First-Party Sets are ready with the following set:
@@ -2740,7 +2756,8 @@ TEST_F(PrivacySandboxServiceTest, FpsPrefInit) {
       privacy_sandbox::kPrivacySandboxFirstPartySetsUI);
 
   CreateService();
-  EXPECT_TRUE(prefs()->GetBoolean(prefs::kPrivacySandboxFirstPartySetsEnabled));
+  EXPECT_TRUE(
+      prefs()->GetBoolean(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled));
   EXPECT_FALSE(prefs()->GetBoolean(
       prefs::kPrivacySandboxFirstPartySetsDataAccessAllowedInitialized));
 
@@ -2753,7 +2770,7 @@ TEST_F(PrivacySandboxServiceTest, FpsPrefInit) {
 
   CreateService();
   EXPECT_FALSE(
-      prefs()->GetBoolean(prefs::kPrivacySandboxFirstPartySetsEnabled));
+      prefs()->GetBoolean(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled));
   EXPECT_TRUE(prefs()->GetBoolean(
       prefs::kPrivacySandboxFirstPartySetsDataAccessAllowedInitialized));
 
@@ -2765,7 +2782,8 @@ TEST_F(PrivacySandboxServiceTest, FpsPrefInit) {
                            content_settings::CookieControlsMode::kOff)));
 
   CreateService();
-  EXPECT_TRUE(prefs()->GetBoolean(prefs::kPrivacySandboxFirstPartySetsEnabled));
+  EXPECT_TRUE(
+      prefs()->GetBoolean(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled));
   EXPECT_TRUE(prefs()->GetBoolean(
       prefs::kPrivacySandboxFirstPartySetsDataAccessAllowedInitialized));
 
@@ -2774,7 +2792,8 @@ TEST_F(PrivacySandboxServiceTest, FpsPrefInit) {
       std::make_unique<base::Value>(static_cast<int>(
           content_settings::CookieControlsMode::kBlockThirdParty)));
   CreateService();
-  EXPECT_TRUE(prefs()->GetBoolean(prefs::kPrivacySandboxFirstPartySetsEnabled));
+  EXPECT_TRUE(
+      prefs()->GetBoolean(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled));
   EXPECT_TRUE(prefs()->GetBoolean(
       prefs::kPrivacySandboxFirstPartySetsDataAccessAllowedInitialized));
 
@@ -2787,7 +2806,7 @@ TEST_F(PrivacySandboxServiceTest, FpsPrefInit) {
   cookie_settings()->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
   CreateService();
   EXPECT_FALSE(
-      prefs()->GetBoolean(prefs::kPrivacySandboxFirstPartySetsEnabled));
+      prefs()->GetBoolean(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled));
   EXPECT_TRUE(prefs()->GetBoolean(
       prefs::kPrivacySandboxFirstPartySetsDataAccessAllowedInitialized));
 }
@@ -2815,7 +2834,7 @@ TEST_F(PrivacySandboxServiceTest, UsesFpsSampleSetsWhenProvided) {
       /*managed_cookie_exceptions=*/{});
   CreateService();
   ClearFpsUserPrefs(prefs());
-  prefs()->SetUserPref(prefs::kPrivacySandboxFirstPartySetsEnabled,
+  prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
                        std::make_unique<base::Value>(true));
 
   // Simulate that the Global First-Party Sets are ready with the following
@@ -2870,7 +2889,7 @@ TEST_F(PrivacySandboxServiceTest, UsesFpsSampleSetsWhenProvided) {
       /*managed_cookie_exceptions=*/{});
   CreateService();
   ClearFpsUserPrefs(prefs());
-  prefs()->SetUserPref(prefs::kPrivacySandboxFirstPartySetsEnabled,
+  prefs()->SetUserPref(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
                        std::make_unique<base::Value>(true));
 
   // Expect queries to be resolved based on the FPS backend.
@@ -2992,6 +3011,9 @@ class PrivacySandboxServicePromptTestBase {
  public:
   PrivacySandboxServicePromptTestBase() {
     privacy_sandbox::RegisterProfilePrefs(prefs()->registry());
+    feature_list()->InitWithFeatures(
+        {privacy_sandbox::kPrivacySandboxSettings3},
+        {privacy_sandbox::kPrivacySandboxSettings4});
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

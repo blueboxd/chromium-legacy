@@ -74,6 +74,8 @@ class AppListModelUpdater {
   virtual void SetItemIconAndColor(const std::string& id,
                                    const gfx::ImageSkia& icon,
                                    const ash::IconColor& icon_color) {}
+  virtual void SetItemBadgeIcon(const std::string& id,
+                                const gfx::ImageSkia& badge_icon) {}
   virtual void SetItemName(const std::string& id, const std::string& name) {}
   virtual void SetAppStatus(const std::string& id, ash::AppStatus app_status) {}
   virtual void SetItemPosition(const std::string& id,
@@ -95,6 +97,7 @@ class AppListModelUpdater {
                                         const gfx::ImageSkia& badge_icon) {}
   virtual void ActivateChromeItem(const std::string& id, int event_flags) {}
   virtual void LoadAppIcon(const std::string& id) {}
+  virtual void UpdateProgress(const std::string& id, float progress) {}
 
   // For AppListModel:
   virtual ChromeAppListItem* FindItem(const std::string& id) = 0;
@@ -127,9 +130,6 @@ class AppListModelUpdater {
 
   // Notifies when the app list gets hidden.
   virtual void OnAppListHidden() = 0;
-
-  // Handles the request to commit the app list temporary sort order from ash.
-  virtual void CommitTemporarySortOrder() = 0;
 
   virtual void AddObserver(AppListModelUpdaterObserver* observer) = 0;
   virtual void RemoveObserver(AppListModelUpdaterObserver* observer) = 0;

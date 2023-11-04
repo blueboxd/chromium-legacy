@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/sequence_checker.h"
-#include "content/browser/media/cdm_storage_host.h"
+#include "content/browser/media/cdm_storage_common.h"
 #include "content/common/content_export.h"
 #include "media/cdm/cdm_type.h"
 #include "sql/database.h"
@@ -26,8 +26,9 @@ class CONTENT_EXPORT CdmStorageDatabase {
  public:
   // The database will be in-memory if `path` is empty.
   explicit CdmStorageDatabase(const base::FilePath& path);
+  ~CdmStorageDatabase();
 
-  CdmStorageHost::CdmStorageHostOpenError EnsureOpenForTesting();
+  CdmStorageOpenError EnsureOpen();
 
   absl::optional<std::vector<uint8_t>> ReadFile(
       const blink::StorageKey& storage_key,
@@ -50,7 +51,7 @@ class CONTENT_EXPORT CdmStorageDatabase {
 
  private:
   // Opens and sets up a database if one is not already set up.
-  CdmStorageHost::CdmStorageHostOpenError OpenDatabase(bool is_retry = false);
+  CdmStorageOpenError OpenDatabase(bool is_retry = false);
 
   void OnDatabaseError(int error, sql::Statement* stmt);
 
@@ -58,6 +59,9 @@ class CONTENT_EXPORT CdmStorageDatabase {
 
   // Empty if the database is in-memory.
   const base::FilePath path_;
+
+  // A descriptor of the last SQL statement that was executed, used for metrics.
+  absl::optional<std::string> last_operation_;
 
   sql::Database db_ GUARDED_BY_CONTEXT(sequence_checker_);
 };

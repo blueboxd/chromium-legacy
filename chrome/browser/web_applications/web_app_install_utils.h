@@ -14,6 +14,7 @@
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
+#include "components/webapps/common/web_app_id.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
 
 class GURL;
@@ -130,10 +131,14 @@ void SetWebAppManifestFields(const WebAppInstallInfo& web_app_info,
                              WebApp& web_app,
                              bool skip_icons_on_download_failure = false);
 
+// Updates product icon fields of |web_app| using |web_app_info|.
+void SetWebAppProductIconFields(const WebAppInstallInfo& web_app_info,
+                                WebApp& web_app);
+
 // Possibly updates |options| to disable OS-integrations based on the
 // configuration of the given app.
 void MaybeDisableOsIntegration(const WebAppRegistrar* app_registrar,
-                               const AppId& app_id,
+                               const webapps::AppId& app_id,
                                InstallOsHooksOptions* options);
 
 // Update |web_app_info| using |install_params|.

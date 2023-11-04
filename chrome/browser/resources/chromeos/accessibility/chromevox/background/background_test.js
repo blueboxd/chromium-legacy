@@ -811,7 +811,6 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'ToggleButton', async function() {
     <div aria-pressed role="button">close</div>
   `;
   const root = await this.runWithLoadedTree(site);
-  const b = ChromeVoxState.instance;
   const move = doCmd('nextObject');
   mockFeedback.call(move)
       .expectSpeech('boldface')
@@ -2249,15 +2248,11 @@ AX_TEST_F(
       const grapefruits = root.find({attributes: {name: 'Grapefruits'}});
 
       mockFeedback
-          .call(() => {
-            ChromeVoxRange.set(CursorRange.fromNode(blueberries));
-          })
+          .call(() => ChromeVoxRange.set(CursorRange.fromNode(blueberries)))
           .call(doCmd('nextObject'))
           .expectSpeech(
               '◦ Raspberries', 'List item', 'List end', 'nested level 2')
-          .call(() => {
-            ChromeVoxRange.set(CursorRange.fromNode(grapefruits));
-          })
+          .call(() => ChromeVoxRange.set(CursorRange.fromNode(grapefruits)))
           .call(doCmd('nextObject'))
           .expectSpeech(
               '■ Mandarins', 'List item', 'List end', 'nested level 3')
@@ -4190,4 +4185,32 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'CanvasHasImageData', async function() {
     canvas.addEventListener(EventType.IMAGE_FRAME_UPDATED, r);
   });
   assertNotEquals('', canvas.imageDataUrl);
+});
+
+AX_TEST_F('ChromeVoxBackgroundTest', 'NestedEmptyClickable', async function() {
+  const mockFeedback = this.createMockFeedback();
+  const site = `
+<div>start</div>
+<div tabindex=0><div aria-label="label" tabindex=0></div></div>
+<div>end</div>
+`;
+  const root = await this.runWithLoadedTree(site);
+  const outer = root.children[1];
+  const inner = outer.children[0];
+
+  Object.defineProperty(outer, 'clickable', {get: () => true});
+  Object.defineProperty(inner, 'clickable', {get: () => true});
+
+  Object.defineProperty(outer, 'name', {get: () => undefined});
+
+  // Linear nav should visit the inner div only.
+  mockFeedback
+      .expectSpeech('start')
+
+      .call(doCmd('nextObject'))
+      .expectSpeech('label')
+
+      .call(doCmd('nextObject'))
+      .expectSpeech('end');
+  await mockFeedback.replay();
 });

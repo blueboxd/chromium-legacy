@@ -5,6 +5,7 @@
     display: grid;
     grid-auto-rows: minmax(52px, auto);
     grid-template-columns: minmax(min-content, 286px) 50%;
+    padding: 0 20px;
   }
 
   /* Show edit-button when user hover on the row container. */
@@ -81,7 +82,8 @@
 </style>
 
 <tr id="container" tabindex$="[[getTabIndex()]]" on-focus="onRowFocused"
-    on-blur="onRowBlur">
+    on-blur="onRowBlur"
+    aria-label$="[[getAriaLabel(description, acceleratorInfos)]]">
   <th id="descriptionText" scope="row">[[description]]</th>
   <td>
     <template is="dom-if" if="[[isDefaultLayout(layoutStyle)]]">
@@ -97,7 +99,7 @@
         <div id="noShortcutAssignedMessage">
           [[i18n('noShortcutAssigned')]]
         </div>
-        <div class="edit-icon-container">
+        <div class="edit-icon-container" aria-label="[[i18n('edit')]]">
           <cr-icon-button class="edit-button" class="clickable-button"
             iron-icon="shortcut-customization:edit"
             on-click="onEditIconClicked">

@@ -62,7 +62,7 @@ class VisibilityComparator {
  public:
   explicit VisibilityComparator(BookmarkClient* client) : client_(client) {}
 
-  // Returns true if |n1| precedes |n2|.
+  // Returns true if `n1` precedes `n2`.
   bool operator()(const std::unique_ptr<BookmarkNode>& n1,
                   const std::unique_ptr<BookmarkNode>& n2) {
     DCHECK(n1->is_permanent_node());
@@ -82,7 +82,7 @@ class SortComparator {
  public:
   explicit SortComparator(icu::Collator* collator) : collator_(collator) {}
 
-  // Returns true if |n1| precedes |n2|.
+  // Returns true if `n1` precedes `n2`.
   bool operator()(const std::unique_ptr<BookmarkNode>& n1,
                   const std::unique_ptr<BookmarkNode>& n2) {
     if (n1->type() == n2->type()) {
@@ -244,7 +244,7 @@ void BookmarkModel::Remove(const BookmarkNode* node,
   std::set<GURL> removed_urls;
   std::unique_ptr<BookmarkNode> owned_node =
       url_index_->Remove(AsMutable(node), &removed_urls);
-  RemoveNodeFromIndexRecursive(owned_node.get());
+  RemoveNodeFromIndicesRecursive(owned_node.get());
 
   if (store_) {
     store_->ScheduleSave();
@@ -295,7 +295,7 @@ const BookmarkNode* BookmarkModel::MoveToOtherModelWithNewNodeIdsAndUuids(
   std::set<GURL> removed_urls;
   std::unique_ptr<BookmarkNode> owned_node =
       url_index_->Remove(AsMutable(node), &removed_urls);
-  RemoveNodeFromIndexRecursive(owned_node.get());
+  RemoveNodeFromIndicesRecursive(owned_node.get());
 
   std::unique_ptr<BookmarkNode> subtree_copy =
       CloneSubtreeForOtherModelWithNewNodeIdsAndUuids(owned_node.get(),
@@ -370,7 +370,7 @@ void BookmarkModel::RemoveAllUserBookmarks() {
   // all children of non-root permanent nodes.
   {
     for (const auto& permanent_node : root_->children()) {
-      if (!client_->CanBeEditedByUser(permanent_node.get())) {
+      if (client_->IsNodeManaged(permanent_node.get())) {
         continue;
       }
 
@@ -378,7 +378,7 @@ void BookmarkModel::RemoveAllUserBookmarks() {
            j >= 0; --j) {
         std::unique_ptr<BookmarkNode> node = url_index_->Remove(
             permanent_node->children()[j].get(), &removed_urls);
-        RemoveNodeFromIndexRecursive(node.get());
+        RemoveNodeFromIndicesRecursive(node.get());
         removed_node_data_list.push_back(
             {permanent_node.get(), j, std::move(node)});
       }
@@ -749,13 +749,12 @@ void BookmarkModel::OnFaviconsChanged(const std::set<GURL>& page_urls,
 
   std::set<const BookmarkNode*> to_update;
   for (const GURL& page_url : page_urls) {
-    std::vector<const BookmarkNode*> nodes;
-    GetNodesByURL(page_url, &nodes);
+    std::vector<const BookmarkNode*> nodes = GetNodesByURL(page_url);
     to_update.insert(nodes.begin(), nodes.end());
   }
 
   if (!icon_url.is_empty()) {
-    // TODO(pkotwicz): Do something more efficient if |icon_url| is non-empty
+    // TODO(pkotwicz): Do something more efficient if `icon_url` is non-empty
     // many times a day for each user.
     url_index_->GetNodesWithIconUrl(icon_url, &to_update);
   }
@@ -791,26 +790,46 @@ void BookmarkModel::SetDateAdded(const BookmarkNode* node, Time date_added) {
   }
 }
 
-void BookmarkModel::GetNodesByURL(const GURL& url,
-                                  std::vector<const BookmarkNode*>* nodes) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (url_index_) {
-    url_index_->GetNodesByUrl(url, nodes);
-  }
-}
-
-const BookmarkNode* BookmarkModel::GetMostRecentlyAddedUserNodeForURL(
-    const GURL& url) {
+std::vector<const BookmarkNode*> BookmarkModel::GetNodesByURL(
+    const GURL& url) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::vector<const BookmarkNode*> nodes;
-  GetNodesByURL(url, &nodes);
+
+  if (url_index_) {
+    url_index_->GetNodesByUrl(url, &nodes);
+  }
+
+  return nodes;
+}
+
+const BookmarkNode* BookmarkModel::GetNodeByUuid(const base::Uuid& uuid) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Because of having to create a dummy node, the invalid-UUID case needs
+  // special handling.
+  if (!uuid.is_valid()) {
+    return nullptr;
+  }
+
+  // TODO(mastiz): When C++20 is supported in Chromium, this map lookup should
+  // be possible without having to use a BookmarkNode instance.
+  BookmarkNode dummy_node_for_lookup(/*id=*/0, uuid, GURL());
+
+  auto it = uuid_index_.find(&dummy_node_for_lookup);
+  return it == uuid_index_.end() ? nullptr : *it;
+}
+
+const BookmarkNode* BookmarkModel::GetMostRecentlyAddedUserNodeForURL(
+    const GURL& url) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  std::vector<const BookmarkNode*> nodes = GetNodesByURL(url);
   std::sort(nodes.begin(), nodes.end(), &MoreRecentlyAdded);
 
   // Look for the first node that the user can edit.
   for (size_t i = 0; i < nodes.size(); ++i) {
-    if (client_->CanBeEditedByUser(nodes[i])) {
+    if (!client_->IsNodeManaged(nodes[i])) {
       return nodes[i];
     }
   }
@@ -818,27 +837,28 @@ const BookmarkNode* BookmarkModel::GetMostRecentlyAddedUserNodeForURL(
   return nullptr;
 }
 
-bool BookmarkModel::HasBookmarks() {
+bool BookmarkModel::HasBookmarks() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return url_index_ && url_index_->HasBookmarks();
 }
 
-bool BookmarkModel::HasNoUserCreatedBookmarksOrFolders() {
+bool BookmarkModel::HasNoUserCreatedBookmarksOrFolders() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return bookmark_bar_node_->children().empty() &&
          other_node_->children().empty() && mobile_node_->children().empty();
 }
 
-bool BookmarkModel::IsBookmarked(const GURL& url) {
+bool BookmarkModel::IsBookmarked(const GURL& url) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return url_index_ && url_index_->IsBookmarked(url);
 }
 
-void BookmarkModel::GetBookmarks(std::vector<UrlAndTitle>* bookmarks) {
+std::vector<UrlAndTitle> BookmarkModel::GetUniqueUrls() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (url_index_) {
-    url_index_->GetBookmarks(bookmarks);
+  if (!url_index_) {
+    return {};
   }
+  return url_index_->GetUniqueUrls();
 }
 
 metrics::BookmarkFolderTypeForUMA BookmarkModel::GetFolderType(
@@ -941,7 +961,7 @@ const BookmarkNode* BookmarkModel::AddURL(
 
 void BookmarkModel::SortChildren(const BookmarkNode* parent) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(client_->CanBeEditedByUser(parent));
+  DCHECK(!client_->IsNodeManaged(parent));
 
   if (!parent || !parent->is_folder() || is_root_node(parent) ||
       parent->children().size() <= 1) {
@@ -973,9 +993,9 @@ void BookmarkModel::ReorderChildren(
     const BookmarkNode* parent,
     const std::vector<const BookmarkNode*>& ordered_nodes) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(client_->CanBeEditedByUser(parent));
+  DCHECK(!client_->IsNodeManaged(parent));
 
-  // Ensure that all children in |parent| are in |ordered_nodes|.
+  // Ensure that all children in `parent` are in `ordered_nodes`.
   DCHECK_EQ(parent->children().size(), ordered_nodes.size());
   for (const BookmarkNode* node : ordered_nodes) {
     DCHECK_EQ(parent, node->parent());
@@ -1030,7 +1050,7 @@ void BookmarkModel::ResetDateFolderModified(const BookmarkNode* node) {
 std::vector<TitledUrlMatch> BookmarkModel::GetBookmarksMatching(
     const std::u16string& query,
     size_t max_count,
-    query_parser::MatchingAlgorithm matching_algorithm) {
+    query_parser::MatchingAlgorithm matching_algorithm) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!loaded_) {
@@ -1085,7 +1105,7 @@ void BookmarkModel::NotifyNodeAddedForAllDescendants(const BookmarkNode* node,
   }
 }
 
-void BookmarkModel::RemoveNodeFromIndexRecursive(BookmarkNode* node) {
+void BookmarkModel::RemoveNodeFromIndicesRecursive(BookmarkNode* node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded_);
   DCHECK(!is_permanent_node(node));
@@ -1096,13 +1116,15 @@ void BookmarkModel::RemoveNodeFromIndexRecursive(BookmarkNode* node) {
     titled_url_index_->RemovePath(node);
   }
 
-  // Reset favicon state for the case when the |node| is restored.
+  uuid_index_.erase(node);
+
+  // Reset favicon state for the case when the `node` is restored.
   CancelPendingFaviconLoadRequests(node);
   node->InvalidateFavicon();
 
   // Recurse through children.
   for (size_t i = node->children().size(); i > 0; --i) {
-    RemoveNodeFromIndexRecursive(node->children()[i - 1].get());
+    RemoveNodeFromIndicesRecursive(node->children()[i - 1].get());
   }
 }
 
@@ -1124,10 +1146,11 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
     }
   }
 
-  titled_url_index_ = details->owned_index();
+  titled_url_index_ = details->owned_titled_url_index();
+  uuid_index_ = details->owned_uuid_index();
   url_index_ = details->url_index();
   root_ = details->root_node();
-  // See declaration for details on why |owned_root_| is reset.
+  // See declaration for details on why `owned_root_` is reset.
   owned_root_.reset();
   bookmark_bar_node_ = details->bb_node();
   other_node_ = details->other_folder_node();
@@ -1172,7 +1195,7 @@ BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
     store_->ScheduleSave();
   }
 
-  AddNodeToIndexRecursive(node_ptr);
+  AddNodeToIndicesRecursive(node_ptr);
 
   for (BookmarkModelObserver& observer : observers_) {
     observer.BookmarkNodeAdded(this, parent, index, added_by_user);
@@ -1181,11 +1204,11 @@ BookmarkNode* BookmarkModel::AddNode(BookmarkNode* parent,
   return node_ptr;
 }
 
-void BookmarkModel::AddNodeToIndexRecursive(const BookmarkNode* node) {
+void BookmarkModel::AddNodeToIndicesRecursive(const BookmarkNode* node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(crbug.com/1143246): add a DCHECK to validate that all nodes have
-  // unique UUID when it is guaranteed.
+  bool uuid_is_unique = uuid_index_.insert(node).second;
+  DUMP_WILL_BE_CHECK(uuid_is_unique);
 
   if (node->is_url()) {
     titled_url_index_->Add(node);
@@ -1194,7 +1217,7 @@ void BookmarkModel::AddNodeToIndexRecursive(const BookmarkNode* node) {
   }
 
   for (const auto& child : node->children()) {
-    AddNodeToIndexRecursive(child.get());
+    AddNodeToIndicesRecursive(child.get());
   }
 }
 

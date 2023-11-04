@@ -39,14 +39,15 @@
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_iterator.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_transaction.h"
 #include "components/services/storage/public/mojom/blob_storage_context.mojom.h"
+#include "components/services/storage/public/mojom/file_system_access_context.mojom.h"
 #include "content/browser/indexed_db/indexed_db_active_blob_registry.h"
+#include "content/browser/indexed_db/indexed_db_bucket_context.h"
+#include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_data_format_version.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_external_object.h"
-#include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
-#include "content/browser/indexed_db/indexed_db_leveldb_env.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
 #include "content/browser/indexed_db/indexed_db_reporting.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
@@ -940,23 +941,17 @@ Status FindDatabaseId(TransactionalLevelDBDatabase* db,
 
 IndexedDBBackingStore::IndexedDBBackingStore(
     Mode backing_store_mode,
-    TransactionalLevelDBFactory* transactional_leveldb_factory,
     const storage::BucketLocator& bucket_locator,
     const base::FilePath& blob_path,
     std::unique_ptr<TransactionalLevelDBDatabase> db,
-    storage::mojom::BlobStorageContext* blob_storage_context,
-    storage::mojom::FileSystemAccessContext* file_system_access_context,
     std::unique_ptr<storage::FilesystemProxy> filesystem_proxy,
     BlobFilesCleanedCallback blob_files_cleaned,
     ReportOutstandingBlobsCallback report_outstanding_blobs,
     scoped_refptr<base::SequencedTaskRunner> idb_task_runner)
     : backing_store_mode_(backing_store_mode),
-      transactional_leveldb_factory_(transactional_leveldb_factory),
       bucket_locator_(bucket_locator),
       blob_path_(backing_store_mode == Mode::kInMemory ? base::FilePath()
                                                        : blob_path),
-      blob_storage_context_(blob_storage_context),
-      file_system_access_context_(file_system_access_context),
       filesystem_proxy_(std::move(filesystem_proxy)),
       origin_identifier_(ComputeOriginIdentifier(bucket_locator)),
       idb_task_runner_(std::move(idb_task_runner)),
@@ -1123,6 +1118,11 @@ leveldb::Status IndexedDBBackingStore::Initialize(bool clean_active_journal) {
   initialized_ = true;
 #endif
   return s;
+}
+
+void IndexedDBBackingStore::TearDown(
+    base::WaitableEvent* signal_on_destruction) {
+  db()->leveldb_state()->RequestDestruction(signal_on_destruction);
 }
 
 Status IndexedDBBackingStore::AnyDatabaseContainsBlobs(bool* blobs_exist) {
@@ -1445,7 +1445,9 @@ Status IndexedDBBackingStore::CreateDatabase(
     blink::IndexedDBDatabaseMetadata& metadata) {
   // TODO(jsbell): Don't persist metadata if open fails. http://crbug.com/395472
   std::unique_ptr<LevelDBDirectTransaction> transaction =
-      db_->class_factory()->CreateLevelDBDirectTransaction(db_.get());
+      IndexedDBClassFactory::Get()
+          ->transactional_leveldb_factory()
+          .CreateLevelDBDirectTransaction(db_.get());
 
   int64_t row_id = 0;
   Status s = indexed_db::GetNewDatabaseId(transaction.get(), &row_id);
@@ -2301,7 +2303,9 @@ void IndexedDBBackingStore::ReportBlobUnused(int64_t database_id,
   bool all_blobs = blob_number == DatabaseMetaDataKey::kAllBlobsNumber;
   DCHECK(all_blobs || DatabaseMetaDataKey::IsValidBlobNumber(blob_number));
   std::unique_ptr<LevelDBDirectTransaction> transaction =
-      transactional_leveldb_factory_->CreateLevelDBDirectTransaction(db_.get());
+      IndexedDBClassFactory::Get()
+          ->transactional_leveldb_factory()
+          .CreateLevelDBDirectTransaction(db_.get());
 
   BlobJournalType active_blob_journal, recovery_journal;
   if (!GetActiveBlobJournal(transaction.get(), &active_blob_journal).ok())
@@ -2433,7 +2437,9 @@ Status IndexedDBBackingStore::CleanUpBlobJournal(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!committing_transaction_count_);
   std::unique_ptr<LevelDBDirectTransaction> journal_transaction =
-      transactional_leveldb_factory_->CreateLevelDBDirectTransaction(db_.get());
+      IndexedDBClassFactory::Get()
+          ->transactional_leveldb_factory()
+          .CreateLevelDBDirectTransaction(db_.get());
   BlobJournalType journal;
 
   Status s = GetBlobJournal(level_db_key, journal_transaction.get(), &journal);
@@ -3830,9 +3836,6 @@ IndexedDBBackingStore::Transaction::Transaction(
     blink::mojom::IDBTransactionDurability durability,
     blink::mojom::IDBTransactionMode mode)
     : backing_store_(std::move(backing_store)),
-      transactional_leveldb_factory_(
-          backing_store_ ? backing_store_->transactional_leveldb_factory_.get()
-                         : nullptr),
       durability_(durability),
       mode_(mode) {
   // `Default` should have already been converted to the bucket's setting.
@@ -3854,10 +3857,13 @@ void IndexedDBBackingStore::Transaction::Begin(
   DCHECK(!transaction_.get());
   TRACE_EVENT0("IndexedDB", "IndexedDBBackingStore::Transaction::Begin");
 
-  transaction_ = transactional_leveldb_factory_->CreateLevelDBTransaction(
-      backing_store_->db_.get(),
-      backing_store_->db_->scopes()->CreateScope(
-          std::move(locks), std::vector<LevelDBScopes::EmptyRange>()));
+  transaction_ =
+      IndexedDBClassFactory::Get()
+          ->transactional_leveldb_factory()
+          .CreateLevelDBTransaction(
+              backing_store_->db_.get(),
+              backing_store_->db_->scopes()->CreateScope(
+                  std::move(locks), std::vector<LevelDBScopes::EmptyRange>()));
 
   // If incognito, this snapshots blobs just as the above transaction_
   // constructor snapshots the leveldb.
@@ -4013,8 +4019,9 @@ Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction() {
     return Status::OK();
 
   std::unique_ptr<LevelDBDirectTransaction> direct_txn =
-      transactional_leveldb_factory_->CreateLevelDBDirectTransaction(
-          backing_store_->db_.get());
+      IndexedDBClassFactory::Get()
+          ->transactional_leveldb_factory()
+          .CreateLevelDBDirectTransaction(backing_store_->db_.get());
 
   int64_t next_blob_number = -1;
   bool result = indexed_db::GetBlobNumberGeneratorCurrentNumber(
@@ -4215,8 +4222,9 @@ Status IndexedDBBackingStore::Transaction::CommitPhaseTwo() {
     // Read the persisted states of the recovery/live blob journals,
     // so that they can be updated correctly by the transaction.
     std::unique_ptr<LevelDBDirectTransaction> journal_transaction =
-        transactional_leveldb_factory_->CreateLevelDBDirectTransaction(
-            backing_store_->db_.get());
+        IndexedDBClassFactory::Get()
+            ->transactional_leveldb_factory()
+            .CreateLevelDBDirectTransaction(backing_store_->db_.get());
     s = GetRecoveryBlobJournal(journal_transaction.get(), &recovery_journal);
     if (!s.ok())
       return s;
@@ -4291,8 +4299,9 @@ Status IndexedDBBackingStore::Transaction::CommitPhaseTwo() {
   }
 
   std::unique_ptr<LevelDBDirectTransaction> update_journal_transaction =
-      transactional_leveldb_factory_->CreateLevelDBDirectTransaction(
-          backing_store_->db_.get());
+      IndexedDBClassFactory::Get()
+          ->transactional_leveldb_factory()
+          .CreateLevelDBDirectTransaction(backing_store_->db_.get());
   UpdateRecoveryBlobJournal(update_journal_transaction.get(),
                             saved_recovery_journal);
   s = update_journal_transaction->Commit();
@@ -4338,9 +4347,6 @@ leveldb::Status IndexedDBBackingStore::Transaction::WriteNewBlobs(
   }
 
   write_state_.emplace(num_objects_to_write, std::move(callback));
-
-  storage::mojom::BlobStorageContext* blob_storage_context =
-      backing_store_->blob_storage_context_;
 
   auto write_result_callback = base::BindRepeating(
       [](base::WeakPtr<Transaction> transaction,
@@ -4403,12 +4409,13 @@ leveldb::Status IndexedDBBackingStore::Transaction::WriteNewBlobs(
                               ? absl::nullopt
                               : absl::make_optional(entry.last_modified());
 #endif
-          blob_storage_context->WriteBlobToFile(
-              std::move(pending_blob),
-              backing_store_->GetBlobFileName(database_id_,
-                                              entry.blob_number()),
-              IndexedDBBackingStore::ShouldSyncOnCommit(durability_),
-              last_modified, write_result_callback);
+          backing_store_->bucket_context_->blob_storage_context()
+              ->WriteBlobToFile(
+                  std::move(pending_blob),
+                  backing_store_->GetBlobFileName(database_id_,
+                                                  entry.blob_number()),
+                  IndexedDBBackingStore::ShouldSyncOnCommit(durability_),
+                  last_modified, write_result_callback);
           break;
         }
         case IndexedDBExternalObject::ObjectType::kFileSystemAccessHandle: {
@@ -4423,31 +4430,34 @@ leveldb::Status IndexedDBBackingStore::Transaction::WriteNewBlobs(
           entry.file_system_access_token_remote()->Clone(
               token_clone.InitWithNewPipeAndPassReceiver());
 
-          backing_store_->file_system_access_context_->SerializeHandle(
-              std::move(token_clone),
-              base::BindOnce(
-                  [](base::WeakPtr<Transaction> transaction,
-                     IndexedDBExternalObject* object,
-                     base::OnceCallback<void(
-                         storage::mojom::WriteBlobToFileResult)> callback,
-                     const std::vector<uint8_t>& serialized_token) {
-                    // `object` is owned by `transaction`, so make sure
-                    // `transaction` is still valid before doing anything else.
-                    if (!transaction)
-                      return;
-                    if (serialized_token.empty()) {
-                      std::move(callback).Run(
-                          storage::mojom::WriteBlobToFileResult::kError);
-                      return;
-                    }
-                    object->set_serialized_file_system_access_handle(
-                        serialized_token);
-                    std::move(callback).Run(
-                        storage::mojom::WriteBlobToFileResult::kSuccess);
-                  },
-                  weak_ptr_factory_.GetWeakPtr(),
-                  base::UnsafeDanglingUntriaged(&entry),
-                  write_result_callback));
+          backing_store_->bucket_context_->file_system_access_context()
+              ->SerializeHandle(
+                  std::move(token_clone),
+                  base::BindOnce(
+                      [](base::WeakPtr<Transaction> transaction,
+                         IndexedDBExternalObject* object,
+                         base::OnceCallback<void(
+                             storage::mojom::WriteBlobToFileResult)> callback,
+                         const std::vector<uint8_t>& serialized_token) {
+                        // `object` is owned by `transaction`, so make sure
+                        // `transaction` is still valid before doing anything
+                        // else.
+                        if (!transaction) {
+                          return;
+                        }
+                        if (serialized_token.empty()) {
+                          std::move(callback).Run(
+                              storage::mojom::WriteBlobToFileResult::kError);
+                          return;
+                        }
+                        object->set_serialized_file_system_access_handle(
+                            serialized_token);
+                        std::move(callback).Run(
+                            storage::mojom::WriteBlobToFileResult::kSuccess);
+                      },
+                      weak_ptr_factory_.GetWeakPtr(),
+                      base::UnsafeDanglingUntriaged(&entry),
+                      write_result_callback));
           break;
         }
       }

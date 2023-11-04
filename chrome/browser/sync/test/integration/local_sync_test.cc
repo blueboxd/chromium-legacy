@@ -88,6 +88,7 @@ IN_PROC_BROWSER_TEST_F(LocalSyncTest, ShouldStart) {
   EXPECT_TRUE(service->IsLocalSyncEnabled());
   EXPECT_FALSE(service->IsSyncFeatureEnabled());
   EXPECT_FALSE(service->IsSyncFeatureActive());
+  EXPECT_FALSE(service->GetUserSettings()->IsInitialSyncFeatureSetupComplete());
 
   // Verify that the expected set of data types successfully started up.
   // If this test fails after adding a new data type, carefully consider whether
@@ -105,7 +106,6 @@ IN_PROC_BROWSER_TEST_F(LocalSyncTest, ShouldStart) {
       syncer::AUTOFILL_WALLET_DATA,
       syncer::AUTOFILL_WALLET_METADATA,
       syncer::THEMES,
-      syncer::TYPED_URLS,
       syncer::EXTENSIONS,
       syncer::SEARCH_ENGINES,
       syncer::SESSIONS,
@@ -118,12 +118,6 @@ IN_PROC_BROWSER_TEST_F(LocalSyncTest, ShouldStart) {
       syncer::WEB_APPS,
       syncer::PROXY_TABS,
       syncer::NIGORI};
-
-  if (base::FeatureList::IsEnabled(syncer::kSyncEnableHistoryDataType)) {
-    // If this feature is enabled, HISTORY replaces TYPED_URLS (and HISTORY
-    // isn't supported in local sync mode).
-    expected_active_data_types.Remove(syncer::TYPED_URLS);
-  }
 
   if (base::FeatureList::IsEnabled(features::kTabGroupsSave)) {
     expected_active_data_types.Put(syncer::SAVED_TAB_GROUP);

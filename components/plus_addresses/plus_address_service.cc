@@ -3,12 +3,16 @@
 // found in the LICENSE file.
 
 #include "components/plus_addresses/plus_address_service.h"
-#include "base/functional/callback_helpers.h"
+
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/plus_addresses/features.h"
+#include "components/plus_addresses/plus_address_client.h"
+#include "components/plus_addresses/plus_address_prefs.h"
+#include "components/plus_addresses/plus_address_types.h"
 #include "components/signin/public/base/consent_level.h"
+#include "components/signin/public/base/persistent_repeating_timer.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
@@ -21,63 +25,45 @@ std::string GetEtldPlusOne(const url::Origin origin) {
   return net::registry_controlled_domains::GetDomainAndRegistry(
       origin, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 }
-
-// A dummy, temporary function to generate a domain-specific string to be the
-// part after the plus in a plus address. This will be replaced with a service
-// integration.
-std::string GetPlusAddressSuffixForEtldPlusOne(std::string etld_plus_one) {
-  int total = 0;
-  for (const char& character : etld_plus_one) {
-    total += character;
-  }
-  return base::NumberToString(total % 10000);
-}
-
-// A dummy, temporary function to generate a domain-specific plus address. This
-// will be replaced with a service integration.
-absl::optional<std::string> MakePlusAddress(std::string email,
-                                            url::Origin origin) {
-  std::string etld_plus_one = GetEtldPlusOne(origin);
-  std::vector<std::string> email_parts = base::SplitString(
-      email, "@", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  if (email_parts.size() != 2) {
-    return absl::nullopt;
-  }
-
-  // It's possible there would already be a plus in the plus address, so use
-  // only the part before that point. Note that this function is temporary, so
-  // further effort is not made to, e.g., ensure the domain actually supports
-  // plus addresses, or to preserve it somehow.
-  std::vector<std::string> maybe_preexisting_plus = base::SplitString(
-      email_parts[0], "+", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  if (maybe_preexisting_plus.size() == 0) {
-    return absl::nullopt;
-  }
-  return base::StrCat({maybe_preexisting_plus[0], "+",
-                       GetPlusAddressSuffixForEtldPlusOne(etld_plus_one), "@",
-                       email_parts[1]});
-}
 }  // namespace
 
+PlusAddressService::PlusAddressService(
+    signin::IdentityManager* identity_manager)
+    : PlusAddressService(
+          identity_manager,
+          /*pref_service=*/nullptr,
+          PlusAddressClient(identity_manager, /*url_loader_factory=*/nullptr)) {
+}
+
 PlusAddressService::PlusAddressService()
-    : PlusAddressService(/*identity_manager=*/nullptr) {}
+    : PlusAddressService(/*identity_manager=*/nullptr,
+                         /*pref_service=*/nullptr,
+                         PlusAddressClient(/*identity_manager=*/nullptr,
+                                           /*url_loader_factory=*/nullptr)) {}
 
 PlusAddressService::~PlusAddressService() = default;
 
 PlusAddressService::PlusAddressService(
-    signin::IdentityManager* identity_manager)
-    : identity_manager_(identity_manager) {}
+    signin::IdentityManager* identity_manager,
+    PrefService* pref_service,
+    PlusAddressClient plus_address_client)
+    : identity_manager_(identity_manager),
+      repeating_timer_(CreateTimer(pref_service)),
+      plus_address_client_(std::move(plus_address_client)) {
+  // Begin PlusAddress periodic actions at construction.
+  if (repeating_timer_) {
+    repeating_timer_->Start();
+  }
+}
 
 bool PlusAddressService::SupportsPlusAddresses(url::Origin origin) {
-  return base::FeatureList::IsEnabled(plus_addresses::kFeature) &&
-         identity_manager_ != nullptr &&
-         // Note that having a primary account implies that account's email will
-         // be populated.
-         identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin);
+  // TODO(b/295187452): Also check `origin` here.
+  return is_enabled();
 }
 
 absl::optional<std::string> PlusAddressService::GetPlusAddress(
     url::Origin origin) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::string etld_plus_one = GetEtldPlusOne(origin);
   auto it = plus_address_by_site_.find(etld_plus_one);
   if (it == plus_address_by_site_.end()) {
@@ -88,31 +74,45 @@ absl::optional<std::string> PlusAddressService::GetPlusAddress(
 
 void PlusAddressService::SavePlusAddress(url::Origin origin,
                                          std::string plus_address) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::string etld_plus_one = GetEtldPlusOne(origin);
   plus_address_by_site_[etld_plus_one] = plus_address;
   plus_addresses_.insert(plus_address);
 }
 
 bool PlusAddressService::IsPlusAddress(std::string potential_plus_address) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return plus_addresses_.contains(potential_plus_address);
 }
 
 void PlusAddressService::OfferPlusAddressCreation(
     const url::Origin& origin,
     PlusAddressCallback callback) {
-  if (!identity_manager_ ||
-      !identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
+  if (!is_enabled()) {
     return;
   }
-  const std::string email =
-      identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin)
-          .email;
-  absl::optional<std::string> result = MakePlusAddress(email, origin);
-  if (!result.has_value()) {
+  // Check the local mapping before issuing a network request.
+  if (absl::optional<std::string> plus_address = GetPlusAddress(origin);
+      plus_address) {
+    std::move(callback).Run(plus_address.value());
     return;
   }
-  SavePlusAddress(origin, result.value());
-  std::move(callback).Run(result.value());
+  plus_address_client_.CreatePlusAddress(
+      GetEtldPlusOne(origin),
+      // On receiving the PlusAddress...
+      base::BindOnce(
+          // ... first send it back to Autofill
+          [](PlusAddressCallback callback, const std::string& plus_address) {
+            std::move(callback).Run(plus_address);
+            return plus_address;
+          },
+          std::move(callback))
+          // ... then save it in this service.
+          .Then(base::BindOnce(
+              &PlusAddressService::SavePlusAddress,
+              // base::Unretained is safe here since PlusAddressService owns
+              // the PlusAddressClient and they will have the same lifetime.
+              base::Unretained(this), origin)));
 }
 
 std::u16string PlusAddressService::GetCreateSuggestionLabel() {
@@ -121,4 +121,60 @@ std::u16string PlusAddressService::GetCreateSuggestionLabel() {
   return base::UTF8ToUTF16(
       plus_addresses::kEnterprisePlusAddressLabelOverride.Get());
 }
+
+absl::optional<std::string> PlusAddressService::GetPrimaryEmail() {
+  if (!identity_manager_ ||
+      !identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
+    return absl::nullopt;
+  }
+  // TODO(crbug.com/1467623): This is fine for prototyping, but eventually we
+  // must also take `AccountInfo::CanHaveEmailAddressDisplayed` into account
+  // here and elsewhere in this file.
+  return identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin)
+      .email;
+}
+
+bool PlusAddressService::is_enabled() const {
+  return base::FeatureList::IsEnabled(plus_addresses::kFeature) &&
+         identity_manager_ != nullptr &&
+         // Note that having a primary account implies that account's email will
+         // be populated.
+         identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin);
+}
+
+std::unique_ptr<signin::PersistentRepeatingTimer>
+PlusAddressService::CreateTimer(PrefService* pref_service) {
+  if (!is_enabled() || !pref_service ||
+      !kSyncWithEnterprisePlusAddressServer.Get()) {
+    return nullptr;
+  }
+  return std::make_unique<signin::PersistentRepeatingTimer>(
+      pref_service, prefs::kPlusAddressLastFetchedTime,
+      /*delay=*/kEnterprisePlusAddressTimerDelay.Get(),
+      /*task=*/
+      base::BindRepeating(&PlusAddressService::SyncPlusAddressMapping,
+                          // base::Unretained(this) is safe here since the timer
+                          // that is created has same lifetime as this service.
+                          base::Unretained(this)));
+}
+
+void PlusAddressService::SyncPlusAddressMapping() {
+  plus_address_client_.GetAllPlusAddresses(base::BindOnce(
+      &PlusAddressService::UpdatePlusAddressMap,
+      // base::Unretained is safe here since PlusAddressService owns
+      // the PlusAddressClient and they have the same lifetime.
+      base::Unretained(this)));
+}
+
+void PlusAddressService::UpdatePlusAddressMap(const PlusAddressMap& map) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!is_enabled()) {
+    return;
+  }
+  plus_address_by_site_ = map;
+  for (const auto& [_, value] : map) {
+    plus_addresses_.insert(value);
+  }
+}
+
 }  // namespace plus_addresses

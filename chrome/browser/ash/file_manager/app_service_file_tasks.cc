@@ -31,6 +31,7 @@
 #include "chrome/browser/ash/file_manager/file_tasks.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/filesystem_api_util.h"
+#include "chrome/browser/ash/file_manager/office_file_tasks.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/fusebox/fusebox_server.h"
 #include "chrome/browser/profiles/profile.h"
@@ -197,13 +198,6 @@ GURL GetRealOrFuseboxGURL(Profile* profile,
     return GURL();
   }
   return url;
-}
-
-// TODO(petermarshall): This can be removed along with ParseFilesAppActionId()
-// in file_tasks.cc as the legacy files app has been removed.
-std::string ToSwaActionId(const std::string& action_id) {
-  return std::string(ash::file_manager::kChromeUIFileManagerURL) + "?" +
-         action_id;
 }
 
 // True if |app_id| and |action_id| represent a task which opens the file by

@@ -33,18 +33,6 @@ namespace {
 
 enum SlowScrollMetricThread { MAIN_THREAD, CC_THREAD };
 
-void RecordCompositorSlowScrollMetric(ui::ScrollInputType type,
-                                      SlowScrollMetricThread scroll_thread) {
-  bool scroll_on_main_thread = (scroll_thread == MAIN_THREAD);
-  if (type == ui::ScrollInputType::kWheel) {
-    UMA_HISTOGRAM_BOOLEAN("Renderer4.CompositorWheelScrollUpdateThread",
-                          scroll_on_main_thread);
-  } else if (type == ui::ScrollInputType::kTouchscreen) {
-    UMA_HISTOGRAM_BOOLEAN("Renderer4.CompositorTouchScrollUpdateThread",
-                          scroll_on_main_thread);
-  }
-}
-
 }  // namespace
 
 InputHandlerCommitData::InputHandlerCommitData() = default;
@@ -115,7 +103,6 @@ InputHandler::ScrollStatus InputHandler::ScrollBegin(ScrollState* scroll_state,
   }
 
   ScrollNode* scrolling_node = nullptr;
-  bool scroll_on_main_thread = false;
 
   // TODO(bokan): ClearCurrentlyScrollingNode shouldn't happen in ScrollBegin,
   // this should only happen in ScrollEnd. We should DCHECK here that the state
@@ -124,8 +111,6 @@ InputHandler::ScrollStatus InputHandler::ScrollBegin(ScrollState* scroll_state,
 
   ElementId target_element_id = scroll_state->target_element_id();
   ScrollTree& scroll_tree = GetScrollTree();
-  bool unification_enabled =
-      base::FeatureList::IsEnabled(features::kScrollUnification);
 
   if (target_element_id && (!scroll_state->main_thread_hit_tested_reasons() ||
                             scroll_state->is_scrollbar_interaction())) {
@@ -134,17 +119,6 @@ InputHandler::ScrollStatus InputHandler::ScrollBegin(ScrollState* scroll_state,
     // If the caller passed in an element_id we can skip all the hit-testing
     // bits and provide a node straight-away.
     scrolling_node = scroll_tree.FindNodeFromElementId(target_element_id);
-
-    // In unified scrolling, if we found a node we get to scroll it.
-    if (!unification_enabled) {
-      // We still need to confirm the targeted node exists and can scroll on
-      // the compositor.
-      if (scrolling_node) {
-        scroll_status = TryScroll(scroll_tree, scrolling_node);
-        if (IsMainThreadScrolling(scroll_status, scrolling_node))
-          scroll_on_main_thread = true;
-      }
-    }
   } else {
     ScrollNode* starting_node = nullptr;
     if (target_element_id) {
@@ -156,7 +130,6 @@ InputHandler::ScrollStatus InputHandler::ScrollBegin(ScrollState* scroll_state,
       // unification is enabled and the targeted scroller comes back from a
       // main thread hit test.
       DCHECK(scroll_state->main_thread_hit_tested_reasons());
-      DCHECK(unification_enabled);
       starting_node = scroll_tree.FindNodeFromElementId(target_element_id);
 
       if (!starting_node) {
@@ -165,7 +138,7 @@ InputHandler::ScrollStatus InputHandler::ScrollBegin(ScrollState* scroll_state,
         // freshly created scroller hasn't yet been committed or a
         // scroller-destroying commit beats the hit test back to the compositor
         // thread. However, these cases shouldn't be user perceptible.
-        scroll_status.thread = InputHandler::ScrollThread::SCROLL_IGNORED;
+        scroll_status.thread = InputHandler::ScrollThread::kScrollIgnored;
         return scroll_status;
       }
     } else {  // !target_element_id
@@ -177,74 +150,34 @@ InputHandler::ScrollStatus InputHandler::ScrollBegin(ScrollState* scroll_state,
           gfx::ScalePoint(gfx::PointF(viewport_point),
                           compositor_delegate_->DeviceScaleFactor());
 
-      if (unification_enabled) {
-        if (scroll_state->main_thread_hit_tested_reasons()) {
-          // The client should have discarded the scroll when the hit test came
-          // back with an invalid element id. If we somehow get here, we should
-          // drop the scroll as continuing could cause us to infinitely bounce
-          // back and forth between here and hit testing on the main thread.
-          NOTREACHED();
-          scroll_status.thread = InputHandler::ScrollThread::SCROLL_IGNORED;
-          return scroll_status;
-        }
-
-        ScrollHitTestResult scroll_hit_test =
-            HitTestScrollNode(device_viewport_point);
-
-        if (!scroll_hit_test.hit_test_successful) {
-          // This result tells the client that the compositor doesn't have
-          // enough information to target this scroll. The client should
-          // perform a hit test in Blink and call this method again, with the
-          // ElementId of the hit-tested scroll node.
-          TRACE_EVENT_INSTANT0("cc", "Request Main Thread Hit Test",
-                               TRACE_EVENT_SCOPE_THREAD);
-          scroll_status.thread =
-              InputHandler::ScrollThread::SCROLL_ON_IMPL_THREAD;
-          DCHECK(scroll_hit_test.main_thread_hit_test_reasons);
-          scroll_status.main_thread_hit_test_reasons =
-              scroll_hit_test.main_thread_hit_test_reasons;
-          return scroll_status;
-        }
-
-        starting_node = scroll_hit_test.scroll_node;
-      } else {  // !unification_enabled
-        LayerImpl* layer_impl =
-            ActiveTree().FindLayerThatIsHitByPoint(device_viewport_point);
-
-        if (layer_impl) {
-          LayerImpl* first_scrolling_layer_or_scrollbar =
-              ActiveTree().FindFirstScrollingLayerOrScrollbarThatIsHitByPoint(
-                  device_viewport_point);
-
-          // Touch dragging the scrollbar requires falling back to main-thread
-          // scrolling.
-          if (IsTouchDraggingScrollbar(first_scrolling_layer_or_scrollbar,
-                                       type)) {
-            TRACE_EVENT_INSTANT0("cc", "Scrollbar Scrolling",
-                                 TRACE_EVENT_SCOPE_THREAD);
-            scroll_status.thread =
-                InputHandler::ScrollThread::SCROLL_ON_MAIN_THREAD;
-            scroll_status.main_thread_scrolling_reasons =
-                MainThreadScrollingReason::kScrollbarScrolling;
-            return scroll_status;
-          }
-          ScrollNode* unused = nullptr;
-          if (!IsInitialScrollHitTestReliable(
-                  layer_impl, first_scrolling_layer_or_scrollbar, unused)) {
-            TRACE_EVENT_INSTANT0("cc", "Failed Hit Test",
-                                 TRACE_EVENT_SCOPE_THREAD);
-            scroll_status.thread =
-                InputHandler::ScrollThread::SCROLL_ON_MAIN_THREAD;
-            scroll_status.main_thread_scrolling_reasons =
-                MainThreadScrollingReason::kFailedHitTest;
-            return scroll_status;
-          }
-        }
-
-        starting_node = FindScrollNodeForCompositedScrolling(
-            device_viewport_point, layer_impl, &scroll_on_main_thread,
-            &scroll_status.main_thread_scrolling_reasons);
+      if (scroll_state->main_thread_hit_tested_reasons()) {
+        // The client should have discarded the scroll when the hit test came
+        // back with an invalid element id. If we somehow get here, we should
+        // drop the scroll as continuing could cause us to infinitely bounce
+        // back and forth between here and hit testing on the main thread.
+        NOTREACHED();
+        scroll_status.thread = InputHandler::ScrollThread::kScrollIgnored;
+        return scroll_status;
       }
+
+      ScrollHitTestResult scroll_hit_test =
+          HitTestScrollNode(device_viewport_point);
+
+      if (!scroll_hit_test.hit_test_successful) {
+        // This result tells the client that the compositor doesn't have
+        // enough information to target this scroll. The client should
+        // perform a hit test in Blink and call this method again, with the
+        // ElementId of the hit-tested scroll node.
+        TRACE_EVENT_INSTANT0("cc", "Request Main Thread Hit Test",
+                             TRACE_EVENT_SCOPE_THREAD);
+        scroll_status.thread = InputHandler::ScrollThread::kScrollOnImplThread;
+        DCHECK(scroll_hit_test.main_thread_hit_test_reasons);
+        scroll_status.main_thread_hit_test_reasons =
+            scroll_hit_test.main_thread_hit_test_reasons;
+        return scroll_status;
+      }
+
+      starting_node = scroll_hit_test.scroll_node;
     }
 
     // The above finds the ScrollNode that's hit by the given point but we
@@ -253,19 +186,11 @@ InputHandler::ScrollStatus InputHandler::ScrollBegin(ScrollState* scroll_state,
     scrolling_node = FindNodeToLatch(scroll_state, starting_node, type);
   }
 
-  if (scroll_on_main_thread) {
-    // Under scroll unification we can request a main thread hit test, but we
-    // should never send scrolls to the main thread.
-    DCHECK(!unification_enabled);
-
-    RecordCompositorSlowScrollMetric(type, MAIN_THREAD);
-    scroll_status.thread = InputHandler::ScrollThread::SCROLL_ON_MAIN_THREAD;
-    return scroll_status;
-  } else if (!scrolling_node) {
+  if (!scrolling_node) {
     if (compositor_delegate_->GetSettings().is_for_embedded_frame) {
       // OOPIFs or fenced frames never have a viewport scroll node so if we
       // can't scroll we need to be bubble up to the parent frame. This happens
-      // by returning SCROLL_IGNORED.
+      // by returning kScrollIgnored.
       TRACE_EVENT_INSTANT0("cc",
                            "Ignored - No ScrollNode (OOPIF or FencedFrame)",
                            TRACE_EVENT_SCOPE_THREAD);
@@ -279,20 +204,19 @@ InputHandler::ScrollStatus InputHandler::ScrollBegin(ScrollState* scroll_state,
       TRACE_EVENT_INSTANT0("cc", "Ignored - No ScrollNode",
                            TRACE_EVENT_SCOPE_THREAD);
     }
-    scroll_status.thread = InputHandler::ScrollThread::SCROLL_IGNORED;
+    scroll_status.thread = InputHandler::ScrollThread::kScrollIgnored;
     return scroll_status;
   }
 
   DCHECK_EQ(scroll_status.main_thread_scrolling_reasons,
             MainThreadScrollingReason::kNotScrollingOnMain);
   DCHECK_EQ(scroll_status.thread,
-            InputHandler::ScrollThread::SCROLL_ON_IMPL_THREAD);
+            InputHandler::ScrollThread::kScrollOnImplThread);
   DCHECK(scrolling_node);
 
   ActiveTree().SetCurrentlyScrollingNode(scrolling_node);
-  if (unification_enabled)
-    scroll_status.main_thread_repaint_reasons =
-        scroll_tree.GetMainThreadRepaintReasons(*scrolling_node);
+  scroll_status.main_thread_repaint_reasons =
+      scroll_tree.GetMainThreadRepaintReasons(*scrolling_node);
 
   DidLatchToScroller(*scroll_state, type);
 
@@ -320,7 +244,7 @@ InputHandler::ScrollStatus InputHandler::RootScrollBegin(
   TRACE_EVENT0("cc", "InputHandler::RootScrollBegin");
   if (!OuterViewportScrollNode()) {
     InputHandler::ScrollStatus scroll_status;
-    scroll_status.thread = InputHandler::ScrollThread::SCROLL_IGNORED;
+    scroll_status.thread = InputHandler::ScrollThread::kScrollIgnored;
     return scroll_status;
   }
 
@@ -448,8 +372,7 @@ InputHandlerScrollResult InputHandler::ScrollUpdate(
   float scale_factor = ActiveTree().page_scale_factor_for_scroll();
   scroll_result.current_visual_offset.Scale(scale_factor);
 
-  if (base::FeatureList::IsEnabled(features::kScrollUnification) &&
-      !GetScrollTree().CanRealizeScrollsOnCompositor(scroll_node)) {
+  if (!GetScrollTree().CanRealizeScrollsOnCompositor(scroll_node)) {
     scroll_result.needs_main_thread_repaint = true;
   }
 
@@ -808,7 +731,7 @@ InputHandler::EventListenerTypeForTouchStartOrMoveAt(
   if (layer_impl_with_touch_handler == nullptr) {
     if (out_touch_action)
       *out_touch_action = TouchAction::kAuto;
-    return InputHandler::TouchStartOrMoveEventListenerType::NO_HANDLER;
+    return InputHandler::TouchStartOrMoveEventListenerType::kNoHandler;
   }
 
   if (out_touch_action) {
@@ -830,7 +753,7 @@ InputHandler::EventListenerTypeForTouchStartOrMoveAt(
   }
 
   if (!CurrentlyScrollingNode())
-    return InputHandler::TouchStartOrMoveEventListenerType::HANDLER;
+    return InputHandler::TouchStartOrMoveEventListenerType::kHandler;
 
   // Check if the touch start (or move) hits on the current scrolling layer or
   // its descendant. layer_impl_with_touch_handler is the layer hit by the
@@ -840,9 +763,10 @@ InputHandler::EventListenerTypeForTouchStartOrMoveAt(
   LayerImpl* layer_impl =
       ActiveTree().FindLayerThatIsHitByPoint(device_viewport_point);
   bool is_ancestor = IsScrolledBy(layer_impl, CurrentlyScrollingNode());
-  return is_ancestor ? InputHandler::TouchStartOrMoveEventListenerType::
-                           HANDLER_ON_SCROLLING_LAYER
-                     : InputHandler::TouchStartOrMoveEventListenerType::HANDLER;
+  return is_ancestor
+             ? InputHandler::TouchStartOrMoveEventListenerType::
+                   kHandlerOnScrollingLayer
+             : InputHandler::TouchStartOrMoveEventListenerType::kHandler;
 }
 
 std::unique_ptr<LatencyInfoSwapPromiseMonitor>
@@ -895,23 +819,6 @@ bool InputHandler::ScrollLayerTo(ElementId element_id,
                        offset - scroll_tree.current_scroll_offset(element_id),
                        &ActiveTree());
   return true;
-}
-
-bool InputHandler::ScrollingShouldSwitchtoMainThread() {
-  DCHECK(!base::FeatureList::IsEnabled(features::kScrollUnification));
-  ScrollTree& scroll_tree = GetScrollTree();
-  ScrollNode* scroll_node = scroll_tree.CurrentlyScrollingNode();
-
-  if (!scroll_node)
-    return true;
-
-  for (; scroll_tree.parent(scroll_node);
-       scroll_node = scroll_tree.parent(scroll_node)) {
-    if (!!scroll_node->main_thread_scrolling_reasons)
-      return true;
-  }
-
-  return false;
 }
 
 absl::optional<gfx::PointF> InputHandler::ConstrainFling(gfx::PointF original) {
@@ -1271,22 +1178,6 @@ FrameSequenceTrackerType InputHandler::GetTrackerTypeForScroll(
   }
 }
 
-bool InputHandler::IsMainThreadScrolling(
-    const InputHandler::ScrollStatus& status,
-    const ScrollNode* scroll_node) const {
-  if (status.thread == InputHandler::ScrollThread::SCROLL_ON_MAIN_THREAD) {
-    if (!!scroll_node->main_thread_scrolling_reasons) {
-      DCHECK(MainThreadScrollingReason::MainThreadCanSetScrollReasons(
-          status.main_thread_scrolling_reasons));
-    } else {
-      DCHECK(MainThreadScrollingReason::CompositorCanSetScrollReasons(
-          status.main_thread_scrolling_reasons));
-    }
-    return true;
-  }
-  return false;
-}
-
 float InputHandler::LineStep() const {
   return kPixelsPerLineStep * ActiveTree().painted_device_scale_factor();
 }
@@ -1330,163 +1221,6 @@ gfx::Vector2dF InputHandler::ResolveScrollGranularityToPixels(
   return pixel_delta;
 }
 
-InputHandler::ScrollStatus InputHandler::TryScroll(
-    const ScrollTree& scroll_tree,
-    ScrollNode* scroll_node) const {
-  DCHECK(!base::FeatureList::IsEnabled(features::kScrollUnification));
-  DCHECK(scroll_node->transform_id != kInvalidPropertyNodeId);
-
-  InputHandler::ScrollStatus scroll_status;
-  scroll_status.main_thread_scrolling_reasons =
-      MainThreadScrollingReason::kNotScrollingOnMain;
-  if (scroll_node->main_thread_scrolling_reasons) {
-    TRACE_EVENT1("cc", "LayerImpl::TryScroll: Failed ShouldScrollOnMainThread",
-                 "MainThreadScrollingReason",
-                 scroll_node->main_thread_scrolling_reasons);
-    scroll_status.thread = InputHandler::ScrollThread::SCROLL_ON_MAIN_THREAD;
-    scroll_status.main_thread_scrolling_reasons =
-        scroll_node->main_thread_scrolling_reasons;
-    return scroll_status;
-  }
-
-  gfx::Transform screen_space_transform =
-      scroll_tree.ScreenSpaceTransform(scroll_node->id);
-  if (!screen_space_transform.IsInvertible()) {
-    TRACE_EVENT0("cc", "LayerImpl::TryScroll: Ignored NonInvertibleTransform");
-    scroll_status.thread = InputHandler::ScrollThread::SCROLL_IGNORED;
-    return scroll_status;
-  }
-
-  if (!scroll_node->scrollable) {
-    TRACE_EVENT0("cc", "LayerImpl::tryScroll: Ignored not scrollable");
-    scroll_status.thread = InputHandler::ScrollThread::SCROLL_IGNORED;
-    return scroll_status;
-  }
-
-  // If an associated scrolling layer is not found, the scroll node must not
-  // support impl-scrolling. The root, secondary root, and inner viewports
-  // are all exceptions to this and may not have a layer because it is not
-  // required for hit testing.
-  if (scroll_node->id != kRootPropertyNodeId &&
-      scroll_node->id != kSecondaryRootPropertyNodeId &&
-      !scroll_node->scrolls_inner_viewport &&
-      !ActiveTree().LayerByElementId(scroll_node->element_id)) {
-    TRACE_EVENT0("cc",
-                 "LayerImpl::tryScroll: Failed due to no scrolling layer");
-    scroll_status.thread = InputHandler::ScrollThread::SCROLL_ON_MAIN_THREAD;
-    scroll_status.main_thread_scrolling_reasons =
-        MainThreadScrollingReason::kNoScrollingLayer;
-    return scroll_status;
-  }
-
-  // The a viewport node should be scrolled even if it has no scroll extent
-  // since it'll scroll using the Viewport class which will generate browser
-  // controls movement and overscroll delta.
-  gfx::PointF max_scroll_offset = scroll_tree.MaxScrollOffset(scroll_node->id);
-  if (max_scroll_offset.x() <= 0 && max_scroll_offset.y() <= 0 &&
-      !GetViewport().ShouldScroll(*scroll_node)) {
-    TRACE_EVENT0("cc",
-                 "LayerImpl::tryScroll: Ignored. Technically scrollable,"
-                 " but has no affordance in either direction.");
-    scroll_status.thread = InputHandler::ScrollThread::SCROLL_IGNORED;
-    return scroll_status;
-  }
-
-  scroll_status.thread = InputHandler::ScrollThread::SCROLL_ON_IMPL_THREAD;
-  return scroll_status;
-}
-
-base::flat_set<int> InputHandler::NonFastScrollableNodes(
-    const gfx::PointF& device_viewport_point) const {
-  base::flat_set<int> non_fast_scrollable_nodes;
-
-  const auto& non_fast_layers =
-      ActiveTree().FindLayersHitByPointInNonFastScrollableRegion(
-          device_viewport_point);
-  for (const auto* layer : non_fast_layers)
-    non_fast_scrollable_nodes.insert(layer->scroll_tree_index());
-
-  return non_fast_scrollable_nodes;
-}
-
-ScrollNode* InputHandler::FindScrollNodeForCompositedScrolling(
-    const gfx::PointF& device_viewport_point,
-    LayerImpl* layer_impl,
-    bool* scroll_on_main_thread,
-    uint32_t* main_thread_scrolling_reasons) {
-  DCHECK(!base::FeatureList::IsEnabled(features::kScrollUnification));
-  DCHECK(scroll_on_main_thread);
-  DCHECK(main_thread_scrolling_reasons);
-  *main_thread_scrolling_reasons =
-      MainThreadScrollingReason::kNotScrollingOnMain;
-
-  const auto& non_fast_scrollable_nodes =
-      NonFastScrollableNodes(device_viewport_point);
-
-  // If we hit a scrollbar layer, get the ScrollNode from its associated
-  // scrolling layer, rather than directly from the scrollbar layer. The latter
-  // would return the parent scroller's ScrollNode.
-  if (layer_impl && layer_impl->IsScrollbarLayer()) {
-    layer_impl = ActiveTree().LayerByElementId(
-        ToScrollbarLayer(layer_impl)->scroll_element_id());
-  }
-
-  // Walk up the hierarchy and look for a scrollable layer.
-  ScrollTree& scroll_tree = GetScrollTree();
-  ScrollNode* impl_scroll_node = nullptr;
-  if (layer_impl) {
-    ScrollNode* scroll_node = scroll_tree.Node(layer_impl->scroll_tree_index());
-    for (; scroll_tree.parent(scroll_node);
-         scroll_node = scroll_tree.parent(scroll_node)) {
-      // The content layer can also block attempts to scroll outside the main
-      // thread.
-      InputHandler::ScrollStatus status = TryScroll(scroll_tree, scroll_node);
-      if (IsMainThreadScrolling(status, scroll_node)) {
-        *scroll_on_main_thread = true;
-        *main_thread_scrolling_reasons = status.main_thread_scrolling_reasons;
-        return scroll_node;
-      }
-
-      if (non_fast_scrollable_nodes.contains(scroll_node->id)) {
-        *scroll_on_main_thread = true;
-        *main_thread_scrolling_reasons =
-            MainThreadScrollingReason::kNonFastScrollableRegion;
-        return scroll_node;
-      }
-
-      if (status.thread == InputHandler::ScrollThread::SCROLL_ON_IMPL_THREAD &&
-          !impl_scroll_node) {
-        impl_scroll_node = scroll_node;
-      }
-    }
-  }
-
-  // TODO(bokan): We shouldn't need this - ordinarily all scrolls should pass
-  // through the outer viewport. If we aren't able to find a scroller we should
-  // return nullptr here and ignore the scroll. However, it looks like on some
-  // pages (reddit.com) we start scrolling from the inner node.
-  if (!impl_scroll_node)
-    impl_scroll_node = InnerViewportScrollNode();
-
-  if (!impl_scroll_node)
-    return nullptr;
-
-  impl_scroll_node = GetNodeToScroll(impl_scroll_node);
-
-  // Ensure that final scroll node scrolls on impl thread (crbug.com/625100)
-  InputHandler::ScrollStatus status = TryScroll(scroll_tree, impl_scroll_node);
-  if (IsMainThreadScrolling(status, impl_scroll_node)) {
-    *scroll_on_main_thread = true;
-    *main_thread_scrolling_reasons = status.main_thread_scrolling_reasons;
-  } else if (non_fast_scrollable_nodes.contains(impl_scroll_node->id)) {
-    *scroll_on_main_thread = true;
-    *main_thread_scrolling_reasons =
-        MainThreadScrollingReason::kNonFastScrollableRegion;
-  }
-
-  return impl_scroll_node;
-}
-
 InputHandler::ScrollHitTestResult InputHandler::HitTestScrollNode(
     const gfx::PointF& device_viewport_point) const {
   ScrollHitTestResult result;
@@ -1497,8 +1231,9 @@ InputHandler::ScrollHitTestResult InputHandler::HitTestScrollNode(
       ActiveTree().FindLayersUpToFirstScrollableOrOpaqueToHitTest(
           device_viewport_point);
 
-  const LayerImpl* scroller_layer =
-      (!layers.empty() && layers.back()->IsScrollerOrScrollbar())
+  const LayerImpl* first_scrollable_or_opaque_to_hit_test_layer =
+      !layers.empty() && (layers.back()->IsScrollerOrScrollbar() ||
+                          layers.back()->OpaqueToHitTest())
           ? layers.back()
           : nullptr;
   ScrollNode* node_to_scroll = nullptr;
@@ -1507,8 +1242,9 @@ InputHandler::ScrollHitTestResult InputHandler::HitTestScrollNode(
   // scrolling if they come from outside the scroller's scroll-subtree or if we
   // hit a non-fast-scrolling-region.
   for (const auto* layer_impl : layers) {
-    if (!IsInitialScrollHitTestReliable(layer_impl, scroller_layer,
-                                        node_to_scroll)) {
+    if (!IsInitialScrollHitTestReliable(
+            layer_impl, first_scrollable_or_opaque_to_hit_test_layer,
+            node_to_scroll)) {
       TRACE_EVENT_INSTANT0("cc", "Failed Hit Test", TRACE_EVENT_SCOPE_THREAD);
       result.main_thread_hit_test_reasons =
           MainThreadScrollingReason::kFailedHitTest;
@@ -1542,16 +1278,6 @@ InputHandler::ScrollHitTestResult InputHandler::HitTestScrollNode(
   result.scroll_node = node_to_scroll;
   result.hit_test_successful = true;
   return result;
-}
-
-// Requires falling back to main thread scrolling when it hit tests in scrollbar
-// from touch.
-bool InputHandler::IsTouchDraggingScrollbar(
-    LayerImpl* first_scrolling_layer_or_scrollbar,
-    ui::ScrollInputType type) {
-  return first_scrolling_layer_or_scrollbar &&
-         first_scrolling_layer_or_scrollbar->IsScrollbarLayer() &&
-         type == ui::ScrollInputType::kTouchscreen;
 }
 
 ScrollNode* InputHandler::GetNodeToScroll(ScrollNode* node) const {
@@ -1588,11 +1314,11 @@ ScrollNode* InputHandler::GetNodeToScroll(ScrollNode* node) const {
 
 bool InputHandler::IsInitialScrollHitTestReliable(
     const LayerImpl* layer_impl,
-    const LayerImpl* first_scrolling_layer_or_scrollbar,
+    const LayerImpl* first_scrollable_or_opaque_to_hit_test_layer,
     ScrollNode*& out_node_to_scroll) const {
   // Hit tests directly on a composited scrollbar are always reliable.
   if (layer_impl->IsScrollbarLayer()) {
-    DCHECK(layer_impl == first_scrolling_layer_or_scrollbar);
+    DCHECK(layer_impl == first_scrollable_or_opaque_to_hit_test_layer);
     // If we hit a scrollbar layer, get the ScrollNode from its associated
     // scrolling layer, rather than directly from the scrollbar layer. The
     // latter would return the parent scroller's ScrollNode.
@@ -1609,42 +1335,37 @@ bool InputHandler::IsInitialScrollHitTestReliable(
   ScrollNode* scroll_node = scroll_tree.Node(layer_impl->scroll_tree_index());
   for (; scroll_tree.parent(scroll_node);
        scroll_node = scroll_tree.parent(scroll_node)) {
-    // TODO(bokan): |scrollable| appears to always be true in LayerList mode.
-    // In non-LayerList, scroll hit tests should always be reliable because we
-    // don't have situations where a layer can be hit testable but pass some
-    // points through (e.g. squashing layers). Perhaps we can remove this
-    // condition?
+    // TODO(crbug.com/1413877): This is inconsistent with the condition in
+    // LayerTreeImpl::FindLayersUpToFirstScrollableOrOpaqueToHitTest(), and
+    // may be a reason for kFailedHitTest main thread scrolling. Can we change
+    // FindLayersUpToFirstScrollableOrOpaqueToHitTest() not to return
+    // a non-scrollable scroller, or not to check scrollable here? We may also
+    // need to consider overscroll behavior of a non-scrollable scroller.
     if (scroll_node->scrollable) {
       closest_scroll_node = GetNodeToScroll(scroll_node);
       break;
     }
   }
-  // We can reliably use layer_impl's closest scroll node if layer_impl is
-  // opaque to hit test (which can be true only if the blink feature
-  // HitTestOpaqueness is enabled).
-  if (layer_impl->OpaqueToHitTest()) {
-    out_node_to_scroll = closest_scroll_node;
-    return true;
-  }
+
   // If there's a scrolling layer, we should also have a closest scroll node,
   // and vice versa. Otherwise, the hit test is not reliable.
-  if ((first_scrolling_layer_or_scrollbar && !closest_scroll_node) ||
-      (closest_scroll_node && !first_scrolling_layer_or_scrollbar)) {
+  if ((first_scrollable_or_opaque_to_hit_test_layer && !closest_scroll_node) ||
+      (closest_scroll_node && !first_scrollable_or_opaque_to_hit_test_layer)) {
     return false;
   }
-  if (!first_scrolling_layer_or_scrollbar && !closest_scroll_node) {
+  if (!first_scrollable_or_opaque_to_hit_test_layer && !closest_scroll_node) {
     // It's ok if we have neither.
     out_node_to_scroll = nullptr;
     return true;
   }
 
-  // If |first_scrolling_layer_or_scrollbar| is not a scrollbar, it must be
-  // a scrollable layer with a scroll node. If this scroll node corresponds to
-  // first scrollable ancestor along the scroll tree for |layer_impl|, the hit
-  // test has not escaped to other areas of the scroll tree and is reliable.
-  if (!first_scrolling_layer_or_scrollbar->IsScrollbarLayer() &&
+  // If `first_scrollable_or_opaque_to_hit_test_layer` is not a scrollbar, and
+  // its scroll tree index corresponds to the first scrollable ancestor for
+  // `layer_impl`, the hit test has not escaped to other areas of the scroll
+  // tree and is reliable.
+  if (!first_scrollable_or_opaque_to_hit_test_layer->IsScrollbarLayer() &&
       closest_scroll_node->id ==
-          first_scrolling_layer_or_scrollbar->scroll_tree_index()) {
+          first_scrollable_or_opaque_to_hit_test_layer->scroll_tree_index()) {
     out_node_to_scroll = closest_scroll_node;
     return true;
   }
@@ -2044,7 +1765,6 @@ void InputHandler::DidLatchToScroller(const ScrollState& scroll_state,
   last_scroll_begin_state_ = scroll_state;
 
   compositor_delegate_->DidStartScroll();
-  RecordCompositorSlowScrollMetric(type, CC_THREAD);
 
   UpdateScrollSourceInfo(scroll_state, type);
 }

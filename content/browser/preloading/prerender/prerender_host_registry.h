@@ -55,11 +55,6 @@ class RenderFrameHostImpl;
 class StoredPage;
 struct PrerenderAttributes;
 
-CONTENT_EXPORT BASE_DECLARE_FEATURE(
-    kPrerender2IgnoreFailureOnMemoryFootprintQuery);
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kPrerender2BypassMemoryLimitCheck);
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kPrerender2NewLimitAndScheduler);
-
 // PrerenderHostRegistry creates and retains a prerender host, and reserves it
 // for NavigationRequest to activate the prerendered page. This is created per
 // WebContentsImpl and owned by it.
@@ -106,6 +101,10 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
     // registry at the time this is called.
     virtual void OnTrigger(const GURL& url) {}
 
+    // Called when CancelHosts() actually cancels each host.
+    virtual void OnCancel(int host_frame_tree_node_id,
+                          const PrerenderCancellationReason& reason) {}
+
     // Called from the registry's destructor. The observer
     // should drop any reference to the registry.
     virtual void OnRegistryDestroyed() {}
@@ -131,7 +130,8 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
   // the new WebContents manages the started host, and `this`
   // PrerenderHostRegistry manages PrerenderNewTabHandle that owns the
   // WebContents (see `prerender_new_tab_handle_by_frame_tree_node_id_`).
-  int CreateAndStartHostForNewTab(const PrerenderAttributes& attributes);
+  int CreateAndStartHostForNewTab(const PrerenderAttributes& attributes,
+                                  PreloadingPredictor preloading_predictor);
 
   // Cancels the host registered for `frame_tree_node_id`. The host is
   // immediately removed from the map of non-reserved hosts but asynchronously
@@ -270,6 +270,8 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
   void DeleteAbandonedHosts();
 
   void NotifyTrigger(const GURL& url);
+  void NotifyCancel(int host_frame_tree_node_id,
+                    const PrerenderCancellationReason& reason);
 
   // Pops one PrerenderHost from the queue and starts the prerendering if
   // there's no running prerender and `kNoFrameTreeNode` is passed as

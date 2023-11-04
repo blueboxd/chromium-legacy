@@ -40,8 +40,7 @@ std::unique_ptr<BookmarkModel> TestBookmarkClient::CreateModelWithClient(
   std::unique_ptr<BookmarkLoadDetails> details =
       std::make_unique<BookmarkLoadDetails>(client_ptr);
   details->LoadManagedNode();
-  details->index()->AddPath(details->other_folder_node());
-  details->CreateUrlIndex();
+  details->CreateIndices();
   bookmark_model->DoneLoading(std::move(details));
   return bookmark_model;
 }
@@ -56,10 +55,6 @@ BookmarkPermanentNode* TestBookmarkClient::EnableManagedNode() {
 
 bool TestBookmarkClient::IsManagedNodeRoot(const BookmarkNode* node) {
   return unowned_managed_node_ == node;
-}
-
-bool TestBookmarkClient::IsAManagedNode(const BookmarkNode* node) {
-  return node && node->HasAncestor(unowned_managed_node_.get());
 }
 
 bool TestBookmarkClient::SimulateFaviconLoaded(const GURL& page_url,
@@ -134,12 +129,8 @@ bool TestBookmarkClient::CanSetPermanentNodeTitle(
   return IsManagedNodeRoot(permanent_node);
 }
 
-bool TestBookmarkClient::CanSyncNode(const BookmarkNode* node) {
-  return !IsAManagedNode(node);
-}
-
-bool TestBookmarkClient::CanBeEditedByUser(const BookmarkNode* node) {
-  return !IsAManagedNode(node);
+bool TestBookmarkClient::IsNodeManaged(const BookmarkNode* node) {
+  return node && node->HasAncestor(unowned_managed_node_.get());
 }
 
 std::string TestBookmarkClient::EncodeBookmarkSyncMetadata() {

@@ -145,6 +145,10 @@ bool InputType::IsTextField() const {
   return false;
 }
 
+bool InputType::ShouldAutoDirUseValue() const {
+  return false;
+}
+
 template <typename T>
 bool ValidateInputType(const T& input_type, const String& value) {
   if (!input_type.CanSetStringValue()) {
@@ -713,8 +717,9 @@ bool InputType::CanSetStringValue() const {
 }
 
 bool InputType::IsKeyboardFocusable() const {
-  // Inputs are always keyboard focusable if they are focusable at all.
-  return GetElement().IsFocusable();
+  // Inputs are always keyboard focusable if they are focusable at all,
+  // and don't have a negative tabindex set.
+  return GetElement().IsFocusable() && GetElement().tabIndex() >= 0;
 }
 
 bool InputType::MayTriggerVirtualKeyboard() const {
@@ -932,10 +937,6 @@ Decimal InputType::FindClosestTickMarkValue(const Decimal&) {
 
 bool InputType::HasLegalLinkAttribute(const QualifiedName&) const {
   return false;
-}
-
-const QualifiedName& InputType::SubResourceAttributeName() const {
-  return QualifiedName::Null();
 }
 
 void InputType::CopyNonAttributeProperties(const HTMLInputElement&) {}

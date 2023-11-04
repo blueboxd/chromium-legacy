@@ -24,13 +24,13 @@
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "components/device_reauth/device_authenticator.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/password_manager/core/browser/export/export_progress_status.h"
 #include "components/password_manager/core/browser/export/password_manager_exporter.h"
 #include "components/password_manager/core/browser/password_access_authenticator.h"
 #include "components/password_manager/core/browser/password_account_storage_settings_watcher.h"
 #include "components/password_manager/core/browser/reauth_purpose.h"
 #include "components/password_manager/core/browser/sharing/recipients_fetcher.h"
 #include "components/password_manager/core/browser/ui/credential_ui_entry.h"
-#include "components/password_manager/core/browser/ui/export_progress_status.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 #include "extensions/browser/extension_function.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -165,7 +165,7 @@ class PasswordsPrivateDelegateImpl
       const password_manager::PasswordStoreChangeList& changes) override;
 
   // web_app::WebAppInstallManagerObserver implementation.
-  void OnWebAppInstalledWithOsHooks(const web_app::AppId& app_id) override;
+  void OnWebAppInstalledWithOsHooks(const webapps::AppId& app_id) override;
   void OnWebAppInstallManagerDestroyed() override;
 
   // Called after the lists are fetched. Once both lists have been set, the
@@ -291,7 +291,7 @@ class PasswordsPrivateDelegateImpl
   raw_ptr<content::WebContents> web_contents_;
 
   // Device authenticator used to authenticate users in settings.
-  scoped_refptr<device_reauth::DeviceAuthenticator> device_authenticator_;
+  std::unique_ptr<device_reauth::DeviceAuthenticator> device_authenticator_;
 
   base::ScopedObservation<web_app::WebAppInstallManager,
                           web_app::WebAppInstallManagerObserver>

@@ -74,9 +74,7 @@ HoldingSpaceItem::~HoldingSpaceItem() {
 
 bool HoldingSpaceItem::operator==(const HoldingSpaceItem& rhs) const {
   return type_ == rhs.type_ && id_ == rhs.id_ && file_ == rhs.file_ &&
-         file_path_ == rhs.file_path_ &&
-         file_system_url_ == rhs.file_system_url_ && text_ == rhs.text_ &&
-         secondary_text_ == rhs.secondary_text_ &&
+         text_ == rhs.text_ && secondary_text_ == rhs.secondary_text_ &&
          secondary_text_color_id_ == rhs.secondary_text_color_id_ &&
          *image_ == *rhs.image_ && progress_ == rhs.progress_ &&
          in_progress_commands_ == rhs.in_progress_commands_;
@@ -86,11 +84,8 @@ bool HoldingSpaceItem::operator==(const HoldingSpaceItem& rhs) const {
 std::unique_ptr<HoldingSpaceItem> HoldingSpaceItem::CreateFileBackedItem(
     Type type,
     const HoldingSpaceFile& file,
-    const base::FilePath& file_path,
-    const GURL& file_system_url,
     ImageResolver image_resolver) {
-  return CreateFileBackedItem(type, file, file_path, file_system_url,
-                              HoldingSpaceProgress(),
+  return CreateFileBackedItem(type, file, HoldingSpaceProgress(),
                               std::move(image_resolver));
 }
 
@@ -98,17 +93,14 @@ std::unique_ptr<HoldingSpaceItem> HoldingSpaceItem::CreateFileBackedItem(
 std::unique_ptr<HoldingSpaceItem> HoldingSpaceItem::CreateFileBackedItem(
     Type type,
     const HoldingSpaceFile& file,
-    const base::FilePath& file_path,
-    const GURL& file_system_url,
     const HoldingSpaceProgress& progress,
     ImageResolver image_resolver) {
-  DCHECK(!file_system_url.is_empty());
+  DCHECK(!file.file_system_url.is_empty());
 
   // Note: std::make_unique does not work with private constructors.
   return base::WrapUnique(new HoldingSpaceItem(
-      type, /*id=*/base::UnguessableToken::Create().ToString(), file, file_path,
-      file_system_url, std::move(image_resolver).Run(type, file_path),
-      progress));
+      type, /*id=*/base::UnguessableToken::Create().ToString(), file,
+      std::move(image_resolver).Run(type, file.file_path), progress));
 }
 
 // static
@@ -234,8 +226,8 @@ std::unique_ptr<HoldingSpaceItem> HoldingSpaceItem::Deserialize(
   // NOTE: `std::make_unique` does not work with private constructors.
   return base::WrapUnique(new HoldingSpaceItem(
       type, DeserializeId(dict),
-      HoldingSpaceFile(HoldingSpaceFile::FileSystemType::kUnknown), file_path,
-      /*file_system_url=*/GURL(),
+      HoldingSpaceFile(file_path, HoldingSpaceFile::FileSystemType::kUnknown,
+                       /*file_system_url=*/GURL()),
       std::move(image_resolver).Run(type, file_path), HoldingSpaceProgress()));
 }
 
@@ -287,7 +279,7 @@ base::Value::Dict HoldingSpaceItem::Serialize() const {
   dict.Set(kVersionPath, kVersion);
   dict.Set(kTypePath, static_cast<int>(type_));
   dict.Set(kIdPath, id_);
-  dict.Set(kFilePathPath, base::FilePathToValue(file_path_));
+  dict.Set(kFilePathPath, base::FilePathToValue(file_.file_path));
   return dict;
 }
 
@@ -297,35 +289,28 @@ base::CallbackListSubscription HoldingSpaceItem::AddDeletionCallback(
 }
 
 bool HoldingSpaceItem::IsInitialized() const {
-  return !file_system_url_.is_empty();
+  return !file_.file_system_url.is_empty();
 }
 
-void HoldingSpaceItem::Initialize(const HoldingSpaceFile& file,
-                                  const GURL& file_system_url) {
+void HoldingSpaceItem::Initialize(const HoldingSpaceFile& file) {
   DCHECK(!IsInitialized());
-  DCHECK(!file_system_url.is_empty());
+  DCHECK(!file.file_system_url.is_empty());
   file_ = file;
-  file_system_url_ = file_system_url;
 }
 
-bool HoldingSpaceItem::SetBackingFile(const HoldingSpaceFile& file,
-                                      const base::FilePath& file_path,
-                                      const GURL& file_system_url) {
-  if (file_ == file && file_path_ == file_path &&
-      file_system_url_ == file_system_url) {
+bool HoldingSpaceItem::SetBackingFile(const HoldingSpaceFile& file) {
+  if (file_ == file) {
     return false;
   }
 
   file_ = file;
-  file_path_ = file_path;
-  file_system_url_ = file_system_url;
-  image_->UpdateBackingFilePath(file_path);
+  image_->UpdateBackingFilePath(file_.file_path);
 
   return true;
 }
 
 std::u16string HoldingSpaceItem::GetText() const {
-  return text_.value_or(file_path_.BaseName().LossyDisplayName());
+  return text_.value_or(file_.file_path.BaseName().LossyDisplayName());
 }
 
 bool HoldingSpaceItem::SetText(const absl::optional<std::u16string>& text) {
@@ -413,15 +398,11 @@ void HoldingSpaceItem::InvalidateImage() {
 HoldingSpaceItem::HoldingSpaceItem(Type type,
                                    const std::string& id,
                                    const HoldingSpaceFile& file,
-                                   const base::FilePath& file_path,
-                                   const GURL& file_system_url,
                                    std::unique_ptr<HoldingSpaceImage> image,
                                    const HoldingSpaceProgress& progress)
     : type_(type),
       id_(id),
       file_(file),
-      file_path_(file_path),
-      file_system_url_(file_system_url),
       image_(std::move(image)),
       progress_(progress) {}
 

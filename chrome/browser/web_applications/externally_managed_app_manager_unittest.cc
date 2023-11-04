@@ -19,6 +19,9 @@
 #include "base/test/bind.h"
 #include "base/test/test_future.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/publishers/app_publisher.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom-shared.h"
@@ -39,6 +42,7 @@
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_contents/web_app_url_loader.h"
 #include "chrome/common/chrome_features.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/common/web_page_metadata.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -86,7 +90,7 @@ class ExternallyManagedAppManagerTest : public WebAppTest {
         base::BindLambdaForTesting(
             [this](const GURL& app_url,
                    ExternalInstallSource install_source) -> bool {
-              absl::optional<AppId> app_id =
+              absl::optional<webapps::AppId> app_id =
                   app_registrar().LookupExternalAppId(app_url);
               if (app_id.has_value()) {
                 ScopedRegistryUpdate update =
@@ -129,7 +133,7 @@ class ExternallyManagedAppManagerTest : public WebAppTest {
               const std::vector<GURL>& installed_app_urls) {
     EXPECT_EQ(deduped_install_count, deduped_install_count_);
     EXPECT_EQ(deduped_uninstall_count, deduped_uninstall_count_);
-    base::flat_map<AppId, base::flat_set<GURL>> apps =
+    base::flat_map<webapps::AppId, base::flat_set<GURL>> apps =
         app_registrar().GetExternallyInstalledApps(
             ExternalInstallSource::kInternalDefault);
     std::vector<GURL> urls;
@@ -343,8 +347,8 @@ class ExternallyAppManagerTest : public WebAppTest {
       ExternalInstallSource source,
       absl::optional<ExternalInstallOptions> template_options = absl::nullopt) {
     std::vector<ExternalInstallOptions> output;
-    std::transform(
-        install_urls.begin(), install_urls.end(), std::back_inserter(output),
+    base::ranges::transform(
+        install_urls, std::back_inserter(output),
         [source, &template_options](const GURL& install_url) {
           ExternalInstallOptions options = template_options.value_or(
               ExternalInstallOptions(install_url, absl::nullopt, source));
@@ -368,9 +372,9 @@ class ExternallyAppManagerTest : public WebAppTest {
         provider().web_contents_manager());
   }
 
-  AppId PopulateBasicInstallPageWithManifest(GURL install_url,
-                                             GURL manifest_url,
-                                             GURL start_url) {
+  webapps::AppId PopulateBasicInstallPageWithManifest(GURL install_url,
+                                                      GURL manifest_url,
+                                                      GURL start_url) {
     auto& install_page_state =
         web_contents_manager().GetOrCreatePageState(install_url);
     install_page_state.url_load_result = WebAppUrlLoaderResult::kUrlLoaded;
@@ -429,7 +433,7 @@ TEST_F(ExternallyAppManagerTest, SimpleInstall) {
       GURL("https://www.example.com/nested/install_url.html");
   const GURL kManifestUrl = GURL("https://www.example.com/manifest.json");
 
-  AppId app_id = web_contents_manager().CreateBasicInstallPageState(
+  webapps::AppId app_id = web_contents_manager().CreateBasicInstallPageState(
       kInstallUrl, kManifestUrl, kStartUrl);
 
   SynchronizeFuture result;
@@ -461,9 +465,9 @@ TEST_F(ExternallyAppManagerTest, TwoInstallUrlsSameApp) {
       GURL("https://www.example.com/nested/install_url2.html");
   const GURL kManifestUrl = GURL("https://www.example.com/manifest.json");
 
-  AppId app_id = web_contents_manager().CreateBasicInstallPageState(
+  webapps::AppId app_id = web_contents_manager().CreateBasicInstallPageState(
       kInstallUrl1, kManifestUrl, kStartUrl);
-  AppId app_id2 = web_contents_manager().CreateBasicInstallPageState(
+  webapps::AppId app_id2 = web_contents_manager().CreateBasicInstallPageState(
       kInstallUrl2, kManifestUrl, kStartUrl);
   EXPECT_EQ(app_id, app_id2);
 
@@ -512,9 +516,9 @@ TEST_F(ExternallyAppManagerTest, RemovingInstallUrlsFromSource) {
       GURL("https://www.example.com/nested/install_url2.html");
   const GURL kManifestUrl = GURL("https://www.example.com/manifest.json");
 
-  AppId app_id = web_contents_manager().CreateBasicInstallPageState(
+  webapps::AppId app_id = web_contents_manager().CreateBasicInstallPageState(
       kInstallUrl1, kManifestUrl, kStartUrl);
-  AppId app_id2 = web_contents_manager().CreateBasicInstallPageState(
+  webapps::AppId app_id2 = web_contents_manager().CreateBasicInstallPageState(
       kInstallUrl2, kManifestUrl, kStartUrl);
   EXPECT_EQ(app_id, app_id2);
 
@@ -619,9 +623,9 @@ TEST_F(ExternallyAppManagerTest, InstallUrlChanges) {
       GURL("https://www.example.com/nested/install_url2.html");
   const GURL kManifestUrl = GURL("https://www.example.com/manifest.json");
 
-  AppId app_id = web_contents_manager().CreateBasicInstallPageState(
+  webapps::AppId app_id = web_contents_manager().CreateBasicInstallPageState(
       kInstallUrl, kManifestUrl, kStartUrl);
-  AppId app_id2 = web_contents_manager().CreateBasicInstallPageState(
+  webapps::AppId app_id2 = web_contents_manager().CreateBasicInstallPageState(
       kInstallUrl2, kManifestUrl, kStartUrl);
   EXPECT_EQ(app_id, app_id2);
 
@@ -683,7 +687,7 @@ TEST_F(ExternallyAppManagerTest, PolicyAppOverridesUserInstalledApp) {
       GURL("https://www.example.com/nested/install_url.html");
   const GURL kManifestUrl = GURL("https://www.example.com/manifest.json");
 
-  AppId app_id = web_contents_manager().CreateBasicInstallPageState(
+  webapps::AppId app_id = web_contents_manager().CreateBasicInstallPageState(
       kInstallUrl, kManifestUrl, kStartUrl);
 
   {
@@ -695,7 +699,7 @@ TEST_F(ExternallyAppManagerTest, PolicyAppOverridesUserInstalledApp) {
     auto install_info = std::make_unique<WebAppInstallInfo>();
     install_info->start_url = kStartUrl;
     install_info->title = u"Test user app";
-    absl::optional<AppId> user_app_id =
+    absl::optional<webapps::AppId> user_app_id =
         test::InstallWebApp(profile(), std::move(install_info));
 
     ASSERT_TRUE(user_app_id.has_value());
@@ -743,8 +747,9 @@ TEST_F(ExternallyAppManagerTest, NoNetworkWithPlaceholder) {
       ExternalInstallSource::kExternalPolicy, result.GetCallback());
   ASSERT_TRUE(result.Wait());
 
-  // The AppId should be created from teh install url.
-  AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, kInstallUrl);
+  // The webapps::AppId should be created from teh install url.
+  webapps::AppId app_id =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, kInstallUrl);
 
   // Install should succeed.
   std::map<GURL, ExternallyManagedAppManager::InstallResult> install_results =
@@ -789,8 +794,9 @@ TEST_F(ExternallyAppManagerTest, RedirectInstallUrlPlaceholder) {
       ExternalInstallSource::kExternalPolicy, result.GetCallback());
   ASSERT_TRUE(result.Wait());
 
-  // The AppId should be created from teh install url.
-  AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, kInstallUrl);
+  // The webapps::AppId should be created from teh install url.
+  webapps::AppId app_id =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, kInstallUrl);
 
   // Install should succeed.
   std::map<GURL, ExternallyManagedAppManager::InstallResult> install_results =
@@ -836,14 +842,14 @@ TEST_F(ExternallyAppManagerTest, PlaceholderResolvedFromSynchronize) {
     ASSERT_TRUE(result.Wait());
   }
 
-  AppId placeholder_app_id =
+  webapps::AppId placeholder_app_id =
       GenerateAppId(/*manifest_id=*/absl::nullopt, kInstallUrl);
 
   auto app_ids = provider().registrar_unsafe().GetAppIds();
   EXPECT_THAT(app_ids, ElementsAre(placeholder_app_id));
 
   // Replace the redirect with an app that resolves.
-  AppId app_id = web_contents_manager().CreateBasicInstallPageState(
+  webapps::AppId app_id = web_contents_manager().CreateBasicInstallPageState(
       kInstallUrl, kManifestUrl, kStartUrl);
 
   // The placeholder app should be uninstalled & the real one installed.
@@ -886,14 +892,14 @@ TEST_F(ExternallyAppManagerTest, PlaceholderResolvedFromInstallNow) {
     ASSERT_TRUE(result.Wait());
   }
 
-  AppId placeholder_app_id =
+  webapps::AppId placeholder_app_id =
       GenerateAppId(/*manifest_id=*/absl::nullopt, kInstallUrl);
 
   auto app_ids = provider().registrar_unsafe().GetAppIds();
   EXPECT_THAT(app_ids, ElementsAre(placeholder_app_id));
 
   // Replace the redirect with an app that resolves.
-  AppId app_id = web_contents_manager().CreateBasicInstallPageState(
+  webapps::AppId app_id = web_contents_manager().CreateBasicInstallPageState(
       kInstallUrl, kManifestUrl, kStartUrl);
 
   ExternalInstallOptions options = template_options;
@@ -919,7 +925,7 @@ TEST_F(ExternallyAppManagerTest, TwoAppsSameInstallUrlSameSourceInstallNow) {
       GURL(), mojom::UserDisplayMode::kStandalone,
       ExternalInstallSource::kExternalPolicy);
 
-  AppId app_id1 = web_contents_manager().CreateBasicInstallPageState(
+  webapps::AppId app_id1 = web_contents_manager().CreateBasicInstallPageState(
       kInstallUrl, kManifestUrl1, kStartUrl1);
 
   {
@@ -936,7 +942,7 @@ TEST_F(ExternallyAppManagerTest, TwoAppsSameInstallUrlSameSourceInstallNow) {
   auto app_ids = provider().registrar_unsafe().GetAppIds();
   EXPECT_THAT(app_ids, ElementsAre(app_id1));
 
-  AppId app_id2 = web_contents_manager().CreateBasicInstallPageState(
+  webapps::AppId app_id2 = web_contents_manager().CreateBasicInstallPageState(
       kInstallUrl, kManifestUrl2, kStartUrl2);
 
   {
@@ -965,7 +971,7 @@ TEST_F(ExternallyAppManagerTest, TwoAppsSameInstallUrlTwoSourcesInstallNow) {
       GURL(), mojom::UserDisplayMode::kStandalone,
       ExternalInstallSource::kExternalPolicy);
 
-  AppId app_id1 = web_contents_manager().CreateBasicInstallPageState(
+  webapps::AppId app_id1 = web_contents_manager().CreateBasicInstallPageState(
       kInstallUrl, kManifestUrl1, kStartUrl1);
 
   {
@@ -982,7 +988,7 @@ TEST_F(ExternallyAppManagerTest, TwoAppsSameInstallUrlTwoSourcesInstallNow) {
   auto app_ids = provider().registrar_unsafe().GetAppIds();
   EXPECT_THAT(app_ids, ElementsAre(app_id1));
 
-  AppId app_id2 = web_contents_manager().CreateBasicInstallPageState(
+  webapps::AppId app_id2 = web_contents_manager().CreateBasicInstallPageState(
       kInstallUrl, kManifestUrl2, kStartUrl2);
 
   {
@@ -1012,7 +1018,7 @@ TEST_F(ExternallyAppManagerTest, TwoAppsSameInstallUrlTwoSourcesSynchronize) {
       GURL(), mojom::UserDisplayMode::kStandalone,
       ExternalInstallSource::kExternalPolicy);
 
-  AppId app_id1 = web_contents_manager().CreateBasicInstallPageState(
+  webapps::AppId app_id1 = web_contents_manager().CreateBasicInstallPageState(
       kInstallUrl, kManifestUrl1, kStartUrl1);
 
   {
@@ -1028,7 +1034,7 @@ TEST_F(ExternallyAppManagerTest, TwoAppsSameInstallUrlTwoSourcesSynchronize) {
   auto app_ids = provider().registrar_unsafe().GetAppIds();
   EXPECT_THAT(app_ids, ElementsAre(app_id1));
 
-  AppId app_id2 = web_contents_manager().CreateBasicInstallPageState(
+  webapps::AppId app_id2 = web_contents_manager().CreateBasicInstallPageState(
       kInstallUrl, kManifestUrl2, kStartUrl2);
 
   {
@@ -1066,8 +1072,9 @@ TEST_F(ExternallyAppManagerTest, PlaceholderFixedBySecondInstallUrlInstallNow) {
   page_state.redirection_url =
       GURL("https://www.otherorigin.com/redirect.html");
 
-  AppId app_at_install_url = web_contents_manager().CreateBasicInstallPageState(
-      kInstallUrl2, kManifestUrl, kInstallUrl1);
+  webapps::AppId app_at_install_url =
+      web_contents_manager().CreateBasicInstallPageState(
+          kInstallUrl2, kManifestUrl, kInstallUrl1);
 
   {
     ExternalInstallOptions options = template_options;
@@ -1139,8 +1146,9 @@ TEST_F(ExternallyAppManagerTest,
   page_state.redirection_url =
       GURL("https://www.otherorigin.com/redirect.html");
 
-  AppId app_at_install_url = web_contents_manager().CreateBasicInstallPageState(
-      kInstallUrl2, kManifestUrl, /*start_url=*/kInstallUrl1);
+  webapps::AppId app_at_install_url =
+      web_contents_manager().CreateBasicInstallPageState(
+          kInstallUrl2, kManifestUrl, /*start_url=*/kInstallUrl1);
 
   SynchronizeFuture result;
   provider().externally_managed_app_manager().SynchronizeInstalledApps(
@@ -1211,8 +1219,9 @@ TEST_F(ExternallyAppManagerTest, PlaceholderFullInstallConflictCanUpdate) {
   page_state.redirection_url =
       GURL("https://www.otherorigin.com/redirect.html");
 
-  AppId app_at_install_url = web_contents_manager().CreateBasicInstallPageState(
-      kInstallUrl2, kManifestUrl1, kInstallUrl1);
+  webapps::AppId app_at_install_url =
+      web_contents_manager().CreateBasicInstallPageState(
+          kInstallUrl2, kManifestUrl1, kInstallUrl1);
 
   {
     ExternalInstallOptions options = template_options;
@@ -1265,8 +1274,9 @@ TEST_F(ExternallyAppManagerTest, PlaceholderFullInstallConflictCanUpdate) {
                                               /*install_urls=*/{kInstallUrl2},
                                               /*additional_policy_ids=*/{}))));
   // Phase 2 - undo the redirection, and point to start url.
-  AppId app_at_start_url = web_contents_manager().CreateBasicInstallPageState(
-      kInstallUrl1, kManifestUrl2, kStartUrl1);
+  webapps::AppId app_at_start_url =
+      web_contents_manager().CreateBasicInstallPageState(
+          kInstallUrl1, kManifestUrl2, kStartUrl1);
 
   {
     ExternalInstallOptions options = template_options;
@@ -1277,6 +1287,7 @@ TEST_F(ExternallyAppManagerTest, PlaceholderFullInstallConflictCanUpdate) {
     provider().externally_managed_app_manager().InstallNow(
         std::move(options), install_future.GetCallback());
     ASSERT_TRUE(install_future.Wait());
+
     EXPECT_THAT(
         install_future.Get(),
         Eq(std::make_tuple(kInstallUrl1,

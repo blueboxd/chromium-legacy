@@ -222,8 +222,8 @@ void* AllocateAlignedMemory(size_t alignment, size_t size) {
     PA_CHECK(partition_alloc::internal::base::bits::IsPowerOfTwo(alignment));
     // TODO(bartekn): See if the compiler optimizes branches down the stack on
     // Mac, where PartitionPageSize() isn't constexpr.
-    return Allocator()->AllocNoHooks(size,
-                                     partition_alloc::PartitionPageSize());
+    return Allocator()->AllocInline<partition_alloc::AllocFlags::kNoHooks>(
+        size);
   }
 
   return AlignedAllocator()
@@ -237,15 +237,16 @@ namespace allocator_shim::internal {
 
 void* PartitionMalloc(const AllocatorDispatch*, size_t size, void* context) {
   partition_alloc::ScopedDisallowAllocations guard{};
-  return Allocator()->AllocNoHooks(size, partition_alloc::PartitionPageSize());
+  return Allocator()->AllocInline<partition_alloc::AllocFlags::kNoHooks>(size);
 }
 
 void* PartitionMallocUnchecked(const AllocatorDispatch*,
                                size_t size,
                                void* context) {
   partition_alloc::ScopedDisallowAllocations guard{};
-  return Allocator()->AllocNoHooks<partition_alloc::AllocFlags::kReturnNull>(
-      size, partition_alloc::PartitionPageSize());
+  return Allocator()
+      ->AllocInline<partition_alloc::AllocFlags::kReturnNull |
+                    partition_alloc::AllocFlags::kNoHooks>(size);
 }
 
 void* PartitionCalloc(const AllocatorDispatch*,
@@ -255,8 +256,9 @@ void* PartitionCalloc(const AllocatorDispatch*,
   partition_alloc::ScopedDisallowAllocations guard{};
   const size_t total =
       partition_alloc::internal::base::CheckMul(n, size).ValueOrDie();
-  return Allocator()->AllocNoHooks<partition_alloc::AllocFlags::kZeroFill>(
-      total, partition_alloc::PartitionPageSize());
+  return Allocator()
+      ->AllocInline<partition_alloc::AllocFlags::kZeroFill |
+                    partition_alloc::AllocFlags::kNoHooks>(total);
 }
 
 void* PartitionMemalign(const AllocatorDispatch*,
@@ -293,7 +295,8 @@ void* PartitionAlignedRealloc(const AllocatorDispatch* dispatch,
   } else {
     // size == 0 and address != null means just "free(address)".
     if (address) {
-      partition_alloc::PartitionRoot::FreeNoHooksInUnknownRoot(address);
+      partition_alloc::PartitionRoot::FreeInlineInUnknownRoot<
+          partition_alloc::FreeFlags::kNoHooks>(address);
     }
   }
   // The original memory block (specified by address) is unchanged if ENOMEM.
@@ -307,7 +310,8 @@ void* PartitionAlignedRealloc(const AllocatorDispatch* dispatch,
     size_t copy_size = usage > size ? size : usage;
     memcpy(new_ptr, address, copy_size);
 
-    partition_alloc::PartitionRoot::FreeNoHooksInUnknownRoot(address);
+    partition_alloc::PartitionRoot::FreeInlineInUnknownRoot<
+        partition_alloc::FreeFlags::kNoHooks>(address);
   }
   return new_ptr;
 }
@@ -367,7 +371,8 @@ void PartitionFree(const AllocatorDispatch*, void* object, void* context) {
   }
 #endif  // BUILDFLAG(PA_IS_CAST_ANDROID)
 
-  partition_alloc::PartitionRoot::FreeNoHooksInUnknownRoot(object);
+  partition_alloc::PartitionRoot::FreeInlineInUnknownRoot<
+      partition_alloc::FreeFlags::kNoHooks>(object);
 }
 
 #if BUILDFLAG(IS_APPLE)
@@ -384,7 +389,8 @@ void PartitionFreeDefiniteSize(const AllocatorDispatch*,
   partition_alloc::ScopedDisallowAllocations guard{};
   // TODO(lizeb): Optimize PartitionAlloc to use the size information. This is
   // still useful though, as we avoid double-checking that the address is owned.
-  partition_alloc::PartitionRoot::FreeNoHooksInUnknownRoot(address);
+  partition_alloc::PartitionRoot::FreeInlineInUnknownRoot<
+      partition_alloc::FreeFlags::kNoHooks>(address);
 }
 #endif  // BUILDFLAG(IS_APPLE)
 
@@ -469,7 +475,8 @@ void PartitionTryFreeDefault(const AllocatorDispatch*,
     return allocator_shim::TryFreeDefaultFallbackToFindZoneAndFree(address);
   }
 
-  partition_alloc::PartitionRoot::FreeNoHooksInUnknownRoot(address);
+  partition_alloc::PartitionRoot::FreeInlineInUnknownRoot<
+      partition_alloc::FreeFlags::kNoHooks>(address);
 }
 #endif  // BUILDFLAG(IS_APPLE)
 

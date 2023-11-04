@@ -15,10 +15,11 @@
 #include "base/files/file_tracing.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/sequenced_task_runner.h"
@@ -52,6 +53,7 @@
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "third_party/perfetto/include/perfetto/protozero/message.h"
 #include "third_party/perfetto/protos/perfetto/trace/extension_descriptor.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
@@ -159,10 +161,9 @@ std::string GetClockOffsetSinceEpoch() {
   clock_gettime(CLOCK_REALTIME, &realtime_before);
   clock_gettime(CLOCK_MONOTONIC, &monotonic);
   clock_gettime(CLOCK_REALTIME, &realtime_after);
-  return base::StringPrintf("%" PRId64,
-                            ConvertTimespecToMicros(realtime_before) / 2 +
-                                ConvertTimespecToMicros(realtime_after) / 2 -
-                                ConvertTimespecToMicros(monotonic));
+  return base::NumberToString(ConvertTimespecToMicros(realtime_before) / 2 +
+                              ConvertTimespecToMicros(realtime_after) / 2 -
+                              ConvertTimespecToMicros(monotonic));
 }
 #endif
 
@@ -331,7 +332,7 @@ TracingControllerImpl::GenerateMetadataDict() {
   // GPU
   const gpu::GPUInfo gpu_info =
       content::GpuDataManagerImpl::GetInstance()->GetGPUInfo();
-  const gpu::GPUInfo::GPUDevice& active_gpu = gpu_info.active_gpu();
+  const gpu::GPUDevice& active_gpu = gpu_info.active_gpu();
 
 #if !BUILDFLAG(IS_ANDROID)
   metadata_dict.Set("gpu-venid", static_cast<int>(active_gpu.vendor_id));
@@ -339,14 +340,14 @@ TracingControllerImpl::GenerateMetadataDict() {
 #endif
 
   metadata_dict.Set("gpu-driver", active_gpu.driver_version);
-  metadata_dict.Set("gpu-psver", gpu_info.pixel_shader_version);
-  metadata_dict.Set("gpu-vsver", gpu_info.vertex_shader_version);
+  metadata_dict.Set("gpu-psver", active_gpu.pixel_shader_version);
+  metadata_dict.Set("gpu-vsver", active_gpu.vertex_shader_version);
 
 #if BUILDFLAG(IS_MAC)
-  metadata_dict.Set("gpu-glver", gpu_info.gl_version);
+  metadata_dict.Set("gpu-glver", active_gpu.gl_version);
 #elif BUILDFLAG(IS_POSIX)
-  metadata_dict.Set("gpu-gl-vendor", gpu_info.gl_vendor);
-  metadata_dict.Set("gpu-gl-renderer", gpu_info.gl_renderer);
+  metadata_dict.Set("gpu-gl-vendor", active_gpu.gl_vendor);
+  metadata_dict.Set("gpu-gl-renderer", active_gpu.gl_renderer);
 #endif
   metadata_dict.Set("gpu-features", GetFeatureStatus());
 
@@ -361,12 +362,10 @@ TracingControllerImpl::GenerateMetadataDict() {
   metadata_dict.Set("command_line", command_line);
 #endif
 
-  base::Time::Exploded ctime;
-  TRACE_TIME_NOW().UTCExplode(&ctime);
-  std::string time_string = base::StringPrintf(
-      "%u-%u-%u %d:%d:%d", ctime.year, ctime.month, ctime.day_of_month,
-      ctime.hour, ctime.minute, ctime.second);
-  metadata_dict.Set("trace-capture-datetime", time_string);
+  metadata_dict.Set(
+      "trace-capture-datetime",
+      base::UnlocalizedTimeFormatWithPattern(TRACE_TIME_NOW(), "y-M-d H:m:s",
+                                             icu::TimeZone::getGMT()));
 
   // TODO(crbug.com/737049): The central controller doesn't know about
   // metadata filters, so we temporarily filter here as the controller is

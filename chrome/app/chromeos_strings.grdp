@@ -134,7 +134,7 @@
     Finalizing...
   </message>
 
-  <message name="IDS_GETTING_DEVICE_READY" desc="Message that the system is getting the device ready" translateable="false">
+  <message name="IDS_GETTING_DEVICE_READY" desc="Message that the system is getting the device ready">
     Getting the device ready...
   </message>
 
@@ -260,10 +260,10 @@
     Invalid code. Please try again.
   </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_INPUT_SUBTITLE" desc="Subtitle for input informing the user that the code used to install an eSIM profile must follow a specific format.">
-    Your entry should have the format LPA:1$&lt;smdp address&gt;$&lt;activation code&gt;
+      Your entry should have the format <ph name="LPA_0">LPA:1</ph>&#36;<ph name="LPA_1">&lt;</ph>SM-DP+ address<ph name="LPA_2">&gt;</ph>&#36;<ph name="LPA_3">&lt;</ph>optional matching id<ph name="LPA_4">&gt;</ph>
   </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_INPUT_ERROR" desc="Error label for input informing the user that the code used to install an eSIM profile is invalid and must follow a specific format.">
-    Invalid code. Your entry should have the format LPA:1$&lt;smdp address&gt;$&lt;activation code&gt;
+      Invalid code. Your entry should have the format <ph name="LPA_0">LPA:1</ph>&#36;<ph name="LPA_1">&lt;</ph>SM-DP+ address<ph name="LPA_2">&gt;</ph>&#36;<ph name="LPA_3">&lt;</ph>optional matching id<ph name="LPA_4">&gt;</ph>
   </message>
   <message name="IDS_CELLULAR_SETUP_ESTABLISH_NETWORK_CONNECTION" desc="Message, informing user that a network connection is being established during cellular setup">
     Establishing network connection ...
@@ -733,10 +733,10 @@
     Bluetooth is turned off. To see available devices, turn Bluetooth on.
   </message>
   <message name="IDS_BLUETOOTH_PAIRING_LEARN_MORE" desc="Bluetooth pairing dialog: Message informing the user on what actions to take in order to see a device in the list of available devices.">
-    Make sure your Bluetooth device is in pairing mode and nearby. Only pair with devices you trust. <ph name="BEGIN_LINK_LEARN_MORE">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK_LEARN_MORE">&lt;/a&gt;</ph>
+    Make sure your Bluetooth device is in pairing mode and nearby. Only pair with devices you trust. Paired devices are visible to all accounts on this Chromebook. <ph name="BEGIN_LINK_LEARN_MORE">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK_LEARN_MORE">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_BLUETOOTH_PAIRING_DESCRIPTION" desc="Bluetooth pairing dialog: Message informing the user on what actions to take in order to see a device in the list of available devices.">
-    Make sure your Bluetooth device is in pairing mode and nearby. Only pair with devices you trust.
+    Make sure your Bluetooth device is in pairing mode and nearby. Only pair with devices you trust. Paired devices are visible to all accounts on this Chromebook.
   </message>
   <message name="IDS_BLUETOOTH_PAIRING_ENTER_PIN" desc="Bluetooth pairing dialog: Message displayed informing the user to enter a PIN in other to complete device pairing.">
     Enter PIN to pair with <ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>
@@ -2809,10 +2809,10 @@
 
     <!-- Update Notification Strings -->
   <message name="IDS_UPDATE_NOTIFICATION_HEADER" desc="Notification title shown for a system update.">
-    You’ve been upgraded to <ph name="NAME">$1<ex>Chromebook</ex></ph>
+    Update <ph name="NAME">$1<ex>Chromebook</ex></ph>.
   </message>
   <message name="IDS_UPDATE_NOTIFICATION_MESSAGE" desc="Notification shown for a system update.">
-     New features include Magic Eraser on Google Photos to remove distractions, improved video call tools, and more
+    Your Chromebook is updated.
   </message>
 
   <!-- Update Required Screen Strings-->
@@ -4401,12 +4401,12 @@
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can start or stop allowing these reports any time in your child's ChromeOS device settings. If you're a domain administrator, you can change this setting in the admin console.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
   </message>
     <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE_OWNER_LACROS" desc="Text shown in a pop-up dialog in the consolidated consent screen when the device owner clicks on the learn more for metrics opt-in when lacros is enabled.">
-    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Allowing your ChromeOS devices to send automatic reports helps us prioritize what to fix and improve in ChromeOS. These reports can include things like when ChromeOS crashes, which features you use, how much memory you typically use, and Android app diagnostic and usage data. Some aggregate data will also help Google apps and partners, such as Android developers. Other app diagnostic and usage data, including for Android and web apps, will be collected if apps sync is also turned on.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Allowing your ChromeOS devices to send automatic reports helps us prioritize what to fix and improve in ChromeOS. These reports can include things like when ChromeOS crashes, which features you use, how much memory you typically use. Some aggregate data will also help Google apps and partners, such as Android developers. Other app diagnostic and usage data, including for Android and web apps, will be collected if apps sync is also turned on.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can start or stop allowing these reports any time in your ChromeOS device settings. If you’re a domain administrator, you can change this setting in the admin console.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>If the Web &amp; App Activity setting is turned on for your Google Account, your Android data may be saved to your Google Account. You can see your data, delete it, and change your account settings at account.google.com.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
   </message>
   <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE_CHILD_OWNER_LACROS" desc="Text shown in a pop-up dialog in the consolidated consent screen when the user clicks on the learn more for metrics opt-in for a child device owner account when lacros is enabled..">
-    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Allowing ChromeOS devices to send automatic reports helps us prioritize what to fix and improve in ChromeOS. These reports can include things like when ChromeOS crashes, which features were used, how much memory was typically used, and Android app diagnostic and usage data. Some aggregate data will also help Google apps and partners, such as Android developers. Other app diagnostic and usage data, including for Android and web apps, will be collected if apps sync is also turned on.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Allowing ChromeOS devices to send automatic reports helps us prioritize what to fix and improve in ChromeOS. These reports can include things like when ChromeOS crashes, which features were used, how much memory was typically used. Some aggregate data will also help Google apps and partners, such as Android developers. Other app diagnostic and usage data, including for Android and web apps, will be collected if apps sync is also turned on.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can start or stop allowing these reports any time in your child's ChromeOS device settings. If you're a domain administrator, you can change this setting in the admin console.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH4">&lt;p&gt;</ph>If the Web &amp; App Activity setting is turned on for your child's Google Account, your child's data may be saved to their Google Account. Learn more about these settings and how to adjust them at families.google.com.<ph name="END_PARAGRAPH4">&lt;/p&gt;</ph>
   </message>
@@ -4645,7 +4645,7 @@
     Relaunch to update
   </message>
   <message name="IDS_LACROS_DATA_MIGRATION_OUT_OF_DISK_ERROR_TEXT" desc="Message shown when a user clicks 'Relaunch to update' button, but failed to restart due to out of disk space.">
-    There isn't enough space on this device to complete this update. Clear up <ph name="NECESSARY_SPACE">$1<ex>10 MB</ex></ph> on your device and try again.
+    There isn't enough space on this device to complete this update. Free up <ph name="NECESSARY_SPACE">$1<ex>10 MB</ex></ph> on your device and try again.
   </message>
 
   <!-- Lacros data backward migration screen. -->
@@ -7261,6 +7261,16 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   </message>
   <message name="IDS_FLOATING_WORKSPACE_PROGRESS_BAR_MESSAGE" desc="Message for floating workspace notification progress bar status.">
     Opening windows from your previous device
+  </message>
+
+  <!-- Shortcut Removal Dialog -->
+  <message name="IDS_PROMP_SHORTCUT_REMOVAL_TITLE"
+    desc="Title text for remove a shortcut in its host app. Example: 'Remove Fortnite - GeForce Now shortcut?'">
+    Remove "<ph name="SHORTCUT_NAME">$1<ex>Fortnite</ex></ph> - <ph name="APP_NAME">$2<ex>GeForce Now</ex></ph>" shortcut?
+  </message>
+  <message name="IDS_PROMP_REMOVE_SHORTCUT_BUTTON"
+    desc="Text for the remove button on the shortcut removal prompt">
+    Remove
   </message>
 
 </grit-part>

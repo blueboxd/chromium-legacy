@@ -43,6 +43,12 @@ chromium-metrics-reviews@google.com.
       summary="Recorded for PermissionsInfobar."/>
   <variant name="InfobarTypeSaveCard"
       summary="Recorded for Save Card Infobar."/>
+  <variant name="InfobarTypeSyncError"
+      summary="Recorded for Sync Error Infobar."/>
+  <variant name="InfobarTypeTabPickup"
+      summary="Recorded for TabPickup Infobar."/>
+  <variant name="InfobarTypeTailoredSecurityService"
+      summary="Recorded for Tailored Security Service Infobar."/>
   <variant name="InfobarTypeTranslate"
       summary="Recorded for Translate Infobar."/>
 </variants>
@@ -83,7 +89,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.ContextMenu.CopyImage" enum="ContextMenuIOSCopyImage"
-    expires_after="2024-01-07">
+    expires_after="2024-03-10">
   <owner>djean@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
@@ -416,17 +422,18 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.RecentTabsManager.TotalTabsFromOtherDevicesOpenAll"
-    units="count" expires_after="2023-04-19">
+    units="count" expires_after="2024-09-19">
   <owner>sczs@chromium.org</owner>
   <owner>edchin@chromium.org</owner>
   <summary>
     Records the total number of tabs opened when Open all was selected from
-    other devices in Recent Tabs, iOS only.
+    other devices in Recent Tabs, iOS only. Warning: this histogram expired
+    between 2023-04-19 and M119.
   </summary>
 </histogram>
 
 <histogram name="Mobile.Share.EntryPoints" enum="IOSActivityScenario"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>dimich@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <owner>chrome-with-friends-robots@google.com</owner>
@@ -866,7 +873,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileFre.NativeInitialized" units="ms"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>skym@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
   <summary>
@@ -1093,7 +1100,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileSignInPromo.NTPFeedTop.ImpressionsTilDismiss"
-    units="impressions" expires_after="2024-01-07">
+    units="impressions" expires_after="2024-03-10">
   <owner>mrefaat@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -1164,40 +1171,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="MobileSignInPromo.SettingsManager.ImpressionsTilDismiss"
-    units="impressions" expires_after="2024-04-01">
-  <owner>jlebel@chromium.org</owner>
-  <owner>chrome-signin-team@google.com</owner>
-  <summary>
-    Counts how many times the signin promo is implicitly dismissed (by closing
-    the settings view) per impression.
-  </summary>
-</histogram>
-
-<histogram name="MobileSignInPromo.SettingsManager.ImpressionsTilSigninButtons"
-    units="impressions" expires_after="2024-04-01">
-  <owner>jlebel@chromium.org</owner>
-  <owner>chrome-signin-team@google.com</owner>
-  <summary>
-    Counts how many times one of the &quot;sign in&quot; buttons (any of the
-    signed-out &quot;Sign in to Chrome&quot; button, the &quot;Continue as
-    |name|&quot; button, or the &quot;Not |email|?&quot; button) is clicked per
-    impression.
-  </summary>
-</histogram>
-
-<histogram name="MobileSignInPromo.SettingsManager.ImpressionsTilXButton"
-    units="impressions" expires_after="2024-04-01">
-  <owner>jlebel@chromium.org</owner>
-  <owner>chrome-signin-team@google.com</owner>
-  <summary>
-    Counts how many times the explicit &quot;X&quot;-to-close button is clicked
-    per impression.
-  </summary>
-</histogram>
-
 <histogram name="MobileStartup.DailyLaunchCount" units="units"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>tedchoc@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -1242,7 +1217,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileStartup.LaunchCause" enum="LaunchCause"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>mthiesse@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>

@@ -169,11 +169,10 @@ class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
                bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
           spotlightInterface:(SpotlightInterface*)spotlightInterface
        searchableItemFactory:(SearchableItemFactory*)searchableItemFactory {
-  self = [super init];
+  self = [super initWithSpotlightInterface:spotlightInterface
+                     searchableItemFactory:searchableItemFactory];
   if (self) {
     _pendingLargeIconTasksCount = 0;
-    _searchableItemFactory = searchableItemFactory;
-    _spotlightInterface = spotlightInterface;
     _bookmarkModelBridge.reset(new SpotlightBookmarkModelBridge(self));
     _bookmarkModel = bookmarkModel;
     bookmarkModel->AddObserver(_bookmarkModelBridge.get());
@@ -271,6 +270,9 @@ class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 }
 
 - (void)reindexBookmarksIfNeeded {
+  if (self.isShuttingDown) {
+    return;
+  }
   if (!_bookmarkModel->loaded() || _initialIndexDone) {
     return;
   }
@@ -284,8 +286,12 @@ class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 // multiple nodes with same URL and title, they will be merged into a single
 // spotlight item but will have tags from each of the bookmrk nodes.
 - (void)refreshItemWithURL:(const GURL&)URL title:(NSString*)title {
-  std::vector<const bookmarks::BookmarkNode*> nodesMatchingURL;
-  _bookmarkModel->GetNodesByURL(URL, &nodesMatchingURL);
+  if (self.isShuttingDown) {
+    return;
+  }
+
+  std::vector<const bookmarks::BookmarkNode*> nodesMatchingURL =
+      _bookmarkModel->GetNodesByURL(URL);
 
   NSMutableArray* itemKeywords = [[NSMutableArray alloc] init];
 
@@ -324,6 +330,9 @@ class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 }
 
 - (void)refreshNodeInIndex:(const bookmarks::BookmarkNode*)node {
+  if (self.isShuttingDown) {
+    return;
+  }
   if (_nodesIndexed > kMaxInitialIndexSize) {
     return;
   }
@@ -338,6 +347,7 @@ class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 }
 
 - (void)shutdown {
+  [super shutdown];
   [self detachBookmarkModel];
 }
 
@@ -357,6 +367,10 @@ class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 }
 
 - (void)completedClearAllSpotlightItems {
+  if (self.isShuttingDown) {
+    return;
+  }
+
   // If this method is called before bookmark model loaded, or after it
   // unloaded, reindexing won't be possible. The latter should happen at
   // shutdown, so the reindex can't happen until next app start. In the former

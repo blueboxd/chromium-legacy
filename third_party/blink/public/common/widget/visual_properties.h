@@ -10,6 +10,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/display/screen_infos.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -103,8 +104,14 @@ struct BLINK_COMMON_EXPORT VisualProperties {
   // Indicates whether tab-initiated fullscreen was granted.
   bool is_fullscreen_granted = false;
 
+  bool resizable = true;
+
   // The display mode.
   mojom::DisplayMode display_mode = mojom::DisplayMode::kUndefined;
+
+  // The window show state. Defaults to `SHOW_STATE_DEFAULT`.
+  ui::WindowShowState window_show_state =
+      ui::WindowShowState::SHOW_STATE_DEFAULT;
 
   // This represents the latest capture sequence number requested. When this is
   // incremented, that means the caller wants to synchronize surfaces which

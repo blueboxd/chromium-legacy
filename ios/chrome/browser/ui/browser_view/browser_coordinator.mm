@@ -13,8 +13,11 @@
 #import "components/content_settings/core/browser/host_content_settings_map.h"
 #import "components/feature_engagement/public/event_constants.h"
 #import "components/feature_engagement/public/tracker.h"
+#import "components/infobars/core/infobar.h"
+#import "components/infobars/core/infobar_manager.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/common/password_manager_features.h"
+#import "components/prefs/pref_service.h"
 #import "components/profile_metrics/browser_profile_type.h"
 #import "components/safe_browsing/core/common/features.h"
 #import "components/segmentation_platform/embedder/default_model/device_switcher_result_dispatcher.h"
@@ -22,8 +25,8 @@
 #import "components/translate/core/browser/translate_manager.h"
 #import "ios/chrome/browser/app_launcher/model/app_launcher_abuse_detector.h"
 #import "ios/chrome/browser/app_launcher/model/app_launcher_tab_helper.h"
-#import "ios/chrome/browser/commerce/push_notification/push_notification_feature.h"
-#import "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
+#import "ios/chrome/browser/commerce/model/push_notification/push_notification_feature.h"
+#import "ios/chrome/browser/content_settings/model/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/credential_provider_promo/features.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/download/download_directory_util.h"
@@ -36,11 +39,17 @@
 #import "ios/chrome/browser/find_in_page/util.h"
 #import "ios/chrome/browser/follow/follow_browser_agent.h"
 #import "ios/chrome/browser/follow/followed_web_site.h"
+#import "ios/chrome/browser/infobars/infobar_ios.h"
+#import "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/intents/intents_donation_helper.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder_browser_agent.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp/new_tab_page_state.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/overscroll_actions/overscroll_actions_tab_helper.h"
+#import "ios/chrome/browser/parcel_tracking/parcel_tracking_infobar_delegate.h"
+#import "ios/chrome/browser/parcel_tracking/parcel_tracking_step.h"
+#import "ios/chrome/browser/parcel_tracking/parcel_tracking_util.h"
 #import "ios/chrome/browser/passwords/password_controller_delegate.h"
 #import "ios/chrome/browser/prerender/preload_controller_delegate.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
@@ -58,6 +67,7 @@
 #import "ios/chrome/browser/shared/model/browser/browser_provider.h"
 #import "ios/chrome/browser/shared/model/browser/browser_provider_interface.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/public/commands/activity_service_commands.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
@@ -70,6 +80,7 @@
 #import "ios/chrome/browser/shared/public/commands/mini_map_commands.h"
 #import "ios/chrome/browser/shared/public/commands/new_tab_page_commands.h"
 #import "ios/chrome/browser/shared/public/commands/page_info_commands.h"
+#import "ios/chrome/browser/shared/public/commands/parcel_tracking_opt_in_commands.h"
 #import "ios/chrome/browser/shared/public/commands/password_breach_commands.h"
 #import "ios/chrome/browser/shared/public/commands/password_protection_commands.h"
 #import "ios/chrome/browser/shared/public/commands/password_suggestion_commands.h"
@@ -100,6 +111,7 @@
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator_delegate.h"
 #import "ios/chrome/browser/sync/sync_error_browser_agent.h"
+#import "ios/chrome/browser/tab_insertion/model/tab_insertion_browser_agent.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/app_store_rating/features.h"
@@ -150,6 +162,7 @@
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/page_info/page_info_coordinator.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
+#import "ios/chrome/browser/ui/parcel_tracking/parcel_tracking_opt_in_coordinator.h"
 #import "ios/chrome/browser/ui/passwords/account_storage_notice/passwords_account_storage_notice_coordinator.h"
 #import "ios/chrome/browser/ui/passwords/bottom_sheet/password_suggestion_bottom_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/passwords/bottom_sheet/password_suggestion_bottom_sheet_coordinator_delegate.h"
@@ -194,6 +207,7 @@
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
+#import "ios/chrome/browser/view_source/model/view_source_browser_agent.h"
 #import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
 #import "ios/chrome/browser/web/page_placeholder_browser_agent.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
@@ -204,10 +218,8 @@
 #import "ios/chrome/browser/web/web_navigation_ntp_delegate.h"
 #import "ios/chrome/browser/web/web_state_delegate_browser_agent.h"
 #import "ios/chrome/browser/web/web_state_update_browser_agent.h"
-#import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
-#import "ios/chrome/browser/web_state_list/view_source_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_usage_enabler_browser_agent.h"
-#import "ios/chrome/browser/webui/net_export_tab_helper_delegate.h"
+#import "ios/chrome/browser/webui/model/net_export_tab_helper_delegate.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/fullscreen/fullscreen_api.h"
 #import "ios/public/provider/chrome/browser/signin/choice_api.h"
@@ -274,7 +286,8 @@ enum class ToolbarKind {
     ToolbarAccessoryCoordinatorDelegate,
     URLLoadingDelegate,
     WebContentCommands,
-    WebNavigationNTPDelegate>
+    WebNavigationNTPDelegate,
+    ParcelTrackingOptInCommands>
 
 // Whether the coordinator is started.
 @property(nonatomic, assign, getter=isStarted) BOOL started;
@@ -373,6 +386,10 @@ enum class ToolbarKind {
 
 // Coordinator for Page Info UI.
 @property(nonatomic, strong) ChromeCoordinator* pageInfoCoordinator;
+
+// Coordinator for parcel tracking opt-in UI presentation.
+@property(nonatomic, strong)
+    ParcelTrackingOptInCoordinator* parcelTrackingOptInCoordinator;
 
 // Coordinator for the PassKit UI presentation.
 @property(nonatomic, strong) PassKitCoordinator* passKitCoordinator;
@@ -612,6 +629,8 @@ enum class ToolbarKind {
 
 - (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion
                            dismissOmnibox:(BOOL)dismissOmnibox {
+  [self stopSaveToPhotos];
+
   [self.passKitCoordinator stop];
 
   [self.printCoordinator dismissAnimated:YES];
@@ -805,6 +824,7 @@ enum class ToolbarKind {
     @protocol(WebContentCommands),
     @protocol(DefaultBrowserPromoCommands),
     @protocol(MiniMapCommands),
+    @protocol(ParcelTrackingOptInCommands),
   ];
 
   for (Protocol* protocol in protocols) {
@@ -1360,6 +1380,12 @@ enum class ToolbarKind {
 
   [self.miniMapCoordinator stop];
   self.miniMapCoordinator = nil;
+
+  [self.saveToPhotosCoordinator stop];
+  self.saveToPhotosCoordinator = nil;
+
+  [self.parcelTrackingOptInCoordinator stop];
+  self.parcelTrackingOptInCoordinator = nil;
 }
 
 // Starts independent mediators owned by this coordinator.
@@ -1564,6 +1590,7 @@ enum class ToolbarKind {
 }
 
 - (void)showBookmarksManager {
+  [IntentDonationHelper donateIntent:DonatedIntentType::kOpenBookmarks];
   [_bookmarksCoordinator presentBookmarks];
 }
 
@@ -1590,6 +1617,8 @@ enum class ToolbarKind {
 }
 
 - (void)showRecentTabs {
+  [IntentDonationHelper donateIntent:DonatedIntentType::kOpenRecentTabs];
+
   // TODO(crbug.com/825431): If BVC's clearPresentedState is ever called (such
   // as in tearDown after a failed egtest), then this coordinator is left in a
   // started state even though its corresponding VC is no longer on screen.
@@ -2294,6 +2323,82 @@ enum class ToolbarKind {
   }
 }
 
+#pragma mark - ParcelTrackingOptInCommands
+
+- (void)showParcelTrackingUIWithParcels:
+    (NSArray<CustomTextCheckingResult*>*)parcels {
+  // TODO(crbug.com/1473449): Once Shopping Service API is ready, return
+  // early if the parcels are already being tracked.
+  if (IsUserEligibleParcelTrackingOptInPrompt(
+          self.browser->GetBrowserState())) {
+    [self showParcelTrackingOptInPromptWithParcels:parcels];
+  } else {
+    [self maybeShowParcelTrackingInfobarWithParcels:parcels];
+  }
+}
+
+- (void)showParcelTrackingInfobarWithParcels:
+            (NSArray<CustomTextCheckingResult*>*)parcels
+                                     forStep:(ParcelTrackingStep)step {
+  web::WebState* activeWebState = self.activeWebState;
+  CHECK(activeWebState);
+  std::unique_ptr<ParcelTrackingInfobarDelegate> delegate =
+      std::make_unique<ParcelTrackingInfobarDelegate>(
+          activeWebState, step, parcels,
+          HandlerForProtocol(self.dispatcher, ApplicationCommands),
+          HandlerForProtocol(self.dispatcher, ParcelTrackingOptInCommands));
+  infobars::InfoBarManager* infobar_manager =
+      InfoBarManagerImpl::FromWebState(activeWebState);
+
+  std::unique_ptr<infobars::InfoBar> infobar = std::make_unique<InfoBarIOS>(
+      InfobarType::kInfobarTypeParcelTracking, std::move(delegate));
+  infobar_manager->AddInfoBar(std::move(infobar),
+                              /*replace_existing=*/true);
+}
+
+#pragma mark - ParcelTrackingOptInCommands helpers
+
+- (void)maybeShowParcelTrackingInfobarWithParcels:
+    (NSArray<CustomTextCheckingResult*>*)parcels {
+  IOSParcelTrackingOptInStatus optInStatus =
+      static_cast<IOSParcelTrackingOptInStatus>(
+          self.browser->GetBrowserState()->GetPrefs()->GetInteger(
+              prefs::kIosParcelTrackingOptInStatus));
+  ParcelTrackingStep step;
+  switch (optInStatus) {
+    case IOSParcelTrackingOptInStatus::kAlwaysTrack:
+      step = ParcelTrackingStep::kNewPackageTracked;
+      break;
+    case IOSParcelTrackingOptInStatus::kAskToTrack:
+      step = ParcelTrackingStep::kAskedToTrackPackage;
+      break;
+    case IOSParcelTrackingOptInStatus::kNeverTrack:
+      // Do not display infobar.
+      return;
+  }
+  [self showParcelTrackingInfobarWithParcels:parcels forStep:step];
+}
+
+- (void)showParcelTrackingOptInPromptWithParcels:
+    (NSArray<CustomTextCheckingResult*>*)parcels {
+  web::WebState* activeWebState = self.activeWebState;
+  CHECK(activeWebState);
+  [self dismissParcelTrackingOptInPrompt];
+  self.parcelTrackingOptInCoordinator = [[ParcelTrackingOptInCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser
+                        webState:activeWebState
+                         parcels:parcels];
+  [self.parcelTrackingOptInCoordinator start];
+}
+
+- (void)dismissParcelTrackingOptInPrompt {
+  if (self.parcelTrackingOptInCoordinator) {
+    [self.parcelTrackingOptInCoordinator stop];
+    self.parcelTrackingOptInCoordinator = nil;
+  }
+}
+
 #pragma mark - PasswordBreachCommands
 
 - (void)showPasswordBreachForLeakType:(CredentialLeakType)leakType {
@@ -2420,11 +2525,26 @@ enum class ToolbarKind {
 #pragma mark - SaveToPhotosCommands
 
 - (void)saveImageToPhotos:(SaveImageToPhotosCommand*)command {
-  // TODO(crbug.com/1473314): Create a SaveToPhotosCoordinator.
+  if (!command.webState) {
+    // If the web state does not exist anymore, don't do anything.
+    return;
+  }
+
+  // If the Save to Photos coordinator is not nil, stop it.
+  [self stopSaveToPhotos];
+
+  self.saveToPhotosCoordinator = [[SaveToPhotosCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser
+                        imageURL:command.imageURL
+                        referrer:command.referrer
+                        webState:command.webState.get()];
+  [self.saveToPhotosCoordinator start];
 }
 
 - (void)stopSaveToPhotos {
-  // TODO(crbug.com/1473314): Create a SaveToPhotosCoordinator.
+  [self.saveToPhotosCoordinator stop];
+  self.saveToPhotosCoordinator = nil;
 }
 
 #pragma mark - WebContentCommands
@@ -2712,12 +2832,6 @@ enum class ToolbarKind {
     }
   }
   return webState->GetView();
-}
-
-- (UIViewTintAdjustmentMode)snapshotGenerator:
-                                (SnapshotGenerator*)snapshotGenerator
-         defaultTintAdjustmentModeForWebState:(web::WebState*)webState {
-  return UIViewTintAdjustmentModeAutomatic;
 }
 
 #pragma mark - NewTabPageCommands

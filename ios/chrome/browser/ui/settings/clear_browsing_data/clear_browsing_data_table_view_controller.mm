@@ -12,10 +12,11 @@
 #import "components/prefs/pref_service.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
-#import "ios/chrome/browser/browsing_data/browsing_data_features.h"
-#import "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
+#import "ios/chrome/browser/browsing_data/model/browsing_data_features.h"
+#import "ios/chrome/browser/browsing_data/model/browsing_data_remove_mask.h"
 #import "ios/chrome/browser/discover_feed/discover_feed_service.h"
 #import "ios/chrome/browser/discover_feed/discover_feed_service_factory.h"
+#import "ios/chrome/browser/intents/intents_donation_helper.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
 #import "ios/chrome/browser/shared/coordinator/alert/alert_coordinator.h"
@@ -42,7 +43,7 @@
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
-#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/strings/grit/ui_strings.h"
@@ -193,6 +194,7 @@
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
   [self.dataManager restartCounters:BrowsingDataRemoveMask::REMOVE_ALL];
+  [IntentDonationHelper donateIntent:DonatedIntentType::kClearBrowsingData];
 
   [self updateToolbarButtons];
   // Showing toolbar here because parent class hides toolbar in

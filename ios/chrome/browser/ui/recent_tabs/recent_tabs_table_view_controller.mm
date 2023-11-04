@@ -70,8 +70,8 @@
 #import "ios/chrome/browser/synced_sessions/distant_session.h"
 #import "ios/chrome/browser/synced_sessions/distant_tab.h"
 #import "ios/chrome/browser/synced_sessions/synced_sessions.h"
-#import "ios/chrome/browser/tabs_search/tabs_search_service.h"
-#import "ios/chrome/browser/tabs_search/tabs_search_service_factory.h"
+#import "ios/chrome/browser/tabs_search/model/tabs_search_service.h"
+#import "ios/chrome/browser/tabs_search/model/tabs_search_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
@@ -93,7 +93,7 @@
 #import "ios/chrome/common/ui/favicon/favicon_attributes.h"
 #import "ios/chrome/common/ui/favicon/favicon_view.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
-#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/modals/modals_api.h"
 #import "ios/web/public/web_state.h"
@@ -188,7 +188,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
 @property(nonatomic, strong) TableViewURLDragDropHandler* dragDropHandler;
 @end
 
-@implementation RecentTabsTableViewController : ChromeTableViewController
+@implementation RecentTabsTableViewController
 
 #pragma mark - Public Interface
 

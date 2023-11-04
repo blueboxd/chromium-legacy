@@ -55,13 +55,14 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/browser_resources.h"
-#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/new_tab_page_resources.h"
 #include "chrome/grit/new_tab_page_resources_map.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/commerce/core/commerce_feature_list.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/google/core/common/google_util.h"
@@ -92,6 +93,8 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/webui_resources.h"
 #include "ui/webui/color_change_listener/color_change_handler.h"
+#include "ui/webui/webui_allowlist.h"
+#include "url/origin.h"
 #include "url/url_util.h"
 
 #if !defined(OFFICIAL_BUILD)
@@ -503,9 +506,14 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       {"modulesJourneysInfo", IDS_NTP_MODULES_HISTORY_CLUSTERS_INFO},
       {"modulesHistoryWithDiscountInfo",
        IDS_NTP_MODULES_HISTORY_CLUSTERS_WITH_DISCOUNT_INFO},
+      {"modulesHistoryResumeBrowsingTitle",
+       IDS_NTP_MODULES_HISTORY_CLUSTERS_RESUME_BROWSING},
+      {"modulesHistoryResumeBrowsingForTitle",
+       IDS_NTP_MODULES_HISTORY_CLUSTERS_RESUME_BROWSING_FOR},
       {"modulesThisTypeOfCardText",
        IDS_NTP_MODULES_HISTORY_CLUSTERS_DISABLE_TOAST_NAME},
-      {"modulesJourneyDisable", IDS_NTP_MODULES_HISTORY_CLUSTERS_DISABLE_TEXT},
+      {"modulesJourneyDisable",
+       IDS_NTP_MODULES_HISTORY_CLUSTERS_DISABLE_DROPDOWN_TEXT},
       {"modulesJourneysDismissButton",
        IDS_NTP_MODULES_HISTORY_CLUSTERS_DISMISS_BUTTON},
       {"modulesJourneysDoneButton",
@@ -525,8 +533,6 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
        IDS_NTP_MODULES_QUEST_CART_TILE_LABEL_SINGULAR},
       {"modulesJourneysCartTileLabelDefault",
        IDS_NTP_MODULES_QUEST_CART_TILE_LABEL_DEFAULT},
-      {"modulesJourneysResumeJourney",
-       IDS_NTP_MODULES_HISTORY_CLUSTERS_RESUME_BROWSING},
       {"modulesMoreActions", IDS_NTP_MODULES_MORE_ACTIONS},
 
       // Middle slot promo.
@@ -540,14 +546,6 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
 
   source->AddBoolean("wideModulesEnabled", base::FeatureList::IsEnabled(
                                                ntp_features::kNtpWideModules));
-
-  if (base::FeatureList::IsEnabled(history_clusters::kRenameJourneys)) {
-    source->AddLocalizedString("modulesJourneysInfo",
-                               IDS_NTP_MODULES_HISTORY_CLUSTERS_INFO2);
-    source->AddLocalizedString(
-        "modulesJourneyDisable",
-        IDS_NTP_MODULES_HISTORY_CLUSTERS_DISABLE_DROPDOWN_TEXT);
-  }
 
   source->AddBoolean(
       "modulesHeaderIconEnabled",
@@ -675,6 +673,14 @@ NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
 
   web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
 
+  // Give OGB 3P Cookie Permissions.
+  WebUIAllowlist::GetOrCreate(profile_)->RegisterAutoGrantedThirdPartyCookies(
+      url::Origin::Create(GURL(chrome::kChromeUIUntrustedNewTabPageUrl)),
+      {
+          ContentSettingsPattern::FromURL(GURL("https://ogs.google.com")),
+          ContentSettingsPattern::FromURL(GURL("https://corp.google.com")),
+      });
+
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(
       ntp_prefs::kNtpUseMostVisitedTiles,
@@ -708,12 +714,21 @@ NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
 WEB_UI_CONTROLLER_TYPE_IMPL(NewTabPageUI)
 
 NewTabPageUI::~NewTabPageUI() {
-  // Deregister customize chrome entry on unified side panel
-  if (customize_chrome::IsSidePanelEnabled()) {
-    auto* customize_chrome_tab_helper =
-        CustomizeChromeTabHelper::FromWebContents(web_contents());
-    customize_chrome_tab_helper->DeregisterEntry();
+  if (!customize_chrome::IsSidePanelEnabled()) {
+    return;
   }
+
+  // Deregister customize chrome entry on unified side panel, unless the
+  // WebContents is showing another NewTabPageUI (e.g. in case of reloads).
+  if (auto* web_ui = web_contents()->GetWebUI()) {
+    if (web_ui->GetController() && web_ui->GetController()->GetType() &&
+        web_ui->GetController()->GetAs<NewTabPageUI>()) {
+      return;
+    }
+  }
+  auto* customize_chrome_tab_helper =
+      CustomizeChromeTabHelper::FromWebContents(web_contents());
+  customize_chrome_tab_helper->DeregisterEntry();
 }
 
 // static

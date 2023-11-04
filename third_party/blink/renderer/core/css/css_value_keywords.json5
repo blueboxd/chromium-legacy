@@ -787,6 +787,12 @@
     // auto
     "from-font",
 
+    //
+    // text-spacing-trim
+    //
+    "space-all",
+    "space-first",
+
     // text-underline-position
     // auto
     // "from-font",
@@ -1096,6 +1102,12 @@
     "browser",
     "window-controls-overlay",
     "tabbed",
+
+    // (display-state:) media feature
+    // normal
+    // fullscreen
+    "minimized",
+    "maximized",
 
     // (overflow-block:) media feature
     "paged",

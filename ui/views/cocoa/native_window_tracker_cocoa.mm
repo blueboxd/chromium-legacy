@@ -17,7 +17,7 @@
 @end
 
 @implementation BridgedNativeWindowTracker {
-  NSWindow* __unsafe_unretained _window;
+  NSWindow* __weak _window;
 }
 
 - (instancetype)initWithNSWindow:(NSWindow*)window {

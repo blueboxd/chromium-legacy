@@ -75,10 +75,11 @@ void PaintController::RecordHitTestData(const DisplayItemClient& client,
                                         const gfx::Rect& rect,
                                         TouchAction touch_action,
                                         bool blocking_wheel,
-                                        cc::HitTestOpaqueness opaqueness) {
+                                        cc::HitTestOpaqueness opaqueness,
+                                        DisplayItem::Type type) {
   if (rect.IsEmpty())
     return;
-  PaintChunk::Id id(client.Id(), DisplayItem::kHitTest, current_fragment_);
+  PaintChunk::Id id(client.Id(), type, current_fragment_);
   CheckNewChunkId(id);
   ValidateNewChunkClient(client);
   if (paint_chunker_.AddHitTestDataToCurrentChunk(
@@ -213,7 +214,7 @@ sk_sp<SkTextBlob> PaintController::CachedTextBlob() const {
     return nullptr;
   }
   const cc::PaintOp& op = record.GetFirstOp();
-  if (op.GetType() != cc::PaintOpType::DrawTextBlob) {
+  if (op.GetType() != cc::PaintOpType::kDrawtextblob) {
     return nullptr;
   }
   return static_cast<const cc::DrawTextBlobOp&>(op).blob;

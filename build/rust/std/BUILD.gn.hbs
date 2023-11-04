@@ -71,15 +71,15 @@ cargo_crate("{{this.0}}") {
   {{/unless}}
   {{#each deps}}
   {{#if @first}}
-    {{#each this.rules}}
-    "{{this}}",
+    {{#each this.packages}}
+    ":{{this.name}}",
     {{/each}}
   ]
   {{else}}
   if ({{this.cond}}) {
-    deps = [
-      {{#each this.rules}}
-      "{{this}}",
+    deps += [
+      {{#each this.packages}}
+      ":{{this.name}}",
       {{/each}}
     ]
   }
@@ -117,6 +117,10 @@ cargo_crate("{{this.0}}") {
     {{/if}}
   ]
   output_dir = "$root_out_dir/local_rustc_sysroot/lib/rustlib/$rust_abi_target/lib/"
+
+  {{#with extra_kv.raw_gn}}
+  {{this}}
+  {{/with}}
   {{/with}}
 }
 {{/each}}

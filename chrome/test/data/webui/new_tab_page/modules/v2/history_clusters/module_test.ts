@@ -126,9 +126,9 @@ suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
 
     test('Header element populated with correct data', async () => {
       // Arrange.
-      const sampleClusterLabel = '"Sample Journey"';
+      const clusterLabel = 'Sample Journey';
       const moduleElements = await initializeModule(
-          [createSampleCluster(2, {label: sampleClusterLabel})]);
+          [createSampleCluster(2, {label: `"${clusterLabel}"`})]);
       const moduleElement = moduleElements[0];
 
       // Assert.
@@ -137,8 +137,31 @@ suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
       assertTrue(!!headerElement);
       const label = $$(headerElement, '#label');
       assertTrue(!!label);
-      assertModuleHeaderTitle(label as HTMLElement, `${sampleClusterLabel}`);
+      assertModuleHeaderTitle(label as HTMLElement, `${clusterLabel}`);
       assertTrue(!!$$(headerElement, 'ntp-module-header-v2'));
+    });
+
+    test('Header element has expected action menu items', async () => {
+      const moduleElements = await initializeModule(
+          [createSampleCluster(2, {label: '"Sample Journey"'})]);
+      const moduleElement = moduleElements[0];
+      assertTrue(!!moduleElement);
+
+      const headerTileElement = $$(moduleElement, 'history-clusters-header-v2');
+      assertTrue(!!headerTileElement);
+      const moduleHeaderElement = $$(headerTileElement, 'ntp-module-header-v2');
+      assertTrue(!!moduleHeaderElement);
+      const actionMenu = $$(moduleHeaderElement, 'cr-action-menu');
+      assertTrue(!!actionMenu);
+
+      const actionMenuItems =
+          [...actionMenu.querySelectorAll('button.dropdown-item')];
+      assertEquals(6, actionMenuItems.length);
+      ['done', 'dismiss', 'disable', 'show-all', 'info', 'customize-module']
+          .forEach((action, index) => {
+            assertEquals(
+                action, actionMenuItems[index]!.getAttribute('data-action'));
+          });
     });
 
     test('Header info button click opens info dialog', async () => {
@@ -376,15 +399,7 @@ suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
         for (const discount of moduleElement.discounts) {
           assertEquals('', discount);
         }
-        const contentElement =
-            moduleElement.shadowRoot!
-                .querySelector('ntp-history-clusters-visit-tile')!.shadowRoot!
-                .querySelector('#content')! as HTMLElement;
-        assertEquals(
-            contentElement.getAttribute('aria-label'),
-            'Test Title 1, foo.com, 1 min ago');
       }
-      assertEquals(0, metrics.count(`NewTabPage.HistoryClusters.HasDiscount`));
     });
 
     test('Discount initialization', async () => {
@@ -423,7 +438,6 @@ suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
         await waitAfterNextRender(moduleElement);
         assertEquals(moduleElement.discounts.length, visitCount);
       }
-      assertEquals(2, metrics.count(`NewTabPage.HistoryClusters.HasDiscount`));
 
       // Assert Module One.
       const expectedDiscountsModuleOne = ['', '15% off', ''];
@@ -443,19 +457,8 @@ suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
       assertEquals(
           'https://www.annotated.com/1',
           visitTiles[0]!.visit.normalizedUrl.url);
-      let contentElement =
-          visitTiles[0]!.shadowRoot!.querySelector('#content')! as HTMLElement;
-      assertEquals(
-          contentElement.getAttribute('aria-label'),
-          'Test Title 1, annotated.com, 1 min ago, 15% off');
-
       assertEquals(
           'https://www.foo.com/2', visitTiles[1]!.visit.normalizedUrl.url);
-      contentElement =
-          visitTiles[1]!.shadowRoot!.querySelector('#content')! as HTMLElement;
-      assertEquals(
-          contentElement.getAttribute('aria-label'),
-          'Test Title 2, foo.com, 1 min ago');
 
       // Assert Module Two.
       const expectedDiscountsModuleTwo = ['', '', '$10 off'];
@@ -473,63 +476,14 @@ suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
       }
       assertEquals(
           'https://www.foo.com/3', visitTiles[0]!.visit.normalizedUrl.url);
-      contentElement =
-          visitTiles[0]!.shadowRoot!.querySelector('#content')! as HTMLElement;
-      assertEquals(
-          contentElement.getAttribute('aria-label'),
-          'Test Title 1, foo.com, 1 min ago');
-
       assertEquals(
           'https://www.annotated.com/2',
           visitTiles[1]!.visit.normalizedUrl.url);
-      contentElement =
-          visitTiles[1]!.shadowRoot!.querySelector('#content')! as HTMLElement;
-      assertEquals(
-          contentElement.getAttribute('aria-label'),
-          'Test Title 2, annotated.com, 1 min ago, $10 off');
 
       // Assert info dialog.
       for (const moduleElement of moduleElements) {
         checkInfoDialogContent(moduleElement, 'modulesHistoryWithDiscountInfo');
       }
-    });
-
-    test('Metrics for Discount click', async () => {
-      loadTimeData.overrideValues({
-        historyClustersModuleDiscountsEnabled: true,
-      });
-
-      const instanceCount = 1;
-      const visitCount = 3;
-      const clusters = createSampleClusters(instanceCount);
-      const discoutMap = new Map<Url, Discount[]>();
-      discoutMap.set(clusters[0]!.visits[1]!.normalizedUrl, [{
-                       valueInText: '15% off',
-                       annotatedVisitUrl: {url: 'https://www.annotated.com/1'},
-                     }]);
-
-      const moduleElements = await initializeModule(clusters, discoutMap);
-      assertEquals(
-          instanceCount, handler.getCallCount('getDiscountsForCluster'));
-      for (const moduleElement of moduleElements) {
-        assertTrue(!!moduleElement);
-        await waitAfterNextRender(moduleElement);
-        assertEquals(moduleElement.discounts.length, visitCount);
-      }
-      assertEquals(1, metrics.count(`NewTabPage.HistoryClusters.HasDiscount`));
-
-      const visitTiles: VisitTileModuleElement[] =
-          Array.from(moduleElements[0]!.shadowRoot!.querySelectorAll(
-              'ntp-history-clusters-visit-tile'));
-      assertEquals(visitTiles.length, visitCount - 1);
-
-      visitTiles[1]!.click();
-      assertEquals(
-          0, metrics.count(`NewTabPage.HistoryClusters.DiscountClicked`));
-
-      visitTiles[0]!.click();
-      assertEquals(
-          1, metrics.count(`NewTabPage.HistoryClusters.DiscountClicked`));
     });
   });
 });

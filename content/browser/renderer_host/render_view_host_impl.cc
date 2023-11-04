@@ -55,6 +55,7 @@
 #include "content/browser/scoped_active_url.h"
 #include "content/common/agent_scheduling_group.mojom.h"
 #include "content/common/content_switches_internal.h"
+#include "content/common/features.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/public/browser/ax_event_notification_details.h"
@@ -74,7 +75,6 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/input/native_web_keyboard_event.h"
 #include "content/public/common/result_codes.h"
@@ -545,7 +545,7 @@ bool RenderViewHostImpl::CreateRenderView(
 
   bool is_portal = frame_tree_->delegate()->IsPortal();
   bool is_guest_view = delegate_->IsGuest();
-  bool is_fenced_frame = frame_tree_->type() == FrameTree::Type::kFencedFrame;
+  bool is_fenced_frame = frame_tree_->is_fenced_frame();
 
   if (is_fenced_frame) {
     params->type = mojom::ViewWidgetType::kFencedFrame;
@@ -624,7 +624,7 @@ void RenderViewHostImpl::EnterBackForwardCache() {
   // Only unregister the RenderViewHost if the FrameTree is the primary
   // FrameTree, inner FrameTrees hold their state when they enter back/forward
   // cache.
-  if (frame_tree_->type() == FrameTree::Type::kPrimary) {
+  if (frame_tree_->is_primary()) {
     frame_tree_->UnregisterRenderViewHost(render_view_host_map_id_, this);
     registered_with_frame_tree_ = false;
   }

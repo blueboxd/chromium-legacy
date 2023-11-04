@@ -6,18 +6,8 @@
 
 #include <utility>
 
-#include "chrome/browser/headless/headless_mode_util.h"
-#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
-#include "chrome/common/chrome_switches.h"
-
 namespace {
 
-constexpr char kEarlySingletonForceEnabledGroup[] = "Enabled_Forced3";
-constexpr char kEarlySingletonEnabledGroup[] = "Enabled3";
-constexpr char kEarlySingletonDisabledMergeGroup[] = "Disabled_Merge3";
-constexpr char kEarlySingletonDefaultGroup[] = "Default3";
-
-const char* g_early_singleton_feature_group_ = nullptr;
 ChromeProcessSingleton* g_chrome_process_singleton_ = nullptr;
 
 }  // namespace
@@ -35,14 +25,13 @@ ChromeProcessSingleton::~ChromeProcessSingleton() = default;
 
 ProcessSingleton::NotifyResult
     ChromeProcessSingleton::NotifyOtherProcessOrCreate() {
-  // In headless mode we don't want to hand off pages to an existing processes,
-  // so short circuit process singleton creation and bail out if we're not
-  // the only process using this user data dir.
-  if (headless::IsHeadlessMode()) {
-    return process_singleton_.Create() ? ProcessSingleton::PROCESS_NONE
-                                       : ProcessSingleton::PROFILE_IN_USE;
+  CHECK(!is_singleton_instance_);
+  ProcessSingleton::NotifyResult result =
+      process_singleton_.NotifyOtherProcessOrCreate();
+  if (result == ProcessSingleton::PROCESS_NONE) {
+    is_singleton_instance_ = true;
   }
-  return process_singleton_.NotifyOtherProcessOrCreate();
+  return result;
 }
 
 void ChromeProcessSingleton::StartWatching() {
@@ -50,7 +39,9 @@ void ChromeProcessSingleton::StartWatching() {
 }
 
 void ChromeProcessSingleton::Cleanup() {
-  process_singleton_.Cleanup();
+  if (is_singleton_instance_) {
+    process_singleton_.Cleanup();
+  }
 }
 
 void ChromeProcessSingleton::SetModalDialogNotificationHandler(
@@ -88,39 +79,9 @@ ChromeProcessSingleton* ChromeProcessSingleton::GetInstance() {
 }
 
 // static
-void ChromeProcessSingleton::SetupEarlySingletonFeature(
-    const base::CommandLine& command_line) {
-  DCHECK(!g_early_singleton_feature_group_);
-  if (command_line.HasSwitch(switches::kEnableEarlyProcessSingleton)) {
-    g_early_singleton_feature_group_ = kEarlySingletonForceEnabledGroup;
-    return;
-  }
-
-  g_early_singleton_feature_group_ = kEarlySingletonDefaultGroup;
-}
-
-// static
-void ChromeProcessSingleton::RegisterEarlySingletonFeature() {
-  DCHECK(g_early_singleton_feature_group_);
-  // The synthetic trial needs to use kCurrentLog to ensure that UMA report will
-  // be generated from the metrics log that is open at the time of registration.
-  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-      "EarlyProcessSingleton", g_early_singleton_feature_group_,
-      variations::SyntheticTrialAnnotationMode::kCurrentLog);
-}
-
-// static
-bool ChromeProcessSingleton::IsEarlySingletonFeatureEnabled() {
-  return g_early_singleton_feature_group_ == kEarlySingletonEnabledGroup ||
-         g_early_singleton_feature_group_ == kEarlySingletonForceEnabledGroup;
-}
-
-// static
-bool ChromeProcessSingleton::ShouldMergeMetrics() {
-  // This should not be called when the early singleton feature is enabled.
-  DCHECK(g_early_singleton_feature_group_ && !IsEarlySingletonFeatureEnabled());
-
-  return g_early_singleton_feature_group_ == kEarlySingletonDisabledMergeGroup;
+bool ChromeProcessSingleton::IsSingletonInstance() {
+  return g_chrome_process_singleton_ &&
+         g_chrome_process_singleton_->is_singleton_instance_;
 }
 
 bool ChromeProcessSingleton::NotificationCallback(

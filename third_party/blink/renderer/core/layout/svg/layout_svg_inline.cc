@@ -23,9 +23,9 @@
 
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
-#include "third_party/blink/renderer/core/layout/ng/svg/layout_ng_svg_text.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_text.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
@@ -171,15 +171,20 @@ void LayoutSVGInline::StyleDidChange(StyleDifference diff,
                                      const ComputedStyle* old_style) {
   NOT_DESTROYED();
   if (diff.HasDifference()) {
-    if (auto* svg_text = LayoutNGSVGText::LocateLayoutSVGTextAncestor(this)) {
+    if (auto* svg_text = LayoutSVGText::LocateLayoutSVGTextAncestor(this)) {
       if (svg_text->NeedsTextMetricsUpdate())
         diff.SetNeedsFullLayout();
     }
   }
   LayoutInline::StyleDidChange(diff, old_style);
 
-  if (diff.NeedsFullLayout())
+  if (diff.NeedsFullLayout()) {
+    // The boundaries affect mask clip and clip path mask/clip.
+    if (StyleRef().MaskerResource() || StyleRef().HasClipPath()) {
+      SetNeedsPaintPropertyUpdate();
+    }
     SetNeedsBoundariesUpdate();
+  }
 
   SVGResources::UpdateEffects(*this, diff, old_style);
   SVGResources::UpdatePaints(*this, old_style, StyleRef());
@@ -194,13 +199,13 @@ void LayoutSVGInline::AddChild(LayoutObject* child,
                                LayoutObject* before_child) {
   NOT_DESTROYED();
   LayoutInline::AddChild(child, before_child);
-  LayoutNGSVGText::NotifySubtreeStructureChanged(
+  LayoutSVGText::NotifySubtreeStructureChanged(
       this, layout_invalidation_reason::kChildChanged);
 }
 
 void LayoutSVGInline::RemoveChild(LayoutObject* child) {
   NOT_DESTROYED();
-  LayoutNGSVGText::NotifySubtreeStructureChanged(
+  LayoutSVGText::NotifySubtreeStructureChanged(
       this, layout_invalidation_reason::kChildChanged);
   LayoutInline::RemoveChild(child);
 }

@@ -217,6 +217,9 @@ aura::client::DragDropClient* GetDragDropClient(views::Widget* widget) {
 
 HoldingSpaceTray::HoldingSpaceTray(Shelf* shelf)
     : TrayBackgroundView(shelf, TrayBackgroundViewCatalogName::kHoldingSpace) {
+  SetCallback(base::BindRepeating(&HoldingSpaceTray::OnTrayButtonPressed,
+                                  weak_factory_.GetWeakPtr()));
+
   // Ensure the existence of the singleton animation registry.
   HoldingSpaceAnimationRegistry::GetInstance();
 
@@ -727,6 +730,15 @@ void HoldingSpaceTray::ObservePrefService(PrefService* prefs) {
                                         base::Unretained(this)));
 }
 
+void HoldingSpaceTray::OnTrayButtonPressed(const ui::Event& event) {
+  if (GetBubbleWidget()) {
+    CloseBubble();
+    return;
+  }
+
+  ShowBubble();
+}
+
 void HoldingSpaceTray::UpdatePreviewsState() {
   UpdatePreviewsVisibility();
   SchedulePreviewsIconUpdate();
@@ -791,12 +803,14 @@ void HoldingSpaceTray::UpdatePreviewsIcon() {
   std::set<base::FilePath> paths_with_previews;
   for (const auto& item :
        base::Reversed(HoldingSpaceController::Get()->model()->items())) {
-    if (!IsPreviewable(item))
+    if (!IsPreviewable(item)) {
       continue;
-    if (base::Contains(paths_with_previews, item->file_path()))
+    }
+    if (base::Contains(paths_with_previews, item->file().file_path)) {
       continue;
+    }
     items_with_previews.push_back(item.get());
-    paths_with_previews.insert(item->file_path());
+    paths_with_previews.insert(item->file().file_path);
   }
   previews_tray_icon_->UpdatePreviews(items_with_previews);
 }

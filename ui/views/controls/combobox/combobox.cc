@@ -48,6 +48,7 @@
 #include "ui/views/mouse_constants.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/style/typography_provider.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 
@@ -65,12 +66,13 @@ float GetCornerRadius() {
 SkColor GetTextColorForEnableState(const Combobox& combobox, bool enabled) {
   const int style = enabled ? style::STYLE_PRIMARY : style::STYLE_DISABLED;
   return combobox.GetColorProvider()->GetColor(
-      style::GetColorId(style::CONTEXT_TEXTFIELD, style));
+      TypographyProvider::Get().GetColorId(style::CONTEXT_TEXTFIELD, style));
 }
 
 // The transparent button which holds a button state but is not rendered.
 class TransparentButton : public Button {
  public:
+  METADATA_HEADER(TransparentButton);
   explicit TransparentButton(PressedCallback callback)
       : Button(std::move(callback)) {
     SetFocusBehavior(FocusBehavior::NEVER);
@@ -113,6 +115,9 @@ class TransparentButton : public Button {
     }
   }
 };
+
+BEGIN_METADATA(TransparentButton, Button)
+END_METADATA
 
 }  // namespace
 
@@ -188,7 +193,7 @@ Combobox::~Combobox() {
 }
 
 const gfx::FontList& Combobox::GetFontList() const {
-  return style::GetFont(kContext, kStyle);
+  return TypographyProvider::Get().GetFont(kContext, kStyle);
 }
 
 void Combobox::SetSelectedIndex(absl::optional<size_t> index) {
@@ -787,7 +792,7 @@ PrefixSelector* Combobox::GetPrefixSelector() {
 
 const gfx::FontList& Combobox::GetForegroundFontList() const {
   if (foreground_text_style_) {
-    return style::GetFont(kContext, *foreground_text_style_);
+    return TypographyProvider::Get().GetFont(kContext, *foreground_text_style_);
   }
   return GetFontList();
 }

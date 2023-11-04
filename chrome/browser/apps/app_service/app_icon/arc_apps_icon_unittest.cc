@@ -108,7 +108,7 @@ class AppServiceArcAppIconTest : public ArcAppsIconFactoryTest,
                                       gfx::ImageSkia& image_skia) {
     gfx::ImageSkia foreground_image_skia;
     gfx::ImageSkia background_image_skia;
-    for (auto scale_factor : ui::GetSupportedResourceScaleFactors()) {
+    for (const auto scale_factor : ui::GetSupportedResourceScaleFactors()) {
       auto raw_icon_data = GenerateRawArcAppIcon(app_id, scale_factor);
       ASSERT_TRUE(raw_icon_data);
       ASSERT_TRUE(raw_icon_data->foreground_icon_png_data.has_value());
@@ -162,12 +162,12 @@ class AppServiceArcAppIconTest : public ArcAppsIconFactoryTest,
     return result.Take();
   }
 
-  apps::IconValuePtr LoadIconFromIconKey(const std::string& app_id,
-                                         const IconKey& icon_key,
-                                         IconType icon_type) {
+  apps::IconValuePtr LoadIconWithIconEffects(const std::string& app_id,
+                                             uint32_t icon_effects,
+                                             IconType icon_type) {
     base::test::TestFuture<apps::IconValuePtr> result;
-    app_service_proxy().LoadIconFromIconKey(
-        AppType::kArc, app_id, icon_key, icon_type, kSizeInDip,
+    app_service_proxy().LoadIconWithIconEffects(
+        AppType::kArc, app_id, icon_effects, icon_type, kSizeInDip,
         /*allow_placeholder_icon=*/false, result.GetCallback());
     return result.Take();
   }
@@ -251,9 +251,9 @@ TEST_F(AppServiceArcAppIconTest, GetCompressedIconDataForStandardIcon) {
 
   // Verify the icon reading and writing function in AppService for the
   // kStandard icon.
-  IconKey icon_key;
-  icon_key.icon_effects = IconEffects::kCrOsStandardIcon | IconEffects::kPaused;
-  auto ret = LoadIconFromIconKey(app_id, icon_key, IconType::kStandard);
+  auto ret = LoadIconWithIconEffects(
+      app_id, IconEffects::kCrOsStandardIcon | IconEffects::kPaused,
+      IconType::kStandard);
 
   ASSERT_EQ(apps::IconType::kStandard, ret->icon_type);
   VerifyIcon(src_image_skia, ret->uncompressed);
@@ -270,7 +270,7 @@ TEST_F(AppServiceArcAppIconTest, GetCompressedIconDataFromArcDiskCache) {
   base::ScopedObservation<ArcAppListPrefs, ArcAppListPrefs::Observer>
       observation(this);
   observation.Observe(arc_test()->arc_app_list_prefs());
-  for (auto scale_factor : ui::GetSupportedResourceScaleFactors()) {
+  for (const auto scale_factor : ui::GetSupportedResourceScaleFactors()) {
     base::RunLoop run_loop;
     AwaitIconUpdate(app_id, run_loop.QuitClosure());
     arc_test()->arc_app_list_prefs()->MaybeRequestIcon(

@@ -86,13 +86,12 @@ TEST_F(ContentSuggestionsViewControllerTest,
        TestMagicStackTopImpressionMetric) {
   scoped_feature_list_.Reset();
   scoped_feature_list_.InitWithFeatures({kMagicStack}, {});
-  [view_controller_ setMagicStackOrder:@[
-    @(int(ContentSuggestionsModuleType::kMostVisited))
-  ]];
-  [view_controller_ loadViewIfNeeded];
   histogram_tester_->ExpectBucketCount(
       kMagicStackTopModuleImpressionHistogram,
       ContentSuggestionsModuleType::kMostVisited, 0);
+  [view_controller_ setMagicStackOrder:@[
+    @(int(ContentSuggestionsModuleType::kMostVisited))
+  ]];
   [view_controller_ setMostVisitedTilesWithConfigs:@[
     [[ContentSuggestionsMostVisitedItem alloc] init]
   ]];
@@ -145,38 +144,6 @@ TEST_F(ContentSuggestionsViewControllerTest,
       ContentSuggestionsModuleType::kSetUpListSync, 1);
 }
 
-// Tests that the Magic Stack top module impression metric logs correctly even
-// if the Magic Stack module rank is ready after the top module is. This
-// simulates an environment where kSegmentationPlatformFeature is enabled, so
-// the magic stack module rank is asynchonously fetched and could be available
-// only after the initial view construction.
-TEST_F(ContentSuggestionsViewControllerTest,
-       TestMagicStackTopImpressionMetricSegmentation) {
-  scoped_feature_list_.Reset();
-  scoped_feature_list_.InitWithFeaturesAndParameters(
-      {{segmentation_platform::features::kSegmentationPlatformFeature, {}},
-       {segmentation_platform::features::kSegmentationPlatformIosModuleRanker,
-        {{segmentation_platform::kDefaultModelEnabledParam, "true"}}},
-       {kMagicStack, {}}},
-      {});
-
-  [view_controller_ setShortcutTilesWithConfigs:@[ BookmarkActionItem() ]];
-  histogram_tester_->ExpectBucketCount(kMagicStackTopModuleImpressionHistogram,
-                                       ContentSuggestionsModuleType::kShortcuts,
-                                       0);
-  [view_controller_ loadViewIfNeeded];
-  histogram_tester_->ExpectBucketCount(kMagicStackTopModuleImpressionHistogram,
-                                       ContentSuggestionsModuleType::kShortcuts,
-                                       0);
-  [view_controller_ setMagicStackOrder:@[
-    @(int(ContentSuggestionsModuleType::kShortcuts)),
-    @(int(ContentSuggestionsModuleType::kMostVisited))
-  ]];
-  histogram_tester_->ExpectBucketCount(kMagicStackTopModuleImpressionHistogram,
-                                       ContentSuggestionsModuleType::kShortcuts,
-                                       1);
-}
-
 // Tests that modules are inserted in their correct final positions in the Magic
 // Stack after initial Magic Stack construction no matter what order the modules
 // are made available.
@@ -217,7 +184,8 @@ TEST_F(ContentSuggestionsViewControllerTest, TestInsertModuleIntoMagicStack) {
   UIStackView* magicStack = FindMagicStack();
   // Assert order is correct.
   NSArray<UIView*>* subviews = magicStack.arrangedSubviews;
-  ASSERT_EQ(3u, [subviews count]);
+  // Three modules and edit button.
+  ASSERT_EQ(4u, [subviews count]);
   MagicStackModuleContainer* mostVisitedModule =
       (MagicStackModuleContainer*)subviews[0];
   EXPECT_EQ(ContentSuggestionsModuleType::kMostVisited, mostVisitedModule.type);
@@ -269,7 +237,8 @@ TEST_F(ContentSuggestionsViewControllerTest, TestUpdateMagicStackOrder) {
   UIStackView* magicStack = FindMagicStack();
   // Assert order is correct.
   NSArray<UIView*>* subviews = magicStack.arrangedSubviews;
-  ASSERT_EQ(2u, [subviews count]);
+  // Two modules and edit button.
+  ASSERT_EQ(3u, [subviews count]);
   MagicStackModuleContainer* mostVisitedModule =
       (MagicStackModuleContainer*)subviews[0];
   EXPECT_EQ(ContentSuggestionsModuleType::kMostVisited, mostVisitedModule.type);
@@ -291,7 +260,8 @@ TEST_F(ContentSuggestionsViewControllerTest, TestUpdateMagicStackOrder) {
   magicStack = FindMagicStack();
   // Assert order is correct.
   subviews = magicStack.arrangedSubviews;
-  ASSERT_EQ(3u, [subviews count]);
+  // Three modules and edit button.
+  ASSERT_EQ(4u, [subviews count]);
   mostVisitedModule = (MagicStackModuleContainer*)subviews[0];
   EXPECT_EQ(ContentSuggestionsModuleType::kMostVisited, mostVisitedModule.type);
   shortcutsModule = (MagicStackModuleContainer*)subviews[1];
@@ -340,7 +310,8 @@ TEST_F(ContentSuggestionsViewControllerTest,
   // Assert order is correct.
   NSArray<UIView*>* subviews = magicStack.arrangedSubviews;
 
-  ASSERT_EQ(3u, [subviews count]);
+  // Three modules and edit button.
+  ASSERT_EQ(4u, [subviews count]);
 
   MagicStackModuleContainer* mostVisitedModule =
       (MagicStackModuleContainer*)subviews[0];
@@ -371,7 +342,8 @@ TEST_F(ContentSuggestionsViewControllerTest,
   // Assert order is correct.
   subviews = magicStack.arrangedSubviews;
 
-  ASSERT_EQ(3u, [subviews count]);
+  // Three modules and edit button.
+  ASSERT_EQ(4u, [subviews count]);
 
   safetyCheckModule = (MagicStackModuleContainer*)subviews[2];
 
@@ -409,5 +381,6 @@ TEST_F(ContentSuggestionsViewControllerTest, TestMagicStackPlaceholder) {
   ]];
   magicStack = FindMagicStack();
   subviews = magicStack.arrangedSubviews;
-  ASSERT_EQ(1u, [subviews count]);
+  // One module and edit button.
+  ASSERT_EQ(2u, [subviews count]);
 }

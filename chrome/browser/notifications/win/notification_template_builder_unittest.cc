@@ -7,8 +7,8 @@
 #include <memory>
 #include <string>
 
+#include "base/strings/strcat_win.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -16,7 +16,7 @@
 #include "chrome/browser/notifications/win/fake_notification_image_retainer.h"
 #include "chrome/browser/notifications/win/notification_launch_id.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util_win.h"
@@ -36,15 +36,14 @@ const char16_t kNotificationMessage[] = u"My Message";
 const char kNotificationOrigin[] = "https://example.com";
 
 base::Time FixedTime() {
+  static constexpr base::Time::Exploded kTime = {.year = 1998,
+                                                 .month = 9,
+                                                 .day_of_month = 4,
+                                                 .hour = 1,
+                                                 .minute = 2,
+                                                 .second = 3};
   base::Time time;
-  base::Time::Exploded exploded = {0};
-  exploded.year = 1998;
-  exploded.month = 9;
-  exploded.day_of_month = 4;
-  exploded.hour = 1;
-  exploded.minute = 2;
-  exploded.second = 3;
-  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &time));
+  EXPECT_TRUE(base::Time::FromUTCExploded(kTime, &time));
   return time;
 }
 
@@ -341,8 +340,8 @@ TEST_F(NotificationTemplateBuilderTest, LocalizedContextMenu) {
   // Disable overriding context menu label.
   SetContextMenuLabelForTesting(nullptr);
 
-  const wchar_t kExpectedXmlTemplate[] =
-      LR"(<toast launch="0|0|Default|0|https://example.com/|notification_id" displayTimestamp="1998-09-04T01:02:03Z">
+  std::wstring expected_xml = base::StrCat(
+      {LR"(<toast launch="0|0|Default|0|https://example.com/|notification_id" displayTimestamp="1998-09-04T01:02:03Z">
  <visual>
   <binding template="ToastGeneric">
    <text>My Title</text>
@@ -351,15 +350,13 @@ TEST_F(NotificationTemplateBuilderTest, LocalizedContextMenu) {
   </binding>
  </visual>
  <actions>
-  <action content="%ls" placement="contextMenu" activationType="foreground" arguments="2|0|Default|0|https://example.com/|notification_id"/>
+  <action content=")",
+       l10n_util::GetWideString(
+           IDS_WIN_NOTIFICATION_SETTINGS_CONTEXT_MENU_ITEM_NAME),
+       LR"(" placement="contextMenu" activationType="foreground" arguments="2|0|Default|0|https://example.com/|notification_id"/>
  </actions>
 </toast>
-)";
-
-  std::wstring settings_msg = l10n_util::GetWideString(
-      IDS_WIN_NOTIFICATION_SETTINGS_CONTEXT_MENU_ITEM_NAME);
-  std::wstring expected_xml =
-      base::StringPrintf(kExpectedXmlTemplate, settings_msg.c_str());
+)"});
 
   ASSERT_NO_FATAL_FAILURE(VerifyXml(notification, expected_xml));
 }

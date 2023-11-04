@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/test_browser_window.h"
 
+#include "base/feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/sharing/sharing_dialog_data.h"
@@ -105,11 +106,7 @@ const ui::ThemeProvider* TestBrowserWindow::GetThemeProvider() const {
 
 const ui::ColorProvider* TestBrowserWindow::GetColorProvider() const {
   return ui::ColorProviderManager::Get().GetColorProviderFor(
-      {ui::ColorProviderKey::ColorMode::kLight,
-       ui::ColorProviderKey::ContrastMode::kNormal, ui::SystemTheme::kDefault,
-       ui::ColorProviderKey::FrameType::kChromium,
-       ui::ColorProviderKey::FrameStyle::kDefault,
-       ui::ColorProviderKey::UserColorSource::kAccent});
+      ui::ColorProviderKey());
 }
 
 ui::ElementContext TestBrowserWindow::GetElementContext() {
@@ -353,6 +350,12 @@ bool TestBrowserWindow::IsFeaturePromoActive(
              iph_feature, user_education::FeaturePromoStatus::kContinued);
 }
 
+bool TestBrowserWindow::CanShowFeaturePromo(
+    const base::Feature& iph_feature) const {
+  return feature_promo_controller_ &&
+         feature_promo_controller_->CanShowPromo(iph_feature);
+}
+
 bool TestBrowserWindow::MaybeShowFeaturePromo(
     const base::Feature& iph_feature,
     user_education::FeaturePromoController::BubbleCloseCallback close_callback,
@@ -377,9 +380,11 @@ bool TestBrowserWindow::MaybeShowStartupFeaturePromo(
       std::move(body_params), std::move(title_params));
 }
 
-bool TestBrowserWindow::CloseFeaturePromo(const base::Feature& iph_feature) {
+bool TestBrowserWindow::CloseFeaturePromo(
+    const base::Feature& iph_feature,
+    user_education::FeaturePromoCloseReason close_reason) {
   return feature_promo_controller_ &&
-         feature_promo_controller_->EndPromo(iph_feature);
+         feature_promo_controller_->EndPromo(iph_feature, close_reason);
 }
 
 user_education::FeaturePromoHandle
@@ -392,6 +397,9 @@ TestBrowserWindow::CloseFeaturePromoAndContinue(
 }
 
 void TestBrowserWindow::NotifyFeatureEngagementEvent(const char* event_name) {}
+
+void TestBrowserWindow::NotifyPromoFeatureUsed(
+    const base::Feature& iph_feature) {}
 
 user_education::FeaturePromoController*
 TestBrowserWindow::SetFeaturePromoController(

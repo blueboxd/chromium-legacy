@@ -11,6 +11,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/observer_list.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -64,6 +65,51 @@ bool IsChromePolicy(const std::string& type) {
   return type == dm_protocol::kChromeDevicePolicyType ||
          type == dm_protocol::kChromeUserPolicyType ||
          IsMachineLevelUserCloudPolicyType(type);
+}
+
+em::DevicePolicyRequest::Reason TranslateFetchReason(PolicyFetchReason reason) {
+  using Request = em::DevicePolicyRequest;
+  switch (reason) {
+    case PolicyFetchReason::kUnspecified:
+      return Request::UNSPECIFIED;
+    case PolicyFetchReason::kDeviceEnrollment:
+      return Request::DEVICE_ENROLLMENT;
+    case PolicyFetchReason::kInvalidation:
+      return Request::INVALIDATION;
+    case PolicyFetchReason::kRegistrationChanged:
+      return Request::REGISTRATION_CHANGED;
+    case PolicyFetchReason::kRetryAfterStatusServiceActivationPending:
+      return Request::RETRY_AFTER_STATUS_SERVICE_ACTIVATION_PENDING;
+    case PolicyFetchReason::kRetryAfterStatusServicePolicyNotFound:
+      return Request::RETRY_AFTER_STATUS_SERVICE_POLICY_NOT_FOUND;
+    case PolicyFetchReason::kRetryAfterStatusServiceTooManyRequests:
+      return Request::RETRY_AFTER_STATUS_SERVICE_TOO_MANY_REQUESTS;
+    case PolicyFetchReason::kRetryAfterStatusRequestFailed:
+      return Request::RETRY_AFTER_STATUS_REQUEST_FAILED;
+    case PolicyFetchReason::kRetryAfterStatusTemporaryUnavailable:
+      return Request::RETRY_AFTER_STATUS_TEMPORARY_UNAVAILABLE;
+    case PolicyFetchReason::kRetryAfterStatusCannotSignRequest:
+      return Request::RETRY_AFTER_STATUS_CANNOT_SIGN_REQUEST;
+    case PolicyFetchReason::kRetryAfterStatusRequestInvalid:
+      return Request::RETRY_AFTER_STATUS_REQUEST_INVALID;
+    case PolicyFetchReason::kRetryAfterStatusHttpStatusError:
+      return Request::RETRY_AFTER_STATUS_HTTP_STATUS_ERROR;
+    case PolicyFetchReason::kRetryAfterStatusResponseDecodingError:
+      return Request::RETRY_AFTER_STATUS_RESPONSE_DECODING_ERROR;
+    case PolicyFetchReason::kRetryAfterStatusServiceManagementNotSupported:
+      return Request::RETRY_AFTER_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED;
+    case PolicyFetchReason::kRetryAfterStatusRequestTooLarge:
+      return Request::RETRY_AFTER_STATUS_REQUEST_TOO_LARGE;
+    case PolicyFetchReason::kScheduled:
+      return Request::SCHEDULED;
+    case PolicyFetchReason::kSignin:
+      return Request::SIGNIN;
+    case PolicyFetchReason::kBrowserStart:
+      return Request::BROWSER_START;
+    case PolicyFetchReason::kTest:
+      return Request::TEST;
+  }
+  NOTREACHED_NORETURN();
 }
 
 em::PolicyValidationReportRequest::ValidationResultType
@@ -404,7 +450,7 @@ void CloudPolicyClient::SetOAuthTokenAsAdditionalAuth(
   oauth_token_ = oauth_token;
 }
 
-void CloudPolicyClient::FetchPolicy() {
+void CloudPolicyClient::FetchPolicy(PolicyFetchReason reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   CHECK(is_registered());
@@ -476,6 +522,8 @@ void CloudPolicyClient::FetchPolicy() {
       key_update_request->add_server_backed_state_keys(*key);
     }
   }
+
+  policy_request->set_reason(TranslateFetchReason(reason));
 
   // Set the fetched invalidation version to the latest invalidation version
   // since it is now the invalidation version used for the latest fetch.
@@ -791,6 +839,7 @@ void CloudPolicyClient::FetchRemoteCommands(
     std::unique_ptr<RemoteCommandJob::UniqueIDType> last_command_id,
     const std::vector<em::RemoteCommandResult>& command_results,
     em::PolicyFetchRequest::SignatureType signature_type,
+    const std::string& request_type,
     RemoteCommandCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
@@ -818,6 +867,7 @@ void CloudPolicyClient::FetchRemoteCommands(
 
   request->set_send_secure_commands(true);
   request->set_signature_type(signature_type);
+  request->set_type(request_type);
 
   request_jobs_.push_back(service_->CreateJob(std::move(config)));
 }

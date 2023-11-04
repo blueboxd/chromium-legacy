@@ -5,15 +5,16 @@
 #import "ios/chrome/browser/drag_and_drop/drag_item_util.h"
 
 #import "base/check_op.h"
-#import "ios/chrome/browser/window_activities/window_activity_helpers.h"
+#import "ios/chrome/browser/window_activities/model/window_activity_helpers.h"
 #import "ios/web/public/browser_state.h"
 #import "ios/web/public/web_state.h"
 #import "net/base/mac/url_conversions.h"
 
 @implementation TabInfo
-- (instancetype)initWithTabID:(NSString*)tabID incognito:(BOOL)incognito {
+- (instancetype)initWithTabID:(web::WebStateID)tabID incognito:(BOOL)incognito {
   self = [super init];
   if (self) {
+    CHECK(tabID.valid());
     _tabID = tabID;
     _incognito = incognito;
   }
@@ -38,7 +39,7 @@ UIDragItem* CreateTabDragItem(web::WebState* web_state) {
   NSItemProvider* item_provider = [[NSItemProvider alloc] initWithObject:url];
   UIDragItem* drag_item =
       [[UIDragItem alloc] initWithItemProvider:item_provider];
-  NSString* tab_id = web_state->GetStableIdentifier();
+  web::WebStateID tab_id = web_state->GetUniqueIdentifier();
   BOOL incognito = web_state->GetBrowserState()->IsOffTheRecord();
   // Visibility "all" is required to allow the OS to recognize this activity for
   // creating a new window.

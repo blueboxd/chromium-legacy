@@ -215,7 +215,7 @@ enum class NudgeCatalogName {
   kVideoConferenceTrayCameraUseWhileHWDisabled = 14,
   kVideoConferenceTrayCameraUseWhileSWDisabled = 15,
   kVideoConferenceTraySpeakOnMuteOptIn = 16,
-  kVideoConferenceTraySpeakOnMuteOptInConfirmation = 17,
+  // [Deprecated] kVideoConferenceTraySpeakOnMuteOptInConfirmation = 17,
   kScalableIphBubble = 18,
   kVideoConferenceTrayCameraMicrophoneUseWhileDisabled = 19,
   kMultitaskMenuClamshell = 20,
@@ -274,7 +274,10 @@ enum class ToastCatalogName {
   // [Deprecated] kVideoConferenceTrayUseWhileDisabled = 43,
   kBatterySaverDisabled = 44,
   kDictationNoFocusedTextField = 45,
-  kMaxValue = kDictationNoFocusedTextField
+  kBatterySaverEnabled = 46,
+  kDictationMicMuted = 47,
+  kVideoConferenceTraySpeakOnMuteOptInConfirmation = 48,
+  kMaxValue = kVideoConferenceTraySpeakOnMuteOptInConfirmation
 };
 
 }  // namespace ash

@@ -68,6 +68,7 @@
 #include "url/origin.h"
 
 #if !BUILDFLAG(IS_ANDROID)
+#include "base/test/test_future.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -104,6 +105,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/policy/system_features_disable_list_policy_handler.h"
+#include "chromeos/components/kiosk/kiosk_test_utils.h"
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -297,6 +299,23 @@ TEST_F(ChromeContentBrowserClientWindowTest, OverrideNavigationParams) {
 }
 
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_CHROMEOS)
+TEST_F(ChromeContentBrowserClientWindowTest,
+       BackForwardCacheIsDisallowedForCacheControlNoStorePageWhenInKioskMode) {
+// Enter Kiosk session.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  user_manager::ScopedUserManager user_manager(
+      std::make_unique<user_manager::FakeUserManager>());
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  chromeos::SetUpFakeKioskSession();
+
+  ChromeContentBrowserClient client;
+  ASSERT_FALSE(client.ShouldAllowBackForwardCacheForCacheControlNoStorePage(
+      browser()->profile()));
+}
+
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 // NOTE: Any updates to the expectations in these tests should also be done in
 // the browser test WebRtcDisableEncryptionFlagBrowserTest.
@@ -596,6 +615,23 @@ TEST_F(ChromeContentBrowserClientTest, RedirectPrivacySandboxURL) {
 }
 
 #endif
+
+#if !BUILDFLAG(IS_ANDROID)
+TEST_F(ChromeContentBrowserClientTest, BindVideoEffectsManager) {
+  TestChromeContentBrowserClient test_content_browser_client;
+  mojo::Remote<video_capture::mojom::VideoEffectsManager> video_effects_manager;
+  test_content_browser_client.BindVideoEffectsManager(
+      "test_device_id", &profile_,
+      video_effects_manager.BindNewPipeAndPassReceiver());
+
+  base::test::TestFuture<video_capture::mojom::VideoEffectsConfigurationPtr>
+      configuration_future;
+  video_effects_manager->GetConfiguration(configuration_future.GetCallback());
+  // The actual value isn't that important here. What matters is that getting a
+  // result means that the plumbing worked.
+  EXPECT_FALSE(configuration_future.Get().is_null());
+}
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS)
 class ChromeContentSettingsRedirectTest

@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/web_apps_sync_test_base.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
+#include "chrome/browser/web_applications/generated_icon_fix_util.h"
 #include "chrome/browser/web_applications/manifest_update_manager.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
@@ -107,7 +108,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientWebAppsSyncGeneratedIconFixSyncTest,
   // Insert web app into sync profile.
   // Fields copied from chrome/test/data/web_apps/basic.json.
   GURL start_url = embedded_test_server()->GetURL("/web_apps/basic.html");
-  AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);
+  webapps::AppId app_id =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);
   sync_pb::EntitySpecifics specifics;
   sync_pb::WebAppSpecifics& web_app_specifics = *specifics.mutable_web_app();
   web_app_specifics.set_start_url(start_url.spec());
@@ -139,8 +141,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientWebAppsSyncGeneratedIconFixSyncTest,
 
   if (wait_8_days()) {
     // Advance time beyond the fix time window.
-    provider(0).manifest_update_manager().set_time_override_for_testing(
-        base::Time::Now() + base::Days(8));
+    generated_icon_fix_util::SetNowForTesting(base::Time::Now() +
+                                              base::Days(8));
   }
 
   // Trigger manifest update.

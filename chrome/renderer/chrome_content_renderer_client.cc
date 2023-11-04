@@ -43,7 +43,7 @@
 #include "chrome/common/secure_origin_allowlist.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/benchmarking_extension.h"
@@ -734,7 +734,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
 #else
   if (base::FeatureList::IsEnabled(commerce::kCommerceHintAndroid) &&
 #endif  // !BUILDFLAG(IS_ANDROID)
-      render_frame->IsMainFrame() && !render_frame->IsInFencedFrameTree()) {
+      render_frame->GetWebFrame()->IsOutermostMainFrame()) {
     new cart::CommerceHintAgent(render_frame);
   }
 
@@ -1771,7 +1771,7 @@ bool ChromeContentRendererClient::IsSafeRedirectTarget(const GURL& from_url,
       return false;
     // TODO(solomonkinard): Use initiator_origin and add tests.
     if (extensions::WebAccessibleResourcesInfo::IsResourceWebAccessible(
-            extension, to_url.path(), absl::optional<url::Origin>())) {
+            extension, to_url.path(), nullptr)) {
       return true;
     }
     return extension->guid() == from_url.host();

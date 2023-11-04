@@ -52,6 +52,8 @@
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/events/event.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/image/image.h"
 
@@ -174,6 +176,29 @@ TEST_F(StatusAreaWidgetTest, OpenTrayBubble) {
   LeftClickOn(ime_menu);
 
   EXPECT_EQ(status_area->open_shelf_pod_bubble(), ime_menu->GetBubbleView());
+}
+
+TEST_F(StatusAreaWidgetTest, OnlyOneOpenTrayBubble) {
+  Shell::Get()->ime_controller()->ShowImeMenuOnShelf(true);
+
+  StatusAreaWidget* status_area = GetPrimaryShelf()->GetStatusAreaWidget();
+  TrayBackgroundView* ime_menu = status_area->ime_menu_tray();
+  UnifiedSystemTray* system_tray = status_area->unified_system_tray();
+
+  LeftClickOn(ime_menu);
+  ASSERT_EQ(status_area->open_shelf_pod_bubble(), ime_menu->GetBubbleView());
+
+  // Open Quick Settings through the accelerator.
+  Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
+      AcceleratorAction::kToggleSystemTrayBubble, {});
+
+  // When there's an open shelf pod bubble and we open another bubble through
+  // shortcuts, the previous bubble should hide for the next one to show.
+  EXPECT_FALSE(ime_menu->GetBubbleView());
+  ASSERT_TRUE(system_tray->bubble());
+
+  EXPECT_EQ(status_area->open_shelf_pod_bubble(),
+            system_tray->bubble()->GetBubbleView());
 }
 
 class SystemTrayFocusTestObserver : public SystemTrayObserver {
@@ -587,10 +612,7 @@ TEST_F(StatusAreaWidgetCollapseStateTest, ClickOverflowButton) {
   EXPECT_TRUE(overflow_button_->GetVisible());
 
   // Click overflow button.
-  gfx::Point point = overflow_button_->GetBoundsInScreen().origin();
-  ui::MouseEvent click(ui::ET_MOUSE_PRESSED, point, point,
-                       base::TimeTicks::Now(), 0, 0);
-  overflow_button_->PerformAction(click);
+  LeftClickOn(overflow_button_);
 
   // All tray buttons should be visible in the expanded state.
   EXPECT_EQ(StatusAreaWidget::CollapseState::EXPANDED, collapse_state());
@@ -601,7 +623,7 @@ TEST_F(StatusAreaWidgetCollapseStateTest, ClickOverflowButton) {
   EXPECT_TRUE(overflow_button_->GetVisible());
 
   // Clicking the overflow button again should go back to the collapsed state.
-  overflow_button_->PerformAction(click);
+  LeftClickOn(overflow_button_);
   EXPECT_EQ(StatusAreaWidget::CollapseState::COLLAPSED, collapse_state());
   EXPECT_FALSE(select_to_speak_->GetVisible());
   EXPECT_FALSE(ime_menu_->GetVisible());

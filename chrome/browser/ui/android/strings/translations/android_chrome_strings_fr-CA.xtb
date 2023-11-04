@@ -175,6 +175,7 @@ Lorsque vous supprimez votre historique de navigation (pour un site en particuli
 <translation id="19288952978244135">Rouvrir Chrome.</translation>
 <translation id="1933845786846280168">Onglet sélectionné</translation>
 <translation id="1943432128510653496">Enregistrer les mots de passe</translation>
+<translation id="1944535645109964458">Aucune clé d'accès accessible</translation>
 <translation id="1952172573699511566">Les sites Web affichent du texte dans votre langue préférée lorsque cela est possible.</translation>
 <translation id="1959679933317802873">En attente de contenu…</translation>
 <translation id="1960290143419248813">Les mises à jour Chrome ne sont plus prises en charge pour cette version d'Android</translation>
@@ -222,6 +223,7 @@ Lorsque vous supprimez votre historique de navigation (pour un site en particuli
 <translation id="2189903024544168260">Centre d'intérêt retiré</translation>
 <translation id="2194856509914051091">Points à prendre en compte</translation>
 <translation id="2200113223741723867">Gérer le partage des données d'utilisation</translation>
+<translation id="221494669172414749">Si vous ouvrez Chrome sans un verrouillage de profil, vos mots de passe et vos modes de paiement enregistrés seront retirés du véhicule. Le verrouillage de profil protège ces données.</translation>
 <translation id="2218567645332692482">Met à niveau les navigations vers le protocole HTTPS et vous avertit avant de charger des sites qui ne le prennent pas en charge</translation>
 <translation id="2227444325776770048">Continuer comme <ph name="USER_FULL_NAME" /></translation>
 <translation id="2230777942707397948">Fenêtre vide</translation>
@@ -262,6 +264,7 @@ Lorsque vous supprimez votre historique de navigation (pour un site en particuli
 <translation id="2461822463642141190">Actuelle</translation>
 <translation id="2472163211318554013">Connectez-vous pour profiter pleinement de Chrome</translation>
 <translation id="247737702124049222">Les descriptions d'images sont activées</translation>
+<translation id="2479148705183875116">Accéder aux paramètres</translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="2496180316473517155">Historique de navigation</translation>
 <translation id="2497852260688568942">La synchronisation est désactivée par votre administrateur</translation>
@@ -338,6 +341,7 @@ Les jetons de confiance valides améliorent la confidentialité sur le Web et ne
 <translation id="2840810876587895427">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> onglet de navigation privée sera fermé}one{<ph name="TAB_COUNT_MANY" /> onglet de navigation privée sera fermé}other{<ph name="TAB_COUNT_MANY" /> onglets de navigation privée seront fermés}}</translation>
 <translation id="2841216154655874070">{NUM_DAYS,plural, =1{Dernière vérification : il y a 1 jour}one{Dernière vérification : il y a # jour}other{Dernière vérification : il y a # jours}}</translation>
 <translation id="2842985007712546952">Dossier parent</translation>
+<translation id="2853415089995957805">Chrome précharge les pages que vous êtes susceptible de visiter, afin qu'elles se chargent plus rapidement lorsque vous les visitez</translation>
 <translation id="2856503607207334158">Échec de connexion</translation>
 <translation id="2860954141821109167">Assurez-vous qu'une application de téléphonie est activée sur cet appareil</translation>
 <translation id="2861923151411510142">Certaines fonctionnalités de Chrome ne seront plus offertes</translation>
@@ -555,7 +559,6 @@ Les jetons de confiance valides améliorent la confidentialité sur le Web et ne
 <translation id="3958287878205277013">Pour effacer l'historique de navigation privée de votre appareil, fermez tous les onglets de navigation privée.</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome chargera la page lorsque l'appareil sera en ligne}one{Chrome chargera la page lorsque l'appareil sera en ligne}other{Chrome chargera les pages lorsque l'appareil sera en ligne}}</translation>
 <translation id="3962119236270174787">Protection standard contre les extensions, les sites Web, les téléchargements qui sont réputés être dangereux</translation>
-<translation id="3963007978381181125">Le chiffrement par phrase de passe ne couvre pas les modes de paiement ni les adresses de Google Pay. Seule une personne connaissant votre phrase de passe peut lire vos données chiffrées. Google ne reçoit ni ne stocke la phrase de passe. Si vous l'oubliez ou souhaitez modifier ce paramètre, vous devrez réinitialiser la synchronisation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="3969142555815019568">Chrome ne peut pas vérifier vos mots de passe</translation>
 <translation id="3969863827134279083">Déplacer vers le haut</translation>
 <translation id="397105322502079400">Calcul en cours...</translation>
@@ -583,6 +586,7 @@ Les jetons de confiance valides améliorent la confidentialité sur le Web et ne
 <translation id="4084712963632273211">De <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />fourni par Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="409109920254068737">Vous pouvez utiliser cette tablette pour vous connecter à l'appareil qui affiche ce code QR.</translation>
 <translation id="4095146165863963773">Supprimer les données de l'application?</translation>
+<translation id="4095425503313512126">La navigation et la recherche sont plus rapides</translation>
 <translation id="4096227151372679484">Flux d'enregistrement des favoris ouvert à mi-hauteur</translation>
 <translation id="4101475238162928417">Synchronisez vos données pour ajouter vos mots de passe, vos favoris et plus sur vos autres appareils</translation>
 <translation id="4106587138345390261">Chrome explore de nouvelles fonctionnalités qui permettent aux sites d'offrir la même expérience de navigation tout en recourant dans une moindre mesure à vos renseignements personnels</translation>
@@ -624,6 +628,7 @@ Les jetons de confiance valides améliorent la confidentialité sur le Web et ne
 <translation id="4257230861809842349">Supprimer les mots de passe du gestionnaire de mots de passe Google?</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Quelles données sont utilisées :<ph name="END_BOLD" /> votre historique de navigation et un enregistrement des sites que vous avez visités à l'aide de Chrome sur cet appareil.</translation>
 <translation id="4269820728363426813">Copier l'adresse du lien</translation>
+<translation id="4277529130885813215">Utiliser un autre appareil</translation>
 <translation id="4283102315569707115">Demander des sites pour ordinateurs par défaut?</translation>
 <translation id="4285846616383034558">Témoins, cache et autres données relatives aux sites</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Activez le verrouillage d'écran dans les paramètres Android<ph name="END_LINK" /></translation>
@@ -792,6 +797,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5054455334322721892"><ph name="BEGIN_LINK1" />D'autres formes d'activités<ph name="END_LINK1" /> peuvent être enregistrées dans votre compte Google lorsque vous êtes connecté. Vous pouvez les supprimer à tout moment.</translation>
 <translation id="506254248375231072">Aucun onglet</translation>
 <translation id="5062960805900435602">La mise à jour sur la fusion des mots de passe est fermée</translation>
+<translation id="5081960376148623587">Choisir de précharger ou non les pages</translation>
 <translation id="5091199029769593641">Vous verrez bientôt des histoires de <ph name="SITE_NAME" /> lorsque vous ouvrez un nouvel onglet. Les sites que vous suivez sont enregistrés dans votre compte Google. Vous pouvez les gérer dans les paramètres de Découvertes.</translation>
 <translation id="5091249083535528968">Données d'utilisation étendues</translation>
 <translation id="509429900233858213">Une erreur s'est produite.</translation>
@@ -832,6 +838,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5308380583665731573">Connecter</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
 <translation id="5319359161174645648">Google recommande Chrome</translation>
+<translation id="5320351714793324716">Si vous autorisez les témoins, Chrome peut les utiliser pour procéder au préchargement</translation>
 <translation id="5321849971085220133">Chrome trouve continuellement de nouvelles façons de réduire le suivi et d'encore mieux vous protéger lors de votre navigation. En outre, Chrome <ph name="BEGIN_LINK" />estime vos centres d'intérêt<ph name="END_LINK" /> tout en vous permettant de les gérer. Ainsi, les sites que vous visitez peuvent demander à Chrome vos centres d'intérêt pour vous montrer des annonces adaptées.</translation>
 <translation id="5326921373682845375">Comme les pages préchargées sont chiffrées et que le site qui renvoie à ces pages est un site Google, les serveurs de Google ne reçoivent pas de nouveaux renseignements lors du préchargement privé de ces pages.</translation>
 <translation id="5329858041417644019">Votre navigateur n'est pas géré</translation>
@@ -1010,6 +1017,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6295158916970320988">Tous les sites</translation>
 <translation id="6303969859164067831">Se déconnecter et désactiver la synchronisation</translation>
 <translation id="6312687380483398334">Applications Web (mode silencieux)</translation>
+<translation id="6315386555979018699">Supprimer et continuer</translation>
 <translation id="6316139424528454185">Version Android non compatible</translation>
 <translation id="6324916366299863871">Modifier un raccourci</translation>
 <translation id="6324977638108296054">Impossible de créer un lien vers l'élément en surbrillance</translation>
@@ -1161,6 +1169,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6955535239952325894">Ce paramètre est désactivé sur les navigateurs gérés</translation>
 <translation id="6963766334940102469">Supprimer des favoris</translation>
 <translation id="696447261358045621">Désactiver le mode de navigation privée</translation>
+<translation id="6965382102122355670">OK</translation>
 <translation id="6971862865055170158">Ne pas approuver</translation>
 <translation id="6978717888677691380">Les sites que vous avez bloqués</translation>
 <translation id="6979737339423435258">Toutes les périodes</translation>
@@ -1572,6 +1581,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8998289560386111590">Non accessible sur votre appareil</translation>
 <translation id="8998729206196772491">Vous vous connectez avec un compte géré par <ph name="MANAGED_DOMAIN" />, et son administrateur pourra contrôler vos données Google Chrome. Celles-ci seront définitivement liées à votre compte. En vous déconnectant de Chrome, vous supprimerez vos données sur cet appareil, mais celles-ci resteront stockées dans votre compte Google.</translation>
 <translation id="9012585441087414258">Protège contre les sites, les téléchargements et les extensions qui sont réputés être dangereux. Si une page fait quelque chose de suspect, les URL et les éléments de contenu de la page sont envoyés à la navigation sécurisée Google.</translation>
+<translation id="9019199799064251516">Continuer sans verrouillage de profil du véhicule?</translation>
 <translation id="9022774213089566801">Fréquemment consultés</translation>
 <translation id="9022871169049522985">Les sites et les annonceurs peuvent mesurer la performance de leurs annonces</translation>
 <translation id="9035378196785279980">Déplacer vers\u2026</translation>
@@ -1634,5 +1644,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="983192555821071799">Fermer tous les onglets</translation>
 <translation id="987264212798334818">Généralités</translation>
 <translation id="992745192656291733"><ph name="TAB_COUNT" /> onglets</translation>
+<translation id="993520549480398880">Effacer également les favoris, l'historique et les autres données de ce véhicule</translation>
 <translation id="996149300115483134">Le menu de la carte du flux est fermé</translation>
 </translationbundle>

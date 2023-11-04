@@ -78,6 +78,7 @@
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/active_script_wrappable_manager.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/source_location.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
@@ -106,6 +107,12 @@
 #endif
 
 namespace blink {
+
+#if BUILDFLAG(IS_WIN)
+// Defined in v8_initializer_win.cc.
+bool FilterETWSessionByURLCallback(v8::Local<v8::Context> context,
+                                   const std::string& json_payload);
+#endif  // BUILDFLAG(IS_WIN)
 
 static String ExtractMessageForConsole(v8::Isolate* isolate,
                                        v8::Local<v8::Value> data) {
@@ -339,10 +346,14 @@ static void PromiseRejectHandlerInWorker(v8::PromiseRejectMessage data) {
 static void FailedAccessCheckCallbackInMainThread(v8::Local<v8::Object> holder,
                                                   v8::AccessType type,
                                                   v8::Local<v8::Value> data) {
-  // FIXME: We should modify V8 to pass in more contextual information (context,
-  // property, and object).
+  // FIXME: This is the access check callback of last resort. We should modify
+  // V8 to pass in more contextual information, so that we can build a full
+  // ExceptionState.
+  ExceptionState exception_state(
+      holder->GetIsolate(), ExceptionContextType::kUnknown, nullptr, nullptr);
   BindingSecurity::FailedAccessCheckFor(holder->GetIsolate(),
-                                        WrapperTypeInfo::Unwrap(data), holder);
+                                        WrapperTypeInfo::Unwrap(data), holder,
+                                        exception_state);
 }
 
 // Check whether Content Security Policy allows script execution.
@@ -377,8 +388,8 @@ TrustedTypesCodeGenerationCheck(v8::Local<v8::Context> context,
                                 v8::Local<v8::Value> source,
                                 bool is_code_like) {
   v8::Isolate* isolate = context->GetIsolate();
-  ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
-                                 "eval", "");
+  ExceptionState exception_state(
+      isolate, ExceptionContextType::kOperationInvoke, "eval", "");
 
   // If the input is not a string or TrustedScript, pass it through.
   if (!source->IsString() && !is_code_like &&
@@ -567,6 +578,15 @@ bool WasmGCEnabledCallback(v8::Local<v8::Context> context) {
   return RuntimeEnabledFeatures::WebAssemblyGCEnabled(execution_context);
 }
 
+bool WasmJSStringBuiltinsEnabledCallback(v8::Local<v8::Context> context) {
+  ExecutionContext* execution_context = ToExecutionContext(context);
+  if (!execution_context) {
+    return false;
+  }
+  return RuntimeEnabledFeatures::WebAssemblyJSStringBuiltinsEnabled(
+      execution_context);
+}
+
 bool JavaScriptCompileHintsMagicEnabledCallback(
     v8::Local<v8::Context> context) {
   ExecutionContext* execution_context = ToExecutionContext(context);
@@ -631,8 +651,9 @@ v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
           script_state->GetContext(), v8::Local<v8::Module>(),
           v8_import_assertions, /*v8_import_assertions_has_positions=*/false));
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  resolver->SetPropertyName("import");
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+      script_state,
+      ExceptionContext(ExceptionContextType::kUnknown, "", "import"));
   ScriptPromise promise = resolver->Promise();
 
   String invalid_attribute_key;
@@ -694,6 +715,8 @@ void InitializeV8Common(v8::Isolate* isolate) {
   isolate->SetWasmModuleCallback(WasmModuleOverride);
   isolate->SetWasmInstanceCallback(WasmInstanceOverride);
   isolate->SetWasmGCEnabledCallback(WasmGCEnabledCallback);
+  isolate->SetWasmImportedStringsEnabledCallback(
+      WasmJSStringBuiltinsEnabledCallback);
   isolate->SetSharedArrayBufferConstructorEnabledCallback(
       SharedArrayBufferConstructorEnabledCallback);
   isolate->SetJavaScriptCompileHintsMagicEnabledCallback(
@@ -702,6 +725,10 @@ void InitializeV8Common(v8::Isolate* isolate) {
   isolate->SetHostInitializeImportMetaObjectCallback(
       HostGetImportMetaProperties);
   isolate->SetMetricsRecorder(std::make_shared<V8MetricsRecorder>(isolate));
+
+#if BUILDFLAG(IS_WIN)
+  isolate->SetFilterETWSessionByURLCallback(FilterETWSessionByURLCallback);
+#endif  // BUILDFLAG(IS_WIN)
 
   V8ContextSnapshot::EnsureInterfaceTemplates(isolate);
 

@@ -206,6 +206,7 @@
 <translation id="1775598828170459419"><ph name="NUM_TOTAL_ITEMS" /> жасалчу иштин ичинен <ph name="NUM_SHOWN_ITEMS" /> жасалчу иш көрсөтүлүүдө</translation>
 <translation id="178347895271755507">Телефонуңуздагы соңку сүрөттөрдү, медиа файлдарды жана билдирмелерди көрүү параметрин тууралоо</translation>
 <translation id="1787955149152357925">Өчүк</translation>
+<translation id="1797271123677381264">Сырсөздү унутуп калдым</translation>
 <translation id="181103072419391116">Сигналдын күчү <ph name="SIGNAL_STRENGTH" />, Администраторуңуз башкарат</translation>
 <translation id="1815245884418711390">Байланыш түйүнүн өчүрүү/күйгүзүү. Байланыш түйүнү өчүк.</translation>
 <translation id="1816896987747843206">Камерага уруксаты бар колдонмолордун жана вебсайттардын баарына камераны пайдалануу мүмкүнчүлүгү берилет</translation>
@@ -298,7 +299,6 @@
 <translation id="2227179592712503583">Сунушту өчүрүү</translation>
 <translation id="2248634276911611268">Шилтемени жаңы өтмөктө ачып, ушул жаңы өтмөккө которулуу</translation>
 <translation id="225680501294068881">Түзмөктөр изделүүдө…</translation>
-<translation id="225716114209817872">Эң көп</translation>
 <translation id="2257486738914982088"><ph name="FILENAME" /> файлын жүктөп алып жатканда бир жерден ката кетти</translation>
 <translation id="2258734398699965611">Сунушталган файлдар</translation>
 <translation id="2268130516524549846">Bluetooth өчүрүлдү</translation>
@@ -310,7 +310,7 @@
 <translation id="2292698582925480719">Дисплей шкаласы</translation>
 <translation id="229397294990920565">Мобилдик Интернет өчүрүлүүдө...</translation>
 <translation id="2295777434187870477">Микрофон күйүк, өчүрүү менен микрофондун үнү басылат.</translation>
-<translation id="2298170939937364391">Толук экран лупасы иштетилди. Өчүрүү үчүн Ctrl+Search+M баскычтарын кайра басыңыз.</translation>
+<translation id="2298170939937364391">Толук экран лупасы иштетилди. Аны өчүрүү үчүн Ctrl+Search+M баскычтарын кайра басыңыз.</translation>
 <translation id="2302092602801625023">Бул аккаунт Family Link аркылуу башкарылат</translation>
 <translation id="2303600792989757991">Терезеге ыкчам көз чаптырууга которуу</translation>
 <translation id="2305738328104302723">Google'да жасалчу иштер тизмеси: <ph name="GLANCEABLES_TASKS_LIST_NAME" /></translation>
@@ -451,6 +451,7 @@
 <translation id="2891209721153296020">"Тандоодон чыгаруу"</translation>
 <translation id="2894949423239620203">Кабель майнаптуулукка кедергисин тийгизиши мүмкүн</translation>
 <translation id="2914580577416829331">Экрандан тартылып алынгандар</translation>
+<translation id="2924416280450782352">Объекттер көрсөтүлбөй жатат. Бул панелди кайрадан ачып көрүңүз.</translation>
 <translation id="2931572158271115754">Жасалчу иштер жок.</translation>
 <translation id="2941112035454246133">Төмөн</translation>
 <translation id="2942350706960889382">Жалгаштырылган лупа</translation>
@@ -469,7 +470,7 @@
 <translation id="2977598380246111477">Кийинки номер</translation>
 <translation id="2985148236010982088">Бардык колдонмолорду көрүү</translation>
 <translation id="2992327365391326550">Түзмөктүн микрофон баскычы өчүк.</translation>
-<translation id="2996462380875591307">Жалгаштырылган лупа иштетилди. Өчүрүү үчүн Ctrl+Search+D баскычтарын кайра басыңыз.</translation>
+<translation id="2996462380875591307">Жалгаштырылган лупа иштетилди. Аны өчүрүү үчүн Ctrl+Search+D баскычтарын кайра басыңыз.</translation>
 <translation id="3000461861112256445">Моно аудио</translation>
 <translation id="3009178788565917040">Чыгаруу</translation>
 <translation id="3009958530611748826">Скандалган нерселерди сактоо үчүн папка тандаңыз</translation>
@@ -696,7 +697,6 @@
 <translation id="385300504083504382">Киришүү</translation>
 <translation id="3859364108019690">Колдонмолорду алып ойнотууга болбойт</translation>
 <translation id="3861651314799684201">Толук экранды жаздыруу үчүн "Enter" баскычын басыңыз</translation>
-<translation id="3871092408932389764">Эң төмөн</translation>
 <translation id="3886872229787704059">Бүгүн ачылды</translation>
 <translation id="3891340733213178823">Чыгуу үчүн эки ирет Ctrl+Shift+Q басыңыз.</translation>
 <translation id="3893630138897523026">ChromeVox (айтылуучу жооп пикир)</translation>
@@ -738,6 +738,7 @@
 <translation id="4028481283645788203">Коопсуздукту бекемдөө үчүн сырсөз талап кылынат</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4032988577476260673"><ph name="LAUNCHER_KEY_NAME" /> + солго жебе</translation>
+<translation id="4039699481424758547">Терезени тартып алуу үчүн "Enter" баскычын басыңыз: <ph name="WINDOW_TITLE" /></translation>
 <translation id="4042660782729322247">Экраныңызды бөлүшүп жатасыз</translation>
 <translation id="404437169852192935">Жаңыртуулар аяктады</translation>
 <translation id="4049230407053723315">Ыкчам жөндөөлөр</translation>
@@ -833,7 +834,6 @@
 <translation id="4406883609789734330">Ыкчам коштомо жазуулар</translation>
 <translation id="4412944820643904175"><ph name="FEATURE_NAME" /> өчүк.</translation>
 <translation id="4424159417645388645">5-иш такта</translation>
-<translation id="4427695046139341014">Оюн тактасы</translation>
 <translation id="4430019312045809116">Үндүн катуулугу</translation>
 <translation id="4441283832827406317">Колдонмолор аталышы боюнча иргелет</translation>
 <translation id="4445159312344259901">Кулпусун ачуу үчүн кириңиз</translation>
@@ -1214,12 +1214,12 @@
 <translation id="5961960957587052807">Жарык</translation>
 <translation id="5965524703725988602">Караңгы теманы өчүрүү/күйгүзүү. <ph name="STATE_TEXT" />.</translation>
 <translation id="5975235751479998104">Кийинки терезеге өтүү</translation>
-<translation id="5976112937189445008">Терезени жаздыруу үчүн "Enter" баскычын басыңыз</translation>
 <translation id="5978382165065462689">Алыскы жардамчы аркылуу экраныңыздын көзөмөлүн бөлүшүүдө.</translation>
 <translation id="5980301590375426705">Конокту чыгаруу</translation>
 <translation id="5983567367406220847">Колдонулбагандыктан, байланыш түйүнү өчүрүлдү.</translation>
 <translation id="598407983968395253">Үлгүнү колдонуу</translation>
 <translation id="598882571027504733">Жаңыртуу үчүн, туташкан баскычтопту үзбөй туруп, Chromebook'ту өчүрүп-күйгүзүңүз.</translation>
+<translation id="6000279412553873020">Ачкычтар, баскычтар жана башкалар</translation>
 <translation id="6012623610530968780"><ph name="TOTAL_PAGE_NUM" /> барактын ичинен <ph name="SELECTED_PAGE" /> барак</translation>
 <translation id="601304062528754300">Текчедеги кийинки нерсени бөлүп көрсөтүү</translation>
 <translation id="6015573907265691211">Аткарылды деп белгилөө</translation>
@@ -1436,7 +1436,6 @@
 <translation id="6886172995547742638"><ph name="DEVICE_TYPE" /> түзмөгүңүз начар иштеши мүмкүн. Тастыкталган <ph name="PREFERRED_MINIMUM_POWER" /> Вт же андан жогору USB-C кубаттагыч адаптерин колдонуңуз.</translation>
 <translation id="688631446150864480">Терезелерди которуштуруу үчүн Ылдый жебени басыңыз</translation>
 <translation id="6896758677409633944">Көчүрүү</translation>
-<translation id="6901883536534621389">Өтүү үчүн жаңсап көрүңүз</translation>
 <translation id="6912841030378044227">Дарек тилкесине өтүү</translation>
 <translation id="6912901278692845878">Кыскача маалымат алуу</translation>
 <translation id="6919251195245069855">Акылдуу картаңыз таанылган жок. Кайталап көрүңүз.</translation>
@@ -1742,7 +1741,6 @@
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> колдонулууда</translation>
 <translation id="8185090165691050712">Кулпулоо режиминин өлчөмүн өзгөртүү үчүн менюну өчүрүү/күйгүзүү</translation>
 <translation id="8192202700944119416">Билдирмелер жашырылды.</translation>
-<translation id="8196787716797768628">Жаңсоо аркылуу колдонмолорду тез которуштуруп, Chromebook'ту планшет режиминде колдонуңуз.</translation>
 <translation id="8198456017687137612">Өтмөктү тышкы экранга чыгаруу</translation>
 <translation id="8200772114523450471">Улантуу</translation>
 <translation id="8203795194971602413">Оң баскычын чыкылдатуу</translation>
@@ -1752,7 +1750,6 @@
 <translation id="8230305195727960608">Түстөрдү инверсиялоо режими</translation>
 <translation id="8236042855478648955">Тыныгууга убакыт келди</translation>
 <translation id="8239034820133090126">Оң жактагы иш тактаны иштетүү</translation>
-<translation id="8246282815785366524">Кайтып келишиңиз менен, <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, Сигналдын күчү <ph name="SIGNAL_STRENGTH" />, Телефондун батареясы <ph name="BATTERY_STATUS" /></translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, Колдонмо</translation>
 <translation id="8255234195843591763">Жаңыртуу үчүн баштапкы абалга келтириңиз</translation>
@@ -1851,6 +1848,7 @@
 <translation id="8703634754197148428">Жаздырып баштаңыз. Жаздыруу башталгандан кийин Alt + Shift + L баскычтарынын айкалышын колдонуп, текчеге өтүп, жаздырууну токтотуу баскычын издеңиз</translation>
 <translation id="8704155109538237473">Сүрөттөгү сүрөт терезесине өтүү</translation>
 <translation id="870917907284186124">Текстти айтып терүүнү күйгүзүү/өчүрүү (оозеки терүү)</translation>
+<translation id="8714138378966541668">Провайдер кулпулап койгон</translation>
 <translation id="8717459106217102612">Мурунку сөздү же тамганы тандоо</translation>
 <translation id="8721053961083920564">Үндү өчүрүү/күйгүзүү. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Экрандагыны толугу менен сүрөткө тартып алуу</translation>
@@ -1869,7 +1867,6 @@
 <translation id="878215960996152260"><ph name="APP_NAME" />, Орнотулган колдонмо, Бөгөттөлдү</translation>
 <translation id="8785070478575117577"><ph name="NETWORK_NAME" /> түзмөгүнө туташуу</translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
-<translation id="8790998409862094015">Оор</translation>
 <translation id="8792626944327216835">микрофон</translation>
 <translation id="8801802992492329306">5G</translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> папкасы</translation>
@@ -1882,6 +1879,7 @@
 <translation id="8834539327799336565">Учурда туташып турган түзмөктөр</translation>
 <translation id="8841375032071747811">Артка баскычы</translation>
 <translation id="8843682306134542540">Буруу кулпусун өчүрүү/күйгүзүү. <ph name="STATE_TEXT" /></translation>
+<translation id="8849001918648564819">Жашырылды</translation>
 <translation id="8853703225951107899">PIN кодуңуз же сырсөзүңүз дагы эле ырасталган жок. Эскертүү: Эгер жакында сырсөзүңүздү өзгөрткөн болсоңуз, эски сырсөзүңүздү колдонуңуз. Жаңы сырсөзүңүз аккаунтуңуздан чыккандан кийин колдонулат.</translation>
 <translation id="8855885154700222542">Толук экран режиминин ачкычы</translation>
 <translation id="8858369206579825206">Купуялык параметрлери</translation>
@@ -1901,7 +1899,6 @@
 <translation id="8909138438987180327">Батареянын кубаты – <ph name="PERCENTAGE" /> пайыз.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Жардамчы бул тилде иштебейт.</translation>
-<translation id="8924458948354692166">Терезенин скриншотун тартып алуу үчүн "Enter" баскычын басыңыз</translation>
 <translation id="8926951137623668982">Текче ар дайым жашырылат</translation>
 <translation id="8934926665751933910">{NUM_FILES,plural, =1{1 файл}other{# файл}}</translation>
 <translation id="8936501819958976551">өчүрүлдү</translation>
@@ -1914,7 +1911,7 @@
 <translation id="8982906748181120328">Nearby'да көрүнүү</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590"><ph name="IME_NAME" /> колдонулууда</translation>
-<translation id="8991617137207906966">Түстөрдү инверсиялоо режими иштетилди. Өчүрүү үчүн Ctrl+Search+H баскычтарын кайра басыңыз.</translation>
+<translation id="8991617137207906966">Түстөрдү инверсиялоо режими иштетилди. Аны өчүрүү үчүн Ctrl+Search+H баскычтарын кайра басыңыз.</translation>
 <translation id="899350903320462459">Билдирмедеги аракетти аткаруу үчүн түзмөктүн кулпусун <ph name="LOGIN_ID" /> катары ачыңыз</translation>
 <translation id="8993733019280019776">Сүйлөп жатасызбы? Микрофонуңуз өчүк. Аны күйгүзүү үчүн микрофонду тандаңыз.</translation>
 <translation id="9000771174482730261">САКТАГЫЧТЫ БАШКАРУУ</translation>
@@ -1966,6 +1963,7 @@
 <translation id="9211490828691860325">Бардык иш такталар</translation>
 <translation id="9211681782751733685">Батарея <ph name="TIME_REMAINING" /> кийин толот.</translation>
 <translation id="9215934040295798075">Тушкагаз коюу</translation>
+<translation id="9216699844945104164">Терезени жаздыруу үчүн "Enter" баскычын басыңыз: <ph name="WINDOW_TITLE" /></translation>
 <translation id="9219103736887031265">Сүрөттөр</translation>
 <translation id="921989828232331238">Ата-энеңиз түзмөгүңүздү бир күнгө кулпулап койду</translation>
 <translation id="9220525904950070496">Аккаунтту өчүрүү</translation>

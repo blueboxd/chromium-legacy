@@ -100,6 +100,11 @@ declare_args() {
   # Enables a bounds check when two pointers (at least one being raw_ptr) are
   # subtracted (if supported by the underlying implementation).
   enable_pointer_subtraction_check = false
+
+  # Enables a compile-time check that all raw_ptrs to which arithmetic
+  # operations are to be applied are annotated with the AllowPtrArithmetic
+  # trait,
+  enable_pointer_arithmetic_trait_check = false
 }
 
 declare_args() {
@@ -199,12 +204,6 @@ declare_args() {
   # Shadow metadata is still under development and only supports Linux
   # for now.
   enable_shadow_metadata = false
-
-  if (is_apple) {
-    # TODO(crbug.com/1414153): this should be removed once the use of mach
-    # absolute time ticks is successfully launched on iOS.
-    partition_alloc_enable_mach_absolute_time_ticks = true
-  }
 }
 
 # *Scan is currently only used by Chromium, and supports only 64-bit.
@@ -307,14 +306,6 @@ assert(!use_asan_backup_ref_ptr || is_asan,
 assert(!use_asan_unowned_ptr || is_asan,
        "AsanUnownedPtr requires AddressSanitizer")
 
-if (is_apple) {
-  assert(!use_blink || partition_alloc_enable_mach_absolute_time_ticks,
-         "use_blink requires partition_alloc_enable_mach_absolute_time_ticks")
-
-  assert(!is_mac || partition_alloc_enable_mach_absolute_time_ticks,
-         "mac requires partition_alloc_enable_mach_absolute_time_ticks")
-}
-
 # AsanBackupRefPtr is not supported outside Chromium. The implementation is
 # entangled with `//base`. The code is only physically located with the rest of
 # `raw_ptr` to keep it together.
@@ -328,7 +319,26 @@ declare_args() {
   # pkeys support is explicitly disabled in all Cronet builds, as some test
   # dependencies that use partition_allocator are compiled in AOSP against a
   # version of glibc that does not include pkeys syscall numbers.
-  enable_pkeys = is_linux && target_cpu == "x64" && !is_cronet_build
+  enable_pkeys =
+      (is_linux || is_chromeos) && target_cpu == "x64" && !is_cronet_build
 }
-assert(!enable_pkeys || (is_linux && target_cpu == "x64"),
-       "Pkeys are only supported on x64 linux")
+assert(!enable_pkeys || ((is_linux || is_chromeos) && target_cpu == "x64"),
+       "Pkeys are only supported on x64 linux and ChromeOS")
+
+# Some implementations of raw_ptr<>, like BackupRefPtr, require zeroing when
+# constructing, destructing or moving out of a pointer. Some don't, like
+# NoOpImpl. Setting these to true, triggers zeroing even for implementations
+# that don't require it. This is the recommended setting.
+# Caveat: _zero_on_move and _on_destruct will prevent the type from being
+# trivially copyable, _zero_on_construct and _on_destruct will prevent the
+# type from being trivially default constructible.
+#
+# Setting to false will make raw_ptr<> behave more like raw C++ pointer `T*`,
+# making NoOpImpl act like an actual no-op, so use it if you're worried about
+# performance of your project. Use at your own risk, as it's unsupported and
+# untested within Chromium.
+declare_args() {
+  raw_ptr_zero_on_construct = raw_ptr_zero_on_construct_default
+  raw_ptr_zero_on_move = raw_ptr_zero_on_move_default
+  raw_ptr_zero_on_destruct = raw_ptr_zero_on_destruct_default
+}

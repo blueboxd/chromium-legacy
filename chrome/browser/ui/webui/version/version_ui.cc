@@ -23,13 +23,13 @@
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/embedder_support/user_agent_utils.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/grit/version_ui_resources.h"
 #include "components/grit/version_ui_resources_map.h"
-#include "components/strings/grit/components_chromium_strings.h"
+#include "components/strings/grit/components_branded_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/variations/service/variations_service.h"
 #include "components/version_info/version_info.h"
@@ -94,7 +94,6 @@ void CreateAndAddVersionUIDataSource(Profile* profile) {
     {version_ui::kFirmwareVersion, IDS_VERSION_UI_FIRMWARE_VERSION},
     {version_ui::kOsVersionHeaderText1, IDS_VERSION_UI_OS_TEXT1_LABEL},
     {version_ui::kOsVersionHeaderText2, IDS_VERSION_UI_OS_TEXT2_LABEL},
-    {version_ui::kOsVersionHeaderLink, IDS_VERSION_UI_OS_LINK},
 #endif  // BUILDFLAG(IS_CHROMEOS)
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
     {version_ui::kOSName, IDS_VERSION_UI_OS},
@@ -104,6 +103,11 @@ void CreateAndAddVersionUIDataSource(Profile* profile) {
 #endif  // BUILDFLAG(IS_ANDROID)
   };
   html_source->AddLocalizedStrings(kStrings);
+
+#if BUILDFLAG(IS_CHROMEOS)
+  auto os_link = l10n_util::GetStringUTF16(IDS_VERSION_UI_OS_LINK);
+  html_source->AddString(version_ui::kOsVersionHeaderLink, os_link);
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   VersionUI::AddVersionDetailStrings(html_source);
 

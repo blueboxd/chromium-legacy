@@ -223,7 +223,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.DetachedResourceRequest.FinalStatus"
-    enum="NetErrorCodes" expires_after="2024-01-14">
+    enum="NetErrorCodes" expires_after="2024-03-17">
   <owner>lizeb@chromium.org</owner>
   <owner>cct-team@google.com</owner>
   <summary>
@@ -246,7 +246,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.FeatureUsage" enum="CustomTabsFeatureUsed"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>donnd@chromium.org</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -287,7 +287,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.HadInteractionOnClose.FormStillActive"
-    enum="Boolean" expires_after="2024-01-21">
+    enum="Boolean" expires_after="2024-03-24">
   <owner>katzz@google.com</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -380,7 +380,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.MayLaunchUrlType" enum="MayLaunchUrlType"
-    expires_after="2024-01-21">
+    expires_after="2024-03-24">
   <owner>lizeb@chromium.org</owner>
   <summary>
     Android only. Which flavors of mayLaunchUrl() were used before a tab launch.
@@ -391,6 +391,29 @@ chromium-metrics-reviews@google.com.
 
     Before M118, unlike CustomTabs.WarmupStateOnLaunch, this metric was only
     recorded with a valid session.
+  </summary>
+</histogram>
+
+<histogram name="CustomTabs.MinimizedFeatureAvailability"
+    enum="CustomTabsMinimizedFeatureAvailability" expires_after="2024-04-01">
+  <owner>sinansahin@google.com</owner>
+  <owner>chrome-connective-tissue@google.com</owner>
+  <summary>
+    Minimized Custom Tab feature availability. Recorded during startup in
+    #onFinishNativeInitialization() when the availability is first checked to
+    initialize the feature. Android only.
+  </summary>
+</histogram>
+
+<histogram name="CustomTabs.PageInsights.Event" enum="PageInsightsEvent"
+    expires_after="2024-04-01">
+  <owner>jinsukkim@chromium.org</owner>
+  <owner>chrome-connective-tissue@google.com</owner>
+  <summary>
+    Recorded only on Android. Holds the interaction that the user has with Page
+    Insights BottomSheet, such as invoking PIH manually or by being auto
+    triggered, the bottom sheet's states and when it is dismissed, and
+    interactions with xSurface views.
   </summary>
 </histogram>
 
@@ -552,7 +575,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.SessionDisconnectStatus"
-    enum="CustomTabsSessionDisconnectStatus" expires_after="2024-01-21">
+    enum="CustomTabsSessionDisconnectStatus" expires_after="2024-03-24">
   <owner>kgrosu@google.com</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -632,7 +655,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="CustomTabs.Startup.TimeToFirstCommitNavigation.{suffix}"
+<histogram name="CustomTabs.Startup.TimeToFirstCommitNavigation2.{suffix}"
     units="ms" expires_after="2024-08-25">
   <owner>mthiesse@chromium.org</owner>
   <owner>chrome-connective-tissue@google.com</owner>
@@ -640,6 +663,9 @@ chromium-metrics-reviews@google.com.
     Startup time for a Custom Tab from the earliest point in startup to the
     first navigation commit. Split by varying degrees of warmness, from cold to
     fully pre-loaded through mayLaunchUrl.
+
+    It is recommended to limit analysis of data to Android P+ because on prior
+    versions the cold start detection is less robust.
 
     {suffix}.
   </summary>
@@ -658,7 +684,7 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="CustomTabs.Startup.TimeToLargestContentfulPaint.{suffix}"
+<histogram name="CustomTabs.Startup.TimeToLargestContentfulPaint2.{suffix}"
     units="ms" expires_after="2024-08-25">
   <owner>mthiesse@chromium.org</owner>
   <owner>chrome-connective-tissue@google.com</owner>
@@ -666,6 +692,9 @@ chromium-metrics-reviews@google.com.
     Startup time for a Custom Tab from the earliest point in startup to the
     Largest Contentful Paint on the first navigation. Split by varying degrees
     of warmness, from cold to fully pre-loaded through mayLaunchUrl.
+
+    It is recommended to limit analysis of data to Android P+ because on prior
+    versions the cold start detection is less robust.
 
     {suffix}.
   </summary>
@@ -711,7 +740,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.TimeScrollUpdateReceivedAfterScrollEnd" units="ms"
-    expires_after="2024-01-21">
+    expires_after="2024-03-24">
   <owner>sinansahin@google.com</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -752,7 +781,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.WebContentsStateOnLaunch" enum="WebContentsState"
-    expires_after="2024-01-21">
+    expires_after="2024-03-24">
   <owner>lizeb@chromium.org</owner>
   <summary>
     Android: When a CustomTabActivity creates its Tab, whether we use a
@@ -809,7 +838,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="TrustedWebActivity.LocationDelegationEnrolled" enum="Boolean"
-    expires_after="2024-01-14">
+    expires_after="2024-03-24">
   <owner>eirage@chromium.org</owner>
   <owner>peconn@chromium.org</owner>
   <summary>

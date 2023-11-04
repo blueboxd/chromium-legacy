@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.app.tab_activity_glue.ReparentingTask;
 import org.chromium.chrome.browser.app.tabmodel.TabModelOrchestrator;
 import org.chromium.chrome.browser.app.tabmodel.TabWindowManagerSingleton;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
@@ -45,6 +44,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
 import org.chromium.components.favicon.LargeIconBridge;
@@ -238,12 +238,12 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
     public int allocInstanceId(int windowId, int taskId, boolean preferNew) {
         removeInvalidInstanceData();
 
+        int instanceId = getInstanceByTask(taskId);
+
         // Explicitly specified window ID should be preferred. This comes from user selecting
-        // a certain instance on UI. This method would never be called if there were an instance
-        // already mapped to the task. Check it with an assert. When out of range, ignore the ID
-        // and apply the normal allocation logic below.
-        if (windowId >= 0 && windowId < mMaxInstances) {
-            assert getInstanceByTask(taskId) == INVALID_INSTANCE_ID;
+        // a certain instance on UI when no task is present for it.
+        // When out of range, ignore the ID and apply the normal allocation logic below.
+        if (windowId >= 0 && windowId < mMaxInstances && instanceId == INVALID_INSTANCE_ID) {
             Log.i(TAG_MULTI_INSTANCE, "Existing Instance - selected Id allocated: " + windowId);
             return windowId;
         }
@@ -251,7 +251,6 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
         // First, see if we have instance-task ID mapping. If we do, use the instance id. This
         // takes care of a task that had its activity destroyed and comes back to create a
         // new one. We pair them again.
-        int instanceId = getInstanceByTask(taskId);
         if (instanceId != INVALID_INSTANCE_ID) {
             Log.i(TAG_MULTI_INSTANCE, "Existing Instance - mapped Id allocated: " + instanceId);
             return instanceId;
@@ -783,7 +782,7 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
      */
     @Override
     public void moveTabToNewWindow(Tab tab) {
-        if (!ChromeFeatureList.sTabDragDropAndroid.isEnabled()) return;
+        if (!TabUiFeatureUtilities.isTabDragEnabled()) return;
 
         // Check if the new Chrome instance can be opened.
         if (MultiWindowUtils.getInstanceCount() < mMaxInstances) {
@@ -805,7 +804,7 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
      */
     @Override
     public void moveTabToWindow(Activity activity, Tab tab, int atIndex) {
-        if (!ChromeFeatureList.sTabDragDropAndroid.isEnabled()) return;
+        if (!TabUiFeatureUtilities.isTabDragEnabled()) return;
 
         // Get the current instance and move tab there.
         InstanceInfo info = getInstanceInfoFor(activity);

@@ -218,6 +218,18 @@ export class SettingsCursorAndTouchpadPageElement extends
       },
 
       /**
+       * Whether the face movements mouse cursor and keyboard control feature is
+       * enabled.
+       */
+      isAccessibilityFaceTrackingEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean(
+              'isAccessibilityGameFaceIntegrationEnabled');
+        },
+      },
+
+      /**
        * Used by DeepLinkingMixin to focus this page's deep links.
        */
       supportedSettingIds: {
@@ -250,6 +262,7 @@ export class SettingsCursorAndTouchpadPageElement extends
   private shelfNavigationButtonsPref_:
       chrome.settingsPrivate.PrefObject<boolean>;
   private showShelfNavigationButtonsSettings_: boolean;
+  private isAccessibilityFaceTrackingEnabled_: boolean;
 
   constructor() {
     super();
@@ -263,7 +276,7 @@ export class SettingsCursorAndTouchpadPageElement extends
     this.deviceBrowserProxy_ = DevicePageBrowserProxyImpl.getInstance();
   }
 
-  override connectedCallback() {
+  override connectedCallback(): void {
     super.connectedCallback();
 
     this.addWebUiListener(
@@ -278,7 +291,7 @@ export class SettingsCursorAndTouchpadPageElement extends
     this.deviceBrowserProxy_.initializePointers();
   }
 
-  override ready() {
+  override ready(): void {
     super.ready();
 
     this.addFocusConfig(routes.POINTERS, '#pointerSubpageButton');
@@ -287,7 +300,7 @@ export class SettingsCursorAndTouchpadPageElement extends
   /**
    * Note: Overrides RouteOriginMixin implementation
    */
-  override currentRouteChanged(newRoute: Route, prevRoute?: Route) {
+  override currentRouteChanged(newRoute: Route, prevRoute?: Route): void {
     super.currentRouteChanged(newRoute, prevRoute);
 
     // Does not apply to this page.
@@ -300,7 +313,7 @@ export class SettingsCursorAndTouchpadPageElement extends
 
   pointersChanged(
       hasMouse: boolean, hasTouchpad: boolean, hasPointingStick: boolean,
-      isKioskModeActive: boolean) {
+      isKioskModeActive: boolean): void {
     this.$.pointerSubpageButton.hidden =
         (!hasMouse && !hasPointingStick && !hasTouchpad) || isKioskModeActive;
   }

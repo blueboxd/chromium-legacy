@@ -38,7 +38,7 @@ public class OmniboxFeatures {
     public static final BooleanCachedFieldTrialParameter
             MODERNIZE_VISUAL_UPDATE_ACTIVE_COLOR_ON_OMNIBOX = new BooleanCachedFieldTrialParameter(
                     ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE,
-                    "modernize_visual_update_active_color_on_omnibox", false);
+                    "modernize_visual_update_active_color_on_omnibox", true);
 
     public static final BooleanCachedFieldTrialParameter
             MODERNIZE_VISUAL_UPDATE_SMALL_BOTTOM_MARGIN = new BooleanCachedFieldTrialParameter(
@@ -51,15 +51,12 @@ public class OmniboxFeatures {
 
     public static final BooleanCachedFieldTrialParameter MODERNIZE_VISUAL_UPDATE_SMALLEST_MARGINS =
             new BooleanCachedFieldTrialParameter(ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE,
-                    "modernize_visual_update_smallest_margins", false);
+                    "modernize_visual_update_smallest_margins", true);
 
     public static final BooleanCachedFieldTrialParameter
             MODERNIZE_VISUAL_UPDATE_MERGE_CLIPBOARD_ON_NTP = new BooleanCachedFieldTrialParameter(
                     ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE,
-                    "modernize_visual_update_merge_clipboard_on_ntp", false);
-    private static final MutableFlagWithSafeDefault sShouldAdaptToNarrowTabletWindows =
-            new MutableFlagWithSafeDefault(
-                    ChromeFeatureList.OMNIBOX_ADAPT_NARROW_TABLET_WINDOWS, false);
+                    "modernize_visual_update_merge_clipboard_on_ntp", true);
 
     private static final MutableFlagWithSafeDefault sJourneysActionChipFlag =
             new MutableFlagWithSafeDefault(
@@ -70,11 +67,10 @@ public class OmniboxFeatures {
 
     private static final MutableFlagWithSafeDefault sCacheSuggestionResources =
             new MutableFlagWithSafeDefault(
-                    ChromeFeatureList.OMNIBOX_CACHE_SUGGESTION_RESOURCES, false);
+                    ChromeFeatureList.OMNIBOX_CACHE_SUGGESTION_RESOURCES, true);
 
     private static final MutableFlagWithSafeDefault sWarmRecycledViewPoolFlag =
-            new MutableFlagWithSafeDefault(
-                    ChromeFeatureList.OMNIBOX_WARM_RECYCLED_VIEW_POOL, false);
+            new MutableFlagWithSafeDefault(ChromeFeatureList.OMNIBOX_WARM_RECYCLED_VIEW_POOL, true);
 
     private static final MutableFlagWithSafeDefault sNoopEditUrlSuggestionClicks =
             new MutableFlagWithSafeDefault(
@@ -112,14 +108,6 @@ public class OmniboxFeatures {
     public static boolean shouldShowModernizeVisualUpdate(Context context) {
         return ChromeFeatureList.sOmniboxModernizeVisualUpdate.isEnabled()
                 && (!isTablet(context) || enabledModernizeVisualUpdateOnTablet());
-    }
-
-    /**
-     * Returns whether the omnibox dropdown should be switched to a phone-like appearance when the
-     * window width is <600dp.
-     */
-    public static boolean shouldAdaptToNarrowTabletWindows() {
-        return sShouldAdaptToNarrowTabletWindows.isEnabled();
     }
 
     /**

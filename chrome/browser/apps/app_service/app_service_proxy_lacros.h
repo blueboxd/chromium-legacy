@@ -81,7 +81,6 @@ struct IntentLaunchInfo {
 //
 // TODO(crbug.com/1402872): Inherit from a common AppServiceProxy interface.
 class AppServiceProxyLacros : public KeyedService,
-                              public apps::IconLoader,
                               public crosapi::mojom::AppServiceSubscriber {
  public:
   explicit AppServiceProxyLacros(Profile* profile);
@@ -104,16 +103,20 @@ class AppServiceProxyLacros : public KeyedService,
 
   apps::WebsiteMetricsServiceLacros* WebsiteMetricsService();
 
-  // apps::IconLoader overrides.
-  absl::optional<IconKey> GetIconKey(const std::string& app_id) override;
-  std::unique_ptr<Releaser> LoadIconFromIconKey(
+  // Convenience method that calls app_icon_loader()->LoadIcon to load app icons
+  // with `app_id`. `callback` may be dispatched synchronously if it's possible
+  // to quickly return a result.
+  // TODO(crbug.com/1412708): Remove app_type from interface.
+  std::unique_ptr<IconLoader::Releaser> LoadIcon(
       AppType app_type,
       const std::string& app_id,
-      const IconKey& icon_key,
-      IconType icon_type,
+      const IconType& icon_type,
       int32_t size_hint_in_dip,
       bool allow_placeholder_icon,
-      apps::LoadIconCallback callback) override;
+      apps::LoadIconCallback callback);
+
+  // Return the most outer layer of the app icon loader that app service owns.
+  IconLoader* app_icon_loader() { return &app_outer_icon_loader_; }
 
   // Launches the app for the given |app_id|. |event_flags| provides additional
   // context about the action which launches the app (e.g. a middle click
@@ -184,6 +187,12 @@ class AppServiceProxyLacros : public KeyedService,
 
   // Stops the current running app for the given |app_id|.
   void StopApp(const std::string& app_id);
+
+  // Requests the size of an app with |app_id|. Publishers are expected to
+  // calculate and update the size of the app and publish this to App Service.
+  // This allows app sizes to be requested on-demand and ensure up-to-date
+  // values.
+  void UpdateAppSize(const std::string& app_id);
 
   // Executes a shortcut menu |command_id| and |shortcut_id| for a menu item
   // previously built with GetMenuModel(). |app_id| is the menu app.
@@ -257,53 +266,18 @@ class AppServiceProxyLacros : public KeyedService,
  protected:
   // An adapter, presenting an IconLoader interface based on the underlying
   // Mojo service (or on a fake implementation for testing).
-  //
-  // Conceptually, the ASP (the AppServiceProxyLacros) is itself such an
-  // adapter: UI clients call the IconLoader::LoadIconFromIconKey method (which
-  // the ASP implements) and the ASP translates (i.e. adapts) these to Mojo
-  // calls (or C++ calls to the Fake). This diagram shows control flow going
-  // left to right (with "=c=>" and "=m=>" denoting C++ and Mojo calls), and the
-  // responses (callbacks) then run right to left in LIFO order:
-  //
-  //   UI =c=> ASP =+=m=> MojoService
-  //                |       or
-  //                +=c=> Fake
-  //
-  // It is more complicated in practice, as we want to insert IconLoader
-  // decorators (as in the classic "decorator" or "wrapper" design pattern) to
-  // provide optimizations like proxy-wide icon caching and IPC coalescing
-  // (de-duplication). Nonetheless, from a UI client's point of view, we would
-  // still like to present a simple API: that the ASP implements the IconLoader
-  // interface. We therefore split the "ASP" component into multiple
-  // sub-components. Once again, control flow runs from left to right, and
-  // inside the ASP, outer layers (wrappers) call into inner layers (wrappees):
-  //
-  //           +------------------ ASP ------------------+
-  //           |                                         |
-  //   UI =c=> | Outer =c=> MoreDecorators... =c=> Inner | =+=m=> MojoService
-  //           |                                         |  |       or
-  //           +-----------------------------------------+  +=c=> Fake
-  //
-  // The inner_icon_loader_ field (of type InnerIconLoader) is the "Inner"
-  // component: the one that ultimately talks to the Mojo service.
-  //
-  // The outer_icon_loader_ field (of type IconCache) is the "Outer" component:
-  // the entry point for calls into the AppServiceProxyLacros.
-  //
-  // Note that even if the ASP provides some icon caching, upstream UI clients
-  // may want to introduce further icon caching. See the commentary where
-  // IconCache::GarbageCollectionPolicy is defined.
-  //
-  // IPC coalescing would be one of the "MoreDecorators".
-  class InnerIconLoader : public apps::IconLoader {
+  // This adapter will call into crosapi mojom interface to call
+  // AppService in ash to load icon.
+  // Please see AppInnerIconLoader documentation in app_service_proxy_base.h
+  // for more details.
+  class AppInnerIconLoader : public apps::IconLoader {
    public:
-    explicit InnerIconLoader(AppServiceProxyLacros* host);
+    explicit AppInnerIconLoader(AppServiceProxyLacros* host);
 
     // apps::IconLoader overrides.
-    absl::optional<IconKey> GetIconKey(const std::string& app_id) override;
+    absl::optional<IconKey> GetIconKey(const std::string& id) override;
     std::unique_ptr<IconLoader::Releaser> LoadIconFromIconKey(
-        AppType app_type,
-        const std::string& app_id,
+        const std::string& id,
         const IconKey& icon_key,
         IconType icon_type,
         int32_t size_hint_in_dip,
@@ -348,9 +322,9 @@ class AppServiceProxyLacros : public KeyedService,
   // inner. Fields are listed from inner to outer, the opposite of call order,
   // as each one depends on the previous one, and in the constructor,
   // initialization happens in field order.
-  InnerIconLoader inner_icon_loader_;
-  IconCoalescer icon_coalescer_;
-  IconCache outer_icon_loader_;
+  AppInnerIconLoader app_inner_icon_loader_;
+  IconCoalescer app_icon_coalescer_;
+  IconCache app_outer_icon_loader_;
 
   apps::PreferredAppsList preferred_apps_list_;
 

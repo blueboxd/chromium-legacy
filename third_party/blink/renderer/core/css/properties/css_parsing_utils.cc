@@ -960,9 +960,6 @@ class MathFunctionParser {
               is_percentage_allowed, allowed_anchor_queries),
           value_range);
     }
-    if (calc_value_ && calc_value_->HasComparisons()) {
-      context.Count(WebFeature::kCSSComparisonFunctions);
-    }
   }
 
   const CSSMathFunctionValue* Value() const { return calc_value_; }
@@ -5072,7 +5069,7 @@ CSSValue* ConsumeFontStyle(CSSParserTokenRange& range,
       ConsumeIdent<CSSValueID::kOblique>(range);
 
   CSSPrimitiveValue* start_angle = ConsumeAngle(
-      range, context, absl::nullopt, MinObliqueValue(), MaxObliqueValue());
+      range, context, absl::nullopt, kMinObliqueValue, kMaxObliqueValue);
   if (!start_angle) {
     return oblique_identifier;
   }
@@ -5088,7 +5085,7 @@ CSSValue* ConsumeFontStyle(CSSParserTokenRange& range,
   }
 
   CSSPrimitiveValue* end_angle = ConsumeAngle(
-      range, context, absl::nullopt, MinObliqueValue(), MaxObliqueValue());
+      range, context, absl::nullopt, kMinObliqueValue, kMaxObliqueValue);
   if (!end_angle || !IsAngleWithinLimits(end_angle)) {
     return nullptr;
   }
@@ -6368,7 +6365,7 @@ CSSValue* ConsumeOffsetRotate(CSSParserTokenRange& range,
 
 CSSValue* ConsumeInitialLetter(CSSParserTokenRange& range,
                                const CSSParserContext& context) {
-  if (auto* normal = ConsumeIdent<CSSValueID::kNormal>(range)) {
+  if (ConsumeIdent<CSSValueID::kNormal>(range)) {
     return CSSIdentifierValue::Create(CSSValueID::kNormal);
   }
 

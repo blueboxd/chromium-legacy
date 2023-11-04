@@ -40,7 +40,9 @@ static constexpr char kFirstLoginFlowHistogramFailureName[] =
 
 class AppPreloadServiceBrowserTest : public InProcessBrowserTest {
  public:
-  AppPreloadServiceBrowserTest() {
+  AppPreloadServiceBrowserTest()
+      : startup_check_resetter_(
+            AppPreloadService::DisablePreloadsOnStartupForTesting()) {
     feature_list_.InitWithFeatures(
         {/*enabled_features=*/features::kAppPreloadService},
         /*disabled_features=*/{});
@@ -48,10 +50,6 @@ class AppPreloadServiceBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    // Note that App Preload Service runs as part of browser startup, so the
-    // browser test SetUp() method will trigger a call to APS before any test
-    // code runs. This call will fail as the EmbeddedTestServer will not be
-    // started.
     InProcessBrowserTest::SetUpOnMainThread();
 
     https_server_.RegisterRequestHandler(base::BindRepeating(
@@ -130,6 +128,7 @@ class AppPreloadServiceBrowserTest : public InProcessBrowserTest {
   net::EmbeddedTestServer https_server_;
   std::map<std::string, std::string> manifest_responses_;
   absl::optional<proto::AppPreloadListResponse> apps_proto_;
+  base::AutoReset<bool> startup_check_resetter_;
 };
 
 IN_PROC_BROWSER_TEST_F(AppPreloadServiceBrowserTest, OemWebAppInstall) {

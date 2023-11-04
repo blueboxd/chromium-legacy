@@ -7,14 +7,12 @@
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "chrome/browser/device_reauth/chrome_device_authenticator_factory.h"
 #include "chrome/browser/device_reauth/mac/authenticator_mac.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "components/password_manager/core/browser/features/password_features.h"
-#include "components/password_manager/core/browser/password_access_authenticator.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "device/fido/mac/scoped_touch_id_test_environment.h"
 #include "device/fido/mac/touch_id_context.h"
@@ -25,8 +23,7 @@ namespace {
 using MockAuthResultCallback =
     base::MockCallback<DeviceAuthenticatorMac::AuthenticateCallback>;
 
-using device_reauth::DeviceAuthRequester;
-using password_manager::PasswordAccessAuthenticator;
+constexpr base::TimeDelta kAuthValidityPeriod = base::Seconds(60);
 
 }  // namespace
 
@@ -46,12 +43,15 @@ class DeviceAuthenticatorMacTest
     : public ::testing::TestWithParam<std::tuple<bool, bool>> {
  public:
   DeviceAuthenticatorMacTest()
-      : testing_local_state_(TestingBrowserProcess::GetGlobal()) {
+      : testing_local_state_(TestingBrowserProcess::GetGlobal()),
+        device_authenticator_params_(
+            kAuthValidityPeriod,
+            device_reauth::DeviceAuthSource::kPasswordManager) {
     std::unique_ptr<MockSystemAuthenticator> system_authenticator =
         std::make_unique<MockSystemAuthenticator>();
     system_authenticator_ = system_authenticator.get();
-    authenticator_ = DeviceAuthenticatorMac::CreateForTesting(
-        std::move(system_authenticator));
+    authenticator_ = std::make_unique<DeviceAuthenticatorMac>(
+        std::move(system_authenticator), &proxy_, device_authenticator_params_);
     ON_CALL(*system_authenticator_, CheckIfBiometricsAvailable)
         .WillByDefault(testing::Return(is_biometric_available()));
     ON_CALL(*system_authenticator_, CheckIfBiometricsOrScreenLockAvailable)
@@ -98,15 +98,13 @@ class DeviceAuthenticatorMacTest
 
   MockAuthResultCallback& result_callback() { return result_callback_; }
 
-  void ResetAuthenticator() { authenticator_.reset(); }
-
  private:
+  DeviceAuthenticatorProxy proxy_;
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   ScopedTestingLocalState testing_local_state_;
-  scoped_refptr<device_reauth::DeviceAuthenticator> authenticator_ =
-      ChromeDeviceAuthenticatorFactory::GetInstance()
-          ->GetOrCreateDeviceAuthenticator();
+  device_reauth::DeviceAuthParams device_authenticator_params_;
+  std::unique_ptr<device_reauth::DeviceAuthenticator> authenticator_;
   device::fido::mac::AuthenticatorConfig config_{
       .keychain_access_group = "test-keychain-access-group",
       .metadata_secret = "TestMetadataSecret"};
@@ -116,9 +114,6 @@ class DeviceAuthenticatorMacTest
 
   // This is owned by the authenticator.
   raw_ptr<MockSystemAuthenticator> system_authenticator_ = nullptr;
-
-  base::test::ScopedFeatureList scoped_feature_list_{
-      password_manager::features::kBiometricAuthenticationInSettings};
 };
 
 // If time that passed since the last successful authentication is smaller than
@@ -135,8 +130,7 @@ TEST_P(DeviceAuthenticatorMacTest, NoReauthenticationIfLessThan60Seconds) {
   // another prompt, so the auth should be reported as successful. If there is a
   // call to touchIdContext test will fail as TouchIdEnvironment will crash
   // since there is no prompt expected.
-  task_environment().FastForwardBy(
-      PasswordAccessAuthenticator::kAuthValidityPeriod / 2);
+  task_environment().FastForwardBy(kAuthValidityPeriod / 2);
 
   EXPECT_CALL(result_callback(), Run(/*success=*/true));
   authenticator()->AuthenticateWithMessage(
@@ -159,8 +153,7 @@ TEST_P(DeviceAuthenticatorMacTest, ReauthenticationIfMoreThan60Seconds) {
   // Since the delay is bigger than kAuthValidityPeriod, the previous auth has
   // expired. Thus a new prompt will be requested which should fail the
   // authentication.
-  task_environment().FastForwardBy(
-      PasswordAccessAuthenticator::kAuthValidityPeriod * 2);
+  task_environment().FastForwardBy(kAuthValidityPeriod * 2);
 
   EXPECT_CALL(result_callback(), Run(/*success=*/false));
   authenticator()->AuthenticateWithMessage(
@@ -183,8 +176,7 @@ TEST_P(DeviceAuthenticatorMacTest, ReauthenticationIfPreviousFailed) {
   // Although it passed less than kAuthValidityPeriod no valid authentication
   // should be recorded as reauth will fail.
   SimulateReauthFailure();
-  task_environment().FastForwardBy(
-      PasswordAccessAuthenticator::kAuthValidityPeriod / 2);
+  task_environment().FastForwardBy(kAuthValidityPeriod / 2);
 
   EXPECT_CALL(result_callback(), Run(/*success=*/false));
   authenticator()->AuthenticateWithMessage(
@@ -208,7 +200,7 @@ TEST_P(DeviceAuthenticatorMacTest, CancelPendingAuthentication) {
   // Authentication should fail as it will take 10 seconds to authenticate, and
   // there will be a cancellation in the meantime.
   EXPECT_CALL(result_callback(), Run(/*success=*/false));
-  authenticator()->Cancel(DeviceAuthRequester::kPasswordsInSettings);
+  authenticator()->Cancel();
 }
 
 TEST_P(DeviceAuthenticatorMacTest, BiometricAuthenticationAvailability) {

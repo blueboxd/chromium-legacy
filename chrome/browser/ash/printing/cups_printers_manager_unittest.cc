@@ -11,6 +11,7 @@
 #include <unordered_set>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
@@ -21,6 +22,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chrome/browser/ash/printing/enterprise_printers_provider.h"
@@ -52,6 +54,8 @@ using ::chromeos::PpdProvider;
 using ::chromeos::Printer;
 using ::chromeos::PrinterClass;
 using ::chromeos::PrinterSearchData;
+
+constexpr base::TimeDelta kMetricsDelayTimerInterval = base::Seconds(60);
 
 // Fake backend for EnterprisePrintersProvider.  This allows us to poke
 // arbitrary changes in the enterprise printer lists.
@@ -296,6 +300,20 @@ class FakePpdProvider : public PpdProvider {
   std::string usb_manufacturer_;
 };
 
+class FakeLocalPrintersObserver
+    : public CupsPrintersManager::LocalPrintersObserver {
+ public:
+  FakeLocalPrintersObserver() {}
+  ~FakeLocalPrintersObserver() override = default;
+
+  void OnLocalPrintersUpdated() override { ++num_observer_calls_; }
+
+  size_t num_observer_calls() const { return num_observer_calls_; }
+
+ private:
+  size_t num_observer_calls_ = 0;
+};
+
 // Expect that the printers in printers have the given ids, without
 // considering order.
 void ExpectPrinterIdsAre(const std::vector<Printer>& printers,
@@ -482,6 +500,8 @@ class CupsPrintersManagerTest : public testing::Test,
 
   // Manages active networks.
   network_config::CrosNetworkConfigTestHelper cros_network_config_helper_;
+
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // Pseudo-constructor for inline creation of a DetectedPrinter that should (in
@@ -937,9 +957,36 @@ TEST_F(CupsPrintersManagerTest, AutomaticUsbPrinterIsInstalledAutomatically) {
   EXPECT_TRUE(manager_->IsPrinterInstalled(*printer));
 }
 
-// Automatic USB Printer is *not* configured if |UserPrintersAllowed|
+// Can handle four different USB printers at the same time.
+TEST_F(CupsPrintersManagerTest, CanHandleManyUsbPrinters) {
+  // Printer without PPD file and not supporting IPPUSB.
+  auto p1 = MakeUsbDiscoveredPrinter("id1");
+  // Printer with PPD file but not supporting IPPUSB.
+  auto p2 = MakeUsbDiscoveredPrinter("id2");
+  p2.ppd_search_data.make_and_model.push_back("make-and-model");
+  // Printer without PPD file but supporting IPPUSB.
+  auto p3 = MakeUsbDiscoveredPrinter("id3");
+  p3.printer.set_supports_ippusb(true);
+  // Printer with PPD file and supporting IPPUSB.
+  auto p4 = MakeUsbDiscoveredPrinter("id4");
+  p4.ppd_search_data.make_and_model.push_back("make-and-model");
+  p4.printer.set_supports_ippusb(true);
+
+  usb_detector_->AddDetections({p1, p2, p3, p4});
+
+  task_environment_.RunUntilIdle();
+
+  ExpectPrintersInClassAre(PrinterClass::kDiscovered, {"id1"});
+  ExpectPrintersInClassAre(PrinterClass::kAutomatic, {"id2", "id3", "id4"});
+  EXPECT_FALSE(manager_->IsPrinterInstalled(*manager_->GetPrinter("id1")));
+  EXPECT_TRUE(manager_->IsPrinterInstalled(*manager_->GetPrinter("id2")));
+  EXPECT_TRUE(manager_->IsPrinterInstalled(*manager_->GetPrinter("id3")));
+  EXPECT_TRUE(manager_->IsPrinterInstalled(*manager_->GetPrinter("id4")));
+}
+
+// Automatic Printer is *not* configured if |UserPrintersAllowed|
 // pref is set to false.
-TEST_F(CupsPrintersManagerTest, AutomaticUsbPrinterNotInstalledAutomatically) {
+TEST_F(CupsPrintersManagerTest, AutomaticPrinterNotInstalledAutomatically) {
   // Disable the use of non-enterprise printers.
   UpdatePolicyValue(prefs::kUserPrintersAllowed, false);
 
@@ -1005,19 +1052,25 @@ TEST_F(CupsPrintersManagerTest, RecordTotalNetworkPrinterCounts) {
   manager_->SavePrinter(Printer("DiscoveredNetworkPrinter0"));
   usb_detector_->AddDetections({MakeDiscoveredPrinter("DiscoveredUSBPrinter"),
                                 MakeAutomaticPrinter("AutomaticUSBPrinter")});
+  task_environment_.FastForwardBy(kMetricsDelayTimerInterval);
+  histogram_tester.ExpectBucketCount("Printing.CUPS.TotalNetworkPrintersCount2",
+                                     0, 1);
   manager_->RecordNearbyNetworkPrinterCounts();
   task_environment_.RunUntilIdle();
-  histogram_tester.ExpectBucketCount("Printing.CUPS.TotalNetworkPrintersCount",
-                                     0, 1);
+  histogram_tester.ExpectBucketCount(
+      "Printing.CUPS.TotalNetworkPrintersCount2.SettingsOpened", 0, 1);
   zeroconf_detector_->AddDetections(
       {MakeDiscoveredPrinter("DiscoveredNetworkPrinter0"),
        MakeDiscoveredPrinter("DiscoveredNetworkPrinter1"),
        MakeAutomaticPrinter("AutomaticNetworkPrinter0"),
        MakeAutomaticPrinter("AutomaticNetworkPrinter1")});
+  task_environment_.FastForwardBy(kMetricsDelayTimerInterval);
+  histogram_tester.ExpectBucketCount("Printing.CUPS.TotalNetworkPrintersCount2",
+                                     4, 1);
   manager_->RecordNearbyNetworkPrinterCounts();
   task_environment_.RunUntilIdle();
-  histogram_tester.ExpectBucketCount("Printing.CUPS.TotalNetworkPrintersCount",
-                                     4, 1);
+  histogram_tester.ExpectBucketCount(
+      "Printing.CUPS.TotalNetworkPrintersCount2.SettingsOpened", 4, 1);
 }
 
 // Test that RecordNearbyNetworkPrinterCounts logs the number of
@@ -1135,6 +1188,25 @@ TEST_F(CupsPrintersManagerTest, ActiveNetworkStrengthChanged) {
 
   ExpectPrintersInClassAre(PrinterClass::kDiscovered, {"DiscoveredPrinter"});
   ExpectPrintersInClassAre(PrinterClass::kAutomatic, {"AutomaticPrinter"});
+}
+
+// Tests that local printers observers are triggered when added.
+TEST_F(CupsPrintersManagerTest, AddLocalPrintersObserver) {
+  feature_list_.InitAndEnableFeature(features::kLocalPrinterObserving);
+
+  // Add the same observer twice to verify it's only added once and triggered
+  // once.
+  FakeLocalPrintersObserver observer1;
+  manager_->AddLocalPrintersObserver(&observer1);
+  manager_->AddLocalPrintersObserver(&observer1);
+  EXPECT_EQ(1u, observer1.num_observer_calls());
+
+  // Add another observer and verify it's the only one that's triggered this
+  // time.
+  FakeLocalPrintersObserver observer2;
+  manager_->AddLocalPrintersObserver(&observer2);
+  EXPECT_EQ(1u, observer2.num_observer_calls());
+  EXPECT_EQ(1u, observer1.num_observer_calls());
 }
 
 }  // namespace

@@ -41,9 +41,10 @@
       "use_remoteexec": true
     }
   },
-  "chromeos-brya-chrome-skylab-fyi": {
+  "chromeos-brya-chrome-dchecks-skylab": {
     "args_file": "//build/args/chromeos/brya.gni",
     "gn_args": {
+      "also_build_lacros_chrome_for_architecture": "amd64",
       "dcheck_always_on": true,
       "exclude_unwind_tables": false,
       "is_chrome_branded": true,
@@ -54,7 +55,7 @@
       "use_remoteexec": true
     }
   },
-  "chromeos-jacuzzi-chrome-skylab-fyi": {
+  "chromeos-jacuzzi-chrome-dchecks-skylab": {
     "args_file": "//build/args/chromeos/jacuzzi.gni",
     "gn_args": {
       "dcheck_always_on": true,
@@ -69,7 +70,8 @@
   "chromeos-octopus-chrome-skylab-fyi": {
     "args_file": "//build/args/chromeos/octopus.gni",
     "gn_args": {
-      "dcheck_always_on": true,
+      "also_build_lacros_chrome_for_architecture": "amd64",
+      "dcheck_always_on": false,
       "exclude_unwind_tables": false,
       "is_chrome_branded": true,
       "is_chromeos_device": true,
@@ -81,20 +83,7 @@
   "chromeos-trogdor-chrome-skylab-fyi": {
     "args_file": "//build/args/chromeos/trogdor.gni",
     "gn_args": {
-      "dcheck_always_on": true,
-      "exclude_unwind_tables": false,
-      "is_chrome_branded": true,
-      "is_chromeos_device": true,
-      "is_official_build": true,
-      "is_skylab": true,
-      "ozone_platform_headless": true,
-      "use_remoteexec": true
-    }
-  },
-  "chromeos-volteer-chrome-skylab-fyi": {
-    "args_file": "//build/args/chromeos/volteer.gni",
-    "gn_args": {
-      "dcheck_always_on": true,
+      "dcheck_always_on": false,
       "exclude_unwind_tables": false,
       "is_chrome_branded": true,
       "is_chromeos_device": true,

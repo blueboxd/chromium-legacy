@@ -22,22 +22,21 @@ import android.view.MenuItem;
 import androidx.annotation.Nullable;
 import androidx.core.hardware.fingerprint.FingerprintManagerCompat;
 import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillEditorBase;
 import org.chromium.chrome.browser.autofill.AutofillUiUtils;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
-import org.chromium.chrome.browser.device_reauth.DeviceAuthRequester;
+import org.chromium.chrome.browser.device_reauth.DeviceAuthSource;
 import org.chromium.chrome.browser.device_reauth.ReauthenticatorBridge;
-import org.chromium.chrome.browser.feedback.FragmentHelpAndFeedbackLauncher;
-import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
+import org.chromium.chrome.browser.settings.ChromeBaseSettingsFragment;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.components.autofill.MandatoryReauthAuthenticationFlowEvent;
@@ -52,9 +51,8 @@ import org.chromium.components.payments.AndroidPaymentAppFactory;
  * Autofill credit cards fragment, which allows the user to edit credit cards and control
  * payment apps.
  */
-public class AutofillPaymentMethodsFragment
-        extends PreferenceFragmentCompat implements PersonalDataManager.PersonalDataManagerObserver,
-                                                    FragmentHelpAndFeedbackLauncher {
+public class AutofillPaymentMethodsFragment extends ChromeBaseSettingsFragment
+        implements PersonalDataManager.PersonalDataManagerObserver {
     // The Fido pref is used as a key on the settings toggle. This key helps in the retrieval of the
     // Fido toggle during tests.
     static final String PREF_FIDO = "fido";
@@ -69,8 +67,6 @@ public class AutofillPaymentMethodsFragment
             "Autofill.PaymentMethods.MandatoryReauth.OptChangeEvent.SettingsPage.OptIn";
     static final String MANDATORY_REAUTH_OPT_OUT_HISTOGRAM =
             "Autofill.PaymentMethods.MandatoryReauth.OptChangeEvent.SettingsPage.OptOut";
-
-    private HelpAndFeedbackLauncher mHelpAndFeedbackLauncher;
 
     @Nullable
     private ReauthenticatorBridge mReauthenticatorBridge;
@@ -98,7 +94,7 @@ public class AutofillPaymentMethodsFragment
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_id_targeted_help) {
-            mHelpAndFeedbackLauncher.show(
+            getHelpAndFeedbackLauncher().show(
                     getActivity(), getActivity().getString(R.string.help_context_autofill), null);
             return true;
         }
@@ -127,7 +123,8 @@ public class AutofillPaymentMethodsFragment
             PersonalDataManager.setAutofillCreditCardEnabled((boolean) newValue);
             return true;
         });
-        autofillSwitch.setManagedPreferenceDelegate(new ChromeManagedPreferenceDelegate() {
+        autofillSwitch.setManagedPreferenceDelegate(new ChromeManagedPreferenceDelegate(
+                getProfile()) {
             @Override
             public boolean isPreferenceControlledByPolicy(Preference preference) {
                 return PersonalDataManager.isAutofillCreditCardManaged();
@@ -159,40 +156,16 @@ public class AutofillPaymentMethodsFragment
         }
 
         // TODO(crbug.com/1427216): Confirm with Product on the order of the toggles.
-        if (ChromeFeatureList.isEnabled(
-                    ChromeFeatureList.AUTOFILL_ENABLE_PAYMENTS_MANDATORY_REAUTH)) {
-            if (mReauthenticatorBridge == null) {
-                mReauthenticatorBridge = ReauthenticatorBridge.create(
-                        DeviceAuthRequester.PAYMENT_METHODS_REAUTH_IN_SETTINGS);
-            }
-            ChromeSwitchPreference mandatoryReauthSwitch =
-                    new ChromeSwitchPreference(getStyledContext(), null);
-            mandatoryReauthSwitch.setTitle(
-                    R.string.autofill_settings_page_enable_payment_method_mandatory_reauth_label);
-            mandatoryReauthSwitch.setSummary(
-                    R.string.autofill_settings_page_enable_payment_method_mandatory_reauth_sublabel);
-            mandatoryReauthSwitch.setKey(PREF_MANDATORY_REAUTH);
-            // We always display the toggle, but the toggle is only enabled when Autofill credit
-            // card is enabled AND the device supports biometric auth or screen lock. If either of
-            // these is not met, we will grey out the toggle.
-            boolean enableReauthSwitch = PersonalDataManager.isAutofillCreditCardEnabled()
-                    && mReauthenticatorBridge.canUseAuthenticationWithBiometricOrScreenLock();
-            mandatoryReauthSwitch.setEnabled(enableReauthSwitch);
-            mandatoryReauthSwitch.setOnPreferenceChangeListener(
-                    this::onMandatoryReauthSwitchToggled);
-            getPreferenceScreen().addPreference(mandatoryReauthSwitch);
-
-            // Every {@link SwitchPreferenceCompat} on a {@link PreferenceScreen} has a pref that is
-            // automatically added to the {@link SharedPreferences}. When a switch is added, by
-            // default its checked state is reset to the saved pref value irrespective of whether or
-            // not the switch's checked state was set before adding the switch. Setting the checked
-            // state after adding the switch updates the underlying pref as well.
-            // If a user opts in to mandatory reauth during the checkout flow, since the switch's
-            // underlying pref is still false, the switch does not reflect the opt-in. Set switch's
-            // checked state after adding it to the screen so the underlying pref value is also
-            // updated and is in sync with the mandatory reauth user pref.
-            mandatoryReauthSwitch.setChecked(
-                    PersonalDataManager.isPaymentMethodsMandatoryReauthEnabled());
+        // Don't show the toggle to enable mandatory reauth on automotive,
+        // as the feature is always enabled for automotive builds.
+        if (BuildInfo.getInstance().isAutomotive) {
+            // The ReauthenticatorBridge is still needed for reauthentication to view/edit
+            // payment methods.
+            createReauthenticatorBridge();
+        } else if (ChromeFeatureList.isEnabled(
+                           ChromeFeatureList.AUTOFILL_ENABLE_PAYMENTS_MANDATORY_REAUTH)) {
+            createReauthenticatorBridge();
+            createMandatoryReauthSwitch();
         }
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ENABLE_CVC_STORAGE)) {
@@ -288,6 +261,42 @@ public class AutofillPaymentMethodsFragment
         refreshPaymentAppsPrefForAndroidPaymentApps(payment_apps_pref);
     }
 
+    private void createReauthenticatorBridge() {
+        if (mReauthenticatorBridge == null) {
+            mReauthenticatorBridge = ReauthenticatorBridge.create(DeviceAuthSource.AUTOFILL);
+        }
+    }
+
+    private void createMandatoryReauthSwitch() {
+        ChromeSwitchPreference mandatoryReauthSwitch =
+                new ChromeSwitchPreference(getStyledContext(), null);
+        mandatoryReauthSwitch.setTitle(
+                R.string.autofill_settings_page_enable_payment_method_mandatory_reauth_label);
+        mandatoryReauthSwitch.setSummary(
+                R.string.autofill_settings_page_enable_payment_method_mandatory_reauth_sublabel);
+        mandatoryReauthSwitch.setKey(PREF_MANDATORY_REAUTH);
+        // We always display the toggle, but the toggle is only enabled when Autofill credit
+        // card is enabled AND the device supports biometric auth or screen lock. If either of
+        // these is not met, we will grey out the toggle.
+        boolean enableReauthSwitch = PersonalDataManager.isAutofillCreditCardEnabled()
+                && mReauthenticatorBridge.canUseAuthenticationWithBiometricOrScreenLock();
+        mandatoryReauthSwitch.setEnabled(enableReauthSwitch);
+        mandatoryReauthSwitch.setOnPreferenceChangeListener(this::onMandatoryReauthSwitchToggled);
+        getPreferenceScreen().addPreference(mandatoryReauthSwitch);
+
+        // Every {@link SwitchPreferenceCompat} on a {@link PreferenceScreen} has a pref that is
+        // automatically added to the {@link SharedPreferences}. When a switch is added, by
+        // default its checked state is reset to the saved pref value irrespective of whether or
+        // not the switch's checked state was set before adding the switch. Setting the checked
+        // state after adding the switch updates the underlying pref as well.
+        // If a user opts in to mandatory reauth during the checkout flow, since the switch's
+        // underlying pref is still false, the switch does not reflect the opt-in. Set switch's
+        // checked state after adding it to the screen so the underlying pref value is also
+        // updated and is in sync with the mandatory reauth user pref.
+        mandatoryReauthSwitch.setChecked(
+                PersonalDataManager.isPaymentMethodsMandatoryReauthEnabled());
+    }
+
     private Context getStyledContext() {
         return getPreferenceManager().getContext();
     }
@@ -373,7 +382,7 @@ public class AutofillPaymentMethodsFragment
                         MandatoryReauthAuthenticationFlowEvent.FLOW_FAILED,
                         MandatoryReauthAuthenticationFlowEvent.MAX_VALUE + 1);
             }
-        }, /*useLastValidAuth=*/false);
+        });
         // Returning false here holds the toggle to still display the old value while
         // waiting for biometric auth. Once biometric is completed (either succeed or
         // fail), OnResume will reload the page with the pref value, which will switch
@@ -416,7 +425,7 @@ public class AutofillPaymentMethodsFragment
                         MandatoryReauthAuthenticationFlowEvent.FLOW_FAILED,
                         MandatoryReauthAuthenticationFlowEvent.MAX_VALUE + 1);
             }
-        }, /*useLastValidAuth=*/false);
+        });
         return true;
     }
 
@@ -463,10 +472,5 @@ public class AutofillPaymentMethodsFragment
     public void onDestroyView() {
         PersonalDataManager.getInstance().unregisterDataObserver(this);
         super.onDestroyView();
-    }
-
-    @Override
-    public void setHelpAndFeedbackLauncher(HelpAndFeedbackLauncher helpAndFeedbackLauncher) {
-        mHelpAndFeedbackLauncher = helpAndFeedbackLauncher;
     }
 }

@@ -12,7 +12,6 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
-import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
@@ -91,6 +90,7 @@ import org.chromium.chrome.browser.omnibox.OmniboxStub;
 import org.chromium.chrome.browser.omnibox.OverrideUrlLoadingDelegate;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdownScrollListener;
 import org.chromium.chrome.browser.omnibox.suggestions.history_clusters.HistoryClustersProcessor.OpenHistoryClustersDelegate;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.page_info.ChromePageInfo;
@@ -315,6 +315,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
     private boolean mIsDestroyed;
     private static boolean sSkipRecreateForTesting;
+
+    private final boolean mIsCustomTab;
 
     private static class TabObscuringCallback implements Callback<Boolean> {
         private final TabObscuringHandler mTabObscuringHandler;
@@ -627,9 +629,9 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         ThemeColorProvider overviewModeThemeColorProvider = mAppThemeColorProvider;
 
         Runnable requestFocusRunnable = compositorViewHolder::requestFocus;
-        boolean isCustomTab = toolbarLayout instanceof CustomTabToolbar;
+        mIsCustomTab = toolbarLayout instanceof CustomTabToolbar;
         ThemeColorProvider menuButtonThemeColorProvider =
-                isCustomTab ? mCustomTabThemeColorProvider : browsingModeThemeColorProvider;
+                mIsCustomTab ? mCustomTabThemeColorProvider : browsingModeThemeColorProvider;
 
         Supplier<MenuButtonState> menuButtonStateSupplier =
                 () -> UpdateMenuItemHelper.getInstance().getUiState().buttonState;
@@ -678,7 +680,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
         tabObscuringHandler.addObserver(this);
 
-        if (isCustomTab) {
+        if (mIsCustomTab) {
             CustomTabToolbar customTabToolbar = ((CustomTabToolbar) toolbarLayout);
             mLocationBar = customTabToolbar.createLocationBar(mLocationBarModel,
                     mActionModeController.getActionModeCallback(), modalDialogManagerSupplier,
@@ -699,6 +701,10 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                     mEphemeralTabCoordinatorSupplier,
                     mTabCreatorManager.getTabCreator(
                             mIncognitoStateProvider.isIncognitoSelected()));
+            OmniboxSuggestionsDropdownScrollListener scrollListener =
+                    toolbarLayout instanceof OmniboxSuggestionsDropdownScrollListener
+                    ? (OmniboxSuggestionsDropdownScrollListener) toolbarLayout
+                    : null;
             // clang-format off
             LocationBarCoordinator locationBarCoordinator = new LocationBarCoordinator(
                     mActivity.findViewById(R.id.location_bar), toolbarLayout, profileSupplier,
@@ -721,7 +727,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                     merchantTrustSignalsCoordinatorSupplier,
                     omniboxActionDelegate, mControlsVisibilityDelegate,
                     ChromePureJavaExceptionReporter::reportJavaException, backPressManager,
-                    toolbarLayout, openHistoryClustersDelegate, tabModelSelectorSupplier);
+                    scrollListener, openHistoryClustersDelegate, tabModelSelectorSupplier);
             // clang-format on
             toolbarLayout.setLocationBarCoordinator(locationBarCoordinator);
             toolbarLayout.setBrowserControlsVisibilityDelegate(mControlsVisibilityDelegate);
@@ -1728,7 +1734,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     @Override
     public void onAccessibilityModeChanged(boolean enabled) {
         if (mIsStartSurfaceEnabled != ReturnToChromeUtil.isStartSurfaceEnabled(mActivity)
-                && !sSkipRecreateForTesting) {
+                && !sSkipRecreateForTesting && !mIsCustomTab) {
             // If Start surface is disabled or re-enabled due to the accessibility change, restarts
             // the activity to create the correct Toolbar from scratch.
             recreateActivityWithTabReparenting();
@@ -1739,9 +1745,12 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
     @VisibleForTesting
     static String homepageUrl() {
-        String homePageUrl = HomepageManager.getHomepageUri();
-        if (TextUtils.isEmpty(homePageUrl)) homePageUrl = UrlConstants.NTP_URL;
-        return homePageUrl;
+        GURL homepageGurl = HomepageManager.getHomepageGurl();
+        if (homepageGurl.isEmpty()) {
+            return UrlConstants.NTP_URL;
+        } else {
+            return homepageGurl.getSpec();
+        }
     }
 
     private void registerTemplateUrlObserver() {

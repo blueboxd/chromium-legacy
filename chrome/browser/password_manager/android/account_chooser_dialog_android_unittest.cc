@@ -4,7 +4,7 @@
 
 #include "chrome/browser/password_manager/android/account_chooser_dialog_android.h"
 
-#include "base/memory/scoped_refptr.h"
+#include "base/android/build_info.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -24,7 +24,6 @@
 namespace {
 
 using base::test::RunOnceCallback;
-using device_reauth::DeviceAuthRequester;
 using device_reauth::MockDeviceAuthenticator;
 using testing::_;
 using testing::Eq;
@@ -62,7 +61,7 @@ password_manager::PasswordFormData kFormData2 = {
 class MockPasswordManagerClient
     : public password_manager::StubPasswordManagerClient {
  public:
-  MOCK_METHOD(scoped_refptr<device_reauth::DeviceAuthenticator>,
+  MOCK_METHOD(std::unique_ptr<device_reauth::DeviceAuthenticator>,
               GetDeviceAuthenticator,
               (),
               (override));
@@ -90,9 +89,6 @@ class AccountChooserDialogAndroidTest : public ChromeRenderViewHostTestHarness {
       std::vector<std::unique_ptr<password_manager::PasswordForm>> credentials);
 
   MockPasswordManagerClient client_;
-
-  scoped_refptr<MockDeviceAuthenticator> authenticator_ =
-      base::MakeRefCounted<MockDeviceAuthenticator>();
 
   base::MockCallback<ManagePasswordsState::CredentialsCallback>
       credential_callback_;
@@ -127,11 +123,19 @@ AccountChooserDialogAndroidTest::CreateDialogManyAccounts() {
 }
 
 TEST_F(AccountChooserDialogAndroidTest, SendsCredentialIfAuthNotAvailable) {
+  // Auth is required to fill passwords in Android automotive.
+  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
+    GTEST_SKIP();
+  }
+
   AccountChooserDialogAndroid* dialog = CreateDialogManyAccounts();
 
-  EXPECT_CALL(client_, GetDeviceAuthenticator).WillOnce(Return(authenticator_));
-  EXPECT_CALL(*authenticator_.get(), CanAuthenticateWithBiometrics())
+  auto authenticator = std::make_unique<MockDeviceAuthenticator>();
+
+  EXPECT_CALL(*authenticator, CanAuthenticateWithBiometrics())
       .WillOnce(Return(false));
+  EXPECT_CALL(client_, GetDeviceAuthenticator)
+      .WillOnce(Return(testing::ByMove(std::move(authenticator))));
   std::unique_ptr<password_manager::PasswordForm> form =
       FillPasswordFormWithData(kFormData2);
 
@@ -145,13 +149,14 @@ TEST_F(AccountChooserDialogAndroidTest, SendsCredentialIfAuthNotAvailable) {
 TEST_F(AccountChooserDialogAndroidTest, SendsCredentialIfAuthSuccessful) {
   AccountChooserDialogAndroid* dialog = CreateDialogManyAccounts();
 
-  EXPECT_CALL(client_, GetDeviceAuthenticator).WillOnce(Return(authenticator_));
-  EXPECT_CALL(*authenticator_.get(), CanAuthenticateWithBiometrics())
-      .WillOnce(Return(true));
-  EXPECT_CALL(*authenticator_.get(),
-              Authenticate(DeviceAuthRequester::kAccountChooserDialog, _,
-                           /*use_last_valid_auth=*/true))
+  auto authenticator = std::make_unique<MockDeviceAuthenticator>();
+
+  ON_CALL(*authenticator, CanAuthenticateWithBiometrics())
+      .WillByDefault(Return(true));
+  EXPECT_CALL(*authenticator, AuthenticateWithMessage)
       .WillOnce(RunOnceCallback<1>(true));
+  EXPECT_CALL(client_, GetDeviceAuthenticator)
+      .WillOnce(Return(testing::ByMove(std::move(authenticator))));
 
   std::unique_ptr<password_manager::PasswordForm> form =
       FillPasswordFormWithData(kFormData2);
@@ -165,13 +170,14 @@ TEST_F(AccountChooserDialogAndroidTest, SendsCredentialIfAuthSuccessful) {
 TEST_F(AccountChooserDialogAndroidTest, DoesntSendCredentialIfAuthFailed) {
   AccountChooserDialogAndroid* dialog = CreateDialogManyAccounts();
 
-  EXPECT_CALL(client_, GetDeviceAuthenticator).WillOnce(Return(authenticator_));
-  EXPECT_CALL(*authenticator_.get(), CanAuthenticateWithBiometrics())
-      .WillOnce(Return(true));
-  EXPECT_CALL(*authenticator_.get(),
-              Authenticate(DeviceAuthRequester::kAccountChooserDialog, _,
-                           /*use_last_valid_auth=*/true))
+  auto authenticator = std::make_unique<MockDeviceAuthenticator>();
+
+  ON_CALL(*authenticator, CanAuthenticateWithBiometrics())
+      .WillByDefault(Return(true));
+  EXPECT_CALL(*authenticator, AuthenticateWithMessage)
       .WillOnce(RunOnceCallback<1>(false));
+  EXPECT_CALL(client_, GetDeviceAuthenticator)
+      .WillOnce(Return(testing::ByMove(std::move(authenticator))));
 
   std::unique_ptr<password_manager::PasswordForm> form =
       FillPasswordFormWithData(kFormData2);
@@ -185,18 +191,19 @@ TEST_F(AccountChooserDialogAndroidTest, DoesntSendCredentialIfAuthFailed) {
 TEST_F(AccountChooserDialogAndroidTest, CancelsAuthIfDestroyed) {
   AccountChooserDialogAndroid* dialog = CreateDialogManyAccounts();
 
-  EXPECT_CALL(client_, GetDeviceAuthenticator).WillOnce(Return(authenticator_));
-  EXPECT_CALL(*authenticator_.get(), CanAuthenticateWithBiometrics())
-      .WillOnce(Return(true));
-  EXPECT_CALL(*authenticator_.get(),
-              Authenticate(DeviceAuthRequester::kAccountChooserDialog, _,
-                           /*use_last_valid_auth=*/true));
+  auto authenticator = std::make_unique<MockDeviceAuthenticator>();
+  auto* authenticator_ptr = authenticator.get();
+
+  ON_CALL(*authenticator_ptr, CanAuthenticateWithBiometrics())
+      .WillByDefault(Return(true));
+  EXPECT_CALL(*authenticator_ptr, AuthenticateWithMessage);
+  EXPECT_CALL(client_, GetDeviceAuthenticator)
+      .WillOnce(Return(testing::ByMove(std::move(authenticator))));
 
   dialog->OnCredentialClicked(base::android::AttachCurrentThread(),
                               nullptr /* obj */, 1 /* credential_item */,
                               false /* signin_button_clicked */);
 
-  EXPECT_CALL(*authenticator_.get(),
-              Cancel(DeviceAuthRequester::kAccountChooserDialog));
+  EXPECT_CALL(*authenticator_ptr, Cancel());
   dialog->OnVisibilityChanged(content::Visibility::HIDDEN);
 }

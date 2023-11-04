@@ -42,14 +42,6 @@
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
 
-namespace features {
-
-BASE_FEATURE(kDumpWhenFrameTreeNodeTakesNavigationRequestWithEvictedBFCacheRFH,
-             "DumpWhenFrameTreeNodeTakesNavigationRequestWithEvictedBFCacheRFH",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-}  // namespace features
-
 namespace content {
 
 namespace {
@@ -151,9 +143,10 @@ FrameTreeNode::FencedFrameStatus ComputeFencedFrameStatus(
     const blink::FramePolicy& frame_policy) {
   using FencedFrameStatus = FrameTreeNode::FencedFrameStatus;
   if (blink::features::IsFencedFramesEnabled() &&
-      frame_tree.type() == FrameTree::Type::kFencedFrame) {
-    if (!parent)
+      frame_tree.is_fenced_frame()) {
+    if (!parent) {
       return FencedFrameStatus::kFencedFrameRoot;
+    }
     return FencedFrameStatus::kIframeNestedWithinFencedFrame;
   }
 
@@ -604,25 +597,6 @@ void FrameTreeNode::TakeNavigationRequest(
   // Cancel any task that will restart BackForwardCache navigation that was
   // initiated previously.
   CancelRestartingBackForwardCacheNavigation();
-
-  // TODO(crbug.com/1468984): Remove.
-  // Dump the process to investigate the case when BFCache is evicted
-  // after the NavigationRequest creation but before its ownership is
-  // transferred to the FrameTreeNode.
-  if (base::FeatureList::IsEnabled(
-          features::
-              kDumpWhenFrameTreeNodeTakesNavigationRequestWithEvictedBFCacheRFH)) {
-    if (navigation_request->IsServedFromBackForwardCache() &&
-        navigation_request->GetRenderFrameHostRestoredFromBackForwardCache()
-            ->is_evicted_from_back_forward_cache()) {
-      SCOPED_CRASH_KEY_STRING256(
-          "Bug1468984", "bfcache_eviction_reason",
-          navigation_request->GetRenderFrameHostRestoredFromBackForwardCache()
-              ->GetBackForwardCacheMetrics()
-              ->GetPageStoredResultString());
-      base::debug::DumpWithoutCrashing();
-    }
-  }
 
   navigation_request_ = std::move(navigation_request);
   if (was_discarded_) {

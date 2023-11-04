@@ -541,6 +541,19 @@ void CheckOutput(
       return;
     }
 
+    case (OutputKey::kIsPrivateAggregationDebugModeAllowed): {
+      SCOPED_TRACE("Check Output: IsPrivateAggregationDebugModeAllowed()");
+      auto top_frame_origin =
+          GetItemValueForKey<url::Origin>(InputKey::kTopFrameOrigin, input);
+      auto reporting_origin = GetItemValueForKey<url::Origin>(
+          InputKey::kAdMeasurementReportingOrigin, input);
+      auto return_value = GetItemValue<bool>(output_value);
+      ASSERT_EQ(return_value,
+                privacy_sandbox_settings->IsPrivateAggregationDebugModeAllowed(
+                    top_frame_origin, reporting_origin));
+      return;
+    }
+
     case (OutputKey::kIsTopicsAllowedMetric): {
       SCOPED_TRACE("Check Output: PrivacySandbox.IsTopicsAllowed");
       base::HistogramTester histogram_tester;
@@ -884,8 +897,17 @@ void CheckOutput(
 
 MockPrivacySandboxObserver::MockPrivacySandboxObserver() = default;
 MockPrivacySandboxObserver::~MockPrivacySandboxObserver() = default;
-MockPrivacySandboxSettingsDelegate::MockPrivacySandboxSettingsDelegate() =
-    default;
+
+MockPrivacySandboxSettingsDelegate::MockPrivacySandboxSettingsDelegate() {
+  // Setup some reasonable default responses that generally allow APIs.
+  // Tests can further override the responses as required.
+  SetUpIsPrivacySandboxRestrictedResponse(false);
+  SetUpIsPrivacySandboxCurrentlyUnrestrictedResponse(true);
+  SetUpIsIncognitoProfileResponse(false);
+  SetUpHasAppropriateTopicsConsentResponse(true);
+  SetUpIsSubjectToM1NoticeRestrictedResponse(false);
+}
+
 MockPrivacySandboxSettingsDelegate::~MockPrivacySandboxSettingsDelegate() =
     default;
 

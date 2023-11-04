@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.bookmarks;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -12,6 +14,8 @@ import static org.mockito.Mockito.verify;
 import static org.chromium.chrome.browser.bookmarks.SharedBookmarkModelMocks.DESKTOP_BOOKMARK_ID;
 import static org.chromium.chrome.browser.bookmarks.SharedBookmarkModelMocks.FOLDER_BOOKMARK_ID_A;
 import static org.chromium.chrome.browser.bookmarks.SharedBookmarkModelMocks.MOBILE_BOOKMARK_ID;
+import static org.chromium.chrome.browser.bookmarks.SharedBookmarkModelMocks.OTHER_BOOKMARK_ID;
+import static org.chromium.chrome.browser.bookmarks.SharedBookmarkModelMocks.PARTNER_BOOKMARK_ID;
 import static org.chromium.chrome.browser.bookmarks.SharedBookmarkModelMocks.READING_LIST_BOOKMARK_ID;
 import static org.chromium.chrome.browser.bookmarks.SharedBookmarkModelMocks.ROOT_BOOKMARK_ID;
 import static org.chromium.chrome.browser.bookmarks.SharedBookmarkModelMocks.URL_BOOKMARK_ID_A;
@@ -91,8 +95,8 @@ public class ImprovedBookmarkQueryHandlerTest {
                 .getBookmarkRowSortOrder();
 
         List<BookmarkListEntry> result = mHandler.buildBookmarkListForParent(ROOT_BOOKMARK_ID);
-        List<BookmarkId> expected =
-                Arrays.asList(DESKTOP_BOOKMARK_ID, MOBILE_BOOKMARK_ID, READING_LIST_BOOKMARK_ID);
+        List<BookmarkId> expected = Arrays.asList(DESKTOP_BOOKMARK_ID, OTHER_BOOKMARK_ID,
+                MOBILE_BOOKMARK_ID, READING_LIST_BOOKMARK_ID, PARTNER_BOOKMARK_ID);
         verifyBookmarkIds(expected, result);
     }
 
@@ -103,8 +107,8 @@ public class ImprovedBookmarkQueryHandlerTest {
                 .getBookmarkRowSortOrder();
 
         List<BookmarkListEntry> result = mHandler.buildBookmarkListForParent(ROOT_BOOKMARK_ID);
-        List<BookmarkId> expected =
-                Arrays.asList(READING_LIST_BOOKMARK_ID, MOBILE_BOOKMARK_ID, DESKTOP_BOOKMARK_ID);
+        List<BookmarkId> expected = Arrays.asList(PARTNER_BOOKMARK_ID, READING_LIST_BOOKMARK_ID,
+                MOBILE_BOOKMARK_ID, OTHER_BOOKMARK_ID, DESKTOP_BOOKMARK_ID);
         verifyBookmarkIds(expected, result);
     }
 
@@ -115,8 +119,8 @@ public class ImprovedBookmarkQueryHandlerTest {
                 .getBookmarkRowSortOrder();
 
         List<BookmarkListEntry> result = mHandler.buildBookmarkListForParent(ROOT_BOOKMARK_ID);
-        List<BookmarkId> expected =
-                Arrays.asList(DESKTOP_BOOKMARK_ID, MOBILE_BOOKMARK_ID, READING_LIST_BOOKMARK_ID);
+        List<BookmarkId> expected = Arrays.asList(DESKTOP_BOOKMARK_ID, MOBILE_BOOKMARK_ID,
+                OTHER_BOOKMARK_ID, PARTNER_BOOKMARK_ID, READING_LIST_BOOKMARK_ID);
         verifyBookmarkIds(expected, result);
     }
 
@@ -127,8 +131,8 @@ public class ImprovedBookmarkQueryHandlerTest {
                 .getBookmarkRowSortOrder();
 
         List<BookmarkListEntry> result = mHandler.buildBookmarkListForParent(ROOT_BOOKMARK_ID);
-        List<BookmarkId> expected =
-                Arrays.asList(READING_LIST_BOOKMARK_ID, MOBILE_BOOKMARK_ID, DESKTOP_BOOKMARK_ID);
+        List<BookmarkId> expected = Arrays.asList(READING_LIST_BOOKMARK_ID, PARTNER_BOOKMARK_ID,
+                OTHER_BOOKMARK_ID, MOBILE_BOOKMARK_ID, DESKTOP_BOOKMARK_ID);
         verifyBookmarkIds(expected, result);
     }
 
@@ -139,8 +143,8 @@ public class ImprovedBookmarkQueryHandlerTest {
                 .getBookmarkRowSortOrder();
 
         List<BookmarkListEntry> result = mHandler.buildBookmarkListForParent(ROOT_BOOKMARK_ID);
-        List<BookmarkId> expected =
-                Arrays.asList(DESKTOP_BOOKMARK_ID, MOBILE_BOOKMARK_ID, READING_LIST_BOOKMARK_ID);
+        List<BookmarkId> expected = Arrays.asList(DESKTOP_BOOKMARK_ID, OTHER_BOOKMARK_ID,
+                MOBILE_BOOKMARK_ID, READING_LIST_BOOKMARK_ID, PARTNER_BOOKMARK_ID);
         verifyBookmarkIds(expected, result);
     }
 
@@ -221,7 +225,7 @@ public class ImprovedBookmarkQueryHandlerTest {
                 URL_BOOKMARK_ID_A, URL_BOOKMARK_ID_B, URL_BOOKMARK_ID_C, URL_BOOKMARK_ID_D);
         doReturn(queryIds)
                 .when(mBookmarkModel)
-                .searchBookmarks(ArgumentMatchers.any(), ArgumentMatchers.anyInt());
+                .searchBookmarks(ArgumentMatchers.eq("test"), ArgumentMatchers.anyInt());
         ShoppingSpecifics trackedShoppingSpecifics =
                 ShoppingSpecifics.newBuilder().setProductClusterId(1).build();
         PowerBookmarkMeta shoppingMetaTracked =
@@ -247,7 +251,7 @@ public class ImprovedBookmarkQueryHandlerTest {
         doReturn(null).when(mBookmarkModel).getPowerBookmarkMeta(URL_BOOKMARK_ID_D);
 
         List<BookmarkListEntry> result = mHandler.buildBookmarkListForSearch(
-                "", Collections.singleton(PowerBookmarkType.SHOPPING));
+                "test", Collections.singleton(PowerBookmarkType.SHOPPING));
         verifyBookmarkIds(Collections.singletonList(URL_BOOKMARK_ID_A), result);
     }
 
@@ -287,6 +291,16 @@ public class ImprovedBookmarkQueryHandlerTest {
         List<BookmarkListEntry> result = mHandler.buildBookmarkListForSearch(
                 "", Collections.singleton(PowerBookmarkType.SHOPPING));
         verifyBookmarkIds(Collections.emptyList(), result);
+    }
+
+    @Test
+    public void testBuildBookmarkListForSearch_empty() {
+        doReturn(Arrays.asList(FOLDER_BOOKMARK_ID_A, URL_BOOKMARK_ID_A))
+                .when(mBookmarkModel)
+                .searchBookmarks(anyString(), anyInt());
+        List<BookmarkListEntry> result =
+                mHandler.buildBookmarkListForSearch("", /*powerFilter*/ null);
+        assertEquals(0, result.size());
     }
 
     private void verifyBookmarkIds(

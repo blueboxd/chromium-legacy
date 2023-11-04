@@ -29,17 +29,21 @@ import '../os_settings_page/os_settings_animated_pages.js';
 import '../os_settings_page/os_settings_subpage.js';
 import '../os_settings_page/settings_card.js';
 import '../settings_shared.css.js';
+import '../os_printing_page/printing_settings_card.js';
 
 import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
-import {CrLinkRowElement} from 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {isExternalStorageEnabled, isInputDeviceSettingsSplitEnabled, isRevampWayfindingEnabled} from '../common/load_time_booleans.js';
+import {PrefsState} from '../common/types.js';
 import {KeyboardPolicies, MousePolicies} from '../mojom-webui/input_device_settings.mojom-webui.js';
-import {KeyboardSettingsObserverReceiver, MouseSettingsObserverReceiver, PointingStickSettingsObserverReceiver, TouchpadSettingsObserverReceiver} from '../mojom-webui/input_device_settings_provider.mojom-webui.js';
+import {GraphicsTabletSettingsObserverReceiver, KeyboardSettingsObserverReceiver, MouseSettingsObserverReceiver, PointingStickSettingsObserverReceiver, TouchpadSettingsObserverReceiver} from '../mojom-webui/input_device_settings_provider.mojom-webui.js';
 import {Section} from '../mojom-webui/routes.mojom-webui.js';
+import {ACCESSIBILITY_COMMON_IME_ID} from '../os_languages_page/languages.js';
+import {LanguageHelper, LanguagesModel} from '../os_languages_page/languages_types.js';
 import {RouteOriginMixin} from '../route_origin_mixin.js';
 import {Route, Router, routes} from '../router.js';
 
@@ -50,16 +54,10 @@ import {getInputDeviceSettingsProvider} from './input_device_mojo_interface_prov
 import {GraphicsTablet, InputDeviceSettingsProviderInterface, Keyboard, Mouse, PointingStick, Touchpad} from './input_device_settings_types.js';
 import {SettingsPerDeviceKeyboardRemapKeysElement} from './per_device_keyboard_remap_keys.js';
 
-interface SettingsDevicePageElement {
-  $: {
-    pointersRow: CrLinkRowElement,
-  };
-}
-
 const SettingsDevicePageElementBase =
     RouteOriginMixin(I18nMixin(WebUiListenerMixin(PolymerElement)));
 
-class SettingsDevicePageElement extends SettingsDevicePageElementBase {
+export class SettingsDevicePageElement extends SettingsDevicePageElementBase {
   static get is() {
     return 'settings-device-page' as const;
   }
@@ -114,7 +112,7 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
       isDeviceSettingsSplitEnabled_: {
         type: Boolean,
         value() {
-          return loadTimeData.getBoolean('enableInputDeviceSettingsSplit');
+          return isInputDeviceSettingsSplitEnabled();
         },
         readOnly: true,
       },
@@ -126,6 +124,14 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
         type: Boolean,
         value() {
           return loadTimeData.getBoolean('enablePeripheralCustomization');
+        },
+        readOnly: true,
+      },
+
+      isRevampWayfindingEnabled_: {
+        type: Boolean,
+        value: () => {
+          return isRevampWayfindingEnabled();
         },
         readOnly: true,
       },
@@ -143,10 +149,10 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
         readOnly: true,
       },
 
-      androidEnabled_: {
+      isExternalStorageEnabled_: {
         type: Boolean,
         value() {
-          return loadTimeData.getBoolean('androidEnabled');
+          return isExternalStorageEnabled();
         },
       },
 
@@ -177,6 +183,22 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
       graphicsTablets: {
         type: Array,
       },
+
+      /**
+       * Set of languages from <settings-languages>
+       */
+      languages: Object,
+
+      /**
+       * Language helper API from <settings-languages>
+       */
+      languageHelper: Object,
+
+      inputMethodDisplayName_: {
+        type: String,
+        computed: 'computeInputMethodDisplayName_(' +
+            'languages.inputMethods.currentId, languageHelper)',
+      },
     };
   }
 
@@ -188,6 +210,10 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
       'pointingStickChanged_(pointingSticks)',
     ];
   }
+
+  languages: LanguagesModel|undefined;
+  languageHelper: LanguageHelper|undefined;
+  prefs: PrefsState|undefined;
 
   protected pointingSticks: PointingStick[];
   protected keyboards: Keyboard[];
@@ -203,12 +229,15 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
   private hasHapticTouchpad_: boolean;
   private isDeviceSettingsSplitEnabled_: boolean;
   private isPeripheralCustomizationEnabled: boolean;
+  private isRevampWayfindingEnabled_: boolean;
   private pointingStickSettingsObserverReceiver:
       PointingStickSettingsObserverReceiver;
   private keyboardSettingsObserverReceiver: KeyboardSettingsObserverReceiver;
   private touchpadSettingsObserverReceiver: TouchpadSettingsObserverReceiver;
   private inputDeviceSettingsProvider: InputDeviceSettingsProviderInterface;
   private mouseSettingsObserverReceiver: MouseSettingsObserverReceiver;
+  private graphicsTabletSettingsObserverReceiver:
+      GraphicsTabletSettingsObserverReceiver;
   private section_: Section;
 
   constructor() {
@@ -224,17 +253,17 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
       this.observeKeyboardSettings();
       this.observeTouchpadSettings();
       this.observeMouseSettings();
+      if (this.isPeripheralCustomizationEnabled) {
+        // The flag `isPeripheralCustomizationEnabled` should only be enabled
+        // when `isDeviceSettingsSplitEnabled_` is enabled. Will not call
+        // `getInputDeviceSettingsProvider` here again.
+        this.observeGraphicsTabletSettings();
+      }
     }
 
-    if (this.isPeripheralCustomizationEnabled) {
-      // The flag `isPeripheralCustomizationEnabled` should only be enabled
-      // when `isDeviceSettingsSplitEnabled_` is enabled. Will not call
-      // `getInputDeviceSettingsProvider` here again.
-      this.observeGraphicsTabletSettings();
-    }
   }
 
-  override connectedCallback() {
+  override connectedCallback(): void {
     super.connectedCallback();
 
     if (!this.isDeviceSettingsSplitEnabled_) {
@@ -257,11 +286,11 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
 
     this.addWebUiListener(
         'storage-android-enabled-changed',
-        this.set.bind(this, 'androidEnabled_'));
+        this.set.bind(this, 'isExternalStorageEnabled_'));
     this.browserProxy_.updateAndroidEnabled();
   }
 
-  override ready() {
+  override ready(): void {
     super.ready();
 
     this.addFocusConfig(routes.POINTERS, '#pointersRow');
@@ -277,10 +306,6 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
     this.addFocusConfig(routes.STYLUS, '#stylusRow');
     this.addFocusConfig(routes.DISPLAY, '#displayRow');
     this.addFocusConfig(routes.AUDIO, '#audioRow');
-    this.addFocusConfig(routes.STORAGE, '#storageRow');
-    this.addFocusConfig(
-        routes.EXTERNAL_STORAGE_PREFERENCES, '#externalStoragePreferencesRow');
-    this.addFocusConfig(routes.POWER, '#powerRow');
     this.addFocusConfig(routes.GRAPHICS_TABLET, '#tabletRow');
     this.addFocusConfig(
         routes.CUSTOMIZE_MOUSE_BUTTONS, '#customizeMouseButtonsRow');
@@ -288,6 +313,11 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
         routes.CUSTOMIZE_TABLET_BUTTONS, '#customizeTabletButtonsSubpage');
     this.addFocusConfig(
         routes.CUSTOMIZE_PEN_BUTTONS, '#customizePenButtonsSubpage');
+
+    if (!this.isRevampWayfindingEnabled_) {
+      this.addFocusConfig(routes.STORAGE, '#storageRow');
+      this.addFocusConfig(routes.POWER, '#powerRow');
+    }
   }
 
   private observePointingStickSettings(): void {
@@ -375,7 +405,15 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
     if (this.inputDeviceSettingsProvider instanceof
         FakeInputDeviceSettingsProvider) {
       this.inputDeviceSettingsProvider.observeGraphicsTabletSettings(this);
+      return;
     }
+
+    this.graphicsTabletSettingsObserverReceiver =
+        new GraphicsTabletSettingsObserverReceiver(this);
+
+    this.inputDeviceSettingsProvider.observeGraphicsTabletSettings(
+        this.graphicsTabletSettingsObserverReceiver.$
+            .bindNewPipeAndPassRemote());
   }
 
   onGraphicsTabletListUpdated(graphicsTablets: GraphicsTablet[]): void {
@@ -401,98 +439,98 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
   /**
    * Handler for tapping the mouse and touchpad settings menu item.
    */
-  private onPointersClick_() {
+  private onPointersClick_(): void {
     Router.getInstance().navigateTo(routes.POINTERS);
   }
 
   /**
    * Handler for tapping the mouse and touchpad settings menu item.
    */
-  private onPerDeviceKeyboardClick_() {
+  private onPerDeviceKeyboardClick_(): void {
     Router.getInstance().navigateTo(routes.PER_DEVICE_KEYBOARD);
   }
 
   /**
    * Handler for tapping the Mouse settings menu item.
    */
-  private onPerDeviceMouseClick_() {
+  private onPerDeviceMouseClick_(): void {
     Router.getInstance().navigateTo(routes.PER_DEVICE_MOUSE);
   }
 
   /**
    * Handler for tapping the Touchpad settings menu item.
    */
-  private onPerDeviceTouchpadClick_() {
+  private onPerDeviceTouchpadClick_(): void {
     Router.getInstance().navigateTo(routes.PER_DEVICE_TOUCHPAD);
   }
 
   /**
    * Handler for tapping the Pointing stick settings menu item.
    */
-  private onPerDevicePointingStickClick_() {
+  private onPerDevicePointingStickClick_(): void {
     Router.getInstance().navigateTo(routes.PER_DEVICE_POINTING_STICK);
   }
 
   /**
    * Handler for tapping the Keyboard settings menu item.
    */
-  private onKeyboardClick_() {
+  private onKeyboardClick_(): void {
     Router.getInstance().navigateTo(routes.KEYBOARD);
   }
 
   /**
    * Handler for tapping the Stylus settings menu item.
    */
-  private onStylusClick_() {
+  private onStylusClick_(): void {
     Router.getInstance().navigateTo(routes.STYLUS);
   }
 
   /**
    * Handler for tapping the Graphics tablet settings menu item.
    */
-  private onGraphicsTabletClick() {
+  private onGraphicsTabletClick(): void {
     Router.getInstance().navigateTo(routes.GRAPHICS_TABLET);
   }
 
   /**
    * Handler for tapping the Display settings menu item.
    */
-  private onDisplayClick_() {
+  private onDisplayClick_(): void {
     Router.getInstance().navigateTo(routes.DISPLAY);
   }
 
   /**
    * Handler for tapping the Audio settings menu item.
    */
-  private onAudioClick_() {
+  private onAudioClick_(): void {
     Router.getInstance().navigateTo(routes.AUDIO);
   }
 
   /**
    * Handler for tapping the Storage settings menu item.
    */
-  private onStorageClick_() {
+  private onStorageClick_(): void {
     Router.getInstance().navigateTo(routes.STORAGE);
   }
 
   /**
    * Handler for tapping the Power settings menu item.
    */
-  private onPowerClick_() {
+  private onPowerClick_(): void {
     Router.getInstance().navigateTo(routes.POWER);
   }
 
-  override currentRouteChanged(newRoute: Route, oldRoute?: Route) {
+  override currentRouteChanged(newRoute: Route, oldRoute?: Route): void {
     super.currentRouteChanged(newRoute, oldRoute);
 
     this.checkPointerSubpage_();
   }
 
-  private pointersChanged_() {
+  private pointersChanged_(): void {
     this.checkPointerSubpage_();
   }
 
-  private mouseChanged_() {
+  private mouseChanged_(): void {
     if ((!this.mice || this.mice.length === 0) &&
         Router.getInstance().currentRoute === routes.PER_DEVICE_MOUSE) {
       getAnnouncerInstance().announce(
@@ -501,7 +539,7 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
     }
   }
 
-  private touchpadChanged_() {
+  private touchpadChanged_(): void {
     if ((!this.touchpads || this.touchpads.length === 0) &&
         Router.getInstance().currentRoute === routes.PER_DEVICE_TOUCHPAD) {
       getAnnouncerInstance().announce(
@@ -511,7 +549,7 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
     }
   }
 
-  private pointingStickChanged_() {
+  private pointingStickChanged_(): void {
     if ((!this.pointingSticks || this.pointingSticks.length === 0) &&
         Router.getInstance().currentRoute ===
             routes.PER_DEVICE_POINTING_STICK) {
@@ -549,13 +587,33 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
   /**
    * Leaves the pointer subpage if all pointing devices are detached.
    */
-  private checkPointerSubpage_() {
+  private checkPointerSubpage_(): void {
     // Check that the properties have explicitly been set to false.
     if (this.hasMouse_ === false && this.hasPointingStick_ === false &&
         this.hasTouchpad_ === false &&
         Router.getInstance().currentRoute === routes.POINTERS) {
       Router.getInstance().navigateTo(routes.DEVICE);
     }
+  }
+
+  /**
+   * Computes the display name for the currently configured input method. This
+   * should be displayed as a sublabel under the Keyboard and inputs row, only
+   * when OsSettingsRevampWayfinding is enabled.
+   */
+  private computeInputMethodDisplayName_(): string {
+    if (!this.isRevampWayfindingEnabled_) {
+      return '';
+    }
+
+    const id = this.languages?.inputMethods?.currentId;
+    if (!id || !this.languageHelper) {
+      return '';
+    }
+    if (id === ACCESSIBILITY_COMMON_IME_ID) {
+      return '';
+    }
+    return this.languageHelper.getInputMethodDisplayName(id);
   }
 }
 

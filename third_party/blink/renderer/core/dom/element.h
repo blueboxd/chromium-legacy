@@ -115,6 +115,7 @@ class ShadowRoot;
 class ShadowRootInit;
 class SpaceSplitString;
 class StyleEngine;
+class StyleHighlightData;
 class StylePropertyMap;
 class StylePropertyMapReadOnly;
 class StyleRecalcContext;
@@ -572,7 +573,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void DefaultEventHandler(Event&) override;
 
   virtual bool HasLegalLinkAttribute(const QualifiedName&) const;
-  virtual const QualifiedName& SubResourceAttributeName() const;
 
   // Only called by the parser immediately after element construction.
   void ParserSetAttributes(const Vector<Attribute, kAttributePrealloc>&);
@@ -609,6 +609,16 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   void RecalcStyle(const StyleRecalcChange, const StyleRecalcContext&);
   void RecalcStyleForTraversalRootAncestor();
+
+  // RecalcHighlightStyles for the originating element's new_style and return
+  // a new new_style if highlight styles were added. Otherwise return a pointer
+  // to the passed in new_style.
+  const ComputedStyle* RecalcHighlightStyles(
+      const StyleRecalcContext& style_recalc_context,
+      const ComputedStyle* old_style,
+      const ComputedStyle& new_style,
+      const ComputedStyle* parent_style);
+
   void RebuildLayoutTreeForTraversalRootAncestor() {
     RebuildFirstLetterLayoutTree();
     WhitespaceAttacher whitespace_attacher;
@@ -784,16 +794,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
                                       const FocusOptions*);
   virtual void blur();
 
-  // SupportsFocus is true if the element is *capable* of being focused. An
-  // element supports focus if, e.g. it has a tabindex attribute, or it is
-  // editable, or other conditions. Note that the element might *support* focus
-  // while not *being focusable*, for example if the element is disconnected
-  // from the document. This method can be called when layout is not clean, and
-  // it will *not* update layout itself.
- protected:
-  virtual bool SupportsFocus() const;
-
- public:
   // IsFocusable is true if the element SupportsFocus(), and is currently
   // focusable (using the mouse). This method can be called when layout is not
   // clean, but the method might trigger a lifecycle update in that case. This
@@ -924,6 +924,15 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // See StyleRecalcContext for more information.
   const ComputedStyle* StyleForPseudoElement(const StyleRecalcContext&,
                                              const StyleRequest&);
+
+  // This is used by ResolveStyle with Highlight Inheritance when caching
+  // is not used.
+  const ComputedStyle* StyleForHighlightPseudoElement(
+      const StyleRecalcContext& style_recalc_context,
+      const ComputedStyle* highlight_parent,
+      const ComputedStyle& originating_style,
+      const PseudoId pseudo_id,
+      const AtomicString& pseudo_argument = g_null_atom);
 
   // Returns the ComputedStyle after applying the declarations in the @try block
   // at the given index. Returns nullptr if the current element doesn't use
@@ -1259,6 +1268,17 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
     return NamedItemType::kNone;
   }
 
+  // SupportsFocus is true if the element is *capable* of being focused. An
+  // element supports focus if, e.g. it has a tabindex attribute, or it is
+  // editable, or other conditions. Note that the element might *support* focus
+  // while not *being focusable*, for example if the element is disconnected
+  // from the document. This method can be called when layout is not clean,
+  // but in some cases it might run a style/layout lifecycle update on the
+  // document. This method should stay protected - it is only for use by the
+  // Element class hierarchy. Outside callers should use `IsFocusable()` and/or
+  // `IsKeyboardFocusable()`.
+  virtual bool SupportsFocus() const;
+
   bool SupportsSpatialNavigationFocus() const;
 
   void ClearTabIndexExplicitlyIfNeeded();
@@ -1314,6 +1334,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // changes.
   void LangAttributeChanged();
 
+  TextDirection ParentDirectionality() const;
+
  private:
   friend class AXObject;
   struct AffectedByPseudoStateChange;
@@ -1360,6 +1382,29 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
       const StyleRecalcContext&,
       PseudoId,
       const AtomicString& pseudo_argument = g_null_atom);
+
+  enum class HighlightRecalc {
+    // No highlight recalc is needed.
+    kNone,
+    // The HighlightData from the old style can be re-used.
+    kReuse,
+    // The HighlightData contains font relative units and may need recalc.
+    kFontRelative,
+    // Highlights must be calculated in full.
+    kFull,
+  };
+
+  // Determine whether pseudo highlight style must be recalculated,
+  // either because full recalc is required or the parent has font relative
+  // units.
+  bool ShouldRecalcHighlightPseudoStyle(HighlightRecalc, const ComputedStyle*);
+
+  // Recalc those custom highlights that require it.
+  void RecalcCustomHighlightPseudoStyle(const StyleRecalcContext&,
+                                        HighlightRecalc,
+                                        ComputedStyleBuilder&,
+                                        const StyleHighlightData*,
+                                        const ComputedStyle&);
 
   // Recalculate the ComputedStyle for this element and return a
   // StyleRecalcChange for propagation/traversal into child nodes.
@@ -1435,6 +1480,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
     DetachPseudoElement(kPseudoIdBackdrop, performing_reattach);
     DetachPseudoElement(kPseudoIdFirstLetter, performing_reattach);
   }
+
+  void RecomputeDirectionFromParent();
 
   ShadowRoot& CreateAndAttachShadowRoot(ShadowRootType);
 
@@ -1571,21 +1618,15 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   bool ShouldUpdateLastRememberedBlockSize() const;
   bool ShouldUpdateLastRememberedInlineSize() const;
 
-  enum class HighlightRecalc {
-    // No highlight recalc is needed.
-    kNone,
-    // The HighlightData from the old style can be re-used.
-    kReuse,
-    // Highlights must be calculated in full.
-    kFull,
-  };
+  bool IsStyleAttributeChangeAllowed(const AtomicString& style_string);
 
   // Highlight pseudos inherit all properties from the corresponding highlight
   // in the parent, but virtually all existing content uses universal rules
   // like *::selection. To improve runtime and keep copy-on-write inheritance,
   // avoid recalc if neither parent nor child matched any non-universal rules.
   HighlightRecalc CalculateHighlightRecalc(const ComputedStyle* old_style,
-                                           const ComputedStyle* new_style);
+                                           const ComputedStyle& new_style,
+                                           const ComputedStyle* parent_style);
 
   Member<ElementData> element_data_;
 };

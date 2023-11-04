@@ -39,6 +39,7 @@ class PresentationTimeRecorder;
 }  // namespace ui
 
 namespace ash {
+class AutoSnapController;
 class OverviewSession;
 class SplitViewOverviewSession;
 class SplitViewControllerTest;
@@ -202,16 +203,10 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   SnapPosition default_snap_position() const { return default_snap_position_; }
   SplitViewDivider* split_view_divider() { return split_view_divider_.get(); }
   EndReason end_reason() const { return end_reason_; }
-  bool in_snap_group_creation_session() const {
-    return in_snap_group_creation_session_;
-  }
   SplitViewMetricsController* split_view_metrics_controller() {
     return split_view_metrics_controller_.get();
   }
   aura::Window* to_be_activated_window() { return to_be_activated_window_; }
-  SplitViewOverviewSession* split_view_overview_session_for_testing() {
-    return split_view_overview_session_.get();
-  }
 
   // Returns true if the divider is resizing (not animating) in tablet mode
   // split view, or between two windows in Snap Groups.
@@ -461,7 +456,6 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   friend class SplitViewOverviewSessionTest;
   friend class SplitViewOverviewSession;
   class DividerSnapAnimation;
-  class AutoSnapController;
   class ToBeSnappedWindowsObserver;
 
   // Reason that a snapped window is detached from the splitview.
@@ -742,11 +736,6 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // split view and clamshell split view.
   SplitViewType split_view_type_ = SplitViewType::kTabletType;
 
-  // True if we are currently in a snap group creation session which can either
-  // be active on one window snapped or when updating a window. Both use cases
-  // are behind the feature flag `kSnapGroup`.
-  bool in_snap_group_creation_session_ = false;
-
   // The time when splitview starts. Used for metric collection purpose.
   base::Time splitview_start_time_;
 
@@ -762,10 +751,6 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
 
   // Observes windows and performs auto snapping if needed.
   std::unique_ptr<AutoSnapController> auto_snap_controller_;
-
-  // Observes a single window in intermediate split view and makes calls to
-  // overview.
-  std::unique_ptr<SplitViewOverviewSession> split_view_overview_session_;
 
   // The metrics controller for the same root window.
   std::unique_ptr<SplitViewMetricsController> split_view_metrics_controller_;

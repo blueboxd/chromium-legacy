@@ -74,6 +74,8 @@ class MockFactory final : public web_package::mojom::WebBundleParserFactory {
       response_callback_ = std::move(callback);
     }
 
+    void Close(CloseCallback callback) override {}
+
     ParseIntegrityBlockCallback integrity_block_callback_;
     ParseMetadataCallback metadata_callback_;
     ParseResponseCallback response_callback_;
@@ -122,6 +124,8 @@ class MockDataSource final : public web_package::mojom::BundleDataSource {
   MockDataSource(const MockDataSource&) = delete;
   MockDataSource& operator=(const MockDataSource&) = delete;
 
+  bool is_closed() const { return is_closed_; }
+
  private:
   // Implements web_package::mojom::BundledDataSource.
   void Read(uint64_t offset, uint64_t length, ReadCallback callback) override {}
@@ -130,7 +134,13 @@ class MockDataSource final : public web_package::mojom::BundleDataSource {
 
   void IsRandomAccessContext(IsRandomAccessContextCallback) override {}
 
+  void Close(CloseCallback callback) override {
+    is_closed_ = true;
+    std::move(callback).Run();
+  }
+
   mojo::Receiver<web_package::mojom::BundleDataSource> receiver_;
+  bool is_closed_ = false;
 };
 
 }  // namespace
@@ -407,6 +417,25 @@ TEST_F(SafeWebBundleParserTest, ParseWebBundleWithRelativeUrls) {
                             {GURL("https://test.example.org/absolute-url"),
                              GURL("https://example.com/relative-url-1"),
                              GURL("https://example.com/foo/relative-url-2")}));
+}
+
+TEST_F(SafeWebBundleParserTest, Close) {
+  auto parser =
+      std::make_unique<SafeWebBundleParser>(/*base_url=*/absl::nullopt);
+
+  mojo::PendingRemote<web_package::mojom::BundleDataSource> remote_data_source;
+  auto data_source = std::make_unique<MockDataSource>(
+      remote_data_source.InitWithNewPipeAndPassReceiver());
+  parser->OpenDataSource(std::move(remote_data_source));
+
+  EXPECT_FALSE(data_source->is_closed());
+
+  base::test::TestFuture<void> closed_callback;
+  parser->Close(closed_callback.GetCallback());
+  closed_callback.Get();
+
+  // Check that parser has closed the data source.
+  EXPECT_TRUE(data_source->is_closed());
 }
 
 }  // namespace data_decoder

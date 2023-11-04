@@ -10,6 +10,7 @@
 
 #include "base/component_export.h"
 #include "base/memory/raw_ptr.h"
+#include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/macros.h"
 #include "components/services/app_service/public/cpp/shortcut/shortcut.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -37,6 +38,15 @@ class COMPONENT_EXPORT(SHORTCUT) ShortcutUpdate {
 
   ShortcutSource ShortcutSource() const;
   bool ShortcutSourceChanged() const;
+
+  absl::optional<apps::IconKey> IconKey() const;
+  bool IconKeyChanged() const;
+
+  // Return true if this is a newly registered shortcut in
+  // App Service. This could happen when new shortcut created
+  // or the shortcut got published to the App Service on
+  // start up.
+  bool ShortcutInitialized() const;
 
  private:
   raw_ptr<const Shortcut, DanglingUntriaged> state_ = nullptr;

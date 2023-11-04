@@ -1414,7 +1414,7 @@ TEST_F(NetworkContextTest, CertReporting) {
 
     client.RunUntilComplete();
     EXPECT_TRUE(client.has_received_completion());
-    EXPECT_EQ(net::ERR_INSECURE_RESPONSE,
+    EXPECT_EQ(net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN,
               client.completion_status().error_code);
 
     if (reporting_enabled) {
@@ -7916,6 +7916,15 @@ TEST_F(NetworkContextExpectBadMessageTest, DataUrl) {
                    mojom::kBrowserProcessId, std::move(factory_params));
 
   AssertBadMessage();
+}
+
+TEST_F(NetworkContextTest, InvalidateIpProtectionConfigCacheTryAgainAfterTime) {
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateNetworkContextParamsForTesting());
+  // If the network context shouldn't participate in IP Protection, calling
+  // `InvalidateIpProtectionConfigCacheTryAgainAfterTime()` isn't expected but
+  // shouldn't cause a crash.
+  network_context->InvalidateIpProtectionConfigCacheTryAgainAfterTime();
 }
 
 class NetworkContextBrowserCookieTest

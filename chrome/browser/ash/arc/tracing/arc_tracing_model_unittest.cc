@@ -134,7 +134,6 @@ std::unique_ptr<ArcTracingGraphicsModel> LoadGraphicsModel(
 // Ensures |model1| is equal to |model2|.
 void EnsureGraphicsModelsEqual(const ArcTracingGraphicsModel& model1,
                                const ArcTracingGraphicsModel& model2) {
-  EXPECT_EQ(model1.android_top_level(), model2.android_top_level());
   EXPECT_EQ(model1.chrome_top_level(), model2.chrome_top_level());
   EXPECT_EQ(model1.view_buffers(), model2.view_buffers());
   EXPECT_EQ(model1.system_model(), model2.system_model());
@@ -192,26 +191,9 @@ TEST_F(ArcTracingModelTest, TopLevel) {
   // Continue in this test to avoid heavy calculations for building base model.
   // Make sure we can create graphics model.
   ArcTracingGraphicsModel graphics_model;
-  ASSERT_TRUE(graphics_model.Build(model));
-
-  ASSERT_EQ(1U, graphics_model.android_top_level().buffer_events().size());
-  EXPECT_TRUE(ValidateGrahpicsEvents(
-      graphics_model.android_top_level().buffer_events()[0],
-      {GraphicsEventType::kSurfaceFlingerInvalidationStart,
-       GraphicsEventType::kSurfaceFlingerInvalidationDone,
-       GraphicsEventType::kSurfaceFlingerCompositionStart,
-       GraphicsEventType::kSurfaceFlingerCompositionDone}));
-  EXPECT_TRUE(
-      ValidateGrahpicsEvents(graphics_model.android_top_level().global_events(),
-                             {GraphicsEventType::kSurfaceFlingerVsyncHandler,
-                              GraphicsEventType::kSurfaceFlingerCompositionJank,
-                              GraphicsEventType::kVsyncTimestamp}));
-  ASSERT_FALSE(graphics_model.android_top_level().global_events().empty());
-  // Check trimmed by VSYNC.
-  EXPECT_EQ(GraphicsEventType::kSurfaceFlingerVsyncHandler,
-            graphics_model.android_top_level().global_events()[0].type);
-  EXPECT_EQ(0U,
-            graphics_model.android_top_level().global_events()[0].timestamp);
+  TraceTimestamps commits;
+  commits.Add(base::TimeTicks::FromUptimeMillis(42));
+  ASSERT_TRUE(graphics_model.Build(model, commits));
 
   EXPECT_EQ(2U, graphics_model.chrome_top_level().buffer_events().size());
   for (const auto& chrome_top_level_band :
@@ -233,21 +215,7 @@ TEST_F(ArcTracingModelTest, TopLevel) {
     EXPECT_FALSE(view.second.buffer_events().empty());
     for (const auto& buffer : view.second.buffer_events()) {
       EXPECT_TRUE(ValidateGrahpicsEvents(
-          buffer, {
-                      GraphicsEventType::kBufferQueueDequeueStart,
-                      GraphicsEventType::kBufferQueueDequeueDone,
-                      GraphicsEventType::kBufferQueueQueueStart,
-                      GraphicsEventType::kBufferQueueQueueDone,
-                      GraphicsEventType::kBufferQueueAcquire,
-                      GraphicsEventType::kBufferQueueReleased,
-                      GraphicsEventType::kExoSurfaceAttach,
-                      GraphicsEventType::kExoProduceResource,
-                      GraphicsEventType::kExoBound,
-                      GraphicsEventType::kExoPendingQuery,
-                      GraphicsEventType::kExoReleased,
-                      GraphicsEventType::kChromeBarrierOrder,
-                      GraphicsEventType::kChromeBarrierFlush,
-                  }));
+          buffer, {GraphicsEventType::kExoSurfaceCommit}));
     }
   }
 
@@ -614,48 +582,6 @@ TEST_F(ArcTracingModelTest, GraphicsModelLoadSerialize) {
   EXPECT_FALSE(LoadGraphicsModel("gm_bad_wrong_timestamp.json"));
 }
 
-TEST_F(ArcTracingModelTest, EventsContainerTrim) {
-  ArcTracingGraphicsModel::EventsContainer events;
-  constexpr int64_t trim_timestamp = 25;
-  events.global_events().emplace_back(
-      ArcTracingGraphicsModel::BufferEventType::kChromeOSJank,
-      15 /* timestamp */);
-  events.global_events().emplace_back(
-      ArcTracingGraphicsModel::BufferEventType::kChromeOSJank,
-      25 /* timestamp */);
-  events.global_events().emplace_back(
-      ArcTracingGraphicsModel::BufferEventType::kChromeOSJank,
-      30 /* timestamp */);
-  events.global_events().emplace_back(
-      ArcTracingGraphicsModel::BufferEventType::kChromeOSJank,
-      35 /* timestamp */);
-  events.buffer_events().resize(1);
-  // Two sequences, first sequence starts before trim and ends after. After
-  // trimming  next sequence should be preserved only.
-  events.buffer_events()[0].emplace_back(
-      ArcTracingGraphicsModel::BufferEventType::kChromeOSDraw,
-      20 /* timestamp */);
-  events.buffer_events()[0].emplace_back(
-      ArcTracingGraphicsModel::BufferEventType::kChromeOSSwapDone,
-      30 /* timestamp */);
-  events.buffer_events()[0].emplace_back(
-      ArcTracingGraphicsModel::BufferEventType::kChromeOSDraw,
-      40 /* timestamp */);
-  events.buffer_events()[0].emplace_back(
-      ArcTracingGraphicsModel::BufferEventType::kChromeOSSwapDone,
-      50 /* timestamp */);
-  ArcTracingGraphicsModel::TrimEventsContainer(
-      &events, trim_timestamp,
-      {ArcTracingGraphicsModel::BufferEventType::kChromeOSDraw});
-  ASSERT_EQ(3U, events.global_events().size());
-  EXPECT_EQ(25U, events.global_events()[0].timestamp);
-  ASSERT_EQ(1U, events.buffer_events().size());
-  ASSERT_EQ(2U, events.buffer_events()[0].size());
-  EXPECT_EQ(40U, events.buffer_events()[0][0].timestamp);
-  EXPECT_EQ(ArcTracingGraphicsModel::BufferEventType::kChromeOSDraw,
-            events.buffer_events()[0][0].type);
-}
-
 TEST_F(ArcTracingModelTest, AsynchronousSystemEvents) {
   base::FilePath base_path;
   base::PathService::Get(chrome::DIR_TEST_DATA, &base_path);
@@ -693,65 +619,6 @@ TEST_F(ArcTracingModelTest, AsynchronousSystemEvents) {
   EXPECT_EQ(TRACE_EVENT_PHASE_ASYNC_END, group2[1]->GetPhase());
   EXPECT_EQ(1200000UL, group2[0]->GetTimestamp());
   EXPECT_EQ(1400000UL, group2[1]->GetTimestamp());
-}
-
-TEST_F(ArcTracingModelTest, InputEvents) {
-  base::FilePath base_path;
-  base::PathService::Get(chrome::DIR_TEST_DATA, &base_path);
-  const base::FilePath tracing_path =
-      base_path.Append("arc_graphics_tracing").Append("trace_input.dat.gz");
-
-  std::string tracing_data_compressed;
-  ASSERT_TRUE(base::ReadFileToString(tracing_path, &tracing_data_compressed));
-
-  std::string tracing_data;
-  ASSERT_TRUE(
-      compression::GzipUncompress(tracing_data_compressed, &tracing_data));
-
-  ArcTracingModel model;
-  ASSERT_TRUE(model.Build(tracing_data));
-
-  ArcTracingGraphicsModel graphics_model;
-  graphics_model.set_skip_structure_validation();
-  ASSERT_TRUE(graphics_model.Build(model));
-
-  const std::vector<GraphicsEvents>& buffers =
-      graphics_model.input().buffer_events();
-  ASSERT_TRUE(buffers.size());
-
-  for (const GraphicsEvents& buffer : buffers) {
-    ASSERT_FALSE(buffer.empty());
-
-    uint64_t last_timestamp = buffer[0].timestamp;
-    GraphicsEventType last_type = buffer[0].type;
-    EXPECT_EQ(GraphicsEventType::kInputEventCreated, last_type);
-    for (size_t i = 1; i < buffer.size(); ++i) {
-      const uint64_t timestamp = buffer[i].timestamp;
-      const GraphicsEventType type = buffer[i].type;
-      EXPECT_GE(timestamp, last_timestamp);
-      // One input sequence may contain multiple input events.
-      switch (last_type) {
-        case GraphicsEventType::kInputEventCreated:
-        case GraphicsEventType::kInputEventWaylandDispatched:
-          EXPECT_TRUE(type == GraphicsEventType::kInputEventCreated ||
-                      type == GraphicsEventType::kInputEventWaylandDispatched ||
-                      type == GraphicsEventType::kInputEventDeliverStart);
-          break;
-        case GraphicsEventType::kInputEventDeliverStart:
-          EXPECT_EQ(GraphicsEventType::kInputEventDeliverEnd, type);
-          break;
-        case GraphicsEventType::kInputEventDeliverEnd:
-          EXPECT_EQ(GraphicsEventType::kInputEventCreated, type);
-          break;
-        default:
-          NOTREACHED();
-      }
-
-      last_timestamp = timestamp;
-      last_type = type;
-    }
-    EXPECT_EQ(GraphicsEventType::kInputEventDeliverEnd, last_type);
-  }
 }
 
 }  // namespace arc

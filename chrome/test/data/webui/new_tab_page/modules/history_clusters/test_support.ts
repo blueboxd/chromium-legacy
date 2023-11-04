@@ -26,7 +26,7 @@ export function createVisit(overrides?: Partial<URLVisit>): URLVisit {
         titleMatchPositions: [],
         urlForDisplayMatchPositions: [],
         duplicates: [],
-        relativeDate: '1 min ago',
+        relativeDate: '',
         annotations: [],
         debugInfo: {},
         rawVisitData: {

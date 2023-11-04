@@ -79,9 +79,15 @@ GPU_GLES2_EXPORT GLFormatDesc ToGLFormatDesc(viz::SharedImageFormat format,
 #if BUILDFLAG(ENABLE_VULKAN)
 // Returns true if given `format` is supported by Vulkan.
 GPU_GLES2_EXPORT bool HasVkFormat(viz::SharedImageFormat format);
-// Returns vulkan format for given `format`.
+// Returns vulkan format for given `format` with external sampler.
+GPU_GLES2_EXPORT VkFormat
+ToVkFormatExternalSampler(viz::SharedImageFormat format);
+// Returns vulkan format for given `format`, which must be single-planar.
+GPU_GLES2_EXPORT VkFormat ToVkFormatSinglePlanar(viz::SharedImageFormat format);
+// Returns vulkan format for given `format`, which can be single-planar or
+// multiplanar with per-plane sampling.
 GPU_GLES2_EXPORT VkFormat ToVkFormat(viz::SharedImageFormat format,
-                                     int plane_index = 0);
+                                     int plane_index);
 #endif
 
 // Following functions return the appropriate WebGPU/Dawn format for a
@@ -101,11 +107,10 @@ GPU_GLES2_EXPORT WGPUTextureFormat ToWGPUFormat(viz::SharedImageFormat format);
 GPU_GLES2_EXPORT WGPUTextureFormat ToWGPUFormat(viz::SharedImageFormat format,
                                                 int plane_index);
 
-// Returns the supported Dawn texture usage for the given `format`. For
-// single-plane formats that are not legacy multiplanar, `is_yuv_plane`
-// indicates if the texture corresponds to a plane of a multi-planar image.
-wgpu::TextureUsage GetSupportedDawnTextureUsage(viz::SharedImageFormat format,
-                                                bool is_yuv_plane = false,
+// Returns the supported Dawn texture usage. `is_yuv_plane` indicates if the
+// texture corresponds to a plane of a multi-planar image and `is_dcomp_surface`
+// indicates if the texture corresponds to a direct composition surface.
+wgpu::TextureUsage GetSupportedDawnTextureUsage(bool is_yuv_plane = false,
                                                 bool is_dcomp_surface = false);
 
 // Returns wgpu::TextureAspect corresponding to `plane_index` of a particular
@@ -121,10 +126,11 @@ GPU_GLES2_EXPORT unsigned int ToMTLPixelFormat(viz::SharedImageFormat format,
                                                int plane_index = 0);
 #endif
 
-// Returns the graphite::TextureInfo for a given `format` and `plane_index`. For
-// single-plane formats that are not legacy multiplanar, `is_yuv_plane`
-// indicates if the texture corresponds to a plane of a multi-planar image.
-// `mipmapped` indicates if the texture has mipmaps.
+// Returns the graphite::TextureInfo for a given `format` and `plane_index`.
+// `is_yuv_plane` indicates if the texture corresponds to a plane of a
+// multi-planar image. `mipmapped` indicates if the texture has mipmaps.
+// `scanout_dcomp_surface` indicates if the texture corresponds to a Windows
+// direct composition surface.
 GPU_GLES2_EXPORT skgpu::graphite::TextureInfo GetGraphiteTextureInfo(
     GrContextType gr_context_type,
     viz::SharedImageFormat format,

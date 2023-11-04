@@ -9,13 +9,16 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/types/expected.h"
 #include "base/uuid.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/common/app_ui_observer.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/routines/diagnostic_routine.h"
+#include "chrome/browser/chromeos/extensions/telemetry/api/routines/diagnostic_routine_info.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/routines/remote_diagnostic_routines_service_strategy.h"
 #include "chromeos/crosapi/mojom/telemetry_diagnostic_routine_service.mojom.h"
+#include "chromeos/crosapi/mojom/telemetry_extension_exception.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry.h"
@@ -62,6 +65,18 @@ class DiagnosticRoutineManager : public extensions::BrowserContextKeyedAPI,
   base::expected<base::Uuid, Error> CreateRoutine(
       extensions::ExtensionId extension_id,
       crosapi::mojom::TelemetryDiagnosticRoutineArgumentPtr routine_argument);
+  // Tries to start the routine with `routine_id`, returns true if successful,
+  // otherwise false.
+  bool StartRoutineForExtension(extensions::ExtensionId extension_id,
+                                base::Uuid routine_id);
+  // Stops the routine with `routine_id`.
+  void CancelRoutineForExtension(extensions::ExtensionId extension_id,
+                                 base::Uuid routine_id);
+
+  void IsRoutineArgumentSupported(
+      crosapi::mojom::TelemetryDiagnosticRoutineArgumentPtr arg,
+      base::OnceCallback<
+          void(crosapi::mojom::TelemetryExtensionSupportStatusPtr)> callback);
 
   // `ExtensionRegistryObserver`:
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
@@ -79,8 +94,9 @@ class DiagnosticRoutineManager : public extensions::BrowserContextKeyedAPI,
                  DiagnosticRoutineManager::Error>
   CreateAppUiObserver(extensions::ExtensionId extension_id);
 
-  // Called once a specific `DiagnosticRoutine` signals its destruction.
-  void OnDiagnosticRoutineFinished(DiagnosticRoutine* routine);
+  // Called once a specific `DiagnosticRoutine` signals a cut connection or
+  // enters the finished state. We are removing the routine in that case.
+  void OnRoutineExceptionOrFinished(DiagnosticRoutineInfo info);
 
   mojo::Remote<crosapi::mojom::TelemetryDiagnosticRoutinesService>&
   GetRemoteService();
@@ -97,7 +113,7 @@ class DiagnosticRoutineManager : public extensions::BrowserContextKeyedAPI,
       routines_per_extension_;
 
   std::unique_ptr<RemoteDiagnosticRoutineServiceStrategy> remote_strategy_;
-  raw_ptr<content::BrowserContext, ExperimentalAsh> browser_context_;
+  raw_ptr<content::BrowserContext> browser_context_;
 };
 
 }  // namespace chromeos

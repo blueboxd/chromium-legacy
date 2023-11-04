@@ -171,6 +171,11 @@ class AutofillWebDataBackendImpl
   WebDatabase::State UpdateCreditCard(const CreditCard& credit_card,
                                       WebDatabase* db);
 
+  // Updates a local CVC in the web database.
+  WebDatabase::State UpdateLocalCvc(const std::string& guid,
+                                    const std::u16string& cvc,
+                                    WebDatabase* db);
+
   // Removes a credit card from the web database. Valid only for local cards.
   WebDatabase::State RemoveCreditCard(const std::string& guid, WebDatabase* db);
 
@@ -217,8 +222,6 @@ class AutofillWebDataBackendImpl
                                      WebDatabase* db);
   WebDatabase::State RemoveServerCvc(int64_t instrument_id, WebDatabase* db);
   WebDatabase::State ClearServerCvcs(WebDatabase* db);
-
-  WebDatabase::State AddUpiId(const std::string& upi_id, WebDatabase* db);
 
   // Returns the PaymentsCustomerData from the database.
   std::unique_ptr<WDTypedResult> GetPaymentsCustomerData(WebDatabase* db);

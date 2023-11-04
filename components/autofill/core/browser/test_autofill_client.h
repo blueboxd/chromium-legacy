@@ -15,7 +15,6 @@
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -360,8 +359,7 @@ class TestAutofillClientTemplate : public T {
     confirm_save_credit_card_locally_called_ = true;
     offer_to_save_credit_card_bubble_was_shown_ = options.show_prompt;
     save_credit_card_options_ = options;
-    std::move(callback).Run(
-        AutofillClient::SaveCardOfferUserDecision::kAccepted);
+    std::move(callback).Run(get_save_card_offer_user_decision());
   }
 
   void ConfirmSaveCreditCardToCloud(
@@ -369,10 +367,11 @@ class TestAutofillClientTemplate : public T {
       const LegalMessageLines& legal_message_lines,
       AutofillClient::SaveCreditCardOptions options,
       AutofillClient::UploadSaveCardPromptCallback callback) override {
+    confirm_save_credit_card_to_cloud_called_ = true;
     offer_to_save_credit_card_bubble_was_shown_ = options.show_prompt;
     save_credit_card_options_ = options;
-    std::move(callback).Run(
-        AutofillClient::SaveCardOfferUserDecision::kAccepted, {});
+
+    std::move(callback).Run(get_save_card_offer_user_decision(), {});
   }
 
   void CreditCardUploadCompleted(bool card_saved) override {}
@@ -388,7 +387,10 @@ class TestAutofillClientTemplate : public T {
       AutofillClient::SaveAddressProfilePromptOptions options,
       AutofillClient::AddressProfileSavePromptCallback callback) override {}
 
-  void ShowEditAddressProfileDialog(const AutofillProfile& profile) override {}
+  void ShowEditAddressProfileDialog(
+      const AutofillProfile& profile,
+      AutofillClient::AddressProfileSavePromptCallback
+          on_user_decision_callback) override {}
 
   void ShowDeleteAddressProfileDialog() override {}
 
@@ -457,10 +459,6 @@ class TestAutofillClientTemplate : public T {
 
   bool IsPasswordManagerEnabled() override { return true; }
 
-  void PropagateAutofillPredictionsDeprecated(
-      AutofillDriver* driver,
-      const std::vector<FormStructure*>& forms) override {}
-
   void DidFillOrPreviewForm(mojom::AutofillActionPersistence action_persistence,
                             AutofillTriggerSource trigger_source,
                             bool is_refill) override {}
@@ -482,13 +480,30 @@ class TestAutofillClientTemplate : public T {
     return {};
   }
 
-  scoped_refptr<device_reauth::DeviceAuthenticator> GetDeviceAuthenticator()
-      const override {
+  std::unique_ptr<device_reauth::DeviceAuthenticator> GetDeviceAuthenticator()
+      override {
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
-    return mock_device_authenticator_;
+    if (device_authenticator_) {
+      return std::move(device_authenticator_);
+    }
+    return std::make_unique<device_reauth::MockDeviceAuthenticator>();
 #else
     return nullptr;
 #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
+  }
+
+  device_reauth::MockDeviceAuthenticator* GetDeviceAuthenticatorPtr() {
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
+    return device_authenticator_.get();
+#else
+    return nullptr;
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
+  }
+
+  void SetDeviceAuthenticator(
+      std::unique_ptr<device_reauth::MockDeviceAuthenticator>
+          device_authenticator) {
+    device_authenticator_ = std::move(device_authenticator);
   }
 
   void ShowMandatoryReauthOptInPrompt(
@@ -588,6 +603,11 @@ class TestAutofillClientTemplate : public T {
   }
 #endif
 
+  void set_save_card_offer_user_decision(
+      AutofillClient::SaveCardOfferUserDecision decision) {
+    save_card_offer_user_decision_ = decision;
+  }
+
   void set_should_save_autofill_profiles(bool value) {
     should_save_autofill_profiles_ = value;
   }
@@ -599,6 +619,10 @@ class TestAutofillClientTemplate : public T {
 
   bool ConfirmSaveCardLocallyWasCalled() {
     return confirm_save_credit_card_locally_called_;
+  }
+
+  bool ConfirmSaveCardToCloudWasCalled() {
+    return confirm_save_credit_card_to_cloud_called_;
   }
 
   bool ConfirmSaveIbanLocallyWasCalled() {
@@ -630,6 +654,11 @@ class TestAutofillClientTemplate : public T {
 
   AutofillClient::SaveCreditCardOptions get_save_credit_card_options() {
     return save_credit_card_options_.value();
+  }
+
+  AutofillClient::SaveCardOfferUserDecision
+  get_save_card_offer_user_decision() {
+    return save_card_offer_user_decision_;
   }
 
   ::testing::NiceMock<MockAutocompleteHistoryManager>*
@@ -702,11 +731,10 @@ class TestAutofillClientTemplate : public T {
   ::testing::NiceMock<MockMerchantPromoCodeManager>
       mock_merchant_promo_code_manager_;
   ::testing::NiceMock<MockFastCheckoutClient> mock_fast_checkout_client_;
-  scoped_refptr<device_reauth::MockDeviceAuthenticator>
-      mock_device_authenticator_ =
-          base::MakeRefCounted<device_reauth::MockDeviceAuthenticator>();
   std::unique_ptr<::testing::NiceMock<payments::MockMandatoryReauthManager>>
       mock_payments_mandatory_reauth_manager_;
+  std::unique_ptr<device_reauth::MockDeviceAuthenticator>
+      device_authenticator_ = nullptr;
 
   // NULL by default.
   std::unique_ptr<PrefService> prefs_;
@@ -735,6 +763,8 @@ class TestAutofillClientTemplate : public T {
   bool should_save_autofill_profiles_ = true;
 
   bool confirm_save_credit_card_locally_called_ = false;
+
+  bool confirm_save_credit_card_to_cloud_called_ = false;
 
   bool confirm_save_iban_locally_called_ = false;
 
@@ -774,6 +804,10 @@ class TestAutofillClientTemplate : public T {
   // Populated if credit card local save or upload was offered.
   absl::optional<AutofillClient::SaveCreditCardOptions>
       save_credit_card_options_;
+
+  // User decision when credit card / CVC local save or upload was offered.
+  AutofillClient::SaveCardOfferUserDecision save_card_offer_user_decision_ =
+      AutofillClient::SaveCardOfferUserDecision::kAccepted;
 
   // Populated if IBAN save was offered. True if bubble was shown, false
   // otherwise.

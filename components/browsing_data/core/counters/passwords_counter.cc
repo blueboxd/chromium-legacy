@@ -12,9 +12,10 @@
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "components/browsing_data/core/pref_names.h"
-#include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_interface.h"
+#include "components/password_manager/core/browser/password_sync_util.h"
 #include "components/sync/service/sync_service.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
@@ -25,7 +26,7 @@ namespace {
 bool IsPasswordSyncEnabled(const syncer::SyncService* sync_service) {
   if (!sync_service)
     return false;
-  switch (password_manager_util::GetPasswordSyncState(sync_service)) {
+  switch (password_manager::sync_util::GetPasswordSyncState(sync_service)) {
     case password_manager::SyncState::kNotSyncing:
     case password_manager::SyncState::kAccountPasswordsActiveNormalEncryption:
     case password_manager::SyncState::
@@ -131,13 +132,11 @@ void PasswordStoreFetcher::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<password_manager::PasswordForm>> results) {
   domain_examples_.clear();
 
-  results.erase(
-      std::remove_if(
-          results.begin(), results.end(),
-          [this](const std::unique_ptr<password_manager::PasswordForm>& form) {
-            return (form->date_created < start_ || form->date_created >= end_);
-          }),
-      results.end());
+  base::EraseIf(
+      results,
+      [this](const std::unique_ptr<password_manager::PasswordForm>& form) {
+        return (form->date_created < start_ || form->date_created >= end_);
+      });
   num_passwords_ = results.size();
   std::sort(results.begin(), results.end(),
             [](const std::unique_ptr<password_manager::PasswordForm>& a,
@@ -248,7 +247,6 @@ void PasswordsCounter::OnPasswordsFetchDone() {
 
 std::unique_ptr<PasswordsCounter::PasswordsResult>
 PasswordsCounter::MakeResult() {
-  DCHECK(!(is_sync_active() && num_account_passwords() > 0));
   return std::make_unique<PasswordsCounter::PasswordsResult>(
       this, num_passwords(), num_account_passwords(), is_sync_active(),
       domain_examples(), account_domain_examples());

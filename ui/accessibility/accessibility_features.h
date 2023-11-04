@@ -101,12 +101,6 @@ AX_BASE_EXPORT bool IsUiaProviderEnabled();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 AX_BASE_EXPORT bool IsDictationOfflineAvailable();
 
-AX_BASE_EXPORT BASE_DECLARE_FEATURE(
-    kExperimentalAccessibilityChromeVoxOobeDialogImprovements);
-
-AX_BASE_EXPORT bool
-IsExperimentalAccessibilityChromeVoxOobeDialogImprovementsEnabled();
-
 // Enables Context Checking with the accessibility Dictation feature.
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(
     kExperimentalAccessibilityDictationContextChecking);
@@ -122,6 +116,14 @@ AX_BASE_EXPORT BASE_DECLARE_FEATURE(
 // Returns true if using Language Packs to download Google TTS voices is
 // enabled.
 AX_BASE_EXPORT bool IsExperimentalAccessibilityGoogleTtsLanguagePacksEnabled();
+
+// Enables downloading Google TTS High Quality voices.
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(
+    kExperimentalAccessibilityGoogleTtsHighQualityVoices);
+
+// Returns true if downloading High Quality Google TTS voices is enabled.
+AX_BASE_EXPORT bool
+IsExperimentalAccessibilityGoogleTtsHighQualityVoicesEnabled();
 
 // Enables the experimental color enhancements settings.
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(
@@ -170,12 +172,12 @@ AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityGameFaceIntegration);
 
 // Returns true if the GameFace integration is enabled.
 AX_BASE_EXPORT bool IsAccessibilityGameFaceIntegrationEnabled();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // A feature that makes PDFs displayed in the ChromeOS Media App (AKA Backlight)
 // accessible by performing OCR on the images for each page.
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kBacklightOcr);
 AX_BASE_EXPORT bool IsBacklightOcrEnabled();
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Enables Get Image Descriptions to augment existing images labels,
 // rather than only provide descriptions for completely unlabeled images.
@@ -231,6 +233,17 @@ AX_BASE_EXPORT BASE_DECLARE_FEATURE(kReadAnythingWithScreen2x);
 // Returns true if read anything is enabled with screen2x integration, which
 // distills web pages using an ML model.
 AX_BASE_EXPORT bool IsReadAnythingWithScreen2xEnabled();
+
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(kDataCollectionModeForScreen2x);
+
+// If enabled, the browser will open with read_anything open in the side panel,
+// and calls distill only once we receive navigation's load-complete event.
+// This is because the browser is only being opened to render one webpage, for
+// the sake of generating training data for Screen2x data collection. The
+// browser is intended to be closed by the user who launches Chrome once the
+// first distill call finishes executing. This feature should be used along
+// with 'ScreenAIDebugModeEnabled=true' and --no-sandbox.
+AX_BASE_EXPORT bool IsDataCollectionModeForScreen2xEnabled();
 
 // If enabled, ScreenAI library writes some debug data in /tmp.
 AX_BASE_EXPORT bool IsScreenAIDebugModeEnabled();

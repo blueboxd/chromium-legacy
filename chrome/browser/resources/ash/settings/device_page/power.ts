@@ -38,7 +38,7 @@ interface IdleOption {
   selected: boolean;
 }
 
-interface SettingsPowerElement {
+export interface SettingsPowerElement {
   $: {
     adaptiveChargingToggle: SettingsToggleButtonElement,
     batterySaverToggle: SettingsToggleButtonElement,
@@ -50,7 +50,7 @@ interface SettingsPowerElement {
 const SettingsPowerElementBase = DeepLinkingMixin(RouteObserverMixin(
     PrefsMixin(WebUiListenerMixin(I18nMixin(PolymerElement)))));
 
-class SettingsPowerElement extends SettingsPowerElementBase {
+export class SettingsPowerElement extends SettingsPowerElementBase {
   static get is() {
     return 'settings-power';
   }
@@ -71,7 +71,12 @@ class SettingsPowerElement extends SettingsPowerElementBase {
       /**
        * Whether a low-power (USB) charger is being used.
        */
-      lowPowerCharger_: Boolean,
+      isExternalPowerUSB_: Boolean,
+
+      /**
+       * Whether an AC charger is being used.
+       */
+      isExternalPowerAC_: Boolean,
 
       /**
        *  Whether the AC idle behavior is managed by policy.
@@ -115,7 +120,7 @@ class SettingsPowerElement extends SettingsPowerElementBase {
        */
       powerSourceName_: {
         type: String,
-        computed: 'computePowerSourceName_(powerSources_, lowPowerCharger_)',
+        computed: 'computePowerSourceName_(powerSources_, isExternalPowerUSB_)',
       },
 
       acIdleOptions_: {
@@ -174,12 +179,6 @@ class SettingsPowerElement extends SettingsPowerElementBase {
             'computeBatterySaverHidden_(batteryStatus_, batterySaverFeatureEnabled_)',
       },
 
-      batterySaverToggleDisabled_: {
-        type: Boolean,
-        computed:
-            'computeBatterySaverToggleDisabled_(powerSources_, lowPowerCharger_)',
-      },
-
       isRevampWayfindingEnabled_: {
         type: Boolean,
         value: () => {
@@ -219,7 +218,8 @@ class SettingsPowerElement extends SettingsPowerElementBase {
   private isRevampWayfindingEnabled_: boolean;
   private lidClosedLabel_: string;
   private lidClosedPref_: chrome.settingsPrivate.PrefObject<boolean>;
-  private lowPowerCharger_: boolean;
+  private isExternalPowerUSB_: boolean;
+  private isExternalPowerAC_: boolean;
   private powerSources_: PowerSource[]|undefined;
   private selectedPowerSourceId_: string;
   private batterySaverFeatureEnabled_: boolean;
@@ -230,7 +230,7 @@ class SettingsPowerElement extends SettingsPowerElementBase {
     this.browserProxy_ = DevicePageBrowserProxyImpl.getInstance();
   }
 
-  override connectedCallback() {
+  override connectedCallback(): void {
     super.connectedCallback();
 
     this.addWebUiListener(
@@ -259,7 +259,7 @@ class SettingsPowerElement extends SettingsPowerElementBase {
     return true;
   }
 
-  override currentRouteChanged(route: Route) {
+  override currentRouteChanged(route: Route): void {
     // Does not apply to this page.
     if (route !== routes.POWER) {
       return;
@@ -312,15 +312,6 @@ class SettingsPowerElement extends SettingsPowerElementBase {
     return !featureEnabled || !batteryStatus.present;
   }
 
-  private computeBatterySaverToggleDisabled_(
-      powerSources: PowerSource[]|undefined,
-      lowPowerCharger: boolean): boolean {
-    if (powerSources === undefined) {
-      return true;
-    }
-    return powerSources.length > 0 && !lowPowerCharger;
-  }
-
   private onPowerSourceChange_(): void {
     this.browserProxy_.setPowerSource(this.$.powerSource.value);
   }
@@ -364,15 +355,18 @@ class SettingsPowerElement extends SettingsPowerElementBase {
   /**
    * @param sources External power sources.
    * @param selectedId The ID of the currently used power source.
-   * @param lowPowerCharger Whether the currently used power source
-   *     is a low-powered USB charger.
+   * @param isExternalPowerUSB Whether the currently used power source is a
+   *     low-powered USB charger.
+   * @param isExternalPowerAC Whether the currently used power source is an AC
+   *     charged connected to mains power.
    */
   private powerSourcesChanged_(
-      sources: PowerSource[], selectedId: string,
-      lowPowerCharger: boolean): void {
+      sources: PowerSource[], selectedId: string, isExternalPowerUSB: boolean,
+      isExternalPowerAC: boolean): void {
     this.powerSources_ = sources;
     this.selectedPowerSourceId_ = selectedId;
-    this.lowPowerCharger_ = lowPowerCharger;
+    this.isExternalPowerUSB_ = isExternalPowerUSB;
+    this.isExternalPowerAC_ = isExternalPowerAC;
   }
 
   /**
@@ -416,8 +410,7 @@ class SettingsPowerElement extends SettingsPowerElementBase {
    * @return Idle option object that maps to idleBehavior.
    */
   private getIdleOption_(
-      idleBehavior: IdleBehavior, currIdleBehavior: IdleBehavior):
-      {value: IdleBehavior, name: string, selected: boolean} {
+      idleBehavior: IdleBehavior, currIdleBehavior: IdleBehavior): IdleOption {
     const selected = idleBehavior === currIdleBehavior;
     switch (idleBehavior) {
       case IdleBehavior.DISPLAY_OFF_SLEEP:
@@ -457,7 +450,8 @@ class SettingsPowerElement extends SettingsPowerElementBase {
 
   private updateIdleOptions_(
       acIdleBehaviors: IdleBehavior[], batteryIdleBehaviors: IdleBehavior[],
-      currAcIdleBehavior: IdleBehavior, currBatteryIdleBehavior: IdleBehavior) {
+      currAcIdleBehavior: IdleBehavior,
+      currBatteryIdleBehavior: IdleBehavior): void {
     this.acIdleOptions_ = acIdleBehaviors.map((idleBehavior) => {
       return this.getIdleOption_(idleBehavior, currAcIdleBehavior);
     });
@@ -471,7 +465,7 @@ class SettingsPowerElement extends SettingsPowerElementBase {
    * @param powerManagementSettings Current power management settings.
    */
   private powerManagementSettingsChanged_(powerManagementSettings:
-                                              PowerManagementSettings) {
+                                              PowerManagementSettings): void {
     this.updateIdleOptions_(
         powerManagementSettings.possibleAcIdleBehaviors || [],
         powerManagementSettings.possibleBatteryIdleBehaviors || [],

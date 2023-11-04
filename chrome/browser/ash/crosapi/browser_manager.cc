@@ -81,6 +81,7 @@
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
@@ -347,7 +348,7 @@ ResourcesFileSharingMode ClearOrMoveSharedResourceFile(
 // This method runs some work on a background thread prior to launching lacros.
 // The returns struct is used by the main thread as parameters to launch Lacros.
 LaunchParamsFromBackground DoLacrosBackgroundWorkPreLaunch(
-    base::FilePath lacros_dir,
+    base::FilePath lacros_binary,
     bool clear_shared_resource_file,
     bool launching_at_login_screen) {
   LaunchParamsFromBackground params;
@@ -372,6 +373,9 @@ LaunchParamsFromBackground DoLacrosBackgroundWorkPreLaunch(
   }
 
   params.logfd = base::ScopedFD(fd);
+
+  params.enable_shared_components_dir =
+      base::FeatureList::IsEnabled(features::kLacrosSharedComponentsDir);
 
   params.enable_resource_file_sharing =
       base::FeatureList::IsEnabled(features::kLacrosResourcesFileSharing);
@@ -415,7 +419,7 @@ LaunchParamsFromBackground DoLacrosBackgroundWorkPreLaunch(
   // This speeds up the perceived startup time, as they will be loaded anyway
   // in the later stages of Lacros's lifetime.
   if (launching_at_login_screen) {
-    PreloadLacrosFiles(lacros_dir);
+    PreloadLacrosFiles(lacros_binary.DirName());
   }
 
   return params;
@@ -1079,15 +1083,15 @@ void BrowserManager::StartWithLogFile(bool launching_at_login_screen,
     return;
   }
 
-  // If the user is already logged in and we are inside the session,
-  // call |RecordDataverForPrimaryUser| now.
+  // If we are not launching at the login screen, we must be inside a
+  // user session, so call `RecordDataVerForPrimaryUser` now.
   // Otherwise, if we're pre-launching at login screen, this will be
   // done later, once the user logs in and the session is started.
-  if (user_manager::UserManager::Get()->IsUserLoggedIn()) {
-    RecordDataVerForPrimaryUser();
+  if (!launching_at_login_screen) {
+    WaitForProfileAddedAndThen(base::BindOnce(&RecordDataVerForPrimaryUser));
   }
 
-  std::string chrome_path = lacros_path_.MaybeAsASCII() + "/chrome";
+  std::string chrome_path = lacros_path_.MaybeAsASCII();
   LOG(WARNING) << "Launching lacros-chrome at " << chrome_path;
 
   // If Ash is an unknown channel then this is not a production build and we
@@ -1222,7 +1226,9 @@ void BrowserManager::StartWithLogFile(bool launching_at_login_screen,
     argv.push_back(std::string("--vmodule=")
                    // TODO(crbug.com/1371493): Remove after fix.
                    + ",wayland_window_drag_controller=1,wayland_data_source=1" +
-                   ",tab_drag_controller=1");
+                   ",tab_drag_controller=1" +
+                   // TODO(crbug.com/1472682): Remove after fix.
+                   ",wayland_data_drag_controller=1");
 
     if (launching_at_login_screen &&
         !command_line->HasSwitch(switches::kDisableLoggingRedirect)) {
@@ -1313,6 +1319,12 @@ void BrowserManager::StartWithLogFile(bool launching_at_login_screen,
     // run with enabling the feature as well since the feature is based on some
     // ash behavior(clear or move cached shared resource file at lacros launch).
     command_line.AppendSwitch(switches::kEnableResourcesFileSharing);
+  }
+
+  if (params.enable_shared_components_dir) {
+    // Pass a flag to enable using a location shared across users for browser
+    // components.
+    command_line.AppendSwitch(switches::kEnableLacrosSharedComponentsDir);
   }
 
   LOG(WARNING) << "Launching lacros with command: "
@@ -1694,36 +1706,31 @@ void BrowserManager::ResumeLaunch() {
 
   LOG(WARNING) << "Resuming lacros-chrome launch";
 
-  // Execute actions that we couldn't run when pre-launching at login screen,
-  // because they required the user to be logged in.
-  PrepareLacrosPolicies();
-  RecordLacrosLaunchMode();
-  crosapi::lacros_startup_state::SetLacrosStartupState(is_lacros_enabled);
-  RecordDataVerForPrimaryUser();
-
   // Once Lacros starts and BrowserService is connected,
   // the following action will be executed.
   pending_actions_.Push(BrowserAction::GetActionForSessionStart());
 
   WaitForDeviceOwnerFetchedAndThen(
-      base::BindOnce(&BrowserManager::WaitForProfileAddedBeforeResuming,
-                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(
+          &BrowserManager::WaitForProfileAddedAndThen,
+          weak_factory_.GetWeakPtr(),
+          base::BindOnce(&BrowserManager::ResumeLaunchAfterProfileAdded,
+                         weak_factory_.GetWeakPtr())),
       /*launching_at_login_screen=*/false);
 }
 
-void BrowserManager::WaitForProfileAddedBeforeResuming() {
+void BrowserManager::WaitForProfileAddedAndThen(base::OnceClosure cb) {
+  DCHECK(!primary_profile_creation_waiter_);
   primary_profile_creation_waiter_ = PrimaryProfileCreationWaiter::WaitOrRun(
-      g_browser_process->profile_manager(),
-      base::BindOnce(&BrowserManager::WritePostLoginData,
-                     weak_factory_.GetWeakPtr()));
+      g_browser_process->profile_manager(), std::move(cb));
 }
 
 void BrowserManager::WaitForDeviceOwnerFetchedAndThen(
     base::OnceClosure cb,
     bool launching_at_login_screen) {
   device_ownership_waiter_called_ = true;
-  device_ownership_waiter_->WaitForOwnerhipFetched(std::move(cb),
-                                                   launching_at_login_screen);
+  device_ownership_waiter_->WaitForOwnershipFetched(std::move(cb),
+                                                    launching_at_login_screen);
 }
 
 void BrowserManager::OnLaunchParamsFetched(bool launching_at_login_screen,
@@ -1735,8 +1742,13 @@ void BrowserManager::OnLaunchParamsFetched(bool launching_at_login_screen,
       launching_at_login_screen);
 }
 
-void BrowserManager::WritePostLoginData() {
-  primary_profile_creation_waiter_.reset();
+void BrowserManager::ResumeLaunchAfterProfileAdded() {
+  // Execute actions that we couldn't run when pre-launching at login screen,
+  // because they required the user to be logged in.
+  PrepareLacrosPolicies();
+  RecordLacrosLaunchMode();
+  crosapi::lacros_startup_state::SetLacrosStartupState(true);
+  RecordDataVerForPrimaryUser();
 
   lacros_resume_time_ = base::TimeTicks::Now();
   // Write post-login parameters into the anonymous pipe.

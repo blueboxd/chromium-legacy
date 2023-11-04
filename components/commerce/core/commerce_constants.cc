@@ -14,6 +14,20 @@ const char kChromeUIShoppingInsightsSidePanelHost[] =
 const char kChromeUIShoppingInsightsSidePanelUrl[] =
     "chrome://shopping-insights-side-panel.top-chrome";
 
+const char kOAuthScope[] = "https://www.googleapis.com/auth/chromememex";
+
+const char kOAuthName[] = "chromememex_svc";
+
+const char kDeleteHttpMethod[] = "DELETE";
+
+const char kGetHttpMethod[] = "GET";
+
+const char kPostHttpMethod[] = "POST";
+
+const char kContentType[] = "application/json; charset=UTF-8";
+
+const char kEmptyPostData[] = "";
+
 const char kUTMSourceLabel[] = "utm_source";
 
 const char kUTMMediumLabel[] = "utm_medium";
@@ -26,7 +40,4 @@ const char kUTMMediumValue[] = "app";
 
 const char kUTMCampaignValueForDiscounts[] =
     "chrome-history-cluster-with-discount";
-
-const char kUTMPrefix[] = "utm_";
-
 }  // namespace commerce

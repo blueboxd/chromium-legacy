@@ -75,6 +75,12 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       content::BrowserContext* browser_context,
       const url::Origin& top_frame_origin,
       const url::Origin& accessing_origin) override;
+  bool IsCookieDeprecationLabelAllowed(
+      content::BrowserContext* browser_context) override;
+  bool IsCookieDeprecationLabelAllowedForContext(
+      content::BrowserContext* browser_context,
+      const url::Origin& top_frame_origin,
+      const url::Origin& context_origin) override;
   GeneratedCodeCacheSettings GetGeneratedCodeCacheSettings(
       content::BrowserContext* context) override;
   base::OnceClosure SelectClientCertificate(
@@ -115,6 +121,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   base::Value::Dict GetNetLogConstants() override;
   base::FilePath GetSandboxedStorageServiceDataDirectory() override;
   base::FilePath GetFirstPartySetsDirectory() override;
+  absl::optional<base::FilePath> GetLocalTracesDirectory() override;
   std::string GetUserAgent() override;
   blink::UserAgentMetadata GetUserAgentMetadata() override;
   void OverrideURLLoaderFactoryParams(

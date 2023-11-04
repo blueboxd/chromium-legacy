@@ -24,6 +24,7 @@ all,chrome/browser/apps/app_discovery_service/recommended_arc_apps/recommend_app
 all,chrome/browser/ash/app_list/search/arc/recommend_apps_fetcher_impl.cc
 all,chrome/browser/ui/ash/projector/screencast_manager.cc
 all,chrome/services/cups_proxy/socket_manager.cc
+missing,chrome/browser/manta/orca_provider.cc
 missing,chrome/browser/manta/snapper_provider.cc
 
 # Android-specific annotations.
@@ -39,6 +40,9 @@ missing,chrome/browser/android/feedback/connectivity_checker.cc
 missing,chrome/browser/commerce/subscriptions/android/java/src/org/chromium/chrome/browser/subscriptions/CommerceSubscriptionsServiceProxy.java
 missing,chrome/browser/tab/java/src/org/chromium/chrome/browser/tab/state/StorePersistedTabData.java
 missing,net/proxy_resolution/proxy_config_service_android.cc
+
+# Desktop platform specific annotations.
+missing,components/optimization_guide/core/model_execution/model_execution_fetcher.cc
 
 # Android annotations missing fields internal::contact:email, user_data::type, last_reviewed
 missing_new_fields,missing,android_webview/browser/network_service/aw_proxy_config_monitor.cc
@@ -323,7 +327,7 @@ missing_new_fields,services/image_annotation/annotator.cc
 missing_new_fields,services/network/network_context.cc
 missing_new_fields,services/network/public/cpp/server/http_server.cc
 missing_new_fields,third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.cc
-missing_new_fields,third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader.cc
+missing_new_fields,third_party/blink/renderer/platform/loader/fetch/fetch_utils.cc
 missing_new_fields,third_party/libaddressinput/chromium/chrome_metadata_source.cc
 missing_new_fields,ash/quick_pair/repository/fast_pair/footprints_fetcher_impl.cc
 missing_new_fields,chrome/browser/ash/printing/oauth2/authorization_server_data.cc

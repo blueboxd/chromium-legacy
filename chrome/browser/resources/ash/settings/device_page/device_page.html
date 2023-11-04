@@ -10,6 +10,7 @@
     margin-inline-end: 8px;
   }
 </style>
+
 <os-settings-animated-pages id="pages" section="[[section_]]">
   <div id="main" route-path="default">
     <settings-card header-text="$i18n{devicePageTitle}">
@@ -50,14 +51,20 @@
         </cr-link-row>
       </template>
       <template is="dom-if" if="[[isDeviceSettingsSplitEnabled_]]">
-        <cr-link-row class="hr" id="perDeviceKeyboardRow"
-            label="$i18n{keyboardTitle}" aria-label="$i18n{keyboardTitle}"
+        <cr-link-row id="perDeviceKeyboardRow"
+            class="hr"
+            label="$i18n{keyboardTitle}"
+            aria-label="$i18n{keyboardTitle}"
+            sub-label="[[inputMethodDisplayName_]]"
             on-click="onPerDeviceKeyboardClick_"
             role-description="$i18n{subpageArrowRoleDescription}">
         </cr-link-row>
       </template>
       <template is="dom-if" if="[[!isDeviceSettingsSplitEnabled_]]">
-        <cr-link-row class="hr" id="keyboardRow" label="$i18n{keyboardTitle}"
+        <cr-link-row id="keyboardRow"
+            class="hr"
+            label="$i18n{keyboardTitle}"
+            sub-label="[[inputMethodDisplayName_]]"
             on-click="onKeyboardClick_"
             role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
       </template>
@@ -80,14 +87,27 @@
           on-click="onAudioClick_"
           role-description="$i18n{subpageArrowRoleDescription}">
       </cr-link-row>
-      <cr-link-row class="hr" hidden="[[hideStorageInfo_]]" id="storageRow"
-          label="$i18n{storageTitle}" on-click="onStorageClick_"
-          role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
-      <cr-link-row class="hr" id="powerRow" label="$i18n{powerTitle}"
-          on-click="onPowerClick_"
-          role-description="$i18n{subpageArrowRoleDescription}">
-      </cr-link-row>
+      <template is="dom-if" if="[[!isRevampWayfindingEnabled_]]">
+        <template is="dom-if" if="[[!hideStorageInfo_]]">
+          <cr-link-row id="storageRow"
+              class="hr"
+              label="$i18n{storageTitle}"
+              on-click="onStorageClick_"
+              role-description="$i18n{subpageArrowRoleDescription}">
+          </cr-link-row>
+        </template>
+        <cr-link-row id="powerRow"
+            class="hr"
+            label="$i18n{powerTitle}"
+            on-click="onPowerClick_"
+            role-description="$i18n{subpageArrowRoleDescription}">
+        </cr-link-row>
+      </template>
     </settings-card>
+
+    <template is="dom-if" if="[[isRevampWayfindingEnabled_]]">
+      <printing-settings-card></printing-settings-card>
+    </template>
   </div>
 
   <template is="dom-if" route-path="/pointer-overlay">
@@ -180,22 +200,6 @@
       </settings-audio>
     </os-settings-subpage>
   </template>
-  <template is="dom-if" route-path="/storage">
-    <os-settings-subpage page-title="$i18n{storageTitle}">
-      <settings-storage prefs="{{prefs}}"
-          android-enabled="[[androidEnabled_]]">
-      </settings-storage>
-    </os-settings-subpage>
-  </template>
-  <template is="dom-if" if="[[androidEnabled_]]">
-    <template is="dom-if" route-path="/storage/externalStoragePreferences">
-      <os-settings-subpage
-          page-title="$i18n{storageExternal}">
-        <settings-storage-external prefs="{{prefs}}">
-        </settings-storage-external>
-      </os-settings-subpage>
-    </template>
-  </template>
   <template is="dom-if"
       route-path="/per-device-keyboard/remap-keys">
     <os-settings-subpage id="perDeviceKeyboardRemapKeysRow"
@@ -216,14 +220,79 @@
       route-path="/per-device-mouse/customizeButtons">
     <os-settings-subpage id="customizeMouseButtonsRow"
         page-title="$i18n{customizeMouseButtonsTitle}">
-      <settings-customize-mouse-buttons-subpage mouse-list="[[mice]]">
+      <settings-customize-mouse-buttons-subpage
+          mouse-list="[[mice]]"
+          mouse-policies="[[mousePolicies]]">
       </settings-customize-mouse-buttons-subpage>
     </os-settings-subpage>
   </template>
-  <template is="dom-if" route-path="/power">
-    <os-settings-subpage
-        page-title="$i18n{powerTitle}">
-      <settings-power prefs="{{prefs}}"></settings-power>
-    </os-settings-subpage>
+
+  <template is="dom-if" if="[[!isRevampWayfindingEnabled_]]">
+    <template is="dom-if" route-path="/storage">
+      <os-settings-subpage page-title="$i18n{storageTitle}">
+        <settings-storage prefs="{{prefs}}">
+        </settings-storage>
+      </os-settings-subpage>
+    </template>
+    <template is="dom-if" if="[[isExternalStorageEnabled_]]">
+      <template is="dom-if" route-path="/storage/externalStoragePreferences">
+        <os-settings-subpage page-title="$i18n{storageExternal}">
+          <settings-storage-external prefs="{{prefs}}">
+          </settings-storage-external>
+        </os-settings-subpage>
+      </template>
+    </template>
+    <template is="dom-if" route-path="/power">
+      <os-settings-subpage page-title="$i18n{powerTitle}">
+        <settings-power prefs="{{prefs}}"></settings-power>
+      </os-settings-subpage>
+    </template>
+  </template>
+
+  <template is="dom-if" if="[[isRevampWayfindingEnabled_]]">
+    <!-- Input subpages -->
+    <template is="dom-if" route-path="/osLanguages/input">
+      <os-settings-subpage page-title="$i18n{inputPageTitle}">
+        <os-settings-input-page prefs="{{prefs}}"
+            languages="[[languages]]"
+            language-helper="[[languageHelper]]">
+        </os-settings-input-page>
+      </os-settings-subpage>
+    </template>
+
+    <template is="dom-if" route-path="/osLanguages/inputMethodOptions">
+      <os-settings-subpage>
+        <settings-input-method-options-page prefs="{{prefs}}"
+            language-helper="[[languageHelper]]">
+        </settings-input-method-options-page>
+      </os-settings-subpage>
+    </template>
+
+    <template is="dom-if" route-path="/osLanguages/editDictionary">
+      <os-settings-subpage page-title="$i18n{editDictionaryLabel}">
+        <os-settings-edit-dictionary-page></os-settings-edit-dictionary-page>
+      </os-settings-subpage>
+    </template>
+
+    <template is="dom-if"
+        route-path="/osLanguages/japaneseManageUserDictionary">
+      <os-settings-subpage
+          page-title="$i18n{japaneseManageUserDictionaryLabel}">
+        <os-settings-japanese-manage-user-dictionary-page>
+        </os-settings-japanese-manage-user-dictionary-page>
+      </os-settings-subpage>
+    </template>
+
+    <!-- Printing cups printers subpage -->
+    <template is="dom-if" route-path="/cupsPrinters">
+      <os-settings-subpage
+          page-title="$i18n{cupsPrintTitle}"
+          search-label="$i18n{searchLabel}"
+          search-term="{{searchTerm}}">
+        <settings-cups-printers search-term="{{searchTerm}}"
+            prefs="{{prefs}}">
+        </settings-cups-printers>
+      </os-settings-subpage>
+    </template>
   </template>
 </os-settings-animated-pages>

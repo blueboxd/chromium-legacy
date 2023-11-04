@@ -33,6 +33,7 @@
 #include <string>
 
 #include "base/functional/callback_helpers.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
@@ -149,7 +150,6 @@
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
-#include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_loader_mock_factory.h"
@@ -2551,7 +2551,7 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
       ClientRedirectPolicy::kNotClientRedirect,
       /*has_transient_user_activation=*/false, /*initiator_origin=*/nullptr,
-      /*is_synchronously_committed=*/false,
+      /*is_synchronously_committed=*/false, /*source_element=*/nullptr,
       mojom::blink::TriggeringEventInfo::kNotFromEvent,
       /*is_browser_initiated=*/true,
       /*soft_navigation_heuristics_task_id=*/absl::nullopt);
@@ -2559,7 +2559,7 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
       item2->Url(), WebFrameLoadType::kBackForward, item2.Get(),
       ClientRedirectPolicy::kNotClientRedirect,
       /*has_transient_user_activation=*/false, /*initiator_origin=*/nullptr,
-      /*is_synchronously_committed=*/false,
+      /*is_synchronously_committed=*/false, /*source_element=*/nullptr,
       mojom::blink::TriggeringEventInfo::kNotFromEvent,
       /*is_browser_initiated=*/true,
       /*soft_navigation_heuristics_task_id=*/absl::nullopt);
@@ -2567,7 +2567,7 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
       ClientRedirectPolicy::kNotClientRedirect,
       /*has_transient_user_activation=*/false, /*initiator_origin=*/nullptr,
-      /*is_synchronously_committed=*/false,
+      /*is_synchronously_committed=*/false, /*source_element=*/nullptr,
       mojom::blink::TriggeringEventInfo::kNotFromEvent,
       /*is_browser_initiated=*/true,
       /*soft_navigation_heuristics_task_id=*/absl::nullopt);
@@ -2590,7 +2590,7 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
       ClientRedirectPolicy::kNotClientRedirect,
       /*has_transient_user_activation=*/false, /*initiator_origin=*/nullptr,
-      /*is_synchronously_committed=*/false,
+      /*is_synchronously_committed=*/false, /*source_element=*/nullptr,
       mojom::blink::TriggeringEventInfo::kNotFromEvent,
       /*is_browser_initiated=*/true,
       /*soft_navigation_heuristics_task_id=*/absl::nullopt);
@@ -2599,7 +2599,7 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
       item3->Url(), WebFrameLoadType::kBackForward, item3.Get(),
       ClientRedirectPolicy::kNotClientRedirect,
       /*has_transient_user_activation=*/false, /*initiator_origin=*/nullptr,
-      /*is_synchronously_committed=*/false,
+      /*is_synchronously_committed=*/false, /*source_element=*/nullptr,
       mojom::blink::TriggeringEventInfo::kNotFromEvent,
       /*is_browser_initiated=*/true,
       /*soft_navigation_heuristics_task_id=*/absl::nullopt);
@@ -5963,7 +5963,7 @@ TEST_F(WebViewTest, InputDelayReported) {
 
   test_task_runner_->FastForwardBy(base::Milliseconds(70));
 
-  HistogramTester histogram_tester;
+  base::HistogramTester histogram_tester;
   WebKeyboardEvent key_event1(WebInputEvent::Type::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests());

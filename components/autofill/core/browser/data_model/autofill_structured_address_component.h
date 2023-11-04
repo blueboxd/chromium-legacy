@@ -138,9 +138,12 @@ enum MergeMode {
 //  NAME_LAST values but only a formatted NAME_FULL value.
 class AddressComponent {
  public:
+  // List of node subcomponents.
+  using SubcomponentsList = std::vector<std::unique_ptr<AddressComponent>>;
+
   // Constructor for a compound child node.
   AddressComponent(ServerFieldType storage_type,
-                   AddressComponent* parent,
+                   SubcomponentsList subcomponents,
                    unsigned int merge_mode);
 
   // Disallows copies and direct assignments since they are not needed in the
@@ -299,9 +302,7 @@ class AddressComponent {
   bool MergeTokenEquivalentComponent(const AddressComponent& newer_component);
 
   // Returns a constant vector of pointers to the child nodes of the component.
-  const std::vector<AddressComponent*>& Subcomponents() const {
-    return subcomponents_;
-  }
+  const SubcomponentsList& Subcomponents() const { return subcomponents_; }
 
   // Returns a vector containing sorted normalized tokens of the
   // value of the component. The tokens are lazily calculated when first needed.
@@ -489,9 +490,8 @@ class AddressComponent {
 
   // Function to be called by child nodes on construction to register
   // themselves as child nodes.
-  void RegisterChildNode(AddressComponent* child);
+  void RegisterChildNode(std::unique_ptr<AddressComponent> child);
 
- private:
   // Returns the node in the tree that supports `field_type`. This node, if it
   // exists, is unique by definition. Returns nullptr if no such node exists.
   AddressComponent* GetNodeForType(ServerFieldType field_type);
@@ -499,6 +499,7 @@ class AddressComponent {
   // const version of GetNodeForType.
   const AddressComponent* GetNodeForType(ServerFieldType field_type) const;
 
+ private:
   // Unsets the node and all of its children.
   void UnsetAddressComponentAndItsSubcomponents();
 
@@ -562,8 +563,8 @@ class AddressComponent {
   // The storable Autofill type of the component.
   const ServerFieldType storage_type_;
 
-  // A vector of pointers to the subcomponents.
-  std::vector<AddressComponent*> subcomponents_;
+  // A vector of children of the component.
+  SubcomponentsList subcomponents_;
 
   // A vector that contains the tokens of |value_| after normalization,
   // meaning that it was converted to lower case and diacritics have been
@@ -573,7 +574,7 @@ class AddressComponent {
 
   // A pointer to the parent node. It is set to nullptr if the node is the root
   // node of the AddressComponent tree.
-  raw_ptr<AddressComponent> parent_;
+  raw_ptr<AddressComponent> parent_ = nullptr;
 
   // Defines if and how two components can be merged.
   int merge_mode_;

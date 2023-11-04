@@ -46,14 +46,14 @@ class CORE_EXPORT OffscreenCanvas final
  public:
   static OffscreenCanvas* Create(ScriptState*, unsigned width, unsigned height);
 
-  OffscreenCanvas(ExecutionContext*, const gfx::Size&);
+  OffscreenCanvas(ExecutionContext*, gfx::Size);
   ~OffscreenCanvas() override;
   void Dispose();
 
   bool IsOffscreenCanvas() const override { return true; }
   // IDL attributes
-  unsigned width() const { return size_.width(); }
-  unsigned height() const { return size_.height(); }
+  unsigned width() const { return Size().width(); }
+  unsigned height() const { return Size().height(); }
   void setWidth(unsigned);
   void setHeight(unsigned);
 
@@ -69,8 +69,7 @@ class CORE_EXPORT OffscreenCanvas final
                               const ImageEncodeOptions* options,
                               ExceptionState& exception_state);
 
-  const gfx::Size& Size() const override { return size_; }
-  void SetSize(const gfx::Size&);
+  void SetSize(gfx::Size) override;
   void RecordTransfer();
 
   void SetPlaceholderCanvasId(DOMNodeId canvas_id);
@@ -112,7 +111,7 @@ class CORE_EXPORT OffscreenCanvas final
 
   // CanvasRenderingContextHost implementation.
   void PreFinalizeFrame() override {}
-  void PostFinalizeFrame(CanvasResourceProvider::FlushReason) override {}
+  void PostFinalizeFrame(FlushReason) override {}
   void DetachContext() override { context_ = nullptr; }
   CanvasRenderingContext* RenderingContext() const override { return context_; }
 
@@ -133,6 +132,10 @@ class CORE_EXPORT OffscreenCanvas final
   // TODO(fserb): Merge this with HTMLCanvasElement::UpdateMemoryUsage
   void UpdateMemoryUsage() override;
   size_t GetMemoryUsage() const override;
+  // Because OffscreenCanvas is not tied to a DOM, it's visibility cannot be
+  // determined synchronously.
+  // TODO(junov): Propagate changes in visibility from the placeholder canvas.
+  bool IsPageVisible() override { return true; }
 
   // EventTarget implementation
   const AtomicString& InterfaceName() const final {
@@ -159,7 +162,7 @@ class CORE_EXPORT OffscreenCanvas final
 
   // CanvasImageSource implementation
   scoped_refptr<Image> GetSourceImageForCanvas(
-      CanvasResourceProvider::FlushReason,
+      FlushReason,
       SourceImageStatus*,
       const gfx::SizeF&,
       const AlphaDisposition alpha_disposition = kPremultiplyAlpha) final;
@@ -169,6 +172,8 @@ class CORE_EXPORT OffscreenCanvas final
     return gfx::SizeF(width(), height());
   }
   bool IsOpaque() const final;
+
+  // overrides CanvasImageSource::IsAccelerated()
   bool IsAccelerated() const final;
 
   DispatchEventResult HostDispatchEvent(Event* event) override {
@@ -245,7 +250,6 @@ class CORE_EXPORT OffscreenCanvas final
 
   DOMNodeId placeholder_canvas_id_ = kInvalidDOMNodeId;
 
-  gfx::Size size_;
   bool disposing_ = false;
   bool is_neutered_ = false;
   bool origin_clean_ = true;

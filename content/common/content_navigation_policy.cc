@@ -30,9 +30,8 @@ bool DeviceHasEnoughMemoryForBackForwardCache() {
   // It is important to check the base::FeatureList to avoid activating any
   // field trial groups if BFCache is disabled due to memory threshold.
   if (base::FeatureList::IsEnabled(features::kBackForwardCacheMemoryControls)) {
-    // On Android, BackForwardCache is only enabled for 2GB+ high memory
-    // devices. The default threshold value is set to 1700 MB to account for all
-    // 2GB devices which report lower RAM due to carveouts.
+    // On Android, BackForwardCache is enabled for devices with 1200MB memory or
+    // above.
     int default_memory_threshold_mb =
 #if BUILDFLAG(IS_ANDROID)
         1200;
@@ -243,6 +242,15 @@ NavigationQueueingFeatureLevel GetNavigationQueueingFeatureLevel() {
 }
 
 bool ShouldAvoidRedundantNavigationCancellations() {
+  // If the experimental early RenderFrameHost swap for history navigations is
+  // turned on, this must return true so that when the old RFH is unloaded as
+  // part of the early swap, this doesn't cancel the navigation that's still
+  // ongoing in the new RFH.
+  if (base::FeatureList::IsEnabled(
+          features::kEarlyDocumentSwapForBackForwardTransitions)) {
+    return true;
+  }
+
   return GetNavigationQueueingFeatureLevel() >=
          NavigationQueueingFeatureLevel::kAvoidRedundantCancellations;
 }
@@ -256,7 +264,7 @@ bool ShouldRestrictCanAccessDataForOriginToUIThread() {
   // Only restrict calls to the UI thread if the feature is enabled, and if the
   // new blob URL support is enabled.
   return base::FeatureList::IsEnabled(
-             kRestrictCanAccessDataForOriginToUIThread) &&
+             features::kRestrictCanAccessDataForOriginToUIThread) &&
          base::FeatureList::IsEnabled(
              net::features::kSupportPartitionedBlobUrl);
 }

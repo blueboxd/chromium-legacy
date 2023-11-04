@@ -782,7 +782,7 @@ TEST_F(TabletModeMultitaskMenuTest, NoCrashWhenExitingTabletMode) {
   TabletModeControllerTestApi().LeaveTabletMode();
 }
 
-// Tests that update drag does not cause a crash. Test for https://b/290102602.
+// Tests that update drag does not cause a crash. Test for http://b/290102602.
 TEST_F(TabletModeMultitaskMenuTest, NoCrashDuringUpdateDrag) {
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
@@ -874,8 +874,7 @@ TEST_F(TabletModeMultitaskMenuTest, HidesWhenMinimized) {
 TEST_F(TabletModeMultitaskMenuTest, NotShownInKioskMode) {
   // Enter kiosk mode and try swiping down. The multitask menu and cue should
   // not show.
-  LoginState::Get()->SetLoggedInState(LoginState::LOGGED_IN_ACTIVE,
-                                      LoginState::LOGGED_IN_USER_KIOSK);
+  SimulateKioskMode(user_manager::USER_TYPE_KIOSK_APP);
   auto window = CreateAppWindow(gfx::Rect(800, 600));
   EXPECT_FALSE(
       GetMultitaskMenuController()->multitask_cue_controller()->cue_layer());

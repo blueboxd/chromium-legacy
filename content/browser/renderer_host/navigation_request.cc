@@ -354,8 +354,6 @@ std::string ComputeUserAgentValue(const net::HttpRequestHeaders& headers,
   return GetContentClient()->browser()->GetUserAgentBasedOnPolicy(context);
 }
 
-// TODO(clamy): This should match what's happening in
-// blink::FrameFetchContext::addAdditionalRequestHeaders.
 void AddAdditionalRequestHeaders(
     net::HttpRequestHeaders* headers,
     const GURL& url,
@@ -1071,7 +1069,7 @@ bool IsSharedStorageWritableForNavigationRequest(FrameTreeNode* frame_tree_node,
   if (frame_tree_node->fenced_frame_status() !=
           RenderFrameHostImpl::FencedFrameStatus::
               kIframeNestedWithinFencedFrame &&
-      (frame_tree_node->frame_tree().type() != FrameTree::Type::kPrimary ||
+      (!frame_tree_node->frame_tree().is_primary() ||
        !frame_tree_node->frame_tree().root()->IsOutermostMainFrame())) {
     return false;
   }
@@ -1975,7 +1973,8 @@ NavigationRequest::NavigationRequest(
     // already started the service worker), but this call does nothing if the
     // service worker already started for the URL.
     if (reload_type_ != ReloadType::BYPASSING_CACHE &&
-        base::FeatureList::IsEnabled(kSpeculativeServiceWorkerStartup)) {
+        base::FeatureList::IsEnabled(
+            features::kSpeculativeServiceWorkerStartup)) {
       if (ServiceWorkerContext* context =
               frame_tree_node_->navigator()
                   .controller()
@@ -2273,6 +2272,18 @@ void NavigationRequest::BeginNavigation() {
     // ConvertFencedFrameURNToURL may cause the destruction of the
     // NavigationRequest.
     return;
+  }
+
+  // Log a histogram for a top-level navigation that initiates from a fenced
+  // frame or URN iframe.
+  if (GetInitiatorDocumentRenderFrameHost() &&
+      GetInitiatorDocumentRenderFrameHost()
+          ->frame_tree_node()
+          ->GetFencedFrameProperties()
+          .has_value() &&
+      IsInOutermostMainFrame()) {
+    base::UmaHistogramEnumeration(blink::kFencedFrameTopNavigationHistogram,
+                                  blink::FencedFrameNavigationState::kBegin);
   }
 
   BeginNavigationImpl();
@@ -3980,10 +3991,22 @@ void NavigationRequest::OnResponseStarted(
   response_body_ = std::move(response_body);
   ssl_info_ = response_head_->ssl_info;
   auth_challenge_info_ = response_head_->auth_challenge_info;
+
   // TODO(https://crbug.com/1305896): Store the whole EarlyHints struct instead
   // of duplicating all of its fields.
   was_resource_hints_received_ = early_hints.was_resource_hints_received;
   early_hints_manager_ = std::move(early_hints.manager);
+  if (early_hints_manager_ &&
+      early_hints_manager_->first_early_hints_receive_time()) {
+    base::UmaHistogramTimes(
+        "Navigation.EarlyHints.WillStartRequestToEarlyHintsTime",
+        *early_hints_manager_->first_early_hints_receive_time() -
+            will_start_request_time_);
+    base::UmaHistogramTimes(
+        "Navigation.EarlyHints.EarlyHintsToResponseStartTime",
+        base::TimeTicks::Now() -
+            *early_hints_manager_->first_early_hints_receive_time());
+  }
 
   // A request was made. Record it before we decide to block this response for
   // a reason or another.
@@ -4956,6 +4979,20 @@ void NavigationRequest::OnStartChecksComplete(
       NetworkServiceDevToolsObserver::MakeSelfOwned(frame_tree_node_),
       std::move(cached_response_head), std::move(interceptor));
   DCHECK(!HasRenderFrameHost());
+
+  // If needed, perform an early RenderFrameHost swap after notifying observers
+  // with DidStartNavigation, after processing WillStartRequest throttle events,
+  // and after creating the NavigationURLLoader above (which needs the old
+  // current_frame_host()). This (1) avoids performing the early swap in case
+  // the navigation gets canceled prior to getting here, and (2) ensures that
+  // DidStartNavigation and WillStartRequest implementations are not disrupted
+  // by the early swap and don't see a RenderFrameHostChanged event prior to a
+  // navigation actually starting.
+  //
+  // TODO(crbug.com/1467011): Remove the `is_called_after_did_start_navigation`
+  // param once all early swaps are done from here.
+  frame_tree_node_->render_manager()->PerformEarlyRenderFrameHostSwapIfNeeded(
+      this, /*is_called_after_did_start_navigation=*/true);
 
   base::UmaHistogramTimes(
       base::StrCat({"Navigation.WillStartRequestToLoaderStart.",
@@ -5992,16 +6029,6 @@ void NavigationRequest::UpdateNavigationHandleTimingsOnResponseReceived(
   navigation_handle_timing_.final_non_informational_response_start_time =
       response_head_->load_timing.receive_non_informational_headers_start;
   navigation_handle_timing_.final_loader_callback_time = loader_callback_time;
-
-  // 103 Early Hints experiment (https://crbug.com/1093693).
-  if (is_first_response) {
-    DCHECK(
-        navigation_handle_timing_.early_hints_for_first_request_time.is_null());
-    navigation_handle_timing_.early_hints_for_first_request_time =
-        response_head_->load_timing.first_early_hints_time;
-  }
-  navigation_handle_timing_.early_hints_for_final_request_time =
-      response_head_->load_timing.first_early_hints_time;
 
   // |navigation_commit_sent_time| will be updated by
   // UpdateNavigationHandleTimingsOnCommitSent() later.
@@ -7160,18 +7187,14 @@ void NavigationRequest::UpdatePrivateNetworkRequestPolicy() {
       frame_tree_node_->navigator().controller().GetBrowserContext();
 
   url::Origin origin = GetOriginToCommit().value();
-  switch (client->ShouldOverridePrivateNetworkRequestPolicy(context, origin)) {
-    case ContentBrowserClient::PrivateNetworkRequestPolicyOverride::kForceAllow:
-      private_network_request_policy_ =
-          network::mojom::PrivateNetworkRequestPolicy::kAllow;
-      return;
-    case ContentBrowserClient::PrivateNetworkRequestPolicyOverride::
-        kForcePreflightBlock:
-      private_network_request_policy_ =
-          network::mojom::PrivateNetworkRequestPolicy::kPreflightBlock;
-      return;
-    case ContentBrowserClient::PrivateNetworkRequestPolicyOverride::kDefault:
-      break;
+  ContentBrowserClient::PrivateNetworkRequestPolicyOverride policy_override =
+      client->ShouldOverridePrivateNetworkRequestPolicy(context, origin);
+
+  if (policy_override ==
+      ContentBrowserClient::PrivateNetworkRequestPolicyOverride::kForceAllow) {
+    private_network_request_policy_ =
+        network::mojom::PrivateNetworkRequestPolicy::kAllow;
+    return;
   }
 
   const PolicyContainerPolicies& policies =
@@ -7196,6 +7219,13 @@ void NavigationRequest::UpdatePrivateNetworkRequestPolicy() {
 
   private_network_request_policy_ = DerivePrivateNetworkRequestPolicy(
       policies, PrivateNetworkRequestContext::kSubresource);
+
+  if (policy_override ==
+      ContentBrowserClient::PrivateNetworkRequestPolicyOverride::
+          kBlockInsteadOfWarn) {
+    private_network_request_policy_ =
+        OverrideBlockWithWarn(private_network_request_policy_);
+  }
 }
 
 std::vector<blink::mojom::WebFeature>
@@ -7276,8 +7306,9 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
   }
 
   // TODO(https://crbug.com/888079) Take sandbox into account.
+  absl::optional<url::Origin> origin_to_commit = GetOriginToCommit();
   same_origin_ = (previous_render_frame_host->GetLastCommittedOrigin() ==
-                  GetOriginToCommit());
+                  origin_to_commit);
 
   SetExpectedProcess(GetRenderFrameHost()->GetProcess());
 
@@ -7288,6 +7319,22 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
   // process at commit time.
   browser_side_origin_to_commit_with_debug_info_ =
       GetOriginToCommitWithDebugInfo();
+
+  // Set origin_to_commit for data: URLs. Set it here because otherwise the
+  // origin (and hence the nonce) is separately calculated on the renderer side
+  // and sent with DidCommit. At that point the origin used to create the
+  // SiteInstance will differ from the one committed in the renderer. A
+  // consistent nonce across the browser and renderer can be used to determine
+  // which data: URL SiteInstance should be used in
+  // RenderFrameProxyHost::OpenURL.
+  // We do not need to set it for LoadDataWithBaseURL cases, because it will not
+  // lead to ambiguous cases where multiple data: SiteInstances will be in the
+  // same group. However, when the base URL is empty, LoadDataWithBaseURL is
+  // treated like a regular data: URL.
+  if (common_params_->url.SchemeIs(url::kDataScheme) &&
+      !IsLoadDataWithBaseURL()) {
+    commit_params_->origin_to_commit = origin_to_commit;
+  }
 
   if (!IsSameDocument()) {
 #if DCHECK_IS_ON()
@@ -8107,11 +8154,11 @@ const std::string& NavigationRequest::GetSearchableFormEncoding() {
   return begin_params().searchable_form_encoding;
 }
 
-ReloadType NavigationRequest::GetReloadType() {
+ReloadType NavigationRequest::GetReloadType() const {
   return reload_type_;
 }
 
-RestoreType NavigationRequest::GetRestoreType() {
+RestoreType NavigationRequest::GetRestoreType() const {
   return restore_type_;
 }
 
@@ -8170,7 +8217,7 @@ bool NavigationRequest::IsSameProcess() {
   return is_same_process_;
 }
 
-NavigationEntry* NavigationRequest::GetNavigationEntry() {
+NavigationEntry* NavigationRequest::GetNavigationEntry() const {
   if (nav_entry_id_ == 0)
     return nullptr;
 
@@ -8698,7 +8745,7 @@ std::string NavigationRequest::GetUserAgentOverride() {
                                     : std::string();
 }
 
-NavigationControllerImpl* NavigationRequest::GetNavigationController() {
+NavigationControllerImpl* NavigationRequest::GetNavigationController() const {
   return &frame_tree_node_->navigator().controller();
 }
 
@@ -9185,9 +9232,19 @@ bool NavigationRequest::ShouldReplaceCurrentEntryForFailedNavigation() const {
 const absl::optional<FencedFrameProperties>&
 NavigationRequest::ComputeFencedFrameProperties(
     FencedFramePropertiesNodeSource node_source) const {
+  if (node_source == FencedFramePropertiesNodeSource::kFrameTreeRoot &&
+      !frame_tree_node_->IsFencedFrameRoot()) {
+    // Sometimes nodes other than the frame tree root (urn iframes) have
+    // FencedFrameProperties in their navigation requests. When the node source
+    // is kFrameTreeRoot and this navigation request is not for the frame tree
+    // root, get the properties from the frame tree root.
+    return frame_tree_node_->GetFencedFrameProperties(node_source);
+  }
+
   if (fenced_frame_properties_) {
     return fenced_frame_properties_;
   }
+
   return frame_tree_node_->GetFencedFrameProperties(node_source);
 }
 

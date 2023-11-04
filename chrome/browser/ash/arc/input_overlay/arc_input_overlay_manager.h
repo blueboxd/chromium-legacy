@@ -106,10 +106,6 @@ class ArcInputOverlayManager : public KeyedService,
   // Called after checking if GIO is applicable.
   void OnDidCheckGioApplicable(std::unique_ptr<TouchInjector> touch_injector,
                                bool is_gio_applicable);
-  // Read customized data. Customized data will overrides the default data if
-  // there is any.
-  void ReadCustomizedData(const std::string& package_name,
-                          std::unique_ptr<TouchInjector> touch_injector);
   // Apply the customized proto data.
   void OnProtoDataAvailable(std::unique_ptr<TouchInjector> touch_injector,
                             std::unique_ptr<AppDataProto> proto);
@@ -134,9 +130,16 @@ class ArcInputOverlayManager : public KeyedService,
   // Called when data loading finished from files or mojom calls for
   // `touch_injector`.
   void OnLoadingFinished(std::unique_ptr<TouchInjector> touch_injector);
+  // Once there is an error when checking Android side, reset `TouchInjector` if
+  // it has empty actions. Otherwise, finish data loading. This is called for
+  // mojom connection error. Once the mojom connection failed, it considers GIO
+  // is available if there is mapping data.
+  void MayKeepTouchInjectorAfterError(
+      std::unique_ptr<TouchInjector> touch_injector);
 
-  // Returns the game window if `window` is game dashboard main menu window.
-  // Otherwise, returns nullptr.
+  // Returns the game window if `window` is game dashboard window which is the
+  // window of `GameDashboardButton` or `GameDashboardMainMenu`. Otherwise,
+  // returns nullptr.
   aura::Window* GetGameWindow(aura::Window* window);
 
   base::ScopedObservation<aura::Env, aura::EnvObserver> env_observation_{this};

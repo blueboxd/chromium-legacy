@@ -5,9 +5,10 @@
 import {TestRunner} from 'test_runner';
 import {ElementsTestRunner} from 'elements_test_runner';
 
+import * as UIModule from 'devtools/ui/legacy/legacy.js';
+
 (async function() {
   TestRunner.addResult(`Tests that slow completions do not interfere with editing styles.\n`);
-  await TestRunner.loadLegacyModule('elements');
   await TestRunner.showPanel('elements');
   await TestRunner.loadHTML(`<div id="inspected">Text</div>`);
 
@@ -15,11 +16,11 @@ import {ElementsTestRunner} from 'elements_test_runner';
   var section = ElementsTestRunner.inlineStyleSection();
   const treeElement = section.addNewBlankProperty(0);
   treeElement.startEditing();
-  await TestRunner.addSnifferPromise(UI.TextPrompt.prototype, 'completionsReady');
+  await TestRunner.addSnifferPromise(UIModule.TextPrompt.TextPrompt.prototype, 'completionsReady');
 
   treeElement.nameElement.textContent = 'white-space';
   treeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent('Tab'));
-  await TestRunner.addSnifferPromise(UI.TextPrompt.prototype, 'completionsReady');
+  await TestRunner.addSnifferPromise(UIModule.TextPrompt.TextPrompt.prototype, 'completionsReady');
 
   // Precondition: we have suggestions and a default queryRange
   // Trigger an input. This will change the queryRange to be 'n'
@@ -29,7 +30,7 @@ import {ElementsTestRunner} from 'elements_test_runner';
   treeElement.valueElement.textContent = userInput;
   treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent(userInput));
   treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent('Tab'));
-  await TestRunner.addSnifferPromise(UI.TextPrompt.prototype, 'completionsReady');
+  await TestRunner.addSnifferPromise(UIModule.TextPrompt.TextPrompt.prototype, 'completionsReady');
   dumpFocus();
   ElementsTestRunner.dumpRenderedMatchedStyles();
   TestRunner.completeTest();

@@ -20,12 +20,12 @@
 #include "chrome/browser/chromeos/policy/dlp/dlp_files_utils.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_histogram_helper.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_policy_constants.h"
-#include "chrome/browser/enterprise/data_controls/component.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/enterprise/data_controls/component.h"
 #include "content/public/test/browser_test.h"
 #include "ui/base/ui_base_types.h"
 
@@ -74,6 +74,7 @@ class FilesPolicyDialogBrowserTest
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
+  const base::HistogramTester histogram_tester_;
 };
 
 class WarningDialogBrowserTest : public FilesPolicyDialogBrowserTest {
@@ -87,7 +88,7 @@ class WarningDialogBrowserTest : public FilesPolicyDialogBrowserTest {
 
  protected:
   std::vector<DlpConfidentialFile> warning_files_;
-  base::MockCallback<OnDlpRestrictionCheckedCallback> cb_;
+  base::MockCallback<OnDlpRestrictionCheckedWithJustificationCallback> cb_;
 };
 
 // Tests that the warning dialog is created as a system modal if no parent is
@@ -106,9 +107,16 @@ IN_PROC_BROWSER_TEST_P(WarningDialogBrowserTest, NoParent) {
 
   EXPECT_EQ(dialog->GetModalType(), ui::ModalType::MODAL_TYPE_SYSTEM);
   // Proceed.
-  EXPECT_CALL(cb_, Run(/*should_proceed=*/true)).Times(1);
+  EXPECT_CALL(cb_, Run(/*user_justification=*/absl::optional<std::u16string>(),
+                       /*should_proceed=*/true))
+      .Times(1);
   dialog->AcceptDialog();
   EXPECT_TRUE(widget->IsClosed());
+
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  GetDlpHistogramPrefix() +
+                  std::string(dlp::kFileActionWarnReviewedUMA)),
+              base::BucketsAre(base::Bucket(action, 1)));
 }
 
 // Tests that the warning dialog is created as a window modal if a Files app
@@ -135,9 +143,16 @@ IN_PROC_BROWSER_TEST_P(WarningDialogBrowserTest, WithParent) {
   EXPECT_EQ(widget->parent()->GetNativeWindow(),
             files_app->window()->GetNativeWindow());
   // Cancel.
-  EXPECT_CALL(cb_, Run(/*should_proceed=*/false)).Times(1);
+  EXPECT_CALL(cb_, Run(/*user_justification=*/absl::optional<std::u16string>(),
+                       /*should_proceed=*/false))
+      .Times(1);
   dialog->CancelDialog();
   EXPECT_TRUE(widget->IsClosed());
+
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  GetDlpHistogramPrefix() +
+                  std::string(dlp::kFileActionWarnReviewedUMA)),
+              base::BucketsAre(base::Bucket(action, 1)));
 }
 
 INSTANTIATE_TEST_SUITE_P(FilesPolicyDialog,
@@ -156,14 +171,13 @@ class ErrorDialogBrowserTest : public FilesPolicyDialogBrowserTest {
     FilesPolicyDialogBrowserTest::SetUpOnMainThread();
 
     blocked_files_.emplace(DlpConfidentialFile(base::FilePath("file1.txt")),
-                           Policy::kDlp);
+                           FilesPolicyDialog::BlockReason::kDlp);
     blocked_files_.emplace(DlpConfidentialFile(base::FilePath("file2.txt")),
-                           Policy::kDlp);
+                           FilesPolicyDialog::BlockReason::kDlp);
   }
 
  protected:
-  std::map<DlpConfidentialFile, Policy> blocked_files_;
-  const base::HistogramTester histogram_tester_;
+  std::map<DlpConfidentialFile, FilesPolicyDialog::BlockReason> blocked_files_;
 };
 
 // Tests that the error dialog is created as a system modal if no parent is
@@ -171,8 +185,9 @@ class ErrorDialogBrowserTest : public FilesPolicyDialogBrowserTest {
 IN_PROC_BROWSER_TEST_P(ErrorDialogBrowserTest, NoParent) {
   dlp::FileAction action = GetParam();
   // Add another blocked file to test the mixed error case.
-  blocked_files_.emplace(DlpConfidentialFile(base::FilePath("file3.txt")),
-                         Policy::kEnterpriseConnectors);
+  blocked_files_.emplace(
+      DlpConfidentialFile(base::FilePath("file3.txt")),
+      FilesPolicyDialog::BlockReason::kEnterpriseConnectorsSensitiveData);
 
   auto* widget = FilesPolicyDialog::CreateErrorDialog(blocked_files_, action,
                                                       /*modal_parent=*/nullptr);

@@ -78,8 +78,8 @@ bool IsValidFieldTypeAndValue(const ServerFieldTypeSet types_seen,
        field_type_group != FieldTypeGroup::kPhone)) {
     LOG_AF(import_log_buffer)
         << LogMessage::kImportAddressProfileFromFormFailed
-        << "Multiple fields of type "
-        << AutofillType::ServerFieldTypeToString(field_type) << "." << CTag{};
+        << "Multiple fields of type " << FieldTypeToStringPiece(field_type)
+        << "." << CTag{};
     return false;
   }
   // Abandon the import if an email address value shows up in a field that is
@@ -88,7 +88,7 @@ bool IsValidFieldTypeAndValue(const ServerFieldTypeSet types_seen,
     LOG_AF(import_log_buffer)
         << LogMessage::kImportAddressProfileFromFormFailed
         << "Email address found in field of different type: "
-        << AutofillType::ServerFieldTypeToString(field_type) << CTag{};
+        << FieldTypeToStringPiece(field_type) << CTag{};
     return false;
   }
 
@@ -153,14 +153,13 @@ FormDataImporter::FormDataImporter(AutofillClient* client,
           std::make_unique<AddressProfileSaveManager>(client,
                                                       personal_data_manager)),
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-      iban_save_manager_(std::make_unique<IbanSaveManager>(client)),
+      iban_save_manager_(
+          std::make_unique<IbanSaveManager>(client, personal_data_manager)),
       local_card_migration_manager_(
           std::make_unique<LocalCardMigrationManager>(client,
                                                       payments_client,
                                                       app_locale,
                                                       personal_data_manager)),
-      upi_vpa_save_manager_(
-          std::make_unique<UpiVpaSaveManager>(client, personal_data_manager)),
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
       personal_data_manager_(personal_data_manager),
       app_locale_(app_locale),
@@ -208,7 +207,7 @@ void FormDataImporter::ImportAndProcessFormData(
 
   bool cc_prompt_potentially_shown = ProcessExtractedCreditCard(
       submitted_form, extracted_data.extracted_credit_card,
-      extracted_data.extracted_upi_id, payment_methods_autofill_enabled,
+      payment_methods_autofill_enabled,
       credit_card_save_manager_->IsCreditCardUploadEnabled());
   fetched_card_instrument_id_.reset();
 
@@ -295,7 +294,6 @@ FormDataImporter::ExtractedFormData FormDataImporter::ExtractFormData(
   if (payment_methods_autofill_enabled) {
     extracted_form_data.extracted_credit_card =
         ExtractCreditCard(submitted_form);
-    extracted_form_data.extracted_upi_id = ExtractUpiId(submitted_form);
   }
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
@@ -328,7 +326,6 @@ FormDataImporter::ExtractedFormData FormDataImporter::ExtractFormData(
   }
 
   if (!extracted_form_data.extracted_credit_card &&
-      !extracted_form_data.extracted_upi_id &&
       num_complete_address_profiles == 0 &&
       !extracted_form_data.iban_import_candidate) {
     personal_data_manager_->MarkObserversInsufficientFormDataForImport();
@@ -435,6 +432,11 @@ bool FormDataImporter::ExtractAddressProfileFromSection(
     std::vector<FormDataImporter::AddressProfileImportCandidate>*
         address_profile_import_candidates,
     LogBuffer* import_log_buffer) {
+  // TODO(crbug.com/1464568): Design a proper import mechanism for i18n address
+  // model.
+  if (base::FeatureList::IsEnabled(features::kAutofillUseI18nAddressModel)) {
+    return false;
+  }
   // The candidate for profile import. There are many ways for the candidate to
   // be rejected (see everywhere this function returns false).
   AutofillProfile candidate_profile;
@@ -715,16 +717,8 @@ bool FormDataImporter::ProcessAddressProfileImportCandidates(
 bool FormDataImporter::ProcessExtractedCreditCard(
     const FormStructure& submitted_form,
     const absl::optional<CreditCard>& extracted_credit_card,
-    const absl::optional<std::string>& extracted_upi_id,
     bool payment_methods_autofill_enabled,
     bool is_credit_card_upstream_enabled) {
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-  if (extracted_upi_id && payment_methods_autofill_enabled &&
-      base::FeatureList::IsEnabled(features::kAutofillSaveAndFillVPA)) {
-    upi_vpa_save_manager_->OfferLocalSave(*extracted_upi_id);
-  }
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-
   // If no card was successfully extracted from the form, return.
   if (credit_card_import_type_ == CreditCardImportType::kNoCard) {
     return false;
@@ -736,10 +730,8 @@ bool FormDataImporter::ProcessExtractedCreditCard(
           client_->GetOrCreatePaymentsMandatoryReauthManager();
       mandatory_reauth_manager &&
       mandatory_reauth_manager->ShouldOfferOptin(
-          extracted_credit_card,
-          card_identifier_if_non_interactive_authentication_flow_completed_,
-          credit_card_import_type_)) {
-    card_identifier_if_non_interactive_authentication_flow_completed_.reset();
+          card_record_type_if_non_interactive_authentication_flow_completed_)) {
+    card_record_type_if_non_interactive_authentication_flow_completed_.reset();
     mandatory_reauth_manager->StartOptInFlow();
     return true;
   }
@@ -960,17 +952,6 @@ absl::optional<Iban> FormDataImporter::ExtractIban(const FormStructure& form) {
   // still be able to save new IBANs from the settings page using this pref.
   personal_data_manager_->SetAutofillHasSeenIban();
 
-  bool found_existing_local_iban = base::ranges::any_of(
-      personal_data_manager_->GetLocalIbans(), [&](const auto& iban) {
-        return iban->value() == candidate_iban.value();
-      });
-
-  if (found_existing_local_iban) {
-    return absl::nullopt;
-  }
-
-  // Only offer to save new IBAN. Users can go to the payment methods settings
-  // page to update existing IBANs if desired.
   return candidate_iban;
 }
 
@@ -1007,7 +988,7 @@ FormDataImporter::ExtractCreditCardFromForm(const FormStructure& form) {
     types_seen.insert(server_field_type);
 
     // If |field| is an HTML5 month input, handle it as a special case.
-    if (base::EqualsCaseInsensitiveASCII(field->form_control_type, "month")) {
+    if (field->form_control_type == StringToFormControlType("month")) {
       DCHECK_EQ(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, server_field_type);
       result.card.SetInfoForMonthInputType(value);
       continue;
@@ -1033,6 +1014,8 @@ FormDataImporter::ExtractCreditCardFromForm(const FormStructure& form) {
 }
 
 Iban FormDataImporter::ExtractIbanFromForm(const FormStructure& form) {
+  // Creates an IBAN candidate with `kUnknown` record type as it is currently
+  // unknown if this IBAN already exists locally or on the server.
   Iban candidate_iban;
 
   for (const auto& field : form) {
@@ -1049,15 +1032,6 @@ Iban FormDataImporter::ExtractIbanFromForm(const FormStructure& form) {
   }
 
   return candidate_iban;
-}
-
-absl::optional<std::string> FormDataImporter::ExtractUpiId(
-    const FormStructure& form) {
-  for (const auto& field : form) {
-    if (IsUPIVirtualPaymentAddress(field->value))
-      return base::UTF16ToUTF8(field->value);
-  }
-  return absl::nullopt;
 }
 
 bool FormDataImporter::ShouldOfferUploadCardOrLocalCardSave(
@@ -1102,18 +1076,17 @@ void FormDataImporter::OnBrowsingHistoryCleared(
 }
 
 void FormDataImporter::
-    SetCardIdentifierIfNonInteractiveAuthenticationFlowCompleted(
-        absl::optional<absl::variant<CardGuid, CardLastFourDigits>>
-            card_identifier_if_non_interactive_authentication_flow_completed) {
-  card_identifier_if_non_interactive_authentication_flow_completed_ = std::move(
-      card_identifier_if_non_interactive_authentication_flow_completed);
+    SetCardRecordTypeIfNonInteractiveAuthenticationFlowCompleted(
+        absl::optional<CreditCard::RecordType>
+            card_record_type_if_non_interactive_authentication_flow_completed) {
+  card_record_type_if_non_interactive_authentication_flow_completed_ =
+      card_record_type_if_non_interactive_authentication_flow_completed;
 }
 
-const absl::optional<absl::variant<FormDataImporter::CardGuid,
-                                   FormDataImporter::CardLastFourDigits>>&
-FormDataImporter::GetCardIdentifierIfNonInteractiveAuthenticationFlowCompleted()
+absl::optional<CreditCard::RecordType>
+FormDataImporter::GetCardRecordTypeIfNonInteractiveAuthenticationFlowCompleted()
     const {
-  return card_identifier_if_non_interactive_authentication_flow_completed_;
+  return card_record_type_if_non_interactive_authentication_flow_completed_;
 }
 
 }  // namespace autofill

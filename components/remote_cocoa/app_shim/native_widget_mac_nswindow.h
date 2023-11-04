@@ -42,11 +42,6 @@ REMOTE_COCOA_APP_SHIM_EXPORT
 // Set a CommandDispatcherDelegate, i.e. to implement key event handling.
 - (void)setCommandDispatcherDelegate:(id<CommandDispatcherDelegate>)delegate;
 
-// Selector passed to [NSApp beginSheet:]. Forwards to [self delegate], if set.
-- (void)sheetDidEnd:(NSWindow*)sheet
-         returnCode:(NSInteger)returnCode
-        contextInfo:(void*)contextInfo;
-
 // Set a WindowTouchBarDelegate to allow creation of a custom TouchBar when
 // AppKit follows the responder chain and reaches the NSWindow when trying to
 // create one.
@@ -117,7 +112,7 @@ REMOTE_COCOA_APP_SHIM_EXPORT
 // Window to dispatch commands to. Needed for situations where the window that
 // needs to handle events is not the target's immediate parent; for example
 // alerts in immersive fullscreen.
-@property(nonatomic, assign)
+@property(nonatomic, weak)
     NSWindow<CommandDispatchingWindow>* commandDispatchParentOverride;
 
 @end

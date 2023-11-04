@@ -10,10 +10,6 @@ BASE_FEATURE(kMetricsServiceAllowEarlyLogClose,
              "MetricsServiceAllowEarlyLogClose",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kMetricsClearLogsOnClonedInstall,
-             "MetricsClearLogsOnClonedInstall",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kStructuredMetrics,
              "EnableStructuredMetrics",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -47,6 +43,10 @@ BASE_FEATURE(kMetricsServiceAsyncIndependentLogs,
 
 BASE_FEATURE(kFlushPersistentSystemProfileOnWrite,
              "FlushPersistentSystemProfileOnWrite",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kMetricsServiceDeltaSnapshotInBg,
+             "MetricsServiceDeltaSnapshotInBg",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace metrics::features

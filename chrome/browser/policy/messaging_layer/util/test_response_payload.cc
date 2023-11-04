@@ -103,11 +103,10 @@ absl::optional<base::Value::Dict> ResponseBuilder::Build() const {
     response.Set("encryptionSettings", std::move(encryption_settings));
   }
 
-  // If attach_configuration_file is true, process that.
-  const auto attach_configuration_file =
-      request_.FindBool("attachConfigurationFile");
-  if (attach_configuration_file.has_value() &&
-      attach_configuration_file.value()) {
+  // If configurationFileVersion is provided, attach the configuration file.
+  const auto configuration_file_version =
+      request_.FindInt("configurationFileVersion");
+  if (configuration_file_version.has_value()) {
     base::Value::Dict configuration_file;
     base::Value::List event_configs;
     base::Value::Dict heartbeat;
@@ -124,8 +123,9 @@ absl::optional<base::Value::Dict> ResponseBuilder::Build() const {
     event_configs.Append(std::move(lock));
     std::string encoded;
     base::Base64Encode("Fake signature", &encoded);
-    configuration_file.Set("configurationFileSignature", std::move(encoded));
-    configuration_file.Set("eventConfigs", std::move(event_configs));
+    configuration_file.Set("configFileSignature", std::move(encoded));
+    configuration_file.Set("blockedEventConfigs", std::move(event_configs));
+    configuration_file.Set("version", 123456);
     response.Set("configurationFile", std::move(configuration_file));
   }
 

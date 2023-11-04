@@ -16,32 +16,48 @@
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_toolbars_mutator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/incognito/incognito_grid_mediator_delegate.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_metrics.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_paging.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_configuration.h"
 
-namespace {
-
-// Returns whether the feature kFilterWebsitesForSupervisedUsersOnDesktopAndIOS
-// is enabled or not.
-bool ShouldFilterWebSitesForSupervisedUsers() {
-  return base::FeatureList::IsEnabled(
-      supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
-}
-
-}  // namespace
+// TODO(crbug.com/1457146): Needed for `TabPresentationDelegate`, should be
+// refactored.
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_view_controller.h"
 
 @interface IncognitoGridMediator () <PrefObserverDelegate>
 @end
 
 @implementation IncognitoGridMediator {
+  // Preference service from the application context.
+  PrefService* _prefService;
   // Pref observer to track changes to prefs.
   std::unique_ptr<PrefObserverBridge> _prefObserverBridge;
   // Registrar for pref changes notifications.
-  std::unique_ptr<PrefChangeRegistrar> _prefChangeRegistrar;
+  PrefChangeRegistrar _prefChangeRegistrar;
   // YES if incognito is disabled.
   BOOL _incognitoDisabled;
+}
+
+- (instancetype)initWithPrefService:(PrefService*)prefService
+                           consumer:(id<TabCollectionConsumer>)consumer {
+  if (self = [super initWithConsumer:consumer]) {
+      CHECK(prefService);
+      _prefService = prefService;
+      _prefChangeRegistrar.Init(_prefService);
+      if (base::FeatureList::IsEnabled(
+              supervised_user::
+                  kFilterWebsitesForSupervisedUsersOnDesktopAndIOS)) {
+        _prefObserverBridge.reset(new PrefObserverBridge(self));
+        // Register to observe any changes on supervised_user status.
+        _prefObserverBridge->ObserveChangesForPreference(
+            prefs::kSupervisedUserId, &_prefChangeRegistrar);
+      }
+      _incognitoDisabled = [self isIncognitoModeDisabled];
+    }
+  return self;
 }
 
 // TODO(crbug.com/1457146): Refactor the grid commands to have the same function
@@ -87,11 +103,33 @@ bool ShouldFilterWebSitesForSupervisedUsers() {
   [self closeAllItems];
 }
 
+- (void)newTabButtonTapped:(id)sender {
+  // Ignore the tap if the current page is disabled for some reason, by policy
+  // for instance. This is to avoid situations where the tap action from an
+  // enabled page can make it to a disabled page by releasing the
+  // button press after switching to the disabled page (b/273416844 is an
+  // example).
+  if (_incognitoDisabled) {
+    return;
+  }
+
+  [self.gridConsumer setPageIdleStatus:NO];
+  base::RecordAction(base::UserMetricsAction("MobileTabNewTab"));
+  [self.gridConsumer prepareForDismissal];
+  [self addNewItem];
+  [self.gridConsumer setActivePageFromPage:TabGridPageIncognitoTabs];
+  [self.tabPresentationDelegate showActiveTabInPage:TabGridPageIncognitoTabs
+                                       focusOmnibox:NO];
+  base::RecordAction(
+      base::UserMetricsAction("MobileTabGridCreateIncognitoTab"));
+}
+
 #pragma mark - Parent's function
 
 - (void)disconnect {
-  _prefChangeRegistrar.reset();
+  _prefChangeRegistrar.RemoveAll();
   _prefObserverBridge.reset();
+  _prefService = nil;
   [super disconnect];
 }
 
@@ -123,53 +161,16 @@ bool ShouldFilterWebSitesForSupervisedUsers() {
   }
 }
 
-#pragma mark - Properties
-
-- (void)setBrowser:(Browser*)browser {
-  _prefChangeRegistrar.reset();
-  _prefObserverBridge.reset();
-
-  [super setBrowser:browser];
-
-  if (browser) {
-    if (ShouldFilterWebSitesForSupervisedUsers()) {
-      PrefService* prefService = browser->GetBrowserState()->GetPrefs();
-      DCHECK(prefService);
-
-      _prefChangeRegistrar = std::make_unique<PrefChangeRegistrar>();
-      _prefChangeRegistrar->Init(prefService);
-
-      // Register to observe any changes on supervised_user status.
-      _prefObserverBridge = std::make_unique<PrefObserverBridge>(self);
-      _prefObserverBridge->ObserveChangesForPreference(
-          prefs::kSupervisedUserId, _prefChangeRegistrar.get());
-    }
-
-    // Pretend the preference changed to force setting _incognitoDisabled.
-    [self onPreferenceChanged:prefs::kSupervisedUserId];
-  }
-}
-
-- (PrefService*)prefService {
-  Browser* browser = self.browser;
-  DCHECK(browser);
-
-  return browser->GetBrowserState()->GetPrefs();
-}
-
 #pragma mark - Private
 
 // Returns YES if incognito is disabled.
 - (BOOL)isIncognitoModeDisabled {
-  DCHECK(self.browser);
-  PrefService* prefService = self.browser->GetBrowserState()->GetPrefs();
-
-  if (IsIncognitoModeDisabled(prefService)) {
-    return YES;
+  if (base::FeatureList::IsEnabled(
+          supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS)) {
+    return supervised_user::IsSubjectToParentalControls(_prefService) ||
+           IsIncognitoModeDisabled(_prefService);
   }
-
-  return ShouldFilterWebSitesForSupervisedUsers() &&
-         supervised_user::IsSubjectToParentalControls(prefService);
+  return IsIncognitoModeDisabled(_prefService);
 }
 
 @end

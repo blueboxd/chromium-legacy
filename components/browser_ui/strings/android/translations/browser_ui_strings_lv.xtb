@@ -100,6 +100,7 @@
 <translation id="2653659639078652383">Iesniegt</translation>
 <translation id="2677748264148917807">Iziet</translation>
 <translation id="2678468611080193228">Īslaicīgi atļaujiet izmantot trešo pušu sīkfailus. Tas nozīmē, ka aizsardzības līmenis būs zemāks, taču pastāv lielāka iespēja, ka darbosies vietnes funkcijas.</translation>
+<translation id="2683434792633810741">Vai dzēst datus un atiestatīt atļaujas?</translation>
 <translation id="2687403674020088961">Bloķēt visus sīkfailus (nav ieteicams)</translation>
 <translation id="2713106313042589954">Izslēgt kameru</translation>
 <translation id="2717722538473713889">E-pasta adreses</translation>
@@ -179,6 +180,7 @@
 <translation id="4008040567710660924">Atļaut sīkfailus konkrētai vietnei.</translation>
 <translation id="4046123991198612571">Nākamais ieraksts</translation>
 <translation id="4053720452172726777">Pielāgot un kontrolēt Google Chrome</translation>
+<translation id="4149890623864272035">Vai tiešām vēlaties dzēst visus lokālos datus, tostarp sīkfailus, un atiestatīt visas atļaujas šai vietnei?</translation>
 <translation id="4149994727733219643">Vienkāršots tīmekļa lapu skatījums</translation>
 <translation id="4151930093518524179">Noklusējuma tālummaiņa</translation>
 <translation id="4165986682804962316">Vietnes iestatījumi</translation>
@@ -196,6 +198,7 @@
 <translation id="4412992751769744546">Atļaut trešo pušu sīkfailus</translation>
 <translation id="4428065317363009941">Reklāmu personalizēšana</translation>
 <translation id="4434045419905280838">Uznirstošie elem. un novirzīšana</translation>
+<translation id="443552056913301231">Veicot šo darbību, tiks dzēsti visi lokālie dati, tostarp sīkfaili, kā arī tiks atiestatītas visas pakalpojuma <ph name="ORIGIN" /> atļaujas.</translation>
 <translation id="4468959413250150279">Izslēgt skaņu noteiktai vietnei</translation>
 <translation id="4475912480633855319">{COOKIES,plural, =1{# sīkfails}zero{# sīkfailu}one{# sīkfails}other{# sīkfaili}}</translation>
 <translation id="4478158430052450698">Varat vienkāršot tālummaiņas pielāgošanu dažādās vietnēs</translation>
@@ -205,6 +208,7 @@
 <translation id="4566417217121906555">Izslēgt mikrofonu</translation>
 <translation id="4570913071927164677">Detalizēta informācija</translation>
 <translation id="4598549027014564149">Inkognito režīmā vietnes nedrīkst izmantot sīkfailus, lai skatītu jūsu pārlūkošanas darbības vietnēs, pat saistītajās vietnēs. Jūsu pārlūkošanas darbības netiek izmantotas, piemēram, reklāmu personalizēšanai. Noteiktās vietnēs funkcijas var nedarboties.</translation>
+<translation id="4644713492825682049">Dzēst un atiestatīt</translation>
 <translation id="4645575059429386691">Pārvalda viens no jūsu vecākiem</translation>
 <translation id="4670064810192446073">Virtuālā realitāte</translation>
 <translation id="4751476147751820511">Kustību vai gaismas sensori</translation>
@@ -235,6 +239,7 @@
 <translation id="5216942107514965959">Pēdējoreiz apmeklēta šodien</translation>
 <translation id="5225463052809312700">Ieslēgt kameru</translation>
 <translation id="5234764350956374838">Nerādīt</translation>
+<translation id="5246825184569358663">Veicot šo darbību, tiks dzēsti visi lokālie dati, tostarp sīkfaili, un atiestatītas visas atļaujas vietnē <ph name="DOMAIN" /> un visās tai pakārtotajās vietnēs.</translation>
 <translation id="5264323282659631142">Noņemt žetonu <ph name="CHIP_LABEL" /></translation>
 <translation id="528192093759286357">Lai izietu no pilnekrāna režīma, velciet no augšas un pieskarieties pogai Atpakaļ.</translation>
 <translation id="5300589172476337783">Rādīt</translation>
@@ -278,11 +283,11 @@
 <translation id="5922853908706496913">Notiek jūsu ekrāna kopīgošana</translation>
 <translation id="5922967540311291836">Bloķēt trešo pušu sīkfailus:</translation>
 <translation id="5939518447894949180">Atiestatīt</translation>
+<translation id="5964247741333118902">Iegultais saturs</translation>
 <translation id="5968921426641056619">Ievadiet tīmekļa adresi</translation>
 <translation id="5975083100439434680">Tālināt</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> — <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Pārvaldiet šīs vietnes piekļuvi jūsu ierīcei</translation>
-<translation id="6018815681665454784">Vai notīrīt un atiestatīt?</translation>
 <translation id="6040143037577758943">Aizvērt</translation>
 <translation id="6042308850641462728">Vairāk</translation>
 <translation id="6064125863973209585">Pabeigtās lejupielādes</translation>
@@ -294,6 +299,7 @@
 <translation id="6192792657125177640">Izņēmumi</translation>
 <translation id="6196640612572343990">Bloķēt trešo pušu sīkfailus</translation>
 <translation id="6205314730813004066">Reklāmu konfidencialitāte</translation>
+<translation id="6207207788774442484">Dzēst datus un atiestatīt atļaujas</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: iespējas</translation>
 <translation id="6231752747840485235">Vai atinstalēt lietotni <ph name="APP_NAME" />?</translation>
 <translation id="6262191102408817757">Pamatojoties uz pēdējās cilnes saturu</translation>
@@ -302,13 +308,11 @@
 <translation id="6295158916970320988">Visas vietnes</translation>
 <translation id="6320088164292336938">Vibrācija</translation>
 <translation id="6367753977865761591">Trešās puses pierakstīšanās bloķēšana konkrētā vietnē</translation>
-<translation id="6388207532828177975">Notīrīt un atiestatīt</translation>
 <translation id="6398765197997659313">Iziet no pilnekrāna režīma</translation>
 <translation id="640163077447496506">Derīguma termiņš beidzas šodien</translation>
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Neļaut vietnēm izmantot jūsu virtuālās realitātes ierīci un datus</translation>
 <translation id="6447842834002726250">Sīkfaili</translation>
-<translation id="6467852467360539617">Dzēst datus un atiestatīt atļaujas</translation>
 <translation id="6500423977866688905">Ja logs ir šaurs, pieprasīt skatu mobilajā ierīcē</translation>
 <translation id="6527303717912515753">Kopīgot</translation>
 <translation id="652937045869844725">Varat atļaut trešo pušu sīkfailus. Tas nozīmē, ka aizsardzības līmenis būs zemāks, taču pastāv lielāka iespēja, ka darbosies vietnes funkcijas.</translation>
@@ -381,11 +385,9 @@
 <translation id="7846076177841592234">Atcelt atlasi</translation>
 <translation id="7882806643839505685">Atļaut skaņu konkrētai vietnei</translation>
 <translation id="789180354981963912">Bloķēt trešo pušu sīkfailus inkognito režīmā:</translation>
-<translation id="7895868624847501462">Veicot šo darbību, tiks notīrīti visi lokālie dati, tostarp sīkfaili, un atiestatītas visas atļaujas vietnē <ph name="DOMAIN" /> un visās tai pakārtotajās vietnēs.</translation>
 <translation id="7940722705963108451">Atgādināt</translation>
 <translation id="7974024493641668069">{COUNT,plural, =1{<ph name="FPS_MEMBERS_COUNT" /> vietne domēna <ph name="FPS_OWNER" /> vietņu grupā, kurai piederīgo vietņu īpašniekiem ir redzamas jebkurā grupas vietnē veiktās darbības}zero{<ph name="FPS_MEMBERS_COUNT" /> vietņu domēna <ph name="FPS_OWNER" /> vietņu grupā, kurai piederīgo vietņu īpašniekiem ir redzamas jebkurā grupas vietnē veiktās darbības}one{<ph name="FPS_MEMBERS_COUNT" /> vietne domēna <ph name="FPS_OWNER" /> vietņu grupā, kurai piederīgo vietņu īpašniekiem ir redzamas jebkurā grupas vietnē veiktās darbības}other{<ph name="FPS_MEMBERS_COUNT" /> vietnes domēna <ph name="FPS_OWNER" /> vietņu grupā, kurai piederīgo vietņu īpašniekiem ir redzamas jebkurā grupas vietnē veiktās darbības}}</translation>
 <translation id="7986741934819883144">Kontaktpersonas atlase</translation>
-<translation id="7999064672810608036">Vai tiešām vēlaties notīrīt visus ar šo vietni saistītos lokālos datus, tostarp sīkfailus, un atiestatīt visas atļaujas?</translation>
 <translation id="8007176423574883786">Izslēgts šai ierīcei</translation>
 <translation id="802154636333426148">Lejupielāde neizdevās</translation>
 <translation id="8042586301629853791">Kārtot pēc:</translation>
@@ -409,7 +411,6 @@
 <translation id="8284326494547611709">Subtitri</translation>
 <translation id="8300705686683892304">Pārvalda lietotne</translation>
 <translation id="8324158725704657629">Nejautāt atkārtoti</translation>
-<translation id="8338445138528827481">Veicot šo darbību, tiks notīrīti visi lokālie dati, tostarp sīkfaili, un atiestatītas visas konta <ph name="ORIGIN" /> atļaujas.</translation>
 <translation id="8362795839483915693">Varat tuvināt vai tālināt saturu apmeklētajās vietnēs.</translation>
 <translation id="8372893542064058268">Atļaut sinhronizāciju fonā konkrētai vietnei</translation>
 <translation id="8376384591331888629">Arī šajā vietnē esošos trešo pušu sīkfailus</translation>

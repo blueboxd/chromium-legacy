@@ -88,7 +88,7 @@ Profile* WebAppControllerBrowserTest::profile() {
   return browser()->profile();
 }
 
-AppId WebAppControllerBrowserTest::InstallPWA(const GURL& start_url) {
+webapps::AppId WebAppControllerBrowserTest::InstallPWA(const GURL& start_url) {
   auto web_app_info = std::make_unique<WebAppInstallInfo>();
   web_app_info->start_url = start_url;
   web_app_info->scope = start_url.GetWithoutFilename();
@@ -97,27 +97,29 @@ AppId WebAppControllerBrowserTest::InstallPWA(const GURL& start_url) {
   return web_app::test::InstallWebApp(profile(), std::move(web_app_info));
 }
 
-AppId WebAppControllerBrowserTest::InstallWebApp(
+webapps::AppId WebAppControllerBrowserTest::InstallWebApp(
     std::unique_ptr<WebAppInstallInfo> web_app_info) {
   return web_app::test::InstallWebApp(profile(), std::move(web_app_info));
 }
 
-void WebAppControllerBrowserTest::UninstallWebApp(const AppId& app_id) {
+void WebAppControllerBrowserTest::UninstallWebApp(
+    const webapps::AppId& app_id) {
   web_app::test::UninstallWebApp(profile(), app_id);
 }
 
-Browser* WebAppControllerBrowserTest::LaunchWebAppBrowser(const AppId& app_id) {
+Browser* WebAppControllerBrowserTest::LaunchWebAppBrowser(
+    const webapps::AppId& app_id) {
   return web_app::LaunchWebAppBrowser(profile(), app_id);
 }
 
 Browser* WebAppControllerBrowserTest::LaunchWebAppBrowserAndWait(
-    const AppId& app_id) {
+    const webapps::AppId& app_id) {
   return web_app::LaunchWebAppBrowserAndWait(profile(), app_id);
 }
 
 Browser*
 WebAppControllerBrowserTest::LaunchWebAppBrowserAndAwaitInstallabilityCheck(
-    const AppId& app_id) {
+    const webapps::AppId& app_id) {
   Browser* browser = web_app::LaunchWebAppBrowserAndWait(profile(), app_id);
   webapps::TestAppBannerManagerDesktop::FromWebContents(
       browser->tab_strip_model()->GetActiveWebContents())
@@ -126,7 +128,7 @@ WebAppControllerBrowserTest::LaunchWebAppBrowserAndAwaitInstallabilityCheck(
 }
 
 Browser* WebAppControllerBrowserTest::LaunchBrowserForWebAppInTab(
-    const AppId& app_id) {
+    const webapps::AppId& app_id) {
   return web_app::LaunchBrowserForWebAppInTab(profile(), app_id);
 }
 
@@ -179,13 +181,40 @@ WebAppControllerBrowserTest::NavigateInNewWindowAndAwaitInstallabilityCheck(
   return new_browser;
 }
 
-absl::optional<AppId> WebAppControllerBrowserTest::FindAppWithUrlInScope(
-    const GURL& url) {
+absl::optional<webapps::AppId>
+WebAppControllerBrowserTest::FindAppWithUrlInScope(const GURL& url) {
   return provider().registrar_unsafe().FindAppWithUrlInScope(url);
 }
 
+Browser* WebAppControllerBrowserTest::OpenPopupAndWait(
+    Browser* browser,
+    const GURL& url,
+    const gfx::Size& popup_size) {
+  content::WebContents* const web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+
+  ui_test_utils::BrowserChangeObserver browser_change_observer(
+      nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
+  std::string open_window_script = base::StringPrintf(
+      "window.open('%s', '_blank', 'toolbar=none,width=%i,height=%i')",
+      url.spec().c_str(), popup_size.width(), popup_size.height());
+
+  EXPECT_TRUE(content::ExecJs(web_contents, open_window_script));
+
+  // The navigation should happen in a new window.
+  Browser* popup_browser = browser_change_observer.Wait();
+  EXPECT_NE(browser, popup_browser);
+
+  content::WebContents* popup_contents =
+      popup_browser->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::WaitForLoadStop(popup_contents));
+  EXPECT_EQ(popup_contents->GetLastCommittedURL(), url);
+
+  return popup_browser;
+}
+
 content::WebContents* WebAppControllerBrowserTest::OpenApplication(
-    const AppId& app_id) {
+    const webapps::AppId& app_id) {
   ui_test_utils::UrlLoadObserver url_observer(
       provider().registrar_unsafe().GetAppStartUrl(app_id),
       content::NotificationService::AllSources());

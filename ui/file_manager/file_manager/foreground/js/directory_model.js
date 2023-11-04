@@ -7,23 +7,24 @@ import {dispatchSimpleEvent} from 'chrome://resources/ash/common/cr_deprecated.j
 import {NativeEventTarget as EventTarget} from 'chrome://resources/ash/common/event_target.js';
 
 import {Aggregator, AsyncQueue} from '../../common/js/async_util.js';
-import {GuestOsPlaceholder} from '../../common/js/files_app_entry_types.js';
-import {metrics} from '../../common/js/metrics.js';
+import {EntryList, GuestOsPlaceholder, VolumeEntry} from '../../common/js/files_app_entry_types.js';
+import {recordMediumCount} from '../../common/js/metrics.js';
 import {util} from '../../common/js/util.js';
 import {isNative, VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {FileOperationManager} from '../../externs/background/file_operation_manager.js';
 import {EntriesChangedEvent} from '../../externs/entries_changed_event.js';
 import {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
-import {PropStatus, SearchLocation, SearchOptions, State} from '../../externs/ts/state.js';
+import {PropStatus, SearchLocation, SearchOptions, State, Volume, VolumeId} from '../../externs/ts/state.js';
 import {Store} from '../../externs/ts/store.js';
 import {VolumeInfo} from '../../externs/volume_info.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
+import {getMyFiles} from '../../state/ducks/all_entries.js';
 import {changeDirectory} from '../../state/ducks/current_directory.js';
-import {updateSearch} from '../../state/ducks/search.js';
-import {getStore} from '../../state/store.js';
+import {clearSearch, getDefaultSearchOptions, updateSearch} from '../../state/ducks/search.js';
+import {getFileData, getStore, getVolume} from '../../state/store.js';
 
 import {constants} from './constants.js';
-import {ContentScanner, CrostiniMounter, DirectoryContents, DirectoryContentScanner, DriveMetadataSearchContentScanner, DriveSearchContentScanner, FileFilter, FileListContext, GuestOsMounter, LocalSearchContentScanner, MediaViewContentScanner, RecentContentScanner, SearchV2ContentScanner, TrashContentScanner} from './directory_contents.js';
+import {ContentScanner, CrostiniMounter, DirectoryContents, DirectoryContentScanner, DriveMetadataSearchContentScanner, FileFilter, FileListContext, GuestOsMounter, MediaViewContentScanner, RecentContentScanner, SearchV2ContentScanner, TrashContentScanner} from './directory_contents.js';
 import {FileListModel} from './file_list_model.js';
 import {FileWatcher} from './file_watcher.js';
 import {MetadataModel} from './metadata/metadata_model.js';
@@ -50,10 +51,6 @@ const SHORT_RESCAN_INTERVAL = 100;
  */
 function isRecentScan(entry, query, options) {
   if (util.isRecentRootType(entry.rootType)) {
-    if (!util.isSearchV2Enabled()) {
-      // If V2 of search is not enabled, being in recents is sufficient.
-      return true;
-    }
     // The user is in Recent view. If query is empty, this is definitely
     // a scan. Otherwise, we need to check the options.
     if (!query) {
@@ -62,7 +59,7 @@ function isRecentScan(entry, query, options) {
     // Potential search in Recents. However, if options are present and are
     // indicating that the user wishes to scan current entry, still use Recent
     // scanner.
-    if (!options || options.location == SearchLocation.THIS_FOLDER) {
+    if (options && options.location == SearchLocation.THIS_FOLDER) {
       return true;
     }
   }
@@ -74,7 +71,7 @@ function isRecentScan(entry, query, options) {
  * based on the fake entry, query and options.
  * @param {!FakeEntry} entry
  * @param {string|undefined} query
- * @param {SearchOptions|undefined} options
+ * @param {!SearchOptions|undefined} options
  */
 function getFileCategory(entry, query, options) {
   if (query) {
@@ -113,6 +110,7 @@ export class DirectoryModel extends EventTarget {
     this.rescanTime_ = null;
     this.scanFailures_ = 0;
     this.changeDirectorySequence_ = 0;
+    this.cachedSearch_ = null;
 
     /** @private {?function(Event): void} */
     this.onSearchCompleted_ = null;
@@ -176,6 +174,9 @@ export class DirectoryModel extends EventTarget {
     /** @private {FilesAppDirEntry} */
     this.myFilesEntry_ = null;
 
+    /** @private {?Object<!VolumeId, !Volume>} */
+    this.volumes_ = null;
+
     /** @private {!Store} */
     this.store_ = getStore();
     this.store_.subscribe(this);
@@ -183,9 +184,25 @@ export class DirectoryModel extends EventTarget {
 
   /** @param {!State} state latest state from the store. */
   onStateChanged(state) {
+    this.handleSearchState_(state);
+    this.handleDirectoryState_(state);
+  }
+
+  /**
+   * Handles the current directory slice of the store's state.
+   * @param {!State} state latest state from the store.
+   * @private
+   */
+  handleDirectoryState_(state) {
     const currentEntry = this.getCurrentDirEntry();
     const currentURL = currentEntry ? currentEntry.toURL() : null;
     let newURL = state.currentDirectory ? state.currentDirectory.key : null;
+
+    // Observe volume changes.
+    if (this.volumes_ !== state.volumes) {
+      this.onStateVolumeChanged_(state);
+      this.volumes_ = state.volumes;
+    }
 
     // If the directory is the same, ignore it.
     if (currentURL === newURL) {
@@ -214,6 +231,35 @@ export class DirectoryModel extends EventTarget {
 
       // Initiate the directory change.
       this.changeDirectoryEntry(/** @type {!DirectoryEntry} */ (entry));
+    }
+  }
+
+  /**
+   * Reacts to changes in the search state of the store. If the search changed
+   * and the query is not empty, this method triggers a new directory search.
+   * @param {!State} state
+   * @private
+   */
+  handleSearchState_(state) {
+    const search = state.search;
+    if (this.cachedSearch_ === search) {
+      // Bail out early if the search part of the state has not changed.
+      return;
+    }
+
+    // Cache the last received search state for future comparisons.
+    const lastSearch = this.cachedSearch_;
+    this.cachedSearch_ = search;
+
+    // We change the search state (STARTED, SUCCESS, etc.) so only trigger
+    // a new search if the query or the options have changed.
+    if (!search) {
+      return;
+    }
+    if (!lastSearch || lastSearch.query !== search.query ||
+        lastSearch.options !== search.options) {
+      this.search_(
+          search.query || '', search.options || getDefaultSearchOptions());
     }
   }
 
@@ -503,6 +549,35 @@ export class DirectoryModel extends EventTarget {
       }
     } else {
       this.rescanSoon(false);
+    }
+  }
+
+  /**
+   * Invoked when volumes have been modified in the state.
+   * @param {!State} state latest state from the store.
+   * @private
+   */
+  onStateVolumeChanged_(state) {
+    for (const volume of Object.values(state.volumes)) {
+      // Navigate out of ODFS if it got disabled and the current directory is
+      // under ODFS.
+      const isOdfs = util.isOneDriveId(volume.providerId);
+      if (!(isOdfs && volume.isDisabled)) {
+        continue;
+      }
+      const currentDirectoryFileData =
+          getFileData(state, state.currentDirectory.key);
+      const currentDirectoryOnOdfs = util.isOneDriveId(
+          getVolume(state, currentDirectoryFileData)?.providerId);
+      if (currentDirectoryOnOdfs) {
+        const {myFilesEntry} = /**
+                                  @type {{myFilesVolume: (Volume|null),
+                                      myFilesEntry: (VolumeEntry|EntryList)}}
+                                */
+            (getMyFiles(state));
+        const myFilesRootKey = myFilesEntry.toURL();
+        this.store_.dispatch(changeDirectory({toKey: myFilesRootKey}));
+      }
     }
   }
 
@@ -939,8 +1014,7 @@ export class DirectoryModel extends EventTarget {
             volumeInfo.volumeType ===
                 VolumeManagerCommon.VolumeType.DOWNLOADS &&
             locationInfo.isRootEntry) {
-          metrics.recordMediumCount(
-              'DownloadsCount', dirContents.getFileListLength());
+          recordMediumCount('DownloadsCount', dirContents.getFileListLength());
         }
       }
 
@@ -1235,6 +1309,9 @@ export class DirectoryModel extends EventTarget {
       event.newDirEntry = dirEntry;
       event.volumeChanged = previousVolumeInfo !== currentVolumeInfo;
       this.dispatchEvent(event);
+      // Preemptively always clear search and search query on directory change.
+      this.store_.dispatch(clearSearch());
+      this.clearLastSearchQuery();
       // Notify the Store that the new directory has successfully changed.
       this.store_.dispatch(
           changeDirectory({to: dirEntry, status: PropStatus.SUCCESS}));
@@ -1464,11 +1541,11 @@ export class DirectoryModel extends EventTarget {
    * Returns true if directory search should be used for the entry and query.
    *
    * @param {!DirectoryEntry|!FilesAppEntry} entry Directory entry.
-   * @param {string=} opt_query Search query string.
+   * @param {string=} query Search query string.
    * @return {boolean} True if directory search should be used for the entry
    *     and query.
    */
-  isSearchDirectory(entry, opt_query) {
+  isSearchDirectory(entry, query) {
     if (util.isRecentRootType(entry.rootType) ||
         entry.rootType == VolumeManagerCommon.RootType.CROSTINI ||
         entry.rootType == VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT) {
@@ -1478,8 +1555,7 @@ export class DirectoryModel extends EventTarget {
       return false;
     }
 
-    const query = (opt_query || '').trimLeft();
-    if (query) {
+    if ((query || '').trimStart()) {
       return true;
     }
 
@@ -1496,25 +1572,21 @@ export class DirectoryModel extends EventTarget {
    * Creates scanner factory for the entry and query.
    *
    * @param {!DirectoryEntry|!FilesAppEntry} entry Directory entry.
-   * @param {string=} opt_query Search query string.
-   * @param {SearchOptions=} opt_options search options.
+   * @param {string=} query Search query string.
+   * @param {SearchOptions=} options search options.
    * @return {function():ContentScanner} The factory to create ContentScanner
    *     instance.
    */
-  createScannerFactory(entry, opt_query, opt_options) {
-    const query = (opt_query || '').trimStart();
+  createScannerFactory(entry, query, options) {
+    const sanitizedQuery = (query || '').trimStart();
     const locationInfo = this.volumeManager_.getLocationInfo(entry);
-    const canUseDriveSearch =
-        this.volumeManager_.getDriveConnectionState().type !==
-            chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE &&
-        (locationInfo && locationInfo.isDriveBased);
 
-    if (isRecentScan(entry, opt_query, opt_options)) {
+    if (isRecentScan(entry, sanitizedQuery, options)) {
       const fakeEntry = /** @type {!FakeEntry} */ (entry);
       return () => {
         return new RecentContentScanner(
-            query, this.volumeManager_, fakeEntry.sourceRestriction,
-            getFileCategory(fakeEntry, opt_query, opt_options));
+            sanitizedQuery, this.volumeManager_, fakeEntry.sourceRestriction,
+            getFileCategory(fakeEntry, sanitizedQuery, options));
       };
     }
     // TODO(b/271485133): Make sure the entry here is a fake entry, not real
@@ -1546,25 +1618,11 @@ export class DirectoryModel extends EventTarget {
         return new TrashContentScanner(this.volumeManager_);
       };
     }
-    if (util.isSearchV2Enabled()) {
-      if (query) {
-        return () => {
-          return new SearchV2ContentScanner(
-              this.volumeManager_, entry, query, opt_options);
-        };
-      }
-    }
-    if (query && canUseDriveSearch) {
-      // Drive search.
+    if (sanitizedQuery) {
       return () => {
-        return new DriveSearchContentScanner(query);
-      };
-    }
-    if (query) {
-      // Local search for local files and DocumentsProvider files.
-      return () => {
-        return new LocalSearchContentScanner(
-            /** @type {!DirectoryEntry} */ (entry), query);
+        return new SearchV2ContentScanner(
+            this.volumeManager_, entry, sanitizedQuery,
+            options || getDefaultSearchOptions());
       };
     }
     if (locationInfo &&
@@ -1608,15 +1666,14 @@ export class DirectoryModel extends EventTarget {
    *
    * @param {FileListContext} context File list context.
    * @param {!DirectoryEntry|!FilesAppDirEntry} entry Current directory.
-   * @param {string=} opt_query Search query string.
-   * @param {SearchOptions=} opt_options Search options.
-   * @return {DirectoryContents} Directory contents.
+   * @param {string=} query Search query string.
+   * @param {SearchOptions=} options Search options.
+   * @return {!DirectoryContents} Directory contents.
    * @private
    */
-  createDirectoryContents_(context, entry, opt_query, opt_options) {
-    const isSearch = this.isSearchDirectory(entry, opt_query);
-    const scannerFactory =
-        this.createScannerFactory(entry, opt_query, opt_options);
+  createDirectoryContents_(context, entry, query, options) {
+    const isSearch = this.isSearchDirectory(entry, query);
+    const scannerFactory = this.createScannerFactory(entry, query, options);
     return new DirectoryContents(context, isSearch, entry, scannerFactory);
   }
 
@@ -1642,12 +1699,11 @@ export class DirectoryModel extends EventTarget {
    * name search over current directory will be performed.
    *
    * @param {string} query Query that will be searched for.
-   * @param {SearchOptions|undefined} options Search options, such as file
+   * @param {!SearchOptions} options Search options, such as file
    *     type, etc.
-   * @param {function(Event)} onSearchRescan Function that will be called when
-   *     the search directory is rescanned (i.e. search results are displayed).
+   * @private
    */
-  search(query, options, onSearchRescan) {
+  search_(query, options) {
     this.lastSearchQuery_ = query;
     this.stopActiveSearch_();
     const currentDirEntry = this.getCurrentDirEntry();
@@ -1685,9 +1741,6 @@ export class DirectoryModel extends EventTarget {
       this.store_.dispatch(
           updateSearch({query: query, status: PropStatus.STARTED}));
       this.onSearchCompleted_ = (...args) => {
-        // Notify the caller via callback, for non-store based callers.
-        onSearchRescan(...args);
-
         // Notify the store-aware parts.
         this.store_.dispatch(updateSearch({status: PropStatus.SUCCESS}));
       };

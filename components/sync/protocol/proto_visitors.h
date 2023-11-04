@@ -324,8 +324,8 @@ VISIT_PROTO_FIELDS(const sync_pb::ChromiumExtensionsActivity& proto) {
 VISIT_PROTO_FIELDS(const sync_pb::ContactInfoSpecifics& proto) {
   VISIT(guid);
   VISIT(use_count);
-  VISIT(use_date_windows_epoch_micros);
-  VISIT(date_modified_windows_epoch_micros);
+  VISIT(use_date_unix_epoch_seconds);
+  VISIT(date_modified_unix_epoch_seconds);
   VISIT(language_code);
   VISIT(profile_label);
   VISIT(initial_creator_id);
@@ -371,6 +371,7 @@ VISIT_PROTO_FIELDS(const sync_pb::ContactInfoSpecifics::Observation& proto) {
 VISIT_PROTO_FIELDS(const sync_pb::ContactInfoSpecifics::TokenMetadata& proto) {
   VISIT_ENUM(status);
   VISIT_REP(observations);
+  VISIT(value_hash);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::ContactInfoSpecifics::StringToken& proto) {
@@ -576,7 +577,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
-  static_assert(49 == GetNumModelTypes(),
+  static_assert(48 == GetNumModelTypes(),
                 "When adding a new protocol type, you will likely need to add "
                 "it here as well.");
   VISIT(encrypted);
@@ -997,6 +998,7 @@ VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecificsMetadata& proto) {
   VISIT(blacklisted);
   VISIT(date_last_used_windows_epoch_micros);
   VISIT(password_issues);
+  VISIT(type);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::PowerBookmarkSpecifics& proto) {

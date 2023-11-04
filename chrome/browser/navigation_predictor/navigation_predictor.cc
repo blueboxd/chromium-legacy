@@ -18,8 +18,8 @@
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
 #include "chrome/browser/navigation_predictor/preloading_model_keyed_service.h"
 #include "chrome/browser/navigation_predictor/preloading_model_keyed_service_factory.h"
-#include "chrome/browser/prefetch/prefetch_prefs.h"
 #include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
+#include "chrome/browser/preloading/preloading_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "content/public/browser/navigation_handle.h"
@@ -77,7 +77,7 @@ PathLengthDepthAndHash GetUrlPathLengthDepthAndHash(const GURL& target_url) {
   int64_t path_depth = std::min(num_slashes, static_cast<int64_t>(5));
 
   // 10-bucket hash of the URL's path.
-  uint32_t hash = base::PersistentHash(path.data(), path.length());
+  uint32_t hash = base::PersistentHash(path);
   hash = hash % 10;
   return {path_length, path_depth, hash};
 }

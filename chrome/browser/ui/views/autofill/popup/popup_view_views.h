@@ -12,6 +12,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_base_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_row_view.h"
@@ -42,7 +43,12 @@ class ExpandablePopupParentView {
  private:
   friend class PopupViewViews;
 
-  // TODO(crbug.com/1466116): Add parent's methods.
+  // Callbacks to notify the parent of the children about hover state changes.
+  // The calls are also propagated to grandparents, so that, no matter how
+  // long the chain of sub-popups is, lower level popups know the hover
+  // status in (grand)children.
+  virtual void OnMouseEnteredInChildren() = 0;
+  virtual void OnMouseExitedInChildren() = 0;
 };
 
 // Views implementation for the autofill and password suggestion.
@@ -57,7 +63,15 @@ class PopupViewViews : public PopupBaseView,
       absl::variant<PopupRowView*, PopupSeparatorView*, PopupWarningView*>;
 
   // The time it takes for a selected cell to open a sub-popup if it has one.
-  static constexpr base::TimeDelta kOpenSubPopupDelay = base::Milliseconds(250);
+  static constexpr base::TimeDelta kMouseOpenSubPopupDelay =
+      base::Milliseconds(250);
+  static constexpr base::TimeDelta kNonMouseOpenSubPopupDelay =
+      kMouseOpenSubPopupDelay / 10;
+
+  // The delay for closing the sub-popup after having no cell selected,
+  // sub-popup cells are also taken into account.
+  static constexpr base::TimeDelta kNoSelectionHideSubPopupDelay =
+      base::Milliseconds(2500);
 
   PopupViewViews(base::WeakPtr<AutofillPopupController> controller,
                  base::WeakPtr<ExpandablePopupParentView> parent,
@@ -71,10 +85,13 @@ class PopupViewViews : public PopupBaseView,
   // Gets and sets the currently selected cell. If an invalid `cell_index` is
   // passed, `GetSelectedCell()` will return `absl::nullopt` afterwards.
   absl::optional<CellIndex> GetSelectedCell() const override;
-  void SetSelectedCell(absl::optional<CellIndex> cell_index) override;
+  void SetSelectedCell(absl::optional<CellIndex> cell_index,
+                       PopupCellSelectionSource source) override;
 
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
 
   // AutofillPopupView:
   bool Show(AutoselectFirstSuggestion autoselect_first_suggestion) override;
@@ -130,6 +147,12 @@ class PopupViewViews : public PopupBaseView,
   // selected.
   void SelectNextRow();
 
+  // Selects the next/previous in horizontal direction (i.e. left to right or
+  // vice versa) cell, if there is one. Otherwise leaves the current selection.
+  // Does not wrap.
+  bool SelectNextHorizontalCell();
+  bool SelectPreviousHorizontalCell();
+
   // Attempts to accept the selected cell. It will return false if there is no
   // selected cell or the cell does not trigger field filling or scanning a
   // credit card. `event_time` must be the time the user input event was
@@ -148,11 +171,16 @@ class PopupViewViews : public PopupBaseView,
   // PopupBaseView:
   bool DoUpdateBoundsAndRedrawPopup() override;
 
+  // ExpandablePopupParentView:
+  void OnMouseEnteredInChildren() override;
+  void OnMouseExitedInChildren() override;
+
   bool CanShowDropdownInBounds(const gfx::Rect& bounds) const;
 
   // Opens a sub-popup on a new cell (and closes the open one if any), or just
   // closes the existing if `absl::nullopt` is passed.
-  void SetCellWithOpenSubPopup(absl::optional<CellIndex> cell_index);
+  void SetCellWithOpenSubPopup(absl::optional<CellIndex> cell_index,
+                               PopupCellSelectionSource selection_source);
 
   // Controller for this view.
   base::WeakPtr<AutofillPopupController> controller_ = nullptr;
@@ -173,6 +201,7 @@ class PopupViewViews : public PopupBaseView,
   raw_ptr<views::BoxLayoutView> footer_container_ = nullptr;
 
   base::OneShotTimer open_sub_popup_timer_;
+  base::OneShotTimer no_selection_sub_popup_close_timer_;
 
   base::WeakPtrFactory<PopupViewViews> weak_ptr_factory_{this};
 };

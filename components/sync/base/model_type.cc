@@ -4,14 +4,11 @@
 
 #include "components/sync/base/model_type.h"
 
-#include <stddef.h>
-
 #include <ostream>
 
 #include "base/containers/fixed_flat_map.h"
 #include "base/logging.h"
 #include "base/notreached.h"
-#include "base/values.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
 
 namespace syncer {
@@ -84,9 +81,6 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
     {THEMES, "THEME", "themes", "Themes",
      sync_pb::EntitySpecifics::kThemeFieldNumber,
      ModelTypeForHistograms::kThemes},
-    {TYPED_URLS, "TYPED_URL", "typed_urls", "Typed URLs",
-     sync_pb::EntitySpecifics::kTypedUrlFieldNumber,
-     ModelTypeForHistograms::kTypedUrls},
     {EXTENSIONS, "EXTENSION", "extensions", "Extensions",
      sync_pb::EntitySpecifics::kExtensionFieldNumber,
      ModelTypeForHistograms::kExtensions},
@@ -213,7 +207,7 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
 static_assert(std::size(kModelTypeInfoMap) == GetNumModelTypes(),
               "kModelTypeInfoMap should have GetNumModelTypes() elements");
 
-static_assert(49 == syncer::GetNumModelTypes(),
+static_assert(48 == syncer::GetNumModelTypes(),
               "When adding a new type, update enum SyncModelTypes in enums.xml "
               "and suffix SyncModelType in histograms.xml.");
 
@@ -245,7 +239,6 @@ constexpr kSpecificsFieldNumberToModelTypeMap
         {sync_pb::EntitySpecifics::kAutofillWalletUsageFieldNumber,
          AUTOFILL_WALLET_USAGE},
         {sync_pb::EntitySpecifics::kThemeFieldNumber, THEMES},
-        {sync_pb::EntitySpecifics::kTypedUrlFieldNumber, TYPED_URLS},
         {sync_pb::EntitySpecifics::kExtensionFieldNumber, EXTENSIONS},
         {sync_pb::EntitySpecifics::kSearchEngineFieldNumber, SEARCH_ENGINES},
         {sync_pb::EntitySpecifics::kSessionFieldNumber, SESSIONS},
@@ -336,9 +329,6 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
       break;
     case THEMES:
       specifics->mutable_theme();
-      break;
-    case TYPED_URLS:
-      specifics->mutable_typed_url();
       break;
     case EXTENSIONS:
       specifics->mutable_extension();
@@ -477,7 +467,7 @@ void internal::GetModelTypeSetFromSpecificsFieldNumberListHelper(
 }
 
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
-  static_assert(49 == syncer::GetNumModelTypes(),
+  static_assert(48 == syncer::GetNumModelTypes(),
                 "When adding new protocol types, the following type lookup "
                 "logic must be updated.");
   if (specifics.has_bookmark())
@@ -496,8 +486,6 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
     return AUTOFILL_WALLET_METADATA;
   if (specifics.has_theme())
     return THEMES;
-  if (specifics.has_typed_url())
-    return TYPED_URLS;
   if (specifics.has_extension())
     return EXTENSIONS;
   if (specifics.has_search_engine())
@@ -585,7 +573,7 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
 }
 
 ModelTypeSet EncryptableUserTypes() {
-  static_assert(49 == syncer::GetNumModelTypes(),
+  static_assert(48 == syncer::GetNumModelTypes(),
                 "If adding an unencryptable type, remove from "
                 "encryptable_user_types below.");
   ModelTypeSet encryptable_user_types = UserTypes();
@@ -634,10 +622,6 @@ int ModelTypeToStableIdentifier(ModelType model_type) {
   return static_cast<int>(ModelTypeHistogramValue(model_type)) + 1;
 }
 
-base::Value ModelTypeToValue(ModelType model_type) {
-  return base::Value(ModelTypeToDebugString(model_type));
-}
-
 std::string ModelTypeSetToDebugString(ModelTypeSet model_types) {
   std::string result;
   for (ModelType type : model_types) {
@@ -651,14 +635,6 @@ std::string ModelTypeSetToDebugString(ModelTypeSet model_types) {
 
 std::ostream& operator<<(std::ostream& out, ModelTypeSet model_type_set) {
   return out << ModelTypeSetToDebugString(model_type_set);
-}
-
-base::Value::List ModelTypeSetToValue(ModelTypeSet model_types) {
-  base::Value::List value;
-  for (ModelType type : model_types) {
-    value.Append(ModelTypeToDebugString(type));
-  }
-  return value;
 }
 
 std::string ModelTypeToProtocolRootTag(ModelType model_type) {
@@ -681,15 +657,6 @@ bool IsRealDataType(ModelType model_type) {
 
 bool IsActOnceDataType(ModelType model_type) {
   return model_type == HISTORY_DELETE_DIRECTIVES;
-}
-
-bool IsTypeWithServerGeneratedRoot(ModelType model_type) {
-  return model_type == BOOKMARKS || model_type == NIGORI;
-}
-
-bool IsTypeWithClientGeneratedRoot(ModelType model_type) {
-  return IsRealDataType(model_type) &&
-         !IsTypeWithServerGeneratedRoot(model_type);
 }
 
 }  // namespace syncer

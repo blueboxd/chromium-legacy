@@ -74,8 +74,8 @@ OverviewButtonTray::OverviewButtonTray(Shelf* shelf)
     : TrayBackgroundView(shelf, TrayBackgroundViewCatalogName::kOverview),
       icon_(new views::ImageView()),
       scoped_session_observer_(this) {
-  SetPressedCallback(base::BindRepeating(&OverviewButtonTray::OnButtonPressed,
-                                         base::Unretained(this)));
+  SetCallback(base::BindRepeating(&OverviewButtonTray::OnButtonPressed,
+                                  base::Unretained(this)));
 
   const gfx::ImageSkia image = GetIconImage();
   const int vertical_padding = (kTrayItemSize - image.height()) / 2;
@@ -123,11 +123,6 @@ void OverviewButtonTray::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-void OverviewButtonTray::HandlePerformActionResult(bool action_performed,
-                                                   const ui::Event& event) {
-  // Do nothing, prevent the default ripple handling.
-}
-
 void OverviewButtonTray::OnSessionStateChanged(
     session_manager::SessionState state) {
   UpdateIconVisibility();
@@ -169,6 +164,10 @@ void OverviewButtonTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
 void OverviewButtonTray::OnThemeChanged() {
   TrayBackgroundView::OnThemeChanged();
   icon_->SetImage(GetIconImage());
+}
+
+void OverviewButtonTray::HideBubble(const TrayBubbleView* bubble_view) {
+  // This class has no bubbles to hide.
 }
 
 void OverviewButtonTray::OnButtonPressed(const ui::Event& event) {

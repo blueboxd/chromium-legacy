@@ -217,9 +217,6 @@
     IDC_EXTENSIONS_SUBMENU_VISIT_CHROME_WEB_STORE) \
   E(kActionReadingListMenu, IDC_READING_LIST_MENU) \
   E(kActionReadingListMenuAddTab, IDC_READING_LIST_MENU_ADD_TAB) \
-  E(kActionReadingListMenuShowUi, IDC_READING_LIST_MENU_SHOW_UI) \
-  E(kActionShowBookmarkSidePanel, IDC_SHOW_BOOKMARK_SIDE_PANEL) \
-  E(kActionShowSearchCompanion, IDC_SHOW_SEARCH_COMPANION) \
   E(kActionShowChromeLabs, IDC_SHOW_CHROME_LABS) \
   E(kActionRecentTabsLoginForDeviceTabs, \
     IDC_RECENT_TABS_LOGIN_FOR_DEVICE_TABS) \
@@ -362,6 +359,21 @@
     IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS) \
   E(kActionContentContextPartialTranslate, \
     IDC_CONTENT_CONTEXT_PARTIAL_TRANSLATE) \
+  /* Side Panel items */ \
+  E(kActionSidePanelShowAboutThisSite) \
+  E(kActionSidePanelShowAssistant) \
+  E(kActionSidePanelShowBookmarks, IDC_SHOW_BOOKMARK_SIDE_PANEL) \
+  E(kActionSidePanelShowCustomizeChrome) \
+  E(kActionSidePanelShowFeed) \
+  E(kActionSidePanelShowHistoryCluster) \
+  E(kActionSidePanelShowLens) \
+  E(kActionSidePanelShowPerformance) \
+  E(kActionSidePanelShowReadAnything) \
+  E(kActionSidePanelShowReadingList, IDC_READING_LIST_MENU_SHOW_UI) \
+  E(kActionSidePanelShowSearchCompanion, IDC_SHOW_SEARCH_COMPANION) \
+  E(kActionSidePanelShowShoppingInsights) \
+  E(kActionSidePanelShowSideSearch) \
+  E(kActionSidePanelShowUserNote) \
   /* Frame items. */ \
   E(kActionContentContextReloadFrame, IDC_CONTENT_CONTEXT_RELOADFRAME) \
   E(kActionContentContextViewFrameSource, IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE) \
@@ -486,8 +498,6 @@
     IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS) \
   E(kActionContentContextAccessibilityLabelsToggleOnce, \
     IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE_ONCE) \
-  /* Orca feature context menu items. */ \
-  E(kActionContentContextOrca, IDC_CONTENT_CONTEXT_ORCA) \
   /* Screen AI layout extraction. */ \
   E(kActionContentContextRunLayoutExtraction, \
     IDC_CONTENT_CONTEXT_RUN_LAYOUT_EXTRACTION) \

@@ -31,7 +31,6 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/message_center/message_view_factory.h"
 #include "ash/system/video_conference/video_conference_tray_controller.h"
-#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/auto_reset.h"
 #include "base/check.h"
@@ -41,6 +40,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/functional/callback_helpers.h"
+#include "base/i18n/time_formatting.h"
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
@@ -63,11 +63,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
-#include "ui/display/types/display_constants.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
-#include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/snapshot/snapshot.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
@@ -95,9 +93,6 @@ constexpr char kScreenRecordingNotificationType[] =
 // recording".
 constexpr char kScreenshotFileNameFmtStr[] = "Screenshot %s %s";
 constexpr char kVideoFileNameFmtStr[] = "Screen recording %s %s";
-constexpr char kDateFmtStr[] = "%d-%02d-%02d";
-constexpr char k24HourTimeFmtStr[] = "%02d.%02d.%02d";
-constexpr char kAmPmTimeFmtStr[] = "%d.%02d.%02d";
 
 // Duration to clear the capture region selection from the previous session.
 constexpr base::TimeDelta kResetCaptureRegionDuration = base::Minutes(8);
@@ -113,12 +108,6 @@ constexpr char kUsesDefaultCapturePathPrefName[] =
     "ash.capture_mode.uses_default_capture_path";
 
 constexpr char kShareToYouTubeURL[] = "https://youtube.com/upload";
-
-// The name of a boolean pref that determines whether we can show the selfie
-// camera user nudge. When this pref is false, it means that we showed the
-// nudge at some point and the user interacted with the capture mode session UI
-// in such a way that the nudge no longer needs to be displayed again.
-constexpr char kCanShowCameraNudge[] = "ash.capture_mode.can_show_camera_nudge";
 
 // The name of a boolean pref that determines whether we can show the demo tools
 // user nudge. When this pref is false, it means that we showed the nudge at
@@ -170,35 +159,6 @@ bool IsVideoFileExtensionSupported(const base::FilePath& video_file_path) {
     }
   }
   return false;
-}
-
-// Returns the date extracted from |timestamp| as a string to be part of
-// captured file names. Note that naturally formatted dates includes slashes
-// (e.g. 2020/09/02), which will cause problems when used in file names since
-// slash is a path separator.
-std::string GetDateStr(const base::Time::Exploded& timestamp) {
-  return base::StringPrintf(kDateFmtStr, timestamp.year, timestamp.month,
-                            timestamp.day_of_month);
-}
-
-// Returns the time extracted from |timestamp| as a string to be part of
-// captured file names. Also note that naturally formatted times include colons
-// (e.g. 11:20 AM), which is restricted in file names in most file systems.
-// https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations.
-std::string GetTimeStr(const base::Time::Exploded& timestamp,
-                       bool use_24_hour) {
-  if (use_24_hour) {
-    return base::StringPrintf(k24HourTimeFmtStr, timestamp.hour,
-                              timestamp.minute, timestamp.second);
-  }
-
-  int hour = timestamp.hour % 12;
-  if (hour <= 0)
-    hour += 12;
-
-  std::string time = base::StringPrintf(kAmPmTimeFmtStr, hour, timestamp.minute,
-                                        timestamp.second);
-  return time.append(timestamp.hour >= 12 ? " PM" : " AM");
 }
 
 // Selects a file path for captured files (image/video) from `current_path` and
@@ -579,9 +539,7 @@ void CaptureModeController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
                                  /*default_value=*/base::FilePath());
   registry->RegisterBooleanPref(kUsesDefaultCapturePathPrefName,
                                 /*default_value=*/false);
-  registry->RegisterBooleanPref(features::AreCaptureModeDemoToolsEnabled()
-                                    ? kCanShowDemoToolsNudge
-                                    : kCanShowCameraNudge,
+  registry->RegisterBooleanPref(kCanShowDemoToolsNudge,
                                 /*default_value=*/true);
 }
 
@@ -737,16 +695,11 @@ bool CaptureModeController::CanShowUserNudge() const {
 
   auto* pref_service = session_controller->GetActivePrefService();
   DCHECK(pref_service);
-  return pref_service->GetBoolean(features::AreCaptureModeDemoToolsEnabled()
-                                      ? kCanShowDemoToolsNudge
-                                      : kCanShowCameraNudge);
+  return pref_service->GetBoolean(kCanShowDemoToolsNudge);
 }
 
 void CaptureModeController::DisableUserNudgeForever() {
-  GetActiveUserPrefService()->SetBoolean(
-      features::AreCaptureModeDemoToolsEnabled() ? kCanShowDemoToolsNudge
-                                                 : kCanShowCameraNudge,
-      false);
+  GetActiveUserPrefService()->SetBoolean(kCanShowDemoToolsNudge, false);
 }
 
 void CaptureModeController::SetUsesDefaultCaptureFolder(bool value) {
@@ -1769,12 +1722,12 @@ base::FilePath CaptureModeController::BuildImagePathForDisplay(
 base::FilePath CaptureModeController::BuildPathNoExtension(
     const char* const format_string,
     base::Time timestamp) const {
-  base::Time::Exploded exploded_time;
-  timestamp.LocalExplode(&exploded_time);
-
   return GetCurrentCaptureFolder().path.AppendASCII(base::StringPrintf(
-      format_string, GetDateStr(exploded_time).c_str(),
-      GetTimeStr(exploded_time, delegate_->Uses24HourFormat()).c_str()));
+      format_string,
+      base::UnlocalizedTimeFormatWithPattern(timestamp, "y-MM-dd").c_str(),
+      base::UnlocalizedTimeFormatWithPattern(
+          timestamp, delegate_->Uses24HourFormat() ? "HH.mm.ss" : "h.mm.ss a")
+          .c_str()));
 }
 
 base::FilePath CaptureModeController::GetFallbackFilePathFromFile(
@@ -2115,16 +2068,6 @@ void CaptureModeController::OnDlpRestrictionCheckedAtSessionInit(
     behavior_type = BehaviorType::kProjector;
   } else if (entry_type == CaptureModeEntryType::kGameDashboard) {
     CHECK(features::IsGameDashboardEnabled());
-    // TODO(minch): Get the window from game dashboard and make sure the window
-    // exists before starting the game capture session.
-    auto windows =
-        Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
-    if (windows.empty()) {
-      LOG(ERROR)
-          << "Please make sure there is a window selected for game capture.";
-      return;
-    }
-
     behavior_type = BehaviorType::kGameDashboard;
   }
 

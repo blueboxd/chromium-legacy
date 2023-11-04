@@ -6,7 +6,8 @@
 
 #include <stddef.h>
 
-#include "base/strings/string_piece.h"
+#include <string_view>
+
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest-message.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -588,7 +589,7 @@ TEST_F(URLUtilTest, TestDomainIs) {
 }
 
 namespace {
-absl::optional<std::string> CanonicalizeSpec(base::StringPiece spec,
+absl::optional<std::string> CanonicalizeSpec(std::string_view spec,
                                              bool trim_path_end) {
   std::string canonicalized;
   StdStringCanonOutput output(&canonicalized);
@@ -632,6 +633,89 @@ TEST_F(URLUtilTest, TestCanonicalizeIdempotencyWithLeadingControlCharacters) {
       ASSERT_TRUE(canonicalized);
       EXPECT_EQ(canonicalized, CanonicalizeSpec(*canonicalized, trim_path_end));
     }
+  }
+}
+
+TEST_F(URLUtilTest, TestHasInvalidURLEscapeSequences) {
+  struct TestCase {
+    const char* input;
+    bool is_invalid;
+  } cases[] = {
+      // Edge cases.
+      {"", false},
+      {"%", true},
+
+      // Single regular chars with no escaping are valid.
+      {"a", false},
+      {"g", false},
+      {"A", false},
+      {"G", false},
+      {":", false},
+      {"]", false},
+      {"\x00", false},      // ASCII 'NUL' char
+      {"\x01", false},      // ASCII 'SOH' char
+      {"\xC2\xA3", false},  // UTF-8 encoded '£'.
+
+      // Longer strings without escaping are valid.
+      {"Hello world", false},
+      {"Here: [%25] <-- a percent-encoded percent character.", false},
+
+      // Valid %-escaped sequences ('%' followed by two hex digits).
+      {"%00", false},
+      {"%20", false},
+      {"%02", false},
+      {"%ff", false},
+      {"%FF", false},
+      {"%0a", false},
+      {"%0A", false},
+      {"abc%FF", false},
+      {"%FFabc", false},
+      {"abc%FFabc", false},
+      {"hello %FF world", false},
+      {"%20hello%20world", false},
+      {"%25", false},
+      {"%25%25", false},
+      {"%250", false},
+      {"%259", false},
+      {"%25A", false},
+      {"%25F", false},
+      {"%0a:", false},
+
+      // '%' followed by a single character is never a valid sequence.
+      {"%%", true},
+      {"%2", true},
+      {"%a", true},
+      {"%A", true},
+      {"%g", true},
+      {"%G", true},
+      {"%:", true},
+      {"%[", true},
+      {"%F", true},
+      {"%\xC2\xA3", true},  //% followed by UTF-8 encoded '£'.
+
+      // String ends on a potential escape sequence but without two hex-digits
+      // is invalid.
+      {"abc%", true},
+      {"abc%%", true},
+      {"abc%%%", true},
+      {"abc%a", true},
+
+      // One hex and one non-hex digit is invalid.
+      {"%a:", true},
+      {"%:a", true},
+      {"%::", true},
+      {"%ag", true},
+      {"%ga", true},
+      {"%-1", true},
+      {"%1-", true},
+      {"%0\xC2\xA3", true},  // %0£.
+  };
+
+  for (TestCase test_case : cases) {
+    const char* input = test_case.input;
+    bool result = HasInvalidURLEscapeSequences(input);
+    EXPECT_EQ(test_case.is_invalid, result)
+        << "Invalid result for '" << input << "'";
   }
 }
 

@@ -24,7 +24,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/policy/cloud/policy_invalidation_util.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_invalidator.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/invalidation/impl/invalidator_registrar_with_memory.h"
@@ -36,6 +35,7 @@
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "components/policy/core/common/cloud/policy_invalidation_scope.h"
+#include "components/policy/core/common/cloud/policy_invalidation_util.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -437,12 +437,13 @@ bool CloudPolicyInvalidatorTestBase::CheckPolicyRefreshCount(int count) {
   }
 
   // Clear any non-invalidation refreshes which may be pending.
-  EXPECT_CALL(*client_, FetchPolicy()).Times(testing::AnyNumber());
+  EXPECT_CALL(*client_, FetchPolicy(testing::_)).Times(testing::AnyNumber());
   base::RunLoop().RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(client_);
 
   // Run the invalidator tasks then check for invalidation refreshes.
-  EXPECT_CALL(*client_, FetchPolicy()).Times(count);
+  EXPECT_CALL(*client_, FetchPolicy(PolicyFetchReason::kInvalidation))
+      .Times(count);
   task_runner_->RunUntilIdle();
   base::RunLoop().RunUntilIdle();
   return testing::Mock::VerifyAndClearExpectations(client_);

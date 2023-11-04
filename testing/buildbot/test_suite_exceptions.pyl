@@ -129,7 +129,7 @@
         # capacity has been deployed.
         'swarming': {
           'dimensions': {
-            'device_type': 'crosshatch',
+            'device_type': 'sailfish',
           },
           # TODO(crbug/1456515): Temporarily increase the shard by 1 for the surging number of tests.
           # Recover to original number of shards(4) after the bug is fixed.
@@ -319,7 +319,7 @@
         # capacity has been deployed.
         'swarming': {
           'dimensions': {
-            'device_type': 'crosshatch',
+            'device_type': 'sailfish',
           },
         },
       },
@@ -1052,11 +1052,6 @@
           'shards': 40,
         },
       },
-      'Linux ASan Tests (sandboxed)': {
-        'swarming': {
-          'shards': 30, # https://crbug.com/1103330
-        },
-      },
       'Linux CFI': {
         'swarming': {
           'shards': 20,  # https://crbug.com/1361973
@@ -1086,6 +1081,10 @@
         },
       },
       'Linux Tests': {
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        # crbug.com/1473501
+        'retry_only_failed_tests': True,
         'swarming': {
           'shards': 20,
         },
@@ -1095,6 +1094,10 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.wayland_browser_tests.filter',
         ],
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        # crbug.com/1473501
+        'retry_only_failed_tests': True,
         'swarming': {
           'shards': 20,
         },
@@ -1179,6 +1182,10 @@
         'args': [
           '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
         ],
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        # crbug.com/1473501
+        'retry_only_failed_tests': True,
         'swarming': {
           # This is for slow test execution that often becomes a critical path of
           # swarming jobs. crbug.com/868114
@@ -1217,6 +1224,10 @@
         },
       },
       'linux-chromeos-rel': {
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        # crbug.com/1473501
+        'retry_only_failed_tests': True,
         'swarming': {
           'shards': 60,
           'dimensions': {
@@ -1256,6 +1267,10 @@
         ],
       },
       'linux-lacros-tester-rel': {
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        # crbug.com/1473501
+        'retry_only_failed_tests': True,
         'swarming': {
           'shards': 20,
         },
@@ -1272,11 +1287,6 @@
         'args': [
           '--coverage-continuous-mode=1',
         ],
-      },
-      'mac-cr23-rel': {
-        'swarming': {
-          'shards': 20,
-        },
       },
       'mac-osxbeta-rel': {
         'swarming': {
@@ -1654,6 +1664,12 @@
   },
   'chrome_public_wpt': {
     'modifications': {
+      'android-chrome-pie-x86-wpt-android-specific': {
+        'args': [
+          '--test-list',
+          '../../third_party/blink/web_tests/TestLists/Default.txt'
+        ]
+      },
       'android-chrome-pie-x86-wpt-fyi-rel': {
         'args': [
           '--use-upstream-wpt',
@@ -1703,12 +1719,6 @@
     'remove_from': [
       # Timeout happens sometimes (crbug.com/951799).
       'Win10 Tests x64 (dbg)',
-    ],
-  },
-  'chromeos_integration_tests JACUZZI_PUBLIC_LKGM': {
-    # TODO(svenzheng): Re-enable after crrev.com/c/4833732.
-    'remove_from':[
-      'lacros-arm-generic-rel-skylab',
     ],
   },
   'components_browsertests': {
@@ -1854,15 +1864,14 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/cast-linux.content_browsertests.filter',
         ],
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        # crbug.com/1475852
+        'retry_only_failed_tests': True,
       },
       'Linux ASan LSan Tests (1)': {
         'swarming': {
           'shards': 24,
-        },
-      },
-      'Linux ASan Tests (sandboxed)': {
-        'swarming': {
-          'shards': 10, # https://crbug.com/1103330
         },
       },
       'Linux Chromium OS ASan LSan Tests (1)': {
@@ -1874,6 +1883,18 @@
         'swarming': {
           'shards': 30,
         },
+      },
+      'Linux Tests': {
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        # crbug.com/1475852
+        'retry_only_failed_tests': True,
+      },
+      'Linux Tests (Wayland)': {
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        # crbug.com/1475852
+        'retry_only_failed_tests': True,
       },
       'Mac ASan 64 Tests (1)': { # https://crbug.com/1200640
         'experiment_percentage': 100,
@@ -1889,6 +1910,10 @@
         },
       },
       'Mac13 Tests': {
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        # crbug.com/1475852
+        'retry_only_failed_tests': True,
         'swarming': {
           'shards': 12,
         },
@@ -1913,6 +1938,10 @@
         'args': [
           '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
         ],
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        # crbug.com/1475852
+        'retry_only_failed_tests': True,
       },
       'Win10 Tests x64 (dbg)': {
         'experiment_percentage': 100,
@@ -2021,6 +2050,10 @@
             'cores': '8',
           },
         },
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        # crbug.com/1475852
+        'retry_only_failed_tests': True,
       },
       'android-oreo-x86-rel': {
         'args': [
@@ -2038,6 +2071,10 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64.content_browsertests_coverage.filter',
         ],
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        # crbug.com/1475852
+        'retry_only_failed_tests': True,
         'swarming': {
           # TODO(crbug.com/1462745): Temporarily increase the shard by 5 for the surging number of tests.
           # Recover to default number of shards(20) after the bug is fixed.
@@ -2119,6 +2156,10 @@
         },
       },
       'linux-chromeos-rel': {
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        # crbug.com/1475852
+        'retry_only_failed_tests': True,
         'swarming': {
           'shards': 6,
         },
@@ -2145,6 +2186,12 @@
       'linux-lacros-tester-fyi-rel': {
         'experiment_percentage': 100,
       },
+      'linux-lacros-tester-rel': {
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        # crbug.com/1475852
+        'retry_only_failed_tests': True,
+      },
       'mac-code-coverage': {
         'args': [
           '--coverage-continuous-mode=1',
@@ -2170,7 +2217,8 @@
           '--test-launcher-jobs=3',
         ],
         'swarming': {
-          'shards': 16,
+          # ASAN bot is slow: https://crbug.com/1484550#c3
+          'shards': 32,
         },
       },
       'win-rel-cft': {
@@ -2354,51 +2402,12 @@
       'Android FYI Release (Pixel 2)',
     ],
   },
-  'cr23_browser_tests': {
+  'cr23_pixel_browser_tests': {
     'modifications': {
-      'linux-cr23-rel': {
-        'ci_only': None,
-        'experiment_percentage': None,
-      },
-      'mac-cr23-rel': {
-        'ci_only': None,
-        'experiment_percentage': None,
-      },
-      'win-cr23-rel': {
-        'ci_only': None,
-        'experiment_percentage': None,
-      },
-    }
-  },
-  'cr23_interactive_ui_tests': {
-    'modifications': {
-      'linux-cr23-rel': {
-        'ci_only': None,
-        'experiment_percentage': None,
-      },
-      'mac-cr23-rel': {
-        'ci_only': None,
-        'experiment_percentage': None,
-      },
-      'win-cr23-rel': {
-        'ci_only': None,
-        'experiment_percentage': None,
-      },
-    },
-  },
-  'cr23_views_unittests': {
-    'modifications': {
-      'linux-cr23-rel': {
-        'ci_only': None,
-        'experiment_percentage': None,
-      },
-      'mac-cr23-rel': {
-        'ci_only': None,
-        'experiment_percentage': None,
-      },
-      'win-cr23-rel': {
-        'ci_only': None,
-        'experiment_percentage': None,
+      'win-rel-cft': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/win.win-rel-cft.cr23_pixel_browser_tests.filter',
+        ],
       },
     },
   },
@@ -2641,9 +2650,9 @@
       },
     },
   },
-  'expected_color_pixel_validating_test KEVIN_PUBLIC_LKGM': {
+  'expected_color_pixel_validating_test JACUZZI_RELEASE_LKGM': {
     'modifications': {
-      'ChromeOS FYI Release Skylab (kevin)': {
+      'ChromeOS FYI Release Skylab (jacuzzi)': {
         'args': [
           # Skylab currently doesn't support use of LUCI_CONTEXT, so Gold cannot
           # automatically get the service account to authenticate with.
@@ -2855,9 +2864,6 @@
     },
   },
   'gl_tests_validating': {
-   'remove_from': [
-      'Android FYI Release (Nexus 5X)',
-    ],
     'modifications': {
       'Android FYI Release (Samsung A13)': {
         'args': [
@@ -3102,6 +3108,9 @@
         },
       },
       'Linux ASan LSan Tests (1)': {
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        'retry_only_failed_tests': True,
         # These are slow on the ASan trybot for some reason, crbug.com/1257927
         'swarming': {
           'shards': 12,
@@ -3126,6 +3135,9 @@
         },
       },
       'Linux TSan Tests': {
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        'retry_only_failed_tests': True,
         # These are slow on the TSan bots for some reason, crbug.com/1257927
         'swarming': {
           'shards': 32, # Adjusted for testing, see https://crbug.com/1179567
@@ -3193,6 +3205,9 @@
         },
       },
       'linux-chromeos-rel': {
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        'retry_only_failed_tests': True,
         'swarming': {
           'shards': 5,
         },
@@ -3223,6 +3238,11 @@
         'swarming': {
           'shards': 5,
         },
+      },
+      'linux-lacros-tester-rel': {
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        'retry_only_failed_tests': True,
       },
       'linux-rel-cft': {
         'args': [
@@ -3278,7 +3298,11 @@
       'win10-code-coverage': {
         'swarming': {
           'shards': 32,
-        },
+          'dimensions': {
+            'pool': 'chromium.tests.coverage',
+            'ssd': '1',
+          },
+        }
       },
     },
   },
@@ -3348,6 +3372,13 @@
         },
       },
     },
+  },
+  'lacros_all_tast_tests amd64-generic': {
+    'modifications': {
+      'lacros-amd64-generic-rel': {
+        'ci_only': True,
+      }
+    }
   },
   'lacros_chrome_browsertests_run_in_series': {
     'modifications': {
@@ -3907,9 +3938,9 @@
       },
     },
   },
-  'pixel_skia_gold_validating_test KEVIN_PUBLIC_LKGM': {
+  'pixel_skia_gold_validating_test JACUZZI_RELEASE_LKGM': {
     'modifications': {
-      'ChromeOS FYI Release Skylab (kevin)': {
+      'ChromeOS FYI Release Skylab (jacuzzi)': {
         'args': [
           # Skylab currently doesn't support use of LUCI_CONTEXT, so Gold cannot
           # automatically get the service account to authenticate with.
@@ -4224,6 +4255,12 @@
   },
   'system_webview_wpt': {
     'modifications': {
+      'android-chrome-pie-x86-wpt-android-specific': {
+        'args': [
+          '--test-list',
+          '../../third_party/blink/web_tests/TestLists/Default.txt'
+        ]
+      },
       'android-webview-pie-x86-wpt-fyi-rel': {
         'args': [
           '--use-upstream-wpt',
@@ -4415,6 +4452,9 @@
     ],
     'modifications': {
       'Linux ASan LSan Tests (1)': {
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        'retry_only_failed_tests': True,
         # These are slow on the ASAN trybot for some reason.
         # crbug.com/1257927
         'swarming': {
@@ -4440,11 +4480,19 @@
           'shards': 2,
         },
       },
+      'Linux Tests': {
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        'retry_only_failed_tests': True,
+      },
       # https://crbug.com/1184127
       'Linux Tests (Wayland)': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.unit_tests_wayland.filter',
         ],
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        'retry_only_failed_tests': True,
       },
       'Mac13 Tests': {
         'swarming': {
@@ -4482,6 +4530,9 @@
         },
       },
       'linux-chromeos-rel': {
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        'retry_only_failed_tests': True,
         'swarming': {
           'shards': 2,
         },
@@ -4498,6 +4549,11 @@
           'shards': 2,
         },
       },
+      'linux-lacros-tester-rel': {
+        # Only retry the individual failed tests instead of rerunning entire
+        # shards.
+        'retry_only_failed_tests': True,
+      },
       'linux-rel-dev': {
         'swarming': {
           'dimensions': {
@@ -4509,6 +4565,12 @@
         'args': [
           '--top-chrome-touch-ui=disabled',
         ],
+      },
+      'win-asan': {
+        'swarming': {
+          # ASAN bot is slow: https://crbug.com/1484550#c4
+          'shards': 4,
+        },
       },
       'win10-code-coverage': {
         'swarming': {
@@ -4884,7 +4946,7 @@
             # which is used by Dawn Mac x64 Release (Intel).
             'cpu': 'x86-64',
             'gpu': '8086:3e9b',
-            'os': 'Mac-13.3.1|Mac-13.5',
+            'os': 'Mac-13.5',
             'display_attached': '1',
           },
         },
@@ -4954,7 +5016,7 @@
             # which is used by Dawn Mac x64 Release (Intel).
             'cpu': 'x86-64',
             'gpu': '8086:3e9b',
-            'os': 'Mac-13.3.1|Mac-13.5',
+            'os': 'Mac-13.5',
             'display_attached': '1',
           },
         },
@@ -5069,7 +5131,7 @@
         # capacity has been deployed.
         'swarming': {
           'dimensions': {
-            'device_type': 'crosshatch',
+            'device_type': 'sailfish',
           },
         },
       },
@@ -5082,6 +5144,15 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.webview_cts_tests.filter',
         ],
+      },
+      'android-pie-arm64-rel': {
+        # TODO(crbug.com/1111436): Move this back to walleye if/when additional
+        # capacity has been deployed.
+        'swarming': {
+          'dimensions': {
+            'device_type': 'sailfish',
+          },
+        },
       },
       # Keep this same as android-nougat-x86-rel above
       'android-x86-code-coverage': {

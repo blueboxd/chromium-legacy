@@ -48,7 +48,7 @@
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
-#include "third_party/freetype/src/src/autofit/afws-decl.h"
+#include "third_party/freetype_buildflags.h"
 #include "third_party/skia/include/core/SkFontMetrics.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkTypeface.h"
@@ -57,12 +57,22 @@
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "v8/include/v8.h"
 
+#if !BUILDFLAG(USE_SYSTEM_FREETYPE)
+#include "third_party/freetype/src/src/autofit/afws-decl.h"
+#endif
+
 namespace blink {
 
 constexpr float kSmallCapsFontSizeMultiplier = 0.7f;
 constexpr float kEmphasisMarkFontSizeMultiplier = 0.5f;
+
+#if !BUILDFLAG(USE_SYSTEM_FREETYPE)
 constexpr int32_t kFontObjectsMemoryConsumption =
     std::max(sizeof(AF_LatinMetricsRec), sizeof(AF_CJKMetricsRec));
+#else
+// sizeof(AF_LatinMetricsRec) = 2128
+constexpr int32_t kFontObjectsMemoryConsumption = 2128;
+#endif
 
 SimpleFontData::SimpleFontData(const FontPlatformData& platform_data,
                                scoped_refptr<CustomFontData> custom_data,
@@ -448,6 +458,26 @@ LayoutUnit SimpleFontData::VerticalPosition(
   }
   NOTREACHED();
   return LayoutUnit();
+}
+
+const HanKerning::FontData& SimpleFontData::HanKerningData(
+    const LayoutLocale& locale,
+    bool is_horizontal) const {
+  for (const HanKerningCacheEntry& entry : han_kerning_cache_) {
+    if (entry.locale == &locale && entry.is_horizontal == is_horizontal) {
+      return entry.data;
+    }
+  }
+
+  // The cache didn't hit. Shift the list and create a new entry at `[0]`.
+  for (wtf_size_t i = 1; i < std::size(han_kerning_cache_); ++i) {
+    han_kerning_cache_[i] = std::move(han_kerning_cache_[i - 1]);
+  }
+  HanKerningCacheEntry& new_entry = han_kerning_cache_[0];
+  new_entry = {.locale = &locale,
+               .is_horizontal = is_horizontal,
+               .data = HanKerning::FontData(*this, locale, is_horizontal)};
+  return new_entry.data;
 }
 
 gfx::RectF SimpleFontData::PlatformBoundsForGlyph(Glyph glyph) const {

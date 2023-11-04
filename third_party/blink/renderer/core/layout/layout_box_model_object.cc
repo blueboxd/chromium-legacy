@@ -92,16 +92,6 @@ bool NeedsAnchorPositionScrollData(Element& element,
 LayoutBoxModelObject::LayoutBoxModelObject(ContainerNode* node)
     : LayoutObject(node) {}
 
-bool LayoutBoxModelObject::UsesCompositedScrolling() const {
-  NOT_DESTROYED();
-
-  // TODO(crbug.com/1414885): We may need to redefine this function for
-  // CompositeScrollAfterPaint.
-  const auto* properties = FirstFragment().PaintProperties();
-  return properties && properties->ScrollTranslation() &&
-         properties->ScrollTranslation()->HasDirectCompositingReasons();
-}
-
 LayoutBoxModelObject::~LayoutBoxModelObject() = default;
 
 void LayoutBoxModelObject::WillBeDestroyed() {
@@ -451,15 +441,8 @@ void LayoutBoxModelObject::UpdateFromStyle() {
       !BackgroundTransfersToView() &&
       StyleRef().HasFixedAttachmentBackgroundImage();
   SetIsBackgroundAttachmentFixedObject(is_background_attachment_fixed_object);
-  constexpr wtf_size_t kMaxCompositedBackgroundAttachmentFixed = 20;
   SetCanCompositeBackgroundAttachmentFixed(
       is_background_attachment_fixed_object &&
-      // Too many composited background-attachment:fixed hurt performance, so
-      // we want to avoid that with this heuristic (which doesn't need to be
-      // accurate so we simply check the number of all
-      // background-attachment:fixed objects).
-      GetFrameView()->BackgroundAttachmentFixedObjects().size() <=
-          kMaxCompositedBackgroundAttachmentFixed &&
       ComputeCanCompositeBackgroundAttachmentFixed());
 }
 

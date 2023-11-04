@@ -17,7 +17,7 @@
 #import "components/autofill/core/common/autofill_switches.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/variations/variations_associated_data.h"
-#import "ios/chrome/browser/browsing_data/browsing_data_features.h"
+#import "ios/chrome/browser/browsing_data/model/browsing_data_features.h"
 #import "ios/chrome/browser/flags/chrome_switches.h"
 #import "ios/chrome/browser/safety_check/ios_chrome_safety_check_manager_constants.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -41,6 +41,12 @@ NSString* const kSafetyCheckPasswordStateOverride =
     @"SafetyCheckPasswordStateOverride";
 NSString* const kSafetyCheckSafeBrowsingStateOverride =
     @"SafetyCheckSafeBrowsingStateOverride";
+NSString* const kSafetyCheckWeakPasswordsCountOverride =
+    @"SafetyCheckWeakPasswordsCountOverride";
+NSString* const kSafetyCheckReusedPasswordsCountOverride =
+    @"SafetyCheckReusedPasswordsCountOverride";
+NSString* const kSafetyCheckCompromisedPasswordsCountOverride =
+    @"SafetyCheckCompromisedPasswordsCountOverride";
 NSString* const kSimulatePostDeviceRestore = @"SimulatePostDeviceRestore";
 BASE_FEATURE(kEnableThirdPartyKeyboardWorkaround,
              "EnableThirdPartyKeyboardWorkaround",
@@ -175,6 +181,39 @@ absl::optional<SafeBrowsingSafetyCheckState> GetSafeBrowsingSafetyCheckState() {
           stringForKey:kSafetyCheckSafeBrowsingStateOverride]);
 
   return SafeBrowsingSafetyCheckStateForName(state);
+}
+
+absl::optional<int> GetSafetyCheckWeakPasswordsCount() {
+  int weakPasswordsCount = [[NSUserDefaults standardUserDefaults]
+      integerForKey:kSafetyCheckWeakPasswordsCountOverride];
+
+  if (weakPasswordsCount == 0) {
+    return absl::nullopt;
+  }
+
+  return weakPasswordsCount;
+}
+
+absl::optional<int> GetSafetyCheckReusedPasswordsCount() {
+  int reusedPasswordsCount = [[NSUserDefaults standardUserDefaults]
+      integerForKey:kSafetyCheckReusedPasswordsCountOverride];
+
+  if (reusedPasswordsCount == 0) {
+    return absl::nullopt;
+  }
+
+  return reusedPasswordsCount;
+}
+
+absl::optional<int> GetSafetyCheckCompromisedPasswordsCount() {
+  int compromisedPasswordsCount = [[NSUserDefaults standardUserDefaults]
+      integerForKey:kSafetyCheckCompromisedPasswordsCountOverride];
+
+  if (compromisedPasswordsCount == 0) {
+    return absl::nullopt;
+  }
+
+  return compromisedPasswordsCount;
 }
 
 std::string GetSegmentForForcedDeviceSwitcherExperience() {

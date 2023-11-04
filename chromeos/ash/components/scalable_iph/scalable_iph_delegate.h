@@ -43,6 +43,12 @@ class ScalableIphDelegate {
     // This method is called only if there is a change in a value. Initial value
     // is expected to be `false`.
     virtual void OnHasSavedPrintersChanged(bool has_saved_printers) {}
+
+    // Called when there is a change in eligibility of phone hub onboarding.
+    // This method is called only if there is a change in a value. Initial value
+    // is expected to be `false`.
+    virtual void OnPhoneHubOnboardingEligibleChanged(
+        bool phonehub_onboarding_eligible) {}
   };
 
   // Have a virtual destructor as we can put `ScalableIphDelegate` in
@@ -100,6 +106,16 @@ class ScalableIphDelegate {
     kWallpaper,
   };
 
+  enum class NotificationIcon {
+    kDefault,
+    kRedeem,
+  };
+
+  enum class NotificationSummaryText {
+    kNone,
+    kWelcomeTips,
+  };
+
   struct NotificationParams {
     NotificationParams();
     NotificationParams(const NotificationParams&);
@@ -110,6 +126,10 @@ class ScalableIphDelegate {
     std::string notification_id;
     std::string title;
     std::string text;
+    std::string source = kCustomNotificationSourceTextValueDefault;
+    NotificationIcon icon = NotificationIcon::kDefault;
+    NotificationSummaryText summary_text =
+        NotificationSummaryText::kWelcomeTips;
     Button button;
 
     bool operator==(const NotificationParams& params) const = default;
@@ -150,6 +170,23 @@ class ScalableIphDelegate {
 
 std::ostream& operator<<(std::ostream& out,
                          ScalableIphDelegate::SessionState session_state);
+std::ostream& operator<<(std::ostream& out, ScalableIphDelegate::Action action);
+std::ostream& operator<<(std::ostream& out, ScalableIphDelegate::Button button);
+std::ostream& operator<<(std::ostream& out,
+                         ScalableIphDelegate::BubbleIcon bubble_icon);
+std::ostream& operator<<(std::ostream& out,
+                         ScalableIphDelegate::BubbleParams bubble_params);
+std::ostream& operator<<(
+    std::ostream& out,
+    ScalableIphDelegate::NotificationImageType notification_image_type);
+std::ostream& operator<<(
+    std::ostream& out,
+    ScalableIphDelegate::NotificationIcon notification_icon);
+std::ostream& operator<<(
+    std::ostream& out,
+    ScalableIphDelegate::NotificationSummaryText summary_text);
+std::ostream& operator<<(std::ostream& out,
+                         ScalableIphDelegate::NotificationParams params);
 
 }  // namespace scalable_iph
 

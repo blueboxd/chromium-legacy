@@ -15,6 +15,7 @@
 #include "base/task/thread_pool.h"
 #include "base/uuid.h"
 #include "build/build_config.h"
+#include "components/file_access/scoped_file_access_delegate.h"
 #include "content/browser/file_system_access/features.h"
 #include "content/browser/file_system_access/file_system_access_access_handle_host_impl.h"
 #include "content/browser/file_system_access/file_system_access_error.h"
@@ -111,6 +112,14 @@ base::File::Error CreateCowSwapFile(const storage::FileSystemURL& source_url,
 }
 #endif  // BUILDFLAG(IS_MAC)
 
+file_access::ScopedFileAccessDelegate::RequestFilesAccessIOCallback
+CreateFileAccessCallback(const GURL& destination) {
+  if (auto* file_access = file_access::ScopedFileAccessDelegate::Get()) {
+    return file_access->CreateFileAccessCallback(destination);
+  }
+  return base::NullCallback();
+}
+
 }  // namespace
 
 FileSystemAccessFileHandleImpl::FileSystemAccessFileHandleImpl(
@@ -159,13 +168,14 @@ void FileSystemAccessFileHandleImpl::AsBlob(AsBlobCallback callback) {
 void FileSystemAccessFileHandleImpl::CreateFileWriter(
     bool keep_existing_data,
     bool auto_close,
+    blink::mojom::FileSystemAccessWritableFileStreamLockMode mode,
     CreateFileWriterCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   RunWithWritePermission(
       base::BindOnce(&FileSystemAccessFileHandleImpl::CreateFileWriterImpl,
-                     weak_factory_.GetWeakPtr(), keep_existing_data,
-                     auto_close),
+                     weak_factory_.GetWeakPtr(), keep_existing_data, auto_close,
+                     mode),
       base::BindOnce([](blink::mojom::FileSystemAccessErrorPtr result,
                         CreateFileWriterCallback callback) {
         std::move(callback).Run(std::move(result), mojo::NullRemote());
@@ -477,16 +487,18 @@ void FileSystemAccessFileHandleImpl::DidGetMetaDataForBlob(
 
   GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE,
-      base::BindOnce(&ChromeBlobStorageContext::CreateFileSystemBlob,
-                     base::WrapRefCounted(manager()->blob_context()),
-                     base::WrapRefCounted(file_system_context()),
-                     std::move(blob_receiver), url(), std::move(uuid),
-                     std::move(content_type), info.size, info.last_modified));
+      base::BindOnce(
+          &ChromeBlobStorageContext::CreateFileSystemBlobWithFileAccess,
+          base::WrapRefCounted(manager()->blob_context()),
+          base::WrapRefCounted(file_system_context()), std::move(blob_receiver),
+          url(), std::move(uuid), std::move(content_type), info.size,
+          info.last_modified, CreateFileAccessCallback(context().url)));
 }
 
 void FileSystemAccessFileHandleImpl::CreateFileWriterImpl(
     bool keep_existing_data,
     bool auto_close,
+    blink::mojom::FileSystemAccessWritableFileStreamLockMode mode,
     CreateFileWriterCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(GetWritePermissionStatus(),
@@ -499,18 +511,19 @@ void FileSystemAccessFileHandleImpl::CreateFileWriterImpl(
         base::BindOnce(&HasWritePermission, url().path()),
         base::BindOnce(
             &FileSystemAccessFileHandleImpl::DidVerifyHasWritePermissions,
-            weak_factory_.GetWeakPtr(), keep_existing_data, auto_close,
+            weak_factory_.GetWeakPtr(), keep_existing_data, auto_close, mode,
             std::move(callback)));
     return;
   }
 
-  DidVerifyHasWritePermissions(keep_existing_data, auto_close,
+  DidVerifyHasWritePermissions(keep_existing_data, auto_close, mode,
                                std::move(callback), /*can_write=*/true);
 }
 
 void FileSystemAccessFileHandleImpl::DidVerifyHasWritePermissions(
     bool keep_existing_data,
     bool auto_close,
+    blink::mojom::FileSystemAccessWritableFileStreamLockMode mode,
     CreateFileWriterCallback callback,
     bool can_write) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -523,7 +536,12 @@ void FileSystemAccessFileHandleImpl::DidVerifyHasWritePermissions(
     return;
   }
 
-  auto lock = manager()->TakeLock(url(), manager()->GetWFSSiloedLockType());
+  FileSystemAccessLockManager::LockType lock_type =
+      mode == blink::mojom::FileSystemAccessWritableFileStreamLockMode::kSiloed
+          ? manager()->GetWFSSiloedLockType()
+          : manager()->GetExclusiveLockType();
+
+  auto lock = manager()->TakeLock(url(), lock_type);
   if (!lock) {
     std::move(callback).Run(
         file_system_access_error::FromStatus(

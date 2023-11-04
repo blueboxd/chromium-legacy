@@ -44,7 +44,7 @@ TEST(FontPlatformDataMacTest, VariableOpticalSizingThreshold) {
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 72));
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 96));
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 97));
-  } else if (@available(macOS 10.15, *)) {
+  } else {
     EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 6));
     EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 12));
     EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 17));
@@ -57,19 +57,6 @@ TEST(FontPlatformDataMacTest, VariableOpticalSizingThreshold) {
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 72));
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 96));
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 97));
-  } else {
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 6));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 12));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 17));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 18));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 19));
-    EXPECT_FALSE(
-        VariableAxisChangeEffective(system_font.get(), kOpszTag, 19.8999));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 20));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 24));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 72));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 96));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 97));
   }
 
   // Just smaller than the switch-over size in 10.15, which is 19.9.
@@ -87,7 +74,7 @@ TEST(FontPlatformDataMacTest, VariableOpticalSizingThreshold) {
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 72));
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 96));
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 97));
-  } else if (@available(macOS 10.15, *)) {
+  } else {
     EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 6));
     EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 12));
     EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 17));
@@ -100,19 +87,6 @@ TEST(FontPlatformDataMacTest, VariableOpticalSizingThreshold) {
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 72));
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 96));
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 97));
-  } else {
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 6));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 12));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 17));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 18));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 19));
-    EXPECT_FALSE(
-        VariableAxisChangeEffective(system_font.get(), kOpszTag, 19.8999));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 20));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 24));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 72));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 96));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 97));
   }
 
   // Just larger than the switch-over size in 10.15, which is 19.9.
@@ -130,7 +104,7 @@ TEST(FontPlatformDataMacTest, VariableOpticalSizingThreshold) {
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 72));
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 96));
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 97));
-  } else if (@available(macOS 10.15, *)) {
+  } else {
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 6));
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 12));
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 17));
@@ -138,19 +112,6 @@ TEST(FontPlatformDataMacTest, VariableOpticalSizingThreshold) {
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 19));
     EXPECT_TRUE(
         VariableAxisChangeEffective(system_font.get(), kOpszTag, 19.8999));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 20));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 24));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 72));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 96));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 97));
-  } else {
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 6));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 12));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 17));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 18));
-    EXPECT_FALSE(
-        VariableAxisChangeEffective(system_font.get(), kOpszTag, 19.8999));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 19));
     EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 20));
     EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 24));
     EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 72));
@@ -173,7 +134,7 @@ TEST(FontPlatformDataMacTest, VariableOpticalSizingThreshold) {
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 72));
     EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 96));
     EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 97));
-  } else if (@available(macOS 10.15, *)) {
+  } else {
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 6));
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 12));
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 17));
@@ -181,19 +142,6 @@ TEST(FontPlatformDataMacTest, VariableOpticalSizingThreshold) {
     EXPECT_TRUE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 19));
     EXPECT_TRUE(
         VariableAxisChangeEffective(system_font.get(), kOpszTag, 19.8999));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 20));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 24));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 72));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 96));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 97));
-  } else {
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 6));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 12));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 17));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 18));
-    EXPECT_FALSE(
-        VariableAxisChangeEffective(system_font.get(), kOpszTag, 19.8999));
-    EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 19));
     EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 20));
     EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 24));
     EXPECT_FALSE(VariableAxisChangeEffective(system_font.get(), kOpszTag, 72));

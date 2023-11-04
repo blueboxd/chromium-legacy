@@ -175,14 +175,7 @@ ScanningUI::ScanningUI(
 
   const auto resources =
       base::make_span(kAshScanningAppResources, kAshScanningAppResourcesSize);
-  SetUpWebUIDataSource(html_source, resources, IDR_SCANNING_APP_INDEX_HTML);
-
-  html_source->AddResourcePath("scanning.mojom-lite.js",
-                               IDR_SCANNING_MOJO_LITE_JS);
-  html_source->AddResourcePath("file_path.mojom-lite.js",
-                               IDR_SCANNING_APP_FILE_PATH_MOJO_LITE_JS);
-  html_source->AddResourcePath("accessibility_features.mojom-lite.js",
-                               IDR_ACCESSIBILITY_FEATURES_MOJO_LITE_JS);
+  SetUpWebUIDataSource(html_source, resources, IDR_ASH_SCANNING_APP_INDEX_HTML);
 
   AddScanningAppStrings(html_source);
 

@@ -19,24 +19,15 @@ class TouchIdContext;
 
 class DeviceAuthenticatorMac : public ChromeDeviceAuthenticatorCommon {
  public:
-  // Creates an instance of DeviceAuthenticatorWin for testing purposes
-  // only.
-  static scoped_refptr<DeviceAuthenticatorMac> CreateForTesting(
-      std::unique_ptr<AuthenticatorMacInterface> authenticator);
+  DeviceAuthenticatorMac(
+      std::unique_ptr<AuthenticatorMacInterface> authenticator,
+      DeviceAuthenticatorProxy* proxy,
+      const device_reauth::DeviceAuthParams& params);
+  ~DeviceAuthenticatorMac() override;
 
   bool CanAuthenticateWithBiometrics() override;
 
   bool CanAuthenticateWithBiometricOrScreenLock() override;
-
-  // Triggers an authentication flow based on biometrics, with the
-  // screen lock as fallback. Note: this only supports one authentication
-  // request at a time.
-  // |use_last_valid_auth| if set to false, ignores the grace 60 seconds
-  // period between the last valid authentication and the current
-  // authentication, and re-invokes system authentication.
-  void Authenticate(device_reauth::DeviceAuthRequester requester,
-                    AuthenticateCallback callback,
-                    bool use_last_valid_auth) override;
 
   // Triggers an OS-level authentication flow.
   // If biometrics are available, it creates touchIdAuthentication object,
@@ -51,14 +42,9 @@ class DeviceAuthenticatorMac : public ChromeDeviceAuthenticatorCommon {
   // Should be called by the object using the authenticator if the purpose
   // for which the auth was requested becomes obsolete or the object is
   // destroyed.
-  void Cancel(device_reauth::DeviceAuthRequester requester) override;
+  void Cancel() override;
 
  private:
-  friend class ChromeDeviceAuthenticatorFactory;
-  explicit DeviceAuthenticatorMac(
-      std::unique_ptr<AuthenticatorMacInterface> authenticator);
-  ~DeviceAuthenticatorMac() override;
-
   // Called when the authentication completes with the result |success|.
   void OnAuthenticationCompleted(bool success);
 

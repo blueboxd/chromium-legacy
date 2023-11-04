@@ -48,6 +48,10 @@ std::string StringFromValue(const base::Value& value) {
   return value_string;
 }
 
+std::string BoolToString(const bool value) {
+  return value ? "true" : "false";
+}
+
 }  // namespace
 
 class IntegrationTestCommandsSystem : public IntegrationTestCommands {
@@ -74,8 +78,16 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
 
   void Install() const override { RunCommand("install"); }
 
-  void InstallUpdaterAndApp(const std::string& app_id) const override {
-    RunCommand("install_updater_and_app", {Param("app_id", app_id)});
+  void InstallUpdaterAndApp(
+      const std::string& app_id,
+      const bool is_silent_install,
+      const std::string& tag,
+      const std::string& child_window_text_to_find) const override {
+    RunCommand("install_updater_and_app",
+               {Param("app_id", app_id),
+                Param("is_silent_install", BoolToString(is_silent_install)),
+                Param("tag", tag),
+                Param("child_window_text_to_find", child_window_text_to_find)});
   }
 
   void ExpectInstalled() const override { RunCommand("expect_installed"); }
@@ -112,7 +124,7 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
 
   void SetMachineManaged(bool is_managed_device) const override {
     RunCommand("set_machine_managed",
-               {Param("managed", is_managed_device ? "true" : "false")});
+               {Param("managed", BoolToString(is_managed_device))});
   }
 
   void ExpectSelfUpdateSequence(ScopedServer* test_server) const override {
@@ -223,6 +235,11 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     RunCommand("expect_not_registered", {Param("app_id", app_id)});
   }
 
+  void ExpectAppTag(const std::string& app_id,
+                    const std::string& tag) const override {
+    RunCommand("expect_app_tag", {Param("app_id", app_id), Param("tag", tag)});
+  }
+
   void ExpectAppVersion(const std::string& app_id,
                         const base::Version& version) const override {
     RunCommand("expect_app_version", {Param("app_id", app_id),
@@ -249,7 +266,7 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
 
   void RunServer(int expected_exit_code, bool internal) const override {
     RunCommand("run_server",
-               {Param("internal", internal ? "true" : "false"),
+               {Param("internal", BoolToString(internal)),
                 Param("exit_code", base::NumberToString(expected_exit_code))});
   }
 
@@ -348,6 +365,7 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
   void RunHandoff(const std::string& app_id) const override {
     RunCommand("run_handoff", {Param("app_id", app_id)});
   }
+#endif  // BUILDFLAG(IS_WIN)
 
   void InstallAppViaService(
       const std::string& app_id,
@@ -358,7 +376,6 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
          Param("expected_final_values",
                StringFromValue(base::Value(expected_final_values.Clone())))});
   }
-#endif  // BUILDFLAG(IS_WIN)
 
   base::FilePath GetDifferentUserPath() const override {
     // On POSIX, the path may be chowned; so do not use a file not owned by the
@@ -379,10 +396,9 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
                {Param("app_id", app_id),
                 Param("install_data_index", install_data_index),
                 Param("same_version_update_allowed",
-                      policy_same_version_update ==
-                              UpdateService::PolicySameVersionUpdate::kAllowed
-                          ? "true"
-                          : "false")});
+                      BoolToString(
+                          policy_same_version_update ==
+                          UpdateService::PolicySameVersionUpdate::kAllowed))});
   }
 
   void SetupFakeLegacyUpdater() const override {
@@ -406,6 +422,12 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
         {Param("app_id", app_id), Param("version", version.GetString())});
   }
 
+  void SetLastChecked(const base::Time& time) const override {
+    RunCommand(
+        "set_last_checked",
+        {Param("time", base::NumberToString(time.ToJsTimeIgnoringNull()))});
+  }
+
   void ExpectLastChecked() const override { RunCommand("expect_last_checked"); }
 
   void ExpectLastStarted() const override { RunCommand("expect_last_started"); }
@@ -417,17 +439,21 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
   void RunOfflineInstall(bool is_legacy_install,
                          bool is_silent_install) override {
     RunCommand("run_offline_install",
-               {Param("legacy_install", is_legacy_install ? "true" : "false"),
-                Param("silent", is_silent_install ? "true" : "false")});
+               {Param("legacy_install", BoolToString(is_legacy_install)),
+                Param("silent", BoolToString(is_silent_install))});
   }
 
   void RunOfflineInstallOsNotSupported(bool is_legacy_install,
                                        bool is_silent_install) override {
     RunCommand("run_offline_install_os_not_supported",
-               {Param("legacy_install", is_legacy_install ? "true" : "false"),
-                Param("silent", is_silent_install ? "true" : "false")});
+               {Param("legacy_install", BoolToString(is_legacy_install)),
+                Param("silent", BoolToString(is_silent_install))});
   }
 
+  void DMPushEnrollmentToken(const std::string& enrollment_token) override {
+    RunCommand("dm_push_enrollment_token",
+               {Param("enrollment_token", enrollment_token)});
+  }
   void DMDeregisterDevice() override { RunCommand("dm_deregister_device"); }
   void DMCleanup() override { RunCommand("dm_cleanup"); }
 

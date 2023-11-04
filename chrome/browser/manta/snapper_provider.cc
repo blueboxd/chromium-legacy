@@ -10,6 +10,8 @@
 
 #include "base/functional/bind.h"
 #include "base/time/time.h"
+#include "chrome/browser/manta/manta_service_callbacks.h"
+#include "chrome/browser/manta/proto/manta.pb.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/endpoint_fetcher/endpoint_fetcher.h"
 #include "components/signin/public/base/consent_level.h"
@@ -23,7 +25,7 @@ namespace {
 
 constexpr char kOauthConsumerName[] = "manta_snapper";
 constexpr char kHttpMethod[] = "POST";
-constexpr char kHttpContentType[] = "application/json; charset=UTF-8";
+constexpr char kHttpContentType[] = "application/x-protobuf";
 constexpr char kEndpointUrl[] =
     "https://autopush-aratea-pa.sandbox.googleapis.com/generate";
 constexpr char kOAuthScope[] = "https://www.googleapis.com/auth/mdi.aratea";
@@ -39,22 +41,18 @@ SnapperProvider::SnapperProvider(
 
 SnapperProvider::~SnapperProvider() = default;
 
-void SnapperProvider::Call(const std::string& input,
-                           EndpointFetcherCallback done_callback) {
-  std::unique_ptr<EndpointFetcher> fetcher =
-      CreateEndpointFetcher(GURL{kEndpointUrl}, {kOAuthScope}, input);
+void SnapperProvider::Call(const manta::proto::Request& request,
+                           MantaProtoResponseCallback done_callback) {
+  std::string serialized_request;
+  request.SerializeToString(&serialized_request);
+
+  std::unique_ptr<EndpointFetcher> fetcher = CreateEndpointFetcher(
+      GURL{kEndpointUrl}, {kOAuthScope}, serialized_request);
 
   EndpointFetcher* const fetcher_ptr = fetcher.get();
-  fetcher_ptr->Fetch(base::BindOnce(
-      &SnapperProvider::HandleResponse, weak_ptr_factory_.GetWeakPtr(),
-      std::move(done_callback), std::move(fetcher)));
-}
-
-void SnapperProvider::HandleResponse(
-    EndpointFetcherCallback done_callback,
-    std::unique_ptr<EndpointFetcher> /* endpoint_fetcher */,
-    std::unique_ptr<EndpointResponse> response) {
-  std::move(done_callback).Run(std::move(response));
+  fetcher_ptr->Fetch(base::BindOnce(&OnEndpointFetcherComplete,
+                                    std::move(done_callback),
+                                    std::move(fetcher)));
 }
 
 std::unique_ptr<EndpointFetcher> SnapperProvider::CreateEndpointFetcher(

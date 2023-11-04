@@ -109,10 +109,6 @@
 #include "net/ssl/client_cert_store_mac.h"
 #endif  // BUILDFLAG(IS_MAC)
 
-#if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
-#include "chrome/browser/net/trial_comparison_cert_verifier_controller.h"
-#endif
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/constants.h"
 #endif
@@ -248,19 +244,6 @@ void Update3pcdSettings(Profile* profile) {
       settings));
 }
 
-void Update3pcdMetadataGrantsSettings(Profile* profile) {
-  ContentSettingsForOneType settings =
-      HostContentSettingsMapFactory::GetForProfile(profile)
-          ->GetSettingsForOneType(ContentSettingsType::TPCD_METADATA_GRANTS);
-  profile->ForEachLoadedStoragePartition(base::BindRepeating(
-      [](ContentSettingsForOneType settings,
-         content::StoragePartition* storage_partition) {
-        storage_partition->GetCookieManagerForBrowserProcess()
-            ->SetContentSettingsFor3pcdMetadataGrants(settings);
-      },
-      settings));
-}
-
 // `kPermissionStorageAccessAPI` enables feature: Storage Access API with
 // Prompts (https://chromestatus.com/feature/5085655327047680). StorageAccessAPI
 // is considered enabled when either feature is enabled (by different field
@@ -350,10 +333,6 @@ ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
   // When any of the following CT preferences change, we schedule an update
   // to aggregate the actual update using a |ct_policy_update_timer_|.
   pref_change_registrar_.Add(
-      certificate_transparency::prefs::kCTRequiredHosts,
-      base::BindRepeating(&ProfileNetworkContextService::ScheduleUpdateCTPolicy,
-                          base::Unretained(this)));
-  pref_change_registrar_.Add(
       certificate_transparency::prefs::kCTExcludedHosts,
       base::BindRepeating(&ProfileNetworkContextService::ScheduleUpdateCTPolicy,
                           base::Unretained(this)));
@@ -431,9 +410,8 @@ void ProfileNetworkContextService::UpdateAdditionalCertificates() {
 
 void ProfileNetworkContextService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(
-      embedder_support::kAlternateErrorPagesEnabled, true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(embedder_support::kAlternateErrorPagesEnabled,
+                                true);
   registry->RegisterBooleanPref(prefs::kQuicAllowed, true);
   registry->RegisterBooleanPref(prefs::kGloballyScopeHTTPAuthCacheEnabled,
                                 false);
@@ -534,8 +512,6 @@ void ProfileNetworkContextService::UpdateReferrersEnabled() {
 
 network::mojom::CTPolicyPtr ProfileNetworkContextService::GetCTPolicy() {
   auto* prefs = profile_->GetPrefs();
-  const base::Value::List& ct_required =
-      prefs->GetList(certificate_transparency::prefs::kCTRequiredHosts);
   const base::Value::List& ct_excluded =
       prefs->GetList(certificate_transparency::prefs::kCTExcludedHosts);
   const base::Value::List& ct_excluded_spkis =
@@ -543,14 +519,13 @@ network::mojom::CTPolicyPtr ProfileNetworkContextService::GetCTPolicy() {
   const base::Value::List& ct_excluded_legacy_spkis =
       prefs->GetList(certificate_transparency::prefs::kCTExcludedLegacySPKIs);
 
-  std::vector<std::string> required(TranslateStringArray(ct_required));
   std::vector<std::string> excluded(TranslateStringArray(ct_excluded));
   std::vector<std::string> excluded_spkis(
       TranslateStringArray(ct_excluded_spkis));
   std::vector<std::string> excluded_legacy_spkis(
       TranslateStringArray(ct_excluded_legacy_spkis));
 
-  return network::mojom::CTPolicy::New(std::move(required), std::move(excluded),
+  return network::mojom::CTPolicy::New(std::move(excluded),
                                        std::move(excluded_spkis),
                                        std::move(excluded_legacy_spkis));
 }
@@ -650,9 +625,7 @@ ProfileNetworkContextService::CreateCookieManagerParams(
   out->settings_for_3pcd = host_content_settings_map->GetSettingsForOneType(
       ContentSettingsType::TPCD_SUPPORT);
 
-  out->settings_for_3pcd_metadata_grants =
-      host_content_settings_map->GetSettingsForOneType(
-          ContentSettingsType::TPCD_METADATA_GRANTS);
+  out->settings_for_3pcd_metadata_grants = ContentSettingsForOneType();
 
   if (StorageAccessAPIEnabled()) {
     out->settings_for_storage_access =
@@ -982,35 +955,6 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
 
   network_context_params->ct_policy = GetCTPolicy();
 
-#if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
-  DCHECK(cert_verifier_creation_params);
-  if (!in_memory &&
-      TrialComparisonCertVerifierController::MaybeAllowedForProfile(profile_)) {
-    mojo::PendingRemote<
-        cert_verifier::mojom::TrialComparisonCertVerifierConfigClient>
-        config_client;
-    auto config_client_receiver =
-        config_client.InitWithNewPipeAndPassReceiver();
-
-    cert_verifier_creation_params->trial_comparison_cert_verifier_params =
-        cert_verifier::mojom::TrialComparisonCertVerifierParams::New();
-
-    if (!trial_comparison_cert_verifier_controller_) {
-      trial_comparison_cert_verifier_controller_ =
-          std::make_unique<TrialComparisonCertVerifierController>(profile_);
-    }
-    trial_comparison_cert_verifier_controller_->AddClient(
-        std::move(config_client),
-        cert_verifier_creation_params->trial_comparison_cert_verifier_params
-            ->report_client.InitWithNewPipeAndPassReceiver());
-    cert_verifier_creation_params->trial_comparison_cert_verifier_params
-        ->initial_allowed =
-        trial_comparison_cert_verifier_controller_->IsAllowed();
-    cert_verifier_creation_params->trial_comparison_cert_verifier_params
-        ->config_client_receiver = std::move(config_client_receiver);
-  }
-#endif
-
   if (domain_reliability::ShouldCreateService()) {
     network_context_params->enable_domain_reliability = true;
     network_context_params->domain_reliability_upload_reporter =
@@ -1097,8 +1041,8 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
   network_context_params->first_party_sets_access_delegate_params =
       network::mojom::FirstPartySetsAccessDelegateParams::New();
   network_context_params->first_party_sets_access_delegate_params->enabled =
-      profile_->GetPrefs()->GetBoolean(
-          prefs::kPrivacySandboxFirstPartySetsEnabled);
+      PrivacySandboxSettingsFactory::GetForProfile(profile_)
+          ->AreRelatedWebsiteSetsEnabled();
 
   mojo::Remote<network::mojom::FirstPartySetsAccessDelegate>
       fps_access_delegate_remote;
@@ -1149,9 +1093,6 @@ void ProfileNetworkContextService::OnContentSettingChanged(
     case ContentSettingsType::TPCD_SUPPORT:
       Update3pcdSettings(profile_);
       break;
-    case ContentSettingsType::TPCD_METADATA_GRANTS:
-      Update3pcdMetadataGrantsSettings(profile_);
-      break;
     case ContentSettingsType::STORAGE_ACCESS:
       UpdateStorageAccessSettings(profile_);
       break;
@@ -1163,7 +1104,6 @@ void ProfileNetworkContextService::OnContentSettingChanged(
       UpdateCookieSettings(profile_);
       UpdateLegacyCookieSettings(profile_);
       Update3pcdSettings(profile_);
-      Update3pcdMetadataGrantsSettings(profile_);
       UpdateAllStorageAccessSettings(profile_);
       break;
     default:

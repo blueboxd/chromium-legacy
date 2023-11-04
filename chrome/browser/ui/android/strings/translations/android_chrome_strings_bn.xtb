@@ -175,6 +175,7 @@
 <translation id="19288952978244135">Chrome আবার খুলুন।</translation>
 <translation id="1933845786846280168">নির্বাচিত ট্যাবগুলি</translation>
 <translation id="1943432128510653496">পাসওয়ার্ডগুলি সেভ করুন</translation>
+<translation id="1944535645109964458">কোনও 'পাসকী' উপলভ্য নেই</translation>
 <translation id="1952172573699511566">যখন সম্ভব হবে ওয়েবসাইট আপনার পছন্দের ভাষায় টেক্সট দেখাবে।</translation>
 <translation id="1959679933317802873">কন্টেন্টের জন্য অপেক্ষা করা হচ্ছে</translation>
 <translation id="1960290143419248813">Android-এর এই ভার্সনে Chrome আপডেট করা আর সম্ভব নয়</translation>
@@ -222,6 +223,7 @@
 <translation id="2189903024544168260">আগ্রহ সরিয়ে দেওয়া হয়েছে</translation>
 <translation id="2194856509914051091">যা যা দেখে নেওয়া প্রয়োজন</translation>
 <translation id="2200113223741723867">ব্যবহারের ডেটা শেয়ার করার সেটিংস ম্যানেজ করুন</translation>
+<translation id="221494669172414749">প্রোফাইল লক ছাড়া Chrome খুললে, আপনার সেভ করা পাসওয়ার্ড ও পেমেন্ট পদ্ধতি গাড়ি থেকে মুছে ফেলা হবে। প্রোফাইল লক ব্যবহার করা হলে এই ডেটা সুরক্ষিত থাকবে।</translation>
 <translation id="2218567645332692482">নেভিগেশন HTTPS-এ আপগ্রেড করুন এবং HTTPS-এ কাজ করে না এমন সাইট লোড করার আগে সতর্কতা পান</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> হিসেবে চালিয়ে যান</translation>
 <translation id="2230777942707397948">ফাঁকা উইন্ডো</translation>
@@ -262,6 +264,7 @@
 <translation id="2461822463642141190">বর্তমান</translation>
 <translation id="2472163211318554013">Chrome থেকে সবচেয়ে বেশি সুবিধা পেতে সাইন-ইন করুন</translation>
 <translation id="247737702124049222">ছবির বিবরণ চালু করা আছে</translation>
+<translation id="2479148705183875116">সেটিংসে যান</translation>
 <translation id="2482878487686419369">বিজ্ঞপ্তিগুলি</translation>
 <translation id="2496180316473517155">ব্রাউজিং ইতিহাস</translation>
 <translation id="2497852260688568942">আপনার প্রশাসকের দ্বারা সিঙ্ক অক্ষম করা হয়েছে</translation>
@@ -338,6 +341,7 @@
 <translation id="2840810876587895427">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" />টি ছদ্মবেশী ট্যাব বন্ধ করা হবে}one{<ph name="TAB_COUNT_MANY" />টি ছদ্মবেশী ট্যাব বন্ধ করা হবে}other{<ph name="TAB_COUNT_MANY" />টি ছদ্মবেশী ট্যাব বন্ধ করা হবে}}</translation>
 <translation id="2841216154655874070">{NUM_DAYS,plural, =1{১ দিন আগে চেক করা হয়েছে}one{# দিন আগে চেক করা হয়েছে}other{# দিন আগে চেক করা হয়েছে}}</translation>
 <translation id="2842985007712546952">অভিভাবক ফোল্ডার</translation>
+<translation id="2853415089995957805">আপনি দেখতে পারেন এমন পৃষ্ঠা Chrome প্রিলোড করে, যাতে আপনি দেখার সময় সেগুলি দ্রুত লোড হতে পারে</translation>
 <translation id="2856503607207334158">সাইন-ইন করা যায়নি</translation>
 <translation id="2860954141821109167">এই ডিভাইসে ফোন অ্যাপ চালু করা আছে কিনা দেখে নিন</translation>
 <translation id="2861923151411510142">কিছু Chrome-এর ফিচার আর ব্যবহার করা যাবে না</translation>
@@ -555,9 +559,6 @@
 <translation id="3958287878205277013">আপনার ডিভাইস থেকে ছদ্মবেশী মোডে করা ব্রাউজিংয়ের ইতিহাস মুছে ফেলতে, সব ছদ্মবেশী ট্যাব বন্ধ করুন।</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{রেডি হলেই Chrome আপনার পৃষ্ঠা লোড করবে}one{রেডি হলেই Chrome আপনার পৃষ্ঠা লোড করবে}other{রেডি হলেই Chrome আপনার পৃষ্ঠা লোড করবে}}</translation>
 <translation id="3962119236270174787">ঝুঁকিপূর্ণ হিসেবে চিহ্নিত ওয়েবসাইট, ডাউনলোড এবং এক্সটেনশনের জন্য স্ট্যান্ডার্ড নিরাপত্তা</translation>
-<translation id="3963007978381181125">পাসফ্রেজ এনক্রিপশনে Google Pay-এর পেমেন্ট পদ্ধতি ও ঠিকানা অন্তর্ভুক্ত থাকে না। 
-আপনার পাসফ্রেজ আছে এমন কেউই শুধু আপনার এনক্রিপ্ট করা ডেটা পড়তে পারবেন। 
-পাসফ্রেজ Google-এ পাঠানো হয় না বা Google তা সংরক্ষণ করে না। পাসফ্রেজ ভুলে গেলে বা এই সেটিং পরিবর্তন করতে চাইলে, আপনাকে সিঙ্ক রিসেট করতে হবে। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="3969142555815019568">Chrome আপনার পাসওয়ার্ড চেক করতে পারছে না</translation>
 <translation id="3969863827134279083">উপরে যান</translation>
 <translation id="397105322502079400">গণনা করা হচ্ছে...</translation>
@@ -585,6 +586,7 @@
 <translation id="4084712963632273211"><ph name="PUBLISHER_ORIGIN" /> থেকে – <ph name="BEGIN_DEEMPHASIZED" />Google এর মাধ্যমে ডেলিভারি দেওয়া হয়েছে<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="409109920254068737">যে ডিভাইসে এই QR কোড দেখানো হচ্ছে তাতে সাইন-ইন করার জন্য আপনি এই ট্যাবলেট ব্যবহার করতে পারবেন।</translation>
 <translation id="4095146165863963773">অ্যাপ্লিকেশান ডেটা মুছবেন?</translation>
+<translation id="4095425503313512126">আরও দ্রুত ব্রাউজিং এবং সার্চ করা যেতে পারে</translation>
 <translation id="4096227151372679484">বুকমার্ক সেভ ফ্লো ফোল্ডার অর্ধেক উচ্চতায় খোলা হয়েছে</translation>
 <translation id="4101475238162928417">আপনার অন্যান্য ডিভাইসে পাসওয়ার্ড, বুকমার্ক এবং আরও অনেক কিছু পেতে সিঙ্ক করুন</translation>
 <translation id="4106587138345390261">Chrome নতুন ফিচার এক্সপ্লোর করছে যা সাইটগুলিকে আপনার কম তথ্য ব্যবহার করে একই ব্রাউজিং অভিজ্ঞতা প্রদান করতে দেয়</translation>
@@ -626,6 +628,7 @@
 <translation id="4257230861809842349">Google Password Manager থেকে পাসওয়ার্ড মুছে ফেলবেন?</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />কোন ডেটা ব্যবহার করা হয়:<ph name="END_BOLD" /> আপনার ব্রাউজিং ইতিহাস, এই ডিভাইসে Chrome ব্যবহার করে আপনি যে সাইটগুলি ভিজিট করেছেন তার একটি রেকর্ড।</translation>
 <translation id="4269820728363426813">লিঙ্ক অ্যাড্রেস কপি করুন</translation>
+<translation id="4277529130885813215">অন্য ডিভাইস ব্যবহার করুন</translation>
 <translation id="4283102315569707115">ডিফল্ট হিসেবে ডেস্কটপ সাইট দেখানোর অনুরোধ করবেন?</translation>
 <translation id="4285846616383034558">কুকি, ক্যাশে ও অন্যান্য সাইট ডেটা</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Android সেটিংসে স্ক্রিন লক চালু করুন<ph name="END_LINK" /></translation>
@@ -794,6 +797,7 @@
 <translation id="5054455334322721892">আপনি সাইন-ইন করে থাকলে <ph name="BEGIN_LINK1" />অন্যান্য অ্যাক্টিভিটি<ph name="END_LINK1" /> আপনার Google অ্যাকাউন্টে সেভ হয়ে যেতে পারে। আপনি যেকোনও সময় সেগুলি মুছে দিতে পারেন।</translation>
 <translation id="506254248375231072">কোনও ট্যাব নেই</translation>
 <translation id="5062960805900435602">পাসওয়ার্ড মার্জ করা সম্পর্কিত আপডেট বন্ধ করা আছে</translation>
+<translation id="5081960376148623587">পৃষ্ঠা প্রিলোড করবেন কিনা বেছে নিন</translation>
 <translation id="5091199029769593641">শীঘ্রই, আপনি নতুন কোনও ট্যাব খুললে, <ph name="SITE_NAME" /> থেকে গল্প পড়তে পারবেন। আপনি যেসব সাইট ফলো করেন, সেগুলি আপনার Google অ্যাকাউন্টে সেভ হয়ে যায়। আপনি 'ডিসকভার' সেটিংসে গিয়ে সেগুলি ম্যানেজ করতে পারেন।</translation>
 <translation id="5091249083535528968">বেশি ব্যবহারের ডেটা</translation>
 <translation id="509429900233858213">একটি ত্রুটি ঘটেছে৷</translation>
@@ -834,6 +838,7 @@
 <translation id="5308380583665731573">কানেক্ট করুন</translation>
 <translation id="5317780077021120954">সেভ করুন</translation>
 <translation id="5319359161174645648">Google Chrome ব্যবহার করার সুপারিশ করে</translation>
+<translation id="5320351714793324716">আপনি কুকি ব্যবহার করার অনুমতি দিলে, প্রিলোড করার জন্য Chrome তা ব্যবহার করতে পারে</translation>
 <translation id="5321849971085220133">ট্র্যাক করা কমাতে Chrome নতুন উপায় নিয়ে আসছে এবং ব্রাউজ করার সময়ে আপনি আরও বেশি সুরক্ষিত থাকবেন। এছাড়াও, <ph name="BEGIN_LINK" />Chrome আপনার আগ্রহ সম্পর্কে ধারণা করতে পারে<ph name="END_LINK" /> এবং সেগুলি ম্যানেজ করতে আপনাকে সাহায্য করে। এর কিছু সময় পরে, বিজ্ঞাপন দেখানোর জন্য ভিজিট করা সাইটগুলি আপনার আগ্রহ সম্পর্কে Chrome-এর কাছে জানতে চাইতে পারে।</translation>
 <translation id="5326921373682845375">প্রিলোড করা পৃষ্ঠাগুলি এনক্রিপ্ট করা আছে এবং যে সাইট সেগুলিতে লিঙ্ক করছে সেটি Google সাইট, তাই এগুলি ব্যক্তিগতভাবে প্রিলোড করার সময় Google সার্ভার নতুন কোনও তথ্য পায় না।</translation>
 <translation id="5329858041417644019">আপনার ব্রাউজারটি ম্যানেজ করা হয়নি</translation>
@@ -1012,6 +1017,7 @@
 <translation id="6295158916970320988">সমস্ত সাইট</translation>
 <translation id="6303969859164067831">সাইন-আউট করুন এবং সিঙ্ক করা বন্ধ করুন</translation>
 <translation id="6312687380483398334">ওয়েব অ্যাপ (কোনও রকম আওয়াজ ছাড়া)</translation>
+<translation id="6315386555979018699">মুছুন এবং এগিয়ে যান</translation>
 <translation id="6316139424528454185">এই Android ভার্সন সমর্থিত নয়</translation>
 <translation id="6324916366299863871">শর্টকার্ট এডিট করুন</translation>
 <translation id="6324977638108296054">হাইলাইট করা টেক্সটের লিঙ্ক কপি করা যাচ্ছে না</translation>
@@ -1163,6 +1169,7 @@
 <translation id="6955535239952325894">ম্যানেজ করা ব্রাউজারে এই সেটিং কাজ করে না</translation>
 <translation id="6963766334940102469">বুকমার্কগুলি মুছুন</translation>
 <translation id="696447261358045621">ছদ্মবেশী মোড ছেড়ে বেরিয়ে আসুন</translation>
+<translation id="6965382102122355670">ঠিক আছে</translation>
 <translation id="6971862865055170158">অনুমোদন দেবেন না</translation>
 <translation id="6978717888677691380">আপনার ব্লক করা সাইট</translation>
 <translation id="6979737339423435258">শুরু থেকে</translation>
@@ -1321,6 +1328,7 @@
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" /> থেকে টেক্সট শেয়ার করা হয়েছে</translation>
 <translation id="7762668264895820836"><ph name="SD_CARD_NUMBER" /> টি এসডি কার্ড</translation>
 <translation id="7764225426217299476">ঠিকানা যোগ করুন</translation>
+<translation id="7766587497031415281">ব্রাউজিং ডেটা মোছার আরও বিকল্প</translation>
 <translation id="7772032839648071052">পাসফ্রেজ নিশ্চিত করুন</translation>
 <translation id="7772375229873196092"><ph name="APP_NAME" /> বন্ধ করুন</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 এবং <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> আরও অনেক}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 এবং <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> আরও অনেক}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 এবং <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> আরও অনেক}}</translation>
@@ -1574,6 +1582,7 @@
 <translation id="8998289560386111590">আপনার ডিভাইসে উপলভ্য নয়</translation>
 <translation id="8998729206196772491">আপনি <ph name="MANAGED_DOMAIN" /> দ্বারা পরিচালিত একটি অ্যাকাউন্টের মাধ্যমে সাইন-ইন করছেন এবং এর অ্যাডমিনিস্ট্রেটরকে আপনার Chrome ডেটা নিয়ন্ত্রণ করতে দিচ্ছেন৷ আপনার ডেটা এই অ্যাকাউন্টের সাথে স্থায়ীভাবে আবদ্ধ হবে৷ Chrome থেকে সাইন-আউট করলে এই ডিভাইস থেকে আপনার ডেটা মুছে ফেলা হবে, কিন্তু এটা আপনার Google অ্যাকাউন্টে সঞ্চিত থাকবে।</translation>
 <translation id="9012585441087414258">বিপজ্জনক হতে পারে এমন সাইট, ডাউনলোড ও এক্সটেনশন থেকে সুরক্ষিত রাখে। কোনও পৃষ্ঠাতে সন্দেহজনক কিছু পাওয়া গেলে, URL ও পৃষ্ঠার কন্টেন্টের কিছু অংশ Google Safe Browsing-এ পাঠানো হয়।</translation>
+<translation id="9019199799064251516">গাড়ির প্রোফাইল লক ছাড়াই চালিয়ে যেতে চান?</translation>
 <translation id="9022774213089566801">আপনি প্রায়ই দেখেন</translation>
 <translation id="9022871169049522985">সাইট এবং বিজ্ঞাপনদাতারা তাদের বিজ্ঞাপনের পারফর্ম্যান্স পরিমাপ করতে পারে</translation>
 <translation id="9035378196785279980">এখানে যান\u2026</translation>
@@ -1636,5 +1645,6 @@
 <translation id="983192555821071799">সমস্ত ট্যাবগুলি বন্ধ করুন</translation>
 <translation id="987264212798334818">সাধারণ</translation>
 <translation id="992745192656291733"><ph name="TAB_COUNT" />টি ট্যাব</translation>
+<translation id="993520549480398880">এছাড়া, এই গাড়ি থেকে বুকমার্ক, ইতিহাস এবং আরও অনেক কিছু মুছে দিন</translation>
 <translation id="996149300115483134">ফিড কার্ডের মেনু বন্ধ করা আছে</translation>
 </translationbundle>

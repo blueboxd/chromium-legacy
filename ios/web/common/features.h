@@ -41,18 +41,11 @@ BASE_DECLARE_FEATURE(kSetRequestAttribution);
 // Feature flag that enable Shared Highlighting color change in iOS.
 BASE_DECLARE_FEATURE(kIOSSharedHighlightingColorChange);
 
-// Feature flag that enables native session restoration with a synthesized
-// interaction state.
-BASE_DECLARE_FEATURE(kSynthesizedRestoreSession);
-
 // Feature flag enabling use of new iOS 15
 // loadSimulatedRequest:responseHTMLString: API to display error pages in
 // CRWWKNavigationHandler. The helper method IsLoadSimulatedRequestAPIEnabled()
 // should be used instead of directly checking this feature.
 BASE_DECLARE_FEATURE(kUseLoadSimulatedRequestForOfflinePage);
-
-// Feature flag to enable Emails detection.
-BASE_DECLARE_FEATURE(kEnableEmails);
 
 // Feature flag to enable Phone Numbers detection.
 BASE_DECLARE_FEATURE(kEnablePhoneNumbers);

@@ -29,6 +29,7 @@ import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {focusWithoutInk} from 'chrome://resources/js/focus_without_ink.js';
+import {OpenWindowProxyImpl} from 'chrome://resources/js/open_window_proxy.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
@@ -153,17 +154,6 @@ export class SettingsPaymentsSectionElement extends
       },
 
       /**
-       * Whether virtual card enroll management on settings page is enabled.
-       */
-      virtualCardEnrollmentEnabled_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('virtualCardEnrollmentEnabled');
-        },
-        readOnly: true,
-      },
-
-      /**
        * Checks if we can use device authentication to authenticate the user.
        */
       // <if expr="is_win or is_macosx">
@@ -212,7 +202,6 @@ export class SettingsPaymentsSectionElement extends
   private showVirtualCardUnenrollDialog_: boolean;
   private migratableCreditCardsInfo_: string;
   private migrationEnabled_: boolean;
-  private virtualCardEnrollmentEnabled_: boolean;
   // <if expr="is_win or is_macosx">
   private deviceAuthAvailable_: boolean;
   // </if>
@@ -388,7 +377,13 @@ export class SettingsPaymentsSectionElement extends
 
   private onRemoteEditCreditCardClick_() {
     this.paymentsManager_.logServerCardLinkClicked();
-    window.open(loadTimeData.getString('manageCreditCardsUrl'));
+    OpenWindowProxyImpl.getInstance().openUrl(
+        loadTimeData.getString('managePaymentMethodsUrl'));
+  }
+
+  private onRemoteEditIbanMenuClick_() {
+    OpenWindowProxyImpl.getInstance().openUrl(
+        loadTimeData.getString('managePaymentMethodsUrl'));
   }
 
   private onLocalCreditCardRemoveConfirmationDialogClose_() {
@@ -571,8 +566,7 @@ export class SettingsPaymentsSectionElement extends
   }
 
   private shouldShowAddVirtualCardButton_(): boolean {
-    if (!this.virtualCardEnrollmentEnabled_ ||
-        this.activeCreditCard_ === null || !this.activeCreditCard_!.metadata) {
+    if (this.activeCreditCard_ === null || !this.activeCreditCard_!.metadata) {
       return false;
     }
     return !!this.activeCreditCard_!.metadata!
@@ -581,8 +575,7 @@ export class SettingsPaymentsSectionElement extends
   }
 
   private shouldShowRemoveVirtualCardButton_(): boolean {
-    if (!this.virtualCardEnrollmentEnabled_ ||
-        this.activeCreditCard_ === null || !this.activeCreditCard_!.metadata) {
+    if (this.activeCreditCard_ === null || !this.activeCreditCard_!.metadata) {
       return false;
     }
     return !!this.activeCreditCard_!.metadata!

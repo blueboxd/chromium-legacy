@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
+#include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
@@ -75,10 +76,11 @@
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/side_panel_toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
@@ -93,6 +95,7 @@
 #include "content/public/browser/web_contents.h"
 #include "media/base/media_switches.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/interaction/element_identifier.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/theme_provider.h"
@@ -197,6 +200,7 @@ class TabstripLikeBackground : public views::Background {
 
 class ToolbarView::ContainerView : public views::View {
  public:
+  METADATA_HEADER(ContainerView);
   // Calling PreferredSizeChanged() will trigger the parent's
   // ChildPreferredSizeChanged.
   // Bubble up calls to ChildPreferredSizeChanged.
@@ -204,6 +208,9 @@ class ToolbarView::ContainerView : public views::View {
     PreferredSizeChanged();
   }
 };
+
+BEGIN_METADATA(ToolbarView, ContainerView, views::View)
+END_METADATA
 
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, public:
@@ -369,7 +376,10 @@ void ToolbarView::Init() {
   std::unique_ptr<SidePanelToolbarButton> side_panel_button;
   std::unique_ptr<SidePanelToolbarContainer> side_panel_toolbar_container;
   if (browser_view_->unified_side_panel()) {
-    if (companion::IsCompanionFeatureEnabled()) {
+    if (base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
+      // TODO(b:299463334): Use the new SidePanelContainer which supports
+      // ActionItems
+    } else if (companion::IsCompanionFeatureEnabled()) {
       side_panel_toolbar_container =
           std::make_unique<SidePanelToolbarContainer>(browser_view_);
     } else {
@@ -460,6 +470,12 @@ void ToolbarView::Init() {
   show_avatar_toolbar_button = !profiles::IsManagedGuestSession();
 #endif
   avatar_->SetVisible(show_avatar_toolbar_button);
+
+  if (base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
+    overflow_button_ =
+        container_view_->AddChildView(std::make_unique<OverflowButton>());
+    overflow_button_->SetVisible(false);
+  }
 
   auto app_menu_button = std::make_unique<BrowserAppMenuButton>(this);
   app_menu_button->SetFlipCanvasOnPaintForRTLUI(true);
@@ -771,9 +787,25 @@ void ToolbarView::Layout() {
     }
   }
 
+  // Use two-pass layout solution to avoid overflow button being interfere with
+  // toolbar elements space allocation. The button itself should just be an
+  // indicator of overflow not the cause. (See crbug.com/1484294)
+  // In the first pass turn off overflow button right before each layout.
+  // TODO(pengchaocai): Explore possible optimizations.
+  if (base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
+    toolbar_controller_->SetOverflowButtonVisible(false);
+  }
+
   // Call super implementation to ensure layout manager and child layouts
   // happen.
   AccessiblePaneView::Layout();
+
+  if (base::FeatureList::IsEnabled(features::kResponsiveToolbar) &&
+      toolbar_controller_->ShouldShowOverflowButton()) {
+    // This is the second pass layout that shows overflow button if necessary.
+    toolbar_controller_->SetOverflowButtonVisible(true);
+    AccessiblePaneView::Layout();
+  }
 }
 
 void ToolbarView::OnThemeChanged() {
@@ -840,12 +872,18 @@ void ToolbarView::InitLayout() {
   // TODO(dfried): rename this constant.
   const int location_bar_margin = GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
 
+  // Shift previously flex-able elements' order by `kOrderOffset`.
+  // This will cause them to be the first ones to drop out or shrink to minimum.
+  // Order 1 - kOrderOffset will be assigned to new flex-able elements.
+  constexpr int kOrderOffset = 1000;
+  constexpr int kLocationBarFlexOrder = kOrderOffset + 1;
+  constexpr int kSidePanelFlexOrder = kOrderOffset + 2;
+  constexpr int kExtensionsFlexOrder = kOrderOffset + 3;
+
   const views::FlexSpecification location_bar_flex_rule =
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
                                views::MaximumFlexSizeRule::kUnbounded)
-          .WithOrder(1);
-  constexpr int kSidePanelFlexOrder = 2;
-  constexpr int kExtensionsFlexOrder = 3;
+          .WithOrder(kLocationBarFlexOrder);
 
   layout_manager_ =
       container_view_->SetLayoutManager(std::make_unique<views::FlexLayout>());
@@ -884,6 +922,22 @@ void ToolbarView::InitLayout() {
   if (toolbar_divider_) {
     toolbar_divider_->SetProperty(views::kMarginsKey,
                                   gfx::Insets::VH(0, kToolbarDividerSpacing));
+  }
+
+  if (base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
+    // Order 1 is reserved for transient buttons.
+    constexpr int kToolbarFlexOrderStart = 2;
+
+    // TODO(crbug.com/1479588): Ignore containers till issue addressed.
+    toolbar_controller_ = std::make_unique<ToolbarController>(
+        std::vector<ui::ElementIdentifier>{
+            kToolbarForwardButtonElementId, kToolbarAvatarButtonElementId,
+            kToolbarHomeButtonElementId, kToolbarChromeLabsButtonElementId},
+        kToolbarFlexOrderStart, container_view_, overflow_button_);
+
+    overflow_button_->set_create_menu_model_callback(
+        base::BindRepeating(&ToolbarController::CreateOverflowMenuModel,
+                            base::Unretained(toolbar_controller_.get())));
   }
 
   LayoutCommon();

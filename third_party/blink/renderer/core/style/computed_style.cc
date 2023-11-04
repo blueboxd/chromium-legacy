@@ -219,10 +219,8 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle() = default;
 ALWAYS_INLINE ComputedStyle::ComputedStyle(const ComputedStyle& initial_style)
     : ComputedStyleBase(initial_style) {}
 
-ALWAYS_INLINE ComputedStyle::ComputedStyle(const ComputedStyle& initial_style,
-                                           const ComputedStyle& parent_style,
-                                           ComputedStyleAccessFlags& access)
-    : ComputedStyleBase(initial_style, parent_style, access) {}
+ALWAYS_INLINE ComputedStyle::ComputedStyle(const ComputedStyleBuilder& builder)
+    : ComputedStyleBase(builder) {}
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle(PassKey key) : ComputedStyle() {}
 
@@ -231,10 +229,8 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle(BuilderPassKey key,
     : ComputedStyle(initial_style) {}
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle(BuilderPassKey key,
-                                           const ComputedStyle& initial_style,
-                                           const ComputedStyle& parent_style,
-                                           ComputedStyleAccessFlags& access)
-    : ComputedStyle(initial_style, parent_style, access) {}
+                                           const ComputedStyleBuilder& builder)
+    : ComputedStyle(builder) {}
 
 static bool PseudoElementStylesEqual(const ComputedStyle& old_style,
                                      const ComputedStyle& new_style) {
@@ -594,6 +590,35 @@ bool ComputedStyle::operator==(const ComputedStyle& o) const {
          InheritedVariablesEqual(o);
 }
 
+bool ComputedStyle::HighlightPseudoElementStylesDependOnFontMetrics() const {
+  const StyleHighlightData& highlight_data = HighlightData();
+  if (highlight_data.Selection() &&
+      highlight_data.Selection()->HasFontRelativeUnits()) {
+    return true;
+  }
+  if (highlight_data.TargetText() &&
+      highlight_data.TargetText()->HasFontRelativeUnits()) {
+    return true;
+  }
+  if (highlight_data.SpellingError() &&
+      highlight_data.SpellingError()->HasFontRelativeUnits()) {
+    return true;
+  }
+  if (highlight_data.GrammarError() &&
+      highlight_data.GrammarError()->HasFontRelativeUnits()) {
+    return true;
+  }
+  const CustomHighlightsStyleMap& custom_highlights =
+      highlight_data.CustomHighlights();
+  for (auto custom_highlight : custom_highlights) {
+    if (custom_highlight.value->HasFontRelativeUnits()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 const ComputedStyle* ComputedStyle::GetCachedPseudoElementStyle(
     PseudoId pseudo_id,
     const AtomicString& pseudo_argument) const {
@@ -680,14 +705,14 @@ void ComputedStyle::ClearCachedPseudoElementStyles() const {
 }
 
 const ComputedStyle* ComputedStyle::GetBaseComputedStyle() const {
-  if (auto* base_data = BaseData().Get()) {
+  if (StyleBaseData* base_data = BaseData()) {
     return base_data->GetBaseComputedStyle();
   }
   return nullptr;
 }
 
 const CSSBitset* ComputedStyle::GetBaseImportantSet() const {
-  if (auto* base_data = BaseData().Get()) {
+  if (StyleBaseData* base_data = BaseData()) {
     return base_data->GetBaseImportantSet();
   }
   return nullptr;
@@ -721,10 +746,6 @@ bool ComputedStyle::InheritedDataShared(const ComputedStyle& other) const {
 StyleDifference ComputedStyle::VisualInvalidationDiff(
     const Document& document,
     const ComputedStyle& other) const {
-  // Note, we use .Get() on each DataRef below because DataRef::operator== will
-  // do a deep compare, which is duplicate work when we're going to compare each
-  // property inside this function anyway.
-
   StyleDifference diff;
   if (DiffNeedsReshapeAndFullLayoutAndPaintInvalidation(*this, other)) {
     diff.SetNeedsReshape();
@@ -1514,9 +1535,9 @@ PointAndTangent ComputedStyle::CalculatePointAndTangentOnRay(
     // Specifically, the path’s length is reduced by half the width
     // or half the height of the element’s border box,
     // whichever is larger, and floored at zero.
-    const float largest_side =
-        std::max(box->BorderBoxRect().Width().ToFloat(),
-                 box->BorderBoxRect().Height().ToFloat());
+    const PhysicalRect border_box_rect = box->PhysicalBorderBoxRect();
+    const float largest_side = std::max(border_box_rect.Width().ToFloat(),
+                                        border_box_rect.Height().ToFloat());
     ray_length -= largest_side / 2;
     ray_length = std::max(ray_length, 0.f);
   }
@@ -1620,8 +1641,7 @@ void ComputedStyle::ApplyMotionPathTransform(float origin_x,
         break;
       }
     }
-  } else if (const auto* coord_box_operation =
-                 DynamicTo<CoordBoxOffsetPathOperation>(offset_path)) {
+  } else if (IsA<CoordBoxOffsetPathOperation>(offset_path)) {
     if (box && box->ContainingBlock()) {
       scoped_refptr<BasicShapeInset> inset = BasicShapeInset::Create();
       inset->SetTop(Length::Fixed(0));
@@ -2607,21 +2627,14 @@ bool ComputedStyle::IsRenderedInTopLayer(const Element& element) const {
          StyleType() == kPseudoIdBackdrop;
 }
 
-ComputedStyleBuilder::ComputedStyleBuilder(const ComputedStyle& style) {
-  style_ = MakeGarbageCollected<ComputedStyle>(ComputedStyle::BuilderPassKey(),
-                                               style);
-  SetStyleBase(*style_);
-}
+ComputedStyleBuilder::ComputedStyleBuilder(const ComputedStyle& style)
+    : ComputedStyleBuilderBase(style) {}
 
 ComputedStyleBuilder::ComputedStyleBuilder(
     const ComputedStyle& initial_style,
     const ComputedStyle& parent_style,
-    IsAtShadowBoundary is_at_shadow_boundary) {
-  style_ = MakeGarbageCollected<ComputedStyle>(ComputedStyle::BuilderPassKey(),
-                                               initial_style, parent_style,
-                                               GetAccessFlagsForConstructor());
-  SetStyleBase(*style_);
-
+    IsAtShadowBoundary is_at_shadow_boundary)
+    : ComputedStyleBuilderBase(initial_style, parent_style) {
   // Even if surrounding content is user-editable, shadow DOM should act as a
   // single unit, and not necessarily be editable
   if (is_at_shadow_boundary == kAtShadowBoundary) {
@@ -2638,11 +2651,15 @@ ComputedStyleBuilder::ComputedStyleBuilder(
   SetBaseTextDecorationData(parent_style.AppliedTextDecorationData());
 }
 
+const ComputedStyle* ComputedStyleBuilder::TakeStyle() {
+  return MakeGarbageCollected<ComputedStyle>(ComputedStyle::BuilderPassKey(),
+                                             *this);
+}
+
 const ComputedStyle* ComputedStyleBuilder::CloneStyle() const {
-  DCHECK(style_);
   ResetAccess();
   return MakeGarbageCollected<ComputedStyle>(ComputedStyle::BuilderPassKey(),
-                                             *style_);
+                                             *this);
 }
 
 void ComputedStyleBuilder::PropagateIndependentInheritedProperties(
@@ -2812,6 +2829,21 @@ ComputedStyleBuilder::MutableNonInheritedVariables() {
     variables = std::make_unique<StyleNonInheritedVariables>();
   }
   return *variables;
+}
+
+void ComputedStyleBuilder::CopyInheritedVariablesFrom(
+    const ComputedStyle* style) {
+  if (style->InheritedVariablesInternal()) {
+    MutableInheritedVariablesInternal() = style->InheritedVariablesInternal();
+  }
+}
+
+void ComputedStyleBuilder::CopyNonInheritedVariablesFrom(
+    const ComputedStyle* style) {
+  if (style->NonInheritedVariablesInternal()) {
+    MutableNonInheritedVariablesInternal() =
+        style->NonInheritedVariablesInternal()->Clone();
+  }
 }
 
 STATIC_ASSERT_ENUM(cc::OverscrollBehavior::Type::kAuto,

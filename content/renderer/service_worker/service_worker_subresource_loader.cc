@@ -237,11 +237,9 @@ bool ServiceWorkerSubresourceLoader::StartRaceNetworkRequest() {
       resource_request_.url);
 
   DCHECK(!race_network_request_loader_client_);
-  race_network_request_loader_client_.emplace(
-      resource_request_, weak_factory_.GetWeakPtr(),
-      std::move(forwarding_client),
-      network::features::GetDataPipeDefaultAllocationSize(
-          network::features::DataPipeAllocationSize::kLargerSizeIfPossible));
+  race_network_request_loader_client_.emplace(resource_request_,
+                                              weak_factory_.GetWeakPtr(),
+                                              std::move(forwarding_client));
 
   // If the initial state is not kWaitForBody, that means creating data pipes
   // failed. Do not start RaceNetworkRequest this case.
@@ -374,7 +372,7 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
     // TODO(crbug.com/1371756): support other sources in the full form.
     // https://github.com/yoshisatoyanagisawa/service-worker-static-routing-api/blob/main/final-form.md
     switch (sources[0].type) {
-      case blink::ServiceWorkerRouterSource::SourceType::kNetwork:
+      case blink::ServiceWorkerRouterSource::Type::kNetwork:
         // Network fallback is requested.
         fallback_factory_->CreateLoaderAndStart(
             url_loader_receiver_.Unbind(), request_id_, options_,
@@ -382,13 +380,13 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
             traffic_annotation_);
         delete this;
         return;
-      case blink::ServiceWorkerRouterSource::SourceType::kRace:
+      case blink::ServiceWorkerRouterSource::Type::kRace:
         race_network_request_mode = kForced;
         break;
-      case blink::ServiceWorkerRouterSource::SourceType::kFetchEvent:
+      case blink::ServiceWorkerRouterSource::Type::kFetchEvent:
         race_network_request_mode = kSkipped;
         break;
-      case blink::ServiceWorkerRouterSource::SourceType::kCache:
+      case blink::ServiceWorkerRouterSource::Type::kCache:
         controller_connector_->CallCacheStorageMatch(
             sources[0].cache_source->cache_name,
             blink::mojom::FetchAPIRequest::From(resource_request_),
@@ -1374,7 +1372,9 @@ void ServiceWorkerSubresourceLoader::DidCacheStorageMatch(
   timing->respond_with_settled_time = base::TimeTicks::Now();
   switch (result->which()) {
     case blink::mojom::MatchResult::Tag::kStatus:  // error fallback.
-      // TODO(crbug.com/1371756): add UMA to track cases other than not found.
+      base::UmaHistogramEnumeration(
+          "ServiceWorker.StaticRouter.Subresource.CacheStorageError",
+          result->get_status());
       OnFallback(absl::nullopt, std::move(timing));
       return;
     case blink::mojom::MatchResult::Tag::kResponse:  // we got fetch response.

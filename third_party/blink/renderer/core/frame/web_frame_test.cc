@@ -204,7 +204,6 @@
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/testing/find_cc_layer.h"
-#include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -321,7 +320,12 @@ class WebFrameTest : public testing::Test {
   WebFrameTest()
       : base_url_("http://internal.test/"),
         not_base_url_("http://external.test/"),
-        chrome_url_("chrome://") {}
+        chrome_url_("chrome://test/") {
+    // This is needed so that a chrome: URL's origin is computed correctly,
+    // which is needed for Javascript URL security checks to work properly in
+    // tests below.
+    url::AddStandardScheme("chrome", url::SCHEME_WITH_HOST);
+  }
 
   ~WebFrameTest() override {
     url_test_helpers::UnregisterAllURLsAndClearMemoryCache();
@@ -500,6 +504,7 @@ class WebFrameTest : public testing::Test {
   std::string chrome_url_;
 
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
+  url::ScopedSchemeRegistryForTests scoped_registry_;
 };
 
 TEST_F(WebFrameTest, ContentText) {
@@ -8131,7 +8136,7 @@ TEST_F(WebFrameTest, SameDocumentHistoryNavigationCommitType) {
       item->Url(), WebFrameLoadType::kBackForward, item.Get(),
       ClientRedirectPolicy::kNotClientRedirect,
       false /* has_transient_user_activation */, /*initiator_origin=*/nullptr,
-      /*is_synchronously_committed=*/false,
+      /*is_synchronously_committed=*/false, /*source_element=*/nullptr,
       mojom::blink::TriggeringEventInfo::kNotFromEvent,
       /*is_browser_initiated=*/true,
       /*soft_navigation_heuristics_task_id=*/absl::nullopt);
@@ -11209,12 +11214,13 @@ TEST_F(WebFrameTest, ImageDocumentLoadResponseEnd) {
   ImageResourceContent* image_content = img_document->CachedImage();
 
   EXPECT_TRUE(image_content);
-  EXPECT_NE(base::TimeTicks(), image_content->LoadEnd());
+  EXPECT_NE(base::TimeTicks(), image_content->LoadResponseEnd());
 
   DocumentLoader* loader = document->Loader();
 
   EXPECT_TRUE(loader);
-  EXPECT_EQ(loader->GetTiming().ResponseEnd(), image_content->LoadEnd());
+  EXPECT_EQ(loader->GetTiming().ResponseEnd(),
+            image_content->LoadResponseEnd());
 }
 
 TEST_F(WebFrameTest, CopyImageDocument) {
@@ -13577,14 +13583,14 @@ void RecursiveCollectTextRunDOMNodeIds(
     DOMNodeId dom_node_id,
     std::vector<TextRunDOMNodeIdInfo>* text_runs) {
   for (const cc::PaintOp& op : paint_record) {
-    if (op.GetType() == cc::PaintOpType::DrawRecord) {
+    if (op.GetType() == cc::PaintOpType::kDrawrecord) {
       const auto& draw_record_op = static_cast<const cc::DrawRecordOp&>(op);
       RecursiveCollectTextRunDOMNodeIds(draw_record_op.record, dom_node_id,
                                         text_runs);
-    } else if (op.GetType() == cc::PaintOpType::SetNodeId) {
+    } else if (op.GetType() == cc::PaintOpType::kSetnodeid) {
       const auto& set_node_id_op = static_cast<const cc::SetNodeIdOp&>(op);
       dom_node_id = set_node_id_op.node_id;
-    } else if (op.GetType() == cc::PaintOpType::DrawTextBlob) {
+    } else if (op.GetType() == cc::PaintOpType::kDrawtextblob) {
       const auto& draw_text_op = static_cast<const cc::DrawTextBlobOp&>(op);
       SkTextBlob::Iter iter(*draw_text_op.blob);
       SkTextBlob::Iter::Run run;

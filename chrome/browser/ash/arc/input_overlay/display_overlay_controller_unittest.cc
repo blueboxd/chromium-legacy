@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
 
-#include "ash/game_dashboard/game_dashboard_utils.h"
-#include "ash/game_dashboard/game_dashboard_widget.h"
 #include "ash/public/cpp/arc_game_controls_flag.h"
 #include "chrome/browser/ash/arc/input_overlay/test/game_controls_test_base.h"
 #include "chrome/browser/ash/arc/input_overlay/touch_injector.h"
+#include "chrome/browser/ash/arc/input_overlay/util.h"
 #include "ui/aura/window.h"
+#include "ui/views/widget/widget.h"
 
 namespace arc::input_overlay {
 
@@ -22,6 +22,18 @@ class DisplayOverlayControllerTest : public GameControlsTestBase {
     for (const auto& action : touch_injector_->actions()) {
       controller_->RemoveAction(action.get());
     }
+  }
+
+  void EnableGIO(aura::Window* window, bool enable) {
+    // In GD, once Game Controls feature is turned on or off, the
+    // mapping hint is also set to on or off.
+    window->SetProperty(
+        ash::kArcGameControlsFlagsKey,
+        UpdateFlag(window->GetProperty(ash::kArcGameControlsFlagsKey),
+                   static_cast<ash::ArcGameControlsFlag>(
+                       ash::ArcGameControlsFlag::kEnabled |
+                       ash::ArcGameControlsFlag::kHint),
+                   /*enable_flag=*/enable));
   }
 
   void CheckWidgets(bool has_input_mapping_widget,
@@ -43,23 +55,17 @@ TEST_F(DisplayOverlayControllerTest, TestDisableEnableFeature) {
   EXPECT_TRUE(CanRewriteEvent());
 
   auto* window = touch_injector_->window();
-  auto flags = window->GetProperty(ash::kArcGameControlsFlagsKey);
 
   // 1. Disable and enable GIO in `kView` mode. All the widgets shouldn't show
   // up when GIO is disabled.
-  // Disable GIO.
-  window->SetProperty(
-      ash::kArcGameControlsFlagsKey,
-      ash::game_dashboard_utils::UpdateFlag(
-          flags, ash::ArcGameControlsFlag::kEnabled, /*enable_flag=*/false));
+  // Disable GIO. In GD, once Game Controls feature is turned on or off, the
+  // mapping hint is also set to on or off.
+  EnableGIO(window, /*enable=*/false);
   CheckWidgets(/*has_input_mapping_widget=*/false,
                /*hint_visible=*/false, /*has_editing_list_widget=*/false);
   EXPECT_FALSE(CanRewriteEvent());
   // Enable GIO back.
-  window->SetProperty(
-      ash::kArcGameControlsFlagsKey,
-      ash::game_dashboard_utils::UpdateFlag(
-          flags, ash::ArcGameControlsFlag::kEnabled, /*enable_flag=*/true));
+  EnableGIO(window, /*enable=*/true);
   CheckWidgets(/*has_input_mapping_widget=*/true, /*hint_visible=*/true,
                /*has_editing_list_widget=*/false);
   EXPECT_TRUE(CanRewriteEvent());
@@ -71,17 +77,11 @@ TEST_F(DisplayOverlayControllerTest, TestDisableEnableFeature) {
   CheckWidgets(/*has_input_mapping_widget=*/true, /*hint_visible=*/true,
                /*has_editing_list_widget=*/true);
   // Disable GIO.
-  window->SetProperty(
-      ash::kArcGameControlsFlagsKey,
-      ash::game_dashboard_utils::UpdateFlag(
-          flags, ash::ArcGameControlsFlag::kEnabled, /*enable_flag=*/false));
+  EnableGIO(window, /*enable=*/false);
   CheckWidgets(/*has_input_mapping_widget=*/false, /*hint_visible=*/false,
                /*has_editing_list_widget=*/false);
   // Enable GIO and overlay is displayed as view mode.
-  window->SetProperty(
-      ash::kArcGameControlsFlagsKey,
-      ash::game_dashboard_utils::UpdateFlag(
-          flags, ash::ArcGameControlsFlag::kEnabled, /*enable_flag=*/true));
+  EnableGIO(window, /*enable=*/true);
   CheckWidgets(/*has_input_mapping_widget=*/true, /*hint_visible=*/true,
                /*has_editing_list_widget=*/false);
   EXPECT_TRUE(CanRewriteEvent());
@@ -97,9 +97,8 @@ TEST_F(DisplayOverlayControllerTest, TestHideMappingHint) {
   auto* window = touch_injector_->window();
   window->SetProperty(
       ash::kArcGameControlsFlagsKey,
-      ash::game_dashboard_utils::UpdateFlag(
-          window->GetProperty(ash::kArcGameControlsFlagsKey),
-          ash::ArcGameControlsFlag::kHint, /*enable_flag=*/false));
+      UpdateFlag(window->GetProperty(ash::kArcGameControlsFlagsKey),
+                 ash::ArcGameControlsFlag::kHint, /*enable_flag=*/false));
   CheckWidgets(/*has_input_mapping_widget=*/true,
                /*hint_visible=*/false, /*has_editing_list_widget=*/false);
   EXPECT_TRUE(CanRewriteEvent());

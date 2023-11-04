@@ -655,6 +655,7 @@ class BidderWorkletTest : public testing::Test {
     auto bidder_worklet_impl = std::make_unique<BidderWorklet>(
         v8_helper_, std::move(shared_storage_host_remote_),
         pause_for_debugger_on_start, std::move(url_loader_factory),
+        auction_network_events_handler_.CreateRemote(),
         url.is_empty() ? interest_group_bidding_url_ : url,
         interest_group_wasm_url_, interest_group_trusted_bidding_signals_url_,
         top_window_origin_, permissions_policy_state_.Clone(),
@@ -970,6 +971,8 @@ class BidderWorkletTest : public testing::Test {
   network::TestURLLoaderFactory alternate_url_loader_factory_;
   scoped_refptr<AuctionV8Helper> v8_helper_;
 
+  TestAuctionNetworkEventsHandler auction_network_events_handler_;
+
   mojo::PendingRemote<mojom::AuctionSharedStorageHost>
       shared_storage_host_remote_;
 
@@ -1007,6 +1010,15 @@ TEST_F(BidderWorkletTest, NetworkError) {
   GenerateBidExpectingNeverCompletes(bidder_worklet.get());
   EXPECT_EQ("Failed to load https://url.test/ HTTP status = 404 Not Found.",
             WaitForDisconnect());
+
+  // Wait until idle to ensure all requests have been observed within the
+  // `auction_network_events_handler_`.
+  task_environment_.RunUntilIdle();
+  EXPECT_THAT(
+      auction_network_events_handler_.GetObservedRequests(),
+      testing::ElementsAre(
+          "Sent URL: https://url.test/", "Received URL: https://url.test/",
+          "Completion Status: net::ERR_HTTP_RESPONSE_CODE_FAILURE"));
 }
 
 TEST_F(BidderWorkletTest, CompileError) {
@@ -1029,6 +1041,14 @@ TEST_F(BidderWorkletTest, GenerateBidReturnValueAd) {
           blink::AdDescriptor(GURL("https://response.test/")),
           /*ad_component_descriptors=*/absl::nullopt,
           /*modeling_signals=*/absl::nullopt, base::TimeDelta()));
+
+  // Wait until idle to ensure all requests have been observed within the
+  // `auction_network_events_handler_`.
+  task_environment_.RunUntilIdle();
+  EXPECT_THAT(auction_network_events_handler_.GetObservedRequests(),
+              testing::ElementsAre("Sent URL: https://url.test/",
+                                   "Received URL: https://url.test/",
+                                   "Completion Status: net::OK"));
 
   // Explicitly setting an undefined ad value acts just like not setting an ad
   // value.
@@ -3162,7 +3182,7 @@ TEST_F(BidderWorkletTest, GenerateBidLoadCompletionOrder) {
   constexpr char kTrustedSignalsResponse[] = R"({"keys":{"1":1}})";
   constexpr char kJsonResponse[] = "{}";
   constexpr char kDirectFromSellerSignalsHeaders[] =
-      "X-Allow-FLEDGE: true\nX-FLEDGE-Auction-Only: true";
+      "Ad-Auction-Allowed: true\nAd-Auction-Only: true";
 
   direct_from_seller_per_buyer_signals_ =
       GURL("https://url.test/perbuyersignals");
@@ -3258,7 +3278,7 @@ if (auctionSignalsJson !== '{"worklet":2}') {
   constexpr char kRawReturnValue[] =
       R"({bid: 1, render:"https://response.test/"})";
   constexpr char kDirectFromSellerSignalsHeaders[] =
-      "X-Allow-FLEDGE: true\nX-FLEDGE-Auction-Only: true";
+      "Ad-Auction-Allowed: true\nAd-Auction-Only: true";
 
   for (bool late_direct_from_seller_signals : {false, true}) {
     SCOPED_TRACE(late_direct_from_seller_signals);
@@ -5379,7 +5399,7 @@ TEST_F(BidderWorkletTest, ReportWinDataVersion) {
 TEST_F(BidderWorkletTest, ReportWinLoadCompletionOrder) {
   constexpr char kJsonResponse[] = "{}";
   constexpr char kDirectFromSellerSignalsHeaders[] =
-      "X-Allow-FLEDGE: true\nX-FLEDGE-Auction-Only: true";
+      "Ad-Auction-Allowed: true\nAd-Auction-Only: true";
 
   direct_from_seller_per_buyer_signals_ =
       GURL("https://url.test/perbuyersignals");
@@ -9078,8 +9098,10 @@ TEST_F(BidderWorkletTest,
 class BidderWorkletAdMacroReportingEnabledTest : public BidderWorkletTest {
  public:
   BidderWorkletAdMacroReportingEnabledTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        blink::features::kAdAuctionReportingWithMacroApi);
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{blink::features::kAdAuctionReportingWithMacroApi,
+                              blink::features::kFencedFramesM119Features},
+        /*disabled_features=*/{});
   }
 
  private:
@@ -9130,6 +9152,18 @@ TEST_F(BidderWorkletAdMacroReportingEnabledTest, ReportWinRegisterAdMacro) {
       /*expected_ad_beacon_map=*/{},
       {{"uppercase", "ABC"}, {"lowercase", "abc"}});
 
+  // URL-encoded strings should be accepted.
+  RunReportWinWithFunctionBodyExpectingResult(
+      R"(registerAdMacro('URL_ENC_KEY', 'http%3A%2F%2Fpub%2Eexample%2Fpage');
+        registerAdMacro('http%3A%2F%2Fpub%2Eexample%2Fpage', 'URL_ENC_VAL');
+        registerAdMacro('URL_ENC_KEY_http%3A%2F', 'URL_ENC_VAL_http%3A%2F');
+      )",
+      /*expected_report_url=*/absl::nullopt,
+      /*expected_ad_beacon_map=*/{},
+      {{"URL_ENC_KEY", "http%3A%2F%2Fpub%2Eexample%2Fpage"},
+       {"http%3A%2F%2Fpub%2Eexample%2Fpage", "URL_ENC_VAL"},
+       {"URL_ENC_KEY_http%3A%2F", "URL_ENC_VAL_http%3A%2F"}});
+
   // When called multiple times for a macro name, use the last valid call's
   // value.
   RunReportWinWithFunctionBodyExpectingResult(
@@ -9173,6 +9207,14 @@ TEST_F(BidderWorkletAdMacroReportingEnabledTest,
       {R"(registerAdMacro('123', {toString:{}});)",
        "https://url.test/:11 Uncaught TypeError: Cannot convert object to "
        "primitive value."},
+      // Invalid characters in macro key.
+      {R"(registerAdMacro('}${FOO', 'foo');)",
+       "https://url.test/:11 Uncaught TypeError: registerAdMacro macro key and "
+       "value must be URL-encoded."},
+      // Invalid characters in macro value.
+      {R"(registerAdMacro('MACRO_KEY', 'baz&foo=bar');)",
+       "https://url.test/:11 Uncaught TypeError: registerAdMacro macro key and "
+       "value must be URL-encoded."},
   };
   for (const auto& test_case : kTestCases) {
     RunReportWinWithFunctionBodyExpectingResult(

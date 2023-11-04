@@ -64,6 +64,16 @@ ReadAnythingUntrustedPageHandler::ReadAnythingUntrustedPageHandler(
 
   if (features::IsReadAnythingWebUIToolbarEnabled()) {
     PrefService* prefs = browser_->profile()->GetPrefs();
+    double speechRate =
+        features::IsReadAnythingReadAloudEnabled()
+            ? prefs->GetDouble(prefs::kAccessibilityReadAnythingSpeechRate)
+            : kReadAnythingDefaultSpeechRate;
+    read_anything::mojom::HighlightGranularity highlightGranularity =
+        features::IsReadAnythingReadAloudEnabled()
+            ? static_cast<read_anything::mojom::HighlightGranularity>(
+                  prefs->GetDouble(
+                      prefs::kAccessibilityReadAnythingHighlightGranularity))
+            : read_anything::mojom::HighlightGranularity::kDefaultValue;
     page_->OnSettingsRestoredFromPrefs(
         static_cast<read_anything::mojom::LineSpacing>(
             prefs->GetInteger(prefs::kAccessibilityReadAnythingLineSpacing)),
@@ -72,7 +82,8 @@ ReadAnythingUntrustedPageHandler::ReadAnythingUntrustedPageHandler(
         prefs->GetString(prefs::kAccessibilityReadAnythingFontName),
         prefs->GetDouble(prefs::kAccessibilityReadAnythingFontScale),
         static_cast<read_anything::mojom::Colors>(
-            prefs->GetInteger(prefs::kAccessibilityReadAnythingColorInfo)));
+            prefs->GetInteger(prefs::kAccessibilityReadAnythingColorInfo)),
+        speechRate, highlightGranularity);
   }
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
@@ -151,6 +162,18 @@ void ReadAnythingUntrustedPageHandler::OnColorChange(
       prefs::kAccessibilityReadAnythingColorInfo, static_cast<size_t>(color));
 }
 
+void ReadAnythingUntrustedPageHandler::OnSpeechRateChange(double rate) {
+  browser_->profile()->GetPrefs()->SetDouble(
+      prefs::kAccessibilityReadAnythingSpeechRate, rate);
+}
+
+void ReadAnythingUntrustedPageHandler::OnHighlightGranularityChanged(
+    read_anything::mojom::HighlightGranularity granularity) {
+  browser_->profile()->GetPrefs()->SetInteger(
+      prefs::kAccessibilityReadAnythingHighlightGranularity,
+      static_cast<size_t>(granularity));
+}
+
 void ReadAnythingUntrustedPageHandler::OnLinkClicked(
     const ui::AXTreeID& target_tree_id,
     ui::AXNodeID target_node_id) {
@@ -220,6 +243,11 @@ void ReadAnythingUntrustedPageHandler::OnReadAnythingThemeChanged(
   page_->OnThemeChanged(
       ReadAnythingTheme::New(font_name, font_scale, foreground_skcolor,
                              background_skcolor, line_spacing, letter_spacing));
+}
+
+void ReadAnythingUntrustedPageHandler::SetDefaultLanguageCode(
+    const std::string& code) {
+  page_->SetDefaultLanguageCode(code);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -337,6 +365,10 @@ void ReadAnythingUntrustedPageHandler::OnActiveAXTreeIDChanged() {
 }
 
 void ReadAnythingUntrustedPageHandler::LogTextStyle() {
+  if (!browser_ || !browser_->profile()->GetPrefs()) {
+    return;
+  }
+
   // This is called when the side panel closes, so retrieving the values from
   // preferences won't happen very often.
   PrefService* prefs = browser_->profile()->GetPrefs();
@@ -347,9 +379,13 @@ void ReadAnythingUntrustedPageHandler::LogTextStyle() {
   base::UmaHistogramExactLinear(string_constants::kFontScaleHistogramName,
                                 GetNormalizedFontScale(font_scale),
                                 maximum_font_scale_logging + 1);
-  ReadAnythingFont font =
-      font_map_.at(prefs->GetString(prefs::kAccessibilityReadAnythingFontName));
-  base::UmaHistogramEnumeration(string_constants::kFontNameHistogramName, font);
+  std::string font_name =
+      prefs->GetString(prefs::kAccessibilityReadAnythingFontName);
+  if (font_map_.find(font_name) != font_map_.end()) {
+    ReadAnythingFont font = font_map_.at(font_name);
+    base::UmaHistogramEnumeration(string_constants::kFontNameHistogramName,
+                                  font);
+  }
   read_anything::mojom::Colors color =
       static_cast<read_anything::mojom::Colors>(
           prefs->GetInteger(prefs::kAccessibilityReadAnythingColorInfo));

@@ -16,6 +16,7 @@
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/system_sounds_delegate.h"
+#include "ash/shell_delegate.h"
 #include "ash/wm/window_state.h"
 #include "base/check.h"
 #include "base/command_line.h"
@@ -42,9 +43,9 @@
 #include "chrome/browser/ui/ash/capture_mode/chrome_capture_mode_delegate.h"
 #include "chrome/browser/ui/ash/chrome_accelerator_prefs_delegate.h"
 #include "chrome/browser/ui/ash/chrome_accessibility_delegate.h"
+#include "chrome/browser/ui/ash/clipboard_history_controller_delegate_impl.h"
 #include "chrome/browser/ui/ash/desks/chrome_saved_desk_delegate.h"
 #include "chrome/browser/ui/ash/game_dashboard/chrome_game_dashboard_delegate.h"
-#include "chrome/browser/ui/ash/glanceables/chrome_glanceables_delegate.h"
 #include "chrome/browser/ui/ash/global_media_controls/media_notification_provider_impl.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_ui.h"
 #include "chrome/browser/ui/ash/session_util.h"
@@ -74,6 +75,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/chromeos/multi_capture_service.h"
 #include "content/public/browser/device_service.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/media_session_service.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -115,9 +117,13 @@ content::WebContents* GetActiveWebContentsForNativeBrowserWindow(
 chrome::FeedbackSource ToChromeFeedbackSource(
     ash::ShellDelegate::FeedbackSource source) {
   switch (source) {
+    case ash::ShellDelegate::FeedbackSource::kGameDashboard:
+      return chrome::FeedbackSource::kFeedbackSourceGameDashboard;
     case ash::ShellDelegate::FeedbackSource::kWindowLayoutMenu:
       return chrome::FeedbackSource::kFeedbackSourceWindowLayoutMenu;
   }
+  NOTREACHED_NORETURN()
+      << "Unable to retrieve FeedbackSource due to unknown source type.";
 }
 
 }  // namespace
@@ -137,6 +143,11 @@ ChromeShellDelegate::CreateCaptureModeDelegate() const {
   return std::make_unique<ChromeCaptureModeDelegate>();
 }
 
+std::unique_ptr<ash::ClipboardHistoryControllerDelegate>
+ChromeShellDelegate::CreateClipboardHistoryControllerDelegate() const {
+  return std::make_unique<ClipboardHistoryControllerDelegateImpl>();
+}
+
 std::unique_ptr<ash::GameDashboardDelegate>
 ChromeShellDelegate::CreateGameDashboardDelegate() const {
   return std::make_unique<ChromeGameDashboardDelegate>();
@@ -145,12 +156,6 @@ ChromeShellDelegate::CreateGameDashboardDelegate() const {
 std::unique_ptr<ash::AcceleratorPrefsDelegate>
 ChromeShellDelegate::CreateAcceleratorPrefsDelegate() const {
   return std::make_unique<ChromeAcceleratorPrefsDelegate>();
-}
-
-std::unique_ptr<ash::GlanceablesDelegate>
-ChromeShellDelegate::CreateGlanceablesDelegate(
-    ash::GlanceablesController* controller) const {
-  return std::make_unique<ChromeGlanceablesDelegate>(controller);
 }
 
 ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {
@@ -245,12 +250,10 @@ bool ChromeShellDelegate::ShouldWaitForTouchPressAck(gfx::NativeWindow window) {
 }
 
 bool ChromeShellDelegate::IsTabDrag(const ui::OSExchangeData& drop_data) {
-  DCHECK(ash::features::IsWebUITabStripTabDragIntegrationEnabled());
   return tab_strip_ui::IsDraggedTab(drop_data);
 }
 
 int ChromeShellDelegate::GetBrowserWebUITabStripHeight() {
-  DCHECK(ash::features::IsWebUITabStripTabDragIntegrationEnabled());
   return TabStripUILayout::GetContainerHeight();
 }
 

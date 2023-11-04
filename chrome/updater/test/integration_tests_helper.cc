@@ -148,6 +148,23 @@ base::RepeatingCallback<bool(Args...)> WithSwitch(
       }));
 }
 
+// Overload for Time switches.
+template <typename... Args>
+base::RepeatingCallback<bool(Args...)> WithSwitch(
+    const std::string& flag,
+    base::RepeatingCallback<bool(const base::Time&, Args...)> callback) {
+  return WithSwitch(
+      flag,
+      base::BindLambdaForTesting([=](const std::string& flag, Args... args) {
+        double flag_value;
+        if (base::StringToDouble(flag, &flag_value)) {
+          return callback.Run(base::Time::FromJsTime(flag_value),
+                              std::move(args)...);
+        }
+        return false;
+      }));
+}
+
 // Overload for TimeDelta switches.
 template <typename... Args>
 base::RepeatingCallback<bool(Args...)> WithSwitch(
@@ -286,6 +303,9 @@ void AppTestHelper::FirstTaskRun() {
      WithSwitch("app_id", WithSystemScope(Wrap(&ExpectRegistered)))},
     {"expect_not_registered",
      WithSwitch("app_id", WithSystemScope(Wrap(&ExpectNotRegistered)))},
+    {"expect_app_tag",
+     WithSwitch("tag",
+                WithSwitch("app_id", WithSystemScope(Wrap(&ExpectAppTag))))},
     {"expect_app_version",
      WithSwitch("version", WithSwitch("app_id", WithSystemScope(
                                                     Wrap(&ExpectAppVersion))))},
@@ -330,7 +350,13 @@ void AppTestHelper::FirstTaskRun() {
      WithSwitch("version", WithSystemScope(Wrap(&ExpectVersionNotActive)))},
     {"install", WithSystemScope(Wrap(&Install))},
     {"install_updater_and_app",
-     WithSwitch("app_id", WithSystemScope(Wrap(&InstallUpdaterAndApp)))},
+     WithSwitch(
+         "child_window_text_to_find",
+         WithSwitch(
+             "tag",
+             WithSwitch("is_silent_install",
+                        WithSwitch("app_id", WithSystemScope(Wrap(
+                                                 &InstallUpdaterAndApp))))))},
     {"print_log", WithSystemScope(Wrap(&PrintLog))},
     {"run_wake", WithSwitch("exit_code", WithSystemScope(Wrap(&RunWake)))},
     {"run_wake_all", WithSystemScope(Wrap(&RunWakeAll))},
@@ -391,6 +417,8 @@ void AppTestHelper::FirstTaskRun() {
     {"run_recovery_component",
      WithSwitch("version", WithSwitch("app_id", WithSystemScope(Wrap(
                                                     &RunRecoveryComponent))))},
+    {"set_last_checked",
+     WithSwitch("time", WithSystemScope(Wrap(&SetLastChecked)))},
     {"expect_last_checked", WithSystemScope(Wrap(&ExpectLastChecked))},
     {"expect_last_started", WithSystemScope(Wrap(&ExpectLastStarted))},
     {"run_offline_install",
@@ -401,6 +429,8 @@ void AppTestHelper::FirstTaskRun() {
      WithSwitch("silent", WithSwitch("legacy_install",
                                      WithSystemScope(Wrap(
                                          &RunOfflineInstallOsNotSupported))))},
+    {"dm_push_enrollment_token",
+     WithSwitch("enrollment_token", Wrap(DMPushEnrollmentToken))},
     {"dm_deregister_device", WithSystemScope(Wrap(&DMDeregisterDevice))},
     {"dm_cleanup", WithSystemScope(Wrap(&DMCleanup))},
   };

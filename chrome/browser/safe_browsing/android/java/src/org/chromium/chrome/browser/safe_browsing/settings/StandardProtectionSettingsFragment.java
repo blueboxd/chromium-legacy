@@ -11,7 +11,6 @@ import androidx.preference.Preference;
 
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.safe_browsing.SafeBrowsingBridge;
 import org.chromium.chrome.browser.safe_browsing.SafeBrowsingState;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
@@ -39,12 +38,14 @@ public class StandardProtectionSettingsFragment
     public ChromeSwitchPreference mExtendedReportingPreference;
     public ChromeSwitchPreference mPasswordLeakDetectionPreference;
 
-    private final ManagedPreferenceDelegate mManagedPreferenceDelegate =
-            createManagedPreferenceDelegate();
-    private final PrefService mPrefService = UserPrefs.get(Profile.getLastUsedRegularProfile());
+    private ManagedPreferenceDelegate mManagedPreferenceDelegate;
+    private PrefService mPrefService;
 
     @Override
     protected void onCreatePreferencesInternal(Bundle bundle, String rootKey) {
+        mManagedPreferenceDelegate = createManagedPreferenceDelegate();
+        mPrefService = UserPrefs.get(getProfile());
+
         mExtendedReportingPreference = findPreference(PREF_EXTENDED_REPORTING);
         mExtendedReportingPreference.setOnPreferenceChangeListener(this);
         mExtendedReportingPreference.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
@@ -142,16 +143,19 @@ public class StandardProtectionSettingsFragment
     }
 
     private ChromeManagedPreferenceDelegate createManagedPreferenceDelegate() {
-        return preference -> {
-            String key = preference.getKey();
-            if (PREF_EXTENDED_REPORTING.equals(key)) {
-                return SafeBrowsingBridge.isSafeBrowsingExtendedReportingManaged();
-            } else if (PREF_PASSWORD_LEAK_DETECTION.equals(key)) {
-                return mPrefService.isManagedPreference(Pref.PASSWORD_LEAK_DETECTION_ENABLED);
-            } else {
-                assert false : "Should not be reached";
+        return new ChromeManagedPreferenceDelegate(getProfile()) {
+            @Override
+            public boolean isPreferenceControlledByPolicy(Preference preference) {
+                String key = preference.getKey();
+                if (PREF_EXTENDED_REPORTING.equals(key)) {
+                    return SafeBrowsingBridge.isSafeBrowsingExtendedReportingManaged();
+                } else if (PREF_PASSWORD_LEAK_DETECTION.equals(key)) {
+                    return mPrefService.isManagedPreference(Pref.PASSWORD_LEAK_DETECTION_ENABLED);
+                } else {
+                    assert false : "Should not be reached";
+                }
+                return false;
             }
-            return false;
         };
     }
 }

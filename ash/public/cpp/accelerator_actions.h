@@ -156,6 +156,7 @@ namespace ash {
   ACCELERATOR_ACTION_ENTRY(WindowCycleSnapRight)                        \
   ACCELERATOR_ACTION_ENTRY(WindowMinimize)                              \
   ACCELERATOR_ACTION_ENTRY(MinimizeTopWindowOnBack)                     \
+  ACCELERATOR_ACTION_ENTRY(VolumeMuteToggle)                            \
   /* Debug accelerators are intentionally at the end, so that if you */ \
   /* remove one, you don't need to update tests which check*/           \
   /* hashes of the ids.*/                                               \
@@ -166,10 +167,10 @@ namespace ash {
   ACCELERATOR_ACTION_ENTRY(DebugPrintViewHierarchy)                     \
   ACCELERATOR_ACTION_ENTRY(DebugPrintWindowHierarchy)                   \
   ACCELERATOR_ACTION_ENTRY(DebugShowToast)                              \
+  ACCELERATOR_ACTION_ENTRY(DebugShowSystemNudge)                        \
   ACCELERATOR_ACTION_ENTRY(DebugSystemUiStyleViewer)                    \
   ACCELERATOR_ACTION_ENTRY(DebugToggleDarkMode)                         \
   ACCELERATOR_ACTION_ENTRY(DebugToggleDynamicColor)                     \
-  ACCELERATOR_ACTION_ENTRY(DebugToggleGlanceables)                      \
   ACCELERATOR_ACTION_ENTRY(DebugTogglePowerButtonMenu)                  \
   ACCELERATOR_ACTION_ENTRY(DebugToggleShowDebugBorders)                 \
   ACCELERATOR_ACTION_ENTRY(DebugToggleShowFpsCounter)                   \

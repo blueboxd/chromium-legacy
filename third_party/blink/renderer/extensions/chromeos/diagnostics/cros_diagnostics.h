@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,8 @@ class CrosDiagnostics : public ScriptWrappable,
 
   ScriptPromise getCpuInfo(ScriptState* script_state);
 
+  ScriptPromise getNetworkInterfaces(ScriptState* script_state);
+
   void Trace(Visitor*) const override;
 
  private:
@@ -39,6 +41,10 @@ class CrosDiagnostics : public ScriptWrappable,
 
   void OnGetCpuInfoResponse(ScriptPromiseResolver* resolver,
                             mojom::blink::GetCpuInfoResultPtr result);
+
+  void OnGetNetworkInterfacesResponse(
+      ScriptPromiseResolver* resolver,
+      mojom::blink::GetNetworkInterfacesResultPtr result);
 
   HeapMojoRemote<mojom::blink::CrosDiagnostics> cros_diagnostics_remote_;
 };

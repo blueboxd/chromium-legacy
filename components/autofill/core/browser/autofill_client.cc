@@ -13,7 +13,7 @@
 #include "components/autofill/core/browser/single_field_form_fill_router.h"
 #include "components/autofill/core/browser/ui/payments/bubble_show_options.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
-#include "components/plus_addresses/plus_address_service.h"
+#include "components/plus_addresses/plus_address_types.h"
 #include "components/version_info/channel.h"
 
 namespace autofill {
@@ -65,6 +65,10 @@ AutofillClient::GetAutofillMlPredictionModelHandler() {
 }
 
 IbanManager* AutofillClient::GetIbanManager() {
+  return nullptr;
+}
+
+compose::ComposeManager* AutofillClient::GetComposeManager() {
   return nullptr;
 }
 
@@ -234,8 +238,8 @@ const AutofillAblationStudy& AutofillClient::GetAblationStudy() const {
   return *ablation_study;
 }
 
-scoped_refptr<device_reauth::DeviceAuthenticator>
-AutofillClient::GetDeviceAuthenticator() const {
+std::unique_ptr<device_reauth::DeviceAuthenticator>
+AutofillClient::GetDeviceAuthenticator() {
   return nullptr;
 }
 

@@ -162,7 +162,7 @@ std::u16string CreditCard::GetObfuscatedStringForCardDigits(
 }
 
 CreditCard::CreditCard(const std::string& guid, const std::string& origin)
-    : AutofillDataModel(guid),
+    : guid_(guid),
       origin_(origin),
       record_type_(RecordType::kLocalCard),
       network_(kGenericCard),
@@ -171,6 +171,10 @@ CreditCard::CreditCard(const std::string& guid, const std::string& origin)
       card_issuer_(Issuer::kIssuerUnknown),
       instrument_id_(0) {}
 
+// TODO(crbug.com/1121806): Calling the CreditCard's default constructor
+// initializes the `guid_`. This shouldn't happen for server cards, since they
+// are not identified by guids. However, some of the server card logic relies
+// by them for historical reasons.
 CreditCard::CreditCard(RecordType type, const std::string& server_id)
     : CreditCard() {
   DCHECK(type == RecordType::kMaskedServerCard ||
@@ -179,6 +183,7 @@ CreditCard::CreditCard(RecordType type, const std::string& server_id)
   server_id_ = server_id;
 }
 
+// TODO(crbug.com/1121806): See `server_id` constructor.
 CreditCard::CreditCard(RecordType type, int64_t instrument_id) : CreditCard() {
   DCHECK(type == RecordType::kMaskedServerCard ||
          type == RecordType::kFullServerCard);
@@ -1332,25 +1337,7 @@ std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card) {
 
 void CreditCard::SetNameOnCardFromSeparateParts() {
   DCHECK(!temp_card_first_name_.empty() && !temp_card_last_name_.empty());
-
-  std::u16string new_name_on_card =
-      temp_card_first_name_ + u" " + temp_card_last_name_;
-
-  DCHECK(name_on_card_.empty() || name_on_card_ == new_name_on_card);
-
-  name_on_card_ = new_name_on_card;
+  name_on_card_ = temp_card_first_name_ + u" " + temp_card_last_name_;
 }
-
-const char kAmericanExpressCard[] = "americanExpressCC";
-const char kDinersCard[] = "dinersCC";
-const char kDiscoverCard[] = "discoverCC";
-const char kEloCard[] = "eloCC";
-const char kGenericCard[] = "genericCC";
-const char kJCBCard[] = "jcbCC";
-const char kMasterCard[] = "masterCardCC";
-const char kMirCard[] = "mirCC";
-const char kTroyCard[] = "troyCC";
-const char kUnionPay[] = "unionPayCC";
-const char kVisaCard[] = "visaCC";
 
 }  // namespace autofill

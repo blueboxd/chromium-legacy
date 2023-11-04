@@ -730,7 +730,7 @@ bool AXNode::IsText() const {
   // - The list marker itself is ignored but the descendants are not
   // - Or the list marker contains images
   if (GetRole() == ax::mojom::Role::kListMarker)
-    return !GetUnignoredChildCount();
+    return !IsIgnored() && !GetUnignoredChildCount();
   return ui::IsText(GetRole());
 }
 
@@ -1878,6 +1878,14 @@ bool AXNode::IsReadOnlyOrDisabled() const {
       return !IsReadOnlySupported();
     }
   }
+}
+
+bool AXNode::IsView() const {
+  const AXTreeManager* manager = GetManager();
+  if (!manager) {
+    return false;
+  }
+  return manager->IsView();
 }
 
 AXNode* AXNode::ComputeLastUnignoredChildRecursive() const {

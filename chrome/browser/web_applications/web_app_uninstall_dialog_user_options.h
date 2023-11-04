@@ -14,7 +14,8 @@ struct UninstallUserOptions {
   bool clear_site_data = false;
 };
 
-using UninstallDialogCallback = base::OnceCallback<void(UninstallUserOptions)>;
+using UninstallDialogCallback =
+    base::OnceCallback<void(web_app::UninstallUserOptions)>;
 
 }  // namespace web_app
 

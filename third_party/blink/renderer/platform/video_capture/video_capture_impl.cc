@@ -689,18 +689,14 @@ void VideoCaptureImpl::VideoFrameBufferPreparer::Finalize() {
 // Information about a video capture client of ours.
 struct VideoCaptureImpl::ClientInfo {
   ClientInfo() = default;
-
   ClientInfo(const ClientInfo& other) = default;
-
   ~ClientInfo() = default;
 
   media::VideoCaptureParams params;
-
   VideoCaptureStateUpdateCB state_update_cb;
-
   VideoCaptureDeliverFrameCB deliver_frame_cb;
-
   VideoCaptureCropVersionCB crop_version_cb;
+  VideoCaptureNotifyFrameDroppedCB frame_dropped_cb;
 };
 
 VideoCaptureImpl::VideoCaptureImpl(
@@ -768,7 +764,8 @@ void VideoCaptureImpl::StartCapture(
     const media::VideoCaptureParams& params,
     const VideoCaptureStateUpdateCB& state_update_cb,
     const VideoCaptureDeliverFrameCB& deliver_frame_cb,
-    const VideoCaptureCropVersionCB& crop_version_cb) {
+    const VideoCaptureCropVersionCB& crop_version_cb,
+    const VideoCaptureNotifyFrameDroppedCB& frame_dropped_cb) {
   DVLOG(1) << __func__ << " |device_id_| = " << device_id_;
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   OnLog("VideoCaptureImpl got request to start capture.");
@@ -778,6 +775,7 @@ void VideoCaptureImpl::StartCapture(
   client_info.state_update_cb = state_update_cb;
   client_info.deliver_frame_cb = deliver_frame_cb;
   client_info.crop_version_cb = crop_version_cb;
+  client_info.frame_dropped_cb = frame_dropped_cb;
 
   switch (state_) {
     case VIDEO_CAPTURE_STATE_STARTING:
@@ -867,11 +865,6 @@ void VideoCaptureImpl::GetDeviceFormatsInUse(
       device_id_, session_id_,
       base::BindOnce(&VideoCaptureImpl::OnDeviceFormatsInUse,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void VideoCaptureImpl::OnFrameDropped(
-    media::VideoCaptureFrameDropReason reason) {
-  GetVideoCaptureHost()->OnFrameDropped(device_id_, reason);
 }
 
 void VideoCaptureImpl::OnLog(const String& message) {
@@ -981,7 +974,7 @@ void VideoCaptureImpl::OnBufferReady(
 
   bool consume_buffer = state_ == VIDEO_CAPTURE_STATE_STARTED;
   if (!consume_buffer) {
-    OnFrameDropped(
+    OnFrameDroppedEarly(
         media::VideoCaptureFrameDropReason::kVideoCaptureImplNotInStartedState);
     GetVideoCaptureHost()->ReleaseBuffer(device_id_, buffer->buffer_id,
                                          DefaultFeedback());
@@ -1042,8 +1035,8 @@ void VideoCaptureImpl::OnBufferReady(
     scaled_frame_preparers.push_back(std::move(scaled_frame_preparer));
   }
   if (!init_successful) {
-    OnFrameDropped(media::VideoCaptureFrameDropReason::
-                       kVideoCaptureImplFailedToWrapDataAsMediaVideoFrame);
+    OnFrameDroppedEarly(media::VideoCaptureFrameDropReason::
+                            kVideoCaptureImplFailedToWrapDataAsMediaVideoFrame);
     GetVideoCaptureHost()->ReleaseBuffer(
         device_id_, frame_preparer->buffer_id(), DefaultFeedback());
     for (auto& scaled_frame_preparer : scaled_frame_preparers) {
@@ -1120,8 +1113,8 @@ void VideoCaptureImpl::OnVideoFrameReady(
     is_any_frame_not_bound |= !scaled_frame_preparer->IsVideoFrameBound();
   }
   if (is_any_frame_not_bound) {
-    OnFrameDropped(media::VideoCaptureFrameDropReason::
-                       kVideoCaptureImplFailedToWrapDataAsMediaVideoFrame);
+    OnFrameDroppedEarly(media::VideoCaptureFrameDropReason::
+                            kVideoCaptureImplFailedToWrapDataAsMediaVideoFrame);
     // Release all buffers.
     GetVideoCaptureHost()->ReleaseBuffer(
         device_id_, frame_preparer->buffer_id(), DefaultFeedback());
@@ -1164,6 +1157,14 @@ void VideoCaptureImpl::OnBufferDestroyed(int32_t buffer_id) {
            cb_iter->second->HasOneRef())
         << "Instructed to delete buffer we are still using.";
     client_buffers_.erase(cb_iter);
+  }
+}
+
+void VideoCaptureImpl::OnFrameDroppedEarly(
+    media::VideoCaptureFrameDropReason reason) {
+  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
+  for (const auto& client : clients_) {
+    client.second.frame_dropped_cb.Run(reason);
   }
 }
 

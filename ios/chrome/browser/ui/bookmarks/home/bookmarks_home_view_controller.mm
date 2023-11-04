@@ -76,7 +76,7 @@
 #import "ios/chrome/browser/ui/sharing/sharing_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/window_activities/window_activity_helpers.h"
+#import "ios/chrome/browser/window_activities/model/window_activity_helpers.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/favicon/favicon_attributes.h"
 #import "ios/chrome/common/ui/favicon/favicon_constants.h"
@@ -440,7 +440,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     [self refreshContents];
   }
 
-  [IntentDonationHelper donateIntent:INTENT_OPEN_BOOKMARKS];
+  [IntentDonationHelper donateIntent:DonatedIntentType::kOpenBookmarks];
 }
 
 - (void)viewDidLayoutSubviews {
@@ -1505,15 +1505,14 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 // Returns YES if the given node can be edited by user.
 - (BOOL)isNodeEditableByUser:(const BookmarkNode*)node {
-  // Note that CanBeEditedByUser() below returns true for Bookmarks Bar, Mobile
+  // Note that IsNodeManaged() below returns false for Bookmarks Bar, Mobile
   // Bookmarks, and Other Bookmarks since the user can add, delete, and edit
-  // items within those folders. CanBeEditedByUser() returns false for the
+  // items within those folders. IsNodeManaged() returns true for the
   // managed_node and all nodes that are descendants of managed_node.
   bookmarks::ManagedBookmarkService* managedBookmarkService =
       ManagedBookmarkServiceFactory::GetForBrowserState(self.browserState);
-  return managedBookmarkService
-             ? managedBookmarkService->CanBeEditedByUser(node)
-             : YES;
+  return managedBookmarkService ? !managedBookmarkService->IsNodeManaged(node)
+                                : YES;
 }
 
 // Returns YES if user is allowed to edit any bookmarks.

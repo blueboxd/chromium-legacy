@@ -58,6 +58,7 @@ import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.omnibox.status.StatusCoordinator;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdownScrollListener;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.theme.ThemeUtils;
@@ -103,7 +104,8 @@ import java.util.function.BooleanSupplier;
 /**
  * Phone specific toolbar implementation.
  */
-public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabCountObserver {
+public class ToolbarPhone extends ToolbarLayout
+        implements OnClickListener, TabCountObserver, OmniboxSuggestionsDropdownScrollListener {
     /** The amount of time transitioning from one theme color to another should take in ms. */
     public static final long THEME_COLOR_TRANSITION_DURATION = 250;
 
@@ -257,6 +259,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
      */
     private boolean mIsShowingStartSurfaceTabSwitcher;
     private NtpSearchBoxDrawable mNtpSearchBoxBackground;
+    private int mHomeSurfaceToolbarBackgroundColor;
 
     /**
      * Used to specify the visual state of the toolbar.
@@ -316,6 +319,8 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         mBackgroundHeightIncreaseWhenFocus =
                 OmniboxResourceProvider.getToolbarOnFocusHeightIncrease(context);
         mIsSurfacePolishEnabled = ChromeFeatureList.sSurfacePolish.isEnabled();
+        mHomeSurfaceToolbarBackgroundColor = ChromeColors.getSurfaceColor(
+                getContext(), R.dimen.home_surface_background_color_elevation);
     }
 
     @Override
@@ -814,7 +819,9 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
                 // yet. Use the default background color, which will match what the NTP eventually
                 // draws itself.
                 if (!getToolbarDataProvider().getNewTabPageDelegate().hasCompletedFirstLayout()) {
-                    return ChromeColors.getDefaultThemeColor(getContext(), false);
+                    return mIsSurfacePolishEnabled
+                            ? mHomeSurfaceToolbarBackgroundColor
+                            : ChromeColors.getDefaultThemeColor(getContext(), false);
                 }
 
                 // During transition we cannot rely on the background to be opaque yet, so keep full
@@ -827,8 +834,10 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
                 // toolbar color so that the NTP content is not visible beneath the toolbar. In
                 // between the transition, we set a translucent default toolbar color based on
                 // the expansion progress of the toolbar.
-                return androidx.core.graphics.ColorUtils.setAlphaComponent(
-                        ChromeColors.getDefaultThemeColor(getContext(), false), alpha);
+                return androidx.core.graphics.ColorUtils.setAlphaComponent(mIsSurfacePolishEnabled
+                                ? mHomeSurfaceToolbarBackgroundColor
+                                : ChromeColors.getDefaultThemeColor(getContext(), false),
+                        alpha);
             case VisualState.NORMAL:
                 return ChromeColors.getDefaultThemeColor(getContext(), false);
             case VisualState.INCOGNITO:
@@ -837,6 +846,9 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
                 if (mShouldShowModernizeVisualUpdate
                         && mLocationBar.getPhoneCoordinator().hasFocus()) {
                     return getToolbarDefaultColor();
+                }
+                if (mIsSurfacePolishEnabled && mIsShowingStartSurfaceHomepage) {
+                    return mHomeSurfaceToolbarBackgroundColor;
                 }
                 return getToolbarDataProvider().getPrimaryColor();
             default:
@@ -1107,7 +1119,9 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
             // In NTP, toolbar and locationbar need to transite color only when the omnibox is
             // focused. When the fake omnibox is scrolled, the color should not change.
             if (((mShouldShowModernizeVisualUpdate && mLocationBar.getPhoneCoordinator().hasFocus())
-                        || !isLocationBarShownInNTP)
+                        || (mIsSurfacePolishEnabled ? (
+                                    !isLocationBarShownInNTP && !mIsShowingStartSurfaceHomepage)
+                                                    : !isLocationBarShownInNTP))
                     && mTabSwitcherState == STATIC_TAB) {
                 int defaultColor = getToolbarDefaultColor();
                 int defaultLocationBarColor =

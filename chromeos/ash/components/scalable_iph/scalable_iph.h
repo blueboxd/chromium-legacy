@@ -85,15 +85,26 @@ class ScalableIph : public KeyedService,
     kUnlocked,
     kAppListShown,
     kAppListItemActivationYouTube,
-    kAppListItemActivationGoogleDocs
+    kAppListItemActivationGoogleDocs,
+    kAppListItemActivationGooglePhotosWeb,
+    kOpenPersonalizationApp,
+    kShelfItemActivationYouTube,
+    kShelfItemActivationGoogleDocs,
+    kShelfItemActivationGooglePhotosWeb,
+    kShelfItemActivationGooglePhotosAndroid,
+    kShelfItemActivationGooglePlay,
+    kAppListItemActivationGooglePlayStore,
+    kAppListItemActivationGooglePhotosAndroid,
+    kPrintJobCreated,
   };
 
   ScalableIph(feature_engagement::Tracker* tracker,
-              std::unique_ptr<ScalableIphDelegate> delegate);
+              std::unique_ptr<ScalableIphDelegate> delegate,
+              std::unique_ptr<Logger> logger);
 
   void RecordEvent(Event event);
 
-  Logger* logger() { return &logger_; }
+  Logger* GetLogger();
 
   ScalableIphDelegate* delegate_for_testing() { return delegate_.get(); }
 
@@ -107,6 +118,8 @@ class ScalableIph : public KeyedService,
   void OnSuspendDoneWithoutLockScreen() override;
   void OnAppListVisibilityChanged(bool shown) override;
   void OnHasSavedPrintersChanged(bool has_saved_printers) override;
+  void OnPhoneHubOnboardingEligibleChanged(
+      bool phonehub_onboarding_eligible) override;
 
   // IphSession::Delegate:
   void PerformActionForIphSession(ActionType action_type) override;
@@ -139,8 +152,9 @@ class ScalableIph : public KeyedService,
   void SetHasSavedPrintersChangedClosureForTesting(
       base::RepeatingClosure has_saved_printers_closure);
 
-  // Maybe record an app list item activation of `id`.
+  // Maybe record an app list item or a shelf item activation of `id`.
   void MaybeRecordAppListItemActivation(const std::string& id);
+  void MaybeRecordShelfItemActivationById(const std::string& id);
 
  private:
   void EnsureTimerStarted();
@@ -157,6 +171,7 @@ class ScalableIph : public KeyedService,
   bool CheckNetworkConnection(const base::Feature& feature);
   bool CheckClientAge(const base::Feature& feature);
   bool CheckHasSavedPrinters(const base::Feature& feature);
+  bool CheckPhoneHubOnboardingEligible(const base::Feature& feature);
 
   const std::vector<const base::Feature*>& GetFeatureList() const;
 
@@ -167,7 +182,8 @@ class ScalableIph : public KeyedService,
   ScalableIphDelegate::SessionState session_state_ =
       ScalableIphDelegate::SessionState::kUnknownInitialValue;
   bool has_saved_printers_ = false;
-  Logger logger_;
+  bool phonehub_onboarding_eligible_ = false;
+  std::unique_ptr<Logger> logger_;
 
   base::RepeatingClosure has_saved_printers_closure_for_testing_;
   std::vector<const base::Feature*> feature_list_for_testing_;

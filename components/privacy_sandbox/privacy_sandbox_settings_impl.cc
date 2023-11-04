@@ -28,6 +28,8 @@
 #include "components/privacy_sandbox/privacy_sandbox_attestations/privacy_sandbox_attestations.h"
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/privacy_sandbox/privacy_sandbox_prefs.h"
+#include "components/privacy_sandbox/privacy_sandbox_settings.h"
+#include "components/privacy_sandbox/tracking_protection_settings.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_features.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -98,6 +100,22 @@ base::Value::Dict CreateBlockedTopicEntry(const CanonicalTopic& topic) {
       .Set(kBlockedTopicsBlockTimeKey, base::TimeToValue(base::Time::Now()));
 }
 
+std::set<browsing_topics::Topic> GetTopicsSetFromString(
+    std::string topics_string) {
+  if (topics_string.empty()) {
+    return {};
+  }
+  std::set<browsing_topics::Topic> result;
+  std::vector<std::string> tokens = base::SplitString(
+      topics_string, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  for (const std::string& token : tokens) {
+    int topic_id;
+    CHECK(base::StringToInt(token, &topic_id));
+    result.emplace(topic_id);
+  }
+  return result;
+}
+
 }  // namespace
 
 // static
@@ -138,14 +156,17 @@ PrivacySandboxSettingsImpl::PrivacySandboxSettingsImpl(
     std::unique_ptr<Delegate> delegate,
     HostContentSettingsMap* host_content_settings_map,
     scoped_refptr<content_settings::CookieSettings> cookie_settings,
+    TrackingProtectionSettings* tracking_protection_settings,
     PrefService* pref_service)
     : delegate_(std::move(delegate)),
       host_content_settings_map_(host_content_settings_map),
       cookie_settings_(cookie_settings),
+      tracking_protection_settings_(tracking_protection_settings),
       pref_service_(pref_service) {
-  DCHECK(pref_service_);
-  DCHECK(host_content_settings_map_);
-  DCHECK(cookie_settings_);
+  CHECK(pref_service_);
+  CHECK(host_content_settings_map_);
+  CHECK(cookie_settings_);
+  CHECK(tracking_protection_settings_);
   // "Clear on exit" causes a cookie deletion on shutdown. But for practical
   // purposes, we're notifying the observers on startup (which should be
   // equivalent, as no cookie operations could have happened while the profile
@@ -154,11 +175,14 @@ PrivacySandboxSettingsImpl::PrivacySandboxSettingsImpl(
     OnCookiesCleared();
   }
 
+  tracking_protection_settings_observation_.Observe(
+      tracking_protection_settings_);
+
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
-      prefs::kPrivacySandboxFirstPartySetsEnabled,
+      prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
       base::BindRepeating(
-          &PrivacySandboxSettingsImpl::OnFirstPartySetsEnabledPrefChanged,
+          &PrivacySandboxSettingsImpl::OnRelatedWebsiteSetsEnabledPrefChanged,
           base::Unretained(this)));
 }
 
@@ -183,24 +207,26 @@ PrivacySandboxSettingsImpl::GetM1TopicAllowedStatus() const {
   return control_status;
 }
 
-const std::vector<browsing_topics::Topic>&
+const std::set<browsing_topics::Topic>&
 PrivacySandboxSettingsImpl::GetFinchDisabledTopics() {
   if (finch_disabled_topics_.size() > 0) {
     return finch_disabled_topics_;
   }
   std::string disabled_topics_string =
       blink::features::kBrowsingTopicsDisabledTopicsList.Get();
-  if (disabled_topics_string.empty()) {
-    return finch_disabled_topics_;
-  }
-  std::vector<std::string> tokens = base::SplitString(
-      disabled_topics_string, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  for (const std::string& token : tokens) {
-    int disabled_topic_id;
-    CHECK(base::StringToInt(token, &disabled_topic_id));
-    finch_disabled_topics_.emplace_back(disabled_topic_id);
-  }
+  finch_disabled_topics_ = GetTopicsSetFromString(disabled_topics_string);
   return finch_disabled_topics_;
+}
+
+const std::set<browsing_topics::Topic>&
+PrivacySandboxSettingsImpl::GetFinchPrioritizedTopics() {
+  if (finch_prioritized_topics_.size() > 0) {
+    return finch_prioritized_topics_;
+  }
+  std::string prioritized_topics_string =
+      blink::features::kBrowsingTopicsPrioritizedTopicsList.Get();
+  finch_prioritized_topics_ = GetTopicsSetFromString(prioritized_topics_string);
+  return finch_prioritized_topics_;
 }
 
 bool PrivacySandboxSettingsImpl::IsTopicsAllowed() const {
@@ -314,6 +340,22 @@ void PrivacySandboxSettingsImpl::SetTopicAllowed(const CanonicalTopic& topic,
   if (!allowed) {
     scoped_pref_update->Append(CreateBlockedTopicEntry(topic));
   }
+}
+
+bool PrivacySandboxSettingsImpl::IsTopicPrioritized(
+    const CanonicalTopic& topic) {
+  const std::set<browsing_topics::Topic>& prioritized_topics =
+      GetFinchPrioritizedTopics();
+  if (prioritized_topics.contains(topic.topic_id())) {
+    return true;
+  }
+  for (const browsing_topics::Topic& ancestor_topic :
+       browsing_topics::SemanticTree().GetAncestorTopics(topic.topic_id())) {
+    if (prioritized_topics.contains(ancestor_topic)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void PrivacySandboxSettingsImpl::ClearTopicSettings(base::Time start_time,
@@ -671,6 +713,20 @@ bool PrivacySandboxSettingsImpl::IsPrivateAggregationAllowed(
                                            reporting_origin.GetURL());
 }
 
+bool PrivacySandboxSettingsImpl::IsPrivateAggregationDebugModeAllowed(
+    const url::Origin& top_frame_origin,
+    const url::Origin& reporting_origin) const {
+  if (!IsPrivateAggregationAllowed(top_frame_origin, reporting_origin)) {
+    return false;
+  }
+
+  // Third party cookies must also be available for this context. An empty site
+  // for cookies is provided so the context is always treated as a third party.
+  return cookie_settings_->IsFullCookieAccessAllowed(
+      reporting_origin.GetURL(), net::SiteForCookies(), top_frame_origin,
+      net::CookieSettingOverrides());
+}
+
 bool PrivacySandboxSettingsImpl::IsPrivacySandboxEnabled() const {
   PrivacySandboxSettingsImpl::Status status = GetPrivacySandboxAllowedStatus();
   if (!IsAllowed(status)) {
@@ -733,14 +789,13 @@ void PrivacySandboxSettingsImpl::OnCookiesCleared() {
   SetTopicsDataAccessibleFromNow();
 }
 
-void PrivacySandboxSettingsImpl::OnFirstPartySetsEnabledPrefChanged() {
+void PrivacySandboxSettingsImpl::OnRelatedWebsiteSetsEnabledPrefChanged() {
   if (!base::FeatureList::IsEnabled(features::kFirstPartySets)) {
     return;
   }
 
   for (auto& observer : observers_) {
-    observer.OnFirstPartySetsEnabledChanged(
-        pref_service_->GetBoolean(prefs::kPrivacySandboxFirstPartySetsEnabled));
+    observer.OnFirstPartySetsEnabledChanged(AreRelatedWebsiteSetsEnabled());
   }
 }
 
@@ -838,9 +893,13 @@ PrivacySandboxSettingsImpl::GetM1PrivacySandboxApiEnabledStatus(
   return status;
 }
 
+bool PrivacySandboxSettingsImpl::
+    IsCookieDeprecationExperimentCurrentlyEligible() const {
+  return delegate_->IsCookieDeprecationExperimentCurrentlyEligible();
+}
+
 bool PrivacySandboxSettingsImpl::IsCookieDeprecationLabelAllowed() const {
-  return !IsPrivacySandboxRestricted() &&
-         !cookie_settings_->ShouldBlockThirdPartyCookies();
+  return delegate_->IsCookieDeprecationExperimentEligible();
 }
 
 bool PrivacySandboxSettingsImpl::IsCookieDeprecationLabelAllowedForContext(
@@ -850,13 +909,27 @@ bool PrivacySandboxSettingsImpl::IsCookieDeprecationLabelAllowedForContext(
     return false;
   }
 
-  if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)) {
-    return IsAllowed(
-        GetSiteAccessAllowedStatus(top_frame_origin, context_origin.GetURL()));
+  return IsAllowed(
+      GetSiteAccessAllowedStatus(top_frame_origin, context_origin.GetURL()));
+}
+
+void PrivacySandboxSettingsImpl::OnBlockAllThirdPartyCookiesChanged() {
+  if (!base::FeatureList::IsEnabled(features::kFirstPartySets)) {
+    return;
   }
 
-  return IsPrivacySandboxEnabledForContext(top_frame_origin,
-                                           context_origin.GetURL());
+  for (auto& observer : observers_) {
+    observer.OnFirstPartySetsEnabledChanged(AreRelatedWebsiteSetsEnabled());
+  }
+}
+
+bool PrivacySandboxSettingsImpl::AreRelatedWebsiteSetsEnabled() const {
+  // FPS should be on in the 3PCD experiment unless all 3PC are blocked.
+  if (tracking_protection_settings_->IsTrackingProtection3pcdEnabled()) {
+    return !tracking_protection_settings_->AreAllThirdPartyCookiesBlocked();
+  }
+  return pref_service_->GetBoolean(
+      prefs::kPrivacySandboxRelatedWebsiteSetsEnabled);
 }
 
 }  // namespace privacy_sandbox

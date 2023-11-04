@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 
+#include "base/containers/contains.h"
 #include "base/functional/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/strcat.h"
@@ -31,6 +32,7 @@
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/frame_type.h"
 #include "content/public/browser/navigation_handle.h"
@@ -2068,7 +2070,7 @@ class FencedFrameParameterizedBrowserTest : public FencedFrameBrowserTestBase {
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{blink::features::kFencedFrames, {}},
          {net::features::kThirdPartyStoragePartitioning, {}},
-         {net::features::kNoncedPartitionedCookies, {}},
+         {net::features::kPartitionedCookies, {}},
          {features::kPrivacySandboxAdsAPIsOverride, {}},
          {blink::features::kInterestGroupStorage, {}},
          {blink::features::kAdInterestGroupAPI, {}},
@@ -2079,7 +2081,8 @@ class FencedFrameParameterizedBrowserTest : public FencedFrameBrowserTestBase {
          {features::kBackForwardCache, {}},
          // This feature allows `runAdAuction()`'s promise to resolve to a
          // `FencedFrameConfig` object upon developer request.
-         {blink::features::kFencedFramesAPIChanges, {}}},
+         {blink::features::kFencedFramesAPIChanges, {}},
+         {blink::features::kFencedFramesM119Features, {}}},
         {/* disabled_features */});
   }
 
@@ -2199,7 +2202,7 @@ class FencedFrameParameterizedBrowserTest : public FencedFrameBrowserTestBase {
     SCOPED_TRACE(from_here.ToString());
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     std::string file_name = url.path();
-    CHECK(cookie_headers_map_.find(file_name) != cookie_headers_map_.end());
+    CHECK(base::Contains(cookie_headers_map_, file_name));
     std::string header = cookie_headers_map_[file_name];
     EXPECT_EQ(expected_value, header);
     cookie_headers_map_.erase(file_name);
@@ -2214,8 +2217,7 @@ class FencedFrameParameterizedBrowserTest : public FencedFrameBrowserTestBase {
     SCOPED_TRACE(from_here.ToString());
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     std::string file_name = url.path();
-    CHECK(sec_fetch_dest_headers_map_.find(file_name) !=
-          sec_fetch_dest_headers_map_.end());
+    CHECK(base::Contains(sec_fetch_dest_headers_map_, file_name));
     std::string header = sec_fetch_dest_headers_map_[file_name];
     EXPECT_EQ(expected_value, header);
     sec_fetch_dest_headers_map_.erase(file_name);
@@ -5018,7 +5020,7 @@ class FencedFrameReportEventBrowserTest
         ASSERT_FALSE(step.destination.path.empty());
         int redirect_index = 0;
         for (auto& redirect_destination : step.redirects) {
-          ASSERT_TRUE(paths.find(redirect_destination.path) == paths.end());
+          ASSERT_FALSE(base::Contains(paths, redirect_destination.path));
           ASSERT_FALSE(redirect_destination.origin.empty());
           ASSERT_FALSE(redirect_destination.path.empty());
           paths.insert(redirect_destination.path);
@@ -6855,6 +6857,7 @@ class FencedFrameAutomaticBeaconBrowserTest
     };
 
     Destination starting_url;
+    Destination secondary_initiator_url;
     Destination navigation_url;
 
     // Optional message to be sent as part of the payload.
@@ -6866,6 +6869,10 @@ class FencedFrameAutomaticBeaconBrowserTest
     // Whether there is a call to `setReportEventDataForAutomaticBeacons()`.
     bool register_beacon_data = true;
 
+    // Weather the destinations field is set when calling
+    // `setReportEventDataForAutomaticBeacons()`.
+    bool register_destinations = true;
+
     // Whether the initiating frame should have user activation when navigating.
     bool initiator_has_user_activation = true;
 
@@ -6875,6 +6882,9 @@ class FencedFrameAutomaticBeaconBrowserTest
 
     // Whether we expect the beacon to send properly or not.
     bool expected_success = true;
+
+    // Whether we expect the beacon to send with data or not.
+    bool expected_data = true;
   };
 
   static std::string DescribeParams(
@@ -7006,20 +7016,26 @@ class FencedFrameAutomaticBeaconBrowserTest
     }
     ad_frame_observer.WaitForCommit();
 
+    base::Value::List destination_list;
+    if (config.register_destinations) {
+      destination_list.Append("buyer");
+      destination_list.Append("seller");
+    }
+
     if (config.register_beacon_data) {
       if (!config.message) {
         // Call `setReportEventDataForAutomaticBeacons()` without `eventData`
         // field.
-        EXPECT_TRUE(
-            ExecJs(ad_frame_root_node,
-                   JsReplace(R"(
+        EXPECT_TRUE(ExecJs(ad_frame_root_node,
+                           JsReplace(R"(
               window.fence.setReportEventDataForAutomaticBeacons({
                 eventType: $1,
-                destination: ['seller', 'buyer']
+                destination: $2
               });
             )",
-                             blink::kFencedFrameTopNavigationBeaconType),
-                   ad_frame_execjs_options));
+                                     blink::kFencedFrameTopNavigationBeaconType,
+                                     destination_list.Clone()),
+                           ad_frame_execjs_options));
       } else {
         // Call `setReportEventDataForAutomaticBeacons()` with `eventData`.
         EvalJsResult result =
@@ -7028,11 +7044,11 @@ class FencedFrameAutomaticBeaconBrowserTest
               window.fence.setReportEventDataForAutomaticBeacons({
                 eventType: $1,
                 eventData: $2,
-                destination: ['seller', 'buyer']
+                destination: $3
               });
             )",
                              blink::kFencedFrameTopNavigationBeaconType,
-                             config.message.value()),
+                             config.message.value(), destination_list.Clone()),
                    ad_frame_execjs_options);
 
         if (config.message->length() > blink::kFencedFrameMaxBeaconLength) {
@@ -7048,6 +7064,25 @@ class FencedFrameAutomaticBeaconBrowserTest
           EXPECT_TRUE(result.error.empty());
         }
       }
+    }
+
+    // If a secondary initiator URL is specified, navigate the ad frame to the
+    // second URL before performing a top-level navigation. This checks that
+    // automatic beacons are not sent if the current URL of a frame is
+    // cross-origin to the mapped URL in the fenced frame config.
+    GURL secondary_initiator_url =
+        config.secondary_initiator_url.origin.empty()
+            ? GURL()
+            : https_server()->GetURL(config.secondary_initiator_url.origin,
+                                     config.secondary_initiator_url.path);
+    if (secondary_initiator_url.is_valid()) {
+      TestFrameNavigationObserver ad_frame_new_navigation_observer(
+          ad_frame_root_node->current_frame_host());
+      EXPECT_TRUE(
+          ExecJs(ad_frame_root_node,
+                 JsReplace(R"(window.location = $1;)", secondary_initiator_url),
+                 ad_frame_execjs_options));
+      ad_frame_new_navigation_observer.WaitForCommit();
     }
 
     std::string target;
@@ -7072,18 +7107,33 @@ class FencedFrameAutomaticBeaconBrowserTest
       // received the request from `SendBasicRequest`, which was sent after the
       // possible automatic beacon, implies the automatic beacon was not sent as
       // a result of the top navigation, as expected.
+      EXPECT_TRUE(content::WaitForLoadStop(shell()->web_contents()));
       fenced_frame_test_helper().SendBasicRequest(
           web_contents(), https_server()->GetURL("c.test", kReportingURL),
           "response");
       response.WaitForRequest();
       EXPECT_TRUE(response.has_received_request());
       EXPECT_EQ(response.http_request()->content, "response");
+      // Fenced frames do not allow top-level navigation without user activation
+      // due to the permissions policy always being disabled. We only test the
+      // histogram for iframes.
+      if (!config.initiator_has_user_activation &&
+          GetParam() == std::string("iframe")) {
+        histogram_tester_.ExpectUniqueSample(
+            blink::kAutomaticBeaconOutcomeHistogram,
+            blink::AutomaticBeaconOutcome::kNoUserActivation, 1);
+      }
+      if (secondary_initiator_url.is_valid()) {
+        histogram_tester_.ExpectUniqueSample(
+            blink::kAutomaticBeaconOutcomeHistogram,
+            blink::AutomaticBeaconOutcome::kNotSameOrigin, 1);
+      }
       return;
     }
 
     response.WaitForRequest();
     // Verify the request has the correct content.
-    if (!config.message) {
+    if (!config.message || !config.expected_data) {
       EXPECT_TRUE(response.http_request()->content.empty());
     } else {
       EXPECT_EQ(response.http_request()->content, config.message);
@@ -7094,6 +7144,16 @@ class FencedFrameAutomaticBeaconBrowserTest
     EXPECT_FALSE(base::Contains(response.http_request()->headers,
                                 "Attribution-Reporting-Support"));
     response.Done();
+
+    histogram_tester_.ExpectUniqueSample(
+        blink::kAutomaticBeaconOutcomeHistogram,
+        blink::AutomaticBeaconOutcome::kSuccess, 1);
+    histogram_tester_.ExpectBucketCount(
+        blink::kFencedFrameTopNavigationHistogram,
+        blink::FencedFrameNavigationState::kBegin, 1);
+    histogram_tester_.ExpectBucketCount(
+        blink::kFencedFrameTopNavigationHistogram,
+        blink::FencedFrameNavigationState::kCommit, 1);
   }
 
  private:
@@ -7101,6 +7161,8 @@ class FencedFrameAutomaticBeaconBrowserTest
   void AssertServerStart() override {}
 
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  base::HistogramTester histogram_tester_;
 };
 
 IN_PROC_BROWSER_TEST_P(FencedFrameAutomaticBeaconBrowserTest, SameOriginBasic) {
@@ -7146,7 +7208,7 @@ IN_PROC_BROWSER_TEST_P(FencedFrameAutomaticBeaconBrowserTest,
       .starting_url = {"a.test", "/fenced_frames/title1.html"},
       .navigation_url = {"b.test", "/fenced_frames/title1.html"},
       .message = std::string(blink::kFencedFrameMaxBeaconLength + 1, '*'),
-      .expected_success = false,
+      .expected_data = false,
   };
   RunTest(config);
 }
@@ -7179,7 +7241,7 @@ IN_PROC_BROWSER_TEST_P(FencedFrameAutomaticBeaconBrowserTest,
       .starting_url = {"a.test", "/fenced_frames/title1.html"},
       .navigation_url = {"b.test", "/fenced_frames/title1.html"},
       .register_beacon_data = false,
-      .expected_success = false,
+      .expected_data = false,
   };
   RunTest(config);
 }
@@ -7201,6 +7263,28 @@ IN_PROC_BROWSER_TEST_P(FencedFrameAutomaticBeaconBrowserTest,
       .starting_url = {"a.test", "/fenced_frames/title1.html"},
       .navigation_url = {"b.test", "/fenced_frames/title1.html"},
       .target_blank_navigation = true,
+  };
+  RunTest(config);
+}
+
+IN_PROC_BROWSER_TEST_P(FencedFrameAutomaticBeaconBrowserTest,
+                       CrossOriginToMappedURL) {
+  Config config = {
+      .starting_url = {"a.test", "/fenced_frames/title1.html"},
+      .secondary_initiator_url = {"c.test", "/fenced_frames/title1.html"},
+      .navigation_url = {"b.test", "/fenced_frames/title1.html"},
+      .expected_success = false,
+  };
+  RunTest(config);
+}
+
+IN_PROC_BROWSER_TEST_P(FencedFrameAutomaticBeaconBrowserTest,
+                       NoDestinationsRegistered) {
+  Config config = {
+      .starting_url = {"a.test", "/fenced_frames/title1.html"},
+      .navigation_url = {"b.test", "/fenced_frames/title1.html"},
+      .register_destinations = false,
+      .expected_data = false,
   };
   RunTest(config);
 }

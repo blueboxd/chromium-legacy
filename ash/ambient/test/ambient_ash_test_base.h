@@ -11,15 +11,16 @@
 
 #include "ash/ambient/ambient_access_token_controller.h"
 #include "ash/ambient/ambient_controller.h"
+#include "ash/ambient/ambient_ui_launcher.h"
 #include "ash/ambient/ui/ambient_animation_view.h"
 #include "ash/ambient/ui/ambient_background_image_view.h"
 #include "ash/ambient/ui/ambient_info_view.h"
 #include "ash/ambient/ui/photo_view.h"
-#include "ash/constants/ambient_theme.h"
 #include "ash/public/cpp/ambient/proto/photo_cache_entry.pb.h"
 #include "ash/public/cpp/test/test_image_downloader.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_ash_web_view_factory.h"
+#include "ash/webui/personalization_app/mojom/personalization_app.mojom-shared.h"
 #include "base/functional/callback.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/login/auth/auth_events_recorder.h"
@@ -78,7 +79,7 @@ class AmbientAshTestBase : public AshTestBase {
 
   // Convenient form of the above that only sets |AmbientUiSettings::theme| and
   // leaves the rest of the settings unset.
-  void SetAmbientTheme(AmbientTheme theme);
+  void SetAmbientTheme(personalization_app::mojom::AmbientTheme theme);
 
   // Sets jitters configs to zero for pixel testing.
   void DisableJitter();
@@ -178,8 +179,16 @@ class AmbientAshTestBase : public AshTestBase {
   void SetPowerStateCharging();
   void SetPowerStateDischarging();
   void SetPowerStateFull();
+
+  // An official, non-USB external power is connected.
   void SetExternalPowerConnected();
+
+  // A USB external power is connected.
+  void SetExternalUsbPowerConnected();
+
+  // No external power of any form is connected.
   void SetExternalPowerDisconnected();
+
   void SetBatteryPercent(double percent);
 
   // Returns the number of active wake locks of type |type|.
@@ -211,6 +220,8 @@ class AmbientAshTestBase : public AshTestBase {
   const std::map<int, ::ambient::PhotoCacheEntry>& GetBackupCachedFiles();
 
   AmbientController* ambient_controller();
+
+  AmbientUiLauncher* ambient_ui_launcher();
 
   AmbientPhotoController* photo_controller();
 

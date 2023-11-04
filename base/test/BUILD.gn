@@ -12,6 +12,7 @@ import("//third_party/protobuf/proto_library.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
+  import("//third_party/jni_zero/jni_zero.gni")
 }
 
 if (is_ios) {
@@ -102,6 +103,7 @@ static_library("test_support") {
     "power_monitor_test.h",
     "power_monitor_test_utils.cc",
     "power_monitor_test_utils.h",
+    "protobuf_matchers.h",
     "rectify_callback.h",
     "rectify_callback_internal.h",
     "repeating_test_future.h",
@@ -109,6 +111,8 @@ static_library("test_support") {
     "run_until.h",
     "scoped_amount_of_physical_memory_override.cc",
     "scoped_amount_of_physical_memory_override.h",
+    "scoped_block_tests_writing_to_special_dirs.cc",
+    "scoped_block_tests_writing_to_special_dirs.h",
     "scoped_command_line.cc",
     "scoped_command_line.h",
     "scoped_feature_list.cc",
@@ -428,8 +432,10 @@ shared_library("test_shared_library") {
 if (is_fuchsia || is_linux || is_chromeos) {
   shared_library("malloc_wrapper") {
     testonly = true
-    sources = [ "malloc_wrapper.cc" ]
-    deps = [ "//base" ]
+    sources = [
+      "malloc_wrapper.cc",
+      "malloc_wrapper.h",
+    ]
   }
 }
 
@@ -504,10 +510,7 @@ if (is_ios) {
 
   source_set("google_test_runner") {
     sources = [ "ios/google_test_runner.mm" ]
-    deps = [
-      ":google_test_runner_shared_headers",
-      "//base",
-    ]
+    deps = [ ":google_test_runner_shared_headers" ]
     frameworks = [ "UIKit.framework" ]
     configs += [ "//build/config/ios:xctest_config" ]
   }

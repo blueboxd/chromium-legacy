@@ -63,6 +63,7 @@ ci.gpu.linux_builder(
         category = "Android|Builder|Chromium",
         short_name = "arm64",
     ),
+    contact_team_email = "angle-team@google.com",
 )
 
 ci.thin_tester(
@@ -92,6 +93,7 @@ ci.thin_tester(
         category = "Android|Nexus5X|Chromium",
         short_name = "arm64",
     ),
+    contact_team_email = "angle-team@google.com",
 )
 
 ci.gpu.linux_builder(
@@ -119,6 +121,7 @@ ci.gpu.linux_builder(
         category = "Fuchsia|Builder|ANGLE",
         short_name = "x64",
     ),
+    contact_team_email = "angle-team@google.com",
 )
 
 ci.gpu.linux_builder(
@@ -145,6 +148,7 @@ ci.gpu.linux_builder(
         category = "Linux|Builder|Chromium",
         short_name = "x64",
     ),
+    contact_team_email = "angle-team@google.com",
 )
 
 ci.thin_tester(
@@ -174,6 +178,7 @@ ci.thin_tester(
         category = "Linux|Intel|Chromium",
         short_name = "x64",
     ),
+    contact_team_email = "angle-team@google.com",
 )
 
 ci.thin_tester(
@@ -203,6 +208,7 @@ ci.thin_tester(
         category = "Linux|NVIDIA|Chromium",
         short_name = "x64",
     ),
+    contact_team_email = "angle-team@google.com",
 )
 
 ci.gpu.mac_builder(
@@ -229,6 +235,7 @@ ci.gpu.mac_builder(
         category = "Mac|Builder|Chromium",
         short_name = "x64",
     ),
+    contact_team_email = "angle-team@google.com",
 )
 
 ci.thin_tester(
@@ -258,6 +265,7 @@ ci.thin_tester(
         category = "Mac|AMD|Chromium",
         short_name = "x64",
     ),
+    contact_team_email = "angle-team@google.com",
 )
 
 ci.thin_tester(
@@ -287,6 +295,7 @@ ci.thin_tester(
         category = "Mac|Intel|Chromium",
         short_name = "x64",
     ),
+    contact_team_email = "angle-team@google.com",
 )
 
 ci.gpu.mac_builder(
@@ -315,6 +324,7 @@ ci.gpu.mac_builder(
         category = "iOS|Builder|ANGLE",
         short_name = "x64",
     ),
+    contact_team_email = "angle-team@google.com",
     xcode = xcode.x14main,
 )
 
@@ -347,6 +357,7 @@ ci.thin_tester(
         category = "iOS|Intel|ANGLE",
         short_name = "x64",
     ),
+    contact_team_email = "angle-team@google.com",
 )
 
 ci.gpu.windows_builder(
@@ -373,6 +384,7 @@ ci.gpu.windows_builder(
         category = "Windows|Builder|Chromium",
         short_name = "x64",
     ),
+    contact_team_email = "angle-team@google.com",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
 )
 
@@ -403,6 +415,7 @@ ci.thin_tester(
         category = "Windows|Intel|Chromium",
         short_name = "x64",
     ),
+    contact_team_email = "angle-team@google.com",
 )
 
 ci.thin_tester(
@@ -432,6 +445,7 @@ ci.thin_tester(
         category = "Windows|NVIDIA|Chromium",
         short_name = "x64",
     ),
+    contact_team_email = "angle-team@google.com",
 )
 
 ci.gpu.windows_builder(
@@ -458,5 +472,6 @@ ci.gpu.windows_builder(
         category = "Windows|Builder|Chromium",
         short_name = "x86",
     ),
+    contact_team_email = "angle-team@google.com",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
 )

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/android/rules.gni")
+import("//third_party/jni_zero/jni_zero.gni")
 
 generate_jni("site_settings_jni_headers") {
   sources = [
@@ -91,7 +92,7 @@ android_library("java") {
     "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsDelegate.java",
     "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsFeatureList.java",
     "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsFeatureMap.java",
-    "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsPreferenceFragment.java",
+    "java/src/org/chromium/components/browser_ui/site_settings/BaseSiteSettingsFragment.java",
     "java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsUtil.java",
     "java/src/org/chromium/components/browser_ui/site_settings/StorageInfo.java",
     "java/src/org/chromium/components/browser_ui/site_settings/TriStateCookieSettingsPreference.java",
@@ -112,7 +113,7 @@ android_library("java") {
     "//base:base_java",
     "//base:jni_java",
     "//build/android:build_java",
-    "//components/browser_ui/accessibility/android:java",
+    "//components/browser_ui/accessibility/android:page_zoom_utils_java",
     "//components/browser_ui/modaldialog/android:java",
     "//components/browser_ui/settings/android:java",
     "//components/browser_ui/site_settings/android:constants_java",
@@ -124,6 +125,7 @@ android_library("java") {
     "//components/content_settings/android:java",
     "//components/embedder_support/android:util_java",
     "//components/location/android:location_java",
+    "//components/permissions/android:core_java",
     "//components/permissions/android:java",
     "//components/prefs/android:java",
     "//components/subresource_filter/android:java",

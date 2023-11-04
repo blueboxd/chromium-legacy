@@ -5,11 +5,13 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 
 #include "base/check_op.h"
-#include "base/debug/crash_logging.h"
+#include "base/containers/cxx20_erase.h"
+#include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
@@ -104,36 +106,42 @@ bool RichAutocompletionApplicable(bool enabled_all_providers,
 
 // Gives a basis for match comparison that prefers some providers over others
 // while remaining neutral with a default score of zero for most providers.
-int GetDeduplicationProviderPreferenceScore(AutocompleteProvider::Type type) {
-  const static int shortcuts_preference =
-      base::FeatureList::IsEnabled(
-          omnibox::kPreferNonShortcutMatchesWhenDeduping)
-          ? -1
-          : 0;
-  const static std::unordered_map<AutocompleteProvider::Type, int>
-      provider_preference = {
-          {// Prefer live document suggestions. We check provider type instead
-           // of match type in order to distinguish live suggestions from the
-           // document provider from stale suggestions from the shortcuts
-           // providers, because the latter omits changing metadata such as last
-           // access date.
-           AutocompleteProvider::TYPE_DOCUMENT, 2},
-          {// Prefer bookmark suggestions, as 1) their titles may be explicitly
-           // set, and 2) they may display enhanced information such as the
-           // bookmark folders path.
-           AutocompleteProvider::TYPE_BOOKMARK, 1},
-          {// Prefer non-shorcut matches over shortcuts, the latter of which may
-           // have stale or missing URL titles (the latter from what-you-typed
-           // matches).
-           AutocompleteProvider::TYPE_SHORTCUTS, shortcuts_preference},
-          {// Prefer non-fuzzy matches over fuzzy matches.
-           AutocompleteProvider::TYPE_HISTORY_FUZZY, -2},
-      };
-  const auto it = provider_preference.find(type);
-  if (it == provider_preference.end()) {
+int GetDeduplicationProviderPreferenceScore(
+    const AutocompleteProvider* provider) {
+  if (!provider) {
     return 0;
   }
-  return it->second;
+  const AutocompleteProvider::Type type = provider->type();
+
+  using ProviderPrefMap = base::flat_map<AutocompleteProvider::Type, int>;
+  static const base::NoDestructor<ProviderPrefMap> provider_prefs({
+      // Prefer live document suggestions. We check provider type instead
+      // of match type in order to distinguish live suggestions from the
+      // document provider from stale suggestions from the shortcuts
+      // providers, because the latter omits changing metadata such as last
+      // access date.
+      {AutocompleteProvider::TYPE_DOCUMENT, 2},
+      // Prefer bookmark suggestions, as:
+      // 1) Their titles may be explicitly set.
+      // 2) They may display enhanced information such as the bookmark
+      //    folders path.
+      {AutocompleteProvider::TYPE_BOOKMARK, 1},
+      // Prefer non-shorcut matches over shortcuts, the latter of which may
+      // have stale or missing URL titles (the latter from what-you-typed
+      // matches).
+      //
+      // If the value here becomes a fixed value, then change `provider_prefs`
+      // from a NoDestructor to a FixedFlatMap.
+      {AutocompleteProvider::TYPE_SHORTCUTS,
+       base::FeatureList::IsEnabled(
+           omnibox::kPreferNonShortcutMatchesWhenDeduping)
+           ? -1
+           : 0},
+      // Prefer non-fuzzy matches over fuzzy matches.
+      {AutocompleteProvider::TYPE_HISTORY_FUZZY, -2},
+  });
+  const auto it = provider_prefs->find(type);
+  return it != provider_prefs->end() ? it->second : 0;
 }
 
 // Implementation of boost::hash_combine
@@ -488,10 +496,6 @@ const gfx::VectorIcon& AutocompleteMatch::AnswerTypeToAnswerIcon(int type) {
 const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
     bool is_bookmark,
     const TemplateURL* turl) const {
-  // TODO(https://crbug.com/1024114): Remove crash logging once fixed.
-  SCOPED_CRASH_KEY_NUMBER("AutocompleteMatch", "type", type);
-  SCOPED_CRASH_KEY_NUMBER("AutocompleteMatch", "provider_type",
-                          provider ? provider->type() : -1);
   const bool use_chrome_refresh_icons =
       OmniboxFieldTrial::IsChromeRefreshSuggestIconsEnabled();
   if (is_bookmark)
@@ -615,14 +619,8 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
                                       : omnibox::kProductIcon;
 
     case Type::NUM_TYPES:
-      // TODO(https://crbug.com/1024114): Replace with NOTREACHED() once fixed.
-      CHECK(false);
-      return vector_icons::kErrorIcon;
+      NOTREACHED_NORETURN();
   }
-
-  // TODO(https://crbug.com/1024114): Replace with NOTREACHED() once fixed.
-  CHECK(false);
-  return vector_icons::kErrorIcon;
 }
 #endif
 
@@ -680,9 +678,9 @@ bool AutocompleteMatch::BetterDuplicate(const AutocompleteMatch& match1,
 
   // Prefer some providers above others according to score (default is zero).
   const int match1_score =
-      GetDeduplicationProviderPreferenceScore(match1.provider->type());
+      GetDeduplicationProviderPreferenceScore(match1.provider);
   const int match2_score =
-      GetDeduplicationProviderPreferenceScore(match2.provider->type());
+      GetDeduplicationProviderPreferenceScore(match2.provider);
   if (match1_score != match2_score) {
     return match1_score > match2_score;
   }
@@ -915,21 +913,21 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
   // or from the search/keyword provider matches.
   const TemplateURL* template_url = GetTemplateURLWithKeyword(
       template_url_service, keyword, stripped_destination_url.host());
-  if (template_url != nullptr &&
-      template_url->SupportsReplacement(
-          template_url_service->search_terms_data())) {
+  if (template_url && template_url->SupportsReplacement(
+                          template_url_service->search_terms_data())) {
     using CacheKey = std::tuple<const TemplateURL*, GURL, bool, bool>;
-    static base::LRUCache<CacheKey, GURL> template_cache(30);
+    static base::NoDestructor<base::LRUCache<CacheKey, GURL>> template_cache(
+        30);
     const CacheKey cache_key = {template_url, url, keep_search_intent_params,
                                 normalize_search_terms};
-    const auto& cached = template_cache.Get(cache_key);
-    if (cached != template_cache.end()) {
+    const auto& cached = template_cache->Get(cache_key);
+    if (cached != template_cache->end()) {
       stripped_destination_url = cached->second;
     } else if (template_url->KeepSearchTermsInURL(
                    url, template_url_service->search_terms_data(),
                    keep_search_intent_params, normalize_search_terms,
                    &stripped_destination_url)) {
-      template_cache.Put(cache_key, stripped_destination_url);
+      template_cache->Put(cache_key, stripped_destination_url);
     }
   }
 
@@ -1348,18 +1346,14 @@ void AutocompleteMatch::FilterAndSortActionsInSuggest() {
   // Collect all Actions in Suggest.
   omnibox::ActionInfo::ActionType remove_action_type =
       OmniboxFieldTrial::kActionsInSuggestRemoveActionTypes.Get();
-  actions.erase(
-      std::remove_if(
-          actions.begin(), actions.end(),
-          [&actions_in_suggest_to_reinsert,
-           remove_action_type](const scoped_refptr<OmniboxAction>& action) {
-            auto* ais = OmniboxActionInSuggest::FromAction(action.get());
-            if (ais != nullptr && ais->Type() != remove_action_type) {
-              actions_in_suggest_to_reinsert.emplace(ais->Type(), action);
-            }
-            return ais != nullptr;
-          }),
-      actions.end());
+  base::EraseIf(actions, [&actions_in_suggest_to_reinsert, remove_action_type](
+                             const scoped_refptr<OmniboxAction>& action) {
+    auto* ais = OmniboxActionInSuggest::FromAction(action.get());
+    if (ais != nullptr && ais->Type() != remove_action_type) {
+      actions_in_suggest_to_reinsert.emplace(ais->Type(), action);
+    }
+    return ais != nullptr;
+  });
 
   for (auto pair : actions_in_suggest_to_reinsert) {
     actions.emplace_back(std::move(pair.second));
@@ -1502,9 +1496,8 @@ void AutocompleteMatch::UpgradeMatchWithPropertiesFrom(
   // bookmark paths and document metadata. Don't edit the omnibox text (i.e.
   // `fill_into_edit`, `inline_autocompletion`, and `additional_text`) as the
   // duplicate may not be `allowed_to_be_default_match`.
-  if (GetDeduplicationProviderPreferenceScore(
-          duplicate_match.provider->type()) >
-      GetDeduplicationProviderPreferenceScore(provider->type())) {
+  if (GetDeduplicationProviderPreferenceScore(duplicate_match.provider) >
+      GetDeduplicationProviderPreferenceScore(provider)) {
     contents = duplicate_match.contents;
     contents_class = duplicate_match.contents_class;
     description = duplicate_match.description;
@@ -1900,25 +1893,28 @@ OmniboxAction* AutocompleteMatch::GetActionAt(size_t index) const {
   return index >= actions.size() ? nullptr : actions[index].get();
 }
 
-void AutocompleteMatch::ConvertFromTakeoverAction() {
-  CHECK(takeover_action);
-  CHECK(takeover_action->ActionId() == OmniboxActionId::PEDAL);
+AutocompleteMatch AutocompleteMatch::CreateActionMatch(
+    size_t action_index) const {
+  CHECK_LT(action_index, actions.size());
+  CHECK_EQ(actions[action_index]->ActionId(), OmniboxActionId::PEDAL);
 
-  swap_contents_and_description = false;
-  transition = ui::PAGE_TRANSITION_GENERATED;
-  type = AutocompleteMatchType::PEDAL;
-  suggest_type = omnibox::SuggestType::TYPE_NATIVE_CHROME;
+  AutocompleteMatch action_match(provider, relevance, false,
+                                 AutocompleteMatchType::PEDAL);
+  action_match.takeover_action = actions[action_index];
+  action_match.transition = ui::PAGE_TRANSITION_GENERATED;
+  action_match.suggest_type = omnibox::SuggestType::TYPE_NATIVE_CHROME;
+  action_match.suggestion_group_id = suggestion_group_id;
 
   // Use the pedal text as primary match `contents`.
-  contents = takeover_action->GetLabelStrings().hint;
-  contents_class = {{0, ACMatchClassification::NONE}};
+  action_match.contents = action_match.takeover_action->GetLabelStrings().hint;
+  action_match.fill_into_edit = action_match.contents;
+  if (action_match.contents.empty()) {
+    action_match.contents_class.clear();
+  } else {
+    action_match.contents_class = {{0, ACMatchClassification::NONE}};
+  }
 
-  // TODO(crbug.com/1473162): May use a shorter description here, like
-  //  a new grit string for "Chrome action", or maybe no string at all.
-  //  Consider also providing a tooltip with `suggestion_contents`, as
-  //  pedals did support this detailed educational string in the past.
-  description = takeover_action->GetLabelStrings().suggestion_contents;
-  description_class = {{0, ACMatchClassification::DIM}};
+  return action_match;
 }
 
 #if DCHECK_IS_ON()

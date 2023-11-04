@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,14 @@ interface CrosDiagnostics {
   // * |result| - union containing diagnostics information of the CPU, e.g.
   //   model name, utilization and temperature, or error.
   GetCpuInfo() => (GetCpuInfoResult result);
+
+  // Retrieves diagnostics information on network interfaces.
+  //
+  // The response:
+  // * |result| - union containing diagnostics information on each network
+  //   interface attached to the system, e.g. network name and the associated IP
+  //   address.
+  GetNetworkInterfaces() => (GetNetworkInterfacesResult network_interfaces);
 };
 
 // Error codes used by the getCpuInfo() method.
@@ -32,21 +40,28 @@ enum GetCpuInfoError {
   kCpuTelemetryInfoUnavailable,
 };
 
+// Error codes used by the getNetworkInterfaces() method.
+enum GetNetworkInterfacesError {
+  // Network interface lookup failed or unsupported.
+  kNetworkInterfaceLookupFailed,
+};
+
+// An enumeration of CPU architectures.
+enum CrosCpuArchitecture {
+  kUnknown,
+  kX86_64,
+  kArm,
+  kArm64,
+};
+
 // Diagnostics information of the CPU, e.g. model name, utilization and
 // temperature.
 struct CrosCpuInfo {
-  // The architecture of the CPU, e.g. "x86", "x86_64", "ARM", "ARM_64".
-  string architecture_name;
+  // The architecture of the CPU, represented by the CrosCpuArchitecture enumeration.
+  CrosCpuArchitecture architecture;
 
   // The model name of the CPU, e.g. "AMD Ryzen 7 7840U", "Intel Core i7-1370P".
   string model_name;
-
-  // The number of power-efficient logical processors available. This is
-  // typically the number of LITTLE cores on the Arm big.LITTLE architecture, or
-  // E-cores on the Intel hybrid architecture.
-  //
-  // Evaluates to 0 when the architecture is symmetric or cannot be determined.
-  int32 num_of_efficient_processors;
 
   // Information on each logical processor available to the system.
   array<CrosLogicalCpuInfo> logical_cpus;
@@ -72,6 +87,19 @@ struct CrosLogicalCpuInfo {
   uint32? scaling_max_frequency_khz;
 };
 
+// Diagnostics information of a network interface, e.g. network name and
+// the associated IP address.
+struct CrosNetworkInterface {
+  // The associated IPv4/6 address.
+  string address;
+
+  // The name of the network interface, e.g. "eth0", "wlan0".
+  string name;
+
+  // The prefix length of the network.
+  uint32 prefix_length;
+};
+
 // The response from the getCpuInfo() method.
 union GetCpuInfoResult {
   // Returned on success.
@@ -79,4 +107,13 @@ union GetCpuInfoResult {
 
   // Returned on encountering an error.
   GetCpuInfoError error;
+};
+
+// The response from the getNetworkInterfaces() method.
+union GetNetworkInterfacesResult {
+  // Returned on success.
+  array<CrosNetworkInterface> network_interfaces;
+
+  // Returned on encountering an error.
+  GetNetworkInterfacesError error;
 };

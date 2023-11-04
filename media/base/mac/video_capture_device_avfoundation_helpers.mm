@@ -5,6 +5,7 @@
 #include "media/base/mac/video_capture_device_avfoundation_helpers.h"
 
 #include "base/notreached.h"
+#include "base/feature_list.h"
 #include "build/build_config.h"
 
 namespace media {

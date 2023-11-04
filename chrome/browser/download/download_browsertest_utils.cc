@@ -21,6 +21,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "third_party/blink/public/common/switches.h"
+#include "ui/views/views_switches.h"
 
 using content::DownloadManager;
 using content::WebContents;
@@ -104,6 +105,11 @@ void DownloadTestBase::SetUpCommandLine(base::CommandLine* command_line) {
   // Slower builders (linux-chromeos-rel, debug, and maybe others) are flaky
   // due to slower loading interacting with deferred commits.
   command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
+
+  // Clicks from tests should always be allowed, even on dialogs that have
+  // protection against accidental double-clicking/etc.
+  command_line->AppendSwitch(
+      views::switches::kDisableInputEventActivationProtectionForTesting);
 }
 
 void DownloadTestBase::TearDownOnMainThread() {
@@ -288,22 +294,19 @@ bool DownloadTestBase::CheckDownloadFullPaths(
   return downloaded_file_deleted;
 }
 
-content::DownloadTestObserver*
-DownloadTestBase::CreateInProgressDownloadObserver(size_t download_count) {
-  DownloadManager* manager = DownloadManagerForBrowser(browser());
-  return new content::DownloadTestObserverInProgress(manager, download_count);
-}
+DownloadItem* DownloadTestBase::CreateSlowTestDownload(Browser* browser) {
+  if (!browser) {
+    browser = DownloadTestBase::browser();
+  }
+  DownloadManager* manager = DownloadManagerForBrowser(browser);
 
-DownloadItem* DownloadTestBase::CreateSlowTestDownload() {
-  std::unique_ptr<content::DownloadTestObserver> observer(
-      CreateInProgressDownloadObserver(1));
+  std::unique_ptr<content::DownloadTestObserver> observer =
+      std::make_unique<content::DownloadTestObserverInProgress>(manager, 1);
   embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
       &content::SlowDownloadHttpResponse::HandleSlowDownloadRequest));
   EXPECT_TRUE(embedded_test_server()->Start());
   GURL slow_download_url = embedded_test_server()->GetURL(
       content::SlowDownloadHttpResponse::kKnownSizeUrl);
-
-  DownloadManager* manager = DownloadManagerForBrowser(browser());
 
   EXPECT_EQ(0, manager->BlockingShutdownCount());
   EXPECT_EQ(0, manager->InProgressCount());
@@ -311,7 +314,7 @@ DownloadItem* DownloadTestBase::CreateSlowTestDownload() {
     return nullptr;
   }
 
-  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), slow_download_url));
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser, slow_download_url));
 
   observer->WaitForFinished();
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::IN_PROGRESS));
@@ -320,11 +323,11 @@ DownloadItem* DownloadTestBase::CreateSlowTestDownload() {
   manager->GetAllDownloads(&items);
 
   DownloadItem* new_item = nullptr;
-  for (auto iter = items.begin(); iter != items.end(); ++iter) {
-    if ((*iter)->GetState() == DownloadItem::IN_PROGRESS) {
+  for (auto* item : items) {
+    if (item->GetState() == DownloadItem::IN_PROGRESS) {
       // There should be only one IN_PROGRESS item.
       EXPECT_FALSE(new_item);
-      new_item = *iter;
+      new_item = item;
     }
   }
   return new_item;

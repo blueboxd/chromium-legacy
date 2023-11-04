@@ -138,8 +138,7 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   void RemoveAttributionDataByDataKey(const DataKey& data_key,
                                       base::OnceClosure callback) override;
 
-  void HandleOsRegistration(OsRegistration,
-                            GlobalRenderFrameHostId render_frame_id) override;
+  void HandleOsRegistration(OsRegistration) override;
 
   void NotifyOsRegistration(const OsRegistration&,
                             bool is_debug_key_allowed,
@@ -237,6 +236,13 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   void OnOsRegistration(bool is_debug_key_allowed,
                         const OsRegistration&,
                         bool success);
+
+  // Per the spec, source's and trigger's filtering keys prefixed with "_"
+  // should only be used for specified features, e.g., lookback window. Before
+  // enforcing this, we measure the use of reserved keys for non specified
+  // features. TODO(https://crbug.com/1481746): Clear when enforcing this.
+  void RecordReservedKeysUsage(const SourceOrTrigger& event,
+                               GlobalRenderFrameHostId) const;
 
   const raw_ref<StoragePartitionImpl> storage_partition_;
 

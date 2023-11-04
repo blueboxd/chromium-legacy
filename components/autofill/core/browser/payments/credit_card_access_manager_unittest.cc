@@ -83,6 +83,10 @@
 #include "content/public/test/mock_navigation_handle.h"
 #endif
 
+#if BUILDFLAG(IS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 using base::ASCIIToUTF16;
 using testing::NiceMock;
 
@@ -644,6 +648,14 @@ class CreditCardAccessManagerMandatoryReauthTest
     CreditCardAccessManagerTest::SetUp();
     feature_list_.InitWithFeatureState(
         features::kAutofillEnablePaymentsMandatoryReauth, FeatureFlagIsOn());
+#if BUILDFLAG(IS_ANDROID)
+    if (base::android::BuildInfo::GetInstance()->is_automotive()) {
+      autofill_client_.GetPrefs()->SetBoolean(
+          prefs::kAutofillPaymentMethodsMandatoryReauth,
+          /*value=*/true);
+      return;
+    }
+#endif  // BUILDFLAG(IS_ANDROID)
     autofill_client_.GetPrefs()->SetBoolean(
         prefs::kAutofillPaymentMethodsMandatoryReauth,
         /*value=*/PrefIsEnabled());
@@ -659,6 +671,15 @@ class CreditCardAccessManagerMandatoryReauthTest
 
   bool isBiometric() const { return std::get<3>(GetParam()); }
 
+  bool IsMandatoryReauthEnabled() {
+#if BUILDFLAG(IS_ANDROID)
+    if (base::android::BuildInfo::GetInstance()->is_automotive()) {
+      return true;
+    }
+#endif
+    return FeatureFlagIsOn() && PrefIsEnabled();
+  }
+
   void SetUpDeviceAuthenticatorResponseMock() {
     if (isBiometric()) {
       ON_CALL(mandatory_reauth_manager(), GetAuthenticationMethod)
@@ -671,15 +692,16 @@ class CreditCardAccessManagerMandatoryReauthTest
     }
 
     // We should only expect an AuthenticateWithMessage() call if the feature
-    // flag is on and the pref is enabled.
-    if (FeatureFlagIsOn() && PrefIsEnabled()) {
+    // flag is on and the pref is enabled, or if the device is automotive.
+    if (IsMandatoryReauthEnabled()) {
       ON_CALL(mandatory_reauth_manager(),
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
               AuthenticateWithMessage)
+          .WillByDefault(testing::WithArg<1>(
 #elif BUILDFLAG(IS_ANDROID)
               Authenticate)
+          .WillByDefault(testing::WithArg<0>(
 #endif
-          .WillByDefault(testing::WithArg<1>(
               testing::Invoke([mandatory_reauth_response_is_success =
                                    MandatoryReauthResponseIsSuccess()](
                                   base::OnceCallback<void(bool)> callback) {
@@ -719,11 +741,9 @@ TEST_P(CreditCardAccessManagerMandatoryReauthTest,
   SetUpDeviceAuthenticatorResponseMock();
   credit_card_access_manager().FetchCreditCard(card, accessor_->GetWeakPtr());
 
-  // The only time we should expect an error is if the feature flag is on, the
-  // pref is enabled, but the mandatory re-auth authentication was not
-  // successful.
-  if (FeatureFlagIsOn() && PrefIsEnabled() &&
-      !MandatoryReauthResponseIsSuccess()) {
+  // The only time we should expect an error is if mandatory re-auth is
+  // enabled, but the mandatory re-auth authentication was not successful.
+  if (IsMandatoryReauthEnabled() && !MandatoryReauthResponseIsSuccess()) {
     EXPECT_EQ(accessor_->result(), CreditCardFetchResult::kTransientError);
     EXPECT_TRUE(accessor_->number().empty());
   } else {
@@ -733,7 +753,7 @@ TEST_P(CreditCardAccessManagerMandatoryReauthTest,
   std::string histogram_name =
       "Autofill.PaymentMethods.CheckoutFlow.ReauthUsage.LocalCard";
   histogram_name += isBiometric() ? ".Biometric" : ".ScreenLock";
-  if (FeatureFlagIsOn() && PrefIsEnabled()) {
+  if (IsMandatoryReauthEnabled()) {
     histogram_tester.ExpectBucketCount(
         histogram_name,
         autofill_metrics::MandatoryReauthAuthenticationFlowEvent::kFlowStarted,
@@ -781,8 +801,7 @@ TEST_P(CreditCardAccessManagerMandatoryReauthTest,
       AutofillClient::PaymentsRpcResult::kSuccess, response);
 
   // Expect the accessor receives the correct response.
-  if (FeatureFlagIsOn() && PrefIsEnabled() &&
-      !MandatoryReauthResponseIsSuccess()) {
+  if (IsMandatoryReauthEnabled() && !MandatoryReauthResponseIsSuccess()) {
     EXPECT_EQ(accessor_->result(), CreditCardFetchResult::kTransientError);
   } else {
     EXPECT_EQ(accessor_->result(), CreditCardFetchResult::kSuccess);
@@ -794,7 +813,7 @@ TEST_P(CreditCardAccessManagerMandatoryReauthTest,
   std::string histogram_name =
       "Autofill.PaymentMethods.CheckoutFlow.ReauthUsage.VirtualCard";
   histogram_name += isBiometric() ? ".Biometric" : ".ScreenLock";
-  if (FeatureFlagIsOn() && PrefIsEnabled()) {
+  if (IsMandatoryReauthEnabled()) {
     histogram_tester.ExpectBucketCount(
         histogram_name,
         autofill_metrics::MandatoryReauthAuthenticationFlowEvent::kFlowStarted,
@@ -820,6 +839,12 @@ INSTANTIATE_TEST_SUITE_P(,
 
 // Tests retrieving local cards.
 TEST_F(CreditCardAccessManagerTest, FetchLocalCardSuccess) {
+#if BUILDFLAG(IS_ANDROID)
+  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
+    GTEST_SKIP() << "This test should not run on automotive.";
+  }
+#endif  // BUILDFLAG(IS_ANDROID)
+
   CreateLocalCard(kTestGUID, kTestNumber);
   CreditCard* card = personal_data().GetCreditCardByGUID(kTestGUID);
 
@@ -834,17 +859,11 @@ TEST_F(CreditCardAccessManagerTest, FetchLocalCardSuccess) {
 
   // There was no interactive authentication in this flow, so check that this
   // is signaled correctly.
-  absl::optional<absl::variant<FormDataImporter::CardGuid,
-                               FormDataImporter::CardLastFourDigits>>
-      card_identifier =
-          autofill_client_.GetFormDataImporter()
-              ->GetCardIdentifierIfNonInteractiveAuthenticationFlowCompleted();
+  absl::optional<CreditCard::RecordType> card_identifier =
+      autofill_client_.GetFormDataImporter()
+          ->GetCardRecordTypeIfNonInteractiveAuthenticationFlowCompleted();
   ASSERT_TRUE(card_identifier.has_value());
-  ASSERT_TRUE(absl::holds_alternative<FormDataImporter::CardGuid>(
-      card_identifier.value()));
-  ASSERT_EQ(
-      absl::get<FormDataImporter::CardGuid>(card_identifier.value()).value(),
-      kTestGUID);
+  ASSERT_EQ(card_identifier.value(), CreditCard::RecordType::kLocalCard);
 }
 
 // Ensures that FetchCreditCard() reports a failure when a card does not exist.
@@ -905,7 +924,7 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardCVCSuccess) {
     // authentication.
     EXPECT_FALSE(
         autofill_client_.GetFormDataImporter()
-            ->GetCardIdentifierIfNonInteractiveAuthenticationFlowCompleted()
+            ->GetCardRecordTypeIfNonInteractiveAuthenticationFlowCompleted()
             .has_value());
   }
 }
@@ -2595,6 +2614,12 @@ TEST_F(CreditCardAccessManagerTest, IsVirtualCardPresentInUnmaskedCache) {
 
 TEST_F(CreditCardAccessManagerTest, RiskBasedVirtualCardUnmasking_Success) {
   base::HistogramTester histogram_tester;
+#if BUILDFLAG(IS_ANDROID)
+  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
+    GTEST_SKIP() << "This test should not run on automotive.";
+  }
+#endif  // BUILDFLAG(IS_ANDROID)
+
   CreateServerCard(kTestGUID, kTestNumber, /*masked=*/false, kTestServerId);
   CreditCard* virtual_card = personal_data().GetCreditCardByGUID(kTestGUID);
   virtual_card->set_record_type(CreditCard::RecordType::kVirtualCard);
@@ -2627,22 +2652,12 @@ TEST_F(CreditCardAccessManagerTest, RiskBasedVirtualCardUnmasking_Success) {
   EXPECT_EQ(accessor_->expiry_year(), base::UTF8ToUTF16(test::NextYear()));
 
   // There was no interactive authentication in this flow, so check that this
-  // is signaled correctly. The card identifier in the virtual card case should
-  // be the last four digits of the card number.
-  // There was no interactive authentication in this flow, so check that this
   // is signaled correctly.
-  absl::optional<absl::variant<FormDataImporter::CardGuid,
-                               FormDataImporter::CardLastFourDigits>>
-      card_identifier =
-          autofill_client_.GetFormDataImporter()
-              ->GetCardIdentifierIfNonInteractiveAuthenticationFlowCompleted();
+  absl::optional<CreditCard::RecordType> card_identifier =
+      autofill_client_.GetFormDataImporter()
+          ->GetCardRecordTypeIfNonInteractiveAuthenticationFlowCompleted();
   ASSERT_TRUE(card_identifier.has_value());
-  ASSERT_TRUE(absl::holds_alternative<FormDataImporter::CardLastFourDigits>(
-      card_identifier.value()));
-  ASSERT_EQ(
-      absl::get<FormDataImporter::CardLastFourDigits>(card_identifier.value())
-          .value(),
-      response.real_pan.substr(response.real_pan.size() - 4));
+  EXPECT_EQ(card_identifier.value(), CreditCard::RecordType::kVirtualCard);
 
   // Expect the metrics are logged correctly.
   histogram_tester.ExpectUniqueSample(
@@ -2678,7 +2693,7 @@ TEST_F(CreditCardAccessManagerTest,
   // Expect that we did not signal that there was no interactive authentication.
   EXPECT_FALSE(
       autofill_client_.GetFormDataImporter()
-          ->GetCardIdentifierIfNonInteractiveAuthenticationFlowCompleted()
+          ->GetCardRecordTypeIfNonInteractiveAuthenticationFlowCompleted()
           .has_value());
 
   // Expect accessor to successfully retrieve the CVC.
@@ -2715,7 +2730,7 @@ TEST_F(CreditCardAccessManagerTest,
   // Expect that we did not signal that there was no interactive authentication.
   EXPECT_FALSE(
       autofill_client_.GetFormDataImporter()
-          ->GetCardIdentifierIfNonInteractiveAuthenticationFlowCompleted()
+          ->GetCardRecordTypeIfNonInteractiveAuthenticationFlowCompleted()
           .has_value());
 
   // Expect the metrics are logged correctly.
@@ -2771,7 +2786,7 @@ TEST_F(CreditCardAccessManagerTest,
   // Expect that we did not signal that there was no interactive authentication.
   EXPECT_FALSE(
       autofill_client_.GetFormDataImporter()
-          ->GetCardIdentifierIfNonInteractiveAuthenticationFlowCompleted()
+          ->GetCardRecordTypeIfNonInteractiveAuthenticationFlowCompleted()
           .has_value());
 
   // Expect the metrics are logged correctly.
@@ -2847,8 +2862,7 @@ TEST_F(CreditCardAccessManagerTest,
   // Mock FIDO authentication completed.
   CreditCardFidoAuthenticator::FidoAuthenticationResponse fido_response;
   fido_response.did_succeed = true;
-  CreditCard card = test::GetCreditCard();
-  card.set_cvc(u"234");
+  CreditCard card = test::WithCvc(test::GetCreditCard(), u"234");
   fido_response.card = &card;
   credit_card_access_manager().OnFIDOAuthenticationComplete(fido_response);
 
@@ -3207,22 +3221,22 @@ TEST_F(CreditCardAccessManagerTest,
       autofill_metrics::ServerCardUnmaskResult::kFlowCancelled, 1);
 }
 
-// Test that the CreditCardAccessManager's destructor resets the identifier of
+// Test that the CreditCardAccessManager's destructor resets the record type of
 // the card that had no interactive authentication flows completed in the
 // associated FormDataImporter.
 TEST_F(CreditCardAccessManagerTest, DestructorResetsCardIdentifier) {
   auto* form_data_importer = autofill_client_.GetFormDataImporter();
   form_data_importer
-      ->SetCardIdentifierIfNonInteractiveAuthenticationFlowCompleted(
-          FormDataImporter::CardGuid("TestGuid"));
+      ->SetCardRecordTypeIfNonInteractiveAuthenticationFlowCompleted(
+          CreditCard::RecordType::kLocalCard);
   EXPECT_TRUE(
       form_data_importer
-          ->GetCardIdentifierIfNonInteractiveAuthenticationFlowCompleted()
+          ->GetCardRecordTypeIfNonInteractiveAuthenticationFlowCompleted()
           .has_value());
   autofill_driver_.reset();
   EXPECT_FALSE(
       form_data_importer
-          ->GetCardIdentifierIfNonInteractiveAuthenticationFlowCompleted()
+          ->GetCardRecordTypeIfNonInteractiveAuthenticationFlowCompleted()
           .has_value());
 }
 

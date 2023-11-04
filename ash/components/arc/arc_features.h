@@ -15,6 +15,7 @@ namespace arc {
 // Please keep alphabetized.
 BASE_DECLARE_FEATURE(kArcOnDemandFeature);
 BASE_DECLARE_FEATURE(kBootCompletedBroadcastFeature);
+BASE_DECLARE_FEATURE(kContainerAppKiller);
 BASE_DECLARE_FEATURE(kCustomTabsExperimentFeature);
 BASE_DECLARE_FEATURE(kDocumentsProviderUnknownSizeFeature);
 BASE_DECLARE_FEATURE(kEnableArcIdleManager);
@@ -70,6 +71,7 @@ extern const base::FeatureParam<int> kVmMemoryPSIReportsPeriod;
 BASE_DECLARE_FEATURE(kVmMemorySize);
 extern const base::FeatureParam<int> kVmMemorySizeShiftMiB;
 extern const base::FeatureParam<int> kVmMemorySizeMaxMiB;
+extern const base::FeatureParam<int> kVmMemorySizePercentage;
 BASE_DECLARE_FEATURE(kVmBroadcastPreNotifyANR);
 BASE_DECLARE_FEATURE(kVmmSwapoutGhostWindow);
 BASE_DECLARE_FEATURE(kVmmSwapKeyboardShortcut);

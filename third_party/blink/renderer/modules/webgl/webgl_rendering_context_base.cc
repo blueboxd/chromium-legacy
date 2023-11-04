@@ -675,15 +675,17 @@ void WebGLRenderingContextBase::drawingBufferStorage(GLenum sizedformat,
                       "height > MAX_RENDERBUFFER_SIZE");
     return;
   }
+  if (!attrs.alpha) {
+    SynthesizeGLError(GL_INVALID_OPERATION, function_name,
+                      "alpha is required for drawingBufferStorage");
+    return;
+  }
 
   // Ensure that the format is supported, and set the corresponding alpha
   // type.
   SkAlphaType alpha_type =
       attrs.premultiplied_alpha ? kPremul_SkAlphaType : kUnpremul_SkAlphaType;
   switch (sizedformat) {
-    case GL_RGB8:
-      alpha_type = kOpaque_SkAlphaType;
-      break;
     case GL_RGBA8:
       break;
     case GL_SRGB8_ALPHA8:
@@ -751,16 +753,16 @@ void WebGLRenderingContextBase::commit() {
 
   if (PaintRenderingResultsToCanvas(kBackBuffer)) {
     if (Host()->GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU)) {
-      Host()->Commit(Host()->ResourceProvider()->ProduceCanvasResource(
-                         CanvasResourceProvider::FlushReason::kNone),
-                     SkIRect::MakeWH(width, height));
+      Host()->Commit(
+          Host()->ResourceProvider()->ProduceCanvasResource(FlushReason::kNone),
+          SkIRect::MakeWH(width, height));
     }
   }
   MarkLayerComposited();
 }
 
 scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
-    CanvasResourceProvider::FlushReason reason) {
+    FlushReason reason) {
   if (!GetDrawingBuffer())
     return nullptr;
 
@@ -802,8 +804,9 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
 
   if (!CopyRenderingResultsFromDrawingBuffer(resource_provider.get(),
                                              kBackBuffer)) {
-    // CopyRenderingResultsFromDrawingBuffer will handle both CPU and GPU cases.
-    NOTREACHED();
+    // CopyRenderingResultsFromDrawingBuffer handles both the
+    // hardware-accelerated and software cases, so there is no
+    // possible additional fallback for failures seen at this point.
     return nullptr;
   }
   return resource_provider->Snapshot(reason);
@@ -1588,18 +1591,17 @@ bool WebGLRenderingContextBase::PushFrameWithCopy() {
     if (Host()->GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU)) {
       const int width = GetDrawingBuffer()->Size().width();
       const int height = GetDrawingBuffer()->Size().height();
-      submitted_frame = Host()->PushFrame(
-          Host()->ResourceProvider()->ProduceCanvasResource(
-              CanvasResourceProvider::FlushReason::kNon2DCanvas),
-          SkIRect::MakeWH(width, height));
+      submitted_frame =
+          Host()->PushFrame(Host()->ResourceProvider()->ProduceCanvasResource(
+                                FlushReason::kNon2DCanvas),
+                            SkIRect::MakeWH(width, height));
     }
   }
   MarkLayerComposited();
   return submitted_frame;
 }
 
-void WebGLRenderingContextBase::FinalizeFrame(
-    CanvasResourceProvider::FlushReason) {
+void WebGLRenderingContextBase::FinalizeFrame(FlushReason) {
   if (Host()->LowLatencyEnabled()) {
     // PaintRenderingResultsToCanvas will export drawing buffer if the resource
     // provider is single buffered.  Otherwise it will copy the drawing buffer.
@@ -1746,9 +1748,9 @@ bool WebGLRenderingContextBase::IsOriginTopLeft() const {
   return is_origin_top_left_;
 }
 
-void WebGLRenderingContextBase::SetIsInHiddenPage(bool hidden) {
+void WebGLRenderingContextBase::PageVisibilityChanged() {
   if (GetDrawingBuffer())
-    GetDrawingBuffer()->SetIsInHiddenPage(hidden);
+    GetDrawingBuffer()->SetIsInHiddenPage(!Host()->IsPageVisible());
 }
 
 bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
@@ -3896,6 +3898,14 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* script_state,
       SynthesizeGLError(GL_INVALID_ENUM, "getParameter",
                         "invalid parameter name, EXT_clip_control not enabled");
       return ScriptValue::CreateNull(script_state->GetIsolate());
+    case GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT:  // EXT_blend_func_extended
+      if (ExtensionEnabled(kEXTBlendFuncExtendedName)) {
+        return GetUnsignedIntParameter(script_state, pname);
+      }
+      SynthesizeGLError(
+          GL_INVALID_ENUM, "getParameter",
+          "invalid parameter name, EXT_blend_func_extended not enabled");
+      return ScriptValue::CreateNull(script_state->GetIsolate());
     case GL_MAX_COLOR_ATTACHMENTS_EXT:  // EXT_draw_buffers BEGIN
       if (ExtensionEnabled(kWebGLDrawBuffersName) || IsWebGL2())
         return WebGLAny(script_state, MaxColorAttachments());
@@ -5552,8 +5562,7 @@ scoped_refptr<Image> WebGLRenderingContextBase::DrawImageIntoBufferForTexImage(
   draw_options.clamping_mode = Image::kDoNotClampImageToSourceRect;
   image->Draw(resource_provider->Canvas(), flags, gfx::RectF(dest_rect),
               gfx::RectF(src_rect), draw_options);
-  return resource_provider->Snapshot(
-      CanvasResourceProvider::FlushReason::kWebGLTexImage);
+  return resource_provider->Snapshot(FlushReason::kWebGLTexImage);
 }
 
 WebGLTexture* WebGLRenderingContextBase::ValidateTexImageBinding(
@@ -6047,7 +6056,7 @@ void WebGLRenderingContextBase::TexImageHelperCanvasRenderingContextHost(
 
   SourceImageStatus source_image_status = kInvalidSourceImageStatus;
   scoped_refptr<Image> image = context_host->GetSourceImageForCanvas(
-      CanvasResourceProvider::FlushReason::kWebGLTexImage, &source_image_status,
+      FlushReason::kWebGLTexImage, &source_image_status,
       gfx::SizeF(*params.width, *params.height));
   if (source_image_status != kNormalSourceImageStatus)
     return;

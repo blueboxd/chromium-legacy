@@ -7,8 +7,10 @@
 #include <vector>
 
 #include "base/check_is_test.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/typed_macros.h"
 #include "content/browser/renderer_host/policy_container_host.h"
@@ -30,6 +32,56 @@
 
 namespace content {
 namespace {
+
+// Internally enforces a limit to allow a loader outlive its renderer after
+// receiving disconnection notification from the renderer.
+//
+// Defaults to 30s, the same as pre-migration's timeout.
+constexpr base::TimeDelta kDefaultDisconnectedKeepAliveURLLoaderTimeout =
+    base::Seconds(30);
+
+base::TimeDelta GetDisconnectedKeepAliveURLLoaderTimeout() {
+  return base::Seconds(GetFieldTrialParamByFeatureAsInt(
+      blink::features::kKeepAliveInBrowserMigration,
+      "disconnected_loader_timeout_seconds",
+      base::checked_cast<int32_t>(
+          kDefaultDisconnectedKeepAliveURLLoaderTimeout.InSeconds())));
+}
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+//
+// Must remain in sync with FetchKeepAliveBrowserMetricType in
+// tools/metrics/histograms/enums.xml.
+enum class FetchKeepAliveBrowserMetricType {
+  kLoadingSuceeded = 0,
+  kLoadingFailed = 1,
+  kForwardingCompleted = 2,
+  kCancelledAfterTimeLimit = 3,
+  kAbortedByInitiator = 4,
+  kMaxValue = kAbortedByInitiator,
+};
+
+void LogFetchKeepAliveMetric(const FetchKeepAliveBrowserMetricType& type) {
+  base::UmaHistogramEnumeration("FetchKeepAlive.Browser.Metrics", type);
+}
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+//
+// Must remain in sync with FetchLaterBrowserMetricType in
+// tools/metrics/histograms/enums.xml.
+enum class FetchLaterBrowserMetricType {
+  kAbortedByInitiator = 0,
+  kStartedAfterInitiatorDisconnected = 1,
+  kStartedByInitiator = 2,
+  kCancelledAfterTimeLimit = 3,
+  kMaxValue = kCancelledAfterTimeLimit,
+};
+
+void LogFetchLaterMetric(const FetchLaterBrowserMetricType& type) {
+  base::UmaHistogramEnumeration("FetchLater.Browser.Metrics", type);
+}
 
 // A convenient holder to aggregate modified header fields for redirect.
 struct ModifiedHeaders {
@@ -305,6 +357,10 @@ KeepAliveURLLoader::KeepAliveURLLoader(
               request_id_, "url", last_url_);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("loading", "KeepAliveURLLoader",
                                     request_id_, "url", last_url_);
+  if (IsFetchLater()) {
+    base::UmaHistogramBoolean("FetchLater.Browser.Total", true);
+  }
+  base::UmaHistogramBoolean("FetchKeepAlive.Browser.Total", true);
 
   // TODO(crbug.com/1356128): Replace custom throttle logic here with blink's.
   for (auto& content_throttle : throttles) {
@@ -319,6 +375,11 @@ void KeepAliveURLLoader::Start() {
               request_id_);
   is_started_ = true;
 
+  if (IsFetchLater()) {
+    base::UmaHistogramBoolean("FetchLater.Browser.Total.Started", true);
+  }
+  base::UmaHistogramBoolean("FetchKeepAlive.Browser.Total.Started", true);
+
   // Asks the network service to create a URL loader with passed in params.
   network_loader_factory_->CreateLoaderAndStart(
       loader_.BindNewPipeAndPassReceiver(), request_id_, options_,
@@ -326,8 +387,9 @@ void KeepAliveURLLoader::Start() {
       traffic_annotation_);
   loader_receiver_.set_disconnect_handler(base::BindOnce(
       &KeepAliveURLLoader::OnNetworkConnectionError, base::Unretained(this)));
-  forwarding_client_.set_disconnect_handler(base::BindOnce(
-      &KeepAliveURLLoader::OnRendererConnectionError, base::Unretained(this)));
+  forwarding_client_.set_disconnect_handler(
+      base::BindOnce(&KeepAliveURLLoader::OnForwardingClientDisconnected,
+                     base::Unretained(this)));
 
   // These throttles are also run by `blink::ThrottlingURLLoader`. However, they
   // have to be re-run here in case of handling in-browser redirects.
@@ -361,6 +423,8 @@ KeepAliveURLLoader::~KeepAliveURLLoader() {
   TRACE_EVENT("loading", "KeepAliveURLLoader::~KeepAliveURLLoader",
               "request_id", request_id_);
   TRACE_EVENT_NESTABLE_ASYNC_END0("loading", "KeepAliveURLLoader", request_id_);
+
+  disconnected_loader_timer_.Stop();
 }
 
 void KeepAliveURLLoader::set_on_delete_callback(
@@ -482,6 +546,7 @@ void KeepAliveURLLoader::OnReceiveRedirect(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TRACE_EVENT("loading", "KeepAliveURLLoader::OnReceiveRedirect", "request_id",
               request_id_);
+  base::UmaHistogramBoolean("FetchKeepAlive.Browser.Total.Redirected", true);
 
   // Stores the redirect data for later use by renderer.
   stored_url_load_->redirects.emplace(
@@ -564,6 +629,8 @@ void KeepAliveURLLoader::OnReceiveResponse(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TRACE_EVENT("loading", "KeepAliveURLLoader::OnReceiveResponse", "request_id",
               request_id_, "url", last_url_);
+  base::UmaHistogramBoolean("FetchKeepAlive.Browser.Total.ReceivedResponse",
+                            true);
 
   if (observer_for_testing_) {
     CHECK_IS_TEST();
@@ -642,6 +709,11 @@ void KeepAliveURLLoader::OnComplete(
     CHECK_IS_TEST();
     observer_for_testing_->OnComplete(this, completion_status);
   }
+
+  LogFetchKeepAliveMetric(
+      completion_status.error_code == net::OK
+          ? FetchKeepAliveBrowserMetricType::kLoadingSuceeded
+          : FetchKeepAliveBrowserMetricType::kLoadingFailed);
 
   // In case the renderer is alive, the stored status will be forwarded
   // at the end of `ForwardURLLoad()`.
@@ -735,6 +807,8 @@ void KeepAliveURLLoader::ForwardURLLoad() {
           this, *(stored_url_load_->completion_status));
     }
     stored_url_load_ = nullptr;
+    LogFetchKeepAliveMetric(
+        FetchKeepAliveBrowserMetricType::kForwardingCompleted);
 
     DeleteSelf();
     // DO NOT touch any members after this line. `this` is already deleted.
@@ -781,6 +855,7 @@ net::Error KeepAliveURLLoader::WillFollowRedirect(
   return net::OK;
 }
 
+// Browser <- Network connection.
 void KeepAliveURLLoader::OnNetworkConnectionError() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TRACE_EVENT("loading", "KeepAliveURLLoader::OnNetworkConnectionError",
@@ -805,9 +880,10 @@ void KeepAliveURLLoader::OnNetworkConnectionError() {
   // DO NOT touch any members after this line. `this` is already deleted.
 }
 
-void KeepAliveURLLoader::OnRendererConnectionError() {
+// Browser -> Renderer connection
+void KeepAliveURLLoader::OnForwardingClientDisconnected() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  TRACE_EVENT("loading", "KeepAliveURLLoader::OnRendererConnectionError",
+  TRACE_EVENT("loading", "KeepAliveURLLoader::OnForwardingClientDisconnected",
               "request_id", request_id_);
 
   // Dropping the client as renderer is gone.
@@ -828,8 +904,47 @@ void KeepAliveURLLoader::OnRendererConnectionError() {
   // DO NOT touch any members after this line. `this` is already deleted.
 }
 
+// Browser <- Renderer connection.
+void KeepAliveURLLoader::OnURLLoaderDisconnected() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  TRACE_EVENT("loading", "KeepAliveURLLoader::OnURLLoaderDisconnected",
+              "request_id", request_id_);
+  CHECK(!disconnected_loader_timer_.IsRunning());
+
+  if (!IsStarted()) {
+    // May be the last chance to start a deferred loader.
+    LogFetchLaterMetric(
+        FetchLaterBrowserMetricType::kStartedAfterInitiatorDisconnected);
+    Start();
+  }
+  // For other types of keepalive requests, this loader does not care about
+  // whether messages can be received from renderer or not.
+
+  // Prevents this loader from staying alive indefinitely.
+  disconnected_loader_timer_.Start(
+      FROM_HERE, GetDisconnectedKeepAliveURLLoaderTimeout(),
+      base::BindOnce(&KeepAliveURLLoader::OnDisconnectedLoaderTimerFired,
+                     // `this` owns `disconnected_loader_timer_`.
+                     base::Unretained(this)));
+}
+
+void KeepAliveURLLoader::OnDisconnectedLoaderTimerFired() {
+  if (IsFetchLater()) {
+    LogFetchLaterMetric(FetchLaterBrowserMetricType::kCancelledAfterTimeLimit);
+  }
+  LogFetchKeepAliveMetric(
+      FetchKeepAliveBrowserMetricType::kCancelledAfterTimeLimit);
+  DeleteSelf();
+}
+
+bool KeepAliveURLLoader::IsFetchLater() const {
+  return base::FeatureList::IsEnabled(blink::features::kFetchLaterAPI) &&
+         resource_request_.is_fetch_later_api;
+}
+
 void KeepAliveURLLoader::DeleteSelf() {
   CHECK(on_delete_callback_);
+  base::UmaHistogramBoolean("FetchKeepAlive.Browser.Total.Finished", true);
   std::move(on_delete_callback_).Run();
 }
 

@@ -293,7 +293,6 @@ public class TabPersistentStoreUnitTest {
     @Test
     @SmallTest
     @Feature("TabPersistentStore")
-    // TODO(crbug.com/1119583) Add similar test for CriticalPersistedTabData
     public void testNtpWithStateNotIgnoredDuringRestore() {
         mPersistentStore =
                 new TabPersistentStore(mPersistencePolicy, mTabModelSelector, mTabCreatorManager);
@@ -304,8 +303,7 @@ public class TabPersistentStoreUnitTest {
         TabState ntpState = new TabState();
         mPersistentStore.restoreTab(ntpDetails, ntpState, false);
 
-        verify(mNormalTabCreator)
-                .createFrozenTab(eq(ntpState), eq(null), eq(1), eq(false), anyInt());
+        verify(mNormalTabCreator).createFrozenTab(eq(ntpState), eq(1), eq(false), anyInt());
     }
 
     @Test

@@ -9,6 +9,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
 #include "chrome/browser/nearby_sharing/nearby_share_feature_status.h"
 #include "chromeos/ash/services/nearby/public/mojom/nearby_connections_types.mojom.h"
 #include "chromeos/ash/services/nearby/public/mojom/nearby_decoder_types.mojom.h"
@@ -285,6 +286,12 @@ std::string GetShareTargetTypeSubcategoryName(
   }
 }
 
+// Note: There are many screen states besides locked and logged in. These two
+// are the only states which Nearby Share is enabled for.
+std::string GetScreenLockedName(bool is_screen_locked) {
+  return is_screen_locked ? ".ScreenLocked" : ".LoggedIn";
+}
+
 std::string GetPayloadStatusSubcategoryName(
     nearby::connections::mojom::PayloadStatus status) {
   switch (status) {
@@ -390,16 +397,38 @@ UpgradedMedium GetUpgradedMediumForMetrics(
   }
 }
 
-void RecordNearbySharePayloadAttachmentTypeMetric(
+std::string GetContactStatus(bool is_contact, bool for_self_share) {
+  if (for_self_share) {
+    return ".SelfShare";
+  }
+
+  return is_contact ? ".Contact" : ".NonContact";
+}
+
+void RecordNearbySharePayloadAttachmentTypeMetricVariants(
+    const std::string prefix,
     AttachmentType type,
     bool is_incoming,
     nearby::connections::mojom::PayloadStatus status) {
-  const std::string prefix = "Nearby.Share.Payload.AttachmentType";
   base::UmaHistogramEnumeration(prefix, type);
   base::UmaHistogramEnumeration(
       prefix + GetDirectionSubcategoryName(is_incoming), type);
   base::UmaHistogramEnumeration(
       prefix + GetPayloadStatusSubcategoryName(status), type);
+}
+
+void RecordNearbySharePayloadAttachmentTypeMetric(
+    AttachmentType type,
+    bool is_incoming,
+    bool is_contact,
+    bool for_self_share,
+    nearby::connections::mojom::PayloadStatus status) {
+  RecordNearbySharePayloadAttachmentTypeMetricVariants(
+      "Nearby.Share.Payload.AttachmentType", type, is_incoming, status);
+  RecordNearbySharePayloadAttachmentTypeMetricVariants(
+      "Nearby.Share.Payload" + GetContactStatus(is_contact, for_self_share) +
+          ".AttachmentType",
+      type, is_incoming, status);
 }
 
 // FuseBox (go/fuse-box) makes virtual file systems (e.g. ARC ContentProvider)
@@ -468,24 +497,33 @@ void RecordNearbyShareTimeFromLocalAcceptToTransferStartMetric(
 void RecordNearbySharePayloadFileAttachmentTypeMetric(
     sharing::mojom::FileMetadata::Type type,
     bool is_incoming,
+    bool is_contact,
+    bool for_self_share,
     nearby::connections::mojom::PayloadStatus status) {
   RecordNearbySharePayloadAttachmentTypeMetric(
-      FileMetadataTypeToAttachmentType(type), is_incoming, status);
+      FileMetadataTypeToAttachmentType(type), is_incoming, is_contact,
+      for_self_share, status);
 }
 
 void RecordNearbySharePayloadTextAttachmentTypeMetric(
     sharing::mojom::TextMetadata::Type type,
     bool is_incoming,
+    bool is_contact,
+    bool for_self_share,
     nearby::connections::mojom::PayloadStatus status) {
   RecordNearbySharePayloadAttachmentTypeMetric(
-      TextMetadataTypeToAttachmentType(type), is_incoming, status);
+      TextMetadataTypeToAttachmentType(type), is_incoming, is_contact,
+      for_self_share, status);
 }
 
 void RecordNearbySharePayloadWifiCredentialsAttachmentTypeMetric(
     bool is_incoming,
+    bool is_contact,
+    bool for_self_share,
     nearby::connections::mojom::PayloadStatus status) {
   RecordNearbySharePayloadAttachmentTypeMetric(AttachmentType::kWifiCredentials,
-                                               is_incoming, status);
+                                               is_incoming, is_contact,
+                                               for_self_share, status);
 }
 
 void RecordNearbySharePayloadFileOperationMetrics(
@@ -642,7 +680,9 @@ void RecordNearbyShareTransferFinalStatusMetric(
     bool is_incoming,
     nearby_share::mojom::ShareTargetType type,
     TransferMetadata::Status status,
-    bool is_known) {
+    bool is_known,
+    bool for_self_share,
+    bool is_screen_locked) {
   DCHECK(TransferMetadata::IsFinalStatus(status));
 
   // Emit success/failure to Standard Feature Usage Logging if there was a
@@ -660,9 +700,13 @@ void RecordNearbyShareTransferFinalStatusMetric(
 
   base::UmaHistogramBoolean("Nearby.Share.IsKnownContact", is_known);
 
+  // Log whether the transfer was a Self Share if Self Share is enabled.
+  if (features::IsSelfShareEnabled()) {
+    base::UmaHistogramBoolean("Nearby.Share.IsSelfShare", for_self_share);
+  }
+
   std::string send_or_receive = GetDirectionSubcategoryName(is_incoming);
   std::string share_target_type = GetShareTargetTypeSubcategoryName(type);
-  std::string contact_or_not = GetIsKnownSubcategoryName(is_known);
 
   base::UmaHistogramEnumeration("Nearby.Share.DeviceType", type);
   base::UmaHistogramEnumeration("Nearby.Share.DeviceType" + send_or_receive,
@@ -676,7 +720,8 @@ void RecordNearbyShareTransferFinalStatusMetric(
     base::UmaHistogramEnumeration(prefix, final_status);
     base::UmaHistogramEnumeration(prefix + send_or_receive, final_status);
     base::UmaHistogramEnumeration(prefix + share_target_type, final_status);
-    base::UmaHistogramEnumeration(prefix + contact_or_not, final_status);
+    base::UmaHistogramEnumeration(
+        prefix + GetContactStatus(is_known, for_self_share), final_status);
   }
 
   // Log the transfer success/failure for high-level success and Critical User
@@ -696,10 +741,18 @@ void RecordNearbyShareTransferFinalStatusMetric(
     }
     if (success.has_value()) {
       const std::string prefix = "Nearby.Share.Transfer.Success";
+      const std::string contact_status =
+          GetContactStatus(is_known, for_self_share);
       base::UmaHistogramBoolean(prefix, *success);
       base::UmaHistogramBoolean(
-          prefix + send_or_receive + share_target_type + contact_or_not,
+          prefix + send_or_receive + share_target_type + contact_status,
           *success);
+      if (for_self_share && is_incoming && features::IsSelfShareEnabled()) {
+        base::UmaHistogramBoolean(prefix + ".Receive" + share_target_type +
+                                      ".SelfShare" +
+                                      GetScreenLockedName(is_screen_locked),
+                                  success.value());
+      }
     }
   }
 }

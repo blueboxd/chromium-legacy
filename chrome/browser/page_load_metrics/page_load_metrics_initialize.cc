@@ -30,13 +30,13 @@
 #include "chrome/browser/page_load_metrics/observers/page_anchors_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/portal_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/prefetch_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/preview_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/protocol_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/scheme_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/security_state_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/service_worker_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/signed_exchange_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/tab_strip_page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/observers/third_party_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/translate_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_memory_tracker_factory.h"
 #include "chrome/browser/preloading/prefetch/no_state_prefetch/chrome_no_state_prefetch_contents_delegate.h"
@@ -45,6 +45,7 @@
 #include "components/no_state_prefetch/browser/no_state_prefetch_contents.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/page_load_metrics/browser/observers/ad_metrics/ads_page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/observers/third_party_metrics_observer.h"
 #include "components/page_load_metrics/browser/observers/zstd_page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_embedder_base.h"
 #include "components/page_load_metrics/browser/page_load_metrics_memory_tracker.h"
@@ -178,6 +179,7 @@ void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
         std::make_unique<LocalNetworkRequestsPageLoadMetricsObserver>());
     tracker->AddObserver(
         std::make_unique<TabStripPageLoadMetricsObserver>(web_contents()));
+    tracker->AddObserver(std::make_unique<PreviewPageLoadMetricsObserver>());
   }
   tracker->AddObserver(
       std::make_unique<OmniboxSuggestionUsedMetricsObserver>());

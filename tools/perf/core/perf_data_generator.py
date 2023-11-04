@@ -761,6 +761,18 @@ BUILDERS = {
             'device_os_flavor': 'google',
         },
     },
+    'android-go-wembley_webview-perf': {
+        'tests': [{
+            'isolate': 'performance_webview_test_suite',
+        }],
+        'platform': 'android-webview-google',
+        'dimension': {
+            'pool': 'chrome.tests.perf-webview',
+            'os': 'Android',
+            'device_type': 'wembley_2GB',
+            'device_os_flavor': 'google',
+        },
+    },
     'android-new-pixel-perf': {
         'tests': [{
             'isolate':
@@ -1861,7 +1873,7 @@ def generate_performance_test(tester_config, test, builder_name):
 
   result = {
       'args': test_args,
-      'isolate_name': isolate_name,
+      'test': isolate_name,
       'name': test_name,
       'override_compile_targets': [isolate_name]
   }

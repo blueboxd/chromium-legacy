@@ -111,7 +111,6 @@ UnifiedSystemTrayBubble::~UnifiedSystemTrayBubble() {
   if (Shell::Get()->tablet_mode_controller()) {
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   }
-  unified_system_tray_->tray_event_filter()->RemoveBubble(this);
   unified_system_tray_->shelf()->RemoveObserver(this);
 
   // Unified view children depend on `controller_` which is about to go away.
@@ -135,10 +134,14 @@ UnifiedSystemTrayBubble::~UnifiedSystemTrayBubble() {
 }
 
 void UnifiedSystemTrayBubble::InitializeObservers() {
-  unified_system_tray_->tray_event_filter()->AddBubble(this);
   unified_system_tray_->shelf()->AddObserver(this);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   Shell::Get()->activation_client()->AddObserver(this);
+
+  CHECK(bubble_widget_);
+  CHECK(bubble_view_);
+  tray_event_filter_ = std::make_unique<TrayEventFilter>(
+      bubble_widget_, bubble_view_, /*tray_button=*/unified_system_tray_);
 }
 
 gfx::Rect UnifiedSystemTrayBubble::GetBoundsInScreen() const {
@@ -325,6 +328,15 @@ void UnifiedSystemTrayBubble::OnWidgetDestroying(views::Widget* widget) {
 void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
                                                 aura::Window* gained_active,
                                                 aura::Window* lost_active) {
+  // This function is needed when QsRevamp is disabled since the message center
+  // bubble is on top of this bubble, which we need to customize the window
+  // activation handling like below. When QsRevamp is enabled, we don't need
+  // this anymore since everything is handled in
+  // `TrayEventFilter::OnWindowActivated()`
+  if (features::IsQsRevampEnabled()) {
+    return;
+  }
+
   if (!gained_active || !bubble_widget_) {
     return;
   }
@@ -339,11 +351,7 @@ void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
 
   // Don't close the bubble if a transient child is gaining or losing
   // activation.
-  if (bubble_widget_ == gained_active_widget ||
-      ::wm::HasTransientAncestor(gained_active,
-                                 bubble_widget_->GetNativeWindow()) ||
-      (lost_active && ::wm::HasTransientAncestor(
-                          lost_active, bubble_widget_->GetNativeWindow()))) {
+  if (bubble_widget_ == gained_active_widget) {
     return;
   }
 

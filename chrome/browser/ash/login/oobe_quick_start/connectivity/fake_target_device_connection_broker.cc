@@ -6,8 +6,8 @@
 
 #include "base/functional/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ash/login/oobe_quick_start/connectivity/advertising_id.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fake_connection.h"
-#include "chrome/browser/ash/login/oobe_quick_start/connectivity/random_session_id.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/session_context.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/target_device_connection_broker.h"
 #include "chrome/browser/ash/nearby/quick_start_connectivity_service.h"
@@ -32,6 +32,9 @@ constexpr std::array<uint8_t, 32> kSecondarySharedSecret = {
     0xab, 0xa0, 0xe3, 0xfc, 0xd3, 0x5a, 0x04, 0x01, 0x63, 0xf6, 0xf5,
     0xeb, 0x40, 0x7f, 0x4b, 0xac, 0xe4, 0xd1, 0xbf, 0x20, 0x19};
 
+// random int with 64 bits to use as SessionId.
+constexpr uint64_t kSessionId = 184467440;
+
 // Arbitrary string to use as the connection's authentication token when
 // deriving PIN.
 constexpr char kAuthenticationToken[] = "auth_token";
@@ -55,10 +58,10 @@ FakeTargetDeviceConnectionBroker::Factory::CreateInstance(
 FakeTargetDeviceConnectionBroker::FakeTargetDeviceConnectionBroker(
     QuickStartConnectivityService* quick_start_connectivity_service)
     : quick_start_connectivity_service_(quick_start_connectivity_service) {
-  random_session_id_ = RandomSessionId();
+  advertising_id_ = AdvertisingId();
   fake_nearby_connection_ = std::make_unique<FakeNearbyConnection>();
   NearbyConnection* nearby_connection = fake_nearby_connection_.get();
-  SessionContext session_context(random_session_id_, kSharedSecret,
+  SessionContext session_context(kSessionId, advertising_id_, kSharedSecret,
                                  kSecondarySharedSecret);
 
   connection_ = std::make_unique<FakeConnection>(
@@ -116,8 +119,8 @@ void FakeTargetDeviceConnectionBroker::CloseConnection(
   connection_lifecycle_listener_->OnConnectionClosed(reason);
 }
 
-std::string FakeTargetDeviceConnectionBroker::GetSessionIdDisplayCode() {
-  return random_session_id_.GetDisplayCode();
+std::string FakeTargetDeviceConnectionBroker::GetAdvertisingIdDisplayCode() {
+  return advertising_id_.GetDisplayCode();
 }
 
 std::string FakeTargetDeviceConnectionBroker::GetPinForTests() {

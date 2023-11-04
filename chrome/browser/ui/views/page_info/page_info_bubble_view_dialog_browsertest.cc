@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -39,6 +38,7 @@
 #include "components/safe_browsing/content/browser/password_protection/password_protection_test_util.h"
 #include "components/safe_browsing/core/browser/password_protection/metrics_util.h"
 #include "components/safe_browsing/core/common/features.h"
+#include "components/webapps/common/web_app_id.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "net/dns/mock_host_resolver.h"
@@ -49,6 +49,11 @@
 #include "ui/events/test/test_event.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+#if BUILDFLAG(IS_WIN)
+#include "base/base_paths_win.h"
+#include "base/test/scoped_path_override.h"
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace {
 
@@ -90,9 +95,10 @@ class PageInfoBubbleViewDialogBrowserTest : public DialogBrowserTest {
  public:
   PageInfoBubbleViewDialogBrowserTest() {
     feature_list_.InitWithFeatures(
-        {}, {// TODO(crbug.com/1394910): Use HTTPS URLs in tests to avoid having
-             // to disable this feature.
-             features::kHttpsUpgrades});
+        {},
+        {// TODO(crbug.com/1394910): Use HTTPS URLs in tests to avoid having
+         // to disable this feature.
+         features::kHttpsUpgrades, safe_browsing::kRedInterstitialFacelift});
   }
 
   PageInfoBubbleViewDialogBrowserTest(
@@ -914,7 +920,13 @@ class PageInfoBubbleViewIsolatedWebAppBrowserTest : public DialogBrowserTest {
   base::test::ScopedFeatureList feature_list_;
   net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
   GURL start_url_;
-  web_app::AppId app_id_;
+  webapps::AppId app_id_;
+
+#if BUILDFLAG(IS_WIN)
+  // This stops web app installation from creating a shortcut in the real
+  // desktop start menu dir.
+  base::ScopedPathOverride override_start_menu_dir_{base::DIR_START_MENU};
+#endif  // BUILDFLAG(IS_WIN)
 };
 
 // Test renamed, as currently Skia Gold doesn't support resetting test

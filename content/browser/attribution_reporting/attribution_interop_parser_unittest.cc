@@ -45,8 +45,6 @@ bool operator==(const AttributionConfig::EventLevelLimit& a,
         config.navigation_source_trigger_data_cardinality,
         config.event_source_trigger_data_cardinality,
         config.randomized_response_epsilon, config.max_reports_per_destination,
-        config.max_attributions_per_navigation_source,
-        config.max_attributions_per_event_source,
         config.first_navigation_report_window_deadline,
         config.second_navigation_report_window_deadline,
         config.first_event_report_window_deadline,
@@ -502,7 +500,11 @@ TEST(AttributionInteropParserTest, ValidConfig) {
        AttributionConfigWith([](AttributionConfig& c) {
          c.destination_rate_limit = {.max_total = 100};
        })},
-      {R"json({"rate_limit_time_window":"30"})json", false,
+      {R"json({"destination_rate_limit_window_in_minutes":"5"})json", false,
+       AttributionConfigWith([](AttributionConfig& c) {
+         c.destination_rate_limit = {.rate_limit_window = base::Minutes(5)};
+       })},
+      {R"json({"rate_limit_time_window_in_days":"30"})json", false,
        AttributionConfigWith([](AttributionConfig& c) {
          c.rate_limit =
              RateLimitWith([](AttributionConfig::RateLimitConfig& r) {
@@ -537,6 +539,13 @@ TEST(AttributionInteropParserTest, ValidConfig) {
                r.max_reporting_origins_per_source_reporting_site = 2;
              });
        })},
+      {R"json({"rate_limit_origins_per_site_window_in_days":"2"})json", false,
+       AttributionConfigWith([](AttributionConfig& c) {
+         c.rate_limit =
+             RateLimitWith([](AttributionConfig::RateLimitConfig& r) {
+               r.origins_per_site_window = base::Days(2);
+             });
+       })},
       {R"json({"navigation_source_trigger_data_cardinality":"10"})json", false,
        AttributionConfigWith([](AttributionConfig& c) {
          c.event_level_limit =
@@ -564,20 +573,6 @@ TEST(AttributionInteropParserTest, ValidConfig) {
          c.event_level_limit =
              EventLevelLimitWith([](AttributionConfig::EventLevelLimit& e) {
                e.max_reports_per_destination = 10;
-             });
-       })},
-      {R"json({"max_attributions_per_navigation_source":"10"})json", false,
-       AttributionConfigWith([](AttributionConfig& c) {
-         c.event_level_limit =
-             EventLevelLimitWith([](AttributionConfig::EventLevelLimit& e) {
-               e.max_attributions_per_navigation_source = 10;
-             });
-       })},
-      {R"json({"max_attributions_per_event_source":"10"})json", false,
-       AttributionConfigWith([](AttributionConfig& c) {
-         c.event_level_limit =
-             EventLevelLimitWith([](AttributionConfig::EventLevelLimit& e) {
-               e.max_attributions_per_event_source = 10;
              });
        })},
       {R"json({"max_navigation_info_gain":"0.2"})json", false,
@@ -627,17 +622,17 @@ TEST(AttributionInteropParserTest, ValidConfig) {
         "max_destinations_per_source_site_reporting_site":"10",
         "max_destinations_per_rate_limit_window_reporting_site": "1",
         "max_destinations_per_rate_limit_window": "2",
-        "rate_limit_time_window":"10",
+        "destination_rate_limit_window_in_minutes": "10",
+        "rate_limit_time_window_in_days":"10",
         "rate_limit_max_source_registration_reporting_origins":"20",
         "rate_limit_max_attribution_reporting_origins":"15",
         "rate_limit_max_attributions":"10",
         "rate_limit_max_reporting_origins_per_source_reporting_site":"5",
+        "rate_limit_origins_per_site_window_in_days":"5",
         "navigation_source_trigger_data_cardinality":"100",
         "event_source_trigger_data_cardinality":"10",
         "randomized_response_epsilon":"0.2",
         "max_event_level_reports_per_destination":"10",
-        "max_attributions_per_navigation_source":"5",
-        "max_attributions_per_event_source":"1",
         "max_navigation_info_gain":"5.5",
         "max_event_info_gain":"0.5",
         "max_aggregatable_reports_per_destination":"10",
@@ -655,6 +650,7 @@ TEST(AttributionInteropParserTest, ValidConfig) {
                r.max_attribution_reporting_origins = 15;
                r.max_attributions = 10;
                r.max_reporting_origins_per_source_reporting_site = 5;
+               r.origins_per_site_window = base::Days(5);
              });
          c.event_level_limit =
              EventLevelLimitWith([](AttributionConfig::EventLevelLimit& e) {
@@ -662,8 +658,6 @@ TEST(AttributionInteropParserTest, ValidConfig) {
                e.event_source_trigger_data_cardinality = 10;
                e.randomized_response_epsilon = 0.2;
                e.max_reports_per_destination = 10;
-               e.max_attributions_per_navigation_source = 5;
-               e.max_attributions_per_event_source = 1;
                e.max_navigation_info_gain = 5.5;
                e.max_event_info_gain = 0.5;
              });
@@ -675,7 +669,8 @@ TEST(AttributionInteropParserTest, ValidConfig) {
                a.delay_span = base::Minutes(20);
              });
          c.destination_rate_limit = {.max_total = 2,
-                                     .max_per_reporting_site = 1};
+                                     .max_per_reporting_site = 1,
+                                     .rate_limit_window = base::Minutes(10)};
        })}};
 
   for (const auto& test_case : kTestCases) {
@@ -698,16 +693,16 @@ TEST(AttributionInteropParserTest, InvalidConfigPositiveIntegers) {
       "max_destinations_per_source_site_reporting_site",
       "max_destinations_per_rate_limit_window_reporting_site",
       "max_destinations_per_rate_limit_window",
-      "rate_limit_time_window",
+      "destination_rate_limit_window_in_minutes",
+      "rate_limit_time_window_in_days",
       "rate_limit_max_source_registration_reporting_origins",
       "rate_limit_max_attribution_reporting_origins",
       "rate_limit_max_attributions",
       "rate_limit_max_reporting_origins_per_source_reporting_site",
+      "rate_limit_origins_per_site_window_in_days",
       "navigation_source_trigger_data_cardinality",
       "event_source_trigger_data_cardinality",
       "max_event_level_reports_per_destination",
-      "max_attributions_per_navigation_source",
-      "max_attributions_per_event_source",
       "max_aggregatable_reports_per_destination",
       "aggregatable_budget_per_source",
   };

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.tabmodel;
 
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
-import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -179,7 +178,7 @@ public class TabModelUtils {
     public static List<Tab> getChildTabs(TabList model, int tabId) {
         ArrayList<Tab> childTabs = new ArrayList<Tab>();
         for (int i = 0; i < model.getCount(); i++) {
-            if (CriticalPersistedTabData.from(model.getTabAt(i)).getParentId() == tabId) {
+            if (model.getTabAt(i).getParentId() == tabId) {
                 childTabs.add(model.getTabAt(i));
             }
         }
@@ -212,9 +211,10 @@ public class TabModelUtils {
             final Tab currentTab = model.getTabAt(i);
             if (currentTab.getId() == tabId || currentTab.isClosing()) continue;
 
-            final long currentTime = CriticalPersistedTabData.from(currentTab).getTimestampMillis();
-            if (currentTime != CriticalPersistedTabData.INVALID_TIMESTAMP
-                    && mostRecentTabTime < currentTime) {
+            final long currentTime = currentTab.getTimestampMillis();
+            // TODO(b/301642179) Consider using Optional on Tab interface for getTimestampMillis()
+            // to signal that the timestamp is unknown.
+            if (currentTime != Tab.INVALID_TIMESTAMP && mostRecentTabTime < currentTime) {
                 mostRecentTabTime = currentTime;
                 mostRecentTab = currentTab;
             }

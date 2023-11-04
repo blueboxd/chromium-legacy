@@ -20,6 +20,9 @@ constexpr char kUserActionDone[] = "done";
 constexpr char kUserActionRetry[] = "retry";
 constexpr char kUserActionEnterOldPassword[] = "enter-old-password";
 constexpr char kUserActionReauth[] = "reauth";
+// The time difference between the timeout on the screen, and Auth Session
+// expiry.
+const base::TimeDelta kTimeoutDiff = base::Seconds(10);
 
 }  // namespace
 
@@ -40,6 +43,8 @@ std::string CryptohomeRecoveryScreen::GetResultString(Result result) {
       return "NoRecoveryFactor";
     case Result::kNotApplicable:
       return BaseScreen::kNotApplicable;
+    case Result::kTimeout:
+      return "Timeout";
   }
 }
 
@@ -104,10 +109,13 @@ void CryptohomeRecoveryScreen::OnGetAuthFactorsConfiguration(
       config.HasConfiguredFactor(cryptohome::AuthFactorType::kRecovery);
   if (is_configured) {
     if (user_context->GetReauthProofToken().empty()) {
-      if (context()->gaia_reauth_token_fetch_error) {
+      if (was_reauth_proof_token_missing_) {
+        LOG(ERROR)
+            << "Reauth proof token is still missing after the second attempt";
         view_->OnRecoveryFailed();
       } else {
         LOG(WARNING) << "Reauth proof token is not present";
+        was_reauth_proof_token_missing_ = true;
         RecordReauthReason(user_context->GetAccountId(),
                            ReauthReason::kCryptohomeRecovery);
         view_->ShowReauthNotification();
@@ -186,7 +194,23 @@ void CryptohomeRecoveryScreen::OnReplaceContextKey(
     view_->OnRecoveryFailed();
     return;
   }
+  VLOG(1) << "User data is successfully recovered";
   view_->OnRecoverySucceeded();
+
+  auto delta = context()->user_context->GetSessionLifetime() -
+               base::Time::Now() - kTimeoutDiff;
+  if (!delta.is_positive()) {
+    OnAuthSessionExpired();
+    return;
+  }
+  expiration_timer_ = std::make_unique<base::OneShotTimer>();
+  expiration_timer_->Start(FROM_HERE, delta, this,
+                           &CryptohomeRecoveryScreen::OnAuthSessionExpired);
+}
+
+void CryptohomeRecoveryScreen::OnAuthSessionExpired() {
+  LOG(WARNING) << "Exiting due to expired Auth Session.";
+  exit_callback_.Run(Result::kTimeout);
 }
 
 }  // namespace ash

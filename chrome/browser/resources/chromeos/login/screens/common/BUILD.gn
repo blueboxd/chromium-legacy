@@ -793,6 +793,7 @@ html_to_js("web_components") {
     "marketing_opt_in.js",
     "multidevice_setup.js",
     "offline_ad_login.js",
+    "online_authentication_screen.js",
     "oobe_reset.js",
     "os_install.js",
     "os_trial.js",
@@ -807,6 +808,7 @@ html_to_js("web_components") {
     "theme_selection.js",
     "touchpad_scroll.js",
     "tpm_error.js",
+    "user_allowlist_check_screen.js",
     "user_creation.js",
     "wrong_hwid.js",
   ]

@@ -6,13 +6,13 @@ import("//build/buildflag_header.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
 import("//build/config/freetype/freetype.gni")
+import("//build/config/rust.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/rust/rust_static_library.gni")
 import("//gpu/vulkan/features.gni")
 import("//testing/test.gni")
 import("//third_party/skia/gn/shared_sources.gni")
 import("//third_party/skia/modules/skcms/skcms.gni")
-import("//tools/grit/grit_rule.gni")
 import("features.gni")
 
 if (current_cpu == "arm") {
@@ -74,6 +74,8 @@ config("skia_config") {
     "SK_DISABLE_LEGACY_IMAGE_RELEASE_PROCS",
     "SK_DISABLE_LEGACY_GL_BACKEND_SURFACE",
     "SK_DISABLE_LEGACY_INIT_DECODERS",
+    "SK_DISABLE_LEGACY_GRDIRECTCONTEXT_FLUSH",
+    "SK_DISABLE_LEGACY_GRDIRECTCONTEXT_BOOLS",
   ]
 
   include_dirs = [
@@ -1014,17 +1016,4 @@ if (!is_ios) {
 
 group("fuzzers") {
   deps = [ "//skia/tools/fuzzers" ]
-}
-
-grit("skia_resources") {
-  source = "skia_resources.grd"
-
-  outputs = [
-    "grit/skia_resources.h",
-    "grit/skia_resources_map.cc",
-    "grit/skia_resources_map.h",
-    "skia_resources.pak",
-  ]
-
-  deps = [ "//skia/public/mojom:mojom_js__generator" ]
 }

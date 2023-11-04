@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/scroll/scroll_customization.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/custom_spaces.h"
@@ -194,7 +195,13 @@ class CORE_EXPORT Node : public EventTarget {
   static void DumpStatistics();
 #endif
 
+  static Node* FromDomNodeId(DOMNodeId dom_node_id);
+
   ~Node() override;
+
+  // Returns the existing DOMNodeID for the node if it has already been
+  // assigned, otherwise, assigns a new DOMNodeID and return that.
+  DOMNodeId GetDomNodeId();
 
   // DOM methods & attributes for Node
 
@@ -974,6 +981,13 @@ class CORE_EXPORT Node : public EventTarget {
   void SetHasDisplayLockContext() { SetFlag(kHasDisplayLockContext); }
   bool HasDisplayLockContext() const { return GetFlag(kHasDisplayLockContext); }
 
+  // Creates a DocumentFragment, appends all of |nodes| to it, and returns the
+  // DocumentFragment. Returns nullptr if an exception was thrown.
+  static Node* ConvertNodesIntoNode(const Node* parent,
+                                    const HeapVector<Member<Node>>& nodes,
+                                    Document& document,
+                                    ExceptionState& exception_state);
+
   bool SelfOrAncestorHasDirAutoAttribute() const {
     return GetFlag(kSelfOrAncestorHasDirAutoAttribute);
   }
@@ -987,26 +1001,16 @@ class CORE_EXPORT Node : public EventTarget {
     return (node_flags_ & kCachedDirectionalityIsRtl) ? TextDirection::kRtl
                                                       : TextDirection::kLtr;
   }
-  void SetCachedDirectionality(TextDirection direction) {
-    switch (direction) {
-      case TextDirection::kRtl:
-        SetFlag(kCachedDirectionalityIsRtl);
-        break;
-      case TextDirection::kLtr:
-        ClearFlag(kCachedDirectionalityIsRtl);
-        break;
-    }
-    ClearFlag(kNeedsInheritDirectionalityFromParent);
-  }
-  bool NeedsInheritDirectionalityFromParent() const {
-    return GetFlag(kNeedsInheritDirectionalityFromParent);
-  }
-  void SetNeedsInheritDirectionalityFromParent() {
-    SetFlag(kNeedsInheritDirectionalityFromParent);
-  }
-  void ClearNeedsInheritDirectionalityFromParent() {
-    ClearFlag(kNeedsInheritDirectionalityFromParent);
-  }
+  void SetCachedDirectionality(TextDirection direction);
+
+  bool NeedsInheritDirectionalityFromParent() const;
+  void SetNeedsInheritDirectionalityFromParent();
+  void ClearNeedsInheritDirectionalityFromParent();
+
+  bool DirAutoInheritsFromParent() const;
+  void SetDirAutoInheritsFromParent();
+  void ClearDirAutoInheritsFromParent();
+
   void Trace(Visitor*) const override;
 
  private:
@@ -1057,7 +1061,16 @@ class CORE_EXPORT Node : public EventTarget {
 
     kSelfOrAncestorHasDirAutoAttribute = 1 << 28,
     kCachedDirectionalityIsRtl = 1 << 29,
+    // TODO(https://crbug.com/576815): Remove this duplication once new
+    // dir=auto handling ships as part of
+    // RuntimeEnabledFeatures::CSSPseudoDirEnabled().
+    //
+    // This has the same value as the next flag; this one is used only when
+    // !RuntimeEnabledFeatures::CSSPseudoDirEnabled():
     kNeedsInheritDirectionalityFromParent = 1u << 30,
+    // This has the same value as the previous flag; this one is used only when
+    // RuntimeEnabledFeatures::CSSPseudoDirEnabled():
+    kDirAutoInheritsFromParent = 1u << 30,
 
     kDefaultNodeFlags = kIsFinishedParsingChildrenFlag,
 

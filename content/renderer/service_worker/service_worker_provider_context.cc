@@ -17,6 +17,7 @@
 #include "base/task/sequenced_task_runner_helpers.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
+#include "content/common/features.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "content/renderer/service_worker/service_worker_subresource_loader.h"
@@ -45,6 +46,8 @@ void CreateSubresourceLoaderFactoryForProviderContext(
         fetch_handler_bypass_option,
     absl::optional<blink::ServiceWorkerRouterRules> router_rules,
     blink::EmbeddedWorkerStatus initial_running_status,
+    mojo::PendingReceiver<blink::mojom::ServiceWorkerRunningStatusCallback>
+        running_status_receiver,
     std::unique_ptr<network::PendingSharedURLLoaderFactory>
         pending_fallback_factory,
     mojo::PendingReceiver<blink::mojom::ControllerServiceWorkerConnector>
@@ -54,7 +57,7 @@ void CreateSubresourceLoaderFactoryForProviderContext(
   auto connector = base::MakeRefCounted<ControllerServiceWorkerConnector>(
       std::move(remote_container_host), std::move(remote_controller),
       std::move(remote_cache_storage), client_id, fetch_handler_bypass_option,
-      router_rules, initial_running_status);
+      router_rules, initial_running_status, std::move(running_status_receiver));
   connector->AddBinding(std::move(connector_receiver));
   ServiceWorkerSubresourceLoaderFactory::Create(
       std::move(connector),
@@ -191,7 +194,8 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactoryInternal() {
             std::move(remote_container_host), std::move(remote_controller_),
             std::move(remote_cache_storage_), client_id_,
             fetch_handler_bypass_option_, router_rules_,
-            initial_running_status_, fallback_loader_factory_->Clone(),
+            initial_running_status_, std::move(running_status_receiver_),
+            fallback_loader_factory_->Clone(),
             controller_connector_.BindNewPipeAndPassReceiver(),
             subresource_loader_factory_.BindNewPipeAndPassReceiver(),
             task_runner));
@@ -397,6 +401,8 @@ void ServiceWorkerProviderContext::SetController(
     router_rules_ = controller_info->router_data->router_rules;
     initial_running_status_ =
         controller_info->router_data->initial_running_status;
+    running_status_receiver_ =
+        std::move(controller_info->router_data->running_status_receiver);
     remote_cache_storage_ =
         std::move(controller_info->router_data->remote_cache_storage);
   }

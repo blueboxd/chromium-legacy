@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/raw_ptr.h"
+#include "base/scoped_observation.h"
 #include "base/sequence_checker.h"
 #include "base/supports_user_data.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
@@ -73,6 +74,7 @@ class AutofillWalletCredentialSyncBridge
   bool IsEntityDataValid(const syncer::EntityData& entity_data) const override;
 
   // AutofillWebDataServiceObserverOnDBSequence.
+  void CreditCardChanged(const CreditCardChange& change) override;
   void ServerCvcChanged(const ServerCvcChange& change) override;
 
  private:
@@ -98,6 +100,12 @@ class AutofillWalletCredentialSyncBridge
 
   // The bridge should be used on the same sequence where it is constructed.
   SEQUENCE_CHECKER(sequence_checker_);
+
+  // This is used to keep track of changes on `AutofillWebDataBackend` and
+  // allows the trigger for `ServerCvcChanged`.
+  base::ScopedObservation<AutofillWebDataBackend,
+                          AutofillWebDataServiceObserverOnDBSequence>
+      scoped_observation_{this};
 };
 
 }  // namespace autofill

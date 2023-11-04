@@ -8,32 +8,24 @@ assert(enterprise_data_controls)
 
 source_set("data_controls") {
   sources = [
-    "action_context.h",
-    "attributes_condition.cc",
-    "attributes_condition.h",
-    "condition.h",
-    "data_controls_policy_handler.cc",
-    "data_controls_policy_handler.h",
+    "chrome_dlp_rules_manager.cc",
+    "chrome_dlp_rules_manager.h",
     "dlp_rules_manager_base.h",
+  ]
+
+  public_deps = [
+    "//components/enterprise/data_controls",
+    "//components/enterprise/data_controls:features",
   ]
 
   deps = [
     "//base",
-    "//components/enterprise/data_controls:features",
     "//components/keyed_service/core",
     "//components/policy/core/browser",
-    "//components/prefs",
     "//components/url_matcher",
     "//third_party/abseil-cpp:absl",
     "//url",
   ]
-
-  if (is_chromeos) {
-    sources += [
-      "component.cc",
-      "component.h",
-    ]
-  }
 }
 
 source_set("test_support") {
@@ -51,11 +43,6 @@ source_set("test_support") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [ "attributes_condition_unittest.cc" ]
 
-  deps = [
-    ":data_controls",
-    "//base",
-    "//testing/gtest",
-  ]
+  deps = [ "//components/enterprise/data_controls:unit_tests" ]
 }

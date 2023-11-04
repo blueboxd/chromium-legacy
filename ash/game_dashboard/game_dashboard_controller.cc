@@ -6,18 +6,21 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/game_dashboard/game_dashboard_context.h"
 #include "ash/game_dashboard/game_dashboard_utils.h"
+#include "ash/game_dashboard/game_dashboard_widget.h"
 #include "ash/public/cpp/app_types_util.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "base/functional/bind.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "extensions/common/constants.h"
-#include "ui/aura/client/window_types.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_tracker.h"
 
 namespace ash {
 
@@ -70,6 +73,11 @@ GameDashboardController::~GameDashboardController() {
   CaptureModeController::Get()->RemoveObserver(this);
 }
 
+std::string GameDashboardController::GetArcAppName(
+    const std::string& app_id) const {
+  return delegate_->GetArcAppName(app_id);
+}
+
 GameDashboardContext* GameDashboardController::GetGameDashboardContext(
     aura::Window* window) const {
   DCHECK(window);
@@ -103,18 +111,18 @@ void GameDashboardController::OnWindowInitialized(aura::Window* new_window) {
     // Ignore non-NORMAL window types.
     return;
   }
-  RefreshWindowTracking(new_window);
+  GetWindowGameState(new_window);
 }
 
 void GameDashboardController::OnWindowPropertyChanged(aura::Window* window,
                                                       const void* key,
                                                       intptr_t old) {
   if (key == kAppIDKey) {
-    RefreshWindowTracking(window);
+    GetWindowGameState(window);
   }
 
   if (key == kArcGameControlsFlagsKey) {
-    RefreshMainMenuButton(window);
+    RefreshGameDashboardButton(window);
   }
 }
 
@@ -165,37 +173,56 @@ void GameDashboardController::OnRecordingStartAborted() {
 }
 
 void GameDashboardController::OnOverviewModeWillStart() {
-  // In overview mode, hide the main menu button, and if open, close the main
-  // menu.
+  // In overview mode, hide the Game Dashboard button, and if open, close the
+  // main menu.
   for (auto const& [_, context] : game_window_contexts_) {
-    context->main_menu_button_widget()->Hide();
-    if (context->IsMainMenuOpen()) {
+    context->game_dashboard_button_widget()->Hide();
+    if (context->main_menu_view()) {
       context->CloseMainMenu();
     }
   }
 }
 
 void GameDashboardController::OnOverviewModeEnded() {
-  // Make the main menu button visible.
+  // Make the Game Dashboard button visible.
   for (auto const& [_, context] : game_window_contexts_) {
-    context->main_menu_button_widget()->Show();
+    context->game_dashboard_button_widget()->Show();
   }
 }
 
-GameDashboardController::WindowGameState
-GameDashboardController::GetWindowGameState(aura::Window* window) const {
+void GameDashboardController::GetWindowGameState(aura::Window* window) {
   const auto* app_id = window->GetProperty(kAppIDKey);
   if (!app_id) {
-    return WindowGameState::kNotYetKnown;
+    RefreshWindowTracking(window, WindowGameState::kNotYetKnown);
+  } else if (IsArcWindow(window)) {
+    // For ARC apps, the "app_id" is equivalent to its package name.
+    delegate_->GetIsGame(
+        *app_id, base::BindOnce(&GameDashboardController::OnArcWindowIsGame,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                std::make_unique<aura::WindowTracker>(
+                                    std::vector<aura::Window*>({window}))));
+  } else {
+    RefreshWindowTracking(window, (*app_id == extension_misc::kGeForceNowAppId)
+                                      ? WindowGameState::kGame
+                                      : WindowGameState::kNotGame);
   }
-  const bool is_game = (IsArcWindow(window) && delegate_->IsGame(*app_id)) ||
-                       (*app_id == extension_misc::kGeForceNowAppId);
-  return is_game ? WindowGameState::kGame : WindowGameState::kNotGame;
 }
 
-void GameDashboardController::RefreshWindowTracking(aura::Window* window) {
+void GameDashboardController::OnArcWindowIsGame(
+    std::unique_ptr<aura::WindowTracker> window_tracker,
+    bool is_game) {
+  const auto windows = window_tracker->windows();
+  if (windows.empty()) {
+    return;
+  }
+  RefreshWindowTracking(
+      windows[0], is_game ? WindowGameState::kGame : WindowGameState::kNotGame);
+}
+
+void GameDashboardController::RefreshWindowTracking(aura::Window* window,
+                                                    WindowGameState state) {
+  DCHECK(window);
   const bool is_observing = window_observations_.IsObservingSource(window);
-  const auto state = GetWindowGameState(window);
   const bool should_observe = state != WindowGameState::kNotGame;
 
   if (state != WindowGameState::kNotYetKnown) {
@@ -207,7 +234,7 @@ void GameDashboardController::RefreshWindowTracking(aura::Window* window) {
       auto& context = game_window_contexts_[window];
       if (!context) {
         context = std::make_unique<GameDashboardContext>(window);
-        RefreshMainMenuButton(window);
+        RefreshGameDashboardButton(window);
       }
     }
   }
@@ -223,14 +250,14 @@ void GameDashboardController::RefreshWindowTracking(aura::Window* window) {
   }
 }
 
-void GameDashboardController::RefreshMainMenuButton(aura::Window* window) {
+void GameDashboardController::RefreshGameDashboardButton(aura::Window* window) {
   if (!IsArcWindow(window)) {
     return;
   }
 
   auto it = game_window_contexts_.find(window);
   if (it != game_window_contexts_.end()) {
-    it->second->SetMainMenuButtonEnabled(game_dashboard_utils::IsFlagSet(
+    it->second->SetGameDashboardButtonEnabled(game_dashboard_utils::IsFlagSet(
         window->GetProperty(kArcGameControlsFlagsKey),
         ArcGameControlsFlag::kKnown));
   }

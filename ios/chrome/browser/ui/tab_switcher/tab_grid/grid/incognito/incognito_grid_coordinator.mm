@@ -70,7 +70,8 @@
       HandlerForProtocol(_dispatcher, IncognitoReauthCommands);
 
   _mediator = [[IncognitoGridMediator alloc]
-      initWithConsumer:self.incognitoViewController.incognitoTabsConsumer];
+      initWithPrefService:self.browser->GetBrowserState()->GetPrefs()
+                 consumer:self.incognitoViewController.incognitoTabsConsumer];
   _mediator.browser = self.browser;
   _mediator.delegate = _gridMediatorDelegate;
   _mediator.toolbarsMutator = _toolbarsMutator;
@@ -86,10 +87,10 @@
 - (void)stop {
   [_mediator disconnect];
   _mediator = nil;
-  _incognitoAuthMediator = nil;
 
   [_dispatcher stopDispatchingForProtocol:@protocol(IncognitoReauthCommands)];
   _dispatcher = nil;
+  _incognitoAuthMediator = nil;
 }
 
 #pragma mark - IncognitoGridMediatorDelegate

@@ -243,6 +243,18 @@ public class Features {
     // DropDataContentProvider.call
     public static final String IMAGE_DRAG_DROP = "IMAGE_DRAG_DROP";
 
+    // ProfileStore.getInstance
+    // ProfileStore.getOrCreateProfile
+    // ProfileStore.getProfile
+    // ProfileStore.getAllProfileNames
+    // ProfileStore.deleteProfile
+    // Profile.getName
+    // Profile.getCookieManager
+    // Profile.getWebStorage
+    // Profile.getGeolocationPermissions
+    // Profile.getServiceWorkerController
+    public static final String MULTI_PROFILE = "MULTI_PROFILE";
+
     // WebSettingsCompat.enableRestrictSensitiveWebContent
     @Deprecated()
     public static final String RESTRICT_SENSITIVE_WEB_CONTENT = "RESTRICT_SENSITIVE_WEB_CONTENT";
@@ -250,4 +262,8 @@ public class Features {
     // WebSettingsCompat.setUserAgentMetadataFromMap
     // WebSettingsCompat.getUserAgentMetadataMap
     public static final String USER_AGENT_METADATA = "USER_AGENT_METADATA";
+
+    // WebSettingsCompat.setAttributionBehavior
+    // WebSettingsCompat.getAttributionBehavior
+    public static final String ATTRIBUTION_BEHAVIOR = "ATTRIBUTION_BEHAVIOR";
 }

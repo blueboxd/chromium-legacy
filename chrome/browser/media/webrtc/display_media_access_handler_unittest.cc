@@ -29,10 +29,6 @@
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 
-#if BUILDFLAG(IS_MAC)
-#include "base/mac/mac_util.h"
-#endif
-
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/dlp/test/mock_dlp_content_manager.h"
 #endif  // BUILDFLAG(IS_CHROMEOS)
@@ -100,6 +96,13 @@ class DisplayMediaAccessHandlerTest : public ChromeRenderViewHostTestHarness {
       bool exclude_self_browser_surface) {
     content::MediaStreamRequest request = MakeRequest(/*request_audio=*/false);
     request.exclude_self_browser_surface = exclude_self_browser_surface;
+    return request;
+  }
+
+  content::MediaStreamRequest MakeExcludeMonitorTypeSurfacesRequest(
+      bool exclude_monitor_type_surfaces) {
+    content::MediaStreamRequest request = MakeRequest(/*request_audio=*/false);
+    request.exclude_monitor_type_surfaces = exclude_monitor_type_surfaces;
     return request;
   }
 
@@ -241,15 +244,13 @@ TEST_F(DisplayMediaAccessHandlerTest, PermissionGiven) {
   ProcessRequest(content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
                                          content::DesktopMediaID::kFakeId),
                  &result, devices, false /* request_audio */);
-// TODO(https://crbug.com/1266425): Fix screen-capture tests on MacOS
+// TODO(https://crbug.com/1266425): Fix screen-capture tests on macOS.
 #if BUILDFLAG(IS_MAC)
-  // Starting from macOS 10.15, screen capture requires system permissions
-  // that are disabled by default.
-  if (base::mac::IsAtLeastOS10_15()) {
-    EXPECT_EQ(blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED,
-              result);
-    return;
-  }
+  // On macOS, screen capture requires system permissions that are disabled by
+  // default.
+  EXPECT_EQ(blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED,
+            result);
+  return;
 #endif
 
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, result);
@@ -285,15 +286,13 @@ TEST_F(DisplayMediaAccessHandlerTest, PermissionGivenToRequestWithAudio) {
                                         content::DesktopMediaID::kFakeId,
                                         true /* audio_share */);
   ProcessRequest(fake_media_id, &result, devices, true /* request_audio */);
-// TODO(https://crbug.com/1266425): Fix screen-capture tests on MacOS
+// TODO(https://crbug.com/1266425): Fix screen-capture tests on macOS.
 #if BUILDFLAG(IS_MAC)
-  // Starting from macOS 10.15, screen capture requires system permissions
-  // that are disabled by default.
-  if (base::mac::IsAtLeastOS10_15()) {
-    EXPECT_EQ(blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED,
-              result);
-    return;
-  }
+  // On macOS, screen capture requires system permissions that are disabled by
+  // default.
+  EXPECT_EQ(blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED,
+            result);
+  return;
 #endif
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, result);
   EXPECT_EQ(2u, blink::CountDevices(devices));
@@ -618,7 +617,7 @@ TEST_F(DisplayMediaAccessHandlerTest, MultipleRequests) {
   wait_loop[0].Run();
   EXPECT_TRUE(test_flags_[0].picker_created);
   EXPECT_TRUE(test_flags_[0].picker_deleted);
-// TODO(https://crbug.com/1266425): Fix screen-capture tests on MacOS
+// TODO(https://crbug.com/1266425): Fix screen-capture tests on macOS.
 #if BUILDFLAG(IS_MAC)
   // On macOS, screen capture requires system permissions that are disabled by
   // default.
@@ -724,7 +723,7 @@ TEST_F(DisplayMediaAccessHandlerTest, ChangeSourceWithPendingPickerRequest) {
   wait_loop[0].Run();
   EXPECT_TRUE(test_flags_[0].picker_created);
   EXPECT_TRUE(test_flags_[0].picker_deleted);
-// TODO(https://crbug.com/1266425): Fix screen-capture tests on MacOS
+// TODO(https://crbug.com/1266425): Fix screen-capture tests on macOS.
 #if BUILDFLAG(IS_MAC)
   // On macOS, screen capture requires system permissions that are disabled by
   // default.
@@ -759,7 +758,7 @@ TEST_F(DisplayMediaAccessHandlerTest,
   profile->GetPrefs()->SetBoolean(prefs::kScreenCaptureAllowed, false);
 
   wait_loop[0].Run();
-// TODO(https://crbug.com/1266425): Fix screen-capture tests on MacOS
+// TODO(https://crbug.com/1266425): Fix screen-capture tests on macOS.
 #if BUILDFLAG(IS_MAC)
   // On macOS, screen capture requires system permissions that are disabled by
   // default.
@@ -795,7 +794,7 @@ TEST_F(DisplayMediaAccessHandlerTest,
   wait_loop[0].Run();
   EXPECT_TRUE(test_flags_[0].picker_created);
   EXPECT_TRUE(test_flags_[0].picker_deleted);
-// TODO(https://crbug.com/1266425): Fix screen-capture tests on MacOS
+// TODO(https://crbug.com/1266425): Fix screen-capture tests on macOS.
 #if BUILDFLAG(IS_MAC)
   // On macOS, screen capture requires system permissions that are disabled by
   // default.
@@ -837,4 +836,38 @@ TEST_P(DisplayMediaAccessHandlerTestWithSelfBrowserSurface,
       &wait_loop, &result, devices);
   wait_loop.Run();
   EXPECT_EQ(exclude_self_browser_surface_, IsWebContentsExcluded());
+}
+
+class DisplayMediaAccessHandlerTestWithMonitorTypeSurfaces
+    : public DisplayMediaAccessHandlerTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  DisplayMediaAccessHandlerTestWithMonitorTypeSurfaces()
+      : exclude_monitor_type_surfaces_(GetParam()) {}
+
+  ~DisplayMediaAccessHandlerTestWithMonitorTypeSurfaces() override = default;
+
+ protected:
+  const bool exclude_monitor_type_surfaces_;
+};
+
+INSTANTIATE_TEST_SUITE_P(_,
+                         DisplayMediaAccessHandlerTestWithMonitorTypeSurfaces,
+                         ::testing::Bool());
+
+TEST_P(DisplayMediaAccessHandlerTestWithMonitorTypeSurfaces,
+       CheckMonitorTypeSurfacesAreExcluded) {
+  SetTestFlags({{/*expect_screens=*/!exclude_monitor_type_surfaces_,
+                 /*expect_windows=*/true,
+                 /*expect_tabs=*/true, /*expect_current_tab=*/false,
+                 /*expect_audio=*/false, content::DesktopMediaID(),
+                 /*cancelled=*/false}});
+  blink::mojom::MediaStreamRequestResult result;
+  blink::mojom::StreamDevices devices;
+  base::RunLoop wait_loop;
+
+  HandleRequest(
+      MakeExcludeMonitorTypeSurfacesRequest(exclude_monitor_type_surfaces_),
+      &wait_loop, &result, devices);
+  wait_loop.Run();
 }

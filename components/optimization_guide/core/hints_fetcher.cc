@@ -26,7 +26,6 @@
 #include "components/variations/net/variations_http_headers.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
-#include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -38,8 +37,6 @@
 namespace optimization_guide {
 
 namespace {
-
-constexpr char kAuthHeaderBearer[] = "Bearer ";
 
 // Returns the string that can be used to record histograms for the request
 // context.
@@ -73,10 +70,10 @@ std::string GetStringNameForRequestContext(
 }
 
 void RecordRequestStatusHistogram(proto::RequestContext request_context,
-                                  HintsFetcherRequestStatus status) {
-  DCHECK_NE(status, HintsFetcherRequestStatus::kDeprecatedNetworkOffline);
+                                  FetcherRequestStatus status) {
+  DCHECK_NE(status, FetcherRequestStatus::kDeprecatedNetworkOffline);
   base::UmaHistogramEnumeration(
-      "OptimizationGuide.HintsFetcher.RequestStatus." +
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.RequestStatus." +
           GetStringNameForRequestContext(request_context),
       status);
 }
@@ -110,12 +107,8 @@ HintsFetcher::~HintsFetcher() {
   if (active_url_loader_) {
     if (hints_fetched_callback_)
       std::move(hints_fetched_callback_).Run(absl::nullopt);
-
-    base::UmaHistogramExactLinear(
-        "OptimizationGuide.HintsFetcher.GetHintsRequest."
-        "ActiveRequestCanceled." +
-            GetStringNameForRequestContext(request_context_),
-        1, 1);
+    RecordRequestStatusHistogram(request_context_,
+                                 FetcherRequestStatus::kRequestCanceled);
   }
 }
 
@@ -195,7 +188,7 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
         optimization_guide_logger_,
         "No hints fetched: HintsFetcher busy in another fetch");
     RecordRequestStatusHistogram(request_context_,
-                                 HintsFetcherRequestStatus::kFetcherBusy);
+                                 FetcherRequestStatus::kFetcherBusy);
     std::move(hints_fetched_callback).Run(absl::nullopt);
     return false;
   }
@@ -208,7 +201,7 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
                            optimization_guide_logger_,
                            "No hints fetched: No hosts/URLs");
     RecordRequestStatusHistogram(
-        request_context_, HintsFetcherRequestStatus::kNoHostsOrURLsToFetch);
+        request_context_, FetcherRequestStatus::kNoHostsOrURLsToFetchHints);
     std::move(hints_fetched_callback).Run(absl::nullopt);
     return false;
   }
@@ -224,7 +217,7 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
                            "No hints fetched: No supported optimization types");
     RecordRequestStatusHistogram(
         request_context_,
-        HintsFetcherRequestStatus::kNoSupportedOptimizationTypes);
+        FetcherRequestStatus::kNoSupportedOptimizationTypesToFetchHints);
     std::move(hints_fetched_callback).Run(absl::nullopt);
     return false;
   }
@@ -287,10 +280,7 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   if (!access_token.empty()) {
-    // Add to request header
-    resource_request->headers.SetHeader(
-        net::HttpRequestHeaders::kAuthorization,
-        base::StrCat({kAuthHeaderBearer, access_token}));
+    PopulateAuthorizationRequestHeader(resource_request.get(), access_token);
   }
 
   resource_request->url = optimization_guide_service_url_;
@@ -361,7 +351,7 @@ void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
         fetch_latency);
     if (skip_cache) {
       RecordRequestStatusHistogram(request_context_,
-                                   HintsFetcherRequestStatus::kSuccess);
+                                   FetcherRequestStatus::kSuccess);
       std::move(hints_fetched_callback_).Run(std::move(get_hints_response));
 
       return;
@@ -376,12 +366,12 @@ void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
     }
     UpdateHostsSuccessfullyFetched(valid_duration);
     RecordRequestStatusHistogram(request_context_,
-                                 HintsFetcherRequestStatus::kSuccess);
+                                 FetcherRequestStatus::kSuccess);
     std::move(hints_fetched_callback_).Run(std::move(get_hints_response));
   } else {
     hosts_fetched_.clear();
     RecordRequestStatusHistogram(request_context_,
-                                 HintsFetcherRequestStatus::kResponseError);
+                                 FetcherRequestStatus::kResponseError);
     std::move(hints_fetched_callback_).Run(absl::nullopt);
   }
 }

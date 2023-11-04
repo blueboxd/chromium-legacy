@@ -8,6 +8,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/rand_util.h"
 #include "content/browser/preloading/prefetch/prefetch_features.h"
+#include "content/common/features.h"
 #include "content/public/browser/prefetch_service_delegate.h"
 #include "content/public/common/content_features.h"
 #include "third_party/blink/public/mojom/speculation_rules/speculation_rules.mojom.h"
@@ -225,7 +226,7 @@ bool PrefetchShouldBlockUntilHead(
     case blink::mojom::SpeculationEagerness::kEager:
       return base::GetFieldTrialParamByFeatureAsBool(
           features::kPrefetchUseContentRefactor,
-          "block_until_head_eager_prefetch", false);
+          "block_until_head_eager_prefetch", true);
     case blink::mojom::SpeculationEagerness::kModerate:
       return base::GetFieldTrialParamByFeatureAsBool(
           features::kPrefetchUseContentRefactor,
@@ -244,7 +245,7 @@ base::TimeDelta PrefetchBlockUntilHeadTimeout(
     case blink::mojom::SpeculationEagerness::kEager:
       timeout_in_milliseconds = base::GetFieldTrialParamByFeatureAsInt(
           features::kPrefetchUseContentRefactor,
-          "block_until_head_timeout_eager_prefetch", 0);
+          "block_until_head_timeout_eager_prefetch", 1000);
       break;
     case blink::mojom::SpeculationEagerness::kModerate:
       timeout_in_milliseconds = base::GetFieldTrialParamByFeatureAsInt(

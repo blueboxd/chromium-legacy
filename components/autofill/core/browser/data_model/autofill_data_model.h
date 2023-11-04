@@ -7,8 +7,6 @@
 
 #include <stddef.h>
 
-#include <string>
-
 #include "base/time/time.h"
 #include "components/autofill/core/browser/data_model/form_group.h"
 
@@ -21,6 +19,7 @@ struct AutofillMetadata;
 // PersonalDataManager.
 class AutofillDataModel : public FormGroup {
  public:
+  // TODO(crbug.com/1174203): Remove.
   enum ValidityState {
     // The field has not been validated.
     UNVALIDATED = 0,
@@ -34,22 +33,12 @@ class AutofillDataModel : public FormGroup {
     UNSUPPORTED = 4,
   };
 
-  enum ValidationSource {
-    // The validity state is according to the client validation.
-    CLIENT = 0,
-    // The validity state is according to the server validation.
-    SERVER = 1,
-  };
-
-  explicit AutofillDataModel(const std::string& guid);
+  AutofillDataModel();
   ~AutofillDataModel() override;
 
   // Calculates the number of days since the model was last used by subtracting
   // the model's last recent |use_date_| from the |current_time|.
   int GetDaysSinceLastUse(base::Time current_time) const;
-
-  std::string guid() const { return guid_; }
-  void set_guid(const std::string& guid) { guid_ = guid; }
 
   size_t use_count() const { return use_count_; }
   void set_use_count(size_t count) { use_count_ = count; }
@@ -70,9 +59,11 @@ class AutofillDataModel : public FormGroup {
 
   // Compares two data models according to their ranking score. The score uses
   // a combination of use count and days since last use to determine the
-  // relevance of the profile. `comparison_time_` allows consistent sorting
-  // throughout the comparisons. A greater ranking score corresponds to a higher
+  // relevance of the profile. A greater ranking score corresponds to a higher
   // ranking on the suggestion list.
+  // The function defines a strict weak ordering that can be used for sorting.
+  // Since data models can have the same score, it doesn't define a total order.
+  // `comparison_time_` allows consistent sorting throughout the comparisons.
   bool HasGreaterRankingThan(const AutofillDataModel* other,
                              base::Time comparison_time) const;
 
@@ -93,9 +84,6 @@ class AutofillDataModel : public FormGroup {
   virtual double GetRankingScore(base::Time current_time) const;
 
  private:
-  // A globally unique ID for this object.
-  std::string guid_;
-
   // The number of times this model has been used.
   size_t use_count_;
 

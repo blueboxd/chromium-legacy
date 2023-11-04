@@ -99,7 +99,6 @@ class IOSChromePasswordCheckManager
       password_manager::BulkLeakCheckServiceInterface::State state) override;
   void OnCredentialDone(const password_manager::LeakCheckCredential& credential,
                         password_manager::IsLeaked is_leaked) override;
-  void OnBulkCheckServiceShutDown() override;
 
   void OnWeakOrReuseCheckFinished();
 

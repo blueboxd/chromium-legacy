@@ -22,7 +22,6 @@ class DesktopScreenX11Test;
 }
 
 namespace ui {
-struct DisplayConfig;
 class X11ScreenOzoneTest;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -56,7 +55,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XDisplayManager
   void OnEvent(const x11::Event& xev);
   void UpdateDisplayList();
   void DispatchDelayedDisplayListUpdate();
-  display::Display GetPrimaryDisplay() const;
+  const display::Display& GetPrimaryDisplay() const;
 
   void AddObserver(display::DisplayObserver* observer);
   void RemoveObserver(display::DisplayObserver* observer);
@@ -71,7 +70,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XDisplayManager
   friend class ui::X11ScreenOzoneTest;
   friend class views::DesktopScreenX11Test;
 
-  void SetDisplayList(std::vector<display::Display> displays);
+  void SetDisplayList(std::vector<display::Display> displays,
+                      size_t primary_display_index);
   void FetchDisplayList();
 
   // X11WorkspaceHandler override:
@@ -83,7 +83,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XDisplayManager
 
   const raw_ptr<x11::Connection> connection_;
   x11::Window x_root_window_;
-  int64_t primary_display_index_ = 0;
+  size_t primary_display_index_ = 0;
 
   // XRandR version. MAJOR * 100 + MINOR. Zero if no xrandr is present.
   const int xrandr_version_;
@@ -98,7 +98,6 @@ class COMPONENT_EXPORT(UI_BASE_X) XDisplayManager::Delegate {
  public:
   virtual ~Delegate() = default;
   virtual void OnXDisplayListUpdated() = 0;
-  virtual const DisplayConfig& GetDisplayConfig() const = 0;
 };
 
 }  // namespace ui

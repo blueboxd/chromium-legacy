@@ -48,6 +48,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
 #include "chromeos/ui/base/window_state_type.h"
+#include "chromeos/ui/frame/caption_buttons/snap_controller.h"
 #include "chromeos/ui/frame/header_view.h"
 #include "chromeos/ui/frame/immersive/immersive_fullscreen_controller.h"
 #include "chromeos/ui/wm/constants.h"
@@ -408,23 +409,39 @@ TEST_F(WindowFloatTest, FloatOnOtherDisplay) {
 }
 
 // Tests that floated windows that are moved to an external display are still
-// visible. Regression test for b/286864430.
+// visible and the same size. Regression test for http://b/286864430 and
+// http://b/297218727.
 TEST_F(WindowFloatTest, MoveFloatedWindowToOtherDisplay) {
   // On two displays of the same size, this was never an issue. The issue
   // happened if the destination display was narrower than the source display.
   UpdateDisplay("1200x800,1201+0-600x800");
 
   // Create a floated window on the primary display. Upon floating, it will
-  // automatically reposition to the bottom right corner.
-  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
-  ASSERT_EQ(Shell::GetAllRootWindows()[0], window->GetRootWindow());
+  // automatically reposition to the bottom right corner. For this test, we want
+  // to ensure the normal state size is different from the floated size; we do
+  // this by initializing the window with a large size.
+  auto window = CreateAppWindow(gfx::Rect(1100, 700));
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  CHECK(WindowState::Get(window.get())->IsFloated());
+  CHECK_NE(gfx::Size(1100, 700), window->bounds().size());
+
+  const gfx::Size primary_display_size = window->bounds().size();
 
   // After moving the window to the secondary display, the bounds of `window`
-  // should be partially visible.
+  // should be partially visible and remain the same size.
   PressAndReleaseKey(ui::VKEY_M, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
   ASSERT_EQ(Shell::GetAllRootWindows()[1], window->GetRootWindow());
   EXPECT_TRUE(Shell::GetAllRootWindows()[1]->GetBoundsInScreen().Intersects(
       window->GetBoundsInScreen()));
+  EXPECT_EQ(primary_display_size, window->bounds().size());
+
+  // After moving the window back to the primary display, the bounds of `window`
+  // should be partially visible and remain the same size.
+  PressAndReleaseKey(ui::VKEY_M, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  ASSERT_EQ(Shell::GetAllRootWindows()[0], window->GetRootWindow());
+  EXPECT_TRUE(Shell::GetAllRootWindows()[0]->GetBoundsInScreen().Intersects(
+      window->GetBoundsInScreen()));
+  EXPECT_EQ(primary_display_size, window->bounds().size());
 }
 
 TEST_F(WindowFloatTest, FloatWindowBoundsWithZoomDisplay) {
@@ -1556,7 +1573,7 @@ TEST_F(TabletWindowFloatTest, Dragging) {
 }
 
 // Tests that there is no crash when maximizing a dragged floated window.
-// Regression test for https://b/254107825.
+// Regression test for http://b/254107825.
 TEST_F(TabletWindowFloatTest, MaximizeWhileDragging) {
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
@@ -2184,6 +2201,27 @@ TEST_F(TabletWindowFloatSplitviewTest, FloatToSnapped) {
   PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller->InSplitViewMode());
+
+  // Tests that when we partial-snap `other_window` now, activating `window`
+  // will results in `window` snapped on the opposite side while keeping the
+  // partial snap ratio.
+  const WindowSnapWMEvent snap_primary_two_third(WM_EVENT_SNAP_PRIMARY,
+                                                 chromeos::kTwoThirdSnapRatio);
+  WindowState::Get(other_window.get())->OnWMEvent(&snap_primary_two_third);
+  ASSERT_TRUE(WindowState::Get(other_window.get())->IsSnapped());
+
+  wm::ActivateWindow(window.get());
+  EXPECT_TRUE(WindowState::Get(window.get())->IsSnapped());
+  EXPECT_EQ(split_view_controller->state(),
+            SplitViewController::State::kBothSnapped);
+  EXPECT_EQ(split_view_controller->primary_window(), other_window.get());
+  EXPECT_EQ(split_view_controller->secondary_window(), window.get());
+  EXPECT_NEAR(chromeos::kOneThirdSnapRatio,
+              WindowState::Get(window.get())->snap_ratio().value(),
+              /*abs_error=*/0.1);
+  EXPECT_NEAR(chromeos::kTwoThirdSnapRatio,
+              WindowState::Get(other_window.get())->snap_ratio().value(),
+              /*abs_error=*/0.1);
 }
 
 // When reset a floated window that's previously snapped, maximize instead of

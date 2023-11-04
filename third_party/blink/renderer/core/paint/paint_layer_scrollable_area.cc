@@ -528,13 +528,7 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
 
   if (IsExplicitScrollType(scroll_type) ||
       scroll_type == mojom::blink::ScrollType::kScrollStart) {
-    // We don't need to show scrollbars for kCompositor scrolls unless the
-    // scrollbar is non-composited (!NeedsCompositorScrolling). See
-    // PaintLayerScrollableArea::ShouldDirectlyCompositeScrollbar.
-    if (scroll_type != mojom::blink::ScrollType::kCompositor ||
-        !NeedsCompositedScrolling()) {
-      ShowNonMacOverlayScrollbars();
-    }
+    ShowNonMacOverlayScrollbars();
     GetScrollAnchor()->Clear();
   }
   if (ContentCaptureManager* manager = frame_view->GetFrame()
@@ -642,17 +636,11 @@ gfx::Vector2d PaintLayerScrollableArea::MaximumScrollOffsetInt() const {
   gfx::Size visible_size;
   if (this == controller.RootScrollerArea()) {
     visible_size = controller.RootScrollerVisibleArea();
-  } else if (RuntimeEnabledFeatures::ScrollableAreaNoSnappingEnabled()) {
+  } else {
     visible_size = ToRoundedSize(
         GetLayoutBox()
             ->OverflowClipRect(PhysicalOffset(), kIgnoreOverlayScrollbarSize)
             .size);
-  } else {
-    visible_size =
-        ToPixelSnappedRect(
-            GetLayoutBox()->DeprecatedOverflowClipRect(
-                GetLayoutBox()->Location(), kIgnoreOverlayScrollbarSize))
-            .size();
   }
 
   // TODO(skobes): We should really ASSERT that contentSize >= visibleSize
@@ -691,11 +679,7 @@ gfx::Rect PaintLayerScrollableArea::VisibleContentRect(
   PhysicalRect layout_content_rect(LayoutContentRect(scrollbar_inclusion));
   // TODO(szager): It's not clear that Floor() is the right thing to do here;
   // what is the correct behavior for fractional scroll offsets?
-  gfx::Size size =
-      RuntimeEnabledFeatures::ScrollableAreaNoSnappingEnabled()
-          ? ToRoundedSize(layout_content_rect.size)
-          : ToPixelSnappedSize(layout_content_rect.size.ToLayoutSize(),
-                               GetLayoutBox()->Location());
+  gfx::Size size = ToRoundedSize(layout_content_rect.size);
   return gfx::Rect(ToFlooredPoint(layout_content_rect.offset), size);
 }
 
@@ -718,15 +702,10 @@ PhysicalRect PaintLayerScrollableArea::VisibleScrollSnapportRect(
 }
 
 gfx::Size PaintLayerScrollableArea::ContentsSize() const {
-  LayoutPoint location =
-      RuntimeEnabledFeatures::ScrollableAreaNoSnappingEnabled()
-          ? LayoutPoint()
-          : GetLayoutBox()->Location();
-  // We need to take into account of ClientLeft and ClientTop even if
-  // ScrollableAreaNoSnappingEnabled, for PaintLayerScrollableAreaTest
-  // .NotScrollsOverflowWithScrollableScrollbar.
-  PhysicalOffset offset(GetLayoutBox()->ClientLeft() + location.X(),
-                        GetLayoutBox()->ClientTop() + location.Y());
+  // We need to take into account of ClientLeft and ClientTop  for
+  // PaintLayerScrollableAreaTest.NotScrollsOverflowWithScrollableScrollbar.
+  PhysicalOffset offset(GetLayoutBox()->ClientLeft(),
+                        GetLayoutBox()->ClientTop());
   // TODO(crbug.com/962299): The pixel snapping is incorrect in some cases.
   return PixelSnappedContentsSize(offset);
 }
@@ -739,8 +718,8 @@ gfx::Size PaintLayerScrollableArea::PixelSnappedContentsSize(
   // considered at least as large as the container. Otherwise, the snapshot
   // will be clipped by PendingLayer to the content size.
   if (IsA<LayoutView>(GetLayoutBox())) {
-    if (auto* transition = ViewTransitionUtils::GetActiveTransition(
-            GetLayoutBox()->GetDocument());
+    if (auto* transition =
+            ViewTransitionUtils::GetTransition(GetLayoutBox()->GetDocument());
         transition && transition->IsRootTransitioning()) {
       PhysicalSize container_size(transition->GetSnapshotRootSize());
       size.width = std::max(container_size.width, size.width);
@@ -1335,26 +1314,14 @@ bool PaintLayerScrollableArea::HasHorizontalOverflow() const {
                             VerticalScrollbarWidth(kIgnoreOverlayScrollbarSize);
   if (NeedsRelayout() && !HadVerticalScrollbarBeforeRelayout())
     client_width += VerticalScrollbarWidth();
-  if (RuntimeEnabledFeatures::ScrollableAreaNoSnappingEnabled()) {
-    return ScrollWidth().Round() > client_width.Round();
-  }
-  LayoutUnit scroll_width(ScrollWidth());
-  LayoutUnit box_x = GetLayoutBox()->Location().X();
-  return SnapSizeToPixel(scroll_width, box_x) >
-         SnapSizeToPixel(client_width, box_x);
+  return ScrollWidth().Round() > client_width.Round();
 }
 
 bool PaintLayerScrollableArea::HasVerticalOverflow() const {
   LayoutUnit client_height =
       LayoutContentRect(kIncludeScrollbars).Height() -
       HorizontalScrollbarHeight(kIgnoreOverlayScrollbarSize);
-  if (RuntimeEnabledFeatures::ScrollableAreaNoSnappingEnabled()) {
-    return ScrollHeight().Round() > client_height.Round();
-  }
-  LayoutUnit scroll_height(ScrollHeight());
-  LayoutUnit box_y = GetLayoutBox()->Location().Y();
-  return SnapSizeToPixel(scroll_height, box_y) >
-         SnapSizeToPixel(client_height, box_y);
+  return ScrollHeight().Round() > client_height.Round();
 }
 
 // This function returns true if the given box requires overflow scrollbars (as
@@ -1958,7 +1925,7 @@ PaintLayerScrollableArea::GetSnapPositionAndSetTarget(
   CompositorElementId active_element_id = CompositorElementId();
   if (auto* active_element = GetDocument()->ActiveElement()) {
     active_element_id =
-        CompositorElementIdFromDOMNodeId(DOMNodeIds::IdForNode(active_element));
+        CompositorElementIdFromDOMNodeId(active_element->GetDomNodeId());
   }
 
   absl::optional<gfx::PointF> snap_point;
@@ -2031,21 +1998,21 @@ void PaintLayerScrollableArea::PositionOverflowControls() {
   }
 
   if (scroll_corner_) {
-    LayoutRect rect(ScrollCornerRect());
-    scroll_corner_->SetOverriddenFrameRect(rect);
+    PhysicalRect rect(ScrollCornerRect());
+    scroll_corner_->SetOverriddenSize(rect.size);
     // TODO(crbug.com/1020913): This should be part of PaintPropertyTreeBuilder
     // when we support subpixel layout of overflow controls.
     scroll_corner_->GetMutableForPainting().FirstFragment().SetPaintOffset(
-        PhysicalOffset(rect.Location()));
+        rect.offset);
   }
 
   if (resizer_) {
-    LayoutRect rect(ResizerCornerRect(kResizerForPointer));
-    resizer_->SetOverriddenFrameRect(rect);
+    PhysicalRect rect(ResizerCornerRect(kResizerForPointer));
+    resizer_->SetOverriddenSize(rect.size);
     // TODO(crbug.com/1020913): This should be part of PaintPropertyTreeBuilder
     // when we support subpixel layout of overflow controls.
     resizer_->GetMutableForPainting().FirstFragment().SetPaintOffset(
-        PhysicalOffset(rect.Location()));
+        rect.offset);
   }
 }
 
@@ -2097,14 +2064,14 @@ bool PaintLayerScrollableArea::HitTestOverflowControls(
 
   if (HasVerticalScrollbar() &&
       VerticalScrollbar()->ShouldParticipateInHitTesting()) {
-    LayoutRect v_bar_rect(VerticalScrollbarStart(),
-                          GetLayoutBox()->BorderTop().ToInt(),
-                          VerticalScrollbar()->ScrollbarThickness(),
-                          visible_rect.height() -
-                              (HasHorizontalScrollbar()
-                                   ? HorizontalScrollbar()->ScrollbarThickness()
-                                   : resize_control_size));
-    if (v_bar_rect.Contains(LayoutPoint(local_point))) {
+    gfx::Rect v_bar_rect(VerticalScrollbarStart(),
+                         GetLayoutBox()->BorderTop().ToInt(),
+                         VerticalScrollbar()->ScrollbarThickness(),
+                         visible_rect.height() -
+                             (HasHorizontalScrollbar()
+                                  ? HorizontalScrollbar()->ScrollbarThickness()
+                                  : resize_control_size));
+    if (v_bar_rect.Contains(local_point)) {
       result.SetScrollbar(VerticalScrollbar());
       return true;
     }
@@ -2115,7 +2082,7 @@ bool PaintLayerScrollableArea::HitTestOverflowControls(
       HorizontalScrollbar()->ShouldParticipateInHitTesting()) {
     // TODO(crbug.com/638981): Are the conversions to int intentional?
     int h_scrollbar_thickness = HorizontalScrollbar()->ScrollbarThickness();
-    LayoutRect h_bar_rect(
+    gfx::Rect h_bar_rect(
         HorizontalScrollbarStart(),
         GetLayoutBox()->BorderTop().ToInt() + visible_rect.height() -
             h_scrollbar_thickness,
@@ -2123,7 +2090,7 @@ bool PaintLayerScrollableArea::HitTestOverflowControls(
                                     ? VerticalScrollbar()->ScrollbarThickness()
                                     : resize_control_size),
         h_scrollbar_thickness);
-    if (h_bar_rect.Contains(LayoutPoint(local_point))) {
+    if (h_bar_rect.Contains(local_point)) {
       result.SetScrollbar(HorizontalScrollbar());
       return true;
     }
@@ -3116,7 +3083,7 @@ void PaintLayerScrollableArea::DidScrollWithScrollbar(
       UseCounter::Count(
           GetLayoutBox()->GetDocument(),
           WebFeature::kScrollbarUseScrollbarButtonReversedDirection);
-      U_FALLTHROUGH;
+      [[fallthrough]];
     case kBackButtonStartPart:
     case kForwardButtonEndPart:
       scrollbar_use_uma =

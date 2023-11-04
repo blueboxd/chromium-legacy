@@ -24,7 +24,6 @@ BASE_DECLARE_FEATURE(kIPHDummyFeature);
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
-BASE_DECLARE_FEATURE(kIPHAutofillFeedbackNewBadgeFeature);
 BASE_DECLARE_FEATURE(kIPHBatterySaverModeFeature);
 BASE_DECLARE_FEATURE(kIPHCompanionSidePanelFeature);
 BASE_DECLARE_FEATURE(kIPHCompanionSidePanelRegionSearchFeature);
@@ -60,6 +59,7 @@ BASE_DECLARE_FEATURE(kIPHSideSearchAutoTriggeringFeature);
 BASE_DECLARE_FEATURE(kIPHSideSearchFeature);
 BASE_DECLARE_FEATURE(kIPHSideSearchPageActionLabelFeature);
 BASE_DECLARE_FEATURE(kIPHTabSearchFeature);
+BASE_DECLARE_FEATURE(kIPHTrackingProtectionOnboardingFeature);
 BASE_DECLARE_FEATURE(kIPHWebUITabStripFeature);
 BASE_DECLARE_FEATURE(kIPHDesktopSnoozeFeature);
 BASE_DECLARE_FEATURE(kIPHDesktopPwaInstallFeature);
@@ -175,6 +175,7 @@ BASE_DECLARE_FEATURE(kIPHShareScreenshotFeature);
 BASE_DECLARE_FEATURE(kIPHSharingHubLinkToggleFeature);
 BASE_DECLARE_FEATURE(kIPHWebFeedFollowFeature);
 BASE_DECLARE_FEATURE(kIPHWebFeedPostFollowDialogFeature);
+BASE_DECLARE_FEATURE(kIPHWebFeedPostFollowDialogFeatureWithUIUpdate);
 BASE_DECLARE_FEATURE(kIPHSharedHighlightingBuilder);
 BASE_DECLARE_FEATURE(kIPHSharedHighlightingReceiverFeature);
 BASE_DECLARE_FEATURE(kIPHSharingHubWebnotesStylizeFeature);
@@ -208,6 +209,7 @@ BASE_DECLARE_FEATURE(kIPHiOSShareToolbarItemFeature);
 BASE_DECLARE_FEATURE(kIPHiOSDefaultBrowserVideoPromoTriggerFeature);
 BASE_DECLARE_FEATURE(kIPHiOSPromoPostRestoreDefaultBrowserFeature);
 BASE_DECLARE_FEATURE(kIPHiOSPromoPasswordManagerWidgetFeature);
+BASE_DECLARE_FEATURE(kIPHiOSChoiceScreenFeature);
 #endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
@@ -216,6 +218,7 @@ BASE_DECLARE_FEATURE(kIPHAutofillExternalAccountProfileSuggestionFeature);
 BASE_DECLARE_FEATURE(kIPHAutofillVirtualCardCVCSuggestionFeature);
 BASE_DECLARE_FEATURE(kIPHAutofillVirtualCardSuggestionFeature);
 BASE_DECLARE_FEATURE(kIPHCookieControlsFeature);
+BASE_DECLARE_FEATURE(kIPH3pcdUserBypassFeature);
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) ||
         // BUILDFLAG(IS_FUCHSIA)
@@ -254,6 +257,7 @@ BASE_DECLARE_FEATURE(kIPHScalableIphHelpAppBasedSevenFeature);
 BASE_DECLARE_FEATURE(kIPHScalableIphHelpAppBasedEightFeature);
 BASE_DECLARE_FEATURE(kIPHScalableIphHelpAppBasedNineFeature);
 BASE_DECLARE_FEATURE(kIPHScalableIphHelpAppBasedTenFeature);
+BASE_DECLARE_FEATURE(kIPHScalableIphGamingFeature);
 #endif
 
 #if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)

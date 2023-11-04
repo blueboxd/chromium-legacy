@@ -53,7 +53,6 @@
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_tabbed_utils.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/common/webui_url_constants.h"
@@ -64,6 +63,7 @@
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "components/webapps/common/web_app_id.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_observer.h"
@@ -200,6 +200,22 @@ std::unique_ptr<TabGroupModel> TabGroupModelFactory::Create(
   return std::make_unique<TabGroupModel>(controller);
 }
 
+DetachedWebContents::DetachedWebContents(
+    int index_before_any_removals,
+    int index_at_time_of_removal,
+    std::unique_ptr<WebContents> owned_contents,
+    content::WebContents* contents,
+    TabStripModelChange::RemoveReason remove_reason,
+    absl::optional<SessionID> id)
+    : owned_contents(std::move(owned_contents)),
+      contents(contents),
+      index_before_any_removals(index_before_any_removals),
+      index_at_time_of_removal(index_at_time_of_removal),
+      remove_reason(remove_reason),
+      id(id) {}
+DetachedWebContents::~DetachedWebContents() = default;
+DetachedWebContents::DetachedWebContents(DetachedWebContents&&) = default;
+
 ///////////////////////////////////////////////////////////////////////////////
 // Tab
 
@@ -227,23 +243,6 @@ std::unique_ptr<content::WebContents> TabStripModel::Tab::ReplaceWebContents(
     std::unique_ptr<content::WebContents> contents) {
   return ReplaceContents(std::move(contents));
 }
-
-TabStripModel::DetachedWebContents::DetachedWebContents(
-    int index_before_any_removals,
-    int index_at_time_of_removal,
-    std::unique_ptr<WebContents> owned_contents,
-    content::WebContents* contents,
-    TabStripModelChange::RemoveReason remove_reason,
-    absl::optional<SessionID> id)
-    : owned_contents(std::move(owned_contents)),
-      contents(contents),
-      index_before_any_removals(index_before_any_removals),
-      index_at_time_of_removal(index_at_time_of_removal),
-      remove_reason(remove_reason),
-      id(id) {}
-TabStripModel::DetachedWebContents::~DetachedWebContents() = default;
-TabStripModel::DetachedWebContents::DetachedWebContents(DetachedWebContents&&) =
-    default;
 
 // Holds all state necessary to send notifications for detached tabs.
 struct TabStripModel::DetachNotifications {
@@ -314,10 +313,6 @@ void TabStripModel::SetTabStripUI(TabStripModelObserver* observer) {
 }
 
 void TabStripModel::AddObserver(TabStripModelObserver* observer) {
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // TODO(crbug.com/1427990): Remove this after fixing the bug.
-  CHECK(!observers_.HasObserver(observer));
-#endif
   observers_.AddObserver(observer);
   observer->StartedObserving(TabStripModelObserver::ModelPasskey(), this);
 }
@@ -394,7 +389,7 @@ void TabStripModel::DetachAndDeleteWebContentsAt(int index) {
                                 TabStripModelChange::RemoveReason::kDeleted);
 }
 
-std::unique_ptr<TabStripModel::DetachedWebContents>
+std::unique_ptr<DetachedWebContents>
 TabStripModel::DetachWebContentsWithReasonAt(
     int index,
     TabStripModelChange::RemoveReason reason) {
@@ -424,11 +419,11 @@ void TabStripModel::OnChange(const TabStripModelChange& change,
   }
 }
 
-std::unique_ptr<TabStripModel::DetachedWebContents>
-TabStripModel::DetachWebContentsImpl(int index_before_any_removals,
-                                     int index_at_time_of_removal,
-                                     bool create_historical_tab,
-                                     TabStripModelChange::RemoveReason reason) {
+std::unique_ptr<DetachedWebContents> TabStripModel::DetachWebContentsImpl(
+    int index_before_any_removals,
+    int index_at_time_of_removal,
+    bool create_historical_tab,
+    TabStripModelChange::RemoveReason reason) {
   if (contents_data_.empty())
     return nullptr;
   CHECK(ContainsIndex(index_at_time_of_removal));
@@ -2668,7 +2663,7 @@ bool TabStripModel::PolicyAllowsTabClosing(
   web_app::WebAppProvider* provider =
       web_app::WebAppProvider::GetForWebContents(contents);
   // Can be null if there is no tab helper or app id.
-  const web_app::AppId* app_id = web_app::WebAppTabHelper::GetAppId(contents);
+  const webapps::AppId* app_id = web_app::WebAppTabHelper::GetAppId(contents);
   if (!app_id) {
     return true;
   }

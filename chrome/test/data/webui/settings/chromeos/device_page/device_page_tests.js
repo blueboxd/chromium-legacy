@@ -306,12 +306,8 @@ suite('SettingsDevicePage', function() {
     await flushTasks();
     devicePage = document.createElement('settings-device-page');
     devicePage.prefs = getFakePrefs();
-
-    // os-settings-animated-pages expects a parent with data-page set.
-    const basicPage = document.createElement('div');
-    basicPage.dataset.page = 'basic';
-    basicPage.appendChild(devicePage);
-    document.body.appendChild(basicPage);
+    document.body.appendChild(devicePage);
+    flush();
   }
 
   /** @return {!Promise<!HTMLElement>} */
@@ -2536,13 +2532,14 @@ suite('SettingsDevicePage', function() {
      * @param {string} powerSourceId
      * @param {bool} isLowPowerCharger
      */
-    function setPowerSources(sources, powerSourceId, isLowPowerCharger) {
+    function setPowerSources(
+        sources, powerSourceId, isExternalPowerUSB, isExternalPowerAC) {
       const sourcesCopy = sources.map(function(source) {
         return Object.assign({}, source);
       });
       webUIListenerCallback(
           'power-sources-changed', sourcesCopy, powerSourceId,
-          isLowPowerCharger);
+          isExternalPowerUSB, isExternalPowerAC);
     }
 
     suite('power settings', function() {
@@ -2654,14 +2651,12 @@ suite('SettingsDevicePage', function() {
         };
         webUIListenerCallback(
             'battery-status-changed', Object.assign({}, batteryStatus));
-        setPowerSources([], '', false);
+        setPowerSources([], '', false, false);
         flush();
 
         // Power sources row is visible but dropdown is hidden.
         assertFalse(powerSourceRow.hidden);
         assertTrue(powerSourceSelect.hidden);
-        // Battery saver should be toggleable when not charging.
-        assertFalse(batterySaverToggle.disabled);
 
         // Attach a dual-role USB device.
         const powerSource = {
@@ -2669,33 +2664,27 @@ suite('SettingsDevicePage', function() {
           is_dedicated_charger: false,
           description: 'USB-C device',
         };
-        setPowerSources([powerSource], '', false);
+        setPowerSources([powerSource], '', false, false);
         flush();
 
         // "Battery" should be selected.
         assertFalse(powerSourceSelect.hidden);
         assertEquals('', powerSourceSelect.value);
-        // We are charging on a non-low power charger, battery saver should be
-        // grayed out.
-        assertTrue(batterySaverToggle.disabled);
 
         // Select the power source.
-        setPowerSources([powerSource], powerSource.id, true);
+        setPowerSources([powerSource], powerSource.id, true, false);
         flush();
         assertFalse(powerSourceSelect.hidden);
         assertEquals(powerSource.id, powerSourceSelect.value);
-        // Charging, but on a low-power charger, battery saver should be
-        // toggleable.
-        assertFalse(batterySaverToggle.disabled);
 
         // Send another power source; the first should still be selected.
         const otherPowerSource = Object.assign({}, powerSource);
         otherPowerSource.id = '3';
-        setPowerSources([otherPowerSource, powerSource], powerSource.id, true);
+        setPowerSources(
+            [otherPowerSource, powerSource], powerSource.id, true, false);
         flush();
         assertFalse(powerSourceSelect.hidden);
         assertEquals(powerSource.id, powerSourceSelect.value);
-        assertFalse(batterySaverToggle.disabled);
       });
 
       test('choose power source', function() {
@@ -2715,7 +2704,7 @@ suite('SettingsDevicePage', function() {
           is_dedicated_charger: false,
           description: 'USB-C device',
         };
-        setPowerSources([powerSource], '', false);
+        setPowerSources([powerSource], '', false, false);
         flush();
 
         // Select the device.
@@ -2735,7 +2724,7 @@ suite('SettingsDevicePage', function() {
         };
         webUIListenerCallback(
             'battery-status-changed', Object.assign({}, batteryStatus));
-        setPowerSources([], '', false);
+        setPowerSources([], '', false, false);
         flush();
 
         acIdleSelect =
@@ -3247,7 +3236,7 @@ suite('SettingsDevicePage', function() {
           statusText: '5 hours left',
         });
         // There are no power sources.
-        setPowerSources([], '', false);
+        setPowerSources([], '', false, false);
         // Battery saver feature is enabled.
         sendPowerManagementSettings(
             [
@@ -3270,6 +3259,18 @@ suite('SettingsDevicePage', function() {
         // Battery saver should be visible and toggleable.
         assertFalse(batterySaverToggle.hidden);
         assertFalse(batterySaverToggle.disabled);
+
+        // Connect a dedicated AC power adapter.
+        const mainsPowerSource = {
+          id: '1',
+          is_dedicated_charger: true,
+          description: 'USB-C device',
+        };
+        setPowerSources([mainsPowerSource], '1', false, true);
+
+        // Battery saver should be visible but not toggleable.
+        assertFalse(batterySaverToggle.hidden);
+        assertTrue(batterySaverToggle.disabled);
       });
 
       test('Battery Saver updates when pref updates', () => {
@@ -3918,22 +3919,21 @@ suite('SettingsDevicePage', function() {
       return rowItem.querySelector('#subLabel').innerText;
     }
 
-    suiteSetup(function() {
+    async function setupPage() {
+      PolymerTest.clearBody();
+      await init();
+      storagePage = await showAndGetDeviceSubpage('storage', routes.STORAGE);
+      storagePage.stopPeriodicUpdate_();
+    }
+
+    suiteSetup(() => {
       // Disable animations so sub-pages open within one event loop.
       testing.Test.disableAnimationsAndTransitions();
     });
 
-    async function setupPage() {
-      PolymerTest.clearBody();
-      await init();
-      return showAndGetDeviceSubpage('storage', routes.STORAGE)
-          .then(function(page) {
-            storagePage = page;
-            storagePage.stopPeriodicUpdate_();
-          });
-    }
-
-    setup(setupPage);
+    setup(async () => {
+      await setupPage();
+    });
 
     test('storage stats size', async function() {
       // Low available storage space.
@@ -4072,7 +4072,7 @@ suite('SettingsDevicePage', function() {
           showGoogleDriveSettingsPage: params.showGoogleDriveSettingsPage,
         });
         await setupPage();
-        devicePage.prefs.gdata.disabled = !params.isDriveEnabled;
+        devicePage.set('prefs.gdata.disabled.value', !params.isDriveEnabled);
         await flushTasks();
         const expectedState =
             (params.isVisible) ? 'be visible' : 'not be visible';
@@ -4084,61 +4084,86 @@ suite('SettingsDevicePage', function() {
                 JSON.stringify(params)}`);
       }
 
-      assertDriveOfflineSizeVisibility({
+      await assertDriveOfflineSizeVisibility({
         enableDriveFsBulkPinning: false,
         showGoogleDriveSettingsPage: false,
         isDriveEnabled: false,
         isVisible: false,
       });
 
-      assertDriveOfflineSizeVisibility({
+      await assertDriveOfflineSizeVisibility({
         enableDriveFsBulkPinning: false,
         showGoogleDriveSettingsPage: false,
         isDriveEnabled: true,
         isVisible: false,
       });
 
-      assertDriveOfflineSizeVisibility({
+      await assertDriveOfflineSizeVisibility({
         enableDriveFsBulkPinning: false,
         showGoogleDriveSettingsPage: true,
         isDriveEnabled: false,
         isVisible: false,
       });
 
-      assertDriveOfflineSizeVisibility({
+      await assertDriveOfflineSizeVisibility({
         enableDriveFsBulkPinning: true,
         showGoogleDriveSettingsPage: false,
         isDriveEnabled: false,
         isVisible: false,
       });
 
-      assertDriveOfflineSizeVisibility({
+      await assertDriveOfflineSizeVisibility({
         enableDriveFsBulkPinning: true,
         showGoogleDriveSettingsPage: true,
         isDriveEnabled: false,
         isVisible: false,
       });
 
-      assertDriveOfflineSizeVisibility({
+      await assertDriveOfflineSizeVisibility({
         enableDriveFsBulkPinning: false,
-        showGoogleDriveSettingsPage: true,
-        isDriveEnabled: true,
-        isVisible: true,
-      });
-
-      assertDriveOfflineSizeVisibility({
-        enableDriveFsBulkPinning: true,
-        showGoogleDriveSettingsPage: false,
-        isDriveEnabled: true,
-        isVisible: true,
-      });
-
-      assertDriveOfflineSizeVisibility({
-        enableDriveFsBulkPinning: true,
         showGoogleDriveSettingsPage: true,
         isDriveEnabled: true,
         isVisible: true,
       });
+
+      await assertDriveOfflineSizeVisibility({
+        enableDriveFsBulkPinning: true,
+        showGoogleDriveSettingsPage: false,
+        isDriveEnabled: true,
+        isVisible: true,
+      });
+
+      await assertDriveOfflineSizeVisibility({
+        enableDriveFsBulkPinning: true,
+        showGoogleDriveSettingsPage: true,
+        isDriveEnabled: true,
+        isVisible: true,
+      });
+    });
+  });
+
+  suite('When OsSettingsRevampWayfinding feature is enabled', () => {
+    setup(() => {
+      loadTimeData.overrideValues({isRevampWayfindingEnabled: true});
+    });
+
+    test('Power row is not visible', async () => {
+      await init();
+      const powerRow = devicePage.shadowRoot.getElementById('powerRow');
+      assertFalse(isVisible(powerRow));
+    });
+
+    test('Storage row is not visible', async () => {
+      await init();
+      const storageRow = devicePage.shadowRoot.getElementById('storageRow');
+      assertFalse(isVisible(storageRow));
+    });
+
+    test('Printing settings card is visible', async () => {
+      await init();
+      const printingSettingsCard =
+          devicePage.shadowRoot.querySelector('printing-settings-card');
+      assertTrue(isVisible(printingSettingsCard));
     });
   });
 });

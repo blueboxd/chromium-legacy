@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_SAFETY_HUB_SAFETY_HUB_SERVICE_H_
 
 #include <memory>
+#include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
@@ -14,8 +15,12 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+constexpr char kSafetyHubTimestampResultKey[] = "timestamp";
+constexpr char kSafetyHubOriginKey[] = "origin";
 
 // Base class for Safety Hub services. The background and UI tasks of the
 // derived classes will be executed periodically, according to the time delta
@@ -30,16 +35,45 @@ class SafetyHubService : public KeyedService,
   // thread task should be included as well.
   class Result {
    public:
-    explicit Result(base::TimeTicks timestamp = base::TimeTicks::Now());
-
-    Result(const Result&) = default;
-    Result& operator=(const Result&) = delete;
     virtual ~Result() = default;
 
-    base::TimeTicks timestamp() const;
+    virtual base::Value::Dict ToDictValue() const = 0;
+
+    // Determines whether the current result meets the bar for showing a
+    // notification to the user in the Chrome menu.
+    virtual bool IsTriggerForMenuNotification() const = 0;
+
+    // Determines whether the previous result is sufficiently different that for
+    // the current result a new notification should be shown. This indication is
+    // just based on the comparison of the two results, and thus irrelevant to
+    // how frequently a menu notification has already been shown.
+    virtual bool WarrantsNewMenuNotification(
+        const Result& previousResult) const = 0;
+
+    // Returns the string for the notification that will be shown in the
+    // three-dot menu.
+    virtual std::u16string GetNotificationString() const = 0;
+
+    // Returns the command ID that should be run when the user clicks the
+    // notification in the three-dot menu.
+    virtual int GetNotificationCommandId() const = 0;
+
+    // Returns a copy of the current Safety Hub object. This is intended to be
+    // used when the caller is unaware of the specific derived class.
+    virtual std::unique_ptr<Result> Clone() const = 0;
+
+    base::Time timestamp() const;
+
+   protected:
+    explicit Result(base::Time timestamp = base::Time::Now());
+    explicit Result(const base::Value::Dict& dict);
+    Result(const Result&) = default;
+    Result& operator=(const Result&) = default;
+
+    base::Value::Dict BaseToDictValue() const;
 
    private:
-    base::TimeTicks timestamp_;
+    base::Time timestamp_;
   };
 
   class Observer : public base::CheckedObserver {
@@ -69,20 +103,31 @@ class SafetyHubService : public KeyedService,
   bool IsUpdateRunning();
 
   // Returns the latest result that is available in memory.
-  absl::optional<SafetyHubService::Result*> GetCachedResult();
+  absl::optional<std::unique_ptr<SafetyHubService::Result>> GetCachedResult();
+
+  // Initializes a result object from a base::Value::Dict value.
+  virtual std::unique_ptr<SafetyHubService::Result> GetResultFromDictValue(
+      const base::Value::Dict& dict) = 0;
 
   // KeyedService implementation.
   void Shutdown() override;
+
+  // Checks if the repeating timer is running.
+  bool IsTimerRunningForTesting();
 
  protected:
   // Triggers the repeated update task that updates the state of the Safety Hub
   // service.
   void StartRepeatedUpdates();
 
+  // Stops the repeating timer to stop recurring tasks.
+  void StopTimer();
+
   // SafetyHubService overrides.
 
-  // Initializes the latest result such that it is available in memory.
-  virtual void InitializeLatestResult() = 0;
+  // Initializes the latest result such that it is available in memory. It needs
+  // to be called on creation of the service.
+  void InitializeLatestResult();
 
   // The value returned by this function determines the interval of how often
   // the Update function will be called.
@@ -105,8 +150,11 @@ class SafetyHubService : public KeyedService,
 
   virtual base::WeakPtr<SafetyHubService> GetAsWeakRef() = 0;
 
-  // The latest available result, which is initialized at the start.
-  std::unique_ptr<Result> latest_result_ = nullptr;
+  // Returns the result that should be initialized upon starting the service.
+  // Typically, this will be the outcome of running the lightweight step of the
+  // update process (i.e. `UpdateOnUIThread()`).
+  virtual std::unique_ptr<SafetyHubService::Result>
+  InitializeLatestResultImpl() = 0;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SafetyHubServiceTest, ManageObservers);
@@ -129,6 +177,11 @@ class SafetyHubService : public KeyedService,
 
   // Indicator of how many requested updates are still pending.
   int pending_updates_ = 0;
+
+  // The latest available result, which is initialized when the service is
+  // started. The value is set by `InitializeLatestResult()`, which is called
+  // in the constructor of each service.
+  std::unique_ptr<Result> latest_result_ = nullptr;
 };
 
 #endif  // CHROME_BROWSER_UI_SAFETY_HUB_SAFETY_HUB_SERVICE_H_

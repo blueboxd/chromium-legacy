@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "build/chromeos_buildflags.h"
 #include "content/browser/renderer_host/policy_container_host.h"
+#include "content/common/features.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -245,6 +246,18 @@ AddressSpace CalculateIPAddressSpace(
   }
 
   return IPAddressSpaceForSpecialScheme(url, client);
+}
+
+network::mojom::PrivateNetworkRequestPolicy OverrideBlockWithWarn(
+    network::mojom::PrivateNetworkRequestPolicy policy) {
+  switch (policy) {
+    case network::mojom::PrivateNetworkRequestPolicy::kWarn:
+      return network::mojom::PrivateNetworkRequestPolicy::kBlock;
+    case network::mojom::PrivateNetworkRequestPolicy::kPreflightWarn:
+      return network::mojom::PrivateNetworkRequestPolicy::kPreflightBlock;
+    default:
+      return policy;
+  }
 }
 
 }  // namespace content

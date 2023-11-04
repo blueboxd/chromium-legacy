@@ -91,7 +91,6 @@ class SyncServiceImpl : public SyncService,
         nullptr;
     version_info::Channel channel = version_info::Channel::UNKNOWN;
     std::string debug_identifier;
-    bool is_regular_profile_for_uma = false;
   };
 
   explicit SyncServiceImpl(InitParams init_params);
@@ -182,7 +181,7 @@ class SyncServiceImpl : public SyncService,
   void CryptoStateChanged() override;
   void CryptoRequiredUserActionChanged() override;
   void ReconfigureDataTypesDueToCrypto() override;
-  void SetPassphraseType(PassphraseType passphrase_type) override;
+  void PassphraseTypeChanged(PassphraseType passphrase_type) override;
   absl::optional<PassphraseType> GetPassphraseType() const override;
   void SetEncryptionBootstrapToken(const std::string& bootstrap_token) override;
   std::string GetEncryptionBootstrapToken() const override;
@@ -204,8 +203,10 @@ class SyncServiceImpl : public SyncService,
 
   // SyncPrefObserver implementation.
   void OnSyncManagedPrefChange(bool is_sync_managed) override;
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   void OnFirstSetupCompletePrefChange(
       bool is_initial_sync_feature_setup_complete) override;
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
   void OnPreferredDataTypesPrefChange(
       bool payments_integration_enabled_changed) override;
 
@@ -502,12 +503,6 @@ class SyncServiceImpl : public SyncService,
   CreateHttpPostProviderFactory create_http_post_provider_factory_cb_;
 
   std::unique_ptr<SyncStoppedReporter> sync_stopped_reporter_;
-
-  // Whether the Profile that this SyncService is attached to is a "regular"
-  // profile, i.e. one for which sync actually makes sense. This excludes
-  // profiles types such as system and guest profiles, as well as sign-in and
-  // lockscreen profiles on Ash.
-  const bool is_regular_profile_for_uma_;
 
   // Used for UMA to determine whether TrustedVaultErrorShownOnStartup
   // histogram needs to recorded. Set to false iff histogram was already

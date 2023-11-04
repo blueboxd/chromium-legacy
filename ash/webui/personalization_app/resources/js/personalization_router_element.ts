@@ -27,6 +27,7 @@ export enum Paths {
   GOOGLE_PHOTOS_COLLECTION = '/wallpaper/google-photos',
   LOCAL_COLLECTION = '/wallpaper/local',
   ROOT = '/',
+  SEA_PEN_COLLECTION = '/wallpaper/sea-pen',
   USER = '/user',
 }
 
@@ -41,6 +42,7 @@ export interface QueryParams {
   googlePhotosAlbumIsShared?: 'true';
   topicSource?: string;
   scrollTo?: ScrollableTarget;
+  seaPenTemplateId?: string;
 }
 
 export function isPathValid(path: string|null): boolean {
@@ -146,6 +148,10 @@ export class PersonalizationRouterElement extends PolymerElement {
   /** Navigate to albums subpage of specific topic source. */
   selectAmbientAlbums(topicSource: TopicSource) {
     this.goToRoute(Paths.AMBIENT_ALBUMS, {topicSource: topicSource.toString()});
+  }
+
+  selectSeaPenTemplate(templateId: string) {
+    this.goToRoute(Paths.SEA_PEN_COLLECTION, {seaPenTemplateId: templateId});
   }
 
   goToRoute(path: Paths, queryParams: QueryParams = {}) {

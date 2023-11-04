@@ -70,17 +70,6 @@ std::string ErrorMessageCheckSpooler(const std::string& base_message,
   return message;
 }
 
-// `GetResultCodeFromSystemErrorCode()` is only ever invoked when something has
-// gone wrong while interacting with the OS printing system.  If the cause of
-// the failure was not of the type to register and be and available from
-// `GetLastError()` then we should just use the general error result.
-mojom::ResultCode GetResultCodeFromSystemErrorCode(
-    logging::SystemErrorCode system_code) {
-  if (system_code == ERROR_ACCESS_DENIED)
-    return mojom::ResultCode::kAccessDenied;
-  return mojom::ResultCode::kFailed;
-}
-
 ScopedPrinterHandle GetPrinterHandle(const std::string& printer_name) {
   ScopedPrinterHandle handle;
   handle.OpenPrinterWithName(base::UTF8ToWide(printer_name).c_str());
@@ -386,11 +375,18 @@ mojom::ResultCode PrintBackendWin::GetDefaultPrinterName(
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
   if (!::GetDefaultPrinter(default_printer_name, &size)) {
-    LOG(ERROR) << ErrorMessageCheckSpooler("Error getting default printer: ",
-                                           logging::GetLastSystemErrorCode());
-    return mojom::ResultCode::kFailed;
+    logging::SystemErrorCode err = logging::GetLastSystemErrorCode();
+    if (err != ERROR_FILE_NOT_FOUND) {
+      LOG(ERROR) << ErrorMessageCheckSpooler("Error getting default printer: ",
+                                             err);
+      return mojom::ResultCode::kFailed;
+    }
+
+    // There is no default printer, which is not treated as a failure.
+    default_printer = std::string();
+  } else {
+    default_printer = base::WideToUTF8(default_printer_name);
   }
-  default_printer = base::WideToUTF8(default_printer_name);
   return mojom::ResultCode::kSuccess;
 }
 

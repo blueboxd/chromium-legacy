@@ -671,14 +671,16 @@ class TestDialogController
     }
   }
 
-  void ShowErrorDialog(const std::string& top_frame_for_display,
-                       const absl::optional<std::string>& iframe_for_display,
-                       const std::string& idp_for_display,
-                       const blink::mojom::RpContext& rp_context,
-                       const IdentityProviderMetadata& idp_metadata,
-                       const absl::optional<TokenError>& error,
-                       IdentityRequestDialogController::DismissCallback
-                           dismiss_callback) override {
+  void ShowErrorDialog(
+      const std::string& top_frame_for_display,
+      const absl::optional<std::string>& iframe_for_display,
+      const std::string& idp_for_display,
+      const blink::mojom::RpContext& rp_context,
+      const IdentityProviderMetadata& idp_metadata,
+      const absl::optional<TokenError>& error,
+      IdentityRequestDialogController::DismissCallback dismiss_callback,
+      IdentityRequestDialogController::MoreDetailsCallback
+          more_details_callback) override {
     if (!state_) {
       return;
     }
@@ -1456,6 +1458,10 @@ TEST_F(FederatedAuthRequestImplTest, AccountEndpointDifferentOriginIdp) {
 // Test that request fails if IDP signin URL is different origin from IDP config
 // URL.
 TEST_F(FederatedAuthRequestImplTest, SigninUrlDifferentOriginIdp) {
+  // We only validate the signin_url if IdpSigninStatus is enabled.
+  base::test::ScopedFeatureList list;
+  list.InitAndEnableFeature(features::kFedCmIdpSigninStatusEnabled);
+
   MockConfiguration configuration = kConfigurationValid;
   configuration.idp_info[kProviderUrlFull].config.idp_signin_url =
       "https://idp2.example/signin_url";
@@ -2937,7 +2943,8 @@ TEST_F(FederatedAuthRequestImplTest, DisclosureTextShownForFirstTimeUser) {
       std::make_unique<IdpNetworkRequestManagerParamChecker>();
   checker->SetExpectedTokenPostData(
       "client_id=" + std::string(kClientId) + "&nonce=" + std::string(kNonce) +
-      "&account_id=" + std::string(kAccountId) + "&disclosure_text_shown=true");
+      "&account_id=" + std::string(kAccountId) + "&disclosure_text_shown=true" +
+      "&is_account_auto_selected=false");
   SetNetworkRequestManager(std::move(checker));
 
   RunAuthTest(kDefaultRequestParameters, kExpectationSuccess,
@@ -2957,10 +2964,10 @@ TEST_F(FederatedAuthRequestImplTest, DisclosureTextNotShownForReturningUser) {
 
   std::unique_ptr<IdpNetworkRequestManagerParamChecker> checker =
       std::make_unique<IdpNetworkRequestManagerParamChecker>();
-  checker->SetExpectedTokenPostData("client_id=" + std::string(kClientId) +
-                                    "&nonce=" + std::string(kNonce) +
-                                    "&account_id=" + std::string(kAccountId) +
-                                    "&disclosure_text_shown=false");
+  checker->SetExpectedTokenPostData(
+      "client_id=" + std::string(kClientId) + "&nonce=" + std::string(kNonce) +
+      "&account_id=" + std::string(kAccountId) +
+      "&disclosure_text_shown=false" + "&is_account_auto_selected=false");
   SetNetworkRequestManager(std::move(checker));
 
   MockConfiguration config = kConfigurationValid;
@@ -2979,10 +2986,28 @@ TEST_F(FederatedAuthRequestImplTest, TokenEndpointPostDataEscaping) {
       std::make_unique<IdpNetworkRequestManagerParamChecker>();
   checker->SetExpectedTokenPostData(
       "client_id=" + std::string(kClientId) + "&nonce=" + std::string(kNonce) +
-      "&account_id=account+id&disclosure_text_shown=true");
+      "&account_id=account+id&disclosure_text_shown=true&is_account_auto_"
+      "selected=false");
   SetNetworkRequestManager(std::move(checker));
 
   RunAuthTest(kDefaultRequestParameters, kExpectationSuccess, configuration);
+}
+
+// Test that the is_account_auto_selected field is not included in the request
+// if the feature is disabled.
+TEST_F(FederatedAuthRequestImplTest, AccountAutoSelectedFlagDisabled) {
+  base::test::ScopedFeatureList list;
+  list.InitAndDisableFeature(features::kFedCmAccountAutoSelectedFlag);
+
+  std::unique_ptr<IdpNetworkRequestManagerParamChecker> checker =
+      std::make_unique<IdpNetworkRequestManagerParamChecker>();
+  checker->SetExpectedTokenPostData(
+      "client_id=" + std::string(kClientId) + "&nonce=" + std::string(kNonce) +
+      "&account_id=" + std::string(kAccountId) + "&disclosure_text_shown=true");
+  SetNetworkRequestManager(std::move(checker));
+
+  RunAuthTest(kDefaultRequestParameters, kExpectationSuccess,
+              kConfigurationValid);
 }
 
 // Test that the is_account_auto_selected value in the token post data for
@@ -3965,9 +3990,7 @@ TEST_F(FederatedAuthRequestImplTest, TooManyRequests) {
   // been finalized.
   RequestExpectations expectations = {
       RequestTokenStatus::kErrorTooManyRequests,
-      // TODO(crbug.com/1456183): We currently do not show any console errors in
-      // this case, but we probably should. For now, pass kSuccess.
-      FederatedAuthRequestResult::kSuccess,
+      FederatedAuthRequestResult::kErrorTooManyRequests,
       /*standalone_console_message=*/absl::nullopt,
       /*selected_idp_config_url=*/absl::nullopt};
   RunAuthTest(kDefaultRequestParameters, expectations, configuration);

@@ -47,6 +47,8 @@
 #include "ui/accessibility/ax_mode_observer.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_node_position.h"
+#include "ui/accessibility/ax_position.h"
+#include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_selection.h"
 #include "ui/accessibility/ax_tree_data.h"
@@ -1246,10 +1248,6 @@ AXPlatformNodeWin::UIARoleProperties AXPlatformNodeWin::GetUIARoleProperties() {
       return {UIALocalizationStrategy::kSupply, UIA_ButtonControlTypeId,
               L"button"};
 
-    case ax::mojom::Role::kPre:
-      return {UIALocalizationStrategy::kSupply, UIA_PaneControlTypeId,
-              L"region"};
-
     case ax::mojom::Role::kProgressIndicator:
       return {UIALocalizationStrategy::kSupply, UIA_ProgressBarControlTypeId,
               L"progressbar"};
@@ -1449,6 +1447,9 @@ AXPlatformNodeWin::UIARoleProperties AXPlatformNodeWin::GetUIARoleProperties() {
     case ax::mojom::Role::kUnknown:
       return {UIALocalizationStrategy::kSupply, UIA_PaneControlTypeId,
               L"region"};
+
+    case ax::mojom::Role::kPreDeprecated:
+      NOTREACHED_NORETURN();
   }
 }
 
@@ -6708,9 +6709,6 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kPortal:
       return ROLE_SYSTEM_PUSHBUTTON;
 
-    case ax::mojom::Role::kPre:
-      return ROLE_SYSTEM_TEXT;
-
     case ax::mojom::Role::kProgressIndicator:
       return ROLE_SYSTEM_PROGRESSBAR;
 
@@ -6865,6 +6863,8 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kNone:
     case ax::mojom::Role::kUnknown:
       return ROLE_SYSTEM_PANE;
+    case ax::mojom::Role::kPreDeprecated:
+      NOTREACHED_NORETURN();
   }
 }
 
@@ -7134,9 +7134,6 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
         ia2_role = IA2_ROLE_EMBEDDED_OBJECT;
       }
       break;
-    case ax::mojom::Role::kPre:
-      ia2_role = IA2_ROLE_PARAGRAPH;
-      break;
     case ax::mojom::Role::kRegion:
       ia2_role = IA2_ROLE_LANDMARK;
       break;
@@ -7164,9 +7161,12 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
     case ax::mojom::Role::kStrong:
     case ax::mojom::Role::kSubscript:
     case ax::mojom::Role::kSuperscript:
+    case ax::mojom::Role::kTerm:
     case ax::mojom::Role::kTime:
       ia2_role = IA2_ROLE_TEXT_FRAME;
       break;
+    case ax::mojom::Role::kPreDeprecated:
+      NOTREACHED_NORETURN();
     default:
       break;
   }
@@ -7241,14 +7241,10 @@ std::wstring AXPlatformNodeWin::ComputeUIAProperties() {
   }
 
   // aria-dropeffect is deprecated in WAI-ARIA 1.1.
-  if (HasIntAttribute(ax::mojom::IntAttribute::kDropeffect)) {
-    properties.push_back(
-        L"dropeffect=" +
-        base::UTF8ToWide(GetData().DropeffectBitfieldToString()));
+  if (HasIntAttribute(ax::mojom::IntAttribute::kDropeffectDeprecated)) {
+    NOTREACHED();
   }
   StateToUIAAriaProperty(properties, ax::mojom::State::kExpanded, "expanded");
-  BoolAttributeToUIAAriaProperty(properties, ax::mojom::BoolAttribute::kGrabbed,
-                                 "grabbed");
 
   switch (static_cast<ax::mojom::HasPopup>(
       GetIntAttribute(ax::mojom::IntAttribute::kHasPopup))) {
@@ -8025,15 +8021,13 @@ HRESULT AXPlatformNodeWin::ComputeListItemNameAsBstr(BSTR* value_bstr) const {
   DCHECK_EQ(GetRole(), ax::mojom::Role::kListItem);
   DCHECK(!HasStringAttribute(ax::mojom::StringAttribute::kName));
   std::wstring str;
-  // The list item name will result in the concatenation of its children's
-  // accessible names, excluding the list item marker.
-  for (size_t i = 0; i < GetChildCount(); ++i) {
-    auto* child = static_cast<AXPlatformNodeWin*>(
-        FromNativeViewAccessible(ChildAtIndex(i)));
-    if (child->GetDelegate()->IsText() &&
-        child->GetRole() != ax::mojom::Role::kListMarker)
-      str += base::UTF8ToWide(child->GetName());
+  // If the name is specified by the author.
+  if (GetNameFrom() == ax::mojom::NameFrom::kAttribute) {
+    str = base::UTF8ToWide(GetName());
+  } else {
+    str = GetDelegate()->ComputeListItemNameFromContent();
   }
+
   *value_bstr = SysAllocString(str.c_str());
   DCHECK(*value_bstr);
   return S_OK;

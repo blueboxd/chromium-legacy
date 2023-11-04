@@ -31,11 +31,15 @@ class EditLabel : public views::LabelButton {
   void OnActionInputBindingUpdated();
   // Returns true if the EditLabel shows "?".
   bool IsInputUnbound();
+  void RemoveNewState();
 
  private:
+  friend class ButtonOptionsMenuTest;
   friend class EditLabelTest;
 
   void Init();
+  // Set label content depends on whether the label is in new state.
+  void SetLabelContent();
   void SetTextLabel(const std::u16string& text);
   void SetNameTagState(bool is_error, const std::u16string& error_tooltip);
   std::u16string CalculateAccessibleName();
@@ -50,6 +54,7 @@ class EditLabel : public views::LabelButton {
 
   raw_ptr<DisplayOverlayController> controller_ = nullptr;
   raw_ptr<Action, DanglingUntriaged> action_ = nullptr;
+
   size_t index_ = 0;
 };
 

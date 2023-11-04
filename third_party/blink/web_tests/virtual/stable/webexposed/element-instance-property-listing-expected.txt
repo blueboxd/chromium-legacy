@@ -309,7 +309,6 @@ namespace http://www.w3.org/1999/xhtml
     property setAttributeNS
     property setAttributeNode
     property setAttributeNodeNS
-    property setHTML
     property setPointerCapture
     property shadowRoot
     property showPopover
@@ -1494,7 +1493,6 @@ namespace http://www.w3.org/2000/svg
     property setAttributeNS
     property setAttributeNode
     property setAttributeNodeNS
-    property setHTML
     property setPointerCapture
     property shadowRoot
     property slot
@@ -1580,13 +1578,6 @@ svg element circle
     property transform
 svg element clipPath
     property clipPathUnits
-    property farthestViewportElement
-    property getBBox
-    property getCTM
-    property getScreenCTM
-    property nearestViewportElement
-    property requiredExtensions
-    property systemLanguage
     property transform
 svg element defs
     property farthestViewportElement

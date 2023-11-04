@@ -5,14 +5,19 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/autofill/ui/ui_util.h"
 #include "chrome/browser/ui/autofill/delete_address_profile_dialog_controller_impl.h"
-#include "chrome/browser/ui/autofill/delete_address_profile_dialog_view.h"
+#include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/signin/public/identity_manager/account_info.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "delete_address_profile_dialog_controller_impl.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
 
-// TODO(crbug.com/1459990): Implement missing methods.
 namespace autofill {
 
 DeleteAddressProfileDialogControllerImpl::
@@ -27,25 +32,71 @@ DeleteAddressProfileDialogControllerImpl::
 DeleteAddressProfileDialogControllerImpl::
     ~DeleteAddressProfileDialogControllerImpl() = default;
 
-void DeleteAddressProfileDialogControllerImpl::OfferDelete() {
-  if (!widget_dialog_) {
-    widget_dialog_ = dialogs::ShowDeleteAddressProfileDialogView(web_contents_,
-                                                                 GetWeakPtr());
+void DeleteAddressProfileDialogControllerImpl::OfferDelete(
+    bool is_account_address_profile,
+    AutofillClient::AddressProfileDeleteDialogCallback delete_dialog_callback) {
+  if (is_dialog_opened_) {
+    return;
   }
+  is_account_address_profile_ = is_account_address_profile;
+  delete_dialog_callback_ = std::move(delete_dialog_callback);
+  // TODO(crbug.com/1459990): Open the delete dialog view.
+  is_dialog_opened_ = true;
 }
 
-std::u16string DeleteAddressProfileDialogControllerImpl::GetAccount() const {
-  return std::u16string();
+std::u16string DeleteAddressProfileDialogControllerImpl::GetTitle() const {
+  return l10n_util::GetStringUTF16(
+      IDS_SETTINGS_ADDRESS_REMOVE_CONFIRMATION_TITLE);
 }
 
-void DeleteAddressProfileDialogControllerImpl::OnAccepted() {}
+std::u16string DeleteAddressProfileDialogControllerImpl::GetAcceptButtonText()
+    const {
+  return l10n_util::GetStringUTF16(IDS_SETTINGS_ADDRESS_REMOVE);
+}
 
-void DeleteAddressProfileDialogControllerImpl::OnCanceled() {}
+std::u16string DeleteAddressProfileDialogControllerImpl::GetDeclineButtonText()
+    const {
+  return l10n_util::GetStringUTF16(IDS_CANCEL);
+}
 
-void DeleteAddressProfileDialogControllerImpl::OnClosed() {}
+std::u16string
+DeleteAddressProfileDialogControllerImpl::GetDeleteConfirmationText() const {
+  if (is_account_address_profile_) {
+    absl::optional<AccountInfo> account =
+        GetPrimaryAccountInfoFromBrowserContext(
+            web_contents_->GetBrowserContext());
+    CHECK(account);
+    return l10n_util::GetStringFUTF16(
+        IDS_AUTOFILL_DELETE_ACCOUNT_ADDRESS_SOURCE_NOTICE,
+        base::UTF8ToUTF16(account->email));
+  }
+
+  PersonalDataManager* pdm = PersonalDataManagerFactory::GetForBrowserContext(
+      web_contents_->GetBrowserContext());
+  return l10n_util::GetStringUTF16(
+      pdm->IsSyncFeatureEnabledForAutofill()
+          ? IDS_AUTOFILL_DELETE_SYNC_ADDRESS_SOURCE_NOTICE
+          : IDS_AUTOFILL_DELETE_LOCAL_ADDRESS_SOURCE_NOTICE);
+}
+
+void DeleteAddressProfileDialogControllerImpl::OnAccepted() {
+  user_accepted_ = true;
+}
+
+void DeleteAddressProfileDialogControllerImpl::OnCanceled() {
+  user_accepted_ = false;
+}
+
+void DeleteAddressProfileDialogControllerImpl::OnClosed() {
+  user_accepted_ = false;
+}
 
 void DeleteAddressProfileDialogControllerImpl::OnDialogDestroying() {
-  widget_dialog_ = nullptr;
+  if (user_accepted_) {
+    std::move(delete_dialog_callback_).Run(user_accepted_.value());
+    user_accepted_.reset();
+  }
+  is_dialog_opened_ = false;
 }
 
 base::WeakPtr<DeleteAddressProfileDialogController>

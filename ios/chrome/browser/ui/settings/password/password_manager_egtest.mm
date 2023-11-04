@@ -8,10 +8,12 @@
 
 #import "base/functional/callback.h"
 #import "base/ios/ios_util.h"
+#import "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "base/test/scoped_feature_list.h"
 #import "base/time/time.h"
+#import "components/feature_engagement/public/feature_constants.h"
 #import "components/password_manager/core/common/password_manager_constants.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/policy/policy_constants.h"
@@ -33,6 +35,7 @@
 #import "ios/chrome/browser/ui/settings/password/passwords_in_other_apps/passwords_in_other_apps_app_interface.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
 #import "ios/chrome/browser/ui/settings/password/reauthentication/reauthentication_constants.h"
+#import "ios/chrome/browser/ui/settings/password/widget_promo_instructions/widget_promo_instructions_constants.h"
 #import "ios/chrome/browser/ui/settings/settings_root_table_constants.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_event.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_protocol.h"
@@ -301,6 +304,45 @@ id<GREYMatcher> SetPasscodeDialogTitle() {
       l10n_util::GetNSString(IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_TITLE));
 }
 
+// Returns matcher for the Password Manager widget promo.
+id<GREYMatcher> PasswordManagerWidgetPromo() {
+  return grey_accessibilityID(kWidgetPromoId);
+}
+
+// Returns matcher for the Password Manager widget promo's close button.
+id<GREYMatcher> PasswordManagerWidgetPromoCloseButton() {
+  return grey_accessibilityID(kWidgetPromoCloseButtonId);
+}
+
+// Returns matcher for the Password Manager widget promo's more info button.
+id<GREYMatcher> PasswordManagerWidgetPromoMoreInfoButton(bool enabled = YES) {
+  if (enabled) {
+    return grey_allOf(
+        ButtonWithAccessibilityLabelId(
+            IDS_IOS_PASSWORD_MANAGER_WIDGET_PROMO_BUTTON_TITLE),
+        grey_not(grey_accessibilityTrait(UIAccessibilityTraitNotEnabled)),
+        nullptr);
+  }
+
+  return grey_allOf(ButtonWithAccessibilityLabelId(
+                        IDS_IOS_PASSWORD_MANAGER_WIDGET_PROMO_BUTTON_TITLE),
+                    grey_accessibilityTrait(UIAccessibilityTraitNotEnabled),
+                    nullptr);
+}
+
+// Returns matcher for the Password Manager widget promo instructions screen.
+id<GREYMatcher> PasswordManagerWidgetPromoInstructions() {
+  return grey_accessibilityID(password_manager::kWidgetPromoInstructionsViewID);
+}
+
+// Returns matcher for the close button of the Password Manager widget promo
+// instruction screen.
+id<GREYMatcher> PasswordManagerWidgetPromoInstructionsCloseButton() {
+  return grey_allOf(
+      ButtonWithAccessibilityLabel(l10n_util::GetNSString(IDS_CLOSE)),
+      grey_interactable(), nullptr);
+}
+
 // Saves two example forms in the store.
 void SaveExamplePasswordForms() {
   SavePasswordForm(/*password=*/@"password1",
@@ -357,19 +399,6 @@ void DismissSetPasscodeDialog() {
       assertWithMatcher:grey_sufficientlyVisible()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OKButton()]
       performAction:grey_tap()];
-}
-
-// Opens the help article explaining how to set a passcode by tapping on the
-// "Learn How" action in the set passcode alert.
-void OpenSetPasscodeHelpArticle() {
-  [[EarlGrey selectElementWithMatcher:SetPasscodeDialogTitle()]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  NSString* learnHow =
-      l10n_util::GetNSString(IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_LEARN_HOW);
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
-                                   learnHow)] performAction:grey_tap()];
 }
 
 // Ensure the save passwords in account section is visible.
@@ -437,6 +466,78 @@ void CheckPasswordManagerVisitMetricCount(int count) {
   GREYAssertNil(error, @"Unexpected Password Manager Vistit histogram count");
 }
 
+// Verifies that the elements of the Password Manager widget promo instruction
+// screen are as expected.
+void CheckPasswordManagerWidgetPromoInstructionScreenVisible(
+    bool image_hidden = false) {
+  [[EarlGrey selectElementWithMatcher:PasswordManagerWidgetPromoInstructions()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  id<GREYMatcher> image_matcher =
+      grey_accessibilityID(password_manager::kWidgetPromoInstructionsImageID);
+  [[EarlGrey selectElementWithMatcher:image_matcher]
+      assertWithMatcher:image_hidden ? grey_notVisible()
+                                     : grey_minimumVisiblePercent(0.4)];
+
+  id<GREYMatcher> title_matcher = grey_accessibilityLabel(
+      l10n_util::GetNSString(IDS_IOS_WIDGET_PROMO_INSTRUCTIONS_TITLE));
+  [[EarlGrey selectElementWithMatcher:title_matcher]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  id<GREYMatcher> subtitle_matcher = grey_text(
+      l10n_util::GetNSString(IDS_IOS_WIDGET_PROMO_INSTRUCTIONS_SUBTITLE));
+  [[EarlGrey selectElementWithMatcher:subtitle_matcher]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  id<GREYMatcher> step1_matcher = grey_accessibilityLabel(
+      l10n_util::GetNSString(IDS_IOS_WIDGET_PROMO_INSTRUCTIONS_STEP_1));
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(step1_matcher,
+                                          grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
+                                                  kScrollAmount)
+      onElementWithMatcher:
+          grey_accessibilityID(
+              password_manager::kWidgetPromoInstructionsScrollableViewID)];
+
+  id<GREYMatcher> step2_matcher = grey_accessibilityLabel(
+      l10n_util::GetNSString(IDS_IOS_WIDGET_PROMO_INSTRUCTIONS_STEP_2));
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(step2_matcher,
+                                          grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
+                                                  kScrollAmount)
+      onElementWithMatcher:
+          grey_accessibilityID(
+              password_manager::kWidgetPromoInstructionsScrollableViewID)];
+
+  id<GREYMatcher> step3_matcher = grey_accessibilityLabel(
+      l10n_util::GetNSString(IDS_IOS_WIDGET_PROMO_INSTRUCTIONS_STEP_3));
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(step3_matcher,
+                                          grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
+                                                  kScrollAmount)
+      onElementWithMatcher:
+          grey_accessibilityID(
+              password_manager::kWidgetPromoInstructionsScrollableViewID)];
+
+  id<GREYMatcher> step4_matcher = grey_accessibilityLabel(
+      l10n_util::GetNSString(IDS_IOS_WIDGET_PROMO_INSTRUCTIONS_STEP_4));
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(step4_matcher,
+                                          grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
+                                                  kScrollAmount)
+      onElementWithMatcher:
+          grey_accessibilityID(
+              password_manager::kWidgetPromoInstructionsScrollableViewID)];
+
+  [[EarlGrey selectElementWithMatcher:
+                 PasswordManagerWidgetPromoInstructionsCloseButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
 }  // namespace
 
 // Various tests for the main Password Manager UI.
@@ -463,22 +564,16 @@ void CheckPasswordManagerVisitMetricCount(int count) {
   std::unique_ptr<EarlGreyScopedBlockSwizzler> _passwordAutoFillStatusSwizzler;
 }
 
-- (BOOL)notesEnabled {
-  return YES;
-}
-
 - (BOOL)passwordCheckupEnabled {
   return YES;
 }
 
 - (GREYElementInteraction*)interactionForSinglePasswordEntryWithDomain:
     (NSString*)domain {
-  // With notes enabled authentication is required before interacting with
-  // password details.
-  if ([self notesEnabled]) {
-    [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                      ReauthenticationResult::kSuccess];
-  }
+  // Since passwords notes launch authentication is required before interacting
+  // with password details.
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
 
   // ID, not label because the latter might contain an extra label for the
   // "local password icon" and most tests don't care about it.
@@ -548,12 +643,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 
   config.features_enabled.push_back(
       password_manager::features::kIOSPasswordUISplit);
-
-  if ([self notesEnabled]) {
-    config.features_enabled.push_back(syncer::kPasswordNotesWithBackup);
-  } else {
-    config.features_disabled.push_back(syncer::kPasswordNotesWithBackup);
-  }
 
   if ([self passwordCheckupEnabled]) {
     config.features_enabled.push_back(
@@ -644,6 +733,23 @@ void CheckPasswordManagerVisitMetricCount(int count) {
         syncer::kReplaceSyncPromosWithSignInPromos);
   }
 
+  if ([self isRunningTest:@selector(testClosingPasswordManagerWidgetPromo)] ||
+      [self isRunningTest:@selector
+            (testOpeningPasswordManagerWidgetPromoInstructions)] ||
+      [self
+          isRunningTest:@selector(testPasswordManagerWidgetPromoInEditMode)] ||
+      [self isRunningTest:@selector
+            (testDismissPasswordManagerWidgetPromoInstructionsScreen)] ||
+      [self isRunningTest:@selector
+            (testPasswordManagerWidgetPromoInstructionsDeviceOrientation)]) {
+    config.features_enabled.push_back(
+        password_manager::features::kIOSPasswordAuthOnEntryV2);
+    config.additional_args.push_back(
+        base::StringPrintf("--enable-features=%s:chosen_feature/"
+                           "IPH_iOSPromoPasswordManagerWidget",
+                           feature_engagement::kIPHDemoMode.name));
+  }
+
   return config;
 }
 
@@ -673,14 +779,8 @@ void CheckPasswordManagerVisitMetricCount(int count) {
       performAction:grey_tap()];
 }
 
-// Checks that attempts to copy a password provide appropriate feedback,
-// both when reauthentication succeeds and when it fails.
+// Checks that attempt to copy a password provides appropriate feedback.
 - (void)testCopyPasswordToast {
-  if ([self notesEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"This test is not needed with notes for passwords enabled.");
-  }
-
   // Saving a form is needed for using the "password details" view.
   SavePasswordForm();
 
@@ -688,10 +788,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 
   [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
       performAction:grey_tap()];
-
-  // Check the snackbar in case of successful reauthentication.
-  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                    ReauthenticationResult::kSuccess];
 
   CopyPasswordDetailWithID(IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD);
 
@@ -701,18 +797,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
       performAction:grey_tap()];
 
-  // Check the snackbar in case of failed reauthentication.
-  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                    ReauthenticationResult::kFailure];
-
-  CopyPasswordDetailWithID(IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD);
-
-  snackbarLabel =
-      l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_WAS_NOT_COPIED_MESSAGE);
-  // The tap checks the existence of the snackbar and also closes it.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
-      performAction:grey_tap()];
-
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
@@ -721,9 +805,8 @@ void CheckPasswordManagerVisitMetricCount(int count) {
       performAction:grey_tap()];
 }
 
-// Checks that an attempt to show a password provides an appropriate feedback
-// when reauthentication succeeds.
-- (void)testShowPasswordAuthSucceeded {
+// Checks that an attempt to show a password provides an appropriate feedback.
+- (void)testShowPasswordSucceeded {
   // Saving a form is needed for using the "password details" view.
   SavePasswordForm();
 
@@ -731,11 +814,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 
   [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
       performAction:grey_tap()];
-
-  if (![self notesEnabled]) {
-    [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                      ReauthenticationResult::kSuccess];
-  }
 
   [GetInteractionForPasswordDetailItem(ShowPasswordButton())
       performAction:grey_tap()];
@@ -743,45 +821,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
   // Ensure that password is shown.
   [GetInteractionForPasswordDetailItem(grey_textFieldValue(
       @"concrete password")) assertWithMatcher:grey_notNil()];
-
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-      performAction:grey_tap()];
-}
-
-// Checks that an attempt to show a password provides an appropriate feedback
-// when reauthentication fails.
-- (void)testShowPasswordToastAuthFailed {
-  if ([self notesEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"This test is not needed with notes for passwords enabled.");
-  }
-
-  // Saving a form is needed for using the "password details" view.
-  SavePasswordForm();
-
-  OpenPasswordManager();
-
-  [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
-      performAction:grey_tap()];
-
-  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                    ReauthenticationResult::kFailure];
-
-  // Check the snackbar in case of failed reauthentication.
-  [GetInteractionForPasswordDetailItem(ShowPasswordButton())
-      performAction:grey_tap()];
-
-  // Check that the password is not displayed.
-  [[EarlGrey selectElementWithMatcher:grey_textFieldValue(@"concrete password")]
-      assertWithMatcher:grey_nil()];
-
-  // Note that there is supposed to be no message (cf. the case of the copy
-  // button, which does need one). The reason is that the password not being
-  // shown is enough of a message that the action failed.
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
@@ -854,11 +893,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
   [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
       performAction:grey_tap()];
 
-  if (![self notesEnabled]) {
-    [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                      ReauthenticationResult::kSuccess];
-  }
-
   [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       performAction:grey_tap()];
 
@@ -903,11 +937,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 
   [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
       performAction:grey_tap()];
-
-  if (![self notesEnabled]) {
-    [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                      ReauthenticationResult::kSuccess];
-  }
 
   TapNavigationBarEditButton();
 
@@ -964,11 +993,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
   [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
       performAction:grey_tap()];
 
-  if (![self notesEnabled]) {
-    [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                      ReauthenticationResult::kSuccess];
-  }
-
   [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       performAction:grey_tap()];
 
@@ -1020,11 +1044,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 
   [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
       performAction:grey_tap()];
-
-  if (![self notesEnabled]) {
-    [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                      ReauthenticationResult::kSuccess];
-  }
 
   [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       performAction:grey_tap()];
@@ -1177,11 +1196,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
   [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
       performAction:grey_tap()];
 
-  if (![self notesEnabled]) {
-    [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                      ReauthenticationResult::kSuccess];
-  }
-
   [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       performAction:grey_tap()];
 
@@ -1257,14 +1271,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
   [GetInteractionForPasswordDetailItem(grey_text(kMaskedPassword))
       performAction:grey_tap()];
 
-  // Make sure to capture the reauthentication module in a variable until the
-  // end of the test, otherwise it might get deleted too soon and break the
-  // functionality of copying and viewing passwords.
-  if (![self notesEnabled]) {
-    [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                      ReauthenticationResult::kSuccess];
-  }
-
   // Tap the context menu item for copying.
   [[EarlGrey
       selectElementWithMatcher:PopUpMenuItemWithLabel(
@@ -1314,11 +1320,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
       assertWithMatcher:grey_nil()];
 
   // Check that editing doesn't require reauth.
-  if (![self notesEnabled]) {
-    [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                      ReauthenticationResult::kFailure];
-  }
-
   [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       performAction:grey_tap()];
   // Ensure delete button is present after entering editing mode.
@@ -1340,93 +1341,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 // Checks the order of the elements in the detail view layout for a
 // non-federated, non-blocked credential.
 - (void)testLayoutNormal {
-  SavePasswordForm();
-
-  OpenPasswordManager();
-
-  [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
-      performAction:grey_tap()];
-
-  [[EarlGrey
-      selectElementWithMatcher:[self matcherForPasswordDetailCellWithWebsites:
-                                         @"https://example.com/"]]
-      assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:PasswordDetailUsername()]
-      assertWithMatcher:grey_textFieldValue(@"concrete username")];
-  [[EarlGrey selectElementWithMatcher:PasswordDetailPassword()]
-      assertWithMatcher:grey_textFieldValue(kMaskedPassword)];
-
-  // Check that the federation origin is not present.
-  [[EarlGrey selectElementWithMatcher:PasswordDetailFederation()]
-      assertWithMatcher:grey_nil()];
-
-  [GetInteractionForPasswordDetailItem(PasswordDetailPassword())
-      assertWithMatcher:grey_layout(@[ Below() ], PasswordDetailUsername())];
-  [GetInteractionForPasswordDetailItem(PasswordDetailUsername())
-      assertWithMatcher:grey_layout(
-                            @[ Below() ],
-                            [self matcherForPasswordDetailCellWithWebsites:
-                                      @"https://example.com/"])];
-
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-      performAction:grey_tap()];
-}
-
-// Checks the order of the elements in the detail view layout for a
-// non-federated, non-blocked credential with notes feature disabled.
-- (void)testLayoutWithNotesDisabled {
-  if ([self notesEnabled]) {
-    EARL_GREY_TEST_SKIPPED(@"This test is obsolete with notes enabled.");
-  }
-
-  SavePasswordForm();
-
-  OpenPasswordManager();
-
-  [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
-      performAction:grey_tap()];
-
-  [[EarlGrey
-      selectElementWithMatcher:[self matcherForPasswordDetailCellWithWebsites:
-                                         @"https://example.com/"]]
-      assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:PasswordDetailUsername()]
-      assertWithMatcher:grey_textFieldValue(@"concrete username")];
-  [[EarlGrey selectElementWithMatcher:PasswordDetailPassword()]
-      assertWithMatcher:grey_textFieldValue(kMaskedPassword)];
-  [[EarlGrey selectElementWithMatcher:PasswordDetailNote()]
-      assertWithMatcher:grey_nil()];
-
-  [[EarlGrey selectElementWithMatcher:PasswordDetailFederation()]
-      assertWithMatcher:grey_nil()];
-  [GetInteractionForPasswordDetailItem(PasswordDetailUsername())
-      assertWithMatcher:grey_layout(
-                            @[ Below() ],
-                            [self matcherForPasswordDetailCellWithWebsites:
-                                      @"https://example.com/"])];
-  [GetInteractionForPasswordDetailItem(PasswordDetailPassword())
-      assertWithMatcher:grey_layout(@[ Below() ], PasswordDetailUsername())];
-
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-      performAction:grey_tap()];
-}
-
-// Checks the order of the elements in the detail view layout for a
-// non-federated, non-blocked credential with notes feature enabled.
-- (void)testLayoutWithNotesEnabled {
-  if (![self notesEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"This test is obsolete with notes for passwords disabled.");
-  }
-
   SaveExamplePasswordFormWithNote();
 
   OpenPasswordManager();
@@ -1466,11 +1380,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 // Checks that entering too long note while editing a password blocks the save
 // button and displays a footer explanation.
 - (void)testLayoutWithLongNotes {
-  if (![self notesEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"This test is obsolete with notes for passwords disabled.");
-  }
-
   SaveExamplePasswordFormWithNote();
 
   OpenPasswordManager();
@@ -1703,73 +1612,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
       performAction:grey_tap()];
 }
 
-// Checks that an attempt to copy a password provides appropriate feedback when
-// reauthentication cannot be attempted.
-- (void)testCopyPasswordToastNoReauth {
-  if ([self notesEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"This test is not needed with notes for passwords enabled.");
-  }
-
-  // Saving a form is needed for using the "password details" view.
-  SavePasswordForm();
-
-  OpenPasswordManager();
-
-  [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
-      performAction:grey_tap()];
-
-  [PasswordSettingsAppInterface mockReauthenticationModuleCanAttempt:NO];
-
-  CopyPasswordDetailWithID(IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD);
-
-  DismissSetPasscodeDialog();
-
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-      performAction:grey_tap()];
-}
-
-// Checks that an attempt to view a password provides appropriate feedback when
-// reauthentication cannot be attempted.
-- (void)testShowPasswordToastNoReauth {
-  if ([self notesEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"This test is not needed with notes for passwords enabled.");
-  }
-
-  // Saving a form is needed for using the "password details" view.
-  SavePasswordForm();
-
-  OpenPasswordManager();
-
-  [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
-      performAction:grey_tap()];
-
-  [PasswordSettingsAppInterface mockReauthenticationModuleCanAttempt:NO];
-  [GetInteractionForPasswordDetailItem(ShowPasswordButton())
-      performAction:grey_tap()];
-
-  OpenSetPasscodeHelpArticle();
-
-  // Check the sub menu is closed due to the help article.
-  NSError* error = nil;
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
-      assertWithMatcher:grey_notNil()
-                  error:&error];
-  GREYAssertTrue(error, @"The settings back button is still displayed");
-
-  // Check the settings page is closed.
-  error = nil;
-  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-      assertWithMatcher:grey_notNil()
-                  error:&error];
-  GREYAssertTrue(error, @"The settings page is still displayed");
-}
-
 // Test that even with many passwords the settings are still usable. In
 // particular, ensure that password entries "below the fold" are reachable and
 // their detail view is shown on tapping.
@@ -1801,10 +1643,8 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 
   OpenPasswordManager();
 
-  if ([self notesEnabled]) {
-    [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                      ReauthenticationResult::kSuccess];
-  }
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
 
   // Wait for the loading indicator to disappear, and the sections to be on
   // screen, before scrolling.
@@ -2101,12 +1941,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
   [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
       performAction:grey_tap()];
 
-  // Check the snackbar in case of successful reauthentication.
-  if (![self notesEnabled]) {
-    [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                      ReauthenticationResult::kSuccess];
-  }
-
   TapNavigationBarEditButton();
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailPassword()]
@@ -2144,12 +1978,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 
   [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
       performAction:grey_tap()];
-
-  // Check the snackbar in case of successful reauthentication.
-  if (![self notesEnabled]) {
-    [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                      ReauthenticationResult::kSuccess];
-  }
 
   TapNavigationBarEditButton();
 
@@ -2196,12 +2024,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 
   [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
       performAction:grey_tap()];
-
-  // Check the snackbar in case of successful reauthentication.
-  if (![self notesEnabled]) {
-    [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                      ReauthenticationResult::kSuccess];
-  }
 
   TapNavigationBarEditButton();
 
@@ -2255,12 +2077,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
   [GetInteractionForPasswordEntry(@"example.com, 2 accounts")
       performAction:grey_tap()];
 
-  // Check the snackbar in case of successful reauthentication.
-  if (![self notesEnabled]) {
-    [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                      ReauthenticationResult::kSuccess];
-  }
-
   TapNavigationBarEditButton();
 
   [[EarlGrey selectElementWithMatcher:UsernameTextfieldForUsernameAndSites(
@@ -2303,12 +2119,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 
   [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
       performAction:grey_tap()];
-
-  // Check the snackbar in case of successful reauthentication.
-  if (![self notesEnabled]) {
-    [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                      ReauthenticationResult::kSuccess];
-  }
 
   TapNavigationBarEditButton();
 
@@ -2451,11 +2261,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 // Checks that entering too long note while adding passwords blocks the save
 // button and displays a footer explanation.
 - (void)testAddPasswordLayoutWithLongNotes {
-  if (![self notesEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"This test is obsolote with notes for passwords disabled.");
-  }
-
   OpenPasswordManager();
 
   [[EarlGrey selectElementWithMatcher:AddPasswordToolbarButton()]
@@ -2611,11 +2416,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 // from invalid to valid input in any of the fields (website, password, note),
 // when there are still other fields with invalid input.
 - (void)testAddPasswordSaveButtonStateOnFieldChanges {
-  if (![self notesEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"This test is obsolete with notes for passwords disabled.");
-  }
-
   OpenPasswordManager();
   [[EarlGrey selectElementWithMatcher:AddPasswordToolbarButton()]
       performAction:grey_tap()];
@@ -2738,11 +2538,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
   [GetInteractionForPasswordEntry(@"example.com, 2 accounts")
       performAction:grey_tap()];
 
-  if (![self notesEnabled]) {
-    [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                      ReauthenticationResult::kSuccess];
-  }
-
   TapNavigationBarEditButton();
 
   [[EarlGrey selectElementWithMatcher:PasswordTextfieldForUsernameAndSites(
@@ -2829,47 +2624,10 @@ void CheckPasswordManagerVisitMetricCount(int count) {
       performAction:grey_tap()];
 }
 
-- (void)testShowHidePassword {
-  if ([self notesEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"This test is obsolete with notes for passwords enabled.");
-  }
-
-  SavePasswordForm();
-
-  OpenPasswordManager();
-
-  [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
-      performAction:grey_tap()];
-
-  // Check the snackbar in case of successful reauthentication.
-
-  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                    ReauthenticationResult::kSuccess];
-
-  [GetInteractionForPasswordDetailItem(ShowPasswordButton())
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [GetInteractionForPasswordDetailItem(ShowPasswordButton())
-      performAction:grey_tap()];
-  [GetInteractionForPasswordDetailItem(HidePasswordButton())
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [GetInteractionForPasswordDetailItem(HidePasswordButton())
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-      performAction:grey_tap()];
-}
-
 // Tests that reauthentication is not required to show password when notes are
 // enabled since the reauthentication happens before navigating to the details
 // view in this scenario.
-- (void)testShowHidePasswordWithNotesEnabled {
-  if (![self notesEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"This test is obsolete with notes for passwords disabled.");
-  }
-
+- (void)testShowHidePassword {
   SavePasswordForm();
 
   OpenPasswordManager();
@@ -3069,20 +2827,13 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 
   OpenPasswordManager();
 
-  if ([self notesEnabled]) {
-    [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                      ReauthenticationResult::kSuccess];
-  }
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
 
   [GetInteractionForPasswordEntry(@"example1.com, 2 accounts")
       assertWithMatcher:grey_notNil()];
   [GetInteractionForPasswordEntry(@"example1.com, 2 accounts")
       performAction:grey_tap()];
-
-  if (![self notesEnabled]) {
-    [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                      ReauthenticationResult::kSuccess];
-  }
 
   [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       performAction:grey_tap()];
@@ -3224,10 +2975,8 @@ void CheckPasswordManagerVisitMetricCount(int count) {
                                 enableSync:NO];
   OpenPasswordManager();
 
-  if ([self notesEnabled]) {
-    [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                      ReauthenticationResult::kSuccess];
-  }
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
 
   // `passwordMatcher` includes grey_sufficientlyVisible() because there are
   // other invisible cells when password details is closed later.
@@ -3241,11 +2990,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 
   [[EarlGrey selectElementWithMatcher:passwordMatcher]
       performAction:grey_tap()];
-
-  if (![self notesEnabled]) {
-    [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                      ReauthenticationResult::kSuccess];
-  }
 
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kMovePasswordToAccountButtonId)]
@@ -3280,10 +3024,8 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 
   OpenPasswordManager();
 
-  if ([self notesEnabled]) {
-    [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                      ReauthenticationResult::kSuccess];
-  }
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
 
   // `passwordMatcher` includes grey_sufficientlyVisible() because there are
   // other invisible cells when password details is closed later.
@@ -3297,11 +3039,6 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 
   [[EarlGrey selectElementWithMatcher:passwordMatcher]
       performAction:grey_tap()];
-
-  if (![self notesEnabled]) {
-    [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
-                                      ReauthenticationResult::kSuccess];
-  }
 
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kMovePasswordToAccountButtonId)]
@@ -3842,6 +3579,153 @@ void CheckPasswordManagerVisitMetricCount(int count) {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SearchTextField()]
       assertWithMatcher:grey_userInteractionEnabled()];
+}
+
+// Tests that tapping the close button of the Password Manager widget promo
+// removes the promo from the table view.
+- (void)testClosingPasswordManagerWidgetPromo {
+  // Add a saved password to not get the Password Manager's empty state.
+  SavePasswordForm();
+
+  OpenPasswordManager();
+
+  // The Password Manager widget promo should be visible.
+  [[EarlGrey selectElementWithMatcher:PasswordManagerWidgetPromo()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap the promo's close button.
+  [[EarlGrey selectElementWithMatcher:PasswordManagerWidgetPromoCloseButton()]
+      performAction:grey_tap()];
+
+  // The Password Manager widget promo should now be gone.
+  [[EarlGrey selectElementWithMatcher:PasswordManagerWidgetPromo()]
+      assertWithMatcher:grey_notVisible()];
+}
+
+// Tests that tapping the more info button of the Password Manager widget
+// promo displays the instructions on how to install the widget.
+- (void)testOpeningPasswordManagerWidgetPromoInstructions {
+  // Add a saved password to not get the Password Manager's empty state.
+  SavePasswordForm();
+
+  OpenPasswordManager();
+
+  // The Password Manager widget promo should be visible.
+  [[EarlGrey selectElementWithMatcher:PasswordManagerWidgetPromo()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap the promo's more info button.
+  [[EarlGrey
+      selectElementWithMatcher:PasswordManagerWidgetPromoMoreInfoButton()]
+      performAction:grey_tap()];
+
+  // The Password Manager widget promo's instructions should be visible.
+  CheckPasswordManagerWidgetPromoInstructionScreenVisible();
+}
+
+// Tests that the more info and close buttons of the Password Manager widget
+// promo are disabled when the Password Manager is in edit mode.
+- (void)testPasswordManagerWidgetPromoInEditMode {
+  // Add a saved password to not get the Password Manager's empty state.
+  SavePasswordForm();
+
+  OpenPasswordManager();
+
+  TapNavigationBarEditButton();
+
+  // The Password Manager widget promo should be visible.
+  [[EarlGrey selectElementWithMatcher:PasswordManagerWidgetPromo()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // The close button should be disabled.
+  [[EarlGrey selectElementWithMatcher:PasswordManagerWidgetPromoCloseButton()]
+      assertWithMatcher:grey_not(grey_enabled())];
+
+  // The more info button should be disabled.
+  [[EarlGrey selectElementWithMatcher:PasswordManagerWidgetPromoMoreInfoButton(
+                                          /*enabled=*/false)]
+      assertWithMatcher:grey_not(grey_enabled())];
+}
+
+// Tests that the Password Manager widget promo's instruction screen can be
+// dismissed by swipping it down and by tapping its close button.
+- (void)testDismissPasswordManagerWidgetPromoInstructionsScreen {
+  // Add a saved password to not get the Password Manager's empty state.
+  SavePasswordForm();
+
+  OpenPasswordManager();
+
+  // Tap the promo's more info button.
+  [[EarlGrey
+      selectElementWithMatcher:PasswordManagerWidgetPromoMoreInfoButton()]
+      performAction:grey_tap()];
+
+  // The Password Manager widget promo's instructions should be visible.
+  CheckPasswordManagerWidgetPromoInstructionScreenVisible();
+
+  // Swipe down to dismiss the instructions screen.
+  [[EarlGrey selectElementWithMatcher:PasswordManagerWidgetPromoInstructions()]
+      performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
+
+  // The Password Manager widget promo should be visible.
+  [[EarlGrey selectElementWithMatcher:PasswordManagerWidgetPromo()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap the promo's more info button.
+  [[EarlGrey
+      selectElementWithMatcher:PasswordManagerWidgetPromoMoreInfoButton()]
+      performAction:grey_tap()];
+
+  // The Password Manager widget promo's instructions should be visible.
+  CheckPasswordManagerWidgetPromoInstructionScreenVisible();
+
+  // Tap the instruction screen's close button.
+  [[EarlGrey selectElementWithMatcher:
+                 PasswordManagerWidgetPromoInstructionsCloseButton()]
+      performAction:grey_tap()];
+
+  // The Password Manager widget promo should be visible.
+  [[EarlGrey selectElementWithMatcher:PasswordManagerWidgetPromo()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that the Password Manager widget promo's instruction screen is as
+// expected when transitioning between portrait and landscape modes.
+- (void)testPasswordManagerWidgetPromoInstructionsDeviceOrientation {
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(@"Landscape orientation doesn't change the look of "
+                           @"the instruction view on iPads.");
+  }
+
+  // Add a saved password to not get the Password Manager's empty state.
+  SavePasswordForm();
+
+  OpenPasswordManager();
+
+  // The Password Manager widget promo should be visible.
+  [[EarlGrey selectElementWithMatcher:PasswordManagerWidgetPromo()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap the promo's more info button.
+  [[EarlGrey
+      selectElementWithMatcher:PasswordManagerWidgetPromoMoreInfoButton()]
+      performAction:grey_tap()];
+
+  // The Password Manager widget promo's instructions should be visible with its
+  // image.
+  CheckPasswordManagerWidgetPromoInstructionScreenVisible();
+
+  // The Password Manager widget promo's instructions should be visible with no
+  // image in landscape mode.
+  [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeRight
+                                error:nil];
+  CheckPasswordManagerWidgetPromoInstructionScreenVisible(
+      /*image_hidden=*/true);
+
+  // When going back to portrait mode, the Password Manager widget promo's
+  // instructions should be visible with its image.
+  [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait error:nil];
+  CheckPasswordManagerWidgetPromoInstructionScreenVisible();
 }
 
 @end

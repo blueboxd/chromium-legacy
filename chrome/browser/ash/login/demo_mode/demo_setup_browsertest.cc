@@ -8,12 +8,14 @@
 
 #include "ash/components/arc/arc_util.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_accelerators.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/functional/bind.h"
+#include "base/i18n/time_formatting.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -21,7 +23,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/test_timeouts.h"
-#include "base/time/time_to_iso8601.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -51,7 +52,6 @@
 #include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/welcome_screen_handler.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/ash/components/dbus/shill/shill_service_client.h"
@@ -102,7 +102,8 @@ const test::UIPath kDemoPreferencesNext = {kDemoPrefsId, "nextButton"};
 const test::UIPath kNetworkScreen = {kNetworkId};
 const test::UIPath kNetworkNextButton = {kNetworkId, "nextButton"};
 const test::UIPath kNetworkBackButton = {kNetworkId, "backButton"};
-const test::UIPath kNetworkQuickStartButton = {kNetworkId, "quickStart"};
+const test::UIPath kNetworkQuickStartButton = {kNetworkId,
+                                               "quick-start-network-button"};
 
 const test::UIPath kDemoSetupProgressDialog = {kDemoSetupId,
                                                "demoSetupProgressDialog"};
@@ -286,7 +287,7 @@ class DemoSetupTestBase : public OobeBaseTest {
   void SetFakeTimeForMultiTapDetector(base::Time fake_time) {
     const std::string query =
         base::StrCat({"MultiTapDetector.setFakeTimeForTests(new Date('",
-                      base::TimeToISO8601(fake_time), "'));"});
+                      base::TimeFormatAsIso8601(fake_time), "'));"});
     test::ExecuteOobeJS(query);
   }
 
@@ -1049,8 +1050,16 @@ class DemoSetupRegionCodeNotExistTest : public DemoSetupArcSupportedTest {
   }
 };
 
+// TODO(crbug.com/1486991): Flaky under dbg and asan.
+#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER)
+#define MAYBE_RegionCodeNotExistPlaceholderIsSet \
+  DISABLED_RegionCodeNotExistPlaceholderIsSet
+#else
+#define MAYBE_RegionCodeNotExistPlaceholderIsSet \
+  RegionCodeNotExistPlaceholderIsSet
+#endif
 IN_PROC_BROWSER_TEST_F(DemoSetupRegionCodeNotExistTest,
-                       RegionCodeNotExistPlaceholderIsSet) {
+                       MAYBE_RegionCodeNotExistPlaceholderIsSet) {
   // Simulate successful online setup.
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION);

@@ -1354,6 +1354,10 @@ class WebContents : public PageNavigator,
   // This sends the available title bar area bounds to the renderer process.
   virtual void UpdateWindowControlsOverlay(const gfx::Rect& bounding_rect) = 0;
 
+  // Intermediate function sending widget's `can_resize` to blink to update
+  // `resizable` CSS @media feature.
+  virtual void UpdateResizable(bool resizable) = 0;
+
   // Returns the Window Control Overlay rectangle. Only applies to an
   // outermost main frame's widget. Other widgets always returns an empty rect.
   virtual gfx::Rect GetWindowsControlsOverlayRect() const = 0;
@@ -1380,6 +1384,11 @@ class WebContents : public PageNavigator,
   virtual void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
                                           cc::BrowserControlsState current,
                                           bool animate) = 0;
+
+  // Transmits data to V8CrowdsourcedCompileHintsConsumer in the renderer. The
+  // data is a model describing which JavaScript functions on the page should be
+  // eagerly parsed & compiled by the JS engine.
+  virtual void SetV8CompileHints(base::ReadOnlySharedMemoryRegion data) = 0;
 
   // Sets the last time a tab switch made this WebContents visible.
   // `start_time` is the timestamp of the input event that triggered the tab
@@ -1429,6 +1438,12 @@ class WebContents : public PageNavigator,
 
   // Enables overscroll history navigation.
   virtual void SetOverscrollNavigationEnabled(bool enabled) = 0;
+
+  // Tag `WebContents` with its owner. Used purely for debugging purposes so it
+  // does not need to be exhaustive or perfectly correct.
+  // TODO(crbug.com/1407197): Remove after bug is fixed.
+  virtual void SetOwnerLocationForDebug(
+      absl::optional<base::Location> owner_location) = 0;
 
  private:
   // This interface should only be implemented inside content.

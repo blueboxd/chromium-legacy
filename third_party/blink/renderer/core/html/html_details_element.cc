@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/events/mutation_event_suppression_scope.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/slot_assignment.h"
@@ -56,9 +57,19 @@ HTMLDetailsElement::~HTMLDetailsElement() = default;
 
 void HTMLDetailsElement::DispatchPendingEvent(
     const AttributeModificationReason reason) {
+  Event* toggle_event = nullptr;
+  if (RuntimeEnabledFeatures::DetailsElementToggleEventEnabled()) {
+    CHECK(pending_toggle_event_);
+    toggle_event = pending_toggle_event_.Get();
+    pending_toggle_event_ = nullptr;
+  } else {
+    CHECK(!pending_toggle_event_);
+    toggle_event = Event::Create(event_type_names::kToggle);
+  }
+
   if (reason == AttributeModificationReason::kByParser)
     GetDocument().SetToggleDuringParsing(true);
-  DispatchEvent(*Event::Create(event_type_names::kToggle));
+  DispatchEvent(*toggle_event);
   if (reason == AttributeModificationReason::kByParser)
     GetDocument().SetToggleDuringParsing(false);
 }
@@ -158,6 +169,7 @@ void HTMLDetailsElement::ManuallyAssignSlots() {
 }
 
 void HTMLDetailsElement::Trace(Visitor* visitor) const {
+  visitor->Trace(pending_toggle_event_);
   visitor->Trace(summary_slot_);
   visitor->Trace(content_slot_);
   HTMLElement::Trace(visitor);
@@ -165,6 +177,13 @@ void HTMLDetailsElement::Trace(Visitor* visitor) const {
 
 void HTMLDetailsElement::ParseAttribute(
     const AttributeModificationParams& params) {
+  CHECK(params.reason != AttributeModificationReason::kByParser ||
+        !parentNode())
+      << "This code depends on the parser setting attributes before inserting "
+         "into the document; if that were not the case we would need to "
+         "handle setting of either open or name by the parser, and "
+         "potentially change the open attribute during that handling.";
+
   if (params.name == html_names::kOpenAttr) {
     bool old_value = is_open_;
     is_open_ = !params.new_value.IsNull();
@@ -172,7 +191,17 @@ void HTMLDetailsElement::ParseAttribute(
       return;
 
     // Dispatch toggle event asynchronously.
-    pending_event_ = PostCancellableTask(
+    if (RuntimeEnabledFeatures::DetailsElementToggleEventEnabled()) {
+      String old_state = is_open_ ? "closed" : "open";
+      String new_state = is_open_ ? "open" : "closed";
+      if (pending_toggle_event_) {
+        old_state = pending_toggle_event_->oldState();
+      }
+      pending_toggle_event_ =
+          ToggleEvent::Create(event_type_names::kToggle, Event::Cancelable::kNo,
+                              old_state, new_state);
+    }
+    pending_event_task_ = PostCancellableTask(
         *GetDocument().GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
         WTF::BindOnce(&HTMLDetailsElement::DispatchPendingEvent,
                       WrapPersistent(this), params.reason));
@@ -190,6 +219,8 @@ void HTMLDetailsElement::ParseAttribute(
       // other ones with the same name.
       CHECK_NE(params.reason,
                AttributeModificationReason::kBySynchronizationOfLazyAttribute);
+      // TODO(https://crbug.com/1444057): Should this be in
+      // AttributeChanged instead?
       if (RuntimeEnabledFeatures::AccordionPatternEnabled() &&
           !GetName().empty() &&
           params.reason == AttributeModificationReason::kDirectly) {
@@ -212,6 +243,52 @@ void HTMLDetailsElement::ParseAttribute(
     }
   } else {
     HTMLElement::ParseAttribute(params);
+  }
+}
+
+void HTMLDetailsElement::AttributeChanged(
+    const AttributeModificationParams& params) {
+  const QualifiedName& name = params.name;
+  if (name == html_names::kNameAttr) {
+    MaybeCloseForExclusivity();
+  }
+
+  HTMLElement::AttributeChanged(params);
+}
+
+Node::InsertionNotificationRequest HTMLDetailsElement::InsertedInto(
+    ContainerNode& insertion_point) {
+  Node::InsertionNotificationRequest result =
+      HTMLElement::InsertedInto(insertion_point);
+
+  {
+    // Don't fire mutation events for any changes to the open attribute
+    // that this causes.
+    MutationEventSuppressionScope scope(GetDocument());
+
+    MaybeCloseForExclusivity();
+  }
+
+  return result;
+}
+
+void HTMLDetailsElement::MaybeCloseForExclusivity() {
+  if (!RuntimeEnabledFeatures::AccordionPatternEnabled() || GetName().empty() ||
+      !is_open_) {
+    return;
+  }
+
+  DCHECK(RuntimeEnabledFeatures::OptimizedNodeCloneOrderEnabled())
+      << "OptimizedNodeCloneOrder should ship before AccordionPattern";
+  HeapVector<Member<HTMLDetailsElement>> details_with_name(
+      OtherElementsInNameGroup());
+  for (HTMLDetailsElement* other_details : details_with_name) {
+    CHECK_NE(other_details, this);
+    if (other_details->is_open_) {
+      // close this details element
+      ToggleOpen();
+      break;
+    }
   }
 }
 

@@ -1492,6 +1492,13 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
     // before the task environment is destroyed (in
     // `RenderViewHostTestHarness::TearDown()`).
     auction_runner_.reset();
+
+    // Clear pointers into things owned by `interest_group_manager_`.
+    mock_auction_process_manager_ = nullptr;
+    same_process_auction_process_manager_ = nullptr;
+    // And this points into the process manager as well.
+    auction_worklet_manager_.reset();
+
     interest_group_manager_.reset();
     auction_nonce_manager_.reset();
 
@@ -1693,9 +1700,26 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
           component_auction);
     }
 
-    // Need to clear `same_process_auction_process_manager_` since underlying
-    // object may be owned by `interest_group_manager_`.
+    // `same_process_auction_process_manager_` may point to an object that
+    // that's owned by `interest_group_manager_`, so avoid a dangling pointer
+    // to it once `interest_group_manager_` is reset further below.
     same_process_auction_process_manager_ = nullptr;
+
+    // `mock_auction_process_manager_` is similar to
+    // `same_process_auction_process_manager_`, except it's usually set before
+    // the call to StartAuction() by UseMockWorkletService(), and we need it
+    // around afterwards. Luckily, tests that use it shouldn't have an
+    // `interest_group_manager_` at this point.
+    if (same_process_auction_process_manager_) {
+      DCHECK(!interest_group_manager_);
+    }
+
+    // `auction_worklet_manager_` points to the process manager, which is owned
+    // by `interest_group_manager_`, so resetting that may leave
+    // `auction_worklet_manager_` with a dangling process manager pointer.
+    // So destroy it now, since we are going to make a new one shortly anyway.
+    auction_worklet_manager_.reset();
+
     interest_group_manager_ = std::make_unique<TestInterestGroupManagerImpl>(
         frame_origin_, GetClientSecurityState(),
         dummy_report_shared_url_loader_factory_);
@@ -2944,13 +2968,12 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
   // Set by UseMockWorkletService(). Non-owning reference to the
   // AuctionProcessManager that will be / has been passed to the
   // InterestGroupManager.
-  raw_ptr<MockAuctionProcessManager, DanglingUntriaged>
-      mock_auction_process_manager_ = nullptr;
+  raw_ptr<MockAuctionProcessManager> mock_auction_process_manager_ = nullptr;
 
   // If StartAuction() created a SameProcessAuctionProcessManager for
   // `auction_process_manager_`, this alises it.
   // Reset by other things that set `auction_process_manager_`.
-  raw_ptr<SameProcessAuctionProcessManager, DanglingUntriaged>
+  raw_ptr<SameProcessAuctionProcessManager>
       same_process_auction_process_manager_ = nullptr;
 
   // The TestInterestGroupManager is recreated and repopulated for each auction.
@@ -4729,9 +4752,24 @@ TEST_F(AuctionRunnerTest, ComponentAuctionSharedBuyer) {
           ElementsAreRequests(
               BuildPrivateAggregationRequest(/*bucket=*/10, /*value=*/23),
               BuildPrivateAggregationRequest(/*bucket=*/30, /*value=*/43)))));
+
   // Bid count should only be incremented by 1.
+  base::RunLoop run_loop;
+  interest_group_manager_->GetInterestGroup(
+      kBidder1Key,
+      base::BindLambdaForTesting(
+          [&](absl::optional<StorageInterestGroup> interest_group) {
+            ASSERT_TRUE(interest_group);
+            // MakeInterestGroup() set `bid_count` to 5, so it should be 6
+            // (not 7).
+            EXPECT_EQ(6, interest_group->bidding_browser_signals->bid_count);
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+
+  // Both uses should get reported to the observer, however.
   EXPECT_THAT(result_.interest_groups_that_bid,
-              testing::UnorderedElementsAre(kBidder1Key));
+              testing::UnorderedElementsAre(kBidder1Key, kBidder1Key));
   EXPECT_EQ(R"({"renderURL":"https://component2-bid.test/"})",
             result_.winning_group_ad_metadata);
   // Currently an interest group participating twice in an auction is counted
@@ -6591,7 +6629,7 @@ TEST_F(AuctionRunnerTest, TrustedScoringSignals) {
                                          std::string(R"(
 function scoreAd(adMetadata, bid, auctionConfig, trustedScoringSignals,
                  browserSignals) {
-  let signal = trustedScoringSignals.renderUrl[browserSignals.renderURL];
+  let signal = trustedScoringSignals.renderURL[browserSignals.renderURL];
   if (browserSignals.dataVersion !== 2) {
     throw new Error(`wrong dataVersion (${browserSignals.dataVersion})`);
   }
@@ -9025,7 +9063,8 @@ TEST_F(AuctionRunnerTest, PromiseServerResponseResolveTwice) {
   ad_auction_page_data_->AddAuctionResultWitnessForOrigin(kSeller,
                                                           witnessed_hash);
 
-  AdAuctionRequestContext context(kSeller, {}, std::move(client_context));
+  AdAuctionRequestContext context(kSeller, {}, std::move(client_context),
+                                  base::TimeTicks::Now());
   ad_auction_page_data_->RegisterAdAuctionRequestContext(request_id,
                                                          std::move(context));
 
@@ -20096,6 +20135,7 @@ TEST_F(AuctionRunnerTest, ServerResponseLogsErrors) {
     GURL seller_decision_logic_url;
     bool encrypt;
     std::vector<std::string> errors;
+    AuctionResult result;
   } kTestCases[] = {
       {"Bad framing",
        bad_framing_response,
@@ -20103,28 +20143,32 @@ TEST_F(AuctionRunnerTest, ServerResponseLogsErrors) {
        true,
        kSellerUrl,
        true,
-       {"runAdAuction(): Could not parse response framing"}},
+       {"runAdAuction(): Could not parse response framing"},
+       AuctionResult::kInvalidServerResponse},
       {"not zipped",
        not_zipped_response,
        true,
        true,
        kSellerUrl,
        true,
-       {"runAdAuction(): Could not decompress server response"}},
+       {"runAdAuction(): Could not decompress server response"},
+       AuctionResult::kInvalidServerResponse},
       {"not CBOR",
        not_cbor_response,
        true,
        true,
        kSellerUrl,
        true,
-       {"runAdAuction(): Could not parse server response"}},
+       {"runAdAuction(): Could not parse server response"},
+       AuctionResult::kInvalidServerResponse},
       {"missing fields",
        missing_fields_response,
        true,
        true,
        kSellerUrl,
        true,
-       {"runAdAuction(): Could not parse server response"}},
+       {"runAdAuction(): Could not parse server response"},
+       AuctionResult::kInvalidServerResponse},
       {"not witnessed",
        chaff_response,
        false,
@@ -20132,7 +20176,8 @@ TEST_F(AuctionRunnerTest, ServerResponseLogsErrors) {
        kSellerUrl,
        true,
        {"runAdAuction(): Server response was not witnessed from " +
-        kSeller.Serialize()}},
+        kSeller.Serialize()},
+       AuctionResult::kInvalidServerResponse},
       {"wrong request id",
        chaff_response,
        true,
@@ -20140,32 +20185,37 @@ TEST_F(AuctionRunnerTest, ServerResponseLogsErrors) {
        kSellerUrl,
        true,
        {"runAdAuction(): No corresponding request with ID: " +
-        bad_request_id.AsLowercaseString()}},
+        bad_request_id.AsLowercaseString()},
+       AuctionResult::kInvalidServerResponse},
       {"wrong seller",
        chaff_response,
        true,
        true,
        kBidder1Url,  // Not the seller
        true,
-       {"runAdAuction(): Seller in response doesn't match request"}},
+       {"runAdAuction(): Seller in response doesn't match request"},
+       AuctionResult::kInvalidServerResponse},
       {"not encrypted",
        chaff_response,
        true,
        true,
        kSellerUrl,
        false,
-       {"runAdAuction(): Could not decrypt server response"}},
+       {"runAdAuction(): Could not decrypt server response"},
+       AuctionResult::kInvalidServerResponse},
       {"error on server",
        response_with_error,
        true,
        true,
        kSellerUrl,
        true,
-       {"runAdAuction(): Error on server"}},
+       {"runAdAuction(): Error on server"},
+       AuctionResult::kNoBids},
   };
 
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(test_case.test_name);
+    base::HistogramTester hist;
 
     const base::Uuid request_id = base::Uuid::GenerateRandomV4();
     server_response_request_id_ =
@@ -20193,7 +20243,8 @@ TEST_F(AuctionRunnerTest, ServerResponseLogsErrors) {
           witnessed_hash);
     }
 
-    AdAuctionRequestContext context(kSeller, {}, std::move(client_context));
+    AdAuctionRequestContext context(kSeller, {}, std::move(client_context),
+                                    base::TimeTicks::Now());
     ad_auction_page_data_->RegisterAdAuctionRequestContext(request_id,
                                                            std::move(context));
 
@@ -20217,6 +20268,8 @@ TEST_F(AuctionRunnerTest, ServerResponseLogsErrors) {
 
     task_environment()->RunUntilIdle();
     EXPECT_THAT(result_.errors, testing::ElementsAreArray(test_case.errors));
+    hist.ExpectUniqueSample("Ads.InterestGroup.ServerAuction.Result",
+                            test_case.result, 1);
   }
 
   // Clear this before the page expires to avoid the dangling ptr error.

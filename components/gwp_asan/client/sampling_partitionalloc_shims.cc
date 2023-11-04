@@ -7,11 +7,11 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/allocator/partition_allocator/flags.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/gwp_asan/client/export.h"
 #include "components/gwp_asan/client/guarded_page_allocator.h"
-#include "components/gwp_asan/client/lightweight_detector.h"
 #include "components/gwp_asan/client/sampling_state.h"
 #include "components/gwp_asan/common/crash_key_name.h"
 
@@ -27,20 +27,20 @@ SamplingState<PARTITIONALLOC> sampling_state;
 // for every access.
 GuardedPageAllocator* gpa = nullptr;
 
-// Same as `gpa` above, but for Lightweight UAF Detector.
-LightweightDetector* lightweight_detector = nullptr;
-
 bool AllocationHook(void** out,
-                    unsigned int flags,
+                    partition_alloc::AllocFlags flags,
                     size_t size,
                     const char* type_name) {
   if (UNLIKELY(sampling_state.Sample())) {
     // Ignore allocation requests with unknown flags.
     // TODO(crbug.com/1469794): Add support for memory tagging in GWP-Asan.
-    constexpr int kKnownFlags = partition_alloc::AllocFlags::kReturnNull |
-                                partition_alloc::AllocFlags::kZeroFill;
-    if (flags & ~kKnownFlags)
+    constexpr auto kKnownFlags = partition_alloc::AllocFlags::kReturnNull |
+                                 partition_alloc::AllocFlags::kZeroFill;
+    if (!ContainsFlags(kKnownFlags, flags)) {
+      // Skip if |flags| is not a subset of |kKnownFlags|.
+      // i.e. if we find an unknown flag.
       return false;
+    }
 
     if (void* allocation = gpa->Allocate(size, 0, type_name)) {
       *out = allocation;
@@ -73,18 +73,12 @@ GWP_ASAN_EXPORT GuardedPageAllocator& GetPartitionAllocGpaForTesting() {
   return *gpa;
 }
 
-void QuarantineHook(void* address, size_t size) {
-  lightweight_detector->RecordLightweightDeallocation(address, size);
-}
-
 void InstallPartitionAllocHooks(
     size_t max_allocated_pages,
     size_t num_metadata,
     size_t total_pages,
     size_t sampling_frequency,
-    GuardedPageAllocator::OutOfMemoryCallback callback,
-    LightweightDetectorMode lightweight_detector_mode,
-    size_t num_lightweight_detector_metadata) {
+    GuardedPageAllocator::OutOfMemoryCallback callback) {
   static crash_reporter::CrashKeyString<24> pa_crash_key(
       kPartitionAllocCrashKey);
   gpa = new GuardedPageAllocator();
@@ -96,19 +90,6 @@ void InstallPartitionAllocHooks(
   // PDFium's PartitionAlloc fork.
   partition_alloc::PartitionAllocHooks::SetOverrideHooks(
       &AllocationHook, &FreeHook, &ReallocHook);
-
-  if (lightweight_detector_mode != LightweightDetectorMode::kOff) {
-    lightweight_detector = new LightweightDetector(
-        lightweight_detector_mode, num_lightweight_detector_metadata);
-    static crash_reporter::CrashKeyString<24> lightweight_detector_crash_key(
-        kLightweightDetectorCrashKey);
-    lightweight_detector_crash_key.Set(lightweight_detector->GetCrashKey());
-
-    if (lightweight_detector_mode == LightweightDetectorMode::kBrpQuarantine) {
-      partition_alloc::PartitionAllocHooks::SetQuarantineOverrideHook(
-          &QuarantineHook);
-    }
-  }
 }
 
 }  // namespace internal

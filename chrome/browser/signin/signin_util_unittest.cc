@@ -17,6 +17,7 @@
 #include "components/policy/core/browser/signin/profile_separation_policies.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "content/public/test/browser_task_environment.h"
 
 using signin_util::ProfileSeparationPolicyState;
@@ -136,7 +137,8 @@ TEST_F(SigninUtilTest, IsProfileSeparationEnforcedByProfile) {
       profile.get()->GetPrefs()->SetString(
           prefs::kManagedAccountsSigninRestriction, local_policy);
     }
-    EXPECT_EQ(signin_util::IsProfileSeparationEnforcedByProfile(profile.get()),
+    EXPECT_EQ(signin_util::IsProfileSeparationEnforcedByProfile(
+                  profile.get(), /*intercepted_account_email=*/std::string()),
               SeparationEnforcedByExistingProfileExpected(local_policy));
   }
 
@@ -152,7 +154,8 @@ TEST_F(SigninUtilTest, IsProfileSeparationEnforcedByProfile) {
       profile.get()->GetPrefs()->SetString(
           prefs::kManagedAccountsSigninRestriction, local_policy);
     }
-    EXPECT_EQ(signin_util::IsProfileSeparationEnforcedByProfile(profile.get()),
+    EXPECT_EQ(signin_util::IsProfileSeparationEnforcedByProfile(
+                  profile.get(), /*intercepted_account_email=*/std::string()),
               SeparationEnforcedOnMachineLevelExpected(local_policy));
   }
 }
@@ -167,8 +170,9 @@ TEST_F(SigninUtilTest, IsProfileSeparationEnforcedByPolicies) {
   }
 }
 
-TEST_F(SigninUtilTest,
-       ProfileSeparationAllowsKeepingUnmanagedBrowsingDataInManagedProfile) {
+TEST_F(
+    SigninUtilTest,
+    ProfileSeparationAllowsKeepingUnmanagedBrowsingDataInManagedProfileLegacy) {
   std::unique_ptr<TestingProfile> profile = TestingProfile::Builder().Build();
   for (const auto& local_policy : all_policies) {
     if (local_policy.empty()) {
@@ -189,4 +193,180 @@ TEST_F(SigninUtilTest,
     }
   }
 }
+
+TEST_F(SigninUtilTest, IsSecondaryAccountAllowed) {
+  const std::string consumer_email = "bob@gmail.com";
+  const std::string enterprise_email = "bob@example.com";
+  const std::string other_enterprise_email = "bob@bob.com";
+  EXPECT_TRUE(signin_util::IsAccountExemptedFromEnterpriseProfileSeparation(
+      profile(), consumer_email));
+  EXPECT_TRUE(signin_util::IsAccountExemptedFromEnterpriseProfileSeparation(
+      profile(), enterprise_email));
+  EXPECT_TRUE(signin_util::IsAccountExemptedFromEnterpriseProfileSeparation(
+      profile(), other_enterprise_email));
+
+  {
+    profile()->GetPrefs()->SetList(prefs::kProfileSeparationDomainExceptionList,
+                                   base::Value::List());
+
+    EXPECT_FALSE(signin_util::IsAccountExemptedFromEnterpriseProfileSeparation(
+        profile(), consumer_email));
+    EXPECT_FALSE(signin_util::IsAccountExemptedFromEnterpriseProfileSeparation(
+        profile(), enterprise_email));
+    EXPECT_FALSE(signin_util::IsAccountExemptedFromEnterpriseProfileSeparation(
+        profile(), other_enterprise_email));
+  }
+  {
+    base::Value::List profile_separation_exception_list;
+    profile_separation_exception_list.Append(base::Value("bob.com"));
+    profile()->GetPrefs()->SetList(
+        prefs::kProfileSeparationDomainExceptionList,
+        std::move(profile_separation_exception_list));
+
+    EXPECT_FALSE(signin_util::IsAccountExemptedFromEnterpriseProfileSeparation(
+        profile(), consumer_email));
+    EXPECT_FALSE(signin_util::IsAccountExemptedFromEnterpriseProfileSeparation(
+        profile(), enterprise_email));
+    EXPECT_TRUE(signin_util::IsAccountExemptedFromEnterpriseProfileSeparation(
+        profile(), other_enterprise_email));
+  }
+  {
+    base::Value::List profile_separation_exception_list;
+    profile_separation_exception_list.Append(base::Value("bob.com"));
+    profile_separation_exception_list.Append(base::Value("gmail.com"));
+    profile()->GetPrefs()->SetList(
+        prefs::kProfileSeparationDomainExceptionList,
+        std::move(profile_separation_exception_list));
+
+    EXPECT_TRUE(signin_util::IsAccountExemptedFromEnterpriseProfileSeparation(
+        profile(), consumer_email));
+    EXPECT_FALSE(signin_util::IsAccountExemptedFromEnterpriseProfileSeparation(
+        profile(), enterprise_email));
+    EXPECT_TRUE(signin_util::IsAccountExemptedFromEnterpriseProfileSeparation(
+        profile(), other_enterprise_email));
+  }
+}
+
+TEST_F(SigninUtilTest,
+       IsProfileSeparationEnforcedByProfileSecondaryAccountNotAllowed) {
+  const std::string consumer_email = "bob@gmail.com";
+  const std::string enterprise_email = "bob@example.com";
+  const std::string other_enterprise_email = "bob@bob.com";
+
+  for (const auto& policy : all_policies) {
+    profile()->GetPrefs()->SetString(prefs::kManagedAccountsSigninRestriction,
+                                     policy);
+
+    EXPECT_EQ(signin_util::IsProfileSeparationEnforcedByProfile(profile(),
+                                                                consumer_email),
+              SeparationEnforcedByExistingProfileExpected(policy))
+        << policy;
+    EXPECT_EQ(signin_util::IsProfileSeparationEnforcedByProfile(
+                  profile(), enterprise_email),
+              SeparationEnforcedByExistingProfileExpected(policy))
+        << policy;
+    EXPECT_EQ(signin_util::IsProfileSeparationEnforcedByProfile(
+                  profile(), other_enterprise_email),
+              SeparationEnforcedByExistingProfileExpected(policy))
+        << policy;
+  }
+
+  profile()->GetPrefs()->SetList(prefs::kProfileSeparationDomainExceptionList,
+                                 base::Value::List());
+
+  for (const auto& policy : all_policies) {
+    profile()->GetPrefs()->SetString(prefs::kManagedAccountsSigninRestriction,
+                                     policy);
+
+    EXPECT_TRUE(signin_util::IsProfileSeparationEnforcedByProfile(
+        profile(), consumer_email))
+        << policy;
+    EXPECT_TRUE(signin_util::IsProfileSeparationEnforcedByProfile(
+        profile(), enterprise_email))
+        << policy;
+    EXPECT_TRUE(signin_util::IsProfileSeparationEnforcedByProfile(
+        profile(), other_enterprise_email))
+        << policy;
+  }
+
+  base::Value::List profile_separation_exception_list;
+  profile_separation_exception_list.Append(base::Value("example.com"));
+  profile()->GetPrefs()->SetList(prefs::kProfileSeparationDomainExceptionList,
+                                 std::move(profile_separation_exception_list));
+
+  for (const auto& policy : all_policies) {
+    profile()->GetPrefs()->SetString(prefs::kManagedAccountsSigninRestriction,
+                                     policy);
+
+    EXPECT_TRUE(signin_util::IsProfileSeparationEnforcedByProfile(
+        profile(), consumer_email))
+        << policy;
+
+    EXPECT_EQ(signin_util::IsProfileSeparationEnforcedByProfile(
+                  profile(), enterprise_email),
+              SeparationEnforcedByExistingProfileExpected(policy))
+        << policy;
+
+    EXPECT_TRUE(signin_util::IsProfileSeparationEnforcedByProfile(
+        profile(), other_enterprise_email))
+        << policy;
+  }
+}
+
+TEST_F(SigninUtilTest, IsProfileSeparationEnforced) {
+  EXPECT_FALSE(signin_util::IsProfileSeparationEnforcedByPolicies(
+      policy::ProfileSeparationPolicies(
+          policy::ProfileSeparationSettings::SUGGESTED, absl::nullopt)));
+
+  EXPECT_TRUE(signin_util::IsProfileSeparationEnforcedByPolicies(
+      policy::ProfileSeparationPolicies(
+          policy::ProfileSeparationSettings::ENFORCED, absl::nullopt)));
+
+  EXPECT_FALSE(signin_util::IsProfileSeparationEnforcedByPolicies(
+      policy::ProfileSeparationPolicies(
+          policy::ProfileSeparationSettings::DISABLED, absl::nullopt)));
+}
+
+TEST_F(SigninUtilTest,
+       ProfileSeparationAllowsKeepingUnmanagedBrowsingDataInManagedProfile) {
+  for (const auto& local_policy : all_policies) {
+    if (local_policy.empty()) {
+      profile()->GetPrefs()->ClearPref(
+          prefs::kManagedAccountsSigninRestriction);
+    } else {
+      profile()->GetPrefs()->SetString(prefs::kManagedAccountsSigninRestriction,
+                                       local_policy);
+    }
+
+    EXPECT_EQ(
+        signin_util::
+            ProfileSeparationAllowsKeepingUnmanagedBrowsingDataInManagedProfile(
+                profile(), policy::ProfileSeparationPolicies(
+                               policy::ProfileSeparationSettings::ENFORCED,
+                               policy::ProfileSeparationDataMigrationSettings::
+                                   USER_OPT_IN)),
+        KeepBrowsingDataExpected(local_policy, std::string()))
+        << local_policy;
+
+    EXPECT_EQ(
+        signin_util::
+            ProfileSeparationAllowsKeepingUnmanagedBrowsingDataInManagedProfile(
+                profile(), policy::ProfileSeparationPolicies(
+                               policy::ProfileSeparationSettings::ENFORCED,
+                               policy::ProfileSeparationDataMigrationSettings::
+                                   USER_OPT_OUT)),
+        KeepBrowsingDataExpected(local_policy, std::string()))
+        << local_policy;
+
+    EXPECT_FALSE(
+        signin_util::
+            ProfileSeparationAllowsKeepingUnmanagedBrowsingDataInManagedProfile(
+                profile(), policy::ProfileSeparationPolicies(
+                               policy::ProfileSeparationSettings::ENFORCED,
+                               policy::ProfileSeparationDataMigrationSettings::
+                                   ALWAYS_SEPARATE)))
+        << local_policy;
+  }
+}
+
 #endif

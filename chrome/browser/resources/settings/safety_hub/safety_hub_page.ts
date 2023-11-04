@@ -10,16 +10,19 @@
 
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import './safety_hub_card.js';
+import './safety_hub_module.js';
 
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {PasswordManagerImpl, PasswordManagerPage} from '../autofill_page/password_manager_proxy.js';
+import {RelaunchMixin, RestartType} from '../relaunch_mixin.js';
 import {routes} from '../route.js';
 import {Router} from '../router.js';
 
-import {CardInfo, SafetyHubBrowserProxy, SafetyHubBrowserProxyImpl, SafetyHubEvent, UnusedSitePermissions} from './safety_hub_browser_proxy.js';
+import {CardInfo, CardState, NotificationPermission, SafetyHubBrowserProxy, SafetyHubBrowserProxyImpl, SafetyHubEvent, UnusedSitePermissions} from './safety_hub_browser_proxy.js';
+import {SiteInfo} from './safety_hub_module.js';
 import {getTemplate} from './safety_hub_page.html.js';
 
 export interface SettingsSafetyHubPageElement {
@@ -31,7 +34,7 @@ export interface SettingsSafetyHubPageElement {
 }
 
 const SettingsSafetyHubPageElementBase =
-    WebUiListenerMixin(I18nMixin(PolymerElement));
+    RelaunchMixin(WebUiListenerMixin(I18nMixin(PolymerElement)));
 
 export class SettingsSafetyHubPageElement extends
     SettingsSafetyHubPageElementBase {
@@ -54,8 +57,20 @@ export class SettingsSafetyHubPageElement extends
       // The object that holds data of Safe Browsing card.
       safeBrowsingCardData_: Object,
 
+      // Whether Notification Permissions module should be visible.
+      showNotificationPermissions_: {
+        type: Boolean,
+        value: false,
+      },
+
       // Whether Unused Site Permissions module should be visible.
       showUnusedSitePermissions_: {
+        type: Boolean,
+        value: false,
+      },
+
+      // Whether Extensions module should be visible.
+      showExtensions_: {
         type: Boolean,
         value: false,
       },
@@ -63,16 +78,21 @@ export class SettingsSafetyHubPageElement extends
       showNoRecommendationsState_: {
         type: Boolean,
         computed:
-            'computeShowNoRecommendationsState_(showUnusedSitePermissions_.*)',
+            'computeShowNoRecommendationsState_(showUnusedSitePermissions_.*, showExtensions_.*, showNotificationPermissions_.*)',
       },
+
+      userEducationItemList_: Array,
     };
   }
 
   private passwordCardData_: CardInfo;
   private versionCardData_: CardInfo;
   private safeBrowsingCardData_: CardInfo;
+  private showNotificationPermissions_: boolean;
   private showUnusedSitePermissions_: boolean;
   private showNoRecommendationsState_: boolean;
+  private showExtensions_: boolean;
+  private userEducationItemList_: SiteInfo[];
   private browserProxy_: SafetyHubBrowserProxy =
       SafetyHubBrowserProxyImpl.getInstance();
 
@@ -81,9 +101,11 @@ export class SettingsSafetyHubPageElement extends
 
     this.initializeCards_();
     this.initializeModules_();
+    this.initializeUserEducation_();
   }
 
   private initializeCards_() {
+    // TODO(1443466): Add listeners for cards.
     this.browserProxy_.getPasswordCardData().then((data: CardInfo) => {
       this.passwordCardData_ = data;
     });
@@ -99,13 +121,49 @@ export class SettingsSafetyHubPageElement extends
 
   private initializeModules_() {
     this.addWebUiListener(
+        SafetyHubEvent.NOTIFICATION_PERMISSIONS_MAYBE_CHANGED,
+        (sites: NotificationPermission[]) =>
+            this.onNotificationPermissionListChanged_(sites));
+
+    this.addWebUiListener(
         SafetyHubEvent.UNUSED_PERMISSIONS_MAYBE_CHANGED,
         (sites: UnusedSitePermissions[]) =>
             this.onUnusedSitePermissionListChanged_(sites));
 
+    this.addWebUiListener(
+        SafetyHubEvent.EXTENSIONS_CHANGED,
+        (num: number) => this.onExtensionsChanged_(num));
+
+    this.browserProxy_.getNotificationPermissionReview().then(
+        (sites: NotificationPermission[]) =>
+            this.onNotificationPermissionListChanged_(sites));
+
     this.browserProxy_.getRevokedUnusedSitePermissionsList().then(
         (sites: UnusedSitePermissions[]) =>
             this.onUnusedSitePermissionListChanged_(sites));
+
+    this.browserProxy_.getNumberOfExtensionsThatNeedReview().then(
+        (num: number) => this.onExtensionsChanged_(num));
+  }
+
+  private initializeUserEducation_() {
+    this.userEducationItemList_ = [
+      {
+        origin: this.i18n('safetyHubUserEduDataHeader'),
+        detail: this.i18nAdvanced('safetyHubUserEduDataSubheader'),
+        icon: 'settings20:chrome-filled',
+      },
+      {
+        origin: this.i18n('safetyHubUserEduIncognitoHeader'),
+        detail: this.i18nAdvanced('safetyHubUserEduIncognitoSubheader'),
+        icon: 'settings20:incognito-unfilled',
+      },
+      {
+        origin: this.i18n('safetyHubUserEduSafeBrowsingHeader'),
+        detail: this.i18nAdvanced('safetyHubUserEduSafeBrowsingSubheader'),
+        icon: 'cr:security',
+      },
+    ];
   }
 
   private onPasswordsClick_() {
@@ -114,15 +172,27 @@ export class SettingsSafetyHubPageElement extends
   }
 
   private onVersionClick_() {
-    Router.getInstance().navigateTo(
-        routes.ABOUT, /* dynamicParams= */ undefined,
-        /* removeSearch= */ true);
+    if (this.versionCardData_.state === CardState.WARNING) {
+      this.performRestart(RestartType.RELAUNCH);
+    } else {
+      Router.getInstance().navigateTo(
+          routes.ABOUT, /* dynamicParams= */ undefined,
+          /* removeSearch= */ true);
+    }
   }
 
   private onSafeBrowsingClick_() {
     Router.getInstance().navigateTo(
         routes.SECURITY, /* dynamicParams= */ undefined,
         /* removeSearch= */ true);
+  }
+
+  private onNotificationPermissionListChanged_(permissions:
+                                                   NotificationPermission[]) {
+    // The module should be visible if there is any item on the list, or if
+    // there is no item on the list but the list was shown before.
+    this.showNotificationPermissions_ =
+        permissions.length > 0 || this.showNotificationPermissions_;
   }
 
   private onUnusedSitePermissionListChanged_(permissions:
@@ -134,7 +204,13 @@ export class SettingsSafetyHubPageElement extends
   }
 
   private computeShowNoRecommendationsState_(): boolean {
-    return !this.showUnusedSitePermissions_;
+    return !(
+        this.showUnusedSitePermissions_ || this.showNotificationPermissions_ ||
+        this.showExtensions_);
+  }
+
+  private onExtensionsChanged_(numberOfExtensions: number) {
+    this.showExtensions_ = !!numberOfExtensions;
   }
 }
 

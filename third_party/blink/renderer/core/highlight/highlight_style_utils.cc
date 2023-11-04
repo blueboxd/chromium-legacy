@@ -244,8 +244,11 @@ const ComputedStyle* HighlightPseudoStyleWithOriginatingInheritance(
     // ::selection and ::selection:window-inactive styles may be different. Only
     // cache the styles for ::selection if there are no :window-inactive
     // selector, or if the page is active.
+    // With Originating Inheritance the originating element is also the parent
+    // element.
     return element->UncachedStyleForPseudoElement(
-        StyleRequest(pseudo, element->GetComputedStyle(), pseudo_argument));
+        StyleRequest(pseudo, element->GetComputedStyle(),
+                     element->GetComputedStyle(), pseudo_argument));
   }
 
   return element->CachedStyleForPseudoElement(pseudo, pseudo_argument);
@@ -420,17 +423,20 @@ TextPaintStyle HighlightStyleUtils::HighlightPaintingStyle(
     highlight_style.current_color =
         ResolveColor(document, style, pseudo_style, pseudo,
                      GetCSSPropertyColor(), previous_layer_current_color);
-    highlight_style.fill_color = ResolveColor(
-        document, style, pseudo_style, pseudo,
-        GetCSSPropertyWebkitTextFillColor(), previous_layer_current_color);
+    highlight_style.fill_color =
+        ResolveColor(document, style, pseudo_style, pseudo,
+                     GetCSSPropertyWebkitTextFillColor(),
+                     previous_layer_text_style.fill_color);
     // TODO(crbug.com/1147859) ignore highlight ‘text-emphasis-color’
     // https://github.com/w3c/csswg-drafts/issues/7101
-    highlight_style.emphasis_mark_color = ResolveColor(
-        document, style, pseudo_style, pseudo,
-        GetCSSPropertyTextEmphasisColor(), previous_layer_current_color);
-    highlight_style.stroke_color = ResolveColor(
-        document, style, pseudo_style, pseudo,
-        GetCSSPropertyWebkitTextStrokeColor(), previous_layer_current_color);
+    highlight_style.emphasis_mark_color =
+        ResolveColor(document, style, pseudo_style, pseudo,
+                     GetCSSPropertyTextEmphasisColor(),
+                     previous_layer_text_style.emphasis_mark_color);
+    highlight_style.stroke_color =
+        ResolveColor(document, style, pseudo_style, pseudo,
+                     GetCSSPropertyWebkitTextStrokeColor(),
+                     previous_layer_text_style.stroke_color);
   }
 
   if (pseudo_style) {

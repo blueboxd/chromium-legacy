@@ -12,6 +12,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/style/typography.h"
+#include "ui/views/style/typography_provider.h"
 
 AuthenticatorPaaskSheetView::AuthenticatorPaaskSheetView(
     std::unique_ptr<AuthenticatorPaaskSheetModel> sheet_model)
@@ -26,27 +28,24 @@ class LinkLabelButton : public views::LabelButton {
       : LabelButton(std::move(callback), text, views::style::CONTEXT_BUTTON) {
     SetBorder(views::CreateEmptyBorder(0));
     label()->SetTextStyle(views::style::STYLE_LINK);
-    SetEnabledTextColorIds(views::style::GetColorId(label()->GetTextContext(),
-                                                    views::style::STYLE_LINK));
+    SetEnabledTextColorIds(views::TypographyProvider::Get().GetColorId(
+        label()->GetTextContext(), views::style::STYLE_LINK));
   }
 };
 
-std::pair<std::unique_ptr<views::View>,
-          AuthenticatorRequestSheetView::AutoFocus>
+std::unique_ptr<views::View>
 AuthenticatorPaaskSheetView::BuildStepSpecificContent() {
   AuthenticatorRequestDialogModel* const dialog_model =
       reinterpret_cast<AuthenticatorPaaskSheetModel*>(model())->dialog_model();
   // This context is only shown when USB fallback is an option.
   if (!dialog_model->cable_should_suggest_usb()) {
-    return std::make_pair(nullptr, AutoFocus::kNo);
+    return nullptr;
   }
 
-  return std::make_pair(
-      std::make_unique<LinkLabelButton>(
-          base::BindRepeating(&AuthenticatorPaaskSheetView::OnLinkClicked,
-                              base::Unretained(this)),
-          l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLEV2_SERVERLINK_TROUBLE)),
-      AutoFocus::kNo);
+  return std::make_unique<LinkLabelButton>(
+      base::BindRepeating(&AuthenticatorPaaskSheetView::OnLinkClicked,
+                          base::Unretained(this)),
+      l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLEV2_SERVERLINK_TROUBLE));
 }
 
 void AuthenticatorPaaskSheetView::OnLinkClicked(const ui::Event&) {

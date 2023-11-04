@@ -8,7 +8,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
-#include "chrome/browser/apps/intent_helper/intent_picker_auto_display_prefs.h"
+#include "chrome/browser/apps/intent_helper/intent_chip_display_prefs.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,10 +30,8 @@ class IntentPickerTabHelperTest : public ChromeRenderViewHostTestHarness {
   IntentPickerTabHelper* helper() { return helper_; }
 
   std::vector<apps::IntentPickerAppInfo> CreateTestAppList() {
-    std::vector<apps::IntentPickerAppInfo> apps;
-    apps.emplace_back(apps::PickerEntryType::kWeb, ui::ImageModel(), "app_id",
-                      "Test app");
-    return apps;
+    return {
+        {apps::PickerEntryType::kWeb, ui::ImageModel(), "app_id", "Test app"}};
   }
 
  private:
@@ -57,7 +55,7 @@ TEST_F(IntentPickerTabHelperTest, ShowIconForApps) {
       apps::features::kLinkCapturingUiUpdate);
 
   NavigateAndCommit(GURL("https://www.google.com"));
-  helper()->ShowIconForApps(CreateTestAppList());
+  helper()->MaybeShowIconForApps(CreateTestAppList());
 
   ASSERT_TRUE(helper()->should_show_icon());
 }
@@ -68,7 +66,7 @@ TEST_F(IntentPickerTabHelperTest, ShowIconForApps_ExpandedChip) {
   const GURL kTestUrl = GURL("https://www.google.com");
 
   NavigateAndCommit(kTestUrl);
-  helper()->ShowIconForApps(CreateTestAppList());
+  helper()->MaybeShowIconForApps(CreateTestAppList());
 
   ASSERT_TRUE(helper()->ShouldShowExpandedChip());
 }
@@ -81,12 +79,12 @@ TEST_F(IntentPickerTabHelperTest, ShowIconForApps_CollapsedChip) {
   // Simulate having seen the chip for this URL several times before, so that it
   // appears collapsed.
   for (int i = 0; i < 3; i++) {
-    IntentPickerAutoDisplayPrefs::GetChipStateAndIncrementCounter(profile(),
-                                                                  kTestUrl);
+    IntentChipDisplayPrefs::GetChipStateAndIncrementCounter(profile(),
+                                                            kTestUrl);
   }
 
   NavigateAndCommit(kTestUrl);
-  helper()->ShowIconForApps(CreateTestAppList());
+  helper()->MaybeShowIconForApps(CreateTestAppList());
 
   ASSERT_TRUE(helper()->should_show_icon());
   ASSERT_FALSE(helper()->ShouldShowExpandedChip());
@@ -98,7 +96,7 @@ TEST_F(IntentPickerTabHelperTest, ShowIntentIcon_ResetsExpandedState) {
   const GURL kTestUrl = GURL("https://www.google.com");
 
   NavigateAndCommit(kTestUrl);
-  helper()->ShowIconForApps(CreateTestAppList());
+  helper()->MaybeShowIconForApps(CreateTestAppList());
 
   EXPECT_TRUE(helper()->should_show_icon());
   EXPECT_TRUE(helper()->ShouldShowExpandedChip());
@@ -116,8 +114,7 @@ TEST_F(IntentPickerTabHelperTest, LinkCapturing_EntryPointShown) {
   NavigateAndCommit(GURL("https://www.google.com"));
 
   // Create empty app list which ensures the intent picker icon is hidden.
-  std::vector<apps::IntentPickerAppInfo> apps_list;
-  helper()->ShowIconForApps(apps_list);
+  helper()->MaybeShowIconForApps({});
 
   // None of the histograms should be incremented.
   histogram_tester.ExpectBucketCount(
@@ -132,11 +129,13 @@ TEST_F(IntentPickerTabHelperTest, LinkCapturing_EntryPointShown) {
 
   // Create app list with both a web and an ARC app, and show the intent picker
   // icon.
-  apps_list.emplace_back(apps::PickerEntryType::kWeb, ui::ImageModel(),
-                         "app_id", "Test app");
-  apps_list.emplace_back(apps::PickerEntryType::kArc, ui::ImageModel(),
-                         "app_id", "Test app");
-  helper()->ShowIconForApps(apps_list);
+  {
+    std::vector<apps::IntentPickerAppInfo> apps_list;
+    apps_list = {
+        {apps::PickerEntryType::kWeb, ui::ImageModel(), "app_id", "Test app"},
+        {apps::PickerEntryType::kArc, ui::ImageModel(), "app_id", "Test app"}};
+    helper()->MaybeShowIconForApps(std::move(apps_list));
+  }
 
   // All of the histograms should be incremented.
   histogram_tester.ExpectBucketCount(
@@ -150,13 +149,15 @@ TEST_F(IntentPickerTabHelperTest, LinkCapturing_EntryPointShown) {
       apps::IntentHandlingMetrics::LinkCapturingEvent::kEntryPointShown, 1);
 
   // Hide the intent picker icon.
-  apps_list.clear();
-  helper()->ShowIconForApps(apps_list);
+  helper()->MaybeShowIconForApps({});
 
   // Create app list with only a web app and show the intent picker icon.
-  apps_list.emplace_back(apps::PickerEntryType::kWeb, ui::ImageModel(),
-                         "app_id", "Test app");
-  helper()->ShowIconForApps(apps_list);
+  {
+    std::vector<apps::IntentPickerAppInfo> apps_list;
+    apps_list = {
+        {apps::PickerEntryType::kWeb, ui::ImageModel(), "app_id", "Test app"}};
+    helper()->MaybeShowIconForApps(std::move(apps_list));
+  }
 
   // Only the web app and general histograms should be incremented.
   histogram_tester.ExpectBucketCount(
@@ -170,13 +171,15 @@ TEST_F(IntentPickerTabHelperTest, LinkCapturing_EntryPointShown) {
       apps::IntentHandlingMetrics::LinkCapturingEvent::kEntryPointShown, 2);
 
   // Hide the intent picker icon.
-  apps_list.clear();
-  helper()->ShowIconForApps(apps_list);
+  helper()->MaybeShowIconForApps({});
 
   // Create app list with only an ARC app and show the intent picker icon.
-  apps_list.emplace_back(apps::PickerEntryType::kArc, ui::ImageModel(),
-                         "app_id", "Test app");
-  helper()->ShowIconForApps(apps_list);
+  {
+    std::vector<apps::IntentPickerAppInfo> apps_list;
+    apps_list = {
+        {apps::PickerEntryType::kArc, ui::ImageModel(), "app_id", "Test app"}};
+    helper()->MaybeShowIconForApps(std::move(apps_list));
+  }
 
   // Only the ARC app and general histograms should be incremented.
   histogram_tester.ExpectBucketCount(
@@ -190,15 +193,16 @@ TEST_F(IntentPickerTabHelperTest, LinkCapturing_EntryPointShown) {
       apps::IntentHandlingMetrics::LinkCapturingEvent::kEntryPointShown, 3);
 
   // Hide the intent picker icon.
-  apps_list.clear();
-  helper()->ShowIconForApps(apps_list);
+  helper()->MaybeShowIconForApps({});
 
   // Create app list with non-ARC and non-web types and show the intent picker
   // icon.
-  apps_list.clear();
-  apps_list.emplace_back(apps::PickerEntryType::kMacOs, ui::ImageModel(),
-                         "app_id", "Test app");
-  helper()->ShowIconForApps(apps_list);
+  {
+    std::vector<apps::IntentPickerAppInfo> apps_list;
+    apps_list = {{apps::PickerEntryType::kMacOs, ui::ImageModel(), "app_id",
+                  "Test app"}};
+    helper()->MaybeShowIconForApps(std::move(apps_list));
+  }
 
   // Only the general histogram should be incremented.
   histogram_tester.ExpectBucketCount(

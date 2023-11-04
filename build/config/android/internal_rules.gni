@@ -821,6 +821,12 @@ template("test_runner_script") {
       ]
     }
 
+    if (use_jacoco_coverage) {
+      # Keep in sync with recipe constant for recipe to find coverage data
+      # files from local java tests: https://bit.ly/3Zul6do
+      _jacoco_coverage_dir_name = "java_coverage"
+    }
+
     _device_test = true
     if (_test_type == "gtest") {
       assert(defined(invoker.test_suite))
@@ -898,7 +904,8 @@ template("test_runner_script") {
         # Set a default coverage output directory (can be overridden by user
         # passing the same flag).
         _rebased_coverage_dir =
-            rebase_path("$root_out_dir/coverage", root_build_dir)
+            rebase_path("$root_out_dir/$_jacoco_coverage_dir_name",
+                        root_build_dir)
         executable_args += [
           "--coverage-dir",
           "@WrappedPath(${_rebased_coverage_dir})",
@@ -932,7 +939,8 @@ template("test_runner_script") {
         # Set a default coverage output directory (can be overridden by user
         # passing the same flag).
         _rebased_coverage_dir =
-            rebase_path("$root_out_dir/coverage", root_build_dir)
+            rebase_path("$root_out_dir/$_jacoco_coverage_dir_name",
+                        root_build_dir)
         executable_args += [
           "--coverage-dir",
           "@WrappedPath(${_rebased_coverage_dir})",
@@ -1477,6 +1485,9 @@ if (enable_java_templates) {
     if (defined(invoker.min_sdk_version)) {
       _min_sdk_version = invoker.min_sdk_version
     }
+    assert(
+        _min_sdk_version >= min_supported_sdk_version,
+        get_label_info(":$target_name", "label_no_toolchain") + " has an unsupported min_sdk_version of $_min_sdk_version (min is $min_supported_sdk_version)")
 
     _proguard_enabled =
         defined(invoker.proguard_enabled) && invoker.proguard_enabled
@@ -1899,25 +1910,22 @@ if (enable_java_templates) {
 
   template("bytecode_processor") {
     action_with_pydeps(target_name) {
-      forward_variables_from(invoker, TESTONLY_AND_VISIBILITY + [ "data_deps" ])
-      _bytecode_checker_script = "$root_build_dir/bin/helper/bytecode_processor"
+      forward_variables_from(invoker,
+                             TESTONLY_AND_VISIBILITY + [
+                                   "data_deps",
+                                   "deps",
+                                 ])
       script = "//build/android/gyp/bytecode_processor.py"
       inputs = [
         java_path_for_inputs,
         invoker.build_config,
         invoker.input_jar,
-        _bytecode_checker_script,
       ]
       outputs = [ "$target_out_dir/$target_name.bytecode.stamp" ]
-      deps =
-          invoker.deps +
-          [ "//build/android/bytecode:bytecode_processor($default_toolchain)" ]
       _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
       args = [
         "--target-name",
         get_label_info(":${target_name}", "label_no_toolchain"),
-        "--script",
-        rebase_path(_bytecode_checker_script, root_build_dir),
         "--gn-target=${invoker.target_label}",
         "--input-jar",
         rebase_path(invoker.input_jar, root_build_dir),
@@ -1941,16 +1949,14 @@ if (enable_java_templates) {
       if (treat_warnings_as_errors) {
         args += [ "--warnings-as-errors" ]
       }
-      if (defined(invoker.missing_classes_allowlist)) {
-        args += [
-          "--missing-classes-allowlist=${invoker.missing_classes_allowlist}",
-        ]
-      }
     }
   }
 
   template("merge_manifests") {
     action_with_pydeps(target_name) {
+      assert(
+          invoker.min_sdk_version >= min_supported_sdk_version,
+          get_label_info(":$target_name", "label_no_toolchain") + " has an unsupported min_sdk_version of ${invoker.min_sdk_version} (min is $min_supported_sdk_version)")
       forward_variables_from(invoker, TESTONLY_AND_VISIBILITY + [ "deps" ])
       script = "//build/android/gyp/merge_manifest.py"
       depfile = "$target_gen_dir/$target_name.d"
@@ -3119,13 +3125,6 @@ if (enable_java_templates) {
         ]
       }
 
-      if (use_java_goma) {
-        args += [ "--gomacc-path=$goma_dir/gomacc" ]
-
-        # Override the default action_pool when goma is enabled.
-        pool = "//build/config/android:goma_javac_pool"
-      }
-
       # Flag enable_kythe_annotations requires
       # checkout_android_prebuilts_build_tools=True in .gclient.
       if (enable_kythe_annotations && !invoker.enable_errorprone) {
@@ -3253,13 +3252,6 @@ if (enable_java_templates) {
       }
 
       args += [ "--classpath=@FileArg($_rebased_build_config:deps_info:javac_full_interface_classpath)" ]
-
-      if (use_java_goma) {
-        args += [ "--gomacc-path=$goma_dir/gomacc" ]
-
-        # Override the default action_pool when goma is enabled.
-        pool = "//build/config/android:goma_javac_pool"
-      }
 
       if (_chromium_code) {
         args += [ "--chromium-code" ]
@@ -4193,13 +4185,18 @@ if (enable_java_templates) {
         }
         deps = [ ":$_build_config_target_name" ]
         if (_is_robolectric) {
-          # For robolectric tests, we also add the normal sdk jar to the
-          # classpath since whenever we start using a new Android SDK,
-          # robolectric doesn't support it, and they often take a few months to
-          # support it. This causes issues when mocking classes that reference
-          # new SDK classes, so providing our normal SDK will allow these
-          # classes to resolve. For an example, see crbug.com/1350963.
-          extra_classpath_jars = [ android_sdk_jar ]
+          # For robolectric tests, we add the sdk stub jars so that classes
+          # that reference Android types can be loaded without throwing
+          # NoClassDefFoundErrors. The Robolectric sandbox makes these types
+          # available in non-stub form, but not until test classes are loaded
+          # into it. Before being loaded into the sandbox, they must be loaded
+          # outside of it in order to read their annotations (which configure
+          # the sandbox), and to enumerate test methods.
+          extra_classpath_jars = [
+            android_sdk_jar,
+            "$android_sdk/optional/android.test.base.jar",
+            "$android_sdk/optional/android.test.runner.jar",
+          ]
         }
       }
     }

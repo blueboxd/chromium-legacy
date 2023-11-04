@@ -885,8 +885,7 @@ IN_PROC_BROWSER_TEST_F(NetworkIsolationNavigationBrowserTest,
   ASSERT_TRUE(request->trusted_params);
   EXPECT_TRUE(net::IsolationInfo::Create(
                   net::IsolationInfo::RequestType::kMainFrame, origin, origin,
-                  net::SiteForCookies::FromOrigin(origin),
-                  std::set<net::SchemefulSite>())
+                  net::SiteForCookies::FromOrigin(origin))
                   .IsEqualForTesting(request->trusted_params->isolation_info));
 }
 
@@ -904,8 +903,7 @@ IN_PROC_BROWSER_TEST_F(NetworkIsolationNavigationBrowserTest,
   ASSERT_TRUE(request->trusted_params);
   EXPECT_TRUE(net::IsolationInfo::Create(
                   net::IsolationInfo::RequestType::kMainFrame, origin, origin,
-                  net::SiteForCookies::FromOrigin(origin),
-                  std::set<net::SchemefulSite>())
+                  net::SiteForCookies::FromOrigin(origin))
                   .IsEqualForTesting(request->trusted_params->isolation_info));
 }
 
@@ -925,8 +923,7 @@ IN_PROC_BROWSER_TEST_F(NetworkIsolationNavigationBrowserTest,
   ASSERT_TRUE(main_frame_request->trusted_params);
   EXPECT_TRUE(net::IsolationInfo::Create(
                   net::IsolationInfo::RequestType::kMainFrame, origin, origin,
-                  net::SiteForCookies::FromOrigin(origin),
-                  std::set<net::SchemefulSite>())
+                  net::SiteForCookies::FromOrigin(origin))
                   .IsEqualForTesting(
                       main_frame_request->trusted_params->isolation_info));
 
@@ -936,8 +933,7 @@ IN_PROC_BROWSER_TEST_F(NetworkIsolationNavigationBrowserTest,
   EXPECT_TRUE(
       net::IsolationInfo::Create(net::IsolationInfo::RequestType::kSubFrame,
                                  origin, iframe_origin,
-                                 net::SiteForCookies::FromOrigin(origin),
-                                 std::set<net::SchemefulSite>())
+                                 net::SiteForCookies::FromOrigin(origin))
           .IsEqualForTesting(iframe_request->trusted_params->isolation_info));
 }
 
@@ -7638,6 +7634,65 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, FilterURL_EmptyURL) {
     histograms.ExpectTotalCount("BrowserRenderProcessHost.BlockedByFilterURL",
                                 0);
   }
+}
+
+// Check that an about:blank popup opened from a WebUI page is not allowed to
+// execute Javascript URLs. chrome:// pages don't allow executing javascript:
+// URLs, so an about:blank popup opened by one should not be allowed to either,
+// despite its URL not having the chrome: scheme.  See
+// https://crbug.com/1471305.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       JavascriptURLBlockedInAboutBlankWebUiPopup) {
+  GURL webui_url = GetWebUIURL(kChromeUIGpuHost);
+  ASSERT_TRUE(NavigateToURL(shell(), webui_url));
+
+  // Open an about:blank popup which should inherit the WebUI origin, and set
+  // some state in window.foo.
+  Shell* new_shell = OpenPopup(shell(), GURL(url::kAboutBlankURL), "popup");
+  EXPECT_TRUE(new_shell);
+  EXPECT_TRUE(ExecJs(new_shell, "window.foo = 123;"));
+  EXPECT_EQ(123, EvalJs(new_shell, "window.foo"));
+
+  // Try to execute a Javascript URL that modifies window.foo in the popup via
+  // a browser-initiated navigation. This should be blocked, and the value of
+  // window.foo should stay unchanged.
+  new_shell->LoadURL(GURL("javascript:window.foo=456"));
+  EXPECT_EQ(123, EvalJs(new_shell, "window.foo"));
+}
+
+// Same test as above, but with a sandboxed about:blank WebUI popup, which
+// should still not be allowed to execute Javascript URLs.
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+                       JavascriptURLBlockedInSandboxedWebUiPopup) {
+  GURL webui_url = GetWebUIURL(kChromeUIGpuHost);
+  ASSERT_TRUE(NavigateToURL(shell(), webui_url));
+
+  // Add a sandboxed about:blank iframe.
+  {
+    std::string script =
+        "var frame = document.createElement('iframe');\n"
+        "frame.sandbox = 'allow-scripts allow-popups';\n"
+        "document.body.appendChild(frame);\n";
+    EXPECT_TRUE(ExecJs(shell(), script));
+  }
+
+  // Open an about:blank popup from that sandboxed iframe, which should have an
+  // opaque origin with the WebUI origin as the precursor.  Set some state in
+  // window.foo in that popup.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetPrimaryFrameTree()
+                            .root();
+  Shell* new_shell =
+      OpenPopup(root->child_at(0), GURL(url::kAboutBlankURL), "popup");
+  EXPECT_TRUE(new_shell);
+  EXPECT_TRUE(ExecJs(new_shell, "window.foo = 123;"));
+  EXPECT_EQ(123, EvalJs(new_shell, "window.foo"));
+
+  // Try to execute a Javascript URL that modifies window.foo in the popup via
+  // a browser-initiated navigation. This should be blocked, and the value of
+  // window.foo should stay unchanged.
+  new_shell->LoadURL(GURL("javascript:window.foo=456"));
+  EXPECT_EQ(123, EvalJs(new_shell, "window.foo"));
 }
 
 // Verifies that cross-origin iframes can navigate the top frame to another URL

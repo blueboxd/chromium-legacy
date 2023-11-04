@@ -927,14 +927,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="MobileStartup.ToolbarInflationTime"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="ChromeCleanerFetchCompletedReason" separator="_">
-  <suffix name="DownloadFailure"
-      label="Download failed without an OK HTTP response code."/>
-  <suffix name="DownloadSuccess" label="Download succeeded."/>
-  <suffix name="NetworkError" label="Download failed due to a network error."/>
-  <affected-histogram name="SoftwareReporter.Cleaner.TimeToCompleteDownload"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="ChromeOS_Camera_JpegProcessMethod" separator=".">
   <suffix name="Hardware" label=""/>
   <suffix name="Software" label=""/>
@@ -1501,7 +1493,6 @@ chromium-metrics-reviews@google.com.
   <suffix base="true" name="WebP"
       label="This metric is for only WebP image types."/>
   <affected-histogram name="Renderer4.ImageDecodeTaskDurationUs"/>
-  <affected-histogram name="Renderer4.ImageUploadTaskDurationUs"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="DetachedResourceRequestSource" separator=".">
@@ -1523,13 +1514,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="Network" label="DevTools launched to the Network panel"/>
   <suffix name="Sources" label="DevTools launched to the Sources panel"/>
   <affected-histogram name="DevTools.Launch"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="DnsDropdownSelectionEvent" separator=".">
-  <suffix name="Ignored" label=""/>
-  <suffix name="Selected" label=""/>
-  <suffix name="Unselected" label=""/>
-  <affected-histogram name="Net.DNS.UI.DropdownSelectionEvent"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="DnsImpact2" separator="_">
@@ -1748,13 +1732,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="DriveCommon.RemoteSearch.TextSearchTime"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="DualCertVerifierTrial" separator="_">
-  <suffix name="TrialPrimary" label=""/>
-  <suffix name="TrialSecondary" label=""/>
-  <affected-histogram name="Net.CertVerifier_First_Job_Latency"/>
-  <affected-histogram name="Net.CertVerifier_Job_Latency"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="EncryptionLevel" separator=".">
   <suffix name="0RTT" label="Packets sent at 0-RTT encryption only."/>
   <suffix name="ForwardSecure"
@@ -1872,7 +1849,9 @@ chromium-metrics-reviews@google.com.
 <histogram_suffixes name="GridTabSwitcherAnimationType" separator=".">
   <suffix name="Expand" label="Grid to Tab"/>
   <suffix name="Shrink" label="Tab to Grid"/>
-  <affected-histogram name="GridTabSwitcher.DirtySpan"/>
+  <affected-histogram
+      name="Android.GridTabSwitcher.Animation.FirstFrameLatency"/>
+  <affected-histogram name="Android.GridTabSwitcher.Animation.TotalDuration"/>
   <affected-histogram name="GridTabSwitcher.FramePerSecond"/>
   <affected-histogram name="GridTabSwitcher.MaxFrameInterval"/>
 </histogram_suffixes>

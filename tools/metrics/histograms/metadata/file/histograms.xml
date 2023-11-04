@@ -243,7 +243,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ChangeDirectory.RootType"
-    enum="FileManagerRootType" expires_after="2024-01-14">
+    enum="FileManagerRootType" expires_after="2024-03-17">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -306,7 +306,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.DirectoryTree.Expand.{RootType}" units="ms"
-    expires_after="2024-01-04">
+    expires_after="2024-03-10">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -360,7 +360,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.DownloadsCount" units="units"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -531,7 +531,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Glitch" enum="FileManagerGlitch"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>majewski@chromium.org</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -712,6 +712,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="FileBrowser.GoogleDrive.DailyDSSAvailabilityPercentage"
+    units="%" expires_after="2024-06-01">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    Percentage of Docs/Sheets/Slides that are available offline compared to the
+    total number of known Docs/Sheets/Slides by DriveFS. A file is considered
+    known if DriveFS has cached the metadata for the file. Docs offline can see
+    many more files then DriveFS so we prune the list of known files before
+    sending this metric. This is emitted after at least 1 day has elapsed since
+    the last time it was emitted.
+  </summary>
+</histogram>
+
 <histogram name="FileBrowser.GoogleDrive.DSSAvailabilityPercentage" units="%"
     expires_after="2024-06-01">
   <owner>simmonsjosh@google.com</owner>
@@ -722,7 +736,8 @@ chromium-metrics-reviews@google.com.
     known if DriveFS has cached the metadata for the file. Docs offline can see
     many more files then DriveFS so we prune the list of known files before
     sending this metric. This is emitted during the polling of Docs offline
-    which happens if at least one Files app window is open.
+    which happens if at least one Files app window is open and only emitted if
+    the values changed from the last update.
   </summary>
 </histogram>
 
@@ -934,7 +949,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Notification.Show"
-    enum="FileManagerNotificationType" expires_after="2024-01-14">
+    enum="FileManagerNotificationType" expires_after="2024-03-17">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1338,7 +1353,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Recent.LoadArcMedia" units="ms"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1348,7 +1363,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Recent.LoadCrostini" units="ms"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1368,7 +1383,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Recent.LoadDrive" units="ms"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1389,7 +1404,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Recent.LoadTotal" units="ms"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1399,7 +1414,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.Search.ResultCount" units="count"
-    expires_after="2024-01-21">
+    expires_after="2024-03-24">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1468,7 +1483,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ToggleFileListType" enum="FileManagerListType"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1507,7 +1522,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.TrashFiles.{RootType}" units="units"
-    expires_after="2024-01-23">
+    expires_after="2024-03-24">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>

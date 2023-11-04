@@ -10,7 +10,6 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/test/bind.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -27,7 +26,6 @@
 #include "chrome/browser/web_applications/jobs/uninstall/remove_web_app_job.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
@@ -35,6 +33,7 @@
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/services/storage/public/mojom/local_storage_control.mojom.h"
+#include "components/webapps/common/web_app_id.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/render_frame_host.h"
@@ -76,10 +75,6 @@ MATCHER_P(IsApproximately, approximate_value, "") {
 
 class IsolatedWebAppBrowsingDataTest : public IsolatedWebAppBrowserTestHarness {
  protected:
-  IsolatedWebAppBrowsingDataTest() {
-    scoped_feature_list_.InitAndEnableFeature(features::kIwaControlledFrame);
-  }
-
   IsolatedWebAppUrlInfo InstallIsolatedWebApp() {
     server_ =
         CreateAndStartServer(FILE_PATH_LITERAL("web_apps/simple_isolated_app"));
@@ -153,7 +148,6 @@ class IsolatedWebAppBrowsingDataTest : public IsolatedWebAppBrowserTestHarness {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<net::EmbeddedTestServer> server_;
 };
 
@@ -759,7 +753,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedWebAppBrowsingDataClearingTest,
   cookie_list = GetAllCookies(iwa_main_storage_partition);
   EXPECT_EQ(cookie_list.size(), 0UL);
   // Verify localStorage cleared.
-  EXPECT_EQ(GetLocalStorageCount(cookie_iframe_rfh), 0);
+  EXPECT_EQ(GetLocalStorageCount(content::ChildFrameAt(rfh, 0)), 0);
 }
 
 IN_PROC_BROWSER_TEST_F(IsolatedWebAppBrowsingDataClearingTest,
@@ -815,7 +809,10 @@ IN_PROC_BROWSER_TEST_F(IsolatedWebAppBrowsingDataClearingTest,
     cookie_list = GetAllCookies(controlled_frame_partition);
     EXPECT_EQ(cookie_list.size(), 0UL);
     // Verify localStorage cleared.
-    EXPECT_EQ(GetLocalStorageCount(controlled_frame_rfh), 0);
+    EXPECT_EQ(
+        GetLocalStorageCount(
+            web_contents->GetInnerWebContents()[0]->GetPrimaryMainFrame()),
+        0);
   }
 }
 

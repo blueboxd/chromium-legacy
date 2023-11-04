@@ -80,6 +80,7 @@
 #include "ui/accessibility/platform/inspect/ax_event_recorder.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/base/ime/mojom/virtual_keyboard_types.mojom.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/color/color_provider_key.h"
 #include "ui/color/color_provider_source_observer.h"
 #include "ui/gfx/geometry/size.h"
@@ -576,6 +577,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
                                   cc::BrowserControlsState current,
                                   bool animate) override;
+  void SetV8CompileHints(base::ReadOnlySharedMemoryRegion data) override;
   void SetTabSwitchStartTime(base::TimeTicks start_time,
                              bool destination_is_loaded) override;
 
@@ -883,6 +885,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
           url_match_predicate = absl::nullopt) override;
   void BackNavigationLikely(PreloadingPredictor predictor,
                             WindowOpenDisposition disposition) override;
+  void SetOwnerLocationForDebug(
+      absl::optional<base::Location> owner_location) override;
 
   // NavigatorDelegate ---------------------------------------------------------
 
@@ -987,6 +991,15 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // The following function is already listed under WebContents overrides:
   // bool IsFullscreen() const override;
   blink::mojom::DisplayMode GetDisplayMode() const override;
+
+#if defined(USE_AURA)
+  ui::WindowShowState GetWindowShowState() override;
+#endif
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+  bool GetResizable() override;
+#endif
+  void UpdateResizable(bool resizable) override;
   void LostMouseLock(RenderWidgetHostImpl* render_widget_host) override;
   bool HasMouseLock(RenderWidgetHostImpl* render_widget_host) override;
   RenderWidgetHostImpl* GetMouseLockWidget() override;
@@ -1337,9 +1350,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Because something else may be rendering as the primary contents of this
   // WebContents rather than the RenderHostView, targets that wish to capture
-  // the contents of this WebContents should query for the FrameSinkId of the
-  // base compositor here.
-  viz::FrameSinkId GetCaptureFrameSinkId();
+  // the contents of this WebContents should query its capture target here.
+  struct CaptureTarget {
+    viz::FrameSinkId sink_id;
+    gfx::NativeView view;
+  };
+  CaptureTarget GetCaptureTarget();
 
   void set_show_popup_menu_callback_for_testing(
       base::OnceCallback<void(const gfx::Rect&)> callback) {
@@ -1366,6 +1382,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   }
 
   ui::mojom::VirtualKeyboardMode GetVirtualKeyboardMode() const;
+
+  const absl::optional<base::Location>& ownership_location() const {
+    return ownership_location_;
+  }
 
  private:
   using FrameTreeIterationCallback = base::RepeatingCallback<void(FrameTree&)>;
@@ -1762,6 +1782,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Returns the size that the main frame should be sized to.
   gfx::Size GetSizeForMainFrame();
+
+#if defined(USE_AURA)
+  // Sets the window's state to the given `ui::WindowShowState` and synchronizes
+  // the visual properties of the `RenderWidgetHost`.
+  void SetWindowShowState(ui::WindowShowState state);
+#endif
 
   // Helper method that's called whenever |preferred_size_| or
   // |preferred_size_for_capture_| changes, to propagate the new value to the
@@ -2301,6 +2327,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // manifest. This is in frame space coordinates.
   gfx::Rect window_controls_overlay_rect_;
 
+  // Stores whether the widget can be resized or not.
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+  bool resizable_ = true;
+#endif
+
   // Observe native theme for changes to dark mode, preferred color scheme, and
   // preferred contrast. Used to notify the renderer of preferred color scheme
   // and preferred contrast changes.
@@ -2388,6 +2419,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   int disallow_custom_cursor_scope_count_ = 0;
 
   base::WeakPtr<FileChooserImpl> active_file_chooser_;
+
+  absl::optional<base::Location> ownership_location_;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_{this};
   base::WeakPtrFactory<WebContentsImpl> weak_factory_{this};

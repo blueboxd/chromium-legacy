@@ -124,10 +124,8 @@ class BackgroundTracingActiveScenario::TracingSession {
     }
 
     if (parent_scenario_->delegate_ &&
-        (!parent_scenario_->delegate_->IsAllowedToEndBackgroundScenario(
-            parent_scenario_->GetConfig()->scenario_name(),
-            parent_scenario_->GetConfig()->requires_anonymized_data(),
-            is_crash_scenario))) {
+        (!parent_scenario_->delegate_->OnBackgroundTracingIdle(
+            parent_scenario_->GetConfig()->requires_anonymized_data()))) {
       auto on_failure_cb =
           base::MakeRefCounted<base::RefCountedData<base::OnceClosure>>(
               std::move(on_failure));
@@ -342,12 +340,11 @@ void BackgroundTracingActiveScenario::BeginFinalizing() {
 }
 
 void BackgroundTracingActiveScenario::OnProtoDataComplete(
-    std::string proto_trace) {
+    std::string&& serialized_trace) {
   BackgroundTracingManagerImpl::GetInstance().OnProtoDataComplete(
-      std::move(proto_trace));
-}
-
-void BackgroundTracingActiveScenario::OnFinalizeComplete() {
+      std::move(serialized_trace), config_->scenario_name(),
+      last_triggered_rule_->rule_id(), last_triggered_rule_->is_crash(),
+      base::Token::CreateRandom());
   tracing_session_.reset();
   SetState(State::kIdle);
 

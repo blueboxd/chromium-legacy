@@ -14,7 +14,7 @@
   <div slot="subtitle" hidden$="[[isDemoModeSetup]]">
     [[i18nDynamic(locale, 'networkSectionHint')]]
   </div>
-  <div slot="subtitle" hidden$="[[!errorMessage_]]">
+  <div slot="subtitle" id="errorSubtitleText" hidden$="[[!errorMessage_]]">
     [[errorMessage_]]
   </div>
   <div slot="content" class="layout vertical">
@@ -28,14 +28,13 @@
     <oobe-back-button id="backButton"
         on-click="onBackClicked_"></oobe-back-button>
   </div>
-  <div slot="bottom-buttons">
-    <oobe-text-button
-      id="quickStart"
+  <div slot="bottom-buttons" class="flex layout horizontal">
+    <quick-start-entry-point
+      id="quick-start-network-button"
       on-click="onQuickStartClicked_"
       hidden="[[!isQuickStartEnabled_]]"
-      text-key="networkScreenQuickStart"
-    >
-    </oobe-text-button>
+      quick-start-text-key="networkScreenQuickStart">
+    </quick-start-entry-point>
     <oobe-next-button
       id="nextButton"
       disabled="[[!isConnected_]]"

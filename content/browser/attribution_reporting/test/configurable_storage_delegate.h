@@ -16,10 +16,6 @@
 #include "content/browser/attribution_reporting/attribution_storage_delegate.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace attribution_reporting {
-class EventReportWindows;
-}  // namespace attribution_reporting
-
 namespace content {
 
 class ConfigurableStorageDelegate : public AttributionStorageDelegate {
@@ -42,24 +38,14 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
   void ShuffleTriggerVerifications(
       std::vector<network::TriggerVerification>&) override;
   double GetRandomizedResponseRate(
-      const attribution_reporting::EventReportWindows& event_report_windows,
       attribution_reporting::mojom::SourceType,
+      const attribution_reporting::EventReportWindows&,
       int max_event_level_reports) const override;
-  RandomizedResponse GetRandomizedResponse(
-      const CommonSourceInfo& source,
-      const attribution_reporting::EventReportWindows& event_report_windows,
-      base::Time source_time,
+  GetRandomizedResponseResult GetRandomizedResponse(
+      attribution_reporting::mojom::SourceType,
+      const attribution_reporting::EventReportWindows&,
       int max_event_level_reports,
-      double randomized_response_rate) override;
-  double ComputeChannelCapacity(
-      const CommonSourceInfo& source,
-      const attribution_reporting::EventReportWindows& event_report_windows,
-      base::Time source_time,
-      int max_event_level_reports,
-      double randomized_response_rate) override;
-  base::Time GetExpiryTime(absl::optional<base::TimeDelta> declared_expiry,
-                           base::Time source_time,
-                           attribution_reporting::mojom::SourceType) override;
+      base::Time source_time) const override;
   absl::optional<base::Time> GetReportWindowTime(
       absl::optional<base::TimeDelta> declared_window,
       base::Time source_time) override;
@@ -70,8 +56,6 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
   attribution_reporting::EventReportWindows GetDefaultEventReportWindows(
       attribution_reporting::mojom::SourceType source_type,
       base::TimeDelta last_report_window) const override;
-
-  void set_max_attributions_per_source(int max);
 
   void set_max_sources_per_origin(int max);
 
@@ -103,8 +87,7 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
   void set_randomized_response_rate(double rate);
 
   void set_randomized_response(RandomizedResponse);
-
-  void set_channel_capacity(double channel_capacity);
+  void set_exceeds_channel_capacity_limit(bool);
 
   void set_trigger_data_cardinality(uint64_t navigation, uint64_t event);
 
@@ -136,10 +119,10 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
 
   double randomized_response_rate_ GUARDED_BY_CONTEXT(sequence_checker_) = 0.0;
 
-  double channel_capacity_ = 0;
+  RandomizedResponse randomized_response_ GUARDED_BY_CONTEXT(sequence_checker_);
 
-  RandomizedResponse randomized_response_
-      GUARDED_BY_CONTEXT(sequence_checker_) = absl::nullopt;
+  bool exceeds_channel_capacity_limit_ GUARDED_BY_CONTEXT(sequence_checker_) =
+      false;
 
   std::vector<NullAggregatableReport> null_aggregatable_reports_
       GUARDED_BY_CONTEXT(sequence_checker_);

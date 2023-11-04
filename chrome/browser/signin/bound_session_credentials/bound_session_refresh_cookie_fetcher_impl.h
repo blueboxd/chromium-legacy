@@ -12,6 +12,7 @@
 
 #include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/elapsed_timer.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/cookies/canonical_cookie.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -72,7 +73,9 @@ class BoundSessionRefreshCookieFetcherImpl
       const std::string& challenge_header_value);
   void CompleteRequestAndReportRefreshResult(Result result);
   void RefreshWithChallenge(const std::string& challenge);
-  void OnGenerateBindingKeyAssertion(std::string assertion);
+  void OnGenerateBindingKeyAssertion(
+      base::ElapsedTimer generate_assertion_timer,
+      std::string assertion);
 
   // network::mojom::CookieAccessObserver:
   void OnCookiesAccessed(std::vector<network::mojom::CookieAccessDetailsPtr>
@@ -103,6 +106,7 @@ class BoundSessionRefreshCookieFetcherImpl
   // Non-null after a fetch has started.
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
   mojo::ReceiverSet<network::mojom::CookieAccessObserver> cookie_observers_;
+  absl::optional<base::TimeTicks> cookie_refresh_duration_;
   base::WeakPtrFactory<BoundSessionRefreshCookieFetcherImpl> weak_ptr_factory_{
       this};
 };

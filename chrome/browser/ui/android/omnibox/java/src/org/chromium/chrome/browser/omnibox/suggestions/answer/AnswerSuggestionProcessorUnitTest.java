@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxDrawableState;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxImageSupplier;
+import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties;
 import org.chromium.chrome.browser.omnibox.test.R;
@@ -67,7 +68,7 @@ import java.util.Locale;
 @RunWith(BaseRobolectricTestRunner.class)
 @EnableFeatures(ChromeFeatureList.SUGGESTION_ANSWERS_COLOR_REVERSE)
 public class AnswerSuggestionProcessorUnitTest {
-    private static final @AnswerType int ANSWER_TYPES[] = {AnswerType.DICTIONARY,
+    private static final @AnswerType int[] ANSWER_TYPES = {AnswerType.DICTIONARY,
             AnswerType.FINANCE, AnswerType.KNOWLEDGE_GRAPH, AnswerType.SPORTS, AnswerType.SUNRISE,
             AnswerType.TRANSLATION, AnswerType.WEATHER, AnswerType.WHEN_IS, AnswerType.CURRENCY};
 
@@ -139,6 +140,7 @@ public class AnswerSuggestionProcessorUnitTest {
         /** Get Drawable associated with the suggestion. */
         Drawable getIcon() {
             final OmniboxDrawableState state = mModel.get(BaseSuggestionViewProperties.ICON);
+            Assert.assertTrue(state.isLarge);
             return state == null ? null : state.drawable;
         }
 
@@ -185,11 +187,13 @@ public class AnswerSuggestionProcessorUnitTest {
         mProcessor = new AnswerSuggestionProcessor(ContextUtils.getApplicationContext(),
                 mSuggestionHost, mUrlStateProvider, mImageSupplier);
         mDefaultLocale = Locale.getDefault();
+        OmniboxResourceProvider.disableCachesForTesting();
     }
 
     @After
     public void tearDown() {
         Locale.setDefault(mDefaultLocale);
+        OmniboxResourceProvider.reenableCachesForTesting();
     }
 
     @Test
@@ -309,7 +313,9 @@ public class AnswerSuggestionProcessorUnitTest {
     @Test
     public void answerImage_fallbackIconServedForUnsupportedAnswerType() {
         var suggHelper = createAnswerSuggestion(AnswerType.TOTAL_COUNT, "", 1, "", 1, null);
-        Assert.assertEquals(R.drawable.ic_suggestion_magnifier, suggHelper.getIconRes());
+        var drawable = suggHelper.mModel.get(BaseSuggestionViewProperties.ICON).drawable;
+        Assert.assertEquals(
+                R.drawable.ic_suggestion_magnifier, shadowOf(drawable).getCreatedFromResId());
     }
 
     @Test

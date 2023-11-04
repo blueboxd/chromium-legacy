@@ -63,15 +63,6 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         super(RebaselineCL, self).__init__(options=[
             self.only_changed_tests_option,
             self.no_trigger_jobs_option,
-            optparse.make_option('--fill-missing',
-                                 dest='fill_missing',
-                                 action='store_true',
-                                 default=None,
-                                 help=optparse.SUPPRESS_HELP),
-            optparse.make_option('--no-fill-missing',
-                                 dest='fill_missing',
-                                 action='store_false',
-                                 help=optparse.SUPPRESS_HELP),
             self.test_name_file_option,
             optparse.make_option(
                 '--builders',
@@ -104,7 +95,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         allowed_builders = {
             builder
             for builder in self._tool.builders.all_try_builder_names()
-            if not self._tool.builders.uses_wptrunner(builder)
+            if self._tool.builders.has_rwt_steps(builder)
         }
         for builder in value.split(','):
             if builder in allowed_builders:
@@ -124,12 +115,6 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         self._tool = tool
         self._dry_run = options.dry_run
         self.git_cl = self.git_cl or GitCL(tool)
-
-        # TODO(crbug.com/1383284): Cleanup this warning and the options above.
-        if options.fill_missing is not None:
-            _log.warning(
-                '`--{no-,}fill-missing` is deprecated and will be removed '
-                'soon due to limited utility (crbug.com/1383284).')
 
         # '--dry-run' implies '--no-trigger-jobs'.
         options.trigger_jobs = options.trigger_jobs and not self._dry_run
@@ -161,22 +146,22 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             _log.error('%s', error)
             return 1
 
-        builders_with_infra_failures = {
+        builders_with_incomplete_results = {
             build.builder_name
-            for build in GitCL.filter_infra_failed(build_statuses)
+            for build in GitCL.filter_incomplete(build_statuses)
         }
         jobs_to_results = self._fetch_results(build_statuses)
         builders_with_results = {b.builder_name for b in jobs_to_results}
         builders_without_results = (set(self.selected_try_bots) -
                                     builders_with_results -
-                                    builders_with_infra_failures)
+                                    builders_with_incomplete_results)
         if builders_without_results:
             _log.warning('Some builders have no results:')
             for builder in sorted(builders_without_results):
                 _log.warning('  %s', builder)
 
         fill_missing = False
-        builders_without_results.update(builders_with_infra_failures)
+        builders_without_results.update(builders_with_incomplete_results)
         if builders_without_results:
             fill_missing = self._tool.user.confirm(
                 'Would you like to continue?\n'

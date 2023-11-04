@@ -46,6 +46,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/device_api/managed_configuration_api_factory.h"
+#include "chrome/browser/device_reauth/chrome_device_authenticator_factory.h"
 #include "chrome/browser/dips/dips_cleanup_service_factory.h"
 #include "chrome/browser/dips/dips_service_factory.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
@@ -57,6 +58,7 @@
 #include "chrome/browser/enterprise/identifiers/profile_id_service_factory.h"
 #include "chrome/browser/enterprise/reporting/cloud_profile_reporting_service_factory.h"
 #include "chrome/browser/enterprise/reporting/legacy_tech/legacy_tech_service.h"
+#include "chrome/browser/enterprise/signin/enterprise_signin_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/history_ui_favicon_request_handler_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
@@ -130,6 +132,8 @@
 #include "chrome/browser/privacy/privacy_metrics_service_factory.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
+#include "chrome/browser/privacy_sandbox/tracking_protection_onboarding_factory.h"
+#include "chrome/browser/privacy_sandbox/tracking_protection_settings_factory.h"
 #include "chrome/browser/profile_resetter/triggered_profile_resetter_factory.h"
 #include "chrome/browser/profiles/renderer_updater_factory.h"
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
@@ -171,6 +175,8 @@
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/tpcd/experiment/eligibility_service_factory.h"
+#include "chrome/browser/tpcd/metadata/updater_service_factory.h"
 #include "chrome/browser/translate/translate_model_service_factory.h"
 #include "chrome/browser/translate/translate_ranker_factory.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service_factory.h"
@@ -179,6 +185,7 @@
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/safety_hub/password_status_check_service_factory.h"
 #include "chrome/browser/ui/tabs/pinned_tab_service_factory.h"
+#include "chrome/browser/ui/toolbar/pinned_toolbar_actions_model_factory.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
@@ -200,6 +207,7 @@
 #include "components/commerce/core/proto/commerce_subscription_db_content.pb.h"
 #include "components/commerce/core/proto/persisted_state_db_content.pb.h"
 #include "components/enterprise/content/clipboard_restriction_service.h"
+#include "components/media_effects/media_effects_service_factory.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/omnibox/browser/autocomplete_controller_emitter.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
@@ -436,6 +444,7 @@
 #include "chrome/browser/new_tab_page/one_google_bar/one_google_bar_service_factory.h"
 #include "chrome/browser/new_tab_page/promos/promo_service_factory.h"
 #include "chrome/browser/payments/payment_request_display_manager_factory.h"
+#include "chrome/browser/privacy_sandbox/tracking_protection_notice_factory.h"
 #include "chrome/browser/search/background/ntp_background_service_factory.h"
 #include "chrome/browser/search/background/ntp_custom_background_service_factory.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
@@ -445,6 +454,7 @@
 #include "chrome/browser/ui/performance_controls/performance_controls_hats_service_factory.h"
 #include "chrome/browser/ui/safety_hub/notification_permission_review_service_factory.h"
 #include "chrome/browser/ui/safety_hub/unused_site_permissions_service_factory.h"
+#include "chrome/browser/ui/tabs/organization/tab_organization_service_factory.h"
 #include "chrome/browser/usb/usb_connection_tracker_factory.h"
 #include "chrome/browser/user_notes/user_note_service_factory.h"
 #endif
@@ -635,6 +645,10 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
   ChromeBrowsingDataLifetimeManagerFactory::GetInstance();
   ChromeBrowsingDataRemoverDelegateFactory::GetInstance();
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID) || \
+    BUILDFLAG(IS_CHROMEOS)
+  ChromeDeviceAuthenticatorFactory::GetInstance();
+#endif
 #if BUILDFLAG(IS_CHROMEOS)
   chromeos::CertificateProviderServiceFactory::GetInstance();
 #endif
@@ -710,6 +724,9 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS_ASH)
   enterprise_signals::UserPermissionServiceFactory::GetInstance();
+#endif
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+  enterprise_signin::EnterpriseSigninServiceFactory::GetInstance();
 #endif
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
   ExitTypeServiceFactory::GetInstance();
@@ -804,6 +821,12 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if BUILDFLAG(IS_ANDROID)
   MediaDrmOriginIdManagerFactory::GetInstance();
 #endif
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(media::kCameraMicEffects)) {
+    MediaEffectsServiceFactory::GetInstance();
+  }
+#endif
   if (MediaEngagementService::IsEnabled()) {
     MediaEngagementServiceFactory::GetInstance();
   }
@@ -894,6 +917,7 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if !BUILDFLAG(IS_ANDROID)
   PhotosServiceFactory::GetInstance();
   PinnedTabServiceFactory::GetInstance();
+  PinnedToolbarActionsModelFactory::GetInstance();
 #endif
   PlatformNotificationServiceFactory::GetInstance();
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -1085,6 +1109,11 @@ void ChromeBrowserMainExtraPartsProfiles::
   sync_file_system::SyncFileSystemServiceFactory::GetInstance();
 #endif
   SyncServiceFactory::GetInstance();
+#if !BUILDFLAG(IS_ANDROID)
+  if (features::IsTabOrganization()) {
+    TabOrganizationServiceFactory::GetInstance();
+  }
+#endif
   TabRestoreServiceFactory::GetInstance();
   TemplateURLFetcherFactory::GetInstance();
   TemplateURLServiceFactory::GetInstance();
@@ -1098,6 +1127,13 @@ void ChromeBrowserMainExtraPartsProfiles::
   ToolbarActionsModelFactory::GetInstance();
 #endif
   TopSitesFactory::GetInstance();
+  tpcd::experiment::EligibilityServiceFactory::GetInstance();
+  tpcd::metadata::UpdaterServiceFactory::GetInstance();
+#if !BUILDFLAG(IS_ANDROID)
+  TrackingProtectionNoticeFactory::GetInstance();
+#endif
+  TrackingProtectionOnboardingFactory::GetInstance();
+  TrackingProtectionSettingsFactory::GetInstance();
   translate::TranslateRankerFactory::GetInstance();
   TranslateModelServiceFactory::GetInstance();
 #if !BUILDFLAG(IS_ANDROID)

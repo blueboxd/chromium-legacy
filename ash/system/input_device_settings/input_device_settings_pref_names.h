@@ -43,6 +43,11 @@ constexpr char kGraphicsTabletLoginScreenTabletButtonRemappingListPref[] =
 constexpr char kGraphicsTabletLoginScreenPenButtonRemappingListPref[] =
     "settings.graphics_tablet.pen_button_remappings";
 
+// Prefs which contain login screen button remapping list for connected external
+// mice devices.
+constexpr char kMouseLoginScreenButtonRemappingListPref[] =
+    "settings.mouse.external.button_remappings";
+
 // Prefs which contain dictionaries of settings for each connected device.
 constexpr char kKeyboardDeviceSettingsDictPref[] = "settings.keyboard.devices";
 constexpr char kMouseDeviceSettingsDictPref[] = "settings.mouse.devices";
@@ -80,6 +85,8 @@ constexpr char kSixPackKeyHome[] = "home";
 constexpr char kSixPackKeyEnd[] = "end";
 constexpr char kSixPackKeyDelete[] = "delete";
 constexpr char kSixPackKeyInsert[] = "insert";
+constexpr char kKeyboardSettingF11[] = "f11";
+constexpr char kKeyboardSettingF12[] = "f12";
 
 // Mouse settings dictionary keys.
 constexpr char kMouseSettingSwapRight[] = "swap_right";
@@ -113,11 +120,13 @@ constexpr char kButtonRemappings[] = "button_remappings";
 constexpr char kButtonRemappingName[] = "name";
 constexpr char kButtonRemappingCustomizableButton[] = "customizable_button";
 constexpr char kButtonRemappingKeyboardCode[] = "vkey";
-constexpr char kButtonRemappingAction[] = "action";
+constexpr char kButtonRemappingAcceleratorAction[] = "accelerator_action";
 constexpr char kButtonRemappingKeyEvent[] = "key_event";
 constexpr char kButtonRemappingDomCode[] = "dom_code";
 constexpr char kButtonRemappingDomKey[] = "dom_key";
 constexpr char kButtonRemappingModifiers[] = "modifiers";
+constexpr char kButtonRemappingStaticShortcutAction[] =
+    "static_shortcut_action";
 
 }  // namespace ash::prefs
 

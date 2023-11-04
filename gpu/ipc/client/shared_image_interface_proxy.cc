@@ -73,9 +73,11 @@ std::vector<SyncToken> GenerateDependenciesFromSyncToken(
 
 }  // namespace
 
-SharedImageInterfaceProxy::SharedImageInterfaceProxy(GpuChannelHost* host,
-                                                     int32_t route_id)
-    : host_(host), route_id_(route_id) {}
+SharedImageInterfaceProxy::SharedImageInterfaceProxy(
+    GpuChannelHost* host,
+    int32_t route_id,
+    const gpu::SharedImageCapabilities& capabilities)
+    : host_(host), route_id_(route_id), capabilities_(capabilities) {}
 
 SharedImageInterfaceProxy::~SharedImageInterfaceProxy() = default;
 
@@ -614,7 +616,7 @@ void SharedImageInterfaceProxy::NotifyMailboxAdded(const Mailbox& mailbox,
   AddMailbox(mailbox, usage);
 }
 
-SharedImageInterfaceProxy::GpuMemoryBufferHandleInfo
+GpuMemoryBufferHandleInfo
 SharedImageInterfaceProxy::GetGpuMemoryBufferHandleInfo(
     const Mailbox& mailbox) {
   // Check if the handle info is already present in the map.

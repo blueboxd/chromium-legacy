@@ -47,8 +47,11 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/reporting/metric_default_utils.h"
+#include "chrome/browser/chromeos/reporting/metric_reporting_prefs.h"
 #include "chrome/browser/chromeos/reporting/network/network_bandwidth_sampler.h"
 #include "chrome/browser/chromeos/reporting/user_reporting_settings.h"
+#include "chrome/browser/chromeos/reporting/websites/website_events_observer.h"
+#include "chrome/browser/chromeos/reporting/websites/website_metrics_retriever_ash.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/reporting/client/report_queue_configuration.h"
@@ -94,9 +97,9 @@ BASE_FEATURE(kEnableAppEventsObserver,
 BASE_FEATURE(kEnableFatalCrashEventsObserver,
              "EnableFatalCrashEventsObserver",
              base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kEnableRuntimeCounters,
-             "EnableRuntimeCounters",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kEnableRuntimeCountersTelemetry,
+             "EnableRuntimeCountersTelemetry",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool MetricReportingManager::Delegate::IsUserAffiliated(
     Profile& profile) const {
@@ -336,10 +339,11 @@ void MetricReportingManager::InitOnAffiliatedLogin(Profile* profile) {
       /*init_delay=*/base::TimeDelta());
   InitPeripheralsCollectors();
 
-  // Start observing app events and telemetry only if the app service is
+  // Start observing app/website events and telemetry only if the app service is
   // available for the given profile.
   if (delegate_->IsAppServiceAvailableForProfile(profile)) {
     InitAppCollectors(profile);
+    InitWebsiteMetricCollectors(profile);
   }
 }
 
@@ -613,7 +617,7 @@ void MetricReportingManager::InitBootPerformanceCollector() {
 
 void MetricReportingManager::InitRuntimeCountersCollectors() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (base::FeatureList::IsEnabled(kEnableRuntimeCounters)) {
+  if (base::FeatureList::IsEnabled(kEnableRuntimeCountersTelemetry)) {
     auto psr_telemetry_handler =
         std::make_unique<CrosHealthdPsrSamplerHandler>();
     auto psr_telemetry_sampler = std::make_unique<CrosHealthdMetricSampler>(
@@ -632,14 +636,27 @@ void MetricReportingManager::InitRuntimeCountersCollectors() {
   }
 }
 
+void MetricReportingManager::InitWebsiteMetricCollectors(Profile* profile) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto website_metrics_retriever =
+      std::make_unique<WebsiteMetricsRetrieverAsh>(profile->GetWeakPtr());
+  auto website_events_observer = std::make_unique<WebsiteEventsObserver>(
+      std::move(website_metrics_retriever), user_reporting_settings_.get());
+  InitEventObserverManager(
+      std::move(website_events_observer), user_event_report_queue_.get(),
+      user_reporting_settings_.get(),
+      /*enable_setting_path=*/kReportWebsiteActivityAllowlist,
+      metrics::kReportWebsiteActivityEnabledDefaultValue,
+      /*init_delay=*/base::TimeDelta());
+}
+
 void MetricReportingManager::InitFatalCrashCollectors() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (base::FeatureList::IsEnabled(kEnableFatalCrashEventsObserver)) {
     event_observer_managers_.emplace_back(delegate_->CreateEventObserverManager(
-        std::make_unique<FatalCrashEventsObserver>(),
-        telemetry_report_queue_.get(), &reporting_settings_,
-        ash::kReportDeviceCrashReportInfo,
+        FatalCrashEventsObserver::Create(), telemetry_report_queue_.get(),
+        &reporting_settings_, ash::kReportDeviceCrashReportInfo,
         metrics::kReportDeviceCrashReportInfoDefaultValue,
         /*collector_pool=*/this));
   }

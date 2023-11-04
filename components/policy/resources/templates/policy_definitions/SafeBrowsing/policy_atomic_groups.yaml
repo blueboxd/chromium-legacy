@@ -16,3 +16,5 @@ SafeBrowsing:
   - SafeBrowsingExtensionProtectionAllowed
   - SafeBrowsingProxiedRealTimeChecksAllowed
   - SafeBrowsingSurveysEnabled
+  - SafeBrowsingDeepScanningEnabled
+  - DisableSafeBrowsingProceedAnyway

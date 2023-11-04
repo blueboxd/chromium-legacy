@@ -29,7 +29,6 @@
 #include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate_android.h"
-#include "chrome/browser/tab/jni_headers/CriticalPersistedTabData_jni.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
@@ -188,8 +187,7 @@ int TabAndroid::GetLaunchType() const {
 
 int TabAndroid::GetUserAgent() const {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_CriticalPersistedTabData_getUserAgent(env,
-                                                    weak_java_tab_.get(env));
+  return Java_TabImpl_getUserAgent(env, weak_java_tab_.get(env));
 }
 
 bool TabAndroid::IsNativePage() const {
@@ -311,6 +309,8 @@ void TabAndroid::InitWebContents(
   web_contents_.reset(content::WebContents::FromJavaWebContents(jweb_contents));
   DCHECK(web_contents_.get());
 
+  web_contents_->SetOwnerLocationForDebug(FROM_HERE);
+
   TabAndroidHelper::SetTabForWebContents(web_contents(), this);
   web_contents_delegate_ =
       std::make_unique<android::TabWebContentsDelegateAndroid>(
@@ -402,6 +402,9 @@ void TabAndroid::ReleaseWebContents(JNIEnv* env) {
   // Ownership of |released_contents| is assumed by the code that initiated the
   // release.
   content::WebContents* released_contents = web_contents_.release();
+  if (released_contents) {
+    released_contents->SetOwnerLocationForDebug(absl::nullopt);
+  }
 
   // Remove the link from the native WebContents to |this|, since the
   // lifetimes of the two objects are no longer intertwined.

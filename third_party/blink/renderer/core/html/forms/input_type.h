@@ -111,6 +111,7 @@ class CORE_EXPORT InputType : public GarbageCollected<InputType> {
   virtual bool IsInteractiveContent() const;
   virtual bool IsTextButton() const;
   virtual bool IsTextField() const;
+  virtual bool ShouldAutoDirUseValue() const;
 
   bool IsButtonInputType() const { return type_ == Type::kButton; }
   bool IsColorInputType() const { return type_ == Type::kColor; }
@@ -282,7 +283,6 @@ class CORE_EXPORT InputType : public GarbageCollected<InputType> {
   virtual String DefaultToolTip(const InputTypeView&) const;
   virtual Decimal FindClosestTickMarkValue(const Decimal&);
   virtual bool HasLegalLinkAttribute(const QualifiedName&) const;
-  virtual const QualifiedName& SubResourceAttributeName() const;
   virtual void CopyNonAttributeProperties(const HTMLInputElement&);
   virtual void OnAttachWithLayoutObject();
 

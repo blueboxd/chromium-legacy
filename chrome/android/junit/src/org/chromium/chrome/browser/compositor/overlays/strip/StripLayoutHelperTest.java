@@ -120,6 +120,8 @@ public class StripLayoutHelperTest {
     private ActivityInfo mActivityInfo;
     @Mock
     private PackageManager mPackageManager;
+    @Mock
+    private StripTabHoverCardView mTabHoverCardView;
 
     private Activity mActivity;
     private Context mContext;
@@ -2489,5 +2491,62 @@ public class StripLayoutHelperTest {
                 mStripLayoutHelper.getCurrentTabIndexForTesting() == nextSelectedTabIndex);
 
         clearTabDragSourceMock();
+    }
+
+    @Test
+    @Feature(ChromeFeatureList.TAB_DRAG_DROP_ANDROID)
+    @Config(sdk = 31)
+    public void testDrag_sendMoveWindowBroadcast_success() {
+        // Setup with tabs and select first tab.
+        setTabDragSourceMock();
+        initializeTest(false, false, false, 0, 5);
+        Activity activity = Mockito.spy(mActivity);
+        when(mToolbarContainerView.getContext()).thenReturn(activity);
+
+        // Act and verify the broadcast is sent.
+        onLongPress_OffTab();
+        verify(activity, times(1)).sendBroadcast(any());
+
+        // Cleanup for DragDrop
+        clearTabDragSourceMock();
+    }
+
+    @Test
+    public void testUpdateLastHoveredTab() {
+        // Assume tab0 is selected, tab1 is hovered on.
+        initializeTabHoverTest(false, false);
+        var hoveredTab = mStripLayoutHelper.getStripLayoutTabsForTesting()[1];
+        mStripLayoutHelper.updateLastHoveredTab(hoveredTab);
+        assertEquals(
+                "Last hovered tab is not set.", hoveredTab, mStripLayoutHelper.getLastHoveredTab());
+        verify(mTabHoverCardView).show(mModel.getTabAt(1), hoveredTab, false, SCREEN_HEIGHT);
+    }
+
+    @Test
+    public void testIsTabCompletelyHidden() {
+        TabManagementFieldTrial.TAB_STRIP_REDESIGN_ENABLE_DETACHED.setForTesting(true);
+        initializeTabHoverTest(false, false);
+        var hoveredTab = mStripLayoutHelper.getStripLayoutTabsForTesting()[1];
+
+        // Set simulated hovered StripLayoutTab drawX and width to assume a position beyond the left
+        // fade.
+        hoveredTab.setDrawX(-50f);
+        hoveredTab.setWidth(
+                StripLayoutHelperManager.FADE_SHORT_TSR_WIDTH_DP - 1 - hoveredTab.getDrawX());
+        assertTrue("Tab should be considered hidden for hover state.",
+                mStripLayoutHelper.isTabCompletelyHidden(hoveredTab));
+
+        // Set simulated hovered StripLayoutTab drawX to assume a position beyond the right fade.
+        hoveredTab.setDrawX(SCREEN_WIDTH - StripLayoutHelperManager.FADE_MEDIUM_TSR_WIDTH_DP + 1);
+        assertTrue("Tab should be considered hidden for hover state.",
+                mStripLayoutHelper.isTabCompletelyHidden(hoveredTab));
+    }
+
+    private void initializeTabHoverTest(boolean rtl, boolean incognito) {
+        initializeTest(rtl, incognito, false, 0, 3);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
+        mStripLayoutHelper.setTabHoverCardView(mTabHoverCardView);
+        // For ease of dp/px calculation.
+        mContext.getResources().getDisplayMetrics().density = 1f;
     }
 }

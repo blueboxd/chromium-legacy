@@ -281,6 +281,25 @@ source_set("allow_discouraged_type") {
   visibility = [ "//third_party/blink/renderer/platform/*" ]
 }
 
+source_set("image_headers") {
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ "//third_party/blink/renderer/platform/image-decoders/*" ]
+
+  sources = [
+    "graphics/bitmap_image_metrics.h",
+    "graphics/color_behavior.h",
+    "graphics/image_orientation_enum.h",
+    "graphics/paint/paint_image.h",
+  ]
+
+  public_deps = [
+    "//base:base",
+    "//cc/paint:paint",
+    "//third_party/blink/renderer/platform:platform_export",
+    "//third_party/blink/renderer/platform/wtf:wtf",
+  ]
+}
+
 component("platform") {
   visibility = []  # Allow re-assignment of list.
   visibility = [
@@ -667,6 +686,8 @@ component("platform") {
     "fonts/opentype/open_type_caps_support_mpl.cc",
     "fonts/opentype/open_type_cpal_lookup.cc",
     "fonts/opentype/open_type_cpal_lookup.h",
+    "fonts/opentype/open_type_features.cc",
+    "fonts/opentype/open_type_features.h",
     "fonts/opentype/open_type_math_stretch_data.h",
     "fonts/opentype/open_type_math_support.cc",
     "fonts/opentype/open_type_math_support.h",
@@ -692,11 +713,11 @@ component("platform") {
     "fonts/shaping/caching_word_shaper.h",
     "fonts/shaping/case_mapping_harfbuzz_buffer_filler.cc",
     "fonts/shaping/case_mapping_harfbuzz_buffer_filler.h",
-    "fonts/shaping/east_asian_spacing.cc",
-    "fonts/shaping/east_asian_spacing.h",
     "fonts/shaping/font_features.cc",
     "fonts/shaping/font_features.h",
     "fonts/shaping/glyph_bounds_accumulator.h",
+    "fonts/shaping/han_kerning.cc",
+    "fonts/shaping/han_kerning.h",
     "fonts/shaping/harfbuzz_face.cc",
     "fonts/shaping/harfbuzz_face.h",
     "fonts/shaping/harfbuzz_face_from_typeface.cc",
@@ -728,6 +749,8 @@ component("platform") {
     "fonts/shaping/shaping_line_breaker.h",
     "fonts/shaping/stretchy_operator_shaper.cc",
     "fonts/shaping/stretchy_operator_shaper.h",
+    "fonts/shaping/text_auto_space.cc",
+    "fonts/shaping/text_auto_space.h",
     "fonts/simple_font_data.cc",
     "fonts/simple_font_data.h",
     "fonts/skia/font_cache_skia.cc",
@@ -808,6 +831,8 @@ component("platform") {
     "graphics/canvas_2d_layer_bridge.h",
     "graphics/canvas_color_params.cc",
     "graphics/canvas_color_params.h",
+    "graphics/canvas_hibernation_handler.cc",
+    "graphics/canvas_hibernation_handler.h",
     "graphics/canvas_resource.cc",
     "graphics/canvas_resource.h",
     "graphics/canvas_resource_dispatcher.cc",
@@ -992,6 +1017,7 @@ component("platform") {
     "graphics/image_observer.h",
     "graphics/image_orientation.cc",
     "graphics/image_orientation.h",
+    "graphics/image_orientation_enum.h",
     "graphics/image_pattern.cc",
     "graphics/image_pattern.h",
     "graphics/intercepting_canvas.cc",
@@ -1123,6 +1149,8 @@ component("platform") {
     "graphics/replaying_canvas.h",
     "graphics/resource_id_traits.h",
     "graphics/scoped_interpolation_quality.h",
+    "graphics/scoped_raster_timer.cc",
+    "graphics/scoped_raster_timer.h",
     "graphics/scrollbar_theme_settings.cc",
     "graphics/scrollbar_theme_settings.h",
     "graphics/skia/sk_image_info_hash.h",
@@ -1162,37 +1190,6 @@ component("platform") {
     "graphics/web_graphics_context_3d_video_frame_pool.cc",
     "graphics/web_graphics_context_3d_video_frame_pool.h",
     "heap_observer_set.h",
-    "image-decoders/bmp/bmp_image_decoder.cc",
-    "image-decoders/bmp/bmp_image_decoder.h",
-    "image-decoders/bmp/bmp_image_reader.cc",
-    "image-decoders/bmp/bmp_image_reader.h",
-    "image-decoders/exif_reader.cc",
-    "image-decoders/exif_reader.h",
-    "image-decoders/fast_shared_buffer_reader.cc",
-    "image-decoders/fast_shared_buffer_reader.h",
-    "image-decoders/gif/gif_image_decoder.cc",
-    "image-decoders/gif/gif_image_decoder.h",
-    "image-decoders/ico/ico_image_decoder.cc",
-    "image-decoders/ico/ico_image_decoder.h",
-    "image-decoders/image_animation.h",
-    "image-decoders/image_decoder.cc",
-    "image-decoders/image_decoder.h",
-    "image-decoders/image_frame.cc",
-    "image-decoders/image_frame.h",
-    "image-decoders/jpeg/jpeg_image_decoder.cc",
-    "image-decoders/jpeg/jpeg_image_decoder.h",
-    "image-decoders/png/png_image_decoder.cc",
-    "image-decoders/png/png_image_decoder.h",
-    "image-decoders/png/png_image_reader.cc",
-    "image-decoders/png/png_image_reader.h",
-    "image-decoders/rw_buffer.cc",
-    "image-decoders/rw_buffer.h",
-    "image-decoders/segment_reader.cc",
-    "image-decoders/segment_reader.h",
-    "image-decoders/segment_stream.cc",
-    "image-decoders/segment_stream.h",
-    "image-decoders/webp/webp_image_decoder.cc",
-    "image-decoders/webp/webp_image_decoder.h",
     "image-encoders/image_encoder.cc",
     "image-encoders/image_encoder.h",
     "image-encoders/image_encoder_utils.cc",
@@ -1676,6 +1673,7 @@ component("platform") {
     "//third_party/blink/public/mojom:embedded_frame_sink_mojo_bindings_blink",
     "//third_party/blink/renderer/platform/blob",
     "//third_party/blink/renderer/platform/heap",
+    "//third_party/blink/renderer/platform/image-decoders:image_decoders",
     "//third_party/blink/renderer/platform/instrumentation",
     "//third_party/blink/renderer/platform/loader",
     "//third_party/blink/renderer/platform/network",
@@ -1717,6 +1715,7 @@ component("platform") {
     "//services/viz/public/cpp/gpu",
     "//skia",
     "//skia:skcms",
+    "//third_party:freetype_buildflags",
     "//third_party:freetype_harfbuzz",
     "//third_party/abseil-cpp:absl",
     "//third_party/blink/public:image_resources",
@@ -1734,6 +1733,7 @@ component("platform") {
     "//ui/base/cursor/mojom:cursor_type_blink",
     "//ui/base/prediction",
     "//ui/color",
+    "//ui/color:mixers",
     "//ui/events/ipc",
     "//ui/gfx/geometry",
     "//ui/gfx/mojom",
@@ -1813,18 +1813,6 @@ component("platform") {
     sources += [ "text/hyphenation/hyphenation_null.cc" ]
   }
 
-  if (enable_av1_decoder) {
-    sources += [
-      "image-decoders/avif/avif_image_decoder.cc",
-      "image-decoders/avif/avif_image_decoder.h",
-    ]
-
-    deps += [
-      "//third_party/libavif",
-      "//third_party/libavifinfo",
-    ]
-  }
-
   if (current_cpu == "x86" || current_cpu == "x64") {
     deps += [ ":blink_x86_avx" ]
     sources += [ "audio/cpu/x86/delay_sse2.cc" ]
@@ -1888,8 +1876,6 @@ static_library("test_support") {
     "testing/font_test_base.h",
     "testing/font_test_helpers.cc",
     "testing/font_test_helpers.h",
-    "testing/histogram_tester.cc",
-    "testing/histogram_tester.h",
     "testing/io_task_runner_testing_platform_support.cc",
     "testing/io_task_runner_testing_platform_support.h",
     "testing/layer_tree_host_embedder.cc",
@@ -2060,6 +2046,7 @@ source_set("blink_platform_unittests_sources") {
     "fonts/script_run_iterator_test.cc",
     "fonts/shaping/caching_word_shaper_test.cc",
     "fonts/shaping/font_features_test.cc",
+    "fonts/shaping/han_kerning_test.cc",
     "fonts/shaping/harfbuzz_shaper_test.cc",
     "fonts/shaping/ng_shape_cache_test.cc",
     "fonts/shaping/run_segmenter_test.cc",
@@ -2069,6 +2056,7 @@ source_set("blink_platform_unittests_sources") {
     "fonts/shaping/shape_result_view_test.cc",
     "fonts/shaping/shaping_line_breaker_test.cc",
     "fonts/shaping/stretchy_operator_shaper_test.cc",
+    "fonts/shaping/text_auto_space_test.cc",
     "fonts/small_caps_iterator_test.cc",
     "fonts/symbols_iterator_test.cc",
     "fonts/typesetting_features_test.cc",
@@ -2121,6 +2109,7 @@ source_set("blink_platform_unittests_sources") {
     "graphics/paint/raster_invalidator_test.cc",
     "graphics/paint/scrollbar_display_item_test.cc",
     "graphics/paint_invalidation_reason_test.cc",
+    "graphics/parkable_image_segment_reader_test.cc",
     "graphics/parkable_image_test.cc",
     "graphics/path_test.cc",
     "graphics/placeholder_image_test.cc",
@@ -2129,22 +2118,6 @@ source_set("blink_platform_unittests_sources") {
     "graphics/video_frame_sink_bundle_test.cc",
     "graphics/video_frame_submitter_test.cc",
     "heap_observer_set_test.cc",
-    "image-decoders/bmp/bmp_image_decoder_test.cc",
-    "image-decoders/fast_shared_buffer_reader_test.cc",
-    "image-decoders/gif/gif_image_decoder_test.cc",
-    "image-decoders/ico/ico_image_decoder_test.cc",
-    "image-decoders/image_decoder_base_test.cc",
-    "image-decoders/image_decoder_base_test.h",
-    "image-decoders/image_decoder_test.cc",
-    "image-decoders/image_decoder_test_helpers.cc",
-    "image-decoders/image_decoder_test_helpers.h",
-    "image-decoders/image_frame_test.cc",
-    "image-decoders/jpeg/jpeg_image_decoder_test.cc",
-    "image-decoders/png/png_image_decoder_test.cc",
-    "image-decoders/rw_buffer_test.cc",
-    "image-decoders/segment_reader_test.cc",
-    "image-decoders/segment_stream_test.cc",
-    "image-decoders/webp/webp_image_decoder_test.cc",
     "json/json_parser_test.cc",
     "json/json_values_test.cc",
     "media/webaudiosourceprovider_impl_test.cc",
@@ -2258,10 +2231,6 @@ source_set("blink_platform_unittests_sources") {
     sources += [ "text/locale_icu_test.cc" ]
   }
 
-  if (enable_av1_decoder) {
-    sources += [ "image-decoders/avif/avif_image_decoder_test.cc" ]
-  }
-
   sources += [ "testing/run_all_tests.cc" ]
 
   configs += [
@@ -2297,6 +2266,7 @@ source_set("blink_platform_unittests_sources") {
     "//third_party/blink/public:test_headers",
     "//third_party/blink/public/strings:strings",
     "//third_party/blink/renderer/platform/blob:unit_tests",
+    "//third_party/blink/renderer/platform/image-decoders:unit_tests",
     "//third_party/blink/renderer/platform/instrumentation:unit_tests",
     "//third_party/blink/renderer/platform/loader:unit_tests",
     "//third_party/blink/renderer/platform/media:unit_tests",
@@ -2700,6 +2670,7 @@ source_set("unit_tests") {
     "graphics/animation_worklet_mutator_dispatcher_impl_test.cc",
     "graphics/canvas_2d_layer_bridge_test.cc",
     "graphics/canvas_color_params_test.cc",
+    "graphics/canvas_hibernation_handler_test.cc",
     "graphics/canvas_resource_dispatcher_test.cc",
     "graphics/canvas_resource_provider_test.cc",
     "graphics/canvas_resource_test.cc",
@@ -2710,6 +2681,7 @@ source_set("unit_tests") {
     "graphics/image_frame_generator_test.cc",
     "graphics/offscreen_canvas_placeholder_test.cc",
     "graphics/paint_worklet_paint_dispatcher_test.cc",
+    "graphics/scoped_raster_timer_test.cc",
     "graphics/test/stub_image.h",
 
     # Tests migrated from the web/tests directory.

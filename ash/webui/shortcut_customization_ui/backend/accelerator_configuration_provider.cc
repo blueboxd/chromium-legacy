@@ -230,8 +230,14 @@ constexpr int kCustomizationModifierMask =
 
 // The following are keys that are not allowed to be used as a customized
 // activation key.
-constexpr ui::KeyboardCode kReservedKeys[] = {ui::VKEY_POWER, ui::VKEY_F13,
-                                              ui::VKEY_SLEEP};
+// VKEY_POWER, VKEY_SLEEP are related to power controls.
+// VKEY_F13 is treated as lock on certain devices.
+// VKEY_CAPITAL is capslock, capslock behavior is currently hardcoded and would
+// lead to complications if we allow users to use it for their own accelerators.
+// ScrollLock and NumLock are not officially supported on ChromeOS.
+constexpr ui::KeyboardCode kReservedKeys[] = {
+    ui::VKEY_POWER,   ui::VKEY_F13,    ui::VKEY_SLEEP,
+    ui::VKEY_CAPITAL, ui::VKEY_SCROLL, ui::VKEY_NUMLOCK};
 
 // Gets the parts of the string that don't contain replacements.
 // Ex: "Press and " -> ["Press ", " and "]
@@ -466,6 +472,16 @@ absl::optional<AcceleratorConfigResult> ValidateAccelerator(
     return AcceleratorConfigResult::kShiftOnlyNotAllowed;
   }
 
+  // Case: A function key accelerator cannot have the meta key modifier.
+  if ((modifiers & ui::EF_COMMAND_DOWN) != 0 &&
+      ui::KeyboardCapability::IsFunctionKey(accelerator.key_code())) {
+    VLOG(1) << "Failed to validate accelerator: "
+            << accelerator.GetShortcutText() << " with error: "
+            << static_cast<int>(AcceleratorConfigResult::kKeyNotAllowed)
+            << ". Accelerator has meta key with Function key.";
+    return AcceleratorConfigResult::kSearchWithFunctionKeyNotAllowed;
+  }
+
   // No errors with the accelerator.
   return absl::nullopt;
 }
@@ -588,7 +604,9 @@ AcceleratorConfigurationProvider::AcceleratorConfigurationProvider(
 
   // Observe shortcut policy changes.
   // Gets removed on `AcceleratorPrefs` destruction.
-  Shell::Get()->accelerator_prefs()->AddObserver(this);
+  if (Shell::Get()->accelerator_prefs()->IsUserEnterpriseManaged()) {
+    Shell::Get()->accelerator_prefs()->AddObserver(this);
+  }
 
   if (features::IsInputDeviceSettingsSplitEnabled()) {
     // `InputDeviceSettingsController` provides updates whenever a device is
@@ -644,7 +662,9 @@ AcceleratorConfigurationProvider::~AcceleratorConfigurationProvider() {
     if (features::IsInputDeviceSettingsSplitEnabled()) {
       Shell::Get()->input_device_settings_controller()->RemoveObserver(this);
     }
-    Shell::Get()->accelerator_prefs()->RemoveObserver(this);
+    if (Shell::Get()->accelerator_prefs()->IsUserEnterpriseManaged()) {
+      Shell::Get()->accelerator_prefs()->RemoveObserver(this);
+    }
   }
 }
 
@@ -803,6 +823,13 @@ void AcceleratorConfigurationProvider::AddObserver(
   accelerators_updated_mojo_observer_.Bind(std::move(observer));
 }
 
+void AcceleratorConfigurationProvider::AddPolicyObserver(
+    mojo::PendingRemote<shortcut_customization::mojom::PolicyUpdatedObserver>
+        observer) {
+  policy_updated_mojo_observer.reset();
+  policy_updated_mojo_observer.Bind(std::move(observer));
+}
+
 void AcceleratorConfigurationProvider::OnInputDeviceConfigurationChanged(
     uint8_t input_device_types) {
   if (input_device_types & (ui::InputDeviceEventObserver::kKeyboard)) {
@@ -834,9 +861,10 @@ void AcceleratorConfigurationProvider::OnKeyboardSettingsUpdated(
   NotifyAcceleratorsUpdated();
 }
 
-// TODO(longbowei): Create policy_updated_mojo_observer and inform it
-// of any policy updates.
 void AcceleratorConfigurationProvider::OnShortcutPolicyUpdated() {
+  if (policy_updated_mojo_observer.is_bound()) {
+    policy_updated_mojo_observer->OnCustomizationPolicyUpdated();
+  }
   NotifyAcceleratorsUpdated();
 }
 
@@ -1341,7 +1369,9 @@ AcceleratorConfigurationProvider::MaybeHandleNonSearchAccelerator(
     pending_accelerator_.reset();
   }
 
-  if ((accelerator.modifiers() & ui::EF_COMMAND_DOWN) == 0) {
+  // Function keys cannot be used with the search modifier so don't warn users.
+  if ((accelerator.modifiers() & ui::EF_COMMAND_DOWN) == 0 &&
+      !ui::KeyboardCapability::IsFunctionKey(accelerator.key_code())) {
     if (!pending_accelerator_ || pending_accelerator_->action != action_id ||
         pending_accelerator_->source != source ||
         pending_accelerator_->accelerator != accelerator) {
@@ -1439,8 +1469,14 @@ void AcceleratorConfigurationProvider::PopulateAshAcceleratorConfig(
     if (id_to_accelerator_iter == id_to_accelerators.end() &&
         ignore_layouts_for_testing_) {
       continue;
-    } else {
-      DCHECK(id_to_accelerator_iter != id_to_accelerators.end());
+    }
+
+    // TODO(jimmyxgong): Re-evaluate this after fixing the root cause of this.
+    if (id_to_accelerator_iter == id_to_accelerators.end()) {
+      LOG(ERROR) << "Error: Layout with action ID: " << layout_info.action_id
+                 << " does not exist in the ID to Accelerator mapping. "
+                 << " Skipping adding this to the Ash configuration map.";
+      continue;
     }
 
     const auto& accelerators = id_to_accelerator_iter->second;

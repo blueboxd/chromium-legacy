@@ -12,8 +12,8 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "components/remote_cocoa/app_shim/immersive_mode_controller.h"
-#include "components/remote_cocoa/app_shim/immersive_mode_tabbed_controller.h"
+#include "components/remote_cocoa/app_shim/immersive_mode_controller_cocoa.h"
+#include "components/remote_cocoa/app_shim/immersive_mode_tabbed_controller_cocoa.h"
 #import "components/remote_cocoa/app_shim/mouse_capture_delegate.h"
 #include "components/remote_cocoa/app_shim/native_widget_ns_window_fullscreen_controller.h"
 #include "components/remote_cocoa/app_shim/ns_view_ids.h"
@@ -297,16 +297,18 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   // update widget and compositor size.
   void UpdateWindowGeometry();
 
-  // Is immersive fullscreen enabled. True will be returned at the start of the
-  // fullscreen transition.
-  bool ImmersiveFullscreenIsEnabled();
+  bool ShouldUseCustomTitlebarHeightForFullscreen() const;
 
-  // Returns true if kImmersiveFullscreenTabs is being used.
-  bool ImmersiveFullscreenIsTabbed();
+  // Called by the ImmersiveModeController when the toolbar reveal status
+  // changes. Note that the toolbar may be revealed while the menubar is hidden,
+  // e.g. when "Always Show Toolbar in Full Screen" is enabled or there're
+  // reveal locks.
+  void OnImmersiveFullscreenToolbarRevealChanged(bool is_revealed);
 
-  // Returns the last style set with `UpdateToolbarVisibility()`. Defaults to
-  // kAlways.
-  mojom::ToolbarVisibilityStyle ImmersiveFullscreenLastUsedStyle();
+  // Called by the ImmersiveModeController when the menubar reveal status
+  // changes. `reveal_amount` ranges in [0, 1]. This is the opacity of the
+  // menubar and the browser window traffic lights.
+  void OnImmersiveFullscreenMenuBarRevealChanged(float reveal_amount);
 
  private:
   friend class views::test::BridgedNativeWidgetTestApi;
@@ -423,7 +425,7 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   std::vector<uint8_t> pending_restoration_data_;
 
   // Manages immersive mode when in fullscreen.
-  std::unique_ptr<ImmersiveModeController> immersive_mode_controller_;
+  std::unique_ptr<ImmersiveModeControllerCocoa> immersive_mode_controller_;
 
   // This tracks headless window visibility and fullscreen states.
   // In headless mode the platform window is never made visible or change its

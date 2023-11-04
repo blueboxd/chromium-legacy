@@ -181,6 +181,9 @@ BASE_DECLARE_FEATURE(kSpotlightOpenTabsSource);
 // Enables indexing Reading List items in Spotlight.
 BASE_DECLARE_FEATURE(kSpotlightReadingListSource);
 
+// Enables intent donation for new intent types.
+BASE_DECLARE_FEATURE(kSpotlightDonateNewIntents);
+
 // Feature to enable sign-in only flow without device level account.
 BASE_DECLARE_FEATURE(kConsistencyNewAccountInterface);
 
@@ -211,9 +214,8 @@ bool IsBottomOmniboxSteadyStateEnabled();
 // synchronous clipboard access will always return nil/false.
 BASE_DECLARE_FEATURE(kOnlyAccessClipboardAsync);
 
-// Feature flag to hide the sync promo card in the main settings screen. The
-// "Turn On Sync" row will still be shown when this is enabled.
-BASE_DECLARE_FEATURE(kHideSettingsSyncPromo);
+// Feature flag that enables default browser video in settings experiment.
+BASE_DECLARE_FEATURE(kDBVideoInSettings);
 
 // Feature flag that enables default browser promo to be displayed without
 // matching all the criteria and in depth metrics collection for the displayed
@@ -224,8 +226,8 @@ BASE_DECLARE_FEATURE(kDefaultBrowserTriggerCriteriaExperiment);
 // event.
 BASE_DECLARE_FEATURE(kFullScreenPromoOnOmniboxCopyPaste);
 
-// Feature flag to try using the page theme color in the toolbar
-BASE_DECLARE_FEATURE(kThemeColorInToolbar);
+// Feature flag to try using the page theme color in the top toolbar
+BASE_DECLARE_FEATURE(kThemeColorInTopToolbar);
 
 // Feature flag enabling tab grid refactoring.
 BASE_DECLARE_FEATURE(kTabGridRefactoring);

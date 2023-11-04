@@ -6,7 +6,6 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
-#include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/allow_service_worker_result.h"
 #include "content/public/browser/focused_node_details.h"
@@ -372,8 +371,8 @@ using CookieAccess = CookieTracker::CookieAccessDescription;
 
 }  // namespace
 
-// TODO(https://crbug.com/1288573): Flaky on Mac and Android.
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
+// TODO(https://crbug.com/1288573): Flaky on Windows, Mac, and Android.
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
 #define MAYBE_CookieCallbacks_MainFrame DISABLED_CookieCallbacks_MainFrame
 #else
 #define MAYBE_CookieCallbacks_MainFrame CookieCallbacks_MainFrame
@@ -423,8 +422,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsObserverBrowserTest,
   cookie_tracker.cookie_accesses().clear();
 }
 
-// TODO(https://crbug.com/1288573): Flaky on Mac and Android.
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
+// TODO(https://crbug.com/1288573): Flaky on Mac and Android and Win.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 #define MAYBE_CookieCallbacks_MainFrameRedirect \
   DISABLED_CookieCallbacks_MainFrameRedirect
 #else

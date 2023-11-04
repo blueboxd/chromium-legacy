@@ -16,6 +16,7 @@
 #include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/functional/callback_helpers.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "components/sync/base/features.h"
@@ -230,16 +231,16 @@ PasskeySyncBridge::GetModelTypeControllerDelegate() {
 
 base::flat_set<std::string> PasskeySyncBridge::GetAllSyncIds() const {
   std::vector<std::string> sync_ids;
-  std::transform(data_.begin(), data_.end(), std::back_inserter(sync_ids),
-                 [](const auto& pair) { return pair.first; });
+  base::ranges::transform(data_, std::back_inserter(sync_ids),
+                          [](const auto& pair) { return pair.first; });
   return base::flat_set<std::string>(base::sorted_unique, std::move(sync_ids));
 }
 
 std::vector<sync_pb::WebauthnCredentialSpecifics>
 PasskeySyncBridge::GetAllPasskeys() const {
   std::vector<sync_pb::WebauthnCredentialSpecifics> passkeys;
-  std::transform(data_.begin(), data_.end(), std::back_inserter(passkeys),
-                 [](const auto& pair) { return pair.second; });
+  base::ranges::transform(data_, std::back_inserter(passkeys),
+                          [](const auto& pair) { return pair.second; });
   return passkeys;
 }
 
@@ -258,7 +259,7 @@ PasskeySyncBridge::GetPasskeysForRelyingPartyId(
 bool PasskeySyncBridge::DeletePasskey(const std::string& credential_id) {
   // Find the credential with the given |credential_id|.
   const auto passkey_it =
-      std::ranges::find_if(data_, [&credential_id](const auto& passkey) {
+      base::ranges::find_if(data_, [&credential_id](const auto& passkey) {
         return passkey.second.credential_id() == credential_id;
       });
   if (passkey_it == data_.end()) {
@@ -309,7 +310,7 @@ bool PasskeySyncBridge::UpdatePasskey(const std::string& credential_id,
                                       PasskeyChange change) {
   // Find the credential with the given |credential_id|.
   const auto passkey_it =
-      std::ranges::find_if(data_, [&credential_id](const auto& passkey) {
+      base::ranges::find_if(data_, [&credential_id](const auto& passkey) {
         return passkey.second.credential_id() == credential_id;
       });
   if (passkey_it == data_.end()) {

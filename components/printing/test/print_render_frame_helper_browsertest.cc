@@ -1039,13 +1039,53 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, SpecifiedPageSize3) {
   VerifyPagesPrinted(true);
 }
 
-TEST_F(MAYBE_PrintRenderFrameHelperTest, MediaQueryNoCSSPageMargins) {
-  // The default page size in these tests is US Letter.
+TEST_F(MAYBE_PrintRenderFrameHelperTest, MediaQueryDefaultCSSPageMargins) {
+  // The default page size in these tests is US Letter (see MockPrinter). The
+  // default margin is 1/2 inch on each side, and this is taken into account for
+  // media query evaluation in this implementation, which is interoperable with
+  // others. The spec, on the other hand, says to match against the page *box*
+  // [1], not the page area [1]. I.e. margins shouldn't make any difference at
+  // all, according to the spec.
+  //
+  // [1] https://www.w3.org/TR/css-page-3/#page-model
   LoadHTML(R"HTML(
     <style>
       @page {
+        /* The default margins are overridden here (to 0) as far as page area
+           size and layout are concerned, but that cannot affect media query
+           evaluation, as that might cause cyclic dependencies. So the 1/2 inch
+           default margins are still taken into account for media query
+           evaluation.  */
         margin: 0;
       }
+
+      /* As explained above, this media query won't match, because of the
+         half-inch default margins. */
+      @media (width: 8.5in) and (height: 11in) {
+        div { break-before: page; }
+      }
+    </style>
+    First page
+    <div>Also first page</div>
+  )HTML");
+
+  print_manager()->SetExpectedPagesCount(1);
+  OnPrintPages();
+  VerifyPagesPrinted(true);
+}
+
+TEST_F(MAYBE_PrintRenderFrameHelperTest, MediaQueryNoCSSPageMargins) {
+  LoadHTML(R"HTML(
+    <style>
+      @page {
+        /* This has no effect on media query evaluation (it affects the page
+           area size and layout, though). Only the default margins can affect
+           media query evaluation. */
+        margin: 100px;
+      }
+
+      /* This media query will match, since the default margins are 0,
+         and the default page size is US-Letter. */
       @media (width: 8.5in) and (height: 11in) {
         div { break-before: page; }
       }
@@ -1053,6 +1093,13 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, MediaQueryNoCSSPageMargins) {
     First page
     <div>Second page</div>
   )HTML");
+
+  // Set the default margins to 0, and the page area size equal to the page box
+  // size.
+  mojom::PrintParams& params = printer()->Params();
+  params.margin_left = 0;
+  params.margin_top = 0;
+  params.content_size = params.page_size;
 
   print_manager()->SetExpectedPagesCount(2);
   OnPrintPages();
@@ -2591,6 +2638,41 @@ TEST_F(PrintRenderFrameHelperPreviewTest, LandscapeIgnorePageSizeAndMargin) {
 
   // Find the green point in the bottom right corner of the page.
   EXPECT_EQ(image.pixel_at(779, 599), 0x00ff00U);
+}
+
+TEST_F(PrintRenderFrameHelperPreviewTest,
+       NonDefaultFirstPageSizeDefaultSecond) {
+  LoadHTML(R"HTML(
+    <style>
+      @page { margin:0; }
+      @page larger { size:15in; }
+      html, body { margin:0; height:100%; }
+      div { width:100%; height:100%; }
+      * { box-sizing:border-box; }
+    </style>
+    <div style="page:larger;"></div>
+    <div style="break-before:page; border:2pt solid #00ff00;"></div>
+  )HTML");
+
+  print_settings().Set(kSettingShouldPrintBackgrounds, true);
+
+  printer()->set_should_generate_page_images(true);
+
+  OnPrintPreview();
+  const MockPrinterPage* page = printer()->GetPrinterPage(1);
+  ASSERT_TRUE(page);
+  const printing::Image& image(page->image());
+
+  ASSERT_EQ(image.size(), gfx::Size(612, 792));
+
+  // Find the border in the bottom right corner of the page.
+  EXPECT_EQ(image.pixel_at(611, 788), 0x00ff00U);
+  EXPECT_EQ(image.pixel_at(611, 789), 0x00ff00U);
+  EXPECT_EQ(image.pixel_at(611, 790), 0x00ff00U);
+  EXPECT_EQ(image.pixel_at(611, 791), 0x00ff00U);
+  EXPECT_EQ(image.pixel_at(610, 791), 0x00ff00U);
+  EXPECT_EQ(image.pixel_at(609, 791), 0x00ff00U);
+  EXPECT_EQ(image.pixel_at(608, 791), 0x00ff00U);
 }
 
 #endif  // MOCK_PRINTER_SUPPORTS_PAGE_IMAGES

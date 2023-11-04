@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ML_WEBNN_ML_GRAPH_MOJO_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ML_WEBNN_ML_GRAPH_MOJO_H_
 
+#include "services/webnn/public/mojom/webnn_context_provider.mojom-blink.h"
 #include "services/webnn/public/mojom/webnn_graph.mojom-blink.h"
-#include "services/webnn/public/mojom/webnn_service.mojom-blink.h"
 #include "third_party/blink/renderer/modules/ml/ml_context.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_graph.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_graph_utils.h"
@@ -64,11 +64,10 @@ class MODULES_EXPORT MLGraphMojo final : public MLGraph {
                        ExceptionState& exception_state) override;
 
   // The callback of creating `WebNNGraph` mojo interface from WebNN Service.
-  // Return `CreatGraphResult::kNotSupported` with `mojo::NullRemote` on
-  // non-supported input configuration.
+  // The returned `CreateGraphResultPtr` contains a `pending_remote<WebNNGraph>`
+  // if the graph was successfully created and an `Error` otherwise.
   void OnCreateWebNNGraph(ScriptPromiseResolver* resolver,
-                          MLContext::CreateWebNNGraphResult result,
-                          mojo::PendingRemote<webnn::mojom::blink::WebNNGraph>);
+                          webnn::mojom::blink::CreateGraphResultPtr result);
 
   // The `WebNNGraph` is compiled graph that can be executed by the hardware
   // accelerated OS machine learning API.

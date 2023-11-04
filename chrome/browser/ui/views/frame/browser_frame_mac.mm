@@ -87,7 +87,7 @@ API_AVAILABLE(macos(10.12.2))
 
 @implementation BrowserWindowTouchBarViewsDelegate {
   raw_ptr<Browser> _browser;
-  NSWindow* __unsafe_unretained _window;
+  NSWindow* __weak _window;
   BrowserWindowTouchBarController* __strong _touchBarController;
 }
 
@@ -157,7 +157,7 @@ void BrowserFrameMac::GetWindowFrameTitlebarHeight(
     *titlebar_height =
         browser_view_->GetTabStripHeight() +
         browser_view_->frame()->GetFrameView()->GetTopInset(true);
-    if (!browser_view_->GetTabStripVisible()) {
+    if (!browser_view_->ShouldDrawTabStrip()) {
       *titlebar_height +=
           browser_view_->GetWebAppFrameToolbarPreferredSize().height() +
           kWebAppMenuMargin * 2;

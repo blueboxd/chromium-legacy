@@ -15,6 +15,7 @@
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/picture_in_picture/auto_picture_in_picture_tab_helper.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/view.h"
 #endif  // !BUILDFLAG(IS_ANDROID)
 
@@ -48,6 +49,7 @@ class MockPictureInPictureWindowController
   MOCK_METHOD(content::WebContents*, GetWebContents, (), (override));
   MOCK_METHOD(absl::optional<gfx::Rect>, GetWindowBounds, (), (override));
   MOCK_METHOD(content::WebContents*, GetChildWebContents, (), (override));
+  MOCK_METHOD(absl::optional<url::Origin>, GetOrigin, (), (override));
 };
 
 class PictureInPictureWindowManagerTest
@@ -88,18 +90,18 @@ TEST_F(PictureInPictureWindowManagerTest, RespectsMinAndMaxSize) {
   pip_options.height = 900;
   EXPECT_EQ(
       gfx::Size(800, 800),
-      PictureInPictureWindowManager::
-          CalculateInitialPictureInPictureWindowBounds(pip_options, display)
-              .size());
+      PictureInPictureWindowManager::GetInstance()
+          ->CalculateInitialPictureInPictureWindowBounds(pip_options, display)
+          .size());
 
   // The minimum size should also be respected.
   pip_options.width = 100;
   pip_options.height = 500;
   EXPECT_EQ(
-      gfx::Size(300, 500),
-      PictureInPictureWindowManager::
-          CalculateInitialPictureInPictureWindowBounds(pip_options, display)
-              .size());
+      gfx::Size(240, 500),
+      PictureInPictureWindowManager::GetInstance()
+          ->CalculateInitialPictureInPictureWindowBounds(pip_options, display)
+          .size());
 
   // An extremely small aspect ratio should still respect minimum width and
   // maximum height.
@@ -107,19 +109,19 @@ TEST_F(PictureInPictureWindowManagerTest, RespectsMinAndMaxSize) {
   pip_options.height = 0;
   pip_options.initial_aspect_ratio = 0.00000001;
   EXPECT_EQ(
-      gfx::Size(300, 800),
-      PictureInPictureWindowManager::
-          CalculateInitialPictureInPictureWindowBounds(pip_options, display)
-              .size());
+      gfx::Size(240, 800),
+      PictureInPictureWindowManager::GetInstance()
+          ->CalculateInitialPictureInPictureWindowBounds(pip_options, display)
+          .size());
 
   // An extremely large aspect ratio should still respect maximum width and
   // minimum height.
   pip_options.initial_aspect_ratio = 100000;
   EXPECT_EQ(
       gfx::Size(800, 52),
-      PictureInPictureWindowManager::
-          CalculateInitialPictureInPictureWindowBounds(pip_options, display)
-              .size());
+      PictureInPictureWindowManager::GetInstance()
+          ->CalculateInitialPictureInPictureWindowBounds(pip_options, display)
+          .size());
 }
 
 TEST_F(PictureInPictureWindowManagerTest,
@@ -166,7 +168,9 @@ TEST_F(PictureInPictureWindowManagerTest, DontShowAutoPipSettingUiWithoutPip) {
   PictureInPictureWindowManager* picture_in_picture_window_manager =
       PictureInPictureWindowManager::GetInstance();
   // There's no pip open, so expect no setting UI.
-  EXPECT_FALSE(picture_in_picture_window_manager->GetOverlayView());
+  EXPECT_FALSE(picture_in_picture_window_manager->GetOverlayView(
+      gfx::Rect(), /* anchor_view = */ nullptr,
+      views::BubbleBorder::TOP_CENTER));
 }
 
 TEST_F(PictureInPictureWindowManagerTest,
@@ -176,6 +180,8 @@ TEST_F(PictureInPictureWindowManagerTest,
   picture_in_picture_window_manager->EnterDocumentPictureInPicture(
       web_contents(), child_web_contents());
   // This isn't auto-pip, so expect no overlay view.
-  EXPECT_FALSE(picture_in_picture_window_manager->GetOverlayView());
+  EXPECT_FALSE(picture_in_picture_window_manager->GetOverlayView(
+      gfx::Rect(), /* anchor_view = */ nullptr,
+      views::BubbleBorder::TOP_CENTER));
 }
 #endif

@@ -118,8 +118,6 @@ extern const char kChromeUIInspectURL[];
 extern const char kChromeUIInternalsHost[];
 extern const char kChromeUIInterstitialHost[];
 extern const char kChromeUIInterstitialURL[];
-extern const char kChromeUIInvalidationsHost[];
-extern const char kChromeUIInvalidationsUrl[];
 extern const char kChromeUIKillHost[];
 extern const char kChromeUILauncherInternalsHost[];
 extern const char kChromeUILauncherInternalsURL[];
@@ -163,6 +161,8 @@ extern const char kChromeUIPasswordManagerURL[];
 extern const char kChromeUIPasswordManagerCheckupURL[];
 extern const char kChromeUIPasswordManagerSettingsURL[];
 extern const char kChromeUIPerformanceSettingsURL[];
+extern const char kChromeUIPerformanceSidePanelHost[];
+extern const char kChromeUIPerformanceSidePanelURL[];
 extern const char kChromeUIPolicyHost[];
 extern const char kChromeUIPolicyURL[];
 extern const char kChromeUIPolicyTestURL[];
@@ -369,8 +369,6 @@ extern const char kChromeUISmbCredentialsHost[];
 extern const char kChromeUISmbCredentialsURL[];
 extern const char kChromeUISmbShareHost[];
 extern const char kChromeUISmbShareURL[];
-extern const char kChromeUIStatusAreaInternalsURL[];
-extern const char kChromeUIStatusAreaInternalsHost[];
 extern const char kChromeUISysInternalsHost[];
 extern const char kChromeUISysInternalsUrl[];
 extern const char kChromeUIUntrustedCroshHost[];
@@ -541,6 +539,7 @@ extern const char kResetSubPage[];
 extern const char kResetProfileSettingsSubPage[];
 extern const char kSafeBrowsingEnhancedProtectionSubPage[];
 extern const char kSafetyCheckSubPage[];
+extern const char kSafetyHubSubPage[];
 extern const char kSearchSubPage[];
 extern const char kSearchEnginesSubPage[];
 extern const char kSignOutSubPage[];
@@ -555,6 +554,10 @@ extern const char kPrivacySandboxSubPage[];
 #if !BUILDFLAG(IS_ANDROID)
 extern const char kAdPrivacySubPagePath[];
 extern const char kPrivacySandboxSubPagePath[];
+extern const char kPerformanceSubPagePath[];
+extern const char kPreloadingSubPagePath[];
+extern const char kTrackingProtectionSubPagePath[];
+extern const char kCookiesSubPagePath[];
 #endif
 
 #if BUILDFLAG(IS_WIN)

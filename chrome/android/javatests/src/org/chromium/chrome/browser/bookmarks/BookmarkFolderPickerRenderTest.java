@@ -87,6 +87,7 @@ public class BookmarkFolderPickerRenderTest {
     @Rule
     public final ChromeRenderTestRule mRenderTestRule =
             ChromeRenderTestRule.Builder.withPublicCorpus()
+                    .setRevision(1)
                     .setBugComponent(ChromeRenderTestRule.Component.UI_BROWSER_BOOKMARKS)
                     .build();
 
@@ -174,9 +175,10 @@ public class BookmarkFolderPickerRenderTest {
         // Reading list folder
         doReturn(mReadingListFolderId).when(mBookmarkModel).getReadingListFolder();
         doReturn(mReadingListFolderItem).when(mBookmarkModel).getBookmarkById(mReadingListFolderId);
-        doReturn(Arrays.asList(mReadingListFolderId))
+        doReturn(Arrays.asList(
+                         mDesktopFolderId, mMobileFolderId, mOtherFolderId, mReadingListFolderId))
                 .when(mBookmarkModel)
-                .getTopLevelFolderIds(/*getSpecial=*/true, /*getNormal=*/false);
+                .getTopLevelFolderIds();
         // Mobile bookmarks folder
         doReturn(mMobileFolderId).when(mBookmarkModel).getMobileFolderId();
         doReturn(mMobileFolderItem).when(mBookmarkModel).getBookmarkById(mMobileFolderId);

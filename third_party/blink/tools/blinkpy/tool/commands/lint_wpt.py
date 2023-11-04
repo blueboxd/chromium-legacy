@@ -14,6 +14,7 @@ import logging
 import multiprocessing
 import optparse
 import pathlib
+import random
 import re
 import textwrap
 import typing
@@ -39,6 +40,7 @@ from blinkpy.w3c import wpt_metadata
 from blinkpy.w3c.common import is_basename_skipped
 from blinkpy.w3c.wpt_manifest import WPTManifest
 from blinkpy.web_tests.port.base import Port
+from blinkpy.web_tests.port.factory import add_common_wpt_options
 
 path_finder.bootstrap_wpt_imports()
 from tools.lint import lint as wptlint
@@ -280,6 +282,9 @@ class LintWPT(Command):
         self._tool = tool
         self._fs = self._tool.filesystem
         self._default_port = self._tool.port_factory.get()
+        # Ensure that `self._default_port`, which is shared among child
+        # processes, never updates the manifest, as doing so could race.
+        self._default_port.set_option_default('manifest_update', False)
         self._default_port.set_option_default(
             'test_types', typing.get_args(wpt_metadata.TestType))
         self._finder = path_finder.PathFinder(self._fs)
@@ -288,7 +293,10 @@ class LintWPT(Command):
 
     def parse_args(self, args: List[str]) -> Tuple[optparse.Values, List[str]]:
         # TODO(crbug.com/1431070): Migrate `blink_tool.py` to stdlib's
-        # `argparse`. `optparse` is deprecated.
+        # `argparse`. `optparse` is deprecated. Also, consider making our own
+        # command subparser [1] instead of using the `wpt lint` one.
+        #
+        # [1]: https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser.add_subparsers
         parser = command_line.ArgumentParser(description=self.long_help,
                                              parents=[wptlint.create_parser()],
                                              conflict_handler='resolve')
@@ -301,6 +309,7 @@ class LintWPT(Command):
                             help=argparse.SUPPRESS)
         parser.add_argument('--github-checks-text-file',
                             help=argparse.SUPPRESS)
+        add_common_wpt_options(parser)
         parameters = parser.parse_args(args)
         if not parameters.repo_root:
             parameters.repo_root = self._finder.path_from_wpt_tests()
@@ -308,6 +317,9 @@ class LintWPT(Command):
 
     def execute(self, options: optparse.Values, _args: List[str],
                 _tool: Host) -> Optional[int]:
+        if options.manifest_update:
+            for path in Port.WPT_DIRS:
+                WPTManifest.ensure_manifest(self._default_port, path)
         # Pipe `wpt lint`'s logs into `blink_tool.py`'s formatter.
         wptlint.logger = _log
         # Repurpose the `json` format to collect all lint errors, including
@@ -499,11 +511,19 @@ class MetadataLinter(static.Compiler):
                 test_id = test_id[1:]
             if not self.manifest.is_slow_test(test_id):
                 continue
+            if not any(condition.value == 'TIMEOUT'
+                       for condition in test.get_conditions('expected')):
+                # This is an optimization to skip evaluating the condition on
+                # every config (slow) if there are no consistent timeouts in the
+                # first place. The main check is still necessary in case all
+                # `TIMEOUT`s are only taken by disabled configs.
+                continue
             configs = self.configs.enabled_configs(test, self.metadata_root)
             for config in configs:
                 with contextlib.suppress(KeyError):
                     if test.get('expected', config) == 'TIMEOUT':
                         self._error(MetadataLongTimeout, test=test_id)
+                        break
 
     def visit(self, node: wptnode.Node):
         with self._disable_rules(node):
@@ -590,8 +610,30 @@ class MetadataLinter(static.Compiler):
         conditions_not_taken = set(range(len(conditions)))
         unique_values = set(map(self.visit, values))
         implicit_default = self._implicit_default_value(key_value_node.data)
+        if unique_values == {implicit_default}:
+            self._error(MetadataUnnecessaryKey, value=_format_node(values[0]))
+            return
+        if conditions == [None]:  # Early out for unconditional values
+            return
+
         # Simulate conditional value resolution for each test configuration.
-        for config in self.configs:
+        # Randomly shuffling the configs is an optimization to try to exercise
+        # every branch and take the early out as quickly as possible (sometimes
+        # with >8x speedups). Most conditions are very simple:
+        #   expected:
+        #     if os == "win": FAIL
+        #
+        # However, if we rely on the default lexographical order, we may get
+        # unlucky and need to iterate almost the entire `TestConfigurations`,
+        # which shuffling mitigates:
+        #   os=linux virtual_suite=threaded
+        #   ...
+        #   os=linux virtual_suite=webgpu
+        #   os=mac virtual_suite=threaded
+        #   ...
+        #   os=mac virtual_suite=webgpu
+        #   os=win virtual_suite=threaded   <= First (os == "win") config
+        for config in self._shuffled_configs:
             for i, condition in enumerate(conditions):
                 try:
                     if self._eval_condition_taken(condition, config):
@@ -609,12 +651,13 @@ class MetadataLinter(static.Compiler):
                     conditions_not_taken.discard(i)
             else:
                 unique_values.add(implicit_default)
+            if not conditions_not_taken and (conditions[-1] is None
+                                             or implicit_default
+                                             in unique_values):
+                break
 
-        if unique_values == {implicit_default}:
-            self._error(MetadataUnnecessaryKey, value=_format_node(values[0]))
-            return
-        elif (len([condition for condition in conditions if condition]) > 0
-              and len(unique_values) == 1):
+        if (len([condition for condition in conditions if condition]) > 0
+                and len(unique_values) == 1):
             self._error(MetadataConditionsUnnecessary,
                         value=_format_node(values[0]))
             return
@@ -624,12 +667,18 @@ class MetadataLinter(static.Compiler):
             self._error(MetadataUnreachableValue,
                         condition=_format_condition(conditions[i]))
         for prop, values in self.context['prop_comparisons'].items():
-            unknown_values = values - {config[prop] for config in self.configs}
+            unknown_values = values - self.configs.possible_values(prop)
             for value in unknown_values:
                 self._error(MetadataUnknownPropValue,
                             prop=prop,
                             value=value,
                             condition=_format_condition(condition))
+
+    @functools.cached_property
+    def _shuffled_configs(self) -> List[metadata.RunInfo]:
+        configs = list(self.configs)
+        random.shuffle(configs)
+        return configs
 
     def _implicit_default_value(self, key: str) -> Hashable:
         """Return the value wptrunner infers when no conditions match."""

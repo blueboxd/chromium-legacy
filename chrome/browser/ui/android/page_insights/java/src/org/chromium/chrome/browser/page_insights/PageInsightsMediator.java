@@ -11,11 +11,13 @@ import android.os.Looper;
 import android.text.format.DateUtils;
 import android.view.View;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import com.google.protobuf.ByteString;
 
 import org.chromium.base.MathUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsSizer;
@@ -38,6 +40,7 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.ExpandedSheetHelper;
 import org.chromium.components.browser_ui.bottomsheet.ManagedBottomSheetController;
+import org.chromium.ui.util.ColorUtils;
 import org.chromium.url.GURL;
 
 import java.util.HashMap;
@@ -54,7 +57,7 @@ import java.util.function.BooleanSupplier;
  * </ul>
  */
 public class PageInsightsMediator extends EmptyTabObserver implements BottomSheetObserver {
-    private static final int DEFAULT_TRIGGER_DELAY_MS = (int) DateUtils.MINUTE_IN_MILLIS;
+    static final int DEFAULT_TRIGGER_DELAY_MS = (int) DateUtils.MINUTE_IN_MILLIS;
     private static final float MINIMUM_CONFIDENCE = 0.5f;
     static final String PAGE_INSIGHTS_CAN_AUTOTRIGGER_AFTER_END =
             "page_insights_can_autotrigger_after_end";
@@ -106,20 +109,61 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
     // when notified when the UI was closed.
     private boolean mShouldRestore;
 
+    // Amount of time to wait before triggering the sheet automatically. Can be overridden
+    // for testing.
+    private long mAutoTriggerDelayMs;
+    private Supplier<Long> mCurrentTime;
+
+    private int mOldState = SheetState.NONE;
+
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused.
+    @IntDef({PageInsightsEvent.USER_INVOKES_PIH, PageInsightsEvent.AUTO_PEEK_TRIGGERED,
+            PageInsightsEvent.STATE_PEEK, PageInsightsEvent.STATE_EXPANDED,
+            PageInsightsEvent.DISMISS_PEEK, PageInsightsEvent.DISMISS_EXPANDED,
+            PageInsightsEvent.TAP_XSURFACE_VIEW, PageInsightsEvent.COUNT})
+    @interface PageInsightsEvent {
+        int USER_INVOKES_PIH = 0;
+        int AUTO_PEEK_TRIGGERED = 1;
+        int STATE_PEEK = 2;
+        int STATE_EXPANDED = 3;
+        int DISMISS_PEEK = 4;
+        int DISMISS_EXPANDED = 5;
+        // User interacts with a xSurface in PIH
+        int TAP_XSURFACE_VIEW = 6;
+        // Number of elements in the enum
+        int COUNT = 7;
+    }
+
+    private static void logPageInsightsEvent(@PageInsightsEvent int event) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "CustomTabs.PageInsights.Event", event, PageInsightsEvent.COUNT);
+    }
+
     public PageInsightsMediator(Context context, ObservableSupplier<Tab> tabObservable,
             Supplier<ShareDelegate> shareDelegateSupplier,
             ManagedBottomSheetController bottomSheetController,
             BottomSheetController bottomUiController, ExpandedSheetHelper expandedSheetHelper,
             BrowserControlsStateProvider controlsStateProvider,
-            BrowserControlsSizer browserControlsSizer, BooleanSupplier isPageInsightsHubEnabled) {
+            BrowserControlsSizer browserControlsSizer, BooleanSupplier isPageInsightsHubEnabled,
+            long firstLoadTimeMs) {
         mContext = context;
         mSheetContent = new PageInsightsSheetContent(mContext);
         mSheetController = bottomSheetController;
         mBottomUiController = bottomUiController;
+        mCurrentTime = System::currentTimeMillis;
         tabObservable.addObserver(tab -> {
-            if (tab != null) {
-                tab.addObserver(this);
+            if (tab == null) return;
+
+            // Handle autotrigger if tab loading has already finished, which can happen
+            // when PIH components creation is delayed due to sWAA bit being enabled
+            // later than tab loading process.
+            if (!tab.isLoading() && firstLoadTimeMs > 0) {
+                long triggerTimeMs = firstLoadTimeMs + mAutoTriggerDelayMs;
+                long delayMs = Math.max(0, triggerTimeMs - mCurrentTime.get());
+                delayStartAutoTrigger(Math.min(mAutoTriggerDelayMs, delayMs));
             }
+            tab.addObserver(this);
         });
         mExpandedSheetHelper = expandedSheetHelper;
         mHandler = new Handler(Looper.getMainLooper());
@@ -148,6 +192,9 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
         mSurfaceRendererContextValues =
                 PageInsightsActionHandlerImpl.createContextValues(new PageInsightsActionHandlerImpl(
                         tabObservable, shareDelegateSupplier, this::changeToChildPage));
+        mAutoTriggerDelayMs = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.CCT_PAGE_INSIGHTS_HUB, PAGE_INSIGHTS_CAN_AUTOTRIGGER_AFTER_END,
+                DEFAULT_TRIGGER_DELAY_MS);
     }
 
     void initView(View bottomSheetContainer) {
@@ -210,10 +257,15 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
         // onPageLoadFinished is not suitable as it is not fired when going back to a cached page.
         if (!toDifferentDocument) return;
         resetAutoTriggerTimer();
-        mHandler.postDelayed(mAutoTriggerRunnable,
-                ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                        ChromeFeatureList.CCT_PAGE_INSIGHTS_HUB,
-                        PAGE_INSIGHTS_CAN_AUTOTRIGGER_AFTER_END, DEFAULT_TRIGGER_DELAY_MS));
+        delayStartAutoTrigger(mAutoTriggerDelayMs);
+    }
+
+    private void delayStartAutoTrigger(long delayMs) {
+        if (delayMs > 0) {
+            mHandler.postDelayed(mAutoTriggerRunnable, delayMs);
+        } else {
+            mAutoTriggerRunnable.run();
+        }
     }
 
     private void maybeAutoTriggerPageInsights() {
@@ -229,6 +281,7 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
         boolean hasEnoughConfidence =
                 metadata.getAutoPeekConditions().getConfidence() > MINIMUM_CONFIDENCE;
         if (hasEnoughConfidence) {
+            logPageInsightsEvent(PageInsightsEvent.AUTO_PEEK_TRIGGERED);
             openInPeekState(metadata);
             resetAutoTriggerTimer();
         }
@@ -241,7 +294,7 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
     }
 
     // data
-    void openInExpandedState() {
+    void launch() {
         mSheetContent.showLoadingIndicator();
         mSheetController.requestShowContent(mSheetContent, true);
         mPageInsightsDataLoader.loadInsightsData();
@@ -249,6 +302,7 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
         mSheetContent.setFeedPage(getXSurfaceView(metadata.getFeedPage().getElementsOutput()));
         mSheetContent.showFeedPage();
         setCornerRadiusPx(mMaxCornerRadiusPx);
+        logPageInsightsEvent(PageInsightsEvent.USER_INVOKES_PIH);
         mSheetController.expandSheet();
     }
 
@@ -280,6 +334,28 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
         if (newState == SheetState.HIDDEN || newState == SheetState.PEEK) {
             setBottomControlsHeight(mSheetController.getCurrentOffset());
         }
+
+        // Dismiss from PEEK state
+        if (newState == SheetState.HIDDEN && mOldState == SheetState.PEEK) {
+            logPageInsightsEvent(PageInsightsEvent.DISMISS_PEEK);
+        }
+
+        // Dismiss from EXPANDED state
+        if (newState == SheetState.HIDDEN && mOldState >= SheetState.HALF) {
+            logPageInsightsEvent(PageInsightsEvent.DISMISS_EXPANDED);
+        }
+
+        if (newState == SheetState.PEEK) {
+            setDrawableBackgroundColor(/* ratioOfCompletionFromPeekToExpanded */ .0f);
+            logPageInsightsEvent(PageInsightsEvent.STATE_PEEK);
+        } else if (newState == SheetState.FULL) {
+            setDrawableBackgroundColor(/* ratioOfCompletionFromPeekToExpanded */ 1.0f);
+            logPageInsightsEvent(PageInsightsEvent.STATE_EXPANDED);
+        }
+
+        if (newState != SheetState.NONE && newState != SheetState.SCROLLING) {
+            mOldState = newState;
+        }
     }
 
     private void setBottomControlsHeight(int height) {
@@ -310,8 +386,13 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
             setBottomControlsHeight(0);
         }
 
-        float ratio = (heightFraction - peekHeightRatio) / (1.f - peekHeightRatio);
-        if (0 <= ratio && ratio <= 1.f) setCornerRadiusPx((int) (ratio * mMaxCornerRadiusPx));
+        float ratioOfCompletionFromPeekToExpanded =
+                (heightFraction - peekHeightRatio) / (1.f - peekHeightRatio);
+        setDrawableBackgroundColor(ratioOfCompletionFromPeekToExpanded);
+        if (0 <= ratioOfCompletionFromPeekToExpanded
+                && ratioOfCompletionFromPeekToExpanded <= 1.f) {
+            setCornerRadiusPx((int) (ratioOfCompletionFromPeekToExpanded * mMaxCornerRadiusPx));
+        }
     }
 
     private float getPeekHeightRatio() {
@@ -323,6 +404,20 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
         mBackgroundDrawable.mutate();
         mBackgroundDrawable.setCornerRadii(
                 new float[] {radius, radius, radius, radius, 0, 0, 0, 0});
+    }
+
+    void setDrawableBackgroundColor(float ratioOfCompletionFromPeekToExpanded) {
+        float colorRatio = 1.0f;
+        if (0 <= ratioOfCompletionFromPeekToExpanded
+                && ratioOfCompletionFromPeekToExpanded <= 0.5f) {
+            colorRatio = 2 * ratioOfCompletionFromPeekToExpanded;
+        } else if (ratioOfCompletionFromPeekToExpanded <= 0) {
+            colorRatio = 0;
+        }
+        int toolbarRenderingColor = ColorUtils.getColorWithOverlay(
+                mContext.getColor(R.color.gm3_baseline_surface_container),
+                mContext.getColor(R.color.gm3_baseline_surface), colorRatio, false);
+        mBackgroundDrawable.setColor(toolbarRenderingColor);
     }
 
     @Override
@@ -344,12 +439,20 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
         mAutoTriggerReady = true;
     }
 
+    boolean getAutoTriggerReadyForTesting() {
+        return mAutoTriggerReady;
+    }
+
     void setPageInsightsDataLoaderForTesting(PageInsightsDataLoader pageInsightsDataLoader) {
         mPageInsightsDataLoader = pageInsightsDataLoader;
     }
 
     View getContainerForTesting() {
         return mSheetContainer;
+    }
+
+    void setElapsedRealtimeSupplierForTesting(Supplier<Long> currentTime) {
+        mCurrentTime = currentTime;
     }
 
     private PageInsightsSurfaceRenderer getSurfaceRenderer() {

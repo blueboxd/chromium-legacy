@@ -175,6 +175,7 @@ Když smažete historii prohlížení (celou nebo na určitém webu), smažou se
 <translation id="19288952978244135">Znovu spusťte Chrome.</translation>
 <translation id="1933845786846280168">Vybraná karta</translation>
 <translation id="1943432128510653496">Ukládání hesel</translation>
+<translation id="1944535645109964458">Nejsou k dispozici žádné přístupové klíče</translation>
 <translation id="1952172573699511566">Pokud to bude možné, budou weby zobrazovat text ve vašem preferovaném jazyce.</translation>
 <translation id="1959679933317802873">Čeká se na obsah</translation>
 <translation id="1960290143419248813">V této verzi platformy Android již aktualizace prohlížeče Chrome nejsou podporovány</translation>
@@ -222,6 +223,7 @@ Když smažete historii prohlížení (celou nebo na určitém webu), smažou se
 <translation id="2189903024544168260">Zájem odstraněn</translation>
 <translation id="2194856509914051091">Co je třeba zvážit</translation>
 <translation id="2200113223741723867">Správa sdílení údajů o využití</translation>
+<translation id="221494669172414749">Otevřením Chromu bez zámku profilu odstraníte z auta uložená hesla a platební metody. Použití zámku profilu zajišťuje, aby tato data byla v bezpečí.</translation>
 <translation id="2218567645332692482">Upgradovat navigaci na HTTPS a před načtením webů, které tento protokol nepodporují, zobrazit upozornění</translation>
 <translation id="2227444325776770048">Pokračovat jako uživatel <ph name="USER_FULL_NAME" /></translation>
 <translation id="2230777942707397948">Prázdné okno</translation>
@@ -262,6 +264,7 @@ Když smažete historii prohlížení (celou nebo na určitém webu), smažou se
 <translation id="2461822463642141190">Aktuální</translation>
 <translation id="2472163211318554013">Pokud z Chromu chcete získat maximum, přihlaste se</translation>
 <translation id="247737702124049222">Popisy obrázků jsou zapnuté</translation>
+<translation id="2479148705183875116">Přejít do nastavení</translation>
 <translation id="2482878487686419369">Oznámení</translation>
 <translation id="2496180316473517155">Historie procházení</translation>
 <translation id="2497852260688568942">Synchronizace je administrátorem zakázána.</translation>
@@ -338,6 +341,7 @@ Tokeny soukromého stavu zvyšují ochranu soukromí na webu a nelze pomocí ni
 <translation id="2840810876587895427">{TAB_COUNT,plural, =1{Zavře se <ph name="TAB_COUNT_ONE" /> anonymní karta}few{Zavřou se <ph name="TAB_COUNT_MANY" /> anonymní karty}many{Zavře se <ph name="TAB_COUNT_MANY" /> anonymní karty}other{Zavře se <ph name="TAB_COUNT_MANY" /> anonymních karet}}</translation>
 <translation id="2841216154655874070">{NUM_DAYS,plural, =1{Zkontrolováno před 1 dnem}few{Zkontrolováno před # dny}many{Zkontrolováno před # dne}other{Zkontrolováno před # dny}}</translation>
 <translation id="2842985007712546952">Nadřazená složka</translation>
+<translation id="2853415089995957805">Chrome předběžně načítá stránky, které byste pravděpodobně mohli navštívit. Když je navštívíte, načtou se tak rychleji.</translation>
 <translation id="2856503607207334158">Přihlášení se nezdařilo</translation>
 <translation id="2860954141821109167">Zkontrolujte zda je na tomto zařízení povolená aplikace k telefonování</translation>
 <translation id="2861923151411510142">Některé funkce Chromu už nebudou dostupné</translation>
@@ -555,7 +559,6 @@ Tokeny soukromého stavu zvyšují ochranu soukromí na webu a nelze pomocí ni
 <translation id="3958287878205277013">Pokud ze zařízení chcete vymazat historii anonymního prohlížení, zavřete všechny anonymní karty.</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome stránku načte, až bude připraven}few{Chrome stránky načte, až bude připraven}many{Chrome stránky načte, až bude připraven}other{Chrome stránky načte, až bude připraven}}</translation>
 <translation id="3962119236270174787">Standardní ochrana před weby, soubory ke stažení a rozšířeními, o nichž je známo, že jsou nebezpečné</translation>
-<translation id="3963007978381181125">Šifrování pomocí heslové fráze se nevztahuje na platební metody a adresy ze služby Google Pay. Vaše šifrovaná data mohou číst pouze uživatelé, kteří mají vaši heslovou frázi. Heslová fráze se neodesílá do Googlu a není na Googlu uložena. Pokud ji zapomenete nebo toto nastavení budete chtít změnit, bude nutné synchronizaci resetovat. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="3969142555815019568">Chrome nemůže zkontrolovat vaše hesla</translation>
 <translation id="3969863827134279083">Přesunout nahoru</translation>
 <translation id="397105322502079400">Probíhá výpočet…</translation>
@@ -583,6 +586,7 @@ Tokeny soukromého stavu zvyšují ochranu soukromí na webu a nelze pomocí ni
 <translation id="4084712963632273211">Zdroj: <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />poskytováno společností Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="409109920254068737">Tento tablet můžete použít k přihlášení na počítači, na kterém se zobrazuje tento QR kód.</translation>
 <translation id="4095146165863963773">Smazat data aplikace?</translation>
+<translation id="4095425503313512126">Procházení a vyhledávání je rychlejší.</translation>
 <translation id="4096227151372679484">Postup uložení záložky otevřený na poloviční výšku</translation>
 <translation id="4101475238162928417">Pokud svá hesla, záložky a další položky chcete mít na ostatních zařízeních, zapněte synchronizaci.</translation>
 <translation id="4106587138345390261">Chrome zkoumá nové funkce, které webům umožňují poskytovat stejné prostředí a využívat při tom méně vašich dat a údajů</translation>
@@ -624,6 +628,7 @@ Tokeny soukromého stavu zvyšují ochranu soukromí na webu a nelze pomocí ni
 <translation id="4257230861809842349">Smazat hesla ze Správce hesel Google?</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Jaké údaje používáme:<ph name="END_BOLD" /> Vaši historii prohlížení, což je seznam webů, které jste navštívili v Chromu na tomto zařízení.</translation>
 <translation id="4269820728363426813">Zkopírovat adresu odkazu</translation>
+<translation id="4277529130885813215">Použít jiné zařízení</translation>
 <translation id="4283102315569707115">Požadovat ve výchozím nastavení weby pro počítače?</translation>
 <translation id="4285846616383034558">Soubory cookie, mezipaměť a další data webů</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Zapněte v nastavení systému Android zámek obrazovky<ph name="END_LINK" /></translation>
@@ -792,6 +797,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5054455334322721892"><ph name="BEGIN_LINK1" />Další typy aktivity<ph name="END_LINK1" /> se mohou ukládat do vašeho účtu Google, když jste přihlášeni. Můžete je kdykoli smazat.</translation>
 <translation id="506254248375231072">Žádné karty</translation>
 <translation id="5062960805900435602">Oznámení o sloučení hesel je zavřeno</translation>
+<translation id="5081960376148623587">Zvolte, zda se stránky mají načítat předběžně</translation>
 <translation id="5091199029769593641">Brzy se vám po otevření nové karty začnou zobrazovat články z webu <ph name="SITE_NAME" />. Weby, které sledujete, se ukládají do vašeho účtu Google. Můžete je spravovat v nastavení funkce Objevit.</translation>
 <translation id="5091249083535528968">Rozšířené údaje o využití</translation>
 <translation id="509429900233858213">Došlo k chybě.</translation>
@@ -832,6 +838,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5308380583665731573">Připojení</translation>
 <translation id="5317780077021120954">Uložit</translation>
 <translation id="5319359161174645648">Google doporučuje prohlížeč Chrome</translation>
+<translation id="5320351714793324716">Pokud máte povolené soubory cookie, může je Chrome při předběžném načítání použít</translation>
 <translation id="5321849971085220133">Chrome hledá nové způsoby, jak snížit míru sledování a chránit vás na internetu ještě lépe. Chrome také <ph name="BEGIN_LINK" />odhaduje vaše zájmy<ph name="END_LINK" /> a umožňuje vám je spravovat. Navštívené weby pak mohou Chrome požádat o sdílení vašich zájmů, aby vám mohly zobrazovat reklamy.</translation>
 <translation id="5326921373682845375">Protože jsou předběžně načítané stránky zašifrované a web, který na ně odkazuje, je webem Google, servery Google při soukromém načítání těchto stránek neobdrží nové informace.</translation>
 <translation id="5329858041417644019">Prohlížeč není spravován</translation>
@@ -1010,6 +1017,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6295158916970320988">Všechny weby</translation>
 <translation id="6303969859164067831">Odhlásit a vypnout synchronizaci</translation>
 <translation id="6312687380483398334">Webové aplikace (tiché)</translation>
+<translation id="6315386555979018699">Vymazat a pokračovat</translation>
 <translation id="6316139424528454185">Nepodporovaná verze Androidu</translation>
 <translation id="6324916366299863871">Upravit zkratku</translation>
 <translation id="6324977638108296054">Odkaz na zvýraznění nelze vytvořit</translation>
@@ -1161,6 +1169,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6955535239952325894">Toto nastavení je ve spravovaných prohlížečích zakázáno</translation>
 <translation id="6963766334940102469">Smazat záložky</translation>
 <translation id="696447261358045621">Ukončit anonymní režim</translation>
+<translation id="6965382102122355670">OK</translation>
 <translation id="6971862865055170158">Neschválit</translation>
 <translation id="6978717888677691380">Blokované weby</translation>
 <translation id="6979737339423435258">Od počátku věků</translation>
@@ -1319,6 +1328,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7757787379047923882">Text sdílený ze zařízení <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">SD karta <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Přidat adresu</translation>
+<translation id="7766587497031415281">Další možnosti vymazání údajů o prohlížení</translation>
 <translation id="7772032839648071052">Potvrďte heslovou frázi</translation>
 <translation id="7772375229873196092">Zavřít aplikaci <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> další}few{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> další}many{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> další}other{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> dalších}}</translation>
@@ -1572,6 +1582,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8998289560386111590">Na vašem zařízení není k dispozici</translation>
 <translation id="8998729206196772491">Přihlašujete se pomocí účtu spravovaného doménou <ph name="MANAGED_DOMAIN" /> a poskytujete jeho správci kontrolu nad svými daty prohlížeče Chrome. Vaše data budou trvale přidružena k tomuto účtu. Odhlášením z Chromu svá data smažete z tohoto zařízení, ve vašem účtu Google však uložena zůstanou.</translation>
 <translation id="9012585441087414258">Chrání před weby, soubory ke stažení a rozšířeními, o kterých je známo, že jsou nebezpečné. Pokud stránka provede něco podezřelého, odešlou se adresy URL a části obsahu stránky do Bezpečného prohlížení Google.</translation>
+<translation id="9019199799064251516">Pokračovat bez zámku profilu auta?</translation>
 <translation id="9022774213089566801">Často navštěvované</translation>
 <translation id="9022871169049522985">Weby a inzerenti mohou měřit výkon svých reklam</translation>
 <translation id="9035378196785279980">Přesunout do\u2026</translation>
@@ -1634,5 +1645,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="983192555821071799">Zavřít všechny karty</translation>
 <translation id="987264212798334818">Všeobecné</translation>
 <translation id="992745192656291733">Počet karet: <ph name="TAB_COUNT" /></translation>
+<translation id="993520549480398880">Také z tohoto auta vymazat záložky, historii a další položky</translation>
 <translation id="996149300115483134">Nabídka karty informačních kanálů je zavřená</translation>
 </translationbundle>

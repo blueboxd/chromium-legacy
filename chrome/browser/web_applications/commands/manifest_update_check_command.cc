@@ -10,10 +10,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/web_applications/callback_utils.h"
+#include "chrome/browser/web_applications/generated_icon_fix_util.h"
 #include "chrome/browser/web_applications/manifest_update_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_registry_update.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/web_contents/web_app_icon_downloader.h"
 #include "chrome/common/chrome_features.h"
@@ -27,7 +30,7 @@ namespace web_app {
 
 ManifestUpdateCheckCommand::ManifestUpdateCheckCommand(
     const GURL& url,
-    const AppId& app_id,
+    const webapps::AppId& app_id,
     base::Time check_time,
     base::WeakPtr<content::WebContents> web_contents,
     CompletedCallback callback,
@@ -150,7 +153,8 @@ void ManifestUpdateCheckCommand::DownloadNewManifestJson(
 
   webapps::InstallableParams params;
   params.valid_primary_icon = true;
-  params.valid_manifest = true;
+  params.installable_criteria =
+      webapps::InstallableCriteria::kValidManifestWithIcons;
   params.check_webapp_manifest_display = false;
   data_retriever_->CheckInstallabilityAndRetrieveManifest(
       web_contents_.get(),
@@ -417,13 +421,14 @@ ManifestUpdateCheckCommand::MakeAppIconIdentityUpdateDecision() const {
   // Web apps that were installed by sync but have generated icons get a window
   // of time where they can "fix" themselves silently to use the site provided
   // icons.
-  constexpr base::TimeDelta kSyncGeneratedIconFixWindowDuration = base::Days(7);
   if (base::FeatureList::IsEnabled(
           features::kWebAppSyncGeneratedIconUpdateFix) &&
       web_app.is_generated_icon() &&
       web_app.latest_install_source() == webapps::WebappInstallSource::SYNC &&
-      check_time_ <
-          (web_app.install_time() + kSyncGeneratedIconFixWindowDuration)) {
+      generated_icon_fix_util::IsWithinFixTimeWindow(web_app)) {
+    ScopedRegistryUpdate update = lock_->sync_bridge().BeginUpdate();
+    generated_icon_fix_util::EnsureFixTimeWindowStarted(
+        *lock_, update, app_id_, GeneratedIconFixSource_MANIFEST_UPDATE);
     return IdentityUpdateDecision::kSilentlyAllow;
   }
 
@@ -532,9 +537,13 @@ void ManifestUpdateCheckCommand::RevertIdentityChangesIfNeeded() {
           IdentityUpdateDecision::kRevert &&
       manifest_data_changes_.app_icon_identity_change) {
     const WebApp& web_app = GetWebApp();
+    // TODO(crbug.com/1485348): Bundle up product icon data into a single struct
+    // to make this a single assignment and less likely to miss fields as they
+    // get added in future.
     new_install_info_->manifest_icons = web_app.manifest_icons();
     new_install_info_->icon_bitmaps = existing_app_icon_bitmaps_;
     new_install_info_->is_generated_icon = web_app.is_generated_icon();
+    new_install_info_->generated_icon_fix = web_app.generated_icon_fix();
     manifest_data_changes_.app_icon_identity_change.reset();
     manifest_data_changes_.any_app_icon_changed = false;
   }

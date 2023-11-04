@@ -15,12 +15,13 @@
 #include "chrome/browser/search_engine_choice/search_engine_choice_service.h"
 #include "chrome/browser/search_engine_choice/search_engine_choice_service_factory.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/browser/user_education/user_education_service.h"
+#include "chrome/browser/user_education/user_education_service_factory.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/signin/public/base/signin_switches.h"
-#include "components/user_education/views/help_bubble_factory_views.h"
-#include "components/user_education/views/help_bubble_view.h"
 #include "ui/base/interaction/element_tracker.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/accessible_pane_view.h"
@@ -33,12 +34,12 @@ BrowserFeaturePromoController::BrowserFeaturePromoController(
     feature_engagement::Tracker* feature_engagement_tracker,
     user_education::FeaturePromoRegistry* registry,
     user_education::HelpBubbleFactoryRegistry* help_bubble_registry,
-    user_education::FeaturePromoSnoozeService* snooze_service,
+    user_education::FeaturePromoStorageService* storage_service,
     user_education::TutorialService* tutorial_service)
     : FeaturePromoControllerCommon(feature_engagement_tracker,
                                    registry,
                                    help_bubble_registry,
-                                   snooze_service,
+                                   storage_service,
                                    tutorial_service),
       browser_view_(browser_view) {}
 
@@ -65,20 +66,29 @@ ui::ElementContext BrowserFeaturePromoController::GetAnchorContext() const {
   return views::ElementTrackerViews::GetContextForView(browser_view_);
 }
 
-bool BrowserFeaturePromoController::CanShowPromo(
+bool BrowserFeaturePromoController::CanShowPromoForElement(
     ui::TrackedElement* anchor_element) const {
+  auto* const profile = browser_view_->GetProfile();
   // Temporarily turn off IPH in incognito as a concern was raised that
   // the IPH backend ignores incognito and writes to the parent profile.
   // See https://bugs.chromium.org/p/chromium/issues/detail?id=1128728#c30
-  if (browser_view_->GetProfile()->IsIncognitoProfile())
+  if (profile->IsIncognitoProfile()) {
     return false;
+  }
+
+  // Verify that there are no required notices pending.
+  UserEducationService* const ue_service =
+      UserEducationServiceFactory::GetForBrowserContext(profile);
+  if (ue_service->product_messaging_controller().has_pending_notices()) {
+    return false;
+  }
 
   // Turn off IPH while a required privacy interstitial is visible or pending.
   // TODO(dfried): with Desktop User Education 2.0, filtering of IPH may need to
   // be more nuanced; also a contention scheme between required popups may be
   // required. See go/desktop-user-education-2.0 for details.
   auto* const privacy_sandbox_service =
-      PrivacySandboxServiceFactory::GetForProfile(browser_view_->GetProfile());
+      PrivacySandboxServiceFactory::GetForProfile(profile);
   if (privacy_sandbox_service &&
       privacy_sandbox_service->GetRequiredPromptType() !=
           PrivacySandboxService::PromptType::kNone) {
@@ -193,4 +203,12 @@ BrowserFeaturePromoController::GetScreenReaderPromptPromoFeature() const {
 const char* BrowserFeaturePromoController::GetScreenReaderPromptPromoEventName()
     const {
   return feature_engagement::events::kFocusHelpBubbleAcceleratorPromoRead;
+}
+
+std::string BrowserFeaturePromoController::GetAppId() const {
+  if (const web_app::AppBrowserController* const controller =
+          browser_view_->browser()->app_controller()) {
+    return controller->app_id();
+  }
+  return std::string();
 }

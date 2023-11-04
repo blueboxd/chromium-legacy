@@ -10,7 +10,7 @@ import {NavigationKey, NavigationRoot, NavigationSection, NavigationType, State,
 import {Slice} from '../../lib/base_store.js';
 import {getMyFiles} from '../ducks/all_entries.js';
 import {driveRootEntryListKey, recentRootKey, trashRootKey} from '../ducks/volumes.js';
-import {FileKey} from '../file_key.js';
+import type {FileKey} from '../file_key.js';
 import {getEntry, getFileData} from '../store.js';
 
 /**
@@ -18,7 +18,7 @@ import {getEntry, getFileData} from '../store.js';
  * @suppress {checkTypes}
  */
 
-const slice = new Slice<State>('navigation');
+const slice = new Slice<State, State['navigation']>('navigation');
 export {slice as navigationSlice};
 
 const VolumeType = VolumeManagerCommon.VolumeType;
@@ -69,7 +69,7 @@ function getPrefixEntryOrEntry(state: State, volume: Volume): VolumeEntry|
  *  10. Trash.
  */
 export const refreshNavigationRoots =
-    slice.addReducer<void>('refresh-roots', refreshNavigationRootsReducer);
+    slice.addReducer('refresh-roots', refreshNavigationRootsReducer);
 
 function refreshNavigationRootsReducer(currentState: State): State {
   const {

@@ -1018,7 +1018,7 @@ TEST_F(TileManagerTilePriorityQueueTest, DebugNameAppearsInMemoryDump) {
   host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
 
   base::trace_event::MemoryDumpArgs dump_args = {
-      base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
+      base::trace_event::MemoryDumpLevelOfDetail::kDetailed};
   base::trace_event::ProcessMemoryDump memory_dump(dump_args);
   host_impl()->resource_pool()->OnMemoryDump(dump_args, &memory_dump);
   bool found_debug_name = false;
@@ -2317,7 +2317,8 @@ void RunPartialRasterCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
           gfx::ColorSpace::CreateSRGB());
 
   resource.set_software_backing(std::make_unique<TestSoftwareBacking>());
-  host_impl->resource_pool()->PrepareForExport(resource);
+  host_impl->resource_pool()->PrepareForExport(
+      resource, viz::TransferableResource::ResourceSource::kTest);
 
   host_impl->resource_pool()->OnContentReplaced(resource, kInvalidatedId);
   host_impl->resource_pool()->ReleaseResource(std::move(resource));

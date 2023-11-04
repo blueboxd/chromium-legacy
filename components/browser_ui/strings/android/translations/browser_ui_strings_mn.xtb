@@ -100,6 +100,7 @@
 <translation id="2653659639078652383">Илгээх</translation>
 <translation id="2677748264148917807">Үлдээх</translation>
 <translation id="2678468611080193228">Гуравдагч талын күүкинүүдийг түр зөвшөөрч үзээрэй. Энэ нь хамгаалалт багасах хэдий ч сайтын онцлогууд ажиллах магадлал өндөр байна гэсэн үг юм</translation>
+<translation id="2683434792633810741">Устгаж, шинэчлэх үү?</translation>
 <translation id="2687403674020088961">Бүх күүкиг блоклох (зөвлөдөггүй)</translation>
 <translation id="2713106313042589954">Камерыг унтраах</translation>
 <translation id="2717722538473713889">Имэйл хаяг</translation>
@@ -179,6 +180,7 @@
 <translation id="4008040567710660924">Күүкиг тодорхой сайтад зөвшөөрнө үү.</translation>
 <translation id="4046123991198612571">Дараагийн бичлэг</translation>
 <translation id="4053720452172726777">Google Chrome-ыг өөртөө тохируулан хянах</translation>
+<translation id="4149890623864272035">Та күүкиг оруулаад бүх дотоод өгөгдлийг устгаж, энэ вебсайтын бүх зөвшөөрлийг шинэчлэхдээ итгэлтэй байна уу?</translation>
 <translation id="4149994727733219643">Веб хуудасны хялбаршуулсан харагдац</translation>
 <translation id="4151930093518524179">Өгөгдмөл томруулалт</translation>
 <translation id="4165986682804962316">Сайтын тохиргоо</translation>
@@ -196,6 +198,7 @@
 <translation id="4412992751769744546">Гуравдагч этгээдийн cookies-г зөвшөөрөх</translation>
 <translation id="4428065317363009941">Сонирхсон зарын тохируулга</translation>
 <translation id="4434045419905280838">Попап болон дахин чиглүүлэлт</translation>
+<translation id="443552056913301231">Энэ үйлдэл күүкиг оруулаад бүх дотоод өгөгдлийг устгах бөгөөд <ph name="ORIGIN" />-н бүх зөвшөөрлийг шинэчилнэ</translation>
 <translation id="4468959413250150279">Тодорхой сайтын дууг хаана уу.</translation>
 <translation id="4475912480633855319">{COOKIES,plural, =1{# күүки}other{# күүки}}</translation>
 <translation id="4478158430052450698">Өөр өөр сайтад томруулалтыг өөрчлөхийг хялбар болгоно</translation>
@@ -205,6 +208,7 @@
 <translation id="4566417217121906555">Микрофоны дууг хаах</translation>
 <translation id="4570913071927164677">Дэлгэрэнгүй</translation>
 <translation id="4598549027014564149">Нууцлалтай горимд байх үед сайтууд таны күүкиг сайтууд, тэр байтугай холбогдох сайтууд дээрх хөтчийн үйл ажиллагааг тань харахад ашиглах боломжгүй. Таны хөтчийн үйл ажиллагааг зар хувийн болгох зэрэг зүйлсэд ашигладаггүй. Зарим сайтын онцлогууд ажиллахгүй байж магадгүй.</translation>
+<translation id="4644713492825682049">Устгаж, шинэчлэх</translation>
 <translation id="4645575059429386691">Эцэг, эх нь хариуцаж байна</translation>
 <translation id="4670064810192446073">Виртуал бодит байдал</translation>
 <translation id="4751476147751820511">Хөдөлгөөн эсвэл гэрэл мэдрэгч</translation>
@@ -235,6 +239,7 @@
 <translation id="5216942107514965959">Хамгийн сүүлд өнөөдөр зочилсон</translation>
 <translation id="5225463052809312700">Камерыг асаах</translation>
 <translation id="5234764350956374838">Хэрэгсэхгүй болго</translation>
+<translation id="5246825184569358663">Энэ үйлдэл күүкиг оруулаад бүх дотоод өгөгдлийг устгах бөгөөд <ph name="DOMAIN" /> болон үүний доорх бүх сайтын бүх зөвшөөрлийг шинэчилнэ</translation>
 <translation id="5264323282659631142">'<ph name="CHIP_LABEL" />'-г хасах</translation>
 <translation id="528192093759286357">Бүтэн дэлгэцийн горимоос гарахын тулд дээрээс зөөгөөд, буцах товчлуурыг дарна уу.</translation>
 <translation id="5300589172476337783">Харуулах</translation>
@@ -278,11 +283,11 @@
 <translation id="5922853908706496913">Таны дэлгэцийг хуваалцаж байна</translation>
 <translation id="5922967540311291836">Гуравдагч талын күүкиг блоклох:</translation>
 <translation id="5939518447894949180">Дахин сэргээх</translation>
+<translation id="5964247741333118902">Оруулсан контент</translation>
 <translation id="5968921426641056619">Веб хаяг оруулна уу</translation>
 <translation id="5975083100439434680">Багасгаж харах</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Таны төхөөрөмж рүү хандах энэ сайтын хандалтыг удирдах</translation>
-<translation id="6018815681665454784">Цэвэрлэж, шинэчлэх үү?</translation>
 <translation id="6040143037577758943">Хаах</translation>
 <translation id="6042308850641462728">Илүү их</translation>
 <translation id="6064125863973209585">Татаж дууссан файл</translation>
@@ -294,6 +299,7 @@
 <translation id="6192792657125177640">Гажих нөхцлүүд</translation>
 <translation id="6196640612572343990">Гуравдагч талын күүкиг блоклох</translation>
 <translation id="6205314730813004066">Зарын нууцлал</translation>
+<translation id="6207207788774442484">Өгөгдлийг устгаж, зөвшөөрлүүдийг шинэчлэх</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> Сонголт</translation>
 <translation id="6231752747840485235"><ph name="APP_NAME" />-г устгах уу?</translation>
 <translation id="6262191102408817757">Таны сүүлийн табд тулгуурласан</translation>
@@ -302,13 +308,11 @@
 <translation id="6295158916970320988">Бүх сайт</translation>
 <translation id="6320088164292336938">Чичиргэх</translation>
 <translation id="6367753977865761591">Тодорхой сайтын гуравдагч талын нэвтрэлтийг блоклоно уу.</translation>
-<translation id="6388207532828177975">Арилгах &amp; дахин тохируулах</translation>
 <translation id="6398765197997659313">Дэлгэц дүүрэн харах горимоос гарах</translation>
 <translation id="640163077447496506">Өнөөдөр хугацаа нь дуусна</translation>
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Сайтуудад таны виртуал бодит байдлын төхөөрөмж болон өгөгдлийг ашиглахыг хориглох</translation>
 <translation id="6447842834002726250">Cookies</translation>
-<translation id="6467852467360539617">Өгөгдлийг цуцлаад зөвшөөрлийг шинэчлэх</translation>
 <translation id="6500423977866688905">Цонх нарийн үед гар утсан дээр харагдах байдлын хүсэлт тавина уу</translation>
 <translation id="6527303717912515753">Хуваалцах</translation>
 <translation id="652937045869844725">Гуравдагч талын күүкинүүдийг зөвшөөрч үзээрэй. Энэ нь хамгаалалт багасах хэдий ч сайтын онцлогууд ажиллах магадлал өндөр байна гэсэн үг юм</translation>
@@ -381,11 +385,9 @@
 <translation id="7846076177841592234">Сонголтыг цуцлах</translation>
 <translation id="7882806643839505685">Тодорхой сайтад дуу тоглуулахыг зөвшөөрнө үү.</translation>
 <translation id="789180354981963912">Нууцлалтай горимд гуравдагч талын күүкиг блоклох:</translation>
-<translation id="7895868624847501462">Энэ үйлдэл күүкиг оруулаад бүх дотоод өгөгдлийг арилгах бөгөөд <ph name="DOMAIN" /> болон үүний доорх бүх сайтын бүх зөвшөөрлийг шинэчилнэ</translation>
 <translation id="7940722705963108451">Надад сануул</translation>
 <translation id="7974024493641668069">{COUNT,plural, =1{Бүлэг дэх таны үйл ажиллагааг харах боломжтой <ph name="FPS_OWNER" />-н бүлэг сайтууд дахь <ph name="FPS_MEMBERS_COUNT" /> сайт}other{Бүлэг дэх таны үйл ажиллагааг харах боломжтой <ph name="FPS_OWNER" />-н бүлэг сайтууд дахь <ph name="FPS_MEMBERS_COUNT" /> сайт}}</translation>
 <translation id="7986741934819883144">Харилцагч сонгох</translation>
-<translation id="7999064672810608036">Та cookies гэх мэт энэ вэбсайтны бүх мэдээллийг устгах мөн бүх зөвшөөрлийг дахин тохируулахдаа итгэлтэй байна уу?</translation>
 <translation id="8007176423574883786">Энэ төхөөрөмж дээр унтраастай байна</translation>
 <translation id="802154636333426148">Татаж чадсангүй</translation>
 <translation id="8042586301629853791">Дараахаар эрэмбэлэх:</translation>
@@ -409,7 +411,6 @@
 <translation id="8284326494547611709">Тайлбар</translation>
 <translation id="8300705686683892304">Аппаар удирддаг</translation>
 <translation id="8324158725704657629">Дахиж бүү асуу</translation>
-<translation id="8338445138528827481">Энэ үйлдэл күүкиг оруулаад бүх дотоод өгөгдлийг арилгах бөгөөд <ph name="ORIGIN" />-н бүх зөвшөөрлийг шинэчилнэ</translation>
 <translation id="8362795839483915693">Та зочилсон сайтаа томруулах эсвэл жижгэрүүлэх боломжтой</translation>
 <translation id="8372893542064058268">Тодорхой сайтад дэвсгэрт синк хийхийг зөвшөөрнө.</translation>
 <translation id="8376384591331888629">Энэ сайт дээрх гуравдагч талын күүкитэй цуг</translation>

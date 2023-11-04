@@ -32,10 +32,20 @@ class PasswordFactorEditor : public mojom::PasswordFactorEditor {
       const std::string& new_password,
       base::OnceCallback<void(mojom::ConfigureResult)> callback) override;
 
+  void CheckLocalPasswordComplexity(
+      const std::string& password,
+      base::OnceCallback<void(mojom::PasswordComplexity)> callback) override;
+
   void BindReceiver(
       mojo::PendingReceiver<mojom::PasswordFactorEditor> receiver);
 
  private:
+  void SetLocalPasswordWithContext(
+      const std::string& auth_token,
+      const std::string& new_password,
+      base::OnceCallback<void(mojom::ConfigureResult)> callback,
+      std::unique_ptr<UserContext> user_context);
+
   void OnPasswordConfigured(
       base::OnceCallback<void(mojom::ConfigureResult)> callback,
       const std::string& auth_token,

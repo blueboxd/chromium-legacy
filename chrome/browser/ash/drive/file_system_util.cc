@@ -117,7 +117,7 @@ bool IsDriveEnabledForProfile(const Profile* const profile) {
   return IsDriveAvailableForProfile(profile);
 }
 
-bool IsDriveFsBulkPinningEnabled(const Profile* const profile) {
+bool IsDriveFsBulkPinningAvailable(const Profile* const profile) {
   // Check the "DriveFsBulkPinning" Chrome feature. If this feature is disabled,
   // then it probably means that the kill switch has been activated, and the
   // bulk-pinning feature should not be available.
@@ -133,46 +133,40 @@ bool IsDriveFsBulkPinningEnabled(const Profile* const profile) {
     return false;
   }
 
-  // Does the user profile belong to a managed user or not?
-  if (!profile || !profile->GetProfilePolicyConnector()->IsManaged()) {
-    // Not a managed user. The bulk-pinning feature is available on suitable
-    // devices, as controlled by the "FeatureManagementDriveFsBulkPinning"
-    // Chrome feature.
-    return base::FeatureList::IsEnabled(
-        ash::features::kFeatureManagementDriveFsBulkPinning);
-  }
-
-  // Managed user. For Googlers, the bulk-pinning feature is available on any
-  // kind of device. This allows Googlers to easily test ("dogfood") the
-  // bulk-pinning feature.
+  // For Googlers, the bulk-pinning feature is available on any kind of device.
+  // This allows Googlers to easily test ("dogfood") the bulk-pinning feature.
   //
   // TODO(b/296316774) Revisit this decision for Googlers.
-  //
-  // Other managed users (non-Googlers) do not have access to the bulk-pinning
-  // feature for the time being.
-  //
-  // TODO(b/296315040) Allow managed users to access the bulk-pinning feature on
-  // suitable devices.
-  const User* const user = UserManager::Get()->GetActiveUser();
-  return user && gaia::IsGoogleInternalAccountEmail(
-                     user->GetAccountId().GetUserEmail());
+  if (UserManager::IsInitialized()) {
+    if (const User* const user = UserManager::Get()->GetActiveUser();
+        user && gaia::IsGoogleInternalAccountEmail(
+                    user->GetAccountId().GetUserEmail())) {
+      return true;
+    }
+  }
+
+  // For other users (non-Googlers), the bulk-pinning feature is available on
+  // suitable devices, as controlled by the
+  // "FeatureManagementDriveFsBulkPinning" Chrome feature.
+  return base::FeatureList::IsEnabled(
+      ash::features::kFeatureManagementDriveFsBulkPinning);
 }
 
-bool IsDriveFsBulkPinningEnabled() {
-  return IsDriveFsBulkPinningEnabled(ProfileManager::GetActiveUserProfile());
+bool IsDriveFsBulkPinningAvailable() {
+  return IsDriveFsBulkPinningAvailable(ProfileManager::GetActiveUserProfile());
 }
 
-bool IsOobeDrivePinningEnabled(const Profile* const profile) {
+bool IsOobeDrivePinningAvailable(const Profile* const profile) {
   const bool b =
       base::FeatureList::IsEnabled(ash::features::kOobeDrivePinning) &&
       ash::features::IsOobeChoobeEnabled() &&
-      IsDriveFsBulkPinningEnabled(profile);
-  VLOG(1) << "IsOobeDrivePinningEnabled() returned " << b;
+      IsDriveFsBulkPinningAvailable(profile);
+  VLOG(1) << "IsOobeDrivePinningAvailable() returned " << b;
   return b;
 }
 
-bool IsOobeDrivePinningEnabled() {
-  return IsOobeDrivePinningEnabled(ProfileManager::GetActiveUserProfile());
+bool IsOobeDrivePinningAvailable() {
+  return IsOobeDrivePinningAvailable(ProfileManager::GetActiveUserProfile());
 }
 
 // To ensure that the DrivePinningScreen is always available to the wizard,
@@ -244,7 +238,16 @@ ConnectionStatus GetDriveConnectionStatus(Profile* const profile) {
   }
 
   if (!network->IsOnline()) {
-    VLOG(1) << "GetDriveConnectionStatus: not ready";
+    VLOG(1) << "GetDriveConnectionStatus: not ready: network is "
+            << network->connection_state();
+    return kNotReady;
+  }
+
+  using PortalState = ash::NetworkState::PortalState;
+  if (const PortalState portal_state = network->GetPortalState();
+      portal_state != PortalState::kOnline) {
+    VLOG(1) << "GetDriveConnectionStatus: not ready: portal is "
+            << portal_state;
     return kNotReady;
   }
 

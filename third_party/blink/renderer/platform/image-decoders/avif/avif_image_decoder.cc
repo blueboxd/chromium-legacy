@@ -5,9 +5,9 @@
 #include "third_party/blink/renderer/platform/image-decoders/avif/avif_image_decoder.h"
 
 #include <stdint.h>
+#include <string.h>
 
 #include <algorithm>
-#include <cstring>
 #include <memory>
 #include <utility>
 
@@ -171,7 +171,7 @@ scoped_refptr<SegmentReader> CreateGainmapSegmentReader(
 
 // Stream object for use with libavifinfo.
 struct AvifInfoSegmentReaderStream {
-  const SegmentReader* reader = nullptr;
+  scoped_refptr<const SegmentReader> reader;
   size_t num_read_bytes = 0;
   uint8_t buffer[AVIFINFO_MAX_NUM_READ_BYTES];
 };
@@ -218,9 +218,10 @@ void AvifInfoSegmentReaderSkip(void* void_stream, size_t num_bytes) {
   stream->num_read_bytes += num_bytes;
 }
 
-void UpdateAvifBppHistogram(gfx::Size size, size_t image_size_bytes) {
-  static constexpr char kType[] = "Avif";
-  ImageDecoder::UpdateBppHistogram<kType>(size, image_size_bytes);
+inline float FractionToFloat(uint32_t numerator, uint32_t denominator) {
+  // First cast to double and not float because uint32_t->float conversion can
+  // cause precision loss.
+  return static_cast<double>(numerator) / denominator;
 }
 
 }  // namespace
@@ -248,10 +249,10 @@ bool AVIFImageDecoder::ImageIsHighBitDepth() {
   return bit_depth_ > 8;
 }
 
-void AVIFImageDecoder::OnSetData(SegmentReader* data) {
+void AVIFImageDecoder::OnSetData(scoped_refptr<SegmentReader> data) {
   have_parsed_current_data_ = false;
   const bool all_data_received = IsAllDataReceived();
-  avif_io_data_.reader = data_.get();
+  avif_io_data_.reader = data_;
   avif_io_data_.all_data_received = all_data_received;
   avif_io_.sizeHint = all_data_received ? data_->size() : kMaxAvifFileSize;
 
@@ -367,7 +368,7 @@ void AVIFImageDecoder::DecodeToYUV() {
     }
     return;
   }
-  const auto* image = decoded_image_;
+  const avifImage* image = decoded_image_;
 
   DCHECK(!image->alphaPlane);
   static_assert(cc::YUVIndex::kY == static_cast<cc::YUVIndex>(AVIF_CHAN_Y), "");
@@ -488,30 +489,7 @@ base::TimeDelta AVIFImageDecoder::FrameDurationAtIndex(wtf_size_t index) const {
 bool AVIFImageDecoder::ImageHasBothStillAndAnimatedSubImages() const {
   // Per MIAF, all animated AVIF files must have a still image, even if it's
   // just a pointer to the first frame of the animation.
-  if (decoded_frame_count_ > 1) {
-    return true;
-  }
-
-  constexpr wtf_size_t kMajorBrandOffset = 8;
-  constexpr wtf_size_t kMajorBrandSize = 4;
-  if (data_->size() < kMajorBrandOffset + kMajorBrandSize) {
-    return false;
-  }
-
-  // TODO(wtc): We should rely on libavif to tell us if the file has both an
-  // image and an animation track instead of just checking the major brand.
-  //
-  // An AVIF image begins with a file‐type box 'ftyp':
-  //   unsigned int(32) size;
-  //   unsigned int(32) type = boxtype;  // boxtype is 'ftyp'
-  //   unsigned int(32) major_brand;
-  //   ...
-  FastSharedBufferReader fast_reader(data_);
-  char buf[kMajorBrandSize];
-  const char* major_brand =
-      fast_reader.GetConsecutiveData(kMajorBrandOffset, kMajorBrandSize, buf);
-  // The brand 'avis' is an AVIF image sequence (animation) brand.
-  return memcmp(major_brand, "avis", kMajorBrandSize) == 0;
+  return decoder_ && decoder_->imageSequenceTrackPresent;
 }
 
 // static
@@ -614,7 +592,7 @@ void AVIFImageDecoder::Decode(wtf_size_t index) {
     SetFailed();
     return;
   }
-  const auto* image = decoded_image_;
+  const avifImage* image = decoded_image_;
 
   // ImageDecoder::SizeCalculationMayOverflow(), called by UpdateDemuxer()
   // before being here, made sure the image height fits in an int.
@@ -791,6 +769,11 @@ bool AVIFImageDecoder::UpdateDemuxer() {
     // AV1 image items. (This issue has been corrected in libheif v1.12.0.) See
     // crbug.com/1198455.
     decoder_->strictFlags &= ~AVIF_STRICT_PIXI_REQUIRED;
+
+    if (base::FeatureList::IsEnabled(features::kGainmapHdrImages) &&
+        base::FeatureList::IsEnabled(features::kAvifGainmapHdrImages)) {
+      decoder_->enableParsingGainMapMetadata = AVIF_TRUE;
+    }
 
     avif_io_.destroy = nullptr;
     avif_io_.read = ReadFromSegmentReader;
@@ -977,7 +960,8 @@ bool AVIFImageDecoder::UpdateDemuxer() {
   // alpha.
   if (container->depth == 8 && avif_yuv_format_ != AVIF_PIXEL_FORMAT_YUV400 &&
       !decoder_->alphaPresent && decoded_frame_count_ == 1) {
-    update_bpp_histogram_callback_ = base::BindOnce(&UpdateAvifBppHistogram);
+    static constexpr char kType[] = "Avif";
+    update_bpp_histogram_callback_ = base::BindOnce(&UpdateBppHistogram<kType>);
   }
 
   unsigned width = container->width;
@@ -1053,7 +1037,7 @@ avifResult AVIFImageDecoder::DecodeImage(wtf_size_t index) {
   }
 
   if (ret == AVIF_RESULT_OK) {
-    if (IsAllDataReceived() && !update_bpp_histogram_callback_.is_null()) {
+    if (IsAllDataReceived() && update_bpp_histogram_callback_) {
       std::move(update_bpp_histogram_callback_).Run(Size(), data_->size());
     }
 
@@ -1238,7 +1222,7 @@ bool AVIFImageDecoder::GetGainmapInfoAndData(
   // We already know that the file is an AVIF file so there is no need to
   // call AvifInfoIdentify(). Get the features directly.
   AvifInfoSegmentReaderStream stream;
-  stream.reader = data_.get();
+  stream.reader = data_;
 
   // Extract gainmap image.
   AvifInfoFeatures features;
@@ -1249,7 +1233,46 @@ bool AVIFImageDecoder::GetGainmapInfoAndData(
   }
   out_gainmap_data = CreateGainmapSegmentReader(features, data_.get());
 
-  // Parse gainmap image to get gainmap XMP.
+  // If libavif detected a gain map, it already parsed the metadata from the
+  // 'tmap' box.
+  if (decoder_->gainMapPresent) {
+    const avifGainMapMetadata& metadata = decoder_->image->gainMap.metadata;
+    for (int i = 0; i < 3; ++i) {
+      if (metadata.gainMapMinD[i] == 0 || metadata.gainMapMaxD[i] == 0 ||
+          metadata.gainMapGammaD[i] == 0 || metadata.offsetSdrD[i] == 0 ||
+          metadata.offsetHdrD[i] == 0) {
+        DVLOG(1) << "Invalid gainmap metadata: a denominator value is zero";
+        return false;
+      }
+      // Using double and not float because uint32_t->float conversion can cause
+      // precision loss.
+      out_gainmap_info.fGainmapRatioMin[i] =
+          FractionToFloat(metadata.gainMapMinN[i], metadata.gainMapMinD[i]);
+      out_gainmap_info.fGainmapRatioMax[i] =
+          FractionToFloat(metadata.gainMapMaxN[i], metadata.gainMapMaxD[i]);
+      out_gainmap_info.fGainmapGamma[i] =
+          FractionToFloat(metadata.gainMapGammaN[i], metadata.gainMapGammaD[i]);
+      out_gainmap_info.fEpsilonSdr[i] =
+          FractionToFloat(metadata.offsetSdrN[i], metadata.offsetSdrD[i]);
+      out_gainmap_info.fEpsilonHdr[i] =
+          FractionToFloat(metadata.offsetHdrN[i], metadata.offsetHdrD[i]);
+    }
+    if (metadata.hdrCapacityMinD == 0 || metadata.hdrCapacityMaxD == 0) {
+      DVLOG(1) << "Invalid gainmap metadata: a denominator value is zero";
+      return false;
+    }
+    out_gainmap_info.fDisplayRatioSdr =
+        FractionToFloat(metadata.hdrCapacityMinN, metadata.hdrCapacityMinD);
+    out_gainmap_info.fDisplayRatioHdr =
+        FractionToFloat(metadata.hdrCapacityMaxN, metadata.hdrCapacityMaxD);
+    out_gainmap_info.fBaseImageType = metadata.baseRenditionIsHDR
+                                          ? SkGainmapInfo::BaseImageType::kHDR
+                                          : SkGainmapInfo::BaseImageType::kSDR;
+    return true;
+  }
+  // Otherwise, the metadata should be in the gain map image's XMP.
+
+  // Parse the gainmap image to get the gainmap XMP.
   AvifIOData gainmap_avif_io_data(out_gainmap_data.get(), IsAllDataReceived());
 
   avifIO gainmap_avif_io = {.destroy = nullptr,
@@ -1295,9 +1318,10 @@ bool AVIFImageDecoder::GetGainmapInfoAndData(
 }
 
 AVIFImageDecoder::AvifIOData::AvifIOData() = default;
-AVIFImageDecoder::AvifIOData::AvifIOData(const SegmentReader* reader,
-                                         bool all_data_received)
-    : reader(reader), all_data_received(all_data_received) {}
+AVIFImageDecoder::AvifIOData::AvifIOData(
+    scoped_refptr<const SegmentReader> reader,
+    bool all_data_received)
+    : reader(std::move(reader)), all_data_received(all_data_received) {}
 AVIFImageDecoder::AvifIOData::~AvifIOData() = default;
 
 }  // namespace blink

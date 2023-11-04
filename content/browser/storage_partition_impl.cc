@@ -37,6 +37,7 @@
 #include "base/types/optional_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/attribution_reporting/features.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/services/storage/privileged/mojom/indexed_db_control.mojom.h"
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
@@ -63,7 +64,7 @@
 #include "content/browser/cache_storage/cache_storage_control_wrapper.h"
 #include "content/browser/code_cache/generated_code_cache.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
-#include "content/browser/cookie_deprecation_label/cookie_deprecation_label_manager.h"
+#include "content/browser/cookie_deprecation_label/cookie_deprecation_label_manager_impl.h"
 #include "content/browser/cookie_store/cookie_store_manager.h"
 #include "content/browser/devtools/devtools_background_services_context_impl.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
@@ -101,6 +102,7 @@
 #include "content/browser/ssl_private_key_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/worker_host/shared_worker_service_impl.h"
+#include "content/common/features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -1427,7 +1429,7 @@ void StoragePartitionImpl::Initialize(
   platform_notification_context_->Initialize();
 
   devtools_background_services_context_ =
-      base::MakeRefCounted<DevToolsBackgroundServicesContextImpl>(
+      std::make_unique<DevToolsBackgroundServicesContextImpl>(
           browser_context_, service_worker_context_);
 
   content_index_context_ = base::MakeRefCounted<ContentIndexContextImpl>(
@@ -1435,11 +1437,11 @@ void StoragePartitionImpl::Initialize(
 
   background_fetch_context_ = base::MakeRefCounted<BackgroundFetchContext>(
       weak_factory_.GetWeakPtr(), service_worker_context_, quota_manager_proxy,
-      devtools_background_services_context_);
+      *devtools_background_services_context_.get());
 
   background_sync_context_ = base::MakeRefCounted<BackgroundSyncContextImpl>();
   background_sync_context_->Init(service_worker_context_,
-                                 devtools_background_services_context_);
+                                 *devtools_background_services_context_.get());
 
   payment_app_context_ = new PaymentAppContextImpl();
   payment_app_context_->Init(service_worker_context_);
@@ -1450,10 +1452,14 @@ void StoragePartitionImpl::Initialize(
       std::make_unique<BluetoothAllowedDevicesMap>();
 
   // Must be initialized before the `url_loader_factory_getter_`.
+  // Cookie deprecation traffic labels should not be sent in incognito mode,
+  // unless the "enable_incognito" feature parameter is true.
   if (base::FeatureList::IsEnabled(
-          net::features::kCookieDeprecationFacilitatedTestingLabels)) {
+          features::kCookieDeprecationFacilitatedTesting) &&
+      (!is_in_memory() ||
+       features::kCookieDeprecationFacilitatedTestingEnableIncognito.Get())) {
     cookie_deprecation_label_manager_ =
-        std::make_unique<CookieDeprecationLabelManager>(browser_context_);
+        std::make_unique<CookieDeprecationLabelManagerImpl>(browser_context_);
   }
 
   url_loader_factory_getter_ = new URLLoaderFactoryGetter();
@@ -1479,7 +1485,7 @@ void StoragePartitionImpl::Initialize(
   subresource_proxying_url_loader_service_ =
       std::make_unique<SubresourceProxyingURLLoaderService>(browser_context_);
 
-  if (blink::features::IsKeepAliveInBrowserMigrationEnabled()) {
+  if (blink::features::IsKeepAliveURLLoaderServiceEnabled()) {
     keep_alive_url_loader_service_ =
         std::make_unique<KeepAliveURLLoaderService>(browser_context_);
   }
@@ -1494,7 +1500,8 @@ void StoragePartitionImpl::Initialize(
 
   bucket_manager_ = std::make_unique<BucketManager>(this);
 
-  if (base::FeatureList::IsEnabled(blink::features::kConversionMeasurement)) {
+  if (base::FeatureList::IsEnabled(
+          attribution_reporting::features::kConversionMeasurement)) {
     // The Conversion Measurement API is not available in Incognito mode, but
     // this is enforced by the `AttributionManagerImpl` itself for better error
     // reporting and metrics.

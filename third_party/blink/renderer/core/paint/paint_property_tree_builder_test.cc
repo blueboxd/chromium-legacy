@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/layout/layout_tree_as_text.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
+#include "third_party/blink/renderer/core/paint/fragment_data_iterator.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
@@ -4302,12 +4303,12 @@ TEST_P(PaintPropertyTreeBuilderTest,
   // top-left of the border box.
   EXPECT_EQ(PhysicalOffset(8, 8), target1->FirstFragment().PaintOffset());
   // |target1| is only in the first column.
-  EXPECT_FALSE(target1->FirstFragment().NextFragment());
+  EXPECT_FALSE(target1->IsFragmented());
 
   LayoutObject* target2 = GetLayoutObjectByElementId("target2");
   EXPECT_EQ(PhysicalOffset(158, 8), target2->FirstFragment().PaintOffset());
   // |target2| is only in the second column.
-  EXPECT_FALSE(target2->FirstFragment().NextFragment());
+  EXPECT_FALSE(target2->IsFragmented());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
@@ -4367,9 +4368,9 @@ TEST_P(PaintPropertyTreeBuilderTest,
     LayoutObject* first = GetLayoutObjectByElementId("first");
     LayoutObject* second = GetLayoutObjectByElementId("second");
     EXPECT_EQ(PhysicalOffset(), first->FirstFragment().PaintOffset());
-    EXPECT_FALSE(first->FirstFragment().NextFragment());
+    EXPECT_FALSE(first->IsFragmented());
     EXPECT_EQ(PhysicalOffset(70, 0), second->FirstFragment().PaintOffset());
-    EXPECT_FALSE(second->FirstFragment().NextFragment());
+    EXPECT_FALSE(second->IsFragmented());
   };
 
   test();
@@ -5536,11 +5537,13 @@ TEST_P(PaintPropertyTreeBuilderTest, FragmentPaintOffsetUnderOverflowScroll) {
             PaintPropertiesForElement("container")->PaintOffsetTranslation());
 
   const auto* content = GetLayoutObjectByElementId("content");
-  const auto& first_fragment = content->FirstFragment();
-  const auto* second_fragment = first_fragment.NextFragment();
+  FragmentDataIterator iterator(*content);
+  const auto* first_fragment = iterator.GetFragmentData();
+  ASSERT_TRUE(iterator.Advance());
+  const auto* second_fragment = iterator.GetFragmentData();
   ASSERT_NE(nullptr, second_fragment);
 
-  EXPECT_EQ(PhysicalOffset(), first_fragment.PaintOffset());
+  EXPECT_EQ(PhysicalOffset(), first_fragment->PaintOffset());
   EXPECT_EQ(PhysicalOffset(390, 0), second_fragment->PaintOffset());
 }
 
@@ -7147,7 +7150,6 @@ TEST_P(PaintPropertyTreeBuilderTest, DontPromoteTrivial3DWithLowEndDevice) {
   } while (false)
 
 TEST_P(PaintPropertyTreeBuilderTest, BackgroundClip) {
-  ScopedCompositeBackgroundAttachmentFixedForTest enabled(true);
   SetPreferCompositingToLCDText(true);
 
   SetBodyInnerHTML(R"HTML(
@@ -7228,7 +7230,6 @@ TEST_P(PaintPropertyTreeBuilderTest, BackgroundClip) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, BackgroundClipFragmented) {
-  ScopedCompositeBackgroundAttachmentFixedForTest enabled(true);
   SetPreferCompositingToLCDText(true);
 
   SetBodyInnerHTML(R"HTML(

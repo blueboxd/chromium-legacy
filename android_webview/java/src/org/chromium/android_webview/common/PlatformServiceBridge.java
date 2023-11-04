@@ -76,12 +76,12 @@ public abstract class PlatformServiceBridge {
         callback.onResult(false);
     }
 
-    // Overriding implementations may call "callback" asynchronously. For simplicity (and not
-    // because of any technical limitation) we require that "queryMetricsSetting" and "callback"
-    // both get called on WebView's UI thread.
+    // Overriding implementations should not call "callback" synchronously, even if the result is
+    // already known. The callback should be posted to the UI thread to run at the next opportunity,
+    // to avoid blocking the critical path for startup.
     public void queryMetricsSetting(Callback<Boolean> callback) {
         ThreadUtils.assertOnUiThread();
-        callback.onResult(false);
+        ThreadUtils.postOnUiThread(() -> { callback.onResult(false); });
     }
 
     public void setSafeBrowsingHandler() {
@@ -93,6 +93,9 @@ public abstract class PlatformServiceBridge {
     }
 
     // Takes an uncompressed, serialized UMA proto and logs it via a platform-specific mechanism.
+    public void logMetrics(byte[] data) {}
+
+    // TODO(crbug.com/1485663): remove this once downstream lands
     public void logMetrics(byte[] data, boolean useDefaultUploadQos) {}
 
     /**
@@ -111,6 +114,13 @@ public abstract class PlatformServiceBridge {
      * - Cancelled: 16
      * - API not connected (probably means the API is not available on device): 17
      */
+    public int logMetricsBlocking(byte[] data) {
+        // TODO(crbug.com/1248039): remove this once downstream implementation lands.
+        logMetrics(data, true);
+        return 0;
+    }
+
+    // TODO(crbug.com/1485663): remove this once downstream lands
     public int logMetricsBlocking(byte[] data, boolean useDefaultUploadQos) {
         // TODO(crbug.com/1248039): remove this once downstream implementation lands.
         logMetrics(data, useDefaultUploadQos);

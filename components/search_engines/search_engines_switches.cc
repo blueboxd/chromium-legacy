@@ -14,4 +14,13 @@ const char kExtraSearchQueryParams[] = "extra-search-query-params";
 // Intended for testing. Expects 2-letter country codes.
 const char kSearchEngineChoiceCountry[] = "search-engine-choice-country";
 
+// Disable the search engine choice screen for testing / autmation.
+const char kDisableSearchEngineChoiceScreen[] =
+    "disable-search-engine-choice-screen";
+
+// Force-enable showing the search engine choice screen for testing regardless
+// of region or choice already having been made.
+const char kForceSearchEngineChoiceScreen[] =
+    "force-search-engine-choice-screen";
+
 }  // namespace switches

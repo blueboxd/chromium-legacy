@@ -20,7 +20,9 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/to_string.h"
+#include "base/types/optional_util.h"
 #include "base/values.h"
+#include "chrome/browser/web_applications/generated_icon_fix_util.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom-shared.h"
 #include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
@@ -302,7 +304,7 @@ base::Value OptTabStripToDebugValue(
 
 }  // namespace
 
-WebApp::WebApp(const AppId& app_id)
+WebApp::WebApp(const webapps::AppId& app_id)
     : app_id_(app_id),
       chromeos_data_(IsChromeOsDataMandatory()
                          ? absl::make_optional<WebAppChromeOsData>()
@@ -325,7 +327,7 @@ const SortedSizesPx& WebApp::downloaded_icon_sizes(IconPurpose purpose) const {
   }
 }
 
-ManifestId WebApp::manifest_id() const {
+webapps::ManifestId WebApp::manifest_id() const {
   // Almost all production use-cases should have the manifest_id set, but in
   // some test it is not. If the manifest id is not set, then fall back to the
   // start_url, as per the algorithm in
@@ -592,8 +594,8 @@ void WebApp::SetLastLaunchTime(const base::Time& time) {
   last_launch_time_ = time;
 }
 
-void WebApp::SetInstallTime(const base::Time& time) {
-  install_time_ = time;
+void WebApp::SetFirstInstallTime(const base::Time& time) {
+  first_install_time_ = time;
 }
 
 void WebApp::SetManifestUpdateTime(const base::Time& time) {
@@ -625,7 +627,7 @@ void WebApp::SetManifestUrl(const GURL& manifest_url) {
   manifest_url_ = manifest_url;
 }
 
-void WebApp::SetManifestId(const ManifestId& manifest_id) {
+void WebApp::SetManifestId(const webapps::ManifestId& manifest_id) {
   CHECK(manifest_id.is_valid());
   CHECK(start_url_.is_empty() ||
         url::Origin::Create(start_url_)
@@ -642,7 +644,8 @@ void WebApp::SetLaunchHandler(absl::optional<LaunchHandler> launch_handler) {
   launch_handler_ = std::move(launch_handler);
 }
 
-void WebApp::SetParentAppId(const absl::optional<AppId>& parent_app_id) {
+void WebApp::SetParentAppId(
+    const absl::optional<webapps::AppId>& parent_app_id) {
   parent_app_id_ = parent_app_id;
 }
 
@@ -736,6 +739,17 @@ bool WebApp::RemoveInstallUrlForSource(WebAppManagement::Type type,
 
 void WebApp::SetAlwaysShowToolbarInFullscreen(bool show) {
   always_show_toolbar_in_fullscreen_ = show;
+}
+
+void WebApp::SetLatestInstallTime(const base::Time& latest_install_time) {
+  latest_install_time_ = latest_install_time;
+}
+
+void WebApp::SetGeneratedIconFix(
+    absl::optional<GeneratedIconFix> generated_icon_fix) {
+  CHECK(!generated_icon_fix.has_value() ||
+        generated_icon_fix_util::IsValid(*generated_icon_fix));
+  generated_icon_fix_ = generated_icon_fix;
 }
 
 WebApp::ClientData::ClientData() = default;
@@ -886,6 +900,12 @@ void WebApp::IsolationData::SetPendingUpdateInfo(
   pending_update_info_ = pending_update_info;
 }
 
+const absl::optional<GeneratedIconFix>& WebApp::generated_icon_fix() const {
+  CHECK(!generated_icon_fix_.has_value() ||
+        generated_icon_fix_util::IsValid(generated_icon_fix_.value()));
+  return generated_icon_fix_;
+}
+
 bool WebApp::IsolationData::PendingUpdateInfo::operator==(
     const WebApp::IsolationData::PendingUpdateInfo& other) const = default;
 bool WebApp::IsolationData::PendingUpdateInfo::operator!=(
@@ -936,7 +956,7 @@ bool WebApp::operator==(const WebApp& other) const {
         app.note_taking_new_note_url_,
         app.last_badging_time_,
         app.last_launch_time_,
-        app.install_time_,
+        app.first_install_time_,
         app.manifest_update_time_,
         app.run_on_os_login_mode_,
         app.run_on_os_login_os_integration_state_,
@@ -961,7 +981,9 @@ bool WebApp::operator==(const WebApp& other) const {
         app.always_show_toolbar_in_fullscreen_,
         app.current_os_integration_states_,
         app.isolation_data_,
-        app.is_user_selected_app_for_capturing_links_
+        app.is_user_selected_app_for_capturing_links_,
+        app.latest_install_time_,
+        app.generated_icon_fix_
         // clang-format on
     );
   };
@@ -1058,7 +1080,7 @@ base::Value WebApp::AsDebugValueWithOnlyPlatformAgnosticFields() const {
   root.Set("management_type_to_external_configuration_map",
            std::move(external_map));
 
-  root.Set("install_time", base::ToString(install_time_));
+  root.Set("first_install_time", base::ToString(first_install_time_));
 
   root.Set("is_generated_icon", is_generated_icon_);
 
@@ -1174,6 +1196,11 @@ base::Value WebApp::AsDebugValueWithOnlyPlatformAgnosticFields() const {
 
   root.Set("is_user_selected_app_for_capturing_links",
            is_user_selected_app_for_capturing_links_);
+
+  root.Set("latest_install_time", base::ToString(latest_install_time_));
+
+  root.Set("generated_icon_fix", generated_icon_fix_util::ToDebugValue(
+                                     base::OptionalToPtr(generated_icon_fix_)));
 
   return base::Value(std::move(root));
 }

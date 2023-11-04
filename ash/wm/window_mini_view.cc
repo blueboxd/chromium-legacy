@@ -19,7 +19,6 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
-#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
@@ -43,7 +42,7 @@ constexpr int kFocusRingCornerRadius = 20;
 // `scale` for the preview view with given source `window` if allowed to `show`.
 // If the preview view is completely inside the rounded bounds of `backdrop`, no
 // need to round its corners.
-gfx::RoundedCornersF GetRoundedCornerForPreviewView(
+gfx::RoundedCornersF GetRoundedCornersForPreviewView(
     aura::Window* window,
     views::View* backdrop,
     const gfx::Rect& preview_bounds_in_screen,
@@ -66,9 +65,6 @@ gfx::RoundedCornersF GetRoundedCornerForPreviewView(
   }
 
   if (preview_view_rounded_corners.has_value()) {
-    // `window1` is guaranteed to be the primary snapped window in a snap
-    // group and `window2` is guaranteed to be the secondary snapped window in
-    // a snap group.
     // TODO(b/294294344): Return a different set of rounded corners if it is
     // for vertical split view.
     const auto raw_value = preview_view_rounded_corners.value();
@@ -165,29 +161,8 @@ void WindowMiniView::SetBackdropVisibility(bool visible) {
     backdrop_view_->SetCanProcessEventsWithinSubtree(false);
     Layout();
   }
+
   backdrop_view_->SetVisible(visible);
-}
-
-void WindowMiniView::SetShowPreview(bool show) {
-  if (show == !!preview_view_) {
-    return;
-  }
-
-  if (!show) {
-    RemoveChildViewT(preview_view_.get());
-    preview_view_ = nullptr;
-    return;
-  }
-
-  if (!source_window_) {
-    return;
-  }
-
-  preview_view_ =
-      AddChildView(std::make_unique<WindowPreviewView>(source_window_));
-  preview_view_->SetPaintToLayer();
-  preview_view_->layer()->SetFillsBoundsOpaquely(false);
-  Layout();
 }
 
 void WindowMiniView::RefreshPreviewRoundedCorners(bool show) {
@@ -197,11 +172,10 @@ void WindowMiniView::RefreshPreviewRoundedCorners(bool show) {
 
   ui::Layer* layer = preview_view_->layer();
   CHECK(layer);
-  const float scale = layer->transform().To2dScale().x();
 
-  layer->SetRoundedCornerRadius(GetRoundedCornerForPreviewView(
-      source_window_, backdrop_view_, preview_view_->GetBoundsInScreen(), scale,
-      show, preview_view_rounded_corners_));
+  layer->SetRoundedCornerRadius(GetRoundedCornersForPreviewView(
+      source_window_, backdrop_view_, preview_view_->GetBoundsInScreen(),
+      layer->transform().To2dScale().x(), show, preview_view_rounded_corners_));
   layer->SetIsFastRoundedCorner(true);
 }
 
@@ -236,6 +210,28 @@ aura::Window* WindowMiniView::GetWindowAtPoint(
   return GetBoundsInScreen().Contains(screen_point) ? source_window_ : nullptr;
 }
 
+void WindowMiniView::SetShowPreview(bool show) {
+  if (show == !!preview_view_) {
+    return;
+  }
+
+  if (!show) {
+    RemoveChildViewT(preview_view_.get());
+    preview_view_ = nullptr;
+    return;
+  }
+
+  if (!source_window_) {
+    return;
+  }
+
+  preview_view_ =
+      AddChildView(std::make_unique<WindowPreviewView>(source_window_));
+  preview_view_->SetPaintToLayer();
+  preview_view_->layer()->SetFillsBoundsOpaquely(false);
+  Layout();
+}
+
 int WindowMiniView::TryRemovingChildItem(aura::Window* destroying_window) {
   return 0;
 }
@@ -245,9 +241,10 @@ gfx::RoundedCornersF WindowMiniView::GetRoundedCorners() const {
     return gfx::RoundedCornersF();
   }
 
-  auto header_rounded_corners =
+  const gfx::RoundedCornersF header_rounded_corners =
       header_view_->GetHeaderRoundedCorners(source_window_);
-  auto preview_rounded_corners = preview_view_->layer()->rounded_corner_radii();
+  const gfx::RoundedCornersF preview_rounded_corners =
+      preview_view_->layer()->rounded_corner_radii();
   return gfx::RoundedCornersF(header_rounded_corners.upper_left(),
                               header_rounded_corners.upper_right(),
                               preview_rounded_corners.lower_right(),
@@ -267,14 +264,8 @@ gfx::Size WindowMiniView::GetPreviewViewSize() const {
 
 WindowMiniView::WindowMiniView(aura::Window* source_window)
     : source_window_(source_window) {
-  SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(false);
-
   window_observation_.Observe(source_window);
-
   header_view_ = AddChildView(std::make_unique<WindowMiniViewHeaderView>(this));
-  header_view_->SetPaintToLayer();
-  header_view_->layer()->SetFillsBoundsOpaquely(false);
 }
 
 gfx::Rect WindowMiniView::GetContentAreaBounds() const {

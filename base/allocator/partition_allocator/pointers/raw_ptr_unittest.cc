@@ -62,8 +62,9 @@ static_assert(sizeof(raw_ptr<int>) == sizeof(int*),
 static_assert(sizeof(raw_ptr<std::string>) == sizeof(std::string*),
               "raw_ptr shouldn't add memory overhead");
 
-#if !BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) && \
-    !BUILDFLAG(USE_ASAN_UNOWNED_PTR) && !BUILDFLAG(USE_HOOKABLE_RAW_PTR)
+#if !BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) &&                            \
+    !BUILDFLAG(USE_ASAN_UNOWNED_PTR) && !BUILDFLAG(USE_HOOKABLE_RAW_PTR) && \
+    !BUILDFLAG(RAW_PTR_ZERO_ON_MOVE) && !BUILDFLAG(RAW_PTR_ZERO_ON_DESTRUCT)
 // |is_trivially_copyable| assertion means that arrays/vectors of raw_ptr can
 // be copied by memcpy.
 static_assert(std::is_trivially_copyable<raw_ptr<void>>::value,
@@ -72,7 +73,16 @@ static_assert(std::is_trivially_copyable<raw_ptr<int>>::value,
               "raw_ptr should be trivially copyable");
 static_assert(std::is_trivially_copyable<raw_ptr<std::string>>::value,
               "raw_ptr should be trivially copyable");
+#endif  // !BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) &&
+        // !BUILDFLAG(USE_ASAN_UNOWNED_PTR) &&
+        // !BUILDFLAG(USE_HOOKABLE_RAW_PTR) &&
+        // !BUILDFLAG(RAW_PTR_ZERO_ON_MOVE) &&
+        // !BUILDFLAG(RAW_PTR_ZERO_ON_DESTRUCT)
 
+#if !BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) &&                            \
+    !BUILDFLAG(USE_ASAN_UNOWNED_PTR) && !BUILDFLAG(USE_HOOKABLE_RAW_PTR) && \
+    !BUILDFLAG(RAW_PTR_ZERO_ON_CONSTRUCT) &&                                \
+    !BUILDFLAG(RAW_PTR_ZERO_ON_DESTRUCT)
 // |is_trivially_default_constructible| assertion helps retain implicit default
 // constructors when raw_ptr is used as a union field.  Example of an error
 // if this assertion didn't hold:
@@ -93,7 +103,10 @@ static_assert(
     std::is_trivially_default_constructible<raw_ptr<std::string>>::value,
     "raw_ptr should be trivially default constructible");
 #endif  // !BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) &&
-        // !BUILDFLAG(USE_ASAN_UNOWNED_PTR) && !BUILDFLAG(USE_HOOKABLE_RAW_PTR)
+        // !BUILDFLAG(USE_ASAN_UNOWNED_PTR) &&
+        // !BUILDFLAG(USE_HOOKABLE_RAW_PTR) &&
+        // !BUILDFLAG(RAW_PTR_ZERO_ON_CONSTRUCT) &&
+        // !BUILDFLAG(RAW_PTR_ZERO_ON_DESTRUCT)
 
 // Verify that raw_ptr is a literal type, and its entire interface is constexpr.
 //
@@ -1318,8 +1331,9 @@ TEST_F(RawPtrTest, TrivialRelocability) {
     }
     number_of_capacity_changes++;
   } while (number_of_capacity_changes < 10);
-#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) || \
-    BUILDFLAG(USE_ASAN_UNOWNED_PTR) || BUILDFLAG(USE_HOOKABLE_RAW_PTR)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) ||                           \
+    BUILDFLAG(USE_ASAN_UNOWNED_PTR) || BUILDFLAG(USE_HOOKABLE_RAW_PTR) || \
+    BUILDFLAG(RAW_PTR_ZERO_ON_DESTRUCT)
   // TODO(lukasza): In the future (once C++ language and std library
   // support custom trivially relocatable objects) this #if branch can
   // be removed (keeping only the right long-term expectation from the
@@ -1328,15 +1342,16 @@ TEST_F(RawPtrTest, TrivialRelocability) {
 #else
   // This is the right long-term expectation.
   //
-  // (This EXPECT_EQ assertion is slightly misleading in
-  // !USE_BACKUP_REF_PTR mode, because RawPtrNoOpImpl has a default
-  // destructor that doesn't go through
-  // RawPtrCountingImpl::ReleaseWrappedPtr.  Nevertheless, the spirit of
-  // the EXPECT_EQ is correct + the assertion should be true in the
+  // (This EXPECT_EQ assertion is slightly misleading when NoOpImpl is used,
+  // because, unless zeroing is requested, it forces raw_ptr<> to use a default
+  // destructor that doesn't go through RawPtrCountingImpl::ReleaseWrappedPtr,
+  // so we can't really depend on `g_release_wrapped_ptr_cnt`. Nevertheless, the
+  // spirit of the EXPECT_EQ is correct + the assertion should be true in the
   // long-term.)
   EXPECT_EQ(0, RawPtrCountingImpl::release_wrapped_ptr_cnt);
 #endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) ||
-        // BUILDFLAG(USE_ASAN_UNOWNED_PTR)
+        // BUILDFLAG(USE_ASAN_UNOWNED_PTR) ||
+        // BUILDFLAG(RAW_PTR_ZERO_ON_DESTRUCT)
 
   // Basic smoke test that raw_ptr elements in a vector work okay.
   for (const auto& elem : vector) {
@@ -1349,22 +1364,22 @@ TEST_F(RawPtrTest, TrivialRelocability) {
   RawPtrCountingImpl::ClearCounters();
   size_t number_of_cleared_elements = vector.size();
   vector.clear();
-#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) || \
-    BUILDFLAG(USE_ASAN_UNOWNED_PTR) || BUILDFLAG(USE_HOOKABLE_RAW_PTR)
-
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) ||                           \
+    BUILDFLAG(USE_ASAN_UNOWNED_PTR) || BUILDFLAG(USE_HOOKABLE_RAW_PTR) || \
+    BUILDFLAG(RAW_PTR_ZERO_ON_DESTRUCT)
   EXPECT_EQ((int)number_of_cleared_elements,
             RawPtrCountingImpl::release_wrapped_ptr_cnt);
 #else
-  // TODO(lukasza): !USE_BACKUP_REF_PTR / RawPtrNoOpImpl has a default
-  // destructor that doesn't go through
-  // RawPtrCountingImpl::ReleaseWrappedPtr.  So we can't really depend
-  // on `g_release_wrapped_ptr_cnt`.  This #else branch should be
-  // deleted once USE_BACKUP_REF_PTR is removed (e.g. once BackupRefPtr
-  // ships to the Stable channel).
+  // TODO(lukasza): NoOpImpl has a default destructor that, unless zeroing is
+  // requested, doesn't go through RawPtrCountingImpl::ReleaseWrappedPtr.  So we
+  // can't really depend on `g_release_wrapped_ptr_cnt`.  This #else branch
+  // should be deleted once USE_BACKUP_REF_PTR is removed (e.g. once
+  // BackupRefPtr ships to the Stable channel).
   EXPECT_EQ(0, RawPtrCountingImpl::release_wrapped_ptr_cnt);
   std::ignore = number_of_cleared_elements;
 #endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) ||
-        // BUILDFLAG(USE_ASAN_UNOWNED_PTR)
+        // BUILDFLAG(USE_ASAN_UNOWNED_PTR) ||
+        // BUILDFLAG(RAW_PTR_ZERO_ON_DESTRUCT)
 }
 
 struct BaseStruct {
@@ -1408,6 +1423,37 @@ class PmfTestDerived : public PmfTestBase {
   using PmfTestBase::MemFunc;
   int MemFunc(float, double) { return 22; }
 };
+
+TEST_F(RawPtrTest, PointerToMemberFunction) {
+  PmfTestDerived object;
+  int (PmfTestBase::*pmf_base_base)(char, double) const = &PmfTestBase::MemFunc;
+  int (PmfTestDerived::*pmf_derived_base)(char, double) const =
+      &PmfTestDerived::MemFunc;
+  int (PmfTestDerived::*pmf_derived_derived)(float, double) =
+      &PmfTestDerived::MemFunc;
+
+  // Test for `derived_ptr`
+  CountingRawPtr<PmfTestDerived> derived_ptr = &object;
+
+  EXPECT_EQ((derived_ptr->*pmf_base_base)(0, 0), 11);
+  EXPECT_EQ((derived_ptr->*pmf_derived_base)(0, 0), 11);
+  EXPECT_EQ((derived_ptr->*pmf_derived_derived)(0, 0), 22);
+
+  // Test for `derived_ptr_const`
+  const CountingRawPtr<PmfTestDerived> derived_ptr_const = &object;
+
+  EXPECT_EQ((derived_ptr_const->*pmf_base_base)(0, 0), 11);
+  EXPECT_EQ((derived_ptr_const->*pmf_derived_base)(0, 0), 11);
+  EXPECT_EQ((derived_ptr_const->*pmf_derived_derived)(0, 0), 22);
+
+  // Test for `const_derived_ptr`
+  CountingRawPtr<const PmfTestDerived> const_derived_ptr = &object;
+
+  EXPECT_EQ((const_derived_ptr->*pmf_base_base)(0, 0), 11);
+  EXPECT_EQ((const_derived_ptr->*pmf_derived_base)(0, 0), 11);
+  // const_derived_ptr->*pmf_derived_derived is not a const member function,
+  // so it's not possible to test it.
+}
 
 TEST_F(RawPtrTest, WorksWithOptional) {
   int x = 0;
@@ -1622,7 +1668,7 @@ TEST_F(BackupRefPtrTest, ZeroSized) {
   for (int i = 0; i < 128 * 1024; ++i) {
     // Constructing a raw_ptr instance from a zero-sized allocation should
     // not result in a crash.
-    ptrs.emplace_back(allocator_.root()->Alloc(0, ""));
+    ptrs.emplace_back(allocator_.root()->Alloc(0));
   }
 }
 
@@ -1632,27 +1678,21 @@ TEST_F(BackupRefPtrTest, EndPointer) {
   for (int size = 0; size < 1024; size += sizeof(void*)) {
     // Creating a raw_ptr from an address right past the end of an allocation
     // should not result in a crash or corrupt the free list.
-    char* raw_ptr1 =
-        reinterpret_cast<char*>(allocator_.root()->Alloc(size, ""));
+    char* raw_ptr1 = reinterpret_cast<char*>(allocator_.root()->Alloc(size));
     raw_ptr<char, AllowPtrArithmetic> wrapped_ptr = raw_ptr1 + size;
     wrapped_ptr = nullptr;
     // We need to make two more allocations to turn the possible free list
     // corruption into an observable crash.
-    char* raw_ptr2 =
-        reinterpret_cast<char*>(allocator_.root()->Alloc(size, ""));
-    char* raw_ptr3 =
-        reinterpret_cast<char*>(allocator_.root()->Alloc(size, ""));
+    char* raw_ptr2 = reinterpret_cast<char*>(allocator_.root()->Alloc(size));
+    char* raw_ptr3 = reinterpret_cast<char*>(allocator_.root()->Alloc(size));
 
     // Similarly for operator+=.
-    char* raw_ptr4 =
-        reinterpret_cast<char*>(allocator_.root()->Alloc(size, ""));
+    char* raw_ptr4 = reinterpret_cast<char*>(allocator_.root()->Alloc(size));
     wrapped_ptr = raw_ptr4;
     wrapped_ptr += size;
     wrapped_ptr = nullptr;
-    char* raw_ptr5 =
-        reinterpret_cast<char*>(allocator_.root()->Alloc(size, ""));
-    char* raw_ptr6 =
-        reinterpret_cast<char*>(allocator_.root()->Alloc(size, ""));
+    char* raw_ptr5 = reinterpret_cast<char*>(allocator_.root()->Alloc(size));
+    char* raw_ptr6 = reinterpret_cast<char*>(allocator_.root()->Alloc(size));
 
     allocator_.root()->Free(raw_ptr1);
     allocator_.root()->Free(raw_ptr2);
@@ -1700,7 +1740,7 @@ TEST_F(BackupRefPtrTest, QuarantinedBytes) {
 void RunBackupRefPtrImplAdvanceTest(
     partition_alloc::PartitionAllocator& allocator,
     size_t requested_size) {
-  char* ptr = static_cast<char*>(allocator.root()->Alloc(requested_size, ""));
+  char* ptr = static_cast<char*>(allocator.root()->Alloc(requested_size));
   raw_ptr<char, AllowPtrArithmetic> protected_ptr = ptr;
   protected_ptr += 123;
   protected_ptr -= 123;
@@ -1785,7 +1825,7 @@ TEST_F(BackupRefPtrTest, AdvanceAcrossPools) {
   char array1[1000];
   char array2[1000];
 
-  char* in_pool_ptr = static_cast<char*>(allocator_.root()->Alloc(123, ""));
+  char* in_pool_ptr = static_cast<char*>(allocator_.root()->Alloc(123));
 
   raw_ptr<char, AllowPtrArithmetic> protected_ptr = array1;
   // Nothing bad happens. Both pointers are outside of the BRP pool, so no
@@ -1805,8 +1845,8 @@ TEST_F(BackupRefPtrTest, AdvanceAcrossPools) {
 
 TEST_F(BackupRefPtrTest, GetDeltaElems) {
   size_t requested_size = allocator_.root()->AdjustSizeForExtrasSubtract(512);
-  char* ptr1 = static_cast<char*>(allocator_.root()->Alloc(requested_size, ""));
-  char* ptr2 = static_cast<char*>(allocator_.root()->Alloc(requested_size, ""));
+  char* ptr1 = static_cast<char*>(allocator_.root()->Alloc(requested_size));
+  char* ptr2 = static_cast<char*>(allocator_.root()->Alloc(requested_size));
   ASSERT_LT(ptr1, ptr2);  // There should be a ref-count between slots.
   raw_ptr<char> protected_ptr1 = ptr1;
   raw_ptr<char> protected_ptr1_2 = ptr1 + 1;
@@ -1909,7 +1949,7 @@ TEST_F(BackupRefPtrTest, Bind) {
 
 #if PA_CONFIG(REF_COUNT_CHECK_COOKIE)
 TEST_F(BackupRefPtrTest, ReinterpretCast) {
-  void* ptr = allocator_.root()->Alloc(16, "");
+  void* ptr = allocator_.root()->Alloc(16);
   allocator_.root()->Free(ptr);
 
   raw_ptr<void>* wrapped_ptr = reinterpret_cast<raw_ptr<void>*>(&ptr);
@@ -1948,7 +1988,7 @@ class ScopedInstallDanglingRawPtrChecks {
 TEST_F(BackupRefPtrTest, RawPtrMayDangle) {
   ScopedInstallDanglingRawPtrChecks enable_dangling_raw_ptr_checks;
 
-  void* ptr = allocator_.root()->Alloc(16, "");
+  void* ptr = allocator_.root()->Alloc(16);
   raw_ptr<void, DisableDanglingPtrDetection> dangling_ptr = ptr;
   allocator_.root()->Free(ptr);  // No dangling raw_ptr reported.
   dangling_ptr = nullptr;        // No dangling raw_ptr reported.
@@ -1957,7 +1997,7 @@ TEST_F(BackupRefPtrTest, RawPtrMayDangle) {
 TEST_F(BackupRefPtrTest, RawPtrNotDangling) {
   ScopedInstallDanglingRawPtrChecks enable_dangling_raw_ptr_checks;
 
-  void* ptr = allocator_.root()->Alloc(16, "");
+  void* ptr = allocator_.root()->Alloc(16);
   raw_ptr<void> dangling_ptr = ptr;
 #if BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS) && \
     !BUILDFLAG(ENABLE_DANGLING_RAW_PTR_PERF_EXPERIMENT)
@@ -1980,8 +2020,8 @@ TEST_F(BackupRefPtrTest, RawPtrNotDangling) {
 TEST_F(BackupRefPtrTest, DanglingPtrComparison) {
   ScopedInstallDanglingRawPtrChecks enable_dangling_raw_ptr_checks;
 
-  void* ptr_1 = allocator_.root()->Alloc(16, "");
-  void* ptr_2 = allocator_.root()->Alloc(16, "");
+  void* ptr_1 = allocator_.root()->Alloc(16);
+  void* ptr_2 = allocator_.root()->Alloc(16);
 
   if (ptr_1 > ptr_2) {
     std::swap(ptr_1, ptr_2);
@@ -2013,7 +2053,7 @@ TEST_F(BackupRefPtrTest, DanglingPtrComparison) {
 TEST_F(BackupRefPtrTest, DanglingPtrAssignment) {
   ScopedInstallDanglingRawPtrChecks enable_dangling_raw_ptr_checks;
 
-  void* ptr = allocator_.root()->Alloc(16, "");
+  void* ptr = allocator_.root()->Alloc(16);
 
   raw_ptr<void, DisableDanglingPtrDetection> dangling_ptr;
   raw_ptr<void> not_dangling_ptr;
@@ -2032,7 +2072,7 @@ TEST_F(BackupRefPtrTest, DanglingPtrAssignment) {
 TEST_F(BackupRefPtrTest, DanglingPtrCopyContructor) {
   ScopedInstallDanglingRawPtrChecks enable_dangling_raw_ptr_checks;
 
-  void* ptr = allocator_.root()->Alloc(16, "");
+  void* ptr = allocator_.root()->Alloc(16);
 
   raw_ptr<void> not_dangling_ptr(ptr);
   raw_ptr<void, DisableDanglingPtrDetection> dangling_ptr(not_dangling_ptr);
@@ -2085,8 +2125,7 @@ TEST_F(BackupRefPtrTest, SpatialAlgoCompat) {
       allocator_.root()->AllocationCapacityFromRequestedSize(requested_size));
   size_t requested_elements = requested_size / sizeof(int);
 
-  int* ptr =
-      reinterpret_cast<int*>(allocator_.root()->Alloc(requested_size, ""));
+  int* ptr = reinterpret_cast<int*>(allocator_.root()->Alloc(requested_size));
   int* ptr_end = ptr + requested_elements;
 
   CountingRawPtr<int> protected_ptr = ptr;
@@ -2177,7 +2216,7 @@ TEST_F(BackupRefPtrTest, SpatialAlgoCompat) {
 #if BUILDFLAG(BACKUP_REF_PTR_POISON_OOB_PTR)
 TEST_F(BackupRefPtrTest, Duplicate) {
   size_t requested_size = allocator_.root()->AdjustSizeForExtrasSubtract(512);
-  char* ptr = static_cast<char*>(allocator_.root()->Alloc(requested_size, ""));
+  char* ptr = static_cast<char*>(allocator_.root()->Alloc(requested_size));
   raw_ptr<char> protected_ptr1 = ptr;
   protected_ptr1 += requested_size;  // Pointer should now be poisoned.
 

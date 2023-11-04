@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.TabWebContentsObserver;
-import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
@@ -253,13 +252,17 @@ public class ChromeTabUtils {
 
     private static String tabDebugInfo(final Tab tab, @Nullable final String url) {
         WebContents webContents = tab.getWebContents();
+        boolean shouldShowLoadingUI = false;
+        if (webContents != null) {
+            shouldShowLoadingUI = TestThreadUtils.runOnUiThreadBlockingNoException(
+                    () -> webContents.shouldShowLoadingUI());
+        }
         return String.format(Locale.ENGLISH,
                 "Tab information at time of failure -- "
                         + "expected url: '%s', actual URL: '%s', load progress: %d, is "
                         + "loading: %b, web contents init: %b, web contents loading: %b",
                 url, getUrlStringOnUiThread(tab), Math.round(100 * tab.getProgress()),
-                tab.isLoading(), webContents != null,
-                webContents == null ? false : webContents.shouldShowLoadingUI());
+                tab.isLoading(), webContents != null, shouldShowLoadingUI);
     }
 
     /**
@@ -720,7 +723,7 @@ public class ChromeTabUtils {
      */
     public static int getRootId(Tab tab) {
         Assert.assertTrue(ThreadUtils.runningOnUiThread());
-        return CriticalPersistedTabData.from(tab).getRootId();
+        return tab.getRootId();
     }
 
     /**

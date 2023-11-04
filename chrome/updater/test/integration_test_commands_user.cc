@@ -51,8 +51,14 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
 
   void Install() const override { updater::test::Install(updater_scope_); }
 
-  void InstallUpdaterAndApp(const std::string& app_id) const override {
-    updater::test::InstallUpdaterAndApp(updater_scope_, app_id);
+  void InstallUpdaterAndApp(
+      const std::string& app_id,
+      const bool is_silent_install,
+      const std::string& tag,
+      const std::string& child_window_text_to_find) const override {
+    updater::test::InstallUpdaterAndApp(updater_scope_, app_id,
+                                        is_silent_install, tag,
+                                        child_window_text_to_find);
   }
 
   void ExpectInstalled() const override {
@@ -189,6 +195,11 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::ExpectNotRegistered(updater_scope_, app_id);
   }
 
+  void ExpectAppTag(const std::string& app_id,
+                    const std::string& tag) const override {
+    updater::test::ExpectAppTag(updater_scope_, app_id, tag);
+  }
+
   void ExpectAppVersion(const std::string& app_id,
                         const base::Version& version) const override {
     updater::test::ExpectAppVersion(updater_scope_, app_id, version);
@@ -306,6 +317,7 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
   void RunHandoff(const std::string& app_id) const override {
     updater::test::RunHandoff(updater_scope_, app_id);
   }
+#endif  // BUILDFLAG(IS_WIN)
 
   void InstallAppViaService(
       const std::string& app_id,
@@ -313,7 +325,6 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::InstallAppViaService(updater_scope_, app_id,
                                         expected_final_values);
   }
-#endif  // BUILDFLAG(IS_WIN)
 
   base::FilePath GetDifferentUserPath() const override {
 #if BUILDFLAG(IS_MAC)
@@ -358,6 +369,10 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::RunRecoveryComponent(updater_scope_, app_id, version);
   }
 
+  void SetLastChecked(const base::Time& time) const override {
+    updater::test::SetLastChecked(updater_scope_, time);
+  }
+
   void ExpectLastChecked() const override {
     updater::test::ExpectLastChecked(updater_scope_);
   }
@@ -380,6 +395,10 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
                                        bool is_silent_install) override {
     updater::test::RunOfflineInstallOsNotSupported(
         updater_scope_, is_legacy_install, is_silent_install);
+  }
+
+  void DMPushEnrollmentToken(const std::string& enrollment_token) override {
+    FAIL() << __func__ << ": requires system scope.";
   }
 
   void DMDeregisterDevice() override {

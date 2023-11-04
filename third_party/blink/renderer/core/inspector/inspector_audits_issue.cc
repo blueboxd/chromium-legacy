@@ -249,7 +249,7 @@ void AuditsIssue::ReportAttributionIssue(ExecutionContext* execution_context,
                      .build();
 
   if (element) {
-    details->setViolatingNodeId(DOMNodeIds::IdForNode(element));
+    details->setViolatingNodeId(element->GetDomNodeId());
   }
   if (!request_id.IsNull()) {
     details->setRequest(protocol::Audits::AffectedRequest::create()
@@ -557,7 +557,7 @@ void AuditsIssue::ReportMixedContentIssue(
     const mojom::blink::RequestContextType request_context,
     LocalFrame* frame,
     const MixedContentResolutionStatus resolution_status,
-    const absl::optional<String>& devtools_id) {
+    base::optional_ref<const String> devtools_id) {
   auto affected_frame =
       protocol::Audits::AffectedFrame::create()
           .setFrameId(frame->GetDevToolsFrameToken().ToString().c_str())
@@ -574,7 +574,7 @@ void AuditsIssue::ReportMixedContentIssue(
           .setFrame(std::move(affected_frame))
           .build();
 
-  if (devtools_id) {
+  if (devtools_id.has_value()) {
     auto request = protocol::Audits::AffectedRequest::create()
                        .setRequestId(*devtools_id)
                        .setUrl(insecure_url.GetString())
@@ -641,6 +641,43 @@ void AuditsIssue::ReportGenericIssue(
   frame->DomWindow()->AddInspectorIssue(AuditsIssue(std::move(issue)));
 }
 
+void AuditsIssue::ReportPropertyRuleIssue(
+    Document* document,
+    const KURL& url,
+    WTF::OrdinalNumber line,
+    WTF::OrdinalNumber column,
+    protocol::Audits::PropertyRuleIssueReason reason,
+    const String& propertyValue) {
+  if (!document || !document->GetExecutionContext()) {
+    return;
+  }
+  auto sourceCodeLocation = protocol::Audits::SourceCodeLocation::create()
+                                .setUrl(url)
+                                .setLineNumber(line.ZeroBasedInt())
+                                .setColumnNumber(column.OneBasedInt())
+                                .build();
+
+  auto details = protocol::Audits::PropertyRuleIssueDetails::create()
+                     .setSourceCodeLocation(std::move(sourceCodeLocation))
+                     .setPropertyRuleIssueReason(reason)
+                     .build();
+
+  if (!propertyValue.IsNull()) {
+    details->setPropertyValue(propertyValue);
+  }
+
+  auto issue =
+      protocol::Audits::InspectorIssue::create()
+          .setCode(protocol::Audits::InspectorIssueCodeEnum::PropertyRuleIssue)
+          .setDetails(protocol::Audits::InspectorIssueDetails::create()
+                          .setPropertyRuleIssueDetails(std::move(details))
+                          .build())
+          .build();
+
+  document->GetExecutionContext()->AddInspectorIssue(
+      AuditsIssue(std::move(issue)));
+}
+
 void AuditsIssue::ReportStylesheetLoadingLateImportIssue(
     Document* document,
     const KURL& url,
@@ -652,7 +689,7 @@ void AuditsIssue::ReportStylesheetLoadingLateImportIssue(
   auto sourceCodeLocation = protocol::Audits::SourceCodeLocation::create()
                                 .setUrl(url)
                                 .setLineNumber(line.ZeroBasedInt())
-                                .setColumnNumber(column.ZeroBasedInt())
+                                .setColumnNumber(column.OneBasedInt())
                                 .build();
   auto details = protocol::Audits::StylesheetLoadingIssueDetails::create()
                      .setSourceCodeLocation(std::move(sourceCodeLocation))
@@ -677,7 +714,7 @@ void AuditsIssue::ReportStylesheetLoadingLateImportIssue(
 void AuditsIssue::ReportStylesheetLoadingRequestFailedIssue(
     Document* document,
     const KURL& url,
-    const absl::optional<String>& requestId,
+    base::optional_ref<const String> request_id,
     const KURL& initiator_url,
     WTF::OrdinalNumber initiator_line,
     WTF::OrdinalNumber initiator_column,
@@ -685,19 +722,18 @@ void AuditsIssue::ReportStylesheetLoadingRequestFailedIssue(
   if (!document || !document->GetExecutionContext()) {
     return;
   }
-  auto sourceCodeLocation =
-      protocol::Audits::SourceCodeLocation::create()
-          .setUrl(initiator_url)
-          .setLineNumber(initiator_line.ZeroBasedInt())
-          .setColumnNumber(initiator_column.ZeroBasedInt())
-          .build();
+  auto sourceCodeLocation = protocol::Audits::SourceCodeLocation::create()
+                                .setUrl(initiator_url)
+                                .setLineNumber(initiator_line.ZeroBasedInt())
+                                .setColumnNumber(initiator_column.OneBasedInt())
+                                .build();
   auto requestDetails = protocol::Audits::FailedRequestInfo::create()
                             .setUrl(url)
                             .setFailureMessage(failureMessage)
                             .build();
 
-  if (requestId) {
-    requestDetails->setRequestId(*requestId);
+  if (request_id.has_value()) {
+    requestDetails->setRequestId(*request_id);
   }
   auto details =
       protocol::Audits::StylesheetLoadingIssueDetails::create()
@@ -754,7 +790,7 @@ AuditsIssue AuditsIssue::CreateContentSecurityPolicyIssue(
   }
 
   if (element) {
-    cspDetails->setViolatingNodeId(DOMNodeIds::IdForNode(element));
+    cspDetails->setViolatingNodeId(element->GetDomNodeId());
   }
 
   std::unique_ptr<protocol::Audits::InspectorIssueDetails> details =

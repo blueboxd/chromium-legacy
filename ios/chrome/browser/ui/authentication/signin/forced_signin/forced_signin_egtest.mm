@@ -26,10 +26,9 @@
 #import "ios/chrome/browser/ui/first_run/first_run_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
-#import "ios/chrome/browser/ui/settings/signin_settings_app_interface.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/promo_style/constants.h"
-#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
@@ -315,8 +314,6 @@ void CompleteSigninFlow() {
 - (void)setUp {
   [[self class] testForStartup];
   [super setUp];
-  // TODO(crbug.com/1450472): Remove when kHideSettingsSyncPromo is launched.
-  [SigninSettingsAppInterface setSettingsSigninPromoDisplayedCount:INT_MAX];
 }
 
 - (void)tearDown {

@@ -92,6 +92,19 @@ try_.builder(
 )
 
 try_.builder(
+    name = "linux-clobber-rel",
+    mirrors = [
+        "ci/linux-archive-rel",
+    ],
+    try_settings = builder_config.try_settings(
+        include_all_triggered_testers = True,
+        is_compile_only = True,
+    ),
+    contact_team_email = "chrome-browser-infra-team@google.com",
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+)
+
+try_.builder(
     name = "linux-dcheck-off-rel",
     mirrors = builder_config.copy_from("linux-rel"),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
@@ -278,7 +291,7 @@ This builder should be removed after migrating linux-rel from Ninja to Siso. b/2
     },
     main_list_view = "try",
     tryjob = try_.job(
-        experiment_percentage = 20,
+        experiment_percentage = 10,
     ),
     use_clang_coverage = True,
 )
@@ -334,7 +347,7 @@ This builder should be removed after migrating linux-wayland-rel from Ninja to S
     coverage_test_types = ["unit", "overall"],
     main_list_view = "try",
     tryjob = try_.job(
-        experiment_percentage = 20,
+        experiment_percentage = 10,
     ),
     use_clang_coverage = True,
 )
@@ -349,6 +362,14 @@ try_.compilator_builder(
 try_.builder(
     name = "linux-viz-rel",
     mirrors = ["ci/Linux Viz"],
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+)
+
+try_.builder(
+    name = "linux-webkit-asan-rel",
+    mirrors = [
+        "ci/WebKit Linux ASAN",
+    ],
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -482,7 +503,7 @@ This builder should be removed after migrating linux_chromium_asan_rel_ng from N
     },
     main_list_view = "try",
     tryjob = try_.job(
-        experiment_percentage = 20,
+        experiment_percentage = 10,
     ),
 )
 
@@ -501,6 +522,23 @@ try_.builder(
     # TODO(thakis): Remove once https://crbug.com/927738 is resolved.
     execution_timeout = 7 * time.hour,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    tryjob = try_.job(
+        location_filters = [
+            # Diectories that have caused breakages in the past due to the
+            # TensorFlowLite roll.
+            "third_party/eigen3/.+",
+            "third_party/farmhash/.+",
+            "third_party/fft2d/.+",
+            "third_party/flatbuffers/.+",
+            "third_party/fp16/.+",
+            "third_party/fxdiv/.+",
+            "third_party/gemmlowp/.+",
+            "third_party/pthreadpool/.+",
+            "third_party/ruy/.+",
+            "third_party/tflite/.+",
+            "third_party/xnnpack/.+",
+        ],
+    ),
 )
 
 try_.builder(
@@ -535,18 +573,6 @@ try_.builder(
     executable = "recipe:swarming/deterministic_build",
     execution_timeout = 6 * time.hour,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
-)
-
-try_.builder(
-    name = "linux_chromium_clobber_rel_ng",
-    mirrors = [
-        "ci/linux-archive-rel",
-    ],
-    try_settings = builder_config.try_settings(
-        include_all_triggered_testers = True,
-        is_compile_only = True,
-    ),
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -658,7 +684,7 @@ This builder should be removed after migrating linux_chromium_tsan_rel_ng from N
     },
     main_list_view = "try",
     tryjob = try_.job(
-        experiment_percentage = 20,
+        experiment_percentage = 10,
     ),
 )
 
@@ -871,8 +897,3 @@ try_.builder(
     use_javascript_coverage = True,
 )
 ############### Coverage Builders End ##################
-
-try_.builder(
-    name = "linux-cr23-rel",
-    mirrors = ["ci/linux-cr23-rel"],
-)

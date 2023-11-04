@@ -6,6 +6,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "content/common/features.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/web_identity.h"
@@ -78,8 +79,8 @@ TEST_P(IdentityUrlLoaderThrottleTestParameterized, Headers) {
                 "obfuscatedid=123\n",
                 signin_status == IdpSigninStatus::kSignedIn ? "In" : "Out")
           : base::StringPrintf(
-                "idp-signin-status: action=sign%s; type=idp; foo=bar",
-                signin_status == IdpSigninStatus::kSignedIn ? "in" : "out-all");
+                "set-login: logged-%s; type=idp; foo=bar",
+                signin_status == IdpSigninStatus::kSignedIn ? "in" : "out");
 
   network::mojom::URLResponseHead response_head;
   response_head.headers = net::HttpResponseHeaders::TryToCreate(

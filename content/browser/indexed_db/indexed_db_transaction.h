@@ -49,7 +49,6 @@ FORWARD_DECLARE_TEST(IndexedDBTransactionTest, TimeoutPreemptive);
 
 class CONTENT_EXPORT IndexedDBTransaction {
  public:
-  using TearDownCallback = base::RepeatingCallback<void(leveldb::Status)>;
   using Operation = base::OnceCallback<leveldb::Status(IndexedDBTransaction*)>;
   using AbortOperation = base::OnceClosure;
 
@@ -61,7 +60,16 @@ class CONTENT_EXPORT IndexedDBTransaction {
     FINISHED,    // Either aborted or committed.
   };
 
-  virtual ~IndexedDBTransaction();
+  static void DisableInactivityTimeoutForTesting();
+
+  IndexedDBTransaction(
+      int64_t id,
+      IndexedDBConnection* connection,
+      const std::set<int64_t>& object_store_ids,
+      blink::mojom::IDBTransactionMode mode,
+      IndexedDBBucketContextHandle bucket_context,
+      IndexedDBBackingStore::Transaction* backing_store_transaction);
+  ~IndexedDBTransaction();
 
   // Signals the transaction for commit.
   void SetCommitFlag();
@@ -131,11 +139,12 @@ class CONTENT_EXPORT IndexedDBTransaction {
 
   const Diagnostics& diagnostics() const { return diagnostics_; }
 
-  void set_size(int64_t size) { size_ = size; }
-  int64_t size() const { return size_; }
-
   base::WeakPtr<IndexedDBTransaction> AsWeakPtr() {
     return ptr_factory_.GetWeakPtr();
+  }
+
+  IndexedDBBucketContext* bucket_context() {
+    return bucket_context_.bucket_context();
   }
 
   const base::flat_set<PartitionedLockId> lock_ids() const { return lock_ids_; }
@@ -144,21 +153,6 @@ class CONTENT_EXPORT IndexedDBTransaction {
   // in_flight_memory() is used to keep track of all memory scheduled to be
   // written using ScheduleTask. This is reported to memory dumps.
   base::CheckedNumeric<size_t>& in_flight_memory() { return in_flight_memory_; }
-
- protected:
-  // Test classes may derive, but most creation should be done via
-  // IndexedDBClassFactory.
-  IndexedDBTransaction(
-      int64_t id,
-      IndexedDBConnection* connection,
-      const std::set<int64_t>& object_store_ids,
-      blink::mojom::IDBTransactionMode mode,
-      TasksAvailableCallback tasks_available_callback,
-      TearDownCallback tear_down_callback,
-      IndexedDBBackingStore::Transaction* backing_store_transaction);
-
-  // May be overridden in tests.
-  virtual base::TimeDelta GetInactivityTimeout() const;
 
  private:
   friend class IndexedDBClassFactory;
@@ -222,13 +216,8 @@ class CONTENT_EXPORT IndexedDBTransaction {
   base::WeakPtr<IndexedDBConnection> connection_;
   scoped_refptr<IndexedDBDatabaseCallbacks> callbacks_;
   base::WeakPtr<IndexedDBDatabase> database_;
-  TasksAvailableCallback run_tasks_callback_;
-  // Note: calling this will tear down the IndexedDBOriginState (and probably
-  // destroy this object).
-  TearDownCallback tear_down_callback_;
 
-  // Metrics for quota.
-  int64_t size_ = 0;
+  IndexedDBBucketContextHandle bucket_context_;
 
   base::CheckedNumeric<size_t> in_flight_memory_ = 0;
 
@@ -285,6 +274,8 @@ class CONTENT_EXPORT IndexedDBTransaction {
   // This timer is started after requests have been processed. If no subsequent
   // requests are processed before the timer fires, assume the script is
   // unresponsive and abort to unblock the transaction queue.
+  // TODO(crbug.com/1474996): this will not be necessary when each backing store
+  // has its own task runner.
   base::OneShotTimer timeout_timer_;
 
   Diagnostics diagnostics_;

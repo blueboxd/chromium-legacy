@@ -8,6 +8,7 @@
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/functional/callback.h"
+#include "base/json/json_writer.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
@@ -15,6 +16,7 @@
 #include "base/strings/string_piece.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/bad_message.h"
@@ -44,6 +46,7 @@
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
 #include "third_party/blink/public/mojom/webid/federated_auth_request.mojom.h"
 
+using base::Value;
 using blink::mojom::FederatedAuthRequestResult;
 using blink::mojom::IdentityProviderConfig;
 using blink::mojom::IdentityProviderConfigPtr;
@@ -541,23 +544,61 @@ FederatedAuthRequestImpl& FederatedAuthRequestImpl::CreateForTesting(
       permission_context, identity_registry, std::move(receiver));
 }
 
-void FederatedAuthRequestImpl::CompleteMDocRequest(std::string mdoc) {
-  if (!mdoc_provider_) {
-    std::move(mdoc_request_callback_)
+void FederatedAuthRequestImpl::CompleteWalletRequest(std::string response) {
+  if (!wallet_provider_) {
+    std::move(wallet_request_callback_)
         .Run(RequestTokenStatus::kError, absl::nullopt, "",
              /*is_account_auto_selected=*/false);
     return;
   }
 
-  if (!mdoc.empty()) {
-    std::move(mdoc_request_callback_)
-        .Run(RequestTokenStatus::kSuccess, absl::nullopt, mdoc,
+  if (!response.empty()) {
+    std::move(wallet_request_callback_)
+        .Run(RequestTokenStatus::kSuccess, absl::nullopt, response,
              /*is_account_auto_selected=*/false);
   } else {
-    std::move(mdoc_request_callback_)
+    std::move(wallet_request_callback_)
         .Run(RequestTokenStatus::kError, absl::nullopt, "",
              /*is_account_auto_selected=*/false);
   }
+}
+
+base::Value::Dict BuildWalletRequest(blink::mojom::WalletProviderPtr provider) {
+  auto formats = Value::List();
+  for (auto& format : provider->selector->format) {
+    formats.Append(format);
+  }
+
+  auto params = Value::Dict();
+  for (const auto& pair : provider->params) {
+    params.Set(pair.first, pair.second);
+  }
+
+  auto fields = Value::List();
+
+  if (provider->selector->doctype) {
+    auto doctype = Value::Dict();
+    doctype.Set("name", "doctype");
+    doctype.Set("equals", provider->selector->doctype.value());
+    fields.Append(std::move(doctype));
+  }
+
+  for (auto& value : provider->selector->fields) {
+    auto field = Value::Dict();
+    field.Set("name", value->name);
+    if (value->equals) {
+      field.Set("equals", value->equals.value());
+    }
+    fields.Append(std::move(field));
+  }
+
+  return Value::Dict().Set(
+      "providers", Value::List().Append(
+                       Value::Dict()
+                           .Set("responseFormat", std::move(formats))
+                           .Set("params", std::move(params))
+                           .Set("selector", Value::Dict().Set(
+                                                "fields", std::move(fields)))));
 }
 
 void FederatedAuthRequestImpl::RequestToken(
@@ -596,7 +637,7 @@ void FederatedAuthRequestImpl::RequestToken(
     return;
   }
 
-  if (idp_get_params_ptrs[0]->providers[0]->is_mdoc()) {
+  if (idp_get_params_ptrs[0]->providers[0]->is_holder()) {
     if (!IsWebIdentityMDocsEnabled() ||
         IsFedCmMultipleIdentityProvidersEnabled()) {
       // TODO(https://crbug.com/1416939): Support calling the MDocs API with the
@@ -606,8 +647,8 @@ void FederatedAuthRequestImpl::RequestToken(
       return;
     }
 
-    if (mdoc_request_callback_) {
-      // Similar to the token request, only allow one in-flight mdoc request.
+    if (wallet_request_callback_) {
+      // Similar to the token request, only allow one in-flight wallet request.
       // TODO(https://crbug.com/1416939): Reconcile with federated identity
       // requests.
       std::move(callback).Run(RequestTokenStatus::kErrorTooManyRequests,
@@ -616,31 +657,31 @@ void FederatedAuthRequestImpl::RequestToken(
       return;
     }
 
-    mdoc_request_callback_ = std::move(callback);
-    // mdoc_provider_ is not destroyed after a successful mdoc request so we
+    wallet_request_callback_ = std::move(callback);
+    // wallet_provider_ is not destroyed after a successful wallet request so we
     // need to have the nullcheck to avoid duplicated creation.
-    if (!mdoc_provider_) {
-      mdoc_provider_ = CreateMDocProvider();
+    if (!wallet_provider_) {
+      wallet_provider_ = CreateWalletProvider();
     }
-    if (!mdoc_provider_) {
-      std::move(mdoc_request_callback_)
+    if (!wallet_provider_) {
+      std::move(wallet_request_callback_)
           .Run(RequestTokenStatus::kError, absl::nullopt, "",
                /*is_account_auto_selected=*/false);
       return;
     }
 
-    auto mdoc = std::move(idp_get_params_ptrs[0]->providers[0]->get_mdoc());
-    std::string reader_public_key = mdoc->reader_public_key;
-    std::string document_type = mdoc->document_type;
+    auto wallet = std::move(idp_get_params_ptrs[0]->providers[0]->get_holder());
 
-    mdoc_provider_->RequestMDoc(
-        WebContents::FromRenderFrameHost(&render_frame_host()),
-        reader_public_key, document_type, mdoc->requested_elements,
-        base::BindOnce(&FederatedAuthRequestImpl::CompleteMDocRequest,
+    auto request = BuildWalletRequest(std::move(wallet));
+
+    wallet_provider_->RequestMDoc(
+        WebContents::FromRenderFrameHost(&render_frame_host()), origin(),
+        request,
+        base::BindOnce(&FederatedAuthRequestImpl::CompleteWalletRequest,
                        weak_ptr_factory_.GetWeakPtr()));
 
     // TODO(https://crbug.com/1416939): rather than returning early,
-    // we would ultimately like to make the mdocs response reconcile with the
+    // we would ultimately like to make the wallet response reconcile with the
     // federated identities, so that they can be presented to the user in an
     // unified manner.
     return;
@@ -664,6 +705,12 @@ void FederatedAuthRequestImpl::RequestToken(
   if (HasPendingRequest()) {
     fedcm_metrics_->RecordRequestTokenStatus(TokenStatus::kTooManyRequests,
                                              requirement);
+
+    AddDevToolsIssue(
+        blink::mojom::FederatedAuthRequestResult::kErrorTooManyRequests);
+    AddConsoleErrorMessage(
+        blink::mojom::FederatedAuthRequestResult::kErrorTooManyRequests);
+
     std::move(callback).Run(RequestTokenStatus::kErrorTooManyRequests,
                             absl::nullopt, "",
                             /*is_account_auto_selected=*/false);
@@ -726,8 +773,8 @@ void FederatedAuthRequestImpl::RequestToken(
 
   // This counter measures the number of requests made to FedCM in a document to
   // identify RPs calling FedCM in quick succession. Requests made when FedCM is
-  // disabled, when there is a pending FedCM request or for the purpose of MDocs
-  // or multi-IDP are not counted.
+  // disabled, when there is a pending FedCM request or for the purpose of
+  // wallets or multi-IDP are not counted.
   if (!IsFedCmMultipleIdentityProvidersEnabled()) {
     ++num_requests_;
   }
@@ -1008,8 +1055,8 @@ void FederatedAuthRequestImpl::FetchEndpointsForIdps(
     fetch_data_.for_idp_signin = for_idp_signin;
   }
 
-  provider_fetcher_ =
-      std::make_unique<FederatedProviderFetcher>(network_manager_.get());
+  provider_fetcher_ = std::make_unique<FederatedProviderFetcher>(
+      render_frame_host(), network_manager_.get());
   provider_fetcher_->Start(
       fetch_data_.pending_idps, icon_ideal_size, icon_minimum_size,
       base::BindOnce(&FederatedAuthRequestImpl::OnAllConfigAndWellKnownFetched,
@@ -1677,6 +1724,7 @@ void FederatedAuthRequestImpl::OnDismissErrorDialog(
     blink::mojom::FederatedAuthRequestResult result,
     absl::optional<TokenStatus> token_status,
     IdentityRequestDialogController::DismissReason dismiss_reason) {
+  // TODO(crbug.com/1478837): Record metrics for error UI
   CompleteRequestWithError(result, token_status,
                            /*should_delay_callback=*/false);
 }
@@ -1782,6 +1830,7 @@ void FederatedAuthRequestImpl::ShowErrorDialog(
       base::BindOnce(&FederatedAuthRequestImpl::CompleteRequestWithError,
                      weak_ptr_factory_.GetWeakPtr()));
 
+  // TODO(crbug.com/1485710): Refactor IdentityCredentialTokenError
   request_dialog_controller_->ShowErrorDialog(
       GetTopFrameOriginForDisplay(GetEmbeddingOrigin()), iframe_for_display,
       FormatOriginForDisplay(url::Origin::Create(idp_config_url)),
@@ -1794,7 +1843,11 @@ void FederatedAuthRequestImpl::ShowErrorDialog(
           &FederatedAuthRequestImpl::OnDismissErrorDialog,
           weak_ptr_factory_.GetWeakPtr(),
           FederatedAuthRequestResult::kErrorFetchingIdTokenInvalidResponse,
-          TokenStatus::kIdTokenInvalidResponse));
+          TokenStatus::kIdTokenInvalidResponse),
+      error && !error->url.is_empty()
+          ? base::BindOnce(&FederatedAuthRequestImpl::ShowModalDialog,
+                           weak_ptr_factory_.GetWeakPtr(), error->url)
+          : base::NullCallback());
 }
 
 void FederatedAuthRequestImpl::OnTokenResponseReceived(
@@ -1803,29 +1856,31 @@ void FederatedAuthRequestImpl::OnTokenResponseReceived(
     IdpNetworkRequestManager::TokenResult result) {
   CHECK(result.token.empty() || !result.error);
 
-  if (IsFedCmErrorEnabled() &&
-      status.parse_status != IdpNetworkRequestManager::ParseStatus::kSuccess) {
-    ShowErrorDialog(idp->config_url, result.error);
-    return;
-  }
+  auto complete_request_callback =
+      IsFedCmErrorEnabled() &&
+              status.parse_status !=
+                  IdpNetworkRequestManager::ParseStatus::kSuccess
+          ? base::BindOnce(&FederatedAuthRequestImpl::ShowErrorDialog,
+                           weak_ptr_factory_.GetWeakPtr(), idp->config_url,
+                           result.error)
+          : base::BindOnce(&FederatedAuthRequestImpl::CompleteTokenRequest,
+                           weak_ptr_factory_.GetWeakPtr(), std::move(idp),
+                           status, result.token);
 
   // When fetching id tokens we show a "Verify" sheet to users in case fetching
-  // takes a long time due to latency etc.. In case that the fetching process is
+  // takes a long time due to latency etc. In case that the fetching process is
   // fast, we still want to show the "Verify" sheet for at least
   // |token_request_delay_| seconds for better UX.
   token_response_time_ = base::TimeTicks::Now();
   base::TimeDelta fetch_time = token_response_time_ - select_account_time_;
   if (should_complete_request_immediately_ ||
       fetch_time >= token_request_delay_) {
-    CompleteTokenRequest(std::move(idp), status, result.token);
+    std::move(complete_request_callback).Run();
     return;
   }
 
   base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&FederatedAuthRequestImpl::CompleteTokenRequest,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(idp), status,
-                     result.token),
+      FROM_HERE, std::move(complete_request_callback),
       token_request_delay_ - fetch_time);
 }
 
@@ -2029,7 +2084,8 @@ void FederatedAuthRequestImpl::CompleteRequest(
     }
   }
 
-  bool is_account_auto_selected = dialog_type_ == kAutoReauth;
+  bool is_account_auto_selected =
+      IsFedCmAccountAutoSelectedFlagEnabled() && dialog_type_ == kAutoReauth;
 
   CleanUp();
 
@@ -2201,7 +2257,7 @@ FederatedAuthRequestImpl::CreateDialogController() {
       web_contents);
 }
 
-std::unique_ptr<MDocProvider> FederatedAuthRequestImpl::CreateMDocProvider() {
+std::unique_ptr<MDocProvider> FederatedAuthRequestImpl::CreateWalletProvider() {
   // A provider may only be created in browser tests by this moment.
   std::unique_ptr<MDocProvider> provider =
       GetContentClient()->browser()->CreateMDocProvider();

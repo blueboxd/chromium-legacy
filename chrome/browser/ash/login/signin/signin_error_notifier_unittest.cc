@@ -51,6 +51,8 @@ class SigninErrorNotifierTest : public BrowserWithTestWindowTest {
  public:
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
+    // Required to initialize TokenHandleUtil.
+    ash::UserDataAuthClient::InitializeFake();
 
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<FakeChromeUserManager>());
@@ -68,6 +70,7 @@ class SigninErrorNotifierTest : public BrowserWithTestWindowTest {
     // will be destroyed as part of the TearDown() process.
     identity_test_env_profile_adaptor_.reset();
 
+    ash::UserDataAuthClient::Shutdown();
     BrowserWithTestWindowTest::TearDown();
   }
 
@@ -312,7 +315,7 @@ TEST_F(SigninErrorNotifierTest, TokenHandleTest) {
   SigninErrorNotifier* signin_error_notifier =
       SigninErrorNotifierFactory::GetForProfile(GetProfile());
   signin_error_notifier->OnTokenHandleCheck(account_id, kTokenHandle,
-                                            TokenHandleUtil::Status::kInvalid);
+                                            /*reauth_required=*/true);
 
   // Test.
   absl::optional<message_center::Notification> notification =
@@ -344,7 +347,7 @@ TEST_F(SigninErrorNotifierTest,
   SigninErrorNotifier* signin_error_notifier =
       SigninErrorNotifierFactory::GetForProfile(GetProfile());
   signin_error_notifier->OnTokenHandleCheck(account_id, kTokenHandle,
-                                            TokenHandleUtil::Status::kInvalid);
+                                            /*reauth_required=*/true);
 
   // Test.
   absl::optional<message_center::Notification> notification =

@@ -37,9 +37,6 @@ class ChromeProcessSingleton {
   // instance. Callers are guaranteed to either have notified an existing
   // process or have grabbed the singleton (unless the profile is locked by an
   // unreachable process).
-  // The guarantee is a bit different if we're running in Native Headless mode,
-  // in which case an existing process is not notified and this method returns
-  // PROFILE_IN_USE if it happens to use the same profile directory.
   ProcessSingleton::NotifyResult NotifyOtherProcessOrCreate();
 
   // Start watching for notifications from other processes. After this call,
@@ -62,6 +59,8 @@ class ChromeProcessSingleton {
   void Unlock(
       const ProcessSingleton::NotificationCallback& notification_callback);
 
+  bool IsSingletonInstanceForTesting() const { return is_singleton_instance_; }
+
   // Create the chrome process singleton instance for the current process.
   static void CreateInstance(const base::FilePath& user_data_dir);
   // Delete the chrome process singleton instance.
@@ -69,16 +68,17 @@ class ChromeProcessSingleton {
   // Retrieve the chrome process singleton instance for the current process.
   static ChromeProcessSingleton* GetInstance();
 
-  // Setup the experiment for the early process singleton. Remove this code
-  // when the experiment is over (http://www.crbug.com/1340599).
-  static void SetupEarlySingletonFeature(const base::CommandLine& command_line);
-  static void RegisterEarlySingletonFeature();
-  static bool IsEarlySingletonFeatureEnabled();
-  static bool ShouldMergeMetrics();
+  // Returns true if this process is the singleton instance (i.e., a
+  // ProcessSingleton has been created and NotifyOtherProcessOrCreate() has
+  // returned PROCESS_NONE).
+  static bool IsSingletonInstance();
 
  private:
   bool NotificationCallback(const base::CommandLine& command_line,
                             const base::FilePath& current_directory);
+
+  // Whether or not this instance is the running single instance.
+  bool is_singleton_instance_ = false;
 
   // We compose these two locks with the client-supplied notification callback.
   // First |modal_dialog_lock_| will discard any notifications that arrive while

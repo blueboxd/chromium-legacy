@@ -5,6 +5,8 @@
 #import "base/functional/bind.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_app_interface.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -13,6 +15,8 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
+#import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/common/features.h"
@@ -26,6 +30,7 @@ namespace {
 
 using chrome_test_util::BackButton;
 using chrome_test_util::ForwardButton;
+using chrome_test_util::TapWebElementWithId;
 using chrome_test_util::WebStateScrollViewMatcher;
 using chrome_test_util::WebViewMatcher;
 
@@ -337,6 +342,23 @@ UIViewController* TopPresentedViewController() {
   return TopPresentedViewControllerFrom(rootViewController);
 }
 
+// Returns "Move Address Bar to Top" button from the location bar context menu.
+id<GREYMatcher> MoveAddressBarToTopContextMenuButton() {
+  return grey_allOf(chrome_test_util::ContextMenuItemWithAccessibilityLabelId(
+                        IDS_IOS_TOOLBAR_MENU_TOP_OMNIBOX),
+                    grey_accessibilityTrait(UIAccessibilityTraitButton),
+                    grey_hidden(NO), nil);
+}
+
+// Returns "Move Address Bar to Bottom"  button from the location bar context
+// menu.
+id<GREYMatcher> MoveAddressBarToBottomContextMenuButton() {
+  return grey_allOf(chrome_test_util::ContextMenuItemWithAccessibilityLabelId(
+                        IDS_IOS_TOOLBAR_MENU_BOTTOM_OMNIBOX),
+                    grey_accessibilityTrait(UIAccessibilityTraitButton),
+                    grey_hidden(NO), nil);
+}
+
 }  // namespace
 
 #pragma mark - TestCase
@@ -347,6 +369,11 @@ UIViewController* TopPresentedViewController() {
 @end
 
 @implementation AdaptiveToolbarTestCase
+
+- (void)setUp {
+  [super setUp];
+  [ChromeEarlGrey setBoolValue:NO forUserPref:prefs::kBottomOmnibox];
+}
 
 // Tests that tapping a button cancels the focus on the omnibox.
 - (void)testCancelOmniboxEdit {
@@ -597,6 +624,145 @@ UIViewController* TopPresentedViewController() {
   } else {
     // Cancel the rotation.
     [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait error:nil];
+  }
+}
+
+// Verifies that the location bar is hidden on NTP.
+- (void)testLocationBarHiddenOnNTP {
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(@"The NTP is sometimes scrolled on iPad, making the "
+                           @"location bar visible.");
+  }
+  // Location bar should be hidden when loading NTP.
+  CheckVisibilityInToolbar(chrome_test_util::DefocusedLocationView(),
+                           ButtonVisibilityNone);
+
+  // Location bar should be hidden when returning to NTP with the back button.
+  [ChromeEarlGrey loadURL:GURL("chrome://version")];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
+      performAction:grey_tap()];
+  [ChromeEarlGrey waitForPageToFinishLoading];
+
+  CheckVisibilityInToolbar(chrome_test_util::DefocusedLocationView(),
+                           ButtonVisibilityNone);
+
+  // Change the orientation or the trait collection.
+  UIViewController* topViewController = TopPresentedViewController();
+  UITraitCollection* originalTraitCollection =
+      topViewController.traitCollection;
+  RotateOrChangeTraitCollection(originalTraitCollection, topViewController);
+
+  CheckVisibilityInToolbar(chrome_test_util::DefocusedLocationView(),
+                           ButtonVisibilityNone);
+
+  // Revert the orientation/trait collection to the original.
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    // Remove the override.
+    for (UIViewController* child in topViewController.childViewControllers) {
+      [topViewController setOverrideTraitCollection:originalTraitCollection
+                             forChildViewController:child];
+    }
+  } else {
+    // Cancel the rotation.
+    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait error:nil];
+  }
+
+  // Check the visiblity after a rotation.
+  CheckVisibilityInToolbar(chrome_test_util::DefocusedLocationView(),
+                           ButtonVisibilityNone);
+}
+
+@end
+
+#pragma mark - Bottom omnibox enabled tests
+
+// AdaptiveToolbarTestCase with a bottom default omnibox position.
+@interface AdaptiveToolbarBottomOmniboxTestCase : AdaptiveToolbarTestCase
+@end
+
+@implementation AdaptiveToolbarBottomOmniboxTestCase
+
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+  config.features_enabled.push_back(kBottomOmniboxSteadyState);
+  return config;
+}
+
+- (void)setUp {
+  [super setUp];
+  [ChromeEarlGrey setBoolValue:YES forUserPref:prefs::kBottomOmnibox];
+}
+
+// Verifies that the address bar can be moved from the location bar context
+// menu.
+- (void)testMoveAddressBarContextAction {
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(@"Bottom address bar is only available on iPhone.");
+  }
+  [[AppLaunchManager sharedManager]
+      ensureAppLaunchedWithFeaturesEnabled:{kBottomOmniboxSteadyState}
+                                  disabled:{}
+                            relaunchPolicy:NoForceRelaunchAndResetState];
+
+  // Load a page to have the toolbar visible (hidden on NTP).
+  [ChromeEarlGrey loadURL:GURL("chrome://version")];
+
+  CheckVisibilityInToolbar(chrome_test_util::DefocusedLocationView(),
+                           ButtonVisibilitySecondary);
+
+  // Check address bar can be moved to the top toolbar.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
+      performAction:grey_longPress()];
+  [[EarlGrey selectElementWithMatcher:MoveAddressBarToTopContextMenuButton()]
+      performAction:grey_tap()];
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:
+                      grey_allOf(chrome_test_util::DefocusedLocationView(),
+                                 VisibleInPrimaryToolbar(), nil)];
+  CheckVisibilityInToolbar(chrome_test_util::DefocusedLocationView(),
+                           ButtonVisibilityPrimary);
+
+  // Check address bar can be moved to the bottom toolbar.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
+      performAction:grey_longPress()];
+  [[EarlGrey selectElementWithMatcher:MoveAddressBarToBottomContextMenuButton()]
+      performAction:grey_tap()];
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:
+                      grey_allOf(chrome_test_util::DefocusedLocationView(),
+                                 VisibleInSecondaryToolbar(), nil)];
+  CheckVisibilityInToolbar(chrome_test_util::DefocusedLocationView(),
+                           ButtonVisibilitySecondary);
+}
+
+// Verifies that the location bar is above the keyboard when tapping a text
+// field on web. Tapping it should dismiss the keyboard.
+- (void)testTapLocationBarAboveTheKeyboard {
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(@"Bottom address bar is only available on iPhone.");
+  }
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  GURL URL = self.testServer->GetURL("/multi_field_form.html");
+  [ChromeEarlGrey loadURL:URL];
+
+  [ChromeEarlGrey waitForWebStateContainingText:"hello!"];
+
+  // Opening the keyboard from a webview blocks EarlGrey's synchronization.
+  {
+    ScopedSynchronizationDisabler disabler;
+
+    // Brings up the keyboard by tapping on one of the form's field.
+    [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
+        performAction:TapWebElementWithId("username")];
+    [ChromeEarlGrey
+        waitForNotSufficientlyVisibleElementWithMatcher:NewTabButton()];
+
+    // Taping the location bar above the keyboard should dismiss the keyboard.
+    [[EarlGrey
+        selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
+        performAction:grey_tap()];
+    [ChromeEarlGrey waitForUIElementToAppearWithMatcher:NewTabButton()];
+
+    // Taping the location bar again should focus the omnibox.
+    FocusOmnibox();
   }
 }
 

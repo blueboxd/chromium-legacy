@@ -59,7 +59,7 @@ namespace {
 
 BASE_FEATURE(kAlwaysUseMappableSIForSoftwareCanvas,
              "AlwaysUseMappableSIForSoftwareCanvas",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace
 
@@ -228,7 +228,7 @@ bool CanvasResource::PrepareAcceleratedTransferableResource(
 
   *out_resource = viz::TransferableResource::MakeGpu(
       mailbox, TextureTarget(), GetSyncToken(), Size(), GetSharedImageFormat(),
-      IsOverlayCandidate());
+      IsOverlayCandidate(), viz::TransferableResource::ResourceSource::kCanvas);
 
   out_resource->color_space = GetColorSpace();
   if (NeedsReadLockFences()) {
@@ -252,7 +252,8 @@ bool CanvasResource::PrepareUnacceleratedTransferableResource(
   // TransferableResource. Clients are expected to render in N32 format but use
   // RGBA as the tagged format on resources.
   *out_resource = viz::TransferableResource::MakeSoftware(
-      mailbox, Size(), viz::SinglePlaneFormat::kRGBA_8888);
+      mailbox, Size(), viz::SinglePlaneFormat::kRGBA_8888,
+      viz::TransferableResource::ResourceSource::kCanvas);
 
   out_resource->color_space = GetColorSpace();
 
@@ -513,6 +514,12 @@ CanvasResourceRasterSharedImage::CanvasResourceRasterSharedImage(
         GetSharedImageFormat(), Size(), GetColorSpace(), surface_origin,
         surface_alpha_type, shared_image_usage_flags, "CanvasResourceRasterGmb",
         gpu::kNullSurfaceHandle, gfx::BufferUsage::SCANOUT_CPU_READ_WRITE);
+
+    // Note that we are waiting/blocking on the mailbox to be mappable here
+    // instead of blocking during MapSharedImage() call. This is to mimic legacy
+    // behavior of blocking IPC happening while creating |gpu_memory_buffer_| in
+    // order to keep the performance similar.
+    shared_image_interface->WaitForMailboxToBeMappable(shared_image_mailbox);
   } else if (gpu_memory_buffer_) {
     shared_image_mailbox = shared_image_interface->CreateSharedImage(
         GetSharedImageFormat(), Size(), GetColorSpace(), surface_origin,

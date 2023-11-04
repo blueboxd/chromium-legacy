@@ -43,11 +43,13 @@ enum class GlanceablesViewId {
 
   // `GlanceablesTaskView`.
   kTaskItemTitleLabel,
+  kTaskItemTitleTextField,
   kTaskItemDueLabel,
 
   // `GlanceablesErrorMessageView`
   kGlanceablesErrorMessageLabel,
   kGlanceablesErrorMessageButton,
+  kGlanceablesErrorMessageView,
 };
 
 }  // namespace ash

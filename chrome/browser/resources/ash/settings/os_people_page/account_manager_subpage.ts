@@ -41,13 +41,13 @@ import {getTemplate} from './account_manager_subpage.html.js';
 const SettingsAccountManagerSubpageElementBase = RouteObserverMixin(
     WebUiListenerMixin(I18nMixin(DeepLinkingMixin(PolymerElement))));
 
-interface SettingsAccountManagerSubpageElement {
+export interface SettingsAccountManagerSubpageElement {
   $: {
     removeConfirmationDialog: CrDialogElement,
   };
 }
 
-class SettingsAccountManagerSubpageElement extends
+export class SettingsAccountManagerSubpageElement extends
     SettingsAccountManagerSubpageElementBase {
   static get is() {
     return 'settings-account-manager-subpage' as const;
@@ -291,7 +291,7 @@ class SettingsAccountManagerSubpageElement extends
     return this.accounts_.filter(account => !account.isDeviceAccount);
   }
 
-  private onReauthenticationClick_(event: DomRepeatEvent<Account>) {
+  private onReauthenticationClick_(event: DomRepeatEvent<Account>): void {
     if (event.model.item.unmigrated) {
       this.browserProxy_.migrateAccount(event.model.item.email);
     } else {
@@ -316,7 +316,8 @@ class SettingsAccountManagerSubpageElement extends
     this.deviceAccount_ = deviceAccount;
   }
 
-  private onAccountActionsMenuButtonClick_(event: DomRepeatEvent<Account>) {
+  private onAccountActionsMenuButtonClick_(event: DomRepeatEvent<Account>):
+      void {
     this.actionMenuAccount_ = event.model.item;
 
     assertInstanceof(event.target, HTMLElement);

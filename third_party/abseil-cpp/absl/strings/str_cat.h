@@ -102,7 +102,7 @@
 #include "absl/base/attributes.h"
 #include "absl/base/port.h"
 #include "absl/meta/type_traits.h"
-#include "absl/strings/internal/has_absl_stringify.h"
+#include "absl/strings/has_absl_stringify.h"
 #include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/strings/internal/stringify_sink.h"
 #include "absl/strings/numbers.h"
@@ -357,7 +357,7 @@ class AlphaNum {
       : piece_(pc) {}
 
   template <typename T, typename = typename std::enable_if<
-                            strings_internal::HasAbslStringify<T>::value>::type>
+                            HasAbslStringify<T>::value>::type>
   AlphaNum(  // NOLINT(runtime/explicit)
       const T& v ABSL_ATTRIBUTE_LIFETIME_BOUND,
       strings_internal::StringifySink&& sink ABSL_ATTRIBUTE_LIFETIME_BOUND = {})
@@ -384,17 +384,17 @@ class AlphaNum {
   template <typename T,
             typename = typename std::enable_if<
                 std::is_enum<T>{} && std::is_convertible<T, int>{} &&
-                !strings_internal::HasAbslStringify<T>::value>::type>
+                !HasAbslStringify<T>::value>::type>
   AlphaNum(T e)  // NOLINT(runtime/explicit)
       : AlphaNum(+e) {}
 
   // This overload matches scoped enums.  We must explicitly cast to the
   // underlying type, but use integral promotion for the same reason as above.
   template <typename T,
-            typename std::enable_if<
-                std::is_enum<T>{} && !std::is_convertible<T, int>{} &&
-                    !strings_internal::HasAbslStringify<T>::value,
-                char*>::type = nullptr>
+            typename std::enable_if<std::is_enum<T>{} &&
+                                        !std::is_convertible<T, int>{} &&
+                                        !HasAbslStringify<T>::value,
+                                    char*>::type = nullptr>
   AlphaNum(T e)  // NOLINT(runtime/explicit)
       : AlphaNum(+static_cast<typename std::underlying_type<T>::type>(e)) {}
 
@@ -498,10 +498,27 @@ inline std::string SingleArgStrCat(unsigned long long x) {
 inline std::string SingleArgStrCat(float x) { return FloatToString(x); }
 inline std::string SingleArgStrCat(double x) { return FloatToString(x); }
 
+// As of September 2023, the SingleArgStrCat() optimization is only enabled for
+// libc++. The reasons for this are:
+// 1) The SSO size for libc++ is 23, while libstdc++ and MSSTL have an SSO size
+// of 15. Since IntegerToString unconditionally resizes the string to 22 bytes,
+// this causes both libstdc++ and MSSTL to allocate.
+// 2) strings_internal::STLStringResizeUninitialized() only has an
+// implementation that avoids initialization when using libc++. This isn't as
+// relevant as (1), and the cost should be benchmarked if (1) ever changes on
+// libstc++ or MSSTL.
+#ifdef _LIBCPP_VERSION
+#define ABSL_INTERNAL_STRCAT_ENABLE_FAST_CASE true
+#else
+#define ABSL_INTERNAL_STRCAT_ENABLE_FAST_CASE false
+#endif
 
-template <typename T, typename = std::enable_if_t<std::is_arithmetic<T>{} &&
-                                                  !std::is_same<T, char>{}>>
+template <typename T, typename = std::enable_if_t<
+                          ABSL_INTERNAL_STRCAT_ENABLE_FAST_CASE &&
+                          std::is_arithmetic<T>{} && !std::is_same<T, char>{}>>
 using EnableIfFastCase = T;
+
+#undef ABSL_INTERNAL_STRCAT_ENABLE_FAST_CASE
 
 }  // namespace strings_internal
 

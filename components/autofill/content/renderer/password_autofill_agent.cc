@@ -34,7 +34,6 @@
 #include "components/autofill/content/renderer/renderer_save_password_progress_logger.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/autofill_regex_constants.h"
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -101,6 +100,8 @@ const size_t kMaximumTextSizeForAutocomplete = 1000;
 
 // Names of HTML attributes to show form and field signatures for debugging.
 const char kDebugAttributeForFormSignature[] = "form_signature";
+const char kDebugAttributeForAlternativeFormSignature[] =
+    "alternative_form_signature";
 const char kDebugAttributeForFieldSignature[] = "field_signature";
 const char kDebugAttributeForParserAnnotations[] = "pm_parser_annotation";
 const char kDebugAttributeForVisibility[] = "visibility_annotation";
@@ -141,7 +142,7 @@ bool IsUsernameAmendable(const WebInputElement& username_element,
                          bool is_password_field_selected) {
   return !username_element.IsNull() && IsElementEditable(username_element) &&
          (!is_password_field_selected || username_element.IsAutofilled() ||
-          username_element.Value().IsEmpty());
+          username_element.IsPreviewed() || username_element.Value().IsEmpty());
 }
 
 // Log `message` if `logger` is not null.
@@ -266,6 +267,12 @@ bool IsPublicSuffixDomainMatch(const std::string& url1,
 std::string GetFormSignatureAsString(const FormData& form_data) {
   return base::NumberToString(CalculateFormSignature(form_data).value());
 }
+// Similar to `GetFormSignatureAsString` but returns alternative form signature
+// as a string.
+std::string GetAlternativeFormSignatureAsString(const FormData& form_data) {
+  return base::NumberToString(
+      CalculateAlternativeFormSignature(form_data).value());
+}
 
 // Sets the specified attribute of |target| to the given value. This must not
 // happen while ScriptForbiddenScope is active (e.g. during
@@ -295,15 +302,20 @@ void SetAttributeAsync(blink::WebElement target,
 // as HTML attributes.
 void AnnotateFieldsWithSignatures(
     std::vector<blink::WebFormControlElement>& fields,
-    const std::string& form_signature) {
+    const std::string& form_signature,
+    const std::string& alternative_form_signature) {
   for (blink::WebFormControlElement& control_element : fields) {
     FieldSignature field_signature = CalculateFieldSignatureByNameAndType(
         control_element.NameForAutofill().Utf16(),
-        control_element.FormControlTypeForAutofill().Utf8());
+        FormControlTypeToString(form_util::ToAutofillFormControlType(
+            control_element.FormControlTypeForAutofill())));
     SetAttributeAsync(control_element, kDebugAttributeForFieldSignature,
                       base::NumberToString(field_signature.value()));
     SetAttributeAsync(control_element, kDebugAttributeForFormSignature,
                       form_signature);
+    SetAttributeAsync(control_element,
+                      kDebugAttributeForAlternativeFormSignature,
+                      alternative_form_signature);
     SetAttributeAsync(
         control_element, kDebugAttributeForVisibility,
         IsWebElementFocusableForAutofill(control_element) ? "true" : "false");
@@ -315,10 +327,9 @@ void AnnotateFieldsWithSignatures(
 // Instead, we can iterate through the fields of the forms and the unowned
 // fields, both of which are cached in the Document.
 bool HasPasswordField(const WebLocalFrame& frame) {
-  static base::NoDestructor<WebString> kPassword("password");
-
   auto ContainsPasswordField = [&](const auto& fields) {
-    return base::Contains(fields, *kPassword,
+    return base::Contains(fields,
+                          blink::WebFormControlElement::Type::kInputPassword,
                           &WebFormControlElement::FormControlTypeForAutofill);
   };
 
@@ -465,9 +476,10 @@ size_t GetIndexOfElement(const FormData& form_data,
     return form_data.fields.size();
   }
   for (size_t i = 0; i < form_data.fields.size(); ++i) {
-    if (form_data.fields[i].unique_renderer_id.value() ==
-        element.UniqueRendererFormControlId())
+    if (form_data.fields[i].unique_renderer_id ==
+        form_util::GetFieldRendererId(element)) {
       return i;
+    }
   }
   return form_data.fields.size();
 }
@@ -509,7 +521,7 @@ mojom::SubmissionReadinessState CalculateSubmissionReadiness(
     // block a form submission. Note: Don't use |check_status !=
     // kNotCheckable|, a radio button is considered a "checkable" element too,
     // but it should block a submission.
-    return field.form_control_type == "checkbox";
+    return field.form_control_type == StringToFormControlType("checkbox");
   };
 
   for (size_t i = username_index + 1; i < password_index; ++i) {
@@ -769,9 +781,9 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
   WebInputElement mutable_element = element;  // We need a non-const.
 
   const std::u16string element_value = element.Value().Utf16();
-  const FieldRendererId element_id(element.UniqueRendererFormControlId());
-  field_data_manager_->UpdateFieldDataMap(element_id, element_value,
-                                          FieldPropertiesFlags::kUserTyped);
+  field_data_manager_->UpdateFieldDataMap(
+      form_util::GetFieldRendererId(element), element_value,
+      FieldPropertiesFlags::kUserTyped);
 
   InformBrowserAboutUserInput(element.Form(), element);
 
@@ -796,7 +808,8 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
 
   // Exclude 1-symbol inputs, as they are unlikely to be usernames and likely
   // to be characters/digits of OTPs.
-  if (element_value.size() == 1) {
+  // Exclude too large inputs, as they are usually not usernames.
+  if (element_value.size() == 1 || element_value.size() > 100) {
     return;
   }
 
@@ -808,8 +821,10 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
   std::u16string id_attribute = element.GetIdAttribute().Utf16();
 
   bool is_likely_otp =
-      autofill::MatchesRegex<autofill::kOneTimePwdRe>(name_attribute) ||
-      autofill::MatchesRegex<autofill::kOneTimePwdRe>(id_attribute) ||
+      autofill::MatchesRegex<password_manager::constants::kOneTimePwdRe>(
+          name_attribute) ||
+      autofill::MatchesRegex<password_manager::constants::kOneTimePwdRe>(
+          id_attribute) ||
       base::Contains(autocomplete_attribute,
                      password_manager::constants::kAutocompleteOneTimePassword);
 
@@ -904,9 +919,9 @@ void PasswordAutofillAgent::FillField(WebInputElement* input,
   DCHECK(input);
   DCHECK(!input->IsNull());
   input->SetAutofillValue(WebString::FromUTF16(credential));
-  const FieldRendererId input_id(input->UniqueRendererFormControlId());
   field_data_manager_->UpdateFieldDataMap(
-      input_id, credential, FieldPropertiesFlags::kAutofilledOnUserTrigger);
+      form_util::GetFieldRendererId(*input), credential,
+      FieldPropertiesFlags::kAutofilledOnUserTrigger);
   TrackAutofilledElement(*input);
 }
 
@@ -1243,15 +1258,21 @@ void PasswordAutofillAgent::AnnotateFormsAndFieldsWithSignatures(
   for (WebFormElement& form : forms) {
     std::unique_ptr<FormData> form_data = GetFormDataFromWebForm(form);
     std::string form_signature;
+    std::string alternative_form_signature;
     if (form_data) {
       // GetFormSignatureAsString() may require the FormData::url.
       form_data->url = render_frame()->GetWebFrame()->GetDocument().Url();
       form_signature = GetFormSignatureAsString(*form_data);
+      alternative_form_signature =
+          GetAlternativeFormSignatureAsString(*form_data);
       SetAttributeAsync(form, kDebugAttributeForFormSignature, form_signature);
+      SetAttributeAsync(form, kDebugAttributeForAlternativeFormSignature,
+                        alternative_form_signature);
     }
     std::vector<WebFormControlElement> form_fields =
         form_util::ExtractAutofillableElementsInForm(form);
-    AnnotateFieldsWithSignatures(form_fields, form_signature);
+    AnnotateFieldsWithSignatures(form_fields, form_signature,
+                                 alternative_form_signature);
   }
 
   std::vector<WebFormControlElement> unowned_elements =
@@ -1259,12 +1280,16 @@ void PasswordAutofillAgent::AnnotateFormsAndFieldsWithSignatures(
           render_frame()->GetWebFrame()->GetDocument());
   std::unique_ptr<FormData> form_data = GetFormDataFromUnownedInputElements();
   std::string form_signature;
+  std::string alternative_form_signature;
   if (form_data) {
     // GetFormSignatureAsString() may require the FormData::url.
     form_data->url = render_frame()->GetWebFrame()->GetDocument().Url();
     form_signature = GetFormSignatureAsString(*form_data);
+    alternative_form_signature =
+        GetAlternativeFormSignatureAsString(*form_data);
   }
-  AnnotateFieldsWithSignatures(unowned_elements, form_signature);
+  AnnotateFieldsWithSignatures(unowned_elements, form_signature,
+                               alternative_form_signature);
 }
 
 void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
@@ -1549,8 +1574,9 @@ void PasswordAutofillAgent::InformNoSavedCredentials(
       continue;
     // Don't clear the actual value of fields that the user has edited manually
     // (which changes the autofill state back to kNotFilled).
-    if (element.GetAutofillState() == WebAutofillState::kAutofilled)
+    if (element.IsAutofilled()) {
       element.SetValue(blink::WebString());
+    }
     element.SetSuggestedValue(blink::WebString());
   }
   all_autofilled_elements_.clear();
@@ -1630,7 +1656,6 @@ void PasswordAutofillAgent::InformAboutFormClearing(
   if (!FrameCanAccessPasswordManager())
     return;
   for (const auto& element : form.GetFormControlElements()) {
-    FieldRendererId element_id(element.UniqueRendererFormControlId());
     // Notify PasswordManager if |form| has password fields that have user typed
     // input or input autofilled on user trigger.
     if (IsPasswordFieldFilledByUser(element)) {
@@ -1645,7 +1670,7 @@ void PasswordAutofillAgent::InformAboutFieldClearing(
   if (!FrameCanAccessPasswordManager())
     return;
   DCHECK(cleared_element.Value().IsEmpty());
-  FieldRendererId field_id(cleared_element.UniqueRendererFormControlId());
+  FieldRendererId field_id = form_util::GetFieldRendererId(cleared_element);
   // Ignore fields that had no user input or autofill on user trigger.
   if (!field_data_manager_->DidUserType(field_id) &&
       !field_data_manager_->WasAutofilledOnUserTrigger(field_id)) {
@@ -2086,7 +2111,8 @@ PasswordAutofillAgent::ExtractFormStructureInfo(const FormData& form_data) {
 
     FormFieldInfo& field_info = result.fields[i];
     field_info.unique_renderer_id = form_field.unique_renderer_id;
-    field_info.form_control_type = form_field.form_control_type;
+    field_info.form_control_type =
+        FormControlTypeToString(form_field.form_control_type);
     field_info.autocomplete_attribute = form_field.autocomplete_attribute;
     field_info.is_focusable = form_field.is_focusable;
   }
@@ -2132,8 +2158,8 @@ bool PasswordAutofillAgent::WasFormStructureChanged(
 void PasswordAutofillAgent::TryFixAutofilledForm(
     std::vector<WebFormControlElement>* control_elements) const {
   for (auto& element : *control_elements) {
-    const FieldRendererId element_id(element.UniqueRendererFormControlId());
-    auto cached_element = autofilled_elements_cache_.find(element_id);
+    auto cached_element =
+        autofilled_elements_cache_.find(form_util::GetFieldRendererId(element));
     if (cached_element == autofilled_elements_cache_.end())
       continue;
 
@@ -2150,7 +2176,7 @@ void PasswordAutofillAgent::TryFixAutofilledForm(
 void PasswordAutofillAgent::AutofillField(const std::u16string& value,
                                           WebInputElement field) {
   // Do not autofill on load fields that have any user typed input.
-  const FieldRendererId field_id(field.UniqueRendererFormControlId());
+  const FieldRendererId field_id = form_util::GetFieldRendererId(field);
   if (field_data_manager_->DidUserType(field_id))
     return;
 
@@ -2185,8 +2211,9 @@ bool PasswordAutofillAgent::CanShowPopupWithoutPasswords(
 
 bool PasswordAutofillAgent::IsPasswordFieldFilledByUser(
     const WebFormControlElement& element) const {
-  FieldRendererId element_id(element.UniqueRendererFormControlId());
-  return element.FormControlTypeForAutofill() == "password" &&
+  FieldRendererId element_id = form_util::GetFieldRendererId(element);
+  return element.FormControlTypeForAutofill() ==
+             blink::WebFormControlElement::Type::kInputPassword &&
          (field_data_manager_->DidUserType(element_id) ||
           field_data_manager_->WasAutofilledOnUserTrigger(element_id));
 }
@@ -2198,7 +2225,7 @@ void PasswordAutofillAgent::NotifyPasswordManagerAboutClearedForm(
   FormData form_data;
   if (WebFormElementToFormData(cleared_form, WebFormControlElement(),
                                field_data_manager_.get(), extract_mask,
-                               &form_data, nullptr)) {
+                               &form_data, /*field=*/nullptr)) {
     GetPasswordManagerDriver().PasswordFormCleared(form_data);
   }
 }

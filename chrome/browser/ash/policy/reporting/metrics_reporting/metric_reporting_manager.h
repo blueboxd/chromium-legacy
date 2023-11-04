@@ -39,7 +39,7 @@ class Sampler;
 
 BASE_DECLARE_FEATURE(kEnableAppEventsObserver);
 BASE_DECLARE_FEATURE(kEnableFatalCrashEventsObserver);
-BASE_DECLARE_FEATURE(kEnableRuntimeCounters);
+BASE_DECLARE_FEATURE(kEnableRuntimeCountersTelemetry);
 
 // Class to initialize and start info, event, and telemetry collection and
 // reporting.
@@ -274,6 +274,8 @@ class MetricReportingManager : public policy::ManagedSessionService::Observer,
   void InitPeripheralsCollectors();
 
   void InitRuntimeCountersCollectors();
+
+  void InitWebsiteMetricCollectors(Profile* profile);
 
   void InitDisplayCollectors();
 

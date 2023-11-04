@@ -79,7 +79,7 @@ GLContext::~GLContext() {
   share_group_->RemoveContext(this);
   if (GetCurrent() == this) {
     SetCurrent(nullptr);
-    SetCurrentGL(nullptr);
+    SetThreadLocalCurrentGL(nullptr);
   }
   base::subtle::Atomic32 after_value =
       base::subtle::NoBarrier_AtomicIncrement(&total_gl_contexts_, -1);
@@ -113,7 +113,6 @@ bool GLContext::MakeCurrent(GLSurface* surface) {
 
 GLApi* GLContext::CreateGLApi(DriverGL* driver) {
   real_gl_api_ = new RealGLApi;
-  real_gl_api_->set_gl_workarounds(gl_workarounds_);
   real_gl_api_->SetDisabledExtensions(disabled_gl_extensions_);
   real_gl_api_->Initialize(driver);
   return real_gl_api_;
@@ -277,8 +276,10 @@ void GLContext::BackpressureFenceWait(uint64_t fence_id) {
 
   // Waiting on |fence_id| has implicitly waited on all previous fences, so
   // remove them.
-  while (backpressure_fences_.begin()->first < fence_id)
+  while (!backpressure_fences_.empty() &&
+         backpressure_fences_.begin()->first < fence_id) {
     backpressure_fences_.erase(backpressure_fences_.begin());
+  }
 }
 
 bool GLContext::HasBackpressureFences() const {
@@ -362,13 +363,9 @@ void GLContext::SetCurrent(GLSurface* surface) {
   // TODO(sievers): Remove this, but needs all gpu_unittest classes
   // to create and make current a context.
   if (!surface && GetGLImplementation() != kGLImplementationMockGL &&
-      GetGLImplementation() != kGLImplementationStubGL)
-    SetCurrentGL(nullptr);
-}
-
-void GLContext::SetGLWorkarounds(const GLWorkarounds& workarounds) {
-  DCHECK(!real_gl_api_);
-  gl_workarounds_ = workarounds;
+      GetGLImplementation() != kGLImplementationStubGL) {
+    SetThreadLocalCurrentGL(nullptr);
+  }
 }
 
 void GLContext::SetDisabledGLExtensions(
@@ -485,7 +482,7 @@ void GLContext::OnReleaseVirtuallyCurrent(GLContext* virtual_context) {
 }
 
 void GLContext::BindGLApi() {
-  SetCurrentGL(GetCurrentGL());
+  SetThreadLocalCurrentGL(GetCurrentGL());
 }
 
 GLContextReal::GLContextReal(GLShareGroup* share_group)

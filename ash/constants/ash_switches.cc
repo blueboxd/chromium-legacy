@@ -247,6 +247,10 @@ const char kAshForceEnableStylusTools[] = "force-enable-stylus-tools";
 // state.
 const char kAshForceStatusAreaCollapsible[] = "force-status-area-collapsible";
 
+// Path for which to load growth campaigns file for testing (instead of
+// downloading from Omaha).
+const char kGrowthCampaignsPath[] = "growth-campaigns-path";
+
 // Hides notifications that are irrelevant to Chrome OS device factory testing,
 // such as battery level updates.
 const char kAshHideNotificationsForFactory[] =
@@ -397,6 +401,9 @@ const char kDisableGaiaServices[] = "disable-gaia-services";
 // Disables HID-detection OOBE screen.
 const char kDisableHIDDetectionOnOOBEForTesting[] =
     "disable-hid-detection-on-oobe";
+
+// Skip multidevice setup screen during tast tests.
+const char kSkipMultideviceScreenForTesting[] = "skip-multidevice-screen";
 
 // Disables the Lacros keep alive for testing.
 const char kDisableLacrosKeepAliveForTesting[] = "disable-lacros-keep-alive";
@@ -1008,6 +1015,12 @@ const char kSuppressMessageCenterPopups[] = "suppress-message-center-popups";
 // Specifies directory for the Telemetry System Web Extension.
 const char kTelemetryExtensionDirectory[] = "telemetry-extension-dir";
 
+// TODO(b/299642185): Remove this flag by the end of 2023.
+// ChromeOS does not support empty passwords for users, but some legacy test
+// setups might use empty password for users.
+const char kTemporaryAllowEmptyPasswordsInTests[] =
+    "allow-empty-passwords-in-tests";
+
 // Enables testing for encryption migration UI.
 const char kTestEncryptionMigrationUI[] = "test-encryption-migration-ui";
 
@@ -1123,6 +1136,11 @@ bool IsTabletFormFactor() {
       kEnableTabletFormFactor);
 }
 
+bool ShouldMultideviceScreenBeSkippedForTesting() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kSkipMultideviceScreenForTesting);
+}
+
 bool IsGaiaServicesDisabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableGaiaServices);
@@ -1155,6 +1173,11 @@ bool ShouldScaleOobe() {
 bool IsAueReachedForUpdateRequiredForTest() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kUpdateRequiredAueForTest);
+}
+
+bool AreEmptyPasswordsAllowedForForTesting() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kTemporaryAllowEmptyPasswordsInTests);
 }
 
 bool IsOOBEChromeVoxHintTimerDisabledForTesting() {

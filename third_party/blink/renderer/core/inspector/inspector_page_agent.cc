@@ -1692,7 +1692,7 @@ void InspectorPageAgent::CreateIsolatedWorldImpl(
 
   LocalWindowProxy* isolated_world_window_proxy =
       frame.DomWindow()->GetScriptController().WindowProxy(*world);
-  v8::HandleScope handle_scope(V8PerIsolateData::MainThreadIsolate());
+  v8::HandleScope handle_scope(frame.DomWindow()->GetIsolate());
 
   callback->sendSuccess(v8_inspector::V8ContextInfo::executionContextId(
       isolated_world_window_proxy->ContextIfInitialized()));
@@ -1863,7 +1863,7 @@ void InspectorPageAgent::FileChooserOpened(LocalFrame* frame,
       IdentifiersFactory::FrameId(frame),
       multiple ? protocol::Page::FileChooserOpened::ModeEnum::SelectMultiple
                : protocol::Page::FileChooserOpened::ModeEnum::SelectSingle,
-      element ? Maybe<int>(DOMNodeIds::IdForNode(element)) : Maybe<int>());
+      element ? Maybe<int>(element->GetDomNodeId()) : Maybe<int>());
 }
 
 protocol::Response InspectorPageAgent::produceCompilationCache(

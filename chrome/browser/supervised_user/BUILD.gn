@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//third_party/jni_zero/jni_zero.gni")
 import("//tools/grit/grit_rule.gni")
 
 static_library("test_support") {
@@ -20,7 +21,11 @@ static_library("test_support") {
   ]
   if (is_android) {
     sources += [ "android/supervised_user_settings_service_bridge.cc" ]
-    deps += [ ":test_support_jni_headers" ]
+    deps += [
+      ":test_support_jni_headers",
+      "//components/signin/public/identity_manager:test_support",
+      "//services/network:test_support",
+    ]
   }
 }
 
@@ -139,6 +144,8 @@ if (is_android) {
     testonly = true
     resources_package = "org.chromium.chrome.browser.supervised_user"
     sources = [
+      "android/javatests/src/org/chromium/chrome/browser/supervised_user/SupervisedUserCriticalJourneysIntegrationTest.java",
+      "android/javatests/src/org/chromium/chrome/browser/supervised_user/SupervisedUserSettingsTestUtils.java",
       "android/javatests/src/org/chromium/chrome/browser/supervised_user/WebsiteParentApprovalNativesTest.java",
       "android/javatests/src/org/chromium/chrome/browser/supervised_user/WebsiteParentApprovalTest.java",
       "android/javatests/src/org/chromium/chrome/browser/supervised_user/WebsiteParentApprovalTestUtils.java",
@@ -157,6 +164,9 @@ if (is_android) {
       "//chrome/browser/supervised_user:parent_auth_delegate_java",
       "//chrome/browser/supervised_user:supervised_user_metrics_java",
       "//chrome/browser/supervised_user:website_parent_approval_java",
+      "//chrome/browser/tab:java",
+      "//chrome/browser/ui/android/appmenu:java",
+      "//chrome/browser/ui/android/appmenu/test:test_support_java",
       "//chrome/test/android:chrome_java_integration_test_support",
       "//chrome/test/android:pagecontroller_utils_java",
       "//components/browser_ui/bottomsheet/android:java",

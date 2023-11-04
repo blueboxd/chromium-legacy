@@ -6,7 +6,7 @@
 <translation id="1040916596585577953">Chromium empfiehlt, diese Erweiterung zu überprüfen</translation>
 <translation id="1042552502243217427">Wenn eine Website anfordert, Links auf einer ihrer Seiten privat vorab zu laden, verwendet Chromium dazu die Server von Google. Dadurch wird deine Identität vor der vorab geladenen Website verborgen. Google lernt dabei, welche Websites vorab geladen werden.</translation>
 <translation id="1065672644894730302">Deine Einstellungen können nicht gelesen werden. Einige Funktionen sind möglicherweise nicht verfügbar und Änderungen an Einstellungen werden nicht gespeichert.</translation>
-<translation id="1083934481477628225">Deine Eltern haben „Berechtigungen für Websites, Apps und Erweiterungen“ für Chromium deaktiviert</translation>
+<translation id="1083934481477628225">Dein Elternteil hat „Berechtigungen für Websites, Apps und Erweiterungen“ für Chromium deaktiviert</translation>
 <translation id="1098170124587656448">Chromium kann helfen, dich vor Bedrohungen wie Datenpannen und schädlichen Erweiterungen zu schützen</translation>
 <translation id="1104942323762546749">Chromium möchte deine Passwörter exportieren. Wenn du dies zulassen möchtest, gib dein Windows-Passwort ein.</translation>
 <translation id="113122355610423240">Chromium ist dein Standardbrowser</translation>
@@ -118,7 +118,6 @@ Berechtigungen, die du Websites und Apps bereits gewährt hast, gelten mögliche
 <translation id="3509308970982693815">Schließe bitte alle Chromium-Fenster und versuche es erneut.</translation>
 <translation id="3533435340678213462">Zum Schutz deiner Daten löschen wir automatisch deine Interessen, die älter als vier Wochen sind. Je nach deinen Browsingaktivitäten können die Interessen wieder in der Liste erscheinen. Du kannst jedoch Interessen entfernen, die Chromium nicht berücksichtigen soll.</translation>
 <translation id="3567254597502212821">Dein Browserverlauf, das heißt eine Liste der von dir auf diesem Gerät in Chromium besuchten Websites.</translation>
-<translation id="3575459661164320785">Auf deinem Computer wurde schädliche Software gefunden. Chromium kann diese Software entfernen, deine Einstellungen wiederherstellen und Erweiterungen deaktivieren, sodass dein Browser wieder wie gewohnt funktioniert.</translation>
 <translation id="3593091352817399191">Du bist bereits in einem anderen Konto angemeldet. Wenn du deine Browseraktivitäten getrennt halten möchtest, kann Chromium ein eigenes Profil für dich einrichten.</translation>
 <translation id="363078681319665186">Du benötigst macOS 10.15 oder höher, um zukünftige Chromium-Updates zu erhalten. Auf diesem Computer wird macOS 10.13 ausgeführt.</translation>
 <translation id="3639635944603682591">Die Browserdaten dieser Person werden von diesem Gerät gelöscht. Wenn du die Daten wiederherstellen möchtest, melde dich als <ph name="USER_EMAIL" /> in Chromium an.</translation>

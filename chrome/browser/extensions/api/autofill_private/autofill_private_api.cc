@@ -39,7 +39,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/signin/public/identity_manager/account_info.h"
-#include "components/strings/grit/components_chromium_strings.h"
+#include "components/strings/grit/components_branded_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_function.h"
@@ -108,13 +108,6 @@ autofill::AutofillProfile CreateNewAutofillProfile(
       personal_data->IsEligibleForAddressAccountStorage()
           ? autofill::AutofillProfile::Source::kAccount
           : autofill::AutofillProfile::Source::kLocalOrSyncable;
-
-  if (base::FeatureList::IsEnabled(
-          autofill::features::test::
-              kAutofillCreateAccountProfilesFromSettings)) {
-    // Note: overriding address profile source only if test feature is enabled.
-    source = autofill::AutofillProfile::Source::kAccount;
-  }
   if (country_code && !personal_data->IsCountryEligibleForAccountStorage(
                           country_code.value())) {
     // Note: addresses from unsupported countries can't be saved in account.
@@ -545,10 +538,7 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveIbanFunction::Run() {
     if (!existing_iban)
       return RespondNow(Error(kErrorDataUnavailable));
   }
-  autofill::Iban iban =
-      existing_iban
-          ? *existing_iban
-          : autofill::Iban(base::Uuid::GenerateRandomV4().AsLowercaseString());
+  autofill::Iban iban = existing_iban ? *existing_iban : autofill::Iban();
 
   iban.SetRawInfo(autofill::IBAN_VALUE, base::UTF8ToUTF16(*iban_entry->value));
 
@@ -841,8 +831,8 @@ AutofillPrivateCheckIfDeviceAuthAvailableFunction::Run() {
   autofill::ContentAutofillClient* client =
       autofill::ContentAutofillClient::FromWebContents(GetSenderWebContents());
   if (client) {
-    return RespondNow(WithArguments(
-        autofill::IsDeviceAuthAvailable(client->GetDeviceAuthenticator())));
+    return RespondNow(WithArguments(autofill::IsDeviceAuthAvailable(
+        client->GetDeviceAuthenticator().get())));
   }
 #endif  // BUILDFLAG (IS_MAC) || BUILDFLAG(IS_WIN)
   return RespondNow(Error(kErrorDeviceAuthUnavailable));

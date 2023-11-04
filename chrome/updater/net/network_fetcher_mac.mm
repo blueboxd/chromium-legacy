@@ -26,6 +26,7 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/net/network.h"
 #include "chrome/updater/policy/service.h"
+#include "chrome/updater/util/util.h"
 #include "components/update_client/network.h"
 #import "net/base/mac/url_conversions.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -298,7 +299,7 @@ class NetworkFetcher : public update_client::NetworkFetcher {
       update_client::NetworkFetcher::PostRequestCompleteCallback
           post_request_complete_callback) override;
 
-  void DownloadToFile(
+  base::OnceClosure DownloadToFile(
       const GURL& url,
       const base::FilePath& file_path,
       update_client::NetworkFetcher::ResponseStartedCallback
@@ -343,6 +344,8 @@ void NetworkFetcher::PostRequest(
   urlRequest.HTTPMethod = @"POST";
   urlRequest.HTTPBody = [[NSData alloc] initWithBytes:post_data.c_str()
                                                length:post_data.size()];
+  [urlRequest setValue:base::SysUTF8ToNSString(GetUpdaterUserAgent())
+      forHTTPHeaderField:@"User-Agent"];
   [urlRequest addValue:base::SysUTF8ToNSString(content_type)
       forHTTPHeaderField:@"Content-Type"];
 
@@ -358,7 +361,7 @@ void NetworkFetcher::PostRequest(
   [dataTask resume];
 }
 
-void NetworkFetcher::DownloadToFile(
+base::OnceClosure NetworkFetcher::DownloadToFile(
     const GURL& url,
     const base::FilePath& file_path,
     ResponseStartedCallback response_started_callback,
@@ -382,10 +385,13 @@ void NetworkFetcher::DownloadToFile(
 
   NSMutableURLRequest* urlRequest =
       [[NSMutableURLRequest alloc] initWithURL:net::NSURLWithGURL(url)];
+  [urlRequest setValue:base::SysUTF8ToNSString(GetUpdaterUserAgent())
+      forHTTPHeaderField:@"User-Agent"];
 
   NSURLSessionDownloadTask* downloadTask =
       [session downloadTaskWithRequest:urlRequest];
   [downloadTask resume];
+  return base::DoNothing();
 }
 
 }  // namespace

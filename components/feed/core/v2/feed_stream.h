@@ -63,7 +63,6 @@ class ImageFetcher;
 class MetricsReporter;
 class RefreshTaskScheduler;
 class PersistentKeyValueStoreImpl;
-class ResourceFetcher;
 class StreamModel;
 class SurfaceUpdater;
 
@@ -87,9 +86,6 @@ class FeedStream : public FeedApi,
     virtual void ClearAll() = 0;
     virtual AccountInfo GetAccountInfo() = 0;
     virtual bool IsSigninAllowed() = 0;
-    // Returns true if Sync is enabled for the user. If the user is not signed
-    // in it also returns false.
-    virtual bool IsSyncOn() = 0;
     virtual void PrefetchImage(const GURL& url) = 0;
     virtual void RegisterExperiments(const Experiments& experiments) = 0;
     virtual void RegisterFeedUserSettingsFieldTrial(
@@ -102,7 +98,6 @@ class FeedStream : public FeedApi,
              PrefService* profile_prefs,
              FeedNetwork* feed_network,
              ImageFetcher* image_fetcher,
-             ResourceFetcher* resource_fetcher,
              FeedStore* feed_store,
              PersistentKeyValueStoreImpl* persistent_key_value_store,
              TemplateURLService* template_url_service,
@@ -263,7 +258,6 @@ class FeedStream : public FeedApi,
 
   bool IsSigninAllowed() const { return delegate_->IsSigninAllowed(); }
   bool IsSignedIn() const { return !delegate_->GetAccountInfo().IsEmpty(); }
-  bool IsSyncOn() const { return delegate_->IsSyncOn(); }
   AccountInfo GetAccountInfo() const { return delegate_->GetAccountInfo(); }
 
   // Determines if we should attempt loading the stream or refreshing at all.
@@ -430,6 +424,7 @@ class FeedStream : public FeedApi,
 
   bool IsFeedEnabledByEnterprisePolicy();
   bool IsFeedEnabled();
+  bool IsFeedEnabledByDse();
 
   bool HasReachedConditionsToUploadActionsWithNoticeCard();
 
@@ -469,7 +464,6 @@ class FeedStream : public FeedApi,
   raw_ptr<PrefService> profile_prefs_;  // May be null.
   raw_ptr<FeedNetwork> feed_network_;
   raw_ptr<ImageFetcher> image_fetcher_;
-  raw_ptr<ResourceFetcher> resource_fetcher_;
   raw_ptr<FeedStore, DanglingUntriaged> store_;
   raw_ptr<PersistentKeyValueStoreImpl, DanglingUntriaged>
       persistent_key_value_store_;
@@ -510,6 +504,7 @@ class FeedStream : public FeedApi,
   BooleanPrefMember has_stored_data_;
   BooleanPrefMember snippets_enabled_by_policy_;
   BooleanPrefMember articles_list_visible_;
+  BooleanPrefMember snippets_enabled_by_dse_;
   BooleanPrefMember signin_allowed_;
 
   // State loaded at startup:

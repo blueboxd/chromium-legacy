@@ -52,6 +52,10 @@ class DriveFs;
 }  // namespace mojom
 }  // namespace drivefs
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}  // namespace user_prefs
+
 namespace drive {
 
 namespace internal {
@@ -79,6 +83,8 @@ struct QuickAccessItem {
 // DriveIntegrationService.  All events are notified on UI thread.
 class DriveIntegrationServiceObserver : public base::CheckedObserver {
  public:
+  ~DriveIntegrationServiceObserver() override;
+
   // Triggered when the file system is mounted.
   virtual void OnFileSystemMounted() {}
 
@@ -119,14 +125,14 @@ class DriveIntegrationServiceObserver : public base::CheckedObserver {
 class DriveIntegrationService : public KeyedService,
                                 public drivefs::DriveFsHost::MountObserver,
                                 drivefs::pinning::PinManager::Observer,
-                                ash::NetworkStateHandlerObserver {
+                                ash::NetworkStateHandler::Observer {
  public:
   using DriveFsMojoListenerFactory = base::RepeatingCallback<
       std::unique_ptr<drivefs::DriveFsBootstrapListener>()>;
   using GetQuickAccessItemsCallback =
-      base::OnceCallback<void(drive::FileError, std::vector<QuickAccessItem>)>;
+      base::OnceCallback<void(FileError, std::vector<QuickAccessItem>)>;
   using SearchDriveByFileNameCallback =
-      base::OnceCallback<void(drive::FileError,
+      base::OnceCallback<void(FileError,
                               std::vector<drivefs::mojom::QueryItemPtr>)>;
   using GetThumbnailCallback =
       base::OnceCallback<void(const absl::optional<std::vector<uint8_t>>&)>;
@@ -322,7 +328,7 @@ class DriveIntegrationService : public KeyedService,
   // files.
   void GetTotalPinnedSize(base::OnceCallback<void(int64_t)> callback);
 
-  void ClearOfflineFiles(base::OnceCallback<void(drive::FileError)> callback);
+  void ClearOfflineFiles(base::OnceCallback<void(FileError)> callback);
 
   // Tells Drive to immediately start uploading the file at |path|, which is a
   // relative path in Drive. This avoids queuing delays for newly created files,
@@ -343,6 +349,9 @@ class DriveIntegrationService : public KeyedService,
       drivefs::mojom::DriveFs::GetDocsOfflineStatsCallback callback);
 
   void OnNetworkChanged();
+
+  // Register the drive related profile prefs.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* prefs);
 
  private:
   enum class State {
@@ -432,17 +441,17 @@ class DriveIntegrationService : public KeyedService,
       int64_t total_size,
       mojo::Remote<drivefs::mojom::SearchQuery> search_query,
       base::OnceCallback<void(int64_t)> callback,
-      drive::FileError error,
+      FileError error,
       absl::optional<std::vector<drivefs::mojom::QueryItemPtr>> results);
 
   void OnGetQuickAccessItems(
       GetQuickAccessItemsCallback callback,
-      drive::FileError error,
+      FileError error,
       absl::optional<std::vector<drivefs::mojom::QueryItemPtr>> items);
 
   void OnSearchDriveByFileName(
       SearchDriveByFileNameCallback callback,
-      drive::FileError error,
+      FileError error,
       absl::optional<std::vector<drivefs::mojom::QueryItemPtr>> items);
 
   void OnEnableMirroringStatusUpdate(drivefs::mojom::MirrorSyncStatus status);
@@ -457,17 +466,19 @@ class DriveIntegrationService : public KeyedService,
 
   void OnUpdateFromPairedDocComplete(const base::FilePath& drive_path,
                                      base::OnceClosure callback,
-                                     drive::FileError error);
+                                     FileError error);
 
   void OnGetOfflineFilesSpaceUsage(base::OnceCallback<void(int64_t)> callback,
-                                   drive::FileError error,
+                                   FileError error,
                                    int64_t total_size);
 
   void RegisterPrefs();
   void OnDrivePrefChanged();
   void OnMirroringPrefChanged();
 
-  // NetworkStateHandlerObserver implementation.
+  // NetworkStateHandler::Observer implementation.
+  void PortalStateChanged(const ash::NetworkState*,
+                          ash::NetworkState::PortalState portal_state) override;
   void DefaultNetworkChanged(const ash::NetworkState*) override;
   void OnShuttingDown() override;
 
@@ -514,7 +525,7 @@ class DriveIntegrationService : public KeyedService,
   PrefChangeRegistrar registrar_;
 
   base::ScopedObservation<ash::NetworkStateHandler,
-                          ash::NetworkStateHandlerObserver>
+                          ash::NetworkStateHandler::Observer>
       network_state_handler_{this};
 
   // Note: This should remain the last member so it'll be destroyed and

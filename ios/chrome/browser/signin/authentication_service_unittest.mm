@@ -25,8 +25,8 @@
 #import "components/sync/test/mock_sync_service.h"
 #import "components/sync_preferences/pref_service_mock_factory.h"
 #import "components/sync_preferences/pref_service_syncable.h"
-#import "ios/chrome/browser/content_settings/cookie_settings_factory.h"
-#import "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
+#import "ios/chrome/browser/content_settings/model/cookie_settings_factory.h"
+#import "ios/chrome/browser/content_settings/model/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
@@ -575,6 +575,34 @@ TEST_F(AuthenticationServiceTest, SignedInManagedAccountSignOut) {
   EXPECT_EQ(ClearBrowsingDataCount(), 0);
 }
 
+// Tests that MDM errors do not lead to seeding empty account ids.
+//
+// Regression test for root cause of crbug/1482236
+TEST_F(AuthenticationServiceTest, MDMErrorsDontSeedEmptyAccountIds) {
+  SetExpectationsForSignIn();
+  authentication_service()->SignIn(
+      identity(0), signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN);
+  EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 2UL);
+
+  SetCachedMDMInfo(identity(0), CreateRefreshAccessTokenError(identity(0)));
+
+  // Fake an mdm error for an identity that is not loaded in IdentityManager.
+  fake_system_identity_manager()->AddIdentities(@[ @"foo3" ]);
+  SetCachedMDMInfo(identity(2), CreateRefreshAccessTokenError(identity(2)));
+
+  GoogleServiceAuthError error(
+      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+  signin::UpdatePersistentErrorOfRefreshTokenForAccount(
+      identity_manager(), GetAccountId(identity(0)), error);
+  FireApplicationWillEnterForeground();
+
+  ASSERT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 2u);
+  EXPECT_FALSE(
+      identity_manager()->GetAccountsWithRefreshTokens()[0].account_id.empty());
+  EXPECT_FALSE(
+      identity_manager()->GetAccountsWithRefreshTokens()[1].account_id.empty());
+}
+
 // Tests that MDM errors are correctly cleared when signing out of a managed
 // account.
 TEST_F(AuthenticationServiceTest, ManagedAccountSignOut) {
@@ -586,7 +614,8 @@ TEST_F(AuthenticationServiceTest, ManagedAccountSignOut) {
   EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 3UL);
   EXPECT_TRUE(authentication_service()->HasPrimaryIdentityManaged(
       signin::ConsentLevel::kSignin));
-  ON_CALL(*sync_setup_service_mock(), IsInitialSyncFeatureSetupComplete())
+  ON_CALL(*mock_sync_service()->GetMockUserSettings(),
+          IsInitialSyncFeatureSetupComplete())
       .WillByDefault(Return(true));
 
   SetCachedMDMInfo(identity(2), CreateRefreshAccessTokenError(identity(0)));

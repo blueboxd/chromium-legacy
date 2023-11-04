@@ -1596,7 +1596,7 @@ TEST_F(AutofillControllerJsTest, WebFormElementToFormData) {
 TEST_F(AutofillControllerJsTest, WebFormElementToFormDataTooManyFields) {
   NSString* html_fragment = @"<FORM name='Test' action='http://c.com'>";
   // In autofill_controller.js, the maximum number of parsable element is 200
-  // (__gCrWeb.fill.MAX_EXTRACTABLE_FIELDS = 200). Here an HTML page with 201
+  // (MAX_EXTRACTABLE_FIELDS = 200). Here an HTML page with 201
   // elements is generated for testing.
   for (NSUInteger index = 0; index < 201; ++index) {
     html_fragment =
@@ -1785,6 +1785,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"unique_renderer_id" : @"2",
         @"form_control_type" : @"text",
         @"max_length" : GetDefaultMaxLength(),
+        @"placeholder_attribute" : @"",
         @"should_autocomplete" : @true,
         @"is_checkable" : @false,
         @"is_focusable" : @true,
@@ -1800,6 +1801,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"identifier" : @"vehicle1",
         @"unique_renderer_id" : @"3",
         @"form_control_type" : @"checkbox",
+        @"placeholder_attribute" : @"",
         @"should_autocomplete" : @true,
         @"is_checkable" : @true,
         @"is_focusable" : @true,
@@ -1815,6 +1817,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"identifier" : @"vehicle2",
         @"unique_renderer_id" : @"4",
         @"form_control_type" : @"checkbox",
+        @"placeholder_attribute" : @"",
         @"should_autocomplete" : @true,
         @"is_checkable" : @true,
         @"is_focusable" : @true,
@@ -1830,6 +1833,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"identifier" : @"vehicle3",
         @"unique_renderer_id" : @"5",
         @"form_control_type" : @"checkbox",
+        @"placeholder_attribute" : @"",
         @"should_autocomplete" : @true,
         @"is_checkable" : @true,
         @"is_focusable" : @true,
@@ -1845,6 +1849,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"identifier" : @"nameintableth",
         @"unique_renderer_id" : @"6",
         @"form_control_type" : @"text",
+        @"placeholder_attribute" : @"",
         @"max_length" : GetDefaultMaxLength(),
         @"should_autocomplete" : @true,
         @"is_checkable" : @false,
@@ -1861,6 +1866,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"identifier" : @"emailtableth",
         @"unique_renderer_id" : @"7",
         @"form_control_type" : @"email",
+        @"placeholder_attribute" : @"",
         @"max_length" : GetDefaultMaxLength(),
         @"should_autocomplete" : @true,
         @"is_checkable" : @false,
@@ -1877,6 +1883,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"identifier" : @"pwd",
         @"unique_renderer_id" : @"8",
         @"form_control_type" : @"password",
+        @"placeholder_attribute" : @"",
         @"autocomplete_attribute" : @"off",
         @"max_length" : GetDefaultMaxLength(),
         @"should_autocomplete" : @false,
@@ -1894,6 +1901,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
         @"identifier" : @"state",
         @"unique_renderer_id" : @"9",
         @"form_control_type" : @"select-one",
+        @"placeholder_attribute" : @"",
         @"is_focusable" : @1,
         @"option_values" : @[ @"CA", @"TX" ],
         @"option_contents" : @[ @"California", @"Texas" ],

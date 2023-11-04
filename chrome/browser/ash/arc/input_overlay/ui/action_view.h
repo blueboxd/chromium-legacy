@@ -87,12 +87,17 @@ class ActionView : public views::View {
   // Reacts to child label focus change.
   void OnChildLabelUpdateFocus(ActionLabel* child, bool focus);
 
+  // Set the action view to be not new, for the action label.
+  void RemoveNewState();
+
   void ApplyMousePressed(const ui::MouseEvent& event);
   void ApplyMouseDragged(const ui::MouseEvent& event);
   void ApplyMouseReleased(const ui::MouseEvent& event);
   void ApplyGestureEvent(ui::GestureEvent* event);
   bool ApplyKeyPressed(const ui::KeyEvent& event);
   bool ApplyKeyReleased(const ui::KeyEvent& event);
+
+  void ShowButtonOptionsMenu();
 
   // Callbacks related to reposition operations.
   void OnDraggingCallback();
@@ -106,7 +111,7 @@ class ActionView : public views::View {
 
   // Returns the `attached_view` position and update the attached_view.
   gfx::Point CalculateAttachViewPositionInRootWindow(
-      const gfx::Rect& root_window_bounds,
+      const gfx::Rect& available_bounds,
       const gfx::Point& window_content_origin,
       ArrowContainer* attached_view) const;
 
@@ -152,9 +157,8 @@ class ActionView : public views::View {
 
  private:
   friend class ActionViewTest;
+  friend class OverlayViewTestBase;
   friend class ViewTestBase;
-
-  void ShowButtonOptionsMenu();
 
   void RemoveTouchPoint();
 

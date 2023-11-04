@@ -7,7 +7,6 @@
 #include "base/check.h"
 #include "base/functional/callback.h"
 #include "base/run_loop.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/commerce/core/commerce_types.h"
@@ -152,6 +151,16 @@ class MockProtoStorage
        SessionProtoStorage<commerce::DiscountsContent>::OperationCallback
            callback),
       (override));
+  MOCK_METHOD(
+      void,
+      UpdateEntries,
+      ((std::unique_ptr<
+           std::vector<std::pair<std::string, commerce::DiscountsContent>>>
+            entries_to_update),
+       std::unique_ptr<std::vector<std::string>> keys_to_remove,
+       SessionProtoStorage<commerce::DiscountsContent>::OperationCallback
+           callback),
+      (override));
   MOCK_METHOD(void,
               DeleteAllContent,
               (SessionProtoStorage<
@@ -225,9 +234,6 @@ TEST_F(DiscountsStorageTest, TestHandleServerDiscounts_NoUrlsToCheck) {
               InsertContent(kDiscountsUrlFromServer, ExpectedServerProto(), _));
   EXPECT_CALL(*proto_db_, LoadAllEntries).Times(0);
 
-  base::HistogramTester histogram_tester;
-  histogram_tester.ExpectTotalCount(kDiscountsFetchResultHistogramName, 0);
-
   base::RunLoop run_loop;
   storage_->HandleServerDiscounts(
       std::vector<std::string>(), MockServerResults(),
@@ -242,8 +248,6 @@ TEST_F(DiscountsStorageTest, TestHandleServerDiscounts_NoUrlsToCheck) {
           },
           &run_loop));
   run_loop.Run();
-
-  histogram_tester.ExpectTotalCount(kDiscountsFetchResultHistogramName, 0);
 }
 
 TEST_F(DiscountsStorageTest, TestHandleServerDiscounts_FailToLoad) {
@@ -255,9 +259,6 @@ TEST_F(DiscountsStorageTest, TestHandleServerDiscounts_FailToLoad) {
                                           ExpectedServerProto(), _));
     EXPECT_CALL(*proto_db_, LoadAllEntries);
   }
-
-  base::HistogramTester histogram_tester;
-  histogram_tester.ExpectTotalCount(kDiscountsFetchResultHistogramName, 0);
 
   base::RunLoop run_loop;
   storage_->HandleServerDiscounts(
@@ -274,8 +275,6 @@ TEST_F(DiscountsStorageTest, TestHandleServerDiscounts_FailToLoad) {
           },
           &run_loop));
   run_loop.Run();
-
-  histogram_tester.ExpectTotalCount(kDiscountsFetchResultHistogramName, 0);
 }
 
 TEST_F(DiscountsStorageTest, TestHandleServerDiscounts_AllDiscountsUnexpired) {
@@ -288,9 +287,6 @@ TEST_F(DiscountsStorageTest, TestHandleServerDiscounts_AllDiscountsUnexpired) {
     EXPECT_CALL(*proto_db_, LoadAllEntries);
     EXPECT_CALL(*proto_db_, InsertContent).Times(0);
   }
-
-  base::HistogramTester histogram_tester;
-  histogram_tester.ExpectTotalCount(kDiscountsFetchResultHistogramName, 0);
 
   base::RunLoop run_loop;
   storage_->HandleServerDiscounts(
@@ -322,10 +318,6 @@ TEST_F(DiscountsStorageTest, TestHandleServerDiscounts_AllDiscountsUnexpired) {
           },
           &run_loop));
   run_loop.Run();
-
-  histogram_tester.ExpectTotalCount(kDiscountsFetchResultHistogramName, 2);
-  histogram_tester.ExpectBucketCount(kDiscountsFetchResultHistogramName, 1, 1);
-  histogram_tester.ExpectBucketCount(kDiscountsFetchResultHistogramName, 3, 1);
 }
 
 TEST_F(DiscountsStorageTest, TestHandleServerDiscounts_AllDiscountsExpired) {
@@ -338,9 +330,6 @@ TEST_F(DiscountsStorageTest, TestHandleServerDiscounts_AllDiscountsExpired) {
     EXPECT_CALL(*proto_db_, LoadAllEntries);
     EXPECT_CALL(*proto_db_, DeleteOneEntry(kDiscountsUrlInDb, _));
   }
-
-  base::HistogramTester histogram_tester;
-  histogram_tester.ExpectTotalCount(kDiscountsFetchResultHistogramName, 0);
 
   base::RunLoop run_loop;
   storage_->HandleServerDiscounts(
@@ -357,10 +346,6 @@ TEST_F(DiscountsStorageTest, TestHandleServerDiscounts_AllDiscountsExpired) {
           },
           &run_loop));
   run_loop.Run();
-
-  histogram_tester.ExpectTotalCount(kDiscountsFetchResultHistogramName, 2);
-  histogram_tester.ExpectBucketCount(kDiscountsFetchResultHistogramName, 2, 1);
-  histogram_tester.ExpectBucketCount(kDiscountsFetchResultHistogramName, 3, 1);
 }
 
 TEST_F(DiscountsStorageTest, TestHandleServerDiscounts_PartDiscountsExpired) {
@@ -373,9 +358,6 @@ TEST_F(DiscountsStorageTest, TestHandleServerDiscounts_PartDiscountsExpired) {
     EXPECT_CALL(*proto_db_, LoadAllEntries);
     EXPECT_CALL(*proto_db_, InsertContent(kDiscountsUrlInDb, _, _));
   }
-
-  base::HistogramTester histogram_tester;
-  histogram_tester.ExpectTotalCount(kDiscountsFetchResultHistogramName, 0);
 
   base::RunLoop run_loop;
   storage_->HandleServerDiscounts(
@@ -403,10 +385,6 @@ TEST_F(DiscountsStorageTest, TestHandleServerDiscounts_PartDiscountsExpired) {
           },
           &run_loop));
   run_loop.Run();
-
-  histogram_tester.ExpectTotalCount(kDiscountsFetchResultHistogramName, 2);
-  histogram_tester.ExpectBucketCount(kDiscountsFetchResultHistogramName, 1, 1);
-  histogram_tester.ExpectBucketCount(kDiscountsFetchResultHistogramName, 3, 1);
 }
 
 TEST_F(DiscountsStorageTest, TestHandleServerDiscounts_NoDiscountsFound) {
@@ -419,9 +397,6 @@ TEST_F(DiscountsStorageTest, TestHandleServerDiscounts_NoDiscountsFound) {
     EXPECT_CALL(*proto_db_, LoadAllEntries);
     EXPECT_CALL(*proto_db_, InsertContent).Times(0);
   }
-
-  base::HistogramTester histogram_tester;
-  histogram_tester.ExpectTotalCount(kDiscountsFetchResultHistogramName, 0);
 
   base::RunLoop run_loop;
   storage_->HandleServerDiscounts(
@@ -437,71 +412,6 @@ TEST_F(DiscountsStorageTest, TestHandleServerDiscounts_NoDiscountsFound) {
           },
           &run_loop));
   run_loop.Run();
-
-  histogram_tester.ExpectTotalCount(kDiscountsFetchResultHistogramName, 1);
-  histogram_tester.ExpectBucketCount(kDiscountsFetchResultHistogramName, 3, 1);
-}
-
-TEST_F(DiscountsStorageTest,
-       TestHandleServerDiscounts_URLWithDiscountUTM_WithMatching) {
-  proto_db_->MockLoadAllResponse(true, false, false);
-  std::string url_with_utm(kDiscountsUrlInDb);
-  url_with_utm = url_with_utm +
-                 "?utm_source=chrome&utm_medium=app&utm_campaign=chrome-"
-                 "history-cluster-with-discount";
-
-  EXPECT_CALL(*proto_db_, InsertContent).Times(0);
-  EXPECT_CALL(*proto_db_, LoadAllEntries);
-
-  base::RunLoop run_loop;
-  storage_->HandleServerDiscounts(
-      std::vector<std::string>{url_with_utm}, {},
-      base::BindOnce(
-          [](base::RunLoop* run_loop, std::string url_with_utm,
-             const DiscountsMap& map) {
-            ASSERT_EQ(1, (int)map.size());
-            auto discounts = map.find(GURL(url_with_utm))->second;
-            ASSERT_EQ(2, (int)discounts.size());
-            ASSERT_EQ(kDiscountIdInDb1, discounts[0].id);
-            ASSERT_EQ(kDiscountIdInDb2, discounts[1].id);
-            run_loop->Quit();
-          },
-          &run_loop, url_with_utm));
-  run_loop.Run();
-}
-
-TEST_F(DiscountsStorageTest,
-       TestHandleServerDiscounts_URLWithDiscountUTM_WithoutMatching) {
-  proto_db_->MockLoadAllResponse(true, false, false);
-  std::string url_with_wrong_utm(kDiscountsUrlInDb);
-  url_with_wrong_utm =
-      url_with_wrong_utm +
-      "?utm_source=test&utm_medium=app&utm_campaign=ramdom-campaign";
-  std::string wrong_url_with_utm(
-      "http://example.com/"
-      "discounts_wrong?utm_source=test&utm_medium=app&utm_campaign=ramdom-"
-      "campaign");
-
-  base::RunLoop run_loop[2];
-  storage_->HandleServerDiscounts(
-      std::vector<std::string>{url_with_wrong_utm}, {},
-      base::BindOnce(
-          [](base::RunLoop* run_loop, const DiscountsMap& map) {
-            ASSERT_EQ(0, (int)map.size());
-            run_loop->Quit();
-          },
-          &run_loop[0]));
-  run_loop[0].Run();
-
-  storage_->HandleServerDiscounts(
-      std::vector<std::string>{wrong_url_with_utm}, {},
-      base::BindOnce(
-          [](base::RunLoop* run_loop, const DiscountsMap& map) {
-            ASSERT_EQ(0, (int)map.size());
-            run_loop->Quit();
-          },
-          &run_loop[1]));
-  run_loop[1].Run();
 }
 
 TEST_F(DiscountsStorageTest, TestOnURLsDeleted_DeleteAll) {

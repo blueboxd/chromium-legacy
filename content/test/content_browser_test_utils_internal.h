@@ -30,6 +30,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom-forward.h"
 #include "third_party/blink/public/mojom/choosers/popup_menu.mojom.h"
@@ -323,52 +324,6 @@ class ShowPopupWidgetWaiter
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
   raw_ptr<WebContentsImpl> web_contents_;
 #endif
-};
-
-// A BrowserMessageFilter that drops a pre-specified message.
-class DropMessageFilter : public BrowserMessageFilter {
- public:
-  DropMessageFilter(uint32_t message_class, uint32_t drop_message_id);
-
-  DropMessageFilter(const DropMessageFilter&) = delete;
-  DropMessageFilter& operator=(const DropMessageFilter&) = delete;
-
- protected:
-  ~DropMessageFilter() override;
-
- private:
-  // BrowserMessageFilter:
-  bool OnMessageReceived(const IPC::Message& message) override;
-
-  const uint32_t drop_message_id_;
-};
-
-// A BrowserMessageFilter that observes a message without handling it, and
-// reports when it was seen.
-class ObserveMessageFilter : public BrowserMessageFilter {
- public:
-  ObserveMessageFilter(uint32_t message_class, uint32_t watch_message_id);
-
-  ObserveMessageFilter(const ObserveMessageFilter&) = delete;
-  ObserveMessageFilter& operator=(const ObserveMessageFilter&) = delete;
-
-  bool has_received_message() { return received_; }
-
-  // Spins a RunLoop until the message is observed.
-  void Wait();
-
- protected:
-  ~ObserveMessageFilter() override;
-
-  // BrowserMessageFilter:
-  bool OnMessageReceived(const IPC::Message& message) override;
-
- private:
-  void QuitWait();
-
-  const uint32_t watch_message_id_;
-  bool received_ = false;
-  base::OnceClosure quit_closure_;
 };
 
 // This observer waits until WebContentsObserver::OnRendererUnresponsive
@@ -756,6 +711,21 @@ class CommitNavigationPauser
   mojom::DidCommitProvisionalLoadParamsPtr paused_params_;
   mojom::DidCommitProvisionalLoadInterfaceParamsPtr paused_interface_params_;
 };
+
+// Blocks the current execution until the renderer main thread is in a steady
+// state, so the caller can issue an `viz::CopyOutputRequest` against the
+// current `WebContents`.
+void WaitForCopyableViewInWebContents(WebContents* web_contents);
+
+// Blocks the current execution until the frame submitted via the browser's
+// compositor is presented on the screen.
+void WaitForBrowserCompositorFramePresented(WebContents* web_contents);
+
+// Sets up a /redirect-on-second-navigation?url endpoint on the provided
+// `server`, which will return a 200 OK response for the first request, and
+// redirect the second request to `url` provided in the query param. This should
+// be called before starting `server`.
+void AddRedirectOnSecondNavigationHandler(net::EmbeddedTestServer* server);
 
 }  // namespace content
 

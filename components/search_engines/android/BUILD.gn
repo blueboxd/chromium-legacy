@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/android/rules.gni")
+import("//third_party/jni_zero/jni_zero.gni")
 
 android_library("java") {
   deps = [
@@ -26,4 +27,11 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/components/search_engines/TemplateUrl.java",
     "java/src/org/chromium/components/search_engines/TemplateUrlService.java",
   ]
+}
+
+android_library("test_utils_java") {
+  testonly = true
+  sources =
+      [ "java/src/org/chromium/components/search_engines/FakeTemplateUrl.java" ]
+  deps = [ ":java" ]
 }

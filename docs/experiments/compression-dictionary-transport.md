@@ -171,6 +171,11 @@ Developers can check the related HTTP request and response headers
   `transferSize` property of `PerformanceResourceTiming` for shared dictionary
   compressed response are wrong. Currently it returns as if the response is not
   compressed.
+- [crbug.com/1479465](crbug.com/1479465): Can't store large (>40 MB)
+  dictionaries. Fixed in M118, by setting a [100 MB size limit](100mb-limit-line)
+  if there is enough disk space.
+- [cbrbug.com/1479809](crbug.com/1479809): Can't use large (>8MB) dictionaries
+  for Shared Zstd. Fixed in M118.
 
 ## Demo sites
 
@@ -192,3 +197,4 @@ There are a few demo sites that you can use to test the feature:
 [httpbis-draft]: https://datatracker.ietf.org/doc/draft-meenan-httpbis-compression-dictionary/
 [net-internals-sd]: chrome://net-internals/#sharedDictionary
 [type-option-cl]: https://chromiumdash.appspot.com/commit/169031f4af2cbdc529f48160f1df20b4ca8b6cc1
+[100mb-limit-line]: https://source.chromium.org/chromium/chromium/src/+/main:services/network/shared_dictionary/shared_dictionary_constants.cc;l=14;drc=eef4762779d05708d5dfc7d5fe4ea16288069a35

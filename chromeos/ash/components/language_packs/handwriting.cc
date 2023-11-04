@@ -14,6 +14,7 @@
 #include "base/functional/callback.h"
 #include "base/no_destructor.h"
 #include "chromeos/ash/components/language_packs/language_pack_manager.h"
+#include "chromeos/ash/components/language_packs/language_packs_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ime/ash/extension_ime_util.h"
 #include "ui/base/ime/ash/input_method_manager.h"
@@ -21,23 +22,9 @@
 
 namespace ash::language_packs {
 
-base::flat_set<std::string> MapIdsToHandwritingLocales(
-    base::span<const std::string> ids,
-    base::RepeatingCallback<absl::optional<std::string>(const std::string&)>
-        id_to_handwriting_locale) {
-  std::vector<std::string> handwriting_locales;
+using ::ash::input_method::InputMethodManager;
 
-  for (const std::string& engine_id : ids) {
-    absl::optional<std::string> handwriting_language =
-        id_to_handwriting_locale.Run(engine_id);
-    if (handwriting_language.has_value()) {
-      handwriting_locales.push_back(std::move(*handwriting_language));
-    }
-  }
-
-  return handwriting_locales;
-}
-
+// TODO: b/294162606 - Move this code to the input_method codebase.
 absl::optional<std::string> MapEngineIdToHandwritingLocale(
     input_method::InputMethodUtil* const util,
     const std::string& engine_id) {
@@ -46,6 +33,7 @@ absl::optional<std::string> MapEngineIdToHandwritingLocale(
   return MapInputMethodIdToHandwritingLocale(util, input_method_id);
 }
 
+// TODO: b/294162606 - Move this code to the input_method codebase.
 absl::optional<std::string> MapInputMethodIdToHandwritingLocale(
     input_method::InputMethodUtil* const util,
     const std::string& input_method_id) {
@@ -64,12 +52,11 @@ absl::optional<std::string> HandwritingLocaleToDlc(std::string_view locale) {
   return GetDlcIdForLanguagePack(kHandwritingFeatureId, std::string(locale));
 }
 
-bool IsHandwritingDlc(std::string_view dlc_id) {
-  // TODO: b/285993323 - Statically create this instead of at runtime to be
-  // shared with the implementation of `HandwritingLocaleToDlc`.
-  static const base::NoDestructor<const base::flat_set<std::string>>
-      handwriting_dlcs([] {
-        std::vector<std::string> handwriting_dlcs;
+absl::optional<std::string> DlcToHandwritingLocale(std::string_view dlc_id) {
+  static const base::NoDestructor<
+      const base::flat_map<std::string, std::string>>
+      handwriting_locale_from_dlc([] {
+        std::vector<std::pair<std::string, std::string>> handwriting_dlcs;
 
         const base::flat_map<PackSpecPair, std::string>& all_ids =
             GetAllLanguagePackDlcIds();
@@ -79,14 +66,49 @@ bool IsHandwritingDlc(std::string_view dlc_id) {
         auto it = all_ids.upper_bound({kHandwritingFeatureId, ""});
         while (it != all_ids.end() &&
                it->first.feature_id == kHandwritingFeatureId) {
-          handwriting_dlcs.push_back(it->second);
+          handwriting_dlcs.emplace_back(it->second, it->first.locale);
           it++;
         }
 
         return handwriting_dlcs;
       }());
 
-  return handwriting_dlcs->contains(dlc_id);
+  auto it = handwriting_locale_from_dlc->find(dlc_id);
+  if (it == handwriting_locale_from_dlc->end()) {
+    return absl::nullopt;
+  }
+  return it->second;
+}
+
+bool IsHandwritingDlc(std::string_view dlc_id) {
+  return DlcToHandwritingLocale(dlc_id).has_value();
+}
+
+base::flat_set<std::string> ConvertDlcsWithContentToHandwritingLocales(
+    const dlcservice::DlcsWithContent& dlcs_with_content) {
+  std::vector<std::string> dlc_locales;
+
+  for (const auto& dlc_info : dlcs_with_content.dlc_infos()) {
+    const auto& locale = DlcToHandwritingLocale(dlc_info.id());
+    if (locale.has_value()) {
+      dlc_locales.push_back(*locale);
+    }
+  }
+
+  return dlc_locales;
+}
+
+base::flat_set<std::string> GetHandwritingLocalesFromEnabledInputMethods(
+    InputMethodManager* const input_method_manager) {
+  const std::vector<std::string>& input_method_ids =
+      input_method_manager->GetActiveIMEState()->GetEnabledInputMethodIds();
+
+  const base::flat_set<std::string> target_hwr_locales = MapThenFilterStrings(
+      input_method_ids,
+      base::BindRepeating(MapInputMethodIdToHandwritingLocale,
+                          input_method_manager->GetInputMethodUtil()));
+
+  return target_hwr_locales;
 }
 
 }  // namespace ash::language_packs

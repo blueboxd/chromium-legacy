@@ -29,10 +29,6 @@ BASE_FEATURE(kAllowEyeDropperWGCScreenCapture,
 #endif  // BUILDFLAG(IS_WIN)
 );
 
-BASE_FEATURE(kBrowserMetricsAPI,
-             "BrowserMetricsAPI",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables Chrome Labs menu in the toolbar. See https://crbug.com/1145666
 BASE_FEATURE(kChromeLabs, "ChromeLabs", base::FEATURE_ENABLED_BY_DEFAULT);
 const char kChromeLabsActivationParameterName[] =
@@ -57,6 +53,11 @@ BASE_FEATURE(kExtensionsMenuInAppMenu,
              "ExtensionsMenuInAppMenu",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+bool IsExtensionMenuInRootAppMenu() {
+  return base::FeatureList::IsEnabled(kExtensionsMenuInAppMenu) ||
+         features::IsChromeRefresh2023();
+}
+
 #if !defined(ANDROID)
 // Enables "Access Code Cast" UI.
 BASE_FEATURE(kAccessCodeCastUI,
@@ -72,10 +73,10 @@ BASE_FEATURE(kCameraMicPreview,
 #endif
 
 // Enables displaying the submenu to open a link with a different profile if
-// there is at least one other active profile.
+// there is at least one other active profile. Fully rolled out on Desktop.
 BASE_FEATURE(kDisplayOpenLinkAsProfile,
              "DisplayOpenLinkAsProfile",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables showing the EV certificate details in the Page Info bubble.
 BASE_FEATURE(kEvDetailsInPageInfo,
@@ -106,7 +107,7 @@ BASE_FEATURE(kLightweightExtensionOverrideConfirmations,
 // Enables Bookmarks++ Side Panel UI.
 BASE_FEATURE(kPowerBookmarksSidePanel,
              "PowerBookmarksSidePanel",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the QuickCommands UI surface. See https://crbug.com/1014639
 BASE_FEATURE(kQuickCommands,
@@ -156,6 +157,10 @@ BASE_FEATURE(kSidePanelJourneysQueryless,
 #if !defined(ANDROID)
 BASE_FEATURE(kSidePanelCompanionDefaultPinned,
              "SidePanelCompanionDefaultPinned",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSidePanelPinning,
+             "SidePanelPinning",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 

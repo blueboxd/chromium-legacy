@@ -101,7 +101,7 @@ class HitTestLatencyRecorder {
 }  // namespace
 
 LayoutView::LayoutView(ContainerNode* document)
-    : LayoutBlockFlow(document),
+    : LayoutNGBlockFlow(document),
       frame_view_(To<Document>(document)->View()),
       layout_counter_count_(0),
       hit_test_count_(0),
@@ -132,7 +132,7 @@ void LayoutView::Trace(Visitor* visitor) const {
   visitor->Trace(svg_text_descendants_);
   visitor->Trace(hit_test_cache_);
   visitor->Trace(initial_containing_block_resize_handled_list_);
-  LayoutBlockFlow::Trace(visitor);
+  LayoutNGBlockFlow::Trace(visitor);
 }
 
 bool LayoutView::HitTest(const HitTestLocation& location,
@@ -256,18 +256,18 @@ void LayoutView::AddChild(LayoutObject* new_child, LayoutObject* before_child) {
 
     LayoutViewTransitionRoot* snapshot_containing_block =
         MakeGarbageCollected<LayoutViewTransitionRoot>(GetDocument());
-    LayoutBlockFlow::AddChild(snapshot_containing_block,
-                              /*before_child=*/nullptr);
+    LayoutNGBlockFlow::AddChild(snapshot_containing_block,
+                                /*before_child=*/nullptr);
     snapshot_containing_block->AddChild(new_child);
 
     ViewTransition* transition =
-        ViewTransitionUtils::GetActiveTransition(GetDocument());
+        ViewTransitionUtils::GetTransition(GetDocument());
     CHECK(transition);
     transition->UpdateSnapshotContainingBlockStyle();
     return;
   }
 
-  LayoutBlockFlow::AddChild(new_child, before_child);
+  LayoutNGBlockFlow::AddChild(new_child, before_child);
 }
 
 bool LayoutView::IsChildAllowed(LayoutObject* child,
@@ -395,11 +395,6 @@ LayoutViewTransitionRoot* LayoutView::GetViewTransitionRoot() const {
   return DynamicTo<LayoutViewTransitionRoot>(LastChild());
 }
 
-void LayoutView::Paint(const PaintInfo& paint_info) const {
-  NOT_DESTROYED();
-  NOTREACHED_NORETURN();
-}
-
 void LayoutView::InvalidatePaintForViewAndDescendants() {
   NOT_DESTROYED();
   SetSubtreeShouldDoFullPaintInvalidation();
@@ -503,8 +498,7 @@ PhysicalRect LayoutView::ViewRect() const {
   // TODO(bokan): This shouldn't be just for the outermost main frame, we
   // should do it for all frames. crbug.com/1311518.
   if (frame_view_->GetFrame().IsOutermostMainFrame()) {
-    if (auto* transition =
-            ViewTransitionUtils::GetActiveTransition(GetDocument());
+    if (auto* transition = ViewTransitionUtils::GetTransition(GetDocument());
         transition && transition->IsRootTransitioning()) {
       // If we're capturing a transition snapshot, the root transition
       // needs to produce the snapshot at a known stable size, excluding
@@ -541,7 +535,7 @@ PhysicalRect LayoutView::OverflowClipRect(
   // When capturing the root snapshot for a transition, we paint the
   // background color where the scrollbar would be so keep the clip rect
   // the full ViewRect size.
-  auto* transition = ViewTransitionUtils::GetActiveTransition(GetDocument());
+  auto* transition = ViewTransitionUtils::GetTransition(GetDocument());
   bool is_in_transition = transition && transition->IsRootTransitioning();
   if (IsScrollContainer() && !is_in_transition)
     ExcludeScrollbars(rect, overlay_scrollbar_clip_behavior);
@@ -760,20 +754,23 @@ const LayoutBox& LayoutView::RootBox() const {
 
 void LayoutView::UpdateAfterLayout() {
   NOT_DESTROYED();
-  // Unlike every other layer, the root PaintLayer takes its size from the
-  // layout viewport size.  The call to AdjustViewSize() will update the
-  // frame's contents size, which will also update the page's minimum scale
-  // factor.  The call to ResizeAfterLayout() will calculate the layout viewport
-  // size based on the page minimum scale factor, and then update the
-  // LocalFrameView with the new size.
-  LocalFrame& frame = GetFrameView()->GetFrame();
-  if (!GetDocument().Printing())
+  if (!GetDocument().Printing()) {
+    // Unlike every other layer, the root PaintLayer takes its size from the
+    // layout viewport size. The call to AdjustViewSize() will update the
+    // frame's contents size, which will also update the page's minimum scale
+    // factor. The call to ResizeAfterLayout() will calculate the layout
+    // viewport size based on the page minimum scale factor, and then update the
+    // LocalFrameView with the new size.
+    LocalFrame& frame = GetFrameView()->GetFrame();
     GetFrameView()->AdjustViewSize();
-  if (frame.IsMainFrame())
-    frame.GetChromeClient().ResizeAfterLayout();
-  if (IsScrollContainer())
-    GetScrollableArea()->ClampScrollOffsetAfterOverflowChange();
-  LayoutBlockFlow::UpdateAfterLayout();
+    if (frame.IsMainFrame()) {
+      frame.GetChromeClient().ResizeAfterLayout();
+    }
+    if (IsScrollContainer()) {
+      GetScrollableArea()->ClampScrollOffsetAfterOverflowChange();
+    }
+  }
+  LayoutNGBlockFlow::UpdateAfterLayout();
 }
 
 void LayoutView::UpdateHitTestResult(HitTestResult& result,
@@ -836,12 +833,12 @@ void LayoutView::WillBeDestroyed() {
   // Should find and fix the root cause.
   if (PaintLayer* layer = Layer())
     layer->SetNeedsRepaint();
-  LayoutBlockFlow::WillBeDestroyed();
+  LayoutNGBlockFlow::WillBeDestroyed();
 }
 
 void LayoutView::UpdateFromStyle() {
   NOT_DESTROYED();
-  LayoutBlockFlow::UpdateFromStyle();
+  LayoutNGBlockFlow::UpdateFromStyle();
 
   // LayoutView of the main frame is responsible for painting base background.
   if (GetFrameView()->ShouldPaintBaseBackgroundColor())
@@ -851,7 +848,7 @@ void LayoutView::UpdateFromStyle() {
 void LayoutView::StyleDidChange(StyleDifference diff,
                                 const ComputedStyle* old_style) {
   NOT_DESTROYED();
-  LayoutBlockFlow::StyleDidChange(diff, old_style);
+  LayoutNGBlockFlow::StyleDidChange(diff, old_style);
 
   LocalFrame& frame = GetFrameView()->GetFrame();
   VisualViewport& visual_viewport = frame.GetPage()->GetVisualViewport();
@@ -863,23 +860,6 @@ void LayoutView::StyleDidChange(StyleDifference diff,
       visual_viewport.UsedColorSchemeChanged();
     }
   }
-}
-
-RecalcLayoutOverflowResult LayoutView::RecalcLayoutOverflow() {
-  NOT_DESTROYED();
-  if (!NeedsLayoutOverflowRecalc())
-    return RecalcLayoutOverflowResult();
-
-  auto result = LayoutBlockFlow::RecalcLayoutOverflow();
-  if (result.layout_overflow_changed) {
-    if (NeedsLayout())
-      return result;
-    if (GetFrameView()->VisualViewportSuppliesScrollbars())
-      SetShouldCheckForPaintInvalidation();
-    GetFrameView()->AdjustViewSize();
-    SetNeedsPaintPropertyUpdate();
-  }
-  return result;
 }
 
 PhysicalRect LayoutView::DebugRect() const {
@@ -924,8 +904,9 @@ void LayoutView::UpdateMarkersAndCountersAfterStyleChange(
          "container query style recalcs";
 
   needs_marker_counter_update_ = false;
-  if (!HasLayoutCounters() && !HasLayoutListItems())
+  if (!HasLayoutCounters() && !HasLayoutListItems()) {
     return;
+  }
 
   // For container queries style recalc, we know the counter styles didn't
   // change outside the container. Hence, we can start the update traversal from

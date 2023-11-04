@@ -476,7 +476,6 @@ class TunnelTransport : public Transport {
         update_callback_.Run(Platform::Status::HANDSHAKE_COMPLETE);
         websocket_client_->Write(response);
         crypter_ = std::move(result->first);
-        crypter_->UseNewConstruction();
 
         cbor::Value::MapValue post_handshake_msg;
         post_handshake_msg.emplace(1, BuildGetInfoResponse());
@@ -1056,17 +1055,18 @@ class CTAP2Processor : public Transaction {
       }
 
       cbor::Value::MapValue unsigned_extension_outputs;
-      if (auth_response->device_public_key) {
+      if (auth_response->extensions->device_public_key) {
         unsigned_extension_outputs.emplace(
             kExtensionDevicePublicKey,
-            auth_response->device_public_key->signature);
+            auth_response->extensions->device_public_key->signature);
       }
-      if (auth_response->prf_results) {
+      if (auth_response->extensions->prf_results) {
         cbor::Value::MapValue prf, results;
-        results.emplace(kExtensionPRFFirst, auth_response->prf_results->first);
-        if (auth_response->prf_results->second) {
+        results.emplace(kExtensionPRFFirst,
+                        auth_response->extensions->prf_results->first);
+        if (auth_response->extensions->prf_results->second) {
           results.emplace(kExtensionPRFSecond,
-                          *auth_response->prf_results->second);
+                          *auth_response->extensions->prf_results->second);
         }
         prf.emplace(kExtensionPRFResults, std::move(results));
         unsigned_extension_outputs.emplace(kExtensionPRF, std::move(prf));

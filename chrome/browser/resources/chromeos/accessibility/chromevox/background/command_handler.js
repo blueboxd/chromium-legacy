@@ -38,7 +38,7 @@ import {ChromeVoxState} from './chromevox_state.js';
 import {ClipboardHandler} from './clipboard_handler.js';
 import {Color} from './color.js';
 import {CommandHandlerInterface} from './command_handler_interface.js';
-import {TypingEcho} from './editing/typing_echo.js';
+import {TypingEcho, TypingEchoState} from './editing/typing_echo.js';
 import {DesktopAutomationInterface} from './event/desktop_automation_interface.js';
 import {EventSource} from './event_source.js';
 import {GestureInterface} from './gesture_interface.js';
@@ -65,6 +65,14 @@ const SetNativeChromeVoxResponse =
  */
 let NewRangeData;
 
+/**
+ * Maps a Command to the method that will perform that action.
+ *
+ * To streamline this class, the goal is to move the logic for each command out
+ * of this file.
+ *
+ * When adding new commands, please put the logic in a more relevant spot.
+ */
 export class CommandHandler extends CommandHandlerInterface {
   /** @private */
   constructor() {
@@ -1012,16 +1020,16 @@ export class CommandHandler extends CommandHandlerInterface {
         'typingEcho', TypingEcho.cycle(LocalStorage.getNumber('typingEcho')));
     let announce = '';
     switch (LocalStorage.get('typingEcho')) {
-      case TypingEcho.CHARACTER:
+      case TypingEchoState.CHARACTER:
         announce = Msgs.getMsg('character_echo');
         break;
-      case TypingEcho.WORD:
+      case TypingEchoState.WORD:
         announce = Msgs.getMsg('word_echo');
         break;
-      case TypingEcho.CHARACTER_AND_WORD:
+      case TypingEchoState.CHARACTER_AND_WORD:
         announce = Msgs.getMsg('character_and_word_echo');
         break;
-      case TypingEcho.NONE:
+      case TypingEchoState.NONE:
         announce = Msgs.getMsg('none_echo');
         break;
     }

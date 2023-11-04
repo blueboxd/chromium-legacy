@@ -50,7 +50,7 @@ source_set("passwords") {
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//components/password_manager/core/browser",
-    "//components/password_manager/core/browser:affiliation",
+    "//components/password_manager/core/browser/affiliation",
     "//components/password_manager/core/browser/features:password_features",
     "//components/password_manager/core/browser/form_parsing",
     "//components/password_manager/core/browser/leak_detection:leak_detection_interface_headers",
@@ -92,7 +92,7 @@ source_set("passwords") {
     "//ios/chrome/browser/ui/infobars/coordinators",
     "//ios/chrome/browser/ui/ntp:logo",
     "//ios/chrome/browser/web",
-    "//ios/chrome/browser/webdata_services",
+    "//ios/chrome/browser/webdata_services/model",
     "//ios/chrome/common/ui/util",
     "//ios/third_party/material_components_ios",
     "//ios/web/common",
@@ -144,6 +144,7 @@ source_set("store_factory") {
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//components/password_manager/core/browser",
+    "//components/password_manager/core/browser/affiliation:affiliation_fetching",
     "//components/password_manager/core/browser/features:password_features",
     "//components/password_manager/core/common:features",
     "//components/signin/public/identity_manager",
@@ -152,7 +153,7 @@ source_set("store_factory") {
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync/glue",
-    "//ios/chrome/browser/webdata_services",
+    "//ios/chrome/browser/webdata_services/model",
     "//ios/web/public",
     "//services/network/public/cpp",
   ]
@@ -211,13 +212,19 @@ source_set("password_checkup_utils") {
 
 source_set("sharing_factory") {
   sources = [
+    "ios_chrome_password_receiver_service_factory.h",
+    "ios_chrome_password_receiver_service_factory.mm",
     "ios_chrome_password_sender_service_factory.cc",
     "ios_chrome_password_sender_service_factory.h",
   ]
   deps = [
+    ":store_factory",
     "//components/keyed_service/ios",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/browser/features:password_features",
+    "//components/password_manager/core/browser/sharing",
+    "//components/sync/base",
+    "//components/sync/model",
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/sync:model_type_store_service_factory",
     "//ios/chrome/common",

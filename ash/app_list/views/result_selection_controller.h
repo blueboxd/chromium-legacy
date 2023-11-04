@@ -69,7 +69,8 @@ class ASH_EXPORT ResultSelectionController {
     kNone,
 
     // The selection has not changed because the selection would cycle.
-    kSelectionCycleRejected,
+    kSelectionCycleBeforeFirstResult,
+    kSelectionCycleAfterLastResult,
 
     // The currently selected result has changed.
     //
@@ -101,6 +102,10 @@ class ASH_EXPORT ResultSelectionController {
   ResultLocationDetails* selected_location_details() {
     return selected_location_details_.get();
   }
+
+  // Returns whether `selected_result_` locates at the first available location.
+  // Returns false if there is no selected result.
+  bool IsSelectedResultAtFirstAvailableLocation();
 
   // Calls |SetSelection| using the result of |GetNextResultLocation|.
   MoveResult MoveSelection(const ui::KeyEvent& event);

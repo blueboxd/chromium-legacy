@@ -28,6 +28,7 @@ through `builders.cpu`, `builders.os` and `builders.goma` respectively.
 load("//project.star", "settings")
 load("./args.star", "args")
 load("./branches.star", "branches")
+load("./gn_args.star", "register_gn_args")
 load("./bootstrap.star", "register_bootstrap")
 load("./builder_config.star", "register_builder_config")
 load("./builder_health_indicators.star", "register_health_spec")
@@ -112,7 +113,6 @@ reclient = struct(
         TEST_TRUSTED = "rbe-chromium-trusted-test",
         DEFAULT_UNTRUSTED = "rbe-chromium-untrusted",
         TEST_UNTRUSTED = "rbe-chromium-untrusted-test",
-        DEVELOPER = "rbe-chrome-untrusted",
     ),
     jobs = struct(
         DEFAULT = 250,
@@ -174,9 +174,9 @@ xcode = struct(
     # A newer Xcode 14 RC  used on beta bots.
     x14betabots = xcode_enum("14e222b"),
     # Default Xcode 15 for chromium iOS
-    x15main = xcode_enum("15a5229m"),
+    x15main = xcode_enum("15a240d"),
     # A newer Xcode 15 version used on beta bots.
-    x15betabots = xcode_enum("15a5229m"),
+    x15betabots = xcode_enum("15a240d"),
     # in use by ios-webkit-tot
     x14wk = xcode_enum("14c18wk"),
 )
@@ -423,6 +423,7 @@ defaults = args.defaults(
     executable = args.COMPUTE,
     notifies = None,
     triggered_by = args.COMPUTE,
+    contact_team_email = None,
 )
 
 def builder(
@@ -490,6 +491,8 @@ def builder(
         shadow_pool = args.DEFAULT,
         shadow_service_account = args.DEFAULT,
         shadow_reclient_instance = args.DEFAULT,
+        gn_args = None,
+        contact_team_email = args.DEFAULT,
         **kwargs):
     """Define a builder.
 
@@ -924,9 +927,11 @@ def builder(
     if triggered_by != args.COMPUTE:
         kwargs["triggered_by"] = triggered_by
 
+    contact_team_email = defaults.get_value("contact_team_email", contact_team_email)
     builder = branches.builder(
         name = name,
         branch_selector = branch_selector,
+        contact_team_email = contact_team_email,
         dimensions = dimensions,
         properties = properties,
         resultdb_settings = _resultdb_settings(
@@ -949,12 +954,23 @@ def builder(
 
     register_recipe_experiments_ref(bucket, name, executable)
 
-    register_builder_config(bucket, name, builder_group, builder_spec, mirrors, try_settings)
+    additional_exclusions = register_gn_args(builder_group, bucket, name, gn_args)
+
+    register_builder_config(
+        bucket,
+        name,
+        builder_group,
+        builder_spec,
+        mirrors,
+        try_settings,
+        additional_exclusions,
+    )
 
     register_bootstrap(bucket, name, bootstrap, executable)
 
     health_spec = defaults.get_value("health_spec", health_spec)
-    register_health_spec(bucket, name, health_spec)
+
+    register_health_spec(bucket, name, health_spec, contact_team_email)
 
     builder_name = "{}/{}".format(bucket, name)
 

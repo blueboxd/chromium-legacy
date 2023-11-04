@@ -14,6 +14,17 @@
       }
     ]
   },
+  "ADDRESS_HOME_STREET_LOCATION": {
+    "es": [
+      {
+        "positive_pattern": "calle y número",
+        "positive_score": 1.1,
+        "negative_pattern": null,
+        "match_field_attributes": ["LABEL", "NAME"],
+        "match_field_input_types": ["TEXT", "SEARCH"]
+      }
+    ]
+  },
   "ADDRESS_HOME_STREET_NAME": {
     "en" : [
       {
@@ -53,9 +64,9 @@
     ],
     "pt" : [
       {
-        "positive_pattern": "rua|avenida|((?<!do |de )endere[çc]o)|logradouro",
+        "positive_pattern": "rua|avenida|endere[çc]o|logradouro|dirección",
         "positive_score": 1.1,
-        "negative_pattern": null,
+        "negative_pattern": "(do |de )endere[çc]o",
         "match_field_attributes": ["LABEL", "NAME"],
         "match_field_input_types": ["TEXT", "SEARCH"]
       }
@@ -73,7 +84,7 @@
 	],
     "es": [
       {
-        "positive_pattern": "interior|número.*apartamento",
+        "positive_pattern": "interior|número.*apartamento|departamento",
         "positive_score": 1.1,
         "negative_pattern": null,
         "match_field_attributes": ["LABEL", "NAME"],
@@ -147,13 +158,13 @@
     ],
     "es": [
       {
-        "positive_pattern": "n(u|ú)mero.*apartamento|exterior",
+        "positive_pattern": "exterior",
         "positive_score": 1.1,
         "negative_pattern": null,
         "match_field_attributes": ["LABEL", "NAME"],
         "match_field_input_types": ["TEXT", "TELEPHONE", "NUMBER"]
       }
-	],
+    ],
     "ru": [
       {
         "positive_pattern": "дом|номер.?дома",
@@ -254,9 +265,9 @@
     ],
     "de": [
       {
-        "positive_pattern": "(?<!con)firma|firmenname",
+        "positive_pattern": "firma|firmenname",
         "positive_score": 1.1,
-        "negative_pattern": null,
+        "negative_pattern": "confirma",
         "match_field_attributes": ["LABEL", "NAME"],
         "match_field_input_types": ["TEXT"]
       }
@@ -428,9 +439,9 @@
     ],
     "pt": [
       {
-        "positive_pattern": "morada|((?<!do |de )endereço)",
+        "positive_pattern": "morada|endereço",
         "positive_score": 1.1,
-        "negative_pattern": null,
+        "negative_pattern": "(do |de )endereço",
         "match_field_attributes": ["LABEL", "NAME"],
         "match_field_input_types": ["TEXT", "SEARCH"]
       }
@@ -462,16 +473,16 @@
     ],
     "tr": [
       {
-        "positive_pattern": "(\\b|_)adres(?! tarifi)(\\b|_)",
+        "positive_pattern": "(\\b|_)adres(\\b|_)",
         "positive_score": 1.1,
-        "negative_pattern": null,
+        "negative_pattern": "(\\b|_)adres tarifi(\\b|_)",
         "match_field_attributes": ["LABEL", "NAME"],
         "match_field_input_types": ["TEXT", "SEARCH"]
       },
       {
-        "positive_pattern": "(\\b|_)adres(?! tarifi)(\\b|_)|(sokak|cadde).*(apartman|bina|daire|mahalle)|(apartman|bina|daire|mahalle).*(sokak|cadde)",
+        "positive_pattern": "(\\b|_)adres(\\b|_)|(sokak|cadde).*(apartman|bina|daire|mahalle)|(apartman|bina|daire|mahalle).*(sokak|cadde)",
         "positive_score": 1.1,
-        "negative_pattern": null,
+        "negative_pattern": "(\\b|_)adres tarifi(\\b|_)",
         "match_field_attributes": ["LABEL"],
         "match_field_input_types": ["TEXT", "SEARCH"]
       }
@@ -648,15 +659,6 @@
         "match_field_input_types": ["TEXT"]
       }
     ],
-    "es": [
-      {
-        "positive_pattern": "municipio",
-        "positive_score": 1.1,
-        "negative_pattern": null,
-        "match_field_attributes": ["LABEL", "NAME"],
-        "match_field_input_types": ["TEXT"]
-      }
-    ],
     "fr": [
       {
         "positive_pattern": "batiment|residence",
@@ -708,18 +710,18 @@
     ],
     "de": [
       {
-        "positive_pattern": "(\\b|_)land(\\b|_)(?!.*(mark.*))",
+        "positive_pattern": "(\\b|_)land(\\b|_)",
         "positive_score": 1.1,
-        "negative_pattern": null,
+        "negative_pattern": "(\\b|_)land(\\b|_).*mark.*",
         "match_field_attributes": ["LABEL", "NAME"],
         "match_field_input_types": ["TEXT", "SELECT", "SEARCH"]
       }
     ],
     "ja": [
       {
-        "positive_pattern": "(?<!(入|出))国",
+        "positive_pattern": "国",
         "positive_score": 1.1,
-        "negative_pattern": null,
+        "negative_pattern": "(入|出)国",
         "match_field_attributes": ["LABEL", "NAME"],
         "match_field_input_types": ["TEXT", "SELECT", "SEARCH"]
       }
@@ -1016,7 +1018,7 @@
     ],
     "es": [
       {
-        "positive_pattern": "ciudad|provincia|localidad|poblacion",
+        "positive_pattern": "ciudad|localidad|poblacion",
         "positive_score": 1.1,
         "negative_pattern": null,
         "match_field_attributes": ["LABEL", "NAME"],
@@ -1052,7 +1054,7 @@
     ],
     "pt": [
       {
-        "positive_pattern": "cidade|município",
+        "positive_pattern": "cidade",
         "positive_score": 1.1,
         "negative_pattern": null,
         "match_field_attributes": ["LABEL", "NAME"],
@@ -1135,9 +1137,9 @@
   "STATE": {
     "en": [
       {
-        "positive_pattern": "(?<!(united|hist|history).?)state|county|region|province|county|principality",
+        "positive_pattern": "state|county|region|province|county|principality",
         "positive_score": 1.1,
-        "negative_pattern": null,
+        "negative_pattern": "(united|hist|history).?state",
         "match_field_attributes": ["LABEL", "NAME"],
         "match_field_input_types": ["TEXT", "SELECT", "SEARCH"]
       }
@@ -1277,7 +1279,7 @@
     ],
     "pt": [
       {
-        "positive_pattern": "(?:ponto|complemento).*ref[êe]r[êe]ncia",
+        "positive_pattern": "ref[êe]r[êe]ncia",
         "positive_score": 1.1,
         "negative_pattern": null,
         "match_field_attributes": ["LABEL", "NAME"],
@@ -1286,7 +1288,7 @@
     ],
     "es": [
       {
-        "positive_pattern": "punto.*referencia",
+        "positive_pattern": "ref[êe]r[êe]ncia",
         "positive_score": 1.1,
         "negative_pattern": null,
         "match_field_attributes": ["LABEL", "NAME"],
@@ -1317,7 +1319,7 @@
   "ADMIN_LEVEL_2": {
     "pt": [
       {
-        "positive_pattern": "municipio",
+        "positive_pattern": "município",
         "positive_score": 1.1,
         "negative_pattern": null,
         "match_field_attributes": ["LABEL", "NAME"],
@@ -1411,7 +1413,6 @@
   "NUMERIC_QUANTITY": {
     "en": [
       {
-        "pattern_identifier": "en_numeric_quantity_preserving",
         "positive_pattern": "size|height|quantity|length|amount",
         "positive_score": 0.95,
         "negative_pattern": null,
@@ -1574,9 +1575,9 @@
     ],
     "de": [
       {
-        "positive_pattern": "(?<!telefon|haus|person|fødsels|kunden)nummer",
+        "positive_pattern": "nummer",
         "positive_score": 1.0,
-        "negative_pattern": null,
+        "negative_pattern": "(telefon|haus|person|fødsels|kunden)nummer",
         "match_field_attributes": ["LABEL", "NAME"],
         "match_field_input_types": ["TEXT", "TELEPHONE", "PASSWORD", "NUMBER"]
       }
@@ -1628,27 +1629,27 @@
     ],
     "es": [
       {
-        "positive_pattern": "(numero|número|numéro)(?!.*(document|fono|phone|réservation))",
+        "positive_pattern": "(numero|número|numéro)",
         "positive_score": 1.0,
-        "negative_pattern": null,
+        "negative_pattern": "(numero|número|numéro).*(document|fono|phone|réservation)",
         "match_field_attributes": ["LABEL", "NAME"],
         "match_field_input_types": ["TEXT", "TELEPHONE", "PASSWORD", "NUMBER"]
       }
     ],
     "pt": [
       {
-        "positive_pattern": "(numero|número|numéro)(?!.*(document|fono|phone|réservation))",
+        "positive_pattern": "(numero|número|numéro)",
         "positive_score": 1.0,
-        "negative_pattern": null,
+        "negative_pattern": "(numero|número|numéro).*(document|fono|phone|réservation)",
         "match_field_attributes": ["LABEL", "NAME"],
         "match_field_input_types": ["TEXT", "TELEPHONE", "PASSWORD", "NUMBER"]
       }
     ],
     "fr": [
       {
-        "positive_pattern": "(numero|número|numéro)(?!.*(document|fono|phone|réservation))",
+        "positive_pattern": "(numero|número|numéro)",
         "positive_score": 1.0,
-        "negative_pattern": null,
+        "negative_pattern": "(numero|número|numéro).*(document|fono|phone|réservation)",
         "match_field_attributes": ["LABEL", "NAME"],
         "match_field_input_types": ["TEXT", "TELEPHONE", "PASSWORD", "NUMBER"]
       }
@@ -1666,7 +1667,7 @@
   "CREDIT_CARD_VERIFICATION_CODE": {
     "en": [
       {
-        "positive_pattern": "verification|card.?identification|security.?code|card.?code|security.?value|security.?number|card.?pin|c-v-v|(cvn|cvv|cvc|csc|cvd|ccv)|\\bcid\\b|cccid",
+        "positive_pattern": "verification|card.?identification|security.?code|card.?code|security.?value|security.?number|card.?pin|c-v-v|(?:cvn|cvv|cvc|csc|cvd|ccv)|\\bcid\\b|cccid",
         "positive_score": 1.0,
         "negative_pattern": null,
         "match_field_attributes": ["LABEL", "NAME"],
@@ -2198,9 +2199,9 @@
     ],
     "fr": [
       {
-        "positive_pattern": "^nom(?![a-zA-Z])",
+        "positive_pattern": "^nom",
         "positive_score": 0.9,
-        "negative_pattern": null,
+        "negative_pattern": "^nom[a-zA-Z]",
         "match_field_attributes": ["LABEL", "NAME"],
         "match_field_input_types": ["TEXT"]
       }
@@ -2451,9 +2452,9 @@
   "LAST_NAME": {
     "en": [
       {
-        "positive_pattern": "last.*name|lname|surname(?!\\d)|last$|secondname|family.*name",
+        "positive_pattern": "last.*name|lname|surname|last$|secondname|family.*name",
         "positive_score": 0.9,
-        "negative_pattern": null,
+        "negative_pattern": "surname\\d",
         "match_field_attributes": ["LABEL", "NAME"],
         "match_field_input_types": ["TEXT"]
       }
@@ -2478,9 +2479,9 @@
     ],
     "fr": [
       {
-        "positive_pattern": "famille|^nom(?![a-zA-Z])",
+        "positive_pattern": "famille|^nom",
         "positive_score": 0.9,
-        "negative_pattern": null,
+        "negative_pattern": "^nom[a-zA-Z]",
         "match_field_attributes": ["LABEL", "NAME"],
         "match_field_input_types": ["TEXT"]
       }
@@ -2601,9 +2602,9 @@
   "HONORIFIC_PREFIX": {
     "en": [
       {
-        "positive_pattern": "^title:?$|(salutation(?! and given name))",
+        "positive_pattern": "^title:?$|salutation",
         "positive_score": 0.9,
-        "negative_pattern": null,
+        "negative_pattern": "salutation and given name",
         "match_field_attributes": ["LABEL", "NAME"],
         "match_field_input_types": ["TEXT"]
       }
@@ -3045,90 +3046,6 @@
       {
         "positive_pattern": "便名|航空会社",
         "positive_score": 1.2,
-        "negative_pattern": null,
-        "match_field_attributes": ["LABEL", "NAME"],
-        "match_field_input_types": ["TEXT"]
-      }
-    ]
-  },
-  "UPI_VIRTUAL_PAYMENT_ADDRESS": {
-    "en": [
-      {
-        "positive_pattern": "^[\\w.+-_]+@(\\w+\\.ifsc\\.npci|aadhaar\\.npci|mobile\\.npci|rupay\\.npci)$",
-        "positive_score": 0,
-        "negative_pattern": null,
-        "match_field_attributes": ["LABEL", "NAME"],
-        "match_field_input_types": ["TEXT"]
-      },
-      {
-        "positive_pattern": "^[\\w.+-_]+@(airtel|airtelpaymentsbank|albk|allahabadbank|allbank|andb|apb|apl|axis|axisbank|axisgo|bandhan|barodampay|birla|boi|cbin|cboi|centralbank|cmsidfc|cnrb|csbcash|csbpay|cub|dbs|dcb|dcbbank|denabank|dlb|eazypay|equitas|ezeepay|fbl|federal|finobank|hdfcbank|hsbc|icici|idbi|idbibank|idfc|idfcbank|idfcnetc|ikwik|imobile|indbank|indianbank|indianbk|indus|iob|jkb|jsb|jsbp|karb|karurvysyabank|kaypay|kbl|kbl052|kmb|kmbl|kotak|kvb|kvbank|lime|lvb|lvbank|mahb|obc|okaxis|okbizaxis|okhdfcbank|okicici|oksbi|paytm|payzapp|pingpay|pnb|pockets|psb|purz|rajgovhdfcbank|rbl|sbi|sc|scb|scbl|scmobile|sib|srcb|synd|syndbank|syndicate|tjsb|tjsp|ubi|uboi|uco|unionbank|unionbankofindia|united|upi|utbi|vijayabank|vijb|vjb|ybl|yesbank|yesbankltd)$",
-        "positive_score": 0,
-        "negative_pattern": null,
-        "match_field_attributes": ["LABEL", "NAME"],
-        "match_field_input_types": ["TEXT"]
-      }
-    ]
-  },
-  "INTERNATIONAL_BANK_ACCOUNT_NUMBER": {
-    "en": [
-      {
-        "positive_pattern": "^[a-zA-Z]{2}[0-9]{2}[a-zA-Z0-9]{4}[0-9]{7}([a-zA-Z0-9]?){0,16}$",
-        "positive_score": 0,
-        "negative_pattern": null,
-        "match_field_attributes": ["LABEL", "NAME"],
-        "match_field_input_types": ["TEXT"]
-      }
-    ]
-  },
-  "VALIDATION_CREDIT_CARD_VERIFICATION_CODE": {
-    "en": [
-      {
-        "positive_pattern": "^\\d{3,4}$",
-        "positive_score": 0,
-        "negative_pattern": null,
-        "match_field_attributes": ["LABEL", "NAME"],
-        "match_field_input_types": ["TEXT"]
-      }
-    ]
-  },
-  "VALIDATION_CREDIT_CARD_EXP_YEAR": {
-    "en": [
-      {
-        "positive_pattern": "^[2][0][1-9][0-9]$",
-        "positive_score": 0,
-        "negative_pattern": null,
-        "match_field_attributes": ["LABEL", "NAME"],
-        "match_field_input_types": ["TEXT"]
-      }
-    ]
-  },
-  "URL_SEARCH_ACTION": {
-    "en": [
-      {
-        "positive_pattern": "/search(/|((\\w*\\.\\w+)?$))",
-        "positive_score": 0,
-        "negative_pattern": null,
-        "match_field_attributes": ["LABEL", "NAME"],
-        "match_field_input_types": ["TEXT"]
-      }
-    ]
-  },
-  "SOCIAL_SECURITY": {
-    "en": [
-      {
-        "positive_pattern": "ssn|social.?security.?(num(ber)?|#)*",
-        "positive_score": 0,
-        "negative_pattern": null,
-        "match_field_attributes": ["LABEL", "NAME"],
-        "match_field_input_types": ["TEXT"]
-      }
-    ]
-  },
-  "ONE_TIME_PASSWORD": {
-    "en": [
-      {
-        "positive_pattern": "one.?time|sms.?(code|token|password|pwd|pass)",
-        "positive_score": 0,
         "negative_pattern": null,
         "match_field_attributes": ["LABEL", "NAME"],
         "match_field_input_types": ["TEXT"]

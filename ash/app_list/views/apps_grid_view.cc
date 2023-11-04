@@ -66,6 +66,7 @@
 #include "ui/views/animation/animation_sequence_block.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view_observer.h"
+#include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -1762,7 +1763,7 @@ bool AppsGridView::DragPointIsOverItem(const gfx::Point& point) {
       (point - GetExpectedTileBounds(nearest_tile_index).CenterPoint())
           .Length();
   if (distance_to_tile_center >
-      (app_list_config_->folder_dropping_circle_radius() *
+      (app_list_config_->folder_bubble_radius() *
        (cardified_state_ ? GetAppsGridCardifiedScale() : 1.0f))) {
     return false;
   }
@@ -1911,7 +1912,7 @@ void AppsGridView::UpdateDropTargetForReorder(const gfx::Point& point) {
   // between apps.
   int x_offset = x_offset_direction *
                  (total_tile_size.width() / 2 -
-                  app_list_config_->folder_dropping_circle_radius() *
+                  app_list_config_->folder_bubble_radius() *
                       (cardified_state_ ? GetAppsGridCardifiedScale() : 1.0f));
   const int selected_page = GetSelectedPage();
   int col = (point.x() - bounds.x() + x_offset -
@@ -1959,7 +1960,7 @@ bool AppsGridView::DragIsCloseToItem(const gfx::Point& point) {
       (app_list_config_->grid_tile_width() + horizontal_tile_padding_ * 2) *
       0.4 * (cardified_state_ ? GetAppsGridCardifiedScale() : 1.0f);
   const int double_icon_radius =
-      app_list_config_->folder_dropping_circle_radius() * 2 *
+      app_list_config_->folder_bubble_radius() * 2 *
       (cardified_state_ ? GetAppsGridCardifiedScale() : 1.0f);
   const int minimum_drag_distance_for_reorder =
       std::min(forty_percent_icon_spacing, double_icon_radius);
@@ -2630,10 +2631,9 @@ void AppsGridView::StartDragAndDropHostDrag() {
   const bool is_folder = drag_view_->item()->is_folder();
   // Set the refreshed folder shadow size equal to the folder icon background
   // circle.
-  const gfx::Size shadow_size =
-      is_folder && features::IsAppCollectionFolderRefreshEnabled()
-          ? app_list_config_->icon_visible_size()
-          : drag_view_->GetIconImage().size();
+  const gfx::Size shadow_size = is_folder
+                                    ? app_list_config_->icon_visible_size()
+                                    : drag_view_->GetIconImage().size();
   drag_icon_proxy_ = std::make_unique<AppDragIconProxy>(
       GetWidget()->GetNativeWindow()->GetRootWindow(),
       drag_view_->GetIconImage(), location_in_screen,
@@ -2933,10 +2933,13 @@ void AppsGridView::DestroyLayerItemsIfNotNeeded() {
     return;
 
   for (const auto& entry : view_model_.entries()) {
+    AppListItemView* view = views::AsViewClass<AppListItemView>(entry.view);
     // When the item view has finished animating, then also delete the row
     // change layer if possible.
-    row_change_animator_->CancelAnimation(entry.view);
-    entry.view->DestroyLayer();
+    row_change_animator_->CancelAnimation(view);
+    if (!view->AlwaysPaintsToLayer()) {
+      view->DestroyLayer();
+    }
   }
 }
 

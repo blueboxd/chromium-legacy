@@ -504,8 +504,7 @@ void RenderWidgetHostViewChildFrame::UpdateViewportIntersection(
     DCHECK(!visual_properties.has_value() || !host()->owner_delegate());
 
     // TODO(crbug.com/1148960): Also propagate this for portals.
-    bool is_fenced_frame =
-        host()->frame_tree()->type() == FrameTree::Type::kFencedFrame;
+    bool is_fenced_frame = host()->frame_tree()->is_fenced_frame();
     if (!host()->owner_delegate() || is_fenced_frame) {
       host()->GetAssociatedFrameWidget()->SetViewportIntersection(
           intersection_state.Clone(), visual_properties);
@@ -896,6 +895,11 @@ void RenderWidgetHostViewChildFrame::CopyFromSurface(
                 std::move(callback).Run(scoped_bitmap.GetOutScopedBitmap());
               },
               std::move(callback)));
+
+  // Run result callback on the current thread in case `callback` needs to run
+  // on the current thread. See http://crbug.com/1431363.
+  request->set_result_task_runner(
+      base::SingleThreadTaskRunner::GetCurrentDefault());
 
   if (src_subrect.IsEmpty()) {
     request->set_area(gfx::Rect(GetCompositorViewportPixelSize()));

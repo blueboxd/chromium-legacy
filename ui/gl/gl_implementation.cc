@@ -229,11 +229,6 @@ gfx::ExtensionSet GetGLExtensionsFromCurrentContext(
 
 }  // namespace
 
-CurrentGL*& GetGlContextForCurrentThread() {
-  thread_local CurrentGL* gl_context = nullptr;
-  return gl_context;
-}
-
 #if defined(USE_EGL)
 EGLApi* g_current_egl_context;
 #endif
@@ -272,6 +267,18 @@ void SetSoftwareWebGLCommandLineSwitches(base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(switches::kUseGL, kGLImplementationANGLEName);
   command_line->AppendSwitchASCII(switches::kUseANGLE,
                                   kANGLEImplementationSwiftShaderForWebGLName);
+}
+
+uint32_t GetSoftwareGLImplementationVendorId() {
+  return 0xFFFF;
+}
+
+uint32_t GetSoftwareGLImplementationDeviceId() {
+  return 0xFFFF;
+}
+
+uint64_t GetSoftwareGLImplementationSystemDeviceId() {
+  return 0xFFFF0000FFFF;
 }
 
 absl::optional<GLImplementationParts>

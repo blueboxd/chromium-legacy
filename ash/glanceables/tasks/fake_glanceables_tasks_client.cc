@@ -12,6 +12,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_forward.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 
 namespace ash {
@@ -66,6 +67,11 @@ void FakeGlanceablesTasksClient::MarkAsCompleted(
   }
 }
 
+void FakeGlanceablesTasksClient::AddTask(const std::string& task_list_id,
+                                         const std::string& title) {
+  NOTIMPLEMENTED();
+}
+
 void FakeGlanceablesTasksClient::OnGlanceablesBubbleClosed(
     GlanceablesTasksClient::OnAllPendingCompletedTasksSavedCallback callback) {
   ++bubble_closed_count_;
@@ -110,6 +116,15 @@ void FakeGlanceablesTasksClient::PopulateTasks(base::Time tasks_due_time) {
   task_lists_->Add(std::make_unique<GlanceablesTaskList>(
       "TaskListID3", "Task List 3 Title (empty)",
       /*updated=*/tasks_due_time));
+  task_lists_->Add(std::make_unique<GlanceablesTaskList>(
+      "TaskListID4", "Task List 4 Title (empty)",
+      /*updated=*/tasks_due_time));
+  task_lists_->Add(std::make_unique<GlanceablesTaskList>(
+      "TaskListID5", "Task List 5 Title (empty)",
+      /*updated=*/tasks_due_time));
+  task_lists_->Add(std::make_unique<GlanceablesTaskList>(
+      "TaskListID6", "Task List 6 Title (empty)",
+      /*updated=*/tasks_due_time));
 }
 
 void FakeGlanceablesTasksClient::PopulateTaskLists(base::Time tasks_due_time) {
@@ -141,6 +156,12 @@ void FakeGlanceablesTasksClient::PopulateTaskLists(base::Time tasks_due_time) {
   tasks_in_task_lists_.emplace("TaskListID2", std::move(task_list_2));
   tasks_in_task_lists_.emplace(
       "TaskListID3", std::make_unique<ui::ListModel<GlanceablesTask>>());
+  tasks_in_task_lists_.emplace(
+      "TaskListID4", std::make_unique<ui::ListModel<GlanceablesTask>>());
+  tasks_in_task_lists_.emplace(
+      "TaskListID5", std::make_unique<ui::ListModel<GlanceablesTask>>());
+  tasks_in_task_lists_.emplace(
+      "TaskListID6", std::make_unique<ui::ListModel<GlanceablesTask>>());
 }
 
 }  // namespace ash

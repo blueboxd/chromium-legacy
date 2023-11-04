@@ -13,7 +13,8 @@
 #             android-sm-a235m
 #         chromeos-board-amd64-generic chromeos-board-kevin chromeos-board-eve
 #             chromeos-board-jacuzzi chromeos-board-octopus
-#         fuchsia-board-astro fuchsia-board-sherlock fuchsia-board-qemu-x64 ]
+#         fuchsia-board-astro fuchsia-board-nelson fuchsia-board-sherlock
+#             fuchsia-board-qemu-x64 ]
 # Platform
 # tags: [ desktop
 #         mobile ]
@@ -71,7 +72,7 @@
 # WebGPU Compat Mode
 # tags: [ webgpu-compat webgpu-not-compat ]
 # WebGPU DXC
-# tags: [ webgpu-dxc-enabled webgpu-dxc-disabled webgpu-dxc-default ]
+# tags: [ webgpu-dxc-enabled webgpu-dxc-disabled ]
 # Clang coverage
 # tags: [ clang-coverage no-clang-coverage ]
 # Skia Graphite
@@ -219,9 +220,13 @@ crbug.com/1356246 [ mac intel debug ] Pixel_SVGHuge [ Skip ]
 crbug.com/1356246 [ mac intel release asan ] Pixel_SVGHuge [ Skip ]
 # Mac Nvidia laptops are quite old and the test times out on release builds too.
 crbug.com/1356246 [ mac nvidia ] Pixel_SVGHuge [ Skip ]
-# Test flakily times out on Win10 and Linux Debug
-crbug.com/1474637 [ win10 nvidia debug ] Pixel_SVGHuge [ RetryOnFailure ]
-crbug.com/1474637 [ linux nvidia debug ] Pixel_SVGHuge [ RetryOnFailure ]
+# With the SmallerInterestArea experiment, the test becomes slower, and thus
+# times out. Remove this if crbug.com/1459256 ends up not shipping. This is
+# because the feature causes Chrome to raster the SVG image more times, which
+# increases runtime (by ~50%), pushing it from flaky to failing.
+crbug.com/1474637 [ win10 nvidia debug ] Pixel_SVGHuge [ Skip ]
+crbug.com/1474637 [ linux nvidia debug ] Pixel_SVGHuge [ Skip ]
+crbug.com/1474637 [ mac graphite-disabled amd release no-asan ] Pixel_SVGHuge [ Skip ]
 
 # Fuchsia devices do not have enough memory for this test.
 crbug.com/1441056 [ fuchsia ] Pixel_SVGHuge [ Skip ]
@@ -312,6 +317,7 @@ crbug.com/1230619 [ android-chromium android-pixel-4 android-r angle-disabled no
 
 # Failing likely due to protected memory, but cause TBD.
 crbug.com/1420067 [ fuchsia fuchsia-board-astro ] Pixel_Video* [ Failure ]
+crbug.com/1420067 [ fuchsia fuchsia-board-nelson ] Pixel_Video* [ Failure ]
 crbug.com/1420067 [ fuchsia fuchsia-board-sherlock ] Pixel_Video* [ Failure ]
 
 # Failures on Sherlock
@@ -332,6 +338,7 @@ crbug.com/1290953 [ android android-pixel-4 android-webview-instrumentation ] Pi
 crbug.com/1290953 [ android android-pixel-4 android-webview-instrumentation ] Pixel_CanvasLowLatency2DImageData [ Failure ]
 
 crbug.com/1345777 [ android ] Pixel_VideoStreamFromWebGLCanvas [ Skip ]
+
 
 # WebGPU interop fails -- pixel color diff
 crbug.com/1395227 [ amd-0x7340 no-clang-coverage release-x64 target-cpu-64 win ] Pixel_WebGPUImportVideoFrameUnaccelerated [ Failure ]
@@ -359,14 +366,11 @@ crbug.com/1392806 [ chromeos lacros-chrome ] Pixel_Video_Context_Loss_VP9 [ Skip
 crbug.com/1392806 [ chromeos lacros-chrome ] Pixel_WebGLContextRestored [ Skip ]
 crbug.com/1392806 [ chromeos lacros-chrome ] Pixel_WebGLPreservedAfterTabSwitch [ Skip ]
 
-# Lacros on jacuzzi produces the wrong aspect ratio image
-crbug.com/1392806 [ chromeos lacros-chrome chromeos-board-jacuzzi ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ Failure ]
+# jacuzzi produces the wrong aspect ratio image
+crbug.com/1392806 [ chromeos chromeos-board-jacuzzi ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ Failure ]
 
-# Pixel 4 shifted images
-crbug.com/1444804 [ android-pixel-4 android-r angle-disabled no-passthrough ] Pixel_Video_VP9 [ Failure ]
-
-# Flake on Linux NVIDIA
-crbug.com/1453989 [ linux no-clang-coverage nvidia release ] Pixel_VideoStreamFrom2DAlphaCanvas_DisableOOPRaster [ RetryOnFailure ]
+# ChromeOS jacuzzi.
+crbug.com/1286915 [ chromeos cros-chrome chromeos-board-jacuzzi ] Pixel_CanvasLowLatencyWebGLAlphaFalse [ Failure ]
 
 crbug.com/1456360 [ chromeos chromeos-board-amd64-generic ] Pixel_WebGLCopyImage [ Skip ]
 crbug.com/1456360 [ chromeos chromeos-board-amd64-generic ] Pixel_WebGLSadCanvas [ Skip ]
@@ -379,27 +383,17 @@ crbug.com/1468826 [ ventura angle-opengl amd-0x67ef asan ] Pixel_WebGPUToDataURL
 crbug.com/1469875 [ mac graphite-enabled ] Pixel_BackgroundImage [ Failure ]
 crbug.com/1469875 [ mac graphite-enabled ] Pixel_CSSFilterEffects [ Failure ]
 crbug.com/1469875 [ mac graphite-enabled ] Pixel_CSSFilterEffects_NoOverlays [ Failure ]
-crbug.com/1469875 [ amd-0x679e angle-metal graphite-enabled mac-x86_64 monterey no-asan ] Pixel_OffscreenCanvasAccelerated2D [ Failure ]
-crbug.com/1469875 [ amd-0x67ef angle-opengl graphite-enabled no-asan ventura ] Pixel_OffscreenCanvasAccelerated2D [ Failure ]
-crbug.com/1469875 [ amd-0x679e angle-metal graphite-enabled mac-x86_64 monterey no-asan ] Pixel_OffscreenCanvasAccelerated2DWorker [ Failure ]
-crbug.com/1469875 [ amd-0x67ef angle-opengl graphite-enabled no-asan ventura ] Pixel_OffscreenCanvasAccelerated2DWorker [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_OffscreenCanvasTransferAfterStyleResize [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_OffscreenCanvasTransferToImageBitmap [ Failure ]
-crbug.com/1469875 [ amd-0x679e angle-metal graphite-enabled mac-x86_64 monterey no-asan ] Pixel_PaintWorkletTransform [ Failure ]
-crbug.com/1469875 [ amd-0x67ef angle-opengl graphite-enabled no-asan ventura ] Pixel_PaintWorkletTransform [ Failure ]
+crbug.com/1469875 [ amd-0x679e graphite-enabled mac-x86_64 monterey no-asan ] Pixel_OffscreenCanvasTransferAfterStyleResize [ Failure ]
 crbug.com/1469875 [ mac graphite-enabled amd release no-asan ] Pixel_SVGHuge [ Failure ]
 crbug.com/1469875 [ mac graphite-enabled apple ] Pixel_SVGHuge [ Failure ]
 crbug.com/1469875 [ mac graphite-enabled intel release no-asan ] Pixel_SVGHuge [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled no-asan ] Pixel_WebGPUCanvasOneCopyCapture [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_WebGPUImportVideoFrame [ Failure ]
+crbug.com/1469875 [ apple-angle-metal-renderer:-apple-m2 graphite-enabled mac-arm64 no-asan ventura ] Pixel_WebGPUImportVideoFrame [ Failure ]
 crbug.com/1469875 [ mac graphite-enabled ] Pixel_WebGPUImportVideoFrameOffscreenCanvas [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_WebGPUImportVideoFrameUnaccelerated [ Failure ]
-crbug.com/1469875 [ mac graphite-enabled ] Pixel_WebGPUImportVideoFrameUnacceleratedOffscreenCanvas [ Failure ]
+crbug.com/1469875 [ apple-angle-metal-renderer:-apple-m2 graphite-enabled mac-arm64 no-asan ventura ] Pixel_WebGPUImportVideoFrameUnaccelerated [ Failure ]
+crbug.com/1469875 [ apple graphite-enabled mac-arm64 no-asan ventura ] Pixel_WebGPUImportVideoFrameUnacceleratedOffscreenCanvas [ Failure ]
 
 crbug.com/1474611 [ mac nvidia angle-opengl graphite-disabled ] Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha [ Failure ]
-crbug.com/1476029 [ mac asan graphite-enabled ] Pixel_Video_BackdropFilter [ Failure ]
 crbug.com/1477318 [ mac ] Pixel_WebGLPreservedAfterTabSwitch [ RetryOnFailure ]
-crbug.com/1479017 [ ventura intel-0x3e9b angle-metal graphite-enabled ] Pixel_WebGPUCachedSwapBufferInvalidatedShouldBeBlank [ RetryOnFailure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

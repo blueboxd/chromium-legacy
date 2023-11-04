@@ -93,6 +93,10 @@ void MediaStreamVideoSource::AddTrack(
           ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
               &VideoTrackAdapter::NewCropVersionOnVideoTaskRunner,
               GetTrackAdapter()));
+      VideoCaptureNotifyFrameDroppedCB frame_dropped_callback =
+          ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
+              &VideoTrackAdapter::OnFrameDroppedOnVideoTaskRunner,
+              GetTrackAdapter()));
       // Callbacks are invoked from the IO thread. With
       // UseThreadPoolForMediaStreamVideoTaskRunner disabled, the video task
       // runner is the same as the IO thread and there is no need to post frames
@@ -106,11 +110,14 @@ void MediaStreamVideoSource::AddTrack(
                 video_task_runner(),
                 std::move(deliver_encoded_frame_on_video_callback)),
             base::BindPostTask(video_task_runner(),
-                               std::move(new_crop_version_on_video_callback)));
+                               std::move(new_crop_version_on_video_callback)),
+            base::BindPostTask(video_task_runner(),
+                               std::move(frame_dropped_callback)));
       } else {
         StartSourceImpl(std::move(deliver_frame_on_video_callback),
                         std::move(deliver_encoded_frame_on_video_callback),
-                        std::move(new_crop_version_on_video_callback));
+                        std::move(new_crop_version_on_video_callback),
+                        std::move(frame_dropped_callback));
       }
       break;
     }
@@ -599,24 +606,6 @@ void MediaStreamVideoSource::UpdateCanDiscardAlpha() {
     }
   }
   OnSourceCanDiscardAlpha(!using_alpha);
-}
-
-void MediaStreamVideoSource::OnFrameDropped(
-    media::VideoCaptureFrameDropReason reason) {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-  OnFrameDroppedInternal(reason);
-  if (reason ==
-      media::VideoCaptureFrameDropReason::
-          kVideoTrackFrameDelivererNotEnabledReplacingWithBlackFrame) {
-    // Black frame events only happen when the track is disabled, ignore.
-    return;
-  }
-  if (reason == media::VideoCaptureFrameDropReason::
-                    kResolutionAdapterFrameRateIsHigherThanRequested) {
-    ++discarded_frames_;
-  } else {
-    ++dropped_frames_;
-  }
 }
 
 }  // namespace blink

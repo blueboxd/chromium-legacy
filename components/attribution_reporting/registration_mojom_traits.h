@@ -168,7 +168,7 @@ struct COMPONENT_EXPORT(ATTRIBUTION_REPORTING_REGISTRATION_MOJOM_TRAITS)
     return source.source_event_id;
   }
 
-  static absl::optional<base::TimeDelta> expiry(
+  static base::TimeDelta expiry(
       const attribution_reporting::SourceRegistration& source) {
     return source.expiry;
   }
@@ -186,7 +186,7 @@ struct COMPONENT_EXPORT(ATTRIBUTION_REPORTING_REGISTRATION_MOJOM_TRAITS)
 
   static int max_event_level_reports(
       const attribution_reporting::SourceRegistration& source) {
-    return source.max_event_level_reports.value_or(-1);
+    return source.max_event_level_reports;
   }
 
   static int64_t priority(

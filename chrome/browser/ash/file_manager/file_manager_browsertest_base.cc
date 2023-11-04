@@ -78,6 +78,7 @@
 #include "chrome/browser/ash/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/ash/file_manager/file_tasks_observer.h"
 #include "chrome/browser/ash/file_manager/mount_test_util.h"
+#include "chrome/browser/ash/file_manager/office_file_tasks.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/file_system_provider/fake_extension_provider.h"
@@ -2328,12 +2329,6 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     disabled_features.push_back(features::kFileTransferEnterpriseConnectorUI);
   }
 
-  if (options.enable_search_v2) {
-    enabled_features.push_back(ash::features::kFilesSearchV2);
-  } else {
-    disabled_features.push_back(ash::features::kFilesSearchV2);
-  }
-
   if (options.enable_image_content_search) {
     enabled_features.push_back(search_features::kLauncherImageSearch);
     enabled_features.push_back(search_features::kLauncherImageSearchIca);
@@ -2348,12 +2343,6 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     enabled_features.push_back(ash::features::kFSPsInRecents);
   } else {
     disabled_features.push_back(ash::features::kFSPsInRecents);
-  }
-
-  if (options.enable_os_feedback) {
-    enabled_features.push_back(ash::features::kOsFeedback);
-  } else {
-    disabled_features.push_back(ash::features::kOsFeedback);
   }
 
   if (options.enable_google_one_offer_files_banner) {
@@ -2826,10 +2815,8 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
                                  params);
     observer.Wait();
     ASSERT_TRUE(observer.last_navigation_succeeded());
-    LoadSwaTestUtils(observer.web_contents());
 
     const std::string app_id = GetSwaAppId(observer.web_contents());
-
     swa_web_contents_.insert({app_id, observer.web_contents()});
     *output = app_id;
     return;
@@ -3675,11 +3662,6 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
-  if (name == "isOsFeedbackEnabled") {
-    *output = options.enable_os_feedback ? "true" : "false";
-    return;
-  }
-
   if (name == "isFilesExperimentalEnabled") {
     *output = options.files_experimental ? "true" : "false";
     return;
@@ -3936,7 +3918,8 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     std::vector<std::string> tokens = base::SplitString(
         *terms, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     std::set<std::string> unique_terms(tokens.begin(), tokens.end());
-    app_list::ImageInfo image_info(unique_terms, file_path, base::Time::Now());
+    app_list::ImageInfo image_info(unique_terms, file_path, base::Time::Now(),
+                                   /*file_size*/ 1);
     app_list::LocalImageSearchServiceFactory::GetForBrowserContext(profile())
         ->Insert(image_info);
     return;
@@ -4103,19 +4086,6 @@ base::FilePath FileManagerBrowserTestBase::MaybeMountGuestOs(
 void FileManagerBrowserTestBase::EnableVirtualKeyboard() {
   ash::ShellTestApi().EnableVirtualKeyboard();
 }
-
-// Load runtime and static test_utils.js. In Files.app test_utils.js is always
-// loaded, while runtime_loaded_test_util.js is loaded on the first
-// chrome.runtime.sendMessage is sent by the test extension. However, since we
-// use callSwaTestMessageListener, rather than c.r.sendMessage to communicate
-// with Files SWA, we need to explicitly load those files.
-void FileManagerBrowserTestBase::LoadSwaTestUtils(
-    content::WebContents* web_contents) {
-  CHECK(web_contents);
-
-  ASSERT_EQ(true, content::EvalJs(web_contents, "test.swaLoadTestUtils()"));
-}
-
 std::string FileManagerBrowserTestBase::GetSwaAppId(
     content::WebContents* web_contents) {
   CHECK(web_contents);

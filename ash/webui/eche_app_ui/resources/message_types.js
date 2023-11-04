@@ -29,6 +29,7 @@
  *    sendStartSignaling: boolean,
  *    disable_stun_server: boolean,
  *    check_android_network_info: boolean,
+ *    process_android_accessibility_tree: boolean
  * }}
  */
 /* #export */ let SystemInfo;
@@ -116,10 +117,15 @@
   CONNECTION_STATUS_CHANGED: 'connection_status_changed',
   // Message for sending accessibility event data.
   ACCESSIBILITY_EVENT_DATA: 'accessibility_event_data',
+  // Message for getting the location of text in android.
+  ACCESSIBILITY_REFRESH_WITH_EXTRA_DATA:
+      'accessibility_refresh_with_extra_data',
   // Message for sending actions and their parameters.
   ACCESSIBILITY_PERFORM_ACTION: 'accessibility_perform_action',
   // Message for requesting keyboard layout information.
   KEYBOARD_LAYOUT_REQUEST: 'keyboard_layout_request',
   // Message for sending keyboard layout information.
   KEYBOARD_LAYOUT_INFO: 'keyboard_layout_info',
+  // Message for processing Android device accessibility tree
+  PROCESS_ANDROID_ACCESSIBILITY_TREE: 'process_android_accessibility_tree',
 };

@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ActionsProducerGen, ConcurrentActionInvalidatedError, isActionsProducer} from './actions_producer.js';
+import {type ActionsProducerGen, ConcurrentActionInvalidatedError, isActionsProducer} from './actions_producer.js';
+import {Selector, SelectorEmitter, SelectorNode} from './selector.js';
 
 /**
  * Actions are handled by the store according to their name and payload,
@@ -23,14 +24,15 @@ export interface Action {
  * Note: PAYLOAD does not hold any useful value. It's exclusively used to
  * conveniently carry the payload type along with the factory callable.
  */
-export interface ActionFactory<Payload> {
+export interface ActionFactory<Payload = void> {
   (payload: Payload): (Action&{type: string, payload: Payload});
   type: Action['type'];
   PAYLOAD: Payload;
 }
 
 /** Reducers generate a new state from the current state and a payload. */
-export type Reducer<State, Payload> = (state: State, payload: Payload) => State;
+export type Reducer<State, Payload = void> = (state: State, payload: Payload) =>
+    State;
 
 type ReducerMap<State> = Map<Action['type'], Reducer<State, any>>;
 type ReducersMap<State> = Map<Action['type'], Array<Reducer<State, any>>>;
@@ -38,8 +40,11 @@ type ReducersMap<State> = Map<Action['type'], Array<Reducer<State, any>>>;
 /**
  * Slices represent a part of the state that is nested directly under the root
  * state, aggregating its reducers and selectors.
+ * @template State The shape of the store's root state.
+ * @template LocalState The shape of this slice.
  */
-export class Slice<State> {
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export class Slice<State, LocalState> {
   /**
    * Reducers registered with this slice.
    * Only one reducer per slice can be associated with a given action type.
@@ -47,13 +52,17 @@ export class Slice<State> {
   reducers: ReducerMap<State> = new Map();
 
   /**
+   * The slice's default selector - a selector that is created automatically
+   * when the slice is constructed. It selects the slice's part of the state.
+   */
+  selector: SelectorNode<LocalState> =
+      SelectorNode.createDisconnectedNode(this.name);
+
+  /**
    * @param name The prefix to be used when registering action types with
    *     this slice.
-   * @param debug Whether this slice's reducers should log when they are
-   *     triggered. This is useful when tracing Store operations is desired but
-   *     tracing the result of every dispatched action would be too verbose.
    */
-  constructor(public name: string, public debug?: boolean) {}
+  constructor(public name: string) {}
 
   /**
    * Returns the full action name given by prepending the slice's name to the
@@ -80,7 +89,7 @@ export class Slice<State> {
    *     typing of the actions it produces. Those can be used to register
    *     reducers in other slices with the same action type.
    */
-  addReducer<Payload>(
+  addReducer<Payload = void>(
       localType: Action['type'],
       reducer: Reducer<State, Payload>): ActionFactory<Payload> {
     const type = this.prependSliceName_(localType);
@@ -98,12 +107,6 @@ export class Slice<State> {
     actionFactory.PAYLOAD = null as Payload;
 
     return actionFactory;
-  }
-
-  /** Creates a selector. */
-  addSelector(_selector: (state: State) => any) {
-    // TODO(b:297808212) Implement this method.
-    return;
   }
 }
 
@@ -125,7 +128,7 @@ export class BaseStore<State> {
   /**
    * A map of action names to reducers handled by the store.
    */
-  private reducers_: ReducersMap<State>;
+  private reducers_: ReducersMap<State> = new Map();
 
   /**
    * The current state stored in the Store.
@@ -152,7 +155,20 @@ export class BaseStore<State> {
    */
   private batchMode_: boolean = false;
 
-  constructor(state: State, slices: Array<Slice<State>>) {
+  /**
+   * The store's default selector - a selector that is created automatically
+   * when the store is constructed. It selects the root state.
+   */
+  selector: Selector<State>;
+
+  /**
+   * The DAG representation of selectors held by the store. It ensures
+   * selectors are updated in an efficient manner. For more information,
+   * please see the `SelectorEmitter` class documentation.
+   */
+  private selectorEmitter_ = new SelectorEmitter();
+
+  constructor(state: State, slices: Array<Slice<State, any>>) {
     this.state_ = state;
     this.queuedActions_ = [];
     this.observers_ = [];
@@ -167,9 +183,17 @@ export class BaseStore<State> {
           [...sliceNames].join(', '));
     }
 
-    // Populate reducers with given slices.
-    this.reducers_ = new Map();
+    // Connect the default root selector to the Selector Emitter.
+    const rootSelector = SelectorNode.createSourceNode(() => this.state_);
+    this.selectorEmitter_.addSource(rootSelector);
+    this.selector = rootSelector;
+
     for (const slice of slices) {
+      // Connect the slice's default selector to the store's.
+      slice.selector.select = (state) => state[slice.name];
+      slice.selector.parents = [rootSelector];
+
+      // Populate reducers with slice.
       for (const [type, reducer] of slice.reducers.entries()) {
         const reducerList = this.reducers_.get(type);
         if (!reducerList) {
@@ -196,6 +220,7 @@ export class BaseStore<State> {
     });
 
     this.initialized_ = true;
+    this.selectorEmitter_.processChange();
     this.notifyObservers_(this.state_);
   }
 
@@ -305,7 +330,6 @@ export class BaseStore<State> {
     if (window.DEBUG_STORE) {
       console.groupCollapsed(`Action: ${action.type}`);
       console.dir(action.payload);
-      console.groupEnd();
     }
 
     const reducers = this.reducers_.get(action.type);
@@ -321,6 +345,13 @@ export class BaseStore<State> {
     // resolved.
     if (this.initialized_ && !this.batchMode_) {
       this.notifyObservers_(this.state_);
+    }
+    if (this.selector.get() !== this.state_) {
+      this.selectorEmitter_.processChange();
+    }
+
+    if (window.DEBUG_STORE) {
+      console.groupEnd();
     }
   }
 

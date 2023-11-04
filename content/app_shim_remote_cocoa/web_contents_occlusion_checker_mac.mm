@@ -15,9 +15,9 @@
 #include "base/mac/mac_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/no_destructor.h"
+#include "content/common/features.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_features.h"
 
 using features::kMacWebContentsOcclusion;
 
@@ -372,8 +372,10 @@ bool IsBrowserProcess() {
 - (void)performOcclusionStateUpdates {
   _occlusionStateUpdatesAreScheduled = NO;
 
-  if (content::GetContentClient()->browser()->IsShuttingDown())
+  if (content::GetContentClient()->browser() &&
+      content::GetContentClient()->browser()->IsShuttingDown()) {
     return;
+  }
 
   DCHECK(!_updatingOcclusionStates);
 

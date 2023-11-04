@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/intersection_observer/intersection_geometry.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -17,6 +18,7 @@
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 
@@ -197,6 +199,7 @@ IntersectionGeometry::IntersectionGeometry(const Node* root_node,
                                            const Vector<Length>& root_margin,
                                            const Vector<float>& thresholds,
                                            const Vector<Length>& target_margin,
+                                           const Vector<Length>& scroll_margin,
                                            unsigned flags,
                                            CachedRects* cached_rects)
     : flags_(flags & kConstructorFlagsMask) {
@@ -211,8 +214,9 @@ IntersectionGeometry::IntersectionGeometry(const Node* root_node,
     return;
   }
   RootGeometry root_geometry(root_and_target.root, root_margin);
+
   ComputeGeometry(root_geometry, root_and_target, thresholds, target_margin,
-                  cached_rects);
+                  scroll_margin, cached_rects);
 }
 
 IntersectionGeometry::IntersectionGeometry(const RootGeometry& root_geometry,
@@ -220,6 +224,7 @@ IntersectionGeometry::IntersectionGeometry(const RootGeometry& root_geometry,
                                            const Element& target_element,
                                            const Vector<float>& thresholds,
                                            const Vector<Length>& target_margin,
+                                           const Vector<Length>& scroll_margin,
                                            unsigned flags,
                                            CachedRects* cached_rects)
     : flags_(flags & kConstructorFlagsMask),
@@ -230,8 +235,9 @@ IntersectionGeometry::IntersectionGeometry(const RootGeometry& root_geometry,
   if (root_and_target.relationship == RootAndTarget::kInvalid) {
     return;
   }
+
   ComputeGeometry(root_geometry, root_and_target, thresholds, target_margin,
-                  cached_rects);
+                  scroll_margin, cached_rects);
 }
 
 IntersectionGeometry::RootAndTarget::RootAndTarget(
@@ -386,7 +392,11 @@ void IntersectionGeometry::ComputeGeometry(const RootGeometry& root_geometry,
                                            const RootAndTarget& root_and_target,
                                            const Vector<float>& thresholds,
                                            const Vector<Length>& target_margin,
+                                           const Vector<Length>& scroll_margin,
                                            CachedRects* cached_rects) {
+  UMA_HISTOGRAM_BOOLEAN("Blink.IntersectionObservation.UsesCachedRects",
+                        ShouldUseCachedRects());
+
   CHECK_GE(thresholds.size(), 1u);
   DCHECK(cached_rects || !ShouldUseCachedRects());
   flags_ |= kDidComputeGeometry;
@@ -429,7 +439,7 @@ void IntersectionGeometry::ComputeGeometry(const RootGeometry& root_geometry,
 
   bool does_intersect =
       ClipToRoot(root, target, root_rect_, unclipped_intersection_rect_,
-                 intersection_rect_, cached_rects);
+                 intersection_rect_, scroll_margin, cached_rects);
 
   // Map target_rect_ to absolute coordinates for target's document.
   // GeometryMapper is faster, so we use it when possible; otherwise, fall back
@@ -561,7 +571,13 @@ void IntersectionGeometry::ComputeGeometry(const RootGeometry& root_geometry,
 
   min_scroll_delta_to_update_ = ComputeMinScrollDeltaToUpdate(
       root_and_target, target_to_document_transform,
-      root_geometry.root_to_document_transform, thresholds);
+      root_geometry.root_to_document_transform, thresholds, scroll_margin);
+  UMA_HISTOGRAM_COUNTS_1000(
+      "Blink.IntersectionObservation.MinScrollDeltaToUpdateX",
+      min_scroll_delta_to_update_.x());
+  UMA_HISTOGRAM_COUNTS_1000(
+      "Blink.IntersectionObservation.MinScrollDeltaToUpdateY",
+      min_scroll_delta_to_update_.y());
 
   if (cached_rects) {
     cached_rects->min_scroll_delta_to_update = min_scroll_delta_to_update_;
@@ -574,6 +590,7 @@ bool IntersectionGeometry::ClipToRoot(const LayoutObject* root,
                                       const PhysicalRect& root_rect,
                                       PhysicalRect& unclipped_intersection_rect,
                                       PhysicalRect& intersection_rect,
+                                      const Vector<Length>& scroll_margin,
                                       CachedRects* cached_rects) {
   if (!root->IsBox()) {
     return false;
@@ -590,8 +607,47 @@ bool IntersectionGeometry::ClipToRoot(const LayoutObject* root,
   if (CanUseGeometryMapper(target))
     flags |= kUseGeometryMapper;
 
-  bool does_intersect;
-  if (ShouldUseCachedRects()) {
+  bool does_intersect = false;
+
+  if (!scroll_margin.empty()) {
+    flags |= kIgnoreLocalClipPath;
+
+    // TODO(tcaptan - http://crbug/1485750):
+    // Use IntersectionGeometry::RootAndTarget::ComputeRelationship() here
+    // to avoid potential problem of IsDescendantOf(), when being a descendant
+    // may not be equivalent to being contained (i.e. as a descendant in the
+    // containing block chain), and to lower cost.
+    const auto* scroller = target->ContainingScrollContainer();
+    // TODO(tcaptan): investigate iframe scenarios
+
+    if (scroller && scroller->IsDescendantOf(root) &&
+        !scroller->IsEffectiveRootScroller() && scroller != local_ancestor) {
+      absl::optional<gfx::RectF> scroller_bounding_box =
+          ClipPathClipper::LocalClipPathBoundingBox(*scroller);
+      PhysicalRect scroller_rect =
+          scroller_bounding_box.has_value()
+              ? PhysicalRect::EnclosingRect(scroller_bounding_box.value())
+              : scroller->LocalVisualRect();
+
+      // First clip the intersection_rect to it's containing scroller to inflate
+      // the scroller's clipping rect when doing it.
+      does_intersect = ClipToRoot(scroller, target, scroller_rect,
+                                  unclipped_intersection_rect,
+                                  intersection_rect, scroll_margin, nullptr);
+      if (does_intersect) {
+        // If intersection_rect intersects with the scroller, continue clipping
+        // it up to root.
+        unclipped_intersection_rect = intersection_rect;
+        return ClipToRoot(root, scroller, root_rect,
+                          unclipped_intersection_rect, intersection_rect,
+                          scroll_margin, nullptr);
+      }
+
+      return false;
+    }
+  }
+
+  if (ShouldUseCachedRects() && cached_rects) {
     does_intersect = cached_rects->does_intersect;
   } else {
     does_intersect = target->MapToVisualRectInAncestorSpace(
@@ -623,8 +679,18 @@ bool IntersectionGeometry::ClipToRoot(const LayoutObject* root,
       // TODO(szager): This flipping seems incorrect because root_rect is
       // already physical.
       local_ancestor->DeprecatedFlipForWritingMode(root_clip_rect);
-      does_intersect &=
-          intersection_rect.InclusiveIntersect(PhysicalRect(root_clip_rect));
+
+      PhysicalRect root_clip_physical_rect{root_clip_rect};
+
+      if (!scroll_margin.empty() && root->IsScrollContainer()) {
+        // If the root is scrollable, apply the scroll margin to inflate the
+        // root_clip_physical_rect.
+        ApplyMargin(root_clip_physical_rect, scroll_margin,
+                    root->StyleRef().EffectiveZoom());
+      }
+
+      does_intersect &= intersection_rect.InclusiveIntersect(
+          PhysicalRect(root_clip_physical_rect));
     } else {
       // Note that we don't clip to root_rect here. That's ok because
       // (!local_ancestor) implies that the root is implicit and the
@@ -668,10 +734,16 @@ gfx::Vector2dF IntersectionGeometry::ComputeMinScrollDeltaToUpdate(
     const RootAndTarget& root_and_target,
     const gfx::Transform& target_to_document_transform,
     const gfx::Transform& root_to_document_transform,
-    const Vector<float>& thresholds) const {
+    const Vector<float>& thresholds,
+    const Vector<Length>& scroll_margin) const {
   if (!RuntimeEnabledFeatures::IntersectionOptimizationEnabled()) {
     return gfx::Vector2dF();
   }
+
+  if (!scroll_margin.empty()) {
+    return gfx::Vector2dF();
+  }
+
   if (ShouldComputeVisibility()) {
     // We don't have enough data (e.g. the occluded area of target and the
     // occluding areas of the covering elements) to calculate the minimum

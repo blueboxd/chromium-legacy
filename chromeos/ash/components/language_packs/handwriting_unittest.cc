@@ -10,20 +10,24 @@
 
 #include "base/containers/span.h"
 #include "base/functional/bind.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/string_split.h"
+#include "chromeos/ash/components/language_packs/language_packs_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ime/ash/extension_ime_util.h"
 #include "ui/base/ime/ash/fake_input_method_delegate.h"
 #include "ui/base/ime/ash/input_method_descriptor.h"
-#include "ui/base/ime/ash/input_method_manager.h"
-#include "ui/base/ime/ash/input_method_util.h"
+#include "ui/base/ime/ash/mock_input_method_manager.h"
 
 namespace ash::language_packs {
 
 namespace {
 
+using ::ash::input_method::InputMethodManager;
+using ::ash::input_method::InputMethodUtil;
+using ::ash::input_method::MockInputMethodManager;
 using ::testing::Eq;
 using ::testing::IsEmpty;
 using ::testing::Optional;
@@ -31,57 +35,15 @@ using ::testing::UnorderedElementsAre;
 
 class HandwritingTest : public testing::Test {};
 
-absl::optional<std::string> GetSecondUnderscorePart(
-    const std::string& engine_id) {
-  std::vector<std::string> split = base::SplitString(
-      engine_id, "_", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-  if (split.size() < 2) {
-    return absl::nullopt;
-  } else {
-    return split[1];
+// Populates proto message DlcsWithContent with the given list of dlc_ids.
+// All fields other than `id` are left as default.
+dlcservice::DlcsWithContent CreateDlcsWithContent(
+    const std::vector<std::string>& dlc_ids) {
+  dlcservice::DlcsWithContent output;
+  for (const auto& dlc_id : dlc_ids) {
+    output.add_dlc_infos()->set_id(dlc_id);
   }
-}
-
-TEST_F(HandwritingTest, MapIdsToHandwritingLocalesNoInput) {
-  EXPECT_THAT(
-      MapIdsToHandwritingLocales(
-          {}, base::BindRepeating([](const std::string& unused_engine_id)
-                                      -> absl::optional<std::string> {
-            ADD_FAILURE() << "engine_id_to_handwriting_locale was called";
-            return "en";
-          })),
-      IsEmpty());
-}
-
-TEST_F(HandwritingTest, MapIdsToHandwritingLocalesAllToNullopt) {
-  EXPECT_THAT(MapIdsToHandwritingLocales(
-                  {{"qwerty_en", "qwertz_de"}},
-                  base::BindRepeating([](const std::string& unused_engine_id)
-                                          -> absl::optional<std::string> {
-                    return absl::nullopt;
-                  })),
-              IsEmpty());
-}
-
-TEST_F(HandwritingTest, MapIdsToHandwritingLocalesAllToUniqueStrings) {
-  EXPECT_THAT(
-      MapIdsToHandwritingLocales({{"qwerty_en", "qwertz_de"}},
-                                 base::BindRepeating(GetSecondUnderscorePart)),
-      UnorderedElementsAre("en", "de"));
-}
-
-TEST_F(HandwritingTest, MapIdsToHandwritingLocalesRepeatedString) {
-  EXPECT_THAT(
-      MapIdsToHandwritingLocales({{"qwerty_en", "qzertz_de", "qwertz_en"}},
-                                 base::BindRepeating(GetSecondUnderscorePart)),
-      UnorderedElementsAre("en", "de"));
-}
-
-TEST_F(HandwritingTest, MapIdsToHandwritingLocalesSomeNullopt) {
-  EXPECT_THAT(
-      MapIdsToHandwritingLocales({{"qwerty_en", "nohandwriting", "qwertz_de"}},
-                                 base::BindRepeating(GetSecondUnderscorePart)),
-      UnorderedElementsAre("en", "de"));
+  return output;
 }
 
 struct PartialDescriptor {
@@ -123,6 +85,63 @@ class DelegateUtil {
 
     util_.InitXkbInputMethodsForTesting(descriptors);
   }
+};
+
+// Fake InputMethodManager used for testing.
+// InputMethodManager with available IMEs.
+class FakeInputMethodManager : public MockInputMethodManager {
+ public:
+  class TestState : public MockInputMethodManager::State {
+   public:
+    // This constructor takes in engine IDs for conciseness and readability in
+    // testing, so we convert them to input method IDs here.
+    TestState(const std::vector<std::string>& engine_ids) {
+      for (const auto& engine_id : engine_ids) {
+        input_method_ids_.push_back(
+            extension_ime_util::GetInputMethodIDByEngineID(engine_id));
+      }
+    }
+
+    TestState(const TestState&) = delete;
+    TestState& operator=(const TestState&) = delete;
+
+    const std::vector<std::string>& GetEnabledInputMethodIds() const override {
+      return input_method_ids_;
+    }
+
+    std::vector<std::string> input_method_ids_;
+
+   protected:
+    friend base::RefCounted<InputMethodManager::State>;
+    ~TestState() override {}
+  };
+
+  // Constructor.
+  // The first argument `enabled_engine_ids` contains the list of engine IDs
+  // that corresponds to the input methods that the user has currently enabled.
+  // The second argument `partial_descriptors` is used for internal mapping: in
+  // correct scenarios it should always include the IDs of the first argument.
+  explicit FakeInputMethodManager(
+      const std::vector<std::string>& enabled_engine_ids,
+      base::span<const PartialDescriptor> partial_descriptors)
+      : state_(base::MakeRefCounted<TestState>(enabled_engine_ids)),
+        delegate_util_(partial_descriptors) {}
+
+  FakeInputMethodManager(const FakeInputMethodManager&) = delete;
+  FakeInputMethodManager& operator=(const FakeInputMethodManager&) = delete;
+
+  ~FakeInputMethodManager() override = default;
+
+  scoped_refptr<InputMethodManager::State> GetActiveIMEState() override {
+    return state_;
+  }
+
+  InputMethodUtil* GetInputMethodUtil() override {
+    return delegate_util_.util();
+  }
+
+  scoped_refptr<TestState> state_;
+  DelegateUtil delegate_util_;
 };
 
 TEST_F(HandwritingTest, MapEngineIdToHandwritingLocaleNoInputMethods) {
@@ -181,7 +200,7 @@ TEST_F(HandwritingTest, MapEngineIdsToHandwritingLocalesIntegration) {
   input_method::InputMethodUtil* util = delegate_util.util();
 
   EXPECT_THAT(
-      MapIdsToHandwritingLocales(
+      MapThenFilterStrings(
           {{"xkb:de::ger", "xkb:us::eng", "xkb:gb:extd:eng", "xkb:fr::fra"}},
           base::BindRepeating(MapEngineIdToHandwritingLocale, util)),
       UnorderedElementsAre("en", "fr"));
@@ -267,7 +286,7 @@ TEST_F(HandwritingTest, MapInputMethodIdsToHandwritingLocalesIntegration) {
   input_method::InputMethodUtil* util = delegate_util.util();
 
   EXPECT_THAT(
-      MapIdsToHandwritingLocales(
+      MapThenFilterStrings(
           {{extension_ime_util::GetInputMethodIDByEngineID("xkb:de::ger"),
             extension_ime_util::GetInputMethodIDByEngineID("xkb:us::eng"),
             extension_ime_util::GetInputMethodIDByEngineID("xkb:gb:extd:eng"),
@@ -305,6 +324,38 @@ INSTANTIATE_TEST_SUITE_P(
     [](const testing::TestParamInfo<HandwritingLocaleToDlcTest::ParamType>&
            info) { return info.param.test_name; });
 
+struct DlcToHandwritingLocaleTestCase {
+  std::string test_name;
+  std::string_view dlc_id;
+  absl::optional<std::string> expected;
+};
+
+class DlcToHandwritingLocaleTest
+    : public HandwritingTest,
+      public testing::WithParamInterface<DlcToHandwritingLocaleTestCase> {};
+
+TEST_P(DlcToHandwritingLocaleTest, Test) {
+  const DlcToHandwritingLocaleTestCase& test_case = GetParam();
+
+  EXPECT_EQ(DlcToHandwritingLocale(test_case.dlc_id), test_case.expected);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    DlcToHandwritingLocaleTests,
+    DlcToHandwritingLocaleTest,
+    testing::ValuesIn<DlcToHandwritingLocaleTestCase>(
+        {{"InvalidEmpty", "", absl::nullopt},
+         {"InvalidEn", "handwriting-en", absl::nullopt},
+         {"InvalidCy", "handwriting-cy", absl::nullopt},
+         {"InvalidDeDe", "handwriting-de-DE", absl::nullopt},
+         {"InvalidTypoDe", "handwritting-de", absl::nullopt},
+         {"InvalidTtsEnUs", "tts-en-us", absl::nullopt},
+         {"InvalidDeWithoutPrefix", "de", absl::nullopt},
+         {"ValidDe", "handwriting-de", "de"},
+         {"ValidZhHk", "handwriting-zh-HK", "zh-HK"}}),
+    [](const testing::TestParamInfo<DlcToHandwritingLocaleTest::ParamType>&
+           info) { return info.param.test_name; });
+
 struct IsHandwritingDlcTestCase {
   std::string test_name;
   std::string_view dlc_id;
@@ -337,6 +388,83 @@ INSTANTIATE_TEST_SUITE_P(
     [](const testing::TestParamInfo<IsHandwritingDlcTest::ParamType>& info) {
       return info.param.test_name;
     });
+
+TEST_F(HandwritingTest, FilterHandwritingDlcsDefault) {
+  EXPECT_THAT(
+      ConvertDlcsWithContentToHandwritingLocales(dlcservice::DlcsWithContent()),
+      IsEmpty());
+}
+
+TEST_F(HandwritingTest, FilterHandwritingDlcsNotHandwriting) {
+  const dlcservice::DlcsWithContent dlcs_without_handwriting =
+      CreateDlcsWithContent({"tts-en-us", "grammar-it"});
+
+  EXPECT_THAT(
+      ConvertDlcsWithContentToHandwritingLocales(dlcs_without_handwriting),
+      IsEmpty());
+}
+
+TEST_F(HandwritingTest, FilterHandwritingDlcsVariousEntries) {
+  // "handwriting-cy" refer to Welsh language, which is not a language that is
+  // supported in Handwriting.
+  const dlcservice::DlcsWithContent dlcs_with_some_handwriting =
+      CreateDlcsWithContent({"handwriting-fr", "tts-en-us", "handwriting-it",
+                             "grammar-it", "handwriting-cy"});
+
+  EXPECT_THAT(
+      ConvertDlcsWithContentToHandwritingLocales(dlcs_with_some_handwriting),
+      UnorderedElementsAre("fr", "it"));
+}
+
+TEST_F(HandwritingTest, GetTargetLocalesEmpty) {
+  FakeInputMethodManager fake_imm({}, {});
+
+  EXPECT_THAT(GetHandwritingLocalesFromEnabledInputMethods(&fake_imm),
+              IsEmpty());
+}
+
+TEST_F(HandwritingTest, GetTargetLocalesNoMapping) {
+  const std::vector<std::string> enabled_engine_ids(
+      {"xkb:us::eng", "xkb:it::ita"});
+  const std::vector<const PartialDescriptor> partial_descriptors({});
+  FakeInputMethodManager fake_imm(enabled_engine_ids, partial_descriptors);
+
+  EXPECT_THAT(GetHandwritingLocalesFromEnabledInputMethods(&fake_imm),
+              IsEmpty());
+}
+
+TEST_F(HandwritingTest, GetTargetLocalesValidMapping) {
+  const std::vector<std::string> enabled_engine_ids(
+      {"xkb:fr::fra", "xkb:de::ger", "xkb:it::ita"});
+  const std::vector<const PartialDescriptor> partial_descriptors(
+      {{{"xkb:fr::fra", "fr"}, {"xkb:it::ita", "it"}}});
+  FakeInputMethodManager fake_imm(enabled_engine_ids, partial_descriptors);
+
+  EXPECT_THAT(GetHandwritingLocalesFromEnabledInputMethods(&fake_imm),
+              UnorderedElementsAre("fr", "it"));
+}
+
+TEST_F(HandwritingTest, GetTargetLocalesMappingMissing) {
+  const std::vector<std::string> enabled_engine_ids(
+      {"xkb:de::ger", "xkb:it::ita"});
+  const std::vector<const PartialDescriptor> partial_descriptors(
+      {{{"xkb:fr::fra", "fr"}, {"xkb:it::ita", "it"}}});
+  FakeInputMethodManager fake_imm(enabled_engine_ids, partial_descriptors);
+
+  EXPECT_THAT(GetHandwritingLocalesFromEnabledInputMethods(&fake_imm),
+              UnorderedElementsAre("it"));
+}
+
+TEST_F(HandwritingTest, GetTargetLocalesMalformedIds) {
+  const std::vector<std::string> enabled_engine_ids(
+      {"xkb:fr::fra", "xkb:de::ger", "xkb:it::ita"});
+  const std::vector<const PartialDescriptor> partial_descriptors(
+      {{{"xkb:cy::woo", "fr"}, {"xkb:it::ita", "it"}, {"xkb_ime_lol", "it"}}});
+  FakeInputMethodManager fake_imm(enabled_engine_ids, partial_descriptors);
+
+  EXPECT_THAT(GetHandwritingLocalesFromEnabledInputMethods(&fake_imm),
+              UnorderedElementsAre("it"));
+}
 
 }  // namespace
 

@@ -26,9 +26,10 @@ enum class ContentSuggestionsModuleType {
   kSafetyCheckMultiRow = 8,
   kSafetyCheckMultiRowOverflow = 9,
   kTabResumption = 10,
-  kMaxValue = kTabResumption,
+  kParcelTracking = 11,
+  kMaxValue = kParcelTracking,
 };
-// LINT.ThenChange(tools/metrics/histograms/enums.xml)
+// LINT.ThenChange(/tools/metrics/histograms/enums.xml)
 
 // Represents the content suggestions collection view.
 extern NSString* const kContentSuggestionsCollectionIdentifier;
@@ -49,6 +50,16 @@ extern NSString* const kMagicStackScrollViewAccessibilityIdentifier;
 
 // Represents the Magic Stack UIStackView.
 extern NSString* const kMagicStackViewAccessibilityIdentifier;
+
+// Represents the Edit Button Container in the Magic Stack.
+extern NSString* const kMagicStackEditButtonContainerAccessibilityIdentifier;
+
+// Represents the Edit Button in the Magic Stack.
+extern NSString* const kMagicStackEditButtonAccessibilityIdentifier;
+
+// Represents the "Done" button in the Magic Stack edit half sheet.
+extern NSString* const
+    kMagicStackEditHalfSheetDoneButtonAccessibilityIdentifier;
 
 // Represents the width of the Magic Stack ScrollView for the unique wide
 // layout.

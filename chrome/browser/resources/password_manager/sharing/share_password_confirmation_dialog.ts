@@ -5,7 +5,9 @@
 import 'chrome://resources/cr_elements/cr_hidden_style.css.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
+import './metrics_utils.js';
 import './share_password_dialog_header.js';
+import './share_password_group_avatar.js';
 import '../site_favicon.js';
 
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
@@ -15,6 +17,7 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 import {PasswordManagerImpl, PasswordManagerProxy} from '../password_manager_proxy.js';
 import {UserUtilMixin} from '../user_utils_mixin.js';
 
+import {PasswordSharingActions, recordPasswordSharingInteraction} from './metrics_utils.js';
 import {getTemplate} from './share_password_confirmation_dialog.html.js';
 
 export interface SharePasswordConfirmationDialogElement {
@@ -119,7 +122,7 @@ export class SharePasswordConfirmationDialogElement extends
           'sharePasswordConfirmationDescriptionMultipleRecipients', {
             substitutions: [
               this.passwordName,
-              this.i18n('passwordManagerLearnMoreURL'),
+              this.i18n('passwordSharingLearnMoreURL'),
             ],
           });
     }
@@ -128,7 +131,7 @@ export class SharePasswordConfirmationDialogElement extends
           substitutions: [
             this.recipients[0].displayName,
             this.passwordName,
-            this.i18n('passwordManagerLearnMoreURL'),
+            this.i18n('passwordSharingLearnMoreURL'),
           ],
         });
   }
@@ -147,6 +150,22 @@ export class SharePasswordConfirmationDialogElement extends
     });
   }
 
+  private onDescriptionClick_(e: Event) {
+    const element = e.target as HTMLElement;
+    if (element.tagName === 'A') {
+      recordPasswordSharingInteraction(
+          PasswordSharingActions.CONFIRMATION_DIALOG_LEARN_MORE_CLICKED);
+    }
+  }
+
+  private onFooterClick_(e: Event) {
+    const element = e.target as HTMLElement;
+    if (element.tagName === 'A') {
+      recordPasswordSharingInteraction(
+          PasswordSharingActions.CONFIRMATION_DIALOG_CHANGE_PASSWORD_CLICKED);
+    }
+  }
+
   private onClickDone_() {
     this.dispatchEvent(
         new CustomEvent('close', {bubbles: true, composed: true}));
@@ -157,6 +176,8 @@ export class SharePasswordConfirmationDialogElement extends
     if (this.isStage_(ConfirmationDialogStage.SUCCESS)) {
       return;
     }
+    recordPasswordSharingInteraction(
+        PasswordSharingActions.CONFIRMATION_DIALOG_SHARING_CANCELED);
     this.dialogStage_ = ConfirmationDialogStage.CANCELED;
   }
 }

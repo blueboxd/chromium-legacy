@@ -18,12 +18,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/3pcd/heuristics/opener_heuristic_tab_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/dips/dips_service.h"
 #include "chrome/browser/dips/dips_service_factory.h"
 #include "chrome/browser/dips/dips_test_utils.h"
 #include "chrome/browser/dips/dips_utils.h"
+#include "chrome/browser/tpcd/heuristics/opener_heuristic_tab_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/chrome_test_utils.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -48,6 +48,7 @@
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/metrics_proto/ukm/source.pb.h"
 #include "url/gurl.h"
@@ -374,7 +375,13 @@ class DIPSBounceDetectorBrowserTest : public PlatformBrowserTest {
             &DIPSBounceDetectorBrowserTest::GetActiveWebContents,
             base::Unretained(this))) {
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{},
+        /*enabled_features=*/
+        {
+            // WebSQL is disabled by default as of M119 (crbug/695592).
+            // Enable feature in tests during deprecation trial and enterprise
+            // policy support.
+            blink::features::kWebSQLAccess,
+        },
         /*disabled_features=*/{
             // TODO(crbug.com/1394910): Use HTTPS URLs in tests to avoid having
             // to disable this feature.
@@ -1689,6 +1696,9 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   // Visit initial page.
   ASSERT_TRUE(content::NavigateToURL(web_contents, initial_final_url));
+  // Redirect to one of the target URLs, to set DoesFirstPartyPrecedeThirdParty.
+  ASSERT_TRUE(content::NavigateToURLFromRendererWithoutUserGesture(
+      web_contents, target_url_3pc_blocked));
   // Redirect to all tracking URLs.
   ASSERT_TRUE(content::NavigateToURLFromRendererWithoutUserGesture(
       web_contents, tracker_url_in_iframe));
@@ -1722,7 +1732,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
           "RedirectHeuristic.CookieAccess",
           {"AccessId", "AccessAllowed", "HoursSinceLastInteraction",
            "MillisecondsSinceRedirect", "OpenerHasSameSiteIframe",
-           "SitesPassedCount"});
+           "SitesPassedCount", "DoesFirstPartyPrecedeThirdParty"});
 
   // Expect UKM entries from both of the cookie accesses, as well as the iframe
   // navigation.
@@ -1747,6 +1757,8 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
   EXPECT_EQ(ukm_entries[0].metrics.at("OpenerHasSameSiteIframe"),
             static_cast<int32_t>(OptionalBool::kFalse));
   EXPECT_EQ(ukm_entries[0].metrics.at("SitesPassedCount"), 1);
+  EXPECT_EQ(ukm_entries[0].metrics.at("DoesFirstPartyPrecedeThirdParty"),
+            false);
 
   // The second cookie access was due to the iframe navigation from
   // target_url_3pc_blocked to tracker_url_in_iframe.
@@ -1770,6 +1782,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
   EXPECT_EQ(ukm_entries[2].metrics.at("OpenerHasSameSiteIframe"),
             static_cast<int32_t>(OptionalBool::kTrue));
   EXPECT_EQ(ukm_entries[2].metrics.at("SitesPassedCount"), 3);
+  EXPECT_EQ(ukm_entries[2].metrics.at("DoesFirstPartyPrecedeThirdParty"), true);
 
   // Verify there are three corresponding CookieAccessThirdParty entries with
   // matching access IDs.

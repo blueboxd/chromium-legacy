@@ -36,6 +36,7 @@
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
@@ -322,6 +323,7 @@
 #include "third_party/blink/renderer/core/timing/render_blocking_metrics_reporter.h"
 #include "third_party/blink/renderer/core/timing/soft_navigation_heuristics.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
+#include "third_party/blink/renderer/core/view_transition/page_reveal_event.h"
 #include "third_party/blink/renderer/core/view_transition/view_transition_supplement.h"
 #include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/core/xml/parser/xml_document_parser.h"
@@ -2197,8 +2199,7 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
   SCOPED_UMA_AND_UKM_TIMER(View()->GetUkmAggregator(),
                            LocalFrameUkmAggregator::kStyle);
   FontPerformance::StyleScope font_performance_scope;
-  ENTER_EMBEDDER_STATE(V8PerIsolateData::MainThreadIsolate(), GetFrame(),
-                       BlinkState::STYLE);
+  ENTER_EMBEDDER_STATE(GetAgent().isolate(), GetFrame(), BlinkState::STYLE);
 
   if (needs_slot_assignment) {
     // RecalcSlotAssignments should be done before checking
@@ -2305,7 +2306,7 @@ void Document::InvalidateStyleAndLayoutForFontUpdates() {
 void Document::UpdateStyle() {
   DCHECK(!View()->ShouldThrottleRendering());
   TRACE_EVENT_BEGIN0("blink,blink_style", "Document::updateStyle");
-  RUNTIME_CALL_TIMER_SCOPE(V8PerIsolateData::MainThreadIsolate(),
+  RUNTIME_CALL_TIMER_SCOPE(GetAgent().isolate(),
                            RuntimeCallStats::CounterId::kUpdateStyle);
 
   StyleEngine& style_engine = GetStyleEngine();
@@ -3905,6 +3906,7 @@ void Document::Abort() {
 
 void Document::CheckCompleted() {
   if (CheckCompletedInternal()) {
+    CHECK(GetFrame());
     GetFrame()->Loader().DidFinishNavigation(
         FrameLoader::NavigationFinishState::kSuccess);
   }
@@ -3981,6 +3983,11 @@ bool Document::CheckCompletedInternal() {
   } else if (loading_for_print_) {
     loading_for_print_ = false;
     GetFrame()->Client()->DispatchDidFinishLoadForPrinting();
+    // Refresh the page when the print preview pops up.
+    // DispatchDidFinishLoadForPrinting could detach this frame
+    if (!GetFrame()) {
+      return false;
+    }
   }
 
   if (auto* view = View()) {
@@ -5033,11 +5040,6 @@ void Document::LayoutViewportWasResized() {
     if (GetFrame()->IsMainFrame() && !Printing())
       probe::DidResizeMainFrame(GetFrame());
   }
-
-  MarkViewportUnitsDirty();
-}
-
-void Document::MarkViewportUnitsDirty() {
   if (!HasViewportUnits())
     return;
   GetStyleResolver().SetResizedForViewportUnits();
@@ -6203,12 +6205,8 @@ absl::optional<base::Time> Document::lastModifiedTime() const {
 
 // https://html.spec.whatwg.org/C#dom-document-lastmodified
 String Document::lastModified() const {
-  const base::Time time = lastModifiedTime().value_or(base::Time::Now());
-  base::Time::Exploded exploded;
-  time.LocalExplode(&exploded);
-  return String::Format("%02d/%02d/%04d %02d:%02d:%02d", exploded.month,
-                        exploded.day_of_month, exploded.year, exploded.hour,
-                        exploded.minute, exploded.second);
+  return String(base::UnlocalizedTimeFormatWithPattern(
+      lastModifiedTime().value_or(base::Time::Now()), "MM/dd/yyyy HH:mm:ss"));
 }
 
 scoped_refptr<const SecurityOrigin> Document::TopFrameOrigin() const {
@@ -9198,8 +9196,9 @@ bool Document::DeferredCompositorCommitIsAllowed() const {
   // Don't defer commits if a transition is in progress. It requires commits to
   // send directives to the compositor and uses a separate mechanism to pause
   // all rendering when needed.
-  if (ViewTransitionUtils::GetActiveTransition(*this))
+  if (ViewTransitionUtils::GetTransition(*this)) {
     return false;
+  }
   return deferred_compositor_commit_is_allowed_;
 }
 
@@ -9247,6 +9246,16 @@ bool Document::SupportsLegacyDOMMutations() {
     }
   }
   return legacy_dom_mutations_supported_.value();
+}
+
+void Document::EnqueuePageRevealEvent() {
+  CHECK(RuntimeEnabledFeatures::PageRevealEventEnabled());
+  CHECK(dom_window_);
+
+  auto* page_reveal_event = MakeGarbageCollected<PageRevealEvent>();
+  page_reveal_event->SetTarget(dom_window_);
+  page_reveal_event->SetCurrentTarget(dom_window_);
+  EnqueueAnimationFrameEvent(page_reveal_event);
 }
 
 Resource* Document::GetPendingLinkPreloadForTesting(const KURL& url) {

@@ -1,4 +1,4 @@
-# Copyright 2023 The Chromium Authors. All rights reserved.
+# Copyright 2023 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -75,6 +75,9 @@ def _build_supported_extended_attributes():
           forms=[F.NO_ARGS, F.IDENT, F.IDENT_LIST],
           values=["Getter", "Setter"]),
         E("CrossOriginIsolated", applicable_to=T_EXPOSURE),
+        E("CrossOriginIsolatedOrRuntimeEnabled",
+          applicable_to=T_EXPOSURE,
+          forms=[F.IDENT]),
         E("DeprecateAs",
           applicable_to=[
               T.ATTRIBUTE, T.CONSTANT, T.CONSTRUCTOR, T.DICTIONARY_MEMBER,

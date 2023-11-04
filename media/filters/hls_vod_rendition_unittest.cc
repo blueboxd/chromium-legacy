@@ -92,12 +92,12 @@ class HlsVodRenditionUnittest : public testing::Test {
                                base::TimeDelta fetch_expected_time) {
     std::string junk_content = "abcdefg, I dont like to sing rhyming songs";
     EXPECT_CALL(*mock_hrh_, ReadFromUrl(_, _, _, _))
-        .WillOnce([content = std::move(junk_content)](
+        .WillOnce([content = std::move(junk_content), host = mock_hrh_.get()](
                       GURL url, bool, absl::optional<hls::types::ByteRange>,
-                      HlsDataSourceStream::ReadCb cb) {
+                      HlsDataSourceStreamManager::ReadCb cb) {
           auto ds = std::make_unique<StringHlsDataSource>(content);
-          HlsDataSourceStream dss(std::move(ds));
-          std::move(dss).ReadAll(std::move(cb));
+          auto stream = std::make_unique<HlsDataSourceStream>(std::move(ds));
+          host->ReadStream(std::move(stream), std::move(cb));
         });
     EXPECT_CALL(*mock_mdeh_, AppendAndParseData("test", _, _, _, _, 42))
         .WillOnce(Return(true));
@@ -163,6 +163,16 @@ TEST_F(HlsVodRenditionUnittest, TestCheckStateWithTooLateBuffer) {
   rendition->CheckState(base::Seconds(0), 1.0, BindCheckStateNoExpect());
 
   task_environment_.RunUntilIdle();
+}
+
+TEST_F(HlsVodRenditionUnittest, TestStop) {
+  auto rendition = MakeVodRendition(kInitialFetchVodPlaylist);
+  ASSERT_NE(rendition, nullptr);
+
+  rendition->Stop();
+
+  // Should always be kNoTimestamp after `Stop()` and no network requests.
+  rendition->CheckState(base::Seconds(0), 1.0, BindCheckState(kNoTimestamp));
 }
 
 }  // namespace media

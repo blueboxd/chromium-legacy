@@ -134,6 +134,11 @@ public abstract class UrlBar extends AutocompleteEditText {
     private boolean mIsTextTruncated;
     private boolean mDidJustTruncate;
 
+    // TODO (https://crbug.com/1480708) Speculating that something is wrong with the url that was
+    // passed to the previous call to scrollToTLD. Remove after crash is fixed.
+    Editable mScrollToTLDPrevUrl;
+    int mScrollToTLDPrevEndIndex;
+
     @ScrollType
     private int mScrollType;
 
@@ -752,23 +757,6 @@ public abstract class UrlBar extends AutocompleteEditText {
         scrollTo((int) scrollPos, getScrollY());
     }
 
-    // TODO(crbug.com/1465967): remove after getting enough data to diagnose
-    // failed assert
-    private String getWrongIndexErrorMessage(int incorrectIndex) {
-        Editable url = getText();
-        int measuredWidth = getVisibleMeasuredViewportWidth();
-        int urlTextLength = url.length();
-        int finalVisibleCharIndexSlow = getLayout().getOffsetForHorizontal(0, measuredWidth);
-        String errorMessage = "scrollToTLD bad index. old final visible index: "
-                + String.valueOf(finalVisibleCharIndexSlow) + " incorrect index: "
-                + String.valueOf(incorrectIndex) + " viewport: " + String.valueOf(measuredWidth)
-                + " prefix: " + url.subSequence(0, Math.max(mOriginEndIndex - 4, 0))
-                + " suffix: " + url.subSequence(mOriginEndIndex, urlTextLength)
-                + " url length: " + String.valueOf(urlTextLength) + " incorrect index horizontal: "
-                + getLayout().getPrimaryHorizontal(Math.min(incorrectIndex + 1, urlTextLength));
-        return errorMessage;
-    }
-
     /**
      * The visible hint contains the visible portion of the text in the url bar. It is used to
      * reduce toolbar captures. For example, in the case of same document navigations, some prefix
@@ -815,7 +803,9 @@ public abstract class UrlBar extends AutocompleteEditText {
 
                     assert MathUtils.areFloatsEqual(horizontal, width)
                             || horizontal > width
-                        : getWrongIndexErrorMessage(finalVisibleCharIndex);
+                        : "finalVisibleCharIndex is too small: "
+                          + String.valueOf(finalVisibleCharIndexExclusive)
+                          + ". If discovered locally please update crbug.com/1465967 with the url.";
                 }
 
                 // To avoid issues where a small portion of the character following
@@ -842,10 +832,28 @@ public abstract class UrlBar extends AutocompleteEditText {
         assert getLayout().getLineCount() == 1;
         final int originEndIndex = Math.min(mOriginEndIndex, urlTextLength);
         if (mOriginEndIndex > urlTextLength) {
+            String errorMessage = "Attempting to scroll past the end of the URL.";
+            if (mScrollToTLDPrevUrl != null) {
+                boolean hadBlobScheme = mScrollToTLDPrevUrl.toString().startsWith("blob");
+                int prevLength = mScrollToTLDPrevUrl.length();
+                errorMessage += " Previous url was blob: " + String.valueOf(hadBlobScheme)
+                        + " previous url length: " + String.valueOf(prevLength)
+                        + " prev end index: " + String.valueOf(mScrollToTLDPrevEndIndex);
+            } else {
+                boolean isBlobScheme = url.toString().startsWith("blob");
+                errorMessage += " First time. Url is blob: " + String.valueOf(isBlobScheme);
+            }
+
+            errorMessage += " url length: " + String.valueOf(urlTextLength)
+                    + " mOriginEndIndex: " + String.valueOf(mOriginEndIndex);
+
             // If discovered locally, please update crbug.com/859219 with the steps to reproduce.
-            assert false : "Attempting to scroll past the end of the URL: " + url + ", end index: "
-                           + mOriginEndIndex;
+            assert false : errorMessage;
         }
+
+        mScrollToTLDPrevUrl = url;
+        mScrollToTLDPrevEndIndex = mOriginEndIndex;
+
         float endPointX = textLayout.getPrimaryHorizontal(originEndIndex);
         // Compare the position offset of the last character and the character prior to determine
         // the LTR-ness of the final component of the URL.
@@ -988,8 +996,8 @@ public abstract class UrlBar extends AutocompleteEditText {
                 RecordHistogram.recordBooleanHistogram(
                         "Omnibox.setText.TruncatedTooMuch", truncatedTooMuch);
                 assert !truncatedTooMuch
-                    : "If discovered locally, please update crbug.com/1476013: "
-                      + getWrongIndexErrorMessage(textLength - 1);
+                    : "Url was truncated too much. If discovered locally, please update "
+                      + "crbug.com/1476013 with steps to reproduce.";
             }
 
             mIsTextTruncated = mDidJustTruncate;

@@ -290,6 +290,8 @@ class PermissionManagerTest : public content::RenderViewHostTestHarness {
     return result;
   }
 
+  TestPermissionsClient& permissions_client() { return client_; }
+
  private:
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
@@ -1075,6 +1077,175 @@ TEST_F(PermissionManagerTest, SubscribersAreNotifedOfEmbargoEvents) {
                                        ContentSettingsType::GEOLOCATION,
                                        false /* dismissed_prompt_was_quiet */);
   EXPECT_EQ(callback_count(), 1);
+
+  UnsubscribePermissionStatusChange(subscription_id);
+}
+
+TEST_F(PermissionManagerTest, UpdatePermissionStatusWithDeviceStatus) {
+  struct {
+    blink::mojom::PermissionStatus initial_status;
+    bool has_device_permission;
+    bool can_request_device_permission;
+    blink::mojom::PermissionStatus expected_status =
+        initial_status;  // For most of these test cases the expected status is
+                         // the same as the initial status
+  } kTests[] = {
+      {blink::mojom::PermissionStatus::GRANTED, false, false,
+       blink::mojom::PermissionStatus::DENIED},
+      {blink::mojom::PermissionStatus::GRANTED, false, true,
+       blink::mojom::PermissionStatus::ASK},
+      {blink::mojom::PermissionStatus::GRANTED, true, false},
+      {blink::mojom::PermissionStatus::GRANTED, true, true},
+
+      {blink::mojom::PermissionStatus::ASK, false, false},
+      {blink::mojom::PermissionStatus::ASK, false, true},
+      {blink::mojom::PermissionStatus::ASK, true, false},
+      {blink::mojom::PermissionStatus::ASK, true, true},
+
+      {blink::mojom::PermissionStatus::DENIED, false, false},
+      {blink::mojom::PermissionStatus::DENIED, false, true},
+      {blink::mojom::PermissionStatus::DENIED, true, false},
+      {blink::mojom::PermissionStatus::DENIED, true, true},
+  };
+
+  GURL url("http://google.com");
+
+  for (const auto& test : kTests) {
+    SCOPED_TRACE(::testing::Message()
+                 << "initial_status:" << test.initial_status
+                 << ", expected_status: " << test.expected_status
+                 << ", has_device_permission: " << test.has_device_permission
+                 << ", can_request_device_permission: "
+                 << test.can_request_device_permission);
+
+    SetPermission(blink::PermissionType::NOTIFICATIONS, test.initial_status);
+    permissions_client().SetHasDevicePermission(test.has_device_permission);
+    permissions_client().SetCanRequestDevicePermission(
+        test.can_request_device_permission);
+
+    CheckPermissionStatus(blink::PermissionType::NOTIFICATIONS,
+                          test.expected_status);
+  }
+}
+
+TEST_F(PermissionManagerTest,
+       RequestableDevicePermissionChangesLazilyNotifiesObservers) {
+  SetPermission(url(), url(), PermissionType::GEOLOCATION,
+                PermissionStatus::GRANTED);
+  permissions_client().SetHasDevicePermission(true);
+  permissions_client().SetCanRequestDevicePermission(true);
+
+  content::PermissionControllerDelegate::SubscriptionId subscription_id =
+      SubscribePermissionStatusChange(
+          PermissionType::GEOLOCATION, /*render_process_host=*/nullptr,
+          main_rfh(), url(),
+          base::BindRepeating(&PermissionManagerTest::OnPermissionChange,
+                              base::Unretained(this)));
+
+  permissions_client().SetHasDevicePermission(false);
+
+  // At this point we have not yet retrieved the permission status so the device
+  // permission change has not been detected.
+  EXPECT_FALSE(callback_called());
+
+  // This call will trigger an update of the device permission status and
+  // observers will be notified if needed.
+  GetPermissionResultForCurrentDocument(PermissionType::GEOLOCATION,
+                                        web_contents()->GetPrimaryMainFrame());
+
+  EXPECT_TRUE(callback_called());
+  EXPECT_EQ(PermissionStatus::ASK, callback_result());
+  Reset();
+
+  // This does not change the overall permission status so no callback should be
+  // called.
+  SetPermission(url(), url(), PermissionType::GEOLOCATION,
+                PermissionStatus::ASK);
+  EXPECT_FALSE(callback_called());
+
+  // This does change the overall permission status from ask to blocked.
+  SetPermission(url(), url(), PermissionType::GEOLOCATION,
+                PermissionStatus::DENIED);
+  EXPECT_TRUE(callback_called());
+  EXPECT_EQ(PermissionStatus::DENIED, callback_result());
+  Reset();
+
+  // We now reset to a granted state, which should move the overall permission
+  // status to ask (origin status "granted", but Chrome does not have the device
+  // permission).
+  SetPermission(url(), url(), PermissionType::GEOLOCATION,
+                PermissionStatus::GRANTED);
+  EXPECT_TRUE(callback_called());
+  EXPECT_EQ(PermissionStatus::ASK, callback_result());
+  Reset();
+
+  // Now we reset the device permission status back to granted, which moves the
+  // overall permission status to granted.
+  permissions_client().SetHasDevicePermission(true);
+
+  // At this point we have not yet refreshed the permission status.
+  EXPECT_FALSE(callback_called());
+
+  // This call will make us retrieve the device permission status and observers
+  // will be notified if needed.
+  GetPermissionResultForCurrentDocument(PermissionType::GEOLOCATION,
+                                        web_contents()->GetPrimaryMainFrame());
+
+  EXPECT_TRUE(callback_called());
+  EXPECT_EQ(PermissionStatus::GRANTED, callback_result());
+
+  UnsubscribePermissionStatusChange(subscription_id);
+}
+
+TEST_F(PermissionManagerTest,
+       NonrequestableDevicePermissionChangesLazilyNotifiesObservers) {
+  SetPermission(url(), url(), PermissionType::GEOLOCATION,
+                PermissionStatus::GRANTED);
+  permissions_client().SetHasDevicePermission(true);
+  permissions_client().SetCanRequestDevicePermission(false);
+
+  content::PermissionControllerDelegate::SubscriptionId subscription_id =
+      SubscribePermissionStatusChange(
+          PermissionType::GEOLOCATION, /*render_process_host=*/nullptr,
+          main_rfh(), url(),
+          base::BindRepeating(&PermissionManagerTest::OnPermissionChange,
+                              base::Unretained(this)));
+
+  EXPECT_EQ(
+      GetPermissionResultForCurrentDocument(
+          PermissionType::GEOLOCATION, web_contents()->GetPrimaryMainFrame())
+          .status,
+      blink::mojom::PermissionStatus::GRANTED);
+
+  permissions_client().SetHasDevicePermission(false);
+
+  // At this point the device permission has not been queried yet.
+  EXPECT_FALSE(callback_called());
+
+  // Get permission status to also trigger the device permission being queried
+  // which would result in observers being notified.
+  GetPermissionResultForCurrentDocument(PermissionType::GEOLOCATION,
+                                        web_contents()->GetPrimaryMainFrame());
+
+  EXPECT_TRUE(callback_called());
+  EXPECT_EQ(PermissionStatus::DENIED, callback_result());
+  Reset();
+
+  // Overall these 2 changes don't change the permission status, since the
+  // status moves back to "denied". While there is a brief moment when both
+  // device and origin-level permissions are granted, the device permission
+  // status is not queried in the mean time so observers won't be notified.
+  permissions_client().SetHasDevicePermission(true);
+  SetPermission(url(), url(), PermissionType::GEOLOCATION,
+                PermissionStatus::DENIED);
+
+  EXPECT_FALSE(callback_called());
+
+  SetPermission(url(), url(), PermissionType::GEOLOCATION,
+                PermissionStatus::GRANTED);
+  EXPECT_TRUE(callback_called());
+  EXPECT_EQ(PermissionStatus::GRANTED, callback_result());
+  Reset();
 
   UnsubscribePermissionStatusChange(subscription_id);
 }

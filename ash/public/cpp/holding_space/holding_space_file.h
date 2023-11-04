@@ -6,10 +6,11 @@
 #define ASH_PUBLIC_CPP_HOLDING_SPACE_HOLDING_SPACE_FILE_H_
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "base/files/file_path.h"
+#include "url/gurl.h"
 
 namespace ash {
 
-// TODO(http://b/288471183): Move file path and file system URL into this.
 // Representation of a file backing a holding space item.
 struct ASH_PUBLIC_EXPORT HoldingSpaceFile {
   // Enumeration of file system types corresponding to
@@ -41,7 +42,10 @@ struct ASH_PUBLIC_EXPORT HoldingSpaceFile {
     kMaxValue = kFuseBox,
   };
 
-  explicit HoldingSpaceFile(FileSystemType file_system_type);
+  HoldingSpaceFile(const base::FilePath& file_path,
+                   FileSystemType file_system_type,
+                   const GURL& file_system_url);
+
   HoldingSpaceFile(const HoldingSpaceFile&);
   HoldingSpaceFile(HoldingSpaceFile&&);
   HoldingSpaceFile& operator=(const HoldingSpaceFile&);
@@ -51,7 +55,9 @@ struct ASH_PUBLIC_EXPORT HoldingSpaceFile {
   bool operator==(const HoldingSpaceFile&) const;
   bool operator!=(const HoldingSpaceFile&) const;
 
+  base::FilePath file_path;
   FileSystemType file_system_type;
+  GURL file_system_url;
 };
 
 }  // namespace ash

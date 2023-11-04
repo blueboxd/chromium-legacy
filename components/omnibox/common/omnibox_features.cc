@@ -74,27 +74,12 @@ BASE_FEATURE(kPreferNonShortcutMatchesWhenDeduping,
              "OmniboxPreferNonShortcutMatchesWhenDeduping",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Determines which are culled when both tail and history cluster suggestions
-// are available. See `MaybeCullTailSuggestions()`.
-// TODO(manukh): Enabled by default 6/1/23 m116. Clean up feature code 8/15 when
-//   m116 reaches stable.
-BASE_FEATURE(kPreferTailOverHistoryClusterSuggestions,
-             "OmniboxPreferTailOverHistoryClusterSuggestions",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // When disabled, when providers update their matches, the new set of matches
 // are sorted and culled, then merged with the old matches, then sorted and
 // culled again. When enabled, the first sort and cull is skipped.
 BASE_FEATURE(kSingleSortAndCullPass,
              "OmniboxSingleSortAndCullPass",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Feature to debounce `AutocompleteController::NotifyChanged()`.
-// TODO(manukh): Enabled by default 7/11/23 m117. Clean up feature code 9/12
-//   when m117 reaches stable.
-BASE_FEATURE(kUpdateResultDebounce,
-             "OmniboxUpdateResultDebounce",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Feature used to cap max zero suggestions shown according to the param
 // OmniboxMaxZeroSuggestMatches. If omitted,
@@ -181,7 +166,7 @@ BASE_FEATURE(kLocalHistoryZeroSuggestBeyondNTP,
 // mismatches in the terms.
 BASE_FEATURE(kNormalizeSearchSuggestions,
              "NormalizeSearchSuggestions",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Mainly used to enable sending INTERACTION_CLOBBER focus type for zero-prefix
 // requests with an empty input on Web/SRP on Mobile. Enabled by default on
@@ -354,7 +339,7 @@ BASE_FEATURE(kOmniboxActionsUISimplification,
 // Feature used to enable URL suggestions for inputs that may contain typos.
 BASE_FEATURE(kOmniboxFuzzyUrlSuggestions,
              "OmniboxFuzzyUrlSuggestions",
-             enabled_by_default_desktop_only);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Feature used to synchronize the toolbar's and status bar's color.
 BASE_FEATURE(kOmniboxMatchToolbarAndStatusBarColor,
@@ -375,8 +360,9 @@ BASE_FEATURE(kSearchReadyOmniboxAllowQueryEdit,
 
 // If enabled, adds a grey square background to search icons, and makes answer
 // icon square instead of round.
-// TODO(manukh): Clean up feature code 9/12 when m117 reaches stable; we're
-//   launching the rest of CR23 in m117.
+// TODO(manukh): Partially launched; still experimenting with
+//  `OmniboxSquareSuggestIconWeather`. Clean up when that param launches and
+//  reaches stable.
 BASE_FEATURE(kSquareSuggestIcons,
              "OmniboxSquareIcons",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -466,16 +452,10 @@ BASE_FEATURE(kOmniboxSteadyStateTextColor,
              "OmniboxSteadyStateTextColor",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, switching tabs will not restore the omnibox state.
-// TODO(manukh): Should also blur the omnibox on tab switch.
-BASE_FEATURE(kDiscardTemporaryInputOnTabSwitch,
-             "OmniboxDiscardTemporaryInputOnTabSwitch",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enable new Omnibox & Suggestions visual style.
 BASE_FEATURE(kOmniboxModernizeVisualUpdate,
              "OmniboxModernizeVisualUpdate",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Android only flag that controls whether the new security indicator should be
 // used, on non-Android platforms this is controlled through the
@@ -507,27 +487,6 @@ const char kDefaultTypedNavigationsToHttpsTimeoutParam[] = "timeout";
 BASE_FEATURE(kReportAssistedQueryStats,
              "OmniboxReportAssistedQueryStats",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// If enabled, `OmniboxEditModel` uses a new version of `current_match_` that
-// should be valid, and therefore usable, more often. The previous
-// `current_match_` is almost always invalid and therefore the model often
-// resorts to recalculating it each time its needed.
-BASE_FEATURE(kRedoCurrentMatch,
-             "OmniboxRedoCurrentMatch",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// If enabled, when reverting `OmniboxView`, it will first revert the
-// `OmniboxEditModel` before closing the popup. This should be more performant;
-// see comments in `OmniboxView::RevertAll()`.
-BASE_FEATURE(kRevertModelBeforeClosingPopup,
-             "OmniboxRevertModelBeforeClosingPopup",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// If enabled, an existing `AutocompleteClient` will be used instead of
-// generating a new one in `OmniboxEditModel`.
-BASE_FEATURE(kUseExistingAutocompleteClient,
-             "OmniboxUseExistingAutocompleteClient",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, Omnibox reports the Searchbox Stats in the gs_lcrp= param in the
 // Search Results Page URL.

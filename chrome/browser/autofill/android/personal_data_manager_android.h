@@ -66,6 +66,11 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& unused_obj);
 
+  // Determines the country for for the newly created address profile.
+  base::android::ScopedJavaLocalRef<jstring> GetDefaultCountryCodeForNewAddress(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj) const;
+
   // Users based in unsupported countries and profiles with a country value set
   // to an unsupported country are not eligible for account storage. This
   // function determines if the `country_code` is eligible.
@@ -210,6 +215,9 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
   void RemoveByGUID(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& unused_obj,
                     const base::android::JavaParamRef<jstring>& jguid);
+
+  // Delete all local credit cards.
+  void DeleteAllLocalCreditCards(JNIEnv* env);
 
   // Resets the given unmasked card back to the masked state.
   void ClearUnmaskedCache(

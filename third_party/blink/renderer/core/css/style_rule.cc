@@ -40,10 +40,12 @@
 #include "third_party/blink/renderer/core/css/css_scope_rule.h"
 #include "third_party/blink/renderer/core/css/css_starting_style_rule.h"
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/css_supports_rule.h"
 #include "third_party/blink/renderer/core/css/css_try_rule.h"
 #include "third_party/blink/renderer/core/css/css_view_transitions_rule.h"
 #include "third_party/blink/renderer/core/css/parser/container_query_parser.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_impl.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
@@ -57,6 +59,7 @@
 #include "third_party/blink/renderer/core/css/style_rule_keyframe.h"
 #include "third_party/blink/renderer/core/css/style_rule_namespace.h"
 #include "third_party/blink/renderer/core/css/style_rule_view_transitions.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
@@ -580,6 +583,17 @@ const CSSValue* StyleRuleProperty::GetInitialValue() const {
   return properties_->GetPropertyCSSValue(CSSPropertyID::kInitialValue);
 }
 
+bool StyleRuleProperty::SetNameText(const ExecutionContext* execution_context,
+                                    const String& name_text) {
+  DCHECK(!name_text.IsNull());
+  String name = CSSParser::ParseCustomPropertyName(name_text);
+  if (!name)
+    return false;
+
+  name_ = name;
+  return true;
+}
+
 void StyleRuleProperty::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(properties_);
   visitor->Trace(layer_);
@@ -647,11 +661,20 @@ StyleRuleGroup::StyleRuleGroup(const StyleRuleGroup& group_rule)
   }
 }
 
-void StyleRuleGroup::WrapperInsertRule(unsigned index, StyleRuleBase* rule) {
+void StyleRuleGroup::WrapperInsertRule(CSSStyleSheet* parent_sheet,
+                                       unsigned index,
+                                       StyleRuleBase* rule) {
   child_rules_.insert(index, rule);
+  if (parent_sheet) {
+    parent_sheet->Contents()->NotifyRuleChanged(rule);
+  }
 }
 
-void StyleRuleGroup::WrapperRemoveRule(unsigned index) {
+void StyleRuleGroup::WrapperRemoveRule(CSSStyleSheet* parent_sheet,
+                                       unsigned index) {
+  if (parent_sheet) {
+    parent_sheet->Contents()->NotifyRuleChanged(child_rules_[index]);
+  }
   child_rules_.EraseAt(index);
 }
 

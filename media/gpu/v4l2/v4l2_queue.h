@@ -21,6 +21,7 @@
 #include "media/base/video_codecs.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
+#include "media/gpu/chromeos/chromeos_status.h"
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/v4l2_utils.h"
@@ -115,6 +116,10 @@ class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
   // buffer get out of scope, or |V4L2Queue::Streamoff()| is called.
   [[nodiscard]] bool QueueDMABuf(scoped_refptr<VideoFrame> video_frame,
                                  V4L2RequestRef* request_ref = nullptr) &&;
+  // Queue a DMABUF that has already been set in the queue for this buffer. This
+  // is used during secure playback where we recycle the buffers being used for
+  // decoding so they never need to be re-set in the queue slots.
+  [[nodiscard]] bool QueueDMABuf(V4L2RequestRef* request_ref) &&;
 
   // Returns the number of planes in this buffer.
   size_t PlanesCount() const;
@@ -461,6 +466,13 @@ class MEDIA_GPU_EXPORT V4L2Queue
   // Returns |memory_|, memory type of last buffers allocated by this V4L2Queue.
   [[nodiscard]] v4l2_memory GetMemoryType() const;
 
+  // This returns the secure handle for a free buffer and then tags that buffer
+  // as having its handle claimed. It expects another call later to
+  // ReleaseSecureHandle to return control of the secure handle back to the
+  // queue.
+  [[nodiscard]] CroStatus::Or<uint64_t> GetFreeSecureHandle();
+  void ReleaseSecureHandle(uint64_t secure_handle);
+
   // Return a reference to a free buffer for the caller to prepare and submit,
   // or nullopt if no buffer is currently free.
   //
@@ -491,6 +503,12 @@ class MEDIA_GPU_EXPORT V4L2Queue
   // V4L2 buffers allocated on the queue.
   [[nodiscard]] absl::optional<V4L2WritableBufferRef> GetFreeBufferForFrame(
       const VideoFrame& frame);
+  // This returns the V4L2 buffer that is attached to the corresponding
+  // |secure_handle|. This will always return a valid buffer since it already
+  // will be linked from a prior call to GetFreeSecureHandle(). It returns an
+  // optional for compatibility on return with the above methods.
+  [[nodiscard]] absl::optional<V4L2WritableBufferRef>
+  GetFreeBufferForSecureHandle(uint64_t secure_handle);
 
   // Attempt to dequeue a buffer, and return a reference to it if one was
   // available.
@@ -578,6 +596,8 @@ class MEDIA_GPU_EXPORT V4L2Queue
   const base::RepeatingClosure schedule_poll_cb_
       GUARDED_BY_CONTEXT(sequence_checker_);
   const MmapAsCallback mmap_cb_ GUARDED_BY_CONTEXT(sequence_checker_);
+  const AllocateSecureBufferAsCallback allocate_secure_cb_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Callback to call in this queue's destructor.
   base::OnceClosure destroy_cb_;
@@ -585,6 +605,7 @@ class MEDIA_GPU_EXPORT V4L2Queue
   V4L2Queue(const IoctlAsCallback& ioctl_cb,
             const base::RepeatingClosure& schedule_poll_cb,
             const MmapAsCallback& mmap_cb,
+            const AllocateSecureBufferAsCallback& allocate_secure_cb,
             enum v4l2_buf_type type,
             base::OnceClosure destroy_cb);
   friend class V4L2QueueFactory;

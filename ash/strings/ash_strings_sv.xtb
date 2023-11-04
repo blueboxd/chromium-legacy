@@ -206,6 +206,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="1775598828170459419">Visar <ph name="NUM_SHOWN_ITEMS" /> av <ph name="NUM_TOTAL_ITEMS" /></translation>
 <translation id="178347895271755507">Ställ in visning av de senaste bilderna, mediefilerna och aviseringarna på telefonen</translation>
 <translation id="1787955149152357925">Av</translation>
+<translation id="1797271123677381264">Glömt lösenordet</translation>
 <translation id="181103072419391116">Signalstyrka <ph name="SIGNAL_STRENGTH" />, hanteras av administratören</translation>
 <translation id="1815245884418711390">Aktivera och inaktivera surfzon. Surfzonen är inaktiverad.</translation>
 <translation id="1816896987747843206">Detta ger kameraåtkomst för alla appar och webbplatser med kamerabehörighet</translation>
@@ -298,7 +299,6 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="2227179592712503583">Ta bort förslag</translation>
 <translation id="2248634276911611268">Öppna länken i en ny flik och byt till den nya fliken</translation>
 <translation id="225680501294068881">Söker efter enheter ...</translation>
-<translation id="225716114209817872">Högsta</translation>
 <translation id="2257486738914982088">Det gick inte att ladda ned <ph name="FILENAME" /></translation>
 <translation id="2258734398699965611">Föreslagna filer</translation>
 <translation id="2268130516524549846">Bluetooth inaktiverat</translation>
@@ -451,6 +451,7 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="2891209721153296020">Avmarkera</translation>
 <translation id="2894949423239620203">Prestandan kan påverkas av kabeln</translation>
 <translation id="2914580577416829331">Skärmbilder/skärminspelningar</translation>
+<translation id="2924416280450782352">Det går inte att visa objekt. Testa att öppna panelen igen.</translation>
 <translation id="2931572158271115754">Det finns inget på den här att göra-listan.</translation>
 <translation id="2941112035454246133">Låg</translation>
 <translation id="2942350706960889382">Dockad skärmförstoring</translation>
@@ -696,7 +697,6 @@ Anslut enheten till en strömkälla.</translation>
 <translation id="385300504083504382">Början</translation>
 <translation id="3859364108019690">Det gick inte att streama appar</translation>
 <translation id="3861651314799684201">Tryck på retur för att spela in hela skärmen</translation>
-<translation id="3871092408932389764">Lägst</translation>
 <translation id="3886872229787704059">Öppnades i dag</translation>
 <translation id="3891340733213178823">Tryck på Ctrl+Skift+Q två gånger om du vill logga ut.</translation>
 <translation id="3893630138897523026">ChromeVox (talad feedback)</translation>
@@ -738,6 +738,7 @@ Anslut enheten till en strömkälla.</translation>
 <translation id="4028481283645788203">Du måste ange lösenord för större säkerhet</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4032988577476260673"><ph name="LAUNCHER_KEY_NAME" /> + vänsterpil</translation>
+<translation id="4039699481424758547">Tryck på Retur för att ta en skärmbild av fönstret <ph name="WINDOW_TITLE" /></translation>
 <translation id="4042660782729322247">Skärmen delas</translation>
 <translation id="404437169852192935">Uppdateringarna har upphört</translation>
 <translation id="4049230407053723315">Snabbinställningar</translation>
@@ -833,7 +834,6 @@ Anslut enheten till en strömkälla.</translation>
 <translation id="4406883609789734330">Live Caption</translation>
 <translation id="4412944820643904175"><ph name="FEATURE_NAME" /> är av.</translation>
 <translation id="4424159417645388645">Skrivbord 5</translation>
-<translation id="4427695046139341014">Spelöversikt</translation>
 <translation id="4430019312045809116">Volym</translation>
 <translation id="4441283832827406317">Apparna har sorterats efter namn</translation>
 <translation id="4445159312344259901">Logga in för att låsa upp</translation>
@@ -1214,12 +1214,12 @@ Anslut enheten till en strömkälla.</translation>
 <translation id="5961960957587052807">Ljus</translation>
 <translation id="5965524703725988602">Aktivera och inaktivera Mörkt tema. <ph name="STATE_TEXT" />.</translation>
 <translation id="5975235751479998104">Bläddra framåt bland fönster</translation>
-<translation id="5976112937189445008">Tryck på retur för att spela in fönstret</translation>
 <translation id="5978382165065462689">Dela kontroll över skärmen via Fjärrhjälp.</translation>
 <translation id="5980301590375426705">Avsluta gästsession</translation>
 <translation id="5983567367406220847">Surfzonen har inaktiverats på grund av inaktivitet.</translation>
 <translation id="598407983968395253">Använd mall</translation>
 <translation id="598882571027504733">Starta om Chromebook-enheten med tangentbordet tillkopplat för att uppdatera.</translation>
+<translation id="6000279412553873020">Nycklar, knappar med mera</translation>
 <translation id="6012623610530968780">Sida <ph name="SELECTED_PAGE" /> av <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="601304062528754300">Markera nästa objekt på hyllan</translation>
 <translation id="6015573907265691211">Markera som slutförd</translation>
@@ -1436,7 +1436,6 @@ Nyligen installerad</translation>
 <translation id="6886172995547742638">Prestandan på <ph name="DEVICE_TYPE" /> kan försämras. Använd en certifierad USB-C-nätadapter för <ph name="PREFERRED_MINIMUM_POWER" /> W eller mer.</translation>
 <translation id="688631446150864480">Tryck på nedåtpilen på tangentbordet för att byta fönster</translation>
 <translation id="6896758677409633944">Kopiera</translation>
-<translation id="6901883536534621389">Testa att navigera med rörelser</translation>
 <translation id="6912841030378044227">Flytta fokus till adressfältet</translation>
 <translation id="6912901278692845878">Snabbgenomgång</translation>
 <translation id="6919251195245069855">Det smarta kortet kändes inte igen. Försök igen.</translation>
@@ -1742,7 +1741,6 @@ Stäng av enheten genom att hålla av/på-knappen nedtryckt igen.</translation>
 <translation id="8167567890448493835">Använder <ph name="LOCALE_NAME" /></translation>
 <translation id="8185090165691050712">Aktivera/inaktivera menyn för att ändra storlek på låst läge</translation>
 <translation id="8192202700944119416">Aviseringar har dolts.</translation>
-<translation id="8196787716797768628">Använd rörelser för att snabbt växla mellan appar och interagera med Chromebook i surfplatteläge.</translation>
 <translation id="8198456017687137612">Castar flik</translation>
 <translation id="8200772114523450471">Återuppta</translation>
 <translation id="8203795194971602413">Högerklicka</translation>
@@ -1752,7 +1750,6 @@ Stäng av enheten genom att hålla av/på-knappen nedtryckt igen.</translation>
 <translation id="8230305195727960608">Läge för inverterade färger</translation>
 <translation id="8236042855478648955">Dags för en paus</translation>
 <translation id="8239034820133090126">Aktivera skrivbordet till höger</translation>
-<translation id="8246282815785366524">Välkommen tillbaka, <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, signalstyrka <ph name="SIGNAL_STRENGTH" />, telefonens batterinivå <ph name="BATTERY_STATUS" /></translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, app</translation>
 <translation id="8255234195843591763">Återställ för att uppdatera</translation>
@@ -1851,6 +1848,7 @@ Stäng av enheten genom att hålla av/på-knappen nedtryckt igen.</translation>
 <translation id="8703634754197148428">Starta inspelning. När inspelningen har startats trycker du på Alt + Skift + L för att navigera till hyllan där du hittar knappen för att stoppa inspelningen</translation>
 <translation id="8704155109538237473">Flytta fokus till bild-i-bild-fönstret</translation>
 <translation id="870917907284186124">Aktivera/inaktivera diktering (skriv med rösten)</translation>
+<translation id="8714138378966541668">Låst av leverantören</translation>
 <translation id="8717459106217102612">Markera föregående ord eller bokstav</translation>
 <translation id="8721053961083920564">Ljud på/av. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Skärmbild/skärminspelning av hela skärmen</translation>
@@ -1869,7 +1867,6 @@ Stäng av enheten genom att hålla av/på-knappen nedtryckt igen.</translation>
 <translation id="878215960996152260"><ph name="APP_NAME" />, installerad app, blockerad</translation>
 <translation id="8785070478575117577">Anslut till <ph name="NETWORK_NAME" /></translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
-<translation id="8790998409862094015">Kraftig</translation>
 <translation id="8792626944327216835">mikrofon</translation>
 <translation id="8801802992492329306">5G</translation>
 <translation id="8806053966018712535">Mappen <ph name="FOLDER_NAME" /></translation>
@@ -1882,6 +1879,7 @@ Stäng av enheten genom att hålla av/på-knappen nedtryckt igen.</translation>
 <translation id="8834539327799336565">Anslutna just nu</translation>
 <translation id="8841375032071747811">Bakåtknapp</translation>
 <translation id="8843682306134542540">Aktivera och inaktivera rotationslås. <ph name="STATE_TEXT" /></translation>
+<translation id="8849001918648564819">Dold</translation>
 <translation id="8853703225951107899">Det gick fortfarande inte att verifiera pinkoden eller lösenordet. Obs! Om du nyligen har bytt lösenord ska du använda det gamla lösenordet. Det nya lösenordet börjar gälla när du loggar ut.</translation>
 <translation id="8855885154700222542">Tangent för helskärm</translation>
 <translation id="8858369206579825206">Integritetsinställningar</translation>
@@ -1901,7 +1899,6 @@ Stäng av enheten genom att hålla av/på-knappen nedtryckt igen.</translation>
 <translation id="8909138438987180327">Batterinivån är på <ph name="PERCENTAGE" /> procent.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistent talar inte det här språket.</translation>
-<translation id="8924458948354692166">Tryck på retur för att ta en skärmbild av fönstret</translation>
 <translation id="8926951137623668982">Hyllan döljs alltid</translation>
 <translation id="8934926665751933910">{NUM_FILES,plural, =1{1 fil}other{# filer}}</translation>
 <translation id="8936501819958976551">inaktiverad</translation>
@@ -1966,6 +1963,7 @@ Stäng av enheten genom att hålla av/på-knappen nedtryckt igen.</translation>
 <translation id="9211490828691860325">Alla skrivbord</translation>
 <translation id="9211681782751733685"><ph name="TIME_REMAINING" /> återstår tills batteriet är fulladdat.</translation>
 <translation id="9215934040295798075">Ange bakgrund</translation>
+<translation id="9216699844945104164">Tryck på Retur för att spela in fönstret <ph name="WINDOW_TITLE" /></translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="921989828232331238">Din förälder har låst enheten för dagen</translation>
 <translation id="9220525904950070496">Ta bort konto</translation>

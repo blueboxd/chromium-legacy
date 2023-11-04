@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/browsing_topics/browsing_topics_calculator.h"
+#include <memory>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
@@ -22,6 +23,7 @@
 #include "components/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "components/privacy_sandbox/privacy_sandbox_settings_impl.h"
 #include "components/privacy_sandbox/privacy_sandbox_test_util.h"
+#include "components/privacy_sandbox/tracking_protection_settings.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_task_environment.h"
@@ -59,6 +61,9 @@ class BrowsingTopicsCalculatorTest : public testing::Test {
         /*restore_session=*/false, /*should_record_metrics=*/false);
     cookie_settings_ = base::MakeRefCounted<content_settings::CookieSettings>(
         host_content_settings_map_.get(), &prefs_, false, "chrome-extension");
+    tracking_protection_settings_ =
+        std::make_unique<privacy_sandbox::TrackingProtectionSettings>(&prefs_,
+                                                                      nullptr);
     auto privacy_sandbox_delegate = std::make_unique<
         privacy_sandbox_test_util::MockPrivacySandboxSettingsDelegate>();
     privacy_sandbox_delegate->SetUpIsPrivacySandboxRestrictedResponse(
@@ -68,7 +73,8 @@ class BrowsingTopicsCalculatorTest : public testing::Test {
     privacy_sandbox_settings_ =
         std::make_unique<privacy_sandbox::PrivacySandboxSettingsImpl>(
             std::move(privacy_sandbox_delegate),
-            host_content_settings_map_.get(), cookie_settings_, &prefs_);
+            host_content_settings_map_.get(), cookie_settings_,
+            tracking_protection_settings_.get(), &prefs_);
     privacy_sandbox_settings_->SetAllPrivacySandboxAllowedForTesting();
 
     topics_site_data_manager_ =
@@ -161,6 +167,8 @@ class BrowsingTopicsCalculatorTest : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable prefs_;
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
+  std::unique_ptr<privacy_sandbox::TrackingProtectionSettings>
+      tracking_protection_settings_;
   std::unique_ptr<privacy_sandbox::PrivacySandboxSettings>
       privacy_sandbox_settings_;
   TestAnnotator test_annotator_;
@@ -892,6 +900,50 @@ TEST_F(BrowsingTopicsCalculatorTest, TopicBlockedByFinch) {
        {Topic(2), {}}});
 
   EXPECT_EQ(result.padded_top_topics_start_index(), 5u);
+}
+
+TEST_F(BrowsingTopicsCalculatorTest, TopicsPrioritizedByFinch) {
+  base::Time begin_time = base::Time::Now();
+
+  AddHistoryEntries({kHost1, kHost2, kHost3, kHost4, kHost5, kHost6},
+                    begin_time);
+
+  AddApiUsageContextEntries(
+      {{kHost1, {}},
+       {kHost2, {}},
+       {kHost3, {HashedDomain(2)}},
+       {kHost4, {HashedDomain(3)}},
+       {kHost5, {HashedDomain(1), HashedDomain(2), HashedDomain(3)}}});
+
+  test_annotator_.UseModelInfo(
+      *optimization_guide::TestModelInfoBuilder().SetVersion(1).Build());
+  test_annotator_.UseAnnotations({
+      {kHost1, {74, 2, 3, 4, 5, 6}},
+      {kHost2, {2, 3, 4, 5, 6}},
+      {kHost3, {3, 4, 5, 6}},
+      {kHost4, {4, 5, 6}},
+      {kHost5, {5, 6}},
+      {kHost6, {6}},
+  });
+
+  task_environment_.AdvanceClock(base::Seconds(1));
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      blink::features::kBrowsingTopicsParameters,
+      {{"prioritized_topics_list", "4,57"}});  // 74 is descended from 57.
+
+  EpochTopics result = CalculateTopics();
+  ExpectResultTopicsEqual(
+      result.top_topics_and_observing_domains(),
+      {{Topic(4), {HashedDomain(2), HashedDomain(3)}},
+       {Topic(74), {}},
+       {Topic(6), {HashedDomain(1), HashedDomain(2), HashedDomain(3)}},
+       {Topic(5), {HashedDomain(1), HashedDomain(2), HashedDomain(3)}},
+       {Topic(3), {HashedDomain(2)}}});
+
+  EXPECT_EQ(result.padded_top_topics_start_index(), 5u);
+  EXPECT_EQ(result.config_version(), 2);
 }
 
 TEST_F(BrowsingTopicsCalculatorTest, PaddedTopicsDoNotDuplicate) {

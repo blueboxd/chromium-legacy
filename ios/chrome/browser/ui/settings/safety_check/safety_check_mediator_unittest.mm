@@ -20,6 +20,7 @@
 #import "components/password_manager/core/browser/password_form.h"
 #import "components/password_manager/core/browser/password_manager_test_utils.h"
 #import "components/password_manager/core/browser/test_password_store.h"
+#import "components/password_manager/core/browser/ui/password_check_referrer.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/prefs/pref_service.h"
 #import "components/prefs/testing_pref_service.h"
@@ -38,6 +39,7 @@
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_backed_boolean.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
@@ -52,12 +54,11 @@
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_constants.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_consumer.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_mediator+private.h"
-#import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/upgrade/upgrade_constants.h"
 #import "ios/chrome/browser/upgrade/upgrade_recommended_details.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
-#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/web/public/test/web_task_environment.h"
@@ -183,12 +184,14 @@ class SafetyCheckMediatorTest : public PlatformTest {
 
     local_pref_service_ = SetLocalPrefService();
 
-    mediator_ =
-        [[SafetyCheckMediator alloc] initWithUserPrefService:pref_service_
-                                                 localPrefService:local_pref_service_
-                                        passwordCheckManager:password_check_
-                                                 authService:auth_service_
-                                                 syncService:syncService()];
+    mediator_ = [[SafetyCheckMediator alloc]
+        initWithUserPrefService:pref_service_
+               localPrefService:local_pref_service_
+           passwordCheckManager:password_check_
+                    authService:auth_service_
+                    syncService:syncService()
+                       referrer:password_manager::PasswordCheckReferrer::
+                                    kSafetyCheck];
   }
 
   syncer::SyncService* syncService() {

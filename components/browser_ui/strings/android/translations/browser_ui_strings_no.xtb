@@ -100,6 +100,7 @@
 <translation id="2653659639078652383">Send inn</translation>
 <translation id="2677748264148917807">Gå ut</translation>
 <translation id="2678468611080193228">Prøv å tillate informasjonskapsler fra tredjeparter midlertidig. Det innebærer mindre beskyttelse, men øker sannsynligheten for at nettstedsfunksjoner virker som de skal</translation>
+<translation id="2683434792633810741">Vil du slette og tilbakestille?</translation>
 <translation id="2687403674020088961">Blokkér alle informasjonskapsler (anbefales ikke)</translation>
 <translation id="2713106313042589954">Slå av kameraet</translation>
 <translation id="2717722538473713889">E-postadresser</translation>
@@ -179,6 +180,7 @@
 <translation id="4008040567710660924">Tillat informasjonskapsler for et spesifikt nettsted.</translation>
 <translation id="4046123991198612571">Neste spor</translation>
 <translation id="4053720452172726777">Tilpass og kontroller Google Chrome</translation>
+<translation id="4149890623864272035">Er du sikker på at du vil slette alle lokale data, inkludert informasjonskapsler, og tilbakestille alle tillatelsene for dette nettstedet?</translation>
 <translation id="4149994727733219643">Forenklet visning av nettsider</translation>
 <translation id="4151930093518524179">Standard zoom</translation>
 <translation id="4165986682804962316">Nettstedsinnstillinger</translation>
@@ -196,6 +198,7 @@
 <translation id="4412992751769744546">Tillat informasjonskapsler fra tredjeparter</translation>
 <translation id="4428065317363009941">Personlig tilpasning av annonser</translation>
 <translation id="4434045419905280838">Forgrunnsvinduer/viderekoblinger</translation>
+<translation id="443552056913301231">Denne handlingen sletter alle lokale data, inkludert informasjonskapsler, og tilbakestiller alle tillatelsene for <ph name="ORIGIN" /></translation>
 <translation id="4468959413250150279">Kutt lyden for et bestemt nettsted.</translation>
 <translation id="4475912480633855319">{COOKIES,plural, =1{# informasjonskapsel}other{# informasjonskapsler}}</translation>
 <translation id="4478158430052450698">Gjør det enklere å tilpasse zoomen for ulike nettsteder</translation>
@@ -205,6 +208,7 @@
 <translation id="4566417217121906555">Slå av mikrofonen</translation>
 <translation id="4570913071927164677">Detaljer</translation>
 <translation id="4598549027014564149">Når du er i inkognitomodus, kan ikke nettsteder bruke informasjonskapsler for å se nettleseraktiviteten din på andre nettsteder – heller ikke relaterte nettsteder. Nettleseraktiviteten din brukes ikke til ting som personlig tilpasning av annonser. Det kan hende at funksjoner på noen nettsteder ikke fungerer.</translation>
+<translation id="4644713492825682049">Slett og tilbakestill</translation>
 <translation id="4645575059429386691">Administreres av foreldrene dine</translation>
 <translation id="4670064810192446073">Virtuell virkelighet</translation>
 <translation id="4751476147751820511">Bevegelses- eller lyssensorer</translation>
@@ -235,6 +239,7 @@
 <translation id="5216942107514965959">Sist besøkt i dag</translation>
 <translation id="5225463052809312700">Slå på kameraet</translation>
 <translation id="5234764350956374838">Lukk</translation>
+<translation id="5246825184569358663">Denne handlingen sletter alle lokale data, inkludert informasjonskapsler, og tilbakestiller alle tillatelsene for <ph name="DOMAIN" /> og alle underordnede nettsteder</translation>
 <translation id="5264323282659631142">Fjern «<ph name="CHIP_LABEL" />»</translation>
 <translation id="528192093759286357">Dra ned fra toppen og trykk på tilbakeknappen for å avslutte fullskjerm.</translation>
 <translation id="5300589172476337783">Vis</translation>
@@ -278,11 +283,11 @@
 <translation id="5922853908706496913">Deler skjermen din</translation>
 <translation id="5922967540311291836">Blokker informasjonskapsler fra tredjeparter:</translation>
 <translation id="5939518447894949180">Tilbakestill</translation>
+<translation id="5964247741333118902">Innebygd innhold</translation>
 <translation id="5968921426641056619">Skriv inn en nettadresse</translation>
 <translation id="5975083100439434680">Zoom ut</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Kontroller dette nettstedets tilgang til enheten din</translation>
-<translation id="6018815681665454784">Vil du slette og tilbakestille?</translation>
 <translation id="6040143037577758943">Lukk</translation>
 <translation id="6042308850641462728">Mer</translation>
 <translation id="6064125863973209585">Fullførte nedlastinger</translation>
@@ -294,6 +299,7 @@
 <translation id="6192792657125177640">Unntak</translation>
 <translation id="6196640612572343990">Blokkér informasjonskapsler fra tredjeparter</translation>
 <translation id="6205314730813004066">Annonsepersonvern</translation>
+<translation id="6207207788774442484">Slett data og tilbakestill tillatelser</translation>
 <translation id="6216432067784365534">Alternativer for <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6231752747840485235">Vil du avinstallere «<ph name="APP_NAME" />»?</translation>
 <translation id="6262191102408817757">Basert på den siste fanen din</translation>
@@ -302,13 +308,11 @@
 <translation id="6295158916970320988">Alle nettsteder</translation>
 <translation id="6320088164292336938">Vibrering</translation>
 <translation id="6367753977865761591">Blokkér pålogging fra tredjeparter for bestemte nettsteder.</translation>
-<translation id="6388207532828177975">Slett alt og tilbakestill</translation>
 <translation id="6398765197997659313">Avslutt fullskjerm</translation>
 <translation id="640163077447496506">Utløper i dag</translation>
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Blokkér nettsteder fra å bruke virtuell virkelighet-enheten din og -dataene dine</translation>
 <translation id="6447842834002726250">Informasjonskapsler</translation>
-<translation id="6467852467360539617">Fjern data og tilbakestill tillatelser</translation>
 <translation id="6500423977866688905">Når vinduet er smalt, kan du be om mobilvisning</translation>
 <translation id="6527303717912515753">Del</translation>
 <translation id="652937045869844725">Prøv å tillate informasjonskapsler fra tredjeparter. Det innebærer mindre beskyttelse, men øker sannsynligheten for at nettstedsfunksjoner virker som de skal</translation>
@@ -381,11 +385,9 @@
 <translation id="7846076177841592234">Opphev valget</translation>
 <translation id="7882806643839505685">Tillat lyd for et bestemt nettsted.</translation>
 <translation id="789180354981963912">Blokker informasjonskapsler fra tredjeparter i Inkognito:</translation>
-<translation id="7895868624847501462">Denne handlingen sletter alle lokale data, inkludert informasjonskapsler, og tilbakestiller alle tillatelsene for <ph name="DOMAIN" /> og alle underordnede nettsteder</translation>
 <translation id="7940722705963108451">Minn meg på det senere</translation>
 <translation id="7974024493641668069">{COUNT,plural, =1{<ph name="FPS_MEMBERS_COUNT" /> nettsted i gruppen til <ph name="FPS_OWNER" /> som kan se aktiviteten din i gruppen}other{<ph name="FPS_MEMBERS_COUNT" /> nettsteder i gruppen til <ph name="FPS_OWNER" /> som kan se aktiviteten din i gruppen}}</translation>
 <translation id="7986741934819883144">Velg en kontakt</translation>
-<translation id="7999064672810608036">Er du sikker på at du vil slette alle lokale data, deriblant informasjonskapsler, og tilbakestille alle tillatelser for dette nettstedet?</translation>
 <translation id="8007176423574883786">Slått av for denne enheten</translation>
 <translation id="802154636333426148">Nedlastingen mislyktes</translation>
 <translation id="8042586301629853791">Sorter etter:</translation>
@@ -409,7 +411,6 @@
 <translation id="8284326494547611709">Teksting</translation>
 <translation id="8300705686683892304">Administreres av app</translation>
 <translation id="8324158725704657629">Ikke spør igjen</translation>
-<translation id="8338445138528827481">Denne handlingen sletter alle lokale data, inkludert informasjonskapsler, og tilbakestiller alle tillatelsene for <ph name="ORIGIN" /></translation>
 <translation id="8362795839483915693">Du kan zoome inn eller ut på nettsteder som du besøker</translation>
 <translation id="8372893542064058268">Tillat bakgrunnssynkronisering for et bestemt nettsted.</translation>
 <translation id="8376384591331888629">Inkludert informasjonskapsler fra tredjeparter på dette nettstedet</translation>

@@ -80,6 +80,7 @@ public class PersonalDataManager {
         private final String mProductDescription;
         private final String mCardNameForAutofillDisplay;
         private final String mObfuscatedLastFourDigits;
+        private final String mCvc;
 
         @CalledByNative("CreditCard")
         public static CreditCard create(String guid, String origin, boolean isLocal,
@@ -89,12 +90,12 @@ public class PersonalDataManager {
                 long instrumentId, String cardLabel, String nickname, GURL cardArtUrl,
                 @VirtualCardEnrollmentState int virtualCardEnrollmentState,
                 String productDescription, String cardNameForAutofillDisplay,
-                String obfuscatedLastFourDigits) {
+                String obfuscatedLastFourDigits, String cvc) {
             return new CreditCard(guid, origin, isLocal, isCached, isVirtual, name, number,
                     networkAndLastFourDigits, month, year, basicCardIssuerNetwork, iconId,
                     billingAddressId, serverId, instrumentId, cardLabel, nickname, cardArtUrl,
                     virtualCardEnrollmentState, productDescription, cardNameForAutofillDisplay,
-                    obfuscatedLastFourDigits);
+                    obfuscatedLastFourDigits, cvc);
         }
 
         public CreditCard(String guid, String origin, boolean isLocal, boolean isCached,
@@ -109,7 +110,7 @@ public class PersonalDataManager {
                     /* cardArtUrl= */ null,
                     /* virtualCardEnrollmentState= */ VirtualCardEnrollmentState.UNSPECIFIED,
                     /* productDescription= */ "", /* cardNameForAutofillDisplay= */ "",
-                    /* obfuscatedLastFourDigits= */ "");
+                    /* obfuscatedLastFourDigits= */ "", /* cvc= */ "");
         }
 
         public CreditCard(String guid, String origin, boolean isLocal, boolean isCached,
@@ -119,7 +120,7 @@ public class PersonalDataManager {
                 String nickname, GURL cardArtUrl,
                 @VirtualCardEnrollmentState int virtualCardEnrollmentState,
                 String productDescription, String cardNameForAutofillDisplay,
-                String obfuscatedLastFourDigits) {
+                String obfuscatedLastFourDigits, String cvc) {
             mGUID = guid;
             mOrigin = origin;
             mIsLocal = isLocal;
@@ -142,6 +143,7 @@ public class PersonalDataManager {
             mProductDescription = productDescription;
             mCardNameForAutofillDisplay = cardNameForAutofillDisplay;
             mObfuscatedLastFourDigits = obfuscatedLastFourDigits;
+            mCvc = cvc;
         }
 
         public CreditCard() {
@@ -254,6 +256,11 @@ public class PersonalDataManager {
         @CalledByNative("CreditCard")
         public String getProductDescription() {
             return mProductDescription;
+        }
+
+        @CalledByNative("CreditCard")
+        public String getCvc() {
+            return mCvc;
         }
 
         public String getCardNameForAutofillDisplay() {
@@ -564,6 +571,14 @@ public class PersonalDataManager {
                 mPersonalDataManagerAndroid, PersonalDataManager.this, guid);
     }
 
+    /**
+     * Deletes all local credit cards.
+     */
+    public void deleteAllLocalCreditCards() {
+        ThreadUtils.assertOnUiThread();
+        PersonalDataManagerJni.get().deleteAllLocalCreditCards(mPersonalDataManagerAndroid);
+    }
+
     public void clearUnmaskedCache(String guid) {
         PersonalDataManagerJni.get().clearUnmaskedCache(
                 mPersonalDataManagerAndroid, PersonalDataManager.this, guid);
@@ -685,6 +700,14 @@ public class PersonalDataManager {
      */
     public boolean isEligibleForAddressAccountStorage() {
         return PersonalDataManagerJni.get().isEligibleForAddressAccountStorage(
+                mPersonalDataManagerAndroid, PersonalDataManager.this);
+    }
+
+    /**
+     * Determines the country code for a newly created address profile.
+     */
+    public String getDefaultCountryCodeForNewAddress() {
+        return PersonalDataManagerJni.get().getDefaultCountryCodeForNewAddress(
                 mPersonalDataManagerAndroid, PersonalDataManager.this);
     }
 
@@ -873,6 +896,8 @@ public class PersonalDataManager {
                 long nativePersonalDataManagerAndroid, PersonalDataManager caller, String guid);
         boolean isEligibleForAddressAccountStorage(
                 long nativePersonalDataManagerAndroid, PersonalDataManager caller);
+        String getDefaultCountryCodeForNewAddress(
+                long nativePersonalDataManagerAndroid, PersonalDataManager caller);
         boolean isCountryEligibleForAccountStorage(long nativePersonalDataManagerAndroid,
                 PersonalDataManager caller, String countryCode);
         String setProfile(long nativePersonalDataManagerAndroid, PersonalDataManager caller,
@@ -895,6 +920,7 @@ public class PersonalDataManager {
                 long nativePersonalDataManagerAndroid, PersonalDataManager caller, String guid);
         CreditCard getCreditCardForNumber(long nativePersonalDataManagerAndroid,
                 PersonalDataManager caller, String cardNumber);
+        void deleteAllLocalCreditCards(long nativePersonalDataManagerAndroid);
         String setCreditCard(
                 long nativePersonalDataManagerAndroid, PersonalDataManager caller, CreditCard card);
         long getDateNDaysAgoForTesting(

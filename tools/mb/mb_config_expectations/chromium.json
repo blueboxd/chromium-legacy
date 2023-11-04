@@ -1,14 +1,4 @@
 {
-  "android-archive-dbg": {
-    "gn_args": {
-      "debuggable_apks": false,
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 1,
-      "target_os": "android",
-      "use_remoteexec": true
-    }
-  },
   "android-archive-rel": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -86,25 +76,24 @@
       "use_remoteexec": true
     }
   },
-  "linux-archive-dbg": {
-    "gn_args": {
-      "concurrent_links": 50,
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 1,
-      "use_remoteexec": true,
-      "use_remoteexec_links": true
-    }
-  },
   "linux-archive-rel": {
     "gn_args": {
-      "concurrent_links": 50,
       "dcheck_always_on": false,
       "enable_updater": true,
       "is_component_build": false,
       "is_debug": false,
-      "use_remoteexec": true,
-      "use_remoteexec_links": true
+      "use_remoteexec": true
+    }
+  },
+  "linux-chromeos-archive-rel": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "ffmpeg_branding": "ChromeOS",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "target_os": "chromeos",
+      "use_remoteexec": true
     }
   },
   "linux-lacros-archive-rel": {
@@ -118,20 +107,6 @@
       "use_remoteexec": true
     }
   },
-  "linux-official": {
-    "gn_args": {
-      "is_official_build": true,
-      "use_remoteexec": true
-    }
-  },
-  "mac-archive-dbg": {
-    "gn_args": {
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 1,
-      "use_remoteexec": true
-    }
-  },
   "mac-archive-rel": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -139,15 +114,6 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 1,
-      "use_remoteexec": true
-    }
-  },
-  "mac-arm64-archive-dbg": {
-    "gn_args": {
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 1,
-      "target_cpu": "arm64",
       "use_remoteexec": true
     }
   },
@@ -168,14 +134,6 @@
       "use_remoteexec": true
     }
   },
-  "win-archive-dbg": {
-    "gn_args": {
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 1,
-      "use_remoteexec": true
-    }
-  },
   "win-archive-rel": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -189,15 +147,6 @@
     "gn_args": {
       "is_official_build": true,
       "symbol_level": 1,
-      "use_remoteexec": true
-    }
-  },
-  "win32-archive-dbg": {
-    "gn_args": {
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 1,
-      "target_cpu": "x86",
       "use_remoteexec": true
     }
   },

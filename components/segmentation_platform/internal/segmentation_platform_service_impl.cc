@@ -179,33 +179,6 @@ SegmentSelectionResult SegmentationPlatformServiceImpl::GetCachedSegmentResult(
   return selector->GetCachedSegmentResult();
 }
 
-void SegmentationPlatformServiceImpl::GetSelectedSegmentOnDemand(
-    const std::string& segmentation_key,
-    scoped_refptr<InputContext> input_context,
-    SegmentSelectionCallback callback) {
-  // TODO(shaktisahu): Delete this API after enabling RequestDispatcher.
-  if (!storage_init_status_.has_value()) {
-    // If the platform isn't fully initialized, cache the input arguments to run
-    // later.
-    pending_actions_.push_back(base::BindOnce(
-        &SegmentationPlatformServiceImpl::GetSelectedSegmentOnDemand,
-        weak_ptr_factory_.GetWeakPtr(), segmentation_key,
-        std::move(input_context), std::move(callback)));
-    return;
-  }
-
-  if (!storage_init_status_.value()) {
-    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), SegmentSelectionResult()));
-    return;
-  }
-
-  CHECK(segment_selectors_.find(segmentation_key) != segment_selectors_.end());
-  auto& selector = segment_selectors_.at(segmentation_key);
-  selector->GetSelectedSegmentOnDemand(input_context, std::move(callback));
-}
-
 void SegmentationPlatformServiceImpl::CollectTrainingData(
     SegmentId segment_id,
     TrainingRequestId request_id,
@@ -287,7 +260,8 @@ void SegmentationPlatformServiceImpl::OnDatabaseInitialized(bool success) {
 }
 
 void SegmentationPlatformServiceImpl::OnSegmentationModelUpdated(
-    proto::SegmentInfo segment_info) {
+    proto::SegmentInfo segment_info,
+    absl::optional<int64_t> old_model_version) {
   CHECK(IsPlatformInitialized());
   if (!segment_info.has_model_metadata()) {
     signal_handler_.OnSignalListUpdated();
@@ -298,7 +272,13 @@ void SegmentationPlatformServiceImpl::OnSegmentationModelUpdated(
   DCHECK(metadata_utils::ValidateSegmentInfoMetadataAndFeatures(segment_info) ==
          metadata_utils::ValidationResult::kValidationSuccess);
 
-  signal_handler_.OnSignalListUpdated();
+  // This method is called when model is available for execution at startup. The
+  // segment info would not have changed for most cases.
+  const bool version_updated =
+      !old_model_version || *old_model_version != segment_info.model_version();
+  if (version_updated) {
+    signal_handler_.OnSignalListUpdated();
+  }
 
   if (!metadata_utils::SegmentUsesLegacyOutput(segment_info.segment_id())) {
     result_refresh_manager_->OnModelUpdated(&segment_info, &execution_service_);

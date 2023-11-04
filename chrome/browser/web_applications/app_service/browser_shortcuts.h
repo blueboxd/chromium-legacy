@@ -8,16 +8,21 @@
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/apps/app_service/app_icon/icon_key_util.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_forward.h"
 #include "chrome/browser/apps/app_service/publishers/shortcut_publisher.h"
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_manager_observer.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "components/webapps/common/web_app_id.h"
 
 static_assert(BUILDFLAG(IS_CHROMEOS_ASH), "For ash only");
 
 class Profile;
+
+namespace ui {
+enum ResourceScaleFactor : int;
+}
 
 namespace web_app {
 
@@ -41,11 +46,12 @@ class BrowserShortcuts : public apps::ShortcutPublisher,
 
   void InitBrowserShortcuts();
 
-  bool IsShortcut(const AppId& app_id);
-
   // Publish web app identified by `app_id` as browser shortcut to the
   // AppService if the web app is considered as shortcut in ChromeOS.
-  void MaybePublishBrowserShortcut(const AppId& app_id);
+  // `raw_icon_updated` should be set when the manifest raw icon has
+  // changed to allow AppService icon directory to clear the old icons.
+  void MaybePublishBrowserShortcut(const webapps::AppId& app_id,
+                                   bool raw_icon_updated = false);
 
   // apps::ShortcutPublisher:
   void LaunchShortcut(const std::string& host_app_id,
@@ -54,18 +60,26 @@ class BrowserShortcuts : public apps::ShortcutPublisher,
   void RemoveShortcut(const std::string& host_app_id,
                       const std::string& local_shortcut_id,
                       apps::UninstallSource uninstall_source) override;
+  void GetCompressedIconData(const std::string& shortcut_id,
+                             int32_t size_in_dip,
+                             ui::ResourceScaleFactor scale_factor,
+                             apps::LoadIconCallback callback) override;
 
   // WebAppInstallManagerObserver:
-  void OnWebAppInstalled(const AppId& app_id) override;
-  void OnWebAppInstalledWithOsHooks(const AppId& app_id) override;
+  void OnWebAppInstalled(const webapps::AppId& app_id) override;
+  void OnWebAppInstalledWithOsHooks(const webapps::AppId& app_id) override;
   void OnWebAppInstallManagerDestroyed() override;
   void OnWebAppUninstalled(
-      const AppId& app_id,
+      const webapps::AppId& app_id,
       webapps::WebappUninstallSource uninstall_source) override;
 
   const raw_ptr<Profile> profile_;
 
   const raw_ptr<WebAppProvider> provider_;
+
+  raw_ptr<apps::AppServiceProxy> proxy_;
+
+  apps_util::IncrementingIconKeyFactory icon_key_factory_;
 
   base::ScopedObservation<WebAppInstallManager, WebAppInstallManagerObserver>
       install_manager_observation_{this};

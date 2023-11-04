@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {createChild} from '../../common/js/dom_utils.js';
-import {metrics} from '../../common/js/metrics.js';
+import {recordEnum} from '../../common/js/metrics.js';
 import {str, strf, util} from '../../common/js/util.js';
 import {DirectoryChangeEvent} from '../../externs/directory_change_event.js';
 import {FakeEntry} from '../../externs/files_app_entry_interfaces.js';
@@ -121,19 +121,15 @@ export class FileTypeFiltersController {
      */
     this.inRecent_ = false;
 
-    if (util.isSearchV2Enabled()) {
-      getStore().subscribe(this);
-    }
+    getStore().subscribe(this);
   }
 
 
   /** @param {!State} state latest state from the store. */
   onStateChanged(state) {
-    if (util.isSearchV2Enabled()) {
-      if (this.inRecent_) {
-        const search = state.search;
-        this.container_.hidden = !!(search?.query);
-      }
+    if (this.inRecent_) {
+      const search = state.search;
+      this.container_.hidden = !!(search?.query);
     }
   }
 
@@ -159,8 +155,7 @@ export class FileTypeFiltersController {
           chrome.fileManagerPrivate.FileCategory.DOCUMENT,  // 4
         ]);
     Object.freeze(FileTypeFiltersForUMA);
-    metrics.recordEnum(
-        'Recent.FilterByType', fileCategory, FileTypeFiltersForUMA);
+    recordEnum('Recent.FilterByType', fileCategory, FileTypeFiltersForUMA);
   }
 
   /**

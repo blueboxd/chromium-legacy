@@ -27,7 +27,7 @@
 #import "ios/chrome/app/application_delegate/metric_kit_subscriber.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
 #import "ios/chrome/app/startup/ios_enable_sandbox_dump_buildflags.h"
-#import "ios/chrome/browser/crash_report/crash_helper.h"
+#import "ios/chrome/browser/crash_report/model/crash_helper.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #import "ios/chrome/browser/ntp/new_tab_page_util.h"
@@ -43,7 +43,7 @@
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/signin/signin_util.h"
 #import "ios/chrome/browser/tabs/inactive_tabs/metrics.h"
-#import "ios/chrome/browser/widget_kit/features.h"
+#import "ios/chrome/browser/widget_kit/model/features.h"
 #import "ios/chrome/common/app_group/app_group_metrics.h"
 #import "ios/chrome/common/app_group/app_group_metrics_mainapp.h"
 #import "ios/chrome/common/credential_provider/constants.h"
@@ -54,7 +54,7 @@
 #import "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_WIDGET_KIT_EXTENSION)
-#import "ios/chrome/browser/widget_kit/widget_metrics_util.h"  // nogncheck
+#import "ios/chrome/browser/widget_kit/model/widget_metrics_util.h"  // nogncheck
 #endif
 
 @class AppState;
@@ -458,7 +458,7 @@ using metrics_mediator::kAppDidFinishLaunchingConsecutiveCallsKey;
     const int inactiveWebStateListCount = inactiveWebStateList->count();
 
     tabCount += webStateListCount + inactiveWebStateListCount;
-    pinnedTabCount += webStateList->GetIndexOfFirstNonPinnedWebState();
+    pinnedTabCount += webStateList->pinned_tabs_count();
     activeTabCount += webStateListCount;
     inactiveTabCount += inactiveWebStateListCount;
     // All inactive tabs are inactive since minimum 7 days or more.

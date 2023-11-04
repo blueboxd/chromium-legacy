@@ -15,7 +15,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.build.BuildConfig;
 import org.chromium.chrome.browser.WarmupManager;
-import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.back_press.MinimizeAppAndCloseTabBackPressHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -35,7 +34,6 @@ import org.chromium.chrome.browser.optimization_guide.OptimizationGuidePushNotif
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.recent_tabs.RestoreTabsFeatureHelper;
-import org.chromium.chrome.browser.tab.state.FilePersistedTabDataStorage;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementFieldTrial;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
@@ -88,7 +86,6 @@ public class ChromeCachedFlags {
                 BrandingController.USE_TEMPORARY_STORAGE,
                 BrandingController.ANIMATE_TOOLBAR_ICON_TRANSITION, ChimeFeatures.ALWAYS_REGISTER,
                 FeedPlaceholderLayout.ENABLE_INSTANT_START_ANIMATION,
-                FilePersistedTabDataStorage.DELAY_SAVES_UNTIL_DEFERRED_STARTUP_PARAM,
                 OptimizationGuidePushNotificationManager.MAX_CACHE_SIZE,
                 OmniboxFeatures.ENABLE_MODERNIZE_VISUAL_UPDATE_ON_TABLET,
                 OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_ACTIVE_COLOR_ON_OMNIBOX,
@@ -118,6 +115,7 @@ public class ChromeCachedFlags {
                 StartSurfaceConfiguration.SURFACE_POLISH_OMNIBOX_COLOR,
                 StartSurfaceConfiguration.SURFACE_POLISH_MOVE_DOWN_LOGO,
                 StartSurfaceConfiguration.SURFACE_POLISH_LESS_BRAND_SPACE,
+                StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT,
                 StartSurfaceConfiguration.SURFACE_POLISH_USE_MAGIC_SPACE,
                 TabUiFeatureUtilities.ZOOMING_MIN_MEMORY, TabUiFeatureUtilities.SKIP_SLOW_ZOOMING,
                 TabUiFeatureUtilities.TAB_STRIP_REDESIGN_DISABLE_NTB_ANCHOR,
@@ -125,7 +123,7 @@ public class ChromeCachedFlags {
                 TabManagementFieldTrial.DELAY_TEMP_STRIP_TIMEOUT_MS,
                 TabManagementFieldTrial.TAB_STRIP_REDESIGN_ENABLE_FOLIO,
                 TabManagementFieldTrial.TAB_STRIP_REDESIGN_ENABLE_DETACHED,
-                VersionNumberGetter.MIN_SDK_VERSION, ChromeActivity.CONTENT_VIS_DELAY_MS,
+                VersionNumberGetter.MIN_SDK_VERSION,
                 MinimizeAppAndCloseTabBackPressHandler.SYSTEM_BACK,
                 BackPressManager.TAB_HISTORY_RECOVER);
         // clang-format on
@@ -221,11 +219,14 @@ public class ChromeCachedFlags {
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     static void cacheMinimalBrowserFlagsTimeFromNativeTime() {
-        CachedFeatureFlags.cacheMinimalBrowserFlagsTimeFromNativeTime();
+        SharedPreferencesManager.getInstance().writeLong(
+                ChromePreferenceKeys.FLAGS_LAST_CACHED_MINIMAL_BROWSER_FLAGS_TIME_MILLIS,
+                System.currentTimeMillis());
     }
 
     public static long getLastCachedMinimalBrowserFlagsTimeMillis() {
-        return CachedFeatureFlags.getLastCachedMinimalBrowserFlagsTimeMillis();
+        return SharedPreferencesManager.getInstance().readLong(
+                ChromePreferenceKeys.FLAGS_LAST_CACHED_MINIMAL_BROWSER_FLAGS_TIME_MILLIS, 0);
     }
 
     @CalledByNative

@@ -70,7 +70,7 @@ import java.util.List;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 // START_SURFACE_REFACTOR is required to have stable parent id logic.
-@EnableFeatures({ChromeFeatureList.START_SURFACE_REFACTOR})
+@EnableFeatures({ChromeFeatureList.DEFER_TAB_SWITCHER_LAYOUT_CREATION, ChromeFeatureList.START_SURFACE_REFACTOR})
 @Batch(Batch.PER_CLASS)
 public class TabGridAccessibilityHelperTest {
     // clang-format on
@@ -95,11 +95,17 @@ public class TabGridAccessibilityHelperTest {
 
     @Before
     public void setUp() {
+        CriteriaHelper.pollUiThread(
+                sActivityTestRule.getActivity().getTabModelSelector()::isTabStateInitialized);
+
+        // Toggle layout state to trigger lazy layout creation.
+        final ChromeTabbedActivity cta = sActivityTestRule.getActivity();
+        enterTabSwitcher(cta);
+        leaveTabSwitcher(cta);
+
         Layout layout =
                 sActivityTestRule.getActivity().getLayoutManager().getTabSwitcherLayoutForTesting();
         assertTrue(layout instanceof TabSwitcherLayout);
-        CriteriaHelper.pollUiThread(
-                sActivityTestRule.getActivity().getTabModelSelector()::isTabStateInitialized);
     }
 
     @After
@@ -126,13 +132,14 @@ public class TabGridAccessibilityHelperTest {
         enterTabSwitcher(cta);
         verifyTabSwitcherCardCount(cta, 5);
 
-        View view = cta.findViewById(R.id.tab_list_view);
+        View view = cta.findViewById(R.id.tab_list_recycler_view);
         assertTrue(view instanceof TabListMediator.TabGridAccessibilityHelper);
         TabListMediator.TabGridAccessibilityHelper helper =
                 (TabListMediator.TabGridAccessibilityHelper) view;
 
         // Verify action list in portrait mode with span count = 2.
-        onView(allOf(withParent(withId(R.id.compositor_view_holder)), withId(R.id.tab_list_view)))
+        onView(allOf(withParent(withId(R.id.compositor_view_holder)),
+                       withId(R.id.tab_list_recycler_view)))
                 .check((v, noMatchingViewException) -> {
                     if (noMatchingViewException != null) {
                         throw noMatchingViewException;
@@ -185,7 +192,8 @@ public class TabGridAccessibilityHelperTest {
         callbackHelper.waitForCallback(callCount);
 
         // Verify action list in landscape mode with span count = 3.
-        onView(allOf(withParent(withId(R.id.compositor_view_holder)), withId(R.id.tab_list_view)))
+        onView(allOf(withParent(withId(R.id.compositor_view_holder)),
+                       withId(R.id.tab_list_recycler_view)))
                 .check((v, noMatchingViewException) -> {
                     if (noMatchingViewException != null) {
                         throw noMatchingViewException;
@@ -246,13 +254,14 @@ public class TabGridAccessibilityHelperTest {
         enterTabSwitcher(cta);
         verifyTabSwitcherCardCount(cta, 5);
 
-        View view = cta.findViewById(R.id.tab_list_view);
+        View view = cta.findViewById(R.id.tab_list_recycler_view);
         assertTrue(view instanceof TabListMediator.TabGridAccessibilityHelper);
         TabListMediator.TabGridAccessibilityHelper helper =
                 (TabListMediator.TabGridAccessibilityHelper) view;
 
         // Span count 2.
-        onView(allOf(withParent(withId(R.id.compositor_view_holder)), withId(R.id.tab_list_view)))
+        onView(allOf(withParent(withId(R.id.compositor_view_holder)),
+                       withId(R.id.tab_list_recycler_view)))
                 .check((v, noMatchingViewException) -> {
                     if (noMatchingViewException != null) {
                         throw noMatchingViewException;
@@ -296,7 +305,8 @@ public class TabGridAccessibilityHelperTest {
         callbackHelper.waitForCallback(callCount);
 
         // Span count 3.
-        onView(allOf(withParent(withId(R.id.compositor_view_holder)), withId(R.id.tab_list_view)))
+        onView(allOf(withParent(withId(R.id.compositor_view_holder)),
+                       withId(R.id.tab_list_recycler_view)))
                 .check((v, noMatchingViewException) -> {
                     if (noMatchingViewException != null) {
                         throw noMatchingViewException;

@@ -8,15 +8,16 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
-#include "components/autofill/core/browser/address_rewriter.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_constants.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/geo/address_rewriter.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/re2/src/re2/re2.h"
 
@@ -187,7 +188,7 @@ std::vector<std::string> GetAllPartialMatches(const std::string& value,
 std::vector<std::string> ExtractAllPlaceholders(const std::string& value);
 
 // Returns |value| as a placeholder token: ${value}.
-std::string GetPlaceholderToken(const std::string& value);
+std::string GetPlaceholderToken(std::string_view value);
 
 // Returns a named capture group created by the concatenation of the
 // StringPieces in |pattern_span_initializer_list|. The group is named by the

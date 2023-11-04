@@ -100,6 +100,7 @@
 <translation id="2653659639078652383">Пошаљи</translation>
 <translation id="2677748264148917807">Затвори</translation>
 <translation id="2678468611080193228">Пробајте привремено да дозволите колачиће треће стране, што значи слабију заштиту, али већу вероватноћу да ће функције сајта радити</translation>
+<translation id="2683434792633810741">Желите да избришете и ресетујете?</translation>
 <translation id="2687403674020088961">Блокирај све колачиће (не препоручује се)</translation>
 <translation id="2713106313042589954">Искључи камеру</translation>
 <translation id="2717722538473713889">Имејл адресе</translation>
@@ -179,6 +180,7 @@
 <translation id="4008040567710660924">Омогућава колачиће за одређени сајт.</translation>
 <translation id="4046123991198612571">Следећа песма</translation>
 <translation id="4053720452172726777">Прилагодите и контролишите Google Chrome</translation>
+<translation id="4149890623864272035">Желите ли стварно да избришете све локалне податке, укључујући колачиће, и ресетујете све дозволе за овај веб-сајт?</translation>
 <translation id="4149994727733219643">Поједностављен приказ веб-страница</translation>
 <translation id="4151930093518524179">Подразумевани зум</translation>
 <translation id="4165986682804962316">Подешавања сајта</translation>
@@ -196,6 +198,7 @@
 <translation id="4412992751769744546">Дозволи колачиће треће стране</translation>
 <translation id="4428065317363009941">Персонализација огласа</translation>
 <translation id="4434045419905280838">Искачући прозори и преусмеравања</translation>
+<translation id="443552056913301231">Овом радњом ћете избрисати све локалне податке, укључујући колачиће, и ресетовати све дозволе за <ph name="ORIGIN" /></translation>
 <translation id="4468959413250150279">Искључи звук за одређени сајт</translation>
 <translation id="4475912480633855319">{COOKIES,plural, =1{# колачић}one{# колачић}few{# колачића}other{# колачића}}</translation>
 <translation id="4478158430052450698">Олакшајте прилагођавање зумирања за различите сајтове</translation>
@@ -205,6 +208,7 @@
 <translation id="4566417217121906555">Искључи звук микрофона</translation>
 <translation id="4570913071927164677">Детаљи</translation>
 <translation id="4598549027014564149">Када сте у режиму без архивирања, сајтови не могу да користе колачиће да би видели ваше активности прегледања на свим сајтовима, чак и на сродним сајтовима. Активности прегледања се не користе за ствари као што је персонализовање огласа. Функције на неким сајтовима могу да не раде.</translation>
+<translation id="4644713492825682049">Избриши и ресетуј</translation>
 <translation id="4645575059429386691">Овим управља твој родитељ</translation>
 <translation id="4670064810192446073">Виртуелна реалност</translation>
 <translation id="4751476147751820511">Сензори за покрет или светло</translation>
@@ -235,6 +239,7 @@
 <translation id="5216942107514965959">Последњи посећен данас</translation>
 <translation id="5225463052809312700">Укључи камеру</translation>
 <translation id="5234764350956374838">Одбаци</translation>
+<translation id="5246825184569358663">Овом радњом ћете избрисати све локалне податке, укључујући колачиће, и ресетовати све дозволе за <ph name="DOMAIN" /> и све сајтове у оквиру њега</translation>
 <translation id="5264323282659631142">Уклоните „<ph name="CHIP_LABEL" />“</translation>
 <translation id="528192093759286357">Превуците од врха екрана и додирните дугме Назад да бисте изашли из режима целог екрана.</translation>
 <translation id="5300589172476337783">Прикажи</translation>
@@ -278,11 +283,11 @@
 <translation id="5922853908706496913">Дели се екран</translation>
 <translation id="5922967540311291836">Блокирајте колачиће трећих страна:</translation>
 <translation id="5939518447894949180">Ресетуј</translation>
+<translation id="5964247741333118902">Уграђен садржај</translation>
 <translation id="5968921426641056619">Унесите веб-адресу</translation>
 <translation id="5975083100439434680">Умањивање</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Контролишите приступ овог сајта уређају</translation>
-<translation id="6018815681665454784">Желите да обришете и ресетујете?</translation>
 <translation id="6040143037577758943">Затвори</translation>
 <translation id="6042308850641462728">Још</translation>
 <translation id="6064125863973209585">Довршена преузимања</translation>
@@ -294,6 +299,7 @@
 <translation id="6192792657125177640">Изузеци</translation>
 <translation id="6196640612572343990">Блокирај колачиће треће стране</translation>
 <translation id="6205314730813004066">Приватност са огласима</translation>
+<translation id="6207207788774442484">Избриши податке и ресетуј дозволе</translation>
 <translation id="6216432067784365534">Опције ставке <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6231752747840485235">Желите да деинсталатирате „<ph name="APP_NAME" />“?</translation>
 <translation id="6262191102408817757">На основу последње картице</translation>
@@ -302,13 +308,11 @@
 <translation id="6295158916970320988">Сви сајтови</translation>
 <translation id="6320088164292336938">Вибрација</translation>
 <translation id="6367753977865761591">Блокирајте пријављивање трећих страна за одређени сајт.</translation>
-<translation id="6388207532828177975">Обриши и ресетуј</translation>
 <translation id="6398765197997659313">Изађи из режима целог екрана</translation>
 <translation id="640163077447496506">Истиче данас</translation>
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Не дозвољава сајтовима да користе уређај и податке виртуелне реалности</translation>
 <translation id="6447842834002726250">Колачићи</translation>
-<translation id="6467852467360539617">Обриши податке и ресетуј дозволе</translation>
 <translation id="6500423977866688905">Када је прозор узак, захтевај приказ за мобилне уређаје</translation>
 <translation id="6527303717912515753">Дели</translation>
 <translation id="652937045869844725">Пробајте да дозволите колачиће треће стране, што значи слабију заштиту, али већу вероватноћу да ће функције сајта радити</translation>
@@ -381,11 +385,9 @@
 <translation id="7846076177841592234">Откажи избор</translation>
 <translation id="7882806643839505685">Дозволи звук за одређени сајт.</translation>
 <translation id="789180354981963912">Блокирајте колачиће трећих страна у режиму без архивирања:</translation>
-<translation id="7895868624847501462">Овом радњом ћете обрисати све локалне податке, укључујући колачиће, и ресетовати све дозволе за <ph name="DOMAIN" /> и све сајтове у оквиру њега</translation>
 <translation id="7940722705963108451">Подсети ме</translation>
 <translation id="7974024493641668069">{COUNT,plural, =1{<ph name="FPS_MEMBERS_COUNT" /> сајт у групи сајтова власника <ph name="FPS_OWNER" /> која може да види ваше активности у групи}one{<ph name="FPS_MEMBERS_COUNT" /> сајт у групи сајтова власника <ph name="FPS_OWNER" /> која може да види ваше активности у групи}few{<ph name="FPS_MEMBERS_COUNT" /> сајта у групи сајтова власника <ph name="FPS_OWNER" /> која може да види ваше активности у групи}other{<ph name="FPS_MEMBERS_COUNT" /> сајтова у групи сајтова власника <ph name="FPS_OWNER" /> која може да види ваше активности у групи}}</translation>
 <translation id="7986741934819883144">Изаберите контакт</translation>
-<translation id="7999064672810608036">Желите ли стварно да обришете све локалне податке, укључујући колачиће, и ресетујете све дозволе за овај веб-сајт?</translation>
 <translation id="8007176423574883786">Искључено је за овај уређај</translation>
 <translation id="802154636333426148">Преузимање није успело</translation>
 <translation id="8042586301629853791">Сортирај према:</translation>
@@ -409,7 +411,6 @@
 <translation id="8284326494547611709">Титл</translation>
 <translation id="8300705686683892304">Управља апликација</translation>
 <translation id="8324158725704657629">Не питај поново</translation>
-<translation id="8338445138528827481">Овом радњом ћете обрисати све локалне податке, укључујући колачиће, и ресетовати све дозволе за <ph name="ORIGIN" /></translation>
 <translation id="8362795839483915693">Можете да увећавате или умањујете приказ сајтова које посећујете</translation>
 <translation id="8372893542064058268">Дозволите Синхронизацију у позадини за одређени сајт.</translation>
 <translation id="8376384591331888629">Укључујући колачиће трећих страна на овом сајту</translation>

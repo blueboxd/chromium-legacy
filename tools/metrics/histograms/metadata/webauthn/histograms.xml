@@ -149,7 +149,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="WebAuthentication.ChromeOS.GetAssertionStatus"
     enum="WebAuthenticationChromeOSGetAssertionResult"
-    expires_after="2024-01-04">
+    expires_after="2024-03-10">
   <owner>martinkr@google.com</owner>
   <owner>hcyang@google.com</owner>
   <owner>chrome-webauthn@google.com</owner>
@@ -166,7 +166,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebAuthentication.ChromeOS.StartupRecordCount" units="records"
-    expires_after="2024-01-04">
+    expires_after="2024-03-10">
   <owner>martinkr@google.com</owner>
   <owner>chrome-webauthn@google.com</owner>
   <summary>
@@ -176,7 +176,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebAuthentication.ConditionalUiPasskeyCount" units="passkeys"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>kenrb@chromium.org</owner>
   <owner>nsatragno@chromium.org</owner>
   <owner>chrome-webauthn@google.com</owner>
@@ -186,7 +186,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebAuthentication.GetAssertionRequestTransport"
-    enum="WebAuthenticationFidoTransport" expires_after="2024-01-14">
+    enum="WebAuthenticationFidoTransport" expires_after="2024-03-17">
   <owner>kenrb@chromium.org</owner>
   <owner>martinkr@google.com</owner>
   <summary>
@@ -197,7 +197,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebAuthentication.GetAssertionResponseTransport"
-    enum="WebAuthenticationFidoTransport" expires_after="2024-01-14">
+    enum="WebAuthenticationFidoTransport" expires_after="2024-03-17">
   <owner>kenrb@chromium.org</owner>
   <owner>martinkr@google.com</owner>
   <summary>
@@ -207,7 +207,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebAuthentication.IsUVPlatformAuthenticatorAvailable2"
-    enum="Boolean" expires_after="2024-01-07">
+    enum="Boolean" expires_after="2024-03-10">
   <owner>kenrb@chromium.org</owner>
   <owner>martinkr@google.com</owner>
   <summary>
@@ -217,7 +217,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="WebAuthentication.MacOS.PasskeysPermission"
+<histogram name="WebAuthentication.MacOS.PasskeyPermission"
     enum="WebAuthenticationMacOSPasskeysPermission" expires_after="2024-06-14">
   <owner>agl@chromium.org</owner>
   <owner>martinkr@google.com</owner>
@@ -240,7 +240,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebAuthentication.MakeCredentialResponseTransport"
-    enum="WebAuthenticationFidoTransport" expires_after="2024-01-14">
+    enum="WebAuthenticationFidoTransport" expires_after="2024-03-17">
   <owner>kenrb@chromium.org</owner>
   <owner>martinkr@google.com</owner>
   <summary>

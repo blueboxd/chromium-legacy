@@ -230,6 +230,7 @@ ts_library("build_ts") {
 
   definitions = [
     "//tools/typescript/definitions/chrome_event.d.ts",
+    "//tools/typescript/definitions/metrics_private.d.ts",
     "//tools/typescript/definitions/runtime.d.ts",
     "//tools/typescript/definitions/tabs.d.ts",
   ]
@@ -383,6 +384,7 @@ copy("copy_fmp_test") {
 copy("for_image_loader") {
   sources = [
     "$target_gen_dir/tsc/file_manager/common/js/file_types_base.js",
+    "$target_gen_dir/tsc/file_manager/common/js/lru_cache.js",
     "file_manager/common/js/test_error_reporting.js",
   ]
   outputs = [ "$target_gen_dir/file_manager/common/js/{{source_file_part}}" ]
@@ -428,6 +430,7 @@ generate_grd("build_grd") {
 
   if (optimize_webui) {
     input_files += [
+      "file_manager/background/js/runtime_loaded_test_util.rollup.js",
       "file_manager/foreground/js/deferred_elements.rollup.js",
       "file_manager/foreground/js/main.rollup.js",
       "file_manager/foreground/js/metadata/metadata_dispatcher.rollup.js",
@@ -436,10 +439,12 @@ generate_grd("build_grd") {
       # For Image Loader unittests:
       "file_manager/common/js/file_types_base.js",
       "file_manager/common/js/file_types_data.js",
+      "file_manager/common/js/lru_cache.js",
       "file_manager/common/js/test_error_reporting.js",
     ]
 
     resource_path_rewrites += [
+      "file_manager/background/js/runtime_loaded_test_util.rollup.js|file_manager/background/js/runtime_loaded_test_util.js",
       "file_manager/foreground/js/deferred_elements.rollup.js|file_manager/foreground/js/deferred_elements.js",
       "file_manager/foreground/js/main.rollup.js|file_manager/foreground/js/main.js",
       "file_manager/foreground/js/metadata/metadata_dispatcher.rollup.js|file_manager/foreground/js/metadata/metadata_dispatcher.js",
@@ -447,6 +452,7 @@ generate_grd("build_grd") {
 
     deps += [
       ":for_image_loader",
+      "//ui/file_manager/file_manager/background/js:build",
       "//ui/file_manager/file_manager/foreground/elements:elements",
       "//ui/file_manager/file_manager/foreground/js:build",
       "//ui/file_manager/file_manager/foreground/js:build_worker",

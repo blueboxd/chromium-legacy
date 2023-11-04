@@ -68,11 +68,6 @@ BASE_FEATURE(kWebAuthnAndroidCredMan,
 BASE_FEATURE(kWebAuthnAndroidCredManForHybrid,
              "WebAuthenticationAndroidCredManForHybrid",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Added in M118, Not yet enabled by default.
-BASE_FEATURE(kWebAuthnAndroidCredManAndGmsCore,
-             "WebAuthenticationAndroidCredManAndGmsCore",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 // Added in M115. Remove in or after M118.
@@ -225,6 +220,11 @@ BASE_FEATURE(kWebAuthnFilterGooglePasskeys,
 // Enabled in M118. Remove in or after M121.
 BASE_FEATURE(kWebAuthnPINProtocolInHMACSecret,
              "WebAuthenticationPINProtocolInHMACSecret",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enabled in M119. Remove in or after M122.
+BASE_FEATURE(kWebAuthnAndroidIncognitoConfirmation,
+             "WebAuthenticationAndroidIncognitoConfirmation",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace device

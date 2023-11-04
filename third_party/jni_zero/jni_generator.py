@@ -652,9 +652,6 @@ $METHOD_STUBS
       post_call = '.Release()'
       return_declaration = ('base::android::ScopedJavaLocalRef<' + return_type +
                             '>')
-    profiling_entered_native = ''
-    if self.options.enable_profiling:
-      profiling_entered_native = '  JNI_LINK_SAVED_FRAME_POINTER;\n'
 
     values = {
         'RETURN': return_type,
@@ -666,7 +663,6 @@ $METHOD_STUBS
         'PARAMS_IN_CALL': params_in_call,
         'POST_CALL': post_call,
         'STUB_NAME': self.helper.GetStubName(native),
-        'PROFILING_ENTERED_NATIVE': profiling_entered_native,
     }
 
     namespace_qual = self.namespace + '::' if self.namespace else ''
@@ -683,7 +679,6 @@ $METHOD_STUBS
 JNI_GENERATOR_EXPORT ${RETURN} ${STUB_NAME}(
     JNIEnv* env,
     ${PARAMS_IN_STUB}) {
-${PROFILING_ENTERED_NATIVE}\
   ${P0_TYPE}* native = reinterpret_cast<${P0_TYPE}*>(${PARAM0_NAME});
   CHECK_NATIVE_PTR(env, jcaller, native, "${NAME}"${OPTIONAL_ERROR_RETURN});
   return native->${NAME}(${PARAMS_IN_CALL})${POST_CALL};
@@ -698,7 +693,6 @@ static ${RETURN_DECLARATION} ${IMPL_METHOD_NAME}(JNIEnv* env${PARAMS});
 JNI_GENERATOR_EXPORT ${RETURN} ${STUB_NAME}(
     JNIEnv* env,
     ${PARAMS_IN_STUB}) {
-${PROFILING_ENTERED_NATIVE}\
   return ${IMPL_METHOD_NAME}(${PARAMS_IN_CALL})${POST_CALL};
 }
 """)
@@ -762,9 +756,6 @@ ${PROFILING_ENTERED_NATIVE}\
         return_type_str = (
             f'base::android::ScopedJavaLocalRef<{return_type_str}>')
         return_clause = f'return {return_type_str}(env, ret);'
-    profiling_leaving_native = ''
-    if self.options.enable_profiling:
-      profiling_leaving_native = '  JNI_SAVE_FRAME_POINTER;\n'
     sig = called_by_native.signature
     jni_descriptor = sig.to_descriptor()
 
@@ -783,7 +774,6 @@ ${PROFILING_ENTERED_NATIVE}\
         'FIRST_PARAM_IN_CALL': first_param_in_call,
         'PARAMS_IN_CALL': params_in_call,
         'CHECK_EXCEPTION': check_exception,
-        'PROFILING_LEAVING_NATIVE': profiling_leaving_native,
         'JNI_NAME': called_by_native.name,
         'JNI_DESCRIPTOR': jni_descriptor,
         'METHOD_ID_MEMBER_NAME': method_id_member_name,
@@ -818,7 +808,6 @@ ${FUNCTION_HEADER}
           "${JNI_DESCRIPTOR}",
           &g_${JAVA_CLASS}_${METHOD_ID_VAR_NAME});
 
-${PROFILING_LEAVING_NATIVE}\
   ${RETURN_DECLARATION}
      ${PRE_CALL}env->${ENV_CALL}(${FIRST_PARAM_IN_CALL},
           ${METHOD_ID_MEMBER_NAME}${PARAMS_IN_CALL})${POST_CALL};
@@ -936,7 +925,7 @@ def _CreateSrcJar(srcjar_path, gen_jni_class, jni_objs, *, script_name):
         content = proxy_impl_java.Generate(jni_obj,
                                            gen_jni_class=gen_jni_class,
                                            script_name=script_name)
-        zip_path = f'{jni_obj.java_class.full_name_with_slashes}Jni.java'
+        zip_path = f'{jni_obj.java_class.class_without_prefix.full_name_with_slashes}Jni.java'
         zip_helpers.add_to_zip_hermetic(srcjar, zip_path, data=content)
 
       content = placeholder_gen_jni_java.Generate(jni_objs,

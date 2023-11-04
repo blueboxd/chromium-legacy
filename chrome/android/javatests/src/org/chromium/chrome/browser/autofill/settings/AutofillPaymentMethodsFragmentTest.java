@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.autofill.settings;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
@@ -31,9 +30,11 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.HistogramWatcher;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.device_reauth.ReauthenticatorBridge;
@@ -54,6 +55,7 @@ import org.chromium.components.policy.test.annotations.Policies;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.test.util.DeviceRestriction;
 
 import java.util.concurrent.TimeoutException;
 
@@ -69,7 +71,7 @@ public class AutofillPaymentMethodsFragmentTest {
     @Rule
     public final AutofillTestRule rule = new AutofillTestRule();
     @Rule
-    public final MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
+    public final MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.LENIENT);
     @Rule
     public final SettingsActivityTestRule<AutofillPaymentMethodsFragment>
             mSettingsActivityTestRule =
@@ -116,7 +118,7 @@ public class AutofillPaymentMethodsFragmentTest {
             /* cardArtUrl= */ null,
             /* virtualCardEnrollmentState= */ VirtualCardEnrollmentState.UNENROLLED_AND_ELIGIBLE,
             /* productDescription= */ "", /* cardNameForAutofillDisplay= */ "",
-            /* obfuscatedLastFourDigits= */ "");
+            /* obfuscatedLastFourDigits= */ "", /* cvc= */ "");
     private static final CreditCard SAMPLE_VIRTUAL_CARD_ENROLLED = new CreditCard(/* guid= */ "",
             /* origin= */ "",
             /* isLocal= */ false, /* isCached= */ false, /* isVirtual= */ false,
@@ -129,7 +131,7 @@ public class AutofillPaymentMethodsFragmentTest {
             /* cardArtUrl= */ null,
             /* virtualCardEnrollmentState= */ VirtualCardEnrollmentState.ENROLLED,
             /* productDescription= */ "", /* cardNameForAutofillDisplay= */ "",
-            /* obfuscatedLastFourDigits= */ "");
+            /* obfuscatedLastFourDigits= */ "", /* cvc= */ "");
 
     private AutofillTestHelper mAutofillTestHelper;
 
@@ -146,6 +148,7 @@ public class AutofillPaymentMethodsFragmentTest {
 
     @Test
     @MediumTest
+    @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
     public void testTwoCreditCards_displaysTwoServerCards() throws Exception {
         mAutofillTestHelper.addServerCreditCard(SAMPLE_CARD_VISA);
         mAutofillTestHelper.addServerCreditCard(SAMPLE_CARD_MASTERCARD);
@@ -159,12 +162,27 @@ public class AutofillPaymentMethodsFragmentTest {
 
     @Test
     @MediumTest
+    @Restriction(DeviceRestriction.RESTRICTION_TYPE_AUTO)
+    public void testTwoCreditCards_displaysTwoServerCards_mandatoryReauthNotShownOnAutomotive()
+            throws Exception {
+        mAutofillTestHelper.addServerCreditCard(SAMPLE_CARD_VISA);
+        mAutofillTestHelper.addServerCreditCard(SAMPLE_CARD_MASTERCARD);
+
+        SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
+
+        // Verify that the preferences on the initial screen map to Save and Fill toggle + 2 Cards
+        // + Add Card button + Payment Apps.
+        Assert.assertEquals(5, getPreferenceScreen(activity).getPreferenceCount());
+    }
+
+    @Test
+    @MediumTest
     public void testCreditCardWithoutNickname_displayNetworkAndLastFourAsTitle() throws Exception {
         mAutofillTestHelper.addServerCreditCard(SAMPLE_CARD_VISA);
 
         SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
 
-        Preference cardPreference = getPreferenceScreen(activity).getPreference(2);
+        Preference cardPreference = getFirstPaymentMethodPreference(activity);
         String title = cardPreference.getTitle().toString();
         assertThat(title).contains("Visa");
         assertThat(title).contains("1111");
@@ -178,7 +196,7 @@ public class AutofillPaymentMethodsFragmentTest {
 
         SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
 
-        Preference cardPreference = getPreferenceScreen(activity).getPreference(2);
+        Preference cardPreference = getFirstPaymentMethodPreference(activity);
         String title = cardPreference.getTitle().toString();
         assertThat(title).contains("Test nickname");
         assertThat(title).contains("1111");
@@ -193,7 +211,7 @@ public class AutofillPaymentMethodsFragmentTest {
 
         SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
 
-        Preference cardPreference = getPreferenceScreen(activity).getPreference(2);
+        Preference cardPreference = getFirstPaymentMethodPreference(activity);
         String title = cardPreference.getTitle().toString();
         assertThat(title).contains("This is a long nickname");
         assertThat(title).contains("1111");
@@ -207,7 +225,7 @@ public class AutofillPaymentMethodsFragmentTest {
 
         SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
 
-        Preference cardPreference = getPreferenceScreen(activity).getPreference(2);
+        Preference cardPreference = getFirstPaymentMethodPreference(activity);
         String summary = cardPreference.getSummary().toString();
         assertThat(summary).isEqualTo(
                 activity.getString(R.string.autofill_virtual_card_enrolled_text));
@@ -221,7 +239,7 @@ public class AutofillPaymentMethodsFragmentTest {
 
         SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
 
-        Preference cardPreference = getPreferenceScreen(activity).getPreference(2);
+        Preference cardPreference = getFirstPaymentMethodPreference(activity);
         String summary = cardPreference.getSummary().toString();
         // Verify that the summary (line below the card name and number) contains the expiration
         // date.
@@ -236,7 +254,7 @@ public class AutofillPaymentMethodsFragmentTest {
 
         SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
 
-        Preference cardPreference = getPreferenceScreen(activity).getPreference(2);
+        Preference cardPreference = getFirstPaymentMethodPreference(activity);
         String summary = cardPreference.getSummary().toString();
         assertThat(summary).contains(String.format("05/%s", AutofillTestHelper.twoDigitNextYear()));
     }
@@ -250,7 +268,7 @@ public class AutofillPaymentMethodsFragmentTest {
 
         SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
 
-        Preference cardPreference = getPreferenceScreen(activity).getPreference(2);
+        Preference cardPreference = getFirstPaymentMethodPreference(activity);
         String summary = cardPreference.getSummary().toString();
         assertThat(summary).contains(String.format("05/%s", AutofillTestHelper.twoDigitNextYear()));
     }
@@ -302,6 +320,7 @@ public class AutofillPaymentMethodsFragmentTest {
     @MediumTest
     // Use the policy to simulate AutofillCreditCard is disabled.
     @Policies.Add({ @Policies.Item(key = "AutofillCreditCardEnabled", string = "false") })
+    @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
     public void testMandatoryReauthToggle_disabledWhenAutofillDisabled() throws Exception {
         SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
 
@@ -311,6 +330,7 @@ public class AutofillPaymentMethodsFragmentTest {
 
     @Test
     @MediumTest
+    @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
     public void testMandatoryReauthToggle_disabledWhenBothBiometricAndScreenLockAreDisabled()
             throws Exception {
         // Simulate the user can't authenticate with neither biometric nor screen lock.
@@ -324,6 +344,7 @@ public class AutofillPaymentMethodsFragmentTest {
 
     @Test
     @MediumTest
+    @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
     public void testMandatoryReauthToggle_disabledWithCorrespondingPrefValue() throws Exception {
         // Simulate the pref was enabled previously, to ensure the toggle value is set
         // correspondingly.
@@ -344,6 +365,7 @@ public class AutofillPaymentMethodsFragmentTest {
 
     @Test
     @MediumTest
+    @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
     public void testMandatoryReauthToggle_displayToggle() throws Exception {
         // Simulate the pref was enabled previously, to ensure the toggle value is set
         // correspondingly.
@@ -369,6 +391,7 @@ public class AutofillPaymentMethodsFragmentTest {
 
     @Test
     @MediumTest
+    @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
     public void testMandatoryReauthToggle_switchValueOnClicked() throws Exception {
         var optInHistogram =
                 HistogramWatcher.newBuilder()
@@ -395,7 +418,7 @@ public class AutofillPaymentMethodsFragmentTest {
         // authentication which should succeed.
         TestThreadUtils.runOnUiThreadBlocking(getMandatoryReauthPreference(activity)::performClick);
 
-        verify(mReauthenticatorMock).reauthenticate(notNull(), /*useLastValidReauth=*/eq(false));
+        verify(mReauthenticatorMock).reauthenticate(notNull());
         // Verify that the Reauth toggle is now checked.
         Assert.assertTrue(getMandatoryReauthPreference(activity).isChecked());
         optInHistogram.assertExpected();
@@ -403,6 +426,7 @@ public class AutofillPaymentMethodsFragmentTest {
 
     @Test
     @MediumTest
+    @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
     public void testMandatoryReauthToggle_stayAtOldValueIfBiometricAuthFails() throws Exception {
         var optOutHistogram =
                 HistogramWatcher.newBuilder()
@@ -429,7 +453,7 @@ public class AutofillPaymentMethodsFragmentTest {
         // authentication which should fail.
         TestThreadUtils.runOnUiThreadBlocking(getMandatoryReauthPreference(activity)::performClick);
 
-        verify(mReauthenticatorMock).reauthenticate(notNull(), /*useLastValidReauth=*/eq(false));
+        verify(mReauthenticatorMock).reauthenticate(notNull());
         // Verify that the Reauth toggle is still checked since authentication failed.
         Assert.assertTrue(getMandatoryReauthPreference(activity).isChecked());
         optOutHistogram.assertExpected();
@@ -466,9 +490,12 @@ public class AutofillPaymentMethodsFragmentTest {
 
         SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
 
-        // Verify that the Reauth preference is checked.
-        Assert.assertTrue(getMandatoryReauthPreference(activity).isChecked());
-        Preference cardPreference = getPreferenceScreen(activity).getPreference(2);
+        // Verify that the Reauth preference is checked on non-automotive devices.
+        if (!BuildInfo.getInstance().isAutomotive) {
+            Assert.assertTrue(getMandatoryReauthPreference(activity).isChecked());
+        }
+
+        Preference cardPreference = getFirstPaymentMethodPreference(activity);
         String title = cardPreference.getTitle().toString();
         assertThat(title).contains("Visa");
         assertThat(title).contains("1111");
@@ -481,7 +508,7 @@ public class AutofillPaymentMethodsFragmentTest {
         // afterwards. Wait for the new dialog to be rendered.
         rule.waitForFragmentToBeShown();
 
-        verify(mReauthenticatorMock).reauthenticate(notNull(), /*useLastValidReauth=*/eq(false));
+        verify(mReauthenticatorMock).reauthenticate(notNull());
         // Verify that the local card edit dialog was shown.
         Assert.assertTrue(rule.getLastestShownFragment() instanceof AutofillLocalCardEditor);
         editCardReauthHistogram.assertExpected();
@@ -507,9 +534,12 @@ public class AutofillPaymentMethodsFragmentTest {
 
         SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
 
-        // Verify that the Reauth preference is checked.
-        Assert.assertTrue(getMandatoryReauthPreference(activity).isChecked());
-        Preference cardPreference = getPreferenceScreen(activity).getPreference(2);
+        // Verify that the Reauth preference is checked on non-automotive devices.
+        if (!BuildInfo.getInstance().isAutomotive) {
+            Assert.assertTrue(getMandatoryReauthPreference(activity).isChecked());
+        }
+
+        Preference cardPreference = getFirstPaymentMethodPreference(activity);
         String title = cardPreference.getTitle().toString();
         assertThat(title).contains("Visa");
         assertThat(title).contains("1111");
@@ -520,7 +550,7 @@ public class AutofillPaymentMethodsFragmentTest {
         // which should fail and hence the payment methods page should still be open.
         TestThreadUtils.runOnUiThreadBlocking(cardPreference::performClick);
 
-        verify(mReauthenticatorMock).reauthenticate(notNull(), /*useLastValidReauth=*/eq(false));
+        verify(mReauthenticatorMock).reauthenticate(notNull());
         // Verify that the local card edit dialog was NOT shown.
         Assert.assertNull(rule.getLastestShownFragment());
         editCardReauthHistogram.assertExpected();
@@ -540,7 +570,7 @@ public class AutofillPaymentMethodsFragmentTest {
         SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
 
         // Get the local card widget.
-        Preference cardPreference = getPreferenceScreen(activity).getPreference(1);
+        Preference cardPreference = getFirstPaymentMethodPreference(activity);
         String title = cardPreference.getTitle().toString();
         assertThat(title).contains("Visa");
         assertThat(title).contains("1111");
@@ -551,14 +581,14 @@ public class AutofillPaymentMethodsFragmentTest {
         // new dialog to be rendered.
         rule.waitForFragmentToBeShown();
 
-        verify(mReauthenticatorMock, never())
-                .reauthenticate(notNull(), /*useLastValidReauth=*/eq(false));
+        verify(mReauthenticatorMock, never()).reauthenticate(notNull());
         // Verify that the local card edit dialog was shown.
         Assert.assertTrue(rule.getLastestShownFragment() instanceof AutofillLocalCardEditor);
     }
 
     @Test
     @MediumTest
+    @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
     public void testLocalCardEditWithReauth_noReauthWhenReauthIsDisabled() throws Exception {
         mAutofillTestHelper.setCreditCard(SAMPLE_LOCAL_CARD);
         // Simulate Reauth pref is disabled.
@@ -572,7 +602,7 @@ public class AutofillPaymentMethodsFragmentTest {
 
         // Verify that the Reauth preference is not checked.
         Assert.assertFalse(getMandatoryReauthPreference(activity).isChecked());
-        Preference cardPreference = getPreferenceScreen(activity).getPreference(2);
+        Preference cardPreference = getFirstPaymentMethodPreference(activity);
         String title = cardPreference.getTitle().toString();
         assertThat(title).contains("Visa");
         assertThat(title).contains("1111");
@@ -583,14 +613,14 @@ public class AutofillPaymentMethodsFragmentTest {
         // dialog to be rendered.
         rule.waitForFragmentToBeShown();
 
-        verify(mReauthenticatorMock, never())
-                .reauthenticate(notNull(), /*useLastValidReauth=*/eq(false));
+        verify(mReauthenticatorMock, never()).reauthenticate(notNull());
         // Verify that the local card edit dialog was shown.
         Assert.assertTrue(rule.getLastestShownFragment() instanceof AutofillLocalCardEditor);
     }
 
     @Test
     @MediumTest
+    @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
     public void testLocalCardEditWithReauth_turnOnReauthAndVerifyReauthOnClick() throws Exception {
         mAutofillTestHelper.setCreditCard(SAMPLE_LOCAL_CARD);
 
@@ -610,7 +640,7 @@ public class AutofillPaymentMethodsFragmentTest {
         TestThreadUtils.runOnUiThreadBlocking(getMandatoryReauthPreference(activity)::performClick);
 
         // Get the local card's widget.
-        Preference cardPreference = getPreferenceScreen(activity).getPreference(2);
+        Preference cardPreference = getFirstPaymentMethodPreference(activity);
         String title = cardPreference.getTitle().toString();
         assertThat(title).contains("Visa");
         assertThat(title).contains("1111");
@@ -623,14 +653,14 @@ public class AutofillPaymentMethodsFragmentTest {
 
         // Verify there were 2 biometric authentication attempts, once for enabling mandatory
         // reauth, and another time for opening the local card edit page.
-        verify(mReauthenticatorMock, times(2))
-                .reauthenticate(notNull(), /*useLastValidReauth=*/eq(false));
+        verify(mReauthenticatorMock, times(2)).reauthenticate(notNull());
         // Verify that the local card edit dialog was shown.
         Assert.assertTrue(rule.getLastestShownFragment() instanceof AutofillLocalCardEditor);
     }
 
     @Test
     @MediumTest
+    @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
     public void testLocalCardEditWithReauth_turnOffReauthAndVerifyNoReauthOnClick()
             throws Exception {
         mAutofillTestHelper.setCreditCard(SAMPLE_LOCAL_CARD);
@@ -651,7 +681,7 @@ public class AutofillPaymentMethodsFragmentTest {
         TestThreadUtils.runOnUiThreadBlocking(getMandatoryReauthPreference(activity)::performClick);
 
         // Get the local card's widget.
-        Preference cardPreference = getPreferenceScreen(activity).getPreference(2);
+        Preference cardPreference = getFirstPaymentMethodPreference(activity);
         String title = cardPreference.getTitle().toString();
         assertThat(title).contains("Visa");
         assertThat(title).contains("1111");
@@ -665,8 +695,7 @@ public class AutofillPaymentMethodsFragmentTest {
         // Verify there was only 1 biometric authentication attempt, for disabling mandatory reauth.
         // After disabling, biometric authentication challenge should not be presented to open the
         // local card edit page.
-        verify(mReauthenticatorMock, times(1))
-                .reauthenticate(notNull(), /*useLastValidReauth=*/eq(false));
+        verify(mReauthenticatorMock, times(1)).reauthenticate(notNull());
         // Verify that the local card edit dialog was shown.
         Assert.assertTrue(rule.getLastestShownFragment() instanceof AutofillLocalCardEditor);
     }
@@ -749,7 +778,7 @@ public class AutofillPaymentMethodsFragmentTest {
             return true;
         })
                 .when(mReauthenticatorMock)
-                .reauthenticate(notNull(), /*useLastValidReauth=*/eq(false));
+                .reauthenticate(notNull());
     }
 
     private ChromeSwitchPreference getMandatoryReauthPreference(SettingsActivity activity) {
@@ -770,5 +799,17 @@ public class AutofillPaymentMethodsFragmentTest {
 
     private static PrefService getPrefService() {
         return UserPrefs.get(Profile.getLastUsedRegularProfile());
+    }
+
+    private static Preference getFirstPaymentMethodPreference(SettingsActivity activity) {
+        boolean mandatoryReauthToggleShown =
+                ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.AUTOFILL_ENABLE_PAYMENTS_MANDATORY_REAUTH)
+                && !BuildInfo.getInstance().isAutomotive;
+        if (mandatoryReauthToggleShown) {
+            return getPreferenceScreen(activity).getPreference(2);
+        } else {
+            return getPreferenceScreen(activity).getPreference(1);
+        }
     }
 }

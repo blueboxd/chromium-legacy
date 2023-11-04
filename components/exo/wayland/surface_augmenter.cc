@@ -4,8 +4,6 @@
 
 #include "components/exo/wayland/surface_augmenter.h"
 
-#include <surface-augmenter-server-protocol.h>
-
 #include <memory>
 
 #include "base/memory/raw_ptr.h"
@@ -20,8 +18,7 @@
 #include "ui/gfx/geometry/rrect_f.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace exo {
-namespace wayland {
+namespace exo::wayland {
 
 namespace {
 
@@ -75,7 +72,7 @@ class AugmentedSurface : public SurfaceObserver {
         gfx::RRectF(gfx::RectF(x, y, width, height),
                     gfx::RoundedCornersF(top_left, top_right, bottom_right,
                                          bottom_left)),
-        is_root_coordinates);
+        is_root_coordinates, /*commit_override=*/false);
   }
 
   void SetDestination(float width, float height) {
@@ -451,5 +448,4 @@ void bind_surface_augmenter(wl_client* client,
                                  nullptr);
 }
 
-}  // namespace wayland
-}  // namespace exo
+}  // namespace exo::wayland

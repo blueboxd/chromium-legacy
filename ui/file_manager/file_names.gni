@@ -14,14 +14,10 @@ image_loader_static_js_files = [
 
 static_js_files = [
   # Background:
-  "file_manager/background/js/app_window_wrapper.js",
-  "file_manager/background/js/entry_location_impl.js",
   "file_manager/background/js/file_manager_base.js",
   "file_manager/background/js/file_operation_handler.js",
   "file_manager/background/js/file_operation_manager.js",
   "file_manager/background/js/file_operation_util.js",
-  "file_manager/background/js/launcher.js",
-  "file_manager/background/js/metrics_start.js",
 
   # TODO(lucmult): Check if we can move those mocks to the test files section.
   "file_manager/background/js/mock_crostini.js",
@@ -32,14 +28,11 @@ static_js_files = [
   "file_manager/background/js/runtime_loaded_test_util.js",
   "file_manager/background/js/test_util.js",
   "file_manager/background/js/test_util_base.js",
-  "file_manager/background/js/volume_info_impl.js",
-  "file_manager/background/js/volume_info_list_impl.js",
   "file_manager/background/js/volume_manager_factory.js",
   "file_manager/background/js/volume_manager_impl.js",
   "file_manager/background/js/volume_manager_util.js",
 
   # Files Common:
-  "file_manager/common/js/api.js",
   "file_manager/common/js/app_util.js",
   "file_manager/common/js/array_data_model.js",
   "file_manager/common/js/async_util.js",
@@ -51,9 +44,6 @@ static_js_files = [
   "file_manager/common/js/files_app_state.js",
   "file_manager/common/js/filtered_volume_manager.js",
   "file_manager/common/js/icon_util.js",
-  "file_manager/common/js/lru_cache.js",
-  "file_manager/common/js/metrics.js",
-  "file_manager/common/js/metrics_base.js",
   "file_manager/common/js/mock_chrome.js",
   "file_manager/common/js/mock_entry.js",
   "file_manager/common/js/notifications.js",
@@ -102,7 +92,6 @@ static_js_files = [
   "file_manager/foreground/js/directory_contents.js",
   "file_manager/foreground/js/directory_model.js",
   "file_manager/foreground/js/directory_tree_naming_controller.js",
-  "file_manager/foreground/js/drop_effect_and_label.js",
   "file_manager/foreground/js/elements_importer.js",
   "file_manager/foreground/js/empty_folder_controller.js",
   "file_manager/foreground/js/fake_android_app_list_model.js",
@@ -111,14 +100,12 @@ static_js_files = [
   "file_manager/foreground/js/file_manager.js",
   "file_manager/foreground/js/file_manager_commands.js",
   "file_manager/foreground/js/file_selection.js",
-  "file_manager/foreground/js/file_transfer_controller.js",
   "file_manager/foreground/js/file_type_filters_controller.js",
   "file_manager/foreground/js/file_watcher.js",
   "file_manager/foreground/js/folder_shortcuts_data_model.js",
   "file_manager/foreground/js/gear_menu_controller.js",
   "file_manager/foreground/js/guest_os_controller.js",
   "file_manager/foreground/js/holding_space_util.js",
-  "file_manager/foreground/js/last_modified_controller.js",
   "file_manager/foreground/js/launch_param.js",
   "file_manager/foreground/js/list_thumbnail_loader.js",
   "file_manager/foreground/js/main.js",
@@ -141,7 +128,6 @@ static_js_files = [
   "file_manager/foreground/js/quick_view_model.js",
   "file_manager/foreground/js/quick_view_uma.js",
   "file_manager/foreground/js/scan_controller.js",
-  "file_manager/foreground/js/search_controller.js",
   "file_manager/foreground/js/selection_menu_controller.js",
   "file_manager/foreground/js/sort_menu_controller.js",
   "file_manager/foreground/js/spinner_controller.js",
@@ -178,7 +164,6 @@ static_js_files = [
   "file_manager/foreground/js/ui/a11y_announce.js",
   "file_manager/foreground/js/ui/action_model_ui.js",
   "file_manager/foreground/js/ui/actions_submenu.js",
-  "file_manager/foreground/js/ui/autocomplete_list.js",
   "file_manager/foreground/js/ui/combobutton.js",
   "file_manager/foreground/js/ui/command.js",
   "file_manager/foreground/js/ui/commandbutton.js",
@@ -205,7 +190,6 @@ static_js_files = [
   "file_manager/foreground/js/ui/install_linux_package_dialog.js",
   "file_manager/foreground/js/ui/list.js",
   "file_manager/foreground/js/ui/list_container.js",
-  "file_manager/foreground/js/ui/list_item.js",
   "file_manager/foreground/js/ui/list_selection_controller.js",
   "file_manager/foreground/js/ui/list_selection_model.js",
   "file_manager/foreground/js/ui/list_single_selection_model.js",
@@ -231,10 +215,15 @@ static_js_files = [
 
 ts_files = [
   # Common.
+  "file_manager/common/js/api.ts",
+  "file_manager/common/js/cr_ui.ts",
   "file_manager/common/js/dom_utils.ts",
   "file_manager/common/js/entry_utils.ts",
   "file_manager/common/js/file_tasks.ts",
   "file_manager/common/js/file_types_base.ts",
+  "file_manager/common/js/metrics.ts",
+  "file_manager/common/js/lru_cache.ts",
+  "file_manager/common/js/script_loader.ts",
   "file_manager/common/js/trash.ts",
   "file_manager/common/js/trusted_script_url_policy_util.ts",
   "file_manager/common/js/tslib_shim.ts",
@@ -243,6 +232,7 @@ ts_files = [
   "file_manager/lib/actions_producer.ts",
   "file_manager/lib/base_store.ts",
   "file_manager/lib/concurrency_models.ts",
+  "file_manager/lib/selector.ts",
 
   # State.
   "file_manager/state/file_key.ts",
@@ -283,10 +273,11 @@ ts_files = [
   "file_manager/widgets/xf_splitter.ts",
   "file_manager/widgets/xf_pie_progress.ts",
   "file_manager/widgets/xf_inline_status.ts",
-  "file_manager/foreground/js/ui/search_autocomplete_list.ts",
   "file_manager/widgets/xf_cloud_panel.ts",
   "file_manager/widgets/xf_tree.ts",
   "file_manager/widgets/xf_tree_item.ts",
+  "file_manager/widgets/xf_password_dialog.ts",
+  "file_manager/foreground/js/ui/list_item.ts",
   "file_manager/foreground/js/ui/banners/drive_bulk_pinning_banner.ts",
   "file_manager/foreground/js/ui/banners/drive_low_individual_space_banner.ts",
   "file_manager/foreground/js/ui/banners/drive_low_shared_drive_space_banner.ts",
@@ -309,12 +300,20 @@ ts_files = [
   "file_manager/foreground/js/ui/banners/types.ts",
 
   # Background.
+  "file_manager/background/js/app_window_wrapper.ts",
   "file_manager/background/js/crostini.ts",
   "file_manager/background/js/drive_sync_handler.ts",
+  "file_manager/background/js/entry_location_impl.ts",
+  "file_manager/background/js/launcher.ts",
+  "file_manager/background/js/metrics_start.ts",
+  "file_manager/background/js/volume_info_impl.ts",
+  "file_manager/background/js/volume_info_list_impl.ts",
 
   # Foreground.
+  "file_manager/foreground/js/file_transfer_controller.ts",
   "file_manager/foreground/js/banner_controller.ts",
   "file_manager/foreground/js/file_tasks.ts",
+  "file_manager/foreground/js/last_modified_controller.ts",
   "file_manager/foreground/js/task_controller.ts",
   "file_manager/foreground/js/uma_enums.gen.ts",
 
@@ -338,6 +337,7 @@ ts_templates = [
   "file_manager/widgets/xf_conflict_dialog.html",
   "file_manager/widgets/xf_dlp_restriction_details_dialog.html",
   "file_manager/widgets/xf_nudge.html",
+  "file_manager/widgets/xf_password_dialog.html",
   "file_manager/widgets/xf_search_options.html",
   "file_manager/foreground/js/ui/banners/drive_bulk_pinning_banner.html",
   "file_manager/foreground/js/ui/banners/drive_low_individual_space_banner.html",
@@ -364,6 +364,7 @@ ts_test_files = [
   # Common.
   "file_manager/common/js/entry_utils_unittest.ts",
   "file_manager/common/js/file_types_base_unittest.ts",
+  "file_manager/common/js/lru_cache_unittest.ts",
   "file_manager/common/js/mock_util.ts",
 
   # Containers
@@ -374,9 +375,10 @@ ts_test_files = [
   "file_manager/containers/search_container_unittest.ts",
 
   # Lib:
-  "file_manager/lib/base_store_unittest.ts",
   "file_manager/lib/actions_producer_unittest.ts",
+  "file_manager/lib/base_store_unittest.ts",
   "file_manager/lib/for_tests.ts",
+  "file_manager/lib/selector_unittest.ts",
 
   # Reducers:
   "file_manager/state/for_tests.ts",
@@ -403,6 +405,7 @@ ts_test_files = [
   "file_manager/widgets/xf_dlp_restriction_details_dialog_unittest.ts",
   "file_manager/widgets/xf_icon_unittest.ts",
   "file_manager/widgets/xf_nudge_unittest.ts",
+  "file_manager/widgets/xf_password_dialog_unittest.ts",
   "file_manager/widgets/xf_search_options_unittest.ts",
   "file_manager/widgets/xf_select_unittest.ts",
   "file_manager/widgets/xf_splitter_unittest.ts",
@@ -417,6 +420,7 @@ ts_test_files = [
   "file_manager/foreground/js/banner_controller_unittest.ts",
   "file_manager/foreground/js/banner_util_unittest.ts",
   "file_manager/foreground/js/file_tasks_unittest.ts",
+  "file_manager/foreground/js/file_transfer_controller_unittest.ts",
   "file_manager/foreground/js/task_controller_unittest.ts",
   "file_manager/foreground/js/metadata/dlp_metadata_provider_unittest.ts",
   "file_manager/foreground/js/ui/banners/drive_bulk_pinning_banner_unittest.ts",
@@ -440,11 +444,9 @@ ts_generated_templates += [
 # d.ts. files that are automatically generated from the JS file.
 generate_definitions_js_files = [
   "file_manager/common/js/volume_manager_types.js",
-  "file_manager/externs/entry_location.js",
   "file_manager/externs/files_app_entry_interfaces.js",
   "file_manager/externs/volume_info.js",
   "file_manager/externs/volume_info_list.js",
-  "file_manager/externs/volume_manager.js",
   "file_manager/externs/search_item.js",
 ]
 
@@ -453,12 +455,12 @@ checked_in_dts_files = [
   "file_manager/definitions/file_error.d.ts",
   "file_manager/definitions/file_manager.d.ts",
   "file_manager/definitions/navigator_connection.d.ts",
-  "file_manager/foreground/js/ui/autocomplete_list.d.ts",
   "file_manager/foreground/js/ui/command.d.ts",
   "file_manager/foreground/js/ui/list.d.ts",
-  "file_manager/foreground/js/ui/list_item.d.ts",
+  "file_manager/foreground/js/ui/grid.d.ts",
   "file_manager/foreground/js/ui/menu_item.d.ts",
   "file_manager/foreground/js/ui/multi_menu_button.d.ts",
+  "file_manager/foreground/js/ui/tree.d.ts",
 ]
 
 generated_js_files = [
@@ -469,7 +471,6 @@ generated_js_files = [
   "file_manager/foreground/elements/files_format_dialog.js",
   "file_manager/foreground/elements/files_metadata_box.js",
   "file_manager/foreground/elements/files_metadata_entry.js",
-  "file_manager/foreground/elements/files_password_dialog.js",
   "file_manager/foreground/elements/files_quick_view.js",
   "file_manager/foreground/elements/files_safe_media.js",
   "file_manager/foreground/elements/files_spinner.js",
@@ -490,7 +491,6 @@ unittest_files = [
   "file_manager/common/js/util_unittest.js",
   "file_manager/common/js/filtered_volume_manager_unittest.js",
   "file_manager/common/js/file_type_unittest.js",
-  "file_manager/common/js/lru_cache_unittest.js",
   "file_manager/common/js/files_app_entry_types_unittest.js",
   "file_manager/common/js/recent_date_bucket_unittest.js",
   "file_manager/common/js/storage_unittest.js",
@@ -502,7 +502,6 @@ unittest_files = [
   "file_manager/background/js/volume_manager_unittest.js",
 
   # Foreground:
-  "file_manager/foreground/elements/files_password_dialog_unittest.js",
   "file_manager/foreground/elements/files_xf_elements_unittest.js",
   "file_manager/foreground/elements/files_toast_unittest.js",
   "file_manager/foreground/elements/files_tooltip_unittest.js",
@@ -549,7 +548,6 @@ unittest_files = [
   "file_manager/foreground/js/ui/directory_tree_unittest.js",
   "file_manager/foreground/js/navigation_list_model_unittest.js",
   "file_manager/foreground/js/directory_model_unittest.js",
-  "file_manager/foreground/js/file_transfer_controller_unittest.js",
 
   # Image Loader:
   "image_loader/scheduler_unittest.js",

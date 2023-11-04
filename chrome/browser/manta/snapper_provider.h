@@ -12,6 +12,8 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/manta/manta_service_callbacks.h"
+#include "chrome/browser/manta/proto/manta.pb.h"
 #include "components/endpoint_fetcher/endpoint_fetcher.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
@@ -50,20 +52,16 @@ class SnapperProvider {
 
   virtual ~SnapperProvider();
 
-  // Calls the google service endpoint with the provided string input as the
-  // http POST request payload. The fetched response is returned to the caller
-  // via an `EndpointFetcherCallback` callback.
+  // Calls the google service endpoint with the provided request as the http
+  // POST request payload. The fetched response is returned to the caller via a
+  // `MantaProtoResponseCallback` callback.
   //
   // NOTE: This methods internally depends on a valid `IdentityManager`.
-  void Call(const std::string& input, EndpointFetcherCallback done_callback);
+  virtual void Call(const manta::proto::Request& request,
+                    MantaProtoResponseCallback done_callback);
 
  private:
   friend class FakeSnapperProvider;
-
-  // Handles and sends response from the endpoint to the user provided callback.
-  void HandleResponse(EndpointFetcherCallback done_callback,
-                      std::unique_ptr<EndpointFetcher> endpoint_fetcher,
-                      std::unique_ptr<EndpointResponse> response);
 
   // Creates and returns unique pointer to an `EndpointFetcher` initialized with
   // the provided parameters and defaults relevant to `SnapperProvider`. Virtual

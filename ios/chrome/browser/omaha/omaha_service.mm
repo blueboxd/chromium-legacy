@@ -27,7 +27,7 @@
 #import "components/prefs/pref_service.h"
 #import "components/version_info/version_info.h"
 #import "ios/chrome/app/tests_hook.h"
-#import "ios/chrome/browser/browser_state_metrics/browser_state_metrics.h"
+#import "ios/chrome/browser/browser_state_metrics/model/browser_state_metrics.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
 #import "ios/chrome/browser/upgrade/upgrade_constants.h"
@@ -378,6 +378,7 @@ void OmahaService::CheckNow(OneOffCallback callback) {
 
   if (OmahaService::IsEnabled()) {
     OmahaService* service = GetInstance();
+    DUMP_WILL_BE_CHECK(service->started_);
     // TODO(crbug.com/1476112): Remove when early callers are removed.
     if (!service->started_) {
       return;
@@ -654,9 +655,10 @@ void OmahaService::SendPing() {
     DCHECK(!url_loader_factory_);
     url_loader_factory_ = network::SharedURLLoaderFactory::Create(
         std::move(pending_url_loader_factory_));
+    DCHECK(url_loader_factory_);
+  } else {
+    CHECK(url_loader_factory_);
   }
-
-  DCHECK(url_loader_factory_);
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url;

@@ -80,6 +80,7 @@ export {ZoneCustomizationElement} from './keyboard_backlight/zone_customization_
 export {Actions, DismissErrorAction, dismissErrorAction, PersonalizationActionName, SetErrorAction} from './personalization_actions.js';
 
 export * from './../personalization_app.mojom-webui.js';
+export {ColorScheme} from './../color_scheme.mojom-webui.js';
 export {PersonalizationBreadcrumbElement} from './personalization_breadcrumb_element.js';
 export {PersonalizationMainElement} from './personalization_main_element.js';
 export {reduce} from './personalization_reducers.js';
@@ -104,7 +105,7 @@ export {UserPreviewElement} from './user/user_preview_element.js';
 export {UserSubpageElement} from './user/user_subpage_element.js';
 export {GetUserMediaProxy, getWebcamUtils, setWebcamUtilsForTesting} from './user/webcam_utils_proxy.js';
 export {getCountText, getNumberOfGridItemsPerRow, staticColorIds} from './utils.js';
-export {DefaultImageSymbol, DisplayableImage, kDefaultImageSymbol, kMaximumLocalImagePreviews} from './wallpaper/constants.js';
+export {DefaultImageSymbol, DisplayableImage, WallpaperSearchThumbnail, kDefaultImageSymbol, kMaximumLocalImagePreviews} from './wallpaper/constants.js';
 export {GooglePhotosAlbumsElement} from './wallpaper/google_photos_albums_element.js';
 export {GooglePhotosCollectionElement, GooglePhotosTab} from './wallpaper/google_photos_collection_element.js';
 export {GooglePhotosPhotosByAlbumIdElement} from './wallpaper/google_photos_photos_by_album_id_element.js';
@@ -113,6 +114,9 @@ export {GooglePhotosSharedAlbumDialogElement, AcceptEvent} from './wallpaper/goo
 export {GooglePhotosZeroStateElement} from './wallpaper/google_photos_zero_state_element.js';
 export {DEFAULT_COLOR_SCHEME} from './theme/utils.js';
 export {LocalImagesElement} from './wallpaper/local_images_element.js';
+export {SeaPenCollectionElement} from './wallpaper/sea_pen/sea_pen_collection_element.js';
+export {SeaPenImagesElement} from './wallpaper/sea_pen/sea_pen_images_element.js';
+export {SeaPenInputElement} from './wallpaper/sea_pen/sea_pen_input_element.js';
 export {isDefaultImage, isFilePath, isGooglePhotosPhoto, isWallpaperImage} from './wallpaper/utils.js';
 export * from './wallpaper/wallpaper_actions.js';
 export {WallpaperCollectionsElement} from './wallpaper/wallpaper_collections_element.js';

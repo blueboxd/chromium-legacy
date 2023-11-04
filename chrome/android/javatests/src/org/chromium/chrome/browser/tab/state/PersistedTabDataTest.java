@@ -67,7 +67,6 @@ public class PersistedTabDataTest {
         PersistedTabDataConfiguration.setUseTestConfig(true);
         Tab tab = ThreadUtils.runOnUiThreadBlocking(() -> {
             Tab t = MockTab.createAndInitialize(1, false);
-            t.setIsTabSaveEnabled(true);
             return t;
         });
         MockPersistedTabData mockPersistedTabData = ThreadUtils.runOnUiThreadBlocking(() -> {
@@ -147,12 +146,10 @@ public class PersistedTabDataTest {
     @UiThreadTest
     @Test
     public void testOnTabClose() throws TimeoutException {
-        TabImpl tab = (TabImpl) MockTab.createAndInitialize(1, false);
-        tab.setIsTabSaveEnabled(true);
+        TabImpl tab = MockTab.createAndInitialize(1, false);
         tab.getUserDataHost().setUserData(
                 ShoppingPersistedTabData.class, mShoppingPersistedTabDataMock);
         PersistedTabData.onTabClose(tab);
-        Assert.assertFalse(tab.getIsTabSaveEnabledSupplierForTesting().get());
         verify(mShoppingPersistedTabDataMock, times(1)).disableSaving();
     }
 

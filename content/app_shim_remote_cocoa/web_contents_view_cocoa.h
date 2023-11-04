@@ -22,6 +22,10 @@ class WebContentsNSViewHost;
 }  // namespace mojom
 }  // namespace remote_cocoa
 
+namespace url {
+class Origin;
+}
+
 @class WebDragSource;
 
 CONTENT_EXPORT
@@ -48,6 +52,7 @@ CONTENT_EXPORT
 - (instancetype)initWithViewsHostableView:(ui::ViewsHostableView*)v;
 - (void)registerDragTypes;
 - (void)startDragWithDropData:(const content::DropData&)dropData
+                 sourceOrigin:(const url::Origin&)sourceOrigin
             dragOperationMask:(NSDragOperation)operationMask
                         image:(NSImage*)image
                        offset:(NSPoint)offset

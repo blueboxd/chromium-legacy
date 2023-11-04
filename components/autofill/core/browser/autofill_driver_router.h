@@ -14,6 +14,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -98,7 +99,7 @@ namespace autofill {
 //   }
 //
 // Let AutofillAgent-N, AutofillDriver-N, and AutofillManager-N correspond to
-// the Frame-N. ContentAutofillRouter would route an event concerning any of the
+// the Frame-N. AutofillDriverRouter would route an event concerning any of the
 // forms in Frame-3 from AutofillDriver-3 to AutofillDriver-0:
 //
 //   +---Tab---+            +---Tab----+            +----Tab----+
@@ -252,24 +253,17 @@ class AutofillDriverRouter {
                        const FieldGlobalId& field_global_id));
 
   // Routing of events called by the browser:
-  std::vector<FieldGlobalId> FillOrPreviewForm(
+  std::vector<FieldGlobalId> ApplyAutofillAction(
       AutofillDriver* source,
+      mojom::AutofillActionType action_type,
       mojom::AutofillActionPersistence action_persistence,
       const FormData& data,
       const url::Origin& triggered_origin,
       const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map,
       void (*callback)(AutofillDriver* target,
+                       mojom::AutofillActionType action_type,
                        mojom::AutofillActionPersistence action_persistence,
                        const FormData& form));
-  void UndoAutofill(
-      AutofillDriver* source,
-      mojom::AutofillActionPersistence action_persistence,
-      const FormData& data,
-      const url::Origin& triggered_origin,
-      const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map,
-      void (*callback)(AutofillDriver* target,
-                       const FormData& form,
-                       mojom::AutofillActionPersistence action_persistence));
   void SendAutofillTypePredictionsToRenderer(
       AutofillDriver* source,
       const std::vector<FormDataPredictions>& type_predictions,

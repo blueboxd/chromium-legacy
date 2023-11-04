@@ -5,12 +5,13 @@
 #include "chrome/browser/device_reauth/mac/device_authenticator_mac.h"
 
 #include "base/functional/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/device_reauth/mac/authenticator_mac.h"
 #include "chrome/browser/password_manager/password_manager_util_mac.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "components/device_reauth/device_authenticator.h"
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/reauth_purpose.h"
@@ -20,17 +21,14 @@
 #include "ui/base/l10n/l10n_util.h"
 
 DeviceAuthenticatorMac::DeviceAuthenticatorMac(
-    std::unique_ptr<AuthenticatorMacInterface> authenticator)
-    : authenticator_(std::move(authenticator)) {}
+    std::unique_ptr<AuthenticatorMacInterface> authenticator,
+    DeviceAuthenticatorProxy* proxy,
+    const device_reauth::DeviceAuthParams& params)
+    : ChromeDeviceAuthenticatorCommon(proxy,
+                                      params.GetAuthenticationValidityPeriod()),
+      authenticator_(std::move(authenticator)) {}
 
 DeviceAuthenticatorMac::~DeviceAuthenticatorMac() = default;
-
-// static
-scoped_refptr<DeviceAuthenticatorMac> DeviceAuthenticatorMac::CreateForTesting(
-    std::unique_ptr<AuthenticatorMacInterface> authenticator) {
-  return base::WrapRefCounted(
-      new DeviceAuthenticatorMac(std::move(authenticator)));
-}
 
 bool DeviceAuthenticatorMac::CanAuthenticateWithBiometrics() {
   bool is_available = authenticator_->CheckIfBiometricsAvailable()
@@ -62,14 +60,7 @@ bool DeviceAuthenticatorMac::CanAuthenticateWithBiometricOrScreenLock() {
   return authenticator_->CheckIfBiometricsOrScreenLockAvailable();
 }
 
-void DeviceAuthenticatorMac::Authenticate(
-    device_reauth::DeviceAuthRequester requester,
-    AuthenticateCallback callback,
-    bool use_last_valid_auth) {
-  NOTIMPLEMENTED();
-}
-
-void DeviceAuthenticatorMac::Cancel(device_reauth::DeviceAuthRequester) {
+void DeviceAuthenticatorMac::Cancel() {
   touch_id_auth_context_ = nullptr;
   if (callback_) {
     // No code should be run after the callback as the callback could already be
@@ -93,9 +84,7 @@ void DeviceAuthenticatorMac::AuthenticateWithMessage(
   // Always use CanAuthenticateWithBiometrics() before invoking the biometrics
   // API, and if it fails use password_manager_util_mac::AuthenticateUser()
   // instead, until crbug.com/1358442 is fixed.
-  if (!CanAuthenticateWithBiometrics() ||
-      !base::FeatureList::IsEnabled(
-          password_manager::features::kBiometricAuthenticationInSettings)) {
+  if (!CanAuthenticateWithBiometrics()) {
     OnAuthenticationCompleted(authenticator_->AuthenticateUserWithNonBiometrics(
         l10n_util::GetStringFUTF16(IDS_PASSWORDS_AUTHENTICATION_PROMPT_PREFIX,
                                    message)));

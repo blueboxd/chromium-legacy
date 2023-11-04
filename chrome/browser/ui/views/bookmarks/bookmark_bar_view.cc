@@ -797,7 +797,9 @@ void BookmarkBarView::RemoveObserver(BookmarkBarViewObserver* observer) {
 
 void BookmarkBarView::SetPageNavigator(content::PageNavigator* navigator) {
   page_navigator_ = navigator;
-  saved_tab_group_bar_->SetPageNavigator(navigator);
+  if (saved_tab_group_bar_) {
+    saved_tab_group_bar_->SetPageNavigator(navigator);
+  }
 }
 
 void BookmarkBarView::SetInfoBarVisible(bool infobar_visible) {
@@ -1092,7 +1094,7 @@ void BookmarkBarView::Layout() {
   }
 
   int saved_tab_group_bar_width = 0;
-  if (base::FeatureList::IsEnabled(features::kTabGroupsSave)) {
+  if (saved_tab_group_bar_) {
     // Calculate the maximum size needed for the tab group buttons.
     saved_tab_group_bar_width =
         saved_tab_group_bar_->CalculatePreferredWidthRestrictedBy(max_x - x);
@@ -1105,13 +1107,13 @@ void BookmarkBarView::Layout() {
     // the bookmark buttons.
     if (saved_tab_group_bar_width > 0) {
       // Possibly update the paddings of the separator
-      if (saved_tab_group_bar_->IsOverflowButtonVisible()) {
-        saved_tab_groups_separator_view_->UpdateBorderAndPreferredSize(
-            gfx::Insets::TLBR(0, 8, 0, 8));
-      } else {
-        saved_tab_groups_separator_view_->UpdateBorderAndPreferredSize(
-            gfx::Insets::TLBR(0, 16, 0, 8));
-      }
+      constexpr int kSeparatorPadding = 8;
+      const int left_padding = saved_tab_group_bar_->IsOverflowButtonVisible()
+                                   ? 0
+                                   : kSeparatorPadding;
+      saved_tab_groups_separator_view_->UpdateBorderAndPreferredSize(
+          gfx::Insets::TLBR(0, left_padding, 0, kSeparatorPadding));
+
       // Update the bounds for the separator.
       gfx::Size saved_tab_groups_separator_view_pref =
           saved_tab_groups_separator_view_->GetPreferredSize();
@@ -1158,25 +1160,28 @@ void BookmarkBarView::Layout() {
     }
   }
 
+  const bool show_bookmarks_overflow =
+      bookmark_model_->loaded() &&
+      (bookmark_model_->bookmark_bar_node()->children().size() >
+           bookmark_buttons_.size() ||
+       (!bookmark_buttons_.empty() && !bookmark_buttons_.back()->GetVisible()));
+
   // Set the visibility of the tab group separator if there are groups and
   // bookmarks.
-  if (saved_tab_groups_separator_view_ &&
-      base::FeatureList::IsEnabled(features::kTabGroupsSave))
+  if (saved_tab_groups_separator_view_) {
+    const bool bookmarks_button_visible =
+        !bookmark_buttons_.empty() && bookmark_buttons_.front()->GetVisible();
     saved_tab_groups_separator_view_->SetVisible(
-        saved_tab_group_bar_width > 0 && !bookmark_buttons_.empty() &&
-        bookmark_buttons_[0]->GetVisible());
+        saved_tab_group_bar_width > 0 &&
+        (bookmarks_button_visible || show_bookmarks_overflow));
+  }
 
   // Layout the right side buttons.
   x = max_x + bookmark_bar_button_padding;
 
   // The overflow button.
   overflow_button_->SetBounds(x, y, overflow_pref.width(), button_height);
-  const bool show_overflow =
-      bookmark_model_->loaded() &&
-      (bookmark_model_->bookmark_bar_node()->children().size() >
-           bookmark_buttons_.size() ||
-       (!bookmark_buttons_.empty() && !bookmark_buttons_.back()->GetVisible()));
-  overflow_button_->SetVisible(show_overflow);
+  overflow_button_->SetVisible(show_bookmarks_overflow);
   x += overflow_pref.width();
 
   // Bookmarks Separator.
@@ -1723,10 +1728,11 @@ void BookmarkBarView::Init() {
   // Also re-enabled when the model is loaded.
   managed_bookmarks_button_->SetEnabled(false);
 
-  saved_tab_group_bar_ = AddChildView(
-      std::make_unique<SavedTabGroupBar>(browser_, animations_enabled));
-  saved_tab_group_bar_->SetVisible(
-      base::FeatureList::IsEnabled(features::kTabGroupsSave));
+  if (IsSavedTabGroupsEnabled()) {
+    saved_tab_group_bar_ = AddChildView(
+        std::make_unique<SavedTabGroupBar>(browser_, animations_enabled));
+    saved_tab_group_bar_->SetVisible(true);
+  }
 
   overflow_button_ = AddChildView(CreateOverflowButton());
 
@@ -1741,11 +1747,12 @@ void BookmarkBarView::Init() {
           &BookmarkBarView::OnAppsPageShortcutVisibilityPrefChanged,
           base::Unretained(this)));
 
-  saved_tab_groups_separator_view_ =
-      AddChildView(std::make_unique<ButtonSeparatorView>());
-  saved_tab_groups_separator_view_->SetVisible(
-      base::FeatureList::IsEnabled(features::kTabGroupsSave) &&
-      browser_->profile()->IsRegularProfile());
+  if (IsSavedTabGroupsEnabled()) {
+    saved_tab_groups_separator_view_ =
+        AddChildView(std::make_unique<ButtonSeparatorView>());
+    saved_tab_groups_separator_view_->SetVisible(true);
+  }
+
   profile_pref_registrar_.Add(
       bookmarks::prefs::kShowManagedBookmarksInBookmarkBar,
       base::BindRepeating(&BookmarkBarView::OnShowManagedBookmarksPrefChanged,
@@ -1935,6 +1942,11 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
   button->SetMaxSize(gfx::Size(bookmark_button_util::kMaxButtonWidth, 0));
 }
 
+bool BookmarkBarView::IsSavedTabGroupsEnabled() {
+  return base::FeatureList::IsEnabled(features::kTabGroupsSave) &&
+         browser_->profile()->IsRegularProfile();
+}
+
 bool BookmarkBarView::BookmarkNodeAddedImpl(BookmarkModel* model,
                                             const BookmarkNode* parent,
                                             size_t index) {
@@ -2079,7 +2091,7 @@ void BookmarkBarView::CalculateDropLocation(
     location->index = 0;
     const BookmarkNode* node =
         data.GetFirstNode(bookmark_model_, profile->GetPath());
-    int ops = node && managed_->CanBeEditedByUser(node)
+    int ops = node && !managed_->IsNodeManaged(node)
                   ? ui::DragDropTypes::DRAG_MOVE
                   : ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK;
     location->operation = chrome::GetPreferredBookmarkDropOperation(
@@ -2288,7 +2300,9 @@ void BookmarkBarView::InsertBookmarkButtonAtIndex(
   auto i = children().cbegin();
   DCHECK_EQ(*i++, apps_page_shortcut_);
   DCHECK_EQ(*i++, managed_bookmarks_button_);
-  DCHECK_EQ(*i++, saved_tab_group_bar_);
+  if (saved_tab_group_bar_) {
+    DCHECK_EQ(*i++, saved_tab_group_bar_);
+  }
   const auto is_bookmark_button = [this](const auto* v) {
     const char* class_name = v->GetClassName();
     return (class_name == BookmarkButton::kViewClassName ||
@@ -2299,8 +2313,10 @@ void BookmarkBarView::InsertBookmarkButtonAtIndex(
   DCHECK_EQ(*i++, overflow_button_);
   DCHECK_EQ(*i++, other_bookmarks_button_);
 #endif
-  AddChildViewAt(std::move(bookmark_button),
-                 GetIndexOf(saved_tab_group_bar_).value() + 1 + index);
+  const auto view_index = saved_tab_group_bar_
+                              ? GetIndexOf(saved_tab_group_bar_).value()
+                              : GetIndexOf(managed_bookmarks_button_).value();
+  AddChildViewAt(std::move(bookmark_button), view_index + 1 + index);
 }
 
 size_t BookmarkBarView::GetIndexForButton(views::View* button) {

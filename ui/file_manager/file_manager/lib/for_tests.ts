@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ActionsProducerGen} from './actions_producer.js';
-import {Action, BaseStore, Slice} from './base_store.js';
+import type {ActionsProducerGen} from './actions_producer.js';
+import {type Action, BaseStore, Slice} from './base_store.js';
 
 export type TestStore = BaseStore<TestState>;
 
@@ -41,7 +41,7 @@ export class TestSubscriber {
 export function setupTestStore() {
   // All actions dispatched via the store and processed by the reducer.
   const dispatchedActions = Array<Action>(0);
-  const testSlice = new Slice<TestState>('test');
+  const testSlice = new Slice<TestState, any>('test');
   const createTestAction = testSlice.addReducer(
       'test', (state: TestState, payload: string|void): TestState => {
         dispatchedActions.push({type: 'test', payload});

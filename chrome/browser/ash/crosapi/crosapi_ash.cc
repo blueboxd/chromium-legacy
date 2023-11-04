@@ -9,6 +9,7 @@
 
 #include "ash/public/ash_interfaces.h"
 #include "base/dcheck_is_on.h"
+#include "base/feature_list.h"
 #include "base/functional/callback.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -105,6 +106,7 @@
 #include "chrome/browser/ash/crosapi/web_app_service_ash.h"
 #include "chrome/browser/ash/crosapi/web_kiosk_service_ash.h"
 #include "chrome/browser/ash/crosapi/web_page_info_ash.h"
+#include "chrome/browser/ash/input_method/editor_mediator.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/remote_apps/remote_apps_manager_factory.h"
 #include "chrome/browser/ash/sync/sync_mojo_service_ash.h"
@@ -113,6 +115,8 @@
 #include "chrome/browser/ash/telemetry_extension/events/telemetry_event_service_ash.h"
 #include "chrome/browser/ash/telemetry_extension/routines/telemetry_diagnostic_routine_service_ash.h"
 #include "chrome/browser/ash/telemetry_extension/telemetry/probe_service_ash.h"
+#include "chrome/browser/ash/trusted_vault/trusted_vault_backend_service_ash.h"
+#include "chrome/browser/ash/trusted_vault/trusted_vault_backend_service_factory_ash.h"
 #include "chrome/browser/ash/video_conference/video_conference_manager_ash.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -144,6 +148,7 @@
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "components/account_manager_core/chromeos/account_manager_mojo_service.h"
+#include "components/trusted_vault/features.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/media_session_service.h"
@@ -502,6 +507,12 @@ void CrosapiAsh::BindDriveIntegrationService(
 void CrosapiAsh::BindEchoPrivate(
     mojo::PendingReceiver<mojom::EchoPrivate> receiver) {
   echo_private_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindEditorPanelManager(
+    mojo::PendingReceiver<mojom::EditorPanelManager> receiver) {
+  ash::input_method::EditorMediator::Get()->BindEditorPanelManager(
+      std::move(receiver));
 }
 
 void CrosapiAsh::BindEmbeddedAccessibilityHelperClientFactory(
@@ -899,6 +910,16 @@ void CrosapiAsh::BindTestController(
 void CrosapiAsh::BindTimeZoneService(
     mojo::PendingReceiver<mojom::TimeZoneService> receiver) {
   time_zone_service_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindTrustedVaultBackend(
+    mojo::PendingReceiver<mojom::TrustedVaultBackend> receiver) {
+  if (!base::FeatureList::IsEnabled(
+          trusted_vault::kChromeOSTrustedVaultClientShared)) {
+    return;
+  }
+  ash::TrustedVaultBackendServiceFactoryAsh::GetForProfile(GetAshProfile())
+      ->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindTts(mojo::PendingReceiver<mojom::Tts> receiver) {

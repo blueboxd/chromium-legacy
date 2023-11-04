@@ -18,7 +18,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Batch;
-import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
+import org.chromium.net.CronetTestRule.CronetImplementation;
+import org.chromium.net.CronetTestRule.IgnoreFor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,9 +27,7 @@ import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/**
- * Tests that making a large number of requests do not lead to crashes.
- */
+/** Tests that making a large number of requests do not lead to crashes. */
 @RunWith(AndroidJUnit4.class)
 @Batch(Batch.UNIT_TESTS)
 public class CronetStressTest {
@@ -49,8 +48,10 @@ public class CronetStressTest {
 
     @Test
     @LargeTest
-    @OnlyRunNativeCronet
-    public void testLargeNumberOfUploads() throws Exception {
+    @IgnoreFor(implementations = {CronetImplementation.FALLBACK},
+            reason = "This test crashes the fallback implementation.")
+    public void
+    testLargeNumberOfUploads() throws Exception {
         Random random = new Random();
         final int kNumRequest = 1000;
         final int kNumRequestHeaders = 100;

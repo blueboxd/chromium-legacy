@@ -13,7 +13,9 @@
 
 namespace autofill {
 
-IbanSaveManager::IbanSaveManager(AutofillClient* client) : client_(client) {}
+IbanSaveManager::IbanSaveManager(AutofillClient* client,
+                                 PersonalDataManager* personal_data_manager)
+    : client_(client), personal_data_manager_(personal_data_manager) {}
 
 IbanSaveManager::~IbanSaveManager() = default;
 
@@ -27,6 +29,9 @@ std::string IbanSaveManager::GetPartialIbanHashString(
 bool IbanSaveManager::AttemptToOfferIbanLocalSave(
     const Iban& iban_import_candidate) {
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+  if (!ShouldOfferLocalSave(iban_import_candidate)) {
+    return false;
+  }
   iban_save_candidate_ = iban_import_candidate;
   // If the max strikes limit has been reached, do not show the IBAN save
   // prompt.
@@ -53,6 +58,15 @@ bool IbanSaveManager::AttemptToOfferIbanLocalSave(
   // IBAN save prompts do not currently exist on mobile.
   return false;
 #endif
+}
+
+bool IbanSaveManager::ShouldOfferLocalSave(const Iban& iban_import_candidate) {
+  // Only offer to save new IBANs. Users can go to the payment methods settings
+  // page to update existing IBANs if desired.
+  return std::ranges::none_of(
+      personal_data_manager_->GetLocalIbans(), [&](const auto& iban) {
+        return iban->value() == iban_import_candidate.value();
+      });
 }
 
 IbanSaveStrikeDatabase* IbanSaveManager::GetIbanSaveStrikeDatabase() {
@@ -84,7 +98,7 @@ void IbanSaveManager::OnUserDidDecideOnLocalSave(
       // the strike count starts over with respect to re-saving it.
       GetIbanSaveStrikeDatabase()->ClearStrikes(partial_iban_hash);
       client_->GetPersonalDataManager()->OnAcceptedLocalIbanSave(
-          iban_save_candidate_);
+          std::move(iban_save_candidate_));
       if (observer_for_testing_) {
         observer_for_testing_->OnAcceptSaveIbanComplete();
       }

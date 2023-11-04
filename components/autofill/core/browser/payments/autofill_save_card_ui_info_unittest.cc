@@ -12,6 +12,7 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/payments/test_legal_message_line.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/strings/grit/components_strings.h"
@@ -37,7 +38,7 @@ struct Year {
   std::string last2_string;
 };
 
-Year SetupNextYear() {
+Year SetUpNextYear() {
   std::string next_year = test::NextYear();
   int integer;
   EXPECT_TRUE(base::StringToInt(next_year, &integer));
@@ -53,7 +54,7 @@ Year SetupNextYear() {
 
 // Tests that CreateForLocalSave() sets all properties.
 TEST(AutofillSaveCardUiInfoTest, CreateForLocalSaveSetsProperties) {
-  const Year next_year = SetupNextYear();
+  const Year next_year = SetUpNextYear();
   CreditCard card = test::GetCreditCard();
   card.SetNickname(u"My Card");
   card.SetNumber(u"378282246310005");  // This number sets the card network.
@@ -94,7 +95,7 @@ TEST(AutofillSaveCardUiInfoTest, CreateForLocalSaveSetsProperties) {
 // Tests that CreateForUploadSave() sets properties where no branched logic is
 // needed.
 TEST(AutofillSaveCardUiInfoTest, CreateForUploadSaveSetsProperties) {
-  const Year next_year = SetupNextYear();
+  const Year next_year = SetUpNextYear();
   CreditCard card = test::GetMaskedServerCard();
   card.SetNickname(u"My Card");
   card.SetNumber(u"4444333322221111");
@@ -141,9 +142,74 @@ TEST(AutofillSaveCardUiInfoTest, CreateForUploadSaveSetsProperties) {
   EXPECT_EQ(ui_info.is_google_pay_branding_enabled, false);
 }
 
+// Verify that the description text of the prompt is set correctly for different
+// configurations.
+#if BUILDFLAG(IS_ANDROID)
+// The card is saved without CVC.
+TEST(
+    AutofillSaveCardUiInfoTest,
+    VerifyDescriptionForUploadSave_GpayBrandingEnabled_CardSaveTypeIsOnlyCard) {
+  base::test::ScopedFeatureList features;
+  features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillEnablePaymentsAndroidBottomSheet,
+                            features::kAutofillEnableCvcStorageAndFilling},
+      /*disabled_features=*/{});
+  CreditCard card = test::GetMaskedServerCard();
+
+  auto ui_info = AutofillSaveCardUiInfo::CreateForUploadSave(
+      /*options=*/{.card_save_type =
+                       AutofillClient::CardSaveType::kCardSaveOnly},
+      card, LegalMessageLines(), AccountInfo(),
+      /*is_google_pay_branding_enabled=*/true);
+
+  EXPECT_EQ(ui_info.description_text,
+            l10n_util::GetStringUTF16(
+                IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3));
+}
+
+// The card is saved with CVC.
+TEST(AutofillSaveCardUiInfoTest,
+     VerifyDescriptionForUploadSave_GpayBrandingEnabled_CardSaveTypeIsWithCvc) {
+  base::test::ScopedFeatureList features;
+  features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillEnablePaymentsAndroidBottomSheet,
+                            features::kAutofillEnableCvcStorageAndFilling},
+      /*disabled_features=*/{});
+  CreditCard card = test::GetMaskedServerCard();
+
+  auto ui_info = AutofillSaveCardUiInfo::CreateForUploadSave(
+      /*options=*/{.card_save_type =
+                       AutofillClient::CardSaveType::kCardSaveWithCvc},
+      card, LegalMessageLines(), AccountInfo(),
+      /*is_google_pay_branding_enabled=*/true);
+
+  EXPECT_EQ(ui_info.description_text,
+            l10n_util::GetStringUTF16(
+                IDS_AUTOFILL_SAVE_CARD_WITH_CVC_PROMPT_EXPLANATION_UPLOAD));
+}
+#else   // BUILDFLAG(IS_ANDROID)
+
+// On iOS, the card is always saved without CVC as CVC Storage is not available
+// currently.
+TEST(AutofillSaveCardUiInfoTest,
+     VerifyDescriptionForUploadSave_GpayBrandingEnabled) {
+  CreditCard card = test::GetMaskedServerCard();
+
+  auto ui_info = AutofillSaveCardUiInfo::CreateForUploadSave(
+      /*options=*/{.card_save_type =
+                       AutofillClient::CardSaveType::kCardSaveOnly},
+      card, LegalMessageLines(), AccountInfo(),
+      /*is_google_pay_branding_enabled=*/true);
+
+  EXPECT_EQ(ui_info.description_text,
+            l10n_util::GetStringUTF16(
+                IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3));
+}
+#endif  // BUILDFLAG(IS_ANDROID)
+
 TEST(AutofillSaveCardUiInfoTest,
      CreateForUploadSaveSetsCardDescriptionWithoutNickname) {
-  const Year next_year = SetupNextYear();
+  const Year next_year = SetUpNextYear();
   CreditCard card = test::GetMaskedServerCard();
   card.SetNumber(u"4444333322221111");
   card.SetNetworkForMaskedCard(kVisaCard);

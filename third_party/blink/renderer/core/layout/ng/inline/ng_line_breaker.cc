@@ -6,7 +6,8 @@
 
 #include "base/containers/adapters.h"
 #include "base/ranges/algorithm.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/layout/layout_text_combine.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
@@ -26,7 +27,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
-#include "third_party/blink/renderer/core/layout/ng/svg/resolved_text_layout_attributes_iterator.h"
+#include "third_party/blink/renderer/core/layout/svg/resolved_text_layout_attributes_iterator.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/svg/svg_text_content_element.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
@@ -317,10 +318,10 @@ float ComputeWordWidth(const ShapeResult& shape_result,
                                          : start_position - end_position;
 }
 
-inline LayoutNGTextCombine* MayBeTextCombine(const NGInlineItem* item) {
+inline LayoutTextCombine* MayBeTextCombine(const NGInlineItem* item) {
   if (!item)
     return nullptr;
-  return DynamicTo<LayoutNGTextCombine>(item->GetLayoutObject());
+  return DynamicTo<LayoutTextCombine>(item->GetLayoutObject());
 }
 
 }  // namespace
@@ -728,7 +729,28 @@ void NGLineBreaker::PrepareNextLine(NGLineInfo* line_info) {
 
 void NGLineBreaker::NextLine(NGLineInfo* line_info) {
   PrepareNextLine(line_info);
+
+  if (break_token_ && break_token_->IsInParallelBlockFlow()) {
+    const auto* block_break_token = break_token_->BlockBreakToken();
+    DCHECK(block_break_token);
+    const NGInlineItem& item = Items()[break_token_->StartItemIndex()];
+    DCHECK_EQ(item.GetLayoutObject(),
+              block_break_token->InputNode().GetLayoutBox());
+    if (block_break_token->InputNode().IsFloating()) {
+      HandleFloat(item, block_break_token, line_info);
+    } else {
+      // Overflowed block-in-inline, i.e. in a parallel flow.
+      DCHECK_EQ(item.Type(), NGInlineItem::kBlockInInline);
+      HandleBlockInInline(item, block_break_token, line_info);
+    }
+
+    state_ = LineBreakState::kDone;
+    line_info->SetIsEmptyLine();
+    return;
+  }
+
   BreakLine(line_info);
+
   if (UNLIKELY(HasHyphen()))
     FinalizeHyphen(line_info->MutableResults());
   RemoveTrailingCollapsibleSpace(line_info);
@@ -842,7 +864,7 @@ void NGLineBreaker::BreakLine(NGLineInfo* line_info) {
       continue;
     }
     if (item.Type() == NGInlineItem::kFloating) {
-      HandleFloat(item, line_info);
+      HandleFloat(item, /* float_break_token */ nullptr, line_info);
       continue;
     }
     if (item.Type() == NGInlineItem::kBidiControl) {
@@ -850,7 +872,9 @@ void NGLineBreaker::BreakLine(NGLineInfo* line_info) {
       continue;
     }
     if (item.Type() == NGInlineItem::kBlockInInline) {
-      HandleBlockInInline(item, line_info);
+      const NGBlockBreakToken* block_break_token =
+          break_token_ ? break_token_->BlockBreakToken() : nullptr;
+      HandleBlockInInline(item, block_break_token, line_info);
       continue;
     }
 
@@ -1308,7 +1332,7 @@ bool NGLineBreaker::ShouldCreateNewSvgSegment() const {
         svg_addressable_offset_ <= range.end_index)
       return true;
   }
-  const NGSvgCharacterData& char_data =
+  const SvgCharacterData& char_data =
       svg_resolved_iterator_->AdvanceTo(svg_addressable_offset_);
   return char_data.HasRotate() || char_data.HasX() || char_data.HasY() ||
          char_data.HasDx() || char_data.HasDy();
@@ -1334,21 +1358,29 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
 
   DCHECK_EQ(item_shape_result.StartIndex(), item.StartOffset());
   DCHECK_EQ(item_shape_result.EndIndex(), item.EndOffset());
-  struct ShapeCallbackContext {
+  class NGShapingLineBreaker : public ShapingLineBreaker {
     STACK_ALLOCATED();
 
    public:
-    NGLineBreaker* line_breaker;
-    const NGInlineItem& item;
-  } shape_callback_context{this, item};
-  const ShapingLineBreaker::ShapeCallback shape_callback =
-      [](void* untyped_context, unsigned start, unsigned end) {
-        ShapeCallbackContext* context =
-            static_cast<ShapeCallbackContext*>(untyped_context);
-        return context->line_breaker->ShapeText(context->item, start, end);
-      };
-  ShapingLineBreaker breaker(&item_shape_result, &break_iterator_, hyphenation_,
-                             shape_callback, &shape_callback_context);
+    NGShapingLineBreaker(NGLineBreaker* line_breaker,
+                         const NGInlineItem* item,
+                         scoped_refptr<const ShapeResult> result)
+        : ShapingLineBreaker(std::move(result),
+                             &line_breaker->break_iterator_,
+                             line_breaker->hyphenation_),
+          line_breaker_(line_breaker),
+          item_(item) {}
+
+   protected:
+    scoped_refptr<ShapeResult> Shape(unsigned start, unsigned end) final {
+      return line_breaker_->ShapeText(*item_, start, end);
+    }
+
+   private:
+    NGLineBreaker* line_breaker_;
+    const NGInlineItem* item_;
+
+  } breaker(this, &item, &item_shape_result);
 
   // Use kStartShouldBeSafe if at the beginning of a line.
   unsigned options = ShapingLineBreaker::kDefaultOptions;
@@ -2646,8 +2678,10 @@ void NGLineBreaker::ComputeMinMaxContentSizeForBlockChild(
   item_result->inline_size = result.sizes.max_size + inline_margins;
 }
 
-void NGLineBreaker::HandleBlockInInline(const NGInlineItem& item,
-                                        NGLineInfo* line_info) {
+void NGLineBreaker::HandleBlockInInline(
+    const NGInlineItem& item,
+    const NGBlockBreakToken* block_break_token,
+    NGLineInfo* line_info) {
   DCHECK_EQ(item.Type(), NGInlineItem::kBlockInInline);
 
   if (!line_info->Results().empty()) {
@@ -2658,8 +2692,6 @@ void NGLineBreaker::HandleBlockInInline(const NGInlineItem& item,
   }
 
   NGInlineItemResult* item_result = AddItem(item, line_info);
-  const NGBlockBreakToken* incoming_block_break_token =
-      break_token_ ? break_token_->BlockInInlineBreakToken() : nullptr;
   if (mode_ == NGLineBreakerMode::kContent) {
     // The exclusion spaces *must* match. If they don't we'll have an incorrect
     // layout (as it will potentially won't consider some preceeding floats).
@@ -2672,7 +2704,7 @@ void NGLineBreaker::HandleBlockInInline(const NGInlineItem& item,
     const NGColumnSpannerPath* spanner_path_for_child =
         FollowColumnSpannerPath(column_spanner_path_, block_node);
     const NGLayoutResult* layout_result =
-        block_node.Layout(constraint_space_, incoming_block_break_token,
+        block_node.Layout(constraint_space_, block_break_token,
                           /* early_break */ nullptr, spanner_path_for_child);
     line_info->SetBlockInInlineLayoutResult(layout_result);
 
@@ -2700,21 +2732,69 @@ void NGLineBreaker::HandleBlockInInline(const NGInlineItem& item,
   line_info->SetHasForcedBreak();
   is_after_forced_break_ = true;
   trailing_whitespace_ = WhitespaceState::kNone;
-  if (const NGBlockBreakToken* outgoing_block_break_token =
+  if (const auto* outgoing_block_break_token =
           line_info->BlockInInlineBreakToken()) {
     // The block broke inside. If the block itself fits, but some content inside
-    // overflowed, and this happened for the first time, we now need to enter a
-    // parallel flow, i.e. resume the block-in-inline in the next fragmentainer,
-    // but continue layout of any actual inline content after the block-in-
-    // inline in the current fragmentainer.
-    if (outgoing_block_break_token->IsAtBlockEnd() &&
-        (!incoming_block_break_token ||
-         !incoming_block_break_token->IsAtBlockEnd()))
-      needs_new_parallel_flow_ = true;
+    // overflowed, we now need to enter a parallel flow, i.e. resume the
+    // block-in-inline in the next fragmentainer, but continue layout of any
+    // actual inline content after the block-in- inline in the current
+    // fragmentainer.
+    if (outgoing_block_break_token->IsAtBlockEnd()) {
+      const auto* parallel_token =
+          NGInlineBreakToken::CreateForParallelBlockFlow(
+              node_, current_, *outgoing_block_break_token);
+      line_info->PropagateParallelFlowBreakToken(parallel_token);
+
+      MoveToNextOf(item);
+    }
   } else {
     MoveToNextOf(item);
   }
   state_ = LineBreakState::kDone;
+}
+
+// Figure out if the float should be pushed after the current line. This
+// should only be considered if we're not resuming the float, after having
+// broken inside or before it in the previous fragmentainer. Otherwise we must
+// attempt to place it.
+bool NGLineBreaker::ShouldPushFloatAfterLine(
+    NGUnpositionedFloat* unpositioned_float,
+    NGLineInfo* line_info) {
+  if (unpositioned_float->token) {
+    return false;
+  }
+
+  LayoutUnit inline_margin_size =
+      ComputeMarginBoxInlineSizeForUnpositionedFloat(unpositioned_float);
+
+  LayoutUnit used_size = position_ + inline_margin_size +
+                         ComputeFloatAncestorInlineEndSize(
+                             constraint_space_, Items(), current_.item_index);
+  bool can_fit_float =
+      used_size <= line_opportunity_.AvailableFloatInlineSize().AddEpsilon();
+  if (!can_fit_float) {
+    // Floats need to know the current line width to determine whether to put it
+    // into the current line or to the next line. Trailing spaces will be
+    // removed if this line breaks here because they should be collapsed across
+    // floats, but they are still included in the current line position at this
+    // point. Exclude it when computing whether this float can fit or not.
+    can_fit_float = used_size - TrailingCollapsibleSpaceWidth(line_info) <=
+                    line_opportunity_.AvailableFloatInlineSize().AddEpsilon();
+  }
+
+  LayoutUnit bfc_block_offset =
+      unpositioned_float->origin_bfc_offset.block_offset;
+
+  // The float should be positioned after the current line if:
+  //  - It can't fit within the non-shape area. (Assuming the current position
+  //    also is strictly within the non-shape area).
+  //  - It will be moved down due to block-start edge alignment.
+  //  - It will be moved down due to clearance.
+  //  - An earlier float has been pushed to the next fragmentainer.
+  return !can_fit_float ||
+         exclusion_space_->LastFloatBlockStart() > bfc_block_offset ||
+         exclusion_space_->ClearanceOffset(unpositioned_float->ClearType(
+             constraint_space_.Direction())) > bfc_block_offset;
 }
 
 // Performs layout and positions a float.
@@ -2732,6 +2812,7 @@ void NGLineBreaker::HandleBlockInInline(const NGInlineItem& item,
 // allowed to position a float "above" another float which has come before us
 // in the document.
 void NGLineBreaker::HandleFloat(const NGInlineItem& item,
+                                const NGBlockBreakToken* float_break_token,
                                 NGLineInfo* line_info) {
   // When rewind occurs, an item may be handled multiple times.
   // Since floats are put into a separate list, avoid handling same floats
@@ -2743,6 +2824,7 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
   // fragmentainer break. In that case the floats associated with this line will
   // already have been processed.
   NGInlineItemResult* item_result = AddItem(item, line_info);
+  auto index_before_float = current_;
   item_result->can_break_after = auto_wrap_;
   MoveToNextOf(item);
 
@@ -2766,42 +2848,15 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
 
   LayoutUnit bfc_block_offset = line_opportunity_.bfc_block_offset;
   NGUnpositionedFloat unpositioned_float(
-      NGBlockNode(To<LayoutBox>(item.GetLayoutObject())),
-      /* break_token */ nullptr, constraint_space_.AvailableSize(),
+      NGBlockNode(To<LayoutBox>(item.GetLayoutObject())), float_break_token,
+      constraint_space_.AvailableSize(),
       constraint_space_.PercentageResolutionSize(),
       constraint_space_.ReplacedPercentageResolutionSize(),
       {constraint_space_.BfcOffset().line_offset, bfc_block_offset},
       constraint_space_, node_.Style());
 
-  LayoutUnit inline_margin_size =
-      ComputeMarginBoxInlineSizeForUnpositionedFloat(&unpositioned_float);
-
-  LayoutUnit used_size = position_ + inline_margin_size +
-                         ComputeFloatAncestorInlineEndSize(
-                             constraint_space_, Items(), current_.item_index);
-  bool can_fit_float =
-      used_size <= line_opportunity_.AvailableFloatInlineSize().AddEpsilon();
-  if (!can_fit_float) {
-    // Floats need to know the current line width to determine whether to put it
-    // into the current line or to the next line. Trailing spaces will be
-    // removed if this line breaks here because they should be collapsed across
-    // floats, but they are still included in the current line position at this
-    // point. Exclude it when computing whether this float can fit or not.
-    can_fit_float = used_size - TrailingCollapsibleSpaceWidth(line_info) <=
-                    line_opportunity_.AvailableFloatInlineSize().AddEpsilon();
-  }
-
-  // The float should be positioned after the current line if:
-  //  - It can't fit within the non-shape area. (Assuming the current position
-  //    also is strictly within the non-shape area).
-  //  - It will be moved down due to block-start edge alignment.
-  //  - It will be moved down due to clearance.
-  //  - An earlier float has been pushed to the next fragmentainer.
   bool float_after_line =
-      !can_fit_float ||
-      exclusion_space_->LastFloatBlockStart() > bfc_block_offset ||
-      exclusion_space_->ClearanceOffset(unpositioned_float.ClearType(
-          constraint_space_.Direction())) > bfc_block_offset;
+      ShouldPushFloatAfterLine(&unpositioned_float, line_info);
 
   // Check if we already have a pending float. That's because a float cannot be
   // higher than any block or floated box generated before.
@@ -2814,22 +2869,19 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
       PositionFloat(&unpositioned_float, exclusion_space_);
 
   if (constraint_space_.HasBlockFragmentation()) {
-    if (item_result->positioned_float->need_break_before) {
-      // We broke before the float, and there's no fragment. Create a break
-      // token and propagate it all the way to the block container layout
-      // algorithm. The float will start in the next fragmentainer.
-      auto* break_before = NGBlockBreakToken::CreateBreakBefore(
-          unpositioned_float.node, /* is_forced_break */ false);
-      line_info->PropagateBreakToken(break_before);
-      return;
+    if (const auto* break_token = item_result->positioned_float->BreakToken()) {
+      const auto* parallel_token =
+          NGInlineBreakToken::CreateForParallelBlockFlow(
+              node_, index_before_float, *break_token);
+      line_info->PropagateParallelFlowBreakToken(parallel_token);
+      if (item_result->positioned_float->minimum_space_shortage) {
+        line_info->PropagateMinimumSpaceShortage(
+            item_result->positioned_float->minimum_space_shortage);
+      }
+      if (break_token->IsBreakBefore()) {
+        return;
+      }
     }
-    // If we broke inside the float, we also need to propagate a break token to
-    // the block container. Layout of the float will resume in the next
-    // fragmentainer.
-    const NGPhysicalFragment& fragment =
-        item_result->positioned_float->layout_result->PhysicalFragment();
-    if (const NGBreakToken* token = fragment.BreakToken())
-      line_info->PropagateBreakToken(To<NGBlockBreakToken>(token));
   }
 
   NGLayoutOpportunity opportunity = exclusion_space_->FindLayoutOpportunity(
@@ -2971,7 +3023,7 @@ void NGLineBreaker::HandleCloseTag(const NGInlineItem& item,
   const NGInlineItemResults& item_results = line_info->Results();
   if (item_results.size() >= 2) {
     NGInlineItemResult* last = std::prev(item_result);
-    if (UNLIKELY(IsA<LayoutNGTextCombine>(last->item->GetLayoutObject()))) {
+    if (UNLIKELY(IsA<LayoutTextCombine>(last->item->GetLayoutObject()))) {
       // |can_break_after| for close tag should be as same as text-combine box.
       // See "text-combine-upright-break-inside-001a.html"
       // e.g. A<tcy style="white-space: pre">x y</tcy>B
@@ -3130,7 +3182,6 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
       !disable_phrase_ && mode_ == NGLineBreakerMode::kContent) {
     // If the phrase line break overflowed, retry with the normal line break.
     disable_phrase_ = true;
-    break_iterator_.SetBreakType(LineBreakType::kNormal);
     RetryAfterOverflow(line_info, item_results);
     return;
   }
@@ -3139,7 +3190,6 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
     // Overflow occurred but `overflow-wrap` is set. Change the break type and
     // retry the line breaking.
     override_break_anywhere_ = true;
-    break_iterator_.SetBreakType(LineBreakType::kBreakCharacter);
     RetryAfterOverflow(line_info, item_results);
     return;
   }
@@ -3183,10 +3233,19 @@ void NGLineBreaker::RetryAfterOverflow(NGLineInfo* line_info,
   disable_score_line_break_ = true;
 
   state_ = LineBreakState::kContinue;
+
+  // Rewind all items.
+  //
+  // Also `SetCurrentStyle` forcibly, because the retry uses different
+  // conditions such as `override_break_anywhere_`.
+  //
   // TODO(kojii): Not all items need to rewind, but such case is rare and
   // rewinding all items simplifes the code.
   if (!item_results->empty()) {
+    SetCurrentStyleForce(ComputeCurrentStyle(0, line_info));
     Rewind(0, line_info);
+  } else {
+    SetCurrentStyleForce(*current_style_);
   }
   ResetRewindLoopDetector();
 }
@@ -3432,7 +3491,9 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
     DCHECK_EQ(auto_wrap_, ShouldAutoWrap(style));
     if (auto_wrap_) {
       DCHECK_EQ(break_iterator_.IsSoftHyphenEnabled(),
-                style.GetHyphens() != Hyphens::kNone);
+                style.GetHyphens() != Hyphens::kNone &&
+                    (disable_phrase_ ||
+                     style.WordBreak() != EWordBreak::kAutoPhrase));
       DCHECK_EQ(break_iterator_.Locale(), style.GetFontDescription().Locale());
     }
     ShapeResultSpacing<String> spacing(spacing_.Text(), is_svg_text_);
@@ -3442,6 +3503,10 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
 #endif  //  EXPENSIVE_DCHECKS_ARE_ON()
     return;
   }
+  SetCurrentStyleForce(style);
+}
+
+void NGLineBreaker::SetCurrentStyleForce(const ComputedStyle& style) {
   current_style_ = &style;
 
   const FontDescription& font_description = style.GetFontDescription();
@@ -3451,6 +3516,7 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
   if (auto_wrap_) {
     DCHECK(!is_text_combine_);
     break_iterator_.SetLocale(font_description.Locale());
+    Hyphens hyphens = style.GetHyphens();
     const LineBreak line_break = style.GetLineBreak();
     if (UNLIKELY(line_break == LineBreak::kAnywhere)) {
       break_iterator_.SetStrictness(LineBreakStrictness::kDefault);
@@ -3482,6 +3548,8 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
             line_break_type = LineBreakType::kNormal;
           } else {
             line_break_type = LineBreakType::kPhrase;
+            hyphens = Hyphens::kNone;
+            UseCounter::Count(GetDocument(), WebFeature::kLineBreakPhrase);
           }
           break_anywhere_if_overflow_ = false;
           break;
@@ -3501,8 +3569,13 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
       break_iterator_.SetBreakType(line_break_type);
     }
 
-    break_iterator_.EnableSoftHyphen(style.GetHyphens() != Hyphens::kNone);
-    hyphenation_ = style.GetHyphenationWithLimits();
+    if (UNLIKELY(hyphens == Hyphens::kNone)) {
+      break_iterator_.EnableSoftHyphen(false);
+      hyphenation_ = nullptr;
+    } else {
+      break_iterator_.EnableSoftHyphen(true);
+      hyphenation_ = style.GetHyphenationWithLimits();
+    }
 
     if (style.ShouldBreakSpaces()) {
       break_iterator_.SetBreakSpace(BreakSpaceType::kAfterEverySpace);
@@ -3520,7 +3593,6 @@ bool NGLineBreaker::IsPreviousItemOfType(NGInlineItem::NGInlineItemType type) {
 }
 
 void NGLineBreaker::MoveToNextOf(const NGInlineItem& item) {
-  DCHECK(!needs_new_parallel_flow_);
   current_.text_offset = item.EndOffset();
   current_.item_index++;
 #if DCHECK_IS_ON()
@@ -3534,7 +3606,6 @@ void NGLineBreaker::MoveToNextOf(const NGInlineItem& item) {
 }
 
 void NGLineBreaker::MoveToNextOf(const NGInlineItemResult& item_result) {
-  DCHECK(!needs_new_parallel_flow_);
   current_ = item_result.End();
   DCHECK(item_result.item);
   if (current_.text_offset == item_result.item->EndOffset()) {
@@ -3557,21 +3628,17 @@ const NGInlineBreakToken* NGLineBreaker::CreateBreakToken(
     return nullptr;
   }
 
-  // If we've resumed a block-in-inline in a parallel flow, and didn't break
-  // again, we're done. A break token will be created in the main flow (if
-  // there's any left of it).
-  const NGBreakToken* sub_break_token = nullptr;
+  const NGBlockBreakToken* sub_break_token = nullptr;
   const NGLayoutResult* block_in_inline = line_info.BlockInInlineLayoutResult();
   if (UNLIKELY(block_in_inline)) {
     if (UNLIKELY(block_in_inline->Status() != NGLayoutResult::kSuccess)) {
       return nullptr;
     }
-    sub_break_token = block_in_inline->PhysicalFragment().BreakToken();
-  }
-  if (UNLIKELY(break_token_ && break_token_->BlockInInlineBreakToken())) {
-    if (break_token_->BlockInInlineBreakToken()->IsAtBlockEnd() &&
-        !sub_break_token)
-      return nullptr;
+    // Look for a break token inside the block-in-inline, so that we can add it
+    // to the inline break token that we're about to create.
+    const auto& block_in_inline_fragment =
+        To<NGPhysicalBoxFragment>(block_in_inline->PhysicalFragment());
+    sub_break_token = block_in_inline_fragment.BreakToken();
   }
 
   DCHECK_EQ(line_info.HasForcedBreak(), is_after_forced_break_);
@@ -3582,25 +3649,6 @@ const NGInlineBreakToken* NGLineBreaker::CreateBreakToken(
       (cloned_box_decorations_count_
            ? NGInlineBreakToken::kHasClonedBoxDecorations
            : 0);
-
-  if (needs_new_parallel_flow_) {
-    // We broke inside a block-in-inline for the first time. This will establish
-    // a parallel flow, so that the block can be resumed independently of inline
-    // content that might come after it. We'll now create an inline break token
-    // for the block-in-inline, and then (below) we'll wrap this inside another
-    // inline break token. The inner break token will be found by the caller,
-    // and shouldn't be resumed until we get to the next fragmentainer. The
-    // outer break token is used to resume regular inline layout after the block
-    // in inline in the current fragmentainer (and the block-in-inline part
-    // won't be seen there).
-    sub_break_token = NGInlineBreakToken::Create(
-        node_, current_style_, current_, flags, sub_break_token);
-
-    // Move past the block in inline, since we stopped at it. This is where
-    // regular inline content will resume.
-    needs_new_parallel_flow_ = false;
-    MoveToNextOf(items[current_.item_index]);
-  }
 
   return NGInlineBreakToken::Create(node_, current_style_, current_, flags,
                                     sub_break_token);

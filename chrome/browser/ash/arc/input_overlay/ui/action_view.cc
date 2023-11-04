@@ -163,6 +163,12 @@ void ActionView::OnChildLabelUpdateFocus(ActionLabel* child, bool focus) {
   }
 }
 
+void ActionView::RemoveNewState() {
+  for (auto* label : labels_) {
+    label->RemoveNewState();
+  }
+}
+
 void ActionView::ApplyMousePressed(const ui::MouseEvent& event) {
   reposition_controller_->OnMousePressed(event);
 }
@@ -191,8 +197,15 @@ bool ActionView::ApplyKeyReleased(const ui::KeyEvent& event) {
   return reposition_controller_->OnKeyReleased(event);
 }
 
+void ActionView::ShowButtonOptionsMenu() {
+  DCHECK(display_overlay_controller_);
+  display_overlay_controller_->AddButtonOptionsMenuWidget(action_);
+}
+
 void ActionView::OnDraggingCallback() {
   MayUpdateLabelPosition();
+  display_overlay_controller_->SetButtonOptionsMenuWidgetVisibility(
+      /*is_visible=*/false);
 }
 
 void ActionView::OnMouseDragEndCallback() {
@@ -202,6 +215,10 @@ void ActionView::OnMouseDragEndCallback() {
   if (IsBeta()) {
     action_->BindPending();
   }
+
+  display_overlay_controller_->SetButtonOptionsMenuWidgetVisibility(
+      /*is_visible=*/true);
+
   RecordInputOverlayActionReposition(
       display_overlay_controller_->GetPackageName(),
       RepositionType::kMouseDragRepostion,
@@ -215,6 +232,10 @@ void ActionView::OnGestureDragEndCallback() {
   if (IsBeta()) {
     action_->BindPending();
   }
+
+  display_overlay_controller_->SetButtonOptionsMenuWidgetVisibility(
+      /*is_visible=*/true);
+
   RecordInputOverlayActionReposition(
       display_overlay_controller_->GetPackageName(),
       RepositionType::kTouchscreenDragRepostion,
@@ -243,11 +264,6 @@ void ActionView::SetTouchPointCenter(const gfx::Point& touch_point_center) {
   if (touch_point_) {
     touch_point_->OnCenterPositionChanged(*touch_point_center_);
   }
-}
-
-void ActionView::ShowButtonOptionsMenu() {
-  DCHECK(display_overlay_controller_);
-  display_overlay_controller_->AddButtonOptionsMenuWidget(action_);
 }
 
 void ActionView::AddTouchPoint(ActionType action_type) {
@@ -280,7 +296,7 @@ gfx::Point ActionView::GetTouchCenterInWindow() const {
 }
 
 gfx::Point ActionView::CalculateAttachViewPositionInRootWindow(
-    const gfx::Rect& root_window_bounds,
+    const gfx::Rect& available_bounds,
     const gfx::Point& window_content_origin,
     ArrowContainer* attached_view) const {
   auto origin_in_window = origin();
@@ -297,7 +313,7 @@ gfx::Point ActionView::CalculateAttachViewPositionInRootWindow(
   const int attached_view_width_extra =
       kAttachMargin + attached_view_size.width();
   if (origin_in_window.x() + width() + attached_view_width_extra <=
-      root_window_bounds.width()) {
+      available_bounds.width()) {
     can_attach_on_right = true;
   }
 
@@ -326,8 +342,8 @@ gfx::Point ActionView::CalculateAttachViewPositionInRootWindow(
     } else {
       // Attach `attached_view` on the right side of this view.
       x = origin_in_window.x() + width() + kAttachMargin;
-      if (x + attached_view_size.width() > root_window_bounds.width()) {
-        x = root_window_bounds.width() - attached_view_size.width();
+      if (x + attached_view_size.width() > available_bounds.width()) {
+        x = available_bounds.width() - attached_view_size.width();
       }
     }
   } else {
@@ -347,7 +363,7 @@ gfx::Point ActionView::CalculateAttachViewPositionInRootWindow(
   // of the display.
   int y = std::max(0, window_content_origin.y() + touch_center_in_window.y() -
                           attached_view_size.height() / 2);
-  y = std::min(y, root_window_bounds.height() - attached_view_size.height());
+  y = std::min(y, available_bounds.height() - attached_view_size.height());
   attached_view->SetArrowVerticalOffset(
       touch_center_in_window.y() -
       (y - window_content_origin.y() + attached_view_size.height() / 2));

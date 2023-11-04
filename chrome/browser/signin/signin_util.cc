@@ -30,6 +30,7 @@
 #include "components/policy/core/browser/signin/profile_separation_policies.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/account_managed_status_finder.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/cookies/canonical_cookie.h"
@@ -161,7 +162,14 @@ bool IsProfileDeletionAllowed(Profile* profile) {
 #if !BUILDFLAG(IS_CHROMEOS)
 // Returns true if managed accounts signin are required to create a new profile
 // by policies set in `profile`.
-bool IsProfileSeparationEnforcedByProfile(Profile* profile) {
+bool IsProfileSeparationEnforcedByProfile(
+    Profile* profile,
+    const std::string& intercepted_account_email) {
+  if (!intercepted_account_email.empty() &&
+      !IsAccountExemptedFromEnterpriseProfileSeparation(
+          profile, intercepted_account_email)) {
+    return true;
+  }
   std::string legacy_policy_for_current_profile =
       profile->GetPrefs()->GetString(prefs::kManagedAccountsSigninRestriction);
   bool enforced_by_existing_profile = base::StartsWith(
@@ -178,6 +186,12 @@ bool IsProfileSeparationEnforcedByProfile(Profile* profile) {
 bool IsProfileSeparationEnforcedByPolicies(
     const policy::ProfileSeparationPolicies&
         intercepted_account_separation_policies) {
+  if (intercepted_account_separation_policies.profile_separation_settings()
+          .value_or(policy::ProfileSeparationSettings::SUGGESTED) ==
+      policy::ProfileSeparationSettings::ENFORCED) {
+    return true;
+  }
+
   std::string legacy_policy_for_intercepted_profile =
       intercepted_account_separation_policies
           .managed_accounts_signin_restrictions()
@@ -206,11 +220,31 @@ bool ProfileSeparationAllowsKeepingUnmanagedBrowsingDataInManagedProfile(
       legacy_policy_for_current_profile == "none" ||
       base::EndsWith(legacy_policy_for_current_profile, "keep_existing_data");
   bool allowed_by_intercepted_account =
-      legacy_policy_for_intercepted_profile.empty() ||
-      legacy_policy_for_intercepted_profile == "none" ||
-      base::EndsWith(legacy_policy_for_intercepted_profile,
-                     "keep_existing_data");
+      intercepted_account_separation_policies
+              .profile_separation_data_migration_settings()
+              .value_or(policy::ProfileSeparationDataMigrationSettings::
+                            USER_OPT_IN) !=
+          policy::ProfileSeparationDataMigrationSettings::ALWAYS_SEPARATE &&
+      (legacy_policy_for_intercepted_profile.empty() ||
+       legacy_policy_for_intercepted_profile == "none" ||
+       base::EndsWith(legacy_policy_for_intercepted_profile,
+                      "keep_existing_data"));
   return allowed_by_existing_profile && allowed_by_intercepted_account;
+}
+
+bool IsAccountExemptedFromEnterpriseProfileSeparation(
+    Profile* profile,
+    const std::string& email) {
+  if (profile->GetPrefs()
+          ->FindPreference(prefs::kProfileSeparationDomainExceptionList)
+          ->IsDefaultValue()) {
+    return true;
+  }
+
+  const std::string domain = gaia::ExtractDomainName(email);
+  const auto& allowed_domains = profile->GetPrefs()->GetList(
+      prefs::kProfileSeparationDomainExceptionList);
+  return base::Contains(allowed_domains, base::Value(domain));
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS)
 

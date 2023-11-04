@@ -248,9 +248,6 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
                      originator_client_item_id:
                          (const std::string&)originator_client_item_id;
 
-// Injects a typed URL to the sync FakeServer.
-- (void)addFakeSyncServerTypedURL:(const GURL&)URL;
-
 // Injects a HISTORY visit to the sync FakeServer.
 - (void)addFakeSyncServerHistoryVisit:(const GURL&)URL;
 
@@ -683,17 +680,11 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // Returns YES if UKM feature is enabled.
 - (BOOL)isUKMEnabled [[nodiscard]];
 
-// Returns YES if kSynthesizedRestoreSessionEnabled feature is enabled.
-- (BOOL)isSynthesizedRestoreSessionEnabled [[nodiscard]];
-
 // Returns YES if kTestFeature is enabled.
 - (BOOL)isTestFeatureEnabled;
 
 // Returns YES if DemographicMetricsReporting feature is enabled.
 - (BOOL)isDemographicMetricsReportingEnabled [[nodiscard]];
-
-// Returns YES if the SyncEnableHistoryDataType feature is enabled.
-- (BOOL)isSyncHistoryDataTypeEnabled [[nodiscard]];
 
 // Returns YES if the ReplaceSyncPromosWithSignInPromos feature is enabled.
 - (BOOL)isReplaceSyncWithSigninEnabled [[nodiscard]];

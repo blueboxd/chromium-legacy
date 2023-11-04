@@ -108,7 +108,8 @@ PersonalDataManagerAndroid::CreateJavaCreditCardFromNative(
       ConvertUTF16ToJavaString(env, card.product_description()),
       ConvertUTF16ToJavaString(env, card.CardNameForAutofillDisplay()),
       ConvertUTF16ToJavaString(
-          env, card.ObfuscatedNumberWithVisibleLastFourDigits()));
+          env, card.ObfuscatedNumberWithVisibleLastFourDigits()),
+      ConvertUTF16ToJavaString(env, card.cvc()));
 }
 
 // static
@@ -170,6 +171,8 @@ void PersonalDataManagerAndroid::PopulateNativeCreditCardFromJava(
           Java_CreditCard_getVirtualCardEnrollmentState(env, jcard)));
   card->set_product_description(ConvertJavaStringToUTF16(
       Java_CreditCard_getProductDescription(env, jcard)));
+  card->set_cvc(ConvertJavaStringToUTF16(
+        Java_CreditCard_getCvc(env, jcard)));
 }
 
 jboolean PersonalDataManagerAndroid::IsDataLoaded(
@@ -210,6 +213,14 @@ jboolean PersonalDataManagerAndroid::IsEligibleForAddressAccountStorage(
   return personal_data_manager_->IsEligibleForAddressAccountStorage();
 }
 
+base::android::ScopedJavaLocalRef<jstring>
+PersonalDataManagerAndroid::GetDefaultCountryCodeForNewAddress(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& unused_obj) const {
+  return ConvertUTF8ToJavaString(
+      env, personal_data_manager_->GetDefaultCountryCodeForNewAddress());
+}
+
 bool PersonalDataManagerAndroid::IsCountryEligibleForAccountStorage(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& unused_obj,
@@ -226,12 +237,12 @@ ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetProfile(
   std::string guid = ConvertJavaStringToUTF8(env, jguid);
 
   AutofillProfile profile = AutofillProfile::CreateFromJavaObject(
-      jprofile, g_browser_process->GetApplicationLocale());
+      jprofile, personal_data_manager_->GetProfileByGUID(guid),
+      g_browser_process->GetApplicationLocale());
 
   if (guid.empty()) {
     personal_data_manager_->AddProfile(profile);
   } else {
-    profile.set_guid(guid);
     personal_data_manager_->UpdateProfile(profile);
   }
 
@@ -243,15 +254,14 @@ ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetProfileToLocal(
     const JavaParamRef<jobject>& unused_obj,
     const JavaParamRef<jobject>& jprofile,
     const JavaParamRef<jstring>& jguid) {
+  const AutofillProfile* target_profile =
+      personal_data_manager_->GetProfileByGUID(
+          ConvertJavaStringToUTF8(env, jguid));
   AutofillProfile profile = AutofillProfile::CreateFromJavaObject(
-      jprofile, g_browser_process->GetApplicationLocale());
-
-  AutofillProfile* target_profile = personal_data_manager_->GetProfileByGUID(
-      ConvertJavaStringToUTF8(env, jguid));
+      jprofile, target_profile, g_browser_process->GetApplicationLocale());
 
   if (target_profile != nullptr &&
       target_profile->record_type() == AutofillProfile::LOCAL_PROFILE) {
-    profile.set_guid(target_profile->guid());
     personal_data_manager_->UpdateProfile(profile);
   } else {
     personal_data_manager_->AddProfile(profile);
@@ -315,8 +325,10 @@ PersonalDataManagerAndroid::GetBillingAddressLabelForPaymentRequest(
       ADDRESS_HOME_ZIP,   ADDRESS_HOME_SORTING_CODE,
   };
 
+  // TODO(crbug.com/1484006): Check if existing profile needs to be passed.
   AutofillProfile profile = AutofillProfile::CreateFromJavaObject(
-      jprofile, g_browser_process->GetApplicationLocale());
+      jprofile, /*existing_profile=*/nullptr,
+      g_browser_process->GetApplicationLocale());
 
   return ConvertUTF16ToJavaString(
       env, profile.ConstructInferredLabel(
@@ -439,6 +451,10 @@ void PersonalDataManagerAndroid::RemoveByGUID(
     const JavaParamRef<jobject>& unused_obj,
     const JavaParamRef<jstring>& jguid) {
   personal_data_manager_->RemoveByGUID(ConvertJavaStringToUTF8(env, jguid));
+}
+
+void PersonalDataManagerAndroid::DeleteAllLocalCreditCards(JNIEnv* env) {
+  personal_data_manager_->DeleteAllLocalCreditCards();
 }
 
 void PersonalDataManagerAndroid::ClearUnmaskedCache(
@@ -648,8 +664,10 @@ ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
       include_name_in_label ? UNKNOWN_TYPE : NAME_FULL;
 
   std::vector<std::u16string> labels;
+  // TODO(crbug.com/1487119): Replace by `profiles` when `GetProfilesToSuggest`
+  // starts returning a list of const AutofillProfile*.
   AutofillProfile::CreateInferredLabels(
-      profiles,
+      std::vector<const AutofillProfile*>(profiles.begin(), profiles.end()),
       address_only ? absl::make_optional(suggested_fields) : absl::nullopt,
       excluded_field, minimal_fields_shown,
       g_browser_process->GetApplicationLocale(), &labels);
@@ -675,8 +693,10 @@ PersonalDataManagerAndroid::GetShippingAddressLabelForPaymentRequest(
   if (!include_country_in_label)
     --kLabelFields_size;
 
+  // TODO(crbug.com/1484006): Check if existing profile needs to be passed.
   AutofillProfile profile = AutofillProfile::CreateFromJavaObject(
-      jprofile, g_browser_process->GetApplicationLocale());
+      jprofile, /*existing_profile=*/nullptr,
+      g_browser_process->GetApplicationLocale());
 
   return ConvertUTF16ToJavaString(
       env, profile.ConstructInferredLabel(

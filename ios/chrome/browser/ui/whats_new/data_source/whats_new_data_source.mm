@@ -14,7 +14,7 @@
 #import "ios/chrome/browser/ui/whats_new/data_source/whats_new_item.h"
 #import "ios/chrome/browser/ui/whats_new/whats_new_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
-#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "url/gurl.h"
@@ -43,7 +43,8 @@ NSString* const kDictionaryHeroBannerImageKey = @"HeroBannerImageName";
 NSString* const kDictionaryIconImageKey = @"IconImageName";
 NSString* const kDictionaryBackgroundColorKey = @"IconBackgroundColor";
 NSString* const kDictionaryInstructionsKey = @"InstructionSteps";
-NSString* const kDictionaryPrimaryActionKey = @"PrimaryActionTitle";
+NSString* const kDictionaryPrimaryActionTitleKey = @"PrimaryActionTitle";
+NSString* const kDictionaryPrimaryActionKey = @"PrimaryAction";
 NSString* const kDictionaryLearnMoreURLKey = @"LearnMoreUrlString";
 
 // Returns the UIColor corresponding to `color`.
@@ -101,6 +102,18 @@ WhatsNewType WhatsNewTypeFromInt(int type) {
   }
 
   return static_cast<WhatsNewType>(type);
+}
+
+WhatsNewPrimaryAction WhatsNewPrimaryActionFromInt(int type) {
+  const int min_value = static_cast<int>(WhatsNewPrimaryAction::kMinValue);
+  const int max_value = static_cast<int>(WhatsNewPrimaryAction::kMaxValue);
+
+  if (min_value > type || type > max_value) {
+    NOTREACHED() << "unexpected type: " << type;
+    return WhatsNewPrimaryAction::kError;
+  }
+
+  return static_cast<WhatsNewPrimaryAction>(type);
 }
 
 NSArray<WhatsNewItem*>* WhatsNewItemsFromFileAndKey(NSString* path,
@@ -231,12 +244,26 @@ WhatsNewItem* ConstructWhatsNewItem(NSDictionary* entry) {
 
   // Load the entry primary action title.
   NSNumber* primary_action_title =
-      base::apple::ObjCCast<NSNumber>(entry[kDictionaryPrimaryActionKey]);
+      base::apple::ObjCCast<NSNumber>(entry[kDictionaryPrimaryActionTitleKey]);
   if (!primary_action_title) {
     whats_new_item.primaryActionTitle = nil;
   } else {
     whats_new_item.primaryActionTitle =
         l10n_util::GetNSString([primary_action_title intValue]);
+  }
+
+  // Load the entry primary action.
+  NSNumber* primary_action =
+      base::apple::ObjCCast<NSNumber>(entry[kDictionaryPrimaryActionKey]);
+  if (!primary_action) {
+    whats_new_item.primaryAction = WhatsNewPrimaryAction::kNoAction;
+  } else {
+    whats_new_item.primaryAction =
+        WhatsNewPrimaryActionFromInt([primary_action intValue]);
+  }
+
+  if (whats_new_item.primaryAction == WhatsNewPrimaryAction::kError) {
+    return nil;
   }
 
   // Load the entry learn more url.

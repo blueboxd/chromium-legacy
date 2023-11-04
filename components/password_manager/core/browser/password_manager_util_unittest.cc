@@ -41,6 +41,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if BUILDFLAG(IS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 using autofill::password_generation::PasswordGenerationType;
 using device_reauth::MockDeviceAuthenticator;
 using password_manager::Facet;
@@ -75,7 +79,7 @@ class MockPasswordManagerClient
   MOCK_METHOD(void, GeneratePassword, (PasswordGenerationType), (override));
   MOCK_METHOD(PrefService*, GetPrefs, (), (const, override));
   MOCK_METHOD(PrefService*, GetLocalStatePrefs, (), (const, override));
-  MOCK_METHOD(scoped_refptr<device_reauth::DeviceAuthenticator>,
+  MOCK_METHOD(std::unique_ptr<device_reauth::DeviceAuthenticator>,
               GetDeviceAuthenticator,
               (),
               (override));
@@ -231,7 +235,8 @@ class MockAutofillClient : public autofill::AutofillClient {
               (override));
   MOCK_METHOD(void,
               ShowEditAddressProfileDialog,
-              (const autofill::AutofillProfile&),
+              (const autofill::AutofillProfile&,
+               AutofillClient::AddressProfileSavePromptCallback),
               (override));
   MOCK_METHOD(void, ShowDeleteAddressProfileDialog, (), (override));
   MOCK_METHOD(bool, HasCreditCardScanFeature, (), (override));
@@ -274,11 +279,6 @@ class MockAutofillClient : public autofill::AutofillClient {
               (override));
   MOCK_METHOD(bool, IsAutocompleteEnabled, (), (const, override));
   MOCK_METHOD(bool, IsPasswordManagerEnabled, (), (override));
-  MOCK_METHOD(void,
-              PropagateAutofillPredictionsDeprecated,
-              (autofill::AutofillDriver*,
-               const std::vector<autofill::FormStructure*>&),
-              (override));
   MOCK_METHOD(void,
               DidFillOrPreviewForm,
               (autofill::mojom::AutofillActionPersistence action_persistence,
@@ -352,8 +352,7 @@ using testing::Return;
 class PasswordManagerUtilTest : public testing::Test {
  public:
   PasswordManagerUtilTest() {
-    authenticator_ =
-        base::MakeRefCounted<device_reauth::MockDeviceAuthenticator>();
+    authenticator_ = std::make_unique<device_reauth::MockDeviceAuthenticator>();
     pref_service_.registry()->RegisterBooleanPref(
         password_manager::prefs::kCredentialsEnableService, true);
     pref_service_.registry()->RegisterBooleanPref(
@@ -374,9 +373,7 @@ class PasswordManagerUtilTest : public testing::Test {
     ON_CALL(mock_client_, GetLocalStatePrefs())
         .WillByDefault(Return(&pref_service_));
     ON_CALL(mock_client_, GetPrefs()).WillByDefault(Return(&pref_service_));
-    ON_CALL(mock_client_, GetDeviceAuthenticator())
-        .WillByDefault(Return(authenticator_));
-    ON_CALL(*authenticator_, CanAuthenticateWithBiometrics)
+    ON_CALL(*authenticator_.get(), CanAuthenticateWithBiometrics)
         .WillByDefault(Return(true));
 #endif
   }
@@ -391,7 +388,7 @@ class PasswordManagerUtilTest : public testing::Test {
 
  protected:
   MockPasswordManagerClient mock_client_;
-  scoped_refptr<device_reauth::MockDeviceAuthenticator> authenticator_;
+  std::unique_ptr<device_reauth::MockDeviceAuthenticator> authenticator_;
   TestingPrefServiceSimple pref_service_;
   syncer::TestSyncService sync_service_;
 };
@@ -932,7 +929,8 @@ TEST(PasswordManagerUtil, ConstructGURLWithScheme) {
 TEST(PasswordManagerUtil, IsValidPasswordURL) {
   std::vector<std::pair<GURL, bool>> test_cases = {
       {GURL("noscheme.com"), false},
-      {GURL("https://;/invalid"), false},
+      {GURL("https://;/valid"), true},
+      {GURL("https://^/invalid"), false},
       {GURL("scheme://unsupported"), false},
       {GURL("http://example.com"), true},
       {GURL("https://test.com/login"), true}};
@@ -966,232 +964,34 @@ TEST_F(PasswordManagerUtilTest, CanUseBiometricAuth) {
 }
 
 TEST_F(PasswordManagerUtilTest, BiometricsUnavailable) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      password_manager::features::kBiometricAuthenticationForFilling);
-
   SetBiometricAuthenticationBeforeFilling(/*available=*/false);
-  EXPECT_CALL(*authenticator_.get(), CanAuthenticateWithBiometrics)
+  EXPECT_CALL(*authenticator_, CanAuthenticateWithBiometrics)
       .WillOnce(Return(false));
-  EXPECT_FALSE(
-      ShouldShowBiometricAuthenticationBeforeFillingPromo(&mock_client_));
-}
-
-TEST_F(PasswordManagerUtilTest, BiometricForFillingFlagDisabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      password_manager::features::kBiometricAuthenticationForFilling);
-  SetBiometricAuthenticationBeforeFilling(/*available=*/false);
-  EXPECT_CALL(*authenticator_.get(), CanAuthenticateWithBiometrics)
-      .WillOnce(Return(true));
-  EXPECT_FALSE(
-      ShouldShowBiometricAuthenticationBeforeFillingPromo(&mock_client_));
-}
-
-TEST_F(PasswordManagerUtilTest, BiometricForFillingEnabed) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      password_manager::features::kBiometricAuthenticationForFilling);
-  SetBiometricAuthenticationBeforeFilling(/*available=*/true);
-  EXPECT_CALL(*authenticator_.get(), CanAuthenticateWithBiometrics)
-      .WillOnce(Return(true));
+  EXPECT_CALL(mock_client_, GetDeviceAuthenticator)
+      .WillOnce(Return(testing::ByMove(std::move(authenticator_))));
   EXPECT_FALSE(
       ShouldShowBiometricAuthenticationBeforeFillingPromo(&mock_client_));
 }
 
 TEST_F(PasswordManagerUtilTest, ShouldShowBiometricAuthPromo) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      password_manager::features::kBiometricAuthenticationForFilling);
   SetBiometricAuthenticationBeforeFilling(/*available=*/false);
-  EXPECT_CALL(*authenticator_.get(), CanAuthenticateWithBiometrics)
+  EXPECT_CALL(*authenticator_, CanAuthenticateWithBiometrics)
       .WillOnce(Return(true));
+  EXPECT_CALL(mock_client_, GetDeviceAuthenticator)
+      .WillOnce(Return(testing::ByMove(std::move(authenticator_))));
   EXPECT_TRUE(
       ShouldShowBiometricAuthenticationBeforeFillingPromo(&mock_client_));
 }
 
-#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-
-struct TestCase {
-  std::string url;
-  std::string expected_result;
-};
-
-class PasswordManagerUtilMainDomainTest
-    : public testing::Test,
-      public testing::WithParamInterface<TestCase> {
- protected:
-  const base::flat_set<std::string>& psl_extension_list() {
-    return psl_extension_list_;
+#elif BUILDFLAG(IS_ANDROID)
+TEST_F(PasswordManagerUtilTest, CanUseBiometricAuthAndroidAutomotive) {
+  if (!base::android::BuildInfo::GetInstance()->is_automotive()) {
+    GTEST_SKIP();
   }
 
- private:
-  base::flat_set<std::string> psl_extension_list_ = {
-      "app.link",
-      "bttn.io",
-      "test-app.link",
-      "smart.link",
-      "page.link",
-      "onelink.me",
-      "goo.gl",
-      "app.goo.gl",
-      "more.app.goo.gl",
-      // Missing domain.goo.gl on purpose to show all levels need to be included
-      // for multi-level extended main domain (see b/196013199#comment4 for more
-      // context)
-      "included.domain.goo.gl",
-  };
-};
-
-TEST_P(PasswordManagerUtilMainDomainTest, ParamTest) {
-  const TestCase& tc = GetParam();
-  EXPECT_THAT(GetExtendedTopLevelDomain(GURL(tc.url), psl_extension_list()),
-              testing::Eq(tc.expected_result));
+  EXPECT_TRUE(CanUseBiometricAuth(authenticator_.get(), &mock_client_));
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    PasswordManagerUtilMainDomainTest,
-    ::testing::Values(
-        // error cases
-        TestCase(),                         // empty string
-        TestCase{"some arbitrary string"},  // not parsable
-        TestCase{"amazon.com"},             // no schema
-        TestCase{"https://"},               // empty host
-        TestCase{"https://.com"},           // Not under psl, too short
-        TestCase{"https://192.168.100.1"},  // ip as hostname
-        // In PSL list or unknown domain
-        TestCase{"https://main.unknown", "main.unknown"},  // unknown domain
-        // Blogspot.com, special case which is in PSL
-        TestCase{"https://foo.blogspot.com", "foo.blogspot.com"},
-        // different url depths
-        TestCase{"https://f.com", "f.com"},
-        TestCase{"https://facebook.com", "facebook.com"},
-        TestCase{"https://www.facebook.com", "facebook.com"},
-        TestCase{"https://many.many.many.facebook.com", "facebook.com"},
-        // different url schemas and non tld parts
-        TestCase{"http://www.twitter.com", "twitter.com"},
-        TestCase{"https://mobile.twitter.com", "twitter.com"},
-        TestCase{"android://blabla@com.twitter.android"},
-        // additional URI components, see
-        // https://tools.ietf.org/html/rfc3986#section-3
-        TestCase{"https://facebook.com/", "facebook.com"},
-        TestCase{"https://facebook.com/path/", "facebook.com"},
-        TestCase{"https://facebook.com?queryparam=value", "facebook.com"},
-        TestCase{"https://facebook.com#fragment", "facebook.com"},
-        TestCase{"https://userinfo@facebook.com", "facebook.com"},
-        // public suffix with more than one component
-        TestCase{"https://facebook.co.uk", "facebook.co.uk"},
-        TestCase{"https://www.some.trentinosuedtirol.it",
-                 "some.trentinosuedtirol.it"},
-        TestCase{"https://www.some.ac.gov.br", "some.ac.gov.br"},
-        // extended top level domains
-        TestCase{"https://app.link", "app.link"},
-        TestCase{"https://user1.app.link", "user1.app.link"},
-        TestCase{"https://user1.test-app.link", "user1.test-app.link"},
-        TestCase{"https://many.many.many.user1.app.link", "user1.app.link"},
-        // multi level extended top level domains (see b/196013199 and
-        // http://doc/1LlPX9DxrCZxsuB_b52vCdiGavVupaI9zjiibdQb9v24)
-        TestCase{"https://goo.gl", "goo.gl"},
-        TestCase{"https://app.goo.gl", "app.goo.gl"},
-        TestCase{"https://user1.app.goo.gl", "user1.app.goo.gl"},
-        TestCase{"https://many.many.many.user1.app.goo.gl", "user1.app.goo.gl"},
-        TestCase{"https://one.more.app.goo.gl", "one.more.app.goo.gl"},
-        // PSL_EXTENSION_LIST contains included.domain.goo.gl but missing
-        // domain.goo.gl due to this multi level extension does not extend
-        // beyond this level.
-        TestCase{"https://levels.not.included.domain.goo.gl", "domain.goo.gl"},
-        // Http schema
-        TestCase{"http://f.com", "f.com"},
-        TestCase{"http://facebook.com", "facebook.com"},
-        TestCase{"http://www.facebook.com", "facebook.com"},
-        TestCase{"http://many.many.many.facebook.com", "facebook.com"}));
-
-struct MergeRelatedGroupsTestCase {
-  std::vector<std::vector<std::string>> input_groups;
-  std::vector<std::vector<std::string>> output_groups;
-  std::vector<std::string> psl_extensions;
-};
-
-class PasswordManagerUtilMergeRelatedGroupsTest
-    : public testing::Test,
-      public testing::WithParamInterface<MergeRelatedGroupsTestCase> {
- protected:
-  std::vector<GroupedFacets> GetGroups(
-      const std::vector<std::vector<std::string>>& groups) {
-    std::vector<password_manager::GroupedFacets> results;
-    for (const auto& group : groups) {
-      GroupedFacets result;
-      for (const auto& facet : group) {
-        result.facets.emplace_back(
-            FacetURI::FromPotentiallyInvalidSpec("https://" + facet));
-      }
-      results.push_back(std::move(result));
-    }
-    return results;
-  }
-
-  void SortFacets(std::vector<GroupedFacets>& groups) {
-    for (auto& group : groups) {
-      std::sort(group.facets.begin(), group.facets.end(),
-                [](const auto& lhs, const auto& rhs) {
-                  return base::CompareCaseInsensitiveASCII(
-                      lhs.uri.potentially_invalid_spec(),
-                      rhs.uri.potentially_invalid_spec());
-                });
-    }
-  }
-
-  base::flat_set<std::string> GetPSLExtensions() {
-    return base::flat_set<std::string>(GetParam().psl_extensions);
-  }
-};
-
-TEST_P(PasswordManagerUtilMergeRelatedGroupsTest, ParamTest) {
-  std::vector<GroupedFacets> expected_groups =
-      GetGroups(GetParam().output_groups);
-  std::vector<GroupedFacets> actual_groups = MergeRelatedGroups(
-      GetPSLExtensions(), GetGroups(GetParam().input_groups));
-
-  // Sort facets to simplify testing as their order doesn'r matter
-  SortFacets(expected_groups);
-  SortFacets(actual_groups);
-
-  EXPECT_THAT(actual_groups,
-              testing::UnorderedElementsAreArray(expected_groups));
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    PasswordManagerUtilMergeRelatedGroupsTest,
-    ::testing::Values(
-        MergeRelatedGroupsTestCase{{{"a.com"}, {"b.com"}, {"c.com"}},
-                                   {{"a.com"}, {"b.com"}, {"c.com"}},
-                                   {}},
-        MergeRelatedGroupsTestCase{
-            {{"a.com"}, {"test1.a.com"}, {"test2.a.com"}},
-            {{"a.com", "test1.a.com", "test2.a.com"}},
-            {}},
-        // When a.com is extended to be a public suffix the groups no longer
-        // merge together.
-        MergeRelatedGroupsTestCase{
-            {{"a.com"}, {"test1.a.com"}, {"test2.a.com"}},
-            {{"a.com"}, {"test1.a.com"}, {"test2.a.com"}},
-            {"a.com"}},
-        MergeRelatedGroupsTestCase{{{"a.com", "b.com"}, {"www.b.com", "c.com"}},
-                                   {{"a.com", "b.com", "www.b.com", "c.com"}},
-                                   {}},
-        MergeRelatedGroupsTestCase{
-            {{"a.com", "b.com"}, {"www.b.com", "c.com"}, {"d.org"}},
-            {{"a.com", "b.com", "www.b.com", "c.com"}, {"d.org"}},
-            {}},
-        MergeRelatedGroupsTestCase{
-            {{"a.com", "b.com", "c.com"},
-             {"www.b.com"},
-             {"d.org", "www.c.com"}},
-            {{"a.com", "b.com", "c.com", "www.b.com", "d.org", "www.c.com"}},
-            {}}
-
-        ));
+#endif
 
 }  // namespace password_manager_util

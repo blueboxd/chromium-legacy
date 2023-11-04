@@ -578,6 +578,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method write
 [Worker] interface FileSystemWritableFileStream : WritableStream
 [Worker]     attribute @@toStringTag
+[Worker]     getter mode
 [Worker]     method constructor
 [Worker]     method seek
 [Worker]     method truncate
@@ -1661,7 +1662,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     getter data
 [Worker]     getter timestamp
-[Worker]     method clone
 [Worker]     method constructor
 [Worker]     method getMetadata
 [Worker]     method setMetadata
@@ -1673,7 +1673,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter data
 [Worker]     getter timestamp
 [Worker]     getter type
-[Worker]     method clone
 [Worker]     method constructor
 [Worker]     method getMetadata
 [Worker]     method setMetadata
@@ -3293,8 +3292,10 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute RGB
 [Worker]     attribute RGB565
 [Worker]     attribute RGB5_A1
+[Worker]     attribute RGB8
 [Worker]     attribute RGBA
 [Worker]     attribute RGBA4
+[Worker]     attribute RGBA8
 [Worker]     attribute SAMPLER_2D
 [Worker]     attribute SAMPLER_CUBE
 [Worker]     attribute SAMPLES

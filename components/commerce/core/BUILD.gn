@@ -22,7 +22,7 @@ source_set("feature_list") {
     "flag_descriptions.cc",
     "flag_descriptions.h",
   ]
-  public_deps = [ ":utils" ]
+
   deps = [
     ":commerce_heuristics_data",
     ":pref_names",
@@ -206,16 +206,16 @@ static_library("shopping_service") {
 
   deps = [
     ":account_checker",
-    ":commerce_constants",
     ":commerce_subscription_db_content_proto",
     ":discounts_db_content_proto",
     ":feature_list",
     ":metrics",
+    ":parcel_tracking_db_content_proto",
     ":pref_names",
     ":proto",
-    ":utils",
     "//base",
     "//components/bookmarks/browser",
+    "//components/commerce/core/parcel:parcel",
     "//components/history/core/browser",
     "//components/keyed_service/core",
     "//components/leveldb_proto",
@@ -317,6 +317,7 @@ source_set("shopping_service_unit_tests") {
     ":metrics",
     ":pref_names",
     ":shopping_service_test_support",
+    "parcel:unit_tests",
     "subscriptions:test_support",
     "webui:unit_tests",
     "//components/history/core/browser",
@@ -344,6 +345,7 @@ source_set("account_checker") {
   ]
 
   deps = [
+    ":commerce_constants",
     ":feature_list",
     ":pref_names",
     "//base",
@@ -382,6 +384,7 @@ source_set("account_checker_unittests") {
   sources = [ "account_checker_unittest.cc" ]
   deps = [
     ":account_checker",
+    ":commerce_constants",
     ":feature_list",
     ":pref_names",
     "//base",
@@ -410,7 +413,11 @@ source_set("commerce_constants") {
 source_set("commerce_types") {
   sources = [ "commerce_types.h" ]
 
-  deps = [ "//url" ]
+  deps = [
+    ":proto",
+    "//base",
+    "//url",
+  ]
 }
 
 source_set("utils") {
@@ -420,7 +427,6 @@ source_set("utils") {
   ]
   deps = [
     ":commerce_constants",
-    "//base",
     "//net:net",
   ]
 }

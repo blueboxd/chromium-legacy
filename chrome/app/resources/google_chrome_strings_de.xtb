@@ -4,7 +4,6 @@
 <translation id="1001534784610492198">Das Installationsarchiv ist beschädigt oder ungültig. Lade Google Chrome erneut herunter.</translation>
 <translation id="1026101648481255140">Installation fortsetzen</translation>
 <translation id="102763973188675173">Google Chrome anpassen und Einstellungen festlegen. Ein Update ist verfügbar.</translation>
-<translation id="1051826050538111504">Auf deinem Computer wurde schädliche Software gefunden. Chrome kann diese Software entfernen, deine Einstellungen wiederherstellen und Erweiterungen deaktivieren, sodass dein Browser wieder wie gewohnt funktioniert.</translation>
 <translation id="1065672644894730302">Deine Einstellungen können nicht gelesen werden. Einige Funktionen sind möglicherweise nicht verfügbar und Änderungen an Einstellungen werden nicht gespeichert.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> hat zuvor Chrome verwendet</translation>
 <translation id="110877069173485804">Dies ist dein persönlicher Chrome-Browser</translation>
@@ -286,7 +285,7 @@
 <translation id="6247557882553405851">Google Passwortmanager</translation>
 <translation id="6251759518630934363">Warnt dich vor schädlichen Websites, auch solchen, die Google vorher nicht bekannt waren, indem mehr Daten von Websites analysiert werden als beim Standardschutz. Du kannst festlegen, dass Warnungen von Chrome übersprungen werden.</translation>
 <translation id="6273793429163604305">Auf die Plätze…</translation>
-<translation id="6277547788421725101">Deine Eltern haben „Berechtigungen für Websites, Apps und Erweiterungen“ für Chrome deaktiviert</translation>
+<translation id="6277547788421725101">Dein Elternteil hat „Berechtigungen für Websites, Apps und Erweiterungen“ für Chrome deaktiviert</translation>
 <translation id="6291089322031436445">Chrome Dev-Apps</translation>
 <translation id="6291549208091401781">Google Chrome ist bereits für alle Nutzer auf deinem Computer installiert.</translation>
 <translation id="6326175484149238433">Aus Chrome entfernen</translation>

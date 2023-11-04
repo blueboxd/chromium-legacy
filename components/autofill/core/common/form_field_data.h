@@ -9,6 +9,7 @@
 
 #include <limits>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <vector>
 
@@ -52,6 +53,17 @@ enum FieldPropertiesFlags : uint32_t {
   kAutofilledOnPageLoad = 1u << 5,
   // A value was autofilled on any of the triggers.
   kAutofilled = kAutofilledOnUserTrigger | kAutofilledOnPageLoad,
+};
+
+// Autofill supports assigning <label for=x> tags to inputs if x is id/name,
+// or the id/name of a shadow host element containing the input.
+// This enum is used to track how often each case occurs in practice.
+enum class AssignedLabelSource {
+  kId = 0,
+  kName = 1,
+  kShadowHostId = 2,
+  kShadowHostName = 3,
+  kMaxValue = kShadowHostName,
 };
 
 // FieldPropertiesMask is used to contain combinations of FieldPropertiesFlags
@@ -137,6 +149,10 @@ class Section {
 LogBuffer& operator<<(LogBuffer& buffer, const Section& section);
 std::ostream& operator<<(std::ostream& os, const Section& section);
 
+using FormControlType = mojom::FormControlType;
+
+LogBuffer& operator<<(LogBuffer& buffer, FormControlType type);
+
 // Stores information about a field in a form. Read more about forms and fields
 // at FormData.
 struct FormFieldData {
@@ -193,14 +209,7 @@ struct FormFieldData {
   // FormFieldData::DeepEqual() instead.
   // Returns true if both fields are identical, ignoring value- and
   // parsing related members.
-  // See also SimilarFieldAs(), DynamicallySameFieldAs().
   bool SameFieldAs(const FormFieldData& field) const;
-
-  // TODO(crbug/1211834): This function is deprecated.
-  // Returns true if both fields are identical, ignoring members that
-  // are typically changed dynamically.
-  // Strictly weaker than SameFieldAs().
-  bool SimilarFieldAs(const FormFieldData& field) const;
 
   // Returns true for all of textfield-looking types: text, password,
   // search, email, url, and number. It must work the same way as Blink function
@@ -235,9 +244,13 @@ struct FormFieldData {
   bool HadFocus() const;
   bool WasPasswordAutofilled() const;
 
-  // NOTE: update SameFieldAs()            if needed when adding new a member.
-  // NOTE: update SimilarFieldAs()         if needed when adding new a member.
-  // NOTE: update DynamicallySameFieldAs() if needed when adding new a member.
+  // Returns the currently selected text. Returns the empty string if
+  // `selection_start` and/or `selection_end` are out of bounds.
+  std::u16string GetSelection() const;
+  std::u16string_view GetSelectionAsStringView() const;
+
+  // NOTE: Update `SameFieldAs()` and `FormFieldDataAndroid::SimilarFieldAs()`
+  // if needed when adding new a member.
 
   // The name by which autofill knows this field. This is generally either the
   // name attribute or the id_attribute value, which-ever is non-empty with
@@ -250,7 +263,15 @@ struct FormFieldData {
   std::u16string name_attribute;
   std::u16string label;
   std::u16string value;
-  std::string form_control_type;
+  // The range within `value` that is selected. `selection_start` points at the
+  // first selected character, `selection_end` points after the last selected
+  // character. That is, if nothing is selected, `selection_start` and
+  // `selection_end` are identical and represent the cursor position.
+  // Use GetSelection() or GetSelectionAsStringView() to safely get the selected
+  // substring of `value`.
+  uint32_t selection_start = 0;
+  uint32_t selection_end = 0;
+  FormControlType form_control_type = FormControlType::kEmpty;
   std::string autocomplete_attribute;
   absl::optional<AutocompleteParsingResult> parsed_autocomplete;
   std::u16string placeholder;
@@ -340,6 +361,14 @@ struct FormFieldData {
   // user modified.
   bool force_override = false;
 };
+
+// TODO(crbug.com/1482526): Eliminate references to this function where
+// possible.
+std::string_view FormControlTypeToString(FormControlType type);
+
+// TODO(crbug.com/1482526): Eliminate references to this function where
+// possible.
+FormControlType StringToFormControlType(std::string_view type);
 
 // Serialize and deserialize FormFieldData. These are used when FormData objects
 // are serialized and deserialized.

@@ -10,7 +10,6 @@
 
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
-#include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_cell_view.h"
@@ -23,12 +22,26 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
-#include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/insets_outsets_base.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/metadata/type_conversion.h"
+#include "ui/views/view_class_properties.h"
 
 namespace autofill {
+
+namespace {
+
+// Returns the margin on the left and right of the row.
+int GetHorizontalMargin() {
+  return base::FeatureList::IsEnabled(
+             features::kAutofillShowAutocompleteDeleteButton)
+             ? ChromeLayoutProvider::Get()->GetDistanceMetric(
+                   DISTANCE_CONTENT_LIST_VERTICAL_SINGLE)
+             : 0;
+}
+
+}  // namespace
 
 // static
 std::unique_ptr<PopupRowView> PopupRowView::Create(PopupViewViews& popup_view,
@@ -74,27 +87,28 @@ PopupRowView::PopupRowView(
     base::WeakPtr<AutofillPopupController> controller,
     std::unique_ptr<PopupRowStrategy> strategy)
     : a11y_selection_delegate_(a11y_selection_delegate),
+      selection_delegate_(selection_delegate),
       controller_(controller),
       strategy_(std::move(strategy)) {
   CHECK(strategy_);
-  const int kHorizontalPadding =
-      base::FeatureList::IsEnabled(
-          features::kAutofillShowAutocompleteDeleteButton)
-          ? ChromeLayoutProvider::Get()->GetDistanceMetric(
-                DISTANCE_CONTENT_LIST_VERTICAL_SINGLE)
-          : 0;
+
+  SetProperty(views::kMarginsKey, gfx::Insets::VH(0, GetHorizontalMargin()));
+  SetBackground(
+      views::CreateThemedSolidBackground(ui::kColorDropdownBackground));
+
   views::BoxLayout* layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>());
-  layout->set_inside_border_insets(gfx::Insets::VH(0, kHorizontalPadding));
 
   auto add_exit_enter_callbacks = [&](CellType type, PopupCellView& cell) {
-    cell.SetOnExitedCallback(base::BindRepeating(
-        &SelectionDelegate::SetSelectedCell,
-        base::Unretained(&selection_delegate), absl::nullopt));
+    cell.SetOnExitedCallback(
+        base::BindRepeating(&SelectionDelegate::SetSelectedCell,
+                            base::Unretained(&selection_delegate),
+                            absl::nullopt, PopupCellSelectionSource::kMouse));
     cell.SetOnEnteredCallback(base::BindRepeating(
         &SelectionDelegate::SetSelectedCell,
         base::Unretained(&selection_delegate),
-        PopupViewViews::CellIndex{strategy_->GetLineNumber(), type}));
+        PopupViewViews::CellIndex{strategy_->GetLineNumber(), type},
+        PopupCellSelectionSource::kMouse));
   };
 
   content_view_ = AddChildView(strategy_->CreateContent());
@@ -134,6 +148,8 @@ void PopupRowView::SetSelectedCell(absl::optional<CellType> cell) {
     // explicitly with `absl::nullopt`.
     selected_cell_ = absl::nullopt;
   }
+
+  UpdateBackground();
 }
 
 void PopupRowView::SetCellPermanentlyHighlighted(CellType type,
@@ -141,12 +157,16 @@ void PopupRowView::SetCellPermanentlyHighlighted(CellType type,
   if (PopupCellView* view = GetCellView(type)) {
     view->SetPermanentlyHighlighted(highlighted);
   }
+
+  UpdateBackground();
 }
 
 gfx::RectF PopupRowView::GetCellBounds(CellType cell) const {
   const PopupCellView* view = GetCellView(cell);
   // The view is expected to be present.
-  return gfx::RectF(view->GetBoundsInScreen());
+  gfx::RectF bounds = gfx::RectF(view->GetBoundsInScreen());
+  bounds.Outset(GetHorizontalMargin());
+  return bounds;
 }
 
 bool PopupRowView::HandleKeyPressEvent(
@@ -161,42 +181,7 @@ bool PopupRowView::HandleKeyPressEvent(
       content_view_->HandleKeyPressEvent(event)) {
     return true;
   }
-  switch (event.windows_key_code) {
-    case ui::VKEY_LEFT:
-      // `base::i18n::IsRTL` is used here instead of the controller's method
-      // because the controller's `IsRTL` depends on the language of the focused
-      // field and not the overall UI language. However, the layout of the popup
-      // is determined by the overall UI language.
-      if (base::i18n::IsRTL()) {
-        SelectNextCell();
-      } else {
-        SelectPreviousCell();
-      }
-      return true;
-    case ui::VKEY_RIGHT:
-      if (base::i18n::IsRTL()) {
-        SelectPreviousCell();
-      } else {
-        SelectNextCell();
-      }
-      return true;
-    default:
-      return false;
-  }
-}
-
-void PopupRowView::SelectNextCell() {
-  CHECK(GetSelectedCell());
-  if (*GetSelectedCell() == CellType::kContent && GetControlView()) {
-    SetSelectedCell(CellType::kControl);
-  }
-}
-
-void PopupRowView::SelectPreviousCell() {
-  CHECK(GetSelectedCell());
-  if (*GetSelectedCell() == CellType::kControl) {
-    SetSelectedCell(CellType::kContent);
-  }
+  return false;
 }
 
 const PopupCellView* PopupRowView::GetCellView(CellType type) const {
@@ -210,6 +195,20 @@ const PopupCellView* PopupRowView::GetCellView(CellType type) const {
 
 PopupCellView* PopupRowView::GetCellView(CellType type) {
   return const_cast<PopupCellView*>(std::as_const(*this).GetCellView(type));
+}
+
+void PopupRowView::UpdateBackground() {
+  PopupCellView* control_cell = GetCellView(CellType::kControl);
+  if (!control_cell) {
+    return;
+  }
+
+  ui::ColorId kBackgroundColorId = control_cell->IsHighlighted()
+                                       ? ui::kColorDropdownBackgroundSelected
+                                       : ui::kColorDropdownBackground;
+  SetBackground(views::CreateThemedRoundedRectBackground(
+      kBackgroundColorId, ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+                              views::Emphasis::kMedium)));
 }
 
 BEGIN_METADATA(PopupRowView, views::View)

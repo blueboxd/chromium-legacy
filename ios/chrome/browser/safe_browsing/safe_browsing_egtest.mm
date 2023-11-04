@@ -98,6 +98,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
+  config.features_disabled.push_back(safe_browsing::kRedInterstitialFacelift);
   if ([self isRunningTest:@selector(testPageWithUnsafeIframe)] ||
       [self isRunningTest:@selector(testPageWithUnsafeIframeInIncognito)] ||
       [self isRunningTest:@selector

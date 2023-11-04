@@ -4,10 +4,6 @@
 
 #include "chrome/browser/sync/sync_service_factory.h"
 
-#include <stddef.h>
-
-#include <vector>
-
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -21,13 +17,11 @@
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/browser_sync/browser_sync_switches.h"
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/supervised_user/core/common/buildflags.h"
 #include "components/sync/base/command_line_switches.h"
 #include "components/sync/base/features.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/service/data_type_controller.h"
 #include "components/sync/service/sync_service_impl.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/buildflags/buildflags.h"
@@ -91,7 +85,7 @@ class SyncServiceFactoryTest : public testing::Test {
 
   // Returns the collection of default datatypes.
   syncer::ModelTypeSet DefaultDatatypes() {
-    static_assert(49 == syncer::GetNumModelTypes(),
+    static_assert(48 == syncer::GetNumModelTypes(),
                   "When adding a new type, you probably want to add it here as "
                   "well (assuming it is already enabled).");
 
@@ -165,15 +159,12 @@ class SyncServiceFactoryTest : public testing::Test {
     datatypes.Put(syncer::BOOKMARKS);
     datatypes.Put(syncer::CONTACT_INFO);
     datatypes.Put(syncer::DEVICE_INFO);
-    if (base::FeatureList::IsEnabled(syncer::kSyncEnableHistoryDataType)) {
-      datatypes.Put(syncer::HISTORY);
-    }
+    datatypes.Put(syncer::HISTORY);
     datatypes.Put(syncer::HISTORY_DELETE_DIRECTIVES);
     datatypes.Put(syncer::PREFERENCES);
     datatypes.Put(syncer::PRIORITY_PREFERENCES);
     datatypes.Put(syncer::SESSIONS);
     datatypes.Put(syncer::PROXY_TABS);
-    datatypes.Put(syncer::TYPED_URLS);
     datatypes.Put(syncer::USER_EVENTS);
     datatypes.Put(syncer::USER_CONSENTS);
     datatypes.Put(syncer::SEND_TAB_TO_SELF);

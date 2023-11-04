@@ -10,7 +10,7 @@
 #import "base/metrics/user_metrics.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/password_manager/core/browser/features/password_features.h"
-#import "components/password_manager/core/browser/password_manager_features_util.h"
+#import "components/password_manager/core/browser/features/password_manager_features_util.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/password_manager/core/common/password_manager_pref_names.h"
@@ -22,12 +22,12 @@
 #import "components/sync/base/user_selectable_type.h"
 #import "components/sync/service/sync_service_utils.h"
 #import "components/sync/service/sync_user_settings.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_backed_boolean.h"
+#import "ios/chrome/browser/shared/model/utils/observable_boolean.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/ui/settings/password/password_exporter.h"
 #import "ios/chrome/browser/ui/settings/password/saved_passwords_presenter_observer.h"
-#import "ios/chrome/browser/ui/settings/utils/observable_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/password_auto_fill_status_manager.h"
-#import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_protocol.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -114,17 +114,14 @@ bool IsCredentialNotInAccountStore(const CredentialUIEntry& credential) {
 - (instancetype)
        initWithReauthenticationModule:(id<ReauthenticationProtocol>)reauthModule
               savedPasswordsPresenter:
-                  (raw_ptr<password_manager::SavedPasswordsPresenter>)
-                      passwordPresenter
+                  (password_manager::SavedPasswordsPresenter*)passwordPresenter
     bulkMovePasswordsToAccountHandler:
         (id<BulkMoveLocalPasswordsToAccountHandler>)
             bulkMovePasswordsToAccountHandler
                         exportHandler:(id<PasswordExportHandler>)exportHandler
-                          prefService:(raw_ptr<PrefService>)prefService
-                      identityManager:
-                          (raw_ptr<signin::IdentityManager>)identityManager
-                          syncService:
-                              (raw_ptr<syncer::SyncService>)syncService {
+                          prefService:(PrefService*)prefService
+                      identityManager:(signin::IdentityManager*)identityManager
+                          syncService:(syncer::SyncService*)syncService {
   self = [super init];
   if (self) {
     _passwordExporter =
@@ -167,7 +164,8 @@ bool IsCredentialNotInAccountStore(const CredentialUIEntry& credential) {
   [self.consumer setSignedInAccount:base::SysUTF8ToNSString(
                                         _syncService->GetAccountInfo().email)];
 
-  [self.consumer setAccountStorageState:[self computeAccountStorageState]];
+  [self.consumer
+      setAccountStorageSwitchState:[self computeAccountStorageSwitchState]];
 
   // < and not <= below, because the next impression must be counted.
   const int impressionCount = _prefService->GetInteger(
@@ -226,7 +224,7 @@ bool IsCredentialNotInAccountStore(const CredentialUIEntry& credential) {
   [self.passwordExporter resetExportState];
 }
 
-- (void)userDidCancelExportFlow {
+- (void)exportFlowCanceled {
   [self.passwordExporter cancelExport];
 }
 
@@ -372,7 +370,8 @@ bool IsCredentialNotInAccountStore(const CredentialUIEntry& credential) {
   [self.consumer setOnDeviceEncryptionState:[self onDeviceEncryptionState]];
   [self.consumer setSignedInAccount:base::SysUTF8ToNSString(
                                         _syncService->GetAccountInfo().email)];
-  [self.consumer setAccountStorageState:[self computeAccountStorageState]];
+  [self.consumer
+      setAccountStorageSwitchState:[self computeAccountStorageSwitchState]];
   [self updateShowBulkMovePasswordsToAccount];
 }
 
@@ -398,7 +397,7 @@ bool IsCredentialNotInAccountStore(const CredentialUIEntry& credential) {
   [self.consumer updateExportPasswordsButton];
 }
 
-- (PasswordSettingsAccountStorageState)computeAccountStorageState {
+- (AccountStorageSwitchState)computeAccountStorageSwitchState {
   // TODO(crbug.com/1462858): Delete the usage of IsSyncFeatureEnabled() after
   // Phase 2 on iOS is launched. See ConsentLevel::kSync documentation for
   // details.
@@ -406,7 +405,7 @@ bool IsCredentialNotInAccountStore(const CredentialUIEntry& credential) {
       _syncService->IsSyncFeatureEnabled() ||
       base::FeatureList::IsEnabled(
           syncer::kReplaceSyncPromosWithSignInPromos)) {
-    return PasswordSettingsAccountStorageStateNotShown;
+    return AccountStorageSwitchState::kHidden;
   }
 
   CHECK(base::FeatureList::IsEnabled(
@@ -417,13 +416,13 @@ bool IsCredentialNotInAccountStore(const CredentialUIEntry& credential) {
           syncer::UserSelectableType::kPasswords) ||
       _syncService->HasDisableReason(
           syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY)) {
-    return PasswordSettingsAccountStorageStateDisabledByPolicy;
+    return AccountStorageSwitchState::kDisabledByPolicy;
   }
 
   return _syncService->GetUserSettings()->GetSelectedTypes().Has(
              syncer::UserSelectableType::kPasswords)
-             ? PasswordSettingsAccountStorageStateOptedIn
-             : PasswordSettingsAccountStorageStateOptedOut;
+             ? AccountStorageSwitchState::kOn
+             : AccountStorageSwitchState::kOff;
 }
 
 // Computes the amount of local passwords and passes that on to the consumer.

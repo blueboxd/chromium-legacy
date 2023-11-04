@@ -52,9 +52,8 @@ class HoverButton : public views::LabelButton {
   // LabelButton icon, and titles appear on separate rows. An empty |subtitle|
   // will vertically center |title|. |secondary_view|, when set, is shown
   // on the opposite side of the button from |icon_view|.
-  // When |resize_row_for_secondary_icon| is false, the button tries to
-  // accommodate the view's preferred size by reducing the top and bottom
-  // insets appropriately up to a value of 0.
+  // When |add_vertical_label_spacing| is false it will not add vertical spacing
+  // to the label wrapper.
   // Warning: |icon_view| must have a fixed size and be correctly set during its
   // constructor for the HoverButton to layout correctly.
   HoverButton(PressedCallback callback,
@@ -62,8 +61,7 @@ class HoverButton : public views::LabelButton {
               const std::u16string& title,
               const std::u16string& subtitle = std::u16string(),
               std::unique_ptr<views::View> secondary_view = nullptr,
-              bool resize_row_for_secondary_view = true,
-              bool secondary_view_can_process_events = false);
+              bool add_vertical_label_spacing = true);
 
   HoverButton(const HoverButton&) = delete;
   HoverButton& operator=(const HoverButton&) = delete;
@@ -82,8 +80,10 @@ class HoverButton : public views::LabelButton {
   // Sets the text style of the title considering the color of the background.
   // Passing |background_color| makes sure that the text color will not be
   // changed to a color that is not readable on the specified background.
+  // Sets the title's enabled color to |color_id|, if present.
   void SetTitleTextStyle(views::style::TextStyle text_style,
-                         SkColor background_color);
+                         SkColor background_color,
+                         absl::optional<ui::ColorId> color_id);
 
   // Set the text context and style of the subtitle.
   void SetSubtitleTextStyle(int text_context,
@@ -128,7 +128,10 @@ class HoverButton : public views::LabelButton {
 };
 
 BEGIN_VIEW_BUILDER(, HoverButton, views::LabelButton)
-VIEW_BUILDER_METHOD(SetTitleTextStyle, views::style::TextStyle, SkColor)
+VIEW_BUILDER_METHOD(SetTitleTextStyle,
+                    views::style::TextStyle,
+                    SkColor,
+                    absl::optional<ui::ColorId>)
 END_VIEW_BUILDER
 
 DEFINE_VIEW_BUILDER(, HoverButton)

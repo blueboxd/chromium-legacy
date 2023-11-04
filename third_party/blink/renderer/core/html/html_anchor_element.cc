@@ -470,6 +470,7 @@ void HTMLAnchorElement::NavigateToHyperlink(ResourceRequest request,
   FrameLoadRequest frame_request(window, request);
   frame_request.SetNavigationPolicy(navigation_policy);
   frame_request.SetClientRedirectReason(ClientNavigationReason::kAnchorClick);
+  frame_request.SetSourceElement(this);
   const AtomicString& target =
       frame_request.CleanNavigationTarget(GetEffectiveTarget());
   if (HasRel(kRelationNoReferrer)) {
@@ -565,9 +566,8 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   }
 
   Document& top_document = GetDocument().TopDocument();
-  if (AnchorElementMetricsSender::HasAnchorElementMetricsSender(top_document)) {
-    AnchorElementMetricsSender::From(top_document)
-        ->MaybeReportClickedMetricsOnClick(*this);
+  if (auto* sender = AnchorElementMetricsSender::From(top_document)) {
+    sender->MaybeReportClickedMetricsOnClick(*this);
   }
 
   StringBuilder url;
@@ -614,7 +614,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
                          "Max: %d, given: %d",
                          kMaxDownloadAttrLength, download_attr.length()));
       console_message->SetNodes(GetDocument().GetFrame(),
-                                {DOMNodeIds::IdForNode(this)});
+                                {this->GetDomNodeId()});
       GetDocument().AddConsoleMessage(console_message);
       return;
     }
@@ -625,6 +625,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
     if (event.isTrusted())
       params->involvement = UserNavigationInvolvement::kActivation;
     params->download_filename = download_attr;
+    params->source_element = this;
     if (window->navigation()->DispatchNavigateEvent(params) !=
         NavigationApi::DispatchResult::kContinue) {
       return;
@@ -706,8 +707,8 @@ Node::InsertionNotificationRequest HTMLAnchorElement::InsertedInto(
   LogAddElementIfIsolatedWorldAndInDocument("a", html_names::kHrefAttr);
 
   Document& top_document = GetDocument().TopDocument();
-  if (AnchorElementMetricsSender::HasAnchorElementMetricsSender(top_document)) {
-    AnchorElementMetricsSender::From(top_document)->AddAnchorElement(*this);
+  if (auto* sender = AnchorElementMetricsSender::From(top_document)) {
+    sender->AddAnchorElement(*this);
   }
 
   if (isConnected() && IsLink() &&

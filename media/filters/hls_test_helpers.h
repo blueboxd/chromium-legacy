@@ -21,6 +21,7 @@ class FakeHlsDataSource : public HlsDataSource {
             uint8_t* buf,
             HlsDataSource::ReadCb cb) override;
   base::StringPiece GetMimeType() const override;
+  void Stop() override;
 
  protected:
   std::vector<uint8_t> data_;
@@ -94,15 +95,28 @@ class MockHlsRenditionHost : public HlsRenditionHost {
               (GURL uri,
                bool read_chunked,
                absl::optional<hls::types::ByteRange> range,
-               HlsDataSourceStream::ReadCb cb),
+               HlsDataSourceStreamManager::ReadCb cb),
               (override));
 
   MOCK_METHOD(hls::ParseStatus::Or<scoped_refptr<hls::MediaPlaylist>>,
-              ParseMediaPlaylistFromStream,
-              (HlsDataSourceStream stream,
+              ParseMediaPlaylistFromStringSource,
+              (base::StringPiece source,
                GURL uri,
                hls::types::DecimalInteger version),
               (override));
+
+  void ReadStream(std::unique_ptr<HlsDataSourceStream> stream,
+                  HlsDataSourceStreamManager::ReadCb cb) override;
+
+ private:
+  void ExchangeStreamId(HlsDataSourceStream::StreamId ticket,
+                        HlsDataSourceStreamManager::ReadCb cb,
+                        HlsDataSource::ReadStatus::Or<size_t> result);
+
+  HlsDataSourceStream::StreamId::Generator stream_ticket_generator_;
+  base::flat_map<HlsDataSourceStream::StreamId,
+                 std::unique_ptr<HlsDataSourceStream>>
+      stream_map_;
 };
 
 class MockHlsRendition : public HlsRendition {
@@ -119,6 +133,7 @@ class MockHlsRendition : public HlsRendition {
   MOCK_METHOD(bool, Seek, (base::TimeDelta time), (override));
   MOCK_METHOD(void, CancelPendingNetworkRequests, (), (override));
   MOCK_METHOD(absl::optional<base::TimeDelta>, GetDuration, (), (override));
+  MOCK_METHOD(void, Stop, (), (override));
 };
 
 }  // namespace media

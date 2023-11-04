@@ -31,7 +31,6 @@
 #import "components/prefs/ios/pref_observer_bridge.h"
 #import "components/prefs/pref_change_registrar.h"
 #import "components/previous_session_info/previous_session_info.h"
-#import "components/sync/base/features.h"
 #import "components/sync/service/sync_service.h"
 #import "components/web_resource/web_resource_pref_names.h"
 #import "ios/chrome/app/app_metrics_app_state_agent.h"
@@ -60,14 +59,14 @@
 #import "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/app/variations_app_state_agent.h"
 #import "ios/chrome/browser/accessibility/model/window_accessibility_change_notifier_app_agent.h"
-#import "ios/chrome/browser/browsing_data/browsing_data_remover.h"
-#import "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
-#import "ios/chrome/browser/browsing_data/sessions_storage_util.h"
-#import "ios/chrome/browser/crash_report/crash_helper.h"
-#import "ios/chrome/browser/crash_report/crash_keys_helper.h"
-#import "ios/chrome/browser/crash_report/crash_loop_detection_util.h"
-#import "ios/chrome/browser/crash_report/crash_report_helper.h"
-#import "ios/chrome/browser/credential_provider/credential_provider_buildflags.h"
+#import "ios/chrome/browser/browsing_data/model/browsing_data_remover.h"
+#import "ios/chrome/browser/browsing_data/model/browsing_data_remover_factory.h"
+#import "ios/chrome/browser/browsing_data/model/sessions_storage_util.h"
+#import "ios/chrome/browser/crash_report/model/crash_helper.h"
+#import "ios/chrome/browser/crash_report/model/crash_keys_helper.h"
+#import "ios/chrome/browser/crash_report/model/crash_loop_detection_util.h"
+#import "ios/chrome/browser/crash_report/model/crash_report_helper.h"
+#import "ios/chrome/browser/credential_provider/model/credential_provider_buildflags.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/external_files/external_file_remover_factory.h"
@@ -108,8 +107,9 @@
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/signin/authentication_service_delegate.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
-#import "ios/chrome/browser/snapshots/snapshot_cache.h"
+#import "ios/chrome/browser/snapshots/snapshot_storage.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/appearance/appearance_customization.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
@@ -137,9 +137,9 @@
 
 #if BUILDFLAG(IOS_CREDENTIAL_PROVIDER_ENABLED)
 #import "ios/chrome/app/credential_provider_migrator_app_agent.h"
-#import "ios/chrome/browser/credential_provider/credential_provider_service_factory.h"
-#import "ios/chrome/browser/credential_provider/credential_provider_support.h"
-#import "ios/chrome/browser/credential_provider/credential_provider_util.h"
+#import "ios/chrome/browser/credential_provider/model/credential_provider_service_factory.h"
+#import "ios/chrome/browser/credential_provider/model/credential_provider_support.h"
+#import "ios/chrome/browser/credential_provider/model/credential_provider_util.h"
 #endif
 
 #if BUILDFLAG(IOS_ENABLE_SANDBOX_DUMP)
@@ -509,6 +509,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                                         browserState)
               authenticationService:AuthenticationServiceFactory::
                                         GetForBrowserState(browserState)
+                    identityManager:IdentityManagerFactory::GetForBrowserState(
+                                        browserState)
                          localState:GetApplicationContext()->GetLocalState()]];
 }
 
@@ -1091,12 +1093,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (void)saveFieldTrialValuesForExtensions {
   NSUserDefaults* sharedDefaults = app_group::GetGroupUserDefaults();
 
-  NSNumber* credentialProviderExtensionPasswordNotesValue =
-      [NSNumber numberWithBool:base::FeatureList::IsEnabled(
-                                   syncer::kPasswordNotesWithBackup)];
-  NSNumber* credentialProviderExtensionPasswordNotesVersion =
-      [NSNumber numberWithInt:kCredentialProviderExtensionPasswordNotesVersion];
-
   // Add other field trial values here if they are needed by extensions.
   // The general format is
   // {
@@ -1106,10 +1102,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   //   }
   // }
   NSDictionary* fieldTrialValues = @{
-    base::SysUTF8ToNSString(syncer::kPasswordNotesWithBackup.name) : @{
-      kFieldTrialValueKey : credentialProviderExtensionPasswordNotesValue,
-      kFieldTrialVersionKey : credentialProviderExtensionPasswordNotesVersion,
-    },
     kWidgetKitRefreshFiveMinutes : @{
       kFieldTrialValueKey : @([[NSUserDefaults standardUserDefaults]
           boolForKey:kWidgetKitRefreshFiveMinutes]),

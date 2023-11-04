@@ -40,7 +40,13 @@ constexpr int kLowPowerMinutes = 15;
 
 class PowerSoundsControllerTest : public AshTestBase {
  public:
-  PowerSoundsControllerTest() = default;
+  PowerSoundsControllerTest()
+      : PowerSoundsControllerTest({features::kSystemSounds}) {}
+
+  explicit PowerSoundsControllerTest(
+      const std::vector<base::test::FeatureRef>& enabled_features) {
+    scoped_feature_.InitWithFeatures(enabled_features, {});
+  }
 
   PowerSoundsControllerTest(const PowerSoundsControllerTest&) = delete;
   PowerSoundsControllerTest& operator=(const PowerSoundsControllerTest&) =
@@ -50,7 +56,6 @@ class PowerSoundsControllerTest : public AshTestBase {
 
   // AshTestBase:
   void SetUp() override {
-    scoped_feature_.InitAndEnableFeature(features::kSystemSounds);
     AshTestBase::SetUp();
     SetInitialPowerStatus();
   }
@@ -64,12 +69,14 @@ class PowerSoundsControllerTest : public AshTestBase {
     const auto& actual_sounds =
         GetSystemSoundsDelegate()->last_played_sound_keys();
 
-    if (actual_sounds.size() != expected_sounds.size())
+    if (actual_sounds.size() != expected_sounds.size()) {
       return false;
+    }
 
     for (size_t i = 0; i < expected_sounds.size(); ++i) {
-      if (expected_sounds[i] != actual_sounds[i])
+      if (expected_sounds[i] != actual_sounds[i]) {
         return false;
+      }
     }
 
     return true;
@@ -136,11 +143,54 @@ class PowerSoundsControllerTest : public AshTestBase {
       plugged_in_levels_samples_;
   base::flat_map</*battery_level=*/int, /*sample_count=*/int>
       unplugged_levels_samples_;
+  base::test::ScopedFeatureList scoped_feature_;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_;
   bool is_ac_charger_connected_;
 };
+
+class PowerSoundsControllerWithBatterySaverTest
+    : public PowerSoundsControllerTest,
+      public testing::WithParamInterface<
+          features::BatterySaverNotificationBehavior> {
+ public:
+  PowerSoundsControllerWithBatterySaverTest()
+      : PowerSoundsControllerTest(
+            {features::kSystemSounds, features::kBatterySaver}) {}
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    PowerSoundsControllerWithBatterySaverTest,
+    testing::Values(features::BatterySaverNotificationBehavior::kBSMAutoEnable,
+                    features::BatterySaverNotificationBehavior::kBSMOptIn));
+
+TEST_P(PowerSoundsControllerWithBatterySaverTest,
+       PlayLowBatterySoundForBatterySaver) {
+  // Don't play warning sound if the battery level is no less than the low power
+  // threshold for battery saver.
+  const int battery_saver_threshold =
+      features::kBatterySaverActivationChargePercent.Get();
+  GetSystemSoundsDelegate()->reset();
+  SetPowerStatus(battery_saver_threshold + 1, kDisconnectedPower);
+  EXPECT_TRUE(GetSystemSoundsDelegate()->empty());
+
+  // When the battery drops below the low power threshold at the first time, the
+  // device should play the sound for warning.
+  SetPowerStatus(battery_saver_threshold, kDisconnectedPower);
+  EXPECT_TRUE(VerifySounds({Sound::kNoChargeLowBattery}));
+  GetSystemSoundsDelegate()->reset();
+
+  // When the battery level keeps dropping but no less than the critical power
+  // threshold, the device shouldn't play sound for warning.
+  SetPowerStatus(battery_saver_threshold - 1, kDisconnectedPower);
+  EXPECT_TRUE(GetSystemSoundsDelegate()->empty());
+
+  // The device will play the sound if its battery level keeps dropping to the
+  // critical power threshold.
+  SetPowerStatus(kCriticalPercentage, kDisconnectedPower);
+  EXPECT_TRUE(VerifySounds({Sound::kNoChargeLowBattery}));
+}
 
 // Tests if sounds are played correctedly when the device is plugged at three
 // different battery ranges with a AC charger.

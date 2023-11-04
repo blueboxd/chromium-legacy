@@ -109,19 +109,19 @@ export const SECTION_EXPECTATIONS: SectionData[] = [
   {
     name: 'kFiles',
     availableBeforeRevamp: true,
-    availableAfterRevamp: true,
+    availableAfterRevamp: false,
     availableForGuest: false,
   },
   {
     name: 'kPrinting',
     availableBeforeRevamp: true,
-    availableAfterRevamp: true,
+    availableAfterRevamp: false,
     availableForGuest: true,
   },
   {
     name: 'kCrostini',
     availableBeforeRevamp: true,
-    availableAfterRevamp: true,
+    availableAfterRevamp: false,
     availableForGuest: true,
   },
   {

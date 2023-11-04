@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.customtabs;
 import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 
 import android.app.Activity;
+import android.util.SparseBooleanArray;
 
 import androidx.annotation.Nullable;
 import androidx.test.filters.MediumTest;
@@ -40,7 +41,6 @@ import org.chromium.chrome.browser.app.tabmodel.ChromeTabModelFilterFactory;
 import org.chromium.chrome.browser.app.tabmodel.CustomTabsTabModelOrchestrator;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.MockTab;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabPersistencePolicy;
@@ -431,6 +431,10 @@ public class CustomTabTabPersistencePolicyTest {
             @Override
             public void cancelCleanupInProgress() {
             }
+
+            @Override
+            public void getAllTabIds(Callback<SparseBooleanArray> tabIdsCallback) {}
+
         };
     }
 
@@ -439,7 +443,7 @@ public class CustomTabTabPersistencePolicyTest {
         MockTabModel.MockTabModelDelegate tabModelDelegate =
                 new MockTabModel.MockTabModelDelegate() {
                     @Override
-                    public Tab createTab(int id, boolean incognito) {
+                    public MockTab createTab(int id, boolean incognito) {
                         return new MockTab(id, incognito) {
                             @Override
                             public GURL getUrl() {

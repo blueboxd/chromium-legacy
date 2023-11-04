@@ -320,16 +320,11 @@ void MousePrefHandlerImpl::InitializeLoginScreenMouseSettings(
     const AccountId& account_id,
     const mojom::MousePolicies& mouse_policies,
     mojom::Mouse* mouse) {
-  CHECK(local_state);
-  // If the flag is disabled, clear all the settings dictionaries.
+  // Verify if the flag is enabled.
   if (!features::IsInputDeviceSettingsSplitEnabled()) {
-    user_manager::KnownUser known_user(local_state);
-    known_user.SetPath(account_id, prefs::kMouseLoginScreenInternalSettingsPref,
-                       absl::nullopt);
-    known_user.SetPath(account_id, prefs::kMouseLoginScreenExternalSettingsPref,
-                       absl::nullopt);
     return;
   }
+  CHECK(local_state);
 
   const auto* settings_dict = GetLoginScreenSettingsDict(
       local_state, account_id,
@@ -347,6 +342,16 @@ void MousePrefHandlerImpl::InitializeLoginScreenMouseSettings(
       mouse_policies.swap_right_policy->policy_status ==
           mojom::PolicyStatus::kManaged) {
     mouse->settings->swap_right = mouse_policies.swap_right_policy->value;
+  }
+
+  if (features::IsPeripheralCustomizationEnabled()) {
+    const auto* button_remappings_list = GetLoginScreenButtonRemappingList(
+        local_state, account_id,
+        prefs::kMouseLoginScreenButtonRemappingListPref);
+    if (button_remappings_list) {
+      mouse->settings->button_remappings =
+          ConvertListToButtonRemappingArray(*button_remappings_list);
+    }
   }
 }
 
@@ -367,6 +372,16 @@ void MousePrefHandlerImpl::UpdateLoginScreenMouseSettings(
           account_id, pref_name,
           absl::make_optional<base::Value>(ConvertSettingsToDict(
               mouse, mouse_policies, /*force_persistence=*/{}, settings_dict)));
+
+  if (features::IsPeripheralCustomizationEnabled()) {
+    const auto* button_remapping_list_pref =
+        prefs::kMouseLoginScreenButtonRemappingListPref;
+    user_manager::KnownUser(local_state)
+        .SetPath(
+            account_id, button_remapping_list_pref,
+            absl::make_optional<base::Value>(ConvertButtonRemappingArrayToList(
+                mouse.settings->button_remappings)));
+  }
 }
 
 void MousePrefHandlerImpl::InitializeWithDefaultMouseSettings(

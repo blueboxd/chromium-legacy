@@ -37,6 +37,7 @@
 #include "content/browser/renderer_host/should_swap_browsing_instance.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/content_navigation_policy.h"
+#include "content/common/features.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/document_service.h"
 #include "content/public/browser/global_routing_id.h"
@@ -150,10 +151,15 @@ BackForwardCacheBrowserTest::~BackForwardCacheBrowserTest() {
     // be flaky due calls to `LocalFrameHost::DidFocusFrame()` after entering
     // BFCache. So we ignore it for now by removing it if it's present until we
     // can fix the root cause.
+    // TODO(https://crbug.com/1470528): Remove this.
+    // As above but `LocalMainFrameHost::DidFirstVisuallyNonEmptyPaint()`.
     std::erase_if(samples, [](base::Bucket bucket) {
       return bucket.min ==
-             static_cast<base::HistogramBase::Sample>(
-                 base::HashMetricName(blink::mojom::LocalFrameHost::Name_));
+                 static_cast<base::HistogramBase::Sample>(base::HashMetricName(
+                     blink::mojom::LocalFrameHost::Name_)) ||
+             bucket.min ==
+                 static_cast<base::HistogramBase::Sample>(base::HashMetricName(
+                     blink::mojom::LocalMainFrameHost::Name_));
     });
 
     EXPECT_THAT(samples, testing::ElementsAre());
@@ -208,6 +214,10 @@ void BackForwardCacheBrowserTest::SetUpCommandLine(
     // `content::kBackForwardCacheSize`, as many browser tests here assume
     // specific or smaller cache size (e.g. 1) rather than 6.
     DisableFeature(kBackForwardCacheSize);
+
+    // WebSQL is disabled by default as of M119 (crbug/695592). Enable feature
+    // in tests during deprecation trial and enterprise policy support.
+    EnableFeatureAndSetParams(blink::features::kWebSQLAccess, "", "");
 
     SetupFeaturesAndParameters();
 
@@ -2863,7 +2873,7 @@ IN_PROC_BROWSER_TEST_P(
       use_cross_origin_subframe ? "b.com" : "a.com", "/title1.html");
 
   IsolateOriginsForTesting(embedded_test_server(), web_contents(),
-                           {"a.com", "b.com"});
+                           std::vector<std::string>{"a.com", "b.com"});
 
   // 1) Navigate to a.com.
   EXPECT_TRUE(NavigateToURL(shell(), a_url));

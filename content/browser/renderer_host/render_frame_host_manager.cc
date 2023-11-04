@@ -961,7 +961,11 @@ void RenderFrameHostManager::PrepareForCollectingPage(
     if (group->IsRelatedSiteInstanceGroup(it.second->site_instance_group())) {
       DCHECK(base::Contains(*render_view_hosts,
                             it.second->GetRenderViewHost()->GetSafeRef()));
-      (*proxy_hosts)[it.first] = std::move(it.second);
+      auto pair = proxy_hosts->insert({it.first, std::move(it.second)});
+      bool insertion_took_place = pair.second;
+      // There should be only one proxy for any given SiteInstanceGroup, so this
+      // should never replace an existing element.
+      CHECK(insertion_took_place);
     }
   }
 
@@ -1340,21 +1344,8 @@ void RenderFrameHostManager::DidCreateNavigationRequest(
   } else {
     BrowsingContextGroupSwap ignored_bcg_swap_info =
         BrowsingContextGroupSwap::CreateDefault();
-    std::string reason;
-    auto result =
-        GetFrameHostForNavigation(request, &ignored_bcg_swap_info, &reason);
+    auto result = GetFrameHostForNavigation(request, &ignored_bcg_swap_info);
     if (result.has_value()) {
-      if (frame_tree_node_->frame_tree().is_prerendering() &&
-          result.value() == speculative_render_frame_host_.get()) {
-        (*result)->SetCreationInfoForBug1425281(
-            render_frame_host_->GetSiteInstance()
-                ->GetSiteInfo()
-                .GetDebugString(),
-            speculative_render_frame_host_->GetSiteInstance()
-                ->GetSiteInfo()
-                .GetDebugString(),
-            reason, request->GetURL());
-      }
       DCHECK(result.value());
     } else if (result.error() ==
                GetFrameHostForNavigationFailed::kBlockedByPendingCommit) {
@@ -1366,8 +1357,44 @@ void RenderFrameHostManager::DidCreateNavigationRequest(
   }
 }
 
-void RenderFrameHostManager::PerformEarlyRenderFrameHostSwapIfNeeded(
+bool RenderFrameHostManager::ShouldPerformEarlySwapForNavigationTransition(
     NavigationRequest* request) {
+  if (!base::FeatureList::IsEnabled(
+          features::kEarlyDocumentSwapForBackForwardTransitions)) {
+    return false;
+  }
+
+  // Early swaps are allowed in outermost main frames only, as that's where
+  // a navigation transition may be shown.
+  if (!frame_tree_node_->IsOutermostMainFrame()) {
+    return false;
+  }
+
+  // Same-document navigations stay in the same RenderFrameHost and hence
+  // cannot do the early swap.
+  if (request->IsSameDocument()) {
+    return false;
+  }
+
+  // Only browser-initiated navigations are eligible for navigation transitions.
+  if (request->IsRendererInitiated()) {
+    return false;
+  }
+
+  // Check for back/forward history navigations.  These should have both the
+  // dest_site_instance() set from the NavigationEntry and have the back/forward
+  // page transition.  Note that this explicitly excludes reloads.
+  //
+  // TODO(alexmos, creis): For now, the early swap is done for all back/forward
+  // navigations.  In the future, there will be other APIs for deciding when to
+  // do it.
+  return request->dest_site_instance() &&
+         (request->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK);
+}
+
+void RenderFrameHostManager::PerformEarlyRenderFrameHostSwapIfNeeded(
+    NavigationRequest* request,
+    bool is_called_after_did_start_navigation) {
   // The early swap is possible only when there's a speculative RenderFrameHost
   // to swap with the current one.
   if (!speculative_render_frame_host_) {
@@ -1386,32 +1413,54 @@ void RenderFrameHostManager::PerformEarlyRenderFrameHostSwapIfNeeded(
     return;
   }
 
-  // Currently, only non-live frames do the early swap.  This is possible in
-  // two cases: (1) if a frame's process dies (e.g., due to a crash or OOM),
-  // and (2) if we navigate a frame immediately after its creation, and the
-  // navigation cannot reuse the initial non-live RFH and must create a
-  // speculative RFH. The latter case is possible with WebUI and <webview>
-  // tags.
-  if (render_frame_host_->IsRenderFrameLive()) {
-    return;
-  }
-
-  // Skip the early swap if we explicitly do not want it when recovering from a
-  // crash.
-  if (ShouldSkipEarlyCommitPendingForCrashedFrame() &&
-      render_frame_host_->must_be_replaced()) {
-    return;
-  }
-
-  // Remember why the early swap is occurring for metrics. Note that we're
-  // being slightly imprecise here by using kCrashedFrame for
-  // must_be_replaced(), which includes all cases where a RenderFrameHost has
-  // had a process in the past but then lost it via RenderProcessGone, which
-  // also includes cases like OOM.
   using EarlySwapType = NavigationRequest::EarlyRenderFrameHostSwapType;
-  EarlySwapType early_swap_type = render_frame_host_->must_be_replaced()
-                                      ? EarlySwapType::kCrashedFrame
-                                      : EarlySwapType::kInitialFrame;
+  EarlySwapType early_swap_type = EarlySwapType::kNone;
+
+  // Currently, the early swap might be invoked in two places:
+  // - (Legacy timing) At the very beginning of navigation, as part of picking
+  //   the target RenderFrameHost via GetFrameHostForNavigation().
+  // - (New timing) After DidStartNavigation has been dispatched to observers
+  //   and WillStartRequest navigation throttle events have been processed.
+  //
+  // `is_called_after_did_start_navigation` determines which timing was used
+  // (legacy timing when false, new timing when true).  Currently, the legacy
+  // timing is used when doing early RenderFrameHost swap for initial and
+  // crashed frames, and the new timing is used for experimental early swaps for
+  // back/forward navigations. Eventually, we want to only have the new timing
+  // and to move all early swaps to happen after
+  // DidStartNavigation/WillStartRequest.  See crbug.com/1467011.
+  if (is_called_after_did_start_navigation) {
+    // Perform the early swap for navigations that will be subject to navigation
+    // transitions.
+    if (ShouldPerformEarlySwapForNavigationTransition(request)) {
+      early_swap_type = EarlySwapType::kNavigationTransition;
+    }
+  } else if (!render_frame_host_->IsRenderFrameLive()) {
+    // Currently, non-live frames do the early swap before reaching
+    // DidStartNavigation.  This is possible in two cases: (1) if a frame's
+    // process dies (e.g., due to a crash or OOM), and (2) if we navigate a
+    // frame immediately after its creation, and the navigation cannot reuse the
+    // initial non-live RFH and must create a speculative RFH.  For case (1),
+    // must_be_replaced() will always be true, but note that there's also an
+    // experimental feature that skips the early swap for case (1).  Case (2) is
+    // possible in cases like WebUI, <webview> tags, and dynamic isolation on
+    // Android.
+    if (render_frame_host_->must_be_replaced()) {
+      if (!ShouldSkipEarlyCommitPendingForCrashedFrame()) {
+        // Note that we're being slightly imprecise here by using
+        // kCrashedFrame for must_be_replaced(), which includes all cases
+        // where a RenderFrameHost has had a process in the past but then lost
+        // it via RenderProcessGone, which also includes cases like OOM.
+        early_swap_type = EarlySwapType::kCrashedFrame;
+      }
+    } else {
+      early_swap_type = EarlySwapType::kInitialFrame;
+    }
+  }
+
+  if (early_swap_type == EarlySwapType::kNone) {
+    return;
+  }
 
   // Now, proceed with the early swap. There's no reason to sit around with a
   // sad tab or a newly created RFH while we wait for the navigation to
@@ -1680,9 +1729,10 @@ RenderFrameHostManager::GetFrameHostForNavigation(
     request->SetAssociatedRFHType(
         NavigationRequest::AssociatedRenderFrameHostType::SPECULATIVE);
 
-    // TODO(crbug.com/1467011): Move the early swap to happen after
-    // DidStartNavigation.
-    PerformEarlyRenderFrameHostSwapIfNeeded(request);
+    // TODO(crbug.com/1467011): Move this early swap to happen after
+    // DidStartNavigation, together with the back/forward early swap.
+    PerformEarlyRenderFrameHostSwapIfNeeded(
+        request, /*is_called_after_did_start_navigation=*/false);
   }
 
   DCHECK(navigation_rfh &&

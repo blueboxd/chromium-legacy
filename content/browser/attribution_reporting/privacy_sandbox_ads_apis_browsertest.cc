@@ -7,10 +7,12 @@
 #include "base/strings/strcat.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/attribution_reporting/features.h"
 #include "content/browser/browsing_topics/test_util.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"
@@ -701,7 +703,7 @@ class PrivacySandboxAdsAPIsM1OverrideNoFeatureBrowserTest
   PrivacySandboxAdsAPIsM1OverrideNoFeatureBrowserTest() {
     feature_list_.InitWithFeatures(
         {features::kPrivacySandboxAdsAPIsM1Override},
-        {blink::features::kConversionMeasurement,
+        {attribution_reporting::features::kConversionMeasurement,
          blink::features::kBrowsingTopics,
          blink::features::kBrowsingTopicsDocumentAPI,
          blink::features::kInterestGroupStorage, blink::features::kFencedFrames,

@@ -60,6 +60,8 @@ class BrowserDesktopWindowTreeHostLacros
   void OnWindowStateChanged(ui::PlatformWindowState old_state,
                             ui::PlatformWindowState new_state) override;
   void OnImmersiveModeChanged(bool enabled) override;
+  void OnFullscreenModeChanged() override;
+  void OnOverviewModeChanged(bool in_overview) override;
 
   const raw_ptr<BrowserView> browser_view_;
   raw_ptr<DesktopBrowserFrameLacros> native_frame_ = nullptr;

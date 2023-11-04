@@ -10,7 +10,9 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/input_device_settings_controller.h"
 #include "ash/public/cpp/session/session_observer.h"
+#include "ash/public/mojom/input_device_settings.mojom-forward.h"
 #include "ash/public/mojom/input_device_settings.mojom.h"
+#include "ash/system/input_device_settings/input_device_duplicate_id_finder.h"
 #include "ash/system/input_device_settings/input_device_notifier.h"
 #include "ash/system/input_device_settings/input_device_settings_metrics_manager.h"
 #include "ash/system/input_device_settings/input_device_settings_policy_handler.h"
@@ -63,6 +65,8 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
   const mojom::TouchpadSettings* GetTouchpadSettings(DeviceId id) override;
   const mojom::PointingStickSettings* GetPointingStickSettings(
       DeviceId id) override;
+  const mojom::GraphicsTabletSettings* GetGraphicsTabletSettings(
+      DeviceId id) override;
   const mojom::KeyboardPolicies& GetKeyboardPolicies() override;
   const mojom::MousePolicies& GetMousePolicies() override;
   void SetKeyboardSettings(DeviceId id,
@@ -77,6 +81,12 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
       DeviceId id,
       mojom::GraphicsTabletSettingsPtr settings) override;
   void OnLoginScreenFocusedPodChanged(const AccountId& account_id) override;
+  void StartObservingButtons(DeviceId id) override;
+  void StopObservingButtons() override;
+  void OnMouseButtonPressed(DeviceId device_id,
+                            const mojom::Button& button) override;
+  void OnGraphicsTabletButtonPressed(DeviceId device_id,
+                                     const mojom::Button& button) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
 
@@ -127,12 +137,22 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
   void DispatchGraphicsTabletDisconnectedAndEraseFromList(DeviceId id);
   void DispatchGraphicsTabletSettingsChanged(DeviceId id);
 
+  void DispatchCustomizableMouseButtonPressed(const mojom::Mouse& mouse,
+                                              const mojom::Button& button);
+  void DispatchCustomizableTabletButtonPressed(
+      const mojom::GraphicsTablet& graphics_tablet,
+      const mojom::Button& button);
+  void DispatchCustomizablePenButtonPressed(
+      const mojom::GraphicsTablet& graphics_tablet,
+      const mojom::Button& button);
+
   void InitializePolicyHandler();
   void OnKeyboardPoliciesChanged();
   void OnMousePoliciesChanged();
 
   // Correctly initializes settings depending on whether we have an active
   // user session or not.
+  void InitializeGraphicsTabletSettings(mojom::GraphicsTablet* graphics_tablet);
   void InitializeKeyboardSettings(mojom::Keyboard* keyboard);
   void InitializeMouseSettings(mojom::Mouse* mouse);
   void InitializePointingStickSettings(mojom::PointingStick* pointing_stick);
@@ -145,12 +165,19 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
   // - A device is connected/disconnected.
   // - A user makes an update to a device setting.
   // - The active pref service changes.
+  void RefreshStoredLoginScreenGraphicsTabletSettings();
   void RefreshStoredLoginScreenKeyboardSettings();
   void RefreshStoredLoginScreenMouseSettings();
   void RefreshStoredLoginScreenPointingStickSettings();
   void RefreshStoredLoginScreenTouchpadSettings();
 
-  base::ObserverList<InputDeviceSettingsController::Observer> observers_;
+  mojom::Mouse* FindMouse(DeviceId id);
+  mojom::Touchpad* FindTouchpad(DeviceId id);
+  mojom::Keyboard* FindKeyboard(DeviceId id);
+  mojom::GraphicsTablet* FindGraphicsTablet(DeviceId id);
+  mojom::PointingStick* FindPointingStick(DeviceId id);
+
+  base::ObserverList<Observer> observers_;
 
   std::unique_ptr<InputDeviceSettingsPolicyHandler> policy_handler_;
 
@@ -182,6 +209,8 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
       InputDeviceNotifier<mojom::GraphicsTabletPtr, ui::InputDevice>>
       graphics_tablet_notifier_;
   std::unique_ptr<InputDeviceSettingsMetricsManager> metrics_manager_;
+
+  std::unique_ptr<InputDeviceDuplicateIdFinder> duplicate_id_finder_;
 
   raw_ptr<PrefService> active_pref_service_ = nullptr;  // Not owned.
   absl::optional<AccountId> active_account_id_;

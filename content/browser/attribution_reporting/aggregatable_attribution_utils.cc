@@ -148,7 +148,6 @@ absl::optional<AggregatableReportRequest> CreateAggregatableReportRequest(
           [&](const AttributionReport::NullAggregatableData& data) {
             source_time = data.fake_source_time;
             common_aggregatable_data = &data.common_data;
-            contributions.emplace_back(/*bucket=*/0, /*value=*/0);
           },
       },
       report.data());
@@ -187,7 +186,9 @@ absl::optional<AggregatableReportRequest> CreateAggregatableReportRequest(
           common_aggregatable_data->aggregation_coordinator_origin
               ? absl::make_optional(
                     **common_aggregatable_data->aggregation_coordinator_origin)
-              : absl::nullopt),
+              : absl::nullopt,
+          /*max_contributions_allowed=*/
+          attribution_reporting::kMaxAggregationKeysPerSource),
       AggregatableReportSharedInfo(
           report.initial_report_time(), report.external_report_id(),
           report.GetReportingOrigin(), debug_mode, std::move(additional_fields),

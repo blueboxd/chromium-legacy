@@ -381,46 +381,33 @@ VideoEncoderTraits::ParsedConfig* ParseConfigStatic(
 }
 
 bool VerifyCodecSupportStatic(VideoEncoderTraits::ParsedConfig* config,
-                              ExceptionState* exception_state) {
+                              String* js_error_message) {
   if (config->not_supported_error_message) {
-    if (exception_state) {
-      exception_state->ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                         *config->not_supported_error_message);
-    }
+    *js_error_message = *config->not_supported_error_message;
     return false;
   }
 
   const auto& frame_size = config->options.frame_size;
   if (frame_size.height() > media::limits::kMaxDimension) {
-    if (exception_state) {
-      exception_state->ThrowDOMException(
-          DOMExceptionCode::kNotSupportedError,
-          String::Format(
-              "Invalid height; expected range from %d to %d, received %d.", 1,
-              media::limits::kMaxDimension, frame_size.height()));
-    }
+    *js_error_message = String::Format(
+        "Invalid height; expected range from %d to %d, received %d.", 1,
+        media::limits::kMaxDimension, frame_size.height());
     return false;
   }
   if (frame_size.width() > media::limits::kMaxDimension) {
-    if (exception_state) {
-      exception_state->ThrowDOMException(
-          DOMExceptionCode::kNotSupportedError,
-          String::Format(
-              "Invalid width; expected range from %d to %d, received %d.", 1,
-              media::limits::kMaxDimension, frame_size.width()));
-    }
+    *js_error_message = String::Format(
+        "Invalid width; expected range from %d to %d, received %d.", 1,
+        media::limits::kMaxDimension, frame_size.width());
     return false;
   }
   if (frame_size.Area64() > media::limits::kMaxCanvas) {
-    if (exception_state) {
-      exception_state->ThrowDOMException(
-          DOMExceptionCode::kNotSupportedError,
-          String::Format("Invalid resolution; expected range from %d to %d, "
-                         "received %" PRIu64 " (%d * "
-                         "%d).",
-                         1, media::limits::kMaxCanvas, frame_size.Area64(),
-                         frame_size.width(), frame_size.height()));
-    }
+    *js_error_message = String::Format(
+        "Invalid resolution; expected range from %d to %d, "
+        "received %" PRIu64
+        " (%d * "
+        "%d).",
+        1, media::limits::kMaxCanvas, frame_size.Area64(), frame_size.width(),
+        frame_size.height());
     return false;
   }
 
@@ -432,11 +419,7 @@ bool VerifyCodecSupportStatic(VideoEncoderTraits::ParsedConfig* config,
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
     case media::VideoCodec::kHEVC:
       if (config->profile != media::VideoCodecProfile::HEVCPROFILE_MAIN) {
-        if (exception_state) {
-          exception_state->ThrowDOMException(
-              DOMExceptionCode::kNotSupportedError,
-              "Unsupported hevc profile.");
-        }
+        *js_error_message = "Unsupported hevc profile.";
         return false;
       }
       break;
@@ -445,11 +428,7 @@ bool VerifyCodecSupportStatic(VideoEncoderTraits::ParsedConfig* config,
     case media::VideoCodec::kH264: {
       if (config->options.frame_size.width() % 2 != 0 ||
           config->options.frame_size.height() % 2 != 0) {
-        if (exception_state) {
-          exception_state->ThrowDOMException(
-              DOMExceptionCode::kNotSupportedError,
-              "H264 only supports even sized frames.");
-        }
+        *js_error_message = "H264 only supports even sized frames.";
         return false;
       }
 
@@ -462,30 +441,22 @@ bool VerifyCodecSupportStatic(VideoEncoderTraits::ParsedConfig* config,
       uint64_t max_coded_area =
           media::H264LevelToMaxFS(config->level) * 16ull * 16ull;
       if (coded_area > max_coded_area) {
-        if (exception_state) {
-          exception_state->ThrowDOMException(
-              DOMExceptionCode::kNotSupportedError,
-              String::Format("The provided resolution (%s) has a coded area "
-                             "(%d*%d=%" PRIu64
-                             ") which exceeds the maximum coded area (%" PRIu64
-                             ") supported by the AVC level (%1.1f) indicated "
-                             "by the codec string (0x%02X). You must either "
-                             "specify a lower resolution or higher AVC level.",
-                             config->options.frame_size.ToString().c_str(),
-                             coded_size.width(), coded_size.height(),
-                             coded_area, max_coded_area, config->level / 10.0f,
-                             config->level));
-        }
+        *js_error_message = String::Format(
+            "The provided resolution (%s) has a coded area "
+            "(%d*%d=%" PRIu64 ") which exceeds the maximum coded area (%" PRIu64
+            ") supported by the AVC level (%1.1f) indicated "
+            "by the codec string (0x%02X). You must either "
+            "specify a lower resolution or higher AVC level.",
+            config->options.frame_size.ToString().c_str(), coded_size.width(),
+            coded_size.height(), coded_area, max_coded_area,
+            config->level / 10.0f, config->level);
         return false;
       }
       break;
     }
 
     default:
-      if (exception_state) {
-        exception_state->ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                           "Unsupported codec type.");
-      }
+      *js_error_message = "Unsupported codec type.";
       return false;
   }
 
@@ -527,20 +498,16 @@ VideoEncoderConfig* CopyConfig(
   if (config.hasLatencyMode())
     result->setLatencyMode(config.latencyMode());
 
-  if (parsed_config.codec == media::VideoCodec::kH264) {
-    if (config.hasAvc() && config.avc()->hasFormat()) {
-      auto* avc = AvcEncoderConfig::Create();
-      avc->setFormat(config.avc()->format());
-      result->setAvc(avc);
-    }
+  if (config.hasAvc() && config.avc()->hasFormat()) {
+    auto* avc = AvcEncoderConfig::Create();
+    avc->setFormat(config.avc()->format());
+    result->setAvc(avc);
   }
 
-  if (parsed_config.codec == media::VideoCodec::kHEVC) {
-    if (config.hasHevc() && config.hevc()->hasFormat()) {
-      auto* hevc = HevcEncoderConfig::Create();
-      hevc->setFormat(config.hevc()->format());
-      result->setHevc(hevc);
-    }
+  if (config.hasHevc() && config.hevc()->hasFormat()) {
+    auto* hevc = HevcEncoderConfig::Create();
+    hevc->setFormat(config.hevc()->format());
+    result->setHevc(hevc);
   }
 
   return result;
@@ -623,8 +590,8 @@ VideoEncoder::ParsedConfig* VideoEncoder::ParseConfig(
 }
 
 bool VideoEncoder::VerifyCodecSupport(ParsedConfig* config,
-                                      ExceptionState& exception_state) {
-  return VerifyCodecSupportStatic(config, &exception_state);
+                                      String* js_error_message) {
+  return VerifyCodecSupportStatic(config, js_error_message);
 }
 
 std::unique_ptr<media::VideoEncoder>
@@ -794,7 +761,7 @@ void VideoEncoder::ContinueConfigureWithGpuFactories(
     }
     req->EndTracing();
 
-    self->blocking_request_in_progress_ = false;
+    self->blocking_request_in_progress_ = nullptr;
     self->ProcessRequests();
   };
   if (!encoder_metrics_provider_) {
@@ -879,11 +846,6 @@ bool VideoEncoder::ReadyToProcessNextRequest() {
 
 bool VideoEncoder::StartReadback(scoped_refptr<media::VideoFrame> frame,
                                  ReadbackDoneCallback result_cb) {
-  // Stall request processing while we wait for the copy to complete. It'd
-  // be nice to not have to do this, but currently the request processing
-  // loop must execute synchronously or flush() will miss frames.
-  blocking_request_in_progress_ = true;
-
   // TODO(crbug.com/1195433): Once support for alpha channel encoding is
   // implemented, |force_opaque| must be set based on the
   // VideoEncoderConfig.
@@ -979,9 +941,7 @@ bool VideoEncoder::StartReadback(scoped_refptr<media::VideoFrame> frame,
     return true;
   }
 
-  // Oh well, none of our readback mechanisms were able to succeed,
-  // let's unblock request processing and report an error.
-  blocking_request_in_progress_ = false;
+  // Oh well, none of our readback mechanisms were able to succeed.
   return false;
 }
 
@@ -1011,12 +971,22 @@ void VideoEncoder::ProcessEncode(Request* request) {
   // so let's readback pixel data to CPU memory.
   // TODO(crbug.com/1229845): We shouldn't be reading back frames here.
   if (frame->HasTextures() && !frame->HasGpuMemoryBuffer()) {
+    // Stall request processing while we wait for the copy to complete. It'd
+    // be nice to not have to do this, but currently the request processing
+    // loop must execute synchronously or flush() will miss frames.
+    //
+    // Note: Set this before calling StartReadback() since callbacks could
+    // resolve synchronously.
+    blocking_request_in_progress_ = request;
+
     auto readback_done_callback = WTF::BindOnce(
         &VideoEncoder::OnReadbackDone, WrapWeakPersistent(this),
         WrapPersistent(request), frame, std::move(encode_done_callback));
+
     if (StartReadback(std::move(frame), std::move(readback_done_callback))) {
       request->input->close();
     } else {
+      blocking_request_in_progress_ = nullptr;
       callback_runner_->PostTask(
           FROM_HERE, ConvertToBaseOnceCallback(CrossThreadBindOnce(
                          &VideoEncoder::OnEncodeDone,
@@ -1120,7 +1090,7 @@ void VideoEncoder::OnReadbackDone(
   auto encode_options = CreateEncodeOptions(request);
   --requested_encodes_;
   ScheduleDequeueEvent();
-  blocking_request_in_progress_ = false;
+  blocking_request_in_progress_ = nullptr;
   media_encoder_->Encode(std::move(result_frame), encode_options,
                          std::move(done_callback));
   ProcessRequests();
@@ -1148,7 +1118,15 @@ void VideoEncoder::ProcessConfigure(Request* request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   request->StartTracing();
 
-  blocking_request_in_progress_ = true;
+  blocking_request_in_progress_ = request;
+
+  String js_error_message;
+  if (!VerifyCodecSupport(active_config_, &js_error_message)) {
+    QueueHandleError(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotSupportedError, js_error_message));
+    request->EndTracing();
+    return;
+  }
 
   if (active_config_->hw_pref == HardwarePreference::kPreferSoftware &&
       !MayHaveOSSoftwareEncoder(active_config_->profile)) {
@@ -1182,7 +1160,7 @@ void VideoEncoder::ProcessReconfigure(Request* request) {
     req->EndTracing();
 
     if (status.is_ok()) {
-      self->blocking_request_in_progress_ = false;
+      self->blocking_request_in_progress_ = nullptr;
       self->ProcessRequests();
     } else {
       // Reconfiguration failed. Either encoder doesn't support changing options
@@ -1204,7 +1182,7 @@ void VideoEncoder::ProcessReconfigure(Request* request) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(self->sequence_checker_);
     if (!status.is_ok()) {
       self->ReportError("Encoder initialization error.", std::move(status));
-      self->blocking_request_in_progress_ = false;
+      self->blocking_request_in_progress_ = nullptr;
       req->EndTracing();
       return;
     }
@@ -1235,7 +1213,7 @@ void VideoEncoder::ProcessReconfigure(Request* request) {
             MakeUnwrappingCrossThreadHandle(req))));
   };
 
-  blocking_request_in_progress_ = true;
+  blocking_request_in_progress_ = request;
   media_encoder_->Flush(WTF::BindOnce(
       flush_done_callback, MakeUnwrappingCrossThreadWeakHandle(this),
       MakeUnwrappingCrossThreadHandle(request), std::move(reconf_done_callback),
@@ -1375,8 +1353,8 @@ void VideoEncoder::CallOutputCallback(
   TRACE_EVENT_END0(kCategory, GetTraceNames()->output.c_str());
 }
 
-void VideoEncoder::ResetInternal() {
-  Base::ResetInternal();
+void VideoEncoder::ResetInternal(DOMException* ex) {
+  Base::ResetInternal(ex);
   active_encodes_ = 0;
 }
 
@@ -1452,9 +1430,8 @@ static void isConfigSupportedWithHardwareOnly(
 class FindAnySupported final : public ScriptFunction::Callable {
  public:
   ScriptValue Call(ScriptState* state, ScriptValue value) override {
-    ExceptionContext context(
-        ExceptionContext::Context::kConstructorOperationInvoke,
-        "VideoEncoderSupport");
+    ExceptionContext context(ExceptionContextType::kConstructorOperationInvoke,
+                             "VideoEncoderSupport");
     ExceptionState exception_state(state->GetIsolate(), context);
     HeapVector<Member<VideoEncoderSupport>> supports =
         NativeValueTraits<IDLSequence<VideoEncoderSupport>>::NativeValue(
@@ -1487,7 +1464,8 @@ ScriptPromise VideoEncoder::isConfigSupported(ScriptState* script_state,
   auto* config_copy = CopyConfig(*config, *parsed_config);
 
   // Run very basic coarse synchronous validation
-  if (!VerifyCodecSupportStatic(parsed_config, nullptr)) {
+  String unused_js_error_message;
+  if (!VerifyCodecSupportStatic(parsed_config, &unused_js_error_message)) {
     auto* support = VideoEncoderSupport::Create();
     support->setConfig(config_copy);
     support->setSupported(false);

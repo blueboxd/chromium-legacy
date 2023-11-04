@@ -25,8 +25,10 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_session.h"
+#include "ash/wm/snap_group/snap_group.h"
 #include "ash/wm/snap_group/snap_group_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_overview_session.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
@@ -336,24 +338,38 @@ bool ShouldExcludeForOverview(const aura::Window* window) {
   auto* split_view_controller =
       SplitViewController::Get(window->GetRootWindow());
 
-  auto* snap_group_controller = SnapGroupController::Get();
+  // A window should be excluded from being shown in overview when:
+  // 1. In tablet split view mode on one window snapped;
+  // 2. During split view overview session in clamshell mode,
+  // 3. If the window is not the mru window in snap group i.e. the corresponding
+  // overview item representation for the snap group has been created.
+  auto should_exclude_in_clamshell = [&]() -> bool {
+    if (auto* snap_group_controller = SnapGroupController::Get()) {
+      if (auto* split_view_overview_session =
+              RootWindowController::ForWindow(window)
+                  ->split_view_overview_session();
+          snap_group_controller->IsArm1AutomaticallyLockEnabled() &&
+          split_view_overview_session &&
+          split_view_overview_session->window() == window) {
+        return true;
+      }
 
-  // A window should be excluded from being shown in overview when we are
-  // selecting another window to complete a window layout, which can happen when
-  // in tablet split view mode or during snap group creation session in
-  // clamshell mode with `IsArm1AutomaticallyLockEnabled()` returns true.
-  const bool should_exclude_in_clamshell =
-      snap_group_controller &&
-      snap_group_controller->IsArm1AutomaticallyLockEnabled() &&
-      split_view_controller->in_snap_group_creation_session();
-  if ((split_view_controller->InTabletSplitViewMode() ||
-       should_exclude_in_clamshell) &&
-      window == split_view_controller->GetDefaultSnappedWindow()) {
+      if (SnapGroup* snap_group =
+              snap_group_controller->GetSnapGroupForGivenWindow(window)) {
+        return window != snap_group->GetTopMostWindowInGroup();
+      }
+    }
+
+    return false;
+  };
+
+  if (ShouldExcludeForCycleList(window)) {
     return true;
   }
 
-  // Remove everything cycle list should not have.
-  return ShouldExcludeForCycleList(window);
+  return Shell::Get()->tablet_mode_controller()->InTabletMode()
+             ? (window == split_view_controller->GetDefaultSnappedWindow())
+             : should_exclude_in_clamshell();
 }
 
 void EnsureTransientRoots(std::vector<aura::Window*>* out_window_list) {

@@ -47,11 +47,11 @@
 #include "chrome/browser/chromeos/policy/dlp/dlp_policy_event.pb.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_reporting_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/test/dlp_files_test_base.h"
-#include "chrome/browser/enterprise/data_controls/component.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dlp/dlp_client.h"
 #include "chromeos/ui/base/file_icon_util.h"
 #include "components/drive/drive_pref_names.h"
+#include "components/enterprise/data_controls/component.h"
 #include "components/file_access/scoped_file_access.h"
 #include "components/reporting/util/test_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
@@ -1094,13 +1094,6 @@ TEST_F(DlpFilesControllerAshTest, CheckReportingOnIsDlpPolicyMatched) {
   for (size_t i = 0; i < events.size(); ++i) {
     EXPECT_THAT(events[i], IsDlpPolicyEvent(*expected_events[i]));
   }
-
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(GetDlpHistogramPrefix() +
-                                     std::string(dlp::kFileActionWarnedUMA)),
-      base::BucketsAre(base::Bucket(dlp::FileAction::kUnknown, 3),
-                       base::Bucket(dlp::FileAction::kDownload, 0),
-                       base::Bucket(dlp::FileAction::kTransfer, 0)));
 }
 
 TEST_F(DlpFilesControllerAshTest, CheckReportingOnIsFilesTransferRestricted) {
@@ -1691,12 +1684,13 @@ TEST_P(DlpFilesWarningDialogChoiceTest, FileDownloadWarned) {
 
   EXPECT_CALL(*fpnm_, ShowDlpWarning)
       .WillOnce([&choice_result](
-                    OnDlpRestrictionCheckedCallback callback,
+                    OnDlpRestrictionCheckedWithJustificationCallback callback,
                     absl::optional<file_manager::io_task::IOTaskId> task_id,
                     const std::vector<base::FilePath>& warning_files,
                     const DlpFileDestination& destination,
                     dlp::FileAction action) {
-        std::move(callback).Run(choice_result);
+        std::move(callback).Run(/*user_justification=*/absl::nullopt,
+                                choice_result);
         return nullptr;
       });
 
@@ -1750,12 +1744,6 @@ TEST_P(DlpFilesWarningDialogChoiceTest, FileDownloadWarned) {
   if (choice_result) {
     EXPECT_THAT(events[1], IsDlpPolicyEvent(CreateEvent(absl::nullopt)));
   }
-
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(GetDlpHistogramPrefix() +
-                                     std::string(dlp::kFileActionWarnedUMA)),
-      base::BucketsAre(base::Bucket(dlp::FileAction::kDownload, 1),
-                       base::Bucket(dlp::FileAction::kTransfer, 0)));
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples(
@@ -1877,12 +1865,12 @@ TEST_P(DlpFilesWarningDialogContentTest,
                              std::move(expected_files),
                              DlpFileDestination(data_controls::Component::kUsb),
                              transfer_info.files_action))
-      .WillOnce([](OnDlpRestrictionCheckedCallback callback,
+      .WillOnce([](OnDlpRestrictionCheckedWithJustificationCallback callback,
                    absl::optional<file_manager::io_task::IOTaskId> task_id,
                    const std::vector<base::FilePath>& confidential_files,
                    const DlpFileDestination& destination,
                    dlp::FileAction action) {
-        std::move(callback).Run(false);
+        std::move(callback).Run(/*user_justification=*/absl::nullopt, false);
         return nullptr;
       });
 

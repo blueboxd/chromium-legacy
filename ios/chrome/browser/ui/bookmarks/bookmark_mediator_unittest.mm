@@ -16,6 +16,7 @@
 #import "components/bookmarks/common/storage_type.h"
 #import "components/sync/base/user_selectable_type.h"
 #import "components/sync/service/sync_service.h"
+#import "components/sync/test/test_sync_service.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_ios_unit_test_support.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
@@ -26,9 +27,6 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/signin/fake_system_identity_manager.h"
-#import "ios/chrome/browser/sync/sync_service_factory.h"
-#import "ios/chrome/browser/sync/sync_setup_service.h"
-#import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "testing/gtest_mac.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -40,16 +38,6 @@
                                          title:(NSString*)folderTitle
                                          count:(int)count;
 @end
-
-class FakeSyncSetupService : public SyncSetupService {
- public:
-  FakeSyncSetupService(syncer::SyncService* sync_service)
-      : SyncSetupService(sync_service) {}
-
-  bool IsDataTypePreferred(syncer::UserSelectableType datatype) const override {
-    return true;
-  }
-};
 
 namespace {
 
@@ -76,9 +64,6 @@ class BookmarkMediatorUnitTest
     BookmarkIOSUnitTestSupport::SetUp();
     authentication_service_ = AuthenticationServiceFactory::GetForBrowserState(
         chrome_browser_state_.get());
-    sync_service_ =
-        SyncServiceFactory::GetForBrowserState(chrome_browser_state_.get());
-    sync_setup_service_ = std::make_unique<FakeSyncSetupService>(sync_service_);
 
     mediator_ = [[BookmarkMediator alloc]
         initWithWithLocalOrSyncableBookmarkModel:
@@ -87,8 +72,7 @@ class BookmarkMediatorUnitTest
                                            prefs:chrome_browser_state_
                                                      ->GetPrefs()
                            authenticationService:authentication_service_
-                                     syncService:sync_service_
-                                syncSetupService:sync_setup_service_.get()];
+                                     syncService:&sync_service_];
   }
 
   // Number of bookmark saved.
@@ -165,8 +149,7 @@ class BookmarkMediatorUnitTest
   BookmarkMediator* mediator_;
   ChromeAccountManagerService* account_manager_service_;
   AuthenticationService* authentication_service_;
-  std::unique_ptr<FakeSyncSetupService> sync_setup_service_;
-  syncer::SyncService* sync_service_;
+  syncer::TestSyncService sync_service_;
   base::test::ScopedFeatureList scope_;
   base::HistogramTester histogram_tester_;
 };
@@ -241,8 +224,8 @@ TEST_F(BookmarkMediatorUnitTest, TestBulkSnackbarMessageNoValidURLs) {
                                viewAction:^{
                                }];
 
-  std::vector<bookmarks::UrlAndTitle> bookmarks;
-  local_or_syncable_bookmark_model_->GetBookmarks(&bookmarks);
+  std::vector<bookmarks::UrlAndTitle> bookmarks =
+      local_or_syncable_bookmark_model_->GetUniqueUrls();
 
   ASSERT_EQ(0U, bookmarks.size());
   ASSERT_NSEQ(snackbarMessage.text, @"0 Bookmarks saved");
@@ -258,8 +241,8 @@ TEST_F(BookmarkMediatorUnitTest, TestBulkSnackbarMessageOneValidURL) {
                                viewAction:^{
                                }];
 
-  std::vector<bookmarks::UrlAndTitle> bookmarks;
-  local_or_syncable_bookmark_model_->GetBookmarks(&bookmarks);
+  std::vector<bookmarks::UrlAndTitle> bookmarks =
+      local_or_syncable_bookmark_model_->GetUniqueUrls();
 
   ASSERT_EQ(1U, bookmarks.size());
   ASSERT_NSEQ(snackbarMessage.text, @"Bookmark saved");
@@ -278,8 +261,8 @@ TEST_F(BookmarkMediatorUnitTest, TestBulkSnackbarMessageTwoValidURLs) {
                                viewAction:^{
                                }];
 
-  std::vector<bookmarks::UrlAndTitle> bookmarks;
-  local_or_syncable_bookmark_model_->GetBookmarks(&bookmarks);
+  std::vector<bookmarks::UrlAndTitle> bookmarks =
+      local_or_syncable_bookmark_model_->GetUniqueUrls();
 
   ASSERT_EQ(2U, bookmarks.size());
   ASSERT_NSEQ(snackbarMessage.text, @"2 Bookmarks saved");
@@ -300,8 +283,8 @@ TEST_F(BookmarkMediatorUnitTest, TestBulkSnackbarMessageValidAndInvalidURLs) {
                                viewAction:^{
                                }];
 
-  std::vector<bookmarks::UrlAndTitle> bookmarks;
-  local_or_syncable_bookmark_model_->GetBookmarks(&bookmarks);
+  std::vector<bookmarks::UrlAndTitle> bookmarks =
+      local_or_syncable_bookmark_model_->GetUniqueUrls();
 
   ASSERT_EQ(3U, bookmarks.size());
   ASSERT_NSEQ(snackbarMessage.text, @"3 Bookmarks saved");
@@ -322,8 +305,8 @@ TEST_F(BookmarkMediatorUnitTest, TestBulkSnackbarMessageDuplicateBookmarks) {
                                viewAction:^{
                                }];
 
-  std::vector<bookmarks::UrlAndTitle> bookmarks;
-  local_or_syncable_bookmark_model_->GetBookmarks(&bookmarks);
+  std::vector<bookmarks::UrlAndTitle> bookmarks =
+      local_or_syncable_bookmark_model_->GetUniqueUrls();
 
   ASSERT_EQ(3U, bookmarks.size());
   ASSERT_NSEQ(snackbarMessage.text, @"3 Bookmarks saved");
@@ -335,8 +318,8 @@ TEST_F(BookmarkMediatorUnitTest, TestBulkSnackbarMessageDuplicateBookmarks) {
                                viewAction:^{
                                }];
 
-  std::vector<bookmarks::UrlAndTitle> bookmarks_dupes;
-  local_or_syncable_bookmark_model_->GetBookmarks(&bookmarks_dupes);
+  std::vector<bookmarks::UrlAndTitle> bookmarks_dupes =
+      local_or_syncable_bookmark_model_->GetUniqueUrls();
 
   ASSERT_EQ(3U, bookmarks_dupes.size());
   ASSERT_NSEQ(snackbarMessageDuplicates.text, @"0 Bookmarks saved");
@@ -355,8 +338,8 @@ TEST_F(BookmarkMediatorUnitTest, TestBulkSnackbarMessageNoValidURLsSyncing) {
                                viewAction:^{
                                }];
 
-  std::vector<bookmarks::UrlAndTitle> bookmarks;
-  local_or_syncable_bookmark_model_->GetBookmarks(&bookmarks);
+  std::vector<bookmarks::UrlAndTitle> bookmarks =
+      local_or_syncable_bookmark_model_->GetUniqueUrls();
 
   ASSERT_EQ(0U, bookmarks.size());
   ASSERT_NSEQ(snackbarMessage.text,
@@ -375,8 +358,8 @@ TEST_F(BookmarkMediatorUnitTest, TestBulkSnackbarMessageOneValidURLSyncing) {
                                viewAction:^{
                                }];
 
-  std::vector<bookmarks::UrlAndTitle> bookmarks;
-  local_or_syncable_bookmark_model_->GetBookmarks(&bookmarks);
+  std::vector<bookmarks::UrlAndTitle> bookmarks =
+      local_or_syncable_bookmark_model_->GetUniqueUrls();
 
   ASSERT_EQ(1U, bookmarks.size());
   ASSERT_NSEQ(snackbarMessage.text,
@@ -398,8 +381,8 @@ TEST_F(BookmarkMediatorUnitTest, TestBulkSnackbarMessageTwoValidURLsSyncing) {
                                viewAction:^{
                                }];
 
-  std::vector<bookmarks::UrlAndTitle> bookmarks;
-  local_or_syncable_bookmark_model_->GetBookmarks(&bookmarks);
+  std::vector<bookmarks::UrlAndTitle> bookmarks =
+      local_or_syncable_bookmark_model_->GetUniqueUrls();
 
   ASSERT_EQ(2U, bookmarks.size());
   ASSERT_NSEQ(snackbarMessage.text,
@@ -424,8 +407,8 @@ TEST_F(BookmarkMediatorUnitTest,
                                viewAction:^{
                                }];
 
-  std::vector<bookmarks::UrlAndTitle> bookmarks;
-  local_or_syncable_bookmark_model_->GetBookmarks(&bookmarks);
+  std::vector<bookmarks::UrlAndTitle> bookmarks =
+      local_or_syncable_bookmark_model_->GetUniqueUrls();
 
   ASSERT_EQ(3U, bookmarks.size());
   ASSERT_NSEQ(snackbarMessage.text,
@@ -450,8 +433,8 @@ TEST_F(BookmarkMediatorUnitTest,
                                viewAction:^{
                                }];
 
-  std::vector<bookmarks::UrlAndTitle> bookmarks;
-  local_or_syncable_bookmark_model_->GetBookmarks(&bookmarks);
+  std::vector<bookmarks::UrlAndTitle> bookmarks =
+      local_or_syncable_bookmark_model_->GetUniqueUrls();
 
   ASSERT_EQ(3U, bookmarks.size());
   ASSERT_NSEQ(snackbarMessage.text,
@@ -464,8 +447,8 @@ TEST_F(BookmarkMediatorUnitTest,
                                viewAction:^{
                                }];
 
-  std::vector<bookmarks::UrlAndTitle> bookmarks_dupes;
-  local_or_syncable_bookmark_model_->GetBookmarks(&bookmarks_dupes);
+  std::vector<bookmarks::UrlAndTitle> bookmarks_dupes =
+      local_or_syncable_bookmark_model_->GetUniqueUrls();
 
   ASSERT_EQ(3U, bookmarks_dupes.size());
   ASSERT_NSEQ(snackbarMessageDuplicates.text,

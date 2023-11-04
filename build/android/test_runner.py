@@ -352,6 +352,13 @@ def AddDeviceOptions(parser):
       help='If set, will merge logcats recorded during test run and dump them '
            'to the specified file.')
 
+  parser.add_argument(
+      '--force-main-user',
+      action='store_true',
+      help='Force the applicable adb commands to run with "--user" param set '
+      'to the id of the main user on device. Only use when the main user is a '
+      'secondary user, e.g. Android Automotive OS.')
+
 
 def AddEmulatorOptions(parser):
   """Adds emulator-specific options to |parser|."""
@@ -503,6 +510,10 @@ def AddInstrumentationTestOptions(parser):
   parser.add_argument(
       '--apk-under-test',
       help='Path or name of the apk under test.')
+  parser.add_argument(
+      '--store-data-dependencies-in-temp',
+      action='store_true',
+      help='Store data dependencies in /data/local/tmp/chromium_tests_root')
   parser.add_argument(
       '--module',
       action='append',

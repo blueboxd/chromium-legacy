@@ -17,7 +17,6 @@
 #include "base/values.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fido_assertion_info.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/qr_code.h"
-#include "chrome/browser/ash/login/oobe_quick_start/connectivity/random_session_id.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/target_device_connection_broker.h"
 #include "chrome/browser/ash/login/oobe_quick_start/second_device_auth_broker.h"
 #include "chrome/browser/nearby_sharing/public/cpp/nearby_connections_manager.h"
@@ -40,7 +39,6 @@ class TargetDeviceBootstrapController
     ADVERTISING_WITHOUT_QR_CODE,
     PIN_VERIFICATION,
     CONNECTED,
-    GAIA_CREDENTIALS,
     CONNECTING_TO_WIFI,
     CONNECTED_TO_WIFI,
     TRANSFERRING_GOOGLE_ACCOUNT_DETAILS,
@@ -189,8 +187,6 @@ class TargetDeviceBootstrapController
 
   base::WeakPtr<TargetDeviceConnectionBroker::AuthenticatedConnection>
       authenticated_connection_;
-
-  int32_t session_id_;
 
   // Challenge bytes to be sent to the Android device for the FIDO assertion.
   Base64UrlString challenge_bytes_;

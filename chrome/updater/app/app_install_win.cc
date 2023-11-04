@@ -666,7 +666,6 @@ void AppInstallControllerImpl::HandleOsNotSupported() {
   update_state.app_id = app_id_;
   update_state.state = UpdateService::UpdateState::State::kUpdateError;
   update_state.error_category = UpdateService::ErrorCategory::kInstall;
-  update_state.error_code = UNSUPPORTED_WINDOWS_VERSION;
   observer_completion_info_ = HandleInstallResult(update_state);
   observer_completion_info_->completion_text =
       GetLocalizedString(IDS_INSTALL_OS_NOT_SUPPORTED_BASE);
@@ -789,9 +788,11 @@ ObserverCompletionInfo AppInstallControllerImpl::HandleInstallResult(
   AppCompletionInfo app_info;
   if (update_state.state != UpdateService::UpdateState::State::kNoUpdate) {
     app_info.app_id = base::ASCIIToUTF16(update_state.app_id);
-    app_info.completion_message =
-        base::ASCIIToUTF16(update_state.installer_text);
     app_info.error_code = update_state.error_code;
+    app_info.completion_message = base::ASCIIToUTF16(
+        !update_state.installer_text.empty() ? update_state.installer_text
+        : app_info.error_code ? GetTextForSystemError(app_info.error_code)
+                              : "");
     app_info.extra_code1 = update_state.extra_code1;
     app_info.post_install_launch_command_line =
         base::SysUTF8ToWide(update_state.installer_cmd_line);
@@ -801,14 +802,24 @@ ObserverCompletionInfo AppInstallControllerImpl::HandleInstallResult(
             << "], post_install_launch_command_line["
             << app_info.post_install_launch_command_line << "]";
 
-    // TODO(crbug.com/1352307): Figure out how to populate members like
-    // `completion_code` and `post_install_url`. For now, set the completion
-    // for the basic cases and ignore the post install URL.
+    // If the installer provides a launch command,
+    // `COMPLETION_CODE_EXIT_SILENTLY_ON_LAUNCH_COMMAND` will cause the UI
+    // client to run the launch command and exit in the interactive install
+    // case.
+    // TODO(crbug.com/1352307): Is there more to be done to populate members
+    // like `completion_code` and `post_install_url`? For now, set the
+    // completion for the basic cases and ignore the post install URL.
     if (app_info.error_code == 0) {
       app_info.completion_code =
           app_info.post_install_launch_command_line.empty()
               ? CompletionCodes::COMPLETION_CODE_SUCCESS
-              : CompletionCodes::COMPLETION_CODE_LAUNCH_COMMAND;
+              : CompletionCodes::
+                    COMPLETION_CODE_EXIT_SILENTLY_ON_LAUNCH_COMMAND;
+    } else if (app_info.error_code == ERROR_SUCCESS_REBOOT_INITIATED ||
+               app_info.error_code == ERROR_SUCCESS_REBOOT_REQUIRED ||
+               app_info.error_code == ERROR_SUCCESS_RESTART_REQUIRED) {
+      app_info.completion_code =
+          CompletionCodes::COMPLETION_CODE_REBOOT_NOTICE_ONLY;
     } else {
       app_info.completion_code = CompletionCodes::COMPLETION_CODE_ERROR;
     }

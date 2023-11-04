@@ -24,8 +24,9 @@
 #include "gin/dictionary.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
+#include "read_anything_app_controller.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -35,6 +36,7 @@
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_selection.h"
 #include "ui/accessibility/ax_serializable_tree.h"
+#include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/accessibility/ax_tree_update.h"
@@ -346,7 +348,8 @@ gin::WrapperInfo ReadAnythingAppController::kWrapperInfo = {
 // static
 ReadAnythingAppController* ReadAnythingAppController::Install(
     content::RenderFrame* render_frame) {
-  v8::Isolate* isolate = blink::MainThreadIsolate();
+  v8::Isolate* isolate =
+      render_frame->GetWebFrame()->GetAgentGroupScheduler()->Isolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context =
       render_frame->GetWebFrame()->MainWorldScriptContext();
@@ -407,15 +410,6 @@ void ReadAnythingAppController::AccessibilityEventReceived(
   }
 }
 
-void ReadAnythingAppController::ExecuteJavaScript(std::string script) {
-  if (!render_frame_) {
-    return;
-  }
-  // TODO(b/1266555): Use v8::Function rather than javascript. If possible,
-  // replace this function call with firing an event.
-  render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
-}
-
 void ReadAnythingAppController::OnActiveAXTreeIDChanged(
     const ui::AXTreeID& tree_id,
     ukm::SourceId ukm_source_id,
@@ -423,7 +417,6 @@ void ReadAnythingAppController::OnActiveAXTreeIDChanged(
   if (tree_id == model_.active_tree_id()) {
     return;
   }
-  ui::AXTreeID previous_active_tree_id = model_.active_tree_id();
   model_.SetActiveTreeId(tree_id);
   model_.SetActiveUkmSourceId(ukm_source_id);
   model_.SetActiveTreeSelectable(GetSelectable(url));
@@ -433,7 +426,10 @@ void ReadAnythingAppController::OnActiveAXTreeIDChanged(
   model_.ClearPendingUpdates();
   model_.set_requires_distillation(false);
 
-  ExecuteJavaScript("chrome.readingMode.showLoading();");
+  // TODO(b/1266555): Use v8::Function rather than javascript. If possible,
+  // replace this function call with firing an event.
+  std::string script = "chrome.readingMode.showLoading();";
+  render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
 
   // When the UI first constructs, this function may be called before tree_id
   // has been added to the tree list in AccessibilityEventReceived. In that
@@ -454,6 +450,15 @@ void ReadAnythingAppController::Distill() {
     // updates. In those cases, assume we eventually get to `OnAXTreeDistilled`,
     // where we re-request `Distill`.
     model_.set_requires_distillation(true);
+    return;
+  }
+
+  // For screen2x data generation mode, chrome is open from the CLI to a
+  // specific URL. The caller monitors for a dump of the distilled proto written
+  // to a local file. Distill should only be called once the page is finished
+  // loading, so we have the proto representing the entire webpage.
+  if (features::IsDataCollectionModeForScreen2xEnabled() &&
+      !model_.page_finished_loading_for_data_collection()) {
     return;
   }
 
@@ -503,7 +508,10 @@ void ReadAnythingAppController::OnAXTreeDistilled(
   PostProcessSelection();
 
   if (model_.is_empty()) {
-    ExecuteJavaScript("chrome.readingMode.showEmpty();");
+    // TODO(b/1266555): Use v8::Function rather than javascript. If possible,
+    // replace this function call with firing an event.
+    std::string script = "chrome.readingMode.showEmpty();";
+    render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
     if (IsSelectable()) {
       base::UmaHistogramEnumeration(string_constants::kEmptyStateHistogramName,
                                     ReadAnythingEmptyState::kEmptyStateShown);
@@ -546,18 +554,28 @@ void ReadAnythingAppController::PostProcessSelection() {
 void ReadAnythingAppController::Draw() {
   // This call should check that the active tree isn't in an undistilled state
   // -- that is, it is awaiting distillation or never requested distillation.
-  ExecuteJavaScript("chrome.readingMode.updateContent();");
+  // TODO(abigailbklein): Use v8::Function rather than javascript. If possible,
+  // replace this function call with firing an event.
+  std::string script = "chrome.readingMode.updateContent();";
+  render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
 }
 
 void ReadAnythingAppController::DrawSelection() {
   // This call should check that the active tree isn't in an undistilled state
   // -- that is, it is awaiting distillation or never requested distillation.
-  ExecuteJavaScript("chrome.readingMode.updateSelection();");
+  // TODO(abigailbklein): Use v8::Function rather than javascript. If possible,
+  // replace this function call with firing an event.
+  std::string script = "chrome.readingMode.updateSelection();";
+  render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
 }
 
 void ReadAnythingAppController::OnThemeChanged(ReadAnythingThemePtr new_theme) {
   model_.OnThemeChanged(std::move(new_theme));
-  ExecuteJavaScript("chrome.readingMode.updateTheme();");
+
+  // TODO(abigailbklein): Use v8::Function rather than javascript. If possible,
+  // replace this function call with firing an event.
+  std::string script = "chrome.readingMode.updateTheme();";
+  render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
 }
 
 void ReadAnythingAppController::OnSettingsRestoredFromPrefs(
@@ -565,10 +583,16 @@ void ReadAnythingAppController::OnSettingsRestoredFromPrefs(
     read_anything::mojom::LetterSpacing letter_spacing,
     const std::string& font,
     double font_size,
-    read_anything::mojom::Colors color) {
+    read_anything::mojom::Colors color,
+    double speech_rate,
+    read_anything::mojom::HighlightGranularity granularity) {
   model_.OnSettingsRestoredFromPrefs(line_spacing, letter_spacing, font,
-                                     font_size, color);
-  ExecuteJavaScript("chrome.readingMode.restoreSettingsFromPrefs();");
+                                     font_size, color, speech_rate,
+                                     granularity);
+  // TODO(abigailbklein): Use v8::Function rather than javascript. If possible,
+  // replace this function call with firing an event.
+  std::string script = "chrome.readingMode.restoreSettingsFromPrefs();";
+  render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
 }
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
@@ -607,16 +631,22 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
       .SetProperty("veryWideLetterSpacing",
                    &ReadAnythingAppController::VeryWideLetterSpacing)
       .SetProperty("colorTheme", &ReadAnythingAppController::ColorTheme)
+      .SetProperty("highlightGranularity",
+                   &ReadAnythingAppController::HighlightGranularity)
+      .SetProperty("highlightOn", &ReadAnythingAppController::HighlightOn)
       .SetProperty("defaultTheme", &ReadAnythingAppController::DefaultTheme)
       .SetProperty("lightTheme", &ReadAnythingAppController::LightTheme)
       .SetProperty("darkTheme", &ReadAnythingAppController::DarkTheme)
       .SetProperty("yellowTheme", &ReadAnythingAppController::YellowTheme)
       .SetProperty("blueTheme", &ReadAnythingAppController::BlueTheme)
+      .SetProperty("speechRate", &ReadAnythingAppController::SpeechRate)
       .SetProperty("isWebUIToolbarVisible",
                    &ReadAnythingAppController::IsWebUIToolbarEnabled)
       .SetProperty("isReadAloudEnabled",
-                   &ReadAnythingAppController::isReadAloudEnabled)
+                   &ReadAnythingAppController::IsReadAloudEnabled)
       .SetProperty("isSelectable", &ReadAnythingAppController::IsSelectable)
+      .SetProperty("speechSynthesisLanguageCode",
+                   &ReadAnythingAppController::GetLanguageCodeForSpeech)
       .SetMethod("getChildren", &ReadAnythingAppController::GetChildren)
       .SetMethod("getTextDirection",
                  &ReadAnythingAppController::GetTextDirection)
@@ -651,6 +681,12 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
       .SetMethod("onYellowTheme", &ReadAnythingAppController::OnYellowTheme)
       .SetMethod("onBlueTheme", &ReadAnythingAppController::OnBlueTheme)
       .SetMethod("onFontChange", &ReadAnythingAppController::OnFontChange)
+      .SetMethod("onSpeechRateChange",
+                 &ReadAnythingAppController::OnSpeechRateChange)
+      .SetMethod("turnedHighlightOn",
+                 &ReadAnythingAppController::TurnedHighlightOn)
+      .SetMethod("turnedHighlightOff",
+                 &ReadAnythingAppController::TurnedHighlightOff)
       .SetMethod("getLineSpacingValue",
                  &ReadAnythingAppController::GetLineSpacingValue)
       .SetMethod("getLetterSpacingValue",
@@ -659,10 +695,16 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
                  &ReadAnythingAppController::OnSelectionChange)
       .SetMethod("onCollapseSelection",
                  &ReadAnythingAppController::OnCollapseSelection)
+      .SetProperty("supportedFonts",
+                   &ReadAnythingAppController::GetSupportedFonts)
       .SetMethod("setContentForTesting",
                  &ReadAnythingAppController::SetContentForTesting)
       .SetMethod("setThemeForTesting",
-                 &ReadAnythingAppController::SetThemeForTesting);
+                 &ReadAnythingAppController::SetThemeForTesting)
+      .SetMethod("setLanguageForTesting",
+                 &ReadAnythingAppController::SetLanguageForTesting)
+      .SetMethod("getNextSentence",
+                 &ReadAnythingAppController::GetNextSentence);
 }
 
 ui::AXNodeID ReadAnythingAppController::RootId() const {
@@ -715,6 +757,14 @@ int ReadAnythingAppController::ColorTheme() const {
   return model_.color_theme();
 }
 
+float ReadAnythingAppController::SpeechRate() const {
+  return model_.speech_rate();
+}
+
+int ReadAnythingAppController::HighlightGranularity() const {
+  return model_.highlight_granularity();
+}
+
 int ReadAnythingAppController::StandardLineSpacing() const {
   return static_cast<int>(read_anything::mojom::LineSpacing::kStandard);
 }
@@ -757,6 +807,10 @@ int ReadAnythingAppController::YellowTheme() const {
 
 int ReadAnythingAppController::BlueTheme() const {
   return static_cast<int>(read_anything::mojom::Colors::kBlue);
+}
+
+int ReadAnythingAppController::HighlightOn() const {
+  return static_cast<int>(read_anything::mojom::HighlightGranularity::kOn);
 }
 
 std::vector<ui::AXNodeID> ReadAnythingAppController::GetChildren(
@@ -872,8 +926,18 @@ bool ReadAnythingAppController::IsWebUIToolbarEnabled() const {
   return features::IsReadAnythingWebUIToolbarEnabled();
 }
 
-bool ReadAnythingAppController::isReadAloudEnabled() const {
+bool ReadAnythingAppController::IsReadAloudEnabled() const {
   return features::IsReadAnythingReadAloudEnabled();
+}
+
+std::vector<std::string> ReadAnythingAppController::GetSupportedFonts() const {
+  return model_.GetSupportedFonts();
+}
+
+const std::string& ReadAnythingAppController::GetLanguageCodeForSpeech() const {
+  // TODO(crbug.com/1474951): Instead of returning the default browser language
+  // we should use the page language.
+  return model_.default_language_code();
 }
 
 void ReadAnythingAppController::OnConnected() {
@@ -883,9 +947,6 @@ void ReadAnythingAppController::OnConnected() {
   page_handler_factory_->CreateUntrustedPageHandler(
       receiver_.BindNewPipeAndPassRemote(),
       page_handler_.BindNewPipeAndPassReceiver());
-  if (!render_frame_) {
-    return;
-  }
   render_frame_->GetBrowserInterfaceBroker()->GetInterface(
       std::move(page_handler_factory_receiver));
 }
@@ -978,6 +1039,20 @@ void ReadAnythingAppController::OnFontChange(const std::string& font) {
   page_handler_->OnFontChange(font);
 }
 
+void ReadAnythingAppController::OnSpeechRateChange(double rate) {
+  page_handler_->OnSpeechRateChange(rate);
+}
+
+void ReadAnythingAppController::TurnedHighlightOn() {
+  page_handler_->OnHighlightGranularityChanged(
+      read_anything::mojom::HighlightGranularity::kOn);
+}
+
+void ReadAnythingAppController::TurnedHighlightOff() {
+  page_handler_->OnHighlightGranularityChanged(
+      read_anything::mojom::HighlightGranularity::kOff);
+}
+
 double ReadAnythingAppController::GetLineSpacingValue(int line_spacing) const {
   if (line_spacing >
       static_cast<int>(read_anything::mojom::LineSpacing::kMaxValue)) {
@@ -1061,6 +1136,41 @@ void ReadAnythingAppController::OnCollapseSelection() const {
   page_handler_->OnCollapseSelection();
 }
 
+int ReadAnythingAppController::GetNextSentence(const std::u16string& text,
+                                               int maxTextLength) {
+  // TODO(crbug.com/1474951): Investigate using getting text from the model,
+  // rather than passing it through typescript.
+  // TODO(crbug.com/1474941): Investigate providing correct line breaks
+  // or alternatively making adjustments to ax_text_utils to return boundaries
+  // that minimize choppiness.
+  std::vector<int> offsets;
+  const std::u16string shorterString = text.substr(0, maxTextLength);
+  size_t sentence_ends_short = ui::FindAccessibleTextBoundary(
+      shorterString, offsets, ax::mojom::TextBoundary::kSentenceStart, 0,
+      ax::mojom::MoveDirection::kForward,
+      ax::mojom::TextAffinity::kDefaultValue);
+  size_t sentence_ends_long = ui::FindAccessibleTextBoundary(
+      text, offsets, ax::mojom::TextBoundary::kSentenceStart, 0,
+      ax::mojom::MoveDirection::kForward,
+      ax::mojom::TextAffinity::kDefaultValue);
+
+  // Compare the index result for the sentence of maximum text length and of
+  // the longer text string. If the two values are the same, the index is
+  // correct. If they are different, the maximum text length may have
+  // incorrectly spliced a word (e.g. returned "this is a sen" instead of
+  // "this is a" or "this is a sentence"), so if this is the case, we'll want
+  // to use the last word boundary instead.
+  if (sentence_ends_short == sentence_ends_long) {
+    return sentence_ends_short;
+  }
+
+  size_t word_ends = ui::FindAccessibleTextBoundary(
+      shorterString, offsets, ax::mojom::TextBoundary::kWordStart,
+      shorterString.length() - 1, ax::mojom::MoveDirection::kBackward,
+      ax::mojom::TextAffinity::kDefaultValue);
+  return word_ends;
+}
+
 // TODO(crbug.com/1266555): Change line_spacing and letter_spacing types from
 // int to their corresponding enums.
 void ReadAnythingAppController::SetThemeForTesting(const std::string& font_name,
@@ -1078,10 +1188,25 @@ void ReadAnythingAppController::SetThemeForTesting(const std::string& font_name,
                                         letter_spacing_enum));
 }
 
+void ReadAnythingAppController::SetLanguageForTesting(
+    const std::string& language_code) {
+  SetDefaultLanguageCode(language_code);
+}
+
+void ReadAnythingAppController::SetDefaultLanguageCode(
+    const std::string& code) {
+  model_.set_default_language_code(code);
+
+  // Signal to the WebUI that the supported fonts may have changed.
+  std::string script = "chrome.readingMode.updateFonts();";
+  render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
+}
+
 void ReadAnythingAppController::SetContentForTesting(
     v8::Local<v8::Value> v8_snapshot_lite,
     std::vector<ui::AXNodeID> content_node_ids) {
-  v8::Isolate* isolate = blink::MainThreadIsolate();
+  v8::Isolate* isolate =
+      render_frame_->GetWebFrame()->GetAgentGroupScheduler()->Isolate();
   ui::AXTreeUpdate snapshot =
       GetSnapshotFromV8SnapshotLite(isolate, v8_snapshot_lite);
   ui::AXEvent selectionEvent;

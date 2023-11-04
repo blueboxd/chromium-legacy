@@ -18,7 +18,9 @@
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_backed_boolean.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/model/utils/observable_boolean.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_info_button_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_switch_item.h"
@@ -34,11 +36,9 @@
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
-#import "ios/chrome/browser/ui/settings/utils/observable_boolean.h"
-#import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
-#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/signin_resources_api.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -421,11 +421,9 @@ bool GetStatusForSigninPolicy() {
     managedItem.iconTintColor = [UIColor colorNamed:kGrey300Color];
   }
 
-  // This item is not controllable, then set the color opacity to 40%.
-  managedItem.textColor =
-      [[UIColor colorNamed:kTextPrimaryColor] colorWithAlphaComponent:0.4f];
-  managedItem.detailTextColor =
-      [[UIColor colorNamed:kTextSecondaryColor] colorWithAlphaComponent:0.4f];
+  // This item is not controllable; set to lighter colors.
+  managedItem.textColor = [UIColor colorNamed:kTextSecondaryColor];
+  managedItem.detailTextColor = [UIColor colorNamed:kTextTertiaryColor];
   managedItem.accessibilityHint =
       l10n_util::GetNSString(IDS_IOS_TOGGLE_SETTING_MANAGED_ACCESSIBILITY_HINT);
   return managedItem;

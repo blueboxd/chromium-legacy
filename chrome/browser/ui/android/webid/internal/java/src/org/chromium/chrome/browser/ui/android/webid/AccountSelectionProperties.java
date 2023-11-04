@@ -124,6 +124,21 @@ class AccountSelectionProperties {
     }
 
     /**
+     * Properties defined here reflect the state of the got it button in the AccountSelection
+     * sheet.
+     */
+    static class ErrorButtonProperties {
+        static final ReadableObjectPropertyKey<IdentityProviderMetadata> IDP_METADATA =
+                new ReadableObjectPropertyKey<>("idp_metadata");
+        static final ReadableObjectPropertyKey<Runnable> ON_CLICK_LISTENER =
+                new ReadableObjectPropertyKey<>("on_click_listener");
+
+        static final PropertyKey[] ALL_KEYS = {IDP_METADATA, ON_CLICK_LISTENER};
+
+        private ErrorButtonProperties() {}
+    }
+
+    /**
      * Properties defined here reflect the state of the IDP sign in text in the AccountSelection
      * sheet.
      */
@@ -134,6 +149,19 @@ class AccountSelectionProperties {
         static final PropertyKey[] ALL_KEYS = {IDP_FOR_DISPLAY};
 
         private IdpSignInProperties() {}
+    }
+
+    /**
+     * Properties defined here reflect the state of the error text in the AccountSelection
+     * sheet.
+     */
+    static class ErrorProperties {
+        static final ReadableObjectPropertyKey<String> IDP_FOR_DISPLAY =
+                new ReadableObjectPropertyKey<>("idp_for_display");
+
+        static final PropertyKey[] ALL_KEYS = {IDP_FOR_DISPLAY};
+
+        private ErrorProperties() {}
     }
 
     /**
@@ -148,9 +176,17 @@ class AccountSelectionProperties {
                 new WritableObjectPropertyKey<>("header");
         static final WritableObjectPropertyKey<PropertyModel> IDP_SIGNIN =
                 new WritableObjectPropertyKey<>("idp_signin");
+        static final WritableObjectPropertyKey<PropertyModel> ERROR_SUMMARY =
+                new WritableObjectPropertyKey<>("error_summary");
+        static final WritableObjectPropertyKey<PropertyModel> ERROR_DESCRIPTION =
+                new WritableObjectPropertyKey<>("error_description");
+        static final WritableObjectPropertyKey<PropertyModel> GOT_IT_BUTTON =
+                new WritableObjectPropertyKey<>("got_it_btn");
+        static final WritableObjectPropertyKey<PropertyModel> MORE_DETAILS_BUTTON =
+                new WritableObjectPropertyKey<>("more_details_btn");
 
-        static final PropertyKey[] ALL_KEYS = {
-                CONTINUE_BUTTON, DATA_SHARING_CONSENT, HEADER, IDP_SIGNIN};
+        static final PropertyKey[] ALL_KEYS = {CONTINUE_BUTTON, DATA_SHARING_CONSENT, HEADER,
+                IDP_SIGNIN, ERROR_SUMMARY, ERROR_DESCRIPTION, GOT_IT_BUTTON, MORE_DETAILS_BUTTON};
 
         private ItemProperties() {}
     }

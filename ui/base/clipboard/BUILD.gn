@@ -246,13 +246,6 @@ source_set("clipboard_test") {
     sources += [ "clipboard_util_win_unittest.cc" ]
   }
 
-  if (use_aura && !is_chromeos_lacros && !is_linux && !is_win) {
-    sources += [
-      "clipboard_data_unittest.cc",
-      "clipboard_non_backed_unittest.cc",
-    ]
-  }
-
   deps = [
     ":clipboard_test_support",
     "//base/test:test_support",
@@ -266,5 +259,19 @@ source_set("clipboard_test") {
 
   if (is_mac) {
     deps += [ "//third_party/mozilla" ]
+  }
+
+  if ((use_aura && !is_chromeos_lacros) || is_mac) {
+    sources += [
+      "clipboard_data_unittest.cc",
+      "clipboard_non_backed_unittest.cc",
+    ]
+
+    if (use_ozone) {
+      deps += [
+        "//ui/ozone:ozone_switches",
+        "//ui/ozone:platform",
+      ]
+    }
   }
 }

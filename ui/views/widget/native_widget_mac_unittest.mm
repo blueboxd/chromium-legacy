@@ -25,6 +25,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
+#import "ui/base/cocoa/tool_tip_base_view.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #import "ui/base/test/scoped_fake_full_keyboard_access.h"
 #import "ui/base/test/windowed_nsnotification_observer.h"
@@ -1002,17 +1003,33 @@ TEST_F(NativeWidgetMacTest, VisibleAfterNativeParentDeminiaturize) {
   [native_parent close];
 }
 
-// Use Native APIs to query the tooltip text that would be shown once the
-// tooltip delay had elapsed.
+// Query the tooltip text that would be shown once the tooltip delay had
+// elapsed.
 std::u16string TooltipTextForWidget(Widget* widget) {
-  // For Mac, the actual location doesn't matter, since there is only one native
-  // view and it fills the window. This just assumes the window is at least big
-  // big enough for a constant coordinate to be within it.
+  // The actual location doesn't matter, since there is only one native view and
+  // it fills the window. This just assumes the window is at least big enough
+  // for a constant coordinate to be within it.
   NSPoint point = NSMakePoint(30, 30);
   NSView* view = [widget->GetNativeView().GetNativeNSView() hitTest:point];
-  NSString* text =
-      [view view:view stringForToolTip:0 point:point userData:nullptr];
-  return base::SysNSStringToUTF16(text);
+
+  // Tool tips are vended by `NSViewToolTipOwner`s, which are registered with an
+  // NSView by client code to provide a tooltip for a given point. Behind the
+  // scenes, the NSView registers the `NSViewToolTipOwner`s with an
+  // NSToolTipManager, which is completely private. This means that, in the
+  // general case, an NSView cannot be queried for the tooltip that will be used
+  // for any given situation.
+  //
+  // However, the ToolTipBaseView class is known to be its own
+  // NSViewToolTipOwner, and that class is used as a base class for the relevant
+  // views used. Therefore, if the class matches up, the tool tip can be
+  // obtained that way. Do a hard cast, as this test utility function should
+  // only be called on NSViews inheriting from that class.
+  ToolTipBaseView* tool_tip_base_view =
+      base::apple::ObjCCastStrict<ToolTipBaseView>(view);
+  return base::SysNSStringToUTF16([tool_tip_base_view view:view
+                                          stringForToolTip:0
+                                                     point:point
+                                                  userData:nullptr]);
 }
 
 // Tests tooltips. The test doesn't wait for tooltips to appear. That is, the
@@ -1577,8 +1594,8 @@ TEST_F(NativeWidgetMacTest, CloseWithWindowModalSheet) {
   // Similar, but invoke -[NSWindow close] immediately after an asynchronous
   // Close(). This exercises a scenario where two tasks to end the sheet may be
   // posted. Experimentally (on 10.13) both tasks run, but the second will never
-  // attempt to invoke -didEndSheet: on the |modalDelegate| arg of -beginSheet:.
-  // (If it did, it would be fine.)
+  // attempt to invoke the completion handler of the sheet message. (If it did,
+  // it would be fine.)
   {
     Widget* sheet_widget = ShowWindowModalWidget(native_parent);
     NSWindow* sheet_window =
@@ -1592,34 +1609,9 @@ TEST_F(NativeWidgetMacTest, CloseWithWindowModalSheet) {
     EXPECT_TRUE(widget_observer.widget_closed());
     base::RunLoop().RunUntilIdle();
 
-    // Pretend both tasks ran fully. Note that |sheet_window| serves as its own
-    // |modalDelegate|.
-    [base::mac::ObjCCastStrict<NativeWidgetMacNSWindow>(sheet_window)
-        sheetDidEnd:sheet_window
-         returnCode:NSModalResponseStop
-        contextInfo:nullptr];
+    // Pretend both tasks ran fully.
+    [sheet_window.parentWindow endSheet:sheet_window];
   }
-
-  // Test another hypothetical: What if -sheetDidEnd: was invoked somehow
-  // without going through [NSApp endSheet:] or -[NSWindow endSheet:].
-  @autoreleasepool {
-    Widget* sheet_widget = ShowWindowModalWidget(native_parent);
-    NSWindow* sheet_window =
-        sheet_widget->GetNativeWindow().GetNativeNSWindow();
-    EXPECT_TRUE([sheet_window isVisible]);
-
-    WidgetChangeObserver widget_observer(sheet_widget);
-    sheet_widget->Close();
-
-    [base::mac::ObjCCastStrict<NativeWidgetMacNSWindow>(sheet_window)
-        sheetDidEnd:sheet_window
-         returnCode:NSModalResponseStop
-        contextInfo:nullptr];
-
-    EXPECT_TRUE(widget_observer.widget_closed());
-    // Here, the ViewsNSWindowDelegate should be dealloc'd.
-  }
-  base::RunLoop().RunUntilIdle();  // Run the task posted in Close().
 
   // Test -[NSWindow close] on the parent window.
   {

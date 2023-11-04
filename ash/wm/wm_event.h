@@ -80,9 +80,6 @@ enum WMEventType {
   // See description of WM_EVENT_CYCLE_SNAP_PRIMARY.
   WM_EVENT_CYCLE_SNAP_SECONDARY,
 
-  // A user requested to center a window.
-  WM_EVENT_CENTER,
-
   // TODO(oshima): Investigate if this can be removed from ash.
   // Widget requested to show in inactive state.
   WM_EVENT_SHOW_INACTIVE,
@@ -94,12 +91,9 @@ enum WMEventType {
   // display disconnection or dragging.
   WM_EVENT_ADDED_TO_WORKSPACE,
 
-  // Bounds of the display has changed.
-  WM_EVENT_DISPLAY_BOUNDS_CHANGED,
-
-  // Bounds of the work area has changed. This will not occur when the work
-  // area has changed as a result of DISPLAY_BOUNDS_CHANGED.
-  WM_EVENT_WORKAREA_BOUNDS_CHANGED,
+  // A display metric has changed. See DisplayObserver::DisplayMetric for
+  // display related metrics.
+  WM_EVENT_DISPLAY_METRICS_CHANGED,
 
   // A user requested to pin a window.
   WM_EVENT_PIN,
@@ -110,13 +104,6 @@ enum WMEventType {
   // A user requested to pin a window for a trusted application. This is similar
   // WM_EVENT_PIN but does not allow user to exit the mode by shortcut key.
   WM_EVENT_TRUSTED_PIN,
-
-  // A system ui area has changed. Currently, this includes the virtual
-  // keyboard and the message center. A change can be a change in visibility
-  // or bounds.
-  // TODO(oshima): Consider consolidating this into
-  // WM_EVENT_WORKAREA_BOUNDS_CHANGED
-  WM_EVENT_SYSTEM_UI_AREA_CHANGED,
 
   // A user requested to float a window.
   WM_EVENT_FLOAT,
@@ -207,7 +194,6 @@ class ASH_EXPORT SetBoundsWMEvent : public WMEvent {
 };
 
 // A WMEvent sent when display metrics have changed.
-// TODO(oshima): Consolidate with WM_EVENT_WORKAREA_BOUNDS_CHANGED.
 class ASH_EXPORT DisplayMetricsChangedWMEvent : public WMEvent {
  public:
   explicit DisplayMetricsChangedWMEvent(int display_metrics);
@@ -218,8 +204,17 @@ class ASH_EXPORT DisplayMetricsChangedWMEvent : public WMEvent {
 
   ~DisplayMetricsChangedWMEvent() override;
 
+  bool display_bounds_changed() const {
+    return changed_metrics_ & display::DisplayObserver::DISPLAY_METRIC_BOUNDS;
+  }
+
   bool primary_changed() const {
     return changed_metrics_ & display::DisplayObserver::DISPLAY_METRIC_PRIMARY;
+  }
+
+  bool work_area_changed() const {
+    return changed_metrics_ &
+           display::DisplayObserver::DISPLAY_METRIC_WORK_AREA;
   }
 
  private:

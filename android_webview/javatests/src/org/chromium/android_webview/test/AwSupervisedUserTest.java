@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview.test;
 
+import android.net.Uri;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.test.InstrumentationRegistry;
@@ -17,6 +19,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.JsReplyProxy;
+import org.chromium.android_webview.WebMessageListener;
 import org.chromium.android_webview.common.AwFeatures;
 import org.chromium.android_webview.common.AwSupervisedUserUrlClassifierDelegate;
 import org.chromium.android_webview.common.PlatformServiceBridge;
@@ -25,6 +29,9 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content_public.browser.MessagePayload;
+import org.chromium.content_public.browser.MessagePort;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.url.GURL;
 
@@ -50,36 +57,26 @@ public class AwSupervisedUserTest {
     private static final String MATURE_SITE_PATH = "/mature.html";
     private static final String MATURE_SITE_IFRAME_TITLE = "IFrame mature site";
     private static final String MATURE_SITE_IFRAME_PATH = "/mature-inner.html";
-    private static final String BLOCKED_SITE_TITLE = "Webpage not available";
+    private static final String BLOCKED_SITE_TITLE = "This website is blocked by your parent.";
 
     private static String makeTestPage(String title, @Nullable String iFrameUrl) {
-        return "<html>"
-                + "  <head>"
-                + "    <title>" + title + "</title>"
-                + "  </head>"
-                + "  <body>"
-                + "    Hello world!"
-                + ((iFrameUrl != null) ? ("<iframe src=\"" + iFrameUrl + "\"/iframe>") : "")
-                + "  </body>"
-                + "</html>";
-    }
-
-    private static class OnProgressChangedClient extends TestAwContentsClient {
-        private final List<Integer> mProgresses = new ArrayList<Integer>();
-        private final CallbackHelper mCallbackHelper = new CallbackHelper();
-
-        @Override
-        public void onProgressChanged(int progress) {
-            super.onProgressChanged(progress);
-            mProgresses.add(Integer.valueOf(progress));
-            if (progress == 100 && mCallbackHelper.getCallCount() == 0) {
-                mCallbackHelper.notifyCalled();
-            }
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html><head><title>").append(title).append("</title></head><body>Hello world!");
+        if (iFrameUrl != null) {
+            sb.append("<iframe id='testIframe' src='").append(iFrameUrl).append("'></iframe>");
+            sb.append("<script>");
+            sb.append("document.getElementById('testIframe').addEventListener('load', function(){");
+            sb.append("var title;");
+            sb.append("try {");
+            sb.append("title = this.contentWindow.document.title");
+            sb.append("} catch (error){ if (error.name == 'SecurityError') {title = '")
+                    .append(BLOCKED_SITE_TITLE)
+                    .append("';}}");
+            sb.append("myObject.postMessage(title)});");
+            sb.append("</script>");
         }
-
-        public void waitForFullLoad() throws TimeoutException {
-            mCallbackHelper.waitForFirst();
-        }
+        sb.append("</body></html>");
+        return sb.toString();
     }
 
     @Rule
@@ -88,6 +85,7 @@ public class AwSupervisedUserTest {
     private OnProgressChangedClient mContentsClient = new OnProgressChangedClient();
     private AwContents mAwContents;
     private TestWebServer mWebServer;
+    private IFrameLoadedListener mIFrameLoadedListener = new IFrameLoadedListener();
 
     @Before
     public void setUp() throws Exception {
@@ -96,6 +94,11 @@ public class AwSupervisedUserTest {
         AwTestContainerView testContainerView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = testContainerView.getAwContents();
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mAwContents.addWebMessageListener(
+                    "myObject", new String[] {"*"}, mIFrameLoadedListener);
+        });
     }
 
     @After
@@ -107,7 +110,7 @@ public class AwSupervisedUserTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add("enable-features=" + AwFeatures.WEBVIEW_SUPERVISED_USER_SITE_DETECTION)
+    @CommandLineFlags.Add("enable-features=" + AwFeatures.WEBVIEW_SUPERVISED_USER_SITE_BLOCK)
     public void testAllowedSiteIsLoaded() throws Throwable {
         String embeddedUrl = setUpWebPage(SAFE_SITE_IFRAME_PATH, SAFE_SITE_IFRAME_TITLE, null);
         String requestUrl = setUpWebPage(SAFE_SITE_PATH, SAFE_SITE_TITLE, embeddedUrl);
@@ -115,14 +118,13 @@ public class AwSupervisedUserTest {
         loadUrl(requestUrl);
 
         assertPageTitle(SAFE_SITE_TITLE);
-        // todo(jdeabreu): fix flaky iframe test check
-        // assertIframeTitle(SAFE_SITE_IFRAME_TITLE);
+        assertIframeTitle(SAFE_SITE_IFRAME_TITLE);
     }
 
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add("enable-features=" + AwFeatures.WEBVIEW_SUPERVISED_USER_SITE_DETECTION)
+    @CommandLineFlags.Add("enable-features=" + AwFeatures.WEBVIEW_SUPERVISED_USER_SITE_BLOCK)
     public void testDisallowedSiteIsBlocked() throws Throwable {
         String requestUrl = setUpWebPage(MATURE_SITE_PATH, MATURE_SITE_TITLE, null);
 
@@ -134,7 +136,7 @@ public class AwSupervisedUserTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add("enable-features=" + AwFeatures.WEBVIEW_SUPERVISED_USER_SITE_DETECTION)
+    @CommandLineFlags.Add("enable-features=" + AwFeatures.WEBVIEW_SUPERVISED_USER_SITE_BLOCK)
     public void testDisallowedEmbeddedSiteIsBlocked() throws Throwable {
         String embeddedUrl = setUpWebPage(MATURE_SITE_IFRAME_PATH, MATURE_SITE_IFRAME_TITLE, null);
         String requestUrl = setUpWebPage(SAFE_SITE_PATH, SAFE_SITE_TITLE, embeddedUrl);
@@ -142,14 +144,13 @@ public class AwSupervisedUserTest {
         loadUrl(requestUrl);
 
         assertPageTitle(SAFE_SITE_TITLE);
-        // todo(jdeabreu): fix flaky iframe test check
-        // assertIframeTitle("null");
+        assertIframeTitle(BLOCKED_SITE_TITLE);
     }
 
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add("enable-features=" + AwFeatures.WEBVIEW_SUPERVISED_USER_SITE_DETECTION)
+    @CommandLineFlags.Add("enable-features=" + AwFeatures.WEBVIEW_SUPERVISED_USER_SITE_BLOCK)
     public void testDisallowedSiteRedirectIsBlocked() throws Throwable {
         String requestUrl = mWebServer.setRedirect(MATURE_SITE_PATH, SAFE_SITE_PATH);
 
@@ -161,7 +162,7 @@ public class AwSupervisedUserTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add("enable-features=" + AwFeatures.WEBVIEW_SUPERVISED_USER_SITE_DETECTION)
+    @CommandLineFlags.Add("enable-features=" + AwFeatures.WEBVIEW_SUPERVISED_USER_SITE_BLOCK)
     public void testDisallowedRedirectIsBlocked() throws Throwable {
         String requestUrl = mWebServer.setRedirect(SAFE_SITE_PATH, MATURE_SITE_PATH);
 
@@ -172,15 +173,18 @@ public class AwSupervisedUserTest {
 
     @Test
     @SmallTest
-    public void testDisallowedSiteIsLoadedFeatureOff() throws Throwable {
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add("disable-features=" + AwFeatures.WEBVIEW_SUPERVISED_USER_SITE_BLOCK + ","
+            + AwFeatures.WEBVIEW_SUPERVISED_USER_SITE_DETECTION)
+    public void
+    testDisallowedSiteIsLoadedFeatureOff() throws Throwable {
         String embeddedUrl = setUpWebPage(MATURE_SITE_IFRAME_PATH, MATURE_SITE_IFRAME_TITLE, null);
         String requestUrl = setUpWebPage(MATURE_SITE_PATH, MATURE_SITE_TITLE, embeddedUrl);
 
         loadUrl(requestUrl);
 
         assertPageTitle(MATURE_SITE_TITLE);
-        // todo(jdeabreu): fix flaky iframe test check
-        // assertIframeTitle(MATURE_SITE_IFRAME_TITLE);
+        assertIframeTitle(MATURE_SITE_IFRAME_TITLE);
     }
 
     private String setUpWebPage(String path, String title, @Nullable String iFrameUrl) {
@@ -198,21 +202,43 @@ public class AwSupervisedUserTest {
     }
 
     private void assertIframeTitle(String expectedTitle) throws Exception {
-        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
-        String iFrameTitle = getJavaScriptResultIframeTitle(mAwContents, mContentsClient);
+        String iFrameTitle = mIFrameLoadedListener.waitForResult();
         Assert.assertEquals(expectedTitle, iFrameTitle);
     }
 
-    /**
-     * Like {@link AwActivityTestRule#getJavaScriptResultBodyTextContent}, but it gets the title
-     * of the iframe instead. This assumes the main frame has only a single iframe.
-     */
-    private String getJavaScriptResultIframeTitle(
-            final AwContents awContents, final TestAwContentsClient viewClient) throws Exception {
-        String script = "document.getElementsByTagName('iframe')[0].contentDocument.title";
-        String raw =
-                mActivityTestRule.executeJavaScriptAndWaitForResult(awContents, viewClient, script);
-        return mActivityTestRule.maybeStripDoubleQuotes(raw);
+    private static class OnProgressChangedClient extends TestAwContentsClient {
+        private final List<Integer> mProgresses = new ArrayList<>();
+        private final CallbackHelper mCallbackHelper = new CallbackHelper();
+
+        @Override
+        public void onProgressChanged(int progress) {
+            super.onProgressChanged(progress);
+            mProgresses.add(Integer.valueOf(progress));
+            if (progress == 100 && mCallbackHelper.getCallCount() == 0) {
+                mCallbackHelper.notifyCalled();
+            }
+        }
+
+        public void waitForFullLoad() throws TimeoutException {
+            mCallbackHelper.waitForFirst();
+        }
+    }
+
+    private static class IFrameLoadedListener implements WebMessageListener {
+        private final CallbackHelper mCallbackHelper = new CallbackHelper();
+        private volatile String mResult;
+
+        @Override
+        public void onPostMessage(MessagePayload payload, Uri sourceOrigin, boolean isMainFrame,
+                JsReplyProxy replyProxy, MessagePort[] ports) {
+            mResult = payload.getAsString();
+            mCallbackHelper.notifyCalled();
+        }
+
+        public String waitForResult() throws TimeoutException {
+            mCallbackHelper.waitForNext();
+            return mResult;
+        }
     }
 
     private static class TestPlatformServiceBridge extends PlatformServiceBridge {

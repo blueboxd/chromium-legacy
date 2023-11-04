@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import './help_content.js';
 import './help_resources_icons.js';
 import './os_feedback_shared_css.js';
-import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
 import {stringToMojoString16} from 'chrome://resources/js/mojo_type_util.js';
@@ -293,6 +293,12 @@ export class SearchPageElement extends SearchPageElementBase {
       this.hideError_();
     }
 
+    // On oobe and login screen, the feedback app does not allow access to
+    // external websites. Therefore, search is not needed.
+    if (this.isOobeOrLoginScreen_()) {
+      return;
+    }
+
     const querySeqNo = this.getNextQuerySeqNo_();
     this.searchTimerID_ = setTimeout(() => {
       this.fetchHelpContent_(query, querySeqNo);
@@ -308,6 +314,16 @@ export class SearchPageElement extends SearchPageElementBase {
   }
 
   /**
+   * When the feedback app is launched from OOBE or the login screen, the
+   * categoryTag is set to "Login".
+   * @returns {boolean} true if the categoryTag is Login.
+   * @protected
+   */
+  isOobeOrLoginScreen_() {
+    return this.feedbackContext && this.feedbackContext.categoryTag === 'Login';
+  }
+
+  /**
    * Fetches help content/popular search and notifies iframe if querySeqNo is
    * greater than previous.
    * @param {string} query
@@ -317,6 +333,12 @@ export class SearchPageElement extends SearchPageElementBase {
   async fetchHelpContent_(query, querySeqNo) {
     if (!this.iframe_) {
       console.warn('untrusted iframe is not found');
+      return;
+    }
+
+    // On oobe and login screen, the feedback app does not allow access to
+    // external websites. Therefore, search is not needed.
+    if (this.isOobeOrLoginScreen_()) {
       return;
     }
 

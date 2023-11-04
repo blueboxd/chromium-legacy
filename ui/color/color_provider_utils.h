@@ -39,6 +39,10 @@ base::StringPiece COMPONENT_EXPORT(COLOR)
 base::StringPiece COMPONENT_EXPORT(COLOR)
     ContrastModeName(ColorProviderKey::ContrastMode contrast_mode);
 
+// Converts the ForcedColors.
+base::StringPiece COMPONENT_EXPORT(COLOR)
+    ForcedColorsName(ColorProviderKey::ForcedColors forced_colors);
+
 // Converts SystemTheme.
 base::StringPiece COMPONENT_EXPORT(COLOR)
     SystemThemeName(ui::SystemTheme system_theme);
@@ -77,11 +81,23 @@ ColorProvider COMPONENT_EXPORT(COLOR) CreateColorProviderFromRendererColorMap(
 ColorProvider COMPONENT_EXPORT(COLOR)
     CreateEmulatedForcedColorsColorProvider(bool dark_mode);
 
-// Fluent scrollbars have three main colors. This function completes the
+// TODO(samomekarajr): Forced colors web tests currently rely on specific set of
+// hardcoded colors for for determining which system colors to render. This
+// function should be updated once the web driver support spec for forced colors
+// mode is updated.
+ColorProvider COMPONENT_EXPORT(COLOR)
+    CreateEmulatedForcedColorsColorProviderForWebTests();
+
+// Scrollbars have three main colors. This function completes the
 // definition of colors for all scrollbar parts in relation to the three main
 // ones.
 void COMPONENT_EXPORT(COLOR)
-    CompleteFluentScrollbarColorsDefinition(ui::ColorMixer& mixer);
+    CompleteScrollbarColorsDefinition(ui::ColorMixer& mixer);
+
+// Completes color definitions for the controls defined in
+// NativeThemeBase::ControlColorId when in forced colors mode.
+void COMPONENT_EXPORT(COLOR)
+    CompleteControlsForcedColorsDefinition(ui::ColorMixer& mixer);
 
 // Returns true if `color_provider` and `renderer_color_map` map renderer
 // color ids to the same SkColor.

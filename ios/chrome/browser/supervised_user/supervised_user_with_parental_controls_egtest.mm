@@ -2,14 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "components/policy/policy_constants.h"
 #import "components/supervised_user/core/browser/supervised_user_url_filter.h"
 #import "components/supervised_user/core/common/features.h"
+#import "ios/chrome/browser/policy/policy_app_interface.h"
+#import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
+#import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/signin/capabilities_types.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/settings/supervised_user_settings_app_interface.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -20,6 +25,7 @@
 #import "ios/testing/earl_grey/matchers.h"
 #import "net/base/mac/url_conversions.h"
 #import "net/test/embedded_test_server/embedded_test_server.h"
+#import "ui/base/l10n/l10n_util.h"
 #import "url/gurl.h"
 
 namespace {
@@ -41,15 +47,14 @@ static const char* kInterstitialFirstTimeBanner =
 @interface SupervisedUserWithParentalControlsTestCase : ChromeTestCase
 @end
 
-// TODO(b/296996910): Add test cases for the option "Blocked Mature
-// Content".
-
 @implementation SupervisedUserWithParentalControlsTestCase
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
   config.features_enabled.push_back(
       supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
+  config.features_enabled.push_back(
+      supervised_user::kEnableProtoApiForClassifyUrl);
   return config;
 }
 
@@ -69,12 +74,14 @@ static const char* kInterstitialFirstTimeBanner =
   [super setUp];
   bool started = self.testServer->Start();
   GREYAssertTrue(started, @"Test server failed to start.");
+  [SupervisedUserSettingsAppInterface setUpTestUrlLoaderFactoryHelper];
 }
 
 - (void)tearDown {
   [ChromeEarlGrey closeCurrentTab];
   [SupervisedUserSettingsAppInterface resetSupervisedUserURLFilterBehavior];
   [SupervisedUserSettingsAppInterface resetManualUrlFiltering];
+  [SupervisedUserSettingsAppInterface tearDownTestUrlLoaderFactoryHelper];
   [super tearDown];
 }
 
@@ -156,6 +163,34 @@ static const char* kInterstitialFirstTimeBanner =
   [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
 }
 
+// Tests that the user is correctly signed out after signin is disabled via
+// policy.
+- (void)testSupervisedUserSignedOutOnPolicyChange {
+  [self signInSupervisedUser];
+
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
+
+  // Disable signin via policy.
+  policy_test_utils::SetPolicy(static_cast<int>(BrowserSigninMode::kDisabled),
+                               policy::key::kBrowserSignin);
+
+  // Make sure the UI has settled and the last changes are taken into account.
+  GREYWaitForAppToIdle(@"App failed to idle");
+
+  NSString* continueLabel =
+      l10n_util::GetNSString(IDS_IOS_ENTERPRISE_SIGNED_OUT_CONTINUE);
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityLabel(continueLabel),
+                                   grey_accessibilityTrait(
+                                       UIAccessibilityTraitButton),
+                                   nil)] performAction:grey_tap()];
+
+  [SigninEarlGrey verifySignedOut];
+  [PolicyAppInterface clearPolicies];
+}
+
 #pragma mark - Filtering Behaviour
 
 // Tests that users with "Allow Approved" filtering are shown the interstitial
@@ -169,14 +204,37 @@ static const char* kInterstitialFirstTimeBanner =
   [self checkInterstitalIsShown];
 }
 
-// Tests that users with "Allow All" filtering are not blocked
-// when they navigate to a site (allowed by default).
-- (void)testSupervisedUserWithAllowAllSitesFilteringCanViewWebages {
+// Tests that users with "Allow All" filtering are shown the interstitial
+// when they navigate to a site that ClassifyUrl classifies as unsafe.
+- (void)testSupervisedUserWithAllowAllSitesAndSafeSearchRestricted {
   [self signInSupervisedUser];
   [SupervisedUserSettingsAppInterface setFilteringToAllowAllSites];
+  [SupervisedUserSettingsAppInterface
+      setDefaultClassifyURLNavigationIsAllowed:NO];
 
-  GURL allowedURL = self.testServer->GetURL(kEchoPath);
-  [ChromeEarlGrey loadURL:allowedURL];
+  // When safe search classifies the url as restricted, the user navigation is
+  // blocked.
+  GURL blockedSafeSearchURL = self.testServer->GetURL(kEchoPath);
+  [ChromeEarlGrey loadURL:blockedSafeSearchURL];
+
+  [self checkInterstitalIsShown];
+}
+
+// Tests that users with "Allow All" filtering are not blocked
+// when they navigate to a website allowed by ClassifyUrl.
+- (void)testSupervisedUserWithAllowAllSitesAndSafeSearchAllowed {
+  [self signInSupervisedUser];
+  [SupervisedUserSettingsAppInterface setFilteringToAllowAllSites];
+  // TODO(b/297313665): Instead of a default response, introduce a stack-based
+  // approach for the mocked reponses. See `kids_management_api_server_mock.h`.
+  [SupervisedUserSettingsAppInterface
+      setDefaultClassifyURLNavigationIsAllowed:YES];
+
+  // When safe search classifies the url as allowed, the user can navigate to
+  // it.
+  GURL allowedSafeSearchURL = self.testServer->GetURL(kEchoPath);
+  [ChromeEarlGrey loadURL:allowedSafeSearchURL];
+
   [ChromeEarlGrey waitForWebStateContainingText:kEchoContent];
 }
 

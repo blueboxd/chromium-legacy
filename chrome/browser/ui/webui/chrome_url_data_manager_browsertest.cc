@@ -195,7 +195,6 @@ class ChromeURLDataManagerWebUITrustedTypesTest
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     enabled_features.push_back(ash::features::kDriveFsMirroring);
-    enabled_features.push_back(ash::features::kShimlessRMADiagnosticPage);
     enabled_features.push_back(ash::features::kShimlessRMAOsUpdate);
     enabled_features.push_back(chromeos::features::kUploadOfficeToCloud);
 #else
@@ -328,7 +327,6 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://internals/session-service",
     "chrome://internals/user-education",
     "chrome://interstitials/ssl",
-    "chrome://invalidations",
     "chrome://local-state",
     "chrome://management",
     "chrome://media-engagement",

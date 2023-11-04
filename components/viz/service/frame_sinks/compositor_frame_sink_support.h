@@ -139,9 +139,16 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   void SetThreadIds(
       bool from_untrusted_client,
       base::flat_set<base::PlatformThreadId> unverified_thread_ids);
+
   // Throttles the BeginFrames to send at |interval| if |interval| is greater
   // than zero, or clears previously set throttle if zero.
-  void ThrottleBeginFrame(base::TimeDelta interval);
+  // If |simple_cadence_only| is true, then it will further check if the
+  // |interval| is a simple cadence and apply only if that is true. Returns true
+  // if we should throttle, otherwise false.
+  bool ThrottleBeginFrame(base::TimeDelta interval,
+                          bool simple_cadence_only = false);
+
+  void SetLastKnownVsync(base::TimeDelta vsync_interval);
 
   // SurfaceClient implementation.
   void OnSurfaceCommitted(Surface* surface) override;
@@ -220,7 +227,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   const FrameSinkId& GetFrameSinkId() const override;
   void AttachCaptureClient(CapturableFrameSink::Client* client) override;
   void DetachCaptureClient(CapturableFrameSink::Client* client) override;
-  gfx::Rect GetCopyOutputRequestRegion(
+  absl::optional<CapturableFrameSink::RegionProperties>
+  GetRequestRegionProperties(
       const VideoCaptureSubTarget& sub_target) const override;
   void OnClientCaptureStarted() override;
   void OnClientCaptureStopped() override;
@@ -399,6 +407,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // Whether a request for begin frames has been issued.
   bool client_needs_begin_frame_ = false;
 
+  bool handling_auto_needs_begin_frame_ = false;
+
   // Whether the sink currently needs begin frames for any reason.
   bool needs_begin_frame_ = false;
 
@@ -472,6 +482,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // represents the duration of time in between sending two consecutive frames.
   // If zero, no throttling would be applied.
   base::TimeDelta begin_frame_interval_;
+
+  base::TimeDelta last_known_vsync_interval_;
 
   // The set of surfaces owned by this frame sink that have pending frame.
   base::flat_set<Surface*> pending_surfaces_;

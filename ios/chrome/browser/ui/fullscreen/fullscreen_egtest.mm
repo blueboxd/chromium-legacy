@@ -9,6 +9,8 @@
 #import "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "components/translate/core/browser/translate_pref_names.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/fullscreen/test/fullscreen_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
@@ -101,6 +103,8 @@ void WaitforPDFExtensionView() {
       setBoolValue:NO
        forUserPref:base::SysUTF8ToNSString(
                        translate::prefs::kOfferTranslateEnabled)];
+
+  [ChromeEarlGrey setBoolValue:NO forUserPref:prefs::kBottomOmnibox];
 }
 
 - (void)tearDown {
@@ -411,6 +415,31 @@ void WaitforPDFExtensionView() {
   [ChromeEarlGreyUI waitForToolbarVisible:YES];
 }
 
+// Tests collapsing of toolbar when a user scroll on a long page and rotate.
+- (void)testCollapseToolbarOnScrollAndRotate {
+  std::map<GURL, std::string> responses;
+  const GURL URL = web::test::HttpServer::MakeUrl("http://tallpage");
+  // A page long enough to ensure that the toolbar goes away on scrolling.
+  responses[URL] =
+      base::StringPrintf("<p style='height:%dem'>a</p><p>b</p>", kPageHeightEM);
+  web::test::SetUpSimpleHttpServer(responses);
+
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
+
+  // Scroll and check that toolbar is collapsed.
+  HideToolbarUsingUI();
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
+
+  // Rotate and check that toolbar is still collapsed.
+  [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
+                                error:nil];
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
+
+  // Cancel the rotation.
+  [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait error:nil];
+}
+
 @end
 
 #pragma mark - Smooth scrolling enabled Tests
@@ -425,6 +454,31 @@ void WaitforPDFExtensionView() {
   AppLaunchConfiguration config;
   config.features_enabled.push_back(web::features::kSmoothScrollingDefault);
   return config;
+}
+
+// This is currently needed to prevent this test case from being ignored.
+- (void)testEmpty {
+}
+
+@end
+
+#pragma mark - Bottom omnibox enabled Tests
+
+// Fullscreens tests for Chrome with bottom omnibox enabled by default.
+@interface FullscreenBottomOmniboxTestCase : ZZZFullscreenTestCase
+@end
+
+@implementation FullscreenBottomOmniboxTestCase
+
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+  config.features_enabled.push_back(kBottomOmniboxSteadyState);
+  return config;
+}
+
+- (void)setUp {
+  [super setUp];
+  [ChromeEarlGrey setBoolValue:YES forUserPref:prefs::kBottomOmnibox];
 }
 
 // This is currently needed to prevent this test case from being ignored.

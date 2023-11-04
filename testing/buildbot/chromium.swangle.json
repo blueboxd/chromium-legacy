@@ -15,7 +15,6 @@
           "--xvfb",
           "--jobs=4"
         ],
-        "isolate_name": "telemetry_gpu_integration_test",
         "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -25,7 +24,6 @@
           "enable": true,
           "has_native_resultdb_integration": true
         },
-        "should_retry_with_patch": false,
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
@@ -36,6 +34,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test": "telemetry_gpu_integration_test",
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
       }
     ]
@@ -740,7 +739,6 @@
           "--xvfb",
           "--jobs=4"
         ],
-        "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
@@ -749,17 +747,17 @@
           "enable": true,
           "has_native_resultdb_integration": true
         },
-        "should_retry_with_patch": false,
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1|Mac-13.5"
+            "os": "Mac-13.5"
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test": "telemetry_gpu_integration_test",
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
       }
     ]
@@ -778,7 +776,6 @@
           "--xvfb",
           "--jobs=4"
         ],
-        "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
@@ -787,7 +784,6 @@
           "enable": true,
           "has_native_resultdb_integration": true
         },
-        "should_retry_with_patch": false,
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
@@ -798,6 +794,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test": "telemetry_gpu_integration_test",
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
       }
     ]

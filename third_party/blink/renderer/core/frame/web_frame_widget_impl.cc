@@ -113,7 +113,6 @@
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/core/page/drag_actions.h"
-#include "third_party/blink/renderer/core/page/drag_controller.h"
 #include "third_party/blink/renderer/core/page/drag_data.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/link_highlight.h"
@@ -148,6 +147,7 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-blink.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/point_conversions.h"
 
 #if BUILDFLAG(IS_MAC)
@@ -499,7 +499,8 @@ void WebFrameWidgetImpl::DragTargetDragEnter(
   DragTargetDragEnterOrOver(point_in_viewport, screen_point, kDragEnter,
                             key_modifiers);
 
-  std::move(callback).Run(drag_operation_);
+  std::move(callback).Run(drag_operation_.operation,
+                          drag_operation_.document_is_handling_drag);
 }
 
 void WebFrameWidgetImpl::DragTargetDragOver(
@@ -513,7 +514,8 @@ void WebFrameWidgetImpl::DragTargetDragOver(
   DragTargetDragEnterOrOver(point_in_viewport, screen_point, kDragOver,
                             key_modifiers);
 
-  std::move(callback).Run(drag_operation_);
+  std::move(callback).Run(drag_operation_.operation,
+                          drag_operation_.document_is_handling_drag);
 }
 
 void WebFrameWidgetImpl::DragTargetDragLeave(
@@ -527,7 +529,8 @@ void WebFrameWidgetImpl::DragTargetDragLeave(
 
   gfx::PointF point_in_root_frame(ViewportToRootFrame(point_in_viewport));
   DragData drag_data(current_drag_data_.Get(), point_in_root_frame,
-                     screen_point, operations_allowed_);
+                     screen_point, operations_allowed_,
+                     /*force_default_action=*/false);
 
   GetPage()->GetDragController().DragExited(&drag_data,
                                             *local_root_->GetFrame());
@@ -559,9 +562,9 @@ void WebFrameWidgetImpl::DragTargetDrop(const WebDragData& web_drag_data,
   // flight, or else delayed by javascript processing in this webview.  If a
   // drop happens before our IPC reply has reached the browser process, then
   // the browser forwards the drop to this webview.  So only allow a drop to
-  // proceed if our webview drag_operation_ state is not DragOperation::kNone.
+  // proceed if our webview drag operation state is not DragOperation::kNone.
 
-  if (drag_operation_ == DragOperation::kNone) {
+  if (drag_operation_.operation == DragOperation::kNone) {
     // IPC RACE CONDITION: do not allow this drop.
     DragTargetDragLeave(point_in_viewport, screen_point);
     return;
@@ -570,7 +573,7 @@ void WebFrameWidgetImpl::DragTargetDrop(const WebDragData& web_drag_data,
   current_drag_data_->SetModifiers(key_modifiers);
   DragData drag_data(current_drag_data_.Get(),
                      ViewportToRootFrame(point_in_viewport), screen_point,
-                     operations_allowed_);
+                     operations_allowed_, web_drag_data.ForceDefaultAction());
   GetPage()->GetDragController().PerformDrag(&drag_data,
                                              *local_root_->GetFrame());
 }
@@ -1234,7 +1237,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleCharEvent(
 }
 
 void WebFrameWidgetImpl::CancelDrag() {
-  drag_operation_ = DragOperation::kNone;
+  drag_operation_ = DragController::Operation();
   current_drag_data_ = nullptr;
 }
 
@@ -1275,16 +1278,17 @@ void WebFrameWidgetImpl::DragTargetDragEnterOrOver(
 
   current_drag_data_->SetModifiers(key_modifiers);
   DragData drag_data(current_drag_data_.Get(), point_in_root_frame,
-                     screen_point, operations_allowed_);
+                     screen_point, operations_allowed_,
+                     /*force_default_action=*/false);
 
   drag_operation_ = GetPage()->GetDragController().DragEnteredOrUpdated(
       &drag_data, *local_root_->GetFrame());
 
   // Mask the drag operation against the drag source's allowed
   // operations.
-  if (!(static_cast<int>(drag_operation_) &
+  if (!(static_cast<int>(drag_operation_.operation) &
         drag_data.DraggingSourceOperationMask())) {
-    drag_operation_ = DragOperation::kNone;
+    drag_operation_ = DragController::Operation();
   }
 }
 
@@ -1469,27 +1473,6 @@ void WebFrameWidgetImpl::WillBeginMainFrame() {
   if (animation_frame_timing_monitor_) {
     animation_frame_timing_monitor_->WillBeginMainFrame();
   }
-
-  NotifyViewTransitionRenderingHasBegun();
-}
-
-void WebFrameWidgetImpl::NotifyViewTransitionRenderingHasBegun() {
-  if (!RuntimeEnabledFeatures::ViewTransitionOnNavigationEnabled()) {
-    return;
-  }
-
-  ForEachLocalFrameControlledByWidget(
-      local_root_->GetFrame(), [](WebLocalFrameImpl* local_frame) {
-        // A frame in the frame tree is fully attached and must always have a
-        // document.
-        auto* document = local_frame->GetFrame()->GetDocument();
-        DCHECK(document);
-
-        if (auto* transition =
-                ViewTransitionUtils::GetActiveTransition(*document)) {
-          transition->NotifyRenderingHasBegun();
-        }
-      });
 }
 
 bool WebFrameWidgetImpl::ShouldIgnoreInputEvents() {
@@ -1673,6 +1656,8 @@ void WebFrameWidgetImpl::UpdateVisualProperties(
   // independently.
   // https://developer.mozilla.org/en-US/docs/Web/CSS/@media/display-mode
   SetDisplayMode(visual_properties.display_mode);
+  SetWindowShowState(visual_properties.window_show_state);
+  SetResizable(visual_properties.resizable);
 
   if (ForMainFrame()) {
     SetAutoResizeMode(
@@ -1929,6 +1914,14 @@ cc::EventListenerProperties WebFrameWidgetImpl::EventListenerProperties(
 
 mojom::blink::DisplayMode WebFrameWidgetImpl::DisplayMode() const {
   return display_mode_;
+}
+
+ui::WindowShowState WebFrameWidgetImpl::WindowShowState() const {
+  return window_show_state_;
+}
+
+bool WebFrameWidgetImpl::Resizable() const {
+  return resizable_;
 }
 
 const WebVector<gfx::Rect>& WebFrameWidgetImpl::WindowSegments() const {
@@ -2704,6 +2697,28 @@ void WebFrameWidgetImpl::SetDisplayMode(mojom::blink::DisplayMode mode) {
   }
 }
 
+void WebFrameWidgetImpl::SetWindowShowState(ui::WindowShowState state) {
+  if (state == window_show_state_) {
+    return;
+  }
+
+  window_show_state_ = state;
+  LocalFrame* frame = LocalRootImpl()->GetFrame();
+  frame->MediaQueryAffectingValueChangedForLocalSubtree(
+      MediaValueChange::kOther);
+}
+
+void WebFrameWidgetImpl::SetResizable(bool resizable) {
+  if (resizable_ == resizable) {
+    return;
+  }
+
+  resizable_ = resizable;
+  LocalFrame* frame = LocalRootImpl()->GetFrame();
+  frame->MediaQueryAffectingValueChangedForLocalSubtree(
+      MediaValueChange::kOther);
+}
+
 void WebFrameWidgetImpl::SetWindowSegments(
     const std::vector<gfx::Rect>& window_segments_param) {
   WebVector<gfx::Rect> window_segments(window_segments_param);
@@ -3291,12 +3306,6 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
         !presentation_time.is_null() && (presentation_time > swap_time);
     UMA_HISTOGRAM_BOOLEAN("PageLoad.Internal.Renderer.PresentationTime.Valid",
                           presentation_time_is_valid);
-    if (presentation_time_is_valid) {
-      // This measures from 1ms to 10seconds.
-      UMA_HISTOGRAM_TIMES(
-          "PageLoad.Internal.Renderer.PresentationTime.DeltaFromSwapTime",
-          presentation_time - swap_time);
-    }
     ReportTime(std::move(presentation_time_callback),
                presentation_time_is_valid ? presentation_time : swap_time);
   }
@@ -3610,35 +3619,30 @@ void WebFrameWidgetImpl::InjectGestureScrollEvent(
     ui::ScrollGranularity granularity,
     cc::ElementId scrollable_area_element_id,
     blink::WebInputEvent::Type injected_type) {
-  if (base::FeatureList::IsEnabled(::features::kScrollUnification)) {
-    // create a GestureScroll Event and post it to the compositor thread
-    // TODO(crbug.com/1126098) use original input event's timestamp.
-    // TODO(crbug.com/1082590) ensure continuity in scroll metrics collection
-    base::TimeTicks now = base::TimeTicks::Now();
-    std::unique_ptr<WebGestureEvent> gesture_event =
-        WebGestureEvent::GenerateInjectedScrollGesture(
-            injected_type, now, device, gfx::PointF(0, 0), delta, granularity);
-    if (injected_type == WebInputEvent::Type::kGestureScrollBegin) {
-      gesture_event->data.scroll_begin.scrollable_area_element_id =
-          scrollable_area_element_id.GetInternalValue();
-      gesture_event->data.scroll_begin.main_thread_hit_tested_reasons =
-          device == WebGestureDevice::kScrollbar
-              ? cc::MainThreadScrollingReason::kScrollbarScrolling
-              : cc::MainThreadScrollingReason::kFailedHitTest;
-    }
-
-    // Notifies TestWebFrameWidget of the injected event. Does nothing outside
-    // of unit tests. This would happen in WidgetBase::QueueSyntheticEvent if
-    // scroll unification were not enabled.
-    WillQueueSyntheticEvent(
-        WebCoalescedInputEvent(*gesture_event, ui::LatencyInfo()));
-
-    widget_base_->widget_input_handler_manager()
-        ->DispatchScrollGestureToCompositor(std::move(gesture_event));
-  } else {
-    widget_base_->input_handler().InjectGestureScrollEvent(
-        device, delta, granularity, scrollable_area_element_id, injected_type);
+  // create a GestureScroll Event and post it to the compositor thread
+  // TODO(crbug.com/1126098) use original input event's timestamp.
+  // TODO(crbug.com/1082590) ensure continuity in scroll metrics collection
+  base::TimeTicks now = base::TimeTicks::Now();
+  std::unique_ptr<WebGestureEvent> gesture_event =
+      WebGestureEvent::GenerateInjectedScrollGesture(
+          injected_type, now, device, gfx::PointF(0, 0), delta, granularity);
+  if (injected_type == WebInputEvent::Type::kGestureScrollBegin) {
+    gesture_event->data.scroll_begin.scrollable_area_element_id =
+        scrollable_area_element_id.GetInternalValue();
+    gesture_event->data.scroll_begin.main_thread_hit_tested_reasons =
+        device == WebGestureDevice::kScrollbar
+            ? cc::MainThreadScrollingReason::kScrollbarScrolling
+            : cc::MainThreadScrollingReason::kFailedHitTest;
   }
+
+  // Notifies TestWebFrameWidget of the injected event. Does nothing outside
+  // of unit tests. This would happen in WidgetBase::QueueSyntheticEvent if
+  // scroll unification were not enabled.
+  WillQueueSyntheticEvent(
+      WebCoalescedInputEvent(*gesture_event, ui::LatencyInfo()));
+
+  widget_base_->widget_input_handler_manager()
+      ->DispatchScrollGestureToCompositor(std::move(gesture_event));
 }
 
 void WebFrameWidgetImpl::DidChangeCursor(const ui::Cursor& cursor) {
@@ -4668,8 +4672,6 @@ WebFrameWidgetImpl::GetFrameWidgetTestHelperForTesting() {
 }
 
 void WebFrameWidgetImpl::PrepareForFinalLifecyclUpdateForTesting() {
-  NotifyViewTransitionRenderingHasBegun();
-
   ForEachLocalFrameControlledByWidget(
       LocalRootImpl()->GetFrame(), [](WebLocalFrameImpl* local_frame) {
         LocalFrame* core_frame = local_frame->GetFrame();
@@ -4679,6 +4681,16 @@ void WebFrameWidgetImpl::PrepareForFinalLifecyclUpdateForTesting() {
         Document* document = core_frame->GetDocument();
         // Similarly, a fully attached frame must always have a document.
         DCHECK(document);
+
+        // In a web test, a rendering update may not have occurred before the
+        // test finishes so ensure the transition moves out of rendering
+        // blocked state.
+        if (RuntimeEnabledFeatures::ViewTransitionOnNavigationEnabled()) {
+          if (auto* transition =
+                  ViewTransitionUtils::GetTransition(*document)) {
+            transition->ActivateFromSnapshot();
+          }
+        }
       });
 }
 

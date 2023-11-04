@@ -4,10 +4,14 @@
 
 #include "ash/ambient/ambient_video_ui_launcher.h"
 
+#include <utility>
+
 #include "ash/ambient/ambient_controller.h"
+#include "ash/ambient/ambient_photo_controller.h"
 #include "ash/ambient/ambient_ui_settings.h"
 #include "ash/ambient/ui/ambient_video_view.h"
-#include "ash/public/cpp/personalization_app/time_of_day_paths.h"
+#include "ash/ambient/util/ambient_util.h"
+#include "ash/ambient/util/time_of_day_utils.h"
 #include "ash/shell.h"
 #include "base/check.h"
 #include "base/files/file_path.h"
@@ -19,17 +23,12 @@
 namespace ash {
 namespace {
 
-base::FilePath GetVideoHtmlPath() {
-  return personalization_app::GetTimeOfDaySrcDir().Append(
-      personalization_app::kAmbientVideoHtml);
-}
-
 base::StringPiece GetVideoFile(AmbientVideo video) {
   switch (video) {
     case AmbientVideo::kNewMexico:
-      return personalization_app::kTimeOfDayNewMexicoVideo;
+      return kTimeOfDayNewMexicoVideo;
     case AmbientVideo::kClouds:
-      return personalization_app::kTimeOfDayCloudsVideo;
+      return kTimeOfDayCloudsVideo;
   }
 }
 
@@ -41,6 +40,7 @@ AmbientVideoUiLauncher::AmbientVideoUiLauncher(
     : pref_service_(pref_service), view_delegate_(view_delegate) {
   CHECK(pref_service_);
 }
+
 AmbientVideoUiLauncher::~AmbientVideoUiLauncher() = default;
 
 void AmbientVideoUiLauncher::Initialize(InitializationCallback on_done) {
@@ -51,23 +51,27 @@ void AmbientVideoUiLauncher::Initialize(InitializationCallback on_done) {
       AmbientUiSettings::ReadFromPrefService(*pref_service_);
   CHECK(ui_settings.video())
       << "AmbientVideoUiLauncher should not be active for "
-      << ToString(ui_settings.theme());
+      << ambient::util::AmbientThemeToString(ui_settings.theme());
   current_video_ = *ui_settings.video();
   weather_refresher_ = Shell::Get()
                            ->ambient_controller()
                            ->ambient_weather_controller()
                            ->CreateScopedRefresher();
-  std::move(on_done).Run(/*success=*/true);
+  GetAmbientVideoHtmlPath(
+      base::BindOnce(&AmbientVideoUiLauncher::SetVideoHtmlPath,
+                     weak_factory_.GetWeakPtr(), std::move(on_done)));
 }
 
 std::unique_ptr<views::View> AmbientVideoUiLauncher::CreateView() {
   CHECK(is_active_);
+  CHECK(!video_html_path_.empty());
   return std::make_unique<AmbientVideoView>(GetVideoFile(current_video_),
-                                            GetVideoHtmlPath(), current_video_,
+                                            video_html_path_, current_video_,
                                             view_delegate_);
 }
 
 void AmbientVideoUiLauncher::Finalize() {
+  weak_factory_.InvalidateWeakPtrs();
   weather_refresher_.reset();
   is_active_ = false;
 }
@@ -76,8 +80,18 @@ AmbientBackendModel* AmbientVideoUiLauncher::GetAmbientBackendModel() {
   return nullptr;
 }
 
+AmbientPhotoController* AmbientVideoUiLauncher::GetAmbientPhotoController() {
+  return nullptr;
+}
+
 bool AmbientVideoUiLauncher::IsActive() {
   return is_active_;
+}
+
+void AmbientVideoUiLauncher::SetVideoHtmlPath(InitializationCallback on_done,
+                                              base::FilePath video_html_path) {
+  video_html_path_ = std::move(video_html_path);
+  std::move(on_done).Run(/*success=*/!video_html_path_.empty());
 }
 
 }  // namespace ash

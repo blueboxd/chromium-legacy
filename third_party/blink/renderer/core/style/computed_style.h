@@ -53,7 +53,6 @@
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/computed_style_initial_values.h"
 #include "third_party/blink/renderer/core/style/cursor_list.h"
-#include "third_party/blink/renderer/core/style/data_ref.h"
 #include "third_party/blink/renderer/core/style/display_style.h"
 #include "third_party/blink/renderer/core/style/filter_operations.h"
 #include "third_party/blink/renderer/core/style/font_size_style.h"
@@ -283,9 +282,6 @@ class ComputedStyle final : public ComputedStyleBase {
   friend class LengthPropertyFunctions;
   // Edits the background for media controls and accesses UserModify().
   friend class StyleAdjuster;
-  // Access to GetCurrentColor(). (drop-shadow() does not resolve 'currentcolor'
-  // at use-time.)
-  friend class FilterOperationResolver;
   // Access to GetCurrentColor().
   friend class StyleResolver;
   // Access to UserModify().
@@ -320,9 +316,7 @@ class ComputedStyle final : public ComputedStyleBase {
   // TODO(sashab): Move these private members to the bottom of ComputedStyle.
   ALWAYS_INLINE ComputedStyle();
   ALWAYS_INLINE ComputedStyle(const ComputedStyle& initial_style);
-  ALWAYS_INLINE ComputedStyle(const ComputedStyle& initial_style,
-                              const ComputedStyle& parent_style,
-                              ComputedStyleAccessFlags& access);
+  ALWAYS_INLINE explicit ComputedStyle(const ComputedStyleBuilder&);
 
  public:
   using PassKey = base::PassKey<ComputedStyle>;
@@ -330,10 +324,7 @@ class ComputedStyle final : public ComputedStyleBase {
 
   ALWAYS_INLINE ComputedStyle(BuilderPassKey,
                               const ComputedStyle& initial_style);
-  ALWAYS_INLINE ComputedStyle(BuilderPassKey,
-                              const ComputedStyle& initial_style,
-                              const ComputedStyle& parent_style,
-                              ComputedStyleAccessFlags& access);
+  ALWAYS_INLINE ComputedStyle(BuilderPassKey, const ComputedStyleBuilder&);
   ALWAYS_INLINE explicit ComputedStyle(PassKey);
 
   void TraceAfterDispatch(Visitor* visitor) const {
@@ -813,6 +804,7 @@ class ComputedStyle final : public ComputedStyleBase {
            CustomStyleCallbackDependsOnFont();
   }
   bool CachedPseudoElementStylesDependOnFontMetrics() const;
+  bool HighlightPseudoElementStylesDependOnFontMetrics() const;
 
   // font-size
   int FontSize() const { return GetFontDescription().ComputedPixelSize(); }
@@ -1006,7 +998,10 @@ class ComputedStyle final : public ComputedStyleBase {
   bool ResolvedIsColumnReverseFlexDirection() const {
     if (IsDeprecatedWebkitBox()) {
       return BoxOrient() == EBoxOrient::kVertical &&
-             BoxDirection() == EBoxDirection::kReverse;
+             (RuntimeEnabledFeatures::NonInheritedWebkitBoxDirectionEnabled()
+                  ? BoxDirectionAlternative() ==
+                        EBoxDirectionAlternative::kReverse
+                  : BoxDirection() == EBoxDirection::kReverse);
     }
     return FlexDirection() == EFlexDirection::kColumnReverse;
   }
@@ -1020,7 +1015,10 @@ class ComputedStyle final : public ComputedStyleBase {
   bool ResolvedIsRowReverseFlexDirection() const {
     if (IsDeprecatedWebkitBox()) {
       return BoxOrient() == EBoxOrient::kHorizontal &&
-             BoxDirection() == EBoxDirection::kReverse;
+             (RuntimeEnabledFeatures::NonInheritedWebkitBoxDirectionEnabled()
+                  ? BoxDirectionAlternative() ==
+                        EBoxDirectionAlternative::kReverse
+                  : BoxDirection() == EBoxDirection::kReverse);
     }
     return FlexDirection() == EFlexDirection::kRowReverse;
   }
@@ -1522,7 +1520,8 @@ class ComputedStyle final : public ComputedStyleBase {
 
   // Motion utility functions.
   bool HasOffset() const {
-    return !OffsetPosition().X().IsAuto() || OffsetPath();
+    return (!OffsetPosition().X().IsAuto() && !OffsetPosition().X().IsNone()) ||
+           OffsetPath();
   }
 
   // Direction utility functions.
@@ -1752,9 +1751,6 @@ class ComputedStyle final : public ComputedStyleBase {
     return IsDisplayReplacedType(Display());
   }
   bool IsDisplayInlineType() const { return IsDisplayInlineType(Display()); }
-  bool IsOriginalDisplayInlineType() const {
-    return IsDisplayInlineType(OriginalDisplay());
-  }
   bool IsDisplayBlockContainer() const {
     return IsDisplayBlockContainer(Display());
   }
@@ -2499,8 +2495,8 @@ class ComputedStyle final : public ComputedStyleBase {
   }
 
   // Form-sizing utility function
-  bool DisableControlFixedSize() const {
-    return FormSizing() == EFormSizing::kNormal;
+  bool ApplyControlFixedSize() const {
+    return FormSizing() == EFormSizing::kAuto;
   }
 
  private:
@@ -2800,8 +2796,6 @@ inline bool ComputedStyle::HasAnyPseudoElementStyles() const {
 }
 
 inline bool ComputedStyle::HasAnyHighlightPseudoElementStyles() const {
-  return !!PseudoElementStylesInternal();
-
   static_assert(kPseudoIdSelection >= kFirstPublicPseudoId &&
                     kPseudoIdSelection <= kLastTrackedPublicPseudoId,
                 "kPseudoIdSelection must be public");
@@ -2854,7 +2848,7 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   ComputedStyleBuilder& operator=(const ComputedStyleBuilder&) = delete;
   ComputedStyleBuilder& operator=(ComputedStyleBuilder&&) = default;
 
-  const ComputedStyle* TakeStyle() { return std::move(style_); }
+  CORE_EXPORT const ComputedStyle* TakeStyle();
 
   // NOTE: Prefer `TakeStyle()` if possible.
   CORE_EXPORT const ComputedStyle* CloneStyle() const;
@@ -3131,6 +3125,7 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
     return LineHeightInternal() ==
            ComputedStyleInitialValues::InitialLineHeight();
   }
+  const Length& LineHeight() const { return LineHeightInternal(); }
 
   // Sizing properties
   const Length& UsedWidth() const {
@@ -3366,7 +3361,7 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
 
   // BaseData
   const ComputedStyle* GetBaseComputedStyle() const {
-    if (auto* base_data = BaseData().Get()) {
+    if (auto* base_data = BaseData()) {
       return base_data->GetBaseComputedStyle();
     }
     return nullptr;
@@ -3453,6 +3448,8 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
                                    bool is_inherited_property) const;
   CORE_EXPORT StyleInheritedVariables& MutableInheritedVariables();
   CORE_EXPORT StyleNonInheritedVariables& MutableNonInheritedVariables();
+  void CopyInheritedVariablesFrom(const ComputedStyle*);
+  void CopyNonInheritedVariablesFrom(const ComputedStyle*);
   CORE_EXPORT void SetVariableData(const AtomicString& name,
                                    scoped_refptr<CSSVariableData> value,
                                    bool is_inherited_property) {
@@ -3475,7 +3472,9 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
     MutableInitialDataInternal() = std::move(data);
   }
 
-  EWhiteSpace WhiteSpace() const { return style_->WhiteSpace(); }
+  EWhiteSpace WhiteSpace() const {
+    return ToWhiteSpace(GetWhiteSpaceCollapse(), GetTextWrap());
+  }
   void SetWhiteSpace(EWhiteSpace whitespace) {
     SetWhiteSpaceCollapse(ToWhiteSpaceCollapse(whitespace));
     SetTextWrap(ToTextWrap(whitespace));
@@ -3506,8 +3505,6 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
     SetContainIntrinsicHeight(height);
   }
 
- private:
-  ComputedStyle* style_;
 };
 
 }  // namespace blink

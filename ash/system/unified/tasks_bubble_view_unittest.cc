@@ -7,10 +7,10 @@
 #include "ash/constants/ash_features.h"
 #include "ash/glanceables/common/glanceables_list_footer_view.h"
 #include "ash/glanceables/common/glanceables_view_id.h"
-#include "ash/glanceables/glanceables_v2_controller.h"
+#include "ash/glanceables/common/test/glanceables_test_new_window_delegate.h"
+#include "ash/glanceables/glanceables_controller.h"
 #include "ash/glanceables/tasks/fake_glanceables_tasks_client.h"
 #include "ash/glanceables/tasks/glanceables_task_view.h"
-#include "ash/public/cpp/test/test_new_window_delegate.h"
 #include "ash/shell.h"
 #include "ash/style/combobox.h"
 #include "ash/style/icon_button.h"
@@ -35,7 +35,6 @@
 #include "ui/views/view.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
-#include "url/gurl.h"
 
 namespace ash {
 namespace {
@@ -47,42 +46,19 @@ void WaitForTimeBetweenButtonOnClicks() {
   loop.Run();
 }
 
-class TestNewWindowDelegateImpl : public TestNewWindowDelegate {
- public:
-  // TestNewWindowDelegate:
-  void OpenUrl(const GURL& url,
-               OpenUrlFrom from,
-               Disposition disposition) override {
-    last_opened_url_ = url;
-  }
-
-  GURL last_opened_url() const { return last_opened_url_; }
-
- private:
-  GURL last_opened_url_;
-};
-
 }  // namespace
 
 class TasksBubbleViewTest : public AshTestBase {
  public:
-  TasksBubbleViewTest() {
-    auto new_window_delegate = std::make_unique<TestNewWindowDelegateImpl>();
-    new_window_delegate_ = new_window_delegate.get();
-    new_window_delegate_provider_ =
-        std::make_unique<TestNewWindowDelegateProvider>(
-            std::move(new_window_delegate));
-  }
-
   void SetUp() override {
     AshTestBase::SetUp();
     SimulateUserLogin(account_id_);
     fake_glanceables_tasks_client_ =
         std::make_unique<FakeGlanceablesTasksClient>(base::Time::Now());
-    Shell::Get()->glanceables_v2_controller()->UpdateClientsRegistration(
-        account_id_, GlanceablesV2Controller::ClientsRegistration{
+    Shell::Get()->glanceables_controller()->UpdateClientsRegistration(
+        account_id_, GlanceablesController::ClientsRegistration{
                          .tasks_client = fake_glanceables_tasks_client_.get()});
-    ASSERT_TRUE(Shell::Get()->glanceables_v2_controller()->GetTasksClient());
+    ASSERT_TRUE(Shell::Get()->glanceables_controller()->GetTasksClient());
 
     widget_ = CreateFramelessTestWidget();
     widget_->SetFullscreen(true);
@@ -143,8 +119,8 @@ class TasksBubbleViewTest : public AshTestBase {
     return fake_glanceables_tasks_client_.get();
   }
 
-  const TestNewWindowDelegateImpl* new_window_delegate() const {
-    return new_window_delegate_;
+  const GlanceablesTestNewWindowDelegate* new_window_delegate() const {
+    return &new_window_delegate_;
   }
 
   void MenuSelectionAt(int index) {
@@ -155,9 +131,7 @@ class TasksBubbleViewTest : public AshTestBase {
   base::test::ScopedFeatureList feature_list_{features::kGlanceablesV2};
   AccountId account_id_ = AccountId::FromUserEmail("test_user@gmail.com");
   std::unique_ptr<FakeGlanceablesTasksClient> fake_glanceables_tasks_client_;
-  std::unique_ptr<ash::TestNewWindowDelegateProvider>
-      new_window_delegate_provider_;
-  raw_ptr<TestNewWindowDelegateImpl> new_window_delegate_;
+  const GlanceablesTestNewWindowDelegate new_window_delegate_;
   DetailedViewDelegate detailed_view_delegate_{nullptr};
   raw_ptr<TasksBubbleView> view_;
   std::unique_ptr<views::Widget> widget_;
@@ -173,6 +147,12 @@ TEST_F(TasksBubbleViewTest, ShowTasksComboModel) {
   GestureTapOn(GetComboBoxView());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsMenuRunning());
+
+  EXPECT_EQ(gfx::Size(168, 172), GetComboBoxView()->GetMenuViewSize());
+  EXPECT_TRUE(GetComboBoxView()->MenuView()->GetBoundsInScreen().Intersects(
+      GetComboBoxView()->MenuItemAtIndex(0)->GetBoundsInScreen()));
+  EXPECT_FALSE(GetComboBoxView()->MenuView()->GetBoundsInScreen().Intersects(
+      GetComboBoxView()->MenuItemAtIndex(5)->GetBoundsInScreen()));
 
   // Select the second task list using keyboard navigation.
   PressAndReleaseKey(ui::KeyboardCode::VKEY_DOWN);
@@ -200,13 +180,27 @@ TEST_F(TasksBubbleViewTest, ShowTasksComboModel) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsMenuRunning());
 
-  // Select the third task list using keyboard navigation.
+  // Select the sixth task list using keyboard navigation.
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_DOWN);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_DOWN);
+  PressAndReleaseKey(ui::KeyboardCode::VKEY_DOWN);
   PressAndReleaseKey(ui::KeyboardCode::VKEY_DOWN);
   PressAndReleaseKey(ui::KeyboardCode::VKEY_DOWN);
   PressAndReleaseKey(ui::KeyboardCode::VKEY_RETURN);
 
+  WaitForTimeBetweenButtonOnClicks();
+  // Verify that tapping on combobox opens the selection menu.
+  GestureTapOn(GetComboBoxView());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(IsMenuRunning());
+
   // Verify the number of items in task_items_container_view()->children().
   EXPECT_EQ(GetTaskItemsContainerView()->children().size(), 0u);
+  EXPECT_EQ(gfx::Size(168, 172), GetComboBoxView()->GetMenuViewSize());
+  EXPECT_FALSE(GetComboBoxView()->MenuView()->GetBoundsInScreen().Intersects(
+      GetComboBoxView()->MenuItemAtIndex(0)->GetBoundsInScreen()));
+  EXPECT_TRUE(GetComboBoxView()->MenuView()->GetBoundsInScreen().Intersects(
+      GetComboBoxView()->MenuItemAtIndex(5)->GetBoundsInScreen()));
 }
 
 TEST_F(TasksBubbleViewTest, MarkTaskAsComplete) {
@@ -252,7 +246,7 @@ TEST_F(TasksBubbleViewTest, ShowTasksWebUIFromFooterView) {
       views::AsViewClass<views::LabelButton>(GetListFooterView()->GetViewByID(
           base::to_underlying(GlanceablesViewId::kListFooterSeeAllButton)));
   GestureTapOn(see_all_button);
-  EXPECT_EQ(new_window_delegate()->last_opened_url(),
+  EXPECT_EQ(new_window_delegate()->GetLastOpenedUrl(),
             "https://calendar.google.com/calendar/u/0/r/week?opentasks=1");
   EXPECT_EQ(1, user_actions.GetActionCount(
                    "Glanceables_Tasks_LaunchTasksApp_FooterButton"));
@@ -270,7 +264,7 @@ TEST_F(TasksBubbleViewTest, ShowTasksWebUIFromAddNewButton) {
   EXPECT_TRUE(GetAddNewTaskButton()->GetVisible());
 
   GestureTapOn(GetAddNewTaskButton());
-  EXPECT_EQ(new_window_delegate()->last_opened_url(),
+  EXPECT_EQ(new_window_delegate()->GetLastOpenedUrl(),
             "https://calendar.google.com/calendar/u/0/r/week?opentasks=1");
   EXPECT_EQ(1, user_actions.GetActionCount(
                    "Glanceables_Tasks_LaunchTasksApp_AddNewTaskButton"));
@@ -284,7 +278,7 @@ TEST_F(TasksBubbleViewTest, ShowTasksWebUIFromHeaderView) {
   base::UserActionTester user_actions;
   const auto* const header_icon_button = GetHeaderIconView();
   GestureTapOn(header_icon_button);
-  EXPECT_EQ(new_window_delegate()->last_opened_url(),
+  EXPECT_EQ(new_window_delegate()->GetLastOpenedUrl(),
             "https://calendar.google.com/calendar/u/0/r/week?opentasks=1");
   EXPECT_EQ(1, user_actions.GetActionCount(
                    "Glanceables_Tasks_LaunchTasksApp_HeaderButton"));

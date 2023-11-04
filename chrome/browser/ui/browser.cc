@@ -64,8 +64,8 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/policy/developer_tools_policy_handler.h"
-#include "chrome/browser/prefetch/prefetch_prefs.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
+#include "chrome/browser/preloading/preloading_prefs.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
@@ -150,7 +150,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/blocked_content/list_item_position.h"
 #include "components/blocked_content/popup_blocker.h"
@@ -283,6 +283,10 @@
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
 #endif  // BUILDFLAG(IS_MAC)
+
+#if !BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/preloading/preview/preview_manager.h"
+#endif
 
 using base::UserMetricsAction;
 using content::NativeWebKeyboardEvent;
@@ -1990,8 +1994,12 @@ std::unique_ptr<content::EyeDropper> Browser::OpenEyeDropper(
 
 void Browser::InitiatePreview(content::WebContents& web_contents,
                               const GURL& url) {
-  // TODO(b/292184832): Implement PreviewManager and communicate with it here.
-  NOTIMPLEMENTED();
+#if !BUILDFLAG(IS_ANDROID)
+  PreviewManager::CreateForWebContents(&web_contents);
+  PreviewManager* manager = PreviewManager::FromWebContents(&web_contents);
+  CHECK(manager);
+  manager->InitiatePreview(url);
+#endif
 }
 
 void Browser::DidFinishNavigation(
@@ -2379,8 +2387,8 @@ void Browser::FileSelectedWithExtraInfo(const ui::SelectedFileInfo& file_info,
 
   profile_->set_last_selected_directory(file_info.file_path.DirName());
 
-  GURL url = std::move(file_info.url)
-                 .value_or(net::FilePathToFileURL(file_info.local_path));
+  GURL url =
+      file_info.url.value_or(net::FilePathToFileURL(file_info.local_path));
 
   if (url.is_empty())
     return;
@@ -2783,10 +2791,16 @@ void Browser::RemoveScheduledUpdatesFor(WebContents* contents) {
 // Browser, Getters for UI (private):
 
 StatusBubble* Browser::GetStatusBubble() {
-  // In web apps, and in kiosk and exclusive app mode we want to always hide the
-  // status bubble.
-  if (chrome::IsRunningInAppMode() ||
-      web_app::AppBrowserController::IsWebApp(this)) {
+  // For kiosk and exclusive app mode we want to always hide the status bubble.
+  if (chrome::IsRunningInAppMode()) {
+    return nullptr;
+  }
+
+  // We hide the status bar for web apps windows as this matches native
+  // experience. However, we include the status bar for 'minimal-ui' display
+  // mode, as the minimal browser UI includes the status bar.
+  if (web_app::AppBrowserController::IsWebApp(this) &&
+      !app_controller()->HasMinimalUiButtons()) {
     return nullptr;
   }
 

@@ -32,7 +32,7 @@ import {OsBluetoothDevicesSubpageBrowserProxy, OsBluetoothDevicesSubpageBrowserP
 const SettingsBluetoothDevicesSubpageElementBase = DeepLinkingMixin(PrefsMixin(
     RouteObserverMixin(WebUiListenerMixin(I18nMixin(PolymerElement)))));
 
-class SettingsBluetoothDevicesSubpageElement extends
+export class SettingsBluetoothDevicesSubpageElement extends
     SettingsBluetoothDevicesSubpageElementBase {
   static get is() {
     return 'os-settings-bluetooth-devices-subpage' as const;
@@ -131,7 +131,7 @@ class SettingsBluetoothDevicesSubpageElement extends
   /**
    * RouteObserverMixin override
    */
-  override currentRouteChanged(route: Route, oldRoute?: Route) {
+  override currentRouteChanged(route: Route, oldRoute?: Route): void {
     // If we're navigating to a device's detail page, save the id of the device.
     if (route === routes.BLUETOOTH_DEVICE_DETAIL &&
         oldRoute === routes.BLUETOOTH_DEVICES) {
@@ -178,7 +178,7 @@ class SettingsBluetoothDevicesSubpageElement extends
   }
 
   private focusLastSelectedDeviceItem_(): void {
-    const focusItem = (deviceListSelector: string, index: number) => {
+    const focusItem = (deviceListSelector: string, index: number): void => {
       const deviceList =
           this.shadowRoot!.querySelector<HTMLElement>(deviceListSelector);
       const items = deviceList!.shadowRoot!.querySelectorAll(
@@ -211,7 +211,8 @@ class SettingsBluetoothDevicesSubpageElement extends
    * Observer for isBluetoothToggleOn_ that returns early until the previous
    * value was not undefined to avoid wrongly toggling the Bluetooth state.
    */
-  private onBluetoothToggleChanged_(_newValue: boolean, oldValue?: boolean) {
+  private onBluetoothToggleChanged_(_newValue: boolean, oldValue?: boolean):
+      void {
     if (oldValue === undefined) {
       return;
     }
@@ -267,7 +268,8 @@ class SettingsBluetoothDevicesSubpageElement extends
   private isFastPairSavedDevicesRowVisible_(): boolean {
     return loadTimeData.getBoolean('enableFastPairFlag') &&
         loadTimeData.getBoolean('enableSavedDevicesFlag') &&
-        !loadTimeData.getBoolean('isGuest');
+        !loadTimeData.getBoolean('isGuest') &&
+        loadTimeData.getBoolean('isCrossDeviceFeatureSuiteEnabled');
   }
 
   private onClicked_(event: Event): void {

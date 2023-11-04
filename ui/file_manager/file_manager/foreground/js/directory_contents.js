@@ -12,7 +12,7 @@ import {createDOMError} from '../../common/js/dom_utils.js';
 import {isEntryInsideDrive} from '../../common/js/entry_utils.js';
 import {FileType} from '../../common/js/file_type.js';
 import {EntryList} from '../../common/js/files_app_entry_types.js';
-import {metrics} from '../../common/js/metrics.js';
+import {recordInterval, recordMediumCount, startInterval} from '../../common/js/metrics.js';
 import {getEarliestTimestamp} from '../../common/js/recent_date_bucket.js';
 import {createTrashReaders} from '../../common/js/trash.js';
 import {util} from '../../common/js/util.js';
@@ -91,7 +91,7 @@ export class DirectoryContentScanner extends ContentScanner {
       return;
     }
 
-    metrics.startInterval('DirectoryScan');
+    startInterval('DirectoryScan');
     const reader = this.entry_.createReader();
     const readEntries = () => {
       reader.readEntries(entries => {
@@ -102,7 +102,7 @@ export class DirectoryContentScanner extends ContentScanner {
 
         if (entries.length === 0) {
           // All entries are read.
-          metrics.recordInterval('DirectoryScan');
+          recordInterval('DirectoryScan');
           successCallback();
           return;
         }
@@ -112,121 +112,6 @@ export class DirectoryContentScanner extends ContentScanner {
       }, errorCallback);
     };
     readEntries();
-    return;
-  }
-}
-
-/**
- * Scanner of the entries for the search results on Drive File System.
- */
-export class DriveSearchContentScanner extends ContentScanner {
-  /** @param {string} query The query string. */
-  constructor(query) {
-    super();
-    this.query_ = query;
-  }
-
-  /**
-   * Starts to search on Drive File System.
-   * @override
-   */
-  async scan(
-      entriesCallback, successCallback, errorCallback,
-      invalidateCache = false) {
-    // Let's give another search a chance to cancel us before we begin.
-    setTimeout(() => {
-      // Check cancelled state before read the entries.
-      if (this.cancelled_) {
-        errorCallback(createDOMError(util.FileError.ABORT_ERR));
-        return;
-      }
-      chrome.fileManagerPrivate.searchDrive(
-          {
-            query: this.query_,
-            category: chrome.fileManagerPrivate.FileCategory.ALL,
-            nextFeed: '',
-          },
-          (entries, nextFeed) => {
-            if (chrome.runtime.lastError) {
-              console.error(chrome.runtime.lastError.message);
-            }
-
-            if (this.cancelled_) {
-              errorCallback(createDOMError(util.FileError.ABORT_ERR));
-              return;
-            }
-
-            // TODO(tbarzic): Improve error handling.
-            if (!entries) {
-              console.warn('Drive search encountered an error.');
-              errorCallback(
-                  createDOMError(util.FileError.INVALID_MODIFICATION_ERR));
-              return;
-            }
-
-            if (entries.length >= DriveSearchContentScanner.MAX_RESULTS_) {
-              // More results were received than expected, so trim.
-              entries =
-                  entries.slice(0, DriveSearchContentScanner.MAX_RESULTS_);
-            }
-
-            if (entries.length > 0) {
-              entriesCallback(entries);
-            }
-
-            successCallback();
-          });
-    }, DriveSearchContentScanner.SCAN_DELAY_);
-    return;
-  }
-}
-
-/**
- * Delay in milliseconds to be used for drive search scan, in order to reduce
- * the number of server requests while user is typing the query.
- * @type {number}
- * @private
- * @const
- */
-DriveSearchContentScanner.SCAN_DELAY_ = 200;
-
-/**
- * Maximum number of results which is shown on the search.
- * @type {number}
- * @private
- * @const
- */
-DriveSearchContentScanner.MAX_RESULTS_ = 100;
-
-/**
- * Scanner of the entries of the file name search on the directory tree, whose
- * root is entry.
- */
-export class LocalSearchContentScanner extends ContentScanner {
-  /**
-   * @param {DirectoryEntry} entry The root of the search target directory tree.
-   * @param {string} query The query of the search.
-   */
-  constructor(entry, query) {
-    super();
-    this.entry_ = entry;
-    this.query_ = query.toLowerCase();
-  }
-
-  /**
-   * Starts the file name search.
-   * @override
-   */
-  async scan(
-      entriesCallback, successCallback, errorCallback,
-      invalidateCache = false) {
-    util.readEntriesRecursively(assert(this.entry_), (entries) => {
-      const matchEntries = entries.filter(
-          entry => entry.name.toLowerCase().indexOf(this.query_) >= 0);
-      if (matchEntries.length > 0) {
-        entriesCallback(matchEntries);
-      }
-    }, successCallback, errorCallback, () => this.cancelled_);
     return;
   }
 }
@@ -368,7 +253,7 @@ export class SearchV2ContentScanner extends ContentScanner {
    */
   makeFileSearchPromise_(params, metricVariant) {
     return new Promise((resolve, reject) => {
-      metrics.startInterval(`Search.${metricVariant}.Latency`);
+      startInterval(`Search.${metricVariant}.Latency`);
       chrome.fileManagerPrivate.searchFiles(
           params,
           /**
@@ -382,7 +267,7 @@ export class SearchV2ContentScanner extends ContentScanner {
                   util.FileError.NOT_READABLE_ERR,
                   chrome.runtime.lastError.message));
             } else {
-              metrics.recordInterval(`Search.${metricVariant}.Latency`);
+              recordInterval(`Search.${metricVariant}.Latency`);
               resolve(entries);
             }
           });
@@ -415,7 +300,7 @@ export class SearchV2ContentScanner extends ContentScanner {
           });
     });
     return new Promise((resolve, reject) => {
-      metrics.startInterval(`Search.${metricVariant}.Latency`);
+      startInterval(`Search.${metricVariant}.Latency`);
       const collectedEntries = [];
       let workLeft = 1;
       util.readEntriesRecursively(
@@ -445,7 +330,7 @@ export class SearchV2ContentScanner extends ContentScanner {
                     collectedEntries.push(...modified.filter(e => e !== null));
                     workLeft -= modified.length;
                     if (workLeft <= 0) {
-                      metrics.recordInterval(`Search.${metricVariant}.Latency`);
+                      recordInterval(`Search.${metricVariant}.Latency`);
                       resolve(collectedEntries);
                     }
                   });
@@ -454,14 +339,14 @@ export class SearchV2ContentScanner extends ContentScanner {
           // All entries read callback.
           () => {
             if (--workLeft <= 0) {
-              metrics.recordInterval(`Search.${metricVariant}.Latency`);
+              recordInterval(`Search.${metricVariant}.Latency`);
               resolve(collectedEntries);
             }
           },
           // Error callback.
           () => {
             if (!this.cancelled_ && collectedEntries.length >= maxResults) {
-              metrics.recordInterval(`Search.${metricVariant}.Latency`);
+              recordInterval(`Search.${metricVariant}.Latency`);
               resolve(collectedEntries);
             } else {
               reject();
@@ -597,7 +482,7 @@ export class SearchV2ContentScanner extends ContentScanner {
     const searchType = this.driveSearchTypeMap_.get(this.rootType_) ||
         chrome.fileManagerPrivate.SearchType.ALL;
     return new Promise((resolve, reject) => {
-      metrics.startInterval('Search.Drive.Latency');
+      startInterval('Search.Drive.Latency');
       chrome.fileManagerPrivate.searchDriveMetadata(
           {
             query: this.query_,
@@ -616,7 +501,7 @@ export class SearchV2ContentScanner extends ContentScanner {
             } else if (!results) {
               reject(createDOMError(util.FileError.INVALID_MODIFICATION_ERR));
             } else {
-              metrics.recordInterval('Search.Drive.Latency');
+              recordInterval('Search.Drive.Latency');
               resolve(results.map(r => r.entry));
             }
           });
@@ -720,7 +605,7 @@ export class SearchV2ContentScanner extends ContentScanner {
             }
           }
           successCallback();
-          metrics.recordMediumCount('Search.ResultCount', resultCount);
+          recordMediumCount('Search.ResultCount', resultCount);
         });
   }
 }

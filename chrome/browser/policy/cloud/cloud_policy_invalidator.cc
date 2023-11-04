@@ -17,13 +17,13 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/policy/cloud/policy_invalidation_util.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/topic_invalidation_map.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
+#include "components/policy/core/common/cloud/policy_invalidation_util.h"
 #include "components/policy/policy_constants.h"
 
 namespace policy {
@@ -514,7 +514,7 @@ void CloudPolicyInvalidator::RefreshPolicy(bool is_missing_payload) {
   // the client yet, so set it now that the required time has elapsed.
   if (is_missing_payload)
     core_->client()->SetInvalidationInfo(invalidation_version_, std::string());
-  core_->refresh_scheduler()->RefreshSoon();
+  core_->refresh_scheduler()->RefreshSoon(PolicyFetchReason::kInvalidation);
 }
 
 void CloudPolicyInvalidator::AcknowledgeInvalidation() {

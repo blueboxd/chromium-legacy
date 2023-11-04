@@ -22,6 +22,7 @@
 #include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/sequence_manager/enqueue_order.h"
+#include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/task_time_observer.h"
 #include "base/task/sequence_manager/thread_controller_impl.h"
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
@@ -299,6 +300,7 @@ void SequenceManagerImpl::InitializeFeatures() {
   base::InitializeTaskLeeway();
   ApplyNoWakeUpsForCanceledTasks();
   TaskQueueImpl::InitializeFeatures();
+  MessagePump::InitializeFeatures();
   ThreadControllerWithMessagePumpImpl::InitializeFeatures();
 #if BUILDFLAG(IS_WIN)
   g_explicit_high_resolution_timer_win =
@@ -706,8 +708,7 @@ absl::optional<WakeUp> SequenceManagerImpl::GetPendingWakeUp(
     SelectTaskOption option) const {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
 
-  if (auto priority =
-          main_thread_only().selector.GetHighestPendingPriority(option)) {
+  if (main_thread_only().selector.GetHighestPendingPriority(option)) {
     // If the selector has non-empty queues we trivially know there is immediate
     // work to be done. However we may want to yield to native work if it is
     // more important.
@@ -719,8 +720,7 @@ absl::optional<WakeUp> SequenceManagerImpl::GetPendingWakeUp(
   // do this always.
   ReloadEmptyWorkQueues();
 
-  if (auto priority =
-          main_thread_only().selector.GetHighestPendingPriority(option)) {
+  if (main_thread_only().selector.GetHighestPendingPriority(option)) {
     return WakeUp{};
   }
 
@@ -1133,8 +1133,7 @@ size_t SequenceManagerImpl::GetPendingTaskCountForTesting() const {
 
 TaskQueue::Handle SequenceManagerImpl::CreateTaskQueue(
     const TaskQueue::Spec& spec) {
-  return TaskQueue::Handle(
-      std::make_unique<TaskQueue>(CreateTaskQueueImpl(spec), spec));
+  return TaskQueue::Handle(CreateTaskQueueImpl(spec));
 }
 
 std::string SequenceManagerImpl::DescribeAllPendingTasks() const {

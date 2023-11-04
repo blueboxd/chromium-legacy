@@ -30,7 +30,7 @@ import {Route, Router, routes} from '../router.js';
 
 import {getTemplate} from './internet_detail_menu.html.js';
 
-interface SettingsInternetDetailMenuElement {
+export interface SettingsInternetDetailMenuElement {
   $: {
     menu: CrLazyRenderElement<CrActionMenuElement>,
   };
@@ -43,7 +43,7 @@ const SettingsInternetDetailMenuElementBase =
     Constructor<PolymerElement&RouteObserverMixinInterface&
                 DeepLinkingMixinInterface&ESimManagerListenerBehaviorInterface>;
 
-class SettingsInternetDetailMenuElement extends
+export class SettingsInternetDetailMenuElement extends
     SettingsInternetDetailMenuElementBase {
   static get is() {
     return 'settings-internet-detail-menu' as const;
@@ -134,7 +134,7 @@ class SettingsInternetDetailMenuElement extends
   /**
    * RouteObserverMixin override
    */
-  override currentRouteChanged(route: Route) {
+  override currentRouteChanged(route: Route): void {
     this.eSimNetworkState_ = null;
     this.guid_ = '';
     if (route !== routes.NETWORK_DETAIL) {
@@ -161,7 +161,7 @@ class SettingsInternetDetailMenuElement extends
   /**
    * ESimManagerListenerBehavior override
    */
-  override onProfileChanged() {
+  override onProfileChanged(): void {
     this.setEsimNetworkState_();
   }
 

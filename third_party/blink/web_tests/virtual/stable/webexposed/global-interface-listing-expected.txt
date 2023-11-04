@@ -1640,6 +1640,7 @@ interface Document : Node
     method hasFocus
     method hasPrivateToken
     method hasRedemptionRecord
+    method hasStorageAccess
     method importNode
     method open
     method prepend
@@ -1652,6 +1653,8 @@ interface Document : Node
     method querySelectorAll
     method releaseEvents
     method replaceChildren
+    method requestStorageAccess
+    method requestStorageAccessFor
     method startViewTransition
     method webkitCancelFullScreen
     method webkitExitFullscreen
@@ -1975,7 +1978,6 @@ interface Element : Node
     method setAttributeNS
     method setAttributeNode
     method setAttributeNodeNS
-    method setHTML
     method setPointerCapture
     method toggleAttribute
     method webkitMatchesSelector
@@ -7005,9 +7007,10 @@ interface SVGCircleElement : SVGGeometryElement
     getter cy
     getter r
     method constructor
-interface SVGClipPathElement : SVGGraphicsElement
+interface SVGClipPathElement : SVGElement
     attribute @@toStringTag
     getter clipPathUnits
+    getter transform
     method constructor
 interface SVGComponentTransferFunctionElement : SVGElement
     attribute @@toStringTag
@@ -8035,11 +8038,6 @@ interface SVGViewElement : SVGElement
     getter zoomAndPan
     method constructor
     setter zoomAndPan
-interface Sanitizer
-    static method getDefaultConfiguration
-    attribute @@toStringTag
-    method constructor
-    method getConfiguration
 interface Scheduler
     attribute @@toStringTag
     method constructor

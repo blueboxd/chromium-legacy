@@ -8,8 +8,8 @@ import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
 import {waitForElementUpdate} from '../common/js/unittest_util.js';
 
-import {TreeSelectedChangedEvent, XfTree} from './xf_tree.js';
-import {TreeItemCollapsedEvent, TreeItemExpandedEvent, XfTreeItem} from './xf_tree_item.js';
+import {type TreeSelectedChangedEvent, XfTree} from './xf_tree.js';
+import {type TreeItemCollapsedEvent, type TreeItemExpandedEvent, XfTreeItem} from './xf_tree_item.js';
 
 export function setUp() {
   document.body.setAttribute('theme', 'refresh23');
@@ -502,7 +502,7 @@ export async function testEnterToSelectItem(done: () => void) {
       eventToPromise(XfTree.events.TREE_SELECTION_CHANGED, tree);
   sendKeyDownEvent(tree, 'ArrowUp');
   assertTrue(checkFocusedItemToBe(tree, 'item1'));
-  sendKeyDownEvent(tree, 'Space');
+  sendKeyDownEvent(tree, ' ');
   await waitForElementUpdate(tree);
   const selectionChangeEvent2 = await selectionChangeEventPromise2;
   assertTrue(item1.selected);

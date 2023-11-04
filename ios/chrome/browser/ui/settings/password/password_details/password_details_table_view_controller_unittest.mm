@@ -16,7 +16,6 @@
 #import "components/password_manager/core/browser/password_manager_metrics_util.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/common/password_manager_features.h"
-#import "components/sync/base/features.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
@@ -35,7 +34,7 @@
 #import "ios/chrome/browser/ui/settings/password/password_manager_ui_features.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
-#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/mock_reauthentication_module.h"
 #import "ios/web/public/test/web_task_environment.h"
@@ -73,9 +72,6 @@ constexpr char kNote[] = "note";
 }
 
 - (void)dismissPasswordDetailsTableViewController {
-}
-
-- (void)showPasscodeDialog {
 }
 
 - (void)showPasswordDeleteDialogWithPasswordDetails:(PasswordDetails*)password
@@ -209,8 +205,7 @@ class PasswordDetailsTableViewControllerTest
  protected:
   PasswordDetailsTableViewControllerTest() {
     feature_list_.InitWithFeatures(
-        /*enabled_features=*/{syncer::kPasswordNotesWithBackup,
-                              password_manager::features::
+        /*enabled_features=*/{password_manager::features::
                                   kIOSPasswordAuthOnEntryV2},
         /*disabled_features=*/{});
     handler_ = [[FakePasswordDetailsHandler alloc] init];
@@ -383,9 +378,6 @@ class PasswordDetailsTableViewControllerTest
     UIPasteboard* general_pasteboard = [UIPasteboard generalPasteboard];
     EXPECT_NSEQ(expected_pasteboard, general_pasteboard.string);
     EXPECT_NSEQ(expected_snackbar_message, snack_bar().snackbarMessage);
-    // Verify that the error histogram was emitted to the success bucket.
-    histogram_tester.ExpectUniqueSample(
-        "PasswordManager.iOS.PasswordDetails.CopyDetailsFailed", false, 1);
   }
 
   void SetCredentialType(CredentialType credentialType) {
@@ -485,8 +477,6 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestRemovingPasswordWithNote) {
 // Tests that correct metrics is reported after removing a note.
 TEST_F(PasswordDetailsTableViewControllerTest,
        TestEditingPasswordWithoutNoteChange) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(syncer::kPasswordNotesWithBackup);
   base::HistogramTester histogram_tester;
 
   SetPassword();
@@ -504,33 +494,6 @@ TEST_F(PasswordDetailsTableViewControllerTest,
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.PasswordNoteActionInSettings2",
       password_manager::metrics_util::PasswordNoteAction::kNoteNotChanged, 1);
-}
-
-// Tests that password is displayed properly with notes feature disabled.
-TEST_F(PasswordDetailsTableViewControllerTest, TestPasswordWithNotesDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(syncer::kPasswordNotesWithBackup);
-
-  SetPassword();
-  EXPECT_EQ(1, NumberOfSections());
-  EXPECT_EQ(3, NumberOfItemsInSection(0));
-  CheckStackedDetailsCellDetails(@[ @"http://www.example.com/" ], 0, 0);
-  CheckEditCellText(@"test@egmail.com", 0, 1);
-  CheckEditCellText(kMaskedPassword, 0, 2);
-}
-
-// Tests that a credential group is displayed properly.
-TEST_F(PasswordDetailsTableViewControllerTest, TestMultipleWebsites) {
-  std::vector<std::string> websites = {"http://www.example.com/",
-                                       "http://example.com/"};
-  SetPassword(websites);
-  EXPECT_EQ(1, NumberOfSections());
-  EXPECT_EQ(4, NumberOfItemsInSection(0));
-  CheckStackedDetailsCellDetails(
-      @[ @"http://www.example.com/", @"http://example.com/" ], 0, 0);
-  CheckEditCellText(@"test@egmail.com", 0, 1);
-  CheckEditCellText(kMaskedPassword, 0, 2);
-  CheckEditCellMultiLineText(@"note", 0, 3);
 }
 
 // Tests that compromised password is displayed properly when
@@ -706,36 +669,6 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestShowHidePassword) {
   CheckEditCellText(kMaskedPassword, 0, 2);
 }
 
-// Tests that passwords was not shown in case reauth failed.
-TEST_F(PasswordDetailsTableViewControllerTest, TestShowPasswordReauthFailed) {
-  // This test makes sense with notes for password and auth on entry v2 disabled
-  // only since those features require auth before opening password details.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      /*enabled_features=*/{},
-      /*disabled_features=*/{
-          syncer::kPasswordNotesWithBackup,
-          password_manager::features::kIOSPasswordAuthOnEntryV2});
-
-  SetPassword();
-
-  CheckEditCellText(kMaskedPassword, 0, 2);
-
-  reauth().expectedResult = ReauthenticationResult::kFailure;
-  NSIndexPath* indexOfPassword;
-  indexOfPassword = [NSIndexPath indexPathForRow:2 inSection:0];
-
-  TableViewTextEditCell* textFieldCell =
-      base::apple::ObjCCastStrict<TableViewTextEditCell>([controller()
-                      tableView:controller().tableView
-          cellForRowAtIndexPath:indexOfPassword]);
-  EXPECT_TRUE(textFieldCell);
-  [textFieldCell.identifyingIconButton
-      sendActionsForControlEvents:UIControlEventTouchUpInside];
-
-  CheckEditCellText(kMaskedPassword, 0, 2);
-}
-
 // Tests that password was revealed during editing.
 TEST_F(PasswordDetailsTableViewControllerTest, TestPasswordShownDuringEditing) {
   SetPassword();
@@ -750,30 +683,6 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestPasswordShownDuringEditing) {
 
   CheckEditCellText(@"test", 0, 2);
 
-  [password_details editButtonPressed];
-  EXPECT_FALSE(password_details.tableView.editing);
-  CheckEditCellText(kMaskedPassword, 0, 2);
-}
-
-// Tests that editing mode was not entered because reauth failed.
-TEST_F(PasswordDetailsTableViewControllerTest, TestEditingReauthFailed) {
-  // This test makes sense with notes for password and auth on entry v2 disabled
-  // only since those features require auth before opening password details.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      /*enabled_features=*/{},
-      /*disabled_features=*/{
-          syncer::kPasswordNotesWithBackup,
-          password_manager::features::kIOSPasswordAuthOnEntryV2});
-
-  SetPassword();
-
-  CheckEditCellText(kMaskedPassword, 0, 2);
-
-  reauth().expectedResult = ReauthenticationResult::kFailure;
-  PasswordDetailsTableViewController* password_details =
-      base::apple::ObjCCastStrict<PasswordDetailsTableViewController>(
-          controller());
   [password_details editButtonPressed];
   EXPECT_FALSE(password_details.tableView.editing);
   CheckEditCellText(kMaskedPassword, 0, 2);
@@ -978,10 +887,6 @@ TEST_F(PasswordDetailsTableViewControllerTest, CopyUsername) {
       l10n_util::GetNSString(IDS_IOS_SETTINGS_USERNAME_WAS_COPIED_MESSAGE),
       snack_bar().snackbarMessage);
 
-  // Verify that the error histogram was emitted to the success bucket.
-  histogram_tester.ExpectUniqueSample(
-      "PasswordManager.iOS.PasswordDetails.CopyDetailsFailed", false, 1);
-
   EXPECT_FALSE(handler().passwordCopiedByUserCalled);
 }
 
@@ -1008,46 +913,6 @@ TEST_F(PasswordDetailsTableViewControllerTest, CopyPasswordSuccess) {
   EXPECT_NSEQ(
       l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_WAS_COPIED_MESSAGE),
       snack_bar().snackbarMessage);
-  // Verify that the error histogram was emitted to the success bucket.
-  histogram_tester.ExpectUniqueSample(
-      "PasswordManager.iOS.PasswordDetails.CopyDetailsFailed", false, 1);
-}
-
-// Tests copy password works as intended.
-TEST_F(PasswordDetailsTableViewControllerTest, CopyPasswordFail) {
-  // This test makes sense with notes for password and auth on entry v2 disabled
-  // only since those features require auth before opening password details.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      /*enabled_features=*/{},
-      /*disabled_features=*/{
-          syncer::kPasswordNotesWithBackup,
-          password_manager::features::kIOSPasswordAuthOnEntryV2});
-
-  base::HistogramTester histogram_tester;
-  SetPassword();
-
-  PasswordDetailsTableViewController* password_details =
-      base::apple::ObjCCastStrict<PasswordDetailsTableViewController>(
-          controller());
-
-  reauth().expectedResult = ReauthenticationResult::kFailure;
-  [password_details tableView:password_details.tableView
-      didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:2 inSection:0]];
-
-  UIMenuController* menu = [UIMenuController sharedMenuController];
-  EXPECT_EQ(1u, menu.menuItems.count);
-  [password_details copyPasswordDetails:menu];
-
-  EXPECT_NSEQ(
-      l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_WAS_NOT_COPIED_MESSAGE),
-      snack_bar().snackbarMessage);
-
-  // Verify that the error histogram was emitted to the success bucket.
-  histogram_tester.ExpectUniqueSample(
-      "PasswordManager.iOS.PasswordDetails.CopyDetailsFailed", false, 1);
-
-  EXPECT_FALSE(handler().passwordCopiedByUserCalled);
 }
 
 // Tests error histogram is emitted when we fail copying a field.
@@ -1061,10 +926,6 @@ TEST_F(PasswordDetailsTableViewControllerTest, CopyDetailsFailedEmitted) {
   // When no menu controller is passed, there's no way of knowing which field
   // should be copied to the pasteboard and thus copying should fail.
   [password_details copyPasswordDetails:nil];
-
-  // Verify that the error histogram was emitted to the failure bucket.
-  histogram_tester.ExpectUniqueSample(
-      "PasswordManager.iOS.PasswordDetails.CopyDetailsFailed", true, 1);
 
   EXPECT_FALSE(handler().passwordCopiedByUserCalled);
 }

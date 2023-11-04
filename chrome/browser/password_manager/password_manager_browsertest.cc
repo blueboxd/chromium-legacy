@@ -1177,7 +1177,7 @@ autofill::FormData GetPlaceholderUsernameFormData(
   form_data.url = signin_form.url;
   // Username
   autofill::FormFieldData username_field;
-  username_field.form_control_type = "text";
+  username_field.form_control_type = autofill::StringToFormControlType("text");
   username_field.id_attribute = u"username_field";
   username_field.name = username_field.id_attribute;
   username_field.value = u"example@example.com";
@@ -1186,7 +1186,8 @@ autofill::FormData GetPlaceholderUsernameFormData(
   form_data.fields.push_back(username_field);
   // Password
   autofill::FormFieldData password_field;
-  password_field.form_control_type = "password";
+  password_field.form_control_type =
+      autofill::StringToFormControlType("password");
   password_field.id_attribute = u"password_field";
   password_field.name = password_field.id_attribute;
   password_field.value = u"htmlPass";
@@ -1236,13 +1237,12 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
           WebContents())
           ->GetDriverForFrame(WebContents()->GetPrimaryMainFrame());
-  const std::vector<const autofill::FormData*> forms = {&form_data};
   const base::flat_map<autofill::FieldGlobalId,
                        autofill::AutofillType::ServerPrediction>
       field_predictions = {
           {form_data.fields[0].global_id(), std::move(username_prediction)},
           {form_data.fields[1].global_id(), std::move(password_prediction)}};
-  driver->GetPasswordManager()->ProcessAutofillPredictions(driver, forms,
+  driver->GetPasswordManager()->ProcessAutofillPredictions(driver, form_data,
                                                            field_predictions);
 
   // Check original values before interaction
@@ -1300,14 +1300,10 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
           WebContents())
           ->GetDriverForFrame(WebContents()->GetPrimaryMainFrame());
-  const std::vector<const autofill::FormData*> forms = {&form_data};
-  const base::flat_map<autofill::FieldGlobalId,
-                       autofill::AutofillType::ServerPrediction>
-      field_predictions = {
-          {form_data.fields[0].global_id(), std::move(username_prediction)},
-          {form_data.fields[1].global_id(), std::move(password_prediction)}};
-  driver->GetPasswordManager()->ProcessAutofillPredictions(driver, forms,
-                                                           field_predictions);
+  driver->GetPasswordManager()->ProcessAutofillPredictions(
+      driver, form_data,
+      {{form_data.fields[0].global_id(), std::move(username_prediction)},
+       {form_data.fields[1].global_id(), std::move(password_prediction)}});
 
   // Check original values before interaction
   CheckElementValue("username_field", "example@example.com");

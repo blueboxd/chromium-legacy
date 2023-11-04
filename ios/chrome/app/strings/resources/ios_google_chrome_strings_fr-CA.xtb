@@ -14,7 +14,6 @@
 <translation id="1491435845014430217">Activez « Verrouiller les onglets de navigation privée lorsque vous fermez Chrome ».</translation>
 <translation id="1493827051843127077">Définissez Chrome comme navigateur par défaut pour synchroniser vos onglets, vos mots de passe et vos renseignements de paiement sur tous vos appareils</translation>
 <translation id="1504372625950710826">Chrome n'a pas pu vérifier s'il y a des mises à jour. Essayez de vérifier votre connexion Internet.</translation>
-<translation id="1511320244449497906">Vous êtes connecté et vous synchronisez vos données avec un compte géré par <ph name="DOMAIN" />. Son administrateur peut désormais définir des politiques relatives aux utilisateurs propres à ce compte, lesquelles peuvent modifier le comportement de Chrome.</translation>
 <translation id="1516692594929310090">Ouvre la grille d'onglets de Chrome.</translation>
 <translation id="1526327845902180576">Lorsque activé :
 <ph name="BEGIN_INDENT" />  • Vous contribuez à améliorer Chrome pour les personnes qui l'utilisent de la même façon que vous.<ph name="END_INDENT" />
@@ -26,12 +25,10 @@
 
   • Si vous synchronisez votre historique avec votre compte Google, les mesures peuvent également inclure des renseignements sur les URL que vous visitez.<ph name="END_INDENT" /></translation>
 <translation id="1554731936187952550">Vous disposez de la sécurité la plus robuste de Chrome contre les sites Web dangereux</translation>
-<translation id="1615715390546812898">Effectuer une recherche vocale dans Chrome.</translation>
 <translation id="1657395063736185342">Rechercher des visuels dans Chrome</translation>
 <translation id="1675955119303651351">Certaines de vos données Chrome n'ont pas encore été enregistrées dans votre compte Google.
         Essayez d'attendre quelques minutes avant de vous déconnecter. Si vous vous déconnectez maintenant, ces données seront supprimées.</translation>
 <translation id="1682483655351012182">Synchroniser vos données Chrome</translation>
-<translation id="1733654336159102143">Verrouillez la navigation privée lorsque vous quittez Chrome ou passez à une autre application.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1843217788865538014">Utilisez automatiquement Chrome lorsque vous touchez des liens dans des messages, des documents et d'autres applications</translation>
 <translation id="1917964099031477364">Ce compte et toutes les données non enregistrées seront supprimés de Chrome et des autres applications Google sur cet appareil.</translation>
@@ -58,7 +55,6 @@
 <translation id="2732745070297234559">Chrome n'a pas pu vérifier tous les mots de passe. Réessayez demain.</translation>
 <translation id="2736805085127235148">Les notifications de Chrome sont présentement désactivées dans les paramètres de votre appareil.</translation>
 <translation id="2767464022270041271">Aucun mot de passe enregistré. Le gestionnaire de mots de passe de Google peut vérifier vos mots de passe lorsque vous les enregistrez.</translation>
-<translation id="2840432500933227975">Ouvrez les paramètres Chrome dans iOS, puis touchez « PPA par défaut du navigateur » et sélectionnez Chrome.</translation>
 <translation id="2868822340714096138">Effacer les données de navigation dans Chrome</translation>
 <translation id="2869959624320573933">Connectez-vous à Chrome</translation>
 <translation id="2876628302275096482">En savoir plus sur la <ph name="BEGIN_LINK" />manière dont Chrome préserve la confidentialité de vos données<ph name="END_LINK" /></translation>
@@ -72,6 +68,7 @@
 <translation id="3345341804167540816">Utiliser Chrome sur toutes les plateformes</translation>
 <translation id="3472587960215700950">Chrome utilise Google Maps pour vous fournir des itinéraires et des informations locales sur les adresses détectées.</translation>
 <translation id="3503014945441706099">Bénéficiez également de la navigation sécurisée améliorée pour ce profil Chrome</translation>
+<translation id="3506309791702511623">Chrome peut détecter les numéros de suivi que vous saisissez et suivre vos colis sur la page Nouvel onglet tout en aidant d'autres expériences de magasinage sur Google.</translation>
 <translation id="3522659714780527202">Pour voir vos onglets partout où vous utilisez Chrome, activez la synchronisation</translation>
 <translation id="3533694711092285624">Aucun mot de passe enregistré. Chrome ne peut vérifier vos mots de passe que si vous les enregistrez.</translation>
 <translation id="3594076341410558780">Masquez « Tirez le meilleur parti de Chrome »</translation>
@@ -136,17 +133,18 @@
 <translation id="6063091872902370735">Autoriser la connexion dans Chrome</translation>
 <translation id="6110625574506755980">Certaines fonctionnalités de Chrome ne seront plus offertes.</translation>
 <translation id="6181930887571472871">Passer à Chrome</translation>
-<translation id="6228768456496298352">Chrome détecte les adresses à l'aide de Google Maps pour vous fournir des itinéraires et des informations locales.</translation>
 <translation id="6238746320622508509">Chrome peut verrouiller vos onglets de navigation privée.</translation>
 <translation id="6247557882553405851">Gestionnaire de mots de passe Google</translation>
 <translation id="6412673304250309937">Il vérifie les URL en fonction d'une liste de sites non sécuritaires stockée dans Chrome. Si un site tente de voler votre mot de passe ou si vous téléchargez un fichier dangereux, Chrome peut également envoyer les URL concernées, y compris des extraits du contenu de pages, à la navigation sécurisée.</translation>
 <translation id="6427126399757991875">Votre organisation est en train de configurer Chrome…</translation>
+<translation id="6545449117344801102">Chrome détecte les adresses et utilise Google Maps pour vous fournir des itinéraires et des informations locales.</translation>
 <translation id="6600954340915313787">Copiée dans Chrome</translation>
 <translation id="6634107063912726160">Lorsque vous vous déconnectez, Chrome ne synchronise aucune nouvelle donnée avec votre compte Google. Les données précédemment synchronisées demeurent dans le compte.</translation>
 <translation id="6646696210740573446">Envoie une partie brouillée de l'URL à Google à l'aide d'un serveur confidentiel qui masque votre adresse IP. Si un site tente de voler votre mot de passe ou si vous téléchargez un fichier dangereux, Chrome peut aussi envoyer les URL concernées, y compris des extraits du contenu de pages, à Google.</translation>
 <translation id="6648150602980899529">Vous vous connectez avec un compte géré par <ph name="DOMAIN" />, et son administrateur pourra contrôler vos données Google Chrome. Celles-ci seront définitivement liées à votre compte. En vous déconnectant de Chrome, vous supprimerez vos données sur cet appareil, mais elles resteront stockées dans votre compte Google.</translation>
 <translation id="6676840375528380067">Effacer vos données Chrome de cet appareil?</translation>
 <translation id="6683891932310469419">Ouvre votre page de l'historique de Chrome.</translation>
+<translation id="6698978507424537043">Suivre automatiquement vos colis sur Chrome</translation>
 <translation id="6709398533399187136">Votre mot de passe a été exposé dans une violation de données. Le Gestionnaire de mots de passe Google vous recommande de le modifier maintenant.</translation>
 <translation id="6815466750807582739">Les modes de paiement et les adresses ne seront pas chiffrés. L'historique de navigation de Chrome ne se synchronisera pas.
 
@@ -163,6 +161,7 @@ Seule une personne connaissant votre phrase de passe peut lire vos données chif
 <translation id="7165736900384873061">Commencer à utiliser le lecteur de code QR Google Chrome</translation>
 <translation id="7173660919484573146">Chrome utilise Face ID pour assurer un accès autorisé à vos mots de passe.</translation>
 <translation id="7187993566681480880">Il vous protège dans Chrome et peut être utilisé pour améliorer votre sécurité dans d'autres applications Google lorsque vous êtes connecté à votre compte.</translation>
+<translation id="7200524487407690471">Chrome exécute automatiquement la Vérification de sécurité tous les jours pour vous protéger, entre autres, contre les violations de données et les sites Web non sécuritaires. Vous trouverez plus d'information sur la Vérification de sécurité dans Paramètres.</translation>
 <translation id="72119412072970160">Vous pouvez utiliser les mots de passe que vous avez enregistrés dans le gestionnaire de mots de passe Google pour d'autres applications sur votre iPad.</translation>
 <translation id="7254380941803999489">Définir Chrome comme navigateur par défaut</translation>
 <translation id="7261678641327190792">Chrome ne peut pas vérifier vos mots de passe</translation>

@@ -5,29 +5,25 @@
 #include "chrome/installer/gcapi/gcapi_omaha_experiment.h"
 
 #include "base/check.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions_win.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/installer/gcapi/gcapi.h"
 #include "chrome/installer/gcapi/google_update_util.h"
 #include "chrome/installer/util/google_update_constants.h"
 
 namespace {
 
-constexpr const wchar_t* kDays[] = {L"Sun", L"Mon", L"Tue", L"Wed",
-                                    L"Thu", L"Fri", L"Sat"};
-
-constexpr const wchar_t* kMonths[] = {L"Jan", L"Feb", L"Mar", L"Apr",
-                                      L"May", L"Jun", L"Jul", L"Aug",
-                                      L"Sep", L"Oct", L"Nov", L"Dec"};
-
 // Returns the number of weeks since 2/3/2003.
 int GetCurrentRlzWeek(const base::Time& current_time) {
-  const base::Time::Exploded february_third_2003_exploded = {2003, 2, 1, 3,
-                                                             0,    0, 0, 0};
+  static constexpr base::Time::Exploded kFeb32003 = {
+      .year = 2003, .month = 2, .day_of_week = 1, .day_of_month = 3};
   base::Time f;
-  bool conversion_success =
-      base::Time::FromUTCExploded(february_third_2003_exploded, &f);
+  bool conversion_success = base::Time::FromUTCExploded(kFeb32003, &f);
   DCHECK(conversion_success);
   base::TimeDelta delta = current_time - f;
   return delta.InDays() / 7;
@@ -87,9 +83,9 @@ std::wstring GetGCAPIExperimentLabel(const wchar_t* brand_code,
 
   base::Time instance_time = base::Time::FromTimeT(instance_time_value);
 
-  return base::StringPrintf(L"%ls=%ls_%d|%ls", label.c_str(), brand_code,
-                            GetCurrentRlzWeek(instance_time),
-                            BuildExperimentDateString(instance_time).c_str());
+  return base::StrCat({label, L"=", brand_code, L"_",
+                       base::NumberToWString(GetCurrentRlzWeek(instance_time)),
+                       L"|", BuildExperimentDateString(instance_time)});
 }
 
 }  // namespace gcapi_internals
@@ -108,6 +104,10 @@ bool SetRelaunchExperimentLabels(const wchar_t* brand_code, int shell_mode) {
 }
 
 std::wstring BuildExperimentDateString(base::Time current_time) {
+  // It's not critical that we deal with leap years etc.; approximating one year
+  // as 365 days is fine.
+  current_time += base::Days(365);
+
   // The Google Update experiment_labels timestamp format is:
   // "DAY, DD0 MON YYYY HH0:MI0:SE0 TZ"
   //  DAY = 3 character day of week,
@@ -118,13 +118,18 @@ std::wstring BuildExperimentDateString(base::Time current_time) {
   //  MI0 = 2 digit minute,
   //  SE0 = 2 digit second,
   //  TZ = 3 character timezone
-  base::Time::Exploded then = {};
+  // Note that this cannot use base/i18n/time_formatting.h, since it is part of
+  // a standalone DLL that third parties may use without necessarily
+  // initializing ICU.
+  static constexpr char kDays[7][4] = {"Sun", "Mon", "Tue", "Wed",
+                                       "Thu", "Fri", "Sat"};
+  static constexpr char kMonths[12][4] = {"Jan", "Feb", "Mar", "Apr",
+                                          "May", "Jun", "Jul", "Aug",
+                                          "Sep", "Oct", "Nov", "Dec"};
+  base::Time::Exploded then;
   current_time.UTCExplode(&then);
-  then.year += 1;
-  DCHECK(then.HasValidValues());
-
-  return base::StringPrintf(L"%s, %02d %s %d %02d:%02d:%02d GMT",
-                            kDays[then.day_of_week], then.day_of_month,
-                            kMonths[then.month - 1], then.year, then.hour,
-                            then.minute, then.second);
+  return base::ASCIIToWide(base::StringPrintf(
+      "%s, %02d %s %d %02d:%02d:%02d GMT", kDays[then.day_of_week],
+      then.day_of_month, kMonths[then.month - 1], then.year, then.hour,
+      then.minute, then.second));
 }

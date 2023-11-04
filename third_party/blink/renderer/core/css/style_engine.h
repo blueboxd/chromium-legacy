@@ -108,6 +108,7 @@ class StyleInitialData;
 class TextTrack;
 class TreeScopeStyleSheetCollection;
 class ViewportStyleResolver;
+class SelectorFilter;
 struct LogicalSize;
 
 enum InvalidationScope { kInvalidateCurrentScope, kInvalidateAllScopes };
@@ -485,10 +486,11 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
                                               Element& removed_element,
                                               Element& after_element);
   void ScheduleNthPseudoInvalidations(ContainerNode&);
-  void ScheduleInvalidationsForRuleSets(
-      TreeScope&,
-      const HeapHashSet<Member<RuleSet>>&,
-      InvalidationScope = kInvalidateCurrentScope);
+  void ApplyRuleSetInvalidation(TreeScope&,
+                                ContainerNode&,
+                                SelectorFilter&,
+                                const HeapHashSet<Member<RuleSet>>&,
+                                InvalidationScope = kInvalidateCurrentScope);
   void ScheduleCustomElementInvalidations(HashSet<AtomicString> tag_names);
   void ScheduleInvalidationsForHasPseudoAffectedByInsertion(
       Element* parent,
@@ -523,7 +525,8 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   void ApplyRuleSetChanges(TreeScope&,
                            const ActiveStyleSheetVector& old_style_sheets,
-                           const ActiveStyleSheetVector& new_style_sheets);
+                           const ActiveStyleSheetVector& new_style_sheets,
+                           const HeapVector<Member<RuleSetDiff>>& diffs);
   void ApplyUserRuleSetChanges(const ActiveStyleSheetVector& old_style_sheets,
                                const ActiveStyleSheetVector& new_style_sheets);
 
@@ -749,11 +752,12 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   bool ShouldSkipInvalidationFor(const Element&) const;
   bool IsSubtreeAndSiblingsStyleDirty(const Element&) const;
-  void ScheduleRuleSetInvalidationsForElement(
-      Element&,
-      const HeapHashSet<Member<RuleSet>>&);
-  void ScheduleTypeRuleSetInvalidations(ContainerNode&,
-                                        const HeapHashSet<Member<RuleSet>>&);
+  void ApplyRuleSetInvalidationForElement(
+      const TreeScope& tree_scope,
+      Element& element,
+      SelectorFilter& selector_filter,
+      const HeapHashSet<Member<RuleSet>>& rule_sets,
+      bool is_shadow_host);
   void InvalidateSlottedElements(HTMLSlotElement&);
   void InvalidateForRuleSetChanges(
       TreeScope& tree_scope,
@@ -812,6 +816,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   void RecalcStyle(StyleRecalcChange, const StyleRecalcContext&);
   void RecalcStyleForContainer(Element& container, StyleRecalcChange change);
+  void RecalcHighlightStylesForContainer(Element& container);
 
   void RecalcTransitionPseudoStyle();
 

@@ -21,6 +21,7 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_autofill_state.h"
 #include "third_party/blink/public/web/web_element_collection.h"
+#include "third_party/blink/public/web/web_form_control_element.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 class GURL;
@@ -35,6 +36,7 @@ class WebFormElement;
 class WebInputElement;
 class WebLocalFrame;
 class WebNode;
+class WebString;
 }  // namespace blink
 
 namespace content {
@@ -179,6 +181,9 @@ bool IsAutofillableInputElement(const blink::WebInputElement& element);
 // {Text, Radiobutton, Checkbox, Select, TextArea}.
 bool IsAutofillableElement(const blink::WebFormControlElement& element);
 
+FormControlType ToAutofillFormControlType(
+    blink::WebFormControlElement::Type type);
+
 // Returns true iff `element` has a "webauthn" autocomplete attribute.
 bool IsWebauthnTaggedElement(const blink::WebFormControlElement& element);
 
@@ -238,7 +243,7 @@ std::vector<blink::WebFormControlElement> ExtractAutofillableElementsInForm(
 
 struct ShadowFieldData;
 
-// Fills out a FormField object from a given WebFormControlElement.
+// Fills out a FormField object from a given autofillable WebFormControlElement.
 // |extract_mask|: See the enum ExtractMask above for details. Field properties
 // will be copied from |field_data_manager|, if the argument is not null and
 // has entry for |element| (see properties in FieldPropertiesFlags).
@@ -286,6 +291,12 @@ GetUnownedAutofillableFormFieldElements(const blink::WebDocument& document);
 // Returns the <iframe> elements that are not in the scope of any <form>.
 std::vector<blink::WebElement> GetUnownedIframeElements(
     const blink::WebDocument& document);
+
+// Returns a list of elements whose id matches one of the ids found in
+// `id_list`.
+std::vector<blink::WebElement> GetWebElementsFromIdList(
+    const blink::WebDocument& document,
+    const blink::WebString& id_list);
 
 // Returns false iff the extraction fails because the number of fields exceeds
 // |kMaxExtractableFields|, or |field| and |element| are not nullptr but
@@ -343,6 +354,12 @@ void ClearPreviewedElements(
 // a frame does not require being attached to its DOM.
 bool IsOwnedByFrame(const blink::WebNode& node, content::RenderFrame* frame);
 
+// Returns true if `node` is currently owned by `frame` or its frame is nullptr,
+// in which case the frame is not known anymore. It is a weaker condition than
+// `IsOwnedByFrame(node, frame)`.
+bool MaybeWasOwnedByFrame(const blink::WebNode& node,
+                          content::RenderFrame* frame);
+
 // Checks if the webpage is empty.
 // This kind of webpage is considered as empty:
 // <html>
@@ -394,10 +411,13 @@ blink::WebFormElement FindFormByUniqueRendererId(
     const blink::WebDocument& doc,
     FormRendererId form_renderer_id);
 
-// Returns the form control element by unique renderer id. It searches the
-// |form_to_be_searched| if specified, otherwise the whole document. Returns the
-// null element if there is no element with the |queried_form_control| renderer
-// id.
+std::string GetAutocompleteAttribute(const blink::WebElement& element);
+
+// Returns the form control element by unique renderer id.
+// |form_to_be_searched| could be used as an optimization to only search for
+// elements in it, but doesn't guarantee that the returned element will belong
+// to it. Returns the null element if there is no element with the
+// |queried_form_control| renderer id.
 blink::WebFormControlElement FindFormControlElementByUniqueRendererId(
     const blink::WebDocument& doc,
     FieldRendererId queried_form_control,
@@ -417,12 +437,12 @@ FindFormControlElementsByUniqueRendererId(
     const blink::WebDocument& doc,
     const std::vector<FieldRendererId>& queried_form_controls);
 
-// Returns form control elements by unique renderer id from the form with
-// |form_renderer_id|. The result has the same number elements as
-// |queried_form_controls| and the i-th element of the result corresponds to
-// the i-th element of |queried_form_controls|. This function is faster than
-// the previous one, because it only retrieves form control elements from a
-// single form.
+// Returns form control elements by unique renderer id. The result has the same
+// number elements as |queried_form_controls| and the i-th element of the result
+// corresponds to the i-th element of |queried_form_controls|.
+// |form_to_be_searched| could be used as an optimization to only search for
+// elements in it, but doesn't guarantee that the returned element will belong
+// to it.
 std::vector<blink::WebFormControlElement>
 FindFormControlElementsByUniqueRendererId(
     const blink::WebDocument& doc,

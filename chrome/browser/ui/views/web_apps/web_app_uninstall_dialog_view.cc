@@ -17,7 +17,7 @@
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_uninstall_dialog_user_options.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/url_formatter/elide_url.h"
@@ -54,7 +54,7 @@ enum HistogramCloseAction {
 
 WebAppUninstallDialogDelegateView::WebAppUninstallDialogDelegateView(
     Profile* profile,
-    web_app::AppId app_id,
+    webapps::AppId app_id,
     webapps::WebappUninstallSource uninstall_source,
     std::map<SquareSizePx, SkBitmap> icon_bitmaps,
     web_app::UninstallDialogCallback uninstall_choice_callback)
@@ -150,10 +150,10 @@ void WebAppUninstallDialogDelegateView::OnDialogAccepted() {
 void WebAppUninstallDialogDelegateView::OnDialogCanceled() {
   UMA_HISTOGRAM_ENUMERATION("Webapp.UninstallDialogAction",
                             HistogramCloseAction::kCancelled);
-  // We run this with the default value of web_app::UninstallUserOptions(),
-  // since user_wants_uninstall is set to false by default.
+  web_app::UninstallUserOptions uninstall_options;
+  uninstall_options.user_wants_uninstall = false;
   if (uninstall_choice_callback_) {
-    std::move(uninstall_choice_callback_).Run(web_app::UninstallUserOptions());
+    std::move(uninstall_choice_callback_).Run(uninstall_options);
   }
 }
 
@@ -167,7 +167,7 @@ ui::ImageModel WebAppUninstallDialogDelegateView::GetWindowIcon() {
 }
 
 void WebAppUninstallDialogDelegateView::OnWebAppWillBeUninstalled(
-    const web_app::AppId& app_id) {
+    const webapps::AppId& app_id) {
   // Handle the case when web app was uninstalled externally and we have to
   // cancel current dialog.
   if (app_id == app_id_) {
@@ -208,7 +208,7 @@ namespace chrome {
 
 void ShowWebAppUninstallDialog(
     Profile* profile,
-    const web_app::AppId& app_id,
+    const webapps::AppId& app_id,
     webapps::WebappUninstallSource uninstall_source,
     gfx::NativeWindow parent,
     std::map<SquareSizePx, SkBitmap> icon_bitmaps,

@@ -34,10 +34,6 @@ found in the LICENSE file.
     padding-inline-start: 10px;
   }
 
-  #saml-notice-message {
-    font-size: 13px;
-  }
-
   #signin-frame {
     display: flex;
     overflow: hidden;
@@ -82,7 +78,7 @@ found in the LICENSE file.
   }
 
   #sshWarning {
-    color: var(--google-red-600);
+    color: var(--cros-sys-error);
     text-align: center;
   }
 
@@ -139,12 +135,13 @@ found in the LICENSE file.
   </div>
   <div slot="bottom-buttons" hidden$="[[navigationHidden]]">
     <div hidden="[[!isDefaultNavigationShown_(canGoBack,
-        gaiaDialogButtonsType)]]">
-      <oobe-text-button id="quick-start-button"
-          on-click="onQuickStartClicked_"
-          hidden="[[!isQuickStartEnabled_]]"
-          text-key="signinScreenQuickStart">
-      </oobe-text-button>
+        gaiaDialogButtonsType)]]" class="flex layout horizontal">
+      <quick-start-entry-point
+        id="quick-start-signin-button"
+        on-click="onQuickStartClicked_"
+        hidden="[[!isQuickStartEnabled_]]"
+        quick-start-text-key="signinScreenQuickStart">
+      </quick-start-entry-point>
       <oobe-text-button id="secondary-action-button"
           label-for-aria="[[secondaryActionButtonLabel_]]"
           on-click="onSecondaryActionButtonClicked_"

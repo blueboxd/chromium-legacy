@@ -6,10 +6,10 @@
 
 #import "base/functional/bind.h"
 #import "base/memory/ptr_util.h"
-#import "base/metrics/histogram_macros.h"
+#import "base/metrics/histogram_functions.h"
 #import "base/task/sequenced_task_runner.h"
-#import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_generator.h"
+#import "ios/chrome/browser/snapshots/snapshot_storage.h"
 #import "ios/web/public/thread/web_task_traits.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
@@ -32,11 +32,12 @@ enum class PageLoadedSnapshotResult {
 
 // Generates an ID for WebState's snapshot.
 SnapshotID GenerateSnapshotID(const web::WebState* web_state) {
-  DCHECK(web_state->GetUniqueIdentifier().is_valid());
-  DCHECK_GT(web_state->GetUniqueIdentifier().id(), 0);
+  DCHECK(web_state->GetUniqueIdentifier().valid());
+  DCHECK_GT(web_state->GetUniqueIdentifier().identifier(), 0);
 
-  static_assert(sizeof(SessionID::id_type) == sizeof(int32_t));
-  return SnapshotID(web_state->GetUniqueIdentifier().id());
+  static_assert(sizeof(decltype(web::WebStateID().identifier())) ==
+                sizeof(int32_t));
+  return SnapshotID(web_state->GetUniqueIdentifier().identifier());
 }
 
 }  // namespace
@@ -49,8 +50,8 @@ void SnapshotTabHelper::SetDelegate(id<SnapshotGeneratorDelegate> delegate) {
   snapshot_generator_.delegate = delegate;
 }
 
-void SnapshotTabHelper::SetSnapshotCache(SnapshotCache* snapshot_cache) {
-  snapshot_generator_.snapshotCache = snapshot_cache;
+void SnapshotTabHelper::SetSnapshotStorage(SnapshotStorage* snapshot_storage) {
+  snapshot_generator_.snapshotStorage = snapshot_storage;
 }
 
 void SnapshotTabHelper::RetrieveColorSnapshot(void (^callback)(UIImage*)) {
@@ -127,7 +128,7 @@ void SnapshotTabHelper::PageLoaded(
     case web::PageLoadCompletionStatus::FAILURE:
       // Only log histogram for when a stale snapshot needs to be replaced.
       if (was_loading_during_last_snapshot_) {
-        UMA_HISTOGRAM_ENUMERATION(
+        base::UmaHistogramEnumeration(
             "IOS.PageLoadedSnapshotResult",
             PageLoadedSnapshotResult::
                 kSnapshotNotAttemptedBecausePageLoadFailed);
@@ -147,16 +148,14 @@ void SnapshotTabHelper::PageLoaded(
               ^(UIImage* snapshot) {
                 // Only log histogram for when a stale snapshot needs to be
                 // replaced.
-                if (!was_loading)
+                if (!was_loading) {
                   return;
-                PageLoadedSnapshotResult snapshotResult =
-                    PageLoadedSnapshotResult::kSnapshotSucceeded;
-                if (!snapshot) {
-                  snapshotResult =
-                      PageLoadedSnapshotResult::kSnapshotAttemptedAndFailed;
                 }
-                UMA_HISTOGRAM_ENUMERATION("IOS.PageLoadedSnapshotResult",
-                                          snapshotResult);
+                base::UmaHistogramEnumeration(
+                    "IOS.PageLoadedSnapshotResult",
+                    snapshot ? PageLoadedSnapshotResult::kSnapshotSucceeded
+                             : PageLoadedSnapshotResult::
+                                   kSnapshotAttemptedAndFailed);
               }),
           base::Seconds(1));
       break;

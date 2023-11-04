@@ -4,7 +4,6 @@
 
 #include "components/exo/wayland/zaura_shell.h"
 
-#include <aura-shell-server-protocol.h>
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
 #include <xdg-shell-server-protocol.h>
@@ -31,8 +30,10 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/base/window_state_type.h"
+#include "chromeos/ui/frame/multitask_menu/float_controller_base.h"
 #include "components/exo/display.h"
 #include "components/exo/seat.h"
 #include "components/exo/seat_observer.h"
@@ -44,6 +45,7 @@
 #include "components/exo/wayland/wayland_display_observer.h"
 #include "components/exo/wayland/wl_output.h"
 #include "components/exo/wayland/xdg_shell.h"
+#include "components/exo/wayland/zaura_output_manager.h"
 #include "components/version_info/version_info.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -52,14 +54,14 @@
 #include "ui/compositor/layer.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/public/activation_client.h"
 #include "ui/wm/public/tooltip_client.h"
 
-namespace exo {
-namespace wayland {
+namespace exo::wayland {
 
 namespace {
 
@@ -816,6 +818,11 @@ void AuraToplevel::SetOrientationLock(uint32_t lock_type) {
   shell_surface_->SetOrientationLock(OrientationLock(lock_type));
 }
 
+void AuraToplevel::SetWindowRoundedCornerRadius(
+    const gfx::RoundedCornersF& radii) {
+  shell_surface_->SetWindowCornerRadii(radii);
+}
+
 void AuraToplevel::SetClientSubmitsSurfacesInPixelCoordinates(bool enable) {
   shell_surface_->set_client_submits_surfaces_in_pixel_coordinates(enable);
 }
@@ -823,9 +830,14 @@ void AuraToplevel::SetClientSubmitsSurfacesInPixelCoordinates(bool enable) {
 void AuraToplevel::SetWindowBounds(int32_t x,
                                    int32_t y,
                                    int32_t width,
-                                   int32_t height) {
-  if (!shell_surface_->IsDragged())
+                                   int32_t height,
+                                   int64_t display_id) {
+  if (!shell_surface_->IsDragged()) {
+    if (display_id != display::kInvalidDisplayId) {
+      shell_surface_->SetDisplay(display_id);
+    }
     shell_surface_->SetWindowBounds(gfx::Rect(x, y, width, height));
+  }
 }
 
 void AuraToplevel::SetRestoreInfo(int32_t restore_session_id,
@@ -905,8 +917,22 @@ void AuraToplevel::SetSystemModal(bool modal) {
   shell_surface_->SetSystemModal(modal);
 }
 
-void AuraToplevel::SetFloat() {
-  shell_surface_->SetFloat();
+void AuraToplevel::SetFloatToLocation(uint32_t location) {
+  switch (location) {
+    case ZAURA_TOPLEVEL_FLOAT_START_LOCATION_BOTTOM_RIGHT:
+      shell_surface_->SetFloatToLocation(
+          chromeos::FloatStartLocation::kBottomRight);
+      break;
+    case ZAURA_TOPLEVEL_FLOAT_START_LOCATION_BOTTOM_LEFT:
+      shell_surface_->SetFloatToLocation(
+          chromeos::FloatStartLocation::kBottomLeft);
+      break;
+    default:
+      VLOG(2) << "aura_toplevel_set_float_to_location(): unknown "
+                 "float_start_location: "
+              << location;
+      break;
+  }
 }
 
 void AuraToplevel::UnsetFloat() {
@@ -1193,7 +1219,23 @@ class WaylandAuraShell : public ash::DesksController::Observer,
       for (uint32_t bug_id : kFixedBugIds) {
         zaura_shell_send_bug_fix(aura_shell_resource_, bug_id);
       }
+      if (wl_resource_get_version(aura_shell_resource_) >=
+          ZAURA_SHELL_ALL_BUG_FIXES_SENT_SINCE_VERSION) {
+        zaura_shell_send_all_bug_fixes_sent(aura_shell_resource_);
+      }
+      wl_client_flush(wl_resource_get_client(aura_shell_resource_));
     }
+
+    if (chromeos::features::IsRoundedWindowsEnabled() &&
+        wl_resource_get_version(aura_shell_resource_) >=
+            ZAURA_SHELL_WINDOW_CORNERS_RADII_SINCE_VERSION) {
+      const int window_corner_radius =
+          chromeos::features::RoundedWindowsRadius();
+      zaura_shell_send_window_corners_radii(
+          aura_shell_resource_, window_corner_radius, window_corner_radius,
+          window_corner_radius, window_corner_radius);
+    }
+
     display->seat()->AddObserver(this, kAuraShellSeatObserverPriority);
 
     OnDesksChanged();
@@ -1375,6 +1417,17 @@ void aura_toplevel_set_orientation_lock(wl_client* client,
   GetUserDataAs<AuraToplevel>(resource)->SetOrientationLock(orientation_lock);
 }
 
+void aura_toplevel_set_window_corner_radii(wl_client* client,
+                                           wl_resource* resource,
+                                           uint32_t upper_left_radius,
+                                           uint32_t upper_right_radius,
+                                           uint32_t lower_right_radius,
+                                           uint32_t lower_left_radius) {
+  GetUserDataAs<AuraToplevel>(resource)->SetWindowRoundedCornerRadius(
+      gfx::RoundedCornersF(upper_left_radius, upper_right_radius,
+                           lower_right_radius, lower_left_radius));
+}
+
 void aura_toplevel_set_client_supports_window_bounds(wl_client* client,
                                                      wl_resource* resource) {
   GetUserDataAs<AuraToplevel>(resource)->SetClientUsesScreenCoordinates();
@@ -1394,8 +1447,9 @@ void aura_toplevel_set_window_bounds(wl_client* client,
                                      int32_t width,
                                      int32_t height,
                                      wl_resource* output) {
-  // TODO(crbug.com/1261321): Use output hint.
-  GetUserDataAs<AuraToplevel>(resource)->SetWindowBounds(x, y, width, height);
+  auto display_id = AuraOutputManager::GetDisplayIdForOutput(output);
+  GetUserDataAs<AuraToplevel>(resource)->SetWindowBounds(x, y, width, height,
+                                                         display_id);
 }
 
 void aura_toplevel_set_origin(wl_client* client,
@@ -1425,7 +1479,14 @@ void aura_toplevel_unset_system_modal(wl_client* client,
 }
 
 void aura_toplevel_set_float(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<AuraToplevel>(resource)->SetFloat();
+  GetUserDataAs<AuraToplevel>(resource)->SetFloatToLocation(
+      ZAURA_TOPLEVEL_FLOAT_START_LOCATION_BOTTOM_RIGHT);
+}
+
+void aura_toplevel_set_float_to_location(wl_client* client,
+                                         wl_resource* resource,
+                                         uint32_t location) {
+  GetUserDataAs<AuraToplevel>(resource)->SetFloatToLocation(location);
 }
 
 void aura_toplevel_unset_float(wl_client* client, wl_resource* resource) {
@@ -1615,7 +1676,8 @@ const struct zaura_toplevel_interface aura_toplevel_implementation = {
     aura_toplevel_unset_can_maximize,
     aura_toplevel_set_can_fullscreen,
     aura_toplevel_unset_can_fullscreen,
-};
+    aura_toplevel_set_float_to_location,
+    aura_toplevel_set_window_corner_radii};
 
 void aura_popup_surface_submission_in_pixel_coordinates(wl_client* client,
                                                         wl_resource* resource) {
@@ -1767,5 +1829,4 @@ void bind_aura_shell(wl_client* client,
                     std::make_unique<WaylandAuraShell>(resource, display));
 }
 
-}  // namespace wayland
-}  // namespace exo
+}  // namespace exo::wayland

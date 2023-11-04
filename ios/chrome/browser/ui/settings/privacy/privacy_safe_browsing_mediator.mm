@@ -17,7 +17,9 @@
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_backed_boolean.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/model/utils/observable_boolean.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/list_model/list_model.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
@@ -28,10 +30,8 @@
 #import "ios/chrome/browser/ui/settings/privacy/privacy_constants.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_safe_browsing_consumer.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_safe_browsing_navigation_commands.h"
-#import "ios/chrome/browser/ui/settings/utils/observable_boolean.h"
-#import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
-#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
 
@@ -230,10 +230,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // If Safe Browsing is controlled by enterprise, make non-selected options
   // greyed out.
   if (self.enterpriseEnabled && ![self shouldItemTypeHaveCheckmark:type]) {
-    infoButtonItem.textColor =
-        [[UIColor colorNamed:kTextPrimaryColor] colorWithAlphaComponent:0.4f];
-    infoButtonItem.detailTextColor =
-        [[UIColor colorNamed:kTextSecondaryColor] colorWithAlphaComponent:0.4f];
+    // This item is not controllable; set to lighter colors.
+    infoButtonItem.textColor = [UIColor colorNamed:kTextSecondaryColor];
+    infoButtonItem.detailTextColor = [UIColor colorNamed:kTextTertiaryColor];
     infoButtonItem.accessibilityHint = l10n_util::GetNSString(
         IDS_IOS_TOGGLE_SETTING_MANAGED_ACCESSIBILITY_HINT);
   } else {

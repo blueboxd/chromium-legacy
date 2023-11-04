@@ -133,6 +133,12 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
         value: () => !loadTimeData.getBoolean(
             'isPerformanceSettingsPreloadingSubpageEnabled'),
       },
+
+      is3pcdRedesignEnabled_: {
+        type: Boolean,
+        value: () =>
+            loadTimeData.getBoolean('is3pcdCookieSettingsRedesignEnabled'),
+      },
     };
   }
 
@@ -150,6 +156,7 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
   private enableFirstPartySetsUI_: boolean;
   private isPrivacySandboxSettings4_: boolean;
   private showPreloadingSubpage_: boolean;
+  private is3pcdRedesignEnabled_: boolean;
 
   private metricsBrowserProxy_: MetricsBrowserProxy =
       MetricsBrowserProxyImpl.getInstance();
@@ -162,9 +169,15 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
       assert(toFocus);
       focusWithoutInk(toFocus);
     };
-    this.focusConfig.set(
-        `${routes.SITE_SETTINGS_ALL.path}_${routes.COOKIES.path}`,
-        selectSiteDataLinkRow);
+    if (this.is3pcdRedesignEnabled_) {
+      this.focusConfig.set(
+          `${routes.SITE_SETTINGS_ALL.path}_${routes.TRACKING_PROTECTION.path}`,
+          selectSiteDataLinkRow);
+    } else {
+      this.focusConfig.set(
+          `${routes.SITE_SETTINGS_ALL.path}_${routes.COOKIES.path}`,
+          selectSiteDataLinkRow);
+    }
 
     if (this.showPreloadingSubpage_) {
       const selectPreloadingLinkRow = () => {
@@ -180,7 +193,11 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
   }
 
   override currentRouteChanged(route: Route) {
-    if (route !== routes.COOKIES) {
+    if (this.is3pcdRedesignEnabled_) {
+      if (route !== routes.TRACKING_PROTECTION) {
+        this.$.toast.hide();
+      }
+    } else if (route !== routes.COOKIES) {
       this.$.toast.hide();
     }
   }
@@ -370,7 +387,7 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
 
     // NetworkPredictionOptions.WIFI_ONLY_DEPRECATED is treated the same as
     // NetworkPredictionOptions.STANDARD.
-    // See chrome/browser/prefetch/prefetch_prefs.h.
+    // See chrome/browser/preloading/preloading_prefs.h.
     return this.i18n('preloadingPageStandardPreloadingTitle');
   }
 
@@ -392,6 +409,14 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
 
     return this.getPref('generated.cookie_primary_setting').value !==
         CookiePrimarySetting.BLOCK_THIRD_PARTY;
+  }
+
+  private isPrivacySandboxSettings4CookieSettingsEnabled_(): boolean {
+    return this.isPrivacySandboxSettings4_ && !this.is3pcdRedesignEnabled_;
+  }
+
+  private isPrivacySandboxSettings3CookieSettingsEnabled_(): boolean {
+    return !this.isPrivacySandboxSettings4_ && !this.is3pcdRedesignEnabled_;
   }
 }
 

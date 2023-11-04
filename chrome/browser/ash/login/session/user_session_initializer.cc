@@ -43,9 +43,6 @@
 #include "chrome/browser/scalable_iph/scalable_iph_factory.h"
 #include "chrome/browser/screen_ai/screen_ai_dlc_installer.h"
 #include "chrome/browser/ui/ash/calendar/calendar_keyed_service_factory.h"
-#include "chrome/browser/ui/ash/clipboard_history_url_title_fetcher_impl.h"
-#include "chrome/browser/ui/ash/clipboard_image_model_factory_impl.h"
-#include "chrome/browser/ui/ash/glanceables/chrome_glanceables_delegate.h"
 #include "chrome/browser/ui/ash/glanceables/glanceables_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/media_client_impl.h"
@@ -155,7 +152,6 @@ void UserSessionInitializer::OnUserProfileLoaded(const AccountId& account_id) {
     InitializeCerts(profile);
     InitializeCRLSetFetcher();
     InitializePrimaryProfileServices(profile, user);
-    InitializeScalableIph(profile);
 
     FamilyUserMetricsServiceFactory::GetForBrowserContext(profile);
   }
@@ -250,11 +246,6 @@ void UserSessionInitializer::InitializePrimaryProfileServices(
   if (crostini_manager)
     crostini_manager->MaybeUpdateCrostini();
 
-  clipboard_history_url_title_fetcher_impl_ =
-      std::make_unique<ClipboardHistoryUrlTitleFetcherImpl>();
-  clipboard_image_model_factory_impl_ =
-      std::make_unique<ClipboardImageModelFactoryImpl>(profile);
-
   if (captions::IsLiveCaptionFeatureSupported() &&
       features::IsSystemLiveCaptionEnabled()) {
     SystemLiveCaptionServiceFactory::GetInstance()->GetForProfile(profile);
@@ -290,14 +281,14 @@ void UserSessionInitializer::OnUserSessionStarted(bool is_primary_user) {
   if (is_primary_user) {
     DCHECK_EQ(primary_profile_, profile);
 
-    if (features::AreGlanceablesEnabled()) {
-      // Must be called after CalenderKeyedServiceFactory is initialized.
-      ChromeGlanceablesDelegate::Get()->OnPrimaryUserSessionStarted(profile);
-    }
     // Ensure that PhoneHubManager and EcheAppManager are created for the
     // primary profile.
     phonehub::PhoneHubManagerFactory::GetForProfile(profile);
     eche_app::EcheAppManagerFactory::GetForProfile(profile);
+
+    // `ScalableIph` depends on `PhoneHubManager`. Initialize after
+    // `PhoneHubManager`.
+    InitializeScalableIph(profile);
 
     plugin_vm::PluginVmManager* plugin_vm_manager =
         plugin_vm::PluginVmManagerFactory::GetForProfile(primary_profile_);

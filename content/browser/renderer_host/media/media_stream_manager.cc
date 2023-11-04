@@ -95,6 +95,7 @@
 #include "content/browser/gpu/gpu_memory_buffer_manager_singleton.h"
 #include "content/public/browser/chromeos/multi_capture_service.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
+#include "media/capture/video/chromeos/jpeg_accelerator_provider.h"
 #include "media/capture/video/chromeos/public/cros_features.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #endif
@@ -176,9 +177,9 @@ bool GetDeviceIDAndGroupIDFromHMAC(
 
 MediaStreamType ConvertToMediaStreamType(MediaDeviceType type) {
   switch (type) {
-    case MediaDeviceType::MEDIA_AUDIO_INPUT:
+    case MediaDeviceType::kMediaAudioInput:
       return MediaStreamType::DEVICE_AUDIO_CAPTURE;
-    case MediaDeviceType::MEDIA_VIDEO_INPUT:
+    case MediaDeviceType::kMediaVideoInput:
       return MediaStreamType::DEVICE_VIDEO_CAPTURE;
     default:
       NOTREACHED();
@@ -189,11 +190,11 @@ MediaStreamType ConvertToMediaStreamType(MediaDeviceType type) {
 
 const char* DeviceTypeToString(MediaDeviceType type) {
   switch (type) {
-    case MediaDeviceType::MEDIA_AUDIO_INPUT:
+    case MediaDeviceType::kMediaAudioInput:
       return "DEVICE_AUDIO_INPUT";
-    case MediaDeviceType::MEDIA_AUDIO_OUTPUT:
+    case MediaDeviceType::kMediaAudioOuput:
       return "DEVICE_AUDIO_OUTPUT";
-    case MediaDeviceType::MEDIA_VIDEO_INPUT:
+    case MediaDeviceType::kMediaVideoInput:
       return "DEVICE_VIDEO_INPUT";
     default:
       NOTREACHED();
@@ -363,9 +364,10 @@ void SendVideoCaptureLogMessage(const std::string& message) {
 // Returns MediaStreamDevices for getDisplayMedia() calls.
 // Returns a video device built with DesktopMediaID with fake initializers if
 // |kUseFakeDeviceForMediaStream| is set and |preferred_display_surface| is no
-// preference. Otherwise, if |preferred_display_surface| specifies a screen,
-// window, or tab, returns a video device with matching DesktopMediaID. Returns
-// a video device with default DesktopMediaID otherwise.
+// preference. If |exclude_monitor_type_surfaces| is true, returns tab
+// DesktopMediaID. Otherwise, if |preferred_display_surface| specifies a screen,
+// window, or tab, returns a video device with matching DesktopMediaID
+// Returns a video device with default DesktopMediaID otherwise.
 // Returns an audio device with default device parameters.
 // If |kUseFakeDeviceForMediaStream| specifies a
 // browser window, use |render_process_id| and |render_frame_id| as the browser
@@ -375,7 +377,8 @@ MediaStreamDevices DisplayMediaDevicesFromFakeDeviceConfig(
     bool request_audio,
     int render_process_id,
     int render_frame_id,
-    blink::mojom::PreferredDisplaySurface preferred_display_surface) {
+    blink::mojom::PreferredDisplaySurface preferred_display_surface,
+    bool exclude_monitor_type_surfaces) {
   MediaStreamDevices devices;
   DesktopMediaID::Type desktop_media_type = DesktopMediaID::TYPE_SCREEN;
   DesktopMediaID::Id desktop_media_id_id = DesktopMediaID::kNullId;
@@ -412,6 +415,10 @@ MediaStreamDevices DisplayMediaDevicesFromFakeDeviceConfig(
           break;
       }
     }
+  }
+  if (exclude_monitor_type_surfaces &&
+      desktop_media_type == DesktopMediaID::TYPE_SCREEN) {
+    preferred_display_surface = blink::mojom::PreferredDisplaySurface::BROWSER;
   }
   switch (preferred_display_surface) {
     case blink::mojom::PreferredDisplaySurface::NO_PREFERENCE:
@@ -652,6 +659,8 @@ class MediaStreamManager::DeviceRequest {
         stream_controls_.exclude_self_browser_surface;
     ui_request_->preferred_display_surface =
         stream_controls_.preferred_display_surface;
+    ui_request_->exclude_monitor_type_surfaces =
+        stream_controls_.exclude_monitor_type_surfaces;
   }
 
   // Creates a tab capture specific MediaStreamRequest object that is used by
@@ -1506,6 +1515,11 @@ MediaStreamManager::MediaStreamManager(
               &VideoCaptureDependencies::CreateJpegDecodeAccelerator),
           base::BindRepeating(
               &VideoCaptureDependencies::CreateJpegEncodeAccelerator));
+      media::JpegAcceleratorProviderImpl::GetInstance()->Start(
+          base::BindRepeating(
+              &VideoCaptureDependencies::CreateJpegDecodeAccelerator),
+          base::BindRepeating(
+              &VideoCaptureDependencies::CreateJpegEncodeAccelerator));
     }
 #endif
 
@@ -2056,8 +2070,8 @@ void MediaStreamManager::StopRemovedDevice(
     MediaDeviceType type,
     const blink::WebMediaDeviceInfo& media_device_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(type == MediaDeviceType::MEDIA_AUDIO_INPUT ||
-         type == MediaDeviceType::MEDIA_VIDEO_INPUT);
+  DCHECK(type == MediaDeviceType::kMediaAudioInput ||
+         type == MediaDeviceType::kMediaVideoInput);
   SendLogMessage(base::StringPrintf(
                      "StopRemovedDevice({type=%s}, {device=[id: %s, name: %s]}",
                      DeviceTypeToString(type),
@@ -2171,10 +2185,10 @@ void MediaStreamManager::StartEnumeration(DeviceRequest* request,
   // UI thread, after the IO thread has been stopped.
   DCHECK(request_audio_input || request_video_input);
   MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
-  devices_to_enumerate[static_cast<size_t>(
-      MediaDeviceType::MEDIA_AUDIO_INPUT)] = request_audio_input;
-  devices_to_enumerate[static_cast<size_t>(
-      MediaDeviceType::MEDIA_VIDEO_INPUT)] = request_video_input;
+  devices_to_enumerate[static_cast<size_t>(MediaDeviceType::kMediaAudioInput)] =
+      request_audio_input;
+  devices_to_enumerate[static_cast<size_t>(MediaDeviceType::kMediaVideoInput)] =
+      request_video_input;
   media_devices_manager_->EnumerateDevices(
       devices_to_enumerate,
       base::BindOnce(&MediaStreamManager::DevicesEnumerated,
@@ -2556,7 +2570,7 @@ bool MediaStreamManager::SetUpDeviceCaptureRequest(
   if (request->stream_controls().audio.requested() &&
       !GetRequestedDeviceCaptureId(
           request, request->audio_type(),
-          enumeration[static_cast<size_t>(MediaDeviceType::MEDIA_AUDIO_INPUT)],
+          enumeration[static_cast<size_t>(MediaDeviceType::kMediaAudioInput)],
           &audio_device_id)) {
     return false;
   }
@@ -2565,7 +2579,7 @@ bool MediaStreamManager::SetUpDeviceCaptureRequest(
   if (request->stream_controls().video.requested() &&
       !GetRequestedDeviceCaptureId(
           request, request->video_type(),
-          enumeration[static_cast<size_t>(MediaDeviceType::MEDIA_VIDEO_INPUT)],
+          enumeration[static_cast<size_t>(MediaDeviceType::kMediaVideoInput)],
           &video_device_id)) {
     return false;
   }
@@ -4254,7 +4268,8 @@ std::unique_ptr<MediaStreamUIProxy> MediaStreamManager::MakeFakeUIProxy(
         request->video_type(),
         request->audio_type() == MediaStreamType::DISPLAY_AUDIO_CAPTURE,
         request->requesting_process_id, request->requesting_frame_id,
-        request->stream_controls().preferred_display_surface);
+        request->stream_controls().preferred_display_surface,
+        request->stream_controls().exclude_monitor_type_surfaces);
   } else if (request->video_type() ==
              MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE) {
     // Cache the |label| in the device name field, for unit test purpose only.
@@ -4266,10 +4281,10 @@ std::unique_ptr<MediaStreamUIProxy> MediaStreamManager::MakeFakeUIProxy(
   } else {
     MediaStreamDevices audio_devices = ConvertToMediaStreamDevices(
         request->audio_type(),
-        enumeration[static_cast<size_t>(MediaDeviceType::MEDIA_AUDIO_INPUT)]);
+        enumeration[static_cast<size_t>(MediaDeviceType::kMediaAudioInput)]);
     MediaStreamDevices video_devices = ConvertToMediaStreamDevices(
         request->video_type(),
-        enumeration[static_cast<size_t>(MediaDeviceType::MEDIA_VIDEO_INPUT)]);
+        enumeration[static_cast<size_t>(MediaDeviceType::kMediaVideoInput)]);
     devices.reserve(audio_devices.size() + video_devices.size());
     devices.insert(devices.end(), audio_devices.begin(), audio_devices.end());
     devices.insert(devices.end(), video_devices.begin(), video_devices.end());

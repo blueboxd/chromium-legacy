@@ -356,11 +356,16 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
         -([self stickyOmniboxHeight] + [self feedHeaderHeight]);
     [self.contentSuggestionsViewController.view setNeedsLayout];
     [self.contentSuggestionsViewController.view layoutIfNeeded];
+    [self.headerViewController updateConstraints];
+    [self updateOverscrollActionsState];
+    [self updateHeightAboveFeed];
   }
 
   if (previousTraitCollection.preferredContentSizeCategory !=
       self.traitCollection.preferredContentSizeCategory) {
     [self updateFakeOmniboxForScrollPosition];
+    [self.headerViewController updateConstraints];
+    [self updateOverscrollActionsState];
     // Subviews will receive traitCollectionDidChange after this call, so the
     // only way to ensure that the scrollview isn't scrolled up too far is to
     // circle back afterwards and adjust if needed.
@@ -369,10 +374,6 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
           [self updateHeightAboveFeed];
         }));
   }
-
-  [self.headerViewController updateConstraints];
-  [self updateOverscrollActionsState];
-  [self updateHeightAboveFeed];
 }
 
 #pragma mark - Public
@@ -903,7 +904,8 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   // Takes the height of the entire header and subtracts the margin to stick the
   // fake omnibox. Adjusts this for the device by further subtracting the
   // toolbar height.
-  return content_suggestions::FakeOmniboxHeight();
+  return ToolbarExpandedHeight(
+      [UIApplication sharedApplication].preferredContentSizeCategory);
 }
 
 // Sets the feed collection contentOffset from the saved state to `offset` to

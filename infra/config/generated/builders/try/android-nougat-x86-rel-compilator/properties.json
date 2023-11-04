@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "android-nougat-x86-rel",
-              "project": "chromium-m118"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-android-archive",
@@ -37,7 +37,7 @@
         {
           "bucket": "ci",
           "builder": "android-nougat-x86-rel",
-          "project": "chromium-m118"
+          "project": "chromium"
         }
       ]
     }
@@ -58,6 +58,15 @@
     "jobs": 500,
     "metrics_project": "chromium-reclient-metrics",
     "scandeps_server": true
+  },
+  "$build/siso": {
+    "configs": [
+      "builder"
+    ],
+    "enable_cloud_profiler": true,
+    "enable_cloud_trace": true,
+    "experiments": [],
+    "project": "rbe-chromium-untrusted"
   },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],

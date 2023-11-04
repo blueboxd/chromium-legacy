@@ -71,6 +71,7 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
+#include "third_party/blink/renderer/core/layout/forms/layout_fieldset.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
@@ -84,14 +85,13 @@
 #include "third_party/blink/renderer/core/layout/layout_object_inl.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_ruby_column.h"
+#include "third_party/blink/renderer/core/layout/layout_text_combine.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/layout_ng_custom.h"
 #include "third_party/blink/renderer/core/layout/ng/flex/layout_ng_flexible_box.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
-#include "third_party/blink/renderer/core/layout/ng/layout_ng_fieldset.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inline_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
@@ -661,32 +661,31 @@ void LayoutObject::AddChild(LayoutObject* new_child,
   } else if (LIKELY(new_child->IsHorizontalWritingMode()) ||
              !new_child->IsText()) {
     children->InsertChildNode(this, new_child, before_child);
-  } else if (IsA<LayoutNGTextCombine>(*this)) {
-    DCHECK(LayoutNGTextCombine::ShouldBeParentOf(*new_child)) << new_child;
+  } else if (IsA<LayoutTextCombine>(*this)) {
+    DCHECK(LayoutTextCombine::ShouldBeParentOf(*new_child)) << new_child;
     new_child->SetStyle(Style());
     children->InsertChildNode(this, new_child, before_child);
   } else if (!IsHorizontalWritingMode() &&
-             LayoutNGTextCombine::ShouldBeParentOf(*new_child)) {
+             LayoutTextCombine::ShouldBeParentOf(*new_child)) {
     if (before_child) {
-      if (IsA<LayoutNGTextCombine>(before_child)) {
-        DCHECK(!DynamicTo<LayoutNGTextCombine>(before_child->PreviousSibling()))
+      if (IsA<LayoutTextCombine>(before_child)) {
+        DCHECK(!DynamicTo<LayoutTextCombine>(before_child->PreviousSibling()))
             << before_child->PreviousSibling();
         before_child->AddChild(new_child, before_child->SlowFirstChild());
-      } else if (auto* const previous_sibling = DynamicTo<LayoutNGTextCombine>(
+      } else if (auto* const previous_sibling = DynamicTo<LayoutTextCombine>(
                      before_child->PreviousSibling())) {
         previous_sibling->AddChild(new_child);
       } else {
         children->InsertChildNode(
-            this,
-            LayoutNGTextCombine::CreateAnonymous(To<LayoutText>(new_child)),
+            this, LayoutTextCombine::CreateAnonymous(To<LayoutText>(new_child)),
             before_child);
       }
     } else if (auto* const last_child =
-                   DynamicTo<LayoutNGTextCombine>(SlowLastChild())) {
+                   DynamicTo<LayoutTextCombine>(SlowLastChild())) {
       last_child->AddChild(new_child);
     } else {
-      children->AppendChildNode(this, LayoutNGTextCombine::CreateAnonymous(
-                                          To<LayoutText>(new_child)));
+      children->AppendChildNode(
+          this, LayoutTextCombine::CreateAnonymous(To<LayoutText>(new_child)));
     }
   } else {
     // In case of append/insert <br style="writing-mode:vertical-rl">
@@ -805,7 +804,7 @@ bool LayoutObject::IsRenderedLegendInternal() const {
 
   const auto* parent_layout_block = DynamicTo<LayoutBlock>(parent);
   return parent_layout_block && IsA<HTMLFieldSetElement>(parent->GetNode()) &&
-         LayoutNGFieldset::FindInFlowLegend(*parent_layout_block) == this;
+         LayoutFieldset::FindInFlowLegend(*parent_layout_block) == this;
 }
 
 bool LayoutObject::IsListMarkerForSummary() const {
@@ -1382,7 +1381,7 @@ void LayoutObject::SetNeedsCollectInlines() {
   if (NeedsCollectInlines())
     return;
 
-  if (UNLIKELY(IsSVGChild() && !IsNGSVGText() && !IsSVGInline() &&
+  if (UNLIKELY(IsSVGChild() && !IsSVGText() && !IsSVGInline() &&
                !IsSVGInlineText() && !IsSVGForeignObject())) {
     return;
   }
@@ -2091,7 +2090,7 @@ String LayoutObject::DebugName() const {
 
 DOMNodeId LayoutObject::OwnerNodeId() const {
   NOT_DESTROYED();
-  return GetNode() ? DOMNodeIds::IdForNode(GetNode()) : kInvalidDOMNodeId;
+  return GetNode() ? GetNode()->GetDomNodeId() : kInvalidDOMNodeId;
 }
 
 void LayoutObject::InvalidateDisplayItemClients(
@@ -2151,8 +2150,8 @@ bool LayoutObject::MapToVisualRectInAncestorSpaceInternalFastPath(
 
   AncestorSkipInfo skip_info(ancestor);
   PropertyTreeState container_properties = PropertyTreeState::Uninitialized();
-  const LayoutObject* property_container =
-      GetPropertyContainer(&skip_info, &container_properties);
+  const LayoutObject* property_container = GetPropertyContainer(
+      &skip_info, &container_properties, visual_rect_flags);
   if (!property_container)
     return false;
 
@@ -2228,23 +2227,35 @@ bool LayoutObject::MapToVisualRectInAncestorSpaceInternal(
 
 const LayoutObject* LayoutObject::GetPropertyContainer(
     AncestorSkipInfo* skip_info,
-    PropertyTreeStateOrAlias* container_properties) const {
+    PropertyTreeStateOrAlias* container_properties,
+    VisualRectFlags visual_rect_flags) const {
   NOT_DESTROYED();
   const LayoutObject* property_container = this;
   while (!property_container->FirstFragment().HasLocalBorderBoxProperties()) {
     property_container = property_container->Container(skip_info);
     if (!property_container || (skip_info && skip_info->AncestorSkipped()) ||
-        property_container->FirstFragment().NextFragment())
+        property_container->IsFragmented()) {
       return nullptr;
+    }
   }
   if (container_properties) {
     if (property_container == this) {
       *container_properties = FirstFragment().LocalBorderBoxProperties();
+
+      if (visual_rect_flags & kIgnoreLocalClipPath) {
+        if (auto* properties =
+                property_container->FirstFragment().PaintProperties()) {
+          if (auto* clip_path_clip = properties->ClipPathClip()) {
+            container_properties->SetClip(*clip_path_clip->Parent());
+          }
+        }
+      }
     } else {
       *container_properties =
           property_container->FirstFragment().ContentsProperties();
     }
   }
+
   return property_container;
 }
 
@@ -2521,7 +2532,7 @@ void LayoutObject::SetPseudoElementStyle(const ComputedStyle* pseudo_style,
     return;
   }
 
-  if (IsText() && UNLIKELY(IsA<LayoutNGTextCombine>(Parent()))) {
+  if (IsText() && UNLIKELY(IsA<LayoutTextCombine>(Parent()))) {
     // See http://crbug.com/1222640
     ComputedStyleBuilder combined_text_style_builder =
         GetDocument()
@@ -2811,7 +2822,7 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
     if (style_->ContentVisibility() != new_style.ContentVisibility()) {
       if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
         if (GetNode()) {
-          cache->RemoveSubtreeWhenSafe(GetNode());
+          cache->RemoveSubtreeWhenSafe(GetNode(), /* remove_root */ false);
         } else {
           // Removing the AXObject for a nodeless layout object will also
           // remove its subtree.
@@ -3249,11 +3260,13 @@ void LayoutObject::CheckCounterChanges(const ComputedStyle* old_style,
   NOT_DESTROYED();
   DCHECK(new_style);
   if (old_style) {
-    if (old_style->CounterDirectivesEqual(*new_style))
+    if (old_style->CounterDirectivesEqual(*new_style)) {
       return;
+    }
   } else {
-    if (!new_style->GetCounterDirectives())
+    if (!new_style->GetCounterDirectives()) {
       return;
+    }
   }
   LayoutCounter::LayoutObjectStyleChanged(*this, old_style, *new_style);
   View()->SetNeedsMarkerOrCounterUpdate();
@@ -3677,8 +3690,9 @@ void LayoutObject::WillBeDestroyed() {
   // counters for reevaluation. This apparently redundant check is here for the
   // case when this layoutObject had no parent at the time remove() was called.
 
-  if (HasCounterNodeMap())
+  if (HasCounterNodeMap()) {
     LayoutCounter::DestroyCounterNodes(*this);
+  }
 
   // Remove the handler if node had touch-action set. Handlers are not added
   // for text nodes so don't try removing for one too. Need to check if
@@ -3817,8 +3831,9 @@ void LayoutObject::WillBeRemovedFromTree() {
   RemoveFromLayoutFlowThread();
 
   // Update cached boundaries in SVG layoutObjects if a child is removed.
-  if (Parent()->IsSVG())
+  if (Parent()->IsSVG()) {
     Parent()->SetNeedsBoundariesUpdate();
+  }
 
   if (bitfields_.IsScrollAnchorObject()) {
     // Clear the bit first so that anchor.clear() doesn't recurse into
@@ -4480,11 +4495,6 @@ bool LayoutObject::CanUpdateSelectionOnRootLineBoxes() const {
 void LayoutObject::SetNeedsBoundariesUpdate() {
   NOT_DESTROYED();
   DCHECK(!GetDocument().InPostLifecycleSteps());
-  if (IsSVGChild()) {
-    // The boundaries affect mask clip and clip path mask/clip.
-    if (StyleRef().MaskerResource() || StyleRef().HasClipPath())
-      SetNeedsPaintPropertyUpdate();
-  }
   if (LayoutObject* layout_object = Parent())
     layout_object->SetNeedsBoundariesUpdate();
 }
@@ -4755,9 +4765,9 @@ void LayoutObject::SetIsBackgroundAttachmentFixedObject(
 }
 
 void LayoutObject::SetCanCompositeBackgroundAttachmentFixed(
-    bool can_fast_scroll) {
-  if (can_fast_scroll != bitfields_.CanCompositeBackgroundAttachmentFixed()) {
-    bitfields_.SetCanCompositeBackgroundAttachmentFixed(can_fast_scroll);
+    bool can_composite) {
+  if (can_composite != bitfields_.CanCompositeBackgroundAttachmentFixed()) {
+    bitfields_.SetCanCompositeBackgroundAttachmentFixed(can_composite);
     SetNeedsPaintPropertyUpdate();
   }
 }
@@ -4913,7 +4923,7 @@ bool LayoutObject::CanBeSelectionLeaf() const {
 
 Vector<PhysicalRect> LayoutObject::CollectOutlineRectsAndAdvance(
     NGOutlineType outline_type,
-    FragmentDataIterator& iterator) const {
+    AccompaniedFragmentIterator& iterator) const {
   NOT_DESTROYED();
   Vector<PhysicalRect> outline_rects;
   PhysicalOffset paint_offset = iterator.GetFragmentData()->PaintOffset();

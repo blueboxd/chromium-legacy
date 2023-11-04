@@ -150,6 +150,8 @@ MEDIA_EXPORT extern const char kCastStreamingForceEnableHardwareVp8[];
 MEDIA_EXPORT extern const char kCastMirroringTargetPlayoutDelay[];
 #endif  // !BUILDFLAG(IS_ANDROID)
 
+MEDIA_EXPORT extern const char kDisableUseSharedImagesForPepperVideo[];
+
 }  // namespace switches
 
 namespace media {
@@ -162,15 +164,21 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kAudioFocusLossSuspendMediaSession);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kAudioRendererAlgorithmParameters);
 MEDIA_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kAudioRendererAlgorithmStartingCapacityForEncrypted;
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kAutoPictureInPictureForVideoPlayback);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kAutoplayIgnoreWebAudio);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kAutoplayDisableSettings);
-MEDIA_EXPORT BASE_DECLARE_FEATURE(kBresenhamCadence);
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kCameraMicEffects);
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
 
 // NOTE: callers should always use the free functions in
 // /media/cast/encoding/encoding_support.h instead of accessing these features
 // directly.
 // TODO(https://crbug.com/1453388): Guard Cast Sender flags with !IS_ANDROID.
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kCastStreamingAv1);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(
+    kCastStreamingExponentialVideoBitrateAlgorithm);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kCastStreamingPerformanceOverlay);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kCastStreamingVp9);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kCdmHostVerification);
@@ -246,10 +254,16 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kLiveCaption);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kLiveCaptionRightClick);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kLiveCaptionLogFlickerRate);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kLiveCaptionMultiLanguage);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kLiveCaptionUseGreedyTextStabilizer);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kLiveCaptionUseWaitK);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kLiveCaptionWebAudio);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kLiveCaptionSystemWideOnChromeOS);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kLiveTranslate);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kLowDelayVideoRenderingOnLiveStream);
+#if BUILDFLAG(IS_MAC)
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kMacLoopbackAudioForCast);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kMacLoopbackAudioForScreenShare);
+#endif  // BUILDFLAG(IS_MAC)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaCapabilitiesQueryGpuFactories);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaCapabilitiesWithParameters);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaCastOverlayButton);
@@ -267,10 +281,10 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaPowerExperiment);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMemoryPressureBasedSourceBufferGC);
 // TODO(https://crbug.com/1453388): Guard Cast Sender flags with !IS_ANDROID.
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kOpenscreenCastStreamingSession);
-MEDIA_EXPORT BASE_DECLARE_FEATURE(kOpenscreenVideoBitrateFactorInFrameDrops);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseWritePixelsYUV);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseMultiPlaneFormatForHardwareVideo);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseMultiPlaneFormatForSoftwareVideo);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kRasterInterfaceInVideoResourceUpdater);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMultiPlaneSoftwareVideoSharedImages);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMultiPlaneVideoCaptureSharedImages);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kOverlayFullscreenVideo);
@@ -322,6 +336,7 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kGlobalVaapiLock);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kVaapiH264TemporalLayerHWEncoding);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kVaapiVp8TemporalLayerHWEncoding);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kVaapiVp9kSVCHWEncoding);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kVaapiVp9SModeHWEncoding);
 #endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kV4L2FlatStatelessVideoDecoder);
@@ -457,6 +472,10 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kFuchsiaMediacodecVideoEncoder);
 #endif  // BUILDFLAG(IS_FUCHSIA)
 
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kVideoDecodeBatching);
+
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseWindowBoundsForPip);
+
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseSharedImagesForPepperVideo);
 
 // Based on a |command_line| and the current platform, returns the effective
 // autoplay policy. In other words, it will take into account the default policy

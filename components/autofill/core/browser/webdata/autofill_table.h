@@ -350,9 +350,10 @@ struct ServerCvc {
 //                      database, but always returned as an empty string in
 //                      CreditCard. Added in version 71.
 //
-// ibans                This table contains International Bank Account
-//                      Number(IBAN) data added by the user. The columns are
-//                      standard entries in an Iban form.
+// local_ibans          This table contains International Bank Account
+//                      Numbers (IBANs) added by the user. The columns are
+//                      standard entries in an Iban form. Those are local IBANs
+//                      and exist on Chrome client only.
 //
 //   guid               A guid string to uniquely identify the IBAN.
 //   use_count          The number of times this IBAN has been used to fill
@@ -363,6 +364,31 @@ struct ServerCvc {
 //                      encrypted.
 //   nickname           A nickname for the IBAN, entered by the user.
 //
+//
+// masked_ibans         This table contains "masked" International Bank Account
+//                      Numbers (IBANs) added by the user. Those are server
+//                      IBANs saved on GPay server and are available across all
+//                      the Chrome devices.
+//
+//   instrument_id      String assigned by the server to identify this IBAN.
+//                      This is opaque to the client.
+//   prefix             Contains the prefix of the full IBAN value that is
+//                      shown when in a masked format.
+//   suffix             Contains the suffix of the full IBAN value that is
+//                      shown when in a masked format.
+//   length             Length of the full IBAN value.
+//   nickname           A nickname for the IBAN, entered by the user.
+//
+// masked_ibans_metadata
+//                      Metadata (currently, usage data) about server IBANS.
+//                      This will be synced from Chrome sync.
+//
+//   instrument_id      The instrument ID, which matches an ID from the
+//                      masked_ibans table.
+//   use_count          The number of times this IBAN has been used to fill
+//                      a form.
+//   use_date           The date this IBAN was last used to fill a form,
+//                      in time_t.
 //
 // server_addresses     This table contains Autofill address data synced from
 //                      the wallet server. It's basically the same as the
@@ -428,11 +454,6 @@ struct ServerCvc {
 //                      Contains Google Payments customer data.
 //
 //   customer_id        A string representing the Google Payments customer id.
-//
-// payments_upi_vpa     Contains saved UPI/VPA payment data.
-//                      https://en.wikipedia.org/wiki/Unified_Payments_Interface
-//
-//   vpa                A string representing the UPI ID (a.k.a. VPA) value.
 //
 // offer_data           The data for Autofill offers which will be presented in
 //                      payments autofill flows.
@@ -702,6 +723,10 @@ class AutofillTable : public WebDatabaseTable,
   // Updates the database values for the specified credit card.
   bool UpdateCreditCard(const CreditCard& credit_card);
 
+  // Update the CVC in the `kLocalStoredCvcTable` for the given `guid`. Return
+  // value indicates if `kLocalStoredCvcTable` got updated or not.
+  bool UpdateLocalCvc(const std::string& guid, const std::u16string& cvc);
+
   // Removes a row from the credit_cards table.  |guid| is the identifier of the
   // credit card to remove.
   bool RemoveCreditCard(const std::string& guid);
@@ -805,9 +830,6 @@ class AutofillTable : public WebDatabaseTable,
           virtual_card_usage_data);
   bool RemoveAllVirtualCardUsageData();
 
-  // Adds |upi_id| to the saved UPI IDs.
-  bool InsertUpiId(const std::string& upi_id);
-
   // Deletes all data from the server card and profile tables. Returns true if
   // any data was deleted, false if not (so false means "commit not needed"
   // rather than "error").
@@ -899,6 +921,8 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion115EncryptIbanValue();
   bool MigrateToVersion116AddStoredCvcTable();
   bool MigrateToVersion117AddProfileObservationColumn();
+  bool MigrateToVersion118RemovePaymentsUpiVpaTable();
+  bool MigrateToVersion119AddMaskedIbanTablesAndRenameLocalIbanTable();
 
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.
@@ -1006,6 +1030,8 @@ class AutofillTable : public WebDatabaseTable,
   bool InitLegacyProfilePhonesTable();
   bool InitLegacyProfileBirthdatesTable();
   bool InitMaskedCreditCardsTable();
+  bool InitMaskedIbansTable();
+  bool InitMaskedIbansMetadataTable();
   bool InitUnmaskedCreditCardsTable();
   bool InitServerCardMetadataTable();
   bool InitServerAddressesTable();
@@ -1013,7 +1039,6 @@ class AutofillTable : public WebDatabaseTable,
   bool InitAutofillSyncMetadataTable();
   bool InitModelTypeStateTable();
   bool InitPaymentsCustomerDataTable();
-  bool InitPaymentsUPIVPATable();
   bool InitServerCreditCardCloudTokenDataTable();
   bool InitStoredCvcTable();
   bool InitOfferDataTable();

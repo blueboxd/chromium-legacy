@@ -4,7 +4,6 @@
 <translation id="1001534784610492198">Arkivet för installationsfilen är skadat eller ogiltigt. Ladda ned Google Chrome igen.</translation>
 <translation id="1026101648481255140">Återuppta installationen</translation>
 <translation id="102763973188675173">Anpassa och styr Google Chrome. En uppdatering är tillgänglig.</translation>
-<translation id="1051826050538111504">Det finns skadlig programvara på datorn. Den skadliga programvaran kan tas bort, inställningarna återställas och tillägg inaktiveras så att webbläsaren fungerar som den ska igen.</translation>
 <translation id="1065672644894730302">Det går inte att läsa inställningarna.
 
 Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna sparas inte.</translation>
@@ -15,6 +14,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1149651794389918149">Logga in i Chrome. Om du bara vill logga in en gång med ett konto kan du <ph name="GUEST_LINK_BEGIN" />använda enheten som gäst<ph name="GUEST_LINK_END" />.</translation>
 <translation id="1152920704813762236">Om Chrome OS</translation>
 <translation id="1154147086299354128">&amp;Öppna i Chrome</translation>
+<translation id="1194807384646768652">Den här nedladdningen blockerades av Chrome eftersom filtypen inte brukar laddas ned och den kan vara farlig</translation>
 <translation id="1203500561924088507">Tack för att du installerat programmet. Du måste starta om webbläsaren innan du använder <ph name="BUNDLE_NAME" />.</translation>
 <translation id="1278833599417554002">Starta om för att uppdatera &amp;Chrome</translation>
 <translation id="1302523850133262269">Vänta medan de senaste systemuppdateringarna installeras av Chrome.</translation>
@@ -134,10 +134,12 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="3080151273017101988">Fortsätt köra bakgrundsappar när Google Chrome avslutas</translation>
 <translation id="3089968997497233615">Det finns en ny, ännu säkrare version av Google Chrome.</translation>
 <translation id="3100998948628680988">Ge Chrome-profilen ett namn</translation>
+<translation id="3112458742631356345">Den här nedladdningen blockerades av Chrome eftersom filen inte brukar laddas ned och den kan vara farlig</translation>
 <translation id="3114643501466072395"><ph name="BEGIN_LINK" />Logga in i Chrome<ph name="END_LINK" /> om du vill kontrollera att dina andra lösenord skyddas från dataintrång och andra säkerhetsproblem.</translation>
 <translation id="3140883423282498090">Ändringarna börjar gälla nästa gång du startar Google Chrome.</translation>
 <translation id="3149510190863420837">Chrome-appar</translation>
 <translation id="3169523567916669830">Under provperioden kan du se och ta bort ämnen som du är intresserad av och som används på webbplatser för att visa annonser. Uppskattningen av vad du är intresserad av görs utifrån den senaste webbhistoriken i Chrome.</translation>
+<translation id="3196187562065225381">Den här nedladdningen blockerades av Chrome eftersom filen är farlig</translation>
 <translation id="3226612997184048185">Om du även sparar bokmärken i Google-kontot kan du bevaka produktpriser i Chrome och få en avisering när priset sänks.</translation>
 <translation id="3245429137663807393">Om du även delar Chrome-användningsrapporter ingår webbadresserna du besöker i dessa rapporter</translation>
 <translation id="3282568296779691940">Logga in i Chrome</translation>
@@ -185,6 +187,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4148957013307229264">Installerar...</translation>
 <translation id="4149882025268051530">Det gick inte att packa upp arkivet med installationsfilen. Ladda ned Google Chrome igen.</translation>
 <translation id="4153934450158521343">Chrome avslutas snart och data raderas</translation>
+<translation id="4175922240926474352">Den här nedladdningen blockerades av Chrome eftersom webbplatsen inte använder en säker anslutning och filen kan ha manipulerats</translation>
 <translation id="4191857738314598978">{0,plural, =1{Starta om Chrome inom en dag}other{Starta om Chrome inom # dagar}}</translation>
 <translation id="4205939740494406371">Chrome kan inte kontrollera dina lösenord. Försök igen om 24 timmar eller <ph name="BEGIN_LINK" />kontrollera lösenorden i ditt Google-konto<ph name="END_LINK" />.</translation>
 <translation id="4222932583846282852">Avbryter …</translation>
@@ -365,6 +368,7 @@ Behörigheter som du redan har gett webbplatser och appar kan gälla för det h�
 <translation id="7641148173327520642">Systemadministratören har konfigurerat Google Chrome så att <ph name="TARGET_URL_HOSTNAME" /> öppnas i <ph name="ALTERNATIVE_BROWSER_NAME" />.</translation>
 <translation id="7649070708921625228">Hjälp</translation>
 <translation id="7651907282515937834">Logotyp för Chrome Enterprise</translation>
+<translation id="76531479118467370">Den här nedladdningen blockerades av Chrome eftersom du har inaktiverat Säker webbsökning och filen inte kan verifieras</translation>
 <translation id="7655455401911432608">Webbhistoriken, där webbplatser som du besökt i Chrome på den här enheten registreras.</translation>
 <translation id="7747138024166251722">Det gick inte att skapa en tillfällig katalog för installationsfilen. Kontrollera diskutrymmet och att du har behörighet att installera program.</translation>
 <translation id="7761834446675418963">Öppna Chrome genom att klicka på ditt namn och börja surfa.</translation>
@@ -381,6 +385,7 @@ Behörigheter som du redan har gett webbplatser och appar kan gälla för det h�
 <translation id="7890208801193284374">Om du delar en dator med vänner och familj kan de konfigurera Chrome precis som de vill och surfa separat.</translation>
 <translation id="7896673875602241923">Någon har tidigare loggat in i Chrome som <ph name="ACCOUNT_EMAIL_LAST" /> på den här datorn. Skapa en ny Chrome-användare så att dina uppgifter hålls separat.</translation>
 <translation id="7917876797003313048">Du kan hantera dina inloggade Google-konton. Dina Google-konton används för webbläsaren Chrome, Play Butik, Gmail med mera. Om du vill lägga till ett konto åt någon annan, till exempel en familjemedlem, lägger du till en ny person på <ph name="DEVICE_TYPE" /> i stället. <ph name="LINK_BEGIN" />Läs mer<ph name="LINK_END" /></translation>
+<translation id="7936702483636872823">Den här nedladdningen blockerades av Chrome eftersom filen är bedräglig och kan göra oväntade ändringar på enheten</translation>
 <translation id="7951272445806340501">ChromeOS Flex måste startas om för att uppdateringen ska börja gälla.</translation>
 <translation id="7962368738413920945">Webbplatser fortsätter förmodligen att fungera som förväntat men de kommer inte ihåg dig efter att du stänger alla Chrome-fönster</translation>
 <translation id="7962410387636238736">Den här datorn får inte längre uppdateringar för Google Chrome eftersom Windows XP och Windows Vista inte längre stöds.</translation>

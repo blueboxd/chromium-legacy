@@ -17,8 +17,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/policy/policy_ui_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "components/grit/policy_resources.h"
 #include "components/grit/policy_resources_map.h"
 #include "components/policy/core/common/features.h"
@@ -174,7 +175,8 @@ void CreateAndAddPolicyUIHtmlSource(Profile* profile) {
 
   // Test page should only load if testing is enabled and the profile is not
   // managed by cloud.
-  if (policy::utils::IsPolicyTestingEnabled(profile->GetPrefs()) &&
+  if (policy::utils::IsPolicyTestingEnabled(profile->GetPrefs(),
+                                            chrome::GetChannel()) &&
       !policy::ManagementServiceFactory::GetForProfile(profile)
            ->HasManagementAuthority(
                policy::EnterpriseManagementAuthority::CLOUD)) {

@@ -43,6 +43,7 @@ BorealisInstallerUI::BorealisInstallerUI(content::WebUI* web_ui)
       {"finishedTitle", IDS_BOREALIS_INSTALLER_FINISHED_TITLE},
       {"finishedMessage", IDS_BOREALIS_INSTALLER_FINISHED_MESSAGE},
       {"launch", IDS_BOREALIS_INSTALLER_LAUNCH_BUTTON},
+      {"beta", IDS_BOREALIS_BETA_BADGE},
   };
   html_source->AddLocalizedStrings(kStrings);
 
@@ -92,6 +93,15 @@ void BorealisInstallerUI::OnPageClosed() {
   // CloseDialog() is a no-op if we are not in a dialog (e.g. user
   // access the page using the URL directly, which is not supported).
   ui::MojoWebDialogUI::CloseDialog(base::Value::List());
+}
+
+bool BorealisInstallerUI::RequestClosePage() {
+  if (page_closed_ || !page_handler_) {
+    return true;
+  }
+
+  page_handler_->RequestClosePage();
+  return false;
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(BorealisInstallerUI);

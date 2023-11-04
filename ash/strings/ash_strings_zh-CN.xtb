@@ -206,6 +206,7 @@
 <translation id="1775598828170459419">当前显示 <ph name="NUM_SHOWN_ITEMS" /> 项，共 <ph name="NUM_TOTAL_ITEMS" /> 项</translation>
 <translation id="178347895271755507">设置查看手机中的近期照片、媒体内容和通知</translation>
 <translation id="1787955149152357925">关闭</translation>
+<translation id="1797271123677381264">忘记了密码</translation>
 <translation id="181103072419391116">信号强度为 <ph name="SIGNAL_STRENGTH" />，由您的管理员管理</translation>
 <translation id="1815245884418711390">开启/关闭热点。热点已关闭。</translation>
 <translation id="1816896987747843206">如果您开启摄像头，即意味着允许所有具有摄像头使用权限的应用和网站使用摄像头</translation>
@@ -298,7 +299,6 @@
 <translation id="2227179592712503583">移除推荐内容</translation>
 <translation id="2248634276911611268">在新标签页中打开链接，同时切换到该标签页</translation>
 <translation id="225680501294068881">正在查找设备...</translation>
-<translation id="225716114209817872">最大限度</translation>
 <translation id="2257486738914982088">下载“<ph name="FILENAME" />”时出了点问题</translation>
 <translation id="2258734398699965611">建议的文件</translation>
 <translation id="2268130516524549846">蓝牙已停用</translation>
@@ -451,6 +451,7 @@
 <translation id="2891209721153296020">“取消选择”</translation>
 <translation id="2894949423239620203">数据线可能会影响性能</translation>
 <translation id="2914580577416829331">屏幕截图</translation>
+<translation id="2924416280450782352">无法显示内容。请尝试重新打开此面板。</translation>
 <translation id="2931572158271115754">此待办事项清单中没有任何内容。</translation>
 <translation id="2941112035454246133">低</translation>
 <translation id="2942350706960889382">停靠的放大镜</translation>
@@ -696,7 +697,6 @@
 <translation id="385300504083504382">开头</translation>
 <translation id="3859364108019690">无法流式传输应用</translation>
 <translation id="3861651314799684201">按 Enter 键即可录制整个屏幕</translation>
-<translation id="3871092408932389764">最低限度</translation>
 <translation id="3886872229787704059">今天打开过</translation>
 <translation id="3891340733213178823">连按两次Ctrl+Shift+Q即可退出。</translation>
 <translation id="3893630138897523026">ChromeVox（语音反馈）</translation>
@@ -738,6 +738,7 @@
 <translation id="4028481283645788203">需要输入密码以增强安全性</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4032988577476260673"><ph name="LAUNCHER_KEY_NAME" />键 + 向左键</translation>
+<translation id="4039699481424758547">按 Enter 键即可截取“<ph name="WINDOW_TITLE" />”窗口的屏幕截图</translation>
 <translation id="4042660782729322247">您正在共享屏幕</translation>
 <translation id="404437169852192935">更新已结束</translation>
 <translation id="4049230407053723315">快捷设置</translation>
@@ -833,7 +834,6 @@
 <translation id="4406883609789734330">实时字幕</translation>
 <translation id="4412944820643904175">“<ph name="FEATURE_NAME" />”功能已关闭。</translation>
 <translation id="4424159417645388645">桌面 5</translation>
-<translation id="4427695046139341014">游戏信息中心</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4441283832827406317">应用已按名称排序</translation>
 <translation id="4445159312344259901">登录即可解锁</translation>
@@ -1214,7 +1214,6 @@
 <translation id="5961960957587052807">轻微</translation>
 <translation id="5965524703725988602">开启/关闭深色主题。<ph name="STATE_TEXT" />。</translation>
 <translation id="5975235751479998104">正向浏览各个窗口</translation>
-<translation id="5976112937189445008">按 Enter 键即可录制窗口</translation>
 <translation id="5978382165065462689">正在通过远程协助共享您屏幕的控制权限。</translation>
 <translation id="5980301590375426705">退出访客模式</translation>
 <translation id="5983567367406220847">由于闲置过久，热点已关闭。</translation>
@@ -1436,7 +1435,6 @@
 <translation id="6886172995547742638">这可能会导致您的 <ph name="DEVICE_TYPE" /> 性能低下。请使用已获认证的不低于 <ph name="PREFERRED_MINIMUM_POWER" />W 的 USB-C 型电源适配器。</translation>
 <translation id="688631446150864480">按向下键即可切换窗口</translation>
 <translation id="6896758677409633944">复制</translation>
-<translation id="6901883536534621389">尝试使用手势导航</translation>
 <translation id="6912841030378044227">聚焦于地址栏</translation>
 <translation id="6912901278692845878">快速导览</translation>
 <translation id="6919251195245069855">无法识别您的智能卡，请重试。</translation>
@@ -1739,7 +1737,6 @@
 <translation id="8167567890448493835">目前使用的是“<ph name="LOCALE_NAME" />”</translation>
 <translation id="8185090165691050712">开启/关闭菜单即可调整锁定模式的范围</translation>
 <translation id="8192202700944119416">已隐藏通知。</translation>
-<translation id="8196787716797768628">在平板电脑模式下，使用手势快速切换应用以及与 Chromebook 互动。</translation>
 <translation id="8198456017687137612">正在投放标签页</translation>
 <translation id="8200772114523450471">继续</translation>
 <translation id="8203795194971602413">点击鼠标右键</translation>
@@ -1749,7 +1746,6 @@
 <translation id="8230305195727960608">颜色反转模式</translation>
 <translation id="8236042855478648955">该休息了</translation>
 <translation id="8239034820133090126">启用右侧桌面</translation>
-<translation id="8246282815785366524">欢迎回来，<ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />，信号强度为 <ph name="SIGNAL_STRENGTH" />，剩余电量为 <ph name="BATTERY_STATUS" /></translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />，应用</translation>
 <translation id="8255234195843591763">重置以接收更新</translation>
@@ -1848,6 +1844,7 @@
 <translation id="8703634754197148428">开始录制。录制开始后，使用 Alt + Shift + L 可转到任务栏并从中找到“停止录制”按钮</translation>
 <translation id="8704155109538237473">聚焦于画中画窗口</translation>
 <translation id="870917907284186124">开启/关闭语音输入（使用语音输入内容）</translation>
+<translation id="8714138378966541668">已被提供商锁定</translation>
 <translation id="8717459106217102612">选择上一个字词或字母</translation>
 <translation id="8721053961083920564">开启/关闭声音。<ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">截取整个屏幕</translation>
@@ -1866,7 +1863,6 @@
 <translation id="878215960996152260"><ph name="APP_NAME" />，已安装的应用，已禁用</translation>
 <translation id="8785070478575117577">连接到“<ph name="NETWORK_NAME" />”</translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />。<ph name="ENTERPRISE_TEXT" /></translation>
-<translation id="8790998409862094015">高强度</translation>
 <translation id="8792626944327216835">麦克风</translation>
 <translation id="8801802992492329306">5G</translation>
 <translation id="8806053966018712535">文件夹“<ph name="FOLDER_NAME" />”</translation>
@@ -1879,6 +1875,7 @@
 <translation id="8834539327799336565">目前已连接</translation>
 <translation id="8841375032071747811">“返回”按钮</translation>
 <translation id="8843682306134542540">切换旋转锁定设置。<ph name="STATE_TEXT" /></translation>
+<translation id="8849001918648564819">已隐藏</translation>
 <translation id="8853703225951107899">仍然无法验证您的 PIN 码或密码。注意：如果您最近更改了密码，请使用旧密码。待您退出登录后，系统才会应用新密码。</translation>
 <translation id="8855885154700222542">全屏键</translation>
 <translation id="8858369206579825206">隐私控制</translation>
@@ -1898,7 +1895,6 @@
 <translation id="8909138438987180327">剩余的电池电量为 <ph name="PERCENTAGE" />%。</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google 助理不支持此语言。</translation>
-<translation id="8924458948354692166">按 Enter 键即可截取窗口</translation>
 <translation id="8926951137623668982">任务栏始终处于隐藏状态</translation>
 <translation id="8934926665751933910">{NUM_FILES,plural, =1{1 个文件}other{# 个文件}}</translation>
 <translation id="8936501819958976551">已停用</translation>
@@ -1963,6 +1959,7 @@
 <translation id="9211490828691860325">所有桌面</translation>
 <translation id="9211681782751733685">电池电量将在 <ph name="TIME_REMAINING" />后充满。</translation>
 <translation id="9215934040295798075">设置壁纸</translation>
+<translation id="9216699844945104164">按 Enter 键即可录制“<ph name="WINDOW_TITLE" />”窗口</translation>
 <translation id="9219103736887031265">图片</translation>
 <translation id="921989828232331238">您的家长已全天锁定您的设备</translation>
 <translation id="9220525904950070496">移除账号</translation>

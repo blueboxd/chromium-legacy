@@ -28,7 +28,7 @@
 #include "extensions/browser/api/declarative_net_request/file_backed_ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/file_sequence_helper.h"
 #include "extensions/browser/api/declarative_net_request/parse_info.h"
-#include "extensions/browser/api/declarative_net_request/rules_count_pair.h"
+#include "extensions/browser/api/declarative_net_request/rule_counts.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/api/web_request/extension_web_request_event_router.h"
@@ -185,7 +185,7 @@ class RulesMonitorService::FileSequenceBridge {
       LoadRequestData load_data,
       std::vector<int> rule_ids_to_remove,
       std::vector<dnr_api::Rule> rules_to_add,
-      const RulesCountPair& rule_limit,
+      const RuleCounts& rule_limit,
       FileSequenceHelper::UpdateDynamicRulesUICallback ui_callback) const {
     // base::Unretained is safe here because we trigger the destruction of
     // |file_sequence_state_| on |file_task_runner_| from our destructor. Hence
@@ -408,19 +408,18 @@ void RulesMonitorService::UpdateSessionRules(
           std::move(callback));
 }
 
-RulesCountPair RulesMonitorService::GetRulesCountPair(
-    const ExtensionId& extension_id,
-    RulesetID id) const {
+RuleCounts RulesMonitorService::GetRuleCounts(const ExtensionId& extension_id,
+                                              RulesetID id) const {
   const CompositeMatcher* matcher =
       ruleset_manager_.GetMatcherForExtension(extension_id);
   if (!matcher)
-    return RulesCountPair();
+    return RuleCounts();
 
   const RulesetMatcher* ruleset_matcher = matcher->GetMatcherWithID(id);
   if (!ruleset_matcher)
-    return RulesCountPair();
+    return RuleCounts();
 
-  return ruleset_matcher->GetRulesCountPair();
+  return ruleset_matcher->GetRuleCounts();
 }
 
 RulesMonitorService::RulesMonitorService(
@@ -631,11 +630,11 @@ void RulesMonitorService::UpdateDynamicRulesInternal(
   // another simultaneous api call since we ensure that for a given extension,
   // only up to 1 updateDynamicRules/updateSessionRules call is in progress. See
   // the usage of `ApiCallQueue`.
-  RulesCountPair shared_rules_limit(GetDynamicAndSessionRuleLimit(),
-                                    GetRegexRuleLimit());
-  RulesCountPair session_rules_count =
-      GetRulesCountPair(extension_id, kSessionRulesetID);
-  RulesCountPair available_limit = shared_rules_limit - session_rules_count;
+  RuleCounts shared_rules_limit(GetDynamicAndSessionRuleLimit(),
+                                GetRegexRuleLimit());
+  RuleCounts session_rules_count =
+      GetRuleCounts(extension_id, kSessionRulesetID);
+  RuleCounts available_limit = shared_rules_limit - session_rules_count;
 
   // We are updating the indexed ruleset. Don't set the expected checksum since
   // it'll change.
@@ -680,11 +679,11 @@ void RulesMonitorService::UpdateSessionRulesInternal(
 
   // Check if the update would exceed shared rule limits.
   {
-    RulesCountPair dynamic_rule_count =
-        GetRulesCountPair(extension_id, kDynamicRulesetID);
-    RulesCountPair shared_rule_limit(GetDynamicAndSessionRuleLimit(),
-                                     GetRegexRuleLimit());
-    RulesCountPair available_limit = shared_rule_limit - dynamic_rule_count;
+    RuleCounts dynamic_rule_count =
+        GetRuleCounts(extension_id, kDynamicRulesetID);
+    RuleCounts shared_rule_limit(GetDynamicAndSessionRuleLimit(),
+                                 GetRegexRuleLimit());
+    RuleCounts available_limit = shared_rule_limit - dynamic_rule_count;
     if (new_rules.size() > available_limit.rule_count) {
       std::move(callback).Run(kSessionRuleCountExceeded);
       return;
@@ -865,11 +864,11 @@ void RulesMonitorService::OnInitialRulesetsLoadedFromDisk(
   // at install time (by raising a hard error) to maintain forwards
   // compatibility. Since we iterate based on the order of ruleset ID, we'll
   // give more preference to rulesets occurring first in the manifest.
-  RulesCountPair static_rule_count;
+  RuleCounts static_rule_count;
   bool notify_ruleset_failed_to_load = false;
   bool global_rule_limit_exceeded = false;
 
-  RulesCountPair static_rule_limit(
+  RuleCounts static_rule_limit(
       global_rules_tracker_.GetAvailableAllocation(load_data.extension_id) +
           GetStaticGuaranteedMinimumRuleCount(),
       GetRegexRuleLimit());
@@ -882,7 +881,7 @@ void RulesMonitorService::OnInitialRulesetsLoadedFromDisk(
 
     std::unique_ptr<RulesetMatcher> matcher = ruleset.TakeMatcher();
 
-    RulesCountPair matcher_count = matcher->GetRulesCountPair();
+    RuleCounts matcher_count = matcher->GetRuleCounts();
 
     // Per-ruleset limits should have been enforced during
     // indexing/installation.
@@ -895,7 +894,7 @@ void RulesMonitorService::OnInitialRulesetsLoadedFromDisk(
       continue;
     }
 
-    RulesCountPair new_ruleset_count = static_rule_count + matcher_count;
+    RuleCounts new_ruleset_count = static_rule_count + matcher_count;
     if (new_ruleset_count.rule_count > static_rule_limit.rule_count) {
       global_rule_limit_exceeded = true;
       continue;
@@ -955,7 +954,7 @@ void RulesMonitorService::OnNewStaticRulesetsLoaded(
   }
 
   int static_ruleset_count = 0;
-  RulesCountPair static_rule_count;
+  RuleCounts static_rule_count;
   CompositeMatcher* matcher =
       ruleset_manager_.GetMatcherForExtension(load_data.extension_id);
   if (matcher) {
@@ -977,7 +976,7 @@ void RulesMonitorService::OnNewStaticRulesetsLoaded(
         continue;
 
       static_ruleset_count += 1;
-      static_rule_count += ruleset_matcher->GetRulesCountPair();
+      static_rule_count += ruleset_matcher->GetRuleCounts();
     }
   }
 
@@ -991,7 +990,7 @@ void RulesMonitorService::OnNewStaticRulesetsLoaded(
 
     std::unique_ptr<RulesetMatcher> ruleset_matcher = ruleset.TakeMatcher();
 
-    RulesCountPair matcher_count = ruleset_matcher->GetRulesCountPair();
+    RuleCounts matcher_count = ruleset_matcher->GetRuleCounts();
 
     // Per-ruleset limits should have been enforced during
     // indexing/installation.
@@ -1031,11 +1030,8 @@ void RulesMonitorService::OnNewStaticRulesetsLoaded(
   }
 
   if (matcher) {
-    bool had_extra_headers_matcher =
-        ruleset_manager_.HasAnyExtraHeadersMatcher();
     matcher->RemoveRulesetsWithIDs(ids_to_disable);
     matcher->AddOrUpdateRulesets(std::move(new_matchers));
-    AdjustExtraHeaderListenerCountIfNeeded(had_extra_headers_matcher);
   } else {
     // The extension didn't have any existing rulesets. Hence just add a new
     // CompositeMatcher with |new_matchers|. Note, this also updates the
@@ -1091,10 +1087,8 @@ void RulesMonitorService::OnDynamicRulesUpdated(
 
 void RulesMonitorService::RemoveCompositeMatcher(
     const ExtensionId& extension_id) {
-  bool had_extra_headers_matcher = ruleset_manager_.HasAnyExtraHeadersMatcher();
   ruleset_manager_.RemoveRuleset(extension_id);
   action_tracker_.ClearExtensionData(extension_id);
-  AdjustExtraHeaderListenerCountIfNeeded(had_extra_headers_matcher);
 }
 
 void RulesMonitorService::AddCompositeMatcher(
@@ -1105,9 +1099,7 @@ void RulesMonitorService::AddCompositeMatcher(
 
   auto matcher = std::make_unique<CompositeMatcher>(
       std::move(matchers), GetHostPermissionsAlwaysRequired(extension));
-  bool had_extra_headers_matcher = ruleset_manager_.HasAnyExtraHeadersMatcher();
   ruleset_manager_.AddRuleset(extension.id(), std::move(matcher));
-  AdjustExtraHeaderListenerCountIfNeeded(had_extra_headers_matcher);
 }
 
 void RulesMonitorService::UpdateRulesetMatcher(
@@ -1124,23 +1116,7 @@ void RulesMonitorService::UpdateRulesetMatcher(
     return;
   }
 
-  bool had_extra_headers_matcher = ruleset_manager_.HasAnyExtraHeadersMatcher();
   matcher->AddOrUpdateRuleset(std::move(ruleset_matcher));
-  AdjustExtraHeaderListenerCountIfNeeded(had_extra_headers_matcher);
-}
-
-void RulesMonitorService::AdjustExtraHeaderListenerCountIfNeeded(
-    bool had_extra_headers_matcher) {
-  bool has_extra_headers_matcher = ruleset_manager_.HasAnyExtraHeadersMatcher();
-  if (had_extra_headers_matcher == has_extra_headers_matcher)
-    return;
-  if (has_extra_headers_matcher) {
-    ExtensionWebRequestEventRouter::GetInstance()
-        ->IncrementExtraHeadersListenerCount(context_);
-  } else {
-    ExtensionWebRequestEventRouter::GetInstance()
-        ->DecrementExtraHeadersListenerCount(context_);
-  }
 }
 
 void RulesMonitorService::LogMetricsAndUpdateChecksumsIfNeeded(

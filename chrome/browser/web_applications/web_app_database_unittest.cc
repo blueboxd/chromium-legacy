@@ -113,7 +113,7 @@ class WebAppDatabaseTest : public WebAppTest {
       std::unique_ptr<WebApp> app = test::CreateRandomWebApp({.seed = i});
       std::unique_ptr<WebAppProto> proto =
           WebAppDatabase::CreateWebAppProto(*app);
-      const AppId app_id = app->app_id();
+      const webapps::AppId app_id = app->app_id();
 
       write_batch->WriteData(app_id, proto->SerializeAsString());
 
@@ -147,15 +147,16 @@ class WebAppDatabaseTest : public WebAppTest {
     update->CreateApp(std::move(web_app));
   }
 
-  void UnregisterApp(const AppId& app_id) {
+  void UnregisterApp(const webapps::AppId& app_id) {
     ScopedRegistryUpdate update = sync_bridge().BeginUpdate();
     update->DeleteApp(app_id);
   }
 
   void UnregisterAll() {
     ScopedRegistryUpdate update = sync_bridge().BeginUpdate();
-    for (const AppId& app_id : registrar().GetAppIds())
+    for (const webapps::AppId& app_id : registrar().GetAppIds()) {
       update->DeleteApp(app_id);
+    }
   }
 
  private:
@@ -174,7 +175,7 @@ TEST_F(WebAppDatabaseTest, WriteAndReadRegistry) {
   const uint32_t num_apps = 100;
 
   std::unique_ptr<WebApp> app = test::CreateRandomWebApp({.seed = 0});
-  AppId app_id = app->app_id();
+  webapps::AppId app_id = app->app_id();
   RegisterApp(std::move(app));
   EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
 
@@ -198,7 +199,7 @@ TEST_F(WebAppDatabaseTest, WriteAndDeleteAppsWithCallbacks) {
   const uint32_t num_apps = 100;
 
   RegistryUpdateData::Apps apps_to_create;
-  std::vector<AppId> apps_to_delete;
+  std::vector<webapps::AppId> apps_to_delete;
   Registry expected_registry;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -238,7 +239,7 @@ TEST_F(WebAppDatabaseTest, WriteAndDeleteAppsWithCallbacks) {
     {
       ScopedRegistryUpdate update =
           sync_bridge().BeginUpdate(future.GetCallback());
-      for (const AppId& app_id : apps_to_delete) {
+      for (const webapps::AppId& app_id : apps_to_delete) {
         update->DeleteApp(app_id);
       }
     }
@@ -258,7 +259,8 @@ TEST_F(WebAppDatabaseTest, OpenDatabaseAndReadRegistry) {
 
 TEST_F(WebAppDatabaseTest, BackwardCompatibility_WebAppWithOnlyRequiredFields) {
   const GURL start_url{"https://example.com/"};
-  const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);
+  const webapps::AppId app_id =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);
   const std::string name = "App Name";
   const bool is_locally_installed = true;
 
@@ -321,7 +323,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   InitSyncBridge();
 
   const auto start_url = GURL("https://example.com/");
-  const AppId app_id =
+  const webapps::AppId app_id =
       GenerateAppId(/*manifest_id=*/absl::nullopt, GURL(start_url));
   const std::string name = "Name";
 
@@ -373,13 +375,15 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->validated_scope_extensions().empty());
   EXPECT_TRUE(app->last_badging_time().is_null());
   EXPECT_TRUE(app->last_launch_time().is_null());
-  EXPECT_TRUE(app->install_time().is_null());
+  EXPECT_TRUE(app->first_install_time().is_null());
   EXPECT_TRUE(app->shortcuts_menu_item_infos().empty());
   EXPECT_EQ(app->run_on_os_login_mode(), RunOnOsLoginMode::kNotRun);
   EXPECT_FALSE(app->run_on_os_login_os_integration_state().has_value());
   EXPECT_TRUE(app->manifest_url().is_empty());
   EXPECT_TRUE(app->permissions_policy().empty());
   EXPECT_FALSE(app->isolation_data().has_value());
+  EXPECT_TRUE(app->latest_install_time().is_null());
+
   RegisterApp(std::move(app));
 
   Registry registry = database_factory().ReadRegistry();
@@ -424,7 +428,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_FALSE(app_copy->dark_mode_background_color().has_value());
   EXPECT_TRUE(app_copy->last_badging_time().is_null());
   EXPECT_TRUE(app_copy->last_launch_time().is_null());
-  EXPECT_TRUE(app_copy->install_time().is_null());
+  EXPECT_TRUE(app_copy->first_install_time().is_null());
   EXPECT_TRUE(app_copy->manifest_icons().empty());
   EXPECT_TRUE(app_copy->downloaded_icon_sizes(IconPurpose::ANY).empty());
   EXPECT_TRUE(app_copy->downloaded_icon_sizes(IconPurpose::MASKABLE).empty());
@@ -449,6 +453,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->manifest_url().is_empty());
   EXPECT_TRUE(app_copy->permissions_policy().empty());
   EXPECT_FALSE(app_copy->tab_strip());
+  EXPECT_TRUE(app_copy->latest_install_time().is_null());
 }
 
 TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
@@ -460,7 +465,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
 
   std::unique_ptr<WebApp> app =
       test::CreateRandomWebApp({.base_url = base_url});
-  AppId app_id = app->app_id();
+  webapps::AppId app_id = app->app_id();
 
   std::vector<apps::IconInfo> icons;
 
@@ -608,7 +613,8 @@ class WebAppDatabaseProtoDataTest : public ::testing::Test {
  public:
   std::unique_ptr<WebApp> CreateMinimalWebApp() {
     GURL start_url{"https://example.com/"};
-    AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);
+    webapps::AppId app_id =
+        GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);
     auto web_app = std::make_unique<WebApp>(app_id);
     web_app->SetStartUrl(start_url);
     web_app->SetUserDisplayMode(mojom::UserDisplayMode::kBrowser);

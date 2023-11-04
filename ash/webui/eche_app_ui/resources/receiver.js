@@ -85,13 +85,19 @@ parentMessagePipe.registerHandler(
 // Handle accessibility perform action.
 let performActionCallback = null;
 parentMessagePipe.registerHandler(
-    Message.ACCESSIBILITY_PERFORM_ACTION,
-    async (action) => {
+    Message.ACCESSIBILITY_PERFORM_ACTION, async (action) => {
       if (!performActionCallback) {
-        return;
+        return Promise.resolve(false);
       }
-
-      performActionCallback(/** @type {Uint8Array} */ (action));
+      return performActionCallback(/** @type {Uint8Array} */ (action));
+    });
+let refreshWithExtraDataCallback = null;
+parentMessagePipe.registerHandler(
+    Message.ACCESSIBILITY_REFRESH_WITH_EXTRA_DATA, async (action) => {
+      if (!refreshWithExtraDataCallback) {
+        return Promise.resolve(null);
+      }
+      return refreshWithExtraDataCallback(/** @type {Uint8Array} */ (action));
     });
 
 // The implementation of echeapi.d.ts
@@ -221,6 +227,11 @@ const EcheApiBindingImpl = new (class {
     console.log('echeapi receiver.js onPerformAction');
     performActionCallback = callback;
   }
+
+  registerRefreshWithExtraDataCallback(callback) {
+    console.log('echeapi receiver.js registerRefreshWithExtraDataCallback');
+    refreshWithExtraDataCallback = callback;
+  }
 })();
 
 // Declare module echeapi and bind the implementation to echeapi.d.ts
@@ -242,6 +253,9 @@ echeapi.accessibility.sendAccessibilityEventData =
   EcheApiBindingImpl.sendAccessibilityEventData.bind(EcheApiBindingImpl);
 echeapi.accessibility.registerPerformActionReceiver =
   EcheApiBindingImpl.onPerformAction.bind(EcheApiBindingImpl);
+echeapi.accessibility.registerRefreshWithExtraDataReceiver =
+    EcheApiBindingImpl.registerRefreshWithExtraDataCallback.bind(
+        EcheApiBindingImpl);
 // system
 echeapi.system = {};
 echeapi.system.getLocalUid =

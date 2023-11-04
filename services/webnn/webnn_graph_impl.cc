@@ -172,41 +172,26 @@ absl::optional<webnn::Conv2dAttributes> ConvertToConv2dAttributes(
   return component_attributes;
 }
 
-absl::optional<webnn::Pool2dAttributes> ConvertToPool2dAttributes(
-    const webnn::mojom::OperatorAttributesPtr& attributes,
+webnn::Pool2dAttributes ConvertToPool2dAttributes(
+    const webnn::mojom::Pool2dPtr& pool2d,
     const mojom::Operand* output) {
-  if (!attributes->is_pool2d()) {
-    // The type of attribute is not pool2d.
-    return absl::nullopt;
-  }
-  auto& mojo_attributes = attributes->get_pool2d();
-  if (!mojo_attributes) {
-    // The attributes of pool2d were not configured.
-    return absl::nullopt;
-  }
-  if (output->dimensions.size() != 4) {
-    // The element of output dimensions should be 4.
-    return absl::nullopt;
-  }
-
   webnn::Pool2dAttributes component_attributes;
-  auto& window_dimensions = mojo_attributes->window_dimensions;
+  auto& window_dimensions = pool2d->window_dimensions;
   component_attributes.window_dimensions = webnn::Size2d{
       .height = window_dimensions->height, .width = window_dimensions->width};
-  auto& mojo_padding = mojo_attributes->padding;
+  auto& mojo_padding = pool2d->padding;
   component_attributes.padding = webnn::Padding2d{
       .beginning = webnn::Size2d{.height = mojo_padding->beginning->height,
                                  .width = mojo_padding->beginning->width},
       .ending = webnn::Size2d{.height = mojo_padding->ending->height,
                               .width = mojo_padding->ending->width}};
-  component_attributes.strides =
-      webnn::Size2d{.height = mojo_attributes->strides->height,
-                    .width = mojo_attributes->strides->width};
-  component_attributes.dilations =
-      webnn::Size2d{.height = mojo_attributes->dilations->height,
-                    .width = mojo_attributes->dilations->width};
+  component_attributes.strides = webnn::Size2d{
+      .height = pool2d->strides->height, .width = pool2d->strides->width};
+  component_attributes.dilations = webnn::Size2d{
+      .height = pool2d->dilations->height, .width = pool2d->dilations->width};
   component_attributes.layout =
-      MojoInputOperandLayoutToComponent(mojo_attributes->layout);
+      MojoInputOperandLayoutToComponent(pool2d->layout);
+  CHECK_EQ(output->dimensions.size(), 4u);
   switch (component_attributes.layout) {
     case webnn::InputOperandLayout::kNchw:
       component_attributes.output_sizes = webnn::Size2d{
@@ -250,6 +235,7 @@ absl::optional<webnn::GemmAttributes> ConvertToGemmAttributes(
   return component_attributes;
 }
 
+// TODO(crbug.com/1273291): This function will replaced by `operation`
 const mojom::Operand* GetMojoOperand(
     const IdToOperandMap& id_to_operand_map,
     const std::vector<uint64_t>& operand_id_array,
@@ -264,6 +250,16 @@ const mojom::Operand* GetMojoOperand(
     return nullptr;
   }
   return id_to_operand_map.at(operand_id).get();
+}
+
+const mojom::Operand* GetMojoOperand(const IdToOperandMap& id_to_operand_map,
+                                     uint64_t operand_id) {
+  const auto operand_iterator = id_to_operand_map.find(operand_id);
+  if (operand_iterator == id_to_operand_map.end()) {
+    // There is no operand for the id.
+    return nullptr;
+  }
+  return operand_iterator->second.get();
 }
 
 bool ValidateClamp(const IdToOperandMap& id_to_operand_map,
@@ -374,21 +370,21 @@ bool ValidateGemm(const IdToOperandMap& id_to_operand_map,
 }
 
 bool ValidatePool2d(const IdToOperandMap& id_to_operand_map,
-                    const mojom::OperatorPtr& operation) {
-  auto* input = GetMojoOperand(id_to_operand_map, operation->input_operands);
-  auto* output = GetMojoOperand(id_to_operand_map, operation->output_operands);
-  if (!input || !output || !operation->attributes) {
+                    const mojom::Pool2dPtr& pool2d) {
+  auto* input = GetMojoOperand(id_to_operand_map, pool2d->input_operand_id);
+  auto* output = GetMojoOperand(id_to_operand_map, pool2d->output_operand_id);
+  if (!input || !output) {
     // The pool2d operator is invalid.
     return false;
   }
-  auto component_attributes =
-      ConvertToPool2dAttributes(operation->attributes, output);
-  if (!component_attributes) {
-    // Failed to convert the attributes of pool2d.
+
+  if (output->dimensions.size() != 4) {
+    // The element of output dimensions should be 4.
     return false;
   }
-  auto validated_output = ValidatePool2dAndInferOutput(
-      ConvertToComponentOperand(input), component_attributes.value());
+  auto validated_output =
+      ValidatePool2dAndInferOutput(ConvertToComponentOperand(input),
+                                   ConvertToPool2dAttributes(pool2d, output));
   if (!validated_output.has_value()) {
     return false;
   }
@@ -467,8 +463,8 @@ bool ValidateSoftmax(const IdToOperandMap& id_to_operand_map,
   return true;
 }
 
-bool ValidateOperator(const IdToOperandMap& id_to_operand_map,
-                      const mojom::OperatorPtr& operation) {
+bool ValidateGenericOperator(const IdToOperandMap& id_to_operand_map,
+                             const mojom::OperatorPtr& operation) {
   switch (operation->kind) {
     case mojom::Operator::Kind::kClamp:
       return ValidateClamp(id_to_operand_map, operation);
@@ -480,12 +476,10 @@ bool ValidateOperator(const IdToOperandMap& id_to_operand_map,
     case mojom::Operator::Kind::kDiv:
     case mojom::Operator::Kind::kMax:
     case mojom::Operator::Kind::kMin:
+    case mojom::Operator::Kind::kPow:
       return ValidateElementWiseBinary(id_to_operand_map, operation);
     case mojom::Operator::Kind::kGemm:
       return ValidateGemm(id_to_operand_map, operation);
-    case mojom::Operator::Kind::kAveragePool2d:
-    case mojom::Operator::Kind::kMaxPool2d:
-      return ValidatePool2d(id_to_operand_map, operation);
     case mojom::Operator::Kind::kRelu:
       return ValidateRelu(id_to_operand_map, operation);
     case mojom::Operator::Kind::kReshape:
@@ -496,35 +490,63 @@ bool ValidateOperator(const IdToOperandMap& id_to_operand_map,
   NOTREACHED_NORETURN();
 }
 
+base::flat_map<std::string, size_t> CreateByteLengthMap(
+    const std::vector<uint64_t>& operand_ids,
+    const base::flat_map<uint64_t, mojom::OperandPtr>& id_to_operand_map) {
+  base::flat_map<std::string, size_t> name_to_byte_length_map;
+  name_to_byte_length_map.reserve(operand_ids.size());
+  for (auto& operand_id : operand_ids) {
+    const mojom::OperandPtr& operand = id_to_operand_map.at(operand_id);
+    // The `operand` is valid and the byte length of it was already verified in
+    // `ValidateGraph` function.
+    CHECK(operand);
+
+    auto byte_length = ValidateAndCalculateByteLength(
+        GetBytesPerElement(operand->data_type), operand->dimensions);
+    CHECK(byte_length.has_value());
+    CHECK(operand->name.has_value());
+    name_to_byte_length_map[operand->name.value()] = byte_length.value();
+  }
+  return name_to_byte_length_map;
+}
+
+bool ValidateOperation(const IdToOperandMap& id_to_operand_map,
+                       const mojom::OperationPtr& operation) {
+  switch (operation->which()) {
+    case mojom::Operation::Tag::kPool2d:
+      return ValidatePool2d(id_to_operand_map, operation->get_pool2d());
+    case mojom::Operation::Tag::kGenericOperator:
+      return ValidateGenericOperator(id_to_operand_map,
+                                     operation->get_generic_operator());
+  }
+  NOTREACHED_NORETURN();
+}
+
 }  // namespace
 
 WebNNGraphImpl::ComputeResourceInfo::ComputeResourceInfo(
     const mojom::GraphInfoPtr& graph_info) {
-  // Calculate the byte length of inputs for validating before computing.
-  for (auto& input_id : graph_info->input_operands) {
-    const mojom::OperandPtr& operand =
-        graph_info->id_to_operand_map.at(input_id);
-    // The `operand` is valid and the byte length of it was already verified in
-    // `ValidateGraph` function.
-    CHECK(operand);
-    auto byte_length = ValidateAndCalculateByteLength(
-        GetBytesPerElement(operand->data_type), operand->dimensions);
-    CHECK(byte_length.has_value());
-    input_name_to_byte_length_map[operand->name.value()] = byte_length.value();
-  }
+  input_name_to_byte_length_map = CreateByteLengthMap(
+      graph_info->input_operands, graph_info->id_to_operand_map);
+  output_name_to_byte_length_map = CreateByteLengthMap(
+      graph_info->output_operands, graph_info->id_to_operand_map);
 }
+
+WebNNGraphImpl::ComputeResourceInfo::ComputeResourceInfo(
+    ComputeResourceInfo&&) = default;
+WebNNGraphImpl::ComputeResourceInfo&
+WebNNGraphImpl::ComputeResourceInfo::operator=(ComputeResourceInfo&&) = default;
 
 WebNNGraphImpl::ComputeResourceInfo::~ComputeResourceInfo() = default;
 
-WebNNGraphImpl::WebNNGraphImpl(
-    std::unique_ptr<ComputeResourceInfo> compute_resource_info)
+WebNNGraphImpl::WebNNGraphImpl(ComputeResourceInfo compute_resource_info)
     : compute_resource_info_(std::move(compute_resource_info)) {}
 
 WebNNGraphImpl::~WebNNGraphImpl() = default;
 
 bool WebNNGraphImpl::ValidateGraph(const mojom::GraphInfoPtr& graph_info) {
   // The input operands of graph can be empty.
-  if (graph_info->id_to_operand_map.empty() || graph_info->operators.empty() ||
+  if (graph_info->id_to_operand_map.empty() || graph_info->operations.empty() ||
       graph_info->output_operands.empty()) {
     return false;
   }
@@ -602,9 +624,9 @@ bool WebNNGraphImpl::ValidateGraph(const mojom::GraphInfoPtr& graph_info) {
     return false;
   }
 
-  // Validate the operators which are sorted in the topological order.
-  for (auto& operation : graph_info->operators) {
-    if (!ValidateOperator(graph_info->id_to_operand_map, operation)) {
+  // Validate the operations which are sorted in the topological order.
+  for (auto& operation : graph_info->operations) {
+    if (!ValidateOperation(graph_info->id_to_operand_map, operation)) {
       return false;
     }
   }
@@ -617,7 +639,7 @@ void WebNNGraphImpl::Compute(
     mojom::WebNNGraph::ComputeCallback callback) {
   // Validate the inputs for computation match the built graph's expected.
   if (!base::ranges::equal(
-          named_inputs, compute_resource_info_->input_name_to_byte_length_map,
+          named_inputs, compute_resource_info_.input_name_to_byte_length_map,
           [](const auto& iter_a, const auto& iter_b) {
             // Compare the input name with the key of map and the byte length of
             // buffer with value of map.

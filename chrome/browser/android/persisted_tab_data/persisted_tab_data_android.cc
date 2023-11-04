@@ -87,14 +87,9 @@ void PersistedTabDataAndroid::From(TabAndroid* tab_android,
             tab_android->GetAndroidId(),
             persisted_tab_data_config_android->data_id(),
             base::BindOnce(
-                [](base::WeakPtr<TabAndroid> tab_android,
-                   SupplierCallback supplier_callback,
+                [](TabAndroid* tab_android, SupplierCallback supplier_callback,
                    const void* user_data_key,
                    const std::vector<uint8_t>& data) {
-                  if (!tab_android) {
-                    return;
-                  }
-
                   tab_android->SetUserData(user_data_key,
                                            std::move(supplier_callback).Run());
                   PersistedTabDataAndroid* persisted_tab_data_android =
@@ -132,8 +127,7 @@ void PersistedTabDataAndroid::From(TabAndroid* tab_android,
                           tab_android, user_data_key,
                           persisted_tab_data_android));
                 },
-                tab_android->GetWeakPtr(), std::move(supplier_callback),
-                user_data_key));
+                tab_android, std::move(supplier_callback), user_data_key));
   }
 }
 
@@ -226,16 +220,13 @@ PersistedTabDataAndroid::GetCachedCallbackMap() {
 }
 
 void PersistedTabDataAndroid::RunCallbackOnUIThread(
-    base::WeakPtr<TabAndroid> tab_android,
+    TabAndroid* tab_android,
     const void* user_data_key,
     PersistedTabDataAndroid* persisted_tab_data_android) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!tab_android) {
-    return;
-  }
 
   std::string cached_callback_key =
-      GetCachedCallbackKey(tab_android.get(), user_data_key);
+      GetCachedCallbackKey(tab_android, user_data_key);
   for (auto& callback : PersistedTabDataAndroid::GetCachedCallbackMap()
                             ->find(cached_callback_key)
                             ->second) {

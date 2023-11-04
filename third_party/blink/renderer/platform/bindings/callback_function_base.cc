@@ -104,7 +104,7 @@ ScriptState* CallbackFunctionBase::CallbackRelevantScriptStateOrReportError(
   v8::TryCatch try_catch(GetIsolate());
   try_catch.SetVerbose(true);
   ExceptionState exception_state(GetIsolate(),
-                                 ExceptionState::kExecutionContext,
+                                 ExceptionContextType::kOperationInvoke,
                                  interface_name, operation_name);
   exception_state.ThrowSecurityError(
       "An invocation of the provided callback failed due to cross origin "
@@ -124,7 +124,7 @@ ScriptState* CallbackFunctionBase::CallbackRelevantScriptStateOrThrowException(
   // Throw a SecurityError due to a cross origin callback object.
   ScriptState::Scope incumbent_scope(cached_data_->incumbent_script_state_);
   ExceptionState exception_state(GetIsolate(),
-                                 ExceptionState::kExecutionContext,
+                                 ExceptionContextType::kOperationInvoke,
                                  interface_name, operation_name);
   exception_state.ThrowSecurityError(
       "An invocation of the provided callback failed due to cross origin "
@@ -133,7 +133,7 @@ ScriptState* CallbackFunctionBase::CallbackRelevantScriptStateOrThrowException(
 }
 
 void CallbackFunctionBase::EvaluateAsPartOfCallback(
-    base::OnceCallback<void()> closure) {
+    base::OnceCallback<void(ScriptState*)> closure) {
   ScriptState* callback_relevant_script_state =
       CallbackRelevantScriptStateImpl();
   if (!callback_relevant_script_state) {
@@ -148,7 +148,7 @@ void CallbackFunctionBase::EvaluateAsPartOfCallback(
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
 
-  std::move(closure).Run();
+  std::move(closure).Run(callback_relevant_script_state);
 }
 
 }  // namespace blink

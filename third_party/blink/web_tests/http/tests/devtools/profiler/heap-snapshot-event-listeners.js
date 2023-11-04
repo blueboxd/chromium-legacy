@@ -5,6 +5,9 @@
 import {TestRunner} from 'test_runner';
 import {HeapProfilerTestRunner} from 'heap_profiler_test_runner';
 
+import * as HeapSnapshotModel from 'devtools/models/heap_snapshot_model/heap_snapshot_model.js';
+import * as ProfilerModule from 'devtools/panels/profiler/profiler.js';
+
 (async function() {
   TestRunner.addResult(
       `Test that event listeners not user reachable from the root are still present in the class list.\n`);
@@ -20,8 +23,8 @@ import {HeapProfilerTestRunner} from 'heap_profiler_test_runner';
       new EventListenerWrapperTest();
   `);
 
-  var heapProfileType = Profiler.ProfileTypeRegistry.instance.heapSnapshotProfileType;
-  heapProfileType.addEventListener(Profiler.HeapSnapshotProfileType.SnapshotReceived, finishHeapSnapshot);
+  var heapProfileType = ProfilerModule.ProfileTypeRegistry.instance.heapSnapshotProfileType;
+  heapProfileType.addEventListener(ProfilerModule.HeapSnapshotView.HeapSnapshotProfileType.SnapshotReceived, finishHeapSnapshot);
   TestRunner.addSniffer(heapProfileType, 'snapshotReceived', snapshotReceived);
   heapProfileType.takeHeapSnapshot();
 
@@ -40,7 +43,7 @@ import {HeapProfilerTestRunner} from 'heap_profiler_test_runner';
 
   async function snapshotReceived(profile) {
     var snapshotProxy = profile.snapshotProxy;
-    var classNames = await snapshotProxy.aggregatesWithFilter(new HeapSnapshotModel.NodeFilter());
+    var classNames = await snapshotProxy.aggregatesWithFilter(new HeapSnapshotModel.HeapSnapshotModel.NodeFilter());
     var found = Object.keys(classNames).includes('EventListenerWrapperTest');
     if (found)
       TestRunner.addResult('PASS: the class name is found');

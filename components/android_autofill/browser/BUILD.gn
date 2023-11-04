@@ -4,6 +4,7 @@
 
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
+import("//third_party/jni_zero/jni_zero.gni")
 
 android_aidl("autofill_aidl") {
   import_include = [ "java/src" ]
@@ -87,12 +88,23 @@ generate_jni("jni_headers_features") {
 
 static_library("android") {
   sources = [
+    "android_autofill_bridge_factory.cc",
+    "android_autofill_bridge_factory.h",
     "autofill_provider_android.cc",
     "autofill_provider_android.h",
+    "autofill_provider_android_bridge.h",
+    "autofill_provider_android_bridge_impl.cc",
+    "autofill_provider_android_bridge_impl.h",
     "form_data_android.cc",
     "form_data_android.h",
+    "form_data_android_bridge.h",
+    "form_data_android_bridge_impl.cc",
+    "form_data_android_bridge_impl.h",
     "form_field_data_android.cc",
     "form_field_data_android.h",
+    "form_field_data_android_bridge.h",
+    "form_field_data_android_bridge_impl.cc",
+    "form_field_data_android_bridge_impl.h",
   ]
   public_deps = [ ":browser" ]
   deps = [
@@ -123,11 +135,15 @@ static_library("browser") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "autofill_provider_unittest.cc",
+    "autofill_provider_android_unittest.cc",
+    "form_data_android_unittest.cc",
     "form_event_logger_weblayer_android_unittest.cc",
+    "form_field_data_android_unittest.cc",
   ]
   deps = [
+    ":android",
     ":browser",
+    ":features",
     ":test_support",
     "//components/autofill/content/browser:test_support",
     "//content/test:test_support",
@@ -139,9 +155,18 @@ source_set("unit_tests") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "autofill_provider_android_test_api.h",
+    "mock_form_field_data_android_bridge.cc",
+    "mock_form_field_data_android_bridge.h",
     "test_autofill_provider.cc",
     "test_autofill_provider.h",
   ]
-  public_deps = [ ":browser" ]
-  deps = [ "//content/public/browser" ]
+  public_deps = [
+    ":android",
+    ":browser",
+  ]
+  deps = [
+    "//content/public/browser",
+    "//testing/gmock",
+  ]
 }

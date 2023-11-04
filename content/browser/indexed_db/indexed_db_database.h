@@ -45,11 +45,9 @@ struct IndexedDBObjectStoreMetadata;
 }  // namespace blink
 
 namespace content {
-class IndexedDBBucketContextHandle;
-class IndexedDBClassFactory;
+class IndexedDBBucketContext;
 class IndexedDBConnection;
 class IndexedDBDatabaseCallbacks;
-class IndexedDBFactory;
 class IndexedDBTransaction;
 struct IndexedDBValue;
 
@@ -65,13 +63,18 @@ class CONTENT_EXPORT IndexedDBDatabase {
   static const int64_t kInvalidId = 0;
   static const int64_t kMinimumIndexId = 30;
 
+  IndexedDBDatabase(const std::u16string& name,
+                    IndexedDBBucketContext& bucket_context,
+                    const Identifier& unique_identifier);
+
   IndexedDBDatabase(const IndexedDBDatabase&) = delete;
   IndexedDBDatabase& operator=(const IndexedDBDatabase&) = delete;
 
   virtual ~IndexedDBDatabase();
 
   const Identifier& identifier() const { return identifier_; }
-  IndexedDBBackingStore* backing_store() { return backing_store_; }
+  IndexedDBBackingStore* backing_store();
+  PartitionedLockManager* lock_manager();
 
   int64_t id() const { return metadata_.id; }
   const std::u16string& name() const { return metadata_.name; }
@@ -80,16 +83,8 @@ class CONTENT_EXPORT IndexedDBDatabase {
   }
   const blink::IndexedDBDatabaseMetadata& metadata() const { return metadata_; }
 
-  PartitionedLockManager* transaction_lock_manager() { return lock_manager_; }
-  const PartitionedLockManager* transaction_lock_manager() const {
-    return lock_manager_;
-  }
-
   const list_set<IndexedDBConnection*>& connections() const {
     return connections_;
-  }
-  TasksAvailableCallback tasks_available_callback() {
-    return tasks_available_callback_;
   }
 
   // TODO(dmurph): Remove this method and have transactions be directly
@@ -104,19 +99,15 @@ class CONTENT_EXPORT IndexedDBDatabase {
   // IndexedDBBucketContextHandle while calling this methods.
   leveldb::Status ForceCloseAndRunTasks();
 
-  void Commit(IndexedDBTransaction* transaction);
-
   void TransactionCreated();
   void TransactionFinished(blink::mojom::IDBTransactionMode mode,
                            bool committed);
 
   void ScheduleOpenConnection(
-      IndexedDBBucketContextHandle bucket_state_handle,
       std::unique_ptr<IndexedDBPendingConnection> connection,
       scoped_refptr<IndexedDBClientStateCheckerWrapper> client_state_checker);
 
   void ScheduleDeleteDatabase(
-      IndexedDBBucketContextHandle bucket_state_handle,
       std::unique_ptr<IndexedDBFactoryClient> factory_client,
       base::OnceClosure on_deletion_complete);
 
@@ -197,7 +188,6 @@ class CONTENT_EXPORT IndexedDBDatabase {
                                  std::u16string old_name);
 
   leveldb::Status GetOperation(
-      base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
       int64_t object_store_id,
       int64_t index_id,
       std::unique_ptr<blink::IndexedDBKeyRange> key_range,
@@ -206,7 +196,6 @@ class CONTENT_EXPORT IndexedDBDatabase {
       IndexedDBTransaction* transaction);
 
   leveldb::Status GetAllOperation(
-      base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
       int64_t object_store_id,
       int64_t index_id,
       std::unique_ptr<blink::IndexedDBKeyRange> key_range,
@@ -260,7 +249,6 @@ class CONTENT_EXPORT IndexedDBDatabase {
   leveldb::Status OpenCursorOperation(
       std::unique_ptr<OpenCursorOperationParams> params,
       const storage::BucketLocator& bucket_locator,
-      base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
       IndexedDBTransaction* transaction);
 
   leveldb::Status CountOperation(
@@ -311,21 +299,7 @@ class CONTENT_EXPORT IndexedDBDatabase {
   friend class IndexedDBConnectionCoordinator::OpenRequest;
   friend class IndexedDBConnectionCoordinator::DeleteRequest;
 
-  IndexedDBDatabase(const std::u16string& name,
-                    IndexedDBBackingStore* backing_store,
-                    IndexedDBFactory* factory,
-                    IndexedDBClassFactory* class_factory,
-                    TasksAvailableCallback tasks_available_callback,
-                    const Identifier& unique_identifier,
-                    PartitionedLockManager* transaction_lock_manager);
-
-  // May be overridden in tests.
-  virtual size_t GetUsableMessageSizeInBytes() const;
-
  private:
-  friend class MockBrowserTestIndexedDBClassFactory;
-  friend class IndexedDBClassFactory;
-
   FRIEND_TEST_ALL_PREFIXES(IndexedDBDatabaseTest, OpenDeleteClear);
 
   void CallUpgradeTransactionStartedForTesting(int64_t old_version);
@@ -346,7 +320,6 @@ class CONTENT_EXPORT IndexedDBDatabase {
   void MaybeReleaseDatabase();
 
   std::unique_ptr<IndexedDBConnection> CreateConnection(
-      IndexedDBBucketContextHandle bucket_state_handle,
       scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
       scoped_refptr<IndexedDBClientStateCheckerWrapper> client_state_checker);
 
@@ -376,25 +349,18 @@ class CONTENT_EXPORT IndexedDBDatabase {
       std::vector<PartitionedLockManager::PartitionedLockRequest>&
           lock_requests);
 
-  // Safe because the IndexedDBBackingStore is owned by the same object which
-  // owns us, the IndexedDBPerBucketFactory.
-  raw_ptr<IndexedDBBackingStore> backing_store_;
-
   // `metadata_` may not be fully initialized, but its `name` will always be
   // valid.
   blink::IndexedDBDatabaseMetadata metadata_;
 
   const Identifier identifier_;
-  // TODO(dmurph): Remove the need for this to be here (and then remove it).
-  raw_ptr<IndexedDBFactory, DanglingUntriaged> factory_;
-  const raw_ptr<IndexedDBClassFactory> class_factory_;
 
-  raw_ptr<PartitionedLockManager> lock_manager_;
+  // The object that owns `this`.
+  raw_ref<IndexedDBBucketContext> bucket_context_;
+
   int64_t transaction_count_ = 0;
 
   list_set<IndexedDBConnection*> connections_;
-
-  TasksAvailableCallback tasks_available_callback_;
 
   bool force_closing_ = false;
 

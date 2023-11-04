@@ -13,7 +13,7 @@
 #include "base/check.h"
 #include "base/functional/callback_helpers.h"
 #include "chrome/browser/ash/privacy_hub/privacy_hub_util.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "services/device/public/cpp/geolocation/geolocation_manager.h"
@@ -83,7 +83,7 @@ void SystemGeolocationSource::OnPrefChanged(const std::string& pref_name) {
   device::LocationSystemPermissionStatus status =
       device::LocationSystemPermissionStatus::kNotDetermined;
 
-  if (ash::features::IsCrosPrivacyHubV1Enabled()) {
+  if (ash::features::IsCrosPrivacyHubLocationEnabled()) {
     PrefService* pref_service = pref_change_registrar_->prefs();
     if (pref_service) {
       status = pref_service->GetBoolean(prefs::kUserGeolocationAllowed)

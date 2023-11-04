@@ -97,7 +97,10 @@ class ReadAnythingAppController
       read_anything::mojom::LetterSpacing letter_spacing,
       const std::string& font,
       double font_size,
-      read_anything::mojom::Colors color) override;
+      read_anything::mojom::Colors color,
+      double speech_rate,
+      read_anything::mojom::HighlightGranularity granularity) override;
+  void SetDefaultLanguageCode(const std::string& code) override;
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   void ScreenAIServiceReady() override;
 #endif
@@ -111,12 +114,15 @@ class ReadAnythingAppController
   SkColor BackgroundColor() const;
   std::string FontName() const;
   float FontSize() const;
+  float SpeechRate() const;
   void OnFontSizeChanged(bool increase);
   void OnFontSizeReset();
   SkColor ForegroundColor() const;
   float LetterSpacing() const;
   float LineSpacing() const;
   int ColorTheme() const;
+  int HighlightGranularity() const;
+  int HighlightOn() const;
   int StandardLineSpacing() const;
   int LooseLineSpacing() const;
   int VeryLooseLineSpacing() const;
@@ -147,7 +153,7 @@ class ReadAnythingAppController
   void OnCollapseSelection() const;
   bool IsSelectable() const;
   bool IsWebUIToolbarEnabled() const;
-  bool isReadAloudEnabled() const;
+  bool IsReadAloudEnabled() const;
   void OnStandardLineSpacing();
   void OnLooseLineSpacing();
   void OnVeryLooseLineSpacing();
@@ -160,14 +166,20 @@ class ReadAnythingAppController
   void OnYellowTheme();
   void OnBlueTheme();
   void OnFontChange(const std::string& font);
+  void OnSpeechRateChange(double rate);
+  void TurnedHighlightOn();
+  void TurnedHighlightOff();
   double GetLineSpacingValue(int line_spacing) const;
   double GetLetterSpacingValue(int letter_spacing) const;
+  std::vector<std::string> GetSupportedFonts() const;
+
+  // The language code that should be used to determine which voices are
+  // supported for speech.
+  const std::string& GetLanguageCodeForSpeech() const;
 
   void Distill();
   void Draw();
   void DrawSelection();
-
-  void ExecuteJavaScript(std::string script);
 
   void UnserializeUpdates(std::vector<ui::AXTreeUpdate> updates,
                           const ui::AXTreeID& tree_id);
@@ -178,9 +190,17 @@ class ReadAnythingAppController
 
   void PostProcessSelection();
 
-  // SetContentForTesting and SetThemeForTesting are used by
-  // ReadAnythingAppTest and thus need to be kept in ReadAnythingAppController
-  // even though ReadAnythingAppControllerBrowserTest is friended.
+  // Returns the index of the next sentence of the given text, such that the
+  // next sentence is equivalent to text.substr(0, <returned_index>).
+  // If the sentence exceeds the maximum text length, the sentence will be
+  // cropped to the nearest word boundary that doesn't exceed the maximum
+  // text length.
+  int GetNextSentence(const std::u16string& text, int maxTextLength);
+
+  // SetContentForTesting, SetThemeForTesting, and SetLanguageForTesting are
+  // used by ReadAnythingAppTest and thus need to be kept in
+  // ReadAnythingAppController even though ReadAnythingAppControllerBrowserTest
+  // is friended.
   // Snapshot_lite is a data structure which resembles an
   // AXTreeUpdate. E.g.:
   //   const axTree = {
@@ -206,6 +226,7 @@ class ReadAnythingAppController
                           SkColor background_color,
                           int line_spacing,
                           int letter_spacing);
+  void SetLanguageForTesting(const std::string& language_code);
 
   content::RenderFrame* render_frame_;
   std::unique_ptr<AXTreeDistiller> distiller_;

@@ -140,6 +140,9 @@ class AutofillWebDataService : public WebDataServiceBase {
   // Schedules a task to update credit card in the web database.
   void UpdateCreditCard(const CreditCard& credit_card);
 
+  // Schedules a task to update a local CVC in the web database.
+  void UpdateLocalCvc(const std::string& guid, const std::u16string& cvc);
+
   // Schedules a task to remove a credit card from the web database.
   // |guid| is identifier of the credit card to remove.
   void RemoveCreditCard(const std::string& guid);
@@ -167,9 +170,6 @@ class AutofillWebDataService : public WebDataServiceBase {
   void UnmaskServerCreditCard(const CreditCard& card,
                               const std::u16string& full_number);
   void MaskServerCreditCard(const std::string& id);
-
-  // Store a UPI ID.
-  void AddUpiId(const std::string& upi_id);
 
   // Initiates the request for Payments customer data.  The method
   // OnWebDataServiceRequestDone of |consumer| gets called when the request is

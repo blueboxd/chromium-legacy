@@ -62,6 +62,7 @@
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-shared.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+#include "url/url_constants.h"
 
 namespace content {
 
@@ -372,7 +373,7 @@ bool FencedFrameReporter::SendReportInternal(
   DCHECK(reporting_destination_info.reporting_url_map);
 
   // Compute the destination url for the report.
-  GURL url;
+  GURL destination_url;
   if (absl::holds_alternative<DestinationEnumEvent>(event_variant)) {
     std::string event_type =
         absl::get<DestinationEnumEvent>(event_variant).type;
@@ -392,8 +393,8 @@ bool FencedFrameReporter::SendReportInternal(
     }
 
     // Validate the reporting URL.
-    url = url_iter->second;
-    if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS()) {
+    destination_url = url_iter->second;
+    if (!destination_url.is_valid() || !destination_url.SchemeIsHTTPOrHTTPS()) {
       error_message = base::StrCat(
           {"This frame registered invalid reporting url for destination '",
            ReportingDestinationAsString(reporting_destination),
@@ -447,13 +448,38 @@ bool FencedFrameReporter::SendReportInternal(
       return false;
     }
 
+    const GURL& original_url =
+        absl::get<DestinationURLEvent>(event_variant).url;
+    if (!original_url.is_valid() || !original_url.SchemeIs(url::kHttpsScheme)) {
+      attempted_custom_url_report_to_disallowed_origin_ = true;
+      error_message =
+          "This frame attempted to send a report to an invalid custom "
+          "destination URL. No further reports to custom destination URLs will "
+          "be allowed for this fenced frame config.";
+      console_message_level = blink::mojom::ConsoleMessageLevel::kError;
+      NotifyFencedFrameReportingBeaconFailed(attribution_reporting_data);
+      return false;
+    }
+
     // Substitute macros in the specified URL using the macros.
-    url = GURL(SubstituteMappedStrings(
-        absl::get<DestinationURLEvent>(event_variant).url.spec(),
+    destination_url = GURL(SubstituteMappedStrings(
+        original_url.spec(),
         reporting_destination_info.reporting_ad_macros.value()));
-    url::Origin destination_origin = url::Origin::Create(url);
+    if (!destination_url.is_valid() ||
+        !destination_url.SchemeIs(url::kHttpsScheme)) {
+      attempted_custom_url_report_to_disallowed_origin_ = true;
+      error_message =
+          "This frame attempted to send a report to a custom destination URL "
+          "that is invalid after macro substitution. No further reports to "
+          "custom destination URLs will be allowed for this fenced frame "
+          "config.";
+      console_message_level = blink::mojom::ConsoleMessageLevel::kError;
+      NotifyFencedFrameReportingBeaconFailed(attribution_reporting_data);
+      return false;
+    }
 
     // Check whether the destination URL has an allowed origin.
+    url::Origin destination_origin = url::Origin::Create(destination_url);
     bool is_allowed_origin = false;
     for (auto& origin : allowed_reporting_origins_.value()) {
       if (origin.IsSameOriginWith(destination_origin)) {
@@ -480,7 +506,8 @@ bool FencedFrameReporter::SendReportInternal(
   if (!GetContentClient()
            ->browser()
            ->IsPrivacySandboxReportingDestinationAttested(
-               browser_context_, url::Origin::Create(url), invoking_api_)) {
+               browser_context_, url::Origin::Create(destination_url),
+               invoking_api_)) {
     error_message = base::StrCat({
         "The reporting destination '",
         ReportingDestinationAsString(reporting_destination),
@@ -496,7 +523,7 @@ bool FencedFrameReporter::SendReportInternal(
   // Construct the resource request.
   auto request = std::make_unique<network::ResourceRequest>();
 
-  request->url = url;
+  request->url = destination_url;
   request->mode = network::mojom::RequestMode::kCors;
   request->request_initiator = request_initiator;
   request->credentials_mode = network::mojom::CredentialsMode::kOmit;
@@ -632,8 +659,6 @@ bool FencedFrameReporter::SendReportInternal(
 void FencedFrameReporter::OnForEventPrivateAggregationRequestsReceived(
     std::map<std::string, PrivateAggregationRequests>
         private_aggregation_event_map) {
-  MaybeBindPrivateAggregationHost();
-
   for (auto& [event_type, requests] : private_aggregation_event_map) {
     PrivateAggregationRequests& destination_vector =
         private_aggregation_event_map_[event_type];
@@ -655,7 +680,6 @@ void FencedFrameReporter::SendPrivateAggregationRequestsForEvent(
     // events when it should not be able to. Simply ignores the events.
     return;
   }
-  MaybeBindPrivateAggregationHost();
 
   // Always insert `pa_event_type` to `received_pa_events_`, since
   // `private_aggregation_event_map_` might grow with more entries when
@@ -667,7 +691,11 @@ void FencedFrameReporter::SendPrivateAggregationRequestsForEvent(
 
 void FencedFrameReporter::SendPrivateAggregationRequestsForEventInternal(
     const std::string& pa_event_type) {
-  DCHECK(private_aggregation_host_.is_bound());
+  DCHECK(private_aggregation_manager_);
+  DCHECK(winner_origin_.has_value() &&
+         winner_origin_.value().scheme() == url::kHttpsScheme);
+  DCHECK(main_frame_origin_.has_value() &&
+         main_frame_origin_.value().scheme() == url::kHttpsScheme);
 
   auto it = private_aggregation_event_map_.find(pa_event_type);
   if (it == private_aggregation_event_map_.end()) {
@@ -675,8 +703,8 @@ void FencedFrameReporter::SendPrivateAggregationRequestsForEventInternal(
   }
 
   SplitContributionsIntoBatchesThenSendToHost(
-      /*requests=*/std::move(it->second),
-      /*remote_host=*/private_aggregation_host_);
+      /*requests=*/std::move(it->second), *private_aggregation_manager_,
+      /*reporting_origin=*/winner_origin_.value(), main_frame_origin_.value());
 
   // Remove the entry of key `pa_event_type` from
   // `private_aggregation_event_map_` to avoid possibly sending the same
@@ -685,23 +713,20 @@ void FencedFrameReporter::SendPrivateAggregationRequestsForEventInternal(
   private_aggregation_event_map_.erase(it);
 }
 
-void FencedFrameReporter::MaybeBindPrivateAggregationHost() {
-  if (private_aggregation_host_.is_bound()) {
-    return;
+const std::vector<blink::FencedFrame::ReportingDestination>
+FencedFrameReporter::ReportingDestinations() {
+  std::vector<blink::FencedFrame::ReportingDestination> out;
+  for (const auto& reporting_metadata : reporting_metadata_) {
+    // Only add the reporting destination if the URL map has at least 1 entry.
+    // If the reporting URL map is null, it hasn't been received yet, so add
+    // the destination in case the URL map ends up populated with at least 1
+    // entry.
+    if (!reporting_metadata.second.reporting_url_map ||
+        !reporting_metadata.second.reporting_url_map->empty()) {
+      out.emplace_back(reporting_metadata.first);
+    }
   }
-  DCHECK(private_aggregation_manager_);
-  DCHECK(winner_origin_.has_value() &&
-         winner_origin_.value().scheme() == url::kHttpsScheme);
-  DCHECK(main_frame_origin_.has_value() &&
-         main_frame_origin_.value().scheme() == url::kHttpsScheme);
-  bool bound = private_aggregation_manager_->BindNewReceiver(
-      winner_origin_.value(), main_frame_origin_.value(),
-      PrivateAggregationBudgetKey::Api::kProtectedAudience,
-      /*context_id=*/absl::nullopt,
-      private_aggregation_host_.BindNewPipeAndPassReceiver());
-  // FLEDGE's worklets should all be trustworthy, including `winner_origin_`, so
-  // the receiver `private_aggregation_host_` should be accepted.
-  DCHECK(bound);
+  return out;
 }
 
 base::flat_map<blink::FencedFrame::ReportingDestination,

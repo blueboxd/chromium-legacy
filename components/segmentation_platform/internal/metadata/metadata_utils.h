@@ -44,7 +44,15 @@ enum class ValidationResult {
   kMultiClassClassifierHasNoLabels = 16,
   kMultiClassClassifierUsesBothThresholdTypes = 17,
   kMultiClassClassifierClassAndThresholdCountMismatch = 18,
-  kMaxValue = kMultiClassClassifierClassAndThresholdCountMismatch,
+  kDefaultTtlIsMissing = 19,
+  kPredictionTtlTimeUnitInvalid = 20,
+  kGenericPredictorMissingLabels = 21,
+  kBinaryClassifierEmptyLabels = 22,
+  kBinnedClassifierEmptyLabels = 23,
+  kBinnedClassifierBinsUnsorted = 24,
+  kPredictorTypeMissing = 25,
+  kDiscreteMappingAndOutputConfigFound = 26,
+  kMaxValue = kDiscreteMappingAndOutputConfigFound,
 };
 
 // Whether the given SegmentInfo and its metadata is valid to be used for the
@@ -116,6 +124,7 @@ base::TimeDelta ConvertToTimeDelta(proto::TimeUnit time_unit);
 
 // Conversion methods between SignalKey::Kind and proto::SignalType.
 SignalKey::Kind SignalTypeToSignalKind(proto::SignalType signal_type);
+proto::SignalType SignalKindToSignalType(SignalKey::Kind kind);
 
 // Helper method to convert continuous to discrete score.
 float ConvertToDiscreteScore(const std::string& mapping_key,
@@ -125,9 +134,17 @@ float ConvertToDiscreteScore(const std::string& mapping_key,
 std::string SegmetationModelMetadataToString(
     const proto::SegmentationModelMetadata& model_metadata);
 
-// Helper method to get all UMAFeatures from a segmentation model's metadata.
+// Helper method to visit all UMAFeatures from a segmentation model's metadata.
 // When |include_outputs| is true, the UMA features for training outputs will be
 // included. Otherwise only input UMA features are included.
+using VisitUmaFeature =
+    base::RepeatingCallback<void(const proto::UMAFeature& feature)>;
+void VisitAllUmaFeatures(const proto::SegmentationModelMetadata& model_metadata,
+                         bool include_outputs,
+                         VisitUmaFeature visit);
+
+// Same as VisitAllUmaFeatures(), but copies the features and returns a vector.
+// Prefer VisitAllUmaFeatures() unless copies are required.
 std::vector<proto::UMAFeature> GetAllUmaFeatures(
     const proto::SegmentationModelMetadata& model_metadata,
     bool include_outputs);

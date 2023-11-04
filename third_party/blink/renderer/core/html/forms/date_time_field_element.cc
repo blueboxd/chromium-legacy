@@ -82,8 +82,7 @@ void DateTimeFieldElement::DefaultKeyboardEventHandler(
     return;
 
   const String& key = keyboard_event.key();
-  bool is_horizontal =
-      GetComputedStyle() ? GetComputedStyle()->IsHorizontalWritingMode() : true;
+  bool is_horizontal = GetComputedStyle()->IsHorizontalWritingMode();
 
   if ((is_horizontal && key == "ArrowLeft") ||
       (!is_horizontal && key == "ArrowUp")) {

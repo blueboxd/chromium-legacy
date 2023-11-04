@@ -15,7 +15,6 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/media_router/common/pref_names.h"
@@ -38,15 +37,7 @@
 
 namespace media_router {
 
-BASE_FEATURE(kMediaRouterOTRInstance,
-             "MediaRouterOTRInstance",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-#if BUILDFLAG(IS_ANDROID)
-BASE_FEATURE(kCastAnotherContentWhileCasting,
-             "CastAnotherContentWhileCasting",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#else
+#if !BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kMediaRouter, "MediaRouter", base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kCastAllowAllIPsFeature,
              "CastAllowAllIPs",
@@ -62,7 +53,13 @@ BASE_FEATURE(kStartCastSessionWithoutTerminating,
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kFallbackToAudioTabMirroring,
              "FallbackToAudioTabMirroring",
+// TODO(crbug.com/1486680): Enable this once stopping mirroring routes in the
+// global media controls is implemented on Chrome OS.
+#if BUILDFLAG(IS_CHROMEOS)
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#else
              base::FEATURE_ENABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_CHROMEOS)
 BASE_FEATURE(kCastDialogStopButton,
              "CastDialogStopButton",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -80,7 +77,7 @@ BASE_FEATURE(kGlobalMediaControlsCastStartStop,
              "GlobalMediaControlsCastStartStop",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS)
-#endif  // BUILDFLAG(IS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 namespace {
 const PrefService::Preference* GetMediaRouterPref(
@@ -119,13 +116,6 @@ bool MediaRouterEnabled(content::BrowserContext* context) {
   if (!IsUserProfile(Profile::FromBrowserContext(context)))
     return false;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-  if (!base::FeatureList::IsEnabled(kMediaRouterOTRInstance)) {
-    // The MediaRouter service is shared across the original and the incognito
-    // profiles, so we must use the original context for consistency between
-    // them.
-    context = chrome::GetBrowserContextRedirectedInIncognito(context);
-  }
 
   // If the Media Router was already enabled or disabled for |context|, then it
   // must remain so.  The Media Router does not support dynamic

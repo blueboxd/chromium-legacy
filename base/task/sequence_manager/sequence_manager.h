@@ -93,7 +93,7 @@ class BASE_EXPORT SequenceManager {
 
     ~PrioritySettings();
 
-    PrioritySettings(PrioritySettings&&);
+    PrioritySettings(PrioritySettings&&) noexcept;
     PrioritySettings& operator=(PrioritySettings&&);
 
     TaskQueue::QueuePriority priority_count() const { return priority_count_; }
@@ -308,10 +308,6 @@ class BASE_EXPORT SequenceManager {
   // Removes an observer which reports task execution. Can only be called on the
   // same thread that `this` is running on.
   virtual void RemoveTaskObserver(TaskObserver* task_observer) = 0;
-
- protected:
-  virtual std::unique_ptr<internal::TaskQueueImpl> CreateTaskQueueImpl(
-      const TaskQueue::Spec& spec) = 0;
 };
 
 class BASE_EXPORT SequenceManager::Settings::Builder {

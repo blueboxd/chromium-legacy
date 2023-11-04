@@ -280,7 +280,6 @@
 <translation id="3226405216343213872">Traže se skeneri</translation>
 <translation id="3226657629376379887">Meni sa radnjama za raspored</translation>
 <translation id="3246869037381808805">Zadaci štampanja stariji od 1 dana se uklanjaju</translation>
-<translation id="3248223063252096240">Ekskluzivno za <ph name="PRODUCT_NAME" /></translation>
 <translation id="3268178239013324452">Nije uspelo – vrata su otvorena</translation>
 <translation id="3275729367986477355">Slika avatara</translation>
 <translation id="3283504360622356314">{0,plural, =1{Izmeni fajl}one{Izmeni fajlove}few{Izmeni fajlove}other{Izmeni fajlove}}</translation>
@@ -897,7 +896,7 @@
 <translation id="7955587717700691983">Bluetooth tastatura</translation>
 <translation id="7960831585769876809">Temperatura</translation>
 <translation id="7971535376154084247">Opšte kontrole</translation>
-<translation id="7977800524392185497">Da biste se povezali sa <ph name="NETWORK_NAME" /> mreži, idite u Podešavanja</translation>
+<translation id="7977800524392185497">Da biste se pridružili <ph name="NETWORK_NAME" /> mreži, idite u Podešavanja</translation>
 <translation id="7978412674231730200">Privatni ključ</translation>
 <translation id="7994702968232966508">EAP metod</translation>
 <translation id="8004582292198964060">Pregledač</translation>
@@ -921,6 +920,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Izaberite <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
 <translation id="8151185429379586178">Alatke za programere</translation>
+<translation id="8152370627892825"><ph name="DESCRIPTION" />, <ph name="ACCELERATOR_INFO" />.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183974620058026102">Prilog</translation>
 <translation id="8206859287963243715">Mobilni uređaj</translation>

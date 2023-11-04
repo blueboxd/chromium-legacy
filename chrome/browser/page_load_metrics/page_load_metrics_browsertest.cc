@@ -23,6 +23,7 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/to_vector.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -245,10 +246,8 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
 
   std::string GetRecordedPageLoadMetricNames() {
     auto entries = histogram_tester_->GetTotalCountsForPrefix("PageLoad.");
-    std::vector<std::string> names;
-    base::ranges::transform(
-        entries, std::back_inserter(names),
-        &base::HistogramTester::CountsMap::value_type::first);
+    std::vector<std::string> names = base::test::ToVector(
+        entries, &base::HistogramTester::CountsMap::value_type::first);
     return base::JoinString(names, ",");
   }
 
@@ -1015,9 +1014,16 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, Redirect) {
   VerifyNavigationMetrics({final_url});
 }
 
+// TODO(crbug.com/1482170): Re-enable this test on Lacros.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_NoStatePrefetchMetrics DISABLED_NoStatePrefetchMetrics
+#else
+#define MAYBE_NoStatePrefetchMetrics NoStatePrefetchMetrics
+#endif
 // Triggers nostate prefetch, and verifies that the UKM metrics related to
 // nostate prefetch are recorded correctly.
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoStatePrefetchMetrics) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       MAYBE_NoStatePrefetchMetrics) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url = embedded_test_server()->GetURL("/title1.html");
@@ -1474,7 +1480,13 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoDocumentWrite) {
       internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, DocumentWriteBlock) {
+// Flaky on lacros. See https://crbug.com/1484915
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_DocumentWriteBlock DISABLED_DocumentWriteBlock
+#else
+#define MAYBE_DocumentWriteBlock DocumentWriteBlock
+#endif
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, MAYBE_DocumentWriteBlock) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsTestWaiter("waiter");
@@ -1489,7 +1501,13 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, DocumentWriteBlock) {
       internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, DocumentWriteReload) {
+// TODO(crbug.com/1482261): Re-enable this test on Lacros.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_DocumentWriteReload DISABLED_DocumentWriteReload
+#else
+#define MAYBE_DocumentWriteReload DocumentWriteReload
+#endif
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, MAYBE_DocumentWriteReload) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsTestWaiter("waiter");
@@ -2569,6 +2587,9 @@ class SoftNavigationBrowserTest : public PageLoadMetricsBrowserTest {
     content::WaitForHitTestData(web_contents->GetPrimaryMainFrame());
 
     waiter->AddPageExpectation(TimingField::kSoftNavigationCountUpdated);
+    if (wait_for_second_lcp) {
+      waiter->AddPageExpectation(TimingField::kLargestContentfulPaint);
+    }
 
     const std::string wait_for_lcp = R"(
       (async () => {
@@ -2671,6 +2692,7 @@ class SoftNavigationBrowserTest : public PageLoadMetricsBrowserTest {
     EXPECT_EQ(expected_event_number, num_events);
 
     std::string previous_frame;
+    std::string navigation_id;
     double soft_navigation_timestamp = 0.0;
     for (auto* event : events) {
       EXPECT_TRUE(event->HasStringArg("frame"));
@@ -2681,8 +2703,15 @@ class SoftNavigationBrowserTest : public PageLoadMetricsBrowserTest {
       previous_frame = frame;
       if (event->name == "SoftNavigationHeuristics_SoftNavigationDetected") {
         soft_navigation_timestamp = event->timestamp;
+        EXPECT_TRUE(event->HasStringArg("navigationId"));
+        navigation_id = event->GetKnownArgAsString("navigationId");
       } else if (soft_navigation_timestamp > 0.0) {
         EXPECT_LE(soft_navigation_timestamp, event->timestamp);
+        EXPECT_EQ(event->name, "largestContentfulPaint::Candidate");
+        base::Value::Dict data = event->GetKnownArgAsDict("data");
+        if (!navigation_id.empty()) {
+          EXPECT_EQ(navigation_id, *data.FindString("navigationId"));
+        }
       }
     }
     // If we have more than one event, one of them needs to be a soft
@@ -3459,8 +3488,15 @@ class PageLoadMetricsBrowserTestCrashedPage
     : public PageLoadMetricsBrowserTestTerminatedPage,
       public ::testing::WithParamInterface<const char*> {};
 
+// TODO(crbug.com/1479116): Very flaky on Lacros.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_UkmIsRecordedForCrashedTabPage \
+  DISABLED_UkmIsRecordedForCrashedTabPage
+#else
+#define MAYBE_UkmIsRecordedForCrashedTabPage UkmIsRecordedForCrashedTabPage
+#endif
 IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTestCrashedPage,
-                       UkmIsRecordedForCrashedTabPage) {
+                       MAYBE_UkmIsRecordedForCrashedTabPage) {
   // Open a new foreground tab and navigate.
   content::WebContents* contents = OpenTabAndNavigate();
 

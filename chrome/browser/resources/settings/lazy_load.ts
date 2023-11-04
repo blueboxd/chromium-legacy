@@ -156,6 +156,7 @@ export {SettingsImportDataDialogElement} from './people_page/import_data_dialog.
 export {SettingsManageProfileElement} from './people_page/manage_profile.js';
 export {ManageProfileBrowserProxy, ManageProfileBrowserProxyImpl, ProfileShortcutStatus} from './people_page/manage_profile_browser_proxy.js';
 // </if>
+export {SettingsPageContentPageElement} from './people_page/page_content_page.js';
 export {SettingsSyncControlsElement} from './people_page/sync_controls.js';
 export {SettingsSyncEncryptionOptionsElement} from './people_page/sync_encryption_options.js';
 export {SettingsSyncPageElement} from './people_page/sync_page.js';
@@ -192,10 +193,12 @@ export {SetPinDialogPage, SettingsSecurityKeysSetPinDialogElement} from './priva
 export {SafeBrowsingSetting, SettingsSecurityPageElement} from './privacy_page/security_page.js';
 export {SettingsResetPageElement} from './reset_page/reset_page.js';
 export {SettingsResetProfileDialogElement} from './reset_page/reset_profile_dialog.js';
+export {SettingsSafetyHubExtensionsModuleElement} from './safety_hub/extensions_module.js';
+export {SettingsSafetyHubNotificationPermissionsModuleElement} from './safety_hub/notification_permissions_module.js';
 export {CardInfo, CardState, NotificationPermission, SafetyHubBrowserProxy, SafetyHubBrowserProxyImpl, SafetyHubEvent, UnusedSitePermissions} from './safety_hub/safety_hub_browser_proxy.js';
 export {SettingsSafetyHubCardElement} from './safety_hub/safety_hub_card.js';
 export {SettingsSafetyHubEntryPointElement} from './safety_hub/safety_hub_entry_point.js';
-export {SettingsSafetyHubModuleElement, SiteInfo} from './safety_hub/safety_hub_module.js';
+export {SettingsSafetyHubModuleElement, SiteInfo, SiteInfoWithTarget} from './safety_hub/safety_hub_module.js';
 export {SettingsSafetyHubPageElement} from './safety_hub/safety_hub_page.js';
 export {SettingsSafetyHubUnusedSitePermissionsModuleElement} from './safety_hub/unused_site_permissions_module.js';
 export {SettingsOmniboxExtensionEntryElement} from './search_engines_page/omnibox_extension_entry.js';
@@ -206,13 +209,10 @@ export {SettingsSearchEnginesPageElement} from './search_engines_page/search_eng
 export {SettingsSimpleConfirmationDialogElement} from './simple_confirmation_dialog.js';
 export {AddSiteDialogElement} from './site_settings/add_site_dialog.js';
 export {AllSitesElement} from './site_settings/all_sites.js';
-// <if expr="chromeos_ash">
-export {AndroidInfoBrowserProxy, AndroidInfoBrowserProxyImpl, AndroidSmsInfo} from './site_settings/android_info_browser_proxy.js';
-// </if>
 export {CategorySettingExceptionsElement} from './site_settings/category_setting_exceptions.js';
 export {ChooserExceptionListElement} from './site_settings/chooser_exception_list.js';
 export {ChooserExceptionListEntryElement} from './site_settings/chooser_exception_list_entry.js';
-export {ChooserType, ContentSetting, ContentSettingsTypes, CookieControlsMode, CookiesExceptionType, NotificationSetting, SITE_EXCEPTION_WILDCARD, SiteSettingSource, SortMethod} from './site_settings/constants.js';
+export {ChooserType, ContentSetting, ContentSettingsTypes, CookieControlsMode, CookiesExceptionType, SettingsState, SITE_EXCEPTION_WILDCARD, SiteSettingSource, SortMethod} from './site_settings/constants.js';
 export {SettingsEditExceptionDialogElement} from './site_settings/edit_exception_dialog.js';
 export {FileSystemSiteEntryElement} from './site_settings/file_system_site_entry.js';
 export {FileSystemSiteEntryItemElement} from './site_settings/file_system_site_entry_item.js';

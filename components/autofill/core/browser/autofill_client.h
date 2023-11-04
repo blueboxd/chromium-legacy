@@ -13,7 +13,6 @@
 #include "base/containers/span.h"
 #include "base/functional/callback_forward.h"
 #include "base/i18n/rtl.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_trigger_details.h"
@@ -30,7 +29,7 @@
 #include "components/autofill/core/common/form_interactions_flow.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/device_reauth/device_authenticator.h"
-#include "components/plus_addresses/plus_address_service.h"
+#include "components/plus_addresses/plus_address_types.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/security_state/core/security_state.h"
 #include "components/translate/core/browser/language_state.h"
@@ -43,6 +42,14 @@
 #include "url/origin.h"
 
 class PrefService;
+
+namespace compose {
+class ComposeManager;
+}
+
+namespace plus_addresses {
+class PlusAddressService;
+}
 
 namespace signin {
 class IdentityManager;
@@ -65,10 +72,6 @@ namespace webauthn {
 class InternalAuthenticator;
 }
 #endif
-
-namespace plus_addresses {
-class PlusAddressService;
-}
 
 namespace autofill {
 
@@ -93,7 +96,6 @@ class CreditCardCvcAuthenticator;
 enum class CreditCardFetchResult;
 class CreditCardOtpAuthenticator;
 class FormDataImporter;
-class FormStructure;
 class Iban;
 class IbanManager;
 class LogManager;
@@ -336,31 +338,31 @@ class AutofillClient : public RiskDataLoader {
   // Callback to run after local credit card save or local CVC save is offered.
   // Sends whether the prompt was accepted, declined, or ignored in
   // |user_decision|.
-  typedef base::OnceCallback<void(SaveCardOfferUserDecision user_decision)>
-      LocalSaveCardPromptCallback;
+  using LocalSaveCardPromptCallback =
+      base::OnceCallback<void(SaveCardOfferUserDecision user_decision)>;
 
-  // Callback to run after upload credit card save is offered. Sends whether the
-  // prompt was accepted, declined, or ignored in |user_decision|, and
-  // additional |user_provided_card_details| if applicable.
-  typedef base::OnceCallback<void(
+  // Callback to run after upload credit card save or upload CVC save for
+  // existing server card is offered. Sends whether the prompt was accepted,
+  // declined, or ignored in |user_decision|, and additional
+  // |user_provided_card_details| if applicable.
+  using UploadSaveCardPromptCallback = base::OnceCallback<void(
       SaveCardOfferUserDecision user_decision,
-      const UserProvidedCardDetails& user_provided_card_details)>
-      UploadSaveCardPromptCallback;
+      const UserProvidedCardDetails& user_provided_card_details)>;
 
-  typedef base::OnceCallback<void(const CreditCard&)> CreditCardScanCallback;
+  using CreditCardScanCallback = base::OnceCallback<void(const CreditCard&)>;
 
   // Callback to run if user presses the Save button in the migration dialog.
   // Will pass a vector of GUIDs of cards that the user selected to upload to
   // LocalCardMigrationManager.
-  typedef base::OnceCallback<void(const std::vector<std::string>&)>
-      LocalCardMigrationCallback;
+  using LocalCardMigrationCallback =
+      base::OnceCallback<void(const std::vector<std::string>&)>;
 
   // Callback to run if the user presses the trash can button in the
   // action-required dialog. Will pass to LocalCardMigrationManager a
   // string of GUID of the card that the user selected to delete from local
   // storage.
-  typedef base::RepeatingCallback<void(const std::string&)>
-      MigrationDeleteCardCallback;
+  using MigrationDeleteCardCallback =
+      base::RepeatingCallback<void(const std::string&)>;
 
   // Callback to run after local IBAN save is offered. The callback runs with
   // `user_decision` indicating whether the prompt was accepted, declined,
@@ -372,12 +374,19 @@ class AutofillClient : public RiskDataLoader {
 
   // Callback to run if the OK button or the cancel button in a
   // Webauthn dialog is clicked.
-  typedef base::RepeatingCallback<void(WebauthnDialogCallbackType)>
-      WebauthnDialogCallback;
+  using WebauthnDialogCallback =
+      base::RepeatingCallback<void(WebauthnDialogCallbackType)>;
 
+  // TODO(crbug.com/1486412): investigate if AutofillProfile should be passed
+  // by const reference.
   using AddressProfileSavePromptCallback =
       base::OnceCallback<void(SaveAddressProfileOfferUserDecision,
                               AutofillProfile profile)>;
+
+  // The callback accepts the boolean parameter indicating whether the user has
+  // accepted the delete dialog. The callback is intended to be called only upon
+  // user closing the dialog directly and not when user closes the browser tab.
+  using AddressProfileDeleteDialogCallback = base::OnceCallback<void(bool)>;
 
   ~AutofillClient() override = default;
 
@@ -422,6 +431,9 @@ class AutofillClient : public RiskDataLoader {
   // When the enterprise plus address feature is supported, gets the
   // KeyedService that manages that data.
   virtual plus_addresses::PlusAddressService* GetPlusAddressService();
+
+  // Returns the `ComposeManager` instance for the tab of this client.
+  virtual compose::ComposeManager* GetComposeManager();
 
   // Orchestrates UI for enterprise plus address creation; no-op except on
   // supported platforms.
@@ -677,15 +689,18 @@ class AutofillClient : public RiskDataLoader {
       LocalSaveCardPromptCallback callback) = 0;
 
   // Runs |callback| once the user makes a decision with respect to the
-  // offer-to-save prompt. Displays the contents of |legal_message_lines|
-  // to the user. Displays a cardholder name textfield in the bubble if
-  // |options.should_request_name_from_user| is true. Displays
-  // a pair of expiration date dropdowns in the bubble if
+  // offer-to-save prompt. This includes both the save server card prompt and
+  // the save CVC for a server card prompt. Displays the contents of
+  // |legal_message_lines| to the user. Displays a cardholder name textfield in
+  // the bubble if |options.should_request_name_from_user| is true. Displays a
+  // pair of expiration date dropdowns in the bubble if
   // |should_request_expiration_date_from_user| is true. On desktop, shows the
   // offer-to-save bubble if |options.show_prompt| is true;
   // otherwise only shows the omnibox icon. On mobile, shows the offer-to-save
   // infobar if |options.show_prompt| is true; otherwise does
   // not offer to save at all.
+  // TODO (crbug.com/1462821): Make |legal_message_lines| optional, as CVC
+  // upload has no legal message.
   virtual void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
       const LegalMessageLines& legal_message_lines,
@@ -704,8 +719,11 @@ class AutofillClient : public RiskDataLoader {
                                            base::OnceClosure callback) = 0;
 
   // Show an edit address profile dialog, giving the user an option to alter
-  // autofill profile data.
-  virtual void ShowEditAddressProfileDialog(const AutofillProfile& profile) = 0;
+  // autofill profile data. `on_user_decision_callback` is used to react to the
+  // user decision of either saving changes or not.
+  virtual void ShowEditAddressProfileDialog(
+      const AutofillProfile& profile,
+      AddressProfileSavePromptCallback on_user_decision_callback) = 0;
 
   // Show a delete address profile dialog asking if users want to proceed with
   // deletion.
@@ -833,14 +851,6 @@ class AutofillClient : public RiskDataLoader {
   // Returns whether password management is enabled as per the user preferences.
   virtual bool IsPasswordManagerEnabled() = 0;
 
-  // Pass the form structures to the password manager to choose correct username
-  // and to the password generation manager to detect account creation forms.
-  //
-  // TODO(crbug.com/1466435): Do not use or rely on this function anymore.
-  virtual void PropagateAutofillPredictionsDeprecated(
-      AutofillDriver* driver,
-      const std::vector<FormStructure*>& forms) = 0;
-
   // Inform the client that the form has been filled.
   virtual void DidFillOrPreviewForm(
       mojom::AutofillActionPersistence action_persistence,
@@ -882,8 +892,8 @@ class AutofillClient : public RiskDataLoader {
 
   // Returns a pointer to a DeviceAuthenticator. Might be nullptr if the given
   // platform is not supported.
-  virtual scoped_refptr<device_reauth::DeviceAuthenticator>
-  GetDeviceAuthenticator() const;
+  virtual std::unique_ptr<device_reauth::DeviceAuthenticator>
+  GetDeviceAuthenticator();
 };
 
 }  // namespace autofill

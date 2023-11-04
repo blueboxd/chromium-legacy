@@ -58,8 +58,10 @@ enum Setting {
   kSmartLockOnOff = 203,
   // Note: Value 204 was for deprecated kSmartLockUnlockOrSignIn -
   // see b/227674947. Do not reuse.
-  kMessagesSetUp = 205,
-  kMessagesOnOff = 206,
+  // Note Value 205 was for deprecated kMessagesSetUp -
+  // see b/297567461. Do not reuse.
+  // Note Value 206 was for deprecated kMessagesOnOff -
+  // see b/297567461. Do not reuse.
   kForgetPhone = 207,
   kNearbyShareOnOff = 208,
   kPhoneHubOnOff = 209,
@@ -180,6 +182,7 @@ enum Setting {
   kRestoreAppsAndPages = 703,
   kDoNotDisturbOnOff = 704,
   kAppBadgingOnOff = 705,
+  kEnableIsolatedWebAppsOnOff = 706,
 
   // Crostini section.
   kSetUpCrostini= 800,
@@ -221,6 +224,7 @@ enum Setting {
   kLockScreenNotification = 1119,
   kSpeakOnMuteDetectionOnOff = 1120,
   kDataRecovery = 1121,
+  kRevenEnableHwDataUsage = 1122,
 
   // Languages and Input section.
   kAddLanguage = 1200,
@@ -241,6 +245,8 @@ enum Setting {
 
   // Files section.
   kGoogleDriveConnection = 1300,
+  kGoogleDriveRemoveAccess = 1301,
+  kGoogleDriveFileSync = 1302,
 
   // Printing section.
   kAddPrinter = 1400,

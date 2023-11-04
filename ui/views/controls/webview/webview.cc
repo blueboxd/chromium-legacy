@@ -31,6 +31,9 @@ namespace views {
 
 namespace {
 
+// This key indicates that a WebContents is used by a WebView.
+const void* const kIsWebViewContentsKey = &kIsWebViewContentsKey;
+
 // A testing stub that creates web contents.
 WebView::WebContentsCreator* GetCreatorForTesting() {
   static base::NoDestructor<WebView::WebContentsCreator> creator;
@@ -76,6 +79,11 @@ WebView::~WebView() {
   browser_context_ = nullptr;
 }
 
+// static
+bool WebView::IsWebViewContents(const content::WebContents* web_contents) {
+  return web_contents->GetUserData(kIsWebViewContentsKey);
+}
+
 content::WebContents* WebView::GetWebContents(base::Location creator_location) {
   if (!web_contents()) {
     if (!browser_context_) {
@@ -104,6 +112,8 @@ void WebView::SetWebContents(content::WebContents* replacement) {
   // the same hierarchy at a later point in time.
   if (replacement) {
     replacement->SetColorProviderSource(GetWidget());
+    replacement->SetUserData(kIsWebViewContentsKey,
+                             std::make_unique<base::SupportsUserData::Data>());
   }
 
   // web_contents() now returns |replacement| from here onwards.
@@ -468,10 +478,12 @@ void WebView::UpdateCrashedOverlayView() {
 }
 
 void WebView::NotifyAccessibilityWebContentsChanged() {
-  content::RenderFrameHost* rfh =
-      web_contents() ? web_contents()->GetPrimaryMainFrame() : nullptr;
-  GetViewAccessibility().OverrideChildTreeID(rfh ? rfh->GetAXTreeID()
-                                                 : ui::AXTreeIDUnknown());
+  if (!lock_child_ax_tree_id_override_) {
+    content::RenderFrameHost* rfh =
+        web_contents() ? web_contents()->GetPrimaryMainFrame() : nullptr;
+    GetViewAccessibility().OverrideChildTreeID(rfh ? rfh->GetAXTreeID()
+                                                   : ui::AXTreeIDUnknown());
+  }
   NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, false);
 }
 

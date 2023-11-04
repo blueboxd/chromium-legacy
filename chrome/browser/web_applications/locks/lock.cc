@@ -28,7 +28,7 @@ std::string LockTypeToString(LockDescription::Type type) {
   }
 }
 
-LockDescription::LockDescription(base::flat_set<AppId> app_ids,
+LockDescription::LockDescription(base::flat_set<webapps::AppId> app_ids,
                                  LockDescription::Type type)
     : app_ids_(std::move(app_ids)), type_(type) {}
 LockDescription::~LockDescription() = default;
@@ -64,11 +64,6 @@ std::ostream& operator<<(std::ostream& out,
 WebContentsManager& Lock::web_contents_manager() {
   CHECK(lock_manager_);
   return lock_manager_->provider().web_contents_manager();
-}
-
-ExtensionsManager& Lock::extensions_manager() {
-  CHECK(lock_manager_);
-  return lock_manager_->provider().extensions_manager();
 }
 
 Lock::Lock(std::unique_ptr<content::PartitionedLockHolder> holder,

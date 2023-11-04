@@ -74,6 +74,8 @@ build_webui_tests("build") {
     "safety_hub_card_test.ts",
     "safety_hub_entry_point_test.ts",
     "safety_hub_module_test.ts",
+    "safety_hub_notification_permissions_module_test.ts",
+    "safety_hub_extensions_module_test.ts",
     "safety_hub_page_test.ts",
     "safety_hub_unused_site_permissions_module_test.ts",
     "search_engines_page_test.ts",
@@ -110,6 +112,7 @@ build_webui_tests("build") {
     "site_list_entry_test.ts",
     "site_list_test.ts",
     "site_settings_page_test.ts",
+    "speed_page_test.ts",
     "startup_urls_page_test.ts",
     "storage_access_static_site_list_entry_test.ts",
     "storage_access_site_list_entry_test.ts",
@@ -143,11 +146,7 @@ build_webui_tests("build") {
   ]
 
   if (is_chromeos_ash) {
-    files += [
-      "people_page_test_cros.ts",
-      "site_list_tests_cros.ts",
-      "test_android_info_browser_proxy.ts",
-    ]
+    files += [ "people_page_test_cros.ts" ]
   } else {
     files += [
       "fake_language_settings_private.ts",

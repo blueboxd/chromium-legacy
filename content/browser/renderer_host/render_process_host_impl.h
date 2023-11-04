@@ -265,6 +265,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void AddFilter(BrowserMessageFilter* filter) override;
   bool FastShutdownStarted() override;
   base::TimeDelta GetChildProcessIdleTime() override;
+  viz::GpuClient* GetGpuClient();
   FilterURLResult FilterURL(bool empty_allowed, GURL* url) override;
   void EnableAudioDebugRecordings(const base::FilePath& file) override;
   void DisableAudioDebugRecordings() override;
@@ -512,7 +513,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static scoped_refptr<base::SingleThreadTaskRunner>
   GetInProcessRendererThreadTaskRunnerForTesting();
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_ANDROID)
   // Gets the platform-specific limit. Used by GetMaxRendererProcessCount().
   static size_t GetPlatformMaxRendererProcessCount();
 #endif

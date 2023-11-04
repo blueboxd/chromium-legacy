@@ -18,6 +18,12 @@ struct VectorIcon;
 
 class TabStrip;
 
+enum class Edge {
+  kNone = 0,
+  kLeft,
+  kRight,
+};
+
 class TabStripControlButton : public views::LabelButton,
                               public views::MaskedTargeterDelegate {
  public:
@@ -28,7 +34,20 @@ class TabStripControlButton : public views::LabelButton,
 
   TabStripControlButton(TabStrip* tab_strip,
                         PressedCallback callback,
-                        const gfx::VectorIcon& icon);
+                        const gfx::VectorIcon& icon,
+                        Edge flat_edge = Edge::kNone);
+
+  TabStripControlButton(TabStrip* tab_strip,
+                        PressedCallback callback,
+                        const std::u16string& text,
+                        Edge flat_edge = Edge::kNone);
+
+  TabStripControlButton(TabStrip* tab_strip,
+                        PressedCallback callback,
+                        const gfx::VectorIcon& icon,
+                        const std::u16string& text,
+                        Edge flat_edge = Edge::kNone);
+
   TabStripControlButton(const TabStripControlButton&) = delete;
   TabStripControlButton& operator=(const TabStripControlButton&) = delete;
   ~TabStripControlButton() override = default;
@@ -38,6 +57,12 @@ class TabStripControlButton : public views::LabelButton,
   void UpdateIcon();
 
   virtual int GetCornerRadius() const;
+  float GetScaledCornerRadius(float initial_radius, Edge edge) const;
+
+  Edge flat_edge() { return flat_edge_; }
+  float flat_edge_factor_for_testing() { return flat_edge_factor_; }
+
+  void SetFlatEdgeFactor(float factor);
 
   // Helper function for changing the state for TabStripRegionView tests.
   void AnimateToStateForTesting(views::InkDropState state);
@@ -81,11 +106,7 @@ class TabStripControlButton : public views::LabelButton,
     UpdateColors();
   }
 
-  bool GetPaintTransparentForCustomImageTheme() {
-    return paint_transparent_for_custom_image_theme_;
-  }
-
-  void SetPaintTransparentForCustomImageTheme(
+  void set_paint_transparent_for_custom_image_theme(
       bool paint_transparent_for_custom_image_theme) {
     paint_transparent_for_custom_image_theme_ =
         paint_transparent_for_custom_image_theme;
@@ -95,10 +116,18 @@ class TabStripControlButton : public views::LabelButton,
   void UpdateBackground();
   void UpdateInkDrop();
 
-  // Icon for the label button.
+  // Optional icon for the label button.
   const raw_ref<const gfx::VectorIcon> icon_;
 
   bool paint_transparent_for_custom_image_theme_;
+
+  // Button edge which should render without rounded corners.
+  Edge flat_edge_;
+
+  // Corner radius multiplier on the corners adjacent to the flat edge, if any.
+  // Between 0-1, where corners will be flat at 0 and rounded at 1. Used for
+  // animating corner radius.
+  float flat_edge_factor_ = 1;
 
   // Tab strip that contains this button.
   raw_ptr<TabStrip, AcrossTasksDanglingUntriaged> tab_strip_;

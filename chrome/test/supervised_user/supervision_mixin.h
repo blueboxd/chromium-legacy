@@ -16,8 +16,8 @@
 #include "chrome/test/base/fake_gaia_mixin.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
+#include "chrome/test/supervised_user/api_mock_setup_mixin.h"
 #include "chrome/test/supervised_user/embedded_test_server_setup_mixin.h"
-#include "components/prefs/pref_change_registrar.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "content/public/test/browser_test_utils.h"
@@ -25,35 +25,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace supervised_user {
-
-// Registers to observe a preference, and allows to block until it is loaded.
-// Should be installed before fetching process of the family data starts,
-// specifically, should be installed before SupervisionMixin.
-//
-// Useful in multi-threaded test environments, where network calls may not
-// complete before tests are executed. Instances of this class are disposable.
-class FamilyFetchedLock : public InProcessBrowserTestMixin {
- public:
-  FamilyFetchedLock() = delete;
-  FamilyFetchedLock(InProcessBrowserTestMixinHost& test_mixin_host,
-                    raw_ptr<InProcessBrowserTest> test_base);
-  FamilyFetchedLock(const FamilyFetchedLock&) = delete;
-  FamilyFetchedLock& operator=(const FamilyFetchedLock&) = delete;
-  ~FamilyFetchedLock() override;
-
-  // InProcessBrowserTestMixin:
-  void SetUpOnMainThread() override;
-  void TearDownOnMainThread() override;
-
-  // Waits until the preference is ready.
-  void Wait();
-
- private:
-  void OnDone();
-  raw_ptr<InProcessBrowserTest> test_base_;
-  base::OnceClosure done_;
-  PrefChangeRegistrar pref_change_registrar_;
-};
 
 // This mixin is responsible for setting the user supervision status.
 // The account is identified by a supplied email (account name).
@@ -86,6 +57,9 @@ class SupervisionMixin : public InProcessBrowserTestMixin {
   SupervisionMixin(InProcessBrowserTestMixinHost& test_mixin_host,
                    InProcessBrowserTest* test_base,
                    const Options& options = Options::Default());
+
+  // The `embedded_test_server` is used to configure FakeGaia handlers and to
+  // add additional resolver rules.
   SupervisionMixin(InProcessBrowserTestMixinHost& test_mixin_host,
                    InProcessBrowserTest* test_base,
                    raw_ptr<net::EmbeddedTestServer> embedded_test_server,
@@ -104,13 +78,12 @@ class SupervisionMixin : public InProcessBrowserTestMixin {
   // Controls FakeGaia's response.
   void SetNextReAuthStatus(GaiaAuthConsumer::ReAuthProofTokenStatus status);
 
-  // ScopedFeatureList can be nested, but they must be destroyed in the reverse
-  // order of initialization (not declaration). The features are typically
-  // enabled by calling ScopedFeatureList::Init*() methods, expose this as well.
-  void InitFeatures();
-
   EmbeddedTestServerSetupMixin& embedded_test_server_setup_mixin() {
     return *embedded_test_server_setup_mixin_;
+  }
+
+  KidsManagementApiMockSetupMixin& api_mock_setup_mixin() {
+    return api_mock_setup_mixin_;
   }
 
  private:
@@ -126,6 +99,8 @@ class SupervisionMixin : public InProcessBrowserTestMixin {
   FakeGaiaMixin fake_gaia_mixin_;
   absl::optional<EmbeddedTestServerSetupMixin>
       embedded_test_server_setup_mixin_;
+  KidsManagementApiMockSetupMixin api_mock_setup_mixin_;
+
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor> adaptor_;
   base::CallbackListSubscription subscription_;
 

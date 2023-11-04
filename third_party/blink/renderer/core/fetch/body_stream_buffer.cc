@@ -335,10 +335,9 @@ void BodyStreamBuffer::Tee(BodyStreamBuffer** branch1,
 }
 
 ScriptPromise BodyStreamBuffer::Cancel(ScriptState* script_state,
-                                       ScriptValue reason) {
+                                       ScriptValue reason,
+                                       ExceptionState& exception_state) {
   if (underlying_byte_source_) {
-    ExceptionState exception_state(script_state->GetIsolate(),
-                                   ExceptionState::kUnknownContext, "", "");
     ScriptPromise cancel_promise = underlying_byte_source_->Cancel(
         ToV8(reason, script_state->GetContext()->Global(),
              script_state->GetIsolate()),
@@ -351,7 +350,7 @@ ScriptPromise BodyStreamBuffer::Cancel(ScriptState* script_state,
     }
   } else {
     CHECK(underlying_source_);
-    return underlying_source_->Cancel(script_state, reason);
+    return underlying_source_->Cancel(script_state, reason, exception_state);
   }
 }
 
@@ -465,7 +464,7 @@ void BodyStreamBuffer::Close() {
   // will not be set yet.
   if (underlying_byte_source_) {
     ExceptionState exception_state(script_state_->GetIsolate(),
-                                   ExceptionState::kUnknownContext, "", "");
+                                   ExceptionContextType::kUnknown, "", "");
     if (script_state_->ContextIsValid()) {
       ScriptState::Scope scope(script_state_);
       stream_->CloseStream(script_state_, exception_state);
@@ -580,7 +579,7 @@ void BodyStreamBuffer::ProcessData() {
             auto* byte_controller =
                 To<ReadableByteStreamController>(stream_->GetController());
             ExceptionState exception_state(script_state_->GetIsolate(),
-                                           ExceptionState::kUnknownContext, "",
+                                           ExceptionContextType::kUnknown, "",
                                            "");
             if (byob_view) {
               ReadableByteStreamController::Respond(

@@ -46,6 +46,12 @@ BASE_FEATURE(kDevToolsTabTarget,
              "DevToolsTabTarget",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Let DevTools front-end log extensive VisualElements-style UMA metrics for
+// impressions and interactions.
+BASE_FEATURE(kDevToolsVeLogging,
+             "DevToolsVeLogging",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Nukes profile directory before creating a new profile using
 // ProfileManager::CreateMultiProfileAsync().
 BASE_FEATURE(kNukeProfileBeforeCreateMultiAsync,
@@ -208,6 +214,16 @@ BASE_FEATURE(kAppBoundEncryptionMetrics,
 BASE_FEATURE(kLockProfileCookieDatabase,
              "LockProfileCookieDatabase",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Don't call the Win32 API PrefetchVirtualMemory when loading chrome.dll inside
+// non-browser processes. This is done by passing flags to these processes. This
+// prevents pulling the entirety of chrome.dll into physical memory (albeit only
+// pri-2 physical memory) under the assumption that during chrome execution,
+// portions of the DLL which are used will already be present, hopefully leading
+// to less needless memory consumption.
+BASE_FEATURE(kNoPreReadMainDll,
+             "NoPreReadMainDll",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 // Enables showing the email of the flex org admin that setup CBCM in the

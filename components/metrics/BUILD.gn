@@ -9,6 +9,7 @@ import("//testing/test.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
+  import("//third_party/jni_zero/jni_zero.gni")
 }
 
 # Dependency for histogram manager users: cronet and ios/webview
@@ -217,6 +218,7 @@ if (!is_cronet_build || is_ios) {
       ":library_support",
       "//base",
       "//base:base_static",
+      "//base:i18n",
       "//build:branding_buildflags",
       "//build:chromeos_buildflags",
       "//components/flags_ui:switches",
@@ -245,6 +247,8 @@ if (!is_cronet_build || is_ios) {
         "drive_metrics_provider_android.cc",
       ]
       deps += [ ":jni_headers" ]
+    } else {
+      deps += [ "//components/keep_alive_registry" ]
     }
 
     if (is_ios) {

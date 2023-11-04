@@ -74,6 +74,8 @@ class CONTENT_EXPORT VideoCaptureHost
   void OnBufferReady(const VideoCaptureControllerID& controller_id,
                      const ReadyBuffer& buffer,
                      const std::vector<ReadyBuffer>& scaled_buffers) override;
+  void OnFrameDroppedEarly(const VideoCaptureControllerID& controller_id,
+                           media::VideoCaptureFrameDropReason reason) override;
   void OnFrameWithEmptyRegionCapture(
       const VideoCaptureControllerID& controller_id) override;
   void OnEnded(const VideoCaptureControllerID& id) override;
@@ -102,8 +104,7 @@ class CONTENT_EXPORT VideoCaptureHost
   void GetDeviceFormatsInUse(const base::UnguessableToken& device_id,
                              const base::UnguessableToken& session_id,
                              GetDeviceFormatsInUseCallback callback) override;
-  void OnFrameDropped(const base::UnguessableToken& device_id,
-                      media::VideoCaptureFrameDropReason reason) override;
+  // This refers to a late frame drop, originating from the renderer process.
   void OnNewCropVersion(const base::UnguessableToken& device_id,
                         uint32_t crop_version) override;
   void OnLog(const base::UnguessableToken& device_id,

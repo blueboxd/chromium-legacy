@@ -131,14 +131,6 @@ void SyncEngineImpl::Initialize(InitParams params) {
   DCHECK(params.host);
   host_ = params.host;
 
-  // The gaia ID in sync prefs was introduced with M81, so having an empty value
-  // is legitimate and should be populated as a one-off migration.
-  // TODO(mastiz): Clean up this migration code after a grace period (e.g. 1
-  // year).
-  if (prefs_->GetGaiaId().empty()) {
-    prefs_->SetGaiaId(params.authenticated_account_info.gaia);
-  }
-
   const SyncTransportDataStartupState state =
       ValidateSyncTransportData(*prefs_, params.authenticated_account_info);
 
@@ -420,6 +412,9 @@ void SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop(
   // there used to be local transport metadata or not.
   bool is_first_time_sync_configure = false;
 
+  // NOTE: Keep this logic consistent with how
+  // SyncApiComponentFactoryImpl::HasTransportDataIncludingFirstSync()
+  // determines whether transport data exists.
   if (prefs_->GetLastSyncedTime().is_null()) {
     is_first_time_sync_configure = true;
     UpdateLastSyncedTime();

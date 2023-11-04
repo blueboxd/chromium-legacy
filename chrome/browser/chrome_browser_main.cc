@@ -119,7 +119,7 @@
 #include "chrome/common/profiler/thread_profiler.h"
 #include "chrome/common/profiler/thread_profiler_configuration.h"
 #include "chrome/common/profiler/unwind_util.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/device_event_log/device_event_log.h"
@@ -154,6 +154,7 @@
 #include "components/site_isolation/site_isolation_policy.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
+#include "components/tracing/common/background_tracing_utils.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_metrics_logger_impl.h"
@@ -297,6 +298,7 @@
 #include "chrome/browser/headless/headless_mode_metrics.h"  // nogncheck
 #include "chrome/browser/headless/headless_mode_util.h"     // nogncheck
 #include "components/headless/select_file_dialog/headless_select_file_dialog.h"
+#include "ui/gfx/switches.h"
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
@@ -487,6 +489,16 @@ void ProcessSingletonNotificationCallbackImpl(
     return;
   }
 
+#if BUILDFLAG(IS_WIN)
+  // The uninstall command-line switch is handled by the origin process; see
+  // ChromeMainDelegate::PostEarlyInitialization(...). The other process won't
+  // be able to become the singleton process and will display a window asking
+  // the user to close running Chrome instances.
+  if (command_line.HasSwitch(switches::kUninstall)) {
+    return;
+  }
+#endif
+
   g_browser_process->platform_part()->PlatformSpecificCommandLineProcessing(
       command_line);
 
@@ -645,9 +657,9 @@ void ChromeBrowserMainParts::SetupMetrics() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::SetupMetrics");
   CHECK(metrics::SubprocessMetricsProvider::CreateInstance());
   metrics::MetricsService* metrics = browser_process_->metrics_service();
-  metrics->GetSyntheticTrialRegistry()->AddSyntheticTrialObserver(
+  metrics->GetSyntheticTrialRegistry()->AddObserver(
       variations::VariationsIdsProvider::GetInstance());
-  metrics->GetSyntheticTrialRegistry()->AddSyntheticTrialObserver(
+  metrics->GetSyntheticTrialRegistry()->AddObserver(
       variations::SyntheticTrialsActiveGroupIdProvider::GetInstance());
   // Now that field trials have been created, initializes metrics recording.
   metrics->InitializeMetricsRecordingState();
@@ -976,11 +988,6 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // Force MediaCaptureDevicesDispatcher to be created on UI thread.
   MediaCaptureDevicesDispatcher::GetInstance();
 
-#if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
-  if (!ChromeProcessSingleton::IsEarlySingletonFeatureEnabled())
-    ChromeProcessSingleton::CreateInstance(user_data_dir_);
-#endif  // BUILDFLAG(ENABLE_PROCESS_SINGLETON)
-
   // Android's first run is done in Java instead of native.
 #if !BUILDFLAG(IS_ANDROID)
   // Cache first run state early.
@@ -1173,11 +1180,11 @@ void ChromeBrowserMainParts::PostCreateThreads() {
 #endif
 
 #if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
-  if (ChromeProcessSingleton::IsEarlySingletonFeatureEnabled())
-    ChromeProcessSingleton::GetInstance()->StartWatching();
+  ChromeProcessSingleton::GetInstance()->StartWatching();
 #endif
 
-  tracing::SetupBackgroundTracingFieldTrial();
+  tracing::MaybeSetupSystemTracingFromFieldTrial();
+  tracing::SetupBackgroundTracingFromCommandLine();
 
   for (auto& chrome_extra_part : chrome_extra_parts_)
     chrome_extra_part->PostCreateThreads();
@@ -1455,62 +1462,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Make sure aura::Env has been initialized.
   CHECK(aura::Env::GetInstance());
 #endif  // defined(USE_AURA)
-
-#if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
-  if (!ChromeProcessSingleton::IsEarlySingletonFeatureEnabled()) {
-    // When another process is running, use that process instead of starting a
-    // new one. NotifyOtherProcess will currently give the other process up to
-    // 20 seconds to respond. Note that this needs to be done before we attempt
-    // to read the profile.
-    notify_result_ =
-        ChromeProcessSingleton::GetInstance()->NotifyOtherProcessOrCreate();
-    UMA_HISTOGRAM_ENUMERATION("Chrome.ProcessSingleton.NotifyResult",
-                              notify_result_,
-                              ProcessSingleton::kNumNotifyResults);
-
-    // If `notify_result_` is not PROCESS_NONE, this process will exit.
-    // Conditionally defer browser metrics (which is how metrics are reported
-    // when the early singleton feature is enabled) to verify whether the
-    // metrics reporting mechanism has an impact on the metrics. If
-    // ShouldMergeMetrics() returns false, the metrics will instead be sent in
-    // an independent log in some future session.
-    if (ChromeProcessSingleton::ShouldMergeMetrics() &&
-        notify_result_ != ProcessSingleton::PROCESS_NONE) {
-      base::FilePath user_data_dir;
-      if (base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
-        DeferBrowserMetrics(user_data_dir);
-      }
-    }
-
-    switch (notify_result_) {
-      case ProcessSingleton::PROCESS_NONE:
-        // No process already running, fall through to starting a new one.
-        ChromeProcessSingleton::GetInstance()->StartWatching();
-        g_browser_process->platform_part()
-            ->PlatformSpecificCommandLineProcessing(
-                *base::CommandLine::ForCurrentProcess());
-        break;
-
-      case ProcessSingleton::PROCESS_NOTIFIED:
-        printf("%s\n", base::SysWideToNativeMB(
-                           base::UTF16ToWide(l10n_util::GetStringUTF16(
-                               IDS_USED_EXISTING_BROWSER)))
-                           .c_str());
-        return chrome::RESULT_CODE_NORMAL_EXIT_PROCESS_NOTIFIED;
-
-      case ProcessSingleton::PROFILE_IN_USE:
-        return chrome::RESULT_CODE_PROFILE_IN_USE;
-
-      case ProcessSingleton::LOCK_ERROR:
-        LOG(ERROR) << "Failed to create a ProcessSingleton for your profile "
-                      "directory. This means that running multiple instances "
-                      "would start multiple browser processes rather than "
-                      "opening a new window in the existing process. Aborting "
-                      "now to avoid profile corruption.";
-        return chrome::RESULT_CODE_PROFILE_IN_USE;
-    }
-  }
-#endif  // BUILDFLAG(ENABLE_PROCESS_SINGLETON)
 
 #if BUILDFLAG(IS_WIN)
   // We must call DoUpgradeTasks now that we own the browser singleton to
@@ -1963,8 +1914,7 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   TranslateService::Shutdown();
 
 #if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
-  if (notify_result_ == ProcessSingleton::PROCESS_NONE)
-    ChromeProcessSingleton::GetInstance()->Cleanup();
+  ChromeProcessSingleton::GetInstance()->Cleanup();
 #endif  // BUILDFLAG(ENABLE_PROCESS_SINGLETON)
 
   browser_process_->metrics_service()->Stop();
@@ -2017,11 +1967,6 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
   ash::CrosSettings::Shutdown();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-  // The below call to browser_shutdown::ShutdownPostThreadsStop() deletes
-  // |browser_process_|. We release it so that we don't keep holding onto an
-  // invalid reference.
-  std::ignore = browser_process_.release();
-
 #if BUILDFLAG(ENABLE_DOWNGRADE_PROCESSING)
   if (result_code_ == chrome::RESULT_CODE_DOWNGRADE_AND_RELAUNCH) {
     // Process a pending User Data downgrade before restarting.
@@ -2034,16 +1979,14 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
   }
 #endif  // BUILDFLAG(ENABLE_DOWNGRADE_PROCESSING)
 
+  // From this point, the BrowserProcess class is no longer alive.
+  browser_process_.reset();
+
   browser_shutdown::ShutdownPostThreadsStop(restart_mode);
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   master_prefs_.reset();
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
-  if (!ChromeProcessSingleton::IsEarlySingletonFeatureEnabled())
-    ChromeProcessSingleton::DeleteInstance();
-#endif  // BUILDFLAG(ENABLE_PROCESS_SINGLETON)
 
   device_event_log::Shutdown();
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -2075,8 +2018,18 @@ bool ChromeBrowserMainParts::ProcessSingletonNotificationCallback(
   // starts running. So, an additional check needs to happen when it starts.
   // But regardless of any future check, there is no reason to post the task
   // now if we know we're already shutting down.
-  if (!g_browser_process || g_browser_process->IsShuttingDown())
+  if (!g_browser_process || g_browser_process->IsShuttingDown()) {
     return false;
+  }
+
+  // Drop the request if headless mode is in effect or the request is from
+  // a headless Chrome process.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+  if (headless::IsHeadlessMode() ||
+      command_line.HasSwitch(switches::kHeadless)) {
+    return false;
+  }
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
   // In order to handle this request on Windows, there is platform specific
   // code in browser_finder.cc that requires making outbound COM calls to

@@ -16,7 +16,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner.h"
-#include "build/build_config.h"
 #include "components/webapps/browser/installable/installable_data.h"
 #include "components/webapps/browser/installable/installable_logging.h"
 #include "components/webapps/browser/installable/installable_page_data.h"
@@ -82,6 +81,7 @@ class InstallableManager
  private:
   friend class content::WebContentsUserData<InstallableManager>;
   friend class InstallableManagerBrowserTest;
+  friend class TestInstallableManager;
 
   FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest,
                            ManagerBeginsInEmptyState);

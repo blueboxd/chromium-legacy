@@ -122,11 +122,21 @@
 // UIBarButtonSystemItemDone). Must be set before the view is loaded.
 @property(nonatomic, assign) UIBarButtonSystemItem dismissBarButtonSystemItem;
 
+// Sets a custom UIBarButtonItem for the dismiss bar button.
+@property(nonatomic, assign) UIImage* customDismissBarButtonImage;
+
 // The action handler for interactions in this View Controller.
 @property(nonatomic, weak) id<ConfirmationAlertActionHandler> actionHandler;
 
 // Sets the custom scroll view bottom insets.
 @property(nonatomic, assign) CGFloat customScrollViewBottomInsets;
+
+// Indicates whether information stack view items should horizontally fill the
+// space.
+@property(nonatomic) BOOL shouldFillInformationStack;
+
+// Bottom margin for the action stack view.
+@property(nonatomic, assign) CGFloat actionStackBottomMargin;
 
 // Designated initializer.
 - (instancetype)init NS_DESIGNATED_INITIALIZER;

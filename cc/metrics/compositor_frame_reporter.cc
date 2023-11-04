@@ -11,6 +11,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/containers/cxx20_erase.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
@@ -174,6 +175,12 @@ void ReportEventLatencyMetric(
 
 constexpr char kTraceCategory[] =
     "cc,benchmark," TRACE_DISABLED_BY_DEFAULT("devtools.timeline.frame");
+
+bool IsTracingEnabled() {
+  bool enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(kTraceCategory, &enabled);
+  return enabled;
+}
 
 base::TimeTicks ComputeSafeDeadlineForFrame(const viz::BeginFrameArgs& args) {
   return args.frame_time + (args.interval * 1.5);
@@ -826,7 +833,7 @@ void CompositorFrameReporter::TerminateReporter() {
         auto dependent = partial_update_dependents_.front();
         if (dependent)
           dependent->set_has_partial_update(false);
-        partial_update_dependents_.pop();
+        partial_update_dependents_.pop_front();
       }
       break;
 
@@ -1240,6 +1247,10 @@ void CompositorFrameReporter::ReportCompositorLatencyTraceEvents(
         has_partial_update_);
   }
 
+  if (!IsTracingEnabled()) {
+    return;
+  }
+
   const auto trace_track =
       perfetto::Track(base::trace_event::GetNextGlobalTraceId());
   TRACE_EVENT_BEGIN(
@@ -1481,11 +1492,6 @@ void CompositorFrameReporter::ReportScrollJankMetrics() const {
 }
 
 void CompositorFrameReporter::ReportEventLatencyTraceEvents() const {
-  // TODO(mohsen): This function is becoming large and there is concerns about
-  // having this in the compositor critical path. crbug.com/1072740 is
-  // considering doing the reporting off-thread, but as a short-term solution,
-  // we should investigate whether we can skip this function entirely if tracing
-  // is off and whether that has any positive impact or not.
   for (const auto& event_metrics : events_metrics_) {
     EventLatencyTracingRecorder::RecordEventLatencyTraceEvent(
         event_metrics.get(), frame_termination_time_, &stage_history_,
@@ -1797,26 +1803,31 @@ void CompositorFrameReporter::SetPartialUpdateDecider(
   DCHECK(partial_update_dependents_.empty());
   has_partial_update_ = true;
   partial_update_decider_ = decider->GetWeakPtr();
-  decider->partial_update_dependents_.push(GetWeakPtr());
+  decider->partial_update_dependents_.push_back(GetWeakPtr());
 }
 
 void CompositorFrameReporter::DiscardOldPartialUpdateReporters() {
   DCHECK_LE(owned_partial_update_dependents_.size(),
             partial_update_dependents_.size());
   // Remove old owned partial update dependents if there are too many.
+  bool removed = false;
   while (owned_partial_update_dependents_.size() >
          kMaxOwnedPartialUpdateDependents) {
     auto& dependent = owned_partial_update_dependents_.front();
     dependent->set_has_partial_update(false);
     owned_partial_update_dependents_.pop();
+    removed = true;
   }
 
-  // Remove dependent reporters from the front of `partial_update_dependents_`
-  // queue if they are already destroyed.
-  while (!partial_update_dependents_.empty() &&
-         !partial_update_dependents_.front()) {
-    partial_update_dependents_.pop();
+  if (!removed) {
+    return;
   }
+  // Remove all destroyed reporters from `partial_update_dependents_`.
+  base::EraseIf(partial_update_dependents_,
+                [](const base::WeakPtr<CompositorFrameReporter>& reporter) {
+    return !reporter;
+  });
+
 }
 
 base::WeakPtr<CompositorFrameReporter> CompositorFrameReporter::GetWeakPtr() {

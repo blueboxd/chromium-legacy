@@ -300,6 +300,29 @@ namespace os.diagnostics {
 
   callback CreateMemoryRoutineCallback = void (CreateMemoryRoutineResponse response);
 
+  enum RoutineSupportStatus {
+    supported,
+    unsupported
+  };
+
+  dictionary RoutineSupportStatusInfo {
+    RoutineSupportStatus? status;
+  };
+
+  callback RoutineSupportStatusInfoCallback = void (RoutineSupportStatusInfo info);
+
+  dictionary StartRoutineRequest {
+    DOMString uuid;
+  };
+
+  callback StartRoutineCallback = void ();
+
+  dictionary CancelRoutineRequest {
+    DOMString uuid;
+  };
+
+  callback CancelRoutineCallback = void ();
+
   interface Functions {
     [supportsPromises] static void getAvailableRoutines(GetAvailableRoutinesCallback callback);
 
@@ -377,8 +400,19 @@ namespace os.diagnostics {
 
     // ----------------- DIAGNOSTICS API V2 -----------------
 
+    // Starts execution of a routine. This can only be expected to work after
+    // `onRoutineInitialized` was emitted for the routine with `UUID`.
+    [supportsPromises] static void startRoutine(StartRoutineRequest request, StartRoutineCallback callback);
+
+    // Stops executing the routine identified by `UUID` and removes all related resources from the system.
+    [supportsPromises] static void cancelRoutine(CancelRoutineRequest request, CancelRoutineCallback callback);
+
     [supportsPromises] static void createMemoryRoutine(RunMemoryRoutineArguments args,
                                                           CreateMemoryRoutineCallback callback);
+
+    // Checks whether a certain `RunMemoryRoutineArguments` is supported on the platform.
+    [supportsPromises] static void isMemoryRoutineArgumentSupported(RunMemoryRoutineArguments args,
+                                                          RoutineSupportStatusInfoCallback callback);
   };
 
   interface Events {

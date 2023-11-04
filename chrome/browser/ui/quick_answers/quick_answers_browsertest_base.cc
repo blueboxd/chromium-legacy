@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/quick_answers/quick_answers_browsertest_base.h"
+
 #include "base/strings/stringprintf.h"
 #include "chrome/test/base/chrome_test_utils.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_state.h"

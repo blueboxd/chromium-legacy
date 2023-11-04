@@ -18,7 +18,6 @@
 #include "base/memory/raw_ptr.h"
 #include "ui/display/display_observer.h"
 #include "ui/events/event_handler.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/public/activation_change_observer.h"
 
@@ -48,6 +47,19 @@ class ASH_EXPORT DeskBarController : public DesksController::Observer,
     BarWidgetAndView(const BarWidgetAndView&) = delete;
     BarWidgetAndView& operator=(const BarWidgetAndView&) = delete;
     ~BarWidgetAndView();
+
+    // Returns the next focusable view based on `starting_view`, which is a
+    // focusable view in `bar_view`, and `reverse`. If `reverse` is false, it
+    // returns the traversible view after `starting_view`; otherwise, it returns
+    // the traversible view before `starting_view`.
+    views::View* GetNextFocusableView(views::View* starting_view,
+                                      bool reverse) const;
+
+    // Returns the first focusable view in `bar_view`.
+    views::View* GetFirstFocusableView() const;
+
+    // Returns the last focusable view in `bar_view`.
+    views::View* GetLastFocusableView() const;
 
     std::unique_ptr<views::Widget> bar_widget;
     raw_ptr<DeskBarViewBase> bar_view;
@@ -104,57 +116,6 @@ class ASH_EXPORT DeskBarController : public DesksController::Observer,
 
  private:
   void CloseDeskBarInternal(BarWidgetAndView& desk_bar);
-
-  // Returns bounds for desk bar widget in `root`. Please note, this is the full
-  // available bounds and does not change after initialization. Therefore, the
-  // desk bar view can adjust its bounds as needed without manipulating the
-  // widget. This calculates bounds of `kDeskButton` bar for `kBottom`, `kLeft`,
-  // and `kRight` aligned shelf as following.
-  //
-  // Symbols:
-  //   - H: Home button
-  //   - D: Desk button
-  //   - S: Shelf
-  //   - B: Bar widget
-  //
-  // Charts:
-  //   1. `kBottom`
-  //     ┌────────────────────────────────┐
-  //     │                                │
-  //     │                                │
-  //     │                                │
-  //     │                                │
-  //     │                                │
-  //     ├────────────────────────────────│
-  //     │                B               │
-  //     ├───┬─────┬──────────────────────┤
-  //     │ H │  D  │           S          │
-  //     └───┴─────┴──────────────────────┘
-  //   2. `kLeft`
-  //     ┌───┬────────────────────────────┐
-  //     │ H │                            │
-  //     ├───┤ ┌──────────────────────────┤
-  //     │ D │ │             B            │
-  //     ├───┤ │                          │
-  //     │   │ └──────────────────────────┤
-  //     │   │                            │
-  //     │ S │                            │
-  //     │   │                            │
-  //     │   │                            │
-  //     └───┴────────────────────────────┘
-  //   3. `kRight`
-  //     ┌────────────────────────────┬───┐
-  //     │                            │ H │
-  //     ├──────────────────────────┐ ├───┤
-  //     │             B            │ │ D │
-  //     │                          │ ├───┤
-  //     ├──────────────────────────┘ │   │
-  //     │                            │   │
-  //     │                            │ S │
-  //     │                            │   │
-  //     │                            │   │
-  //     └────────────────────────────┴───┘
-  gfx::Rect GetDeskBarWidgetBounds(aura::Window* root) const;
 
   // When pressing off the bar, it should either commit desk name change, or
   // hide the bar.

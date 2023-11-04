@@ -35,9 +35,25 @@
 #include "url/origin.h"
 
 namespace content {
-namespace {
 
-bool AreHttpRequestHeadersCompatible(
+// static
+PrerenderHost* PrerenderHost::GetFromFrameTreeNodeIfPrerendering(
+    FrameTreeNode& frame_tree_node) {
+  if (!frame_tree_node.frame_tree().is_prerendering()) {
+    return nullptr;
+  }
+  return &GetFromFrameTreeNode(frame_tree_node);
+}
+
+// static
+PrerenderHost& PrerenderHost::GetFromFrameTreeNode(
+    FrameTreeNode& frame_tree_node) {
+  CHECK(frame_tree_node.frame_tree().is_prerendering());
+  return *static_cast<PrerenderHost*>(frame_tree_node.frame_tree().delegate());
+}
+
+// static
+bool PrerenderHost::AreHttpRequestHeadersCompatible(
     const std::string& potential_activation_headers_str,
     const std::string& prerender_headers_str,
     PrerenderTriggerType trigger_type,
@@ -58,6 +74,11 @@ bool AreHttpRequestHeadersCompatible(
   potential_activation_headers.RemoveHeader("Purpose");
   prerender_headers.RemoveHeader("Sec-Purpose");
   potential_activation_headers.RemoveHeader("Sec-Purpose");
+
+  prerender_headers.RemoveHeader("RTT");
+  potential_activation_headers.RemoveHeader("RTT");
+  prerender_headers.RemoveHeader("Downlink");
+  potential_activation_headers.RemoveHeader("Downlink");
 
   // TODO(https://crbug.com/1378921): Instead of handling headers added by
   // embedders specifically, prerender should expose an interface to embedders
@@ -93,24 +114,6 @@ bool AreHttpRequestHeadersCompatible(
                      std::move(prerender_headers), trigger_type,
                      embedder_histogram_suffix));
   return false;
-}
-
-}  // namespace
-
-// static
-PrerenderHost* PrerenderHost::GetFromFrameTreeNodeIfPrerendering(
-    FrameTreeNode& frame_tree_node) {
-  if (!frame_tree_node.frame_tree().is_prerendering()) {
-    return nullptr;
-  }
-  return &GetFromFrameTreeNode(frame_tree_node);
-}
-
-// static
-PrerenderHost& PrerenderHost::GetFromFrameTreeNode(
-    FrameTreeNode& frame_tree_node) {
-  CHECK(frame_tree_node.frame_tree().is_prerendering());
-  return *static_cast<PrerenderHost*>(frame_tree_node.frame_tree().delegate());
 }
 
 PrerenderHost::PrerenderHost(
@@ -504,7 +507,38 @@ std::unique_ptr<StoredPage> PrerenderHost::Activate(
   // RenderFrameHost.
   CHECK(!page->render_frame_host()->GetParentOrOuterDocumentOrEmbedder());
 
-  page->render_frame_host()->SetFrameTreeNode(*(target_frame_tree.root()));
+  // TODO(crbug.com/1470312): Remove the following block (retaining the call to
+  // SetFrameTreeNode) once the issue is resolved.
+  {
+    UrlInfo url_info = navigation_request.GetUrlInfo();
+    std::string url_info_str =
+        "urlOrigin=[" +
+        url_info.url.DeprecatedGetOriginAsURL().possibly_invalid_spec() + "]";
+    if (url_info.is_sandboxed) {
+      url_info_str += " sandboxed";
+    }
+    if (url_info.is_coop_isolation_requested) {
+      url_info_str += " coop";
+    }
+    if (url_info.origin_isolation_request !=
+        UrlInfo::OriginIsolationRequest::kDefault) {
+      url_info_str += " oir=[" +
+                      base::NumberToString(url_info.origin_isolation_request) +
+                      "]";
+    }
+    if (url_info.origin) {
+      url_info_str += " origin=[" +
+                      url_info.origin.value().GetURL().possibly_invalid_spec() +
+                      "]";
+    }
+    SCOPED_CRASH_KEY_STRING256("Bug1470312", "url_info", url_info_str);
+    SCOPED_CRASH_KEY_BOOL(
+        "Bug1470312", "page_has_opener",
+        page->render_frame_host()->frame_tree_node()->opener() != nullptr);
+    SCOPED_CRASH_KEY_BOOL("Bug1470312", "target_has_opener",
+                          target_frame_tree.root()->opener() != nullptr);
+    page->render_frame_host()->SetFrameTreeNode(*(target_frame_tree.root()));
+  }
 
   page->render_frame_host()->SetRenderFrameHostOwner(target_frame_tree.root());
 
@@ -985,7 +1019,6 @@ void PrerenderHost::SetFailureReason(
     case PrerenderFinalStatus::kLowEndDevice:
     case PrerenderFinalStatus::kInvalidSchemeRedirect:
     case PrerenderFinalStatus::kInvalidSchemeNavigation:
-    case PrerenderFinalStatus::kInProgressNavigation:
     case PrerenderFinalStatus::kNavigationRequestBlockedByCsp:
     case PrerenderFinalStatus::kMainFrameNavigation:
     case PrerenderFinalStatus::kMojoBinderPolicy:
@@ -996,7 +1029,6 @@ void PrerenderHost::SetFailureReason(
     case PrerenderFinalStatus::kNavigationBadHttpStatus:
     case PrerenderFinalStatus::kClientCertRequested:
     case PrerenderFinalStatus::kNavigationRequestNetworkError:
-    case PrerenderFinalStatus::kMaxNumOfRunningPrerendersExceeded:
     case PrerenderFinalStatus::kCancelAllHostsForTesting:
     case PrerenderFinalStatus::kDidFailLoad:
     case PrerenderFinalStatus::kStop:
@@ -1007,9 +1039,8 @@ void PrerenderHost::SetFailureReason(
     case PrerenderFinalStatus::kMixedContent:
     case PrerenderFinalStatus::kTriggerBackgrounded:
     case PrerenderFinalStatus::kMemoryLimitExceeded:
-    case PrerenderFinalStatus::kFailToGetMemoryUsage:
     case PrerenderFinalStatus::kDataSaverEnabled:
-    case PrerenderFinalStatus::kHasEffectiveUrl:
+    case PrerenderFinalStatus::kTriggerUrlHasEffectiveUrl:
     case PrerenderFinalStatus::kInactivePageRestriction:
     case PrerenderFinalStatus::kStartFailed:
     case PrerenderFinalStatus::kTimeoutBackgrounded:
@@ -1041,6 +1072,12 @@ void PrerenderHost::SetFailureReason(
     case PrerenderFinalStatus::kPrerenderingDisabledByDevTools:
     case PrerenderFinalStatus::kResourceLoadBlockedByClient:
     case PrerenderFinalStatus::kActivatedWithAuxiliaryBrowsingContexts:
+    case PrerenderFinalStatus::kMaxNumOfRunningEagerPrerendersExceeded:
+    case PrerenderFinalStatus::kMaxNumOfRunningNonEagerPrerendersExceeded:
+    case PrerenderFinalStatus::kMaxNumOfRunningEmbedderPrerendersExceeded:
+    case PrerenderFinalStatus::kPrerenderingUrlHasEffectiveUrl:
+    case PrerenderFinalStatus::kRedirectedPrerenderingUrlHasEffectiveUrl:
+    case PrerenderFinalStatus::kActivationUrlHasEffectiveUrl:
       if (attempt_) {
         attempt_->SetFailureReason(
             ToPreloadingFailureReason(reason.final_status()));

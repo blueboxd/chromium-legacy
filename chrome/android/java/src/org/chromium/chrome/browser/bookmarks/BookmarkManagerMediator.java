@@ -20,9 +20,11 @@ import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.bookmarks.BookmarkFolderSelectActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkListEntry.ViewType;
+import org.chromium.chrome.browser.bookmarks.BookmarkMetrics.BookmarkManagerFilter;
 import org.chromium.chrome.browser.bookmarks.BookmarkRow.Location;
 import org.chromium.chrome.browser.bookmarks.BookmarkUiPrefs.BookmarkRowDisplayPref;
 import org.chromium.chrome.browser.bookmarks.BookmarkUiPrefs.BookmarkRowSortOrder;
@@ -112,10 +114,13 @@ class BookmarkManagerMediator
     }
 
     private final BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
+        private final PendingRunnable mPendingRefresh =
+                new PendingRunnable(TaskTraits.UI_DEFAULT, BookmarkManagerMediator.this::refresh);
+
         @Override
         public void bookmarkNodeChildrenReordered(BookmarkItem node) {
             if (!mIsBookmarkModelReorderingInProgress) {
-                refresh();
+                mPendingRefresh.post();
             }
             mIsBookmarkModelReorderingInProgress = false;
         }
@@ -130,7 +135,7 @@ class BookmarkManagerMediator
                 // If the folder is removed in folder mode, show the parent folder or falls back to
                 // all bookmarks mode.
                 if (Objects.equals(id, getCurrentFolderId())) {
-                    if (mBookmarkModel.getTopLevelFolderIds(true, true).contains(id)) {
+                    if (mBookmarkModel.getTopLevelFolderIds().contains(id)) {
                         openFolder(mBookmarkModel.getDefaultFolderViewLocation());
                     } else {
                         openFolder(parent.getId());
@@ -143,7 +148,7 @@ class BookmarkManagerMediator
                     // If the position couldn't be found, then do a full refresh. Otherwise be
                     // smart and remove only the index of the removed bookmark.
                     if (position == -1) {
-                        refresh();
+                        mPendingRefresh.post();
                     } else {
                         mModelList.removeAt(position);
                         // If the deleted node was selection, unselect it.
@@ -156,7 +161,7 @@ class BookmarkManagerMediator
                 // We cannot rely on removing the specific list item that corresponds to the
                 // removed node because the node might be a parent with children also shown
                 // in the list.
-                refresh();
+                mPendingRefresh.post();
             }
         }
 
@@ -171,7 +176,7 @@ class BookmarkManagerMediator
 
             if (getCurrentUiMode() == BookmarkUiMode.FOLDER
                     && Objects.equals(id, getCurrentFolderId())) {
-                refresh();
+                mPendingRefresh.post();
             } else {
                 super.bookmarkNodeChanged(item);
             }
@@ -185,7 +190,7 @@ class BookmarkManagerMediator
                     && TextUtils.isEmpty(getCurrentSearchText())) {
                 onEndSearch();
             } else {
-                refresh();
+                mPendingRefresh.post();
             }
         }
     };
@@ -1133,7 +1138,13 @@ class BookmarkManagerMediator
     private ListItem buildPersonalizedPromoListItem(@ViewType int promoHeaderType) {
         BookmarkListEntry bookmarkListEntry =
                 BookmarkListEntry.createSyncPromoHeader(promoHeaderType);
-        PropertyModel propertyModel = new PropertyModel(BookmarkManagerProperties.ALL_KEYS);
+        PropertyModel.Builder builder =
+                new PropertyModel.Builder(BookmarkManagerProperties.ALL_KEYS);
+        if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) {
+            builder.with(BookmarkManagerProperties.PROMO_TOP_MARGIN_RES,
+                    R.dimen.bookmark_promo_top_margin_with_search_box);
+        }
+        PropertyModel propertyModel = builder.build();
         propertyModel.set(BookmarkManagerProperties.BOOKMARK_LIST_ENTRY, bookmarkListEntry);
         propertyModel.set(BookmarkManagerProperties.BOOKMARK_PROMO_HEADER, mPromoHeaderManager);
         return new ListItem(bookmarkListEntry.getViewType(), propertyModel);
@@ -1426,6 +1437,7 @@ class BookmarkManagerMediator
             mCurrentPowerFilter.remove(PowerBookmarkType.SHOPPING);
         }
 
+        BookmarkMetrics.reportBookmarkManagerFilterUsed(BookmarkManagerFilter.SHOPPING);
         getSearchBoxPropertyModel().set(
                 BookmarkSearchBoxRowProperties.SHOPPING_CHIP_SELECTED, isFiltering);
         refresh();

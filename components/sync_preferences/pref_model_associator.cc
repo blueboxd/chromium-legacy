@@ -28,7 +28,6 @@
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/preference_specifics.pb.h"
 #include "components/sync_preferences/dual_layer_user_pref_store.h"
-#include "components/sync_preferences/pref_model_associator_client.h"
 #include "components/sync_preferences/preferences_merge_helper.h"
 #include "components/sync_preferences/syncable_prefs_database.h"
 
@@ -69,7 +68,7 @@ absl::optional<base::Value> ReadPreferenceSpecifics(
 }  // namespace
 
 PrefModelAssociator::PrefModelAssociator(
-    const PrefModelAssociatorClient* client,
+    scoped_refptr<PrefModelAssociatorClient> client,
     scoped_refptr<WriteablePrefStore> user_prefs,
     syncer::ModelType type)
     : type_(type),
@@ -89,7 +88,7 @@ PrefModelAssociator::PrefModelAssociator(
 }
 
 PrefModelAssociator::PrefModelAssociator(
-    const PrefModelAssociatorClient* client,
+    scoped_refptr<PrefModelAssociatorClient> client,
     scoped_refptr<DualLayerUserPrefStore> dual_layer_user_prefs,
     syncer::ModelType type)
     : PrefModelAssociator(client,
@@ -158,7 +157,7 @@ void PrefModelAssociator::InitPrefAndAssociate(
       // TODO(crbug.com/1434943): Consider the case where a value is set before
       // initial merge. This would overwrite the value the user just set.
       base::Value new_value(helper::MergePreference(
-          client_, pref_name, *user_pref_value, sync_value));
+          client_.get(), pref_name, *user_pref_value, sync_value));
       // Update the local preference based on what we got from the sync
       // server.
       if (new_value.is_none()) {
@@ -222,7 +221,7 @@ PrefModelAssociator::MergeDataAndStartSyncing(
   DCHECK(sync_processor.get());
   sync_processor_ = std::move(sync_processor);
 
-  if (base::FeatureList::IsEnabled(syncer::kEnablePreferencesAccountStorage)) {
+  if (dual_layer_user_prefs_) {
     // Inform the pref store to enable account storage for `type_`.
     dual_layer_user_prefs_->EnableType(type_);
   }
@@ -277,8 +276,7 @@ void PrefModelAssociator::OnBrowserShutdown(syncer::ModelType type) {
 void PrefModelAssociator::Stop(bool is_browser_shutdown) {
   models_associated_ = false;
   sync_processor_.reset();
-  if (!is_browser_shutdown &&
-      base::FeatureList::IsEnabled(syncer::kEnablePreferencesAccountStorage)) {
+  if (!is_browser_shutdown && dual_layer_user_prefs_) {
     // Avoid clearing account store in case of browser shutdown, since it
     // tries to notify the observers which may or may not exist by this time
     // during browser shutdown (crbug.com/1434902).
@@ -403,6 +401,23 @@ void PrefModelAssociator::RegisterPref(const std::string& name) {
       << "Preference " << name
       << " has not been added to syncable prefs allowlist, or has incorrect "
          "data.";
+  // TODO(crbug.com/1474375): Remove these DCHECKs when removing
+  // PrefModelAssociatorClient::IsMergeable*Preference() methods.
+  DCHECK(!client_ || client_->IsMergeableListPreference(name) ==
+                         (client_->GetSyncablePrefsDatabase()
+                              .GetSyncablePrefMetadata(name)
+                              ->merge_behavior() ==
+                          MergeBehavior::kMergeableListWithRewriteOnUpdate))
+      << "Preference " << name
+      << " has invalid merge behavior listed in the syncable prefs database.";
+  DCHECK(!client_ ||
+         client_->IsMergeableDictionaryPreference(name) ==
+             (client_->GetSyncablePrefsDatabase()
+                  .GetSyncablePrefMetadata(name)
+                  ->merge_behavior() == MergeBehavior::kMergeableDict))
+      << "Preference " << name
+      << " has invalid merge behavior listed in the syncable prefs database.";
+
   registered_preferences_.insert(name);
 }
 
@@ -496,8 +511,7 @@ bool PrefModelAssociator::SetPrefWithTypeCheck(const std::string& pref_name,
                   << "pref type: " << registered_type;
     return false;
   }
-  if (base::FeatureList::IsEnabled(syncer::kEnablePreferencesAccountStorage)) {
-    CHECK(dual_layer_user_prefs_);
+  if (dual_layer_user_prefs_) {
     // `dual_layer_user_prefs_->SetValueInAccountStoreOnly()` is almost
     // equivalent to `user_prefs_->SetValue()` except that if the effective
     // value of the pref for the `dual_layer_user_prefs_` is unchanged, no

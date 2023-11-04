@@ -18,25 +18,29 @@
     --cr-dialog-width: 320px;
   }
 </style>
-<template is="dom-repeat"
-    items="[[buttonRemappingList]]"
-    index-as="index">
-  <customize-button-row
-      button-remapping-list="[[buttonRemappingList]]"
-      remapping-index="[[index]]"
-      action-list$="[[actionList]]">
-  </customize-button-row>
-</template>
+<div class="subsection">
+  <template is="dom-repeat"
+      items="{{buttonRemappingList}}"
+      index-as="index">
+    <customize-button-row
+        button-remapping-list="[[buttonRemappingList]]"
+        remapping-index="[[index]]"
+        action-list$="[[actionList]]">
+    </customize-button-row>
+  </template>
+</div>
+
 <template is="dom-if" if="[[shouldShowRenamingDialog_]]" restamp>
   <cr-dialog id="renamingDialog"
       on-close="cancelRenamingDialogClicked_" show-on-attach>
     <div slot="title">$i18n{buttonRenamingDialogTitle}</div>
     <div slot="body">
       <div id="inputContainer">
-        <cr-input label="$i18n{buttonRemappingDialogInputLabel}"
+        <cr-input id="renamingDialogInput"
+          label="$i18n{buttonRemappingDialogInputLabel}"
           value="{{selectedButtonName_}}"
           aria-label="$i18n{buttonRenamingDialogTitle}">
-      </cr-input>
+        </cr-input>
       </div>
     </div>
     <div slot="button-container">
@@ -55,3 +59,8 @@
     </div>
   </cr-dialog>
 </template>
+<key-combination-input-dialog
+    id="keyCombinationInputDialog"
+    button-remapping-list="{{buttonRemappingList}}"
+    remapping-index="[[selectedButtonIndex_]]">
+</key-combination-input-dialog>

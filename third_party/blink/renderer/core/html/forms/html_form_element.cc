@@ -277,9 +277,8 @@ bool HTMLFormElement::ValidateInteractively() {
       ConsoleMessage* console_message = MakeGarbageCollected<ConsoleMessage>(
           mojom::blink::ConsoleMessageSource::kRendering,
           mojom::blink::ConsoleMessageLevel::kError, message);
-      console_message->SetNodes(
-          GetDocument().GetFrame(),
-          {DOMNodeIds::IdForNode(&unhandled->ToHTMLElement())});
+      console_message->SetNodes(GetDocument().GetFrame(),
+                                {unhandled->ToHTMLElement().GetDomNodeId()});
       GetDocument().AddConsoleMessage(console_message);
     }
   }
@@ -495,7 +494,6 @@ void HTMLFormElement::ScheduleFormSubmission(
   DCHECK(form_submission->Method() == FormSubmission::kPostMethod ||
          form_submission->Method() == FormSubmission::kGetMethod);
   DCHECK(form_submission->Data());
-  DCHECK(form_submission->Form());
   if (form_submission->Action().IsEmpty())
     return;
   if (GetExecutionContext()->IsSandboxed(

@@ -25,6 +25,7 @@
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view_test_api.h"
@@ -76,22 +77,19 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "base/containers/contains.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
-#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/to_vector.h"
 #include "base/time/time.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/wm/features.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/window_types.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -111,7 +109,6 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/gfx/geometry/insets_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/transform_util.h"
@@ -2006,9 +2003,9 @@ TEST_P(OverviewSessionTest, ExitOverviewWhenAllGridsEmpty) {
   auto* item2 = GetOverviewItemForWindow(window2);
   ASSERT_TRUE(item1 && item2);
 
-  // Close |item2|. Verify that we are still in overview mode because |window1|
+  // Close `item2`. Verify that we are still in overview mode because `window1`
   // is still open. All the grids should not have a no windows widget.
-  item2->CloseWindow();
+  item2->CloseWindows();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(GetOverviewSession());
   ASSERT_EQ(3u, grids.size());
@@ -2018,9 +2015,9 @@ TEST_P(OverviewSessionTest, ExitOverviewWhenAllGridsEmpty) {
   for (auto& grid : grids)
     EXPECT_FALSE(grid->no_windows_widget());
 
-  // Close |item1|. Verify that since no windows are open, we exit overview
+  // Close `item1`. Verify that since no windows are open, we exit overview
   // mode.
-  item1->CloseWindow();
+  item1->CloseWindows();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetOverviewSession());
 }
@@ -2466,15 +2463,16 @@ TEST_P(OverviewSessionTest, OverviewItemTitleCloseVisibilityOnDrag) {
   base::RunLoop().RunUntilIdle();
 
   if (chromeos::features::IsJellyEnabled()) {
-    // When Jellyroll is enabled, we show the title and hide the close button
-    // only for the overview item being dragged.
-    EXPECT_EQ(1.f, GetTitlebarOpacity(item1));
+    // When Jellyroll is enabled, the title is always shown and the layer is
+    // created only after the drag has started moving.
+    EXPECT_TRUE(GetCloseButton(item1)->layer());
     EXPECT_EQ(0.f, GetCloseButtonOpacity(item1));
   } else {
     EXPECT_EQ(0.f, GetTitlebarOpacity(item1));
     EXPECT_EQ(1.f, GetCloseButtonOpacity(item1));
+    EXPECT_EQ(1.f, GetTitlebarOpacity(item2));
   }
-  EXPECT_EQ(1.f, GetTitlebarOpacity(item2));
+
   EXPECT_EQ(0.f, GetCloseButtonOpacity(item2));
 
   // Drag |item1| in a way so that |window1| does not get activated (drags
@@ -3168,11 +3166,13 @@ TEST_P(OverviewSessionTest, FadeIn) {
   const gfx::Rect bounds = gfx::ToEnclosedRect(item->target_bounds());
   EXPECT_TRUE(GetGridBounds().Contains(bounds));
 
-  // Header is expected to be shown immediately.
-  // Header is expected to be shown immediately.
-  EXPECT_EQ(
-      1.0f,
-      item->overview_item_view()->header_view()->layer()->GetTargetOpacity());
+  // Header is expected to be shown immediately without Jelly. With Jelly, the
+  // header isn't painted to layer until dragged.
+  if (!chromeos::features::IsJellyrollEnabled()) {
+    EXPECT_EQ(
+        1.0f,
+        item->overview_item_view()->header_view()->layer()->GetTargetOpacity());
+  }
 
   EXPECT_EQ(OverviewEnterExitType::kFadeInEnter,
             GetOverviewSession()->enter_exit_overview_type());
@@ -3365,7 +3365,7 @@ TEST_P(OverviewSessionTest, ClosingTransientTree) {
 
   auto* item = GetOverviewItemForWindow(window);
   ASSERT_TRUE(item);
-  item->CloseWindow();
+  item->CloseWindows();
 
   // `NativeWidgetAura::Close()` fires a post task.
   base::RunLoop().RunUntilIdle();
@@ -3586,6 +3586,9 @@ using OverviewRasterScaleTest = OverviewSessionTest;
 // overview mode.
 TEST_P(OverviewRasterScaleTest,
        RasterScaleAnimatedSingleWindowEnterGrowExitShrink) {
+  Shell::Get()
+      ->raster_scale_controller()
+      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(100, 100)));
   auto tracker = RasterScaleChangeTracker(window.get());
 
@@ -3622,6 +3625,9 @@ TEST_P(OverviewRasterScaleTest,
 // overview mode.
 TEST_P(OverviewRasterScaleTest,
        RasterScaleAnimatedSingleWindowEnterShrinkExitGrow) {
+  Shell::Get()
+      ->raster_scale_controller()
+      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(600, 600)));
   auto tracker = RasterScaleChangeTracker(window.get());
 
@@ -3655,6 +3661,9 @@ TEST_P(OverviewRasterScaleTest,
 // entering overview mode.
 TEST_P(OverviewRasterScaleTest,
        RasterScaleMinimizedSingleWindowEnterGrowExitShrink) {
+  Shell::Get()
+      ->raster_scale_controller()
+      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(100, 100)));
   auto tracker = RasterScaleChangeTracker(window.get());
 
@@ -3693,6 +3702,9 @@ TEST_P(OverviewRasterScaleTest,
 // entering overview mode.
 TEST_P(OverviewRasterScaleTest,
        RasterScaleMinimizedSingleWindowEnterShrinkExitGrow) {
+  Shell::Get()
+      ->raster_scale_controller()
+      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(600, 600)));
   auto tracker = RasterScaleChangeTracker(window.get());
 
@@ -3730,6 +3742,9 @@ TEST_P(OverviewRasterScaleTest,
 // Tests raster scale changes for a more complex case with multiple windows in
 // different states.
 TEST_P(OverviewRasterScaleTest, RasterScaleMultipleWindows) {
+  Shell::Get()
+      ->raster_scale_controller()
+      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   std::unique_ptr<aura::Window> window_grow_animated(
       CreateTestWindow(gfx::Rect(100, 100)));
   std::unique_ptr<aura::Window> window_shrink_animated(
@@ -3821,6 +3836,9 @@ TEST_P(OverviewRasterScaleTest, RasterScaleMultipleWindows) {
 // Tests raster scale changes when a maximized window exists with windows on
 // top.
 TEST_P(OverviewRasterScaleTest, RasterScaleMaximizedWithGrowingRestoredOnTop) {
+  Shell::Get()
+      ->raster_scale_controller()
+      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   std::unique_ptr<aura::Window> window_maximized(
       CreateTestWindow(gfx::Rect(100, 100)));
   std::unique_ptr<aura::Window> window_grow(
@@ -3889,6 +3907,9 @@ TEST_P(OverviewRasterScaleTest, RasterScaleMaximizedWithGrowingRestoredOnTop) {
 
 // Tests raster scale changes when a maximized window exists with windows below.
 TEST_P(OverviewRasterScaleTest, RasterScaleMaximizedWithGrowingRestoredBelow) {
+  Shell::Get()
+      ->raster_scale_controller()
+      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   std::unique_ptr<aura::Window> window_grow(
       CreateTestWindow(gfx::Rect(100, 100)));
   std::unique_ptr<aura::Window> window_shrink(
@@ -3962,6 +3983,9 @@ TEST_P(OverviewRasterScaleTest, RasterScaleMaximizedWithGrowingRestoredBelow) {
 // different states when the overview mode animation is cancelled while entering
 // and exiting.
 TEST_P(OverviewRasterScaleTest, RasterScaleMultipleWindowsCancel) {
+  Shell::Get()
+      ->raster_scale_controller()
+      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   std::unique_ptr<aura::Window> window_grow_covered(
       CreateTestWindow(gfx::Rect(100, 100)));
   std::unique_ptr<aura::Window> window_shrink_covered(
@@ -4194,6 +4218,9 @@ TEST_P(OverviewRasterScaleTest, RasterScaleMultipleWindowsCancel) {
 
 // Tests raster scale changes for transient windows.
 TEST_P(OverviewRasterScaleTest, RasterScaleTransientChildWindows) {
+  Shell::Get()
+      ->raster_scale_controller()
+      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   std::unique_ptr<aura::Window> window_grow_covered(
       CreateTestWindow(gfx::Rect(100, 100)));
   std::unique_ptr<aura::Window> window_shrink_covered(
@@ -4753,6 +4780,9 @@ TEST_P(OverviewRasterScaleTest, RasterScaleTransientChildWindows) {
 // update its raster scale.
 TEST_P(OverviewRasterScaleTest,
        RasterScaleAddRemoveTransientChildWindowsDuringOverviewMode) {
+  Shell::Get()
+      ->raster_scale_controller()
+      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(100, 100)));
 
   std::unique_ptr<aura::Window> window_transient(
@@ -4799,6 +4829,9 @@ TEST_P(OverviewRasterScaleTest,
 // scales.
 TEST_P(OverviewRasterScaleTest,
        RasterScaleAddWindowsDuringOverviewModeByCombiningAVirtualDesk) {
+  Shell::Get()
+      ->raster_scale_controller()
+      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
@@ -4891,6 +4924,9 @@ TEST_P(OverviewRasterScaleTest,
 // works.
 TEST_P(OverviewRasterScaleTest,
        RasterScaleMoveWindowToVirtualDeskDuringOverviewMode) {
+  Shell::Get()
+      ->raster_scale_controller()
+      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
@@ -4955,6 +4991,9 @@ TEST_P(OverviewRasterScaleTest,
 
 // Tests raster scale changes work in tablet mode.
 TEST_P(OverviewRasterScaleTest, RasterScaleTabletMode) {
+  Shell::Get()
+      ->raster_scale_controller()
+      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   EnterTabletMode();
 
   std::unique_ptr<aura::Window> window_maximized(
@@ -5062,6 +5101,9 @@ TEST_P(OverviewRasterScaleTest, RasterScaleTabletMode) {
 
 // Tests raster scale changes work during screen rotations.
 TEST_P(OverviewRasterScaleTest, RasterScaleScreenRotation) {
+  Shell::Get()
+      ->raster_scale_controller()
+      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   UpdateDisplay("1600x1200");
   display::test::ScopedSetInternalDisplayId set_internal(
       Shell::Get()->display_manager(),
@@ -5124,6 +5166,9 @@ TEST_P(OverviewRasterScaleTest, RasterScaleScreenRotation) {
 
 // Tests raster scale changes work during screen rotations in tablet mode.
 TEST_P(OverviewRasterScaleTest, RasterScaleScreenRotationTabletMode) {
+  Shell::Get()
+      ->raster_scale_controller()
+      ->set_raster_scale_slop_proportion_for_testing(0.0f);
   UpdateDisplay("1600x1200");
   EnterTabletMode();
 
@@ -5447,6 +5492,25 @@ class TabletModeOverviewSessionTest : public OverviewTestBase {
   void GenerateScrollSequence(const gfx::Point& start, const gfx::Point& end) {
     GetEventGenerator()->GestureScrollSequence(start, end,
                                                base::Milliseconds(100), 1000);
+  }
+
+  void DispatchLongPress(OverviewItemBase* item) {
+    const gfx::Point point =
+        gfx::ToRoundedPoint(item->target_bounds().CenterPoint());
+    ui::GestureEvent long_press(
+        point.x(), point.y(), 0, base::TimeTicks::Now(),
+        ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
+    GetEventGenerator()->Dispatch(&long_press);
+  }
+
+  // Creates `n` test windows. They are created in reverse order, so that the
+  // first window in the vector is the MRU window.
+  std::vector<std::unique_ptr<aura::Window>> CreateAppWindows(int n) {
+    std::vector<std::unique_ptr<aura::Window>> windows(n);
+    for (int i = n - 1; i >= 0; --i) {
+      windows[i] = CreateTestWindow();
+    }
+    return windows;
   }
 };
 
@@ -5866,8 +5930,8 @@ TEST_P(ContinuousOverviewAnimationTest, WindowSizesAndOpacities) {
   // Confirm the opacity of minimized windows is not 100%.
   float opacity = GetOverviewItemForWindow(minimized_window.get())
                       ->GetLeafItemForWindow(minimized_window.get())
-                      ->overview_item_view()
-                      ->layer()
+                      ->item_widget()
+                      ->GetLayer()
                       ->opacity();
   EXPECT_NE(opacity, 1.f);
   EXPECT_NE(opacity, 0.f);
@@ -5935,9 +5999,8 @@ TEST_P(ContinuousOverviewAnimationTest, WindowCornerRadiiAndShadows) {
   EXPECT_FALSE(HasRoundedCorner(active_item));
   EXPECT_TRUE(HasRoundedCorner(minimized_item));
 
-  // If a window is minimized, it should hide its shadows until the enter
-  // animation ends. Otherwise, retain its shadow the entire time.
-  EXPECT_FALSE(GetShadowBounds(active_item).IsEmpty());
+  // Shadows are hidden until the continuous swipe is over.
+  EXPECT_TRUE(GetShadowBounds(active_item).IsEmpty());
   EXPECT_TRUE(GetShadowBounds(minimized_item).IsEmpty());
 
   // Reset.
@@ -5958,12 +6021,10 @@ TEST_P(ContinuousOverviewAnimationTest, WindowCornerRadiiAndShadows) {
   active_item = GetOverviewItemForWindow(active_window.get());
   minimized_item = GetOverviewItemForWindow(minimized_window.get());
 
-  // During the entry animation, the non-minimized windows do not show their
-  // rounded corners or shadows until the animation is complete. Minimized
-  // windows always have rounded corners and immediately show their shadows.
-  // TODO(b/293923755): Both minimized and non-minimized windows should show
-  // their shadow after the animation is complete.
-  EXPECT_FALSE(HasRoundedCorner(active_item));
+  // Rounded corners are shown once the fingers lift. Shadows on minimized
+  // windows are shown, but shadows on non-minimized windows are hidden until
+  // the animation is finished.
+  EXPECT_TRUE(HasRoundedCorner(active_item));
   EXPECT_TRUE(GetShadowBounds(active_item).IsEmpty());
   EXPECT_TRUE(HasRoundedCorner(minimized_item));
   EXPECT_FALSE(GetShadowBounds(minimized_item).IsEmpty());
@@ -6019,257 +6080,6 @@ INSTANTIATE_TEST_SUITE_P(/*no prefix*/,
                            return info.param ? "NaturalScrollOn"
                                              : "NaturalScrollOff";
                          });
-
-class ClamshellScrollOverviewSessionTest : public OverviewTestBase {
- public:
-  ClamshellScrollOverviewSessionTest() = default;
-  ClamshellScrollOverviewSessionTest(
-      const ClamshellScrollOverviewSessionTest&) = delete;
-  ClamshellScrollOverviewSessionTest& operator=(
-      const ClamshellScrollOverviewSessionTest&) = delete;
-  ~ClamshellScrollOverviewSessionTest() override = default;
-
-  // OverviewTestBase:
-  void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kOverviewScrollLayoutForClamshell,
-                              chromeos::features::kJelly},
-        /*disabled_features=*/{});
-    OverviewTestBase::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-// Tests that when 10 windows are open, the scrolling layout for
-// overview mode in clamshell has some of the windows offscreen.
-TEST_F(ClamshellScrollOverviewSessionTest, CheckManyWindowsOffScreen) {
-  auto windows = CreateAppWindows(kMinimumItemsForNewLayoutInClamshell);
-  ToggleOverview();
-  ASSERT_TRUE(InOverviewSession());
-
-  auto* item0 = GetOverviewItemForWindow(windows[0].get());
-  auto* item1 = GetOverviewItemForWindow(windows[1].get());
-  auto* item8 = GetOverviewItemForWindow(windows[8].get());
-  auto* item9 = GetOverviewItemForWindow(windows[9].get());
-
-  const gfx::RectF screen_bounds(GetGridBounds());
-  const gfx::RectF item0_bounds = item0->target_bounds();
-  const gfx::RectF item1_bounds = item1->target_bounds();
-  const gfx::RectF item8_bounds = item8->target_bounds();
-  const gfx::RectF item9_bounds = item9->target_bounds();
-
-  // `item0` should be within `screen_bounds`.
-  EXPECT_TRUE(screen_bounds.Contains(item0_bounds));
-
-  // `item1` should be within `screen_bounds`.
-  EXPECT_TRUE(screen_bounds.Contains(item1_bounds));
-
-  // `item9` should not be within `screen_bounds` but it should have an
-  // x value within `screen_bounds`.
-  EXPECT_FALSE(screen_bounds.Contains(item9_bounds));
-  EXPECT_GT(item9_bounds.x(), screen_bounds.x());
-  EXPECT_LT(item9_bounds.x(), screen_bounds.x() + screen_bounds.width());
-
-  // `item8` should not be within `screen_bounds` but it should have an
-  // x value within `screen_bounds`.
-  EXPECT_FALSE(screen_bounds.Contains(item8_bounds));
-  EXPECT_GT(item8_bounds.x(), screen_bounds.x());
-  EXPECT_LT(item8_bounds.x(), screen_bounds.x() + screen_bounds.width());
-}
-
-// Tests that when 4 windows are open, the scrolling layout for
-// overview mode in clamshell has all of the windows onscreen.
-TEST_F(ClamshellScrollOverviewSessionTest, CheckFewWindowsOnScreen) {
-  auto windows = CreateAppWindows(4);
-  ToggleOverview();
-  ASSERT_TRUE(InOverviewSession());
-
-  auto* item0 = GetOverviewItemForWindow(windows[0].get());
-  auto* item1 = GetOverviewItemForWindow(windows[1].get());
-  auto* item2 = GetOverviewItemForWindow(windows[2].get());
-  auto* item3 = GetOverviewItemForWindow(windows[3].get());
-
-  const gfx::RectF screen_bounds(GetGridBounds());
-  const gfx::RectF item0_bounds = item0->target_bounds();
-  const gfx::RectF item1_bounds = item1->target_bounds();
-  const gfx::RectF item2_bounds = item2->target_bounds();
-  const gfx::RectF item3_bounds = item3->target_bounds();
-
-  // All items should be within `screen_bounds`.
-  EXPECT_TRUE(screen_bounds.Contains(item0_bounds));
-  EXPECT_TRUE(screen_bounds.Contains(item1_bounds));
-  EXPECT_TRUE(screen_bounds.Contains(item2_bounds));
-  EXPECT_TRUE(screen_bounds.Contains(item3_bounds));
-}
-
-// Tests that windows cannot be scrolled if all windows fit on screen.
-TEST_F(ClamshellScrollOverviewSessionTest, CheckNoOverviewItemShift) {
-  auto windows = CreateAppWindows(4);
-  ToggleOverview();
-  ASSERT_TRUE(InOverviewSession());
-
-  auto* item0 = GetOverviewItemForWindow(windows[0].get());
-  const gfx::RectF before_shift_bounds = item0->target_bounds();
-
-  GetEventGenerator()->MoveMouseTo(GetGridBounds().width(),
-                                   GetGridBounds().height());
-  GetEventGenerator()->MoveMouseWheel(0, -200);
-
-  EXPECT_EQ(before_shift_bounds, item0->target_bounds());
-}
-
-// Tests to see that windows can be scrolled if at least one window is
-// partially/completely positioned offscreen.
-TEST_F(ClamshellScrollOverviewSessionTest, CheckOverviewItemShift) {
-  auto windows = CreateAppWindows(kMinimumItemsForNewLayoutInClamshell);
-  ToggleOverview();
-  ASSERT_TRUE(InOverviewSession());
-
-  auto* item0 = GetOverviewItemForWindow(windows[0].get());
-  const gfx::RectF before_shift_bounds = item0->target_bounds();
-
-  GetEventGenerator()->MoveMouseTo(GetGridBounds().width(),
-                                   GetGridBounds().height());
-  GetEventGenerator()->MoveMouseWheel(0, -200);
-
-  EXPECT_LT(item0->target_bounds().y(), before_shift_bounds.y());
-}
-
-// Tests to see if windows remain in bounds after scrolling extremely far.
-TEST_F(ClamshellScrollOverviewSessionTest, CheckOverviewItemScrollingBounds) {
-  auto windows = CreateAppWindows(kMinimumItemsForNewLayoutInClamshell);
-  ToggleOverview();
-  ASSERT_TRUE(InOverviewSession());
-
-  // Scroll an extreme amount to see if windows at the top are still in
-  // bounds. First, align the top window (`windows[0]`) to the top bound
-  // and store the item's location. Then, scroll a far amount and check
-  // to see if the item moved at all.
-  auto* top_window = GetOverviewItemForWindow(windows[0].get());
-
-  GetEventGenerator()->MoveMouseTo(GetGridBounds().width(),
-                                   GetGridBounds().height());
-  GetEventGenerator()->MoveMouseWheel(0, -500);
-
-  const gfx::RectF top_bounds = top_window->target_bounds();
-  GetEventGenerator()->MoveMouseWheel(0, -500);
-  EXPECT_EQ(top_bounds, top_window->target_bounds());
-
-  // Scroll an extreme amount to see if windows on the bottom are still in
-  // bounds. First, align the bottom window (`windows[7]`) to the bottom
-  // bound and store the item's location. Then, scroll a far amount and
-  // check to see if the item moved at all.
-  auto* bottom_window = GetOverviewItemForWindow(windows[7].get());
-  GetEventGenerator()->MoveMouseWheel(0, 500);
-  const gfx::RectF bottom_bounds = bottom_window->target_bounds();
-  GetEventGenerator()->MoveMouseWheel(0, 500);
-  EXPECT_EQ(bottom_bounds, bottom_window->target_bounds());
-}
-
-// Test that overview widgets are stacked underneath the desk bar widget
-// when scrolling vertically in overview mode.
-TEST_F(ClamshellScrollOverviewSessionTest,
-       OverviewWidgetsAreStackedUnderDeskBar) {
-  auto windows = CreateAppWindows(kMinimumItemsForNewLayoutInClamshell);
-  ToggleOverview();
-  auto* desk_bar_view =
-      GetOverviewGridForRoot(Shell::Get()->GetPrimaryRootWindow())
-          ->desks_bar_view();
-  auto* top_window = GetOverviewItemForWindow(windows[0].get());
-  ASSERT_TRUE(InOverviewSession());
-
-  // Ensure the two windows in question share the same root window.
-  ASSERT_EQ(top_window->root_window(), desk_bar_view->root());
-
-  // Before we start scrolling, the items have not been restacked.
-  // So, check that the overview item is still stacked in front of the desk bar
-  // like the default behavior expects.
-  EXPECT_FALSE(window_util::IsStackedBelow(
-      top_window->item_widget()->GetNativeWindow(),
-      desk_bar_view->GetWidget()->GetNativeWindow()));
-
-  // Scroll so the overview widget gets restacked.
-  GetEventGenerator()->MoveMouseTo(GetGridBounds().width(),
-                                   GetGridBounds().height());
-  GetEventGenerator()->MoveMouseWheel(0, -100);
-
-  EXPECT_TRUE(window_util::IsStackedBelow(
-      top_window->item_widget()->GetNativeWindow(),
-      desk_bar_view->GetWidget()->GetNativeWindow()));
-}
-
-// Test scrolling behavior when floated and minimized windows are present.
-TEST_F(ClamshellScrollOverviewSessionTest,
-       CheckOverviewScrollWithFloatedWindow) {
-  auto windows = CreateAppWindows(kMinimumItemsForNewLayoutInClamshell);
-
-  // Create a floated, non-floated active, and minimized window.
-  auto active_window = CreateAppWindow();
-  auto minimized_window = CreateAppWindow();
-  auto floated_window = CreateAppWindow();
-
-  // Confirm minimized window.
-  WindowState::Get(minimized_window.get())->Minimize();
-  ASSERT_TRUE(WindowState::Get(minimized_window.get())->IsMinimized());
-
-  // Confirm floated window.
-  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
-  ASSERT_TRUE(WindowState::Get(floated_window.get())->IsFloated());
-
-  ToggleOverview();
-  ASSERT_TRUE(InOverviewSession());
-
-  auto* desk_bar_view =
-      GetOverviewGridForRoot(Shell::Get()->GetPrimaryRootWindow())
-          ->desks_bar_view();
-  auto* floated_window_item = GetOverviewItemForWindow(floated_window.get());
-  auto* active_window_item = GetOverviewItemForWindow(active_window.get());
-  auto* minimized_window_item =
-      GetOverviewItemForWindow(minimized_window.get());
-
-  const gfx::RectF float_before_shift_bounds =
-      floated_window_item->target_bounds();
-  const gfx::RectF active_before_shift_bounds =
-      active_window_item->target_bounds();
-  const gfx::RectF minimized_before_shift_bounds =
-      minimized_window_item->target_bounds();
-
-  // Ensure the non-floated windows share the same root window. Floated windows
-  // are parented to a different container and guaranteed be below the desk bar.
-  ASSERT_EQ(active_window_item->root_window(), desk_bar_view->root());
-  ASSERT_EQ(minimized_window_item->root_window(), desk_bar_view->root());
-
-  // Before we start scrolling, the items have not been restacked.
-  EXPECT_FALSE(window_util::IsStackedBelow(
-      active_window_item->item_widget()->GetNativeWindow(),
-      desk_bar_view->GetWidget()->GetNativeWindow()));
-  EXPECT_FALSE(window_util::IsStackedBelow(
-      minimized_window_item->item_widget()->GetNativeWindow(),
-      desk_bar_view->GetWidget()->GetNativeWindow()));
-
-  // Scroll so the overview widget gets restacked.
-  GetEventGenerator()->MoveMouseTo(GetGridBounds().width(),
-                                   GetGridBounds().height());
-  GetEventGenerator()->MoveMouseWheel(0, -100);
-
-  // Check windows are stacked below the desk bar.
-  EXPECT_TRUE(window_util::IsStackedBelow(
-      active_window_item->item_widget()->GetNativeWindow(),
-      desk_bar_view->GetWidget()->GetNativeWindow()));
-  EXPECT_TRUE(window_util::IsStackedBelow(
-      minimized_window_item->item_widget()->GetNativeWindow(),
-      desk_bar_view->GetWidget()->GetNativeWindow()));
-
-  // Check windows have been re-positioned.
-  EXPECT_LT(floated_window_item->target_bounds().y(),
-            float_before_shift_bounds.y());
-  EXPECT_LT(active_window_item->target_bounds().y(),
-            active_before_shift_bounds.y());
-  EXPECT_LT(minimized_window_item->target_bounds().y(),
-            minimized_before_shift_bounds.y());
-}
 
 // A unique test class for testing flings in overview as those rely on observing
 // compositor animations which require a mock time task environment.
@@ -6786,6 +6596,34 @@ TEST_F(TabletModeOverviewSessionTest, MinimizedRoundedCorners) {
   EXPECT_FALSE(GetOverviewController()->InOverviewSession());
   EXPECT_TRUE(WindowState::Get(window.get())->IsMinimized());
   EXPECT_EQ(gfx::RoundedCornersF(), window->layer()->rounded_corner_radii());
+}
+
+// Tests the UAF issue reported in b/301368132 has been fixed. The overview
+// item in `OverviewWindowDragController::CompleteDrag()` may be reset in
+// `OverviewGrid::RemoveItem()` and is accessed again when getting the
+// window for `ScopedFloatContainerStacker::OnDragFinished()`.
+TEST_F(TabletModeOverviewSessionTest, AvoidUaFOnCompleteDrag) {
+  std::unique_ptr<aura::Window> window = CreateAppWindow(gfx::Rect(100, 100));
+  WindowState* window_state = WindowState::Get(window.get());
+  const WindowSnapWMEvent snap_type(WM_EVENT_SNAP_PRIMARY);
+  window_state->OnWMEvent(&snap_type);
+  EXPECT_EQ(chromeos::WindowStateType::kPrimarySnapped,
+            window_state->GetStateType());
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+
+  window_state->Minimize();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  auto* overview_item = GetOverviewItemForWindow(window.get());
+
+  // Trigger `OverviewWindowDragController::CompleteDrag()` and verify that
+  // there will be no crash.
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(gfx::ToRoundedPoint(
+      overview_item->GetTargetBoundsInScreen().CenterPoint()));
+  event_generator->ClickLeftButton();
+  EXPECT_EQ(chromeos::WindowStateType::kPrimarySnapped,
+            window_state->GetStateType());
 }
 
 // Test the split view and overview functionalities in tablet mode.
@@ -9165,8 +9003,9 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
   EXPECT_NE(GetGridBounds(), overview_full_bounds);
   EXPECT_NE(GetGridBounds(), overview_snapped_bounds);
   EXPECT_EQ(GetGridBounds(), GetSplitViewRightWindowBounds());
-  EXPECT_TRUE(
-      split_view_controller()->split_view_overview_session_for_testing());
+  EXPECT_TRUE(RootWindowController::ForWindow(Shell::GetPrimaryRootWindow())
+                  ->split_view_overview_session());
+
   // Verify the overview width has decreased by the same amount the window has
   // increased.
   EXPECT_EQ(overview_snapped_bounds.width() - drag_x, GetGridBounds().width());

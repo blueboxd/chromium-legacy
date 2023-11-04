@@ -4,6 +4,7 @@
 
 GEN_INCLUDE(['../../common/testing/e2e_test_base.js']);
 GEN_INCLUDE(['../../common/testing/mock_accessibility_private.js']);
+GEN_INCLUDE(['../../common/testing/mock_audio.js']);
 GEN_INCLUDE(['../../common/testing/mock_input_ime.js']);
 GEN_INCLUDE(['../../common/testing/mock_input_method_private.js']);
 GEN_INCLUDE(['../../common/testing/mock_language_settings_private.js']);
@@ -62,6 +63,9 @@ DictationE2ETestBase = class extends E2ETestBase {
 
     this.mockSpeechRecognitionPrivate = new MockSpeechRecognitionPrivate();
     chrome.speechRecognitionPrivate = this.mockSpeechRecognitionPrivate;
+
+    this.mockAudio = new MockAudio();
+    chrome.audio = this.mockAudio;
 
     this.dictationEngineId =
         '_ext_ime_egfdjlfmgnehecnclamagfafdccgfndpdictation';
@@ -140,7 +144,7 @@ DictationE2ETestBase = class extends E2ETestBase {
     super.testGenPreamble();
 
     GEN(`
-  browser()->profile()->GetPrefs()->SetBoolean(
+  GetProfile()->GetPrefs()->SetBoolean(
         ash::prefs::kDictationAcceleratorDialogHasBeenAccepted, true);
 
   base::OnceClosure load_cb =
@@ -269,7 +273,7 @@ DictationE2ETestBase = class extends E2ETestBase {
 
   /** @return {boolean} */
   getDictationActive() {
-    return this.mockAccessibilityPrivate.getDictationActive();
+    return accessibilityCommon.dictation_.active_;
   }
 
   /**

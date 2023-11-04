@@ -1,21 +1,17 @@
 <style include="settings-shared input-device-settings-shared">
-  #header {
-    display: flex;
-    height: 24px;
-    padding: 12px 0;
-  }
-
-  #description {
-    color: var(--cros-text-color-secondary);
-    margin-inline-start: 20px;
+  #mouseSwapToggleButton {
+    border-bottom: var(--cr-separator-line);
   }
 </style>
-<div id="header">
-  <div id="description">[[selectedMouse.name]]</div>
+<settings-toggle-button id="mouseSwapToggleButton"
+    aria-describedby="description"
+    label="$i18n{mouseSwapButtonsLabel}"
+    pref="{{primaryRightPref_}}">
+</settings-toggle-button>
+<div id="description" class="subpage-description">
+  [[getDescription_(selectedMouse.*)]]
 </div>
-<div class="subsection">
-  <customize-buttons-subsection
-      button-remapping-list="[[selectedMouse.settings.buttonRemappings]]"
-      action-list$="[[buttonActionList_]]">
-  </customize-buttons-subsection>
-</div>
+<customize-buttons-subsection
+    button-remapping-list="{{selectedMouse.settings.buttonRemappings}}"
+    action-list$="[[buttonActionList_]]">
+</customize-buttons-subsection>

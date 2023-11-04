@@ -46,7 +46,8 @@ static constexpr auto kAutofillHeuristicsVsHtmlOverrides =
     base::MakeFixedFlatSet<std::pair<ServerFieldType, HtmlFieldType>>(
         {{ADDRESS_HOME_ADMIN_LEVEL2, HtmlFieldType::kAddressLevel1},
          {ADDRESS_HOME_ADMIN_LEVEL2, HtmlFieldType::kAddressLevel2},
-         {ADDRESS_HOME_APT_NUM, HtmlFieldType::kAddressLevel2},
+         {ADDRESS_HOME_APT_NUM, HtmlFieldType::kAddressLine2},
+         {ADDRESS_HOME_APT_NUM, HtmlFieldType::kAddressLine3},
          {ADDRESS_HOME_BETWEEN_STREETS, HtmlFieldType::kAddressLevel2},
          {ADDRESS_HOME_DEPENDENT_LOCALITY, HtmlFieldType::kAddressLevel1},
          {ADDRESS_HOME_DEPENDENT_LOCALITY, HtmlFieldType::kAddressLevel2},
@@ -66,6 +67,7 @@ static constexpr auto kAutofillHeuristicsVsServerOverrides =
     base::MakeFixedFlatSet<std::pair<ServerFieldType, ServerFieldType>>(
         {{ADDRESS_HOME_ADMIN_LEVEL2, ADDRESS_HOME_CITY},
          {ADDRESS_HOME_APT_NUM, ADDRESS_HOME_LINE2},
+         {ADDRESS_HOME_APT_NUM, ADDRESS_HOME_LINE3},
          {ADDRESS_HOME_APT_NUM, ADDRESS_HOME_HOUSE_NUMBER},
          {ADDRESS_HOME_BETWEEN_STREETS, ADDRESS_HOME_STREET_ADDRESS},
          {ADDRESS_HOME_DEPENDENT_LOCALITY, ADDRESS_HOME_CITY},
@@ -255,8 +257,8 @@ AutofillField::AutofillField(FieldSignature field_signature) : AutofillField() {
 
 AutofillField::AutofillField(const FormFieldData& field)
     : FormFieldData(field), parseable_name_(name), parseable_label_(label) {
-  field_signature_ =
-      CalculateFieldSignatureByNameAndType(name, form_control_type);
+  field_signature_ = CalculateFieldSignatureByNameAndType(
+      name, FormControlTypeToString(form_control_type));
   local_type_predictions_.fill(NO_SERVER_DATA);
 }
 
@@ -388,8 +390,7 @@ void AutofillField::SetTypeTo(const AutofillType& type) {
 AutofillType AutofillField::ComputedType() const {
   // If autocomplete=tel/tel-* and server confirms it really is a phone field,
   // we always use the server prediction as html types are not very reliable.
-  if (GroupTypeOfHtmlFieldType(html_type_, html_mode_) ==
-          FieldTypeGroup::kPhone &&
+  if (GroupTypeOfHtmlFieldType(html_type_) == FieldTypeGroup::kPhone &&
       GroupTypeOfServerFieldType(server_type()) == FieldTypeGroup::kPhone) {
     return AutofillType(server_type());
   }
@@ -424,7 +425,7 @@ AutofillType AutofillField::ComputedType() const {
   if (BelievedHtmlTypes(heuristic_type(), server_type(),
                         IsCreditCardPrediction())
           .contains(html_type())) {
-    return AutofillType(html_type_, html_mode_);
+    return AutofillType(html_type_);
   }
 
   if (server_type() != NO_SERVER_DATA &&
@@ -504,7 +505,8 @@ bool AutofillField::IsEmpty() const {
 FieldSignature AutofillField::GetFieldSignature() const {
   return field_signature_
              ? *field_signature_
-             : CalculateFieldSignatureByNameAndType(name, form_control_type);
+             : CalculateFieldSignatureByNameAndType(
+                   name, FormControlTypeToString(form_control_type));
 }
 
 std::string AutofillField::FieldSignatureAsStr() const {
@@ -569,27 +571,30 @@ void AutofillField::AppendLogEventIfNotRepeated(
   }
 }
 
-FormControlType AutofillField::FormControlType() const {
+DeprecatedFormControlType AutofillField::FormControlType() const {
   // Keep in sync with https://html.spec.whatwg.org/#attr-input-type.
-  if (form_control_type == "text" || form_control_type == "search" ||
-      form_control_type == "tel" || form_control_type == "url" ||
-      form_control_type == "email" || form_control_type == "password" ||
-      form_control_type == "number") {
-    return FormControlType::kText;
-  } else if (form_control_type == "textarea") {
-    return FormControlType::kTextarea;
-  } else if (form_control_type == "checkbox") {
-    return FormControlType::kCheckbox;
-  } else if (form_control_type == "radio") {
-    return FormControlType::kRadio;
-  } else if (form_control_type == "select-one") {
-    return FormControlType::kSelectOne;
-  } else if (form_control_type == "selectlist") {
-    return FormControlType::kSelectlist;
-  } else if (form_control_type == "") {
-    return FormControlType::kEmpty;
+  if (form_control_type == StringToFormControlType("text") ||
+      form_control_type == StringToFormControlType("search") ||
+      form_control_type == StringToFormControlType("tel") ||
+      form_control_type == StringToFormControlType("url") ||
+      form_control_type == StringToFormControlType("email") ||
+      form_control_type == StringToFormControlType("password") ||
+      form_control_type == StringToFormControlType("number")) {
+    return DeprecatedFormControlType::kText;
+  } else if (form_control_type == StringToFormControlType("textarea")) {
+    return DeprecatedFormControlType::kTextarea;
+  } else if (form_control_type == StringToFormControlType("checkbox")) {
+    return DeprecatedFormControlType::kCheckbox;
+  } else if (form_control_type == StringToFormControlType("radio")) {
+    return DeprecatedFormControlType::kRadio;
+  } else if (form_control_type == StringToFormControlType("select-one")) {
+    return DeprecatedFormControlType::kSelectOne;
+  } else if (form_control_type == StringToFormControlType("selectlist")) {
+    return DeprecatedFormControlType::kSelectlist;
+  } else if (form_control_type == StringToFormControlType("")) {
+    return DeprecatedFormControlType::kEmpty;
   } else {
-    return FormControlType::kOther;
+    return DeprecatedFormControlType::kOther;
   }
 }
 

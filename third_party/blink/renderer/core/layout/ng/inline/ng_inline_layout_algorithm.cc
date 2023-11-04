@@ -12,7 +12,7 @@
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-shared.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
+#include "third_party/blink/renderer/core/layout/layout_text_combine.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_initial_letter_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_box_state.h"
@@ -519,14 +519,15 @@ void NGInlineLayoutAlgorithm::CreateLine(
       has_out_of_flow_positioned_items = true;
     } else if (item.Type() == NGInlineItem::kFloating) {
       if (item_result.positioned_float) {
-        if (!item_result.positioned_float->need_break_before) {
+        if (!item_result.positioned_float->break_before_token) {
           DCHECK(item_result.positioned_float->layout_result);
           line_box->AddChild(item_result.positioned_float->layout_result,
                              item_result.positioned_float->bfc_offset,
                              item.BidiLevel());
         }
       } else {
-        line_box->AddChild(item.GetLayoutObject(), item.BidiLevel());
+        line_box->AddChild(item.GetLayoutObject(), item.BidiLevel(),
+                           item_result.Start());
       }
       has_floating_items = true;
       has_relative_positioned_items |=
@@ -806,7 +807,7 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
   NGInlineBoxState* box = box_states_->OnOpenTag(
       ConstraintSpace(), item, *item_result, baseline_type_, *line_box);
 
-  if (LIKELY(!IsA<LayoutNGTextCombine>(layout_object))) {
+  if (LIKELY(!IsA<LayoutTextCombine>(layout_object))) {
     PlaceLayoutResult(item_result, line_box, box, box->margin_inline_start);
   } else {
     // The metrics should be as text instead of atomic inline box.
@@ -899,7 +900,7 @@ void NGInlineLayoutAlgorithm::PlaceInitialLetterBox(
     NGInlineItemResult* item_result,
     NGLogicalLineItems* line_box) {
   DCHECK(item_result->layout_result);
-  DCHECK(!IsA<LayoutNGTextCombine>(item.GetLayoutObject()));
+  DCHECK(!IsA<LayoutTextCombine>(item.GetLayoutObject()));
   DCHECK(!item_result->spacing_before);
 
   // Because of the initial letter box should not contribute baseline position
@@ -1043,24 +1044,24 @@ void NGInlineLayoutAlgorithm::PlaceFloatingObjects(
     // If this is an empty inline, all floats are positioned during the
     // PositionLeadingFloats step.
     if (child.unpositioned_float) {
+      // If we're resuming in a parallel fragmentation flow, the line breaker
+      // should not leave any unpositioned floats behind.
+      DCHECK(!BreakToken() || !BreakToken()->IsInParallelBlockFlow());
+
       NGPositionedFloat positioned_float = PositionFloat(
           origin_bfc_block_offset, child.unpositioned_float, &ExclusionSpace());
-      if (positioned_float.need_break_before) {
-        // We decided to break before the float. No fragment here. Create a
-        // break token and propagate it to the block container.
-        NGBlockNode float_node(To<LayoutBox>(child.unpositioned_float.Get()));
-        auto* break_before = NGBlockBreakToken::CreateBreakBefore(
-            float_node, /* is_forced_break */ false);
-        line_info->PropagateBreakToken(break_before);
-        continue;
-      } else {
-        // If the float broke inside, we need to propagate the break token to
-        // the block container, so that we'll resume in the next fragmentainer.
-        if (const NGBreakToken* token =
-                positioned_float.layout_result->PhysicalFragment()
-                    .BreakToken()) {
-          line_info->PropagateBreakToken(To<NGBlockBreakToken>(token));
+      const NGBlockBreakToken* break_token = positioned_float.BreakToken();
+      if (break_token) {
+        const auto* parallel_token =
+            NGInlineBreakToken::CreateForParallelBlockFlow(
+                node_, child.item_index, *break_token);
+        line_info->PropagateParallelFlowBreakToken(parallel_token);
+        if (positioned_float.minimum_space_shortage) {
+          line_info->PropagateMinimumSpaceShortage(
+              positioned_float.minimum_space_shortage);
         }
+      }
+      if (!break_token || !break_token->IsBreakBefore()) {
         child.layout_result = std::move(positioned_float.layout_result);
         child.bfc_offset = positioned_float.bfc_offset;
         child.unpositioned_float = nullptr;
@@ -1363,7 +1364,7 @@ const NGLayoutResult* NGInlineLayoutAlgorithm::Layout() {
   // Clear break tokens (for fragmented floats) propagated from the previous
   // line (or even the *current* line, in cases where we retry layout after
   // having resolved the BFC offset).
-  context_->ClearPropagatedBreakTokens();
+  context_->ClearParallelFlowBreakTokens();
 
   end_margin_strut_ = ConstraintSpace().MarginStrut();
   container_builder_.SetAdjoiningObjectTypes(
@@ -1428,6 +1429,10 @@ const NGLayoutResult* NGInlineLayoutAlgorithm::Layout() {
           ConstraintSpace().AvailableSize().inline_size);
 
   const NGInlineBreakToken* break_token = BreakToken();
+
+  if (break_token && break_token->IsInParallelBlockFlow()) {
+    container_builder_.SetIsLineForParallelFlow();
+  }
 
   NGFragmentItemsBuilder* const items_builder = context_->ItemsBuilder();
   DCHECK(items_builder);
@@ -1657,9 +1662,15 @@ const NGLayoutResult* NGInlineLayoutAlgorithm::Layout() {
     // Propagate any break tokens for floats that we fragmented before or inside
     // to the block container in 3 steps: 1) in `PositionLeadingFloats`, 2) from
     // `NGLineInfo` here, 3) then `CreateLine` may propagate more.
-    for (const NGBlockBreakToken* float_break_token :
-         line_info.PropagatedBreakTokens()) {
-      context_->PropagateBreakToken(float_break_token);
+    for (const NGBreakToken* parallel_token :
+         line_info.ParallelFlowBreakTokens()) {
+      DCHECK(parallel_token->IsInlineType());
+      DCHECK(To<NGInlineBreakToken>(parallel_token)->IsInParallelBlockFlow());
+      context_->PropagateParallelFlowBreakToken(parallel_token);
+    }
+    if (absl::optional<LayoutUnit> minimum_space_shortage =
+            line_info.MinimumSpaceShortage()) {
+      container_builder_.PropagateSpaceShortage(minimum_space_shortage);
     }
 
     if (line_info.IsEmptyLine()) {
@@ -1716,6 +1727,11 @@ const NGLayoutResult* NGInlineLayoutAlgorithm::Layout() {
 void NGInlineLayoutAlgorithm::PositionLeadingFloats(
     NGExclusionSpace& exclusion_space,
     NGLeadingFloats& leading_floats) {
+  if (BreakToken() && BreakToken()->IsInParallelBlockFlow()) {
+    // Bail, and let the line breaker deal with any kind of parallel flow.
+    return;
+  }
+
   const HeapVector<NGInlineItem>& items =
       Node().ItemsData(/* is_first_line */ false).items;
 
@@ -1746,15 +1762,11 @@ void NGInlineLayoutAlgorithm::PositionLeadingFloats(
 
     if (ConstraintSpace().HasBlockFragmentation()) {
       // Propagate any breaks before or inside floats to the block container.
-      if (positioned_float.need_break_before) {
-        NGBlockNode float_node(To<LayoutBox>(item.GetLayoutObject()));
-        auto* break_before = NGBlockBreakToken::CreateBreakBefore(
-            float_node, /* is_forced_break */ false);
-        context_->PropagateBreakToken(break_before);
-      } else if (const NGBreakToken* token =
-                     positioned_float.layout_result->PhysicalFragment()
-                         .BreakToken()) {
-        context_->PropagateBreakToken(To<NGBlockBreakToken>(token));
+      if (const auto* float_break_token = positioned_float.BreakToken()) {
+        const auto* parallel_token =
+            NGInlineBreakToken::CreateForParallelBlockFlow(
+                node_, {index, item.StartOffset()}, *float_break_token);
+        context_->PropagateParallelFlowBreakToken(parallel_token);
       }
     }
 
@@ -1767,7 +1779,7 @@ void NGInlineLayoutAlgorithm::PositionLeadingFloats(
 NGPositionedFloat NGInlineLayoutAlgorithm::PositionFloat(
     LayoutUnit origin_bfc_block_offset,
     LayoutObject* floating_object,
-    NGExclusionSpace* exclusion_space) const {
+    NGExclusionSpace* exclusion_space) {
   NGBfcOffset origin_bfc_offset = {ConstraintSpace().BfcOffset().line_offset,
                                    origin_bfc_block_offset};
 
@@ -1778,7 +1790,15 @@ NGPositionedFloat NGInlineLayoutAlgorithm::PositionFloat(
       ConstraintSpace().ReplacedPercentageResolutionSize(), origin_bfc_offset,
       ConstraintSpace(), Style());
 
-  return ::blink::PositionFloat(&unpositioned_float, exclusion_space);
+  NGPositionedFloat positioned_float =
+      ::blink::PositionFloat(&unpositioned_float, exclusion_space);
+
+  if (positioned_float.minimum_space_shortage) {
+    container_builder_.PropagateSpaceShortage(
+        positioned_float.minimum_space_shortage);
+  }
+
+  return positioned_float;
 }
 
 void NGInlineLayoutAlgorithm::BidiReorder(TextDirection base_direction,

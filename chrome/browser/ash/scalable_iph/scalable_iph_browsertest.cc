@@ -5,27 +5,37 @@
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_controller.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
+#include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/system/anchored_nudge_manager.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/toast/anchored_nudge_manager_impl.h"
 #include "base/feature_list.h"
 #include "base/scoped_observation.h"
 #include "base/strings/pattern.h"
+#include "chrome/browser/apps/app_service/app_registry_cache_waiter.h"
 #include "chrome/browser/ash/app_list/app_list_client_impl.h"
 #include "chrome/browser/ash/app_list/app_list_model_updater.h"
 #include "chrome/browser/ash/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ash/login/lock/screen_locker_tester.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/printing/cups_print_job.h"
+#include "chrome/browser/ash/printing/cups_print_job_manager.h"
+#include "chrome/browser/ash/printing/cups_print_job_manager_factory.h"
 #include "chrome/browser/ash/printing/synced_printers_manager.h"
 #include "chrome/browser/ash/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/ash/scalable_iph/customizable_test_env_browser_test_base.h"
 #include "chrome/browser/ash/scalable_iph/scalable_iph_browser_test_base.h"
+#include "chrome/browser/ash/scalable_iph/scalable_iph_delegate_impl.h"
 #include "chrome/browser/scalable_iph/scalable_iph_factory.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/ash/components/phonehub/fake_feature_status_provider.h"
+#include "chromeos/ash/components/phonehub/feature_status.h"
 #include "chromeos/ash/components/scalable_iph/iph_session.h"
 #include "chromeos/ash/components/scalable_iph/scalable_iph.h"
 #include "chromeos/ash/components/scalable_iph/scalable_iph_constants.h"
@@ -90,6 +100,39 @@ void SendSuspendDone() {
   chromeos::FakePowerManagerClient::Get()->SendSuspendDone();
 }
 
+class IsOnlineValueWaiter {
+ public:
+  IsOnlineValueWaiter(scalable_iph::ScalableIphDelegate* scalable_iph_delegate,
+                      bool expected)
+      : scalable_iph_delegate_(scalable_iph_delegate), expected_(expected) {}
+
+  void Wait() {
+    if (scalable_iph_delegate_->IsOnline() == expected_) {
+      return;
+    }
+
+    repeating_timer_.Start(FROM_HERE, base::Milliseconds(10),
+                           base::BindRepeating(&IsOnlineValueWaiter::Check,
+                                               weak_ptr_factory_.GetWeakPtr()));
+    run_loop_.Run();
+  }
+
+ private:
+  void Check() {
+    if (scalable_iph_delegate_->IsOnline() != expected_) {
+      return;
+    }
+
+    run_loop_.Quit();
+  }
+
+  raw_ptr<scalable_iph::ScalableIphDelegate> scalable_iph_delegate_;
+  bool expected_;
+  base::RepeatingTimer repeating_timer_;
+  base::RunLoop run_loop_;
+  base::WeakPtrFactory<IsOnlineValueWaiter> weak_ptr_factory_{this};
+};
+
 class AppListItemWaiter : public AppListModelUpdaterObserver {
  public:
   AppListItemWaiter(std::string app_id,
@@ -119,9 +162,47 @@ class AppListItemWaiter : public AppListModelUpdaterObserver {
       app_list_model_updater_observation_{this};
 };
 
+class CupsPrintJobManagerWaiter : public ash::CupsPrintJobManager::Observer {
+ public:
+  CupsPrintJobManagerWaiter(ash::CupsPrintJobManager* print_job_manager,
+                            int job_id)
+      : print_job_manager_(print_job_manager), job_id_(job_id) {
+    CHECK(print_job_manager_);
+    print_job_manager_observation_.Observe(print_job_manager_);
+  }
+
+  void Wait() { run_loop_.Run(); }
+
+  void OnPrintJobCreated(base::WeakPtr<ash::CupsPrintJob> job) override {
+    if (job->job_id() == job_id_) {
+      CHECK(run_loop_.IsRunningOnCurrentThread())
+          << "Observed expected print job id before run_loop_ is running: "
+          << job_id_;
+      run_loop_.Quit();
+    }
+  }
+
+ private:
+  base::ScopedObservation<ash::CupsPrintJobManager,
+                          ash::CupsPrintJobManager::Observer>
+      print_job_manager_observation_{this};
+  raw_ptr<ash::CupsPrintJobManager> print_job_manager_;
+  base::RunLoop run_loop_;
+  int job_id_;
+};
+
 class ScalableIphBrowserTestDebugOff : public ScalableIphBrowserTest {
  public:
   ScalableIphBrowserTestDebugOff() { enable_scalable_iph_debug_ = false; }
+};
+
+class ScalableIphBrowserTestFeatureOffDebugOn : public ScalableIphBrowserTest {
+ public:
+  ScalableIphBrowserTestFeatureOffDebugOn() {
+    enable_scalable_iph_ = false;
+    CHECK(enable_scalable_iph_debug_)
+        << "Debug feature is on by default for ScalableIphBrowserTest";
+  }
 };
 
 class ScalableIphBrowserTestPreinstallApps : public ScalableIphBrowserTest {
@@ -202,9 +283,11 @@ class ScalableIphBrowserTestCustomConditionBase
 
     base::test::FeatureRefAndParams scalable_iph_feature(
         ash::features::kScalableIph, {});
+    base::test::FeatureRefAndParams scalable_iph_debug_feature(
+        ash::features::kScalableIphDebug, {});
 
     scoped_feature_list_.InitWithFeaturesAndParameters(
-        {scalable_iph_feature, test_config}, {});
+        {scalable_iph_feature, scalable_iph_debug_feature, test_config}, {});
   }
 
   virtual void AppendCustomCondition(base::FieldTrialParams& params) = 0;
@@ -228,6 +311,14 @@ class ScalableIphBrowserTestNetworkConnectionOnline
     AddOnlineNetwork();
 
     ScalableIphBrowserTestNetworkConnection::SetUpOnMainThread();
+
+    // There is an async call for querying network status.
+    ash::ScalableIphDelegateImpl* scalable_iph_delegate_impl =
+        static_cast<ash::ScalableIphDelegateImpl*>(
+            mock_delegate()->fake_delegate());
+    IsOnlineValueWaiter is_online_value_waiter(scalable_iph_delegate_impl,
+                                               true);
+    is_online_value_waiter.Wait();
   }
 };
 
@@ -285,6 +376,30 @@ class ScalableIphBrowserTestHasSavedPrinters
         scalable_iph::kCustomConditionHasSavedPrintersParamName)] =
         scalable_iph::kCustomConditionHasSavedPrintersValueFalse;
   }
+};
+
+class ScalableIphBrowserTestPhoneHubOnboardingEligible
+    : public ScalableIphBrowserTestCustomConditionBase {
+ public:
+  void SetUpOnMainThread() override {
+    ScalableIphBrowserTestCustomConditionBase::SetUpOnMainThread();
+    ash::ScalableIphDelegateImpl* scalable_iph_delegate_impl =
+        static_cast<ash::ScalableIphDelegateImpl*>(
+            mock_delegate()->fake_delegate());
+
+    scalable_iph_delegate_impl->SetFakeFeatureStatusProviderForTesting(
+        &fake_feature_status_provider_);
+  }
+
+ protected:
+  void AppendCustomCondition(base::FieldTrialParams& params) override {
+    params[FullyQualified(
+        TestIphFeature(),
+        scalable_iph::kCustomConditionPhoneHubOnboardingEligibleParamName)] =
+        scalable_iph::kCustomConditionPhoneHubOnboardingEligibleValueTrue;
+  }
+
+  ash::phonehub::FakeFeatureStatusProvider fake_feature_status_provider_;
 };
 
 class ScalableIphBrowserTestParameterized
@@ -634,6 +749,31 @@ IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTest, AppListShown) {
   app_list_controller->ShowAppList(ash::AppListShowSource::kSearchKey);
 }
 
+IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTest, OpenPersonalizationApp) {
+  EXPECT_CALL(*mock_tracker(),
+              NotifyEvent(scalable_iph::kEventNameOpenPersonalizationApp));
+
+  ash::LaunchSystemWebAppAsync(browser()->profile(),
+                               ash::SystemWebAppType::PERSONALIZATION);
+}
+
+// TODO(b/301006258): Migrate to use observer pattern, then enable the test.
+IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTest, DISABLED_PrintJobCreated) {
+  EXPECT_CALL(*mock_tracker(),
+              NotifyEvent(scalable_iph::kEventNamePrintJobCreated));
+
+  ash::CupsPrintJobManager* print_job_manager =
+      ash::CupsPrintJobManagerFactory::GetForBrowserContext(
+          browser()->profile());
+  CupsPrintJobManagerWaiter print_job_manager_waiter(print_job_manager,
+                                                     /*job_id=*/0);
+  print_job_manager->CreatePrintJob(
+      "test-printer-id", "title", /*job_id=*/0, /*total_page_number=*/1,
+      ::printing::PrintJob::Source::kPrintPreview, /*source_id=*/"",
+      ash::printing::proto::PrintSettings());
+  print_job_manager_waiter.Wait();
+}
+
 // Logging feature is on by default in `ScalableIphBrowserTest`.
 IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTest, Log) {
   constexpr char kTestFileNamePattern[] = "*scalable_iph_browsertest.cc*";
@@ -653,13 +793,13 @@ IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTest, Log) {
     return true;
   });
 
-  SCALABLE_IPH_LOG(scalable_iph->logger()) << kTestLogMessage;
+  SCALABLE_IPH_LOG(scalable_iph->GetLogger()) << kTestLogMessage;
 
   logging::SetLogMessageHandler(nullptr);
 
-  EXPECT_TRUE(base::MatchPattern(scalable_iph->logger()->GenerateLog(),
+  EXPECT_TRUE(base::MatchPattern(scalable_iph->GetLogger()->GenerateLog(),
                                  kTestLogMessagePattern));
-  EXPECT_TRUE(base::MatchPattern(scalable_iph->logger()->GenerateLog(),
+  EXPECT_TRUE(base::MatchPattern(scalable_iph->GetLogger()->GenerateLog(),
                                  kTestFileNamePattern));
 
   std::string log_output = base::JoinString(*captured_logs, "");
@@ -693,11 +833,11 @@ IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestDebugOff, NoLog) {
     return true;
   });
 
-  SCALABLE_IPH_LOG(scalable_iph->logger()) << kTestLogMessage;
+  SCALABLE_IPH_LOG(scalable_iph->GetLogger()) << kTestLogMessage;
 
   logging::SetLogMessageHandler(nullptr);
 
-  EXPECT_TRUE(scalable_iph->logger()->IsLogEmptyForTesting());
+  EXPECT_TRUE(scalable_iph->GetLogger()->IsLogEmptyForTesting());
 
   std::string log_output = base::JoinString(*captured_logs, "");
   EXPECT_FALSE(base::MatchPattern(log_output, kTestLogMessagePattern));
@@ -709,6 +849,17 @@ IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestDebugOff, NoLog) {
   // Last response headers is nullptr if there is no response. See the comment
   // of `RenderFrameHost::GetLastResponseHeaders` for details.
   EXPECT_FALSE(render_frame_host->GetLastResponseHeaders());
+}
+
+IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestFeatureOffDebugOn,
+                       LogPageAvailable) {
+  content::RenderFrameHost* render_frame_host = ui_test_utils::NavigateToURL(
+      browser(), GURL(kScalableIphDebugLogTextUrl));
+  ASSERT_TRUE(render_frame_host);
+  ASSERT_TRUE(render_frame_host->GetLastResponseHeaders());
+  EXPECT_EQ(200, render_frame_host->GetLastResponseHeaders()->response_code())
+      << "Debug log page is expected to be available even if ScalableIph "
+         "feature itself is off.";
 }
 
 IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestMultipleIphs, OneIphAtATime) {
@@ -757,23 +908,61 @@ IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestPreinstallApps,
       ash::AppListLaunchedFrom::kLaunchedFromGrid);
 }
 
-IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestOobe, SessionState) {
-  EnableTestIphFeature();
+// TODO(b/302092772): Re-enable once the crash is fixed.
+IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestPreinstallApps,
+                       DISABLED_ShelfItemActivationWebApp) {
+  if (!IsGoogleChrome()) {
+    GTEST_SKIP()
+        << "Google Chrome is required for preinstall apps used by this test";
+    return;
+  }
 
-  // Confirm that no trigger condition check should happen during OOBE.
+  apps::AppReadinessWaiter(browser()->profile(),
+                           scalable_iph::kWebAppYouTubeAppId)
+      .Await();
+
   EXPECT_CALL(*mock_tracker(),
-              ShouldTriggerHelpUI(::testing::Ref(TestIphFeature())))
-      .Times(0);
-  TriggerConditionsCheckWithAFakeEvent(
-      scalable_iph::ScalableIph::Event::kFiveMinTick);
-  testing::Mock::VerifyAndClearExpectations(mock_tracker());
+              NotifyEvent(scalable_iph::kEventNameShelfItemActivationYouTube));
+  ash::Shelf::ActivateShelfItem(ash::ShelfModel::Get()->ItemIndexByAppID(
+      scalable_iph::kWebAppYouTubeAppId));
+}
 
-  // Confirm that a trigger condition check happens immediately after OOBE.
+IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestOobe, SessionState) {
+  // This is testing post login OOBE screens. In post login OOBE screens:
+  // - A profile should be loaded.
+  // - Session state should be OOBE.
+  // - `ScalableIph` should not have been initialized yet.
+  ASSERT_EQ(ash::Shell::Get()->session_controller()->GetSessionState(),
+            session_manager::SessionState::OOBE)
+      << "This is an assertion for the test framework. Session state must be "
+         "OOBE during post-login OOBE";
+
+  EXPECT_EQ(nullptr, ScalableIphFactory::GetForBrowserContext(
+                         ProfileManager::GetActiveUserProfile()));
+  ASSERT_EQ(nullptr, mock_delegate());
+
+  // Complete post login OOBE screens. With the completion:
+  // - Session state will transit from `OOBE` to `LOGGED_IN_NOT_ACTIVE`, and
+  //   then `ACTIVE`.
+  // - `ScalableIph` should be initialized.
+  ash::WizardController::default_controller()->SkipPostLoginScreensForTesting();
+  GetLoginManagerMixin()->WaitForActiveSession();
+  ASSERT_EQ(ash::Shell::Get()->session_controller()->GetSessionState(),
+            session_manager::SessionState::ACTIVE)
+      << "This is an assertion for the test framework. Session state must be "
+         "ACTIVE after post-login OOBE";
+
+  EXPECT_NE(nullptr, ScalableIphFactory::GetForBrowserContext(
+                         ProfileManager::GetActiveUserProfile()));
+  SetUpMocks();
+  EnableTestIphFeature();
+  ASSERT_TRUE(mock_delegate());
+
   EXPECT_CALL(*mock_tracker(),
               ShouldTriggerHelpUI(::testing::Ref(TestIphFeature())))
       .Times(1);
-  ash::WizardController::default_controller()->SkipPostLoginScreensForTesting();
-  GetLoginManagerMixin()->WaitForActiveSession();
+  TriggerConditionsCheckWithAFakeEvent(
+      scalable_iph::ScalableIph::Event::kFiveMinTick);
   testing::Mock::VerifyAndClearExpectations(mock_tracker());
 }
 
@@ -972,6 +1161,43 @@ IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestHasSavedPrinters,
     run_loop.Run();
   }
 
+  EXPECT_CALL(*mock_delegate(),
+              ShowNotification(::testing::_, ::testing::NotNull()))
+      .Times(1);
+  TriggerConditionsCheckWithAFakeEvent(
+      scalable_iph::ScalableIph::Event::kFiveMinTick);
+  testing::Mock::VerifyAndClearExpectations(mock_delegate());
+}
+
+// Test config is x_CustomConditionPhoneHubOnboardingEligible: True.
+IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestPhoneHubOnboardingEligible,
+                       Eligible) {
+  EnableTestIphFeature();
+
+  // The condition should not be satisfied for `kNotEligibleForFeature`.
+  fake_feature_status_provider_.SetStatus(
+      ash::phonehub::FeatureStatus::kNotEligibleForFeature);
+  EXPECT_CALL(*mock_delegate(),
+              ShowNotification(::testing::_, ::testing::NotNull()))
+      .Times(0);
+  TriggerConditionsCheckWithAFakeEvent(
+      scalable_iph::ScalableIph::Event::kFiveMinTick);
+  testing::Mock::VerifyAndClearExpectations(mock_delegate());
+
+  // The condition should be satisfied for `kEligiblePhoneButNotSetUp`.
+  fake_feature_status_provider_.SetStatus(
+      ash::phonehub::FeatureStatus::kEligiblePhoneButNotSetUp);
+  EXPECT_CALL(*mock_delegate(),
+              ShowNotification(::testing::_, ::testing::NotNull()))
+      .Times(1);
+  TriggerConditionsCheckWithAFakeEvent(
+      scalable_iph::ScalableIph::Event::kFiveMinTick);
+  testing::Mock::VerifyAndClearExpectations(mock_delegate());
+
+  // The condition should be satisfied for `kDisabled`. See the comment of
+  // `FeatureStatus::kDisabled` about the meaning of the enum value.
+  fake_feature_status_provider_.SetStatus(
+      ash::phonehub::FeatureStatus::kDisabled);
   EXPECT_CALL(*mock_delegate(),
               ShowNotification(::testing::_, ::testing::NotNull()))
       .Times(1);

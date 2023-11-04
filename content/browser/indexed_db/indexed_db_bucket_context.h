@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <memory>
+#include <queue>
 #include <string>
 
 #include "base/containers/flat_map.h"
@@ -19,24 +20,29 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/services/storage/indexed_db/locks/partitioned_lock_manager.h"
-#include "components/services/storage/public/cpp/buckets/bucket_locator.h"
+#include "components/services/storage/public/cpp/buckets/bucket_info.h"
+#include "components/services/storage/public/cpp/quota_error_or.h"
+#include "components/services/storage/public/mojom/blob_storage_context.mojom.h"
+#include "components/services/storage/public/mojom/file_system_access_context.mojom.h"
 #include "content/browser/indexed_db/indexed_db_bucket_context_handle.h"
+#include "content/browser/indexed_db/indexed_db_external_object.h"
 #include "content/browser/indexed_db/indexed_db_task_helper.h"
 #include "content/common/content_export.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
+
+namespace storage {
+class QuotaManagerProxy;
+}
 
 namespace content {
 class IndexedDBBackingStore;
 class IndexedDBDatabase;
+class IndexedDBDataItemReader;
 class IndexedDBFactory;
 class IndexedDBPreCloseTaskQueue;
-class TransactionalLevelDBFactory;
 
 constexpr const char kIDBCloseImmediatelySwitch[] = "idb-close-immediately";
-
-// This is an emergency kill switch to use with Finch if the feature needs to be
-// shut off.
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kCompactIDBOnClose);
 
 // IndexedDBBucketContext manages the per-bucket IndexedDB state, and other
 // important context like the backing store and lock manager.
@@ -59,9 +65,14 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kCompactIDBOnClose);
 // `IndexedDBCursor`.
 class CONTENT_EXPORT IndexedDBBucketContext {
  public:
-  using TearDownCallback = base::RepeatingCallback<void(leveldb::Status)>;
   using DBMap =
       base::flat_map<std::u16string, std::unique_ptr<IndexedDBDatabase>>;
+
+  // Represents a method of `IndexedDBBucketContext` which is not yet bound to a
+  // particular instance of `IndexedDBBucketContext`. This is used for the
+  // `for_each_bucket_context` delegate callback.
+  using InstanceClosure =
+      base::RepeatingCallback<void(IndexedDBBucketContext&)>;
 
   // Maximum time interval between runs of the IndexedDBSweeper. Sweeping only
   // occurs after backing store close.
@@ -85,6 +96,12 @@ class CONTENT_EXPORT IndexedDBBucketContext {
   static constexpr const base::TimeDelta kMaxEarliestBucketCompactionFromNow =
       base::Days(3);
 
+  // `CheckCanUseDiskSpace` fudges quota values a little. If there is excess
+  // free space, QuotaManager may not be checked the next time a transaction
+  // requests space. The decays over this time period.
+  static constexpr const base::TimeDelta kBucketSpaceCacheTimeLimit =
+      base::Seconds(30);
+
   enum class ClosingState {
     // IndexedDBBucketContext isn't closing.
     kNotClosing,
@@ -96,19 +113,60 @@ class CONTENT_EXPORT IndexedDBBucketContext {
     kClosed,
   };
 
-  // `earliest_global_sweep_time` and `earliest_global_compaction_time` are
-  // expected to outlive this object.
+  // This structure defines the interface between `IndexedDBBucketContext` and
+  // the broader context that exists per Storage Partition (i.e.
+  // BrowserContext).
+  // TODO(crbug.com/1474996): for now these callbacks execute on the current
+  // sequence, but in the future they should be bound to the main IDB sequence.
+  struct CONTENT_EXPORT Delegate {
+    Delegate();
+    Delegate(Delegate&&);
+    ~Delegate();
+
+    Delegate(const Delegate&) = delete;
+    Delegate& operator=(const Delegate&) = delete;
+
+    // Called to pump the IDB task queue (generally results in `RunTasks()`
+    // being called).
+    base::RepeatingClosure on_tasks_available;
+
+    // Called when a fatal error has occurred that should result in tearing down
+    // the backing store. `IndexedDBBucketContext` *may* be synchronously
+    // destroyed after this is invoked.
+    base::RepeatingCallback<void(leveldb::Status)> on_fatal_error;
+
+    // Called when database content has changed.
+    base::RepeatingCallback<void(const std::u16string& /*database_name*/,
+                                 const std::u16string& /*object_store_name*/)>
+        on_content_changed;
+
+    // Called to run a given callback on every bucket context (including the one
+    // in the current sequence and those in other sequences/associated with
+    // other buckets). This method will also be called on every subsequently
+    // created bucket context (see `initialization_closure` in constructor),
+    // until it is replaced by another initialization closure.
+    base::RepeatingCallback<void(InstanceClosure)> for_each_bucket_context;
+  };
+
+  // If non-null, `initialization_closure` is immediately run on `this`. If it
+  // is null, `this` will generate a new initialization closure and return it to
+  // the delegate via `for_each_bucket_context`. The delegate, i.e.
+  // `IDBFactory`, will pass a null `InstanceClosure` to the first
+  // `IndexedDBBucketContext` it creates.
   IndexedDBBucketContext(
-      storage::BucketLocator bucket_locator,
+      storage::BucketInfo bucket_info,
       bool persist_for_incognito,
       base::Clock* clock,
-      TransactionalLevelDBFactory* transactional_leveldb_factory,
-      base::Time* earliest_global_sweep_time,
-      base::Time* earliest_global_compaction_time,
       std::unique_ptr<PartitionedLockManager> lock_manager,
-      TasksAvailableCallback notify_tasks_callback,
-      TearDownCallback tear_down_callback,
-      std::unique_ptr<IndexedDBBackingStore> backing_store);
+      Delegate&& delegate,
+      std::unique_ptr<IndexedDBBackingStore> backing_store,
+      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+      scoped_refptr<base::TaskRunner> io_task_runner,
+      mojo::PendingRemote<storage::mojom::BlobStorageContext>
+          blob_storage_context,
+      mojo::PendingRemote<storage::mojom::FileSystemAccessContext>
+          file_system_access_context,
+      InstanceClosure initialization_closure);
 
   IndexedDBBucketContext(const IndexedDBBucketContext&) = delete;
   IndexedDBBucketContext& operator=(const IndexedDBBucketContext&) = delete;
@@ -131,7 +189,30 @@ class CONTENT_EXPORT IndexedDBBucketContext {
 
   void StopPersistingForIncognito();
 
-  const storage::BucketLocator& bucket_locator() { return bucket_locator_; }
+  // Runs `method` on `this`. This exists to facilitate running the setter on
+  // the correct sequence.
+  void RunInstanceClosure(InstanceClosure method);
+
+  // Called when `space_requested` bytes are about to be used by committing a
+  // transaction. Will invoke `disk_space_check_callback` if this usage is
+  // approved, or false if there's insufficient space as per the `QuotaManager`.
+  // If `disk-space_check_callback` is non-null, it will be invoked with the
+  // response. If it is null, the check is considered a dry-run, which warms up
+  // the space cache but doesn't decrement from it.
+  void CheckCanUseDiskSpace(
+      int64_t space_requested,
+      base::OnceCallback<void(bool)> disk_space_check_callback);
+
+  // Create external objects from |objects| and store the results in
+  // |mojo_objects|. |mojo_objects| must be the same length as |objects|.
+  void CreateAllExternalObjects(
+      const std::vector<IndexedDBExternalObject>& objects,
+      std::vector<blink::mojom::IDBExternalObjectPtr>* mojo_objects);
+
+  const storage::BucketInfo& bucket_info() { return bucket_info_; }
+  storage::BucketLocator bucket_locator() {
+    return bucket_info_.ToBucketLocator();
+  }
   IndexedDBBackingStore* backing_store() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return backing_store_.get();
@@ -144,17 +225,16 @@ class CONTENT_EXPORT IndexedDBBucketContext {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return lock_manager_.get();
   }
+  const PartitionedLockManager* lock_manager() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return lock_manager_.get();
+  }
   IndexedDBPreCloseTaskQueue* pre_close_task_queue() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return pre_close_task_queue_.get();
   }
-  TasksAvailableCallback notify_tasks_callback() {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return notify_tasks_callback_;
-  }
 
-  // Note: calling this callback will destroy the IndexedDBBucketContext.
-  const TearDownCallback& tear_down_callback() { return tear_down_callback_; }
+  Delegate& delegate() { return delegate_; }
 
   bool is_running_tasks() const { return running_tasks_; }
   bool is_task_run_scheduled() const { return task_run_scheduled_; }
@@ -172,6 +252,17 @@ class CONTENT_EXPORT IndexedDBBucketContext {
     return weak_factory_.GetWeakPtr();
   }
 
+  storage::QuotaManagerProxy* quota_manager() {
+    return quota_manager_proxy_.get();
+  }
+
+  storage::mojom::BlobStorageContext* blob_storage_context() {
+    return blob_storage_context_.get();
+  }
+  storage::mojom::FileSystemAccessContext* file_system_access_context() {
+    return file_system_access_context_.get();
+  }
+
  private:
   friend IndexedDBFactory;
   friend IndexedDBBucketContextHandle;
@@ -187,18 +278,23 @@ class CONTENT_EXPORT IndexedDBBucketContext {
   // Test needs access to CompactionKillSwitchWorks.
   FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest, CompactionKillSwitchWorks);
 
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBBucketContextTest, BucketSpaceDecay);
+
+  // Used to synchronize the global throttling of LevelDB cleanup operations.
+  // See `for_each_bucket_context`.
+  static void SetInternalState(base::Time earliest_global_sweep_time,
+                               base::Time earliest_global_compaction_time,
+                               IndexedDBBucketContext& context);
+
   IndexedDBDatabase* AddDatabase(const std::u16string& name,
                                  std::unique_ptr<IndexedDBDatabase> database);
 
-  // Returns a new handle to this factory. If this object was in its closing
-  // sequence, then that sequence will be halted by this call.
-  [[nodiscard]] IndexedDBBucketContextHandle CreateHandle();
-
+  void OnHandleCreated();
   void OnHandleDestruction();
 
   // Returns true if this factory can be closed (no references, no blobs, and
   // not persisting for incognito).
-  bool CanCloseFactory();
+  bool CanClose();
 
   void MaybeStartClosing();
   void StartClosing();
@@ -215,44 +311,83 @@ class CONTENT_EXPORT IndexedDBBucketContext {
   // compaction time.
   bool ShouldRunCompaction();
 
+  void OnGotBucketSpaceRemaining(storage::QuotaErrorOr<int64_t> space_left);
+
+  // Returns the amount of bucket space `this` has the authority to approve by
+  // decaying `bucket_space_remaining_` according to the amount of time passed
+  // since `bucket_space_remaining_timestamp_`.
+  int64_t GetBucketSpaceToAllot();
+
+  // Bind `receiver` to read from the file at `path`.
+  void BindFileReader(
+      const base::FilePath& path,
+      base::Time expected_modification_time,
+      base::OnceClosure release_callback,
+      mojo::PendingReceiver<storage::mojom::BlobDataItemReader> receiver);
+  // Removes all readers for this file path.
+  void RemoveBoundReaders(const base::FilePath& path);
+
   SEQUENCE_CHECKER(sequence_checker_);
 
-  storage::BucketLocator bucket_locator_;
+  storage::BucketInfo bucket_info_;
 
   // True if this factory should be remain alive due to the storage partition
   // being for incognito mode, and our backing store being in-memory. This is
-  // used as closing criteria for this object, see CanCloseFactory.
+  // used as closing criteria for this object, see CanClose.
   bool persist_for_incognito_;
   // True if there are blobs referencing this backing store that are still
   // alive. This is used as closing criteria for this object, see
-  // CanCloseFactory.
+  // CanClose.
   bool has_blobs_outstanding_ = false;
   bool skip_closing_sequence_ = false;
   const raw_ptr<base::Clock> clock_;
-  const raw_ptr<TransactionalLevelDBFactory> transactional_leveldb_factory_;
 
   bool running_tasks_ = false;
   bool task_run_scheduled_ = false;
 
-  // This is safe because it is owned by IndexedDBFactory, which owns this
-  // object.
-  raw_ptr<base::Time> earliest_global_sweep_time_;
-  raw_ptr<base::Time> earliest_global_compaction_time_;
+  base::Time earliest_global_sweep_time_;
+  base::Time earliest_global_compaction_time_;
   ClosingState closing_stage_ = ClosingState::kNotClosing;
   base::OneShotTimer close_timer_;
   const std::unique_ptr<PartitionedLockManager> lock_manager_;
   std::unique_ptr<IndexedDBBackingStore> backing_store_;
+  scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
 
   DBMap databases_;
   // This is the refcount for the number of IndexedDBBucketContextHandle's
   // given out for this factory using OpenReference. This is used as closing
-  // criteria for this object, see CanCloseFactory.
+  // criteria for this object, see CanClose.
   int64_t open_handles_ = 0;
+
+  // A queue of callbacks representing `CheckCanUseDiskSpace()` requests.
+  std::queue<std::tuple<int64_t /*space_requested*/,
+                        base::OnceCallback<void(bool /*allowed*/)>>>
+      bucket_space_check_callbacks_;
+  // The number of bytes `this` has the authority to approve in response to
+  // `CheckCanUseDiskSpace` requests before the QuotaManager will be consulted
+  // once more. This is a performance optimization.
+  int64_t bucket_space_remaining_ = 0;
+  // Timestamp when `bucket_space_remaining_` was last fetched from the quota
+  // manager.
+  base::TimeTicks bucket_space_remaining_timestamp_;
+
+  // Members in the following block are used for `CreateAllExternalObjects`.
+  // Shared task runner used to read blob files on.
+  const scoped_refptr<base::TaskRunner> file_task_runner_;
+  // Shared task runner used for async I/O while reading blob files.
+  const scoped_refptr<base::TaskRunner> io_task_runner_;
+  // Mojo connection to `BlobStorageContext`, which runs on the IO thread.
+  mojo::Remote<storage::mojom::BlobStorageContext> blob_storage_context_;
+  // Mojo connection to `FileSystemAccessContextImpl`, which runs on the UI
+  // thread.
+  mojo::Remote<storage::mojom::FileSystemAccessContext>
+      file_system_access_context_;
+  std::map<base::FilePath, std::unique_ptr<IndexedDBDataItemReader>>
+      file_reader_map_;
 
   std::unique_ptr<IndexedDBPreCloseTaskQueue> pre_close_task_queue_;
 
-  TasksAvailableCallback notify_tasks_callback_;
-  TearDownCallback tear_down_callback_;
+  Delegate delegate_;
 
   base::WeakPtrFactory<IndexedDBBucketContext> weak_factory_{this};
 };

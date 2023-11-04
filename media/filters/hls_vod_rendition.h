@@ -5,7 +5,7 @@
 #ifndef MEDIA_FILTERS_HLS_VOD_RENDITION_H_
 #define MEDIA_FILTERS_HLS_VOD_RENDITION_H_
 
-#include "media/base/moving_average.h"
+#include "base/moving_window.h"
 #include "media/filters/hls_rendition.h"
 
 namespace media {
@@ -31,6 +31,7 @@ class MEDIA_EXPORT HlsVodRendition : public HlsRendition {
                   ManifestDemuxer::DelayCallback time_remaining_cb) override;
   bool Seek(base::TimeDelta seek_time) override;
   void CancelPendingNetworkRequests() override;
+  void Stop() override;
 
  private:
   struct SegmentInfo {
@@ -49,11 +50,11 @@ class MEDIA_EXPORT HlsVodRendition : public HlsRendition {
   };
 
   struct PendingSegment {
-    HlsDataSourceStream stream;
+    ~PendingSegment();
+    std::unique_ptr<HlsDataSourceStream> stream;
     size_t index = 0;
-    PendingSegment(HlsDataSourceStream&& stream, size_t index);
+    PendingSegment(std::unique_ptr<HlsDataSourceStream> stream, size_t index);
     PendingSegment(const PendingSegment&) = delete;
-    PendingSegment(PendingSegment&&) = default;
   };
 
   // Clears old data and returns the amount of time taken to do so, in order to
@@ -71,7 +72,7 @@ class MEDIA_EXPORT HlsVodRendition : public HlsRendition {
                      base::TimeDelta fetch_required_time,
                      size_t segment_index,
                      base::TimeTicks net_req_start,
-                     HlsDataSourceStream::ReadResult result);
+                     HlsDataSourceStreamManager::ReadResult result);
 
   // `ManifestDemuxerEngineHost` owns the `HlsRenditionHost` which in
   // turn owns |this|, so it's safe to keep these as raw ptrs. |host_| is needed
@@ -98,10 +99,12 @@ class MEDIA_EXPORT HlsVodRendition : public HlsRendition {
   absl::optional<PendingSegment> pending_stream_fetch_ = absl::nullopt;
 
   // Record the time it takes to download content.
-  MovingAverage fetch_time_;
+  base::MovingAverage<base::TimeDelta, base::TimeDelta> fetch_time_;
 
   // Fetch segments in order always.
   std::vector<SegmentInfo>::iterator fetch_queue_;
+
+  bool is_stopped_for_shutdown_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -15,6 +15,7 @@ ci.defaults.set(
     builder_group = "chromium.dawn",
     pool = ci.gpu.POOL,
     sheriff_rotations = sheriff_rotations.DAWN,
+    contact_team_email = "chrome-gpu-infra@google.com",
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     health_spec = health_spec.DEFAULT,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
@@ -640,10 +641,10 @@ ci.thin_tester(
         run_tests_serially = True,
     ),
     # Uncomment this entry when this experimental tester is actually in use.
-    console_view_entry = consoles.console_view_entry(
-        category = "ToT|Mac|AMD",
-        short_name = "exp",
-    ),
+    # console_view_entry = consoles.console_view_entry(
+    #     category = "ToT|Mac|AMD",
+    #     short_name = "exp",
+    # ),
     list_view = "chromium.gpu.experimental",
 )
 
@@ -668,10 +669,10 @@ ci.thin_tester(
         run_tests_serially = True,
     ),
     # Uncomment this entry when this experimental tester is actually in use.
-    console_view_entry = consoles.console_view_entry(
-        category = "ToT|Mac|Intel",
-        short_name = "exp",
-    ),
+    # console_view_entry = consoles.console_view_entry(
+    #     category = "ToT|Mac|Intel",
+    #     short_name = "exp",
+    # ),
     list_view = "chromium.gpu.experimental",
 )
 

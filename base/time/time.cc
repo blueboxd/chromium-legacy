@@ -22,12 +22,6 @@ namespace base {
 
 namespace {
 
-const char kWeekdayName[7][4] = {"Sun", "Mon", "Tue", "Wed",
-                                 "Thu", "Fri", "Sat"};
-
-const char kMonthName[12][4] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-
 TimeTicks g_shared_time_ticks_at_unix_epoch;
 
 }  // namespace
@@ -193,7 +187,13 @@ int64_t Time::ToRoundedDownMillisecondsSinceUnixEpoch() const {
 std::ostream& operator<<(std::ostream& os, Time time) {
   Time::Exploded exploded;
   time.UTCExplode(&exploded);
-  // Use StringPrintf because iostreams formatting is painful.
+  // Can't call `UnlocalizedTimeFormatWithPattern()`/`TimeFormatAsIso8601()`
+  // since `//base` can't depend on `//base:i18n`. Use `StringPrintf()` because
+  // iostreams formatting is painful.
+  //
+  // TODO(pkasting): Consider whether `operator<<()` should move to
+  // `base/i18n/time_formatting.h` -- would let us implement in terms of
+  // existing time formatting, but might be confusing.
   return os << StringPrintf("%04d-%02d-%02d %02d:%02d:%02d.%03d UTC",
                             exploded.year,
                             exploded.month,
@@ -307,15 +307,6 @@ bool Time::Exploded::HasValidValues() const {
          (0 <= second) && (second <= 60) &&
          (0 <= millisecond) && (millisecond <= 999);
   // clang-format on
-}
-
-std::string TimeFormatHTTP(base::Time time) {
-  base::Time::Exploded exploded;
-  time.UTCExplode(&exploded);
-  return base::StringPrintf(
-      "%s, %02d %s %04d %02d:%02d:%02d GMT", kWeekdayName[exploded.day_of_week],
-      exploded.day_of_month, kMonthName[exploded.month - 1], exploded.year,
-      exploded.hour, exploded.minute, exploded.second);
 }
 
 }  // namespace base

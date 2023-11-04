@@ -15,9 +15,8 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 
 import {getTemplate} from './accelerator_row.html.js';
 import {getShortcutProvider} from './mojo_interface_provider.js';
-import {AcceleratorInfo, AcceleratorSource, LayoutStyle, ShortcutProviderInterface, TextAcceleratorInfo, TextAcceleratorPart} from './shortcut_types.js';
-import {isCustomizationDisabled} from './shortcut_utils.js';
-import {TextAcceleratorElement} from './text_accelerator.js';
+import {AcceleratorInfo, AcceleratorSource, LayoutStyle, ShortcutProviderInterface, StandardAcceleratorInfo, TextAcceleratorInfo, TextAcceleratorPart} from './shortcut_types.js';
+import {getAriaLabelForStandardAccelerators, getAriaLabelForTextAccelerators, getTextAcceleratorParts, isCustomizationAllowed} from './shortcut_utils.js';
 
 export type ShowEditDialogEvent = CustomEvent<{
   description: string,
@@ -120,7 +119,7 @@ export class AcceleratorRowElement extends AcceleratorRowElementBase {
   }
 
   private showDialog(): void {
-    if (isCustomizationDisabled() || this.isTextLayout()) {
+    if (!isCustomizationAllowed() || this.isTextLayout()) {
       return;
     }
 
@@ -141,7 +140,7 @@ export class AcceleratorRowElement extends AcceleratorRowElementBase {
 
   protected getTextAcceleratorParts(infos: TextAcceleratorInfo[]):
       TextAcceleratorPart[] {
-    return TextAcceleratorElement.getTextAcceleratorParts(infos);
+    return getTextAcceleratorParts(infos);
   }
 
   protected isEmptyList(infos: AcceleratorInfo[]): boolean {
@@ -160,7 +159,7 @@ export class AcceleratorRowElement extends AcceleratorRowElementBase {
 
   protected getTabIndex(): number {
     // If customization is disabled, this element should not be tab-focusable.
-    return isCustomizationDisabled() ? -1 : 0;
+    return !isCustomizationAllowed() ? -1 : 0;
   }
 
   protected onRowFocused(): void {
@@ -169,6 +168,27 @@ export class AcceleratorRowElement extends AcceleratorRowElementBase {
 
   protected onRowBlur(): void {
     this.selected = false;
+  }
+
+  private getAriaLabel(): string {
+    let acceleratorText;
+
+    if (this.acceleratorInfos.length === 0) {
+      // No shortcut assigned case:
+      acceleratorText = this.i18n('noShortcutAssigned');
+    } else if (this.isDefaultLayout()) {
+      // Default accelerator:
+      acceleratorText = getAriaLabelForStandardAccelerators(
+          this.acceleratorInfos as StandardAcceleratorInfo[],
+          this.i18n('acceleratorTextDivider'));
+    } else {
+      // Text accelerator:
+      acceleratorText = getAriaLabelForTextAccelerators(
+          this.acceleratorInfos as TextAcceleratorInfo[]);
+    }
+
+    return this.i18n(
+        'acceleratorRowAriaLabel', this.description, acceleratorText);
   }
 
   static get template(): HTMLTemplateElement {

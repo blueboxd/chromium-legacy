@@ -23,6 +23,9 @@
 #include "ui/base/page_transition_types.h"
 
 #if BUILDFLAG(IS_MAC)
+#include "base/apple/scoped_nsautorelease_pool.h"
+#include "base/memory/stack_allocated.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/test/scoped_fake_full_keyboard_access.h"
 #endif
 
@@ -33,12 +36,6 @@
 namespace base {
 
 class CommandLine;
-
-#if BUILDFLAG(IS_MAC)
-namespace apple {
-class ScopedNSAutoreleasePool;
-}  // namespace apple
-#endif  // BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_WIN)
 namespace win {
@@ -181,6 +178,9 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   // If no browser is created in BrowserMain(), this will return nullptr unless
   // another browser instance is created at a later time and
   // SelectFirstBrowser() is called.
+  // In Lacros only mode, ash web browser is disabled, therefore, browser()
+  // is not created and should not be accessed from the tests in
+  // browser_tests_require_lacros test suite.
   Browser* browser() const { return browser_; }
 
   // Set |browser_| to the first browser on the browser list.
@@ -345,8 +345,8 @@ class InProcessBrowserTest : public content::BrowserTestBase {
 
 #if BUILDFLAG(IS_MAC)
   // Returns the autorelease pool in use inside RunTestOnMainThreadLoop().
-  base::apple::ScopedNSAutoreleasePool* AutoreleasePool() const {
-    return autorelease_pool_;
+  base::apple::ScopedNSAutoreleasePool* AutoreleasePool() {
+    return &autorelease_pool_.value();
   }
 #endif  // BUILDFLAG(IS_MAC)
 
@@ -448,8 +448,8 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   feature_engagement::test::ScopedIphFeatureList block_all_iph_feature_list_;
 
 #if BUILDFLAG(IS_MAC)
-  raw_ptr<base::apple::ScopedNSAutoreleasePool, DanglingUntriaged>
-      autorelease_pool_ = nullptr;
+  STACK_ALLOCATED_IGNORE("https://crbug.com/1424190")
+  absl::optional<base::apple::ScopedNSAutoreleasePool> autorelease_pool_;
   std::unique_ptr<ScopedBundleSwizzlerMac> bundle_swizzler_;
 
   // Enable fake full keyboard access by default, so that tests don't depend on

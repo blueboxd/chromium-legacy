@@ -137,7 +137,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.FirstPartySets.State" enum="FirstPartySetsState"
-    expires_after="2024-01-21">
+    expires_after="2024-03-24">
   <owner>alimariam@google.com</owner>
   <owner>olesiamarukhno@google.com</owner>
   <owner>sauski@google.com</owner>
@@ -182,7 +182,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.Homepage.LocationType" enum="HomepageLocationType"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>bttk@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
@@ -231,7 +231,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.HoverCards.ImagePreview.Enabled"
-    enum="BooleanEnabled" expires_after="2024-01-21">
+    enum="BooleanEnabled" expires_after="2024-03-24">
   <owner>charlesmeng@chromium.org</owner>
   <owner>estalin@chromium.org</owner>
   <summary>
@@ -249,6 +249,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Settings.OverscrollHistoryNavigation.Enabled"
+    enum="BooleanEnabled" expires_after="2024-01-21">
+  <owner>charlesmeng@chromium.org</owner>
+  <owner>estalin@chromium.org</owner>
+  <summary>
+    Logs whether the overscroll history navigation setting is enabled or
+    disabled when it is toggled in chrome://settings/accessibility.
+  </summary>
+</histogram>
+
 <histogram name="Settings.PinUnlockSetup" enum="LockScreenProgress"
     expires_after="2024-02-25">
   <owner>anastasiian@chromium.org</owner>
@@ -257,6 +267,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     The users progress through the pin unlock setup wizard. Each type
     corresponds to the user completing a different stage of the setup wizard.
+  </summary>
+</histogram>
+
+<histogram name="Settings.Preloading.DeprecatedRedirect" enum="BooleanEnabled"
+    expires_after="2024-03-30">
+  <owner>fmacintosh@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <summary>
+    Whether or not navigations to the performance page occured because the user
+    was redirected from the deprecated preloading page.
   </summary>
 </histogram>
 
@@ -386,7 +406,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.PrivacySandbox.AdMeasurement.Enabled"
-    enum="BooleanEnabled" expires_after="2024-01-14">
+    enum="BooleanEnabled" expires_after="2024-03-17">
   <owner>sauski@google.com</owner>
   <owner>olesiamarukhno@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
@@ -394,28 +414,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records the startup state of the ad measurement API for Privacy Sandbox GA
     M1. This is recorded during the profile start up.
-  </summary>
-</histogram>
-
-<histogram
-    name="Settings.PrivacySandbox.CanNonNormalBrowserWindowFitConsentWidth"
-    enum="Boolean" expires_after="2024-08-25">
-  <owner>boujane@google.com</owner>
-  <owner>koilos@google.com</owner>
-  <summary>
-    In case of non normal browser(Pop up or PIP for example), Records whether
-    the window width was too small to fit the consent dialog.
-  </summary>
-</histogram>
-
-<histogram
-    name="Settings.PrivacySandbox.CanNonNormalBrowserWindowFitNoticeWidth"
-    enum="Boolean" expires_after="2024-08-25">
-  <owner>boujane@google.com</owner>
-  <owner>koilos@google.com</owner>
-  <summary>
-    In case of non normal browser(Pop up or PIP for example), Records whether
-    the window width was too small to fit the notice dialog.
   </summary>
 </histogram>
 
@@ -471,7 +469,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.PrivacySandbox.Enabled"
-    enum="SettingsPrivacySandboxEnabled" expires_after="2024-01-14">
+    enum="SettingsPrivacySandboxEnabled" expires_after="2024-03-17">
   <owner>harrisonsean@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <owner>chrome-privacy-controls@google.com</owner>
@@ -483,7 +481,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.PrivacySandbox.Fledge.Enabled" enum="BooleanEnabled"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>sauski@google.com</owner>
   <owner>olesiamarukhno@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
@@ -940,7 +938,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.TrackedPreferenceChanged" enum="TrackedPreference"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>proberge@chromium.org</owner>
   <owner>junhao.huang@microsoft.com</owner>
   <summary>
@@ -1069,6 +1067,18 @@ chromium-metrics-reviews@google.com.
   <summary>
     The id of a tracked preference which Chrome would have reset had the config
     allowed it.
+  </summary>
+</histogram>
+
+<histogram name="Settings.TrackingProtection.Redirect" enum="BooleanRedirected"
+    expires_after="2024-12-30">
+  <owner>fmacintosh@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <summary>
+    Whether or not navigations to the tracking protection page occured because
+    the user was redirected from the cookies page. Records true on redirect from
+    chrome://settings/cookies to chrome://settings/trackingProtection. Records
+    false on standard navigation to chrome://settings/trackingProtection.
   </summary>
 </histogram>
 

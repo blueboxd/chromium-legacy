@@ -16,6 +16,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/ranges/algorithm.h"
+#include "base/strings/escape.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
@@ -44,7 +45,29 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
+#include "net/test/embedded_test_server/request_handler_util.h"
 #include "third_party/blink/public/common/frame/frame_visual_properties.h"
+
+#if BUILDFLAG(IS_ANDROID)
+#include "ui/android/window_android.h"
+#include "ui/android/window_android_compositor.h"
+#endif  // BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_MAC)
+#include "content/browser/renderer_host/browser_compositor_view_mac.h"
+#include "content/browser/renderer_host/test_render_widget_host_view_mac_factory.h"
+#endif  // BUILDFLAG(IS_MAC)
+
+#if BUILDFLAG(IS_IOS)
+#include "content/browser/renderer_host/browser_compositor_ios.h"
+#include "content/browser/renderer_host/test_render_widget_host_view_ios_factory.h"
+#endif  // BUILDFLAG(IS_IOS)
+
+#if defined(USE_AURA)
+#include "content/browser/renderer_host/render_widget_host_view_aura.h"
+#endif  // defined(USE_AURA)
 
 namespace content {
 
@@ -587,46 +610,6 @@ void ShowPopupWidgetWaiter::ShowPopupMenu(const gfx::Rect& bounds) {
 }
 #endif
 
-DropMessageFilter::DropMessageFilter(uint32_t message_class,
-                                     uint32_t drop_message_id)
-    : BrowserMessageFilter(message_class), drop_message_id_(drop_message_id) {}
-
-DropMessageFilter::~DropMessageFilter() = default;
-
-bool DropMessageFilter::OnMessageReceived(const IPC::Message& message) {
-  return message.type() == drop_message_id_;
-}
-
-ObserveMessageFilter::ObserveMessageFilter(uint32_t message_class,
-                                           uint32_t watch_message_id)
-    : BrowserMessageFilter(message_class),
-      watch_message_id_(watch_message_id) {}
-
-ObserveMessageFilter::~ObserveMessageFilter() = default;
-
-void ObserveMessageFilter::Wait() {
-  base::RunLoop loop;
-  quit_closure_ = loop.QuitClosure();
-  loop.Run();
-}
-
-bool ObserveMessageFilter::OnMessageReceived(const IPC::Message& message) {
-  if (message.type() == watch_message_id_) {
-    // Exit the Wait() method if it's being used, but in a fresh stack once the
-    // message is actually handled.
-    if (quit_closure_ && !received_) {
-      base::ThreadPool::PostTask(
-          FROM_HERE, base::BindOnce(&ObserveMessageFilter::QuitWait, this));
-    }
-    received_ = true;
-  }
-  return false;
-}
-
-void ObserveMessageFilter::QuitWait() {
-  std::move(quit_closure_).Run();
-}
-
 UnresponsiveRendererObserver::UnresponsiveRendererObserver(
     WebContents* web_contents)
     : WebContentsObserver(web_contents) {}
@@ -987,6 +970,105 @@ bool CommitNavigationPauser::WillProcessDidCommitNavigation(
 
   // Ignore the commit message.
   return false;
+}
+
+// TODO(https://crbug.com/1473319): Use
+// `WebFrameWidgetImpl::NotifySwapAndPresentationTime` instead.
+void WaitForCopyableViewInWebContents(WebContents* web_contents) {
+  {
+    MainThreadFrameObserver obs(
+        web_contents->GetRenderWidgetHostView()->GetRenderWidgetHost());
+    obs.Wait();
+  }
+  // The above `Wait()` blocks until a `CompositorFrame` is submitted from the
+  // renderer to the GPU. However, we want to wait until the Viz process has
+  // received the new `CompositorFrame` so that the previously submitted frame
+  // is available for copy. Waiting for a second frame to be submitted
+  // guarantees this, since the second frame cannot be sent until the first
+  // frame was ACKed by Viz.
+  {
+    MainThreadFrameObserver obs(
+        web_contents->GetRenderWidgetHostView()->GetRenderWidgetHost());
+    obs.Wait();
+  }
+
+  // `IsSurfaceAvailableForCopy` actually only checks if the browser currently
+  // embeds a surface or not (as opposed to sending a IPC to the GPU). However
+  // if the browser does not embed any surface, we won't be able to issue any
+  // copy requests.
+  ASSERT_TRUE(
+      web_contents->GetRenderWidgetHostView()->IsSurfaceAvailableForCopy());
+}
+
+void WaitForBrowserCompositorFramePresented(WebContents* web_contents) {
+  base::RunLoop run_loop;
+  auto callback = base::BindOnce(
+      [](base::RepeatingClosure cb, base::TimeTicks presentation_time) {
+        std::move(cb).Run();
+      },
+      run_loop.QuitClosure());
+#if BUILDFLAG(IS_ANDROID)
+  ui::WindowAndroidCompositor* compositor =
+      web_contents->GetNativeView()->GetWindowAndroid()->GetCompositor();
+  compositor->PostRequestSuccessfulPresentationTimeForNextFrame(
+      std::move(callback));
+#elif BUILDFLAG(IS_MAC)
+  auto* browser_compositor = GetBrowserCompositorMacForTesting(
+      web_contents->GetRenderWidgetHostView());
+  browser_compositor->GetCompositor()
+      ->RequestSuccessfulPresentationTimeForNextFrame(std::move(callback));
+#elif BUILDFLAG(IS_IOS)
+  auto* browser_compositor = GetBrowserCompositorIOSForTesting(
+      web_contents->GetRenderWidgetHostView());
+  browser_compositor->GetCompositor()
+      ->RequestSuccessfulPresentationTimeForNextFrame(std::move(callback));
+#elif defined(USE_AURA)
+  auto* compositor = static_cast<RenderWidgetHostViewAura*>(
+                         web_contents->GetRenderWidgetHostView())
+                         ->GetCompositor();
+  compositor->RequestSuccessfulPresentationTimeForNextFrame(
+      std::move(callback));
+#else
+  NOTREACHED();
+#endif
+  run_loop.Run();
+}
+
+namespace {
+
+// Helper to return a 200 OK non-cacheable response for a first request, and
+// redirect the second request to the URL indicated in the query param.
+std::unique_ptr<net::test_server::HttpResponse>
+RedirectToTargetOnSecondNavigation(
+    unsigned int& navigation_counter,
+    const net::test_server::HttpRequest& request) {
+  ++navigation_counter;
+  if (navigation_counter == 1) {
+    auto http_response =
+        std::make_unique<net::test_server::BasicHttpResponse>();
+    http_response->set_code(net::HttpStatusCode::HTTP_OK);
+    http_response->AddCustomHeader("Cache-Control",
+                                   "no-store, must-revalidate");
+    return http_response;
+  }
+
+  std::string url_from_query =
+      base::UnescapeBinaryURLComponent(request.GetURL().query_piece());
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
+  http_response->set_code(net::HttpStatusCode::HTTP_FOUND);
+  http_response->AddCustomHeader("Location", url_from_query);
+  return http_response;
+}
+
+}  // namespace
+
+void AddRedirectOnSecondNavigationHandler(net::EmbeddedTestServer* server) {
+  unsigned int navigation_counter = 0;
+  server->RegisterDefaultHandler(base::BindRepeating(
+      &net::test_server::HandlePrefixedRequest,
+      "/redirect-on-second-navigation",
+      base::BindRepeating(&RedirectToTargetOnSecondNavigation,
+                          base::OwnedRef(navigation_counter))));
 }
 
 }  // namespace content

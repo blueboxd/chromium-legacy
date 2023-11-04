@@ -17,10 +17,10 @@
 #include "chrome/browser/ash/crosapi/ash_requires_lacros_browsertestbase.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/apps/app_dialog/app_uninstall_dialog_view.h"
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "chromeos/crosapi/mojom/test_controller.mojom.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/instance_registry.h"
+#include "components/webapps/common/web_app_id.h"
 #include "content/public/test/browser_test.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/widget/any_widget_observer.h"
@@ -102,7 +102,8 @@ class WebAppsCrosapiBrowserTest
       return;
     }
 
-    apps::AppTypeInitializationWaiter(profile(), apps::AppType::kWeb).Await();
+    apps::AppTypeInitializationWaiter(GetAshProfile(), apps::AppType::kWeb)
+        .Await();
   }
 
   std::string InstallWebApp(const std::string& start_url,
@@ -112,14 +113,12 @@ class WebAppsCrosapiBrowserTest
         start_url, mode, app_id_future.GetCallback());
     std::string app_id = app_id_future.Take();
     CHECK(!app_id.empty());
-    apps::AppReadinessWaiter(profile(), app_id).Await();
+    apps::AppReadinessWaiter(GetAshProfile(), app_id).Await();
     return app_id;
   }
 
-  Profile* profile() { return browser()->profile(); }
-
   apps::AppServiceProxy* AppServiceProxy() {
-    return apps::AppServiceProxyFactory::GetForProfile(profile());
+    return apps::AppServiceProxyFactory::GetForProfile(GetAshProfile());
   }
 };
 
@@ -133,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(WebAppsCrosapiBrowserTest, PinUsingContextMenu) {
   const size_t kUnpinIndex = 1;
   const size_t kCloseIndex = 2;
 
-  const web_app::AppId app_id =
+  const webapps::AppId app_id =
       InstallWebApp("https://example.org/", apps::WindowMode::kWindow);
 
   EXPECT_EQ(ash::ShelfModel::Get()->ItemIndexByAppID(app_id), -1);
@@ -214,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(WebAppsCrosapiBrowserTest, Uninstall) {
   const size_t kPinIndex = 1;
   const size_t kUninstallIndex = 3;
 
-  const web_app::AppId app_id =
+  const webapps::AppId app_id =
       InstallWebApp("https://example.org/", apps::WindowMode::kWindow);
 
   {
@@ -263,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(WebAppsCrosapiBrowserTest, Uninstall) {
     AppInstanceWaiter app_instance_waiter(AppServiceProxy()->InstanceRegistry(),
                                           app_id, apps::kDestroyed);
     AppUninstallDialogView::GetActiveViewForTesting()->AcceptDialog();
-    apps::AppReadinessWaiter(profile(), app_id,
+    apps::AppReadinessWaiter(GetAshProfile(), app_id,
                              apps::Readiness::kUninstalledByUser)
         .Await();
     app_instance_waiter.Await();

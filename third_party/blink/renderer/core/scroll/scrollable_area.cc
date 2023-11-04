@@ -850,7 +850,7 @@ void ScrollableArea::SetScrollbarNeedsPaintInvalidation(
   // Invalidate the scrollbar directly if it's already composited.
   // GetLayoutBox() may be null in some unit tests.
   if (auto* box = GetLayoutBox()) {
-    auto* frame_view = GetLayoutBox()->GetFrameView();
+    auto* frame_view = box->GetFrameView();
     if (auto* compositor = frame_view->GetPaintArtifactCompositor()) {
       if (compositor->SetScrollbarNeedsDisplay(
               GetScrollbarElementId(orientation))) {
@@ -997,6 +997,9 @@ void ScrollableArea::ShowNonMacOverlayScrollbars() {
 
   // Don't do this for composited scrollbars. These scrollbars are handled
   // by separate code in cc::ScrollbarAnimationController.
+  // TODO(crbug.com/1229864): We may want to always composite overlay
+  // scrollbars to avoid the bug and the duplicated code for composited and
+  // non-composited overlay scrollbars.
   if (UsesCompositedScrolling())
     return;
 

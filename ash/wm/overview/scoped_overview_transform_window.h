@@ -49,6 +49,7 @@ class ASH_EXPORT ScopedOverviewTransformWindow
     kExit,    // Removes or resets clip.
     kCustom,  // Clips to custom given bounds.
   };
+
   using ClippingData = std::pair<ClippingType, gfx::SizeF>;
 
   // Calculates and returns an optimal scale ratio. This is only taking into
@@ -67,6 +68,10 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   ScopedOverviewTransformWindow& operator=(
       const ScopedOverviewTransformWindow&) = delete;
   ~ScopedOverviewTransformWindow() override;
+
+  aura::Window* window() const { return window_; }
+
+  OverviewGridWindowFillMode type() const { return type_; }
 
   // Starts an animation sequence which will use animation settings specified by
   // |animation_type|. The |animation_settings| container is populated with
@@ -155,18 +160,14 @@ class ASH_EXPORT ScopedOverviewTransformWindow
                              ui::PropertyChangeReason reason) override;
   void OnWindowDestroying(aura::Window* window) override;
 
-  aura::Window* window() const { return window_; }
-
-  OverviewGridWindowFillMode type() const { return type_; }
+  // If true, makes `CloseWidget()` execute synchronously when used in tests.
+  static void SetImmediateCloseForTests(bool immediate);
 
  private:
   friend class OverviewFocusCyclerTest;
   friend class OverviewTestBase;
   FRIEND_TEST_ALL_PREFIXES(OverviewSessionTest, CloseAnimationShadow);
   class LayerCachingAndFilteringObserver;
-
-  // If true, makes `CloseWidget()` execute synchronously when used in tests.
-  static void SetImmediateCloseForTests(bool immediate);
 
   // Closes the window managed by |this|.
   void CloseWidget();

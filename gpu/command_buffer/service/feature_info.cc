@@ -210,6 +210,8 @@ FeatureInfo::FeatureInfo(
 #elif BUILDFLAG(IS_MAC)
   feature_flags_.chromium_image_ycbcr_p010 =
       base::mac::MacOSMajorVersion() >= 11;
+#elif BUILDFLAG(IS_IOS)
+  feature_flags_.chromium_image_ycbcr_p010 = true;
 #endif
 }
 
@@ -1345,7 +1347,6 @@ void FeatureInfo::InitializeFeatures() {
   bool is_webgl_compatibility_context =
       gfx::HasExtension(extensions, "GL_ANGLE_webgl_compatibility");
   bool have_es2_draw_buffers =
-      !workarounds_.disable_ext_draw_buffers &&
       (have_es2_draw_buffers_vendor_agnostic ||
        can_emulate_es2_draw_buffers_on_es3_nv) &&
       (context_type_ == CONTEXT_TYPE_OPENGLES2 ||
@@ -1574,7 +1575,7 @@ void FeatureInfo::InitializeFeatures() {
       gl_version_info_->IsAtLeastGL(3, 3) ||
       (gl_version_info_->IsAtLeastGL(3, 2) &&
        gfx::HasExtension(extensions, "GL_ARB_blend_func_extended"));
-  if (!disable_shader_translator_ && !workarounds_.get_frag_data_info_bug &&
+  if (!disable_shader_translator_ &&
       ((gl_version_info_->IsAtLeastGL(3, 2) &&
         has_opengl_dual_source_blending) ||
        (gl_version_info_->IsAtLeastGLES(3, 0) &&
@@ -1767,6 +1768,12 @@ void FeatureInfo::InitializeFeatures() {
   if (is_passthrough_cmd_decoder_ &&
       gfx::HasExtension(extensions, "GL_ANGLE_stencil_texturing")) {
     AddExtensionString("GL_ANGLE_stencil_texturing");
+  }
+
+  if (is_passthrough_cmd_decoder_ &&
+      gfx::HasExtension(extensions, "GL_EXT_blend_func_extended")) {
+    feature_flags_.ext_blend_func_extended = true;
+    AddExtensionString("GL_EXT_blend_func_extended");
   }
 
   if (is_passthrough_cmd_decoder_ &&

@@ -50,6 +50,7 @@ android_resources("java_resources") {
     "java/res/drawable/tab_grid_card_background.xml",
     "java/res/drawable/tab_grid_dialog_background.xml",
     "java/res/drawable/tab_grid_selection_list_icon.xml",
+    "java/res/drawable/tab_hover_card_background.xml",
     "java/res/drawable/tab_selection_editor_share_icon.xml",
     "java/res/drawable/tab_strip_fading_edge_end.xml",
     "java/res/drawable/tab_strip_fading_edge_start.xml",
@@ -72,12 +73,14 @@ android_resources("java_resources") {
     "java/res/layout/tab_grid_card_item.xml",
     "java/res/layout/tab_grid_dialog_layout.xml",
     "java/res/layout/tab_grid_message_card_item.xml",
+    "java/res/layout/tab_hover_card_holder.xml",
     "java/res/layout/tab_list_card_item.xml",
     "java/res/layout/tab_list_recycler_view_layout.xml",
     "java/res/layout/tab_selection_editor_action_view.xml",
     "java/res/layout/tab_selection_editor_layout.xml",
     "java/res/layout/tab_selection_editor_toolbar.xml",
     "java/res/layout/tab_strip_item.xml",
+    "java/res/values-night/dimens.xml",
     "java/res/values/attrs.xml",
     "java/res/values/colors.xml",
     "java/res/values/dimens.xml",
@@ -95,6 +98,7 @@ android_library("unit_device_javatests") {
   testonly = true
   resources_package = "org.chromium.chrome.tab_ui"
   sources = [
+    "javatests/src/org/chromium/chrome/browser/tasks/tab_management/GtsRectAnimatorTest.java",
     "javatests/src/org/chromium/chrome/browser/tasks/tab_management/LargeMessageCardViewBinderTest.java",
     "javatests/src/org/chromium/chrome/browser/tasks/tab_management/MessageCardProviderTest.java",
     "javatests/src/org/chromium/chrome/browser/tasks/tab_management/MessageCardViewBinderTest.java",
@@ -136,6 +140,7 @@ android_library("unit_device_javatests") {
     "//third_party/android_deps:material_design_java",
     "//third_party/android_deps:protobuf_lite_runtime_java",
     "//third_party/android_sdk:android_test_base_java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_appcompat_appcompat_java",
     "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
     "//third_party/androidx:androidx_core_core_java",

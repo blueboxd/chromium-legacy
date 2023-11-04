@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader.h"
 #include "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader_client.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -62,7 +63,6 @@ namespace blink {
 namespace {
 
 const char kTestURL[] = "http://foo";
-const char kTestHTTPSURL[] = "https://foo";
 const char kTestData[] = "blah!";
 
 class MockResourceRequestSender : public ResourceRequestSender {
@@ -93,7 +93,7 @@ class MockResourceRequestSender : public ResourceRequestSender {
 
   int SendAsync(
       std::unique_ptr<network::ResourceRequest> request,
-      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> loading_task_runner,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       uint32_t loader_options,
       const Vector<String>& cors_exempt_header_list,
@@ -102,7 +102,10 @@ class MockResourceRequestSender : public ResourceRequestSender {
       WebVector<std::unique_ptr<URLLoaderThrottle>> throttles,
       std::unique_ptr<ResourceLoadInfoNotifierWrapper>
           resource_load_info_notifier_wrapper,
-      BackForwardCacheLoaderHelper* back_forward_cache_loader_helper) override {
+      base::OnceCallback<void(mojom::blink::RendererEvictionReason)>
+          evict_from_bfcache_callback,
+      base::RepeatingCallback<void(size_t)>
+          did_buffer_load_while_in_bfcache_callback) override {
     EXPECT_FALSE(resource_request_client_);
     if (sync_load_response_.head->encoded_body_length) {
       EXPECT_TRUE(loader_options & network::mojom::kURLLoadOptionSynchronous);
@@ -111,8 +114,7 @@ class MockResourceRequestSender : public ResourceRequestSender {
     return 1;
   }
 
-  void Cancel(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
+  void Cancel(scoped_refptr<base::SequencedTaskRunner> task_runner) override {
     EXPECT_FALSE(canceled_);
     canceled_ = true;
 
@@ -345,22 +347,17 @@ class URLLoaderTest : public testing::Test {
     redirect_info.new_site_for_cookies =
         net::SiteForCookies::FromUrl(GURL(kTestURL));
     std::vector<std::string> removed_headers;
+    bool callback_called = false;
     resource_request_client()->OnReceivedRedirect(
         redirect_info, network::mojom::URLResponseHead::New(),
-        &removed_headers);
-    EXPECT_TRUE(client()->did_receive_redirect());
-  }
-
-  void DoReceiveHTTPSRedirect() {
-    EXPECT_FALSE(client()->did_receive_redirect());
-    net::RedirectInfo redirect_info;
-    redirect_info.status_code = 302;
-    redirect_info.new_method = "GET";
-    redirect_info.new_url = GURL(kTestHTTPSURL);
-    redirect_info.new_site_for_cookies =
-        net::SiteForCookies::FromUrl(GURL(kTestHTTPSURL));
-    resource_request_client()->OnReceivedRedirect(
-        redirect_info, network::mojom::URLResponseHead::New(), nullptr);
+        /*follow_redirect_callback=*/
+        WTF::BindOnce(
+            [](bool* callback_called,
+               std::vector<std::string> removed_headers) {
+              *callback_called = true;
+            },
+            WTF::Unretained(&callback_called)));
+    DCHECK(callback_called);
     EXPECT_TRUE(client()->did_receive_redirect());
   }
 

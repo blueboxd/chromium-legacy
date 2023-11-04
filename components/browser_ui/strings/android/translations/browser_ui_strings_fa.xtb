@@ -100,6 +100,7 @@
 <translation id="2653659639078652383">ارسال</translation>
 <translation id="2677748264148917807">خروج</translation>
 <translation id="2678468611080193228">کوکی‌های شخص ثالث را به‌طور موقت مجاز کنید. این کار به‌معنی محافظت کمتر است اما ویژگی‌های سایت به احتمال زیاد کار می‌کنند</translation>
+<translation id="2683434792633810741">حذف و بازنشانی شود؟</translation>
 <translation id="2687403674020088961">مسدود کردن همه کوکی‌ها (توصیه نمی‌شود)</translation>
 <translation id="2713106313042589954">خاموش کردن دوربین</translation>
 <translation id="2717722538473713889">آدرس‌های ایمیل</translation>
@@ -179,6 +180,7 @@
 <translation id="4008040567710660924">کوکی‌ها را برای سایت خاصی مجاز کنید.</translation>
 <translation id="4046123991198612571">آهنگ بعدی</translation>
 <translation id="4053720452172726777">‏‫سفارشی کردن و کنترل Google Chrome</translation>
+<translation id="4149890623864272035">مطمئنید می‌خواهید همه داده‌های محلی، ازجمله کوکی‌ها، حذف شود و تمام اجازه‌های این وب‌سایت بازنشانی شود؟</translation>
 <translation id="4149994727733219643">نمای ساده‌شده برای صفحه‌های وب</translation>
 <translation id="4151930093518524179">بزرگ‌نمایی پیش‌فرض</translation>
 <translation id="4165986682804962316">تنظیمات سایت</translation>
@@ -196,6 +198,7 @@
 <translation id="4412992751769744546">اجازه به کوکی‌های شخص ثالث</translation>
 <translation id="4428065317363009941">شخصی‌سازی آگهی</translation>
 <translation id="4434045419905280838">پنجره‌های بازشو و هدایت‌ها</translation>
+<translation id="443552056913301231">با این کار، همه داده‌های محلی، ازجمله کوکی‌ها، حذف خواهد شد و تمام اجازه‌های <ph name="ORIGIN" /> بازنشانی خواهد شد</translation>
 <translation id="4468959413250150279">سایتی خاص بی‌صدا شود.</translation>
 <translation id="4475912480633855319">{COOKIES,plural, =1{# کوکی}one{# کوکی}other{# کوکی}}</translation>
 <translation id="4478158430052450698">آسان‌تر شدن سفارشی‌سازی بزرگ‌نمایی برای سایت‌های مختلف</translation>
@@ -205,6 +208,7 @@
 <translation id="4566417217121906555">بی‌صدا کردن میکروفون</translation>
 <translation id="4570913071927164677">جزئیات</translation>
 <translation id="4598549027014564149">وقتی در حالت «ناشناس» هستید، سایت‌ها نمی‌توانند از کوکی‌ها برای دیدن فعالیت مرور شما در سایت‌ها (حتی سایت‌های مرتبط) استفاده کنند. فعالیت مرور شما برای چیزهایی مانند آگهی‌های شخصی‌سازی‌شده استفاده نمی‌شود. ممکن است ویژگی‌های برخی‌از سایت‌ها کار نکنند.</translation>
+<translation id="4644713492825682049">حذف و بازنشانی</translation>
 <translation id="4645575059429386691">مدیریت شده توسط والدین شما</translation>
 <translation id="4670064810192446073">واقعیت مجازی</translation>
 <translation id="4751476147751820511">حسگرهای نوری یا حرکتی</translation>
@@ -235,6 +239,7 @@
 <translation id="5216942107514965959">آخرین بازدید: امروز</translation>
 <translation id="5225463052809312700">روشن کردن دوربین</translation>
 <translation id="5234764350956374838">رد کردن</translation>
+<translation id="5246825184569358663">با این کار، همه داده‌های محلی، ازجمله کوکی‌ها، حذف خواهد شد و تمام اجازه‌های <ph name="DOMAIN" /> و همه سایت‌های تحت آن بازنشانی خواهند شد</translation>
 <translation id="5264323282659631142">برداشتن «<ph name="CHIP_LABEL" />»</translation>
 <translation id="528192093759286357">برای خروج از حالت تمام صفحه، از بالا صفحه را بکشید و دکمه برگشت را لمس کنید.</translation>
 <translation id="5300589172476337783">نمایش</translation>
@@ -278,11 +283,11 @@
 <translation id="5922853908706496913">درحال هم‌رسانی صفحه‌نمایش</translation>
 <translation id="5922967540311291836">مسدود کردن کوکی‌های شخص ثالث:</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
+<translation id="5964247741333118902">محتوای جاسازی‌شده</translation>
 <translation id="5968921426641056619">نشانی وب را وارد کنید</translation>
 <translation id="5975083100439434680">دورنمایی کردن</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">کنترل کردن دسترسی این سایت به دستگاه</translation>
-<translation id="6018815681665454784">پاکسازی و بازنشانی شود؟</translation>
 <translation id="6040143037577758943">بستن</translation>
 <translation id="6042308850641462728">بیشتر</translation>
 <translation id="6064125863973209585">بارگیری‌های کامل‌شده</translation>
@@ -294,6 +299,7 @@
 <translation id="6192792657125177640">موارد استثنا</translation>
 <translation id="6196640612572343990">مسدود کردن کوکی‌های شخص ثالث</translation>
 <translation id="6205314730813004066">حریم خصوصی آگهی</translation>
+<translation id="6207207788774442484">حذف داده‌ها و بازنشانی اجازه‌ها</translation>
 <translation id="6216432067784365534">گزینه‌های <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6231752747840485235">«<ph name="APP_NAME" />» حذف نصب شود؟</translation>
 <translation id="6262191102408817757">براساس آخرین برگه شما</translation>
@@ -302,13 +308,11 @@
 <translation id="6295158916970320988">همه سایت‌ها</translation>
 <translation id="6320088164292336938">لرزش</translation>
 <translation id="6367753977865761591">ورود به سیستم شخص ثالث برای سایت خاصی مسدود می‌شود.</translation>
-<translation id="6388207532828177975">پاک کردن و بازنشانی</translation>
 <translation id="6398765197997659313">خروج از حالت تمام صفحه</translation>
 <translation id="640163077447496506">امروز منقضی می‌شود</translation>
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">دسترسی سایت‌ها به دستگاه و داده‌های واقعیت مجازی مسدود شود</translation>
 <translation id="6447842834002726250">کوکی‌ها</translation>
-<translation id="6467852467360539617">پاک کردن داده‌ها و بازنشانی اجازه‌ها</translation>
 <translation id="6500423977866688905">وقتی پنجره باریک است، نمای تلفن همراه درخواست شود</translation>
 <translation id="6527303717912515753">اشتراک‌گذاری</translation>
 <translation id="652937045869844725">کوکی‌های شخص ثالث را مجاز کنید. این کار به‌معنی محافظت کمتر است اما ویژگی‌های سایت به احتمال زیاد کار می‌کنند</translation>
@@ -381,11 +385,9 @@
 <translation id="7846076177841592234">لغو انتخاب</translation>
 <translation id="7882806643839505685">پخش صدا برای سایت خاصی مجاز شود.</translation>
 <translation id="789180354981963912">مسدود کردن کوکی‌های شخص ثالث در «حالت ناشناس»:</translation>
-<translation id="7895868624847501462">با این کار، همه داده‌های محلی، ازجمله کوکی‌ها، پاک خواهد شد و تمام اجازه‌های <ph name="DOMAIN" /> و همه سایت‌های تحت آن بازنشانی خواهند شد</translation>
 <translation id="7940722705963108451">به من یادآوری شود</translation>
 <translation id="7974024493641668069">{COUNT,plural, =1{<ph name="FPS_MEMBERS_COUNT" /> سایت در گروه سایت‌های <ph name="FPS_OWNER" /> قرار دارد که می‌توانند فعالیت شما را در گروه ببینند}one{<ph name="FPS_MEMBERS_COUNT" /> سایت در گروه سایت‌های <ph name="FPS_OWNER" /> قرار دارد که می‌توانند فعالیت شما را در گروه ببینند}other{<ph name="FPS_MEMBERS_COUNT" /> سایت در گروه سایت‌های <ph name="FPS_OWNER" /> قرار دارد که می‌توانند فعالیت شما را در گروه ببینند}}</translation>
 <translation id="7986741934819883144">مخاطبی انتخاب کنید</translation>
-<translation id="7999064672810608036">مطمئنید که می‌خواهید تمام داده‌های محلی، شامل کوکی‌ها را حذف کنید و تمام مجوزهای این وب‌سایت را بازنشانی کنید؟</translation>
 <translation id="8007176423574883786">برای این دستگاه غیرفعال شد</translation>
 <translation id="802154636333426148">بارگیری نشد</translation>
 <translation id="8042586301629853791">مرتب‌سازی براساس:</translation>
@@ -409,7 +411,6 @@
 <translation id="8284326494547611709">زیرنویس‌ها</translation>
 <translation id="8300705686683892304">مدیریت‌شده توسط برنامه</translation>
 <translation id="8324158725704657629">دوباره سؤال نشود</translation>
-<translation id="8338445138528827481">با این کار، همه داده‌های محلی، ازجمله کوکی‌ها، پاک خواهد شد و تمام اجازه‌های <ph name="ORIGIN" /> بازنشانی خواهد شد</translation>
 <translation id="8362795839483915693">می‌توانید در سایت‌هایی که بازدید می‌کنید زوم‌پیش یا زوم‌پس کنید</translation>
 <translation id="8372893542064058268">«همگام‌سازی پس‌زمینه» را برای یک سایت خاص مجاز کنید.</translation>
 <translation id="8376384591331888629">شامل کوکی‌های شخص ثالث در این سایت می‌شود</translation>

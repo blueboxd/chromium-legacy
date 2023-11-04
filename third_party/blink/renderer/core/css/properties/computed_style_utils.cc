@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/css/properties/shorthands.h"
 #include "third_party/blink/renderer/core/css/style_color.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/layout_ng_grid.h"
@@ -202,10 +203,11 @@ CSSValue* ComputedStyleUtils::ValueForOffset(const ComputedStyle& style,
   if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
     CSSValue* position = ValueForPosition(style.OffsetPosition(), style);
     auto* position_identifier_value = DynamicTo<CSSIdentifierValue>(position);
-    if (!position_identifier_value) {
+    if (!position_identifier_value ||
+        position_identifier_value->GetValueID() == CSSValueID::kAuto) {
       list->Append(*position);
     } else {
-      DCHECK(position_identifier_value->GetValueID() == CSSValueID::kAuto);
+      DCHECK(position_identifier_value->GetValueID() == CSSValueID::kNormal);
     }
   }
 
@@ -664,35 +666,6 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
     const ComputedStyle& style,
     const CSSProperty& property,
     const LayoutObject* layout_object) {
-  if (RuntimeEnabledFeatures::GetComputedStyleOutOfFlowInsetsFixEnabled() &&
-      layout_object && layout_object->IsOutOfFlowPositioned()) {
-    CHECK(layout_object->IsBox());
-    // LayoutBox::OutOfFlowInsetsForGetComputedStyle() are relative to the
-    // container's writing direction. Convert it to physical.
-    const LayoutBox* box = To<LayoutBox>(layout_object);
-    const NGPhysicalBoxStrut& insets =
-        box->OutOfFlowInsetsForGetComputedStyle().ConvertToPhysical(
-            box->ContainingBlock()->StyleRef().GetWritingDirection());
-    LayoutUnit offset;
-    switch (property.PropertyID()) {
-      case CSSPropertyID::kLeft:
-        offset = insets.left;
-        break;
-      case CSSPropertyID::kTop:
-        offset = insets.top;
-        break;
-      case CSSPropertyID::kRight:
-        offset = insets.right;
-        break;
-      case CSSPropertyID::kBottom:
-        offset = insets.bottom;
-        break;
-      default:
-        NOTREACHED();
-    }
-    return ZoomAdjustedPixelValue(offset, style);
-  }
-
   std::pair<const Length*, const Length*> positions;
   bool is_horizontal_property;
   switch (property.PropertyID()) {
@@ -720,8 +693,40 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
 
   const Length& offset = *positions.first;
   const Length& opposite = *positions.second;
-
   const auto* box = DynamicTo<LayoutBox>(layout_object);
+
+  // In this case, the used value is the computed value, so we resolve directly.
+  if (offset.IsFixed() && (!box || !box->UsesPositionFallbackStyle())) {
+    return ZoomAdjustedPixelValueForLength(offset, style);
+  }
+
+  if (RuntimeEnabledFeatures::GetComputedStyleOutOfFlowInsetsFixEnabled() &&
+      box && box->IsOutOfFlowPositioned()) {
+    // LayoutBox::OutOfFlowInsetsForGetComputedStyle() are relative to the
+    // container's writing direction. Convert it to physical.
+    const NGPhysicalBoxStrut& insets =
+        box->OutOfFlowInsetsForGetComputedStyle().ConvertToPhysical(
+            box->ContainingBlock()->StyleRef().GetWritingDirection());
+    LayoutUnit inset;
+    switch (property.PropertyID()) {
+      case CSSPropertyID::kLeft:
+        inset = insets.left;
+        break;
+      case CSSPropertyID::kTop:
+        inset = insets.top;
+        break;
+      case CSSPropertyID::kRight:
+        inset = insets.right;
+        break;
+      case CSSPropertyID::kBottom:
+        inset = insets.bottom;
+        break;
+      default:
+        NOTREACHED();
+    }
+    return ZoomAdjustedPixelValue(inset, style);
+  }
+
   if (offset.IsPercentOrCalc() && box && layout_object->IsPositioned()) {
     LayoutUnit containing_block_size;
     if (layout_object->IsStickyPositioned()) {
@@ -732,12 +737,18 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
       containing_block_size = use_inline_size
                                   ? scroll_container->ContentLogicalWidth()
                                   : scroll_container->ContentLogicalHeight();
+      UseCounter::Count(layout_object->GetDocument(),
+                        WebFeature::kPercentOrCalcStickyUsedOffset);
     } else {
       containing_block_size =
           is_horizontal_property ==
                   layout_object->ContainingBlock()->IsHorizontalWritingMode()
               ? box->ContainingBlockLogicalWidthForContent()
               : box->ContainingBlockLogicalHeightForGetComputedStyle();
+      if (layout_object->IsRelPositioned()) {
+        UseCounter::Count(layout_object->GetDocument(),
+                          WebFeature::kPercentOrCalcRelativeUsedOffset);
+      }
     }
 
     return ZoomAdjustedPixelValue(ValueForLength(offset, containing_block_size),
@@ -751,6 +762,8 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
     // auto when offset.isAuto() on a sticky position object:
     // https://crbug.com/703816.
     if (layout_object->IsRelPositioned()) {
+      UseCounter::Count(layout_object->GetDocument(),
+                        WebFeature::kAutoRelativeUsedOffset);
       // If e.g. left is auto and right is not auto, then left's computed value
       // is negative right. So we get the opposite length unit and see if it is
       // auto.
@@ -825,6 +838,8 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
   }
 
+  // Fixed lengths must have been handled by previous branches.
+  CHECK(!offset.IsFixed());
   return ZoomAdjustedPixelValueForLength(offset, style);
 }
 
@@ -1028,11 +1043,11 @@ CSSPrimitiveValue* ComputedStyleUtils::ValueForFontStretch(
 
 CSSValue* ComputedStyleUtils::ValueForFontStyle(const ComputedStyle& style) {
   FontSelectionValue angle = style.GetFontDescription().Style();
-  if (angle == NormalSlopeValue()) {
+  if (angle == kNormalSlopeValue) {
     return CSSIdentifierValue::Create(CSSValueID::kNormal);
   }
 
-  if (angle == ItalicSlopeValue()) {
+  if (angle == kItalicSlopeValue) {
     return CSSIdentifierValue::Create(CSSValueID::kItalic);
   }
 
@@ -1286,34 +1301,34 @@ CSSIdentifierValue* ComputedStyleUtils::ValueForFontOpticalSizing(
 CSSIdentifierValue* ValueForFontStretchAsKeyword(const ComputedStyle& style) {
   FontSelectionValue stretch_value = style.GetFontDescription().Stretch();
   CSSValueID value_id = CSSValueID::kInvalid;
-  if (stretch_value == UltraCondensedWidthValue()) {
+  if (stretch_value == kUltraCondensedWidthValue) {
     value_id = CSSValueID::kUltraCondensed;
   }
-  if (stretch_value == UltraCondensedWidthValue()) {
+  if (stretch_value == kUltraCondensedWidthValue) {
     value_id = CSSValueID::kUltraCondensed;
   }
-  if (stretch_value == ExtraCondensedWidthValue()) {
+  if (stretch_value == kExtraCondensedWidthValue) {
     value_id = CSSValueID::kExtraCondensed;
   }
-  if (stretch_value == CondensedWidthValue()) {
+  if (stretch_value == kCondensedWidthValue) {
     value_id = CSSValueID::kCondensed;
   }
-  if (stretch_value == SemiCondensedWidthValue()) {
+  if (stretch_value == kSemiCondensedWidthValue) {
     value_id = CSSValueID::kSemiCondensed;
   }
-  if (stretch_value == NormalWidthValue()) {
+  if (stretch_value == kNormalWidthValue) {
     value_id = CSSValueID::kNormal;
   }
-  if (stretch_value == SemiExpandedWidthValue()) {
+  if (stretch_value == kSemiExpandedWidthValue) {
     value_id = CSSValueID::kSemiExpanded;
   }
-  if (stretch_value == ExpandedWidthValue()) {
+  if (stretch_value == kExpandedWidthValue) {
     value_id = CSSValueID::kExpanded;
   }
-  if (stretch_value == ExtraExpandedWidthValue()) {
+  if (stretch_value == kExtraExpandedWidthValue) {
     value_id = CSSValueID::kExtraExpanded;
   }
-  if (stretch_value == UltraExpandedWidthValue()) {
+  if (stretch_value == kUltraExpandedWidthValue) {
     value_id = CSSValueID::kUltraExpanded;
   }
 
@@ -1493,7 +1508,7 @@ CSSValue* ComputedStyleUtils::ValueForFont(const ComputedStyle& style) {
 
   {
     CSSNumericLiteralValue* font_weight = ValueForFontWeight(style);
-    if (font_weight->DoubleValue() != NormalWeightValue()) {
+    if (font_weight->DoubleValue() != kNormalWeightValue) {
       list->Append(*font_weight);
     }
   }
@@ -2935,7 +2950,7 @@ gfx::RectF ComputedStyleUtils::ReferenceBoxForTransform(
     if (pixel_snap_box == kUsePixelSnappedBox) {
       return gfx::RectF(layout_box.PixelSnappedBorderBoxRect());
     }
-    return gfx::RectF(layout_box.BorderBoxRect());
+    return gfx::RectF(layout_box.PhysicalBorderBoxRect());
   }
   return gfx::RectF();
 }
@@ -3595,8 +3610,25 @@ CSSValueList* ComputedStyleUtils::ValuesForGridShorthand(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
     bool allow_visited_style) {
+  // Trailing non-initial values should be dropped.
+  // TODO(kschmi): Also handle `<custom-ident>` behavior, where if only
+  // one is specified for columns, rows also apply that value.
+  unsigned last_index = shorthand.length();
+  // Work backwards to determine the final non-initial index. For grid
+  // shorthands, we can drop all trailing `none` and `auto` values.
+  for (; last_index > 1; --last_index) {
+    const CSSValue* value =
+        shorthand.properties()[last_index - 1]->CSSValueFromComputedStyle(
+            style, layout_object, allow_visited_style);
+    if ((!IsA<CSSIdentifierValue>(value) ||
+         (To<CSSIdentifierValue>(value)->GetValueID() != CSSValueID::kNone &&
+          To<CSSIdentifierValue>(value)->GetValueID() != CSSValueID::kAuto))) {
+      break;
+    }
+  }
+
   CSSValueList* list = CSSValueList::CreateSlashSeparated();
-  for (unsigned i = 0; i < shorthand.length(); ++i) {
+  for (unsigned i = 0; i < last_index; ++i) {
     const CSSValue* value =
         shorthand.properties()[i]->CSSValueFromComputedStyle(
             style, layout_object, allow_visited_style);

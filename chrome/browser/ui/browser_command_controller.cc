@@ -120,6 +120,7 @@
 #include "chrome/browser/ui/ash/browser_data_migration_error_dialog.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 #include "chrome/browser/ui/browser_commands_chromeos.h"
+#include "chromeos/ash/components/standalone_browser/migrator_util.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #endif
@@ -579,7 +580,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
 
 #if BUILDFLAG(IS_MAC)
     case IDC_TOGGLE_FULLSCREEN_TOOLBAR:
-      chrome::ToggleFullscreenToolbar(browser_);
+      chrome::ToggleAlwaysShowToolbarInFullscreen(browser_);
       break;
     case IDC_TOGGLE_JAVASCRIPT_APPLE_EVENTS: {
       chrome::ToggleJavaScriptFromAppleEventsAllowed(browser_);
@@ -849,13 +850,11 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       ShowExtensions(browser_->GetBrowserForOpeningWebUi());
       break;
     case IDC_EXTENSIONS_SUBMENU_MANAGE_EXTENSIONS:
-      CHECK(base::FeatureList::IsEnabled(features::kExtensionsMenuInAppMenu) ||
-            features::IsChromeRefresh2023());
+      CHECK(features::IsExtensionMenuInRootAppMenu());
       ShowExtensions(browser_->GetBrowserForOpeningWebUi());
       break;
     case IDC_EXTENSIONS_SUBMENU_VISIT_CHROME_WEB_STORE:
-      CHECK(base::FeatureList::IsEnabled(features::kExtensionsMenuInAppMenu) ||
-            features::IsChromeRefresh2023());
+      CHECK(features::IsExtensionMenuInRootAppMenu());
       ShowWebStore(browser_, extension_urls::kAppMenuUtmSource);
       break;
     case IDC_PERFORMANCE:
@@ -894,6 +893,11 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_UPGRADE_DIALOG:
       OpenUpdateChromeDialog(browser_);
       break;
+    case IDC_OPEN_SAFETY_HUB:
+      ShowSettingsSubPage(browser_->GetBrowserForOpeningWebUi(),
+                          chrome::kSafetyHubSubPage);
+      break;
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     case IDC_LACROS_DATA_MIGRATION: {
       auto* user_manager = user_manager::UserManager::Get();
@@ -905,7 +909,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       // run it always.
       ash::BrowserDataMigratorImpl::ClearMigrationStep(
           user_manager->GetLocalState());
-      ash::BrowserDataMigratorImpl::ClearMigrationAttemptCountForUser(
+      ash::standalone_browser::migrator_util::ClearMigrationAttemptCountForUser(
           user_manager->GetLocalState(), user->username_hash());
       ash::BrowserDataMigratorImpl::MaybeRestartToMigrateWithDiskCheck(
           user->GetAccountId(), user->username_hash(),
@@ -1350,6 +1354,10 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_LACROS_DATA_MIGRATION, true);
 #endif
 
+  // Safety Hub commands.
+  command_updater_.UpdateCommandEnabled(
+      IDC_OPEN_SAFETY_HUB, base::FeatureList::IsEnabled(features::kSafetyHub));
+
   // Distill current page.
   command_updater_.UpdateCommandEnabled(IDC_DISTILL_PAGE,
                                         dom_distiller::IsDomDistillerEnabled());
@@ -1476,8 +1484,7 @@ void BrowserCommandController::UpdateCommandsForExtensionsMenu() {
     return;
   }
 
-  if (base::FeatureList::IsEnabled(features::kExtensionsMenuInAppMenu) ||
-      features::IsChromeRefresh2023()) {
+  if (features::IsExtensionMenuInRootAppMenu()) {
     command_updater_.UpdateCommandEnabled(
         IDC_EXTENSIONS_SUBMENU_MANAGE_EXTENSIONS,
         /*state=*/true);

@@ -17,12 +17,14 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/commerce/shopping_service_factory.h"
+#include "chrome/browser/companion/core/features.h"
 #include "chrome/browser/download/bubble/download_bubble_prefs.h"
 #include "chrome/browser/performance_manager/public/user_tuning/user_performance_tuning_manager.h"
 #include "chrome/browser/performance_manager/public/user_tuning/user_tuning_utils.h"
 #include "chrome/browser/preloading/preloading_features.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
+#include "chrome/browser/privacy_sandbox/tracking_protection_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_features.h"
@@ -72,7 +74,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/settings_resources.h"
 #include "chrome/grit/settings_resources_map.h"
@@ -87,6 +89,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
+#include "components/privacy_sandbox/tracking_protection_settings.h"
 #include "components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_utils.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -126,16 +129,13 @@
 #include "chrome/browser/ash/account_manager/account_apps_availability.h"
 #include "chrome/browser/ash/account_manager/account_apps_availability_factory.h"
 #include "chrome/browser/ash/account_manager/account_manager_util.h"
-#include "chrome/browser/ash/android_sms/android_sms_app_manager.h"
-#include "chrome/browser/ash/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/ash/eche_app/eche_app_manager_factory.h"
 #include "chrome/browser/ash/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/ash/phonehub/phone_hub_manager_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/ui/webui/settings/ash/account_manager_ui_handler.h"
-#include "chrome/browser/ui/webui/settings/ash/android_apps_handler.h"
+#include "chrome/browser/ui/webui/ash/settings/pages/people/account_manager_ui_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/multidevice_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/browser_resources.h"
@@ -368,7 +368,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 
   html_source->AddBoolean(
       "enablePageContentSetting",
-      base::FeatureList::IsEnabled(features::kPageContentOptIn));
+      base::FeatureList::IsEnabled(features::kPageContentOptIn) ||
+          base::FeatureList::IsEnabled(
+              companion::features::kCompanionEnablePageContent));
 
   html_source->AddBoolean(
       "downloadBubblePartialViewControlledByPref",
@@ -486,10 +488,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("enableSafetyHub",
                           base::FeatureList::IsEnabled(features::kSafetyHub));
 
-  html_source->AddBoolean("is3pcdCookieSettingsRedesignEnabled",
-                          base::FeatureList::IsEnabled(
-                              content_settings::features::
-                                  kThirdPartyCookieDeprecationCookieSettings));
+  html_source->AddBoolean(
+      "is3pcdCookieSettingsRedesignEnabled",
+      TrackingProtectionSettingsFactory::GetForProfile(profile)
+          ->IsTrackingProtection3pcdEnabled());
 
   // Performance
   AddSettingsPageUIHandler(std::make_unique<PerformanceHandler>());
@@ -504,6 +506,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("isPerformanceSettingsPreloadingSubpageEnabled",
                           base::FeatureList::IsEnabled(
                               features::kPerformanceSettingsPreloadingSubpage));
+  html_source->AddBoolean(
+      "isPerformanceSettingsPreloadingSubpageV2Enabled",
+      features::kPerformanceSettingsPreloadingSubpageV2.Get());
   html_source->AddBoolean(
       "isBatterySaverModeManagedByOS",
       performance_manager::user_tuning::IsBatterySaverModeManagedByOS());
@@ -546,13 +551,7 @@ void SettingsUI::InitBrowserSettingsWebUIHandlers() {
             ash::AccountAppsAvailabilityFactory::GetForProfile(profile)));
   }
 
-  // MultideviceHandler is required in browser settings to show a special note
-  // under the notification permission that is auto-granted for Android Messages
-  // integration in ChromeOS.
   if (!profile->IsGuestSession()) {
-    auto* android_sms_service =
-        ash::android_sms::AndroidSmsServiceFactory::GetForBrowserContext(
-            profile);
     ash::phonehub::PhoneHubManager* phone_hub_manager =
         ash::phonehub::PhoneHubManagerFactory::GetForProfile(profile);
     ash::eche_app::EcheAppManager* eche_app_manager =
@@ -566,11 +565,6 @@ void SettingsUI::InitBrowserSettingsWebUIHandlers() {
         phone_hub_manager
             ? phone_hub_manager->GetMultideviceFeatureAccessManager()
             : nullptr,
-        android_sms_service
-            ? android_sms_service->android_sms_pairing_state_tracker()
-            : nullptr,
-        android_sms_service ? android_sms_service->android_sms_app_manager()
-                            : nullptr,
         eche_app_manager ? eche_app_manager->GetAppsAccessManager() : nullptr,
         phone_hub_manager ? phone_hub_manager->GetCameraRollManager() : nullptr,
         phone_hub_manager ? phone_hub_manager->GetBrowserTabsModelProvider()

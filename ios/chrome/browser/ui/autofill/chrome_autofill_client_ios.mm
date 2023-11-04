@@ -17,7 +17,6 @@
 #import "base/strings/utf_string_conversions.h"
 #import "components/autofill/core/browser/autofill_save_update_address_profile_delegate_ios.h"
 #import "components/autofill/core/browser/form_data_importer.h"
-#import "components/autofill/core/browser/form_structure.h"
 #import "components/autofill/core/browser/logging/log_manager.h"
 #import "components/autofill/core/browser/payments/autofill_credit_card_filling_infobar_delegate_mobile.h"
 #import "components/autofill/core/browser/payments/autofill_save_card_delegate.h"
@@ -30,7 +29,6 @@
 #import "components/autofill/core/browser/ui/popup_item_ids.h"
 #import "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/core/common/autofill_prefs.h"
-#import "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "components/autofill/ios/browser/autofill_util.h"
 #import "components/infobars/core/infobar.h"
 #import "components/infobars/core/infobar_manager.h"
@@ -59,7 +57,7 @@
 #import "ios/chrome/browser/ui/autofill/card_expiration_date_fix_flow_view_bridge.h"
 #import "ios/chrome/browser/ui/autofill/card_name_fix_flow_view_bridge.h"
 #import "ios/chrome/browser/ui/autofill/create_card_unmask_prompt_view_bridge.h"
-#import "ios/chrome/browser/webdata_services/web_data_service_factory.h"
+#import "ios/chrome/browser/webdata_services/model/web_data_service_factory.h"
 #import "ios/chrome/common/channel_info.h"
 #import "ios/public/provider/chrome/browser/risk_data/risk_data_api.h"
 #import "ios/web/public/web_state.h"
@@ -394,7 +392,8 @@ void ChromeAutofillClientIOS::ConfirmSaveAddressProfile(
 }
 
 void ChromeAutofillClientIOS::ShowEditAddressProfileDialog(
-    const AutofillProfile& profile) {
+    const AutofillProfile& profile,
+    AddressProfileSavePromptCallback on_user_decision_callback) {
   NOTREACHED_NORETURN();
 }
 
@@ -470,11 +469,6 @@ bool ChromeAutofillClientIOS::IsAutocompleteEnabled() const {
 bool ChromeAutofillClientIOS::IsPasswordManagerEnabled() {
   return GetPrefs()->GetBoolean(
       password_manager::prefs::kCredentialsEnableService);
-}
-
-void ChromeAutofillClientIOS::PropagateAutofillPredictionsDeprecated(
-    AutofillDriver* driver,
-    const std::vector<FormStructure*>& forms) {
 }
 
 void ChromeAutofillClientIOS::DidFillOrPreviewForm(

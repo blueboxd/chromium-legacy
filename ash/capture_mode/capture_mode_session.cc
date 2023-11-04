@@ -17,6 +17,7 @@
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_session_focus_cycler.h"
 #include "ash/capture_mode/capture_mode_settings_view.h"
+#include "ash/capture_mode/capture_mode_source_view.h"
 #include "ash/capture_mode/capture_mode_type_view.h"
 #include "ash/capture_mode/capture_mode_types.h"
 #include "ash/capture_mode/capture_mode_util.h"
@@ -35,6 +36,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
 #include "ash/style/icon_button.h"
+#include "ash/style/tab_slider_button.h"
 #include "ash/utility/cursor_setter.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_dimmer.h"
@@ -53,6 +55,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
@@ -186,9 +189,12 @@ bool SetMouseWarpEnabled(bool enable) {
   return old_value;
 }
 
-// Returns the smallest rect that contains all of |points|.
-gfx::Rect GetRectEnclosingPoints(const std::vector<gfx::Point>& points) {
+// Returns the smallest rect that contains all of `points` if they are all
+// within `root`'s bounds, otherwise constrains the rect to fit.
+gfx::Rect GetRectEnclosingPoints(const std::vector<gfx::Point>& points,
+                                 aura::Window* root) {
   DCHECK_GE(points.size(), 2u);
+  CHECK(root);
 
   int x = INT_MAX;
   int y = INT_MAX;
@@ -200,7 +206,10 @@ gfx::Rect GetRectEnclosingPoints(const std::vector<gfx::Point>& points) {
     right = std::max(point.x(), right);
     bottom = std::max(point.y(), bottom);
   }
-  return gfx::Rect(x, y, right - x, bottom - y);
+
+  gfx::Rect new_rect(x, y, right - x, bottom - y);
+  new_rect.Intersect(root->bounds());
+  return new_rect;
 }
 
 // Returns the widget init params needed to create a widget associated with a
@@ -274,16 +283,6 @@ int GetArrowKeyPressChange(int event_flags) {
   if ((event_flags & ui::EF_CONTROL_DOWN) != 0)
     return capture_mode::kCtrlArrowKeyboardRegionChangeDp;
   return capture_mode::kArrowKeyboardRegionChangeDp;
-}
-
-// Clips |out_bounds| to fit |rect|. Similar to
-// gfx::Rect::AdjustToFit() but does not shift the output rect to maintain the
-// rect size.
-void ClipRectToFit(gfx::Rect* out_bounds, const gfx::Rect& rect) {
-  out_bounds->SetByBounds(std::max(rect.x(), out_bounds->x()),
-                          std::max(rect.y(), out_bounds->y()),
-                          std::min(rect.right(), out_bounds->right()),
-                          std::min(rect.bottom(), out_bounds->bottom()));
 }
 
 // Returns the `message_id` for the chromevox alert when capture session starts.
@@ -507,10 +506,11 @@ void CaptureModeSession::A11yAlertCaptureSource(bool trigger_now) {
       break;
     case CaptureModeSource::kWindow:
       // Selected window could be non-empty when switching to capture type.
-      if (GetSelectedWindow()) {
-        message = l10n_util::GetStringUTF8(
+      if (auto* window = GetSelectedWindow()) {
+        message = l10n_util::GetStringFUTF8(
             is_capturing_image ? IDS_ASH_SCREEN_CAPTURE_ALERT_WINDOW_SCREENSHOT
-                               : IDS_ASH_SCREEN_CAPTURE_ALERT_WINDOW_RECORD);
+                               : IDS_ASH_SCREEN_CAPTURE_ALERT_WINDOW_RECORD,
+            window->GetTitle());
       }
       break;
   }
@@ -658,8 +658,9 @@ void CaptureModeSession::UpdateCursor(const gfx::Point& location_in_screen,
   }
 
   const CaptureModeSource source = controller_->source();
-  if (source == CaptureModeSource::kWindow && !GetSelectedWindow()) {
-    // If we're in window capture mode and there is no select window at the
+  if (source == CaptureModeSource::kWindow &&
+      !IsPointOverSelectedWindow(location_in_screen)) {
+    // If we're in window capture mode and there is no selected window at the
     // moment, we should use a pointer cursor.
     cursor_setter_->UpdateCursor(root_window, ui::mojom::CursorType::kPointer);
     return;
@@ -699,7 +700,8 @@ void CaptureModeSession::HighlightWindowForTab(aura::Window* window) {
   DCHECK(window);
   DCHECK_EQ(CaptureModeSource::kWindow, controller_->source());
   MaybeChangeRoot(window->GetRootWindow());
-  capture_window_observer_->SetSelectedWindow(window);
+  capture_window_observer_->SetSelectedWindow(window, /*a11y_alert_again=*/true,
+                                              /*bar_anchored_to_window=*/false);
 }
 
 void CaptureModeSession::MaybeUpdateSettingsBounds() {
@@ -848,6 +850,7 @@ void CaptureModeSession::SetPreSelectedWindow(
     aura::Window* pre_selected_window) {
   CHECK(capture_window_observer_);
   capture_window_observer_->SetSelectedWindow(pre_selected_window,
+                                              /*a11y_alert_again=*/true,
                                               /*bar_anchored_to_window=*/true);
 }
 
@@ -1268,6 +1271,7 @@ void CaptureModeSession::OnKeyEvent(ui::KeyEvent* event) {
       },
       weak_ptr_factory_.GetWeakPtr(), std::move(should_update_opacity)));
 
+  auto* capture_source_view = capture_mode_bar_view_->GetCaptureSourceView();
   const bool is_in_count_down = IsInCountDownAnimation();
   ui::KeyboardCode key_code = event->key_code();
   switch (key_code) {
@@ -1294,8 +1298,15 @@ void CaptureModeSession::OnKeyEvent(ui::KeyEvent* event) {
       event->StopPropagation();
       if (!is_in_count_down) {
         // Pressing enter while an item is focused should behave exactly like
-        // pressing the space bar on it.
-        if (focus_cycler_->OnSpacePressed()) {
+        // pressing the space bar on it, unless it's the fullscreen source
+        // button, and we are already in fullscreen mode, in this case hitting
+        // enter should perform the capture.
+        views::View* ignore_view = nullptr;
+        if (capture_source_view &&
+            controller_->source() == CaptureModeSource::kFullscreen) {
+          ignore_view = capture_source_view->fullscreen_toggle_button();
+        }
+        if (focus_cycler_->MaybeActivateFocusedView(ignore_view)) {
           *should_update_opacity_ptr = true;
           return;
         }
@@ -1309,15 +1320,23 @@ void CaptureModeSession::OnKeyEvent(ui::KeyEvent* event) {
       event->StopPropagation();
       event->SetHandled();
 
-      if (focus_cycler_->OnSpacePressed()) {
+      // Hitting space on the region toggle button when we are already in region
+      // mode should do nothing as we will take care of it below by creating a
+      // default region if needed.
+      views::View* ignore_view = nullptr;
+      const bool is_in_region_mode =
+          controller_->source() == CaptureModeSource::kRegion;
+      if (capture_source_view && is_in_region_mode) {
+        ignore_view = capture_source_view->region_toggle_button();
+      }
+      if (focus_cycler_->MaybeActivateFocusedView(ignore_view)) {
         *should_update_opacity_ptr = true;
         return;
       }
 
       // Create a default region if we are in region mode and there is no
       // existing region.
-      if (controller_->source() == CaptureModeSource::kRegion &&
-          controller_->user_capture_region().IsEmpty()) {
+      if (is_in_region_mode && controller_->user_capture_region().IsEmpty()) {
         SelectDefaultRegion();
       }
       return;
@@ -1926,7 +1945,9 @@ void CaptureModeSession::OnLocatedEvent(ui::LocatedEvent* event,
       case ui::ET_MOUSE_RELEASED:
       case ui::ET_TOUCH_RELEASED:
         if (is_capture_fullscreen ||
-            (is_capture_window && GetSelectedWindow())) {
+            IsPointOverSelectedWindow(screen_location)) {
+          // Clicking anywhere in fullscreen mode, or over the selected window
+          // in window mode should perform the capture operation.
           DoPerformCapture();  // `this` can be deleted after this.
         }
         break;
@@ -2067,7 +2088,8 @@ void CaptureModeSession::OnLocatedEventDragged(
   // press location and the current location.
   if (is_selecting_region_) {
     UpdateCaptureRegion(
-        GetRectEnclosingPoints({initial_location_in_root_, location_in_root}),
+        GetRectEnclosingPoints({initial_location_in_root_, location_in_root},
+                               current_root_),
         /*is_resizing=*/true, /*by_user=*/true);
     return;
   }
@@ -2107,8 +2129,8 @@ void CaptureModeSession::OnLocatedEventDragged(
     resizing_point.set_x(points.front().x());
   }
   points.push_back(resizing_point);
-  UpdateCaptureRegion(GetRectEnclosingPoints(points), /*is_resizing=*/true,
-                      /*by_user=*/true);
+  UpdateCaptureRegion(GetRectEnclosingPoints(points, current_root_),
+                      /*is_resizing=*/true, /*by_user=*/true);
   MaybeShowMagnifierGlassAtPoint(location_in_root);
 }
 
@@ -2669,7 +2691,7 @@ void CaptureModeSession::UpdateRegionForArrowKeys(ui::KeyboardCode key_code,
     }
 
     new_capture_region.Inset(insets);
-    ClipRectToFit(&new_capture_region, current_root_->bounds());
+    new_capture_region.Intersect(current_root_->bounds());
   }
 
   UpdateCaptureRegion(new_capture_region, /*is_resizing=*/false,
@@ -2762,6 +2784,14 @@ void CaptureModeSession::MaybeUpdateRecordingTypeMenu() {
           capture_label_widget_->GetWindowBoundsInScreen(),
           current_root_->GetBoundsInScreen(),
           recording_type_menu_widget_->GetContentsView()));
+}
+
+bool CaptureModeSession::IsPointOverSelectedWindow(
+    const gfx::Point& screen_point) const {
+  auto* selected_window = GetSelectedWindow();
+  return selected_window &&
+         (capture_mode_util::GetTopMostCapturableWindowAtPoint(screen_point) ==
+          selected_window);
 }
 
 void CaptureModeSession::InitInternal() {

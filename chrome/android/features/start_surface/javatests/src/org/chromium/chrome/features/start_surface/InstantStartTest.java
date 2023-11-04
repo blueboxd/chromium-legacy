@@ -21,13 +21,13 @@ import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
-import android.text.TextUtils;
 import android.util.Size;
 import android.view.View;
 
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
+import org.jni_zero.NativeLibraryLoadedStatus;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -42,7 +42,6 @@ import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.Callback;
-import org.chromium.base.NativeLibraryLoadedStatus;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -281,7 +280,7 @@ public class InstantStartTest {
         // clang-format on
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
         Assert.assertTrue(StartSurfaceConfiguration.isStartSurfaceFlagEnabled());
-        Assert.assertFalse(TextUtils.isEmpty(HomepageManager.getHomepageUri()));
+        Assert.assertFalse(HomepageManager.getHomepageGurl().isEmpty());
 
         TestThreadUtils.runOnUiThreadBlocking(
                 (Runnable) ()
@@ -332,7 +331,7 @@ public class InstantStartTest {
         if (!BuildConfig.ENABLE_ASSERTS) return;
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
         collector.checkThat(StartSurfaceConfiguration.isStartSurfaceFlagEnabled(), is(true));
-        collector.checkThat(TextUtils.isEmpty(HomepageManager.getHomepageUri()), is(false));
+        collector.checkThat(HomepageManager.getHomepageGurl().isEmpty(), is(false));
         Assert.assertFalse(
                 NativeLibraryLoadedStatus.getProviderForTesting().areNativeMethodsReady());
         ReturnToChromeUtil.shouldShowStartSurfaceAsTheHomePage(mActivityTestRule.getActivity());

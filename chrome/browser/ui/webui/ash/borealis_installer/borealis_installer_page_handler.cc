@@ -14,6 +14,7 @@
 #include "chrome/browser/ash/borealis/borealis_installer.h"
 #include "chrome/browser/ash/borealis/borealis_metrics.h"
 #include "chrome/browser/ash/borealis/borealis_service.h"
+#include "chrome/browser/ash/borealis/borealis_types.mojom.h"
 #include "chrome/browser/ash/borealis/borealis_util.h"
 #include "chrome/browser/ui/views/borealis/borealis_installer_error_dialog.h"
 #include "chrome/browser/ui/views/borealis/borealis_splash_screen_view.h"
@@ -22,7 +23,9 @@
 #include "ui/base/l10n/time_format.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
+
 namespace {
+
 // Returns the text to be used for a predicted completion time, which is
 // something like "starting up" or "3 mins remaining" depending on how
 // accurately we can predict.
@@ -42,6 +45,7 @@ std::string GetInstallationPredictionText(const base::Time& start_time,
 }
 
 }  // namespace
+
 namespace ash {
 
 BorealisInstallerPageHandler::BorealisInstallerPageHandler(
@@ -84,6 +88,10 @@ void BorealisInstallerPageHandler::ShutDown() {
           }));
 }
 
+void BorealisInstallerPageHandler::CancelInstall() {
+  borealis::BorealisService::GetForProfile(profile_)->Installer().Cancel();
+}
+
 void BorealisInstallerPageHandler::Launch() {
   // Installation starts the borealis VM, so the splash screen would normally
   // not show, therefore we need to show it manually here. Since this is
@@ -114,11 +122,11 @@ void BorealisInstallerPageHandler::OnProgressUpdated(double fraction_complete) {
 }
 
 void BorealisInstallerPageHandler::OnInstallationEnded(
-    borealis::BorealisInstallResult result,
+    borealis::mojom::InstallResult result,
     const std::string& error_description) {
-  if (result == borealis::BorealisInstallResult::kSuccess) {
+  if (result == borealis::mojom::InstallResult::kSuccess) {
     page_->OnInstallFinished();
-  } else if (result != borealis::BorealisInstallResult::kCancelled) {
+  } else if (result != borealis::mojom::InstallResult::kCancelled) {
     views::borealis::ShowInstallerErrorDialog(
         native_window_, result,
         base::BindOnce(&BorealisInstallerPageHandler::OnErrorDialogDismissed,
@@ -137,6 +145,10 @@ void BorealisInstallerPageHandler::OnErrorDialogDismissed(
       OnPageClosed();
       return;
   }
+}
+
+void BorealisInstallerPageHandler::RequestClosePage() {
+  page_->RequestClose();
 }
 
 }  // namespace ash

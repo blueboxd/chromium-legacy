@@ -142,7 +142,7 @@ FullSlotSpanAllocation GetFullSlotSpan(PartitionRoot& root,
   uintptr_t first = 0;
   uintptr_t last = 0;
   for (size_t i = 0; i < num_slots; ++i) {
-    void* ptr = root.AllocNoHooks(object_size, PartitionPageSize());
+    void* ptr = root.Alloc<partition_alloc::AllocFlags::kNoHooks>(object_size);
     EXPECT_TRUE(ptr);
     if (i == 0) {
       first = root.ObjectToSlotStart(ptr);
@@ -225,7 +225,7 @@ TEST_F(PartitionAllocPCScanTest, FirstObjectInQuarantine) {
       GetFullSlotSpan(root(), kAllocationSize);
   EXPECT_FALSE(IsInQuarantine(full_slot_span.first));
 
-  root().FreeNoHooks(full_slot_span.first);
+  root().Free<FreeFlags::kNoHooks>(full_slot_span.first);
   EXPECT_TRUE(IsInQuarantine(full_slot_span.first));
 }
 
@@ -236,7 +236,7 @@ TEST_F(PartitionAllocPCScanTest, LastObjectInQuarantine) {
       GetFullSlotSpan(root(), kAllocationSize);
   EXPECT_FALSE(IsInQuarantine(full_slot_span.last));
 
-  root().FreeNoHooks(full_slot_span.last);
+  root().Free<FreeFlags::kNoHooks>(full_slot_span.last);
   EXPECT_TRUE(IsInQuarantine(full_slot_span.last));
 }
 
@@ -388,7 +388,7 @@ TEST_F(PartitionAllocPCScanTest, DanglingReferenceFromFullPage) {
   // This allocation must go through the slow path and call SetNewActivePage(),
   // which will flush the full page from the active page list.
   void* value_buffer =
-      root().AllocNoHooks(sizeof(ValueList), PartitionPageSize());
+      root().Alloc<partition_alloc::AllocFlags::kNoHooks>(sizeof(ValueList));
 
   // Assert that the first and the last objects are in different slot spans but
   // in the same bucket.
@@ -662,7 +662,7 @@ TEST_F(PartitionAllocPCScanTest, DontScanUnusedRawSize) {
   // Make sure to commit more memory than requested to have slack for storing
   // dangling reference outside of the raw size.
   const size_t big_size = kMaxBucketed - SystemPageSize() + 1;
-  void* ptr = root().Alloc(big_size, nullptr);
+  void* ptr = root().Alloc(big_size);
 
   uintptr_t slot_start = root().ObjectToSlotStart(ptr);
   auto* slot_span = SlotSpanMetadata::FromSlotStart(slot_start);
@@ -691,9 +691,8 @@ TEST_F(PartitionAllocPCScanTest, PointersToGuardPages) {
     void* scan_bitmap;
     void* guard_page2;
   };
-
   auto* const pointers = static_cast<Pointers*>(
-      root().AllocNoHooks(sizeof(Pointers), PartitionPageSize()));
+      root().Alloc<partition_alloc::AllocFlags::kNoHooks>(sizeof(Pointers)));
 
   // Converting to slot start strips MTE tag.
   const uintptr_t super_page =

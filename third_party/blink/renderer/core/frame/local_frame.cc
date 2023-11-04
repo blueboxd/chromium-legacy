@@ -189,7 +189,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/source_location.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
-#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
@@ -1644,7 +1643,9 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
             insert_type,
             frame_token,
             client->GetDevToolsFrameToken(),
-            MakeGarbageCollected<LocalWindowProxyManager>(*this),
+            MakeGarbageCollected<LocalWindowProxyManager>(
+                page.GetAgentGroupScheduler().Isolate(),
+                *this),
             inheriting_agent_factory),
       frame_scheduler_(page.GetPageScheduler()->CreateFrameScheduler(
           this,
@@ -1672,7 +1673,7 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
   auto frame_tracking_result =
       GetLocalFramesMap().insert(FrameToken::Hasher()(GetFrameToken()), this);
   CHECK(frame_tracking_result.stored_value) << "Inserting a duplicate item.";
-  v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
+  v8::Isolate* isolate = page.GetAgentGroupScheduler().Isolate();
 
   // There is generally one probe sink per local frame tree, so for root frames
   // we create a new child sink and for child frames we propagate one from root.
@@ -2011,7 +2012,7 @@ ContentCaptureManager* LocalFrame::GetOrResetContentCaptureManager() {
   // It is a little bit odd that ContentCaptureManager is created or released on
   // demand, and that this is something that could be improved with an explicit
   // signal for creating / destroying content capture managers.
-  if (auto* content_capture_client = Client()->GetWebContentCaptureClient()) {
+  if (Client()->GetWebContentCaptureClient()) {
     if (!content_capture_manager_) {
       content_capture_manager_ =
           MakeGarbageCollected<ContentCaptureManager>(*this);
@@ -2719,19 +2720,6 @@ bool LocalFrame::SwapIn() {
   // Swap in `this`, which is a provisional frame to an existing frame.
   Frame* provisional_owner_frame = GetProvisionalOwnerFrame();
 
-  if (!IsLocalRoot()) {
-    if (auto* local_provisional_owner =
-            DynamicTo<LocalFrame>(provisional_owner_frame)) {
-      // For local roots, the initial probe sink should not be changed. For
-      // others, we use a provisional sink that needs to be swapped with that of
-      // the previous frame. The probes dispatched to provisional sink are lost,
-      // so no events are sent before swap in or after swap out.
-      std::swap(probe_sink_, local_provisional_owner->probe_sink_);
-    } else {
-      probe_sink_ = LocalFrameRoot().probe_sink_;
-    }
-    probe::FrameAttachedToParent(this, ad_script_from_frame_creation_stack_);
-  }
 
   // First, check if there's a previous main frame to be used for a main frame
   // LocalFrame <-> LocalFrame swap.
@@ -2766,6 +2754,38 @@ bool LocalFrame::SwapIn() {
   // frame can be a RemoteFrame or a LocalFrame (for non-main frame
   // LocalFrame <-> LocalFrame swap cases).
   CHECK_EQ(provisional_owner_frame->GetPage(), GetPage());
+
+  // When creating a provisional LocalFrame, a new provisional probe sink is
+  // created. Whether that probe sink is going to be used differs depending
+  // on the situation:
+  // - For local roots, that provisional probe sink should be used, as
+  //   local roots needs new probe sinks. So nothing needs to be done here.
+  // - For non-local-root LocalFrame <-> LocalFrame swap, reuse the previous
+  //   LocalFrame's probe sink.
+  // - For other cases, reuse the local root's probe sink.
+  // Note that the probes dispatched to provisional sink are lost, so no
+  // events are sent before swap in or after swap out.
+  if (!IsLocalRoot()) {
+    if (auto* local_provisional_owner =
+            DynamicTo<LocalFrame>(provisional_owner_frame)) {
+      // This is doing a LocalFrame <-> LocalFrame swap, so reuse the previous
+      // LocalFrame's probe sink through swapping below. The detaching/unloading
+      // of the previous document is done before we swap the probe sinks. This
+      // is to ensure that resources from the old document won't stay around and
+      // thus won't be be captured in the newly committed document's probe sink.
+      bool swap_result =
+          client->SwapIn(WebFrame::FromCoreFrame(provisional_owner_frame));
+      std::swap(probe_sink_, local_provisional_owner->probe_sink_);
+      return swap_result;
+    }
+
+    // This is a remote -> local swap, so just use the local root's probe sink.
+    probe_sink_ = LocalFrameRoot().probe_sink_;
+    // For remote -> local swap, Send a frameAttached event to keep the legacy
+    // behavior where we fire the frameAttached event on cross-site navigations.
+    probe::FrameAttachedToParent(this, ad_script_from_frame_creation_stack_);
+  }
+
   return client->SwapIn(WebFrame::FromCoreFrame(provisional_owner_frame));
 }
 
@@ -2773,8 +2793,12 @@ void LocalFrame::LoadJavaScriptURL(const KURL& url) {
   // Protect privileged pages against bookmarklets and other JavaScript
   // manipulations.
   if (SchemeRegistry::ShouldTreatURLSchemeAsNotAllowingJavascriptURLs(
-          GetDocument()->Url().Protocol()))
+          GetSecurityContext()
+              ->GetSecurityOrigin()
+              ->GetOriginOrPrecursorOriginIfOpaque()
+              ->Protocol())) {
     return;
+  }
 
   // TODO(mustaq): This is called only through the user typing a javascript URL
   // into the omnibox.  See https://crbug.com/1082900
@@ -3018,6 +3042,7 @@ void LocalFrame::DidBufferLoadWhileInBackForwardCache(size_t num_bytes) {
 }
 
 void LocalFrame::SetScaleFactor(float scale_factor) {
+  DCHECK(!GetDocument() || !GetDocument()->Printing());
   DCHECK(IsMainFrame());
 
   const PageScaleConstraints& constraints =
@@ -3595,17 +3620,6 @@ void LocalFrame::ScheduleNextServiceForScrollSnapshotClients() {
     if (client->ShouldScheduleNextService()) {
       View()->ScheduleAnimation();
       return;
-    }
-  }
-}
-
-void LocalFrame::CollectAnchorPositionScrollerIds(
-    Vector<cc::ElementId>* ids) const {
-  for (const auto& client : scroll_snapshot_clients_) {
-    if (const AnchorPositionScrollData* data =
-            DynamicTo<AnchorPositionScrollData>(client.Get());
-        data && data->IsActive()) {
-      ids->AppendVector(data->ScrollContainerIds());
     }
   }
 }

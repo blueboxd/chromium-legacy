@@ -20,6 +20,8 @@
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/permissions/features.h"
@@ -167,8 +169,11 @@ void PermissionContextBase::RequestPermission(
   content::PermissionResult result = GetPermissionStatus(
       rfh, request_data.requesting_origin, request_data.embedding_origin);
 
-  if (result.status == PermissionStatus::GRANTED ||
-      result.status == PermissionStatus::DENIED) {
+  bool status_ignorable = PermissionUtil::CanPermissionRequestIgnoreStatus(
+      request_data, result.source);
+
+  if (!status_ignorable && (result.status == PermissionStatus::GRANTED ||
+                            result.status == PermissionStatus::DENIED)) {
     switch (result.source) {
       case content::PermissionStatusSource::KILL_SWITCH:
         // Block the request and log to the developer console.
@@ -374,6 +379,41 @@ PermissionContextBase::UpdatePermissionStatusWithDeviceStatus(
     content::PermissionResult result,
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
+  const bool has_device_permission =
+      PermissionsClient::Get()->HasDevicePermission(content_settings_type());
+  const bool should_notify_observers =
+      last_has_device_permission_result_.has_value() &&
+      has_device_permission != last_has_device_permission_result_;
+
+  // We need to update |last_has_device_permission_result_| before calling
+  // |OnContentSettingChanged| to avoid causing a re-entrancy issue since the
+  // |OnContentSettingChanged| will likely end up calling |GetPermissionStatus|.
+  last_has_device_permission_result_ = has_device_permission;
+
+  if (should_notify_observers) {
+    NotifyObservers(ContentSettingsPattern::Wildcard(),
+                    ContentSettingsPattern::Wildcard(),
+                    ContentSettingsTypeSet(content_settings_type()));
+  }
+
+  // If the site content setting is ASK/BLOCKED the device-level permission
+  // won't affect it.
+  if (result.status != blink::mojom::PermissionStatus::GRANTED) {
+    return result;
+  }
+
+  // If the device-level permission is granted, it has no effect on the result.
+  if (has_device_permission) {
+    return result;
+  }
+
+  // Otherwise the result will be "ASK" if the browser can ask for the
+  // device-level permission, and "BLOCKED" otherwise.
+  result.status = PermissionsClient::Get()->CanRequestDevicePermission(
+                      content_settings_type())
+                      ? blink::mojom::PermissionStatus::ASK
+                      : blink::mojom::PermissionStatus::DENIED;
+
   return result;
 }
 
@@ -499,13 +539,7 @@ void PermissionContextBase::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsTypeSet content_type_set) {
-  if (!content_type_set.Contains(content_settings_type_))
-    return;
-
-  for (permissions::Observer& obs : permission_observers_) {
-    obs.OnPermissionChanged(primary_pattern, secondary_pattern,
-                            content_type_set);
-  }
+  NotifyObservers(primary_pattern, secondary_pattern, content_type_set);
 }
 
 void PermissionContextBase::AddObserver(
@@ -622,6 +656,20 @@ bool PermissionContextBase::PermissionAllowedByPermissionsPolicy(
     return true;
 
   return rfh->IsFeatureEnabled(permissions_policy_feature_);
+}
+
+void PermissionContextBase::NotifyObservers(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsTypeSet content_type_set) const {
+  if (!content_type_set.Contains(content_settings_type_)) {
+    return;
+  }
+
+  for (permissions::Observer& obs : permission_observers_) {
+    obs.OnPermissionChanged(primary_pattern, secondary_pattern,
+                            content_type_set);
+  }
 }
 
 }  // namespace permissions

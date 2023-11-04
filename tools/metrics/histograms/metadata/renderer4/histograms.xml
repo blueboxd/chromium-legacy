@@ -51,28 +51,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Renderer4.CompositorTouchScrollUpdateThread"
-    enum="ScrollThread" expires_after="M97">
-  <owner>flackr@chromium.org</owner>
-  <owner>input-dev@chromium.org</owner>
-  <summary>
-    Whether the scroll from touch is executed on main thread. Recorded once for
-    each scroll. Contains incomplete data from M85 to M89 inclusively.
-  </summary>
-</histogram>
-
-<histogram name="Renderer4.CompositorWheelScrollUpdateThread"
-    enum="ScrollThread" expires_after="M97">
-  <owner>flackr@chromium.org</owner>
-  <owner>input-dev@chromium.org</owner>
-  <summary>
-    Whether the scroll from mouse wheel is executed on main thread. Recorded
-    once for each scroll. Contains incomplete data from M85 to M89 inclusively.
-  </summary>
-</histogram>
-
 <histogram name="Renderer4.GpuImageDecodeState" enum="GpuImageUsageState"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>vmpstr@chromium.org</owner>
   <owner>thiabaud@google.com</owner>
   <summary>
@@ -135,7 +115,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer4.GpuRasterizationEnabled" enum="BooleanEnabled"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -145,7 +125,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Renderer4.ImageDecodeTaskDurationUs"
-    units="microseconds" expires_after="2024-01-14">
+    units="microseconds" expires_after="2024-03-17">
 <!-- Name completed by histogram_suffixes name="DecodedImageType" -->
 
 <!-- Name completed by histogram_suffixes name="OutOfRaster" -->
@@ -166,19 +146,6 @@ chromium-metrics-reviews@google.com.
     with low-resolution clocks (i.e. on Windows, ref.
     |TimeTicks::IsHighResolution()|). Such reports will cause this metric to
     have an abnormal distribution.
-  </summary>
-</histogram>
-
-<histogram base="true" name="Renderer4.ImageUploadTaskDurationUs"
-    units="microseconds" expires_after="2021-08-09">
-<!-- Name completed by histogram_suffixes name="DecodedImageType" -->
-
-  <owner>sashamcintosh@chromium.org</owner>
-  <owner>chromeos-gfx@google.com</owner>
-  <summary>
-    This metric records the duration of an image upload for the raster path in
-    the compositor. It is recorded every time we upload an image. The metric is
-    optionally suffixed by the image type (WebP, Jpeg, etc.) or OutOfRaster.
   </summary>
 </histogram>
 
@@ -267,7 +234,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer4.Renderer.RasterTaskTotalDuration"
-    units="microseconds" expires_after="2024-01-07">
+    units="microseconds" expires_after="2024-03-10">
   <owner>khushalsagar@chromium.org</owner>
   <owner>chrome-gpu@google.com</owner>
   <summary>
@@ -293,7 +260,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer4.ScrollingThread" enum="ScrollingThreadStatus"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
 <!-- Name completed by histogram_suffixes name="ScrollSourceDevice" -->
 
   <owner>bokan@chromium.org</owner>

@@ -495,8 +495,7 @@ ServerFieldType GetActualFieldType(const ServerFieldTypeSet& possible_types,
   if (collapsed_field_types.size() == 1)
     actual_type = *collapsed_field_types.begin();
 
-  DVLOG(2) << "Inferred Type: "
-           << AutofillType::ServerFieldTypeToString(actual_type);
+  DVLOG(2) << "Inferred Type: " << FieldTypeToStringPiece(actual_type);
   return actual_type;
 }
 
@@ -694,8 +693,7 @@ void LogPredictionQualityMetrics(
 
   const ServerFieldTypeSet& possible_types =
       metric_type == AutofillMetrics::TYPE_AUTOCOMPLETE_BASED
-          ? ServerFieldTypeSet{AutofillType(field.html_type(),
-                                            field.html_mode())
+          ? ServerFieldTypeSet{AutofillType(field.html_type())
                                    .GetStorableType()}
           : field.possible_types();
 
@@ -703,9 +701,8 @@ void LogPredictionQualityMetrics(
   ServerFieldType actual_type =
       GetActualFieldType(possible_types, predicted_type);
 
-  DVLOG(2) << "Predicted: "
-           << AutofillType::ServerFieldTypeToString(predicted_type) << "; "
-           << "Actual: " << AutofillType::ServerFieldTypeToString(actual_type);
+  DVLOG(2) << "Predicted: " << FieldTypeToStringPiece(predicted_type) << "; "
+           << "Actual: " << FieldTypeToStringPiece(actual_type);
 
   DCHECK_LE(predicted_type, UINT16_MAX);
   DCHECK_LE(actual_type, UINT16_MAX);
@@ -1708,119 +1705,6 @@ void AutofillMetrics::LogNumberOfEditedAutofilledFields(
   }
 }
 
-// static
-void AutofillMetrics::LogFieldFillingStats(
-    FormType form_type,
-    const FormGroupFillingStats& filling_stats) {
-  std::string histogram_prefix = base::StrCat(
-      {"Autofill.FieldFillingStats.", FormTypeToStringPiece(form_type), "."});
-
-  // Do not acquire metrics if autofill was not used in this form group.
-  if (filling_stats.TotalFilled() == 0)
-    return;
-
-  // Counts into those histograms are mutually exclusive.
-  base::UmaHistogramCounts100(base::StrCat({histogram_prefix, "Accepted"}),
-                              filling_stats.num_accepted);
-
-  base::UmaHistogramCounts100(
-      base::StrCat({histogram_prefix, "CorrectedToSameType"}),
-      filling_stats.num_corrected_to_same_type);
-
-  base::UmaHistogramCounts100(
-      base::StrCat({histogram_prefix, "CorrectedToDifferentType"}),
-      filling_stats.num_corrected_to_different_type);
-
-  base::UmaHistogramCounts100(
-      base::StrCat({histogram_prefix, "CorrectedToUnknownType"}),
-      filling_stats.num_corrected_to_unknown_type);
-
-  base::UmaHistogramCounts100(
-      base::StrCat({histogram_prefix, "CorrectedToEmpty"}),
-      filling_stats.num_corrected_to_empty);
-
-  base::UmaHistogramCounts100(
-      base::StrCat({histogram_prefix, "ManuallyFilledToSameType"}),
-      filling_stats.num_manually_filled_to_same_type);
-
-  base::UmaHistogramCounts100(
-      base::StrCat({histogram_prefix, "ManuallyFilledToDifferentType"}),
-      filling_stats.num_manually_filled_to_differt_type);
-
-  base::UmaHistogramCounts100(
-      base::StrCat({histogram_prefix, "ManuallyFilledToUnknownType"}),
-      filling_stats.num_manually_filled_to_unknown_type);
-
-  base::UmaHistogramCounts100(base::StrCat({histogram_prefix, "LeftEmpty"}),
-                              filling_stats.num_left_empty);
-
-  // Counts into those histograms are not mutually exclusive and a single field
-  // can contribute to multiple of those.
-  base::UmaHistogramCounts100(
-      base::StrCat({histogram_prefix, "TotalCorrected"}),
-      filling_stats.TotalCorrected());
-
-  base::UmaHistogramCounts100(base::StrCat({histogram_prefix, "TotalFilled"}),
-                              filling_stats.TotalFilled());
-
-  base::UmaHistogramCounts100(base::StrCat({histogram_prefix, "TotalUnfilled"}),
-                              filling_stats.TotalUnfilled());
-
-  base::UmaHistogramCounts100(
-      base::StrCat({histogram_prefix, "TotalManuallyFilled"}),
-      filling_stats.TotalManuallyFilled());
-
-  base::UmaHistogramCounts100(base::StrCat({histogram_prefix, "Total"}),
-                              filling_stats.Total());
-}
-
-// static
-void AutofillMetrics::LogFormFillingScore(
-    FormType form_type,
-    const FormGroupFillingStats& filling_stats) {
-  // Do not acquire metrics if Autofill was not used in this form group.
-  if (filling_stats.TotalFilled() == 0) {
-    return;
-  }
-
-  const int score =
-      2 * filling_stats.num_accepted - 3 * filling_stats.TotalCorrected() + 100;
-
-  // Make sure that the score is between 0 and 200 since we are only emitting to
-  // a histogram with equally distributed 201 buckets.
-  base::UmaHistogramCustomCounts(
-      base::StrCat(
-          {"Autofill.FormFillingScore.", FormTypeToStringPiece(form_type)}),
-      std::clamp(score, 1, 200), 1, 200, 200);
-}
-
-// static
-void AutofillMetrics::LogFormFillingComplexScore(
-    FormType form_type,
-    const FormGroupFillingStats& filling_stats) {
-  // Do not acquire metrics if Autofill was not used in this form group.
-  if (filling_stats.TotalFilled() == 0) {
-    return;
-  }
-
-  // Limit the number of accepted fields to 19 and the number of corrected
-  // fields to 9.
-  const size_t value_min = 0;
-
-  const size_t clamped_accepted = std::clamp(
-      filling_stats.num_accepted, value_min, static_cast<size_t>(19));
-  const size_t clamped_corrected = std::clamp(
-      filling_stats.TotalCorrected(), value_min, static_cast<size_t>(9));
-
-  const int complex_score = clamped_accepted * 10 + clamped_corrected;
-
-  // The metric is tracked to an histogram with 199 equally distributed buckets.
-  base::UmaHistogramCustomCounts(
-      base::StrCat({"Autofill.FormFillingComplexScore.",
-                    FormTypeToStringPiece(form_type)}),
-      complex_score, 1, 199, 199);
-}
-
 void AutofillMetrics::LogSectioningMetrics(
     const base::flat_map<Section, size_t>& fields_per_section) {
   constexpr base::StringPiece kBaseHistogramName = "Autofill.Sectioning.";
@@ -2282,14 +2166,13 @@ void AutofillMetrics::LogDeveloperEngagementUkm(
 }
 
 AutofillMetrics::FormInteractionsUkmLogger::FormInteractionsUkmLogger(
-    ukm::UkmRecorder* ukm_recorder,
-    const ukm::SourceId source_id)
-    : ukm_recorder_(ukm_recorder), source_id_(source_id) {}
+    AutofillClient* autofill_client,
+    ukm::UkmRecorder* ukm_recorder)
+    : autofill_client_(autofill_client), ukm_recorder_(ukm_recorder) {}
 
 ukm::builders::Autofill_CreditCardFill
-AutofillMetrics::FormInteractionsUkmLogger::CreateCreditCardFillBuilder()
-    const {
-  return ukm::builders::Autofill_CreditCardFill(source_id_);
+AutofillMetrics::FormInteractionsUkmLogger::CreateCreditCardFillBuilder() {
+  return ukm::builders::Autofill_CreditCardFill(GetSourceId());
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::Record(
@@ -2314,7 +2197,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogInteractedWithForm(
   if (!CanLog())
     return;
 
-  ukm::builders::Autofill_InteractedWithForm(source_id_)
+  ukm::builders::Autofill_InteractedWithForm(GetSourceId())
       .SetIsForCreditCard(is_for_credit_card)
       .SetLocalRecordTypeCount(local_record_type_count)
       .SetServerRecordTypeCount(server_record_type_count)
@@ -2330,7 +2213,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogSuggestionsShown(
   if (!CanLog())
     return;
 
-  ukm::builders::Autofill_SuggestionsShown(source_id_)
+  ukm::builders::Autofill_SuggestionsShown(GetSourceId())
       .SetHeuristicType(static_cast<int>(field.heuristic_type()))
       .SetHtmlFieldType(static_cast<int>(field.html_type()))
       .SetServerType(static_cast<int>(field.server_type()))
@@ -2355,7 +2238,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogDidFillSuggestion(
   bool is_for_credit_card =
       absl::holds_alternative<CreditCard::RecordType>(record_type);
 
-  ukm::builders::Autofill_SuggestionFilled(source_id_)
+  ukm::builders::Autofill_SuggestionFilled(GetSourceId())
       .SetRecordType(is_for_credit_card
                          ? base::to_underlying(
                                absl::get<CreditCard::RecordType>(record_type))
@@ -2374,7 +2257,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::
   if (!CanLog())
     return;
 
-  ukm::builders::Autofill_EditedAutofilledFieldAtSubmission(source_id_)
+  ukm::builders::Autofill_EditedAutofilledFieldAtSubmission(GetSourceId())
       .SetFieldSignature(HashFieldSignature(field.GetFieldSignature()))
       .SetFormSignature(HashFormSignature(form.form_signature()))
       .SetOverallType(static_cast<int64_t>(field.Type().GetStorableType()))
@@ -2387,7 +2270,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogTextFieldDidChange(
   if (!CanLog())
     return;
 
-  ukm::builders::Autofill_TextFieldDidChange(source_id_)
+  ukm::builders::Autofill_TextFieldDidChange(GetSourceId())
       .SetFormSignature(HashFormSignature(form.form_signature()))
       .SetFieldSignature(HashFieldSignature(field.GetFieldSignature()))
       .SetFieldTypeGroup(static_cast<int>(field.Type().group()))
@@ -2409,7 +2292,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFieldFillStatus(
   if (!CanLog())
     return;
 
-  ukm::builders::Autofill_FieldFillStatus(source_id_)
+  ukm::builders::Autofill_FieldFillStatus(GetSourceId())
       .SetMillisecondsSinceFormParsed(
           MillisecondsSinceFormParsed(form.form_parsed_timestamp()))
       .SetFormSignature(HashFormSignature(form.form_signature()))
@@ -2434,7 +2317,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFieldType(
   if (!CanLog())
     return;
 
-  ukm::builders::Autofill_FieldTypeValidation(source_id_)
+  ukm::builders::Autofill_FieldTypeValidation(GetSourceId())
       .SetMillisecondsSinceFormParsed(
           MillisecondsSinceFormParsed(form_parsed_timestamp))
       .SetFormSignature(HashFormSignature(form_signature))
@@ -2471,7 +2354,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::
 
   OptionalBoolean was_autofilled = OptionalBoolean::kUndefined;
   OptionalBoolean had_value_before_filling = OptionalBoolean::kUndefined;
-  DenseSet<SkipStatus> autofill_skipped_status;
+  DenseSet<FieldFillingSkipReason> autofill_skipped_status;
   size_t autofill_count = 0;
 
   OptionalBoolean user_typed_into_field = OptionalBoolean::kFalse;
@@ -2660,7 +2543,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::
                           has_value_after_typing == OptionalBoolean::kTrue);
   }
 
-  ukm::builders::Autofill2_FieldInfo builder(source_id_);
+  ukm::builders::Autofill2_FieldInfo builder(GetSourceId());
   builder
       .SetFormSessionIdentifier(
           AutofillMetrics::FormGlobalIdToHash64Bit(form.global_id()))
@@ -2751,6 +2634,49 @@ void AutofillMetrics::FormInteractionsUkmLogger::
   builder.Record(ukm_recorder_);
 }
 
+// static
+void AutofillMetrics::LogAutofillFieldInfoAfterSubmission(
+    ukm::UkmRecorder* ukm_recorder,
+    ukm::SourceId source_id,
+    const FormStructure& form,
+    const base::TimeTicks& form_submitted_timestamp) {
+  for (const auto& field : form) {
+    // The possible field submitted types determined by comparing the submitted
+    // value in the field with the data stored in the Autofill server. We will
+    // have at most three possible field submitted types.
+    ServerFieldType submitted_type1 = UNKNOWN_TYPE;
+
+    ukm::builders::Autofill2_FieldInfoAfterSubmission builder(source_id);
+    builder
+        .SetFormSessionIdentifier(
+            AutofillMetrics::FormGlobalIdToHash64Bit(form.global_id()))
+        .SetFieldSessionIdentifier(
+            AutofillMetrics::FieldGlobalIdToHash64Bit(field->global_id()));
+
+    const ServerFieldTypeSet& type_set = field->possible_types();
+    if (!type_set.empty()) {
+      auto type = type_set.begin();
+      submitted_type1 = *type;
+      if (type_set.size() >= 2) {
+        builder.SetSubmittedType2(*++type);
+      }
+      if (type_set.size() >= 3) {
+        builder.SetSubmittedType3(*++type);
+      }
+    }
+
+    // TODO(crbug.com/1325851): Modify the enum object of SubmissionSource by
+    // assigning values (= 0, = 1, ...) and adding a comment to not change it.
+    builder.SetSubmittedType1(submitted_type1)
+        .SetSubmissionSource(static_cast<int>(form.submission_source()))
+        .SetMillisecondsFromFormParsedUntilSubmission(
+            ukm::GetSemanticBucketMinForDurationTiming(
+                (form_submitted_timestamp - form.form_parsed_timestamp())
+                    .InMilliseconds()))
+        .Record(ukm_recorder);
+  }
+}
+
 void AutofillMetrics::FormInteractionsUkmLogger::
     LogAutofillFormSummaryAtFormRemove(
         const FormStructure& form_structure,
@@ -2764,7 +2690,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::
   static_assert(form_events.data().size() == 2U,
                 "If you add a new form event, you need to create a new "
                 "AutofillFormEvents metric in Autofill2.FormSummary");
-  ukm::builders::Autofill2_FormSummary builder(source_id_);
+  ukm::builders::Autofill2_FormSummary builder(GetSourceId());
   builder
       .SetFormSessionIdentifier(
           AutofillMetrics::FormGlobalIdToHash64Bit(form_structure.global_id()))
@@ -2801,7 +2727,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::
   if (!CanLog())
     return;
 
-  ukm::builders::Autofill_HiddenRepresentationalFieldSkipDecision(source_id_)
+  ukm::builders::Autofill_HiddenRepresentationalFieldSkipDecision(GetSourceId())
       .SetFormSignature(HashFormSignature(form.form_signature()))
       .SetFieldSignature(HashFieldSignature(field.GetFieldSignature()))
       .SetFieldTypeGroup(static_cast<int>(field.Type().group()))
@@ -2822,7 +2748,8 @@ void AutofillMetrics::FormInteractionsUkmLogger::
   if (!CanLog())
     return;
 
-  ukm::builders::Autofill_RepeatedServerTypePredictionRationalized(source_id_)
+  ukm::builders::Autofill_RepeatedServerTypePredictionRationalized(
+      GetSourceId())
       .SetFormSignature(HashFormSignature(form_signature))
       .SetFieldSignature(HashFieldSignature(field.GetFieldSignature()))
       .SetFieldTypeGroup(static_cast<int>(field.Type().group()))
@@ -2838,10 +2765,17 @@ void AutofillMetrics::FormInteractionsUkmLogger::
 void AutofillMetrics::FormInteractionsUkmLogger::LogSectioningHash(
     FormSignature form_signature,
     uint32_t sectioning_signature) {
-  ukm::builders::Autofill_Sectioning(source_id_)
+  ukm::builders::Autofill_Sectioning(GetSourceId())
       .SetFormSignature(HashFormSignature(form_signature))
       .SetSectioningSignature(sectioning_signature % 1024)
       .Record(ukm_recorder_);
+}
+
+ukm::SourceId AutofillMetrics::FormInteractionsUkmLogger::GetSourceId() {
+  if (!source_id_.has_value()) {
+    source_id_ = autofill_client_->GetUkmSourceId();
+  }
+  return *source_id_;
 }
 
 int64_t AutofillMetrics::FormTypesToBitVector(
@@ -2888,7 +2822,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
   if (!CanLog())
     return;
 
-  ukm::builders::Autofill_FormSubmitted builder(source_id_);
+  ukm::builders::Autofill_FormSubmitted builder(GetSourceId());
   builder.SetAutofillFormSubmittedState(static_cast<int>(state))
       .SetIsForCreditCard(is_for_credit_card)
       .SetHasUpiVpaField(has_upi_vpa_field)
@@ -2922,7 +2856,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogKeyMetrics(
   if (!CanLog())
     return;
 
-  ukm::builders::Autofill_KeyMetrics builder(source_id_);
+  ukm::builders::Autofill_KeyMetrics builder(GetSourceId());
   builder.SetFillingReadiness(data_to_fill_available)
       .SetFillingAssistance(suggestion_filled)
       .SetFormTypes(FormTypesToBitVector(form_types))
@@ -2952,7 +2886,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFormEvent(
   if (form_parsed_timestamp.is_null())
     return;
 
-  ukm::builders::Autofill_FormEvent builder(source_id_);
+  ukm::builders::Autofill_FormEvent builder(GetSourceId());
   builder.SetAutofillFormEvent(static_cast<int>(form_event))
       .SetFormTypes(FormTypesToBitVector(form_types))
       .SetMillisecondsSinceFormParsed(

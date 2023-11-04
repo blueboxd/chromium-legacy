@@ -49,15 +49,15 @@ base::Time GetNextReportTime(base::Time last_report_time) {
 }
 
 // Returns a list of preferred segment info for each segment ID in the list.
-std::map<SegmentId, proto::SegmentInfo> GetPreferredSegmentInfo(
+std::map<SegmentId, const proto::SegmentInfo*> GetPreferredSegmentInfo(
     std::unique_ptr<SegmentInfoDatabase::SegmentInfoList> segment_list) {
-  std::map<SegmentId, proto::SegmentInfo> result;
+  std::map<SegmentId, const proto::SegmentInfo*> result;
   for (auto& segment_id_and_info : *segment_list) {
     SegmentId segment_id = segment_id_and_info.first;
     auto it = result.find(segment_id);
-    if (it == result.end() || segment_id_and_info.second.model_source() !=
+    if (it == result.end() || segment_id_and_info.second->model_source() !=
                                   proto::ModelSource::DEFAULT_MODEL_SOURCE) {
-      result[segment_id] = std::move(segment_id_and_info.second);
+      result[segment_id] = segment_id_and_info.second;
     }
   }
   return result;
@@ -140,11 +140,11 @@ void TrainingDataCollectorImpl::OnGetSegmentsInfoList(
     std::unique_ptr<SegmentInfoDatabase::SegmentInfoList> segments) {
   histogram_signal_handler_->AddObserver(this);
   user_action_signal_handler_->AddObserver(this);
-  std::map<SegmentId, proto::SegmentInfo> segment_list =
+  std::map<SegmentId, const proto::SegmentInfo*> segment_list =
       GetPreferredSegmentInfo(std::move(segments));
 
   for (const auto& segment : segment_list) {
-    const proto::SegmentInfo& segment_info = segment.second;
+    const proto::SegmentInfo& segment_info = *segment.second;
 
     // Skip the segment if training data is not needed.
     if (!SegmentationUkmHelper::GetInstance()->IsUploadRequested(
@@ -250,11 +250,9 @@ void TrainingDataCollectorImpl::OnHistogramSignalUpdated(
       if (accepted_enum_ids.empty() ||
           base::Contains(accepted_enum_ids, sample)) {
         // TODO (ritikagup@) : Add handling for default models, if required.
-        segment_info_database_->GetSegmentInfo(
-            segment_id, proto::ModelSource::SERVER_MODEL_SOURCE,
-            base::BindOnce(
-                &TrainingDataCollectorImpl::OnUmaUpdatedReportForSegmentInfo,
-                weak_ptr_factory_.GetWeakPtr(), param));
+        const SegmentInfo* info = segment_info_database_->GetCachedSegmentInfo(
+            segment_id, proto::ModelSource::SERVER_MODEL_SOURCE);
+        OnUmaUpdatedReportForSegmentInfo(param, info);
       }
     }
   }
@@ -270,11 +268,9 @@ void TrainingDataCollectorImpl::OnUserAction(const std::string& user_action,
     auto segments = it->second;
     for (auto segment : segments) {
       // TODO (ritikagup@) : Add handling for default models, if required.
-      segment_info_database_->GetSegmentInfo(
-          segment, ModelSource::SERVER_MODEL_SOURCE,
-          base::BindOnce(
-              &TrainingDataCollectorImpl::OnUmaUpdatedReportForSegmentInfo,
-              weak_ptr_factory_.GetWeakPtr(), absl::nullopt));
+      const SegmentInfo* info = segment_info_database_->GetCachedSegmentInfo(
+          segment, ModelSource::SERVER_MODEL_SOURCE);
+      OnUmaUpdatedReportForSegmentInfo(absl::nullopt, info);
     }
   }
 }
@@ -286,19 +282,19 @@ void TrainingDataCollectorImpl::SetSamplingRateForTesting(
 
 void TrainingDataCollectorImpl::OnUmaUpdatedReportForSegmentInfo(
     const absl::optional<ImmediateCollectionParam>& param,
-    absl::optional<proto::SegmentInfo> segment) {
-  if (segment.has_value()) {
+    const proto::SegmentInfo* segment) {
+  if (segment) {
     absl::optional<TrainingRequestId> request_id =
-        training_cache_->GetRequestId(segment.value().segment_id());
+        training_cache_->GetRequestId(segment->segment_id());
     if (request_id.has_value()) {
       RecordTrainingDataCollectionEvent(
-          segment.value().segment_id(),
+          segment->segment_id(),
           stats::TrainingDataCollectionEvent::kHistogramTriggerHit);
       VLOG(1) << "Observation ended for "
-              << proto::SegmentId_Name(segment.value().segment_id()) << " "
+              << proto::SegmentId_Name(segment->segment_id()) << " "
               << (param ? param->output_metric_name : "");
 
-      OnObservationTrigger(param, request_id.value(), segment.value(),
+      OnObservationTrigger(param, request_id.value(), *segment,
                            base::DoNothing());
     }
   }
@@ -472,14 +468,14 @@ void TrainingDataCollectorImpl::CollectTrainingData(
     SuccessCallback callback) {
   auto available_segments =
       segment_info_database_->GetSegmentInfoForBothModels({segment_id});
-  std::map<SegmentId, proto::SegmentInfo> preferred_segment_infos =
+  std::map<SegmentId, const proto::SegmentInfo*> preferred_segment_infos =
       GetPreferredSegmentInfo(std::move(available_segments));
   auto it = preferred_segment_infos.find(segment_id);
   // If no segment info list has been found.
   if (it == preferred_segment_infos.end()) {
     return;
   }
-  auto segment_info = std::move(it->second);
+  const auto* segment_info = it->second;
 
   absl::optional<TrainingDataCollector::ImmediateCollectionParam>
       immediate_param;
@@ -492,7 +488,7 @@ void TrainingDataCollectorImpl::CollectTrainingData(
   }
   VLOG(1) << "Observation ended for " << proto::SegmentId_Name(segment_id)
           << " " << (param.output_metric ? param.output_metric->first : "");
-  OnObservationTrigger(immediate_param, request_id, segment_info,
+  OnObservationTrigger(immediate_param, request_id, *segment_info,
                        std::move(callback));
 }
 
@@ -530,7 +526,7 @@ void TrainingDataCollectorImpl::OnGetSegmentInfoAtDecisionTime(
     return;
   }
 
-  const proto::SegmentInfo& segment_info = it->second;
+  const proto::SegmentInfo& segment_info = *it->second;
 
   if (!CanReportTrainingData(segment_info, /*include_outputs*/ false)) {
     RecordTrainingDataCollectionEvent(

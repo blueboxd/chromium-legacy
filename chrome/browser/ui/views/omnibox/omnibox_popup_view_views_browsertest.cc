@@ -35,6 +35,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/color/color_provider_utils.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/events/test/event_generator.h"
@@ -163,17 +164,12 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupViewViewsTest, PopupAlignment) {
   EXPECT_EQ(popup_rect.right(), alignment_rect.right());
 }
 
-// TODO(crbug.com/1464282): Bug in chromeOS using the off-white background.
-#if BUILDFLAG(IS_CHROMEOS)
-#define MAYBE_ThemeIntegration DISABLED_ThemeIntegration
-#else
-#define MAYBE_ThemeIntegration ThemeIntegration
-#endif
 // Integration test for omnibox popup theming in regular.
-IN_PROC_BROWSER_TEST_F(OmniboxPopupViewViewsTest, MAYBE_ThemeIntegration) {
+IN_PROC_BROWSER_TEST_F(OmniboxPopupViewViewsTest, ThemeIntegration) {
   ThemeService* theme_service =
       ThemeServiceFactory::GetForProfile(browser()->profile());
   UseDefaultTheme();
+  SetUseDeviceTheme(false);
 
   SetUseDarkColor(true);
   const SkColor selection_color_dark = GetSelectedColor(browser());
@@ -224,24 +220,19 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupViewViewsTest, MAYBE_ThemeIntegration) {
 #endif  // BUILDFLAG(IS_LINUX)
 }
 
-// TODO(crbug.com/1464282): Bug in chromeOS using the wrong colors default in
-//   dark mode.
-#if BUILDFLAG(IS_CHROMEOS)
-#define MAYBE_ThemeIntegrationInIncognito DISABLED_ThemeIntegrationInIncognito
-#else
-#define MAYBE_ThemeIntegrationInIncognito ThemeIntegrationInIncognito
-#endif
-// Integration test for omnibox popup theming in Incognito.
-IN_PROC_BROWSER_TEST_F(OmniboxPopupViewViewsTest,
-                       MAYBE_ThemeIntegrationInIncognito) {
+IN_PROC_BROWSER_TEST_F(OmniboxPopupViewViewsTest, ThemeIntegrationInIncognito) {
   ThemeService* theme_service =
       ThemeServiceFactory::GetForProfile(browser()->profile());
   UseDefaultTheme();
+  SetUseDeviceTheme(false);
 
   SetUseDarkColor(true);
+  SetIsGrayscale(true);
+
   const SkColor selection_color_dark = GetSelectedColor(browser());
 
   SetUseDarkColor(false);
+  SetIsGrayscale(false);
 
   // Install a theme (in both browsers, since it's the same profile).
   extensions::ChromeTestExtensionLoader loader(browser()->profile());
@@ -361,7 +352,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupViewViewsTest,
   match.contents_class = {{0, 0}};
   match.description_class = {{0, 0}};
   matches.push_back(match);
-  controller()->autocomplete_controller()->result_.AppendMatches(matches);
+  controller()->autocomplete_controller()->internal_result_.AppendMatches(
+      matches);
   popup_view()->UpdatePopupAppearance();
   EXPECT_EQ(observer.text_changed_on_listboxoption_count(), 0);
 
@@ -437,7 +429,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupViewViewsTest,
   match.has_tab_match = true;
   match.actions.push_back(base::MakeRefCounted<TabSwitchAction>(GURL()));
   matches.push_back(match);
-  controller()->autocomplete_controller()->result_.AppendMatches(matches);
+  controller()->autocomplete_controller()->internal_result_.AppendMatches(
+      matches);
   controller()->autocomplete_controller()->NotifyChanged();
   popup_view()->UpdatePopupAppearance();
 
@@ -506,7 +499,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupViewViewsTest,
   match.allowed_to_be_default_match = true;
 
   AutocompleteResult& results =
-      controller()->autocomplete_controller()->result_;
+      controller()->autocomplete_controller()->internal_result_;
   ACMatches matches;
   matches.push_back(match);
   results.AppendMatches(matches);

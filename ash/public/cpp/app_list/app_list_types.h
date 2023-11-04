@@ -141,6 +141,7 @@ struct ASH_PUBLIC_EXPORT AppListItemMetadata {
 
   gfx::ImageSkia icon;                  // The icon of this item.
   SkColor badge_color = SK_ColorWHITE;  // Notification badge color.
+  gfx::ImageSkia badge_icon;            // The badge icon for the item.
 
   // Whether the app was installed this session and has not yet been launched.
   bool is_new_install = false;
@@ -465,7 +466,9 @@ enum class SystemInfoAnswerCardDisplayType {
 
 // The categories for launcher search controls.
 enum class AppListSearchControlCategory {
-  kCannotToggle = 0,  // default value to indicate it is non-toggleable
+  kMinValue = 0,
+
+  kCannotToggle = kMinValue,  // default value to indicate it is non-toggleable
   kApps = 1,
   kAppShortcuts = 2,
   kFiles = 3,
@@ -474,6 +477,8 @@ enum class AppListSearchControlCategory {
   kImages = 6,
   kPlayStore = 7,
   kWeb = 8,
+
+  kMaxValue = kWeb
 };
 
 // Gets the pref name strings used for the app list control category preference
@@ -687,14 +692,22 @@ class ASH_PUBLIC_EXPORT SearchResultTextItem {
   OverflowBehavior GetOverflowBehavior() const;
   SearchResultTextItem& SetOverflowBehavior(OverflowBehavior overflow_behavior);
 
+  bool GetAlternateIconAndTextStyling() const;
+  SearchResultTextItem& SetAlternateIconAndTextStyling(
+      bool alternate_icon_text_code_styling);
+
  private:
   SearchResultTextItemType item_type_;
-  // used for type SearchResultTextItemType::kString.
+  // Used for type SearchResultTextItemType::kString.
   absl::optional<std::u16string> raw_text_;
   absl::optional<SearchResultTags> text_tags_;
-  // used for type SearchResultTextItemType::kIconCode.
+  // Used for type SearchResultTextItemType::kIconCode.
   absl::optional<IconCode> icon_code_;
-  // used for type SearchResultTextItemType::kCustomIcon.
+  // Used for type SearchResultTextItemType::kIconCode and
+  // SearchResultTextItemType::kString. Alternate styling is used to distinguish
+  // regular keys such as 'c' and 'v' from 'ctrl' and 'alt'.
+  bool alternate_icon_text_code_styling_ = false;
+  // Used for type SearchResultTextItemType::kCustomIcon.
   absl::optional<gfx::ImageSkia> raw_image_;
   // Behavior of the text item when there is not enough space to show it in the
   // UI. only applicable to SearchResultTextItemType::kString.
@@ -792,9 +805,6 @@ struct ASH_PUBLIC_EXPORT SearchResultMetadata {
 
   // A score to determine the result display order.
   double display_score = 0;
-
-  // Whether this is searched from Omnibox.
-  bool is_omnibox_search = false;
 
   // Whether this result is a recommendation.
   bool is_recommendation = false;

@@ -9,20 +9,21 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/input_device_settings_controller.h"
+#include "ash/public/cpp/test/mock_input_device_settings_controller.h"
 #include "ash/public/mojom/input_device_settings.mojom-forward.h"
 #include "ash/public/mojom/input_device_settings.mojom-shared.h"
 #include "ash/public/mojom/input_device_settings.mojom.h"
-#include "base/containers/cxx20_erase_vector.h"
-#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/webui/settings/ash/input_device_settings/input_device_settings_provider.mojom.h"
-#include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/clone_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
+#include "ui/views/test/views_test_base.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash::settings {
 namespace {
@@ -33,6 +34,7 @@ const ::ash::mojom::Keyboard kKeyboard1 =
                            /*device_key=*/"fake-device-key1",
                            /*meta_key=*/::ash::mojom::MetaKey::kLauncher,
                            /*modifier_keys=*/{},
+                           /*top_row_action_keys=*/{},
                            ::ash::mojom::KeyboardSettings::New());
 const ::ash::mojom::Keyboard kKeyboard2 =
     ::ash::mojom::Keyboard(/*name=*/"Logitech K580",
@@ -41,6 +43,7 @@ const ::ash::mojom::Keyboard kKeyboard2 =
                            /*device_key=*/"fake-device-key2",
                            /*meta_key=*/::ash::mojom::MetaKey::kExternalMeta,
                            /*modifier_keys=*/{},
+                           /*top_row_action_keys=*/{},
                            ::ash::mojom::KeyboardSettings::New());
 const ::ash::mojom::Keyboard kKeyboard3 =
     ::ash::mojom::Keyboard(/*name=*/"HP 910 White Bluetooth Keyboard",
@@ -49,6 +52,7 @@ const ::ash::mojom::Keyboard kKeyboard3 =
                            /*device_key=*/"fake-device-key3",
                            /*meta_key=*/::ash::mojom::MetaKey::kExternalMeta,
                            /*modifier_keys=*/{},
+                           /*top_row_action_keys=*/{},
                            ::ash::mojom::KeyboardSettings::New());
 const ::ash::mojom::Touchpad kTouchpad1 =
     ::ash::mojom::Touchpad(/*name=*/"test touchpad",
@@ -88,6 +92,19 @@ const ::ash::mojom::Mouse kMouse2 =
                         /*id=*/8,
                         /*device_key=*/"fake-device-key8",
                         ::ash::mojom::MouseSettings::New());
+const ::ash::mojom::GraphicsTablet kGraphicsTablet1 =
+    ::ash::mojom::GraphicsTablet(
+        /*name=*/"Wacom Intuos S",
+        /*id=*/9,
+        /*device_key=*/"fake-device-key9",
+        ::ash::mojom::GraphicsTabletSettings::New());
+const ::ash::mojom::GraphicsTablet kGraphicsTablet2 =
+    ::ash::mojom::GraphicsTablet(
+        /*name=*/"Huion H1060P",
+        /*id=*/10,
+        /*device_key=*/"fake-device-key10",
+        ::ash::mojom::GraphicsTabletSettings::New());
+
 template <bool sorted = false, typename T>
 void ExpectListsEqual(const std::vector<T>& expected_list,
                       const std::vector<T>& actual_list) {
@@ -208,7 +225,52 @@ class FakeMouseSettingsObserver : public mojom::MouseSettingsObserver {
   int num_times_mouse_policies_updated_ = 0;
 };
 
-class FakeInputDeviceSettingsController : public InputDeviceSettingsController {
+class FakeGraphicsTabletSettingsObserver
+    : public mojom::GraphicsTabletSettingsObserver {
+ public:
+  void OnGraphicsTabletListUpdated(
+      std::vector<::ash::mojom::GraphicsTabletPtr> graphics_tablets) override {
+    graphics_tablets_ = std::move(graphics_tablets);
+    ++num_times_graphics_tablet_list_updated_;
+  }
+
+  const std::vector<::ash::mojom::GraphicsTabletPtr>& graphics_tablets() {
+    return graphics_tablets_;
+  }
+
+  int num_times_graphics_tablet_list_updated() {
+    return num_times_graphics_tablet_list_updated_;
+  }
+  mojo::Receiver<mojom::GraphicsTabletSettingsObserver> receiver{this};
+
+ private:
+  std::vector<::ash::mojom::GraphicsTabletPtr> graphics_tablets_;
+  int num_times_graphics_tablet_list_updated_ = 0;
+};
+
+class FakeButtonPressObserver : public mojom::ButtonPressObserver {
+ public:
+  void OnButtonPressed(::ash::mojom::ButtonPtr button) override {
+    last_pressed_button_ = std::move(button);
+  }
+
+  bool has_last_pressed_button() {
+    return last_pressed_button_.get() != nullptr;
+  }
+
+  const ::ash::mojom::Button& last_pressed_button() {
+    DCHECK(last_pressed_button_);
+    return *last_pressed_button_;
+  }
+
+  mojo::Receiver<mojom::ButtonPressObserver> receiver{this};
+
+ private:
+  ::ash::mojom::ButtonPtr last_pressed_button_;
+};
+
+class FakeInputDeviceSettingsController
+    : public MockInputDeviceSettingsController {
  public:
   // InputDeviceSettingsController:
   std::vector<::ash::mojom::KeyboardPtr> GetConnectedKeyboards() override {
@@ -227,21 +289,6 @@ class FakeInputDeviceSettingsController : public InputDeviceSettingsController {
   std::vector<::ash::mojom::GraphicsTabletPtr> GetConnectedGraphicsTablets()
       override {
     return mojo::Clone(graphics_tablets_);
-  }
-  const ::ash::mojom::KeyboardSettings* GetKeyboardSettings(
-      DeviceId id) override {
-    return nullptr;
-  }
-  const ::ash::mojom::TouchpadSettings* GetTouchpadSettings(
-      DeviceId id) override {
-    return nullptr;
-  }
-  const ::ash::mojom::MouseSettings* GetMouseSettings(DeviceId id) override {
-    return nullptr;
-  }
-  const ::ash::mojom::PointingStickSettings* GetPointingStickSettings(
-      DeviceId id) override {
-    return nullptr;
   }
   const ::ash::mojom::KeyboardPolicies& GetKeyboardPolicies() override {
     return *keyboard_policies_;
@@ -273,14 +320,16 @@ class FakeInputDeviceSettingsController : public InputDeviceSettingsController {
       ::ash::mojom::PointingStickSettingsPtr settings) override {
     ++num_times_set_pointing_stick_settings_called_;
   }
-  // TODO(wangdanny): Implement SetGraphicsTabletSettings.
   void SetGraphicsTabletSettings(
       DeviceId id,
       ::ash::mojom::GraphicsTabletSettingsPtr settings) override {
-    NOTIMPLEMENTED();
+    ++num_times_set_graphics_tablet_settings_called_;
   }
 
-  void OnLoginScreenFocusedPodChanged(const AccountId& account_id) override {}
+  void StartObservingButtons(DeviceId id) override {
+    observed_currently_ = true;
+  }
+  void StopObservingButtons() override { observed_currently_ = false; }
 
   void AddKeyboard(::ash::mojom::KeyboardPtr keyboard) {
     keyboards_.push_back(std::move(keyboard));
@@ -353,6 +402,22 @@ class FakeInputDeviceSettingsController : public InputDeviceSettingsController {
     pointing_sticks_.erase(iter);
     observer_->OnPointingStickDisconnected(*temp_pointing_stick);
   }
+  void AddGraphicsTablet(::ash::mojom::GraphicsTabletPtr graphics_tablet) {
+    graphics_tablets_.push_back(std::move(graphics_tablet));
+    observer_->OnGraphicsTabletConnected(*graphics_tablets_.back());
+  }
+  void RemoveGraphicsTablet(uint32_t device_id) {
+    auto iter = base::ranges::find_if(graphics_tablets_,
+                                      [device_id](const auto& graphics_tablet) {
+                                        return graphics_tablet->id == device_id;
+                                      });
+    if (iter == graphics_tablets_.end()) {
+      return;
+    }
+    auto temp_pointing_stick = std::move(*iter);
+    graphics_tablets_.erase(iter);
+    observer_->OnGraphicsTabletDisconnected(*temp_pointing_stick);
+  }
   int num_times_restore_default_keyboard_remappings_called() {
     return num_times_restore_default_keyboard_remappings_called_;
   }
@@ -368,6 +433,10 @@ class FakeInputDeviceSettingsController : public InputDeviceSettingsController {
   int num_times_set_touchpad_settings_called() {
     return num_times_set_touchpad_settings_called_;
   }
+  int num_times_set_graphics_tablet_settings_called() {
+    return num_times_set_graphics_tablet_settings_called_;
+  }
+  bool observed_currently() { return observed_currently_; }
 
  private:
   std::vector<::ash::mojom::KeyboardPtr> keyboards_;
@@ -386,26 +455,38 @@ class FakeInputDeviceSettingsController : public InputDeviceSettingsController {
   int num_times_set_pointing_stick_settings_called_ = 0;
   int num_times_set_mouse_settings_called_ = 0;
   int num_times_set_touchpad_settings_called_ = 0;
+  int num_times_set_graphics_tablet_settings_called_ = 0;
+  bool observed_currently_ = false;
 };
 
 }  // namespace
 
-class InputDeviceSettingsProviderTest : public testing::Test {
+class InputDeviceSettingsProviderTest : public views::ViewsTestBase {
  public:
   InputDeviceSettingsProviderTest() = default;
   ~InputDeviceSettingsProviderTest() override = default;
 
   void SetUp() override {
     feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
-    feature_list_->InitAndEnableFeature(features::kInputDeviceSettingsSplit);
-
+    feature_list_->InitWithFeatures({features::kInputDeviceSettingsSplit,
+                                     features::kPeripheralCustomization},
+                                    {});
+    views::ViewsTestBase::SetUp();
+    widget_ = CreateTestWidget();
+    widget_->Show();
+    scoped_resetter_ = std::make_unique<
+        InputDeviceSettingsController::ScopedResetterForTest>();
     controller_ = std::make_unique<FakeInputDeviceSettingsController>();
     provider_ = std::make_unique<InputDeviceSettingsProvider>();
+    provider_->SetWidgetForTesting(widget_.get());
   }
 
   void TearDown() override {
     provider_.reset();
     controller_.reset();
+    scoped_resetter_.reset();
+    widget_.reset();
+    views::ViewsTestBase::TearDown();
     feature_list_.reset();
   }
 
@@ -413,7 +494,9 @@ class InputDeviceSettingsProviderTest : public testing::Test {
   std::unique_ptr<FakeInputDeviceSettingsController> controller_;
   std::unique_ptr<InputDeviceSettingsProvider> provider_;
   std::unique_ptr<base::test::ScopedFeatureList> feature_list_;
-  content::BrowserTaskEnvironment task_environment_;
+  std::unique_ptr<InputDeviceSettingsController::ScopedResetterForTest>
+      scoped_resetter_;
+  std::unique_ptr<views::Widget> widget_;
 };
 
 TEST_F(InputDeviceSettingsProviderTest, TestSetKeyboardSettings) {
@@ -488,6 +571,22 @@ TEST_F(InputDeviceSettingsProviderTest, TestSetTouchpadSettings) {
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, controller_->num_times_set_touchpad_settings_called());
+}
+
+TEST_F(InputDeviceSettingsProviderTest, TestSetGraphicsTabletSettings) {
+  controller_->AddGraphicsTablet(kGraphicsTablet1.Clone());
+  provider_->SetGraphicsTabletSettings(kGraphicsTablet1.id,
+                                       kGraphicsTablet1.settings->Clone());
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, controller_->num_times_set_graphics_tablet_settings_called());
+
+  controller_->AddGraphicsTablet(kGraphicsTablet2.Clone());
+  provider_->SetGraphicsTabletSettings(kGraphicsTablet2.id,
+                                       kGraphicsTablet2.settings->Clone());
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, controller_->num_times_set_graphics_tablet_settings_called());
 }
 
 TEST_F(InputDeviceSettingsProviderTest, TestKeyboardSettingsObeserver) {
@@ -730,6 +829,127 @@ TEST_F(InputDeviceSettingsProviderTest, TestPointingStickSettingsObeserver) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3, fake_observer.num_times_called());
   ExpectListsEqual(expected_pointing_sticks, fake_observer.pointing_sticks());
+}
+
+TEST_F(InputDeviceSettingsProviderTest, TestGraphicsTabletSettingsObeserver) {
+  std::vector<::ash::mojom::GraphicsTabletPtr> expected_graphics_tablets;
+  expected_graphics_tablets.push_back(kGraphicsTablet1.Clone());
+  controller_->AddGraphicsTablet(kGraphicsTablet1.Clone());
+
+  FakeGraphicsTabletSettingsObserver fake_observer;
+  provider_->ObserveGraphicsTabletSettings(
+      fake_observer.receiver.BindNewPipeAndPassRemote());
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, fake_observer.num_times_graphics_tablet_list_updated());
+  ExpectListsEqual(expected_graphics_tablets, fake_observer.graphics_tablets());
+
+  expected_graphics_tablets.push_back(kGraphicsTablet2.Clone());
+  controller_->AddGraphicsTablet(kGraphicsTablet2.Clone());
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, fake_observer.num_times_graphics_tablet_list_updated());
+  ExpectListsEqual(expected_graphics_tablets, fake_observer.graphics_tablets());
+
+  expected_graphics_tablets.pop_back();
+  controller_->RemoveGraphicsTablet(kGraphicsTablet2.id);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(3, fake_observer.num_times_graphics_tablet_list_updated());
+  ExpectListsEqual(expected_graphics_tablets, fake_observer.graphics_tablets());
+}
+
+TEST_F(InputDeviceSettingsProviderTest, ObservationMatchesWidget) {
+  provider_->StartObserving(kMouse1.id);
+  EXPECT_TRUE(controller_->observed_currently());
+
+  widget_->Hide();
+  EXPECT_FALSE(controller_->observed_currently());
+
+  widget_->Show();
+  EXPECT_TRUE(controller_->observed_currently());
+
+  controller_->StopObservingButtons();
+  EXPECT_FALSE(controller_->observed_currently());
+}
+
+TEST_F(InputDeviceSettingsProviderTest, ObservationStateRemembered) {
+  provider_->StartObserving(kMouse1.id);
+  EXPECT_TRUE(controller_->observed_currently());
+
+  widget_->Hide();
+  EXPECT_FALSE(controller_->observed_currently());
+
+  provider_->StopObserving();
+  EXPECT_FALSE(controller_->observed_currently());
+
+  widget_->Show();
+  EXPECT_FALSE(controller_->observed_currently());
+
+  provider_->StartObserving(kMouse1.id);
+  EXPECT_TRUE(controller_->observed_currently());
+}
+
+TEST_F(InputDeviceSettingsProviderTest, ObservationStateOnDestruction) {
+  provider_->StartObserving(kMouse1.id);
+  EXPECT_TRUE(controller_->observed_currently());
+
+  widget_.reset();
+  EXPECT_FALSE(controller_->observed_currently());
+}
+
+TEST_F(InputDeviceSettingsProviderTest, ButtonPressObserverTest) {
+  FakeButtonPressObserver fake_observer;
+  provider_->ObserveButtonPresses(
+      fake_observer.receiver.BindNewPipeAndPassRemote());
+
+  ::ash::mojom::ButtonPtr expected_button =
+      ::ash::mojom::Button::NewCustomizableButton(
+          ::ash::mojom::CustomizableButton::kMiddle);
+  provider_->OnCustomizableMouseButtonPressed(kMouse1, *expected_button);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(*expected_button, fake_observer.last_pressed_button());
+
+  expected_button = ::ash::mojom::Button::NewCustomizableButton(
+      ::ash::mojom::CustomizableButton::kForward);
+  provider_->OnCustomizablePenButtonPressed(kGraphicsTablet1, *expected_button);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(*expected_button, fake_observer.last_pressed_button());
+
+  expected_button = ::ash::mojom::Button::NewVkey(ui::VKEY_0);
+  provider_->OnCustomizablePenButtonPressed(kGraphicsTablet1, *expected_button);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(*expected_button, fake_observer.last_pressed_button());
+}
+
+TEST_F(InputDeviceSettingsProviderTest, ButtonPressObserverFollowsWindowFocus) {
+  FakeButtonPressObserver fake_observer;
+  provider_->ObserveButtonPresses(
+      fake_observer.receiver.BindNewPipeAndPassRemote());
+
+  widget_->Hide();
+
+  ::ash::mojom::ButtonPtr expected_button =
+      ::ash::mojom::Button::NewCustomizableButton(
+          ::ash::mojom::CustomizableButton::kMiddle);
+
+  provider_->OnCustomizableMouseButtonPressed(kMouse1, *expected_button);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(fake_observer.has_last_pressed_button());
+
+  provider_->OnCustomizablePenButtonPressed(kGraphicsTablet1, *expected_button);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(fake_observer.has_last_pressed_button());
+
+  provider_->OnCustomizableTabletButtonPressed(kGraphicsTablet1,
+                                               *expected_button);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(fake_observer.has_last_pressed_button());
+
+  widget_->Show();
+  provider_->OnCustomizableMouseButtonPressed(kMouse1, *expected_button);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(*expected_button, fake_observer.last_pressed_button());
 }
 
 }  // namespace ash::settings

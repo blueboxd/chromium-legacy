@@ -32,13 +32,15 @@ import fnmatch
 import optparse
 import os
 import re
+import shlex
 import sys
 from copy import deepcopy
+from typing import List
 
 from blinkpy.common.path_finder import PathFinder
 
 
-class PortFactory(object):
+class PortFactory:
     PORT_CLASSES = (
         'android.AndroidPort',
         'fuchsia.FuchsiaPort',
@@ -190,6 +192,14 @@ def add_platform_options_group(parser: argparse.ArgumentParser):
     group.add_argument('--platform', help='Platform to use (e.g., "mac-lion")')
 
 
+def add_common_wpt_options(parser: argparse.ArgumentParser):
+    parser.add_argument('--no-manifest-update',
+                        dest='manifest_update',
+                        action='store_false',
+                        help=('Do not update the web-platform-tests '
+                              'MANIFEST.json unless it does not exist.'))
+
+
 def add_configuration_options_group(parser: argparse.ArgumentParser,
                                     rwt: bool = True,
                                     product_choices: list = None):
@@ -208,11 +218,7 @@ def add_configuration_options_group(parser: argparse.ArgumentParser,
                        const='Release',
                        dest='configuration',
                        help='Set the configuration to Release')
-    group.add_argument('--no-manifest-update',
-                       dest='manifest_update',
-                       action='store_false',
-                       help=('Do not update the web-platform-tests '
-                             'MANIFEST.json unless it does not exist.'))
+    add_common_wpt_options(group)
     if rwt:
         group.add_argument('--no-xvfb',
                            action='store_false',
@@ -351,7 +357,12 @@ def add_results_options_group(parser: argparse.ArgumentParser,
         results_group.add_argument(
             '--reset-results',
             action='store_true',
-            help='Reset test metadata to the generated results.')
+            help=('Reset expectations in test metadata to the generated '
+                  'results. Without existing platform-specific expectations, '
+                  'extend local results to all platforms. If `--product` or '
+                  '`--flag-specific` is specified, only reset expectations '
+                  'for that product or flag. Virtual expectations are always '
+                  'updated per-suite.'))
 
 
 def add_testing_options_group(parser: argparse.ArgumentParser,
@@ -469,6 +480,17 @@ def add_testing_options_group(parser: argparse.ArgumentParser,
         action='store_true',
         help=('If set, exit with a success code when no tests are run. '
               'Used on trybots when web tests are retried without patch.'))
+    testing_group.add_argument(
+        '--wrapper',
+        type=command_wrapper,
+        default=[],
+        help=('Wrapper command to insert before invocations of the driver; '
+              'option is split on whitespace before running. (Example: '
+              '--wrapper="valgrind --smc-check=all")'))
+    testing_group.add_argument('-f',
+                               '--fully-parallel',
+                               action='store_true',
+                               help='run all tests in parallel')
     if rwt:
         testing_group.add_argument(
             '--build',
@@ -604,17 +626,6 @@ def add_testing_options_group(parser: argparse.ArgumentParser,
             type=float,
             help='Initialize WebGPU adapter before running any tests.')
         testing_group.add_argument(
-            '--wrapper',
-            help=(
-                'wrapper command to insert before invocations of the driver; '
-                'option is split on whitespace before running. (Example: '
-                '--wrapper="valgrind --smc-check=all")'))
-        # FIXME: Display the default number of child processes that will run.
-        testing_group.add_argument('-f',
-                                   '--fully-parallel',
-                                   action='store_true',
-                                   help='run all tests in parallel')
-        testing_group.add_argument(
             '--virtual-parallel',
             action='store_true',
             help=(
@@ -656,6 +667,10 @@ def add_testing_options_group(parser: argparse.ArgumentParser,
             'print-reftest',
             'manual',
         ]
+        testing_group.add_argument(
+            '--timeout-multiplier',
+            type=float,
+            help='Multiplier relative to standard test timeouts to use')
         testing_group.add_argument(
             '--test-types',
             nargs='*',
@@ -809,3 +824,7 @@ def _read_configuration_from_gn(fs, options):
     # If is_debug is set to anything other than false, or if it
     # does not exist at all, we should use the default value (True).
     return 'Debug'
+
+
+def command_wrapper(wrapper: str) -> List[str]:
+    return shlex.split(wrapper)

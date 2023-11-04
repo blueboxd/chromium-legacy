@@ -8,8 +8,8 @@
 #include "components/ml/webnn/graph_validation_utils.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "services/webnn/public/mojom/webnn_context_provider.mojom.h"
 #include "services/webnn/public/mojom/webnn_graph.mojom.h"
-#include "services/webnn/public/mojom/webnn_service.mojom.h"
 #include "services/webnn/webnn_context_impl.h"
 #include "services/webnn/webnn_context_provider_impl.h"
 #include "services/webnn/webnn_test_utils.h"
@@ -23,8 +23,7 @@ namespace {
 // computing graph message.
 class FakeWebNNGraphImpl final : public WebNNGraphImpl {
  public:
-  explicit FakeWebNNGraphImpl(
-      std::unique_ptr<ComputeResourceInfo> compute_resource_info)
+  explicit FakeWebNNGraphImpl(ComputeResourceInfo compute_resource_info)
       : WebNNGraphImpl(std::move(compute_resource_info)) {}
   ~FakeWebNNGraphImpl() override = default;
 
@@ -34,10 +33,10 @@ class FakeWebNNGraphImpl final : public WebNNGraphImpl {
     mojo::PendingRemote<mojom::WebNNGraph> blink_remote;
     // The receiver bound to FakeWebNNGraphImpl.
     mojo::MakeSelfOwnedReceiver<mojom::WebNNGraph>(
-        std::make_unique<FakeWebNNGraphImpl>(
-            std::make_unique<ComputeResourceInfo>(graph_info)),
+        std::make_unique<FakeWebNNGraphImpl>(ComputeResourceInfo(graph_info)),
         blink_remote.InitWithNewPipeAndPassReceiver());
-    std::move(callback).Run(std::move(blink_remote));
+    std::move(callback).Run(
+        mojom::CreateGraphResult::NewGraphRemote(std::move(blink_remote)));
   }
 
  private:
@@ -81,8 +80,8 @@ class FakeWebNNBackend : public WebNNContextProviderImpl::BackendForTesting {
     // The receiver bound to FakeWebNNContext.
     context_impls.push_back(std::make_unique<FakeWebNNContextImpl>(
         blink_remote.InitWithNewPipeAndPassReceiver(), context_provider_impl));
-    std::move(callback).Run(mojom::CreateContextResult::kOk,
-                            std::move(blink_remote));
+    std::move(callback).Run(
+        mojom::CreateContextResult::NewContextRemote(std::move(blink_remote)));
   }
 };
 
@@ -99,14 +98,12 @@ bool ValidateInputsForComputing(
   auto options = mojom::CreateContextOptions::New();
   provider_remote->CreateWebNNContext(
       std::move(options),
-      base::BindLambdaForTesting(
-          [&](mojom::CreateContextResult result,
-              mojo::PendingRemote<mojom::WebNNContext> remote) {
-            EXPECT_EQ(result, mojom::CreateContextResult::kOk);
-            webnn_context.Bind(std::move(remote));
-            is_callback_called = true;
-            run_loop_create_context.Quit();
-          }));
+      base::BindLambdaForTesting([&](mojom::CreateContextResultPtr result) {
+        ASSERT_TRUE(result->is_context_remote());
+        webnn_context.Bind(std::move(result->get_context_remote()));
+        is_callback_called = true;
+        run_loop_create_context.Quit();
+      }));
   run_loop_create_context.Run();
   EXPECT_TRUE(is_callback_called);
 
@@ -118,8 +115,9 @@ bool ValidateInputsForComputing(
   webnn_context->CreateGraph(
       std::move(graph_info),
       base::BindLambdaForTesting(
-          [&](mojo::PendingRemote<mojom::WebNNGraph> remote) {
-            webnn_graph.Bind(std::move(remote));
+          [&](mojom::CreateGraphResultPtr create_graph_result) {
+            webnn_graph.Bind(
+                std::move(create_graph_result->get_graph_remote()));
             is_callback_called = true;
             run_loop_create_graph.Quit();
           }));
@@ -806,35 +804,19 @@ struct Pool2dTester {
   bool expected;
 
   void Test() {
-    Test(mojom::Operator::Kind::kAveragePool2d);
-    Test(mojom::Operator::Kind::kMaxPool2d);
+    Test(mojom::Pool2d::Kind::kAveragePool2d);
+    Test(mojom::Pool2d::Kind::kMaxPool2d);
   }
 
-  void Test(mojom::Operator::Kind kind) {
+  void Test(mojom::Pool2d::Kind kind) {
     // Build the graph with mojo type.
     GraphInfoBuilder builder;
     uint64_t input_operand_id =
         builder.BuildInput("input", input.dimensions, input.type);
     uint64_t output_operand_id =
         builder.BuildOutput("output", output.dimensions, output.type);
-    mojom::Pool2dAttributesPtr mojo_attributes = mojom::Pool2dAttributes::New();
-    auto& window_dimensions = attributes.window_dimensions;
-    CHECK_EQ(window_dimensions.size(), 2u);
-    mojo_attributes->window_dimensions =
-        mojom::Size2d::New(window_dimensions[0], window_dimensions[1]);
-    mojo_attributes->padding = mojom::Padding2d::New(
-        mojom::Size2d::New(attributes.padding[0],
-                           attributes.padding[2]) /* beginning padding*/,
-        mojom::Size2d::New(attributes.padding[1],
-                           attributes.padding[3]) /* ending padding*/);
-    mojo_attributes->strides =
-        mojom::Size2d::New(attributes.strides[0], attributes.strides[1]);
-    mojo_attributes->dilations =
-        mojom::Size2d::New(attributes.dilations[0], attributes.dilations[1]);
-    mojo_attributes->layout = attributes.layout;
-    builder.BuildOperator(
-        kind, {input_operand_id}, {output_operand_id},
-        mojom::OperatorAttributes::NewPool2d(std::move(mojo_attributes)));
+    builder.BuildPool2d(kind, input_operand_id, output_operand_id,
+                        std::move(attributes));
     EXPECT_EQ(WebNNGraphImpl::ValidateGraph(builder.GetGraphInfo()), expected);
   }
 };

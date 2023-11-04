@@ -788,8 +788,7 @@ const net::IsolationInfo StorageKey::ToPartialNetIsolationInfo() const {
                             : url::Origin::Create(top_level_site_.GetURL());
   return net::IsolationInfo::Create(net::IsolationInfo::RequestType::kOther,
                                     top_frame_origin, origin_,
-                                    ToNetSiteForCookies(),
-                                    /*party_context=*/absl::nullopt, nonce_);
+                                    ToNetSiteForCookies(), nonce_);
 }
 
 // static

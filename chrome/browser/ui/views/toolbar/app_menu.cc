@@ -97,6 +97,8 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 #include "ui/views/controls/menu/submenu_view.h"
+#include "ui/views/style/typography.h"
+#include "ui/views/style/typography_provider.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
@@ -1023,8 +1025,9 @@ absl::optional<SkColor> AppMenu::GetLabelColor(int command_id) const {
   return GetLabelFontList(command_id)
              ? absl::make_optional(
                    root_->GetSubmenu()->GetColorProvider()->GetColor(
-                       views::style::GetColorId(views::style::CONTEXT_MENU,
-                                                views::style::STYLE_PRIMARY)))
+                       views::TypographyProvider::Get().GetColorId(
+                           views::style::CONTEXT_MENU,
+                           views::style::STYLE_PRIMARY)))
              : absl::nullopt;
 }
 
@@ -1137,8 +1140,7 @@ bool AppMenu::IsCommandEnabled(int command_id) const {
     return true;
   }
 
-  if ((base::FeatureList::IsEnabled(features::kExtensionsMenuInAppMenu) ||
-       features::IsChromeRefresh2023()) &&
+  if (features::IsExtensionMenuInRootAppMenu() &&
       command_id == IDC_EXTENSIONS_SUBMENU) {
     return true;
   }
@@ -1395,7 +1397,10 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
             std::make_unique<RecentTabsMenuModelDelegate>(
                 this, model->GetSubmenuModelAt(i), item);
         break;
-
+      case IDC_SHOW_MANAGEMENT_PAGE:
+        parent->SetTooltip(model->GetAccessibleNameAt(i),
+                           IDC_SHOW_MANAGEMENT_PAGE);
+        break;
       default: {
         if (features::IsChromeRefresh2023() &&
             IsOtherProfileCommand(model->GetCommandIdAt(i))) {

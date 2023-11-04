@@ -16,7 +16,7 @@
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/ui/util/dynamic_type_util.h"
-#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
 
@@ -143,6 +143,8 @@ int PasswordIssuesTypeCount(NSInteger weak_passwords_count,
   }
 }
 
+// Creates all views for an individual check row in the Safety Check (Magic
+// Stack) module.
 - (void)createSubviews {
   // Return if the subviews have already been created and added.
   if (!(self.subviews.count == 0)) {
@@ -189,8 +191,6 @@ int PasswordIssuesTypeCount(NSInteger weak_passwords_count,
 
   UILabel* titleLabel = [self createTitleLabelForLayoutType:_layoutType];
   UILabel* descriptionLabel = [self createDescriptionLabel];
-  self.accessibilityLabel =
-      [NSString stringWithFormat:@"%@,%@", titleLabel, descriptionLabel];
 
   // Add a vertical stack for the title and description labels.
   UIStackView* textStack = [[UIStackView alloc]

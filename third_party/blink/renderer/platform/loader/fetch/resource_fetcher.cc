@@ -493,7 +493,8 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
     bool is_link_preload,
     const absl::optional<float> resource_width,
     const absl::optional<float> resource_height,
-    bool is_potentially_lcp_element) {
+    bool is_potentially_lcp_element,
+    bool is_potentially_lcp_influencer) {
   DCHECK(!resource_request.PriorityHasBeenSet() ||
          type == ResourceType::kImage);
   ResourceLoadPriority priority = TypeToPriority(type);
@@ -596,18 +597,24 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
   }
 
   // LCP Critical Path Predictor identified resources get a priority boost.
-  // TODO(crbug.com/1419756): Separate out async script priorities from that of
-  // images.
-  if (is_potentially_lcp_element) {
+  if ((is_potentially_lcp_element || is_potentially_lcp_influencer) &&
+      !features::kLCPCriticalPathPredictorDryRun.Get()) {
+    features::LcppResourceLoadPriority preferred_priority =
+        is_potentially_lcp_element
+            ? features::kLCPCriticalPathPredictorImageLoadPriority.Get()
+            : features::kLCPCriticalPathPredictorInfluencerScriptLoadPriority
+                  .Get();
+
     ++potentially_lcp_resource_priority_boosts_;
-    switch (features::kLCPCriticalPathPredictorImageLoadPriority.Get()) {
-      case features::LcppImageLoadPriority::kMedium:
+
+    switch (preferred_priority) {
+      case features::LcppResourceLoadPriority::kMedium:
         priority = std::max(priority, ResourceLoadPriority::kMedium);
         break;
-      case features::LcppImageLoadPriority::kHigh:
+      case features::LcppResourceLoadPriority::kHigh:
         priority = std::max(priority, ResourceLoadPriority::kHigh);
         break;
-      case features::LcppImageLoadPriority::kVeryHigh:
+      case features::LcppResourceLoadPriority::kVeryHigh:
         priority = std::max(priority, ResourceLoadPriority::kVeryHigh);
         break;
     }
@@ -843,6 +850,19 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
     info->response_end = now;
     info->render_blocking_status =
         render_blocking_behavior == RenderBlockingBehavior::kBlocking;
+
+    // Create a ResourceLoadTiming object and store LCP breakdown timings for
+    // images.
+    if (resource->GetType() == ResourceType::kImage) {
+      // The resource_load_timing may be null in tests.
+      if (ResourceLoadTiming* resource_load_timing =
+              resource->GetResponse().GetResourceLoadTiming()) {
+        resource_load_timing->SetDiscoveryTime(info->start_time);
+        resource_load_timing->SetSendStart(info->start_time);
+        resource_load_timing->SetResponseEnd(info->start_time);
+      }
+    }
+
     scheduled_resource_timing_reports_.push_back(ScheduledResourceTimingInfo{
         std::move(info), resource->Options().initiator_info.name});
     if (!resource_timing_report_timer_.IsActive())
@@ -1114,7 +1134,7 @@ absl::optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
         params.GetSpeculativePreloadType(), params.GetRenderBlockingBehavior(),
         params.GetScriptType(), params.IsLinkPreload(),
         params.GetResourceWidth(), params.GetResourceHeight(),
-        params.IsPotentiallyLCPElement());
+        params.IsPotentiallyLCPElement(), params.IsPotentiallyLCPInfluencer());
   }
 
   DCHECK_NE(computed_load_priority, ResourceLoadPriority::kUnresolved);
@@ -1191,12 +1211,6 @@ absl::optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
 
   if (!params.Url().IsValid())
     return ResourceRequestBlockedReason::kOther;
-
-  if (resource_request.GetCredentialsMode() ==
-      network::mojom::CredentialsMode::kOmit) {
-    // See comments at network::ResourceRequest::credentials_mode.
-    resource_request.SetAllowStoredCredentials(false);
-  }
 
   return absl::nullopt;
 }
@@ -1553,8 +1567,10 @@ std::unique_ptr<URLLoader> ResourceFetcher::CreateURLLoader(
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       unfreezable_task_runner_;
-  if (!blink::features::IsKeepAliveInBrowserMigrationEnabled() &&
-      request.GetKeepalive()) {
+  const bool request_is_fetch_later = request.IsFetchLaterAPI();
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kKeepAliveInBrowserMigration) &&
+      request.GetKeepalive() && !request_is_fetch_later) {
     base::UmaHistogramBoolean("Blink.Fetch.KeepAlive.Total", true);
     // Set the `task_runner` to the `AgentGroupScheduler`'s task-runner for
     // keepalive fetches because we want it to keep running even after the
@@ -2108,7 +2124,9 @@ void ResourceFetcher::ClearContext() {
   StopFetching();
 
   if ((!loaders_.empty() || !non_blocking_loaders_.empty()) &&
-      !blink::features::IsKeepAliveInBrowserMigrationEnabled()) {
+      // This branch is not relevant to FetchLater.
+      !base::FeatureList::IsEnabled(
+          blink::features::kKeepAliveInBrowserMigration)) {
     // There are some keepalive requests.
 
     // Records the current time to estimate how long the remaining requests will
@@ -2347,7 +2365,13 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
   PendingResourceTimingInfo info = resource_timing_info_map_.Take(resource);
 
   if (!info.is_null()) {
-    PopulateAndAddResourceTimingInfo(resource, std::move(info), finish_time);
+    if (resource->GetResourceRequest().Url().ProtocolIsInHTTPFamily() ||
+        (resource->GetResourceRequest().GetWebBundleTokenParams() &&
+         resource->GetResourceRequest()
+             .GetWebBundleTokenParams()
+             ->bundle_url.IsValid())) {
+      PopulateAndAddResourceTimingInfo(resource, std::move(info), finish_time);
+    }
   }
 
   resource->VirtualTimePauser().UnpauseVirtualTime();
@@ -2509,7 +2533,8 @@ void ResourceFetcher::RemoveResourceLoader(ResourceLoader* loader) {
 }
 
 void ResourceFetcher::StopFetching() {
-  if (blink::features::IsKeepAliveInBrowserMigrationEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          blink::features::kKeepAliveInBrowserMigration)) {
     StopFetchingInternal(StopFetchingTarget::kIncludingKeepaliveLoaders);
   } else {
     StopFetchingInternal(StopFetchingTarget::kExcludingKeepaliveLoaders);
@@ -2810,6 +2835,16 @@ void ResourceFetcher::PopulateAndAddResourceTimingInfo(
   info->render_blocking_status = pending_info.render_blocking_behavior ==
                                  RenderBlockingBehavior::kBlocking;
   info->response_end = response_end;
+  // Store LCP breakdown timings for images.
+  if (resource->GetType() == ResourceType::kImage) {
+    // The resource_load_timing may be null in tests.
+    if (ResourceLoadTiming* resource_load_timing =
+            resource->GetResponse().GetResourceLoadTiming()) {
+      resource_load_timing->SetDiscoveryTime(info->start_time);
+      resource_load_timing->SetResponseEnd(response_end);
+    }
+  }
+
   Context().AddResourceTiming(std::move(info), initiator_type);
 }
 

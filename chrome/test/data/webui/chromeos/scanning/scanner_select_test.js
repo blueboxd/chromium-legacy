@@ -7,7 +7,6 @@ import 'chrome://scanning/scanner_select.js';
 
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {ScannerArr, ScannerInfo} from 'chrome://scanning/scanning_app_types.js';
 import {getScannerDisplayName, tokenToString} from 'chrome://scanning/scanning_app_util.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
@@ -43,7 +42,7 @@ suite('scannerSelectTest', function() {
   // Verify the scanner select is initialized enabled with two expected
   // scanners and the first scanner selected.
   test('initializeScannerSelect', () => {
-    const select = scannerSelect.$$('select');
+    const select = scannerSelect.shadowRoot.querySelector('select');
     assertTrue(!!select);
 
     const scannerArr = [
@@ -95,7 +94,9 @@ suite('scannerSelectTest', function() {
 
     return waitAfterNextRender(scannerSelect).then(() => {
       assertEquals(secondScannerIdString, scannerSelect.selectedScannerId);
-      assertEquals(secondScannerIdString, scannerSelect.$$('select').value);
+      assertEquals(
+          secondScannerIdString,
+          scannerSelect.shadowRoot.querySelector('select').value);
     });
   });
 
@@ -113,7 +114,9 @@ suite('scannerSelectTest', function() {
     const firstScannerIdString = tokenToString(firstScannerId);
     return waitAfterNextRender(scannerSelect).then(() => {
       assertEquals(firstScannerIdString, scannerSelect.selectedScannerId);
-      assertEquals(firstScannerIdString, scannerSelect.$$('select').value);
+      assertEquals(
+          firstScannerIdString,
+          scannerSelect.shadowRoot.querySelector('select').value);
     });
   });
 });

@@ -14,12 +14,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/types/optional_util.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/autofill/ui/ui_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/autofill/autofill_bubble_handler.h"
 #include "chrome/browser/ui/autofill/edit_address_profile_dialog_controller_impl.h"
-#include "chrome/browser/ui/autofill/ui_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -326,14 +326,16 @@ SaveUpdateAddressProfileBubbleControllerImpl::GetOriginalProfile() const {
 void SaveUpdateAddressProfileBubbleControllerImpl::OnUserDecision(
     AutofillClient::SaveAddressProfileOfferUserDecision decision,
     AutofillProfile profile) {
+  if (decision ==
+      AutofillClient::SaveAddressProfileOfferUserDecision::kEditDeclined) {
+    // Reopen this bubble if the user canceled editing.
+    shown_by_user_gesture_ = false;
+    Show();
+    return;
+  }
   if (address_profile_save_prompt_callback_) {
     std::move(address_profile_save_prompt_callback_).Run(decision, profile);
   }
-}
-
-void SaveUpdateAddressProfileBubbleControllerImpl::OnUserCanceledEditing() {
-  shown_by_user_gesture_ = false;
-  Show();
 }
 
 void SaveUpdateAddressProfileBubbleControllerImpl::OnEditButtonClicked() {
@@ -344,9 +346,6 @@ void SaveUpdateAddressProfileBubbleControllerImpl::OnEditButtonClicked() {
       address_profile_, GetOriginalProfile(), GetEditorFooterMessage(),
       base::BindOnce(&SaveUpdateAddressProfileBubbleController::OnUserDecision,
                      GetWeakPtr()),
-      base::BindOnce(
-          &SaveUpdateAddressProfileBubbleController::OnUserCanceledEditing,
-          GetWeakPtr()),
       is_migration_to_account_);
   HideBubble();
 }

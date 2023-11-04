@@ -179,8 +179,8 @@ std::u16string CleanUpUrlForMatching(
 // is overly-long.
 std::u16string CleanUpTitleForMatching(const std::u16string& title);
 
-// Returns true if all the |nodes| can be edited by the user,
-// as determined by BookmarkClient::CanBeEditedByUser().
+// Returns true if all the |nodes| can be edited by the user, which means they
+// aren't enterprise-managed, as BookmarkClient::IsNodeManaged().
 bool CanAllBeEditedByUser(BookmarkClient* client,
                           const std::vector<const BookmarkNode*>& nodes);
 
@@ -190,10 +190,6 @@ bool IsBookmarkedByUser(BookmarkModel* model, const GURL& url);
 
 // Returns the node with |id|, or NULL if there is no node with |id|.
 const BookmarkNode* GetBookmarkNodeByID(const BookmarkModel* model, int64_t id);
-
-// Returns the node with |uuid|, or NULL if there is no node with |uuid|.
-const BookmarkNode* GetBookmarkNodeByUuid(const BookmarkModel* model,
-                                          const base::Uuid& uuid);
 
 // Returns true if |node| is a descendant of |root|.
 bool IsDescendantOf(const BookmarkNode* node, const BookmarkNode* root);

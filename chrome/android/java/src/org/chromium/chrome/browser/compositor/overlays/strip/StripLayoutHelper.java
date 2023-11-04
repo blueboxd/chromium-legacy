@@ -9,7 +9,9 @@ import android.animation.Animator.AnimatorListener;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.PointF;
 import android.os.Handler;
@@ -175,6 +177,9 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     private static final String PLACEHOLDER_VISIBLE_DURATION_HISTOGRAM_NAME =
             "Android.TabStrip.PlaceholderStripVisibleDuration";
 
+    // The max width of the tab hover card in terms of the enclosing window width percent.
+    static final float HOVER_CARD_MAX_WIDTH_PERCENT = 0.9f;
+
     // External influences
     private final LayoutUpdateHost mUpdateHost;
     private final LayoutRenderHost mRenderHost;
@@ -278,6 +283,8 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     private StripLayoutTab mActiveClickedTab;
     private StripLayoutTab mLastHoveredTab;
     private TabDropTarget mTabDropTarget;
+
+    private StripTabHoverCardView mTabHoverCardView;
 
     /**
      * Creates an instance of the {@link StripLayoutHelper}.
@@ -445,6 +452,10 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     public void destroy() {
         mStripTabEventHandler.removeCallbacksAndMessages(null);
         mTabDropTarget = null;
+        if (mTabHoverCardView != null) {
+            mTabHoverCardView.destroy();
+            mTabHoverCardView = null;
+        }
     }
 
     /**
@@ -672,7 +683,8 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
             mSelectedOnStartup = mModel.isActiveModel();
             if (mPlaceholderStripReady) replacePlaceholdersForRestoredTabs();
         } else {
-            RecordHistogram.recordTimesHistogram(PLACEHOLDER_VISIBLE_DURATION_HISTOGRAM_NAME, 0L);
+            RecordHistogram.recordMediumTimesHistogram(
+                    PLACEHOLDER_VISIBLE_DURATION_HISTOGRAM_NAME, 0L);
 
             computeAndUpdateTabOrders(false, false);
         }
@@ -684,7 +696,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     protected void onTabStateInitialized() {
         mTabStateInitialized = true;
 
-        if (ChromeFeatureList.sTabStripStartupRefactoring.isEnabled()) {
+        if (ChromeFeatureList.sTabStripStartupRefactoring.isEnabled() && mPlaceholderStripReady) {
             int numLeftoverPlaceholders = 0;
             for (int i = 0; i < mStripTabs.length; i++) {
                 if (mStripTabs[i].getIsPlaceholder()) numLeftoverPlaceholders++;
@@ -1048,9 +1060,11 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
             placeholderTab.setId(id);
             placeholderTab.setIsPlaceholder(false);
             placeholderTab.setContainerOpacity(TAB_OPACITY_HIDDEN);
-        }
 
-        mRenderHost.requestRender();
+            if (placeholderTab.isVisible()) {
+                mRenderHost.requestRender();
+            }
+        }
     }
 
     /**
@@ -1436,6 +1450,10 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
             // Allow the user to drag the selected tab out of the tab toolbar.
             if (clickedTab != null) {
                 allowMovingTabOutOfStripLayout(clickedTab, new PointF(x, y));
+            } else {
+                // Broadcast to start moving the window instance as the user has long pressed on the
+                // open space of the tab strip.
+                sendMoveWindowBroadcast(mToolbarContainerView, x, y);
             }
         }
     }
@@ -1443,9 +1461,8 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     /**
      * Called on hover enter event.
      * @param x The x coordinate of the position of the hover enter event.
-     * @param y The y coordinate of the position of the hover enter event.
      */
-    public void onHoverEnter(float x, float y) {
+    public void onHoverEnter(float x) {
         if (!isPeripheralsSupportForTabStripEnabled()) return;
         StripLayoutTab hoveredTab = getTabAtPosition(x);
         // Hovered into a non-tab region on the strip.
@@ -1457,9 +1474,8 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     /**
      * Called on hover move event.
      * @param x The x coordinate of the position of the hover move event.
-     * @param y The y coordinate of the position of the hover move event.
      */
-    public void onHoverMove(float x, float y) {
+    public void onHoverMove(float x) {
         if (!isPeripheralsSupportForTabStripEnabled()) return;
         StripLayoutTab hoveredTab = getTabAtPosition(x);
         // Hovered into a non-tab region within the strip.
@@ -1488,6 +1504,15 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         mUpdateHost.requestUpdate();
     }
 
+    @VisibleForTesting
+    void setTabHoverCardView(StripTabHoverCardView tabHoverCardView) {
+        mTabHoverCardView = tabHoverCardView;
+    }
+
+    StripTabHoverCardView getTabHoverCardViewForTesting() {
+        return mTabHoverCardView;
+    }
+
     void setLastHoveredTabForTesting(StripLayoutTab tab) {
         mLastHoveredTab = tab;
     }
@@ -1498,15 +1523,26 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
 
     private void clearLastHoveredTab() {
         if (mLastHoveredTab == null) return;
+        assert mTabHoverCardView != null : "Hover card view should not be null.";
         // Remove the highlight from the last hovered tab.
         updateHoveredFolioTabState(mLastHoveredTab, false);
+        mTabHoverCardView.hide();
         mLastHoveredTab = null;
     }
 
-    private void updateLastHoveredTab(StripLayoutTab hoveredTab) {
+    @VisibleForTesting
+    void updateLastHoveredTab(StripLayoutTab hoveredTab) {
         if (hoveredTab == null) return;
+        // Hovered into a drawn tab that is for example, hidden behind the model selector button.
+        if (isTabCompletelyHidden(hoveredTab)) return;
+
         mLastHoveredTab = hoveredTab;
         updateHoveredFolioTabState(mLastHoveredTab, true);
+
+        // Show the tab hover card.
+        int hoveredTabIndex = findIndexForTab(mLastHoveredTab.getId());
+        mTabHoverCardView.show(mModel.getTabAt(hoveredTabIndex), mLastHoveredTab,
+                hoveredTabIndex == mModel.index(), mHeight);
     }
 
     private void updateHoveredFolioTabState(StripLayoutTab tab, boolean hovered) {
@@ -3070,6 +3106,17 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     }
 
     /**
+     * Determines whether a drawn tab is hidden completely out of view.
+     * @param tab The {@link StripLayoutTab} whose visibility is determined.
+     * @return {@code true} if the tab is completely hidden, {@code false} otherwise.
+     */
+    @VisibleForTesting
+    boolean isTabCompletelyHidden(StripLayoutTab tab) {
+        return !tab.isVisible() || tab.getDrawX() + tab.getWidth() <= mLeftFadeWidth
+                || tab.getDrawX() >= mWidth - mRightFadeWidth;
+    }
+
+    /**
      * To prevent accidental tab closures, when the close button of a tab is very close to the edge
      * of the tab strip, we hide the close button. The threshold for hiding is different based on
      * the length of the fade at the end of the strip.
@@ -3240,7 +3287,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
 
     protected void prepareForDragDrop() {
         if (!MultiWindowUtils.isMultiInstanceApi31Enabled()) return;
-        if (!ChromeFeatureList.sTabDragDropAndroid.isEnabled()) return;
+        if (!TabUiFeatureUtilities.isTabDragEnabled()) return;
 
         mTabDropTarget = new TabDropTarget(this);
         TabDragSource.getInstance().prepareForDragDrop(
@@ -3250,7 +3297,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     @VisibleForTesting
     void allowMovingTabOutOfStripLayout(StripLayoutTab clickedTab, PointF dragStartPointF) {
         if (!MultiWindowUtils.isMultiInstanceApi31Enabled()) return;
-        if (!ChromeFeatureList.sTabDragDropAndroid.isEnabled()) return;
+        if (!TabUiFeatureUtilities.isTabDragEnabled()) return;
 
         // In addition to reordering, one can drag and drop the tab beyond the strip layout view.
         // Also start the tab drag only if there are more than one tabs and a tab has been selected
@@ -3274,12 +3321,39 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
 
     void selectTabAtIndex(int atIndex) {
         if (!MultiWindowUtils.isMultiInstanceApi31Enabled()) return;
-        if (!ChromeFeatureList.sTabDragDropAndroid.isEnabled()) return;
+        if (!TabUiFeatureUtilities.isTabDragEnabled()) return;
 
         TabModelUtils.setIndex(mModel, atIndex, true);
     }
 
     int getCurrentTabIndexForTesting() {
         return findIndexForTab(TabModelUtils.getCurrentTabId(mModel));
+    }
+
+    void sendMoveWindowBroadcast(View view, float startXInView, float startYInView) {
+        if (!MultiWindowUtils.isMultiInstanceApi31Enabled()) return;
+        if (!TabUiFeatureUtilities.isTabDragEnabled()) return;
+
+        // The start position is in the view coordinate system and related to the top left position
+        // of the toolbar container view. Convert it to the screen coordinate system for window drag
+        // start position.
+        int[] topLeftLocation = new int[2];
+        view.getLocationOnScreen(topLeftLocation);
+        float startXInScreen = topLeftLocation[0] + startXInView;
+        float startYInScreen = topLeftLocation[1] + startYInView;
+
+        Activity activity = (Activity) view.getContext();
+        int taskId = activity.getTaskId();
+
+        // Prepare the move window intent for the Android system to initiate move and take over the
+        // user input events. The intent is ignored when not handled with no impact to existing
+        // Android platforms.
+        Intent intent = new Intent();
+        intent.setPackage(view.getContext().getPackageName());
+        intent.setAction("com.android.systemui.MOVE_WINDOW");
+        intent.putExtra("MOVE_WINDOW_TASK_ID", taskId);
+        intent.putExtra("MOVE_WINDOW_START_X", startXInScreen);
+        intent.putExtra("MOVE_WINDOW_START_Y", startYInScreen);
+        view.getContext().sendBroadcast(intent);
     }
 }

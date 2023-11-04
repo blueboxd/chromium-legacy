@@ -26,9 +26,9 @@ import {reportError} from './error.js';
 import * as expert from './expert.js';
 import {Flag} from './flag.js';
 import {GalleryButton} from './gallerybutton.js';
-import {I18nString} from './i18n_string.js';
 import {Intent} from './intent.js';
 import * as Comlink from './lib/comlink.js';
+import {startMeasuringMemoryUsage} from './memory_usage.js';
 import * as metrics from './metrics.js';
 import * as filesystem from './models/file_system.js';
 import * as loadTimeData from './models/load_time_data.js';
@@ -308,7 +308,7 @@ async function setupMultiWindowHandling(
   async function handleResume() {
     try {
       if (cameraResourceInitialized.isSignaled()) {
-        cameraManager.requestResume();
+        await cameraManager.requestResume();
         nav.close(ViewName.WARNING, WarningType.CAMERA_PAUSED);
       } else {
         // CCA must get camera usage for completing its initialization when
@@ -381,7 +381,7 @@ function createPerfLogger(): PerfLogger {
   const perfLogger = new PerfLogger();
 
   // Setup listener for performance events.
-  perfLogger.addListener(({event, duration, perfInfo}) => {
+  perfLogger.addListener(async ({event, duration, perfInfo}) => {
     metrics.sendPerfEvent({event, duration, perfInfo});
 
     // Setup for console perf logger.
@@ -394,7 +394,7 @@ function createPerfLogger(): PerfLogger {
     }
 
     // Setup for Tast tests logger.
-    window.appWindow?.reportPerf({event, duration, perfInfo});
+    await window.appWindow?.reportPerf({event, duration, perfInfo});
   });
 
   state.addObserver(state.State.TAKING, (val, extras) => {
@@ -446,12 +446,12 @@ async function main() {
 
   state.set(state.State.INTENT, intent !== null);
 
-  addUnloadCallback(() => {
+  addUnloadCallback(async () => {
     // For SWA, we don't cancel the unhandled intent here since there is no
     // guarantee that asynchronous calls in unload listener can be executed
     // properly. Therefore, we moved the logic for canceling unhandled intent to
     // Chrome (CameraAppHelper).
-    window.appWindow?.notifyClosed();
+    await window.appWindow?.notifyClosed();
   });
 
   // metrics.ts handle it's ready state inside the module, and we don't want to
@@ -540,7 +540,7 @@ async function main() {
     await filesystem.initialize();
     const cameraDir = filesystem.getCameraDirectory();
     if (!shouldHandleIntentResult) {
-      galleryButton.initialize(cameraDir);
+      await galleryButton.initialize(cameraDir);
     }
   } catch (error) {
     reportError(ErrorType.FILE_SYSTEM_FAILURE, ErrorLevel.ERROR, error);
@@ -590,20 +590,18 @@ async function main() {
       PerfEvent.LAUNCHING_FROM_WINDOW_CREATION,
       {hasError: !cameraStartSuccessful});
 
-  window.appWindow?.onAppLaunched();
+  // Start the memory measurement when the camera preview is ready. The first
+  // measurement is performed immediately. The following measurements are
+  // performed periodically, or triggered by specific behaviors.
+  startMeasuringMemoryUsage();
+
+  await window.appWindow?.onAppLaunched();
   metrics.sendOpenCameraEvent(cameraManager.getVidPid());
 
   if (autoTake) {
-    const takePromise = cameraView.beginTake(
+    cameraView.beginTake(
         openFrom === 'assistant' ? metrics.ShutterType.ASSISTANT :
                                    metrics.ShutterType.UNKNOWN);
-    if (takePromise === null) {
-      toast.show(
-          mode === Mode.VIDEO ? I18nString.ERROR_MSG_RECORD_START_FAILED :
-                                I18nString.ERROR_MSG_TAKE_PHOTO_FAILED);
-    } else {
-      await takePromise;
-    }
   }
 }
 

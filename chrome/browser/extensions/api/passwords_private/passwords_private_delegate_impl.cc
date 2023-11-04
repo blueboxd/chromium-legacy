@@ -48,9 +48,9 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/features/password_features.h"
+#include "components/password_manager/core/browser/features/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_access_authenticator.h"
 #include "components/password_manager/core/browser/password_form.h"
-#include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_sync_util.h"
 #include "components/password_manager/core/browser/sharing/password_sender_service.h"
@@ -105,19 +105,19 @@ const char kReauthenticationFailed[] = "reauth-failed";
 extensions::api::passwords_private::ExportProgressStatus ConvertStatus(
     password_manager::ExportProgressStatus status) {
   switch (status) {
-    case password_manager::ExportProgressStatus::NOT_STARTED:
+    case password_manager::ExportProgressStatus::kNotStarted:
       return extensions::api::passwords_private::ExportProgressStatus::
           EXPORT_PROGRESS_STATUS_NOT_STARTED;
-    case password_manager::ExportProgressStatus::IN_PROGRESS:
+    case password_manager::ExportProgressStatus::kInProgress:
       return extensions::api::passwords_private::ExportProgressStatus::
           EXPORT_PROGRESS_STATUS_IN_PROGRESS;
-    case password_manager::ExportProgressStatus::SUCCEEDED:
+    case password_manager::ExportProgressStatus::kSucceeded:
       return extensions::api::passwords_private::ExportProgressStatus::
           EXPORT_PROGRESS_STATUS_SUCCEEDED;
-    case password_manager::ExportProgressStatus::FAILED_CANCELLED:
+    case password_manager::ExportProgressStatus::kFailedCancelled:
       return extensions::api::passwords_private::ExportProgressStatus::
           EXPORT_PROGRESS_STATUS_FAILED_CANCELLED;
-    case password_manager::ExportProgressStatus::FAILED_WRITE_FAILED:
+    case password_manager::ExportProgressStatus::kFailedWrite:
       return extensions::api::passwords_private::ExportProgressStatus::
           EXPORT_PROGRESS_STATUS_FAILED_WRITE_FAILED;
   }
@@ -212,7 +212,7 @@ extensions::api::passwords_private::ImportResults ConvertImportResults(
 }
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS)
-scoped_refptr<device_reauth::DeviceAuthenticator> GetDeviceAuthenticator(
+std::unique_ptr<device_reauth::DeviceAuthenticator> GetDeviceAuthenticator(
     content::WebContents* web_contents) {
   auto* client = ChromePasswordManagerClient::FromWebContents(web_contents);
   DCHECK(client);
@@ -572,6 +572,8 @@ void PasswordsPrivateDelegateImpl::OnFetchingFamilyMembersCompleted(
           FAMILY_FETCH_STATUS_UNKNOWN_ERROR;
       break;
     case FetchFamilyMembersRequestStatus::kSuccess:
+    case FetchFamilyMembersRequestStatus::kNoOtherFamilyMembers:
+      // TODO(crbug.com/1445526): Add new FamilyFetchStatus and its handling.
       results.status = api::passwords_private::FamilyFetchStatus::
           FAMILY_FETCH_STATUS_SUCCESS;
       break;
@@ -867,8 +869,6 @@ void PasswordsPrivateDelegateImpl::SwitchBiometricAuthBeforeFillingState(
 #if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_WIN)
   NOTIMPLEMENTED();
 #else
-  DCHECK(base::FeatureList::IsEnabled(
-      password_manager::features::kBiometricAuthenticationForFilling));
   password_manager::PasswordAccessAuthenticator::AuthResultCallback callback =
       base::BindOnce(&ChangeBiometricAuthenticationBeforeFillingSetting,
                      profile_->GetPrefs());
@@ -1049,7 +1049,7 @@ void PasswordsPrivateDelegateImpl::OnSavedPasswordsChanged(
 }
 
 void PasswordsPrivateDelegateImpl::OnWebAppInstalledWithOsHooks(
-    const web_app::AppId& app_id) {
+    const webapps::AppId& app_id) {
   if (app_id != web_app::kPasswordManagerAppId) {
     return;
   }
@@ -1112,8 +1112,7 @@ void PasswordsPrivateDelegateImpl::AuthenticateUser(
   if (device_authenticator_) {
     // TODO(crbug.com/1371026): Remove Cancel and instead simply destroy
     // |device_authenticator_|.
-    device_authenticator_->Cancel(
-        device_reauth::DeviceAuthRequester::kPasswordsInSettings);
+    device_authenticator_->Cancel();
   }
   device_authenticator_ = GetDeviceAuthenticator(web_contents_);
 

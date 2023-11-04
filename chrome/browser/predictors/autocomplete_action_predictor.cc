@@ -23,9 +23,9 @@
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"
-#include "chrome/browser/prefetch/prefetch_prefs.h"
 #include "chrome/browser/preloading/chrome_preloading.h"
 #include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
+#include "chrome/browser/preloading/preloading_prefs.h"
 #include "chrome/browser/preloading/prerender/prerender_manager.h"
 #include "chrome/browser/preloading/prerender/prerender_utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -237,7 +237,8 @@ void AutocompleteActionPredictor::StartPrerendering(
     content::PreloadingAttempt* preloading_attempt =
         preloading_data->AddPreloadingAttempt(
             chrome_preloading_predictor::kOmniboxDirectURLInput,
-            content::PreloadingType::kPrerender, std::move(same_url_matcher));
+            content::PreloadingType::kPrerender, std::move(same_url_matcher),
+            web_contents.GetPrimaryMainFrame()->GetPageUkmSourceId());
 
     PrerenderManager::CreateForWebContents(&web_contents);
     auto* prerender_manager = PrerenderManager::FromWebContents(&web_contents);
@@ -252,7 +253,8 @@ void AutocompleteActionPredictor::StartPrerendering(
         preloading_data->AddPreloadingAttempt(
             chrome_preloading_predictor::kOmniboxDirectURLInput,
             content::PreloadingType::kNoStatePrefetch,
-            std::move(same_url_matcher));
+            std::move(same_url_matcher),
+            web_contents.GetPrimaryMainFrame()->GetPageUkmSourceId());
 
     content::SessionStorageNamespace* session_storage_namespace =
         web_contents.GetController().GetDefaultSessionStorageNamespace();

@@ -79,12 +79,6 @@ void MediaStreamVideoCapturerSource::RequestRefreshFrame() {
   source_->RequestRefreshFrame();
 }
 
-void MediaStreamVideoCapturerSource::OnFrameDroppedInternal(
-    media::VideoCaptureFrameDropReason reason) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  source_->OnFrameDropped(reason);
-}
-
 void MediaStreamVideoCapturerSource::OnLog(const std::string& message) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   source_->OnLog(message);
@@ -110,15 +104,18 @@ void MediaStreamVideoCapturerSource::OnCapturingLinkSecured(bool is_secure) {
 void MediaStreamVideoCapturerSource::StartSourceImpl(
     VideoCaptureDeliverFrameCB frame_callback,
     EncodedVideoFrameCB encoded_frame_callback,
-    VideoCaptureCropVersionCB crop_version_callback) {
+    VideoCaptureCropVersionCB crop_version_callback,
+    VideoCaptureNotifyFrameDroppedCB frame_dropped_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   state_ = kStarting;
   frame_callback_ = std::move(frame_callback);
   crop_version_callback_ = std::move(crop_version_callback);
+  frame_dropped_callback_ = std::move(frame_dropped_callback);
 
   source_->StartCapture(
       capture_params_, frame_callback_, crop_version_callback_,
+      frame_dropped_callback_,
       WTF::BindRepeating(&MediaStreamVideoCapturerSource::OnRunStateChanged,
                          weak_factory_.GetWeakPtr(), capture_params_));
 }
@@ -156,6 +153,7 @@ void MediaStreamVideoCapturerSource::RestartSourceImpl(
   state_ = kRestarting;
   source_->StartCapture(
       new_capture_params, frame_callback_, crop_version_callback_,
+      frame_dropped_callback_,
       WTF::BindRepeating(&MediaStreamVideoCapturerSource::OnRunStateChanged,
                          weak_factory_.GetWeakPtr(), new_capture_params));
 }
@@ -192,6 +190,7 @@ void MediaStreamVideoCapturerSource::ChangeSourceImpl(
   source_ = device_capturer_factory_callback_.Run(new_device.session_id());
   source_->StartCapture(
       capture_params_, frame_callback_, crop_version_callback_,
+      frame_dropped_callback_,
       WTF::BindRepeating(&MediaStreamVideoCapturerSource::OnRunStateChanged,
                          weak_factory_.GetWeakPtr(), capture_params_));
 }

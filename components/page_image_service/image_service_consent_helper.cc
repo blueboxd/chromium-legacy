@@ -5,7 +5,9 @@
 #include "components/page_image_service/image_service_consent_helper.h"
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "components/page_image_service/features.h"
+#include "components/page_image_service/metrics_util.h"
 #include "components/sync/service/sync_service.h"
 #include "components/unified_consent/consent_throttle.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
@@ -14,14 +16,24 @@ namespace page_image_service {
 
 namespace {
 
-constexpr base::TimeDelta kTimeout = base::Seconds(10);
+void RunConsentThrottleCallback(
+    base::OnceCallback<void(PageImageServiceConsentStatus)> callback,
+    bool success) {
+  std::move(callback).Run(success ? PageImageServiceConsentStatus::kSuccess
+                                  : PageImageServiceConsentStatus::kFailure);
+}
 
 }  // namespace
 
 ImageServiceConsentHelper::ImageServiceConsentHelper(
     syncer::SyncService* sync_service,
     syncer::ModelType model_type)
-    : sync_service_(sync_service), model_type_(model_type) {
+    : sync_service_(sync_service),
+      model_type_(model_type),
+      timeout_duration_(base::Seconds(GetFieldTrialParamByFeatureAsInt(
+          kImageServiceObserveSyncDownloadStatus,
+          "timeout_seconds",
+          10))) {
   if (base::FeatureList::IsEnabled(kImageServiceObserveSyncDownloadStatus)) {
     sync_service_observer_.Observe(sync_service);
   } else if (model_type == syncer::ModelType::BOOKMARKS) {
@@ -31,12 +43,12 @@ ImageServiceConsentHelper::ImageServiceConsentHelper(
             NewPersonalizedBookmarksDataCollectionConsentHelper(
                 sync_service,
                 /*require_sync_feature_enabled=*/true),
-        kTimeout);
+        timeout_duration_);
   } else if (model_type == syncer::ModelType::HISTORY_DELETE_DIRECTIVES) {
     consent_throttle_ = std::make_unique<unified_consent::ConsentThrottle>(
         unified_consent::UrlKeyedDataCollectionConsentHelper::
             NewPersonalizedDataCollectionConsentHelper(sync_service),
-        kTimeout);
+        timeout_duration_);
   } else {
     NOTREACHED();
   }
@@ -45,22 +57,25 @@ ImageServiceConsentHelper::ImageServiceConsentHelper(
 ImageServiceConsentHelper::~ImageServiceConsentHelper() = default;
 
 void ImageServiceConsentHelper::EnqueueRequest(
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceCallback<void(PageImageServiceConsentStatus)> callback) {
   if (consent_throttle_) {
-    consent_throttle_->EnqueueRequest(std::move(callback));
+    consent_throttle_->EnqueueRequest(
+        base::BindOnce(&RunConsentThrottleCallback, std::move(callback)));
     return;
   }
 
   absl::optional<bool> consent_status = GetConsentStatus();
   if (consent_status.has_value()) {
-    std::move(callback).Run(*consent_status);
+    std::move(callback).Run(*consent_status
+                                ? PageImageServiceConsentStatus::kSuccess
+                                : PageImageServiceConsentStatus::kFailure);
     return;
   }
 
   enqueued_request_callbacks_.emplace_back(std::move(callback));
   if (!request_processing_timer_.IsRunning()) {
     request_processing_timer_.Start(
-        FROM_HERE, kTimeout,
+        FROM_HERE, timeout_duration_,
         base::BindOnce(&ImageServiceConsentHelper::OnTimeoutExpired,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -77,7 +92,9 @@ void ImageServiceConsentHelper::OnStateChanged(
   }
 
   for (auto& request_callback : enqueued_request_callbacks_) {
-    std::move(request_callback).Run(*consent_status);
+    std::move(request_callback)
+        .Run(*consent_status ? PageImageServiceConsentStatus::kSuccess
+                             : PageImageServiceConsentStatus::kFailure);
   }
 
   enqueued_request_callbacks_.clear();
@@ -109,7 +126,7 @@ absl::optional<bool> ImageServiceConsentHelper::GetConsentStatus() {
 
 void ImageServiceConsentHelper::OnTimeoutExpired() {
   for (auto& request_callback : enqueued_request_callbacks_) {
-    std::move(request_callback).Run(false);
+    std::move(request_callback).Run(PageImageServiceConsentStatus::kTimedOut);
   }
   enqueued_request_callbacks_.clear();
 }

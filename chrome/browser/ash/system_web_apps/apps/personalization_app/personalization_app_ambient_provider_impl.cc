@@ -10,7 +10,7 @@
 
 #include "ash/ambient/ambient_controller.h"
 #include "ash/ambient/metrics/ambient_metrics.h"
-#include "ash/constants/ambient_theme.h"
+#include "ash/ambient/util/ambient_util.h"
 #include "ash/constants/ambient_video.h"
 #include "ash/constants/ash_features.h"
 #include "ash/controls/contextual_tooltip.h"
@@ -175,12 +175,12 @@ void PersonalizationAppAmbientProviderImpl::SetAmbientModeEnabled(
 }
 
 void PersonalizationAppAmbientProviderImpl::SetAmbientTheme(
-    ash::AmbientTheme to_theme) {
+    mojom::AmbientTheme to_theme) {
   PrefService* pref_service = profile_->GetPrefs();
   DCHECK(pref_service);
   LogAmbientModeTheme(to_theme);
   AmbientUiSettings orig_settings = GetCurrentUiSettings();
-  AmbientTheme from_theme = orig_settings.theme();
+  mojom::AmbientTheme from_theme = orig_settings.theme();
   if (from_theme == to_theme) {
     return;
   }
@@ -188,7 +188,7 @@ void PersonalizationAppAmbientProviderImpl::SetAmbientTheme(
   // Attempt to retrieve the previously selected video. If not, fallback to the
   // default video. Only applicable when target theme is `AmbientTheme::kVideo`.
   AmbientVideo video = orig_settings.video().value_or(kDefaultAmbientVideo);
-  if (to_theme == AmbientTheme::kVideo) {
+  if (to_theme == mojom::AmbientTheme::kVideo) {
     LogAmbientModeVideo(video);
   }
   AmbientUiSettings(to_theme, video).WriteToPrefService(*pref_service);
@@ -198,35 +198,35 @@ void PersonalizationAppAmbientProviderImpl::SetAmbientTheme(
   //
   // If `settings_` is null, the next call to `FetchSettingsAndAlbums()` will
   // broadcast the `OnTopicSourceChanged()` call that's being done here.
-  if (settings_ && (to_theme == AmbientTheme::kVideo ||
-                    from_theme == AmbientTheme::kVideo)) {
+  if (settings_ && (to_theme == mojom::AmbientTheme::kVideo ||
+                    from_theme == mojom::AmbientTheme::kVideo)) {
     OnTopicSourceChanged();
   }
 }
 
 void PersonalizationAppAmbientProviderImpl::SetTopicSource(
-    ash::AmbientModeTopicSource topic_source) {
-  AmbientTheme current_theme = GetCurrentUiSettings().theme();
+    mojom::TopicSource topic_source) {
+  mojom::AmbientTheme current_theme = GetCurrentUiSettings().theme();
   // The presence of the `kVideo` theme in pref automatically means the `kVideo`
   // topic source is active. `settings_` should be kept as the server's view of
   // the user's ambient settings, and `SetAmbientTheme(kVideo)` already
   // broadcasts an `OnTopicSourceChanged()`, so there's no work to do here.
-  if (current_theme == AmbientTheme::kVideo) {
-    if (topic_source != AmbientModeTopicSource::kVideo) {
+  if (current_theme == mojom::AmbientTheme::kVideo) {
+    if (topic_source != mojom::TopicSource::kVideo) {
       LOG(ERROR) << "Cannot set topic source to "
                  << static_cast<int>(topic_source) << " for video theme";
     }
     return;
   }
 
-  if (topic_source == AmbientModeTopicSource::kVideo) {
+  if (topic_source == mojom::TopicSource::kVideo) {
     LOG(ERROR) << "Video topic source does not apply to theme "
-               << ToString(current_theme);
+               << ambient::util::AmbientThemeToString(current_theme);
     return;
   }
 
   // If this is an Art gallery album page, will select art gallery topic source.
-  if (topic_source == ash::AmbientModeTopicSource::kArtGallery) {
+  if (topic_source == mojom::TopicSource::kArtGallery) {
     MaybeUpdateTopicSource(topic_source);
     return;
   }
@@ -234,12 +234,12 @@ void PersonalizationAppAmbientProviderImpl::SetTopicSource(
   // If this is a Google Photos album page, will
   // 1. Select art gallery topic source if no albums or no album is selected.
   if (settings_->selected_album_ids.empty()) {
-    MaybeUpdateTopicSource(ash::AmbientModeTopicSource::kArtGallery);
+    MaybeUpdateTopicSource(mojom::TopicSource::kArtGallery);
     return;
   }
 
   // 2. Select Google Photos topic source if at least one album is selected.
-  MaybeUpdateTopicSource(ash::AmbientModeTopicSource::kGooglePhotos);
+  MaybeUpdateTopicSource(mojom::TopicSource::kGooglePhotos);
 }
 
 void PersonalizationAppAmbientProviderImpl::SetScreenSaverDuration(
@@ -260,10 +260,10 @@ void PersonalizationAppAmbientProviderImpl::SetTemperatureUnit(
 
 void PersonalizationAppAmbientProviderImpl::SetAlbumSelected(
     const std::string& id,
-    ash::AmbientModeTopicSource topic_source,
+    mojom::TopicSource topic_source,
     bool selected) {
   switch (topic_source) {
-    case (ash::AmbientModeTopicSource::kGooglePhotos): {
+    case (mojom::TopicSource::kGooglePhotos): {
       ash::PersonalAlbum* target_personal_album = FindPersonalAlbumById(id);
       if (!target_personal_album) {
         ambient_receiver_.ReportBadMessage("Invalid album id.");
@@ -282,9 +282,9 @@ void PersonalizationAppAmbientProviderImpl::SetAlbumSelected(
 
       // Update topic source based on selections.
       if (settings_->selected_album_ids.empty()) {
-        settings_->topic_source = ash::AmbientModeTopicSource::kArtGallery;
+        settings_->topic_source = mojom::TopicSource::kArtGallery;
       } else {
-        settings_->topic_source = ash::AmbientModeTopicSource::kGooglePhotos;
+        settings_->topic_source = mojom::TopicSource::kGooglePhotos;
       }
 
       ash::ambient::RecordAmbientModeTotalNumberOfAlbums(
@@ -293,7 +293,7 @@ void PersonalizationAppAmbientProviderImpl::SetAlbumSelected(
           settings_->selected_album_ids.size());
       break;
     }
-    case (ash::AmbientModeTopicSource::kArtGallery): {
+    case (mojom::TopicSource::kArtGallery): {
       // For Art gallery, we set the corresponding setting to be enabled or not
       // based on the selections.
       auto* art_setting = FindArtAlbumById(id);
@@ -304,7 +304,7 @@ void PersonalizationAppAmbientProviderImpl::SetAlbumSelected(
       art_setting->enabled = selected;
       break;
     }
-    case AmbientModeTopicSource::kVideo:
+    case mojom::TopicSource::kVideo:
       if (!selected) {
         DVLOG(4) << "Exactly one video must be selected at all times. Setting "
                     "the desired video to selected==true automatically "
@@ -359,7 +359,7 @@ void PersonalizationAppAmbientProviderImpl::OnAmbientModeEnabledChanged() {
     // incremented though every time the hub is simply opened.
     AmbientUiSettings current_ui_settings = GetCurrentUiSettings();
     LogAmbientModeTheme(current_ui_settings.theme());
-    if (current_ui_settings.theme() == AmbientTheme::kVideo) {
+    if (current_ui_settings.theme() == mojom::AmbientTheme::kVideo) {
       LogAmbientModeVideo(*current_ui_settings.video());
     }
   }
@@ -426,8 +426,8 @@ void PersonalizationAppAmbientProviderImpl::OnTopicSourceChanged() {
   // previews.
   OnPreviewsFetched(std::vector<GURL>());
   if (features::IsPersonalizationJellyEnabled() ||
-      GetCurrentTopicSource() == AmbientModeTopicSource::kGooglePhotos ||
-      GetCurrentTopicSource() == AmbientModeTopicSource::kVideo) {
+      GetCurrentTopicSource() == mojom::TopicSource::kGooglePhotos ||
+      GetCurrentTopicSource() == mojom::TopicSource::kVideo) {
     if (is_updating_backend_) {
       // Once settings updated, fetch preview images.
       needs_update_previews_ = true;
@@ -457,7 +457,7 @@ void PersonalizationAppAmbientProviderImpl::OnAlbumsChanged() {
     album->description = personal_album.description;
     album->number_of_photos = personal_album.number_of_photos;
     album->url = GURL(personal_album.banner_image_url);
-    album->topic_source = ash::AmbientModeTopicSource::kGooglePhotos;
+    album->topic_source = mojom::TopicSource::kGooglePhotos;
     albums.emplace_back(std::move(album));
   }
 
@@ -475,7 +475,7 @@ void PersonalizationAppAmbientProviderImpl::OnAlbumsChanged() {
     album->title = setting.title;
     album->description = setting.description;
     album->url = GURL(setting.preview_image_url);
-    album->topic_source = ash::AmbientModeTopicSource::kArtGallery;
+    album->topic_source = mojom::TopicSource::kArtGallery;
     albums.emplace_back(std::move(album));
   }
 
@@ -510,7 +510,7 @@ void PersonalizationAppAmbientProviderImpl::UpdateSettings() {
   DCHECK(IsAmbientModeEnabled())
       << "Ambient mode must be enabled to update settings";
   DCHECK(settings_);
-  DCHECK_NE(settings_->topic_source, AmbientModeTopicSource::kVideo)
+  DCHECK_NE(settings_->topic_source, mojom::TopicSource::kVideo)
       << "Ambient backend is not aware of the video topic source";
 
   // Prevent fetch settings callback changing `settings_` and `personal_albums_`
@@ -625,13 +625,13 @@ void PersonalizationAppAmbientProviderImpl::SyncSettingsAndAlbums() {
   }
 
   if (settings_->selected_album_ids.empty()) {
-    MaybeUpdateTopicSource(ash::AmbientModeTopicSource::kArtGallery);
+    MaybeUpdateTopicSource(mojom::TopicSource::kArtGallery);
   }
 }
 
 void PersonalizationAppAmbientProviderImpl::MaybeUpdateTopicSource(
-    ash::AmbientModeTopicSource topic_source) {
-  DCHECK_NE(settings_->topic_source, AmbientModeTopicSource::kVideo)
+    mojom::TopicSource topic_source) {
+  DCHECK_NE(settings_->topic_source, mojom::TopicSource::kVideo)
       << "Video topic source should automatically get set via the video "
          "AmbientTheme. Should not be reflected in the server.";
   // If the setting is the same, no need to update.
@@ -649,7 +649,7 @@ void PersonalizationAppAmbientProviderImpl::MaybeUpdateTopicSource(
 void PersonalizationAppAmbientProviderImpl::FetchPreviewImages() {
   needs_update_previews_ = false;
   previews_weak_factory_.InvalidateWeakPtrs();
-  if (GetCurrentUiSettings().theme() == AmbientTheme::kVideo) {
+  if (GetCurrentUiSettings().theme() == mojom::AmbientTheme::kVideo) {
     absl::optional<AmbientVideo> video = GetCurrentUiSettings().video();
     DCHECK(video.has_value());
     auto url_arr =
@@ -748,10 +748,10 @@ void PersonalizationAppAmbientProviderImpl::OnAmbientUiVisibilityChanged(
   }
 }
 
-AmbientModeTopicSource
+mojom::TopicSource
 PersonalizationAppAmbientProviderImpl::GetCurrentTopicSource() const {
-  if (GetCurrentUiSettings().theme() == AmbientTheme::kVideo) {
-    return AmbientModeTopicSource::kVideo;
+  if (GetCurrentUiSettings().theme() == mojom::AmbientTheme::kVideo) {
+    return mojom::TopicSource::kVideo;
   } else {
     DCHECK(settings_);
     return settings_->topic_source;

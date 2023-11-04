@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "gin/v8_platform_thread_isolated_allocator.h"
+#include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_root.h"
 
 #if BUILDFLAG(ENABLE_THREAD_ISOLATION)
@@ -32,12 +33,12 @@ void ThreadIsolatedAllocator::Initialize(int pkey) {
 }
 
 void* ThreadIsolatedAllocator::Allocate(size_t size) {
-  return allocator_.root()->AllocNoHooks(size,
-                                         partition_alloc::PartitionPageSize());
+  return allocator_.root()->AllocInline<partition_alloc::AllocFlags::kNoHooks>(
+      size);
 }
 
 void ThreadIsolatedAllocator::Free(void* object) {
-  allocator_.root()->FreeNoHooks(object);
+  allocator_.root()->FreeInline<partition_alloc::FreeFlags::kNoHooks>(object);
 }
 
 enum ThreadIsolatedAllocator::Type ThreadIsolatedAllocator::Type() const {

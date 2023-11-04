@@ -11,13 +11,12 @@
 #include "base/logging.h"
 #include "base/uuid.h"
 #include "components/sync/base/data_type_histogram.h"
-#include "components/sync/base/features.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/time.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/engine/commit_and_get_updates_types.h"
 #include "components/sync/engine/cycle/entity_change_metric_recording.h"
-#include "components/sync/engine/model_type_worker.h"
+#include "components/sync/engine/sync_protocol_error.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -61,14 +60,12 @@ CommitContributionImpl::CommitContributionImpl(
                             const FailedCommitResponseDataList&)>
         on_commit_response_callback,
     base::OnceCallback<void(SyncCommitError)> on_full_commit_failure_callback,
-    Cryptographer* cryptographer,
     PassphraseType passphrase_type,
     bool only_commit_specifics)
     : type_(type),
       on_commit_response_callback_(std::move(on_commit_response_callback)),
       on_full_commit_failure_callback_(
           std::move(on_full_commit_failure_callback)),
-      cryptographer_(cryptographer),
       passphrase_type_(passphrase_type),
       context_(context),
       commit_requests_(std::move(commit_requests)),
@@ -89,7 +86,10 @@ void CommitContributionImpl::AddToCommitMessage(
     sync_pb::SyncEntity* sync_entity = commit_message->add_entries();
     if (only_commit_specifics_) {
       DCHECK(!commit_request->entity->is_deleted());
-      DCHECK(!cryptographer_);
+
+      // Commit-only data types must never be encrypted.
+      CHECK(!commit_request->entity->specifics.has_encrypted());
+
       // Only send specifics to server for commit-only types.
       sync_entity->mutable_specifics()->CopyFrom(
           commit_request->entity->specifics);
@@ -133,7 +133,7 @@ SyncerError CommitContributionImpl::ProcessCommitResponse(
     StatusController* status) {
   CommitResponseDataList success_response_list;
   FailedCommitResponseDataList error_response_list;
-  bool has_unknown_error = false;
+  bool has_invalid_messages = false;
   bool has_conflicting_commits = false;
   bool has_transient_error_commits = false;
 
@@ -160,7 +160,7 @@ SyncerError CommitContributionImpl::ProcessCommitResponse(
         break;
       case sync_pb::CommitResponse::INVALID_MESSAGE:
         DLOG(ERROR) << "Server reports commit message is invalid.";
-        has_unknown_error = true;
+        has_invalid_messages = true;
         break;
       case sync_pb::CommitResponse::CONFLICT:
         DVLOG(1) << "Server reports conflict for commit message.";
@@ -187,16 +187,16 @@ SyncerError CommitContributionImpl::ProcessCommitResponse(
   on_full_commit_failure_callback_.Reset();
 
   // Let the scheduler know about the failures.
-  if (has_unknown_error) {
-    return SyncerError(SyncerError::SERVER_RETURN_UNKNOWN_ERROR);
+  if (has_invalid_messages) {
+    return SyncerError::ProtocolError(SyncProtocolErrorType::INVALID_MESSAGE);
   }
   if (has_transient_error_commits) {
-    return SyncerError(SyncerError::SERVER_RETURN_TRANSIENT_ERROR);
+    return SyncerError::ProtocolError(SyncProtocolErrorType::TRANSIENT_ERROR);
   }
   if (has_conflicting_commits) {
-    return SyncerError(SyncerError::SERVER_RETURN_CONFLICT);
+    return SyncerError::ProtocolError(SyncProtocolErrorType::CONFLICT);
   }
-  return SyncerError(SyncerError::SYNCER_OK);
+  return SyncerError::Success();
 }
 
 void CommitContributionImpl::ProcessCommitFailure(
@@ -215,7 +215,6 @@ void CommitContributionImpl::PopulateCommitProto(
     const CommitRequestData& commit_entity,
     sync_pb::SyncEntity* commit_proto) {
   const EntityData& entity_data = *commit_entity.entity;
-  DCHECK(!entity_data.specifics.has_encrypted());
 
   commit_proto->set_id_string(entity_data.id);
 
@@ -241,21 +240,11 @@ void CommitContributionImpl::PopulateCommitProto(
     // Handle bookmarks separately.
     if (type == BOOKMARKS) {
       // Populate SyncEntity.folder for backward-compatibility.
-      switch (entity_data.specifics.bookmark().type()) {
-        case sync_pb::BookmarkSpecifics::UNSPECIFIED:
-          NOTREACHED();
-          break;
-        case sync_pb::BookmarkSpecifics::URL:
-          commit_proto->set_folder(false);
-          break;
-        case sync_pb::BookmarkSpecifics::FOLDER:
-          commit_proto->set_folder(true);
-          break;
-      }
-      const UniquePosition unique_position = UniquePosition::FromProto(
-          entity_data.specifics.bookmark().unique_position());
-      DCHECK(unique_position.IsValid());
-      *commit_proto->mutable_unique_position() = unique_position.ToProto();
+      commit_proto->set_folder(commit_entity.deprecated_bookmark_folder);
+      CHECK(commit_entity.deprecated_bookmark_unique_position.IsValid());
+      *commit_proto->mutable_unique_position() =
+          commit_entity.deprecated_bookmark_unique_position.ToProto();
+
       // parent_id field is set only for legacy clients only, before M99.
       if (!entity_data.legacy_parent_id.empty()) {
         commit_proto->set_parent_id_string(entity_data.legacy_parent_id);
@@ -280,19 +269,6 @@ void CommitContributionImpl::AdjustCommitProto(
       commit_proto->set_id_string(
           base::Uuid::GenerateRandomV4().AsLowercaseString());
     }
-  }
-
-  // Passwords have different encryption scheme, see ModelTypeWorker.
-  // TODO(crbug.com/1468523): migrate encryption to ModelTypeWorker.
-  if (cryptographer_ && !commit_proto->specifics().has_password()) {
-    if (commit_proto->has_specifics()) {
-      sync_pb::EntitySpecifics encrypted_specifics;
-      bool result = cryptographer_->Encrypt(
-          commit_proto->specifics(), encrypted_specifics.mutable_encrypted());
-      DCHECK(result);
-      commit_proto->mutable_specifics()->CopyFrom(encrypted_specifics);
-    }
-    commit_proto->set_name("encrypted");
   }
 
   // See crbug.com/915133: Certain versions of Chrome (e.g. M71) handle corrupt

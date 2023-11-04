@@ -31,7 +31,6 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 
 import java.util.ArrayList;
@@ -56,9 +55,7 @@ public class QuickDeleteTabsFilterTest {
         // Create tabs.
         for (int id = 0; id < countOfTabs; id++) {
             MockTab mockTab = new MockTab(id, /*incognito=*/false);
-            CriticalPersistedTabData mockTabData = new CriticalPersistedTabData(mockTab);
-            mockTabData.setRootId(id);
-            mockTab.getUserDataHost().setUserData(CriticalPersistedTabData.class, mockTabData);
+            mockTab.setRootId(id);
             mMockTabList.add(mockTab);
         }
         // Update the tab model.
@@ -87,8 +84,7 @@ public class QuickDeleteTabsFilterTest {
         mQuickDeleteTabsFilter = new QuickDeleteTabsFilter(mTabModelMock);
 
         createTabsAndUpdateTabModel(1);
-        CriticalPersistedTabData.from(mMockTabList.get(0))
-                .setLastNavigationCommittedTimestampMillis(INITIAL_TIME_IN_MS);
+        mMockTabList.get(0).setLastNavigationCommittedTimestampMillis(INITIAL_TIME_IN_MS);
 
         // 15 minutes passes...
         mQuickDeleteTabsFilter.setCurrentTimeForTesting(INITIAL_TIME_IN_MS + FIFTEEN_MINUTES_IN_MS);
@@ -104,8 +100,7 @@ public class QuickDeleteTabsFilterTest {
         mQuickDeleteTabsFilter = new QuickDeleteTabsFilter(mTabModelMock);
 
         createTabsAndUpdateTabModel(1);
-        CriticalPersistedTabData.from(mMockTabList.get(0))
-                .setLastNavigationCommittedTimestampMillis(INITIAL_TIME_IN_MS + 10);
+        mMockTabList.get(0).setLastNavigationCommittedTimestampMillis(INITIAL_TIME_IN_MS + 10);
 
         // 15 minutes passes...
         mQuickDeleteTabsFilter.setCurrentTimeForTesting(INITIAL_TIME_IN_MS + FIFTEEN_MINUTES_IN_MS);
@@ -125,8 +120,7 @@ public class QuickDeleteTabsFilterTest {
         // Mock the tab as custom tab.
         mMockTabList.get(0).setIsCustomTab(true);
         // Make the custom tab in the right period for consideration for quick delete.
-        CriticalPersistedTabData.from(mMockTabList.get(0))
-                .setLastNavigationCommittedTimestampMillis(INITIAL_TIME_IN_MS + 10);
+        mMockTabList.get(0).setLastNavigationCommittedTimestampMillis(INITIAL_TIME_IN_MS + 10);
 
         // 15 minutes passes...
         mQuickDeleteTabsFilter.setCurrentTimeForTesting(INITIAL_TIME_IN_MS + FIFTEEN_MINUTES_IN_MS);
@@ -144,16 +138,14 @@ public class QuickDeleteTabsFilterTest {
         createTabsAndUpdateTabModel(2);
 
         // Tab_0: Outside 15 minutes range.
-        CriticalPersistedTabData.from(mMockTabList.get(0))
-                .setLastNavigationCommittedTimestampMillis(INITIAL_TIME_IN_MS);
+        mMockTabList.get(0).setLastNavigationCommittedTimestampMillis(INITIAL_TIME_IN_MS);
 
         // 15 minutes passes...
         mQuickDeleteTabsFilter.setCurrentTimeForTesting(INITIAL_TIME_IN_MS + FIFTEEN_MINUTES_IN_MS);
 
         // Tab_1: Within 15 minutes range.
-        CriticalPersistedTabData.from(mMockTabList.get(1))
-                .setLastNavigationCommittedTimestampMillis(
-                        INITIAL_TIME_IN_MS + FIFTEEN_MINUTES_IN_MS);
+        mMockTabList.get(1).setLastNavigationCommittedTimestampMillis(
+                INITIAL_TIME_IN_MS + FIFTEEN_MINUTES_IN_MS);
 
         List<Tab> filteredTabs =
                 mQuickDeleteTabsFilter.getListOfTabsToBeClosed(TimePeriod.LAST_15_MINUTES);
@@ -169,11 +161,9 @@ public class QuickDeleteTabsFilterTest {
         createTabsAndUpdateTabModel(2);
 
         // Tab 1
-        CriticalPersistedTabData.from(mMockTabList.get(0))
-                .setLastNavigationCommittedTimestampMillis(INITIAL_TIME_IN_MS + 10);
+        mMockTabList.get(0).setLastNavigationCommittedTimestampMillis(INITIAL_TIME_IN_MS + 10);
         // Tab 2
-        CriticalPersistedTabData.from(mMockTabList.get(1))
-                .setLastNavigationCommittedTimestampMillis(INITIAL_TIME_IN_MS + 20);
+        mMockTabList.get(1).setLastNavigationCommittedTimestampMillis(INITIAL_TIME_IN_MS + 20);
 
         // 15 minutes passes...
         mQuickDeleteTabsFilter.setCurrentTimeForTesting(INITIAL_TIME_IN_MS + FIFTEEN_MINUTES_IN_MS);
@@ -203,9 +193,8 @@ public class QuickDeleteTabsFilterTest {
 
         // Set these mock tabs 1 week apart, total of 5 weeks.
         for (int i = 0; i < countOfTabs; ++i) {
-            CriticalPersistedTabData.from(mMockTabList.get(i))
-                    .setLastNavigationCommittedTimestampMillis(
-                            INITIAL_TIME_IN_MS + ONE_WEEK_IN_MS * (i + 1));
+            mMockTabList.get(i).setLastNavigationCommittedTimestampMillis(
+                    INITIAL_TIME_IN_MS + ONE_WEEK_IN_MS * (i + 1));
         }
 
         // 5 weeks passes...
@@ -231,9 +220,8 @@ public class QuickDeleteTabsFilterTest {
 
         // Set these mock tabs 1 week apart, total of 5 weeks.
         for (int i = 0; i < countOfTabs; ++i) {
-            CriticalPersistedTabData.from(mMockTabList.get(i))
-                    .setLastNavigationCommittedTimestampMillis(
-                            INITIAL_TIME_IN_MS + ONE_WEEK_IN_MS * (i + 1));
+            mMockTabList.get(i).setLastNavigationCommittedTimestampMillis(
+                    INITIAL_TIME_IN_MS + ONE_WEEK_IN_MS * (i + 1));
         }
 
         // 5 weeks passes...

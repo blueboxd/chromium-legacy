@@ -74,15 +74,12 @@ enum ModelType {
   AUTOFILL_WALLET_USAGE,
   // A theme object.
   THEMES,
-  // A typed_url object, i.e. a URL the user has typed into the Omnibox.
-  TYPED_URLS,
   // An extension object.
   EXTENSIONS,
   // An object representing a custom search engine.
   SEARCH_ENGINES,
   // An object representing a browser session, e.g. an open tab. This is used
-  // for both "History" (together with TYPED_URLS) and "Tabs" (depending on
-  // PROXY_TABS).
+  // for "Tabs" (depending on PROXY_TABS).
   SESSIONS,
   // An app object.
   APPS,
@@ -158,8 +155,10 @@ enum ModelType {
   // real user types. By convention, we prefix them with 'PROXY_' to distinguish
   // them from normal protocol types.
   //
-  // Tab sync. This is a placeholder type, so that Sessions can be implicitly
-  // enabled for history sync and tabs sync.
+  // Tab sync. This is a placeholder type, which implicitly enables Sessions
+  // for tabs sync.
+  // TODO(crbug.com/1365291): Now that TYPED_URLS is gone, it should be possible
+  // to remove this type, and the whole concept of "proxy types".
   PROXY_TABS,
   LAST_USER_MODEL_TYPE = PROXY_TABS,
 
@@ -174,18 +173,9 @@ enum ModelType {
 
 using ModelTypeSet =
     base::EnumSet<ModelType, FIRST_REAL_MODEL_TYPE, LAST_REAL_MODEL_TYPE>;
-using FullModelTypeSet =
-    base::EnumSet<ModelType, UNSPECIFIED, LAST_REAL_MODEL_TYPE>;
-using ModelTypeNameMap = std::map<ModelType, const char*>;
 
 constexpr int GetNumModelTypes() {
   return static_cast<int>(ModelType::LAST_ENTRY) + 1;
-}
-
-inline ModelType ModelTypeFromInt(int i) {
-  DCHECK_GE(i, 0);
-  DCHECK_LT(i, GetNumModelTypes());
-  return static_cast<ModelType>(i);
 }
 
 // A version of the ModelType enum for use in histograms. ModelType does not
@@ -206,7 +196,7 @@ enum class ModelTypeForHistograms {
   kAutofillProfile = 5,
   kAutofill = 6,
   kThemes = 7,
-  kTypedUrls = 8,
+  // kDeprecatedTypedUrls = 8,
   kExtensions = 9,
   kSearchEngines = 10,
   kSessions = 11,
@@ -285,7 +275,6 @@ constexpr ModelTypeSet ProtocolTypes() {
           AUTOFILL_WALLET_OFFER,
           AUTOFILL_WALLET_USAGE,
           THEMES,
-          TYPED_URLS,
           EXTENSIONS,
           SEARCH_ENGINES,
           SESSIONS,
@@ -383,7 +372,11 @@ constexpr ModelTypeSet LowPriorityUserTypes() {
       // of other data types.
       HISTORY,
       // User Events should not block or delay commits for other data types.
-      USER_EVENTS};
+      USER_EVENTS,
+      // Incoming password sharing invitations must be processed after
+      // Passwords data type to prevent storing incoming passwords locally first
+      // and overwriting the remote password during conflict resolution.
+      INCOMING_PASSWORD_SHARING_INVITATION};
 }
 
 // Returns a list of all control types.
@@ -449,8 +442,6 @@ ModelTypeSet GetModelTypeSetFromSpecificsFieldNumberList(
 // a model type.
 int GetSpecificsFieldNumberFromModelType(ModelType model_type);
 
-// TODO(sync): The functions below badly need some cleanup.
-
 // Returns a string with application lifetime that represents the name of
 // |model_type|.
 const char* ModelTypeToDebugString(ModelType model_type);
@@ -469,17 +460,11 @@ ModelTypeForHistograms ModelTypeHistogramValue(ModelType model_type);
 // time and thus can be used when persisting data.
 int ModelTypeToStableIdentifier(ModelType model_type);
 
-// Handles all model types, and not just real ones.
-base::Value ModelTypeToValue(ModelType model_type);
-
 // Returns the comma-separated string representation of |model_types|.
 std::string ModelTypeSetToDebugString(ModelTypeSet model_types);
 
 // Necessary for compatibility with EXPECT_EQ and the like.
 std::ostream& operator<<(std::ostream& out, ModelTypeSet model_type_set);
-
-// Generates a base::Value::List from |model_types|.
-base::Value::List ModelTypeSetToValue(ModelTypeSet model_types);
 
 // Returns a string corresponding to the root tag as exposed in the sync
 // protocol as the root entity's ID, which makes the root entity trivially
@@ -500,16 +485,7 @@ bool IsRealDataType(ModelType model_type);
 // Returns true if |model_type| is an act-once type. Act once types drop
 // entities after applying them. Drops are deletes that are not synced to other
 // clients.
-// TODO(haitaol): Make entries of act-once data types immutable.
 bool IsActOnceDataType(ModelType model_type);
-
-// Returns true if |model_type| requires its root folder to be explicitly
-// created on the server during initial sync.
-bool IsTypeWithServerGeneratedRoot(ModelType model_type);
-
-// Returns true if root folder for |model_type| is created on the client when
-// that type is initially synced.
-bool IsTypeWithClientGeneratedRoot(ModelType model_type);
 
 }  // namespace syncer
 

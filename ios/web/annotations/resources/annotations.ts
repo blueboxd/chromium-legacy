@@ -52,12 +52,9 @@ class Decoration {
  * Section (like find in page) is used to be able to find text even if
  * there are DOM changes between extraction and decoration. Using WeakRef
  * around nodes also avoids holding on to deleted nodes.
- * TODO(crbug.com/1350973): WeakRef starts in 14.5, remove checks once 14 is
- *   deprecated. This also means that < 14.5 sectionsNodes is never releasing
- *   nodes, even if they are released from the DOM.
  */
 class Section {
-  constructor(public node: Node|WeakRef<Node>, public index: number) {}
+  constructor(public node: WeakRef<Node>, public index: number) {}
 }
 
 /**
@@ -325,7 +322,7 @@ function removeDecorations(): void {
  * @param type - the type of annotations to remove.
  */
 function removeDecorationsWithType(type: string): void {
-  var remainingDecorations = [];
+  var remainingDecorations : Decoration[] = [];
   for (let decoration of decorations) {
     const replacements = decoration.replacements;
     const parentNode = replacements[0]!.parentNode;
@@ -361,22 +358,25 @@ function removeDecorationsWithType(type: string): void {
       continue;
     }
 
-    // The decoration is of mixed type. Just remove the style of the replacement
-    // of the needed type as realtering the DOM would have greater effect in
-    // the page.
+    // The decoration is of mixed type. Just replace the <chrome_annotation>
+    // of `type` by a text node with same text content.
+    let newReplacements: Node[] = [];
     for (let replacement of replacements) {
       if (!(replacement instanceof HTMLElement)) {
+        newReplacements.push(replacement);
         continue;
       }
       var element = replacement as HTMLElement;
       var replacementType = element.getAttribute('data-type');
       if (replacementType !== type) {
+        newReplacements.push(replacement);
         continue;
       }
-      element.removeAttribute('role');
-      element.removeAttribute('style');
-      element.setAttribute('data-disabled', 'true');
+      let text = document.createTextNode(element.textContent ?? "");
+      parentNode.replaceChild(text, element);
+      newReplacements.push(text);
     }
+    decoration.replacements = newReplacements;
     remainingDecorations.push(decoration);
   }
   decorations = remainingDecorations;
@@ -482,9 +482,7 @@ function enumerateTextNodes(
  */
 function enumerateSectionsNodes(process: EnumNodesFunction): void {
   for (let section of sections) {
-    const node: Node|undefined = window.WeakRef ?
-        (section.node as WeakRef<Node>).deref() :
-        section.node as Node;
+    const node: Node|undefined = section.node.deref();
     if (!node)
       continue;
 
@@ -504,8 +502,7 @@ function getPageText(maxChars: number): string {
   const parts: string[] = [];
   sections = [];
   enumerateTextNodes(document.body, function(node, index, text) {
-    sections.push(new Section(window.WeakRef ?
-        new WeakRef<Node>(node) : node, index));
+    sections.push(new Section(new WeakRef<Node>(node), index));
     if (index + text.length > maxChars) {
       parts.push(text.substring(0, maxChars - index));
     } else {
@@ -539,7 +536,6 @@ function handleTopTap(event: Event) {
   // Nothing happened to the page between `handleTap` and `handleTopTap`.
   if (event.target instanceof HTMLElement &&
       event.target.tagName === 'CHROME_ANNOTATION' &&
-      event.target.getAttribute('data-disabled') !== 'true' &&
       mutationDuringClickObserver &&
       !mutationDuringClickObserver.hasPreventativeActivity(event)) {
     const annotation = event.target;

@@ -111,6 +111,14 @@ class ASH_EXPORT TasksBubbleView : public GlanceableTrayChildBubble,
   int num_tasks_shown_ = 0;
   int num_tasks_ = 0;
 
+  // The number of times that the tasks list has been changed during the
+  // lifetime of this view.
+  int tasks_list_change_count_ = 0;
+
+  // Whether the first task list has been shown during the lifetime of this
+  // view.
+  bool first_task_list_shown_ = false;
+
   // Owned by views hierarchy.
   raw_ptr<views::FlexLayoutView, ExperimentalAsh> tasks_header_view_ = nullptr;
   raw_ptr<Combobox, ExperimentalAsh> task_list_combo_box_view_ = nullptr;
@@ -120,6 +128,10 @@ class ASH_EXPORT TasksBubbleView : public GlanceableTrayChildBubble,
   raw_ptr<GlanceablesListFooterView, ExperimentalAsh> list_footer_view_ =
       nullptr;
   raw_ptr<GlanceablesProgressBarView, ExperimentalAsh> progress_bar_ = nullptr;
+
+  // Records the time when the bubble was about to request a task list. Used for
+  // metrics.
+  base::TimeTicks tasks_requested_time_;
 
   base::ScopedObservation<views::View, views::ViewObserver>
       combobox_view_observation_{this};

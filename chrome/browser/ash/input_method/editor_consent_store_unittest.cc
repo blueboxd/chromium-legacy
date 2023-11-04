@@ -32,26 +32,13 @@ TEST_F(EditorConsentStoreTest,
 }
 
 TEST_F(EditorConsentStoreTest,
-       ReceivingApprovalResponseAfterDismissalWillLeadToConsentApproval) {
+       ReceivingApprovalResponseWillLeadToConsentApproval) {
   TestingProfile profile_;
   EditorConsentStore store(profile_.GetPrefs());
 
-  store.ProcessConsentAction(ConsentAction::kDismissed);
   store.ProcessConsentAction(ConsentAction::kApproved);
 
   EXPECT_EQ(store.GetConsentStatus(), ConsentStatus::kApproved);
-}
-
-TEST_F(EditorConsentStoreTest,
-       ManyConsentWindowDismissalsWillLeadToImplicitConsentDecline) {
-  TestingProfile profile_;
-  EditorConsentStore store(profile_.GetPrefs());
-
-  store.ProcessConsentAction(ConsentAction::kDismissed);
-  store.ProcessConsentAction(ConsentAction::kDismissed);
-  store.ProcessConsentAction(ConsentAction::kDismissed);
-
-  EXPECT_EQ(store.GetConsentStatus(), ConsentStatus::kImplicitlyDeclined);
 }
 
 TEST_F(EditorConsentStoreTest,
@@ -66,19 +53,17 @@ TEST_F(EditorConsentStoreTest,
   EXPECT_EQ(store.GetConsentStatus(), ConsentStatus::kUnset);
 }
 
-TEST_F(
-    EditorConsentStoreTest,
-    SwitchingOnSettingToggleWillResetConsentWhichWasPreviouslyImplicitlyDeclined) {
+TEST_F(EditorConsentStoreTest,
+       DecliningThePromoCardWillSwitchOffFeatureToggle) {
   TestingProfile profile_;
   EditorConsentStore store(profile_.GetPrefs());
 
-  store.ProcessConsentAction(ConsentAction::kDismissed);
-  store.ProcessConsentAction(ConsentAction::kDismissed);
-  store.ProcessConsentAction(ConsentAction::kDismissed);
-  // Simulate a user action to switch on the orca toggle.
+  // Switch on the orca toggle in the setting page.
   profile_.GetPrefs()->SetBoolean(prefs::kOrcaEnabled, true);
+  // Simulate a user action to explicitly decline the promo card.
+  store.ProcessPromoCardAction(PromoCardAction::kDeclined);
 
-  EXPECT_EQ(store.GetConsentStatus(), ConsentStatus::kUnset);
+  EXPECT_FALSE(profile_.GetPrefs()->GetBoolean(prefs::kOrcaEnabled));
 }
 
 }  // namespace

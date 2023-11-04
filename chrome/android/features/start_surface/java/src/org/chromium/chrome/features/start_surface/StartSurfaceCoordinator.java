@@ -24,6 +24,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
 import org.chromium.base.MathUtils;
 import org.chromium.base.ObserverList;
+import org.chromium.base.jank_tracker.JankTracker;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplier;
@@ -105,6 +106,7 @@ public class StartSurfaceCoordinator implements StartSurface {
     private final BottomSheetController mBottomSheetController;
     private final Supplier<Tab> mParentTabSupplier;
     private final WindowAndroid mWindowAndroid;
+    private final JankTracker mJankTracker;
     private ViewGroup mContainerView;
     private final Supplier<DynamicResourceLoader> mDynamicResourceLoaderSupplier;
     private final TabModelSelector mTabModelSelector;
@@ -249,7 +251,8 @@ public class StartSurfaceCoordinator implements StartSurface {
      * @param startSurfaceOneshotSupplier Supplies the start surface.
      * @param parentTabSupplier Supplies the current parent {@link Tab}.
      * @param hadWarmStart Whether the application had a warm start.
-     * @param windowAndroid The current {@link WindowAndroid}.
+     * @param windowAndroid The current {@link WindowAndroid}.a
+     * @param jankTracker asd
      * @param containerView The container {@link ViewGroup} for this ui, also the root view for
      *         StartSurface.
      * @param dynamicResourceLoaderSupplier Supplies the current {@link DynamicResourceLoader}.
@@ -277,7 +280,8 @@ public class StartSurfaceCoordinator implements StartSurface {
             @NonNull BottomSheetController sheetController,
             @NonNull OneshotSupplierImpl<StartSurface> startSurfaceOneshotSupplier,
             @NonNull Supplier<Tab> parentTabSupplier, boolean hadWarmStart,
-            @NonNull WindowAndroid windowAndroid, @NonNull ViewGroup containerView,
+            @NonNull WindowAndroid windowAndroid, @NonNull JankTracker jankTracker,
+            @NonNull ViewGroup containerView,
             @NonNull Supplier<DynamicResourceLoader> dynamicResourceLoaderSupplier,
             @NonNull TabModelSelector tabModelSelector,
             @NonNull BrowserControlsManager browserControlsManager,
@@ -302,6 +306,7 @@ public class StartSurfaceCoordinator implements StartSurface {
         mBottomSheetController = sheetController;
         mParentTabSupplier = parentTabSupplier;
         mWindowAndroid = windowAndroid;
+        mJankTracker = jankTracker;
         mContainerView = containerView;
         mDynamicResourceLoaderSupplier = dynamicResourceLoaderSupplier;
         mTabModelSelector = tabModelSelector;
@@ -512,8 +517,8 @@ public class StartSurfaceCoordinator implements StartSurface {
             mExploreSurfaceCoordinatorFactory = new ExploreSurfaceCoordinatorFactory(mActivity,
                     parentView, mPropertyModel, mBottomSheetController, mParentTabSupplier,
                     new ScrollableContainerDelegateImpl(), mSnackbarManager, mShareDelegateSupplier,
-                    mWindowAndroid, mTabModelSelector, mToolbarSupplier, mConstructedTimeNs,
-                    mSwipeRefreshLayout);
+                    mWindowAndroid, mJankTracker, mTabModelSelector, mToolbarSupplier,
+                    mConstructedTimeNs, mSwipeRefreshLayout);
         }
         mStartSurfaceMediator.initWithNative(
                 mIsStartSurfaceEnabled ? mOmniboxStubSupplier.get() : null,
@@ -1060,7 +1065,9 @@ public class StartSurfaceCoordinator implements StartSurface {
 
         // The following |fake*| values mean the values of the fake search box; |real*| values
         // mean the values of the real search box.
-        int fakeHeight = getPixelSize(R.dimen.ntp_search_box_height);
+        int fakeHeight = mIsSurfacePolishEnabled
+                ? getPixelSize(R.dimen.ntp_search_box_height_polish)
+                : getPixelSize(R.dimen.ntp_search_box_height);
         int realHeight = getPixelSize(R.dimen.toolbar_height_no_shadow) - realVerticalMargin * 2;
         int fakeAndRealHeightDiff = fakeHeight - realHeight;
 
@@ -1073,7 +1080,9 @@ public class StartSurfaceCoordinator implements StartSurface {
         int realTranslationX = getPixelSize(R.dimen.location_bar_status_icon_width)
                 + getPixelSize(R.dimen.location_bar_icon_end_padding_focused)
                 + (getPixelSize(R.dimen.fake_search_box_lateral_padding)
-                        - getPixelSize(R.dimen.search_box_start_padding));
+                        - (mIsSurfacePolishEnabled
+                                        ? getPixelSize(R.dimen.fake_search_box_start_padding)
+                                        : getPixelSize(R.dimen.search_box_start_padding)));
 
         int fakeButtonSize = mIsSurfacePolishEnabled
                 ? getPixelSize(R.dimen.location_bar_action_icon_width)

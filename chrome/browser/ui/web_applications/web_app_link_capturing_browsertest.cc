@@ -5,6 +5,7 @@
 #include <tuple>
 
 #include "base/location.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/test_future.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/apps/link_capturing/link_capturing_navigation_throttle.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -35,6 +37,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
+#include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/prerender_test_util.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -78,13 +82,14 @@ class WebAppLinkCapturingBrowserTest : public WebAppNavigationBrowserTest {
   }
 
   // Returns [app_id, in_scope_1, in_scope_2, scope]
-  std::tuple<AppId, GURL, GURL, GURL> InstallTestApp(const char* path) {
+  std::tuple<webapps::AppId, GURL, GURL, GURL> InstallTestApp(
+      const char* path) {
     GURL start_url = embedded_test_server()->GetURL(path);
     GURL in_scope_1 = start_url.Resolve("page1.html");
     GURL in_scope_2 = start_url.Resolve("page2.html");
     GURL scope = start_url.GetWithoutFilename();
 
-    AppId app_id =
+    webapps::AppId app_id =
         InstallWebAppFromPageAndCloseAppBrowser(browser(), start_url);
     apps::AppReadinessWaiter(profile(), app_id).Await();
     return std::make_tuple(app_id, in_scope_1, in_scope_2, scope);
@@ -99,17 +104,17 @@ class WebAppLinkCapturingBrowserTest : public WebAppNavigationBrowserTest {
     return embedded_test_server()->GetURL("/web_apps/nesting/index.html");
   }
 
-  AppId InstallParentApp() {
+  webapps::AppId InstallParentApp() {
     GURL start_url = GetParentAppUrl();
-    AppId app_id =
+    webapps::AppId app_id =
         InstallWebAppFromPageAndCloseAppBrowser(browser(), start_url);
     apps::AppReadinessWaiter(profile(), app_id).Await();
     return app_id;
   }
 
-  AppId InstallNestedApp() {
+  webapps::AppId InstallNestedApp() {
     GURL start_url = GetNestedAppUrl();
-    AppId app_id =
+    webapps::AppId app_id =
         InstallWebAppFromPageAndCloseAppBrowser(browser(), start_url);
     apps::AppReadinessWaiter(profile(), app_id).Await();
     return app_id;
@@ -190,7 +195,7 @@ class WebAppLinkCapturingBrowserTest : public WebAppNavigationBrowserTest {
     }
   }
 
-  void TurnOnLinkCapturing(AppId app_id) {
+  void TurnOnLinkCapturing(webapps::AppId app_id) {
 #if BUILDFLAG(IS_CHROMEOS)
     apps_util::SetSupportedLinksPreferenceAndWait(profile(), app_id);
 #else
@@ -201,7 +206,7 @@ class WebAppLinkCapturingBrowserTest : public WebAppNavigationBrowserTest {
 #endif  // BUILDFLAG(IS_CHROMEOS)
   }
 
-  absl::optional<LaunchHandler> GetLaunchHandler(const AppId& app_id) {
+  absl::optional<LaunchHandler> GetLaunchHandler(const webapps::AppId& app_id) {
     return provider().registrar_unsafe().GetAppById(app_id)->launch_handler();
   }
 
@@ -322,10 +327,50 @@ IN_PROC_BROWSER_TEST_F(WebAppLinkCapturingBrowserTest,
   ExpectTabs(browser(), {url});
 }
 
+// Tests that links to apps from sandboxed iframes can be captured.
+IN_PROC_BROWSER_TEST_F(WebAppLinkCapturingBrowserTest,
+                       HandleClickFromSandboxedIframe) {
+  const auto [app_id, in_scope_1, _, scope] =
+      InstallTestApp("/web_apps/basic.html");
+  TurnOnLinkCapturing(app_id);
+
+  // Create a sandboxed iframe, which contains a link to the installed app,
+  // covering the full viewport of the iframe.
+  constexpr char kIframeCaptureJs[] = R"js(
+    (() => {
+      let i = document.createElement("iframe");
+      i.id = 'iframe';
+      i.sandbox = "allow-popups allow-popups-to-escape-sandbox";
+      i.srcdoc = `<a href="$1"
+          target="_blank"
+          style="position: absolute; top: 0; left: 0; bottom: 0; right: 0;">
+        </a>`
+      document.body.appendChild(i);
+    })();
+  )js";
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::ExecJs(
+      web_contents,
+      base::ReplaceStringPlaceholders(kIframeCaptureJs, {in_scope_1.spec()},
+                                      /*offsets=*/nullptr)));
+
+  BrowserChangeObserver added_observer(
+      nullptr, BrowserChangeObserver::ChangeType::kAdded);
+
+  // Click the iframe, which should click the <a> tag and open the app.
+  content::SimulateMouseClickOrTapElementWithId(web_contents, "iframe");
+
+  Browser* app_browser = added_observer.Wait();
+  EXPECT_NE(browser(), app_browser);
+  EXPECT_TRUE(AppBrowserController::IsForWebApp(app_browser, app_id));
+}
+
 IN_PROC_BROWSER_TEST_F(WebAppLinkCapturingBrowserTest,
                        ParentAppWithChildLinks) {
-  AppId parent_app_id = InstallParentApp();
-  AppId nested_app_id = InstallNestedApp();
+  webapps::AppId parent_app_id = InstallParentApp();
+  webapps::AppId nested_app_id = InstallNestedApp();
 
   TurnOnLinkCapturing(parent_app_id);
   AddTab(browser(), about_blank_);
@@ -356,8 +401,8 @@ IN_PROC_BROWSER_TEST_F(WebAppLinkCapturingBrowserTest,
 #if !BUILDFLAG(IS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(WebAppLinkCapturingBrowserTest,
                        ParentAppAndChildAppCapture) {
-  AppId parent_app_id = InstallParentApp();
-  AppId nested_app_id = InstallNestedApp();
+  webapps::AppId parent_app_id = InstallParentApp();
+  webapps::AppId nested_app_id = InstallNestedApp();
 
   TurnOnLinkCapturing(parent_app_id);
   TurnOnLinkCapturing(nested_app_id);
@@ -396,6 +441,53 @@ IN_PROC_BROWSER_TEST_F(WebAppLinkCapturingBrowserTest,
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS)
 
+// Tests that link capturing works while inside a web app window.
+IN_PROC_BROWSER_TEST_F(WebAppLinkCapturingBrowserTest,
+                       LinkCaptureInWebAppWindow) {
+  webapps::AppId parent_app_id = InstallParentApp();
+  webapps::AppId nested_app_id = InstallNestedApp();
+
+  TurnOnLinkCapturing(nested_app_id);
+
+  content::WebContents* parent_app = OpenApplication(parent_app_id);
+
+  // Clicking a link from target="_self" should link capture.
+  {
+    BrowserChangeObserver added_observer(
+        nullptr, BrowserChangeObserver::ChangeType::kAdded);
+    ClickLinkAndWait(parent_app, GetNestedAppUrl(), LinkTarget::SELF,
+                     /*rel=*/"");
+    EXPECT_TRUE(AppBrowserController::IsForWebApp(added_observer.Wait(),
+                                                  nested_app_id));
+  }
+
+  // Clicking a link from target="_blank" should also link capture.
+  {
+    BrowserChangeObserver added_observer(
+        nullptr, BrowserChangeObserver::ChangeType::kAdded);
+    ClickLinkAndWait(parent_app, GetNestedAppUrl(), LinkTarget::BLANK,
+                     /*rel=*/"");
+    EXPECT_TRUE(AppBrowserController::IsForWebApp(added_observer.Wait(),
+                                                  nested_app_id));
+  }
+
+  // Links clicked within an app popup browser will also capture.
+  {
+    const gfx::Size size(500, 500);
+    Browser* const popup_browser =
+        OpenPopupAndWait(chrome::FindBrowserWithWebContents(parent_app),
+                         GetParentAppUrl(), size);
+
+    BrowserChangeObserver added_observer(
+        nullptr, BrowserChangeObserver::ChangeType::kAdded);
+    ClickLinkAndWait(popup_browser->tab_strip_model()->GetActiveWebContents(),
+                     GetNestedAppUrl(), LinkTarget::SELF,
+                     /*rel=*/"");
+    EXPECT_TRUE(AppBrowserController::IsForWebApp(added_observer.Wait(),
+                                                  nested_app_id));
+  }
+}
+
 // TODO: Run these tests on Chrome OS with both Ash and Lacros processes active.
 class WebAppTabStripLinkCapturingBrowserTest
     : public WebAppLinkCapturingBrowserTest {
@@ -413,7 +505,7 @@ class WebAppTabStripLinkCapturingBrowserTest
   }
 
   // Returns [app_id, in_scope_1, in_scope_2, scope]
-  std::tuple<AppId, GURL, GURL, GURL> InstallTestTabbedApp() {
+  std::tuple<webapps::AppId, GURL, GURL, GURL> InstallTestTabbedApp() {
     const auto [app_id, in_scope_1, in_scope_2, scope] =
         WebAppLinkCapturingBrowserTest::InstallTestApp("/web_apps/basic.html");
     provider().sync_bridge_unsafe().SetAppUserDisplayMode(

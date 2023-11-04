@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright 2023 The Chromium Authors
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/plus_address_dialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/dialog_padding_sides"
+        android:paddingVertical="12dp"
+        android:gravity="center_vertical">
+
+  <TextView
+      android:id="@+id/plus_address_notice_title"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:gravity="center"
+      android:layout_marginBottom="@dimen/list_item_default_margin"
+      android:text="@string/plus_address_modal_title"
+      style="@style/TextAppearance.Headline.Primary" />
+
+  <TextView
+      android:id="@+id/plus_address_modal_plus_address_label"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginBottom="@dimen/list_item_default_margin"
+      android:text="@string/plus_address_modal_plus_address_label"
+      android:textAppearance="@style/TextAppearance.TextLarge.Primary"/>
+
+  <TextView
+      android:id="@+id/proposed_plus_address"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginBottom="@dimen/list_item_default_margin"
+      android:text="@string/plus_address_modal_proposed_plus_address_placeholder"
+      android:textAppearance="@style/TextAppearance.TextLarge.Secondary"/>
+
+  <TextView
+      android:id="@+id/plus_address_modal_primary_email"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginBottom="@dimen/list_item_default_margin"
+      android:textAppearance="@style/TextAppearance.TextMedium.Secondary"/>
+
+  <org.chromium.ui.widget.TextViewWithLeading
+      android:id="@+id/plus_address_modal_explanation"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="@string/plus_address_modal_plus_address_description"
+      android:layout_marginBottom="@dimen/list_item_default_margin"
+      android:textAppearance="@style/TextAppearance.TextMedium.Secondary"/>
+
+</LinearLayout>

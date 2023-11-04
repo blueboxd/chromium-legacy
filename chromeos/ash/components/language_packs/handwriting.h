@@ -11,26 +11,13 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/span.h"
 #include "base/functional/callback.h"
+#include "chromeos/ash/components/dbus/dlcservice/dlcservice.pb.h"
+#include "chromeos/ash/components/language_packs/diff.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/base/ime/ash/input_method_util.h"
 
 namespace ash::language_packs {
-
-// Given a function to map IDs to handwriting locales, returns a set of
-// handwriting locales that we should install for the given list of IDs.
-//
-// IDs can be arbitrary - for example, engine IDs or input method IDs.
-//
-// Example `id_to_handwriting_locale` for engine IDs:
-// ```
-// base::BindRepeating(
-//     MapEngineIdToHandwritingLocale,
-//     input_method::InputMethodManager::Get()->GetInputMethodUtil());
-// ```
-base::flat_set<std::string> MapIdsToHandwritingLocales(
-    base::span<const std::string> ids,
-    base::RepeatingCallback<absl::optional<std::string>(const std::string&)>
-        id_to_handwriting_locale);
 
 // Gets the handwriting language for a given engine ID if it exists.
 // Requires a non-null pointer to `InputMethodUtil`, which can be obtained by
@@ -58,10 +45,26 @@ absl::optional<std::string> MapInputMethodIdToHandwritingLocale(
 // one using `ResolveLocale`.
 absl::optional<std::string> HandwritingLocaleToDlc(std::string_view locale);
 
+// Given a DLC ID, returns the handwriting recognition locale for it if it
+// exists.
+absl::optional<std::string> DlcToHandwritingLocale(std::string_view dlc_id);
+
 // Given a DLC ID, returns whether it is a DLC for handwriting recognition.
 // Intended to be used to filter a list of DLCs that a user has installed to
 // only the relevant handwriting recognition ones.
 bool IsHandwritingDlc(std::string_view dlc_id);
+
+// Given a DlcsWithContent proto message, filters out all DLCs that are not
+// Handwriting and returns a list with the corresponding locales.
+// DlcsWithContent is returned by DLC Service in the callback to get all the
+// existing DLCs on device.
+base::flat_set<std::string> ConvertDlcsWithContentToHandwritingLocales(
+    const dlcservice::DlcsWithContent& dlcs_with_content);
+
+// Returns the list of handwriting locales that correspond to the input methods
+// that are currently enabled.
+base::flat_set<std::string> GetHandwritingLocalesFromEnabledInputMethods(
+    input_method::InputMethodManager* input_method_manager);
 
 }  // namespace ash::language_packs
 

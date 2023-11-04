@@ -7,6 +7,9 @@
 load("@stdlib//internal/graph.star", "graph")
 load("@stdlib//internal/luci/common.star", "keys", "kinds", "triggerer")
 load("./args.star", "args")
+load("./builder_url.star", "linkify_builder")
+load("./sheriff_rotations.star", "get_sheriff_rotations")
+load("./chrome_settings.star", "per_builder_outputs_config")
 load("./nodes.star", "nodes")
 load("./structs.star", "structs")
 load("//project.star", "settings")
@@ -426,7 +429,14 @@ _MIRRORS_COPY_FROM = nodes.create_link_node_type(
     _BUILDER_CONFIG,
 )
 
-def register_builder_config(bucket, name, builder_group, builder_spec, mirrors, try_settings):
+def register_builder_config(
+        bucket,
+        name,
+        builder_group,
+        builder_spec,
+        mirrors,
+        try_settings,
+        additional_exclusions):
     """Registers the builder config so the properties can be computed.
 
     At most one of builder_spec or mirrors can be set. If neither builder_spec
@@ -439,6 +449,9 @@ def register_builder_config(bucket, name, builder_group, builder_spec, mirrors, 
         builder_spec: The spec describing the configuration for the builder.
         mirrors: References to the builders that the builder should mirror.
         try_settings: The object determining the try-specific settings.
+        additional_exclusions: A list of paths that are excluded when analyzing
+            the change to determine affected targets. The paths should be
+            relative to the per-builder output root dir.
     """
     if not builder_spec and not mirrors:
         if try_settings:
@@ -460,6 +473,7 @@ def register_builder_config(bucket, name, builder_group, builder_spec, mirrors, 
         builder_spec = builder_spec,
         mirrors = mirrors,
         try_settings = try_settings,
+        additional_exclusions = additional_exclusions,
     ))
 
     if _is_copy_from(builder_spec):
@@ -578,6 +592,38 @@ def _check_specs_for_consistency(bucket_name, builder_name, entries):
                 ),
             ))
 
+def _get_builder_mirror_description(bucket_name, builder, bc_state):
+    node = _BUILDER_CONFIG.get(bucket_name, builder.name)
+    if not node:
+        return builder.description_html
+    mirrored_builders = bc_state.mirrors(node)
+    mirroring_builders = _get_mirroring_builders(bc_state, node)
+    if not mirrored_builders and not mirroring_builders:
+        return builder.description_html
+    elif mirrored_builders and mirroring_builders:
+        # Need to change the descriptions below if this assertion no
+        # longer holds true.
+        fail("A builder can't both mirror and be mirrored:", builder.name)
+
+    description = builder.description_html
+    if description:
+        description += "<br/>"
+    if mirrored_builders:
+        description += "This builder mirrors the following CI builders:<br/>"
+    else:
+        description += "This builder is mirrored by any of the following try builders:<br/>"
+
+    description += "<ul>"
+    for m in mirrored_builders or mirroring_builders:
+        m_id = _builder_id(m)
+        if (bucket_name, m_id["bucket"]) not in [("try", "ci"), ("ci", "try")]:
+            # Change the descriptions above if this assertion no
+            # longer holds true.
+            fail("{} to {} mirroring is not allowed. Only 'try' can mirror 'ci'.".format(bucket_name, m_id["bucket"]))
+        link = linkify_builder(m_id["bucket"], m_id["builder"])
+        description += "<li>%s</li>" % link
+    return description + "</ul>"
+
 def _set_builder_config_property(ctx):
     cfg = None
     for f in ctx.output:
@@ -661,6 +707,14 @@ def _set_builder_config_property(ctx):
                 builder_ids = sorted(builder_ids, key = _builder_id_sort_key),
                 **structs.to_proto_properties(node.props.try_settings)
             )
+            if node.props.additional_exclusions:
+                builder_config["additional_exclusions"] = [
+                    "infra/config/generated/{}/{}".format(
+                        per_builder_outputs_config().root_dir,
+                        exclusion,
+                    )
+                    for exclusion in node.props.additional_exclusions
+                ]
             builder_config.pop("include_all_triggered_testers", None)
 
             if builder_ids_in_scope_for_testing:
@@ -680,6 +734,43 @@ def _set_builder_config_property(ctx):
                 builder_config = builder_config,
             )
             builder.properties = json.encode(builder_properties)
+
+            builder.description_html = _get_builder_mirror_description(bucket_name, builder, bc_state)
+
+            rotations = get_sheriff_rotations(bucket_name, builder.name)
+            excluded_groups = [
+                # Most/all the clang bots build using clang built from HEAD.
+                # Failures on them hopefully/rarely lead to reverts of random
+                # CLs on the Chromium-side. So trybots for these aren't as
+                # critical.
+                "chromium.clang",
+            ]
+            excluded_builders = [
+                # TODO(crbug.com/1485734): Remove the Samsung builders.
+                "Android FYI Release (Samsung A13)",
+                "Android FYI Release (Samsung A23)",
+
+                # TODO(crbug.com/1486140): Remove when skylab bots are fixed.
+                "lacros-amd64-generic-rel-skylab",
+                "lacros-arm-generic-rel-skylab",
+                "lacros-arm64-generic-rel-skylab",
+
+                # TODO(crbug.com/1484233): Remove the following as trybots are
+                # created for them.
+                "android-arm64-archive-rel",
+                "lacros-arm-archive-rel",
+                "lacros64-archive-rel",
+                "linux-chromeos-archive-rel",
+                "mac-arm64-dbg",
+
+                # These might be permanent exclusions since they do some
+                # perf things. See discussion on crrev.com/c/4884490.
+                "GPU FYI XR Win x64 Builder",
+                "Win10 FYI x64 Release XR Perf (NVIDIA)",
+            ]
+            is_excluded = builder.name in excluded_builders or node.props.builder_group in excluded_groups
+            if rotations and not mirroring_builders and not is_excluded:
+                fail("{} is on a sheriff/gardener rotation, but lacks a matching trybot".format(builder.name))
 
 lucicfg.generator(_set_builder_config_property)
 

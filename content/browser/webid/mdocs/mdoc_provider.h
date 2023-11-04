@@ -8,13 +8,15 @@
 #include <memory>
 
 #include "base/functional/callback.h"
+#include "base/values.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/webid/federated_auth_request.mojom.h"
+#include "url/origin.h"
 
 #include <string>
 
-using blink::mojom::MDocElementPtr;
+using blink::mojom::WalletFieldRequirementPtr;
 
 namespace content {
 
@@ -32,12 +34,10 @@ class CONTENT_EXPORT MDocProvider {
   static std::unique_ptr<MDocProvider> Create();
 
   using MDocCallback = base::OnceCallback<void(std::string)>;
-  virtual void RequestMDoc(
-      WebContents* web_contents,
-      const std::string& reader_public_key,
-      const std::string& document_type,
-      const std::vector<MDocElementPtr>& requested_elements,
-      MDocCallback callback) = 0;
+  virtual void RequestMDoc(WebContents* web_contents,
+                           const url::Origin& origin,
+                           const base::Value::Dict& request,
+                           MDocCallback callback) = 0;
 
  protected:
   MDocProvider();

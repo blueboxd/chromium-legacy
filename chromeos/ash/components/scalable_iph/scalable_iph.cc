@@ -21,7 +21,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/to_string.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/scalable_iph/iph_session.h"
 #include "chromeos/ash/components/scalable_iph/logger.h"
@@ -59,6 +58,25 @@ const base::flat_map<ScalableIph::Event, std::string>& GetEventNamesMap() {
            kEventNameAppListItemActivationYouTube},
           {ScalableIph::Event::kAppListItemActivationGoogleDocs,
            kEventNameAppListItemActivationGoogleDocs},
+          {ScalableIph::Event::kAppListItemActivationGooglePhotosWeb,
+           kEventNameAppListItemActivationGooglePhotosWeb},
+          {ScalableIph::Event::kOpenPersonalizationApp,
+           kEventNameOpenPersonalizationApp},
+          {ScalableIph::Event::kShelfItemActivationYouTube,
+           kEventNameShelfItemActivationYouTube},
+          {ScalableIph::Event::kShelfItemActivationGoogleDocs,
+           kEventNameShelfItemActivationGoogleDocs},
+          {ScalableIph::Event::kShelfItemActivationGooglePhotosWeb,
+           kEventNameShelfItemActivationGooglePhotosWeb},
+          {ScalableIph::Event::kShelfItemActivationGooglePhotosAndroid,
+           kEventNameShelfItemActivationGooglePhotosAndroid},
+          {ScalableIph::Event::kShelfItemActivationGooglePlay,
+           kEventNameShelfItemActivationGooglePlay},
+          {ScalableIph::Event::kAppListItemActivationGooglePlayStore,
+           kEventNameAppListItemActivationGooglePlayStore},
+          {ScalableIph::Event::kAppListItemActivationGooglePhotosAndroid,
+           kEventNameAppListItemActivationGooglePhotosAndroid},
+          {ScalableIph::Event::kPrintJobCreated, kEventNamePrintJobCreated},
       });
   return *event_names_map;
 }
@@ -132,6 +150,8 @@ const std::vector<const base::Feature*>& GetFeatureListConstant() {
           &feature_engagement::kIPHScalableIphHelpAppBasedEightFeature,
           &feature_engagement::kIPHScalableIphHelpAppBasedNineFeature,
           &feature_engagement::kIPHScalableIphHelpAppBasedTenFeature,
+          // Gaming.
+          &feature_engagement::kIPHScalableIphGamingFeature,
       });
   return *feature_list;
 }
@@ -151,6 +171,13 @@ const base::flat_map<std::string, ActionType>& GetActionTypesMap() {
           {kActionTypeOpenPhoneHub, ActionType::kOpenPhoneHub},
           {kActionTypeOpenYouTube, ActionType::kOpenYouTube},
           {kActionTypeOpenFileManager, ActionType::kOpenFileManager},
+          {kActionTypeOpenHelpAppPerks, ActionType::kOpenHelpAppPerks},
+          {kActionTypeOpenChromebookPerksWeb,
+           ActionType::kOpenChromebookPerksWeb},
+          {kActionTypeOpenChromebookPerksGfnPriority2022,
+           ActionType::kOpenChromebookPerksGfnPriority2022},
+          {kActionTypeOpenChromebookPerksMinecraft2023,
+           ActionType::kOpenChromebookPerksMinecraft2023},
       });
   return *action_types_map;
 }
@@ -175,6 +202,23 @@ constexpr auto kAppListItemActivationEventsMap =
          ScalableIph::Event::kAppListItemActivationGoogleDocs},
         {kWebAppYouTubeAppId,
          ScalableIph::Event::kAppListItemActivationYouTube},
+        {kWebAppGooglePhotosAppId,
+         ScalableIph::Event::kAppListItemActivationGooglePhotosWeb},
+        {kAndroidAppGooglePlayStoreAppId,
+         ScalableIph::Event::kAppListItemActivationGooglePlayStore},
+        {kAndroidAppGooglePhotosAppId,
+         ScalableIph::Event::kAppListItemActivationGooglePhotosAndroid},
+    });
+
+constexpr auto kShelfItemActivationEventsMap =
+    base::MakeFixedFlatMap<std::string_view, ScalableIph::Event>({
+        {kWebAppGoogleDocsAppId,
+         ScalableIph::Event::kShelfItemActivationGoogleDocs},
+        {kWebAppYouTubeAppId, ScalableIph::Event::kShelfItemActivationYouTube},
+        {kWebAppGooglePhotosAppId,
+         ScalableIph::Event::kShelfItemActivationGooglePhotosWeb},
+        {kAndroidGooglePhotosAppId,
+         ScalableIph::Event::kShelfItemActivationGooglePhotosAndroid},
     });
 
 constexpr base::TimeDelta kTimeTickEventInterval = base::Minutes(5);
@@ -260,6 +304,24 @@ std::string ParseActionEventName(const std::string& event_used_param) {
   return name_value[1];
 }
 
+ScalableIphDelegate::NotificationIcon GetNotificationIcon(
+    const std::string& icon) {
+  if (icon == kCustomNotificationIconValueRedeem) {
+    return ScalableIphDelegate::NotificationIcon::kRedeem;
+  }
+
+  return ScalableIphDelegate::NotificationIcon::kDefault;
+}
+
+ScalableIphDelegate::NotificationSummaryText GetNotificationSummaryText(
+    const std::string& summary_text) {
+  if (summary_text == kCustomNotificationSummaryTextValueNone) {
+    return ScalableIphDelegate::NotificationSummaryText::kNone;
+  }
+
+  return ScalableIphDelegate::NotificationSummaryText::kWelcomeTips;
+}
+
 std::unique_ptr<NotificationParams> ParseNotificationParams(
     Logger* logger,
     const base::Feature& feature) {
@@ -324,6 +386,35 @@ std::unique_ptr<NotificationParams> ParseNotificationParams(
   if (image_type == kCustomNotificationImageTypeValueWallpaper) {
     param->image_type = ScalableIphDelegate::NotificationImageType::kWallpaper;
   }
+
+  std::string icon = GetParamValue(feature, kCustomNotificationIconParamName);
+  if (!icon.empty()) {
+    param->icon = GetNotificationIcon(icon);
+  }
+  SCALABLE_IPH_LOG(logger) << kCustomNotificationIconParamName
+                           << " is specified as " << icon << ". " << param->icon
+                           << " is set.";
+
+  std::string summary_text =
+      GetParamValue(feature, kCustomNotificationSummaryTextParamName);
+  if (!summary_text.empty()) {
+    param->summary_text = GetNotificationSummaryText(summary_text);
+  }
+  SCALABLE_IPH_LOG(logger) << kCustomNotificationSummaryTextParamName
+                           << " is specified as " << summary_text << ". "
+                           << param->summary_text << " is set.";
+
+  std::string source =
+      GetParamValue(feature, kCustomNotificationSourceTextParamName);
+  if (!source.empty()) {
+    param->source = source;
+  } else {
+    param->source = kCustomNotificationSourceTextValueDefault;
+  }
+  SCALABLE_IPH_LOG(logger) << kCustomNotificationSourceTextParamName
+                           << " is specified as " << source << ". "
+                           << param->source << " is set.";
+
   return param;
 }
 
@@ -415,10 +506,14 @@ bool ValidateVersionNumber(const base::Feature& feature) {
 }  // namespace
 
 ScalableIph::ScalableIph(feature_engagement::Tracker* tracker,
-                         std::unique_ptr<ScalableIphDelegate> delegate)
-    : tracker_(tracker), delegate_(std::move(delegate)) {
+                         std::unique_ptr<ScalableIphDelegate> delegate,
+                         std::unique_ptr<Logger> logger)
+    : tracker_(tracker),
+      delegate_(std::move(delegate)),
+      logger_(std::move(logger)) {
   CHECK(tracker_);
   CHECK(delegate_);
+  CHECK(logger_);
 
   delegate_observation_.Observe(delegate_.get());
 
@@ -426,7 +521,7 @@ ScalableIph::ScalableIph(feature_engagement::Tracker* tracker,
 
   online_ = delegate_->IsOnline();
 
-  SCALABLE_IPH_LOG(logger()) << "Initialize: Online: " << online_;
+  SCALABLE_IPH_LOG(GetLogger()) << "Initialize: Online: " << online_;
 
   tracker_->AddOnInitializedCallback(
       base::BindOnce(&ScalableIph::CheckTriggerConditionsOnInitSuccess,
@@ -451,7 +546,8 @@ void ScalableIph::OnConnectionChanged(bool online) {
 
   online_ = online;
 
-  SCALABLE_IPH_LOG(logger()) << "Connection status changed. Online: " << online;
+  SCALABLE_IPH_LOG(GetLogger())
+      << "Connection status changed. Online: " << online;
 
   tracker_->AddOnInitializedCallback(
       base::BindOnce(&ScalableIph::CheckTriggerConditionsOnInitSuccess,
@@ -475,8 +571,8 @@ void ScalableIph::OnSessionStateChanged(
 
   session_state_ = session_state;
 
-  SCALABLE_IPH_LOG(logger())
-      << "Session state changed to " << base::ToString(session_state)
+  SCALABLE_IPH_LOG(GetLogger())
+      << "Session state changed to " << session_state
       << ". Whether this is considered to be an unlocked event or not: "
       << unlocked;
 
@@ -494,19 +590,20 @@ void ScalableIph::OnSessionStateChanged(
 
 void ScalableIph::OnSuspendDoneWithoutLockScreen() {
   if (session_state_ == ScalableIphDelegate::SessionState::kLocked) {
-    SCALABLE_IPH_LOG(logger())
+    SCALABLE_IPH_LOG(GetLogger())
         << "Unexpected ScalableIph::OnSuspendDoneWithoutLockScreen call";
     DCHECK(false) << "OnSuspendDoneWithoutLockScreen should never be called "
                      "with a lock screen";
   }
 
-  SCALABLE_IPH_LOG(logger())
+  SCALABLE_IPH_LOG(GetLogger())
       << "Recording kUnlocked because of OnSuspendDoneWithoutLockScreen";
   RecordEvent(Event::kUnlocked);
 }
 
 void ScalableIph::OnAppListVisibilityChanged(bool shown) {
-  SCALABLE_IPH_LOG(logger()) << "App list visibility changed. Shown: " << shown;
+  SCALABLE_IPH_LOG(GetLogger())
+      << "App list visibility changed. Shown: " << shown;
 
   if (shown) {
     RecordEvent(Event::kAppListShown);
@@ -518,7 +615,7 @@ void ScalableIph::OnHasSavedPrintersChanged(bool has_saved_printers) {
 
   has_saved_printers_ = has_saved_printers;
 
-  SCALABLE_IPH_LOG(logger())
+  SCALABLE_IPH_LOG(GetLogger())
       << "Has saved printers status changed. Has saved printers: "
       << has_saved_printers;
 
@@ -528,28 +625,53 @@ void ScalableIph::OnHasSavedPrintersChanged(bool has_saved_printers) {
   }
 }
 
+void ScalableIph::OnPhoneHubOnboardingEligibleChanged(
+    bool phonehub_onboarding_eligible) {
+  DCHECK_NE(phonehub_onboarding_eligible_, phonehub_onboarding_eligible);
+
+  SCALABLE_IPH_LOG(GetLogger())
+      << "Phonehub onboarding eligible state has "
+         "changed: Phone hub onboarding eligible: from: "
+      << phonehub_onboarding_eligible_
+      << " to: " << phonehub_onboarding_eligible;
+
+  phonehub_onboarding_eligible_ = phonehub_onboarding_eligible;
+}
+
 void ScalableIph::PerformActionForIphSession(ActionType action_type) {
-  SCALABLE_IPH_LOG(logger())
-      << "Performing an action for an iph session. Action type:"
-      << base::ToString(action_type);
+  SCALABLE_IPH_LOG(GetLogger())
+      << "Performing an action for an iph session. Action type:" << action_type;
   PerformAction(action_type);
 }
 
 void ScalableIph::MaybeRecordAppListItemActivation(const std::string& id) {
   auto* it = kAppListItemActivationEventsMap.find(id);
   if (it == kAppListItemActivationEventsMap.end()) {
-    SCALABLE_IPH_LOG(logger())
+    SCALABLE_IPH_LOG(GetLogger())
         << "Observed an app list item activation. But not recording an app "
            "list item activation as it's not listed in the map.";
     return;
   }
 
-  SCALABLE_IPH_LOG(logger())
-      << "Recording an app list item activation as event: "
-      << base::ToString(it->second);
+  SCALABLE_IPH_LOG(GetLogger())
+      << "Recording an app list item activation as event: " << it->second;
   // Record an event via `RecordEvent` instead of directly notifying an event to
   // `tracker_` as `RecordEvent` can do common tasks, e.g. Making sure that a
   // `tracker_` is initialized, etc.
+  RecordEvent(it->second);
+}
+
+void ScalableIph::MaybeRecordShelfItemActivationById(const std::string& id) {
+  auto* it = kShelfItemActivationEventsMap.find(id);
+  if (it == kShelfItemActivationEventsMap.end()) {
+    SCALABLE_IPH_LOG(GetLogger())
+        << "Observed a shelf item activation. But not recording a shelf item "
+           "activation as it's not listed in the map.";
+    return;
+  }
+
+  SCALABLE_IPH_LOG(GetLogger())
+      << "Recording a shelf item activation as event: " << it->second;
   RecordEvent(it->second);
 }
 
@@ -572,8 +694,8 @@ void ScalableIph::OverrideTaskRunnerForTesting(
 }
 
 void ScalableIph::PerformActionForHelpApp(ActionType action_type) {
-  SCALABLE_IPH_LOG(logger()) << "Perform action for help app. Action type: "
-                             << base::ToString(action_type);
+  SCALABLE_IPH_LOG(GetLogger())
+      << "Perform action for help app. Action type: " << action_type;
 
   std::string iph_event_name = GetHelpAppIphEventName(action_type);
 
@@ -599,8 +721,7 @@ void ScalableIph::SetHasSavedPrintersChangedClosureForTesting(
 }
 
 void ScalableIph::RecordEvent(ScalableIph::Event event) {
-  SCALABLE_IPH_LOG(logger())
-      << "Record event. Event: " << base::ToString(event);
+  SCALABLE_IPH_LOG(GetLogger()) << "Record event. Event: " << event;
 
   if (!tracker_) {
     DCHECK(false) << kFunctionCallAfterKeyedServiceShutdown;
@@ -614,6 +735,10 @@ void ScalableIph::RecordEvent(ScalableIph::Event event) {
                      weak_ptr_factory_.GetWeakPtr(), event));
 }
 
+Logger* ScalableIph::GetLogger() {
+  return logger_.get();
+}
+
 void ScalableIph::EnsureTimerStarted() {
   timer_.Start(FROM_HERE, kTimeTickEventInterval,
                base::BindRepeating(&ScalableIph::RecordTimeTickEvent,
@@ -624,14 +749,14 @@ void ScalableIph::RecordTimeTickEvent() {
   // Do not record timer event outside of an active session, e.g. OOBE, lock
   // screen.
   if (session_state_ != ScalableIphDelegate::SessionState::kActive) {
-    SCALABLE_IPH_LOG(logger())
+    SCALABLE_IPH_LOG(GetLogger())
         << "Observed time tick event. But not recording it as session state is "
            "not Active. Current session state is: "
-        << base::ToString(session_state_);
+        << session_state_;
     return;
   }
 
-  SCALABLE_IPH_LOG(logger()) << "Record time tick event.";
+  SCALABLE_IPH_LOG(GetLogger()) << "Record time tick event.";
   RecordEvent(Event::kFiveMinTick);
 }
 
@@ -643,39 +768,39 @@ void ScalableIph::RecordEventInternal(ScalableIph::Event event,
   }
 
   if (!init_success) {
-    SCALABLE_IPH_LOG(logger())
+    SCALABLE_IPH_LOG(GetLogger())
         << "Failed to initialize feature_engagement::Tracker";
     DCHECK(false) << "Failed to initialize feature_engagement::Tracker.";
     return;
   }
 
   if (session_state_ != ScalableIphDelegate::SessionState::kActive) {
-    SCALABLE_IPH_LOG(logger())
+    SCALABLE_IPH_LOG(GetLogger())
         << "No event is expected to be recorded outside of an active session.";
     return;
   }
 
   auto it = GetEventNamesMap().find(event);
   if (it == GetEventNamesMap().end()) {
-    SCALABLE_IPH_LOG(logger())
+    SCALABLE_IPH_LOG(GetLogger())
         << "Missing ScalableIph::Event to event name string mapping.";
     return;
   }
 
-  SCALABLE_IPH_LOG(logger()) << "Recording event as " << it->second;
+  SCALABLE_IPH_LOG(GetLogger()) << "Recording event as " << it->second;
   tracker_->NotifyEvent(it->second);
 
   if (kIphTriggeringEvents.contains(event)) {
-    SCALABLE_IPH_LOG(logger()) << base::ToString(event)
-                               << " is a condition check triggering event. "
-                                  "Running trigger conditions check.";
+    SCALABLE_IPH_LOG(GetLogger()) << event
+                                  << " is a condition check triggering event. "
+                                     "Running trigger conditions check.";
     CheckTriggerConditions();
   }
 }
 
 void ScalableIph::CheckTriggerConditionsOnInitSuccess(bool init_success) {
   if (!init_success) {
-    SCALABLE_IPH_LOG(logger())
+    SCALABLE_IPH_LOG(GetLogger())
         << "Failed to initialize feature_engagement::Tracker.";
     return;
   }
@@ -691,24 +816,24 @@ void ScalableIph::CheckTriggerConditions() {
   DCHECK(tracker_->IsInitialized());
 
   if (session_state_ != ScalableIphDelegate::SessionState::kActive) {
-    SCALABLE_IPH_LOG(logger()) << "Session state is not Active. No trigger "
-                                  "condition check. Session state is "
-                               << base::ToString(session_state_);
+    SCALABLE_IPH_LOG(GetLogger()) << "Session state is not Active. No trigger "
+                                     "condition check. Session state is "
+                                  << session_state_;
     return;
   }
 
-  SCALABLE_IPH_LOG(logger()) << "Running trigger conditions check.";
+  SCALABLE_IPH_LOG(GetLogger()) << "Running trigger conditions check.";
   for (const base::Feature* feature : GetFeatureList()) {
-    SCALABLE_IPH_LOG(logger()) << "Checking: " << feature->name;
+    SCALABLE_IPH_LOG(GetLogger()) << "Checking: " << feature->name;
 
     if (!base::FeatureList::IsEnabled(*feature)) {
-      SCALABLE_IPH_LOG(logger())
+      SCALABLE_IPH_LOG(GetLogger())
           << feature->name << " is not enabled. Skipping condition check.";
       continue;
     }
 
     if (!ValidateVersionNumber(*feature)) {
-      SCALABLE_IPH_LOG(logger())
+      SCALABLE_IPH_LOG(GetLogger())
           << "Version number does not match with the current version "
              "number. Skipping a config: "
           << feature->name;
@@ -716,37 +841,37 @@ void ScalableIph::CheckTriggerConditions() {
     }
 
     if (!CheckCustomConditions(*feature)) {
-      SCALABLE_IPH_LOG(logger())
+      SCALABLE_IPH_LOG(GetLogger())
           << "Custom conditions are not satisfied for " << feature->name;
       continue;
     }
-    SCALABLE_IPH_LOG(logger())
+    SCALABLE_IPH_LOG(GetLogger())
         << "Custom conditions are satisfied for " << feature->name;
 
     if (!tracker_->ShouldTriggerHelpUI(*feature)) {
-      SCALABLE_IPH_LOG(logger())
+      SCALABLE_IPH_LOG(GetLogger())
           << "Trigger conditions in feature_engagement::Tracker are not "
              "satisfied for "
           << feature->name;
       continue;
     }
-    SCALABLE_IPH_LOG(logger())
+    SCALABLE_IPH_LOG(GetLogger())
         << "Trigger conditions in feature_engagement::Tracker are satisfied "
            "for "
         << feature->name;
 
-    UiType ui_type = ParseUiType(logger(), *feature);
+    UiType ui_type = ParseUiType(GetLogger(), *feature);
     switch (ui_type) {
       case UiType::kNotification: {
         std::unique_ptr<NotificationParams> notification_params =
-            ParseNotificationParams(logger(), *feature);
+            ParseNotificationParams(GetLogger(), *feature);
         if (!notification_params) {
-          SCALABLE_IPH_LOG(logger())
+          SCALABLE_IPH_LOG(GetLogger())
               << "Failed to parse notification params for " << feature->name
               << ". Skipping the config.";
           continue;
         }
-        SCALABLE_IPH_LOG(logger()) << "Triggering a notification.";
+        SCALABLE_IPH_LOG(GetLogger()) << "Triggering a notification.";
         delegate_->ShowNotification(
             *notification_params.get(),
             std::make_unique<IphSession>(*feature, tracker_, this));
@@ -754,21 +879,21 @@ void ScalableIph::CheckTriggerConditions() {
       }
       case UiType::kBubble: {
         std::unique_ptr<BubbleParams> bubble_params =
-            ParseBubbleParams(logger(), *feature);
+            ParseBubbleParams(GetLogger(), *feature);
         if (!bubble_params) {
-          SCALABLE_IPH_LOG(logger())
+          SCALABLE_IPH_LOG(GetLogger())
               << "Failed to parse bubble params for " << feature->name
               << ". Skipping the config.";
           continue;
         }
-        SCALABLE_IPH_LOG(logger()) << "Triggering a bubble.";
+        SCALABLE_IPH_LOG(GetLogger()) << "Triggering a bubble.";
         delegate_->ShowBubble(
             *bubble_params.get(),
             std::make_unique<IphSession>(*feature, tracker_, this));
         return;
       }
       case UiType::kNone:
-        SCALABLE_IPH_LOG(logger())
+        SCALABLE_IPH_LOG(GetLogger())
             << "Condition gets satisfied. But specified ui type is None.";
         break;
     }
@@ -776,42 +901,43 @@ void ScalableIph::CheckTriggerConditions() {
 }
 
 bool ScalableIph::CheckCustomConditions(const base::Feature& feature) {
-  SCALABLE_IPH_LOG(logger())
+  SCALABLE_IPH_LOG(GetLogger())
       << "Checking custom conditions for " << feature.name;
   return CheckNetworkConnection(feature) && CheckClientAge(feature) &&
-         CheckHasSavedPrinters(feature);
+         CheckHasSavedPrinters(feature) &&
+         CheckPhoneHubOnboardingEligible(feature);
 }
 
 bool ScalableIph::CheckNetworkConnection(const base::Feature& feature) {
-  SCALABLE_IPH_LOG(logger())
+  SCALABLE_IPH_LOG(GetLogger())
       << "Checking network condition for " << feature.name;
   std::string connection_condition =
       GetParamValue(feature, kCustomConditionNetworkConnectionParamName);
   if (connection_condition.empty()) {
-    SCALABLE_IPH_LOG(logger()) << "No network condition specified.";
+    SCALABLE_IPH_LOG(GetLogger()) << "No network condition specified.";
     return true;
   }
 
   // If an invalid value is provided, does not satisfy a condition for a
   // fail-safe behavior.
   if (connection_condition != kCustomConditionNetworkConnectionOnline) {
-    SCALABLE_IPH_LOG(logger())
+    SCALABLE_IPH_LOG(GetLogger())
         << "Only " << kCustomConditionNetworkConnectionOnline
         << " is the valid value for network connection condition";
     return false;
   }
 
-  SCALABLE_IPH_LOG(logger())
+  SCALABLE_IPH_LOG(GetLogger())
       << "Expecting online. Current status is: Online: " << online_;
   return online_;
 }
 
 bool ScalableIph::CheckClientAge(const base::Feature& feature) {
-  SCALABLE_IPH_LOG(logger()) << "Checking client age for " << feature.name;
+  SCALABLE_IPH_LOG(GetLogger()) << "Checking client age for " << feature.name;
   std::string client_age_condition =
       GetParamValue(feature, kCustomConditionClientAgeInDaysParamName);
   if (client_age_condition.empty()) {
-    SCALABLE_IPH_LOG(logger()) << "No client age condition specified.";
+    SCALABLE_IPH_LOG(GetLogger()) << "No client age condition specified.";
     return true;
   }
 
@@ -819,20 +945,20 @@ bool ScalableIph::CheckClientAge(const base::Feature& feature) {
   // to test those fail-safe behaviors in browser_tests.
   int max_client_age = 0;
   if (!base::StringToInt(client_age_condition, &max_client_age)) {
-    SCALABLE_IPH_LOG(logger())
+    SCALABLE_IPH_LOG(GetLogger())
         << "Failed to parse client age condition. It must be an integer.";
     return false;
   }
 
   if (max_client_age < 0) {
-    SCALABLE_IPH_LOG(logger())
+    SCALABLE_IPH_LOG(GetLogger())
         << "Client age condition must be a positive integer value.";
     return false;
   }
 
   int client_age = delegate_->ClientAgeInDays();
   if (client_age < 0) {
-    SCALABLE_IPH_LOG(logger())
+    SCALABLE_IPH_LOG(GetLogger())
         << "Client age is a negative number. This can happen if a "
            "user changes time zone, etc. Condition is not satisfied "
            "for a fail safe behavior.";
@@ -840,7 +966,7 @@ bool ScalableIph::CheckClientAge(const base::Feature& feature) {
   }
 
   const bool result = client_age <= max_client_age;
-  SCALABLE_IPH_LOG(logger())
+  SCALABLE_IPH_LOG(GetLogger())
       << "Current client age is " << client_age
       << ". Specified max client age is " << max_client_age
       << " (inclusive). Condition satisfied is: " << result;
@@ -848,12 +974,13 @@ bool ScalableIph::CheckClientAge(const base::Feature& feature) {
 }
 
 bool ScalableIph::CheckHasSavedPrinters(const base::Feature& feature) {
-  SCALABLE_IPH_LOG(logger())
+  SCALABLE_IPH_LOG(GetLogger())
       << "Checking has saved printers condition for " << feature.name;
   std::string has_saved_printers_condition =
       GetParamValue(feature, kCustomConditionHasSavedPrintersParamName);
   if (has_saved_printers_condition.empty()) {
-    SCALABLE_IPH_LOG(logger()) << "No has saved printers condition specified.";
+    SCALABLE_IPH_LOG(GetLogger())
+        << "No has saved printers condition specified.";
     return true;
   }
 
@@ -861,7 +988,7 @@ bool ScalableIph::CheckHasSavedPrinters(const base::Feature& feature) {
           kCustomConditionHasSavedPrintersValueTrue &&
       has_saved_printers_condition !=
           kCustomConditionHasSavedPrintersValueFalse) {
-    SCALABLE_IPH_LOG(logger())
+    SCALABLE_IPH_LOG(GetLogger())
         << "Invalid value provided for "
         << kCustomConditionHasSavedPrintersParamName
         << ". This condition is not satisfied for a fail-safe behavior.";
@@ -871,10 +998,44 @@ bool ScalableIph::CheckHasSavedPrinters(const base::Feature& feature) {
   const bool expected_value =
       has_saved_printers_condition == kCustomConditionHasSavedPrintersValueTrue;
   const bool result = has_saved_printers_ == expected_value;
-  SCALABLE_IPH_LOG(logger()) << "Expected value is " << expected_value
-                             << ". Current has saved printers value is "
-                             << has_saved_printers_ << ". Result is " << result;
+  SCALABLE_IPH_LOG(GetLogger())
+      << "Expected value is " << expected_value
+      << ". Current has saved printers value is " << has_saved_printers_
+      << ". Result is " << result;
   return result;
+}
+
+bool ScalableIph::CheckPhoneHubOnboardingEligible(
+    const base::Feature& feature) {
+  SCALABLE_IPH_LOG(GetLogger())
+      << "Checking phone hub onboarding eligible for " << feature.name;
+
+  std::string phonehub_onboarding_eligible_value = GetParamValue(
+      feature, kCustomConditionPhoneHubOnboardingEligibleParamName);
+  if (phonehub_onboarding_eligible_value.empty()) {
+    SCALABLE_IPH_LOG(GetLogger())
+        << "No phone hub onboarding eligible condition specified.";
+    return true;
+  }
+
+  if (phonehub_onboarding_eligible_value !=
+      kCustomConditionPhoneHubOnboardingEligibleValueTrue) {
+    SCALABLE_IPH_LOG(GetLogger())
+        << "Only " << kCustomConditionPhoneHubOnboardingEligibleValueTrue
+        << " is a valid value for "
+        << kCustomConditionPhoneHubOnboardingEligibleParamName
+        << ". Provided value: " << phonehub_onboarding_eligible_value
+        << ". Condition not satisfied for a fail-safe behavior.";
+    return false;
+  }
+
+  SCALABLE_IPH_LOG(GetLogger())
+      << "Expected value is "
+      << kCustomConditionPhoneHubOnboardingEligibleValueTrue
+      << ". Current phone hub onboarding eligible value is "
+      << phonehub_onboarding_eligible_ << ". Result is "
+      << phonehub_onboarding_eligible_;
+  return phonehub_onboarding_eligible_;
 }
 
 const std::vector<const base::Feature*>& ScalableIph::GetFeatureList() const {
@@ -897,6 +1058,26 @@ std::ostream& operator<<(std::ostream& out, ScalableIph::Event event) {
       return out << "AppListItemActivationYouTube";
     case ScalableIph::Event::kAppListItemActivationGoogleDocs:
       return out << "AppListItemActivationGoogleDocs";
+    case ScalableIph::Event::kAppListItemActivationGooglePhotosWeb:
+      return out << "AppListItemActivationGooglePhotosWeb";
+    case ScalableIph::Event::kOpenPersonalizationApp:
+      return out << "OpenPersonalizationApp";
+    case ScalableIph::Event::kShelfItemActivationGoogleDocs:
+      return out << "ShelfItemActivationGoogleDocs";
+    case ScalableIph::Event::kShelfItemActivationYouTube:
+      return out << "ShelfItemActivationYouTube";
+    case ScalableIph::Event::kShelfItemActivationGooglePhotosWeb:
+      return out << "ShelfItemActivationGooglePhotosWeb";
+    case ScalableIph::Event::kShelfItemActivationGooglePhotosAndroid:
+      return out << "ShelfItemActivationGooglePhotosAndroid";
+    case ScalableIph::Event::kShelfItemActivationGooglePlay:
+      return out << "ShelfItemActivationGooglePlay";
+    case ScalableIph::Event::kAppListItemActivationGooglePlayStore:
+      return out << "AppListItemActivationGooglePlayStore";
+    case ScalableIph::Event::kAppListItemActivationGooglePhotosAndroid:
+      return out << "AppListItemActivationGooglePhotosAndroid";
+    case ScalableIph::Event::kPrintJobCreated:
+      return out << "PrintJobCreated";
   }
 }
 

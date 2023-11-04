@@ -28,6 +28,7 @@ export interface ExtensionsReviewPanelElement {
     makeExceptionMenu: CrActionMenuElement,
     reviewPanelContainer: HTMLDivElement,
     expandButton: CrExpandButtonElement,
+    safetyHubTitleContainer: HTMLElement,
     headingText: HTMLElement,
     secondaryText: HTMLElement,
     removeAllButton: CrButtonElement,
@@ -66,10 +67,20 @@ export class ExtensionsReviewPanelElement extends
       subtitleString_: String,
 
       /**
+       * The text of the safety check completion state.
+       */
+      completionMessage_: String,
+
+      /**
        * List of potentially unsafe extensions. This list being empty
        * indicates that there are no unsafe extensions to review.
        */
       unsafeExtensions_: Array,
+
+      shouldShowSafetyHubHeader_: {
+        type: Boolean,
+        computed: 'computeShouldShowSafetyHubHeader_(shouldHideUnsafePanel_)',
+      },
 
       /**
        * Indicates whether to show completion info after user has finished the
@@ -78,7 +89,7 @@ export class ExtensionsReviewPanelElement extends
       shouldShowCompletionInfo_: {
         type: Boolean,
         computed:
-            'computeShouldShowCompletionInfo_(extensions.*, hasChangeBeenMade_)',
+            'computeShouldShowCompletionInfo_(extensions.*, reviewPanelShown_)',
       },
 
       /**
@@ -87,6 +98,15 @@ export class ExtensionsReviewPanelElement extends
       shouldShowUnsafeExtensions_: {
         type: Boolean,
         computed: 'computeShouldShowUnsafeExtensions_(extensions.*)',
+      },
+
+      /**
+       * Indicates whether to show any part of the Review Panel.
+       */
+      shouldHideUnsafePanel_: {
+        type: Boolean,
+        computed:
+            'computeShouldHideUnsafePanel_(shouldShowUnsafeExtensions_, shouldShowCompletionInfo_)',
       },
 
       /**
@@ -100,7 +120,15 @@ export class ExtensionsReviewPanelElement extends
       /**
        * Indicates if any potential unsafe extensions has been kept or removed.
        */
-      hasChangeBeenMade_: {
+      numberOfExtensionsChanged_: {
+        type: Number,
+        value: 1,
+      },
+
+      /**
+       * Indicates if the review panel has ever been shown.
+       */
+      reviewPanelShown_: {
         type: Boolean,
         value: false,
       },
@@ -119,14 +147,18 @@ export class ExtensionsReviewPanelElement extends
 
   delegate: ItemDelegate&ReviewItemDelegate;
   extensions: chrome.developerPrivate.ExtensionInfo[];
-  private hasChangeBeenMade_: boolean;
+  private numberOfExtensionsChanged_: number;
+  private reviewPanelShown_: boolean;
   private completionMetricLogged_: boolean;
   private unsafeExtensions_: chrome.developerPrivate.ExtensionInfo[];
   private headerString_: string;
   private subtitleString_: string;
   private unsafeExtensionsReviewListExpanded_: boolean;
+  private completionMessage_: string;
+  private shouldShowSafetyHubHeader_: boolean;
   private shouldShowCompletionInfo_: boolean;
   private shouldShowUnsafeExtensions_: boolean;
+  private shouldHideUnsafePanel_: boolean;
   private lastClickedExtensionId_: string;
 
   private async onExtensionsChanged_() {
@@ -137,6 +169,9 @@ export class ExtensionsReviewPanelElement extends
     this.subtitleString_ =
         await PluralStringProxyImpl.getInstance().getPluralString(
             'safetyCheckDescription', this.unsafeExtensions_.length);
+    this.completionMessage_ =
+        await PluralStringProxyImpl.getInstance().getPluralString(
+            'safetyCheckAllDoneForNow', this.numberOfExtensionsChanged_);
   }
 
   private getUnsafeExtensions_(extensions:
@@ -157,7 +192,7 @@ export class ExtensionsReviewPanelElement extends
   private computeShouldShowCompletionInfo_(): boolean {
     const updatedUnsafeExtensions =
         this.getUnsafeExtensions_(this.extensions) || [];
-    if (this.hasChangeBeenMade_ && updatedUnsafeExtensions.length === 0) {
+    if (this.reviewPanelShown_ && updatedUnsafeExtensions.length === 0) {
       if (!this.completionMetricLogged_) {
         this.completionMetricLogged_ = true;
         chrome.metricsPrivate.recordUserAction('SafetyCheck.ReviewCompletion');
@@ -176,10 +211,21 @@ export class ExtensionsReviewPanelElement extends
         chrome.metricsPrivate.recordUserAction('SafetyCheck.ReviewPanelShown');
       }
       this.completionMetricLogged_ = false;
+      this.reviewPanelShown_ = true;
       return true;
     } else {
       return false;
     }
+  }
+
+  private computeShouldShowSafetyHubHeader_(): boolean {
+    return loadTimeData.getBoolean('safetyHubShowReviewPanel') &&
+        !this.shouldHideUnsafePanel_;
+  }
+
+  private computeShouldHideUnsafePanel_(): boolean {
+    return !(
+        this.shouldShowUnsafeExtensions_ || this.shouldShowCompletionInfo_);
   }
 
   /**
@@ -201,7 +247,6 @@ export class ExtensionsReviewPanelElement extends
     if (this.lastClickedExtensionId_) {
       this.delegate.setItemSafetyCheckWarningAcknowledged(
           this.lastClickedExtensionId_);
-      this.hasChangeBeenMade_ = true;
     }
   }
 
@@ -221,25 +266,24 @@ export class ExtensionsReviewPanelElement extends
         'SafetyCheck.ReviewPanelRemoveClicked');
     try {
       await this.delegate.uninstallItem(e.model.item.id);
-      this.hasChangeBeenMade_ = true;
     } catch (_) {
       // The error was almost certainly the user canceling the dialog.
       // Do nothing.
     }
   }
 
-  private async onRemoveAllClick_(): Promise<void> {
+  private async onRemoveAllClick_(event: Event): Promise<void> {
     chrome.metricsPrivate.recordUserAction(
         'SafetyCheck.ReviewPanelRemoveAllClicked');
+    event.stopPropagation();
     try {
+      this.numberOfExtensionsChanged_ = this.unsafeExtensions_.length;
       await this.delegate.deleteItems(
           this.unsafeExtensions_.map(extension => extension.id));
-      // If the Remove button was clicked and no errors were thrown, change
-      // the flag.
-      this.hasChangeBeenMade_ = true;
     } catch (_) {
       // The error was almost certainly the user canceling the dialog.
-      // Do nothing.
+      // Reset `numberOfExtensionsChanged_`.
+      this.numberOfExtensionsChanged_ = 1;
     }
   }
 }

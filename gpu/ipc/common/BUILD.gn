@@ -81,6 +81,7 @@ source_set("ipc_common_sources") {
     "gpu_client_ids.h",
     "gpu_disk_cache_type.cc",
     "gpu_disk_cache_type.h",
+    "gpu_memory_buffer_handle_info.h",
     "gpu_memory_buffer_impl.cc",
     "gpu_memory_buffer_impl.h",
     "gpu_memory_buffer_impl_shared_memory.cc",
@@ -338,6 +339,7 @@ mojom("interfaces") {
     "mailbox.mojom",
     "mailbox_holder.mojom",
     "memory_stats.mojom",
+    "shared_image_capabilities.mojom",
     "sync_token.mojom",
     "vulkan_ycbcr_info.mojom",
   ]
@@ -442,7 +444,7 @@ mojom("interfaces") {
         },
         {
           mojom = "gpu.mojom.GpuDevice"
-          cpp = "::gpu::GPUInfo::GPUDevice"
+          cpp = "::gpu::GPUDevice"
         },
         {
           mojom = "gpu.mojom.GpuInfo"
@@ -504,6 +506,17 @@ mojom("interfaces") {
         },
       ]
       traits_headers = [ "mailbox_holder_mojom_traits.h" ]
+      traits_public_deps = [ ":mojom_traits" ]
+    },
+    {
+      types = [
+        {
+          mojom = "gpu.mojom.SharedImageCapabilities"
+          cpp = "::gpu::SharedImageCapabilities"
+        },
+      ]
+      traits_sources = [ "shared_image_capabilities_mojom_traits.cc" ]
+      traits_headers = [ "shared_image_capabilities_mojom_traits.h" ]
       traits_public_deps = [ ":mojom_traits" ]
     },
     {

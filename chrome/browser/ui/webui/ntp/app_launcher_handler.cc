@@ -137,8 +137,6 @@ const char kPackagedAppKey[] = "packagedApp";
 const int kWebAppIconLargeNonDefault = 128;
 const int kWebAppIconSmallNonDefault = 16;
 
-// These Run on OS Login mode strings need to be in sync with
-// chrome/browser/resources/ntp4/apps_page.js:RUN_ON_OS_LOGIN_MODE enum.
 const char kRunOnOsLoginModeNotRun[] = "run_on_os_login_mode_not_run";
 const char kRunOnOsLoginModeWindowed[] = "run_on_os_login_mode_windowed";
 
@@ -149,7 +147,7 @@ bool IsYoutubeExtension(const std::string& extension_id) {
   return extension_id == extension_misc::kYoutubeAppId;
 }
 
-void GetWebAppBasicInfo(const web_app::AppId& app_id,
+void GetWebAppBasicInfo(const webapps::AppId& app_id,
                         const web_app::WebAppRegistrar& app_registrar,
                         base::Value::Dict* info) {
   info->Set(kInfoIdKey, app_id);
@@ -199,10 +197,7 @@ AppLauncherHandler::~AppLauncherHandler() {
 }
 
 base::Value::Dict AppLauncherHandler::CreateWebAppInfo(
-    const web_app::AppId& app_id) {
-  // The items which are to be in the returned Value::Dict are also described in
-  // chrome/browser/resources/ntp4/page_list_view.js in @typedef for AppInfo.
-  // Please update it whenever you add or remove any keys here.
+    const webapps::AppId& app_id) {
   base::Value::Dict dict;
 
   // Communicate the kiosk flag so the apps page can disable showing the
@@ -307,9 +302,6 @@ base::Value::Dict AppLauncherHandler::CreateWebAppInfo(
 
 base::Value::Dict AppLauncherHandler::CreateExtensionInfo(
     const Extension* extension) {
-  // The items which are to be written into the returned dict are also
-  // described in chrome/browser/resources/ntp4/page_list_view.js in @typedef
-  // for AppInfo. Please update it whenever you add or remove any keys here.
   base::Value::Dict dict;
 
   // Communicate the kiosk flag so the apps page can disable showing the
@@ -553,7 +545,7 @@ void AppLauncherHandler::OnExtensionUninstalled(
   ExtensionRemoved(extension, /*is_uninstall=*/true);
 }
 
-void AppLauncherHandler::OnWebAppInstalled(const web_app::AppId& app_id) {
+void AppLauncherHandler::OnWebAppInstalled(const webapps::AppId& app_id) {
   if (attempting_web_app_install_page_ordinal_.has_value()) {
     AppSorting* sorting =
         ExtensionSystem::Get(Profile::FromWebUI(web_ui()))->app_sorting();
@@ -568,8 +560,8 @@ void AppLauncherHandler::OnWebAppInstalled(const web_app::AppId& app_id) {
                                          CreateWebAppInfo(app_id), highlight);
 }
 
-void AppLauncherHandler::OnWebAppInstallTimeChanged(
-    const web_app::AppId& app_id,
+void AppLauncherHandler::OnWebAppFirstInstallTimeChanged(
+    const webapps::AppId& app_id,
     const base::Time& time) {
   // Use the appAdded to update the app icon's color to no longer be
   // greyscale.
@@ -578,7 +570,7 @@ void AppLauncherHandler::OnWebAppInstallTimeChanged(
 }
 
 void AppLauncherHandler::OnWebAppWillBeUninstalled(
-    const web_app::AppId& app_id) {
+    const webapps::AppId& app_id) {
   base::Value::Dict app_info;
   // Since `isUninstall` is true below, the only item needed in the app_info
   // dictionary is the id.
@@ -590,7 +582,7 @@ void AppLauncherHandler::OnWebAppWillBeUninstalled(
 }
 
 void AppLauncherHandler::OnWebAppUninstalled(
-    const web_app::AppId& app_id,
+    const webapps::AppId& app_id,
     webapps::WebappUninstallSource uninstall_source) {
   // This can be redundant in most cases, however it is not uncommon for the
   // chrome://apps page to be loaded, or reloaded, during the uninstallation of
@@ -608,7 +600,7 @@ void AppLauncherHandler::OnWebAppUninstalled(
 }
 
 void AppLauncherHandler::OnWebAppRunOnOsLoginModeChanged(
-    const web_app::AppId& app_id,
+    const webapps::AppId& app_id,
     web_app::RunOnOsLoginMode run_on_os_login_mode) {
   CallJavascriptFunction("ntp.appAdded", base::Value(CreateWebAppInfo(app_id)));
 }
@@ -635,9 +627,9 @@ void AppLauncherHandler::FillAppDictionary(base::Value::Dict* dictionary) {
   Profile* profile = Profile::FromWebUI(web_ui());
   PrefService* prefs = profile->GetPrefs();
 
-  std::set<web_app::AppId> web_app_ids;
+  std::set<webapps::AppId> web_app_ids;
   web_app::WebAppRegistrar& registrar = web_app_provider_->registrar_unsafe();
-  for (const web_app::AppId& web_app_id : registrar.GetAppIds()) {
+  for (const webapps::AppId& web_app_id : registrar.GetAppIds()) {
     // The Youtube app is harded to be a 'bookmark app', however it is not, it
     // is a platform app.
     // TODO(crbug.com/1065748): Remove this hack once the youtube app is fixed.
@@ -1281,7 +1273,7 @@ void AppLauncherHandler::OnFaviconForAppInstallFromLink(
 
   web_app::OnceInstallCallback install_complete_callback = base::BindOnce(
       [](base::WeakPtr<AppLauncherHandler> app_launcher_handler,
-         const web_app::AppId& app_id,
+         const webapps::AppId& app_id,
          webapps::InstallResultCode install_result) {
         if (!app_launcher_handler)
           return;

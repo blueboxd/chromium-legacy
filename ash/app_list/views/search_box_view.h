@@ -24,6 +24,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace views {
+class MenuItemView;
 class Textfield;
 class View;
 }  // namespace views
@@ -31,6 +32,7 @@ class View;
 namespace ash {
 
 class AppListViewDelegate;
+class FilterMenuAdapter;
 class ResultSelectionController;
 class SearchBoxViewDelegate;
 class SearchResultBaseView;
@@ -110,6 +112,23 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   void OpenAssistantPage() override;
   void OpenSearchBoxIphUrl() override;
 
+  // Shows the category filter menu that allows users to enable/disable specific
+  // search categories.
+  void ShowFilterMenu();
+
+  // Called when the category filter menu is closed.
+  void OnFilterMenuClosed();
+
+  // Returns the menu item view in the category filter menu that indicates the
+  // `category` button. This should only be called when `filter_button_` exists
+  // and the menu is opened.
+  views::MenuItemView* GetFilterMenuItemByCategory(
+      AppListSearchControlCategory category);
+
+  // Returns true if the category filter menu is opened. This should only be
+  // called when `filter_button_` exists.
+  bool IsFilterMenuOpen();
+
   // Updates the search box's background corner radius and color based on the
   // state of AppListModel.
   void UpdateBackground(AppListState target_state);
@@ -135,6 +154,9 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
 
   // Updates the search box with |new_query| and starts a new search.
   void UpdateQuery(const std::u16string& new_query);
+
+  // Moves the focus back to search box and find a search result to select.
+  void EnterSearchResultSelection(const ui::KeyEvent& event);
 
   // Clears the search query and de-activate the search box.
   void ClearSearchAndDeactivateSearchBox();
@@ -180,9 +202,6 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
 
   // Called when the assistant button within the search box gets pressed.
   void AssistantButtonPressed();
-
-  // Called when the filter button within the search box gets pressed.
-  void FilterButtonPressed();
 
   // Updates the icon shown left of the search box texfield.
   void UpdateSearchIcon();
@@ -238,6 +257,16 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   // Clear highlight range.
   void ResetHighlightRange();
 
+  // Builds the menu model for the category filter menu. This returns a vector
+  // of AppListSearchControlCategory that is shown in the filter menu.
+  ui::SimpleMenuModel* BuildFilterMenuModel();
+
+  // Returns the search categories that are available for users to choose if
+  // they want to have the results in the categories displayed in launcher
+  // search. These category will be listed in the filter menu for users to
+  // toggle.
+  std::vector<AppListSearchControlCategory> GetToggleableCategories();
+
   // Tracks whether the search result page view is visible.
   bool search_result_page_visible_ = false;
 
@@ -271,6 +300,11 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
 
   // Whether an IPH is allowed to be shown or not.
   bool is_iph_allowed_ = false;
+
+  // The category filter menu adapter and model that handles the menu life cycle
+  // and command execution.
+  std::unique_ptr<ui::SimpleMenuModel> filter_menu_model_;
+  std::unique_ptr<FilterMenuAdapter> filter_menu_adapter_;
 
   // Set by SearchResultPageView when the accessibility selection moves to a
   // search result view - the value is the ID of the currently selected result

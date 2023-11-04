@@ -23,8 +23,8 @@
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/browser_resources.h"
-#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/password_manager_resources.h"
 #include "chrome/grit/password_manager_resources_map.h"
@@ -325,8 +325,8 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
      IDS_PASSWORD_MANAGER_UI_SHARE_PASSWORD_CONFIRMATION_FOOTER_WEBSITE},
     {"sharePasswordConfirmationFooterAndroidApp",
      IDS_PASSWORD_MANAGER_UI_SHARE_PASSWORD_CONFIRMATION_FOOTER_ANDROID_APP},
-    {"sharePasswordManageFamily",
-     IDS_PASSWORD_MANAGER_UI_SHARE_PASSWORD_MANAGE_FAMILY},
+    {"sharePasswordViewFamily",
+     IDS_PASSWORD_MANAGER_UI_SHARE_PASSWORD_VIEW_FAMILY},
     {"sharePasswordMemeberUnavailable",
      IDS_PASSWORD_MANAGER_UI_SHARE_PASSWORD_MEMBER_UNAVAILABLE},
     {"sharePasswordNotAvailable",
@@ -394,12 +394,18 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
           base::ASCIIToUTF16(chrome::kPasswordManagerLearnMoreURL)));
 
   source->AddString(
-      "sharePasswordNoMembersDescription",
+      "sharePasswordNotFamilyMember",
       l10n_util::GetStringFUTF16(
-          IDS_PASSWORD_MANAGER_UI_SHARE_PASSWORD_NO_MEMBERS_DESCRIPTION,
-          base::ASCIIToUTF16(chrome::kFamilyGroupSiteURL)));
+          IDS_PASSWORD_MANAGER_UI_SHARE_PASSWORD_NOT_FAMILY_MEMBER,
+          base::ASCIIToUTF16(chrome::kFamilyGroupCreateURL)));
 
-  source->AddString("familyGroupSiteURL", chrome::kFamilyGroupSiteURL);
+  source->AddString(
+      "sharePasswordNoOtherFamilyMembers",
+      l10n_util::GetStringFUTF16(
+          IDS_PASSWORD_MANAGER_UI_SHARE_PASSWORD_NO_OTHER_FAMILY_MEMBERS,
+          base::ASCIIToUTF16(chrome::kFamilyGroupViewURL)));
+
+  source->AddString("familyGroupViewURL", chrome::kFamilyGroupViewURL);
 
   source->AddString(
       "checkupUrl",
@@ -427,6 +433,12 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
   source->AddBoolean(
       "enableSendPasswords",
       base::FeatureList::IsEnabled(password_manager::features::kSendPasswords));
+
+  source->AddString("passwordSharingLearnMoreURL",
+                    chrome::kPasswordSharingLearnMoreURL);
+
+  source->AddString("passwordSharingTroubleshootURL",
+                    chrome::kPasswordSharingTroubleshootURL);
 
   source->AddString("passwordManagerLearnMoreURL",
                     chrome::kPasswordManagerLearnMoreURL);

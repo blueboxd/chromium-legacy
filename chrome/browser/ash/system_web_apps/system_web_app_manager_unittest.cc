@@ -33,7 +33,9 @@
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "chromeos/ash/components/login/login_state/login_state.h"
+#include "chromeos/components/kiosk/kiosk_test_utils.h"
+#include "components/user_manager/fake_user_manager.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "content/public/test/test_utils.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -108,7 +110,7 @@ class TestUiManagerObserver : public web_app::WebAppUiManagerObserver {
   }
 
   using ReadyToCommitNavigationCallback = base::RepeatingCallback<void(
-      const web_app::AppId& app_id,
+      const webapps::AppId& app_id,
       content::NavigationHandle* navigation_handle)>;
 
   void SetReadyToCommitNavigationCallback(
@@ -117,7 +119,7 @@ class TestUiManagerObserver : public web_app::WebAppUiManagerObserver {
   }
 
   void OnReadyToCommitNavigation(
-      const web_app::AppId& app_id,
+      const webapps::AppId& app_id,
       content::NavigationHandle* navigation_handle) override {
     if (ready_to_commit_navigation_callback_)
       ready_to_commit_navigation_callback_.Run(app_id, navigation_handle);
@@ -191,7 +193,7 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
     for (const SystemAppData& data : system_app_data_list) {
       std::unique_ptr<web_app::WebApp> web_app = web_app::test::CreateWebApp(
           data.url, web_app::WebAppManagement::Type::kSystem);
-      const web_app::AppId app_id = web_app->app_id();
+      const webapps::AppId app_id = web_app->app_id();
       {
         web_app::ScopedRegistryUpdate update =
             provider().sync_bridge_unsafe().BeginUpdate();
@@ -1519,21 +1521,29 @@ class SystemWebAppManagerInKioskTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-
-    LoginState::Initialize();
-    LoginState::Get()->SetLoggedInState(LoginState::LOGGED_IN_ACTIVE,
-                                        LoginState::LOGGED_IN_USER_KIOSK);
+    chromeos::SetUpFakeKioskSession();
   }
 
   void TearDown() override {
-    LoginState::Shutdown();
     ChromeRenderViewHostTestHarness::TearDown();
   }
+
+ private:
+  user_manager::TypedScopedUserManager<user_manager::FakeUserManager>
+      user_manager_{std::make_unique<user_manager::FakeUserManager>()};
 };
 
 // Checks that SWA manager is not created in Kiosk sessions.
-TEST_F(SystemWebAppManagerInKioskTest, ShoudNotCreateManager) {
+TEST_F(SystemWebAppManagerInKioskTest, ShouldNotCreateManagerByDefault) {
   EXPECT_FALSE(SystemWebAppManager::Get(profile()));
+}
+
+// Checks that SWA manager is created in Kiosk sessions if the feature is
+// enabled.
+TEST_F(SystemWebAppManagerInKioskTest, ShouldCreateManagerIfEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list(
+      ash::features::kKioskEnableSystemWebApps);
+  EXPECT_TRUE(SystemWebAppManager::Get(profile()));
 }
 
 }  // namespace ash

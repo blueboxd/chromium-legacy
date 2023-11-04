@@ -20,10 +20,10 @@
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/webapps/browser/install_result_code.h"
+#include "components/webapps/common/web_app_id.h"
 #include "content/public/browser/web_contents.h"
 #include "net/http/http_status_code.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -72,12 +72,12 @@ class InstallPlaceholderCommandTest : public WebAppTest {
 TEST_F(InstallPlaceholderCommandTest, InstallPlaceholder) {
   ExternalInstallOptions options(kInstallUrl, mojom::UserDisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
-  base::test::TestFuture<const AppId&, webapps::InstallResultCode, bool> future;
-  provider()->scheduler().InstallPlaceholder(options, future.GetCallback(),
-                                             web_contents()->GetWeakPtr());
-  EXPECT_EQ(future.Get<webapps::InstallResultCode>(),
-            webapps::InstallResultCode::kSuccessNewInstall);
-  const AppId app_id = future.Get<AppId>();
+  base::test::TestFuture<ExternallyManagedAppManager::InstallResult> future;
+  provider()->scheduler().InstallPlaceholder(options, future.GetCallback());
+
+  ExternallyManagedAppManager::InstallResult result = future.Take();
+  EXPECT_EQ(result.code, webapps::InstallResultCode::kSuccessNewInstall);
+  const webapps::AppId app_id = *result.app_id;
   EXPECT_TRUE(provider()->registrar_unsafe().IsPlaceholderApp(
       app_id, WebAppManagement::kPolicy));
   EXPECT_EQ(fake_os_integration_manager().num_create_shortcuts_calls(), 1u);
@@ -101,7 +101,7 @@ TEST_F(InstallPlaceholderCommandTest, InstallPlaceholderWithOverrideIconUrl) {
                                  ExternalInstallSource::kExternalPolicy);
   const GURL icon_url("https://example.com/test.png");
   options.override_icon_url = icon_url;
-  base::test::TestFuture<const AppId&, webapps::InstallResultCode, bool> future;
+  base::test::TestFuture<ExternallyManagedAppManager::InstallResult> future;
 
   auto data_retriever =
       std::make_unique<testing::StrictMock<MockDataRetriever>>();
@@ -123,13 +123,13 @@ TEST_F(InstallPlaceholderCommandTest, InstallPlaceholderWithOverrideIconUrl) {
           IconsDownloadedResult::kCompleted, std::move(icons), http_result));
 
   auto command = std::make_unique<InstallPlaceholderCommand>(
-      profile(), options, future.GetCallback(), web_contents()->GetWeakPtr(),
-      std::move(data_retriever));
+      profile(), options, future.GetCallback());
+  command->SetDataRetrieverForTesting(std::move(data_retriever));
   provider()->command_manager().ScheduleCommand(std::move(command));
 
-  EXPECT_EQ(future.Get<webapps::InstallResultCode>(),
-            webapps::InstallResultCode::kSuccessNewInstall);
-  const AppId app_id = future.Get<AppId>();
+  ExternallyManagedAppManager::InstallResult result = future.Take();
+  EXPECT_EQ(result.code, webapps::InstallResultCode::kSuccessNewInstall);
+  const webapps::AppId app_id = *result.app_id;
   EXPECT_TRUE(provider()->registrar_unsafe().IsPlaceholderApp(
       app_id, WebAppManagement::kPolicy));
   EXPECT_EQ(fake_os_integration_manager().num_create_shortcuts_calls(), 1u);
@@ -145,7 +145,7 @@ TEST_F(InstallPlaceholderCommandTest, InstallPlaceholderWithOverrideIconUrl) {
 TEST_F(InstallPlaceholderCommandTest,
        InstallPlaceholderWithUninstallAndReplace) {
   GURL old_app_url("http://old-app.com");
-  const AppId old_app =
+  const webapps::AppId old_app =
       test::InstallDummyWebApp(profile(), "old_app", old_app_url);
   auto shortcut_info = std::make_unique<ShortcutInfo>();
   shortcut_info->url = old_app_url;
@@ -160,15 +160,13 @@ TEST_F(InstallPlaceholderCommandTest,
                                  ExternalInstallSource::kExternalPolicy);
   options.uninstall_and_replace = {old_app};
 
-  base::test::TestFuture<const AppId&, webapps::InstallResultCode, bool> future;
-  provider()->scheduler().InstallPlaceholder(
-      options, future.GetCallback(), web_contents()->GetWeakPtr()
+  base::test::TestFuture<ExternallyManagedAppManager::InstallResult> future;
+  provider()->scheduler().InstallPlaceholder(options, future.GetCallback());
 
-  );
-  EXPECT_EQ(future.Get<webapps::InstallResultCode>(),
-            webapps::InstallResultCode::kSuccessNewInstall);
-  EXPECT_TRUE(future.Get<bool>());
-  const AppId app_id = future.Get<AppId>();
+  ExternallyManagedAppManager::InstallResult result = future.Take();
+  EXPECT_EQ(result.code, webapps::InstallResultCode::kSuccessNewInstall);
+  EXPECT_TRUE(result.did_uninstall_and_replace);
+  const webapps::AppId app_id = *result.app_id;
   EXPECT_TRUE(provider()->registrar_unsafe().IsPlaceholderApp(
       app_id, WebAppManagement::kPolicy));
 

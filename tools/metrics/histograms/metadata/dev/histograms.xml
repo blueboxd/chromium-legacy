@@ -333,7 +333,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="DevTools.Launch" units="ms"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
 <!-- Name completed by histogram_suffixes name="DevToolsLaunchPanels" -->
 
   <owner>yangguo@chromium.org</owner>
@@ -341,6 +341,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     Measures the time until a given tool is interactive during a cold start of
     DevTools.
+  </summary>
+</histogram>
+
+<histogram name="DevTools.LighthouseCategoryUsed"
+    enum="DevToolsLighthouseCategoryUsed" expires_after="2024-09-14">
+  <owner>asraine@chromium.org</owner>
+  <owner>paulirish@chromium.org</owner>
+  <owner>cjamcl@chromium.org</owner>
+  <summary>
+    Records when a Lighthouse category was used to audit the page.
   </summary>
 </histogram>
 
@@ -426,7 +436,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DevTools.RecordingCodeToggled"
-    enum="DevToolsRecordingCodeToggled" expires_after="2024-01-10">
+    enum="DevToolsRecordingCodeToggled" expires_after="2024-03-10">
   <owner>alexrudenko@chromium.org</owner>
   <owner>mathias@chromium.org</owner>
   <owner>yangguo@chromium.org</owner>
@@ -436,7 +446,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DevTools.RecordingCopiedToClipboard"
-    enum="DevToolsRecordingCopiedToClipboard" expires_after="2024-01-10">
+    enum="DevToolsRecordingCopiedToClipboard" expires_after="2024-03-17">
   <owner>alexrudenko@chromium.org</owner>
   <owner>mathias@chromium.org</owner>
   <owner>yangguo@chromium.org</owner>
@@ -447,7 +457,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DevTools.RecordingEdited" enum="DevToolsRecordingEdited"
-    expires_after="2024-01-14">
+    expires_after="2024-03-17">
   <owner>alexrudenko@chromium.org</owner>
   <owner>mathias@chromium.org</owner>
   <owner>yangguo@chromium.org</owner>
@@ -471,7 +481,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DevTools.RecordingReplaySpeed"
-    enum="DevToolsRecordingReplaySpeed" expires_after="2024-01-14">
+    enum="DevToolsRecordingReplaySpeed" expires_after="2024-03-17">
   <owner>ergunsh@chromium.org</owner>
   <owner>alexrudenko@chromium.org</owner>
   <owner>mathias@chromium.org</owner>
@@ -585,7 +595,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DevTools.Workspaces.NumberOfDirectoriesTraversed"
-    units="count" expires_after="2024-01-21">
+    units="count" expires_after="2024-12-01">
   <owner>bmeurer@chromium.org</owner>
   <owner>hablich@chromium.org</owner>
   <summary>
@@ -595,7 +605,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DevTools.Workspaces.NumberOfFilesLoaded" units="count"
-    expires_after="2024-01-21">
+    expires_after="2024-12-01">
   <owner>bmeurer@chromium.org</owner>
   <owner>hablich@chromium.org</owner>
   <summary>
@@ -605,7 +615,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DevTools.Workspaces.PopulateWallClockTime" units="ms"
-    expires_after="M120">
+    expires_after="2024-12-01">
   <owner>bmeurer@chromium.org</owner>
   <owner>hablich@chromium.org</owner>
   <summary>

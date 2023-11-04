@@ -60,6 +60,7 @@
 #include "components/drive/file_system_core_util.h"
 #include "components/drive/resource_metadata_storage.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -84,12 +85,9 @@ namespace {
 using base::Seconds;
 using base::SequencedTaskRunner;
 using base::TimeDelta;
-using content::BrowserContext;
 using content::BrowserThread;
 using drivefs::mojom::DriveFs;
 using drivefs::pinning::PinManager;
-using network::NetworkConnectionTracker;
-using network::mojom::ConnectionType;
 using prefs::kDriveFsBulkPinningEnabled;
 using util::ConnectionStatus;
 
@@ -371,7 +369,7 @@ enum class BulkPinningMountFailureReason {
 
 void RecordBulkPinningMountFailureReason(const Profile* profile,
                                          BulkPinningMountFailureReason reason) {
-  if (!drive::util::IsDriveFsBulkPinningEnabled(profile)) {
+  if (!util::IsDriveFsBulkPinningAvailable(profile)) {
     return;
   }
   base::UmaHistogramEnumeration(
@@ -397,7 +395,7 @@ void DriveIntegrationService::RegisterPrefs() {
                             base::Unretained(this)));
   }
 
-  if (util::IsDriveFsBulkPinningEnabled(profile_)) {
+  if (util::IsDriveFsBulkPinningAvailable(profile_)) {
     registrar_.Add(
         kDriveFsBulkPinningEnabled,
         base::BindRepeating(&DriveIntegrationService::ToggleBulkPinning,
@@ -747,7 +745,7 @@ bool DriveIntegrationService::GetRelativeDrivePath(
 bool DriveIntegrationService::IsSharedDrive(
     const base::FilePath& local_path) const {
   return GetMountPointPath()
-      .Append(drive::util::kDriveTeamDrivesDirName)
+      .Append(util::kDriveTeamDrivesDirName)
       .IsParent(local_path);
 }
 
@@ -893,7 +891,7 @@ void DriveIntegrationService::MaybeMountDrive(const base::FilePath& data_dir,
     LOG(WARNING) << "DriveFS data directory '" << data_dir
                  << "' went missing and got created again";
 
-    if (util::IsDriveFsBulkPinningEnabled(profile_)) {
+    if (util::IsDriveFsBulkPinningAvailable(profile_)) {
       LOG(WARNING)
           << "Displaying system notification and disabling bulk-pinning";
 
@@ -1049,7 +1047,7 @@ void DriveIntegrationService::OnMounted(const base::FilePath& mount_path) {
   }
 
   // Enable bulk-pinning if the feature is enabled.
-  if (util::IsDriveFsBulkPinningEnabled(profile_)) {
+  if (util::IsDriveFsBulkPinningAvailable(profile_)) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     // Instantiate a PinManager.
@@ -1234,7 +1232,7 @@ void DriveIntegrationService::ToggleBulkPinning() {
 
 void DriveIntegrationService::GetTotalPinnedSize(
     base::OnceCallback<void(int64_t)> callback) {
-  if (!util::IsDriveFsBulkPinningEnabled(profile_) || !IsMounted() ||
+  if (!util::IsDriveFsBulkPinningAvailable(profile_) || !IsMounted() ||
       !GetDriveFsInterface()) {
     std::move(callback).Run(-1);
     return;
@@ -1252,9 +1250,9 @@ void DriveIntegrationService::GetTotalPinnedSize(
 
 void DriveIntegrationService::OnGetOfflineFilesSpaceUsage(
     base::OnceCallback<void(int64_t)> callback,
-    drive::FileError error,
+    FileError error,
     int64_t total_size) {
-  if (error != drive::FILE_ERROR_OK) {
+  if (error != FILE_ERROR_OK) {
     LOG(ERROR) << "Cannot get offline size: " << error;
     std::move(callback).Run(-1);
     return;
@@ -1265,12 +1263,10 @@ void DriveIntegrationService::OnGetOfflineFilesSpaceUsage(
 }
 
 void DriveIntegrationService::ClearOfflineFiles(
-    base::OnceCallback<void(drive::FileError)> callback) {
-  if ((!util::IsDriveFsBulkPinningEnabled(profile_) &&
-       !base::FeatureList::IsEnabled(
-           ash::features::kFilesGoogleDriveSettingsPage)) ||
-      !IsMounted() || !GetDriveFsInterface()) {
-    std::move(callback).Run(drive::FILE_ERROR_SERVICE_UNAVAILABLE);
+    base::OnceCallback<void(FileError)> callback) {
+  if (!util::IsDriveFsBulkPinningAvailable(profile_) || !IsMounted() ||
+      !GetDriveFsInterface()) {
+    std::move(callback).Run(FILE_ERROR_SERVICE_UNAVAILABLE);
     return;
   }
 
@@ -1281,8 +1277,7 @@ void DriveIntegrationService::GetQuickAccessItems(
     int max_number,
     GetQuickAccessItemsCallback callback) {
   if (!GetDriveFsHost()) {
-    std::move(callback).Run(drive::FileError::FILE_ERROR_SERVICE_UNAVAILABLE,
-                            {});
+    std::move(callback).Run(FILE_ERROR_SERVICE_UNAVAILABLE, {});
     return;
   }
 
@@ -1297,15 +1292,15 @@ void DriveIntegrationService::GetQuickAccessItems(
   GetDriveFsHost()->PerformSearch(
       std::move(query),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-          std::move(on_response), drive::FileError::FILE_ERROR_ABORT,
+          std::move(on_response), FILE_ERROR_ABORT,
           absl::optional<std::vector<drivefs::mojom::QueryItemPtr>>()));
 }
 
 void DriveIntegrationService::OnGetQuickAccessItems(
     GetQuickAccessItemsCallback callback,
-    drive::FileError error,
+    FileError error,
     absl::optional<std::vector<drivefs::mojom::QueryItemPtr>> items) {
-  if (error != drive::FILE_ERROR_OK || !items.has_value()) {
+  if (error != FILE_ERROR_OK || !items.has_value()) {
     std::move(callback).Run(error, {});
     return;
   }
@@ -1326,8 +1321,7 @@ void DriveIntegrationService::SearchDriveByFileName(
     drivefs::mojom::QueryParameters::QuerySource query_source,
     SearchDriveByFileNameCallback callback) const {
   if (!GetDriveFsHost()) {
-    std::move(callback).Run(drive::FileError::FILE_ERROR_SERVICE_UNAVAILABLE,
-                            {});
+    std::move(callback).Run(FILE_ERROR_SERVICE_UNAVAILABLE, {});
     return;
   }
 
@@ -1345,15 +1339,15 @@ void DriveIntegrationService::SearchDriveByFileName(
   GetDriveFsHost()->PerformSearch(
       std::move(drive_query),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-          std::move(on_response), drive::FileError::FILE_ERROR_ABORT,
+          std::move(on_response), FILE_ERROR_ABORT,
           absl::optional<std::vector<drivefs::mojom::QueryItemPtr>>()));
 }
 
 void DriveIntegrationService::OnSearchDriveByFileName(
     SearchDriveByFileNameCallback callback,
-    drive::FileError error,
+    FileError error,
     absl::optional<std::vector<drivefs::mojom::QueryItemPtr>> items) {
-  if (error != drive::FILE_ERROR_OK || !items.has_value()) {
+  if (error != FILE_ERROR_OK || !items.has_value()) {
     std::move(callback).Run(error, {});
     return;
   }
@@ -1389,20 +1383,20 @@ void DriveIntegrationService::GetMetadata(
     const base::FilePath& local_path,
     DriveFs::GetMetadataCallback callback) {
   if (!IsMounted() || !GetDriveFsInterface()) {
-    std::move(callback).Run(drive::FILE_ERROR_SERVICE_UNAVAILABLE, nullptr);
+    std::move(callback).Run(FILE_ERROR_SERVICE_UNAVAILABLE, nullptr);
     return;
   }
 
   base::FilePath drive_path;
   if (!GetRelativeDrivePath(local_path, &drive_path)) {
-    std::move(callback).Run(drive::FILE_ERROR_NOT_FOUND, nullptr);
+    std::move(callback).Run(FILE_ERROR_NOT_FOUND, nullptr);
     return;
   }
 
   GetDriveFsInterface()->GetMetadata(
       drive_path,
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-          std::move(callback), drive::FILE_ERROR_SERVICE_UNAVAILABLE, nullptr));
+          std::move(callback), FILE_ERROR_SERVICE_UNAVAILABLE, nullptr));
 }
 
 void DriveIntegrationService::LocateFilesByItemIds(
@@ -1418,25 +1412,25 @@ void DriveIntegrationService::LocateFilesByItemIds(
 void DriveIntegrationService::GetQuotaUsage(
     DriveFs::GetQuotaUsageCallback callback) {
   if (!IsMounted() || !GetDriveFsInterface()) {
-    std::move(callback).Run(drive::FILE_ERROR_SERVICE_UNAVAILABLE, nullptr);
+    std::move(callback).Run(FILE_ERROR_SERVICE_UNAVAILABLE, nullptr);
     return;
   }
 
   GetDriveFsInterface()->GetQuotaUsage(
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-          std::move(callback), drive::FILE_ERROR_SERVICE_UNAVAILABLE, nullptr));
+          std::move(callback), FILE_ERROR_SERVICE_UNAVAILABLE, nullptr));
 }
 
 void DriveIntegrationService::GetPooledQuotaUsage(
     DriveFs::GetPooledQuotaUsageCallback callback) {
   if (!IsMounted() || !GetDriveFsInterface()) {
-    std::move(callback).Run(drive::FILE_ERROR_SERVICE_UNAVAILABLE, nullptr);
+    std::move(callback).Run(FILE_ERROR_SERVICE_UNAVAILABLE, nullptr);
     return;
   }
 
   GetDriveFsInterface()->GetPooledQuotaUsage(
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-          std::move(callback), drive::FILE_ERROR_SERVICE_UNAVAILABLE, nullptr));
+          std::move(callback), FILE_ERROR_SERVICE_UNAVAILABLE, nullptr));
 }
 
 void DriveIntegrationService::RestartDrive() {
@@ -1519,7 +1513,7 @@ void DriveIntegrationService::ToggleSyncForPath(
     drivefs::mojom::MirrorPathStatus status,
     DriveFs::ToggleSyncForPathCallback callback) {
   if (!ash::features::IsDriveFsMirroringEnabled() || !IsMirroringEnabled()) {
-    std::move(callback).Run(drive::FILE_ERROR_SERVICE_UNAVAILABLE);
+    std::move(callback).Run(FILE_ERROR_SERVICE_UNAVAILABLE);
     return;
   }
 
@@ -1542,7 +1536,7 @@ void DriveIntegrationService::ToggleSyncForPathIfDirectoryExists(
     DriveFs::ToggleSyncForPathCallback callback,
     bool exists) {
   if (!exists) {
-    std::move(callback).Run(drive::FILE_ERROR_NOT_FOUND);
+    std::move(callback).Run(FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -1555,7 +1549,7 @@ void DriveIntegrationService::ToggleSyncForPathIfDirectoryExists(
 void DriveIntegrationService::GetSyncingPaths(
     DriveFs::GetSyncingPathsCallback callback) {
   if (!ash::features::IsDriveFsMirroringEnabled() || !IsMirroringEnabled()) {
-    std::move(callback).Run(drive::FILE_ERROR_SERVICE_UNAVAILABLE, {});
+    std::move(callback).Run(FILE_ERROR_SERVICE_UNAVAILABLE, {});
     return;
   }
 
@@ -1596,16 +1590,16 @@ void DriveIntegrationService::ForceReSyncFile(const base::FilePath& local_path,
 void DriveIntegrationService::OnUpdateFromPairedDocComplete(
     const base::FilePath& drive_path,
     base::OnceClosure callback,
-    drive::FileError error) {
-  if (error != drive::FileError::FILE_ERROR_OK) {
+    FileError error) {
+  if (error != FILE_ERROR_OK) {
     LOG(ERROR) << "Error in UpdateFromPairedDoc: " << error;
     std::move(callback).Run();
     return;
   }
 
   GetDriveFsInterface()->GetItemFromCloudStore(
-      drive_path, base::BindOnce([](drive::FileError error) {
-                    LOG_IF(ERROR, error != drive::FileError::FILE_ERROR_OK)
+      drive_path, base::BindOnce([](FileError error) {
+                    LOG_IF(ERROR, error != FILE_ERROR_OK)
                         << "Error in GetItemFromCloudStore: " << error;
                   }).Then(std::move(callback)));
 }
@@ -1614,7 +1608,7 @@ void DriveIntegrationService::ImmediatelyUpload(
     const base::FilePath& path,
     drivefs::mojom::DriveFs::ImmediatelyUploadCallback callback) {
   if (!IsMounted() || !GetDriveFsInterface()) {
-    std::move(callback).Run(drive::FILE_ERROR_SERVICE_UNAVAILABLE);
+    std::move(callback).Run(FILE_ERROR_SERVICE_UNAVAILABLE);
     return;
   }
 
@@ -1653,7 +1647,7 @@ void DriveIntegrationService::RegisterDriveFsNativeMessageHostBridge(
 void DriveIntegrationService::GetDocsOfflineStats(
     DriveFs::GetDocsOfflineStatsCallback callback) {
   if (!IsMounted() || !GetDriveFsInterface()) {
-    std::move(callback).Run(drive::FILE_ERROR_SERVICE_UNAVAILABLE,
+    std::move(callback).Run(FILE_ERROR_SERVICE_UNAVAILABLE,
                             drivefs::mojom::DocsOfflineStats::New());
     return;
   }
@@ -1688,6 +1682,35 @@ void DriveIntegrationService::OnNetworkChanged() {
   }
 }
 
+// static
+void DriveIntegrationService::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kDisableDrive, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kDisableDriveOverCellular, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(prefs::kDriveFsWasLaunchedAtLeastOnce, false);
+  registry->RegisterStringPref(prefs::kDriveFsProfileSalt, "");
+  registry->RegisterBooleanPref(prefs::kDriveFsPinnedMigrated, false);
+  registry->RegisterBooleanPref(prefs::kDriveFsEnableVerboseLogging, false);
+  // Do not sync prefs::kDriveFsEnableMirrorSync and
+  // prefs::kDriveFsMirrorSyncMachineId because we're syncing local files
+  // and users may wish to turn this off on a per device basis.
+  registry->RegisterBooleanPref(prefs::kDriveFsEnableMirrorSync, false);
+  registry->RegisterStringPref(prefs::kDriveFsMirrorSyncMachineRootId, "");
+  // Do not sync kDriveFsBulkPinningEnabled as this maintains files that are
+  // locally pinned to this device and should not sync the state across multiple
+  // devices.
+  registry->RegisterBooleanPref(prefs::kDriveFsBulkPinningVisible, true);
+  registry->RegisterBooleanPref(prefs::kDriveFsBulkPinningEnabled, false);
+  // Do not sync `kDriveFsDSSAvailabilityLastEmitted` as it directly relates to
+  // device specific caching of Docs/Sheets/Slides.
+  registry->RegisterTimePref(prefs::kDriveFsDSSAvailabilityLastEmitted,
+                             base::Time::Now());
+}
+
 void DriveIntegrationService::OnDrivePrefChanged() {
   VLOG(1) << "OnDrivePrefChanged";
   SetEnabled(!GetPrefs()->GetBoolean(prefs::kDisableDrive));
@@ -1710,6 +1733,13 @@ void DriveIntegrationService::OnMirroringPrefChanged() {
         base::BindOnce(&DriveIntegrationService::OnDisableMirroringStatusUpdate,
                        weak_ptr_factory_.GetWeakPtr()));
   }
+}
+
+void DriveIntegrationService::PortalStateChanged(
+    const ash::NetworkState*,
+    const ash::NetworkState::PortalState portal_state) {
+  VLOG(1) << "PortalStateChanged: " << portal_state;
+  OnNetworkChanged();
 }
 
 void DriveIntegrationService::DefaultNetworkChanged(const ash::NetworkState*) {
@@ -1786,6 +1816,10 @@ KeyedService* DriveIntegrationServiceFactory::BuildServiceInstanceFor(
   }
 
   return service;
+}
+
+DriveIntegrationServiceObserver::~DriveIntegrationServiceObserver() {
+  CHECK(!IsInObserverList());
 }
 
 }  // namespace drive

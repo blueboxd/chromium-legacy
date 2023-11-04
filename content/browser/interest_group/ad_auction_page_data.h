@@ -11,10 +11,15 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/time/time.h"
 #include "base/uuid.h"
 #include "content/public/browser/page_user_data.h"
 #include "net/third_party/quiche/src/quiche/oblivious_http/oblivious_http_client.h"
 #include "url/origin.h"
+
+namespace data_decoder {
+class DataDecoder;
+}  // namespace data_decoder
 
 namespace content {
 
@@ -22,13 +27,16 @@ struct CONTENT_EXPORT AdAuctionRequestContext {
   AdAuctionRequestContext(
       url::Origin seller,
       base::flat_map<url::Origin, std::vector<std::string>> group_names,
-      quiche::ObliviousHttpRequest::Context context);
+      quiche::ObliviousHttpRequest::Context context,
+      base::TimeTicks start_time);
   AdAuctionRequestContext(AdAuctionRequestContext&& other);
   ~AdAuctionRequestContext();
 
   url::Origin seller;
   base::flat_map<url::Origin, std::vector<std::string>> group_names;
   quiche::ObliviousHttpRequest::Context context;
+  base::TimeTicks start_time;
+  std::unique_ptr<data_decoder::DataDecoder> decoder;
 };
 
 // Contains auction header responses within a page. This will only be created

@@ -59,6 +59,7 @@ struct ChromeInfo {
   version_info::Channel channel{};
   base::Version version;
   bool start_surface = false;
+  bool is_new_tab_search_engine_url_android_enabled = false;
 };
 // Device display metrics.
 struct DisplayMetrics {
@@ -270,8 +271,10 @@ enum class StreamKind : int {
   kFollowing = 2,
   // Single Web Feed (Cormorant) stream.
   kSingleWebFeed = 3,
+  // Kid-friendly content stream.
+  kSupervisedUser = 4,
 
-  kMaxValue = kSingleWebFeed,
+  kMaxValue = kSupervisedUser,
 };
 
 // Singe Web entry points

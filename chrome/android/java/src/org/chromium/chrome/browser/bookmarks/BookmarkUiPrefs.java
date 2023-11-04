@@ -4,8 +4,11 @@
 
 package org.chromium.chrome.browser.bookmarks;
 
+import android.content.SharedPreferences;
+
 import androidx.annotation.IntDef;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
@@ -22,18 +25,25 @@ public class BookmarkUiPrefs {
     private static final @BookmarkRowSortOrder int INITIAL_BOOKMARK_ROW_SORT_ORDER =
             BookmarkRowSortOrder.MANUAL;
 
-    // This is persisted to preferences, entries shouldn't be reordered or removed.
-    @IntDef({BookmarkRowDisplayPref.COMPACT, BookmarkRowDisplayPref.VISUAL})
+    // These values are persisted to prefs/logs. Entries should not be renumbered and numeric
+    // values should never be reused. Keep up-to-date with the
+    // MobileBookmarkManagerBookmarkRowDisplayPref enum in tools/metrics/histograms/enums.xml.
+    @IntDef({BookmarkRowDisplayPref.COMPACT, BookmarkRowDisplayPref.VISUAL,
+            BookmarkRowDisplayPref.COUNT})
     @Retention(RetentionPolicy.SOURCE)
     public @interface BookmarkRowDisplayPref {
         int COMPACT = 0;
         int VISUAL = 1;
+        int COUNT = 2;
     }
 
-    // This is persisted to preferences, entries shouldn't be reordered or removed.
+    // These values are persisted to prefs/logs. Entries should not be renumbered and numeric
+    // values should never be reused. Keep up-to-date with the
+    // MobileBookmarkManagerBookmarkRowSortOrder enum in tools/metrics/histograms/enums.xml.
     @IntDef({BookmarkRowSortOrder.CHRONOLOGICAL, BookmarkRowSortOrder.REVERSE_CHRONOLOGICAL,
             BookmarkRowSortOrder.ALPHABETICAL, BookmarkRowSortOrder.REVERSE_ALPHABETICAL,
-            BookmarkRowSortOrder.RECENTLY_USED, BookmarkRowSortOrder.MANUAL})
+            BookmarkRowSortOrder.RECENTLY_USED, BookmarkRowSortOrder.MANUAL,
+            BookmarkRowSortOrder.COUNT})
     @Retention(RetentionPolicy.SOURCE)
     public @interface BookmarkRowSortOrder {
         int CHRONOLOGICAL = 0;
@@ -42,6 +52,7 @@ public class BookmarkUiPrefs {
         int REVERSE_ALPHABETICAL = 3;
         int RECENTLY_USED = 4;
         int MANUAL = 5;
+        int COUNT = 6;
     }
 
     /** Observer for changes to prefs. */
@@ -53,10 +64,10 @@ public class BookmarkUiPrefs {
         default void onBookmarkRowSortOrderChanged(@BookmarkRowSortOrder int sortOrder) {}
     }
 
-    private SharedPreferencesManager.Observer mPrefsObserver =
-            new SharedPreferencesManager.Observer() {
+    private SharedPreferences.OnSharedPreferenceChangeListener mPrefsListener =
+            new SharedPreferences.OnSharedPreferenceChangeListener() {
                 @Override
-                public void onPreferenceChanged(String key) {
+                public void onSharedPreferenceChanged(SharedPreferences sharedPrefs, String key) {
                     if (key.equals(ChromePreferenceKeys.BOOKMARKS_VISUALS_PREF)) {
                         notifyObserversForDisplayPrefChange(
                                 mPrefsManager.readInt(ChromePreferenceKeys.BOOKMARKS_VISUALS_PREF));
@@ -73,9 +84,13 @@ public class BookmarkUiPrefs {
     /**
      * @param prefsManager Instance of {@link SharedPreferencesManager} to read/write from prefs.
      */
+    // Suppress to observe SharedPreferences, which is discouraged; use another messaging channel
+    // instead.
+    @SuppressWarnings("UseSharedPreferencesManagerFromChromeCheck")
     public BookmarkUiPrefs(SharedPreferencesManager prefsManager) {
         mPrefsManager = prefsManager;
-        mPrefsManager.addObserver(mPrefsObserver);
+        ContextUtils.getAppSharedPreferences().registerOnSharedPreferenceChangeListener(
+                mPrefsListener);
     }
 
     /** Add the given observer to the list. */
@@ -105,6 +120,7 @@ public class BookmarkUiPrefs {
      * @param displayPref The pref value to be set.
      */
     public void setBookmarkRowDisplayPref(@BookmarkRowDisplayPref int displayPref) {
+        BookmarkMetrics.reportBookmarkManagerDisplayPrefChanged(displayPref);
         mPrefsManager.writeInt(ChromePreferenceKeys.BOOKMARKS_VISUALS_PREF, displayPref);
     }
 
@@ -120,6 +136,7 @@ public class BookmarkUiPrefs {
 
     /** Sets the order to sort bookmark rows. */
     public void setBookmarkRowSortOrder(@BookmarkRowSortOrder int sortOrder) {
+        BookmarkMetrics.reportBookmarkManagerSortChanged(sortOrder);
         mPrefsManager.writeInt(ChromePreferenceKeys.BOOKMARKS_SORT_ORDER, sortOrder);
     }
 

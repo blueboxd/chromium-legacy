@@ -2,42 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, DestinationStore, LocalDestinationInfo, makeRecentDestination, NativeLayerImpl, PrinterSetupInfoMessageType, PrintPreviewDestinationDialogCrosElement, PrintPreviewPrinterSetupInfoCrosElement, RecentDestination} from 'chrome://print/print_preview.js';
+import {Destination, DESTINATION_DIALOG_CROS_LOADING_TIMER_IN_MS, DestinationStore, LocalDestinationInfo, makeRecentDestination, NativeLayerImpl, PrinterSetupInfoMessageType, PrintPreviewDestinationDialogCrosElement, PrintPreviewPrinterSetupInfoCrosElement, RecentDestination} from 'chrome://print/print_preview.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
-import {eventToPromise, isVisible} from 'chrome://webui-test/test_util.js';
+import {MockTimer} from 'chrome://webui-test/mock_timer.js';
+import {eventToPromise, isChildVisible, isVisible} from 'chrome://webui-test/test_util.js';
 
 import {NativeLayerCrosStub, setNativeLayerCrosInstance} from './native_layer_cros_stub.js';
 import {NativeLayerStub} from './native_layer_stub.js';
 import {createDestinationStore, getDestinations, setupTestListenerElement} from './print_preview_test_utils.js';
 
-const destination_dialog_cros_test = {
-  suiteName: 'DestinationDialogCrosTest',
-  TestNames: {
-    ShowProvisionalDialog: 'ShowProvisionalDialog',
-    PrintServersChanged: 'PrintServersChanged',
-    PrintServerSelected: 'PrintServerSelected',
-    PrinterSetupAssistanceHasDestinations:
-        'PrinterSetupAssistanceHasDestinations',
-    PrinterSetupAssistanceHasNoDestinations:
-        'PrinterSetupAssistanceHasNoDestinations',
-    ManagePrintersMetrics_HasDestinations:
-        'ManagePrintersMetrics_HasDestinations',
-    ManagePrintersMetrics_HasNoDestinations:
-        'ManagePrintersMetrics_HasNoDestinations',
-    PrinterSetupAssistanceHasDestinations_ShowManagedPrintersFalse:
-        'PrinterSetupAssistanceHasDestinations_ShowManagedPrintersFalse',
-  },
-};
-
-Object.assign(
-    window, {destination_dialog_cros_test: destination_dialog_cros_test});
-
-suite(destination_dialog_cros_test.suiteName, function() {
+suite('DestinationDialogCrosTest', function() {
   let dialog: PrintPreviewDestinationDialogCrosElement;
 
   let destinationStore: DestinationStore;
@@ -51,6 +29,8 @@ suite(destination_dialog_cros_test.suiteName, function() {
   const localDestinations: LocalDestinationInfo[] = [];
 
   let recentDestinations: RecentDestination[] = [];
+
+  let mockTimer: MockTimer;
 
   suiteSetup(function() {
     setupTestListenerElement();
@@ -71,9 +51,17 @@ suite(destination_dialog_cros_test.suiteName, function() {
         '' /* serializedDefaultDestinationSelectionRulesStr */,
         recentDestinations /* recentDestinations */);
 
+    // Setup fake timer.
+    mockTimer = new MockTimer();
+    mockTimer.install();
+
     // Set up dialog
     dialog = document.createElement('print-preview-destination-dialog-cros');
     dialog.destinationStore = destinationStore;
+  });
+
+  teardown(function() {
+    mockTimer.uninstall();
   });
 
   function finishSetup() {
@@ -82,6 +70,7 @@ suite(destination_dialog_cros_test.suiteName, function() {
         .then(function() {
           destinationStore.startLoadAllDestinations();
           dialog.show();
+          mockTimer.tick(DESTINATION_DIALOG_CROS_LOADING_TIMER_IN_MS);
           return nativeLayer.whenCalled('getPrinters');
         })
         .then(function() {
@@ -136,8 +125,7 @@ suite(destination_dialog_cros_test.suiteName, function() {
   // destinations dialog, and that the escape key closes only the provisional
   // dialog when it is open, not the destinations dialog.
   test(
-      destination_dialog_cros_test.TestNames.ShowProvisionalDialog,
-      async () => {
+      'ShowProvisionalDialog', async () => {
         const provisionalDestination = {
           extensionId: 'ABC123',
           extensionName: 'ABC Printing',
@@ -185,7 +173,7 @@ suite(destination_dialog_cros_test.suiteName, function() {
   // Test that checks that print server searchable input and its selections are
   // updated according to the PRINT_SERVERS_CHANGED event.
   test(
-      destination_dialog_cros_test.TestNames.PrintServersChanged, async () => {
+      'PrintServersChanged', async () => {
         await finishSetup();
 
         const printServers = [
@@ -197,7 +185,7 @@ suite(destination_dialog_cros_test.suiteName, function() {
           printServers: printServers,
           isSingleServerFetchingMode: isSingleServerFetchingMode,
         });
-        await waitAfterNextRender(dialog);
+        flush();
 
         assertFalse(dialog.shadowRoot!
                         .querySelector<HTMLElement>(
@@ -215,7 +203,7 @@ suite(destination_dialog_cros_test.suiteName, function() {
   // Tests that choosePrintServers is called when the print server searchable
   // input value is changed.
   test(
-      destination_dialog_cros_test.TestNames.PrintServerSelected, async () => {
+      'PrintServerSelected', async () => {
         await finishSetup();
         const printServers = [
           {id: 'user-print-server-1', name: 'Print Server 1'},
@@ -228,14 +216,14 @@ suite(destination_dialog_cros_test.suiteName, function() {
           printServers: printServers,
           isSingleServerFetchingMode: isSingleServerFetchingMode,
         });
-        await waitAfterNextRender(dialog);
+        flush();
         nativeLayerCros.reset();
 
         const pendingPrintServerId =
             nativeLayerCros.whenCalled('choosePrintServers');
         dialog.shadowRoot!.querySelector('cr-searchable-drop-down')!.value =
             'Print Server 2';
-        await waitAfterNextRender(dialog);
+        flush();
 
         assertEquals(1, nativeLayerCros.getCallCount('choosePrintServers'));
         assertDeepEquals(
@@ -246,9 +234,7 @@ suite(destination_dialog_cros_test.suiteName, function() {
   // Test that the correct elements are displayed when the printer setup
   // assistance flag is on and destination store has destinations.
   test(
-      destination_dialog_cros_test.TestNames
-          .PrinterSetupAssistanceHasDestinations,
-      async () => {
+      'PrinterSetupAssistanceHasDestinations', async () => {
         // Set flag enabled.
         loadTimeData.overrideValues({
           isPrintPreviewSetupAssistanceEnabled: true,
@@ -282,9 +268,7 @@ suite(destination_dialog_cros_test.suiteName, function() {
   // Test that the correct elements are displayed when the printer setup
   // assistance flag is on and destination store has no destinations.
   test(
-      destination_dialog_cros_test.TestNames
-          .PrinterSetupAssistanceHasNoDestinations,
-      async () => {
+      'PrinterSetupAssistanceHasNoDestinations', async () => {
         // Set flag enabled.
         loadTimeData.overrideValues({
           isPrintPreviewSetupAssistanceEnabled: true,
@@ -324,9 +308,7 @@ suite(destination_dialog_cros_test.suiteName, function() {
   // with bucket `DESTINATION_DIALOG_CROS_HAS_PRINTERS` when flag is on and
   // destination store has destinations.
   test(
-      destination_dialog_cros_test.TestNames
-          .ManagePrintersMetrics_HasDestinations,
-      async () => {
+      'ManagePrintersMetrics_HasDestinations', async () => {
         // Set flag enabled.
         loadTimeData.overrideValues({
           isPrintPreviewSetupAssistanceEnabled: true,
@@ -349,9 +331,7 @@ suite(destination_dialog_cros_test.suiteName, function() {
   // with bucket `DESTINATION_DIALOG_CROS_NO_PRINTERS` when flag is on and
   // destination store has no destinations.
   test(
-      destination_dialog_cros_test.TestNames
-          .ManagePrintersMetrics_HasNoDestinations,
-      async () => {
+      'ManagePrintersMetrics_HasNoDestinations', async () => {
         // Set flag enabled.
         loadTimeData.overrideValues({
           isPrintPreviewSetupAssistanceEnabled: true,
@@ -379,8 +359,7 @@ suite(destination_dialog_cros_test.suiteName, function() {
   // getShowManagePrinters return false. Simulates opening print preview from
   // a UI which cannot launch settings (ex. OS Settings app).
   test(
-      destination_dialog_cros_test.TestNames
-          .PrinterSetupAssistanceHasDestinations_ShowManagedPrintersFalse,
+      'PrinterSetupAssistanceHasDestinations_ShowManagedPrintersFalse',
       async () => {
         // Set flag enabled.
         loadTimeData.overrideValues({
@@ -416,5 +395,55 @@ suite(destination_dialog_cros_test.suiteName, function() {
         const searchBox = dialog.shadowRoot!.querySelector<HTMLElement>(
             'print-preview-search-box');
         assertTrue(isVisible(searchBox));
+      });
+
+  // Test loading icon rendered while destinations are loading and for a minimum
+  // of 2 seconds before destination list and search box are visible.
+  test(
+      'CorrectlyDisplaysAndHidesLoadingUI', async () => {
+        // Set flag enabled.
+        loadTimeData.overrideValues({
+          isPrintPreviewSetupAssistanceEnabled: true,
+        });
+        document.body.appendChild(dialog);
+        mockTimer.install();
+        await nativeLayer.whenCalled('getPrinterCapabilities');
+        destinationStore.startLoadAllDestinations();
+        dialog.show();
+        flush();
+
+        // Dialog should be visible with loading UI displayed.
+        const throbber = dialog.shadowRoot!.querySelector(
+                             '.throbber-container') as HTMLElement;
+        assertTrue(throbber !== null);
+        assertFalse(
+            throbber?.hidden,
+            'Loading UI should display while timer is running and ' +
+                'destinations have not loaded');
+
+        // Move timer forward to clear delay.
+        mockTimer.tick(DESTINATION_DIALOG_CROS_LOADING_TIMER_IN_MS);
+
+        // Dialog should be visible with loading UI displayed.
+        assertFalse(
+            throbber?.hidden,
+            'Loading UI should display while destinations have not loaded');
+
+        // Get destinations.
+        await nativeLayer.whenCalled('getPrinters');
+        flush();
+
+        // Loading UI should be hidden. Destination list and search box should
+        // be visible.
+        assertTrue(
+            throbber?.hidden,
+            'Loading UI should be hidden after timer is cleared and ' +
+                'destinations have loaded');
+        assertTrue(
+            isChildVisible(dialog, '#printList'),
+            'Destination list should display');
+        assertTrue(
+            isChildVisible(dialog, 'print-preview-search-box'),
+            'Search-box should display');
       });
 });

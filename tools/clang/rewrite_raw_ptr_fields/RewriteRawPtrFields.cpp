@@ -34,6 +34,7 @@
 
 #include "RawPtrHelpers.h"
 #include "RawPtrManualPathsToIgnore.h"
+#include "SeparateRepositoryPaths.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
@@ -1213,10 +1214,6 @@ int main(int argc, const char* argv[]) {
       llvm::cl::desc("Exclude pointers/references to `STACK_ALLOCATED` objects "
                      "from the rewrite"));
 
-  llvm::cl::opt<bool> raw_ptr_fix_crbug_1449812(
-      "raw_ptr_fix_crbug_1449812", llvm::cl::init(true),
-      llvm::cl::desc("Apply a fix for crbug.com/1449812"));
-
   llvm::Expected<clang::tooling::CommonOptionsParser> options =
       clang::tooling::CommonOptionsParser::create(argc, argv, category);
   assert(static_cast<bool>(options));  // Should not return an error.
@@ -1238,6 +1235,9 @@ int main(int argc, const char* argv[]) {
     for (auto* const line : kRawPtrManualPathsToIgnore) {
       paths_to_exclude_lines.push_back(line);
     }
+    for (auto* const line : kSeparateRepositoryPaths) {
+      paths_to_exclude_lines.push_back(line);
+    }
     paths_to_exclude = std::make_unique<FilterFile>(paths_to_exclude_lines);
   } else {
     paths_to_exclude =
@@ -1248,7 +1248,7 @@ int main(int argc, const char* argv[]) {
   chrome_checker::StackAllocatedPredicate stack_allocated_checker;
   RawPtrAndRefExclusionsOptions exclusion_options{
       &fields_to_exclude, paths_to_exclude.get(), exclude_stack_allocated,
-      &stack_allocated_checker, raw_ptr_fix_crbug_1449812};
+      &stack_allocated_checker};
 
   RawPtrRewriter raw_ptr_rewriter(&output_helper, match_finder,
                                   exclusion_options);

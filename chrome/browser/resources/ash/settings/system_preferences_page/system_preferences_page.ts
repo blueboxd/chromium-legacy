@@ -9,23 +9,25 @@
  */
 
 import '../date_time_page/date_time_settings_card.js';
+import '../os_files_page/files_settings_card.js';
 import '../os_languages_page/language_settings_card.js';
-import '../os_languages_page/languages.js';
 import '../os_settings_page/os_settings_animated_pages.js';
 import '../os_settings_page/os_settings_subpage.js';
 import '../os_reset_page/reset_settings_card.js';
 import '../os_search_page/search_and_assistant_settings_card.js';
 import '../settings_shared.css.js';
+import './storage_and_power_settings_card.js';
 
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {isAssistantAllowed, isPowerwashAllowed, isRevampWayfindingEnabled, shouldShowQuickAnswersSettings} from '../common/load_time_booleans.js';
+import {isAssistantAllowed, isExternalStorageEnabled, isGuest, isPowerwashAllowed, isRevampWayfindingEnabled, shouldShowQuickAnswersSettings} from '../common/load_time_booleans.js';
 import {PrefsState} from '../common/types.js';
 import {Section} from '../mojom-webui/routes.mojom-webui.js';
 import {LanguageHelper, LanguagesModel} from '../os_languages_page/languages_types.js';
+import {routes} from '../router.js';
 
 import {getTemplate} from './system_preferences_page.html.js';
 
@@ -55,14 +57,12 @@ export class SettingsSystemPreferencesPageElement extends
       },
 
       /**
-       * This is used to cache the set of languages from <settings-languages>
-       * via bi-directional data-binding.
+       * Set of languages from <settings-languages>
        */
       languages: Object,
 
       /**
-       * This is used to cache the language helper API from <settings-languages>
-       * via bi-directional data-binding.
+       * Language helper API from <settings-languages>
        */
       languageHelper: Object,
 
@@ -73,6 +73,13 @@ export class SettingsSystemPreferencesPageElement extends
       activeTimeZoneDisplayName_: {
         type: String,
         value: loadTimeData.getString('timeZoneName'),
+      },
+
+      shouldShowFilesSettingsCard_: {
+        type: Boolean,
+        value: () => {
+          return !isGuest();
+        },
       },
 
       shouldShowResetSettingsCard_: {
@@ -95,12 +102,33 @@ export class SettingsSystemPreferencesPageElement extends
           return isAssistantAllowed();
         },
       },
+
+      isExternalStorageEnabled_: {
+        type: Boolean,
+        value: () => {
+          return isExternalStorageEnabled();
+        },
+      },
+
+      shouldStampGoogleDriveSubpage_: {
+        type: Boolean,
+        value: () => {
+          return !!routes.GOOGLE_DRIVE;
+        },
+      },
+
+      shouldStampOfficeSubpage_: {
+        type: Boolean,
+        value: () => {
+          return !!routes.OFFICE;
+        },
+      },
     };
   }
 
-  prefs: PrefsState;
+  prefs: PrefsState|undefined;
 
-  // Languages and Inputs subsection
+  // Languages subsection
   languages: LanguagesModel|undefined;
   languageHelper: LanguageHelper|undefined;
 
@@ -109,12 +137,20 @@ export class SettingsSystemPreferencesPageElement extends
   // Date and Time subsection
   private activeTimeZoneDisplayName_: string;
 
+  // Files subsection
+  private shouldShowFilesSettingsCard_: boolean;
+  private shouldStampGoogleDriveSubpage_: boolean;
+  private shouldStampOfficeSubpage_: boolean;
+
   // Reset subsection
   private shouldShowResetSettingsCard_: boolean;
 
   // Search and Assistant subsection
   private shouldShowQuickAnswersSettings_: boolean;
   private isAssistantAllowed_: boolean;
+
+  // Storage and Power subsection
+  private isExternalStorageEnabled_: boolean;
 
   override connectedCallback(): void {
     super.connectedCallback();

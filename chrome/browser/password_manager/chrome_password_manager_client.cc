@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/time/time.h"
 #include "base/types/optional_util.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -32,6 +33,7 @@
 #include "chrome/browser/password_manager/password_reuse_manager_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/safe_browsing/user_interaction_observer.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -75,8 +77,8 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_setting.h"
 #include "components/password_manager/core/browser/password_manager_settings_service.h"
-#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_requirements_service.h"
+#include "components/password_manager/core/browser/password_sync_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/profile_metrics/browser_profile_type.h"
@@ -288,7 +290,7 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
     return false;
 
   save_update_password_message_delegate_.DisplaySaveUpdatePasswordPrompt(
-      web_contents(), std::move(form_to_save), update_password);
+      web_contents(), std::move(form_to_save), update_password, this);
 #else
   PasswordsClientUIDelegate* manage_passwords_ui_controller =
       PasswordsClientUIDelegateFromWebContents(web_contents());
@@ -464,11 +466,14 @@ void ChromePasswordManagerClient::ShowKeyboardReplacingSurface(
 }
 #endif
 
-scoped_refptr<device_reauth::DeviceAuthenticator>
+std::unique_ptr<device_reauth::DeviceAuthenticator>
 ChromePasswordManagerClient::GetDeviceAuthenticator() {
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || \
     BUILDFLAG(IS_CHROMEOS)
-  return ChromeDeviceAuthenticatorFactory::GetDeviceAuthenticator();
+  device_reauth::DeviceAuthParams params(
+      base::Seconds(60), device_reauth::DeviceAuthSource::kPasswordManager);
+
+  return ChromeDeviceAuthenticatorFactory::GetForProfile(profile_, params);
 #else
   return nullptr;
 #endif
@@ -710,7 +715,7 @@ password_manager::SyncState ChromePasswordManagerClient::GetPasswordSyncState()
     const {
   const syncer::SyncService* sync_service =
       SyncServiceFactory::GetForProfile(profile_);
-  return password_manager_util::GetPasswordSyncState(sync_service);
+  return password_manager::sync_util::GetPasswordSyncState(sync_service);
 }
 
 bool ChromePasswordManagerClient::WasLastNavigationHTTPError() const {
@@ -1439,9 +1444,8 @@ void ChromePasswordManagerClient::OnFieldTypesDetermined(
     if (!driver) {
       continue;
     }
-    std::array<const autofill::FormData*, 1> form_pointers = {&form};
     password_manager_.ProcessAutofillPredictions(
-        driver, form_pointers, forms_and_predictions->predictions);
+        driver, form, forms_and_predictions->predictions);
   }
 }
 

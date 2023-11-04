@@ -373,7 +373,6 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
       net::IsolationInfo::Create(net::IsolationInfo::RequestType::kOther,
                                  worker_origin, worker_origin,
                                  net::SiteForCookies::FromOrigin(worker_origin),
-                                 /*party_context=*/absl::nullopt,
                                  host->instance().storage_key().nonce()),
       creator.BuildClientSecurityStateForWorkers(), credentials_mode,
       std::move(outside_fetch_client_settings_object),

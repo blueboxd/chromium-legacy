@@ -192,19 +192,26 @@ mojom::DataDecoderService* DataDecoder::GetService() {
 
 void DataDecoder::ParseJson(const std::string& json,
                             ValueParseCallback callback) {
+  if (base::JSONReader::UsingRust()) {
 #if BUILDFLAG(BUILD_RUST_JSON_READER)
-  // Parses JSON directly in the calling process using the memory-safe
-  // Rust parser.
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(
-          [](const std::string& json) {
-            return base::JSONReader::ReadAndReturnValueWithError(
-                json, base::JSON_PARSE_RFC);
-          },
-          json),
-      base::BindOnce(&ParsingComplete, cancel_requests_, std::move(callback)));
-#elif BUILDFLAG(IS_ANDROID)
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::TaskPriority::BEST_EFFORT},
+        base::BindOnce(
+            [](const std::string& json) {
+              return base::JSONReader::ReadAndReturnValueWithError(
+                  json, base::JSON_PARSE_RFC);
+            },
+            json),
+        base::BindOnce(&ParsingComplete, cancel_requests_,
+                       std::move(callback)));
+#else   // BUILDFLAG(BUILD_RUST_JSON_READER)
+    CHECK(false)
+        << "UseJsonParserFeature enabled, but not supported in this build.";
+#endif  // BUILDFLAG(BUILD_RUST_JSON_READER)
+    return;
+  }
+
+#if BUILDFLAG(IS_ANDROID)
   // For Android, if the full Rust parser is not available, we use the
   // in-process sanitizer and then parse in-process.
   JsonSanitizer::Sanitize(
@@ -225,7 +232,7 @@ void DataDecoder::ParseJson(const std::string& json,
                                       result.value(), base::JSON_PARSE_RFC));
                 },
                 std::move(callback), cancel_requests_));
-#else
+#else   // BUILDFLAG(IS_ANDROID)
   // Parse JSON out-of-process.
   auto request =
       base::MakeRefCounted<ValueParseRequest<mojom::JsonParser, base::Value>>(
@@ -236,7 +243,7 @@ void DataDecoder::ParseJson(const std::string& json,
       base::BindOnce(&ValueParseRequest<mojom::JsonParser,
                                         base::Value>::OnServiceValueOrError,
                      request));
-#endif
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 // static

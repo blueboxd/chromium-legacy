@@ -58,14 +58,47 @@ class BLINK_EXPORT WebFormControlElement : public WebElement {
   bool IsEnabled() const;
   bool IsReadOnly() const;
   WebString FormControlName() const;
-  WebString FormControlType() const;
 
-  // Same as FormControlType() but returns the type "password" for text fields
-  // that have been a password in the past.
-  WebString FormControlTypeForAutofill() const;
+  enum class Type {
+    kButtonButton,
+    kButtonSubmit,
+    kButtonReset,
+    kButtonSelectList,
+    kFieldset,
+    kInputButton,
+    kInputCheckbox,
+    kInputColor,
+    kInputDate,
+    kInputDatetimeLocal,
+    kInputEmail,
+    kInputFile,
+    kInputHidden,
+    kInputImage,
+    kInputMonth,
+    kInputNumber,
+    kInputPassword,
+    kInputRadio,
+    kInputRange,
+    kInputReset,
+    kInputSearch,
+    kInputSubmit,
+    kInputTelephone,
+    kInputText,
+    kInputTime,
+    kInputUrl,
+    kInputWeek,
+    kOutput,
+    kSelectOne,
+    kSelectMultiple,
+    kSelectList,
+    kTextArea,
+  };
+  Type FormControlType() const;
+  Type FormControlTypeForAutofill() const;
 
   enum WebAutofillState GetAutofillState() const;
   bool IsAutofilled() const;
+  bool IsPreviewed() const;
   void SetAutofillState(enum WebAutofillState);
   void SetPreventHighlightingOfAutofilledFields(bool prevent_highlighting);
   bool PreventHighlightingOfAutofilledFields() const;
@@ -124,15 +157,15 @@ class BLINK_EXPORT WebFormControlElement : public WebElement {
   WebString EditingValue() const;
 
   // Sets character selection range.
-  void SetSelectionRange(int start, int end);
+  void SetSelectionRange(unsigned start, unsigned end);
   // Returned value represents a cursor/caret position at the current
   // selection's start for text input field or textarea. If neither input
   // element nor textarea element, 0 is returned.
-  int SelectionStart() const;
+  unsigned SelectionStart() const;
   // Returned value represents a cursor/caret position at the current
   // selection's end for text input field or textarea. If neither input
   // element nor textarea element, 0 is returned.
-  int SelectionEnd() const;
+  unsigned SelectionEnd() const;
 
   // Returns text-align(only left and right are supported. see crbug.com/482339)
   // of text of element.

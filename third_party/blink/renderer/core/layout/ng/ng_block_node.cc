@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/html/html_marquee_element.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/box_layout_extra_input.h"
+#include "third_party/blink/renderer/core/layout/forms/layout_fieldset.h"
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
@@ -29,7 +30,6 @@
 #include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
-#include "third_party/blink/renderer/core/layout/ng/layout_ng_fieldset.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_fraction_layout_algorithm.h"
@@ -290,10 +290,13 @@ absl::optional<LayoutUnit> ContentMinimumInlineSize(
   else
     inline_size += border_padding.InlineSum();
 
-  if (block_node.IsTextControl())
+  const bool apply_form_sizing = style.ApplyControlFixedSize();
+  if (block_node.IsTextControl() && apply_form_sizing) {
     return inline_size;
-  if (IsA<HTMLSelectElement>(node))
+  }
+  if (IsA<HTMLSelectElement>(node) && apply_form_sizing) {
     return inline_size;
+  }
   if (const auto* input_element = DynamicTo<HTMLInputElement>(node)) {
     const AtomicString& type = input_element->type();
     if (type == input_type_names::kFile)
@@ -1063,6 +1066,11 @@ NGLayoutInputNode NGBlockNode::NextSibling() const {
 }
 
 NGLayoutInputNode NGBlockNode::FirstChild() const {
+  // If this layout is blocked by a display-lock, then we pretend this node has
+  // no children.
+  if (ChildLayoutBlockedByDisplayLock()) {
+    return nullptr;
+  }
   auto* block = DynamicTo<LayoutBlock>(box_.Get());
   if (UNLIKELY(!block))
     return NGBlockNode(box_->FirstChildBox());
@@ -1103,14 +1111,14 @@ NGBlockNode NGBlockNode::GetRenderedLegend() const {
   if (!IsFieldsetContainer())
     return nullptr;
   return NGBlockNode(
-      LayoutNGFieldset::FindInFlowLegend(*To<LayoutBlock>(box_.Get())));
+      LayoutFieldset::FindInFlowLegend(*To<LayoutBlock>(box_.Get())));
 }
 
 NGBlockNode NGBlockNode::GetFieldsetContent() const {
   if (!IsFieldsetContainer())
     return nullptr;
   return NGBlockNode(
-      To<LayoutNGFieldset>(box_.Get())->FindAnonymousFieldsetContentBox());
+      To<LayoutFieldset>(box_.Get())->FindAnonymousFieldsetContentBox());
 }
 
 LayoutUnit NGBlockNode::EmptyLineBlockSize(
@@ -1409,7 +1417,7 @@ void NGBlockNode::PlaceChildrenInFlowThread(
         LayoutPoint point = LayoutBoxUtils::ComputeLocation(
             child_fragment, child.offset, physical_fragment,
             previous_container_break_token);
-        flow_thread->SetLocationAndUpdateOverflowControlsIfNeeded(point);
+        flow_thread->SetLocation(point);
         flow_thread->SetLogicalWidth(logical_size.inline_size);
         has_processed_first_column_in_flow_thread = true;
       }
@@ -1515,7 +1523,7 @@ void NGBlockNode::CopyChildFragmentPosition(
   LayoutPoint point = LayoutBoxUtils::ComputeLocation(
       child_fragment, offset, container_fragment,
       previous_container_break_token);
-  layout_box->SetLocationAndUpdateOverflowControlsIfNeeded(point);
+  layout_box->SetLocation(point);
 
   if (needs_invalidation_check)
     layout_box->SetShouldCheckForPaintInvalidation();
@@ -1565,8 +1573,7 @@ void NGBlockNode::CopyFragmentItemsToLayoutBox(
           maybe_flipped_offset.top += previously_consumed_block_size;
         else
           maybe_flipped_offset.left += previously_consumed_block_size;
-        layout_box->SetLocationAndUpdateOverflowControlsIfNeeded(
-            maybe_flipped_offset.ToLayoutPoint());
+        layout_box->SetLocation(maybe_flipped_offset.ToLayoutPoint());
         if (UNLIKELY(layout_box->HasSelfPaintingLayer()))
           layout_box->Layer()->SetNeedsVisualOverflowRecalc();
 #if DCHECK_IS_ON()

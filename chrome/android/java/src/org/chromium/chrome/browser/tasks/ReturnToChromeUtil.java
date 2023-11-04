@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider.LayoutStateObserver;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.locale.LocaleManager;
+import org.chromium.chrome.browser.new_tab_url.DseNewTabUrlManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
@@ -81,6 +82,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.url.GURL;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -487,12 +489,11 @@ public final class ReturnToChromeUtil {
      */
     @VisibleForTesting
     public static boolean useChromeHomepage() {
-        String homePageUrl = HomepageManager.getHomepageUri();
+        GURL homePageGurl = HomepageManager.getHomepageGurl();
         return HomepageManager.isHomepageEnabled()
                 && ((HomepagePolicyManager.isInitializedWithNative()
                             || sSkipInitializationCheckForTesting)
-                        && (TextUtils.isEmpty(homePageUrl)
-                                || UrlUtilities.isCanonicalizedNTPUrl(homePageUrl)));
+                        && (homePageGurl.isEmpty() || UrlUtilities.isNTPUrl(homePageGurl)));
     }
 
     /**
@@ -532,7 +533,9 @@ public final class ReturnToChromeUtil {
         // When creating initial tab, i.e. cold start without restored tabs, we should only show
         // StartSurface as the HomePage if Single Pane is enabled, HomePage is not customized, not
         // on tablet, accessibility is not enabled or the tab group continuation feature is enabled.
-        return StartSurfaceConfiguration.isStartSurfaceFlagEnabled()
+        return (!DseNewTabUrlManager.isNewTabSearchEngineUrlAndroidEnabled()
+                       || DseNewTabUrlManager.isDefaultSearchEngineGoogle())
+                && StartSurfaceConfiguration.isStartSurfaceFlagEnabled()
                 && !shouldHideStartSurfaceWithAccessibilityOn(context)
                 && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(context);
     }
@@ -939,6 +942,25 @@ public final class ReturnToChromeUtil {
      */
     public static void recordHomeSurfaceShown() {
         RecordHistogram.recordBooleanHistogram(HOME_SURFACE_SHOWN_UMA, true);
+    }
+
+    public static boolean isScrollableMvtEnabled(Context context) {
+        boolean isScrollableMvtEnabled =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID);
+        boolean isSurfacePolishEnabled = ChromeFeatureList.sSurfacePolish.isEnabled();
+        if (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)) {
+            // On phones, parameter SURFACE_POLISH_SCROLLABLE_MVT is checked when feature flag
+            // surface polish is enabled; otherwise, feature flag SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID
+            // is checked.
+            return isSurfacePolishEnabled
+                    ? StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT.getValue()
+                    : isScrollableMvtEnabled;
+        }
+        // On tablets, only show the scrollable MV tiles on NTP if feature flag surface polish is
+        // enabled.
+        return isSurfacePolishEnabled
+                ? true
+                : isScrollableMvtEnabled && ChromeFeatureList.sStartSurfaceOnTablet.isEnabled();
     }
 
     /**

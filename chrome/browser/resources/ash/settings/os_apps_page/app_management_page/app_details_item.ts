@@ -14,8 +14,10 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 
 import {getTemplate} from './app_details_item.html.js';
 import {AppManagementBrowserProxy} from './browser_proxy.js';
+import {AppManagementStoreMixin} from './store_mixin.js';
 
-const AppManagementAppDetailsItemBase = I18nMixin(PolymerElement);
+const AppManagementAppDetailsItemBase =
+    AppManagementStoreMixin(I18nMixin(PolymerElement));
 
 export class AppManagementAppDetailsItem extends
     AppManagementAppDetailsItemBase {
@@ -38,46 +40,53 @@ export class AppManagementAppDetailsItem extends
         computed: 'isHidden_()',
         reflectToAttribute: true,
       },
+
+      appId_: {
+        type: String,
+        observer: 'appIdChanged_',
+      },
     };
   }
 
   app: App;
+  private appId_: string;
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    this.watch('appId_', state => state.selectedAppId);
+    this.updateFromStore();
+  }
+
   override hidden: boolean;
 
   private isHidden_(): boolean {
     return !loadTimeData.getBoolean('appManagementAppDetailsEnabled');
   }
 
-  /**
-   * The version is only shown for Android and Chrome apps.
-   */
-  private shouldShowVersion_(app: App): boolean {
-    if (!app.version) {
-      return false;
-    }
-
-    switch (app.type) {
-      case AppType.kChromeApp:
-      case AppType.kArc:
-        return true;
-      default:
-        return false;
+  private appIdChanged_(appId: string): void {
+    if (appId && this.app) {
+      AppManagementBrowserProxy.getInstance().handler.updateAppSize(appId);
     }
   }
 
   /**
-   * The full storage information is only shown for
-   * Android and Web apps.
+   * The version is shown for every app apart from System apps.
+   */
+  private shouldShowVersion_(app: App): boolean {
+    if (app.installReason === InstallReason.kSystem) {
+      return false;
+    }
+    return Boolean(app.version);
+  }
+
+  /**
+   * Storage information is shown for every app apart from System apps.
    */
   private shouldShowStorage_(app: App): boolean {
-    switch (app.type) {
-      case AppType.kWeb:
-      case AppType.kArc:
-      case AppType.kSystemWeb:
-        return (app.appSize !== undefined || app.dataSize !== undefined);
-      default:
-        return false;
+    if (app.installReason === InstallReason.kSystem) {
+      return false;
     }
+    return true;
   }
 
   private shouldShowAppSize_(app: App): boolean {
@@ -88,12 +97,10 @@ export class AppManagementAppDetailsItem extends
     return Boolean(app.dataSize);
   }
   /**
-   * The info icon is only shown for System apps and apps installed from the
-   * Chrome browser.
+   * The info icon is only shown for apps installed from the Chrome browser.
    */
   private shouldShowInfoIcon_(app: App): boolean {
-    return app.installSource === InstallSource.kBrowser ||
-        app.installReason === InstallReason.kSystem;
+    return app.installSource === InstallSource.kBrowser;
   }
 
   /**
@@ -106,6 +113,12 @@ export class AppManagementAppDetailsItem extends
   }
 
   private getTypeString_(app: App): string {
+    // When installReason = kSystem, the system has determined that the app
+    // needs to be installed. This includes apps such as Chrome and the Play
+    // Store.
+    if (app.installReason === InstallReason.kSystem) {
+      return this.i18n('appManagementAppDetailsTypeCrosSystem');
+    }
     switch (app.type) {
       case AppType.kArc:
         return this.i18n('appManagementAppDetailsTypeAndroid');
@@ -135,48 +148,37 @@ export class AppManagementAppDetailsItem extends
   }
 
   private getTypeAndSourceString_(app: App): string {
-    // When installReason = kSystem, the system has determined that the app
-    // needs to be installed. This includes apps such as Chrome and the Play
-    // Store.
-    if (app.installReason === InstallReason.kSystem) {
-      return this.i18n('appManagementAppDetailsTypeCrosSystem');
-    }
     switch (app.installSource) {
       case InstallSource.kPlayStore:
       case InstallSource.kChromeWebStore:
         return this
             .i18nAdvanced('appManagementAppDetailsTypeAndSourceCombined', {
               substitutions: [
-                String(this.getTypeString_(app)),
-                String(this.getInstallSourceString_(app)),
+                this.getTypeString_(app),
+                this.getInstallSourceString_(app),
               ],
             })
             .toString();
       case InstallSource.kBrowser:
         return this.i18n('appManagementAppDetailsInstallSourceBrowser');
+      case InstallSource.kSystem:
+        return this
+            .i18nAdvanced(
+                'appManagementAppDetailsTypeAndSourcePreinstalledApp', {
+                  substitutions: [
+                    this.getTypeString_(app),
+                    loadTimeData.getString('appManagementDeviceName'),
+                  ],
+                })
+            .toString();
       case InstallSource.kUnknown:
         return this.getTypeString_(app);
       default:
-        console.error('Install source not recognised.');
         return this.getTypeString_(app);
     }
   }
 
-  private getAppSizeString_(app: App): string {
-    if (!app.appSize) {
-      return '';
-    }
-    return this.i18n('appManagementAppDetailsAppSize', app.appSize);
-  }
-
-  private getDataSizeString_(app: App): string {
-    if (!app.dataSize) {
-      return '';
-    }
-    return this.i18n('appManagementAppDetailsDataSize', app.dataSize);
-  }
-
-  private onStoreLinkClicked_(e: CustomEvent<{event: Event}>) {
+  private onStoreLinkClicked_(e: CustomEvent<{event: Event}>): void {
     // A place holder href with the value "#" is used to have a compliant link.
     // This prevents the browser from navigating the window to "#"
     if (e.detail.event) {  // When the store link is clicked
@@ -190,20 +192,11 @@ export class AppManagementAppDetailsItem extends
     }
   }
 
-  private getVersionString_(app: App): string {
-    return this.i18n(
-        'appManagementAppDetailsVersion',
-        app.version ? app.version.toString() : '');
-  }
-
   /**
-   * Returns the sanitized URL for apps downloaded from the Chrome browser, or a
-   * message for system apps, to be shown in the tooltip.
+   * Returns the sanitized URL for apps downloaded from the Chrome browser, to
+   * be shown in the tooltip.
    */
   private getTooltipText_(app: App): string {
-    if (app.installReason === InstallReason.kSystem) {
-      return this.i18n('appManagementAppDetailsTooltipCrosSystem');
-    }
     switch (app.installSource) {
       case InstallSource.kBrowser:
         return app.publisherId.replace(/\?.*$/g, '');

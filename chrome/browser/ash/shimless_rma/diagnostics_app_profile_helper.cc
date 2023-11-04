@@ -12,6 +12,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/webui/shimless_rma/backend/shimless_rma_delegate.h"
 #include "base/files/file_path.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
@@ -24,7 +25,9 @@
 #include "chrome/browser/web_applications/isolated_web_apps/install_isolated_web_app_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chromeos/extensions/chromeos_system_extension_info.h"
 #include "chrome/common/pref_names.h"
@@ -36,6 +39,8 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "extensions/common/permissions/permission_message.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/verifier_formats.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
@@ -101,6 +106,8 @@ struct PrepareDiagnosticsAppProfileState {
   raw_ptr<content::BrowserContext> context;
   absl::optional<std::string> extension_id;
   absl::optional<web_package::SignedWebBundleId> iwa_id;
+  absl::optional<std::string> name;
+  absl::optional<std::string> permission_message;
 };
 
 PrepareDiagnosticsAppProfileState::PrepareDiagnosticsAppProfileState() =
@@ -121,11 +128,10 @@ void ReportSuccess(std::unique_ptr<PrepareDiagnosticsAppProfileState> state) {
 
   std::move(state->callback)
       .Run(base::ok(
-          ShimlessRmaDelegate::PrepareDiagnosticsAppBrowserContextResult{
-              .context = state->context,
-              .extension_id = state->extension_id.value(),
-              .iwa_id = state->iwa_id.value(),
-          }));
+          ShimlessRmaDelegate::PrepareDiagnosticsAppBrowserContextResult(
+              state->context, state->extension_id.value(),
+              state->iwa_id.value(), state->name.value(),
+              state->permission_message)));
 }
 
 void OnIsolatedWebAppInstalled(
@@ -141,6 +147,20 @@ void OnIsolatedWebAppInstalled(
                                       result.error().message);
     return;
   }
+
+  const web_app::WebApp* web_app = state->delegate->GetWebAppById(
+      web_app::IsolatedWebAppUrlInfo::CreateFromSignedWebBundleId(
+          *state->iwa_id)
+          .app_id(),
+      state->context);
+  // TODO(b/294815884): Check this when installing the IWA after we can add
+  // custom checker. For now, we just install the IWA. Because we won't return
+  // the profile and won't launch the IWA it should be fine.
+  if (!web_app->permissions_policy().empty()) {
+    ReportError(std::move(state), k3pDiagErrorIWACannotHasPermissionPolicy);
+    return;
+  }
+  state->name = web_app->untranslated_name();
 
   ReportSuccess(std::move(state));
 }
@@ -250,6 +270,21 @@ void OnExtensionInstalled(
     }
   }
 
+  extensions::PermissionMessages permission_messages =
+      extension->permissions_data()->GetPermissionMessages();
+  if (permission_messages.empty()) {
+    state->permission_message = absl::nullopt;
+  } else {
+    std::u16string message;
+    for (const auto& permission_message : permission_messages) {
+      base::StrAppend(&message, {permission_message.message(), u"\n"});
+      for (const auto& submessage : permission_message.submessages()) {
+        base::StrAppend(&message, {u"- ", submessage, u"\n"});
+      }
+    }
+    state->permission_message = base::UTF16ToUTF8(message);
+  }
+
   GetExtensionService(state->context)->EnableExtension(extension->id());
 
   GURL script_url = extension->GetResourceURL(
@@ -345,6 +380,16 @@ DiagnosticsAppProfileHelperDelegate::GetWebAppCommandScheduler(
       Profile::FromBrowserContext(browser_context));
   CHECK(web_app_provider);
   return &web_app_provider->scheduler();
+}
+
+const web_app::WebApp* DiagnosticsAppProfileHelperDelegate::GetWebAppById(
+    const web_app::AppId& app_id,
+    content::BrowserContext* browser_context) {
+  auto* web_app_provider = web_app::WebAppProvider::GetForWebApps(
+      Profile::FromBrowserContext(browser_context));
+  const web_app::WebAppRegistrar& registrar =
+      web_app_provider->registrar_unsafe();
+  return registrar.GetAppById(app_id);
 }
 
 void PrepareDiagnosticsAppProfile(

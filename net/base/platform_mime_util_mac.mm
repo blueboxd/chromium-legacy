@@ -177,14 +177,10 @@ void PlatformMimeUtil::GetPlatformExtensionsForMimeType(
                                            nullptr));
       if (types) {
         for (CFIndex i = 0; i < CFArrayGetCount(types); i++) {
-          base::apple::ScopedCFTypeRef<CFArrayRef> extensions_list;
-          if (@available(macOS 10.10, *)) {
-            extensions_list.reset(
-                UTTypeCopyAllTagsWithClass(
-                    base::apple::CFCast<CFStringRef>(
-                        CFArrayGetValueAtIndex(types, i)),
-                    kUTTagClassFilenameExtension));
-          }
+          base::apple::ScopedCFTypeRef<CFArrayRef> extensions_list(
+              UTTypeCopyAllTagsWithClass(base::apple::CFCast<CFStringRef>(
+                                             CFArrayGetValueAtIndex(types, i)),
+                                         kUTTagClassFilenameExtension));
           if (!extensions_list) {
             continue;
           }

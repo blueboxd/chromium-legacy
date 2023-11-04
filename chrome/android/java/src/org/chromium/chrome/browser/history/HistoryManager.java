@@ -132,7 +132,7 @@ public class HistoryManager implements OnMenuItemClickListener, SelectionObserve
      * @param isSeparateActivity Whether the history UI will be shown in a separate activity than
      *                           the main Chrome activity.
      * @param snackbarManager The {@link SnackbarManager} used to display snackbars.
-     * @param isIncognito Whether the incognito tab model is currently selected.
+     * @param profile The profile launching History.
      * @param tabSupplier Supplies the current tab, null if the history UI will be shown in a
      *                    separate activity.
      * @param showHistoryClustersImmediately Whether the Journeys (history clusters) UI should be
@@ -142,15 +142,17 @@ public class HistoryManager implements OnMenuItemClickListener, SelectionObserve
      */
     @SuppressWarnings("unchecked") // mSelectableListLayout
     public HistoryManager(@NonNull Activity activity, boolean isSeparateActivity,
-            @NonNull SnackbarManager snackbarManager, boolean isIncognito,
+            @NonNull SnackbarManager snackbarManager, @NonNull Profile profile,
             @Nullable Supplier<Tab> tabSupplier, boolean showHistoryClustersImmediately,
             String historyClustersQuery, HistoryProvider historyProvider) {
         mActivity = activity;
         mIsSeparateActivity = isSeparateActivity;
         mSnackbarManager = snackbarManager;
-        mIsIncognito = isIncognito;
         mHistoryProvider = historyProvider;
-        mProfile = Profile.getLastUsedRegularProfile();
+        assert profile != null;
+        mProfile = profile;
+        mIsIncognito = profile.isOffTheRecord();
+
         mPrefService = UserPrefs.get(mProfile);
         mBackPressStateSupplier.set(false);
 
@@ -302,8 +304,8 @@ public class HistoryManager implements OnMenuItemClickListener, SelectionObserve
         // 2. Create HistoryContentManager and initialize recycler view.
         boolean shouldShowInfoHeader = SharedPreferencesManager.getInstance().readBoolean(
                 ChromePreferenceKeys.HISTORY_SHOW_HISTORY_INFO, true);
-        mContentManager = new HistoryContentManager(mActivity, this, isSeparateActivity,
-                isIncognito, shouldShowInfoHeader, /* shouldShowClearData */ true,
+        mContentManager = new HistoryContentManager(mActivity, this, isSeparateActivity, profile,
+                shouldShowInfoHeader, /* shouldShowClearData */ true,
                 /* hostName */ null, mSelectionDelegate, tabSupplier,
                 mShowHistoryClustersToggleSupplier,
                 (vg) -> buildToggleView(vg, HISTORY_TAB_INDEX), historyProvider);
@@ -318,6 +320,7 @@ public class HistoryManager implements OnMenuItemClickListener, SelectionObserve
                 R.layout.history_toolbar, mSelectionDelegate, R.string.menu_history,
                 R.id.normal_menu_group, R.id.selection_mode_menu_group, this, isSeparateActivity);
         mToolbar.setManager(this);
+        mToolbar.setPrefService(UserPrefs.get(profile));
         mToolbar.initializeSearchView(this, R.string.history_manager_search, R.id.search_menu_id);
         mToolbar.setInfoMenuItem(R.id.info_menu_id);
         mToolbar.updateInfoMenuItem(shouldShowInfoButton(), shouldShowInfoHeaderIfAvailable());
@@ -330,9 +333,10 @@ public class HistoryManager implements OnMenuItemClickListener, SelectionObserve
                     .setTitle(historyClustersVisible
                                     ? R.string.history_clusters_disable_menu_item_label
                                     : R.string.history_clusters_enable_menu_item_label);
-            // In the unlikely event history clusters is force enabled by policy, remove the menu
-            // option to turn it off.
-            if (historyClustersPrefIsManaged) {
+            // If the rename is enabled or in the unlikely event history clusters is force enabled
+            // by policy, remove the menu option to turn it off.
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.RENAME_JOURNEYS)
+                    || historyClustersPrefIsManaged) {
                 mToolbar.getMenu().removeItem(R.id.optout_menu_id);
             }
         } else {

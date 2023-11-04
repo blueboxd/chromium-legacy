@@ -18,6 +18,8 @@
 
 namespace ash {
 
+class InputDeviceSettingsController;
+
 // PeripheralCustomizationEventRewriter recognizes and rewrites events from mice
 // and graphics tablets to arbitrary `ui::KeyEvent`s configured by the user via
 // the Settings SWA.
@@ -29,20 +31,21 @@ class ASH_EXPORT PeripheralCustomizationEventRewriter
 
   enum class DeviceType { kMouse, kGraphicsTablet };
 
-  class Observer : public base::CheckedObserver {
-   public:
-    // Called when a mouse that is currently being observed presses a button
-    // that is remappable on mice.
-    virtual void OnMouseButtonPressed(int device_id,
-                                      const mojom::Button& button) = 0;
+  struct DeviceIdButton {
+    int device_id;
+    mojom::ButtonPtr button;
 
-    // Called when a graphics tablet that is currently being observed presses a
-    // button that is remappable on graphics tablets.
-    virtual void OnGraphicsTabletButtonPressed(int device_id,
-                                               const mojom::Button& button) = 0;
+    DeviceIdButton(int device_id, mojom::ButtonPtr button);
+    DeviceIdButton(DeviceIdButton&& device_id_button);
+    ~DeviceIdButton();
+
+    DeviceIdButton& operator=(DeviceIdButton&& device_id_button);
+    friend bool operator<(const DeviceIdButton& left,
+                          const DeviceIdButton& right);
   };
 
-  PeripheralCustomizationEventRewriter();
+  explicit PeripheralCustomizationEventRewriter(
+      InputDeviceSettingsController* input_device_settings_controller);
   PeripheralCustomizationEventRewriter(
       const PeripheralCustomizationEventRewriter&) = delete;
   PeripheralCustomizationEventRewriter& operator=(
@@ -66,16 +69,10 @@ class ASH_EXPORT PeripheralCustomizationEventRewriter
       const ui::Event& event,
       const Continuation continuation) override;
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
-
-  // This is only for testing and will be removed once the controller properly
-  // sends button remapping data to the rewriter.
-  // TODO(dpad): Remove this function once button remapping data can be received
-  // from the settings controller.
-  void SetRemappingActionForTesting(int device_id,
-                                    mojom::ButtonPtr button,
-                                    mojom::RemappingActionPtr remapping_action);
+  const base::flat_set<int>& mice_to_observe() { return mice_to_observe_; }
+  const base::flat_set<int>& graphics_tablets_to_observe() {
+    return graphics_tablets_to_observe_;
+  }
 
  private:
   // Notifies observers if the given `mouse_event` is a remappable button for
@@ -104,17 +101,26 @@ class ASH_EXPORT PeripheralCustomizationEventRewriter
   const mojom::RemappingAction* GetRemappingAction(int device_id,
                                                    const mojom::Button& button);
 
+  void UpdatePressedButtonMap(
+      mojom::ButtonPtr button,
+      const ui::Event& original_event,
+      const std::unique_ptr<ui::Event>& rewritten_event);
+
   // Removes the set of remapped modifiers from the event that should be
   // discarded.
   void RemoveRemappedModifiers(ui::Event& event);
 
+  // Applies all remapped modifiers.
+  void ApplyRemappedModifiers(ui::Event& event);
+
   base::flat_set<int> mice_to_observe_;
   base::flat_set<int> graphics_tablets_to_observe_;
-  base::ObserverList<Observer> observers_;
 
-  // TODO(dpad): Remove once `InputDeviceSettingsController` is updated to
-  // handle button remappings.
-  base::flat_map<int, ButtonRemappingList> button_remappings_for_testing_;
+  // Maintains a list of currently pressed buttons and the flags that should
+  // be applied to other events processed.
+  base::flat_map<DeviceIdButton, int> device_button_to_flags_;
+
+  raw_ptr<InputDeviceSettingsController> input_device_settings_controller_;
 };
 
 }  // namespace ash

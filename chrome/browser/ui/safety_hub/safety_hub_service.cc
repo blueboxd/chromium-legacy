@@ -4,16 +4,30 @@
 
 #include "chrome/browser/ui/safety_hub/safety_hub_service.h"
 
+#include <memory>
+
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/json/values_util.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
 
-SafetyHubService::Result::Result(base::TimeTicks timestamp)
+SafetyHubService::Result::Result(base::Time timestamp)
     : timestamp_(timestamp) {}
 
-base::TimeTicks SafetyHubService::Result::timestamp() const {
+SafetyHubService::Result::Result(const base::Value::Dict& dict) {
+  timestamp_ =
+      base::ValueToTime(dict.Find(kSafetyHubTimestampResultKey)).value();
+}
+
+base::Value::Dict SafetyHubService::Result::BaseToDictValue() const {
+  base::Value::Dict result;
+  result.Set(kSafetyHubTimestampResultKey, base::TimeToValue(timestamp_));
+  return result;
+}
+
+base::Time SafetyHubService::Result::timestamp() const {
   return timestamp_;
 }
 
@@ -21,6 +35,10 @@ SafetyHubService::SafetyHubService() = default;
 SafetyHubService::~SafetyHubService() = default;
 
 void SafetyHubService::Shutdown() {
+  update_timer_.Stop();
+}
+
+void SafetyHubService::StopTimer() {
   update_timer_.Stop();
 }
 
@@ -74,9 +92,20 @@ bool SafetyHubService::IsUpdateRunning() {
   return pending_updates_ > 0;
 }
 
-absl::optional<SafetyHubService::Result*> SafetyHubService::GetCachedResult() {
-  if (latest_result_ != nullptr) {
-    return latest_result_.get();
+absl::optional<std::unique_ptr<SafetyHubService::Result>>
+SafetyHubService::GetCachedResult() {
+  if (latest_result_) {
+    // Using the `Clone()` function here instead of the copy constructor as the
+    // specific result class is unknown.
+    return latest_result_->Clone();
   }
   return absl::nullopt;
+}
+
+void SafetyHubService::InitializeLatestResult() {
+  latest_result_ = InitializeLatestResultImpl();
+}
+
+bool SafetyHubService::IsTimerRunningForTesting() {
+  return update_timer_.IsRunning();
 }

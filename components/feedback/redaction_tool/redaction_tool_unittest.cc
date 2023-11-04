@@ -510,6 +510,15 @@ TEST_F(RedactionToolTest, RedactCustomPatterns) {
             RedactCustomPatterns("\"attested_device_id\"=\"-5CD045B0DZ\""));
   EXPECT_EQ("\"attested_device_id\"=\"5CD045B0DZ-\"",
             RedactCustomPatterns("\"attested_device_id\"=\"5CD045B0DZ-\""));
+  // redact lsusb's iSerial with a nonzero index.
+  EXPECT_EQ("iSerial    3 (Serial: 14)",
+            RedactCustomPatterns("iSerial    3 12345abcdEFG"));
+  // Do not redact lsusb's iSerial when the index is 0.
+  EXPECT_EQ("iSerial    0 ",
+            RedactCustomPatterns("iSerial    0 "));
+  // redact usbguard's serial number in syslog
+  EXPECT_EQ("serial \"(Serial: 15)\"",
+            RedactCustomPatterns("serial \"usb1234AA5678\""));
 
   // Valid PSM identifiers.
   EXPECT_EQ("PSM id: (PSM ID: 1)", RedactCustomPatterns("PSM id: ABCZ/123xx"));
@@ -990,6 +999,7 @@ TEST_F(RedactionToolTest, RedactBlockDevices) {
       {"{\"lv_uuid\":\"lKYORl-TWDP-OFLT-yDnB-jlQ7-aQrE-AwA8Oa\", "
        "\"lv_name\":\"[thinpool_tdata]\"",
        "{\"lv_uuid\":\"(UUID: 5)\", \"lv_name\":\"[thinpool_tdata]\""},
+      {"id = \"KJ0bUk-QE15-mNMp-6Z2V-4Efq-N1r4-oPeFyc\"", "id = \"(UUID: 6)\""},
 
       // Removable media paths.
       {"/media/removable/SD Card/", "/media/removable/(Volume Label: 2)/"},

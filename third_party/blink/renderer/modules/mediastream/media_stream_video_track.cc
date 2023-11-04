@@ -10,6 +10,8 @@
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
@@ -18,13 +20,16 @@
 #include "build/build_config.h"
 #include "media/base/limits.h"
 #include "media/capture/video_capture_types.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_device.h"
+#include "third_party/blink/renderer/platform/allow_discouraged_type.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_std.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -43,7 +48,7 @@ using VideoCaptureDeliverFrameInternalCallback = WTF::CrossThreadFunction<void(
 
 // This alias mimics the definition of VideoCaptureNotifyFrameDroppedCB.
 using VideoCaptureNotifyFrameDroppedInternalCallback =
-    WTF::CrossThreadFunction<void()>;
+    WTF::CrossThreadFunction<void(media::VideoCaptureFrameDropReason)>;
 
 // Mimics blink::EncodedVideoFrameCB
 using EncodedVideoFrameInternalCallback =
@@ -71,6 +76,102 @@ base::TimeDelta ComputeRefreshIntervalFromBounds(
   return refresh_interval;
 }
 
+void LogVideoFrameDrop(media::VideoCaptureFrameDropReason reason,
+                       mojom::blink::MediaStreamType stream_type) {
+  const int kEnumCount =
+      static_cast<int>(media::VideoCaptureFrameDropReason::kMaxValue) + 1;
+  UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.Track.FrameDrop", reason,
+                            kEnumCount);
+  switch (stream_type) {
+    case mojom::blink::MediaStreamType::DEVICE_VIDEO_CAPTURE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.VideoCapture.Track.FrameDrop.DeviceCapture", reason,
+          kEnumCount);
+      break;
+    case mojom::blink::MediaStreamType::GUM_TAB_VIDEO_CAPTURE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.VideoCapture.Track.FrameDrop.GumTabCapture", reason,
+          kEnumCount);
+      break;
+    case mojom::blink::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.VideoCapture.Track.FrameDrop.GumDesktopCapture", reason,
+          kEnumCount);
+      break;
+    case mojom::blink::MediaStreamType::DISPLAY_VIDEO_CAPTURE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.VideoCapture.Track.FrameDrop.DisplayCapture", reason,
+          kEnumCount);
+      break;
+    case mojom::blink::MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.VideoCapture.Track.FrameDrop.DisplayCaptureCurrentTab", reason,
+          kEnumCount);
+      break;
+    case mojom::blink::MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.VideoCapture.Track.FrameDrop.DisplayCaptureSet", reason,
+          kEnumCount);
+      break;
+    case mojom::blink::MediaStreamType::NO_SERVICE:
+    case mojom::blink::MediaStreamType::DEVICE_AUDIO_CAPTURE:
+    case mojom::blink::MediaStreamType::GUM_TAB_AUDIO_CAPTURE:
+    case mojom::blink::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE:
+    case mojom::blink::MediaStreamType::DISPLAY_AUDIO_CAPTURE:
+    case mojom::blink::MediaStreamType::NUM_MEDIA_TYPES:
+      break;
+  }
+}
+
+void LogMaxConsecutiveVideoFrameDropCountExceeded(
+    media::VideoCaptureFrameDropReason reason,
+    mojom::blink::MediaStreamType stream_type) {
+  const int kEnumCount =
+      static_cast<int>(media::VideoCaptureFrameDropReason::kMaxValue) + 1;
+  UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.Track.MaxFrameDropExceeded",
+                            reason, kEnumCount);
+  switch (stream_type) {
+    case mojom::blink::MediaStreamType::DEVICE_VIDEO_CAPTURE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.VideoCapture.Track.MaxFrameDropExceeded.DeviceCapture", reason,
+          kEnumCount);
+      break;
+    case mojom::blink::MediaStreamType::GUM_TAB_VIDEO_CAPTURE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.VideoCapture.Track.MaxFrameDropExceeded.GumTabCapture", reason,
+          kEnumCount);
+      break;
+    case mojom::blink::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.VideoCapture.Track.MaxFrameDropExceeded.GumDesktopCapture",
+          reason, kEnumCount);
+      break;
+    case mojom::blink::MediaStreamType::DISPLAY_VIDEO_CAPTURE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.VideoCapture.Track.MaxFrameDropExceeded.DisplayCapture",
+          reason, kEnumCount);
+      break;
+    case mojom::blink::MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.VideoCapture.Track.MaxFrameDropExceeded."
+          "DisplayCaptureCurrentTab",
+          reason, kEnumCount);
+      break;
+    case mojom::blink::MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.VideoCapture.Track.MaxFrameDropExceeded.DisplayCaptureSet",
+          reason, kEnumCount);
+      break;
+    case mojom::blink::MediaStreamType::NO_SERVICE:
+    case mojom::blink::MediaStreamType::DEVICE_AUDIO_CAPTURE:
+    case mojom::blink::MediaStreamType::GUM_TAB_AUDIO_CAPTURE:
+    case mojom::blink::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE:
+    case mojom::blink::MediaStreamType::DISPLAY_AUDIO_CAPTURE:
+    case mojom::blink::MediaStreamType::NUM_MEDIA_TYPES:
+      break;
+  }
+}
+
 }  // namespace
 
 // MediaStreamVideoTrack::FrameDeliverer is a helper class used for registering
@@ -88,6 +189,7 @@ class MediaStreamVideoTrack::FrameDeliverer
       scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner,
       scoped_refptr<base::SequencedTaskRunner> video_task_runner,
       base::WeakPtr<MediaStreamVideoTrack> media_stream_video_track,
+      base::WeakPtr<MediaStreamVideoSource> media_stream_video_source,
       bool enabled,
       uint32_t crop_version);
 
@@ -130,13 +232,17 @@ class MediaStreamVideoTrack::FrameDeliverer
       std::vector<scoped_refptr<media::VideoFrame>> scaled_video_frames,
       base::TimeTicks estimated_capture_time);
 
-  void AsyncGetDeliverableVideoFramesCount(
-      WTF::CrossThreadOnceFunction<void(size_t)>
-          deliverable_video_frames_callback);
+  // A frame was dropped instead of delivered. This is the main handler of frame
+  // drops: it updates dropped/discarded counters, invokes
+  // LogFrameDroppedOnVideoTaskRunner() and notifies `callbacks_` (i.e. sinks)
+  // that a frame was dropped.
+  void OnFrameDroppedOnVideoTaskRunner(
+      media::VideoCaptureFrameDropReason reason);
 
-  // Triggers all registered dropped frame callbacks. Must be called on the
-  // video task runner.
-  void NotifyFrameDroppedOnVideoTaskRunner();
+  // Can be called from any task runner (is atomic).
+  size_t deliverable_frames() const { return deliverable_frames_; }
+  size_t discarded_frames() const { return discarded_frames_; }
+  size_t dropped_frames() const { return dropped_frames_; }
 
   // Triggers all encoded callbacks with |frame| and |estimated_capture_time|.
   // Must be called on the video task runner.
@@ -155,6 +261,15 @@ class MediaStreamVideoTrack::FrameDeliverer
   void AddCropVersionCallback(uint32_t crop_version,
                               base::OnceClosure callback);
   void RemoveCropVersionCallback(uint32_t crop_version);
+
+  // Performs logging and UMAs relating to frame drops. This includes both
+  // frames dropped prior to delivery (OnFrameDroppedOnVideoTaskRunner) and
+  // MediaStreamVideoTrack::OnSinkDroppedFrame().
+  void LogFrameDroppedOnVideoTaskRunner(
+      media::VideoCaptureFrameDropReason reason);
+
+  void SetEmitLogMessage(
+      base::RepeatingCallback<void(const std::string&)> emit_log_message);
 
  private:
   friend class WTF::ThreadSafeRefCounted<FrameDeliverer>;
@@ -207,6 +322,8 @@ class MediaStreamVideoTrack::FrameDeliverer
   const scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner_;
 
   base::WeakPtr<MediaStreamVideoTrack> media_stream_video_track_;
+  base::WeakPtr<MediaStreamVideoSource> media_stream_video_source_;
+  const mojom::blink::MediaStreamType stream_type_;
 
   bool enabled_;
   scoped_refptr<media::VideoFrame> black_frame_;
@@ -215,10 +332,32 @@ class MediaStreamVideoTrack::FrameDeliverer
   Vector<VideoIdCallbacks> callbacks_;
   HashMap<VideoSinkId, EncodedVideoFrameInternalCallback> encoded_callbacks_;
 
-  // Frame counter for deliverable frames, only incremented when the track is
-  // enabled (even though a disabled track delivers black frames). Only touched
-  // on the `video_task_runner_`.
-  size_t deliverable_frames_ = 0;
+  // Frame counters for the MediaStreamTrack Statistics API. The counters are
+  // only incremented when the track is enabled (even though a disabled track
+  // delivers black frames).
+  std::atomic<size_t> deliverable_frames_ = 0;
+  std::atomic<size_t> discarded_frames_ = 0;
+  std::atomic<size_t> dropped_frames_ = 0;
+
+  // Helper methods for LogFrameDroppedOnVideoTaskRunner().
+  void MaybeEmitFrameDropLogMessage(media::VideoCaptureFrameDropReason reason);
+  void EmitLogMessage(const std::string& message);
+  base::RepeatingCallback<void(const std::string&)> emit_log_message_;
+  // States relating to frame drop logging and UMAs.
+  struct FrameDropLogState {
+    explicit FrameDropLogState(media::VideoCaptureFrameDropReason reason =
+                                   media::VideoCaptureFrameDropReason::kNone);
+
+    int drop_count = 0;
+    media::VideoCaptureFrameDropReason drop_reason =
+        media::VideoCaptureFrameDropReason::kNone;
+    bool max_log_count_exceeded = false;
+  };
+  FrameDropLogState frame_drop_log_state_;
+  // Tracks how often each frame-drop reason was encountered to decide whether
+  // or not to LOG the console.
+  std::map<media::VideoCaptureFrameDropReason, int> frame_drop_log_counters_
+      ALLOW_DISCOURAGED_TYPE("TODO(crbug.com/1481448)");
 
   // Callbacks that will be invoked a single time when a crop-version
   // is observed that is at least equal to the key.
@@ -236,21 +375,33 @@ class MediaStreamVideoTrack::FrameDeliverer
   uint32_t crop_version_ = 0;
 };
 
+MediaStreamVideoTrack::FrameDeliverer::FrameDropLogState::FrameDropLogState(
+    media::VideoCaptureFrameDropReason reason)
+    : drop_count((reason == media::VideoCaptureFrameDropReason::kNone) ? 0 : 1),
+      drop_reason(reason),
+      max_log_count_exceeded(false) {}
+
 MediaStreamVideoTrack::FrameDeliverer::FrameDeliverer(
     scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner,
     scoped_refptr<base::SequencedTaskRunner> video_task_runner,
     base::WeakPtr<MediaStreamVideoTrack> media_stream_video_track,
+    base::WeakPtr<MediaStreamVideoSource> media_stream_video_source,
     bool enabled,
     uint32_t crop_version)
     : video_task_runner_(std::move(video_task_runner)),
       main_render_task_runner_(main_render_task_runner),
       media_stream_video_track_(media_stream_video_track),
+      media_stream_video_source_(media_stream_video_source),
+      stream_type_(media_stream_video_source_->device().type),
       enabled_(enabled),
       emit_frame_drop_events_(true),
       await_next_key_frame_(false),
       crop_version_(crop_version) {
   DCHECK(video_task_runner_.get());
   DCHECK(main_render_task_runner_);
+  SetEmitLogMessage(ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
+      &MediaStreamVideoTrack::FrameDeliverer::EmitLogMessage,
+      WTF::CrossThreadUnretained(this))));
 }
 
 MediaStreamVideoTrack::FrameDeliverer::~FrameDeliverer() {
@@ -272,8 +423,9 @@ void MediaStreamVideoTrack::FrameDeliverer::AddCallbackOnVideoTaskRunner(
     VideoSinkId id,
     VideoCaptureDeliverFrameInternalCallback callback) {
   DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
-  callbacks_.push_back(VideoIdCallbacks{id, std::move(callback),
-                                        CrossThreadBindRepeating([] {})});
+  callbacks_.push_back(VideoIdCallbacks{
+      id, std::move(callback),
+      CrossThreadBindRepeating([](media::VideoCaptureFrameDropReason) {})});
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::SetNotifyFrameDroppedCallback(
@@ -475,31 +627,20 @@ void MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnVideoTaskRunner(
     base::TimeTicks estimated_capture_time) {
   DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
 
+  frame_drop_log_state_ = FrameDropLogState();
+
   // TODO(crbug.com/1369085): Understand why we sometimes see old crop versions.
   if (frame->metadata().crop_version != crop_version_) {
-    // TODO(crbug.com/964947): A weak ptr instance of MediaStreamVideoTrack is
-    // passed to FrameDeliverer in order to avoid the re-binding the instance of
-    // a WTF::CrossThreadFunction.
-    PostCrossThreadTask(
-        *main_render_task_runner_, FROM_HERE,
-        CrossThreadBindOnce(
-            &MediaStreamVideoTrack::OnFrameDropped, media_stream_video_track_,
-            media::VideoCaptureFrameDropReason::kCropVersionNotCurrent));
+    OnFrameDroppedOnVideoTaskRunner(
+        media::VideoCaptureFrameDropReason::kCropVersionNotCurrent);
     return;
   }
 
   if (!enabled_ && emit_frame_drop_events_) {
     emit_frame_drop_events_ = false;
-
-    // TODO(crbug.com/964947): A weak ptr instance of MediaStreamVideoTrack is
-    // passed to FrameDeliverer in order to avoid the re-binding the instance of
-    // a WTF::CrossThreadFunction.
-    PostCrossThreadTask(
-        *main_render_task_runner_, FROM_HERE,
-        CrossThreadBindOnce(
-            &MediaStreamVideoTrack::OnFrameDropped, media_stream_video_track_,
-            media::VideoCaptureFrameDropReason::
-                kVideoTrackFrameDelivererNotEnabledReplacingWithBlackFrame));
+    LogFrameDroppedOnVideoTaskRunner(
+        media::VideoCaptureFrameDropReason::
+            kVideoTrackFrameDelivererNotEnabledReplacingWithBlackFrame);
   }
   scoped_refptr<media::VideoFrame> video_frame;
   if (enabled_) {
@@ -528,31 +669,88 @@ void MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnVideoTaskRunner(
   }
 }
 
-void MediaStreamVideoTrack::FrameDeliverer::AsyncGetDeliverableVideoFramesCount(
-    WTF::CrossThreadOnceFunction<void(size_t)>
-        deliverable_video_frames_callback) {
-  if (!video_task_runner_->RunsTasksInCurrentSequence()) {
-    PostCrossThreadTask(
-        *video_task_runner_, FROM_HERE,
-        CrossThreadBindOnce(
-            &FrameDeliverer::AsyncGetDeliverableVideoFramesCount,
-            WrapRefCounted(this),
-            std::move(deliverable_video_frames_callback)));
-    return;
-  }
-  DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
-  PostCrossThreadTask(
-      *main_render_task_runner_, FROM_HERE,
-      CrossThreadBindOnce(std::move(deliverable_video_frames_callback),
-                          deliverable_frames_));
-}
-
-void MediaStreamVideoTrack::FrameDeliverer::
-    NotifyFrameDroppedOnVideoTaskRunner() {
+void MediaStreamVideoTrack::FrameDeliverer::OnFrameDroppedOnVideoTaskRunner(
+    media::VideoCaptureFrameDropReason reason) {
   DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
   DVLOG(1) << __func__;
-  for (const auto& entry : callbacks_)
-    entry.notify_frame_dropped.Run();
+  LogFrameDroppedOnVideoTaskRunner(reason);
+  if (enabled_) {
+    if (reason == media::VideoCaptureFrameDropReason::
+                      kResolutionAdapterFrameRateIsHigherThanRequested) {
+      ++discarded_frames_;
+    } else {
+      ++dropped_frames_;
+    }
+  }
+  // Notify sinks that care about frame drops, i.e. WebRTC.
+  for (const auto& entry : callbacks_) {
+    entry.notify_frame_dropped.Run(reason);
+  }
+}
+
+void MediaStreamVideoTrack::FrameDeliverer::LogFrameDroppedOnVideoTaskRunner(
+    media::VideoCaptureFrameDropReason reason) {
+  MaybeEmitFrameDropLogMessage(reason);
+
+  if (reason == frame_drop_log_state_.drop_reason) {
+    if (frame_drop_log_state_.max_log_count_exceeded) {
+      return;
+    }
+
+    if (++frame_drop_log_state_.drop_count >
+        kMaxConsecutiveFrameDropForSameReasonCount) {
+      frame_drop_log_state_.max_log_count_exceeded = true;
+      LogMaxConsecutiveVideoFrameDropCountExceeded(reason, stream_type_);
+      return;
+    }
+  } else {
+    frame_drop_log_state_ = FrameDropLogState(reason);
+  }
+
+  LogVideoFrameDrop(reason, stream_type_);
+}
+
+void MediaStreamVideoTrack::FrameDeliverer::MaybeEmitFrameDropLogMessage(
+    media::VideoCaptureFrameDropReason reason) {
+  using Type = std::underlying_type<media::VideoCaptureFrameDropReason>::type;
+  static_assert(
+      static_cast<Type>(media::VideoCaptureFrameDropReason::kMaxValue) <= 100,
+      "Risk of memory overuse.");
+
+  static_assert(kMaxEmittedLogsForDroppedFramesBeforeSuppressing <
+                    kFrequencyForSuppressedLogs,
+                "");
+
+  DCHECK_GE(static_cast<Type>(reason), 0);
+  DCHECK_LE(reason, media::VideoCaptureFrameDropReason::kMaxValue);
+
+  int& occurrences = frame_drop_log_counters_[reason];
+  if (++occurrences > kMaxEmittedLogsForDroppedFramesBeforeSuppressing &&
+      occurrences % kFrequencyForSuppressedLogs != 0) {
+    return;
+  }
+
+  std::ostringstream string_stream;
+  string_stream << "Frame dropped with reason code "
+                << static_cast<Type>(reason) << ".";
+  if (occurrences == kMaxEmittedLogsForDroppedFramesBeforeSuppressing) {
+    string_stream << " Additional logs will be partially suppressed.";
+  }
+
+  // EmitLogMessage() unless overridden by testing.
+  emit_log_message_.Run(string_stream.str());
+}
+
+void MediaStreamVideoTrack::FrameDeliverer::SetEmitLogMessage(
+    base::RepeatingCallback<void(const std::string&)> emit_log_message) {
+  emit_log_message_ = std::move(emit_log_message);
+}
+
+void MediaStreamVideoTrack::FrameDeliverer::EmitLogMessage(
+    const std::string& message) {
+  PostCrossThreadTask(*main_render_task_runner_, FROM_HERE,
+                      CrossThreadBindOnce(&MediaStreamVideoSource::OnLog,
+                                          media_stream_video_source_, message));
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::
@@ -671,7 +869,8 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
   frame_deliverer_ =
       base::MakeRefCounted<MediaStreamVideoTrack::FrameDeliverer>(
           source->GetTaskRunner(), source->video_task_runner(),
-          weak_factory_.GetWeakPtr(), enabled, source->GetCropVersion());
+          weak_factory_.GetWeakPtr(), source->GetWeakPtr(), enabled,
+          source->GetCropVersion());
   source->AddTrack(
       this, VideoTrackAdapterSettings(),
       ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
@@ -679,7 +878,7 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
           frame_deliverer_)),
       ConvertToBaseRepeatingCallback(
           CrossThreadBindRepeating(&MediaStreamVideoTrack::FrameDeliverer::
-                                       NotifyFrameDroppedOnVideoTaskRunner,
+                                       OnFrameDroppedOnVideoTaskRunner,
                                    frame_deliverer_)),
       ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
           &MediaStreamVideoTrack::FrameDeliverer::
@@ -723,7 +922,8 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
   frame_deliverer_ =
       base::MakeRefCounted<MediaStreamVideoTrack::FrameDeliverer>(
           source->GetTaskRunner(), source->video_task_runner(),
-          weak_factory_.GetWeakPtr(), enabled, source->GetCropVersion());
+          weak_factory_.GetWeakPtr(), source->GetWeakPtr(), enabled,
+          source->GetCropVersion());
   source->AddTrack(
       this, adapter_settings,
       ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
@@ -731,7 +931,7 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
           frame_deliverer_)),
       ConvertToBaseRepeatingCallback(
           CrossThreadBindRepeating(&MediaStreamVideoTrack::FrameDeliverer::
-                                       NotifyFrameDroppedOnVideoTaskRunner,
+                                       OnFrameDroppedOnVideoTaskRunner,
                                    frame_deliverer_)),
       ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
           &MediaStreamVideoTrack::FrameDeliverer::
@@ -985,14 +1185,14 @@ void MediaStreamVideoTrack::GetSettings(
   }
 }
 
-void MediaStreamVideoTrack::AsyncGetDeliverableVideoFramesCount(
-    base::OnceCallback<void(size_t)> deliverable_video_frames_callback) {
+MediaStreamTrackPlatform::VideoFrameStats
+MediaStreamVideoTrack::GetVideoFrameStats() const {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
-  // WTF bindings complain if we don't convert this to a CrossThreadBindOnce,
-  // but note that `deliverable_video_frames_callback` is only called on
-  // `main_render_thread_checker_`. This is effectively a PostTaskAndReply.
-  frame_deliverer_->AsyncGetDeliverableVideoFramesCount(
-      CrossThreadBindOnce(std::move(deliverable_video_frames_callback)));
+  MediaStreamTrackPlatform::VideoFrameStats stats;
+  stats.deliverable_frames = frame_deliverer_->deliverable_frames();
+  stats.discarded_frames = frame_deliverer_->discarded_frames();
+  stats.dropped_frames = frame_deliverer_->dropped_frames();
+  return stats;
 }
 
 MediaStreamTrackPlatform::CaptureHandle
@@ -1086,12 +1286,21 @@ media::VideoCaptureFormat MediaStreamVideoTrack::GetComputedSourceFormat() {
   return computed_source_format_;
 }
 
-void MediaStreamVideoTrack::OnFrameDropped(
+void MediaStreamVideoTrack::OnSinkDroppedFrame(
     media::VideoCaptureFrameDropReason reason) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
-  if (!source_)
+  if (!source_) {
     return;
-  source_->OnFrameDropped(reason);
+  }
+  PostCrossThreadTask(
+      *source_->video_task_runner(), FROM_HERE,
+      CrossThreadBindOnce(&FrameDeliverer::LogFrameDroppedOnVideoTaskRunner,
+                          frame_deliverer_, reason));
+}
+
+void MediaStreamVideoTrack::SetEmitLogMessageForTesting(
+    base::RepeatingCallback<void(const std::string&)> emit_log_message) {
+  frame_deliverer_->SetEmitLogMessage(std::move(emit_log_message));
 }
 
 void MediaStreamVideoTrack::StartTimerForRequestingFrames() {

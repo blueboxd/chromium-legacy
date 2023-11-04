@@ -333,6 +333,10 @@
 [submodule "third_party/harfbuzz-ng/src"]
 	path = third_party/harfbuzz-ng/src
 	url = https://chromium.googlesource.com/external/github.com/harfbuzz/harfbuzz.git
+[submodule "third_party/jszip/src"]
+	path = third_party/jszip/src
+	url = https://chromium.googlesource.com/external/github.com/Stuk/jszip.git
+	gclient-condition = checkout_ios
 	ignore = all
 [submodule "third_party/emoji-segmenter/src"]
 	path = third_party/emoji-segmenter/src
@@ -800,11 +804,6 @@
 	url = https://chrome-internal.googlesource.com/chrome/spellchecker/internal.git
 	gclient-condition = checkout_src_internal
 	ignore = all
-[submodule "chrome/chrome_cleaner/internal"]
-	path = chrome/chrome_cleaner/internal
-	url = https://chrome-internal.googlesource.com/protector/foil.git
-	gclient-condition = checkout_chrome_cleaner_internal and checkout_src_internal
-	ignore = all
 [submodule "chrome/installer/mac/internal"]
 	path = chrome/installer/mac/internal
 	url = https://chrome-internal.googlesource.com/chrome/installer/mac/internal.git
@@ -939,6 +938,10 @@
 	path = remoting/host/installer/linux/internal
 	url = https://chrome-internal.googlesource.com/chrome/remoting/host/installer/linux/internal.git
 	gclient-condition = checkout_linux and checkout_src_internal
+[submodule "remoting/internal"]
+	path = remoting/internal
+	url = https://chrome-internal.googlesource.com/chrome/remoting/internal.git
+	gclient-condition = checkout_src_internal
 	ignore = all
 [submodule "remoting/test/internal"]
 	path = remoting/test/internal
@@ -1049,5 +1052,3 @@
 	path = webkit/data/test_shell/plugins
 	url = https://chrome-internal.googlesource.com/chrome/data/webkit_plugin_tests.git
 	gclient-condition = checkout_src_internal
-        ignore = all
-

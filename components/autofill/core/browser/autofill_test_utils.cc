@@ -96,9 +96,8 @@ void VerifyFormGroupValues(const FormGroup& form_group,
                            bool ignore_status) {
   for (const auto& value : values) {
     SCOPED_TRACE(testing::Message()
-                 << "Expected for type "
-                 << AutofillType::ServerFieldTypeToString(value.type) << "\n\t"
-                 << value.value << " with status "
+                 << "Expected for type " << FieldTypeToStringPiece(value.type)
+                 << "\n\t" << value.value << " with status "
                  << (ignore_status ? "(ignored)" : "")
                  << value.verification_status << "\nFound:"
                  << "\n\t" << form_group.GetRawInfo(value.type)
@@ -320,21 +319,31 @@ std::string GetStrippedValue(const char* value) {
 }
 
 Iban GetIban() {
-  Iban iban(base::Uuid::GenerateRandomV4().AsLowercaseString());
+  Iban iban(Iban::Guid(base::Uuid::GenerateRandomV4().AsLowercaseString()));
   iban.set_value(base::UTF8ToUTF16(std::string(kIbanValue)));
   iban.set_nickname(u"Nickname for Iban");
   return iban;
 }
 
 Iban GetIban2() {
-  Iban iban;
+  Iban iban(Iban::Guid(base::Uuid::GenerateRandomV4().AsLowercaseString()));
   iban.set_value(base::UTF8ToUTF16(std::string(kIbanValue_1)));
   iban.set_nickname(u"My doctor's IBAN");
   return iban;
 }
 
+Iban GetServerIban() {
+  Iban iban(Iban::InstrumentId("1234567"));
+  // Set the prefix, suffix and length of the server IBAN.
+  iban.set_prefix(u"FR76");
+  iban.set_suffix(u"0189");
+  iban.set_length(27);
+  iban.set_nickname(u"My doctor's IBAN");
+  return iban;
+}
+
 Iban GetIbanWithoutNickname() {
-  Iban iban;
+  Iban iban(Iban::Guid(base::Uuid::GenerateRandomV4().AsLowercaseString()));
   iban.set_value(base::UTF8ToUTF16(std::string(kIbanValue_2)));
   return iban;
 }
@@ -399,12 +408,6 @@ CreditCard GetMaskedServerCard2() {
                           NextMonth().c_str(), NextYear().c_str(), "");
   credit_card.SetNetworkForMaskedCard(kMasterCard);
   credit_card.set_instrument_id(2);
-  return credit_card;
-}
-
-CreditCard GetMaskedServerCardWithCvc() {
-  CreditCard credit_card = GetMaskedServerCard();
-  credit_card.set_cvc(u"123");
   return credit_card;
 }
 
@@ -511,6 +514,11 @@ CreditCard GetRandomCreditCard(CreditCard::RecordType record_type) {
         kNetworks[base::RandInt(0, kNumNetworks - 1)]);
   }
 
+  return credit_card;
+}
+
+CreditCard WithCvc(CreditCard credit_card, std::u16string cvc) {
+  credit_card.set_cvc(cvc);
   return credit_card;
 }
 

@@ -134,6 +134,7 @@
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
+#include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
@@ -340,6 +341,15 @@ Node::Node(TreeScope* tree_scope, ConstructionType type)
 
 Node::~Node() {
   InstanceCounters::DecrementCounter(InstanceCounters::kNodeCounter);
+}
+
+DOMNodeId Node::GetDomNodeId() {
+  return DOMNodeIds::IdForNode(this);
+}
+
+// static
+Node* Node::FromDomNodeId(DOMNodeId dom_node_id) {
+  return DOMNodeIds::NodeForId(dom_node_id);
 }
 
 NodeRareData& Node::CreateRareData() {
@@ -827,30 +837,69 @@ static Node* NodeOrStringToNode(
   return Text::Create(document, string_value);
 }
 
+// static
 // Returns nullptr if an exception was thrown.
-static Node* ConvertNodesIntoNode(
+Node* Node::ConvertNodesIntoNode(const Node* parent,
+                                 const VectorOf<Node>& nodes,
+                                 Document& document,
+                                 ExceptionState& exception_state) {
+  if (nodes.size() == 1) {
+    return nodes[0];
+  }
+
+  Node* fragment = DocumentFragment::Create(document);
+  for (const auto& node : nodes) {
+    fragment->appendChild(node, exception_state);
+    if (exception_state.HadException()) {
+      return nullptr;
+    }
+  }
+  return fragment;
+}
+
+namespace {
+
+// Converts |node_unions| from bindings into actual Nodes by converting strings
+// and script into text nodes via NodeOrStringToNode.
+// Returns nullptr if an exception was thrown.
+VectorOf<Node> ConvertNodeUnionsIntoNodes(
     const Node* parent,
-    const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
+    const VectorOf<V8UnionNodeOrStringOrTrustedScript>& node_unions,
     Document& document,
     ExceptionState& exception_state) {
   bool needs_check = IsA<HTMLScriptElement>(parent) &&
                      document.GetExecutionContext() &&
                      document.GetExecutionContext()->RequireTrustedTypes();
-
-  if (nodes.size() == 1)
-    return NodeOrStringToNode(nodes[0], document, needs_check, exception_state);
-
-  Node* fragment = DocumentFragment::Create(document);
-  for (const auto& node_or_string_or_trusted_script : nodes) {
-    Node* node = NodeOrStringToNode(node_or_string_or_trusted_script, document,
-                                    needs_check, exception_state);
-    if (node)
-      fragment->appendChild(node, exception_state);
-    if (exception_state.HadException())
-      return nullptr;
+  VectorOf<Node> nodes;
+  for (const auto& node_union : node_unions) {
+    Node* node =
+        NodeOrStringToNode(node_union, document, needs_check, exception_state);
+    if (exception_state.HadException()) {
+      nodes.clear();
+      return nodes;
+    }
+    if (node) {
+      nodes.push_back(node);
+    }
   }
-  return fragment;
+  return nodes;
 }
+
+// Returns nullptr if an exception was thrown.
+Node* ConvertNodeUnionsIntoNode(
+    const Node* parent,
+    const VectorOf<V8UnionNodeOrStringOrTrustedScript>& node_unions,
+    Document& document,
+    ExceptionState& exception_state) {
+  VectorOf<Node> nodes = ConvertNodeUnionsIntoNodes(parent, node_unions,
+                                                    document, exception_state);
+  if (exception_state.HadException()) {
+    return nullptr;
+  }
+  return Node::ConvertNodesIntoNode(parent, nodes, document, exception_state);
+}
+
+}  // namespace
 
 void Node::prepend(
     const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
@@ -863,9 +912,10 @@ void Node::prepend(
     return;
   }
 
-  if (Node* node =
-          ConvertNodesIntoNode(this, nodes, GetDocument(), exception_state))
+  if (Node* node = ConvertNodeUnionsIntoNode(this, nodes, GetDocument(),
+                                             exception_state)) {
     this_node->InsertBefore(node, this_node->firstChild(), exception_state);
+  }
 }
 
 void Node::append(
@@ -879,9 +929,10 @@ void Node::append(
     return;
   }
 
-  if (Node* node =
-          ConvertNodesIntoNode(this, nodes, GetDocument(), exception_state))
+  if (Node* node = ConvertNodeUnionsIntoNode(this, nodes, GetDocument(),
+                                             exception_state)) {
     this_node->AppendChild(node, exception_state);
+  }
 }
 
 void Node::before(
@@ -891,8 +942,8 @@ void Node::before(
   if (!parent)
     return;
   Node* viable_previous_sibling = FindViablePreviousSibling(*this, nodes);
-  if (Node* node =
-          ConvertNodesIntoNode(parent, nodes, GetDocument(), exception_state)) {
+  if (Node* node = ConvertNodeUnionsIntoNode(parent, nodes, GetDocument(),
+                                             exception_state)) {
     parent->InsertBefore(node,
                          viable_previous_sibling
                              ? viable_previous_sibling->nextSibling()
@@ -908,9 +959,10 @@ void Node::after(
   if (!parent)
     return;
   Node* viable_next_sibling = FindViableNextSibling(*this, nodes);
-  if (Node* node =
-          ConvertNodesIntoNode(parent, nodes, GetDocument(), exception_state))
+  if (Node* node = ConvertNodeUnionsIntoNode(parent, nodes, GetDocument(),
+                                             exception_state)) {
     parent->InsertBefore(node, viable_next_sibling, exception_state);
+  }
 }
 
 void Node::replaceWith(
@@ -921,7 +973,7 @@ void Node::replaceWith(
     return;
   Node* viable_next_sibling = FindViableNextSibling(*this, nodes);
   Node* node =
-      ConvertNodesIntoNode(parent, nodes, GetDocument(), exception_state);
+      ConvertNodeUnionsIntoNode(parent, nodes, GetDocument(), exception_state);
   if (exception_state.HadException())
     return;
   if (parent == parentNode())
@@ -932,7 +984,7 @@ void Node::replaceWith(
 
 // https://dom.spec.whatwg.org/#dom-parentnode-replacechildren
 void Node::replaceChildren(
-    const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
+    const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& node_unions,
     ExceptionState& exception_state) {
   auto* this_node = DynamicTo<ContainerNode>(this);
   if (!this_node) {
@@ -942,27 +994,11 @@ void Node::replaceChildren(
     return;
   }
 
-  // 1. Let node be the result of converting nodes into a node given nodes and
-  // this’s node document.
-  Node* node =
-      ConvertNodesIntoNode(this, nodes, GetDocument(), exception_state);
-  if (exception_state.HadException())
-    return;
-
-  // 2. Ensure pre-insertion validity of node into this before null.
-  if (!this_node->EnsurePreInsertionValidity(*node, nullptr, nullptr,
-                                             exception_state))
-    return;
-
-  // 3. Replace all with node within this.
-  ChildListMutationScope mutation(*this);
-  while (Node* first_child = this_node->firstChild()) {
-    this_node->RemoveChild(first_child, exception_state);
-    if (exception_state.HadException())
-      return;
+  VectorOf<Node> nodes = ConvertNodeUnionsIntoNodes(
+      this, node_unions, GetDocument(), exception_state);
+  if (!exception_state.HadException()) {
+    this_node->ReplaceChildren(nodes, exception_state);
   }
-
-  this_node->AppendChild(node, exception_state);
 }
 
 void Node::remove(ExceptionState& exception_state) {
@@ -2912,8 +2948,9 @@ DispatchEventResult Node::DispatchEventInternal(Event& event) {
 }
 
 void Node::DispatchSubtreeModifiedEvent() {
-  if (IsInShadowTree())
+  if (IsInShadowTree() || GetDocument().ShouldSuppressMutationEvents()) {
     return;
+  }
 
 #if DCHECK_IS_ON()
   DCHECK(!EventDispatchForbiddenScope::IsEventDispatchForbidden());
@@ -3350,6 +3387,11 @@ void Node::FlatTreeParentChanged() {
 }
 
 void Node::AddCandidateDirectionalityForSlot() {
+  if (RuntimeEnabledFeatures::CSSPseudoDirEnabled()) {
+    // This code is not needed for the new dir=auto inheritance rules.
+    return;
+  }
+
   ShadowRoot* root = ShadowRootOfParent();
   if (!root || !root->HasSlotAssignment()) {
     // We should add this node as a candidate that needs to recalculate its
@@ -3407,6 +3449,50 @@ HeapHashSet<Member<TreeScope>> Node::GetAncestorTreeScopes() const {
     ancestor_tree_scopes.insert(scope);
   }
   return ancestor_tree_scopes;
+}
+
+void Node::SetCachedDirectionality(TextDirection direction) {
+  switch (direction) {
+    case TextDirection::kRtl:
+      SetFlag(kCachedDirectionalityIsRtl);
+      break;
+    case TextDirection::kLtr:
+      ClearFlag(kCachedDirectionalityIsRtl);
+      break;
+  }
+  if (!RuntimeEnabledFeatures::CSSPseudoDirEnabled()) {
+    ClearFlag(kNeedsInheritDirectionalityFromParent);
+  }
+}
+
+bool Node::NeedsInheritDirectionalityFromParent() const {
+  CHECK(!RuntimeEnabledFeatures::CSSPseudoDirEnabled());
+  return GetFlag(kNeedsInheritDirectionalityFromParent);
+}
+
+void Node::SetNeedsInheritDirectionalityFromParent() {
+  CHECK(!RuntimeEnabledFeatures::CSSPseudoDirEnabled());
+  SetFlag(kNeedsInheritDirectionalityFromParent);
+}
+
+void Node::ClearNeedsInheritDirectionalityFromParent() {
+  CHECK(!RuntimeEnabledFeatures::CSSPseudoDirEnabled());
+  ClearFlag(kNeedsInheritDirectionalityFromParent);
+}
+
+bool Node::DirAutoInheritsFromParent() const {
+  return RuntimeEnabledFeatures::CSSPseudoDirEnabled() &&
+         GetFlag(kDirAutoInheritsFromParent);
+}
+
+void Node::SetDirAutoInheritsFromParent() {
+  CHECK(RuntimeEnabledFeatures::CSSPseudoDirEnabled());
+  return SetFlag(kDirAutoInheritsFromParent);
+}
+
+void Node::ClearDirAutoInheritsFromParent() {
+  CHECK(RuntimeEnabledFeatures::CSSPseudoDirEnabled());
+  return ClearFlag(kDirAutoInheritsFromParent);
 }
 
 void Node::Trace(Visitor* visitor) const {

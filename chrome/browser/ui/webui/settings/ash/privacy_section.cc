@@ -27,7 +27,7 @@
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
 #include "components/prefs/pref_service.h"
@@ -261,7 +261,7 @@ const std::vector<SearchConcept>& GetPrivacyControlsSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags([] {
     std::vector<SearchConcept> init_tags;
 
-    if (ash::features::IsCrosPrivacyHubEnabled()) {
+    if (ash::features::IsCrosPrivacyHubV0Enabled()) {
       init_tags.push_back({IDS_OS_SETTINGS_TAG_PRIVACY_CONTROLS,
                            mojom::kPrivacyHubSubpagePath,
                            mojom::SearchResultIcon::kShield,
@@ -283,7 +283,7 @@ const std::vector<SearchConcept>& GetPrivacyControlsSearchConcepts() {
                            {.setting = mojom::Setting::kMicrophoneOnOff}});
     }
 
-    if (ash::features::IsCrosPrivacyHubV1Enabled()) {
+    if (ash::features::IsCrosPrivacyHubLocationEnabled()) {
       init_tags.push_back({IDS_OS_SETTINGS_TAG_GEOLOCATION,
                            mojom::kPrivacyHubSubpagePath,
                            mojom::SearchResultIcon::kGeolocation,
@@ -357,28 +357,52 @@ void PrivacySection::AddHandlers(content::WebUI* web_ui) {
 }
 
 void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"enableLogging", IDS_SETTINGS_ENABLE_LOGGING_TOGGLE_TITLE},
-      {"enableLoggingDesc", IDS_SETTINGS_ENABLE_LOGGING_TOGGLE_DESC},
+  const bool kIsRevampEnabled =
+      ash::features::IsOsSettingsRevampWayfindingEnabled();
+
+  webui::LocalizedString kLocalizedStrings[] = {
+      {"enableLogging", kIsRevampEnabled
+                            ? IDS_OS_SETTINGS_REVAMP_ENABLE_LOGGING_TOGGLE_TITLE
+                            : IDS_SETTINGS_ENABLE_LOGGING_TOGGLE_TITLE},
+      {"enableLoggingDesc",
+       kIsRevampEnabled
+           ? IDS_OS_SETTINGS_REVAMP_ENABLE_LOGGING_TOGGLE_DESCRIPTION
+           : IDS_SETTINGS_ENABLE_LOGGING_TOGGLE_DESC},
       {"enableContentProtectionAttestation",
        IDS_SETTINGS_ENABLE_CONTENT_PROTECTION_ATTESTATION},
-      {"enableSuggestedContent", IDS_SETTINGS_ENABLE_SUGGESTED_CONTENT_TITLE},
+      {"enableSuggestedContent",
+       kIsRevampEnabled ? IDS_OS_SETTINGS_REVAMP_ENABLE_SUGGESTED_CONTENT_TITLE
+                        : IDS_SETTINGS_ENABLE_SUGGESTED_CONTENT_TITLE},
       {"enableSuggestedContentDesc",
-       IDS_SETTINGS_ENABLE_SUGGESTED_CONTENT_DESC},
+       kIsRevampEnabled
+           ? IDS_OS_SETTINGS_REVAMP_ENABLE_SUGGESTED_CONTENT_DESCRIPTION
+           : IDS_SETTINGS_ENABLE_SUGGESTED_CONTENT_DESC},
       {"peripheralDataAccessProtectionToggleTitle",
-       IDS_OS_SETTINGS_DATA_ACCESS_PROTECTION_TOGGLE_TITLE},
+       kIsRevampEnabled
+           ? IDS_OS_SETTINGS_REVAMP_DATA_ACCESS_PROTECTION_TOGGLE_TITLE
+           : IDS_OS_SETTINGS_DATA_ACCESS_PROTECTION_TOGGLE_TITLE},
       {"peripheralDataAccessProtectionToggleDescription",
-       IDS_OS_SETTINGS_DATA_ACCESS_PROTECTION_TOGGLE_DESCRIPTION},
+       kIsRevampEnabled
+           ? IDS_OS_SETTINGS_REVAMP_DATA_ACCESS_PROTECTION_TOGGLE_DESCRIPTION
+           : IDS_OS_SETTINGS_DATA_ACCESS_PROTECTION_TOGGLE_DESCRIPTION},
       {"peripheralDataAccessProtectionWarningTitle",
-       IDS_OS_SETTINGS_DISABLE_DATA_ACCESS_PROTECTION_CONFIRM_DIALOG_TITLE},
+       kIsRevampEnabled
+           ? IDS_OS_SETTINGS_REVAMP_DISABLE_DATA_ACCESS_PROTECTION_CONFIRM_DIALOG_TITLE
+           : IDS_OS_SETTINGS_DISABLE_DATA_ACCESS_PROTECTION_CONFIRM_DIALOG_TITLE},
       {"peripheralDataAccessProtectionWarningDescription",
-       IDS_OS_SETTINGS_DISABLE_DATA_ACCESS_PROTECTION_CONFIRM_DIALOG_DESCRIPTION},
+       kIsRevampEnabled
+           ? IDS_OS_SETTINGS_REVAMP_DISABLE_DATA_ACCESS_PROTECTION_CONFIRM_DIALOG_DESCRIPTION
+           : IDS_OS_SETTINGS_DISABLE_DATA_ACCESS_PROTECTION_CONFIRM_DIALOG_DESCRIPTION},
       {"peripheralDataAccessProtectionWarningSubDescription",
-       IDS_OS_SETTINGS_DISABLE_DATA_ACCESS_PROTECTION_CONFIRM_DIALOG_SUB_DESCRIPTION},
+       kIsRevampEnabled
+           ? IDS_OS_SETTINGS_REVAMP_DISABLE_DATA_ACCESS_PROTECTION_CONFIRM_DIALOG_SUB_DESCRIPTION
+           : IDS_OS_SETTINGS_DISABLE_DATA_ACCESS_PROTECTION_CONFIRM_DIALOG_SUB_DESCRIPTION},
       {"peripheralDataAccessProtectionCancelButton",
        IDS_OS_SETTINGS_DATA_ACCESS_PROTECTION_CONFIRM_DIALOG_CANCEL_BUTTON_LABEL},
       {"peripheralDataAccessProtectionDisableButton",
-       IDS_OS_SETTINGS_DATA_ACCESS_PROTECTION_CONFIRM_DIALOG_DISABLE_BUTTON_LABEL},
+       kIsRevampEnabled
+           ? IDS_OS_SETTINGS_REVAMP_DATA_ACCESS_PROTECTION_CONFIRM_DIALOG_ALLOW_BUTTON_LABEL
+           : IDS_OS_SETTINGS_DATA_ACCESS_PROTECTION_CONFIRM_DIALOG_DISABLE_BUTTON_LABEL},
       {"privacyPageTitle", IDS_SETTINGS_PRIVACY_V2},
       {"smartPrivacyTitle", IDS_OS_SETTINGS_SMART_PRIVACY_TITLE},
       {"smartPrivacyQuickDimTitle",
@@ -439,10 +463,8 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       ash::features::IsCrosPrivacyHubAppPermissionsEnabled());
   html_source->AddBoolean("showPrivacyHubPage",
                           ash::features::IsCrosPrivacyHubEnabled());
-  html_source->AddBoolean("showPrivacyHubMVPPage",
-                          ash::features::IsCrosPrivacyHubV1Enabled());
-  html_source->AddBoolean("showPrivacyHubFuturePage",
-                          ash::features::IsCrosPrivacyHubV2Enabled());
+  html_source->AddBoolean("showPrivacyHubLocationControl",
+                          ash::features::IsCrosPrivacyHubLocationEnabled());
   html_source->AddBoolean("showSpeakOnMuteDetectionPage",
                           ash::features::IsVideoConferenceEnabled());
 
@@ -517,6 +539,10 @@ bool PrivacySection::LogMetric(mojom::Setting setting,
       base::UmaHistogramBoolean("ChromeOS.Settings.Privacy.VerifiedAccessOnOff",
                                 value.GetBool());
       return true;
+    case mojom::Setting::kRevenEnableHwDataUsage:
+      base::UmaHistogramBoolean("ChromeOS.Settings.RevenEnableHwDataUsage",
+                                value.GetBool());
+      return true;
     default:
       return false;
   }
@@ -524,6 +550,7 @@ bool PrivacySection::LogMetric(mojom::Setting setting,
 
 void PrivacySection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kVerifiedAccess);
+  generator->RegisterTopLevelSetting(mojom::Setting::kRevenEnableHwDataUsage);
   generator->RegisterTopLevelSetting(
       mojom::Setting::kUsageStatsAndCrashReports);
 

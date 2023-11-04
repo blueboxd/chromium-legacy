@@ -65,7 +65,7 @@ ClipStrategy DetermineClipStrategy(const SVGGraphicsElement& element) {
   // Only shapes, paths and texts are allowed for clipping.
   if (layout_object->IsSVGShape()) {
     strategy = ClipStrategy::kPath;
-  } else if (layout_object->IsNGSVGText()) {
+  } else if (layout_object->IsSVGText()) {
     // Text requires masking.
     strategy = ClipStrategy::kMask;
   }
@@ -244,16 +244,18 @@ AffineTransform LayoutSVGResourceClipper::CalculateClipTransform(
 }
 
 bool LayoutSVGResourceClipper::HitTestClipContent(
-    const gfx::RectF& object_bounding_box,
+    const gfx::RectF& reference_box,
+    const LayoutObject& reference_box_object,
     const HitTestLocation& location) const {
   NOT_DESTROYED();
   if (HasClipPath() &&
-      !ClipPathClipper::HitTest(*this, object_bounding_box, location)) {
+      !ClipPathClipper::HitTest(*this, reference_box, reference_box_object,
+                                location)) {
     return false;
   }
 
   TransformedHitTestLocation local_location(
-      location, CalculateClipTransform(object_bounding_box));
+      location, CalculateClipTransform(reference_box));
   if (!local_location)
     return false;
 

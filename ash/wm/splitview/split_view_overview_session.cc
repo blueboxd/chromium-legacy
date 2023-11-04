@@ -4,10 +4,12 @@
 
 #include "ash/wm/splitview/split_view_overview_session.h"
 
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_utils.h"
+#include "ash/wm/splitview/auto_snap_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_resizer.h"
@@ -22,7 +24,7 @@ namespace {
 // following conditions:
 // a) clamshell split view, empty overview grid;
 // b) clamshell split view, nonempty overview grid;
-// c) clamshell split view, two snapped windows;
+// c) clamshell split view, two snapped windows (for Snap Groups);
 constexpr char kClamshellSplitViewResizeSingleHistogram[] =
     "Ash.SplitViewResize.PresentationTime.ClamshellMode.SingleWindow";
 constexpr char kClamshellSplitViewResizeMultiHistogram[] =
@@ -44,12 +46,29 @@ bool InClamshellSplitViewMode(SplitViewController* controller) {
 
 }  // namespace
 
-SplitViewOverviewSession::SplitViewOverviewSession(aura::Window* window) {
+SplitViewOverviewSession::SplitViewOverviewSession(aura::Window* window)
+    : window_(window) {
   CHECK(window);
   window_observation_.Observe(window);
+  auto* window_state = WindowState::Get(window);
+  CHECK(window_state && window_state->IsSnapped());
+  window_state->AddObserver(this);
+
+  if (IsSnapGroupEnabledInClamshellMode()) {
+    auto_snap_controller_ =
+        std::make_unique<AutoSnapController>(window->GetRootWindow());
+  }
 }
 
-SplitViewOverviewSession::~SplitViewOverviewSession() = default;
+SplitViewOverviewSession::~SplitViewOverviewSession() {
+  WindowState::Get(window_)->RemoveObserver(this);
+}
+
+chromeos::WindowStateType SplitViewOverviewSession::GetWindowStateType() const {
+  WindowState* window_state = WindowState::Get(window_);
+  CHECK(window_state->IsSnapped());
+  return window_state->GetStateType();
+}
 
 void SplitViewOverviewSession::OnResizeLoopStarted(aura::Window* window) {
   auto* split_view_controller =
@@ -79,6 +98,7 @@ void SplitViewOverviewSession::OnResizeLoopStarted(aura::Window* window) {
   if (IsSnapGroupEnabledInClamshellMode() &&
       split_view_controller->state() ==
           SplitViewController::State::kBothSnapped) {
+    // TODO(b/300180664): Unreached. Move this to SnapGroup.
     presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
         window->layer()->GetCompositor(),
         kClamshellSplitViewResizeMultiHistogram,
@@ -161,6 +181,24 @@ void SplitViewOverviewSession::OnWindowBoundsChanged(
   // SplitViewController to update `divider_position_`.
   split_view_controller->UpdateDividerPositionOnWindowResize(window,
                                                              new_bounds);
+}
+
+void SplitViewOverviewSession::OnWindowDestroying(aura::Window* window) {
+  CHECK(window_observation_.IsObservingSource(window));
+  CHECK_EQ(window_, window);
+  // Destroys `this`.
+  RootWindowController::ForWindow(window_)->EndSplitViewOverviewSession();
+}
+
+void SplitViewOverviewSession::OnPreWindowStateTypeChange(
+    WindowState* window_state,
+    chromeos::WindowStateType old_type) {
+  CHECK_EQ(window_, window_state->window());
+  // Normally split view would have ended and destroy this, but the window can
+  // get unsnapped, e.g. during mid-drag or mid-resize, so bail out here.
+  if (!window_state->IsSnapped()) {
+    RootWindowController::ForWindow(window_)->EndSplitViewOverviewSession();
+  }
 }
 
 }  // namespace ash

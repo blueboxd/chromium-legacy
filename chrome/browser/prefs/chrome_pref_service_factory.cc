@@ -36,8 +36,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/browser_resources.h"
-#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/component_updater/pref_names.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
@@ -153,14 +153,6 @@ const prefs::TrackedPreferenceMetadata kTrackedPrefs[] = {
     // releases after M50.
     {18, prefs::kSafeBrowsingIncidentsSent, EnforcementLevel::ENFORCE_ON_LOAD,
      PrefTrackingStrategy::ATOMIC, ValueType::IMPERSONAL},
-#if BUILDFLAG(IS_WIN)
-    {19, prefs::kSwReporterPromptVersion, EnforcementLevel::ENFORCE_ON_LOAD,
-     PrefTrackingStrategy::ATOMIC, ValueType::IMPERSONAL},
-#endif
-#if BUILDFLAG(IS_WIN)
-    {22, prefs::kSwReporterPromptSeed, EnforcementLevel::ENFORCE_ON_LOAD,
-     PrefTrackingStrategy::ATOMIC, ValueType::IMPERSONAL},
-#endif
     {23, prefs::kGoogleServicesAccountId, EnforcementLevel::ENFORCE_ON_LOAD,
      PrefTrackingStrategy::ATOMIC, ValueType::PERSONAL},
     // This is being migrated to `kGoogleServicesLastGaiaId` since 2022/10, and
@@ -169,20 +161,6 @@ const prefs::TrackedPreferenceMetadata kTrackedPrefs[] = {
     {24, prefs::kGoogleServicesLastAccountIdDeprecated,
      EnforcementLevel::ENFORCE_ON_LOAD, PrefTrackingStrategy::ATOMIC,
      ValueType::PERSONAL},
-#if BUILDFLAG(IS_WIN)
-    {25, prefs::kSettingsResetPromptPromptWave,
-     EnforcementLevel::ENFORCE_ON_LOAD, PrefTrackingStrategy::ATOMIC,
-     ValueType::IMPERSONAL},
-    {26, prefs::kSettingsResetPromptLastTriggeredForDefaultSearch,
-     EnforcementLevel::ENFORCE_ON_LOAD, PrefTrackingStrategy::ATOMIC,
-     ValueType::IMPERSONAL},
-    {27, prefs::kSettingsResetPromptLastTriggeredForStartupUrls,
-     EnforcementLevel::ENFORCE_ON_LOAD, PrefTrackingStrategy::ATOMIC,
-     ValueType::IMPERSONAL},
-    {28, prefs::kSettingsResetPromptLastTriggeredForHomepage,
-     EnforcementLevel::ENFORCE_ON_LOAD, PrefTrackingStrategy::ATOMIC,
-     ValueType::IMPERSONAL},
-#endif  // BUILDFLAG(IS_WIN)
     {29, prefs::kMediaStorageIdSalt, EnforcementLevel::ENFORCE_ON_LOAD,
      PrefTrackingStrategy::ATOMIC, ValueType::IMPERSONAL},
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -191,8 +169,6 @@ const prefs::TrackedPreferenceMetadata kTrackedPrefs[] = {
      ValueType::IMPERSONAL},
 #endif
 #if BUILDFLAG(IS_WIN)
-    {31, prefs::kSwReporterReportingEnabled, EnforcementLevel::ENFORCE_ON_LOAD,
-     PrefTrackingStrategy::ATOMIC, ValueType::IMPERSONAL},
     {32, prefs::kMediaCdmOriginData, EnforcementLevel::ENFORCE_ON_LOAD,
      PrefTrackingStrategy::ATOMIC, ValueType::IMPERSONAL},
 #endif  // BUILDFLAG(IS_WIN)
@@ -328,7 +304,7 @@ void PrepareFactory(
       &chrome_prefs::HandlePersistentPrefStoreReadError, pref_filename));
   factory->set_user_prefs(std::move(user_pref_store));
   factory->SetPrefModelAssociatorClient(
-      ChromePrefModelAssociatorClient::GetInstance());
+      base::MakeRefCounted<ChromePrefModelAssociatorClient>());
 }
 
 class ResetOnLoadObserverImpl : public prefs::mojom::ResetOnLoadObserver {

@@ -51,8 +51,21 @@ InputDeviceSettingsPolicyHandler::~InputDeviceSettingsPolicyHandler() = default;
 
 void InputDeviceSettingsPolicyHandler::Initialize(PrefService* local_state,
                                                   PrefService* pref_service) {
+  has_user_prefs_ = pref_service != nullptr;
+  if (local_state) {
+    pref_change_registrar_local_state_.Init(local_state);
+    pref_change_registrar_local_state_.Add(
+        prefs::kOwnerPrimaryMouseButtonRight,
+        base::BindRepeating(
+            &InputDeviceSettingsPolicyHandler::OnMousePoliciesChanged,
+            base::Unretained(this)));
+    pref_change_registrar_local_state_.Add(
+        prefs::kDeviceSwitchFunctionKeysBehaviorEnabled,
+        base::BindRepeating(
+            &InputDeviceSettingsPolicyHandler::OnKeyboardPoliciesChanged,
+            base::Unretained(this)));
+  }
   if (pref_service) {
-    initialized_with_local_state_prefs_ = false;
     pref_change_registrar_.Init(pref_service);
     pref_change_registrar_.Add(
         prefs::kPrimaryMouseButtonRight,
@@ -64,15 +77,6 @@ void InputDeviceSettingsPolicyHandler::Initialize(PrefService* local_state,
         base::BindRepeating(
             &InputDeviceSettingsPolicyHandler::OnKeyboardPoliciesChanged,
             base::Unretained(this)));
-  } else {
-    CHECK(local_state);
-    initialized_with_local_state_prefs_ = true;
-    pref_change_registrar_.Init(local_state);
-    pref_change_registrar_.Add(
-        prefs::kOwnerPrimaryMouseButtonRight,
-        base::BindRepeating(
-            &InputDeviceSettingsPolicyHandler::OnMousePoliciesChanged,
-            base::Unretained(this)));
   }
 
   RefreshKeyboardPolicies(/*notify=*/false);
@@ -80,10 +84,15 @@ void InputDeviceSettingsPolicyHandler::Initialize(PrefService* local_state,
 }
 
 void InputDeviceSettingsPolicyHandler::RefreshKeyboardPolicies(bool notify) {
-  if (!initialized_with_local_state_prefs_) {
+  if (has_user_prefs_) {
     keyboard_policies_.top_row_are_fkeys_policy = GetBooleanPreferencePolicy(
         pref_change_registrar_.prefs(), prefs::kSendFunctionKeys);
   }
+
+  keyboard_policies_.enable_meta_fkey_rewrites_policy =
+      GetBooleanPreferencePolicy(
+          pref_change_registrar_local_state_.prefs(),
+          prefs::kDeviceSwitchFunctionKeysBehaviorEnabled);
 
   if (notify) {
     keyboard_policy_callback_.Run();
@@ -91,12 +100,13 @@ void InputDeviceSettingsPolicyHandler::RefreshKeyboardPolicies(bool notify) {
 }
 
 void InputDeviceSettingsPolicyHandler::RefreshMousePolicies(bool notify) {
-  if (!initialized_with_local_state_prefs_) {
+  if (has_user_prefs_) {
     mouse_policies_.swap_right_policy = GetBooleanPreferencePolicy(
         pref_change_registrar_.prefs(), prefs::kPrimaryMouseButtonRight);
   } else {
-    mouse_policies_.swap_right_policy = GetBooleanPreferencePolicy(
-        pref_change_registrar_.prefs(), prefs::kOwnerPrimaryMouseButtonRight);
+    mouse_policies_.swap_right_policy =
+        GetBooleanPreferencePolicy(pref_change_registrar_local_state_.prefs(),
+                                   prefs::kOwnerPrimaryMouseButtonRight);
   }
 
   if (notify) {

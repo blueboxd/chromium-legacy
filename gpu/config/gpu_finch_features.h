@@ -9,8 +9,13 @@
 #define GPU_CONFIG_GPU_FINCH_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
 #include "gpu/gpu_export.h"
+
+namespace base {
+class CommandLine;
+}  // namespace base
 
 namespace features {
 
@@ -69,6 +74,8 @@ GPU_EXPORT BASE_DECLARE_FEATURE(kVaapiWebPImageDecodeAcceleration);
 GPU_EXPORT BASE_DECLARE_FEATURE(kVulkan);
 
 GPU_EXPORT BASE_DECLARE_FEATURE(kSkiaGraphite);
+GPU_EXPORT extern const base::FeatureParam<bool>
+    kSkiaGraphiteDawnSkipValidation;
 
 #if BUILDFLAG(IS_WIN)
 GPU_EXPORT BASE_DECLARE_FEATURE(kSkiaGraphiteDawnUseD3D12);
@@ -120,6 +127,7 @@ GPU_EXPORT bool IsDrDcEnabled();
 GPU_EXPORT bool IsGpuMainThreadForcedToNormalPriorityDrDc();
 GPU_EXPORT bool NeedThreadSafeAndroidMedia();
 GPU_EXPORT bool IsANGLEValidationEnabled();
+GPU_EXPORT bool IsSkiaGraphiteEnabled(const base::CommandLine* command_line);
 
 #if BUILDFLAG(IS_ANDROID)
 GPU_EXPORT bool IsAImageReaderEnabled();

@@ -6,6 +6,7 @@
 #define CHROMEOS_ASH_COMPONENTS_LANGUAGE_PACKS_LANGUAGE_PACK_MANAGER_H_
 
 #include <string>
+#include <string_view>
 
 #include "base/containers/flat_map.h"
 #include "base/functional/callback.h"
@@ -14,6 +15,7 @@
 #include "base/strings/strcat.h"
 #include "chromeos/ash/components/dbus/dlcservice/dlcservice_client.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 
 namespace ash::language_packs {
 
@@ -90,6 +92,9 @@ struct PackResult {
   // If there is any error in the operation that is requested, it is indicated
   // here.
   ErrorCode operation_error;
+
+  // The feature ID of the pack.
+  std::string feature_id;
 
   // The resolved language code that this Pack is associated with.
   // Often this field matches the locale requested by the client, but due to
@@ -221,6 +226,13 @@ class LanguagePackManager : public DlcserviceClient::Observer {
   void UpdatePacksForOobe(const std::string& locale,
                           OnUpdatePacksForOobeCallback callback);
 
+  // Update all packs related to input methods to match current state.
+  // This method is called internally each time we detect a change to the list
+  // of input methods in the current session.
+  void UpdatePacksForInputMethods(
+      base::span<const std::string> current_dlcs,
+      input_method::InputMethodManager* input_method_manager);
+
   // Adds an observer to the observer list.
   void AddObserver(Observer* observer);
 
@@ -248,7 +260,9 @@ class LanguagePackManager : public DlcserviceClient::Observer {
   void OnDlcStateChanged(const dlcservice::DlcState& dlc_state) override;
 
   // Notification method called upon change of DLCs state.
-  void NotifyPackStateChanged(const dlcservice::DlcState& dlc_state);
+  void NotifyPackStateChanged(std::string_view feature_id,
+                              std::string_view locale,
+                              const dlcservice::DlcState& dlc_state);
 
   base::ObserverList<Observer> observers_;
 };

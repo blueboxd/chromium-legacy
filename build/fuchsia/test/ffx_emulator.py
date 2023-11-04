@@ -26,7 +26,10 @@ class FfxEmulator(AbstractContextManager):
         if args.product:
             self._product = args.product
         else:
-            self._product = 'terminal.qemu-' + get_host_arch()
+            if get_host_arch() == 'x64':
+                self._product = 'terminal.x64'
+            else:
+                self._product = 'terminal.qemu-arm64'
 
         self._enable_graphics = args.enable_graphics
         self._hardware_gpu = args.hardware_gpu
@@ -43,6 +46,7 @@ class FfxEmulator(AbstractContextManager):
         else:
             self._node_name = 'fuchsia-emulator-' + str(random.randint(
                 1, 9999))
+        self._device_spec = args.device_spec
 
     def _everlasting(self) -> bool:
         return self._node_name == 'fuchsia-everlasting-emulator'
@@ -70,6 +74,8 @@ class FfxEmulator(AbstractContextManager):
             emu_command.extend(['--net', 'user'])
         if self._everlasting():
             emu_command.extend(['--reuse-with-check'])
+        if self._device_spec:
+            emu_command.extend(['--device', self._device_spec])
 
         # TODO(https://fxbug.dev/99321): remove when ffx has native support
         # for starting emulator on arm64 host.
@@ -120,13 +126,9 @@ class FfxEmulator(AbstractContextManager):
                 if i > 0:
                     logging.warning(
                         'Emulator failed to start.')
-                configs = ['emu.start.timeout=90']
-                if self._everlasting():
-                    configs.append('emu.instance_dir=' \
-                                   '/home/chrome-bot/.fuchsia_emulator/')
                 run_ffx_command(cmd=emu_command,
                                 timeout=100,
-                                configs=configs)
+                                configs=['emu.start.timeout=90'])
                 break
             except (subprocess.TimeoutExpired, subprocess.CalledProcessError):
                 run_ffx_command(cmd=('emu', 'stop'))

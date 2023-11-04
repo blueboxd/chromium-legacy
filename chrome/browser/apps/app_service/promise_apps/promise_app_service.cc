@@ -17,6 +17,7 @@
 #include "chrome/browser/apps/app_service/promise_apps/promise_app.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_almanac_connector.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_registry_cache.h"
+#include "chrome/browser/apps/app_service/promise_apps/promise_app_utils.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_wrapper.h"
 #include "chrome/browser/image_fetcher/image_decoder_impl.h"
 #include "chrome/browser/profiles/profile.h"
@@ -117,6 +118,11 @@ void PromiseAppService::OnPromiseApp(PromiseAppPtr delta) {
     return;
   }
 
+  // Clear out the icons of any promise app marked for deletion.
+  if (IsPromiseAppCompleted(delta->status)) {
+    promise_app_icon_cache_->RemoveIconsForPackageId(package_id);
+  }
+
   promise_app_registry_cache_->OnPromiseApp(std::move(delta));
 
   if (is_existing_registration) {
@@ -171,7 +177,9 @@ void PromiseAppService::OnAppUpdate(const apps::AppUpdate& update) {
     return;
   }
   // Delete the promise app.
-  RemovePromiseApp(package_id);
+  PromiseAppPtr promise_app = std::make_unique<PromiseApp>(package_id);
+  promise_app->status = PromiseStatus::kSuccess;
+  OnPromiseApp(std::move(promise_app));
 }
 
 void PromiseAppService::OnAppRegistryCacheWillBeDestroyed(
@@ -186,14 +194,6 @@ void PromiseAppService::SetSkipAlmanacForTesting(bool skip_almanac) {
 
 void PromiseAppService::SetSkipApiKeyCheckForTesting(bool skip_api_key_check) {
   skip_api_key_check_for_testing_ = skip_api_key_check;
-}
-
-void PromiseAppService::RemovePromiseApp(const PackageId& package_id) {
-  PromiseAppPtr promise_app = std::make_unique<PromiseApp>(package_id);
-  promise_app->status = PromiseStatus::kRemove;
-  promise_app->should_show = false;
-  OnPromiseApp(std::move(promise_app));
-  promise_app_icon_cache_->RemoveIconsForPackageId(package_id);
 }
 
 void PromiseAppService::OnGetPromiseAppInfoCompleted(
@@ -281,15 +281,27 @@ bool PromiseAppService::IsRegisteredInAppRegistryCache(
     return false;
   }
   bool is_registered = false;
-  app_registry_cache_->ForEachApp([&package_id,
-                                   &is_registered](const AppUpdate& update) {
-    absl::optional<PackageId> app_package_id =
-        apps_util::GetPackageIdForApp(update);
-    if (app_package_id.has_value() && app_package_id.value() == package_id) {
-      is_registered = true;
-      return;
-    }
-  });
+  app_registry_cache_->ForEachApp(
+      [&package_id, &is_registered](const AppUpdate& update) {
+        // TODO(b/297296711): Update check for TWAs, which can have differing
+        // package IDs.
+        if (update.AppType() != package_id.app_type()) {
+          return;
+        }
+        if (update.PublisherId() != package_id.identifier()) {
+          return;
+        }
+        if (update.Readiness() == Readiness::kUninstalledByUser ||
+            update.Readiness() == Readiness::kRemoved ||
+            update.Readiness() == Readiness::kUninstalledByNonUser) {
+          // It's possible for an app to be in the AppRegistryCache despite
+          // being uninstalled. Do not consider this as a registered
+          // installed app.
+          return;
+        }
+        is_registered = true;
+        return;
+      });
   return is_registered;
 }
 

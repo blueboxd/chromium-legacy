@@ -71,8 +71,7 @@
 #include "chrome/browser/ui/ash/tab_cluster_ui_client.h"
 #include "chrome/browser/ui/ash/vpn_list_forwarder.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
-#include "chrome/browser/ui/quick_answers/quick_answers_controller_impl.h"
-#include "chrome/browser/ui/views/editor_menu/editor_menu_controller_impl.h"
+#include "chrome/browser/ui/quick_answers/read_write_cards_manager_impl.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
 #include "chrome/browser/ui/views/tabs/tab_scrubber_chromeos.h"
@@ -82,9 +81,6 @@
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
 #include "chromeos/ash/services/bluetooth_config/fast_pair_delegate.h"
 #include "chromeos/ash/services/bluetooth_config/in_process_instance.h"
-#include "chromeos/components/quick_answers/public/cpp/controller/quick_answers_controller.h"
-#include "chromeos/components/quick_answers/quick_answers_client.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
@@ -352,20 +348,13 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit(Profile* profile,
 
   ash_web_view_factory_ = std::make_unique<AshWebViewFactoryImpl>();
 
-  quick_answers_controller_ = std::make_unique<QuickAnswersControllerImpl>();
-  QuickAnswersController::Get()->SetClient(
-      std::make_unique<quick_answers::QuickAnswersClient>(
-          g_browser_process->shared_url_loader_factory(),
-          QuickAnswersController::Get()->GetQuickAnswersDelegate()));
   game_mode_controller_ = std::make_unique<game_mode::GameModeController>();
 
   // Initialize TabScrubberChromeOS after the Ash Shell has been initialized.
   TabScrubberChromeOS::GetInstance();
 
-  if (chromeos::features::IsOrcaEnabled()) {
-    editor_menu_controller_ =
-        std::make_unique<chromeos::editor_menu::EditorMenuControllerImpl>();
-  }
+  read_write_cards_manager_ =
+      std::make_unique<chromeos::ReadWriteCardsManagerImpl>();
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
@@ -393,7 +382,6 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
 
   night_light_client_.reset();
   mobile_data_notifications_.reset();
-  editor_menu_controller_.reset();
   chrome_shelf_controller_initializer_.reset();
   attestation_cleanup_manager_.reset();
   desks_client_.reset();
@@ -408,7 +396,6 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
 
   // Initialized in PostProfileInit (which may not get called in some tests).
   game_mode_controller_.reset();
-  quick_answers_controller_.reset();
   ash_web_view_factory_.reset();
   network_portal_notification_controller_.reset();
   display_settings_handler_.reset();
@@ -432,8 +419,9 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   app_list_client_.reset();
   ash_shell_init_.reset();
 
-  // This instance must be destructed after `ash_shell_init_`.
+  // These instances must be destructed after `ash_shell_init_`.
   video_conference_tray_controller_.reset();
+  read_write_cards_manager_.reset();
 
   ambient_client_.reset();
 

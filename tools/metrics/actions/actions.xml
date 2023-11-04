@@ -3016,6 +3016,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.DownloadManager.Menu.Action">
+  <obsolete>Deprecated September 2023.</obsolete>
   <owner>dtrainor@chromium.org</owner>
   <description>
     User triggered actions on the top level menu in download home.
@@ -4131,6 +4132,14 @@ should be able to be added at any place in this file.
   <description>
     The user selected the same credit card that was already selected (navigates
     back to home screen).
+  </description>
+</action>
+
+<action name="Autofill_AcceptedPreviouslyHiddenSuggestion">
+  <owner>jihadghanna@google.com</owner>
+  <description>
+    The user has accepted a suggestion that would have been hidden if the
+    feature `kAutofillUseAddressRewriterInProfileSubsetComparison` was disabled.
   </description>
 </action>
 
@@ -24195,15 +24204,6 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="NewTabPage.HistoryClusters.DiscountClicked">
-  <owner>yuezhanggg@chromium.org</owner>
-  <owner>chrome-shopping@google.com</owner>
-  <owner>chrome-desktop-ntp@google.com</owner>
-  <description>
-    User clicks on a tile with discount in the history cluster module.
-  </description>
-</action>
-
 <action name="NewTabPage.LinkOpenedFromContextMenu.WebUI">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
@@ -30254,6 +30254,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Settings.DownloadsSettings">
+  <owner>qpubert@google.com.org</owner>
+  <owner>djean@google.com</owner>
+  <description>
+    Reported when user navigates to Downloads Settings. iOS only.
+  </description>
+</action>
+
 <action name="Settings.GoogleServices">
   <owner>jlebel@chromium.org</owner>
   <owner>fernandex@chromium.org</owner>
@@ -32368,6 +32376,14 @@ should be able to be added at any place in this file.
   <owner>lens-chrome-eng@google.com</owner>
   <owner>juanmojica@google.com</owner>
   <description>Recorded when the Lens side panel entry is shown.</description>
+</action>
+
+<action name="SidePanel.Performance.Shown">
+  <owner>agale@chromium.org</owner>
+  <owner>chrome-performance-ui-sea@google.com</owner>
+  <description>
+    Recorded when the performance side panel entry is shown.
+  </description>
 </action>
 
 <action name="SidePanel.ReadAnything.Shown">
@@ -34647,146 +34663,6 @@ should be able to be added at any place in this file.
 <action name="SiteChipPress">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
-</action>
-
-<action name="SoftwareReporter.CleanupWebui_CleanupFailureDone">
-  <owner>alito@chromium.org</owner>
-  <description>
-    The user dismissed the Chrome Cleaner webui after a failed cleanup by
-    clicking on the 'Done' button.
-  </description>
-</action>
-
-<action name="SoftwareReporter.CleanupWebui_CleanupSuccessDone">
-  <owner>alito@chromium.org</owner>
-  <description>
-    The user dismissed the Chrome Cleaner webui after a successful cleanup by
-    clicking on the 'Done' button.
-  </description>
-</action>
-
-<action name="SoftwareReporter.CleanupWebui_HideDetails">
-  <owner>alito@chromium.org</owner>
-  <description>
-    The user closed the details section of the Chrome Cleaner webui.
-  </description>
-</action>
-
-<action name="SoftwareReporter.CleanupWebui_LearnMore">
-  <owner>alito@chromium.org</owner>
-  <description>
-    The user clicked the 'Learn more' link on the Chrome Cleaner webui.
-  </description>
-</action>
-
-<action name="SoftwareReporter.CleanupWebui_LogsUploadDisabled">
-  <owner>alito@chromium.org</owner>
-  <description>
-    The user disabled logs upload by toggling the permission checkbox in the
-    Chrome Cleaner webui.
-  </description>
-</action>
-
-<action name="SoftwareReporter.CleanupWebui_LogsUploadEnabled">
-  <owner>alito@chromium.org</owner>
-  <description>
-    The user enabled logs upload by toggling the permission checkbox in the
-    Chrome Cleaner webui.
-  </description>
-</action>
-
-<action name="SoftwareReporter.CleanupWebui_RestartComputer">
-  <owner>alito@chromium.org</owner>
-  <description>
-    The user clicked the 'Restart Computer' button in the Chrome Cleaner webui.
-  </description>
-</action>
-
-<action name="SoftwareReporter.CleanupWebui_ShowDetails">
-  <owner>alito@chromium.org</owner>
-  <description>
-    The user opened the details section of the Chrome Cleaner webui.
-  </description>
-</action>
-
-<action name="SoftwareReporter.CleanupWebui_Shown">
-  <owner>alito@chromium.org</owner>
-  <description>The Chrome Cleaner webui was shown.</description>
-</action>
-
-<action name="SoftwareReporter.CleanupWebui_StartCleanup">
-  <owner>alito@chromium.org</owner>
-  <description>
-    The cleaner started the cleanup operation offered on the Chrome Cleaner
-    webui.
-  </description>
-</action>
-
-<action name="SoftwareReporter.CleanupWebui_StartScanning">
-  <owner>ftirelo@chromium.org</owner>
-  <description>
-    The cleaner started the scan operation offered on the Chrome Cleaner webui.
-  </description>
-</action>
-
-<action name="SoftwareReporter.PromptDialog.LogsPermissionCheckbox_Disabled">
-  <owner>alito@chromium.org</owner>
-  <description>
-    The user clicked the logs upload permission checkbox and disabled logs
-    uploading.
-  </description>
-</action>
-
-<action name="SoftwareReporter.PromptDialog.LogsPermissionCheckbox_Enabled">
-  <owner>alito@chromium.org</owner>
-  <description>
-    The user clicked the logs upload permission checkbox and enabled logs
-    uploading.
-  </description>
-</action>
-
-<action name="SoftwareReporter.PromptDialog_Accepted">
-  <owner>alito@chromium.org</owner>
-  <description>The user accepted the Chrome Cleaner prompt.</description>
-</action>
-
-<action name="SoftwareReporter.PromptDialog_Canceled">
-  <owner>alito@chromium.org</owner>
-  <description>
-    The user clicked the cancel button in the Chrome Cleaner prompt dialog.
-  </description>
-</action>
-
-<action name="SoftwareReporter.PromptDialog_ClosedWithoutUserInteraction">
-  <owner>alito@chromium.org</owner>
-  <description>
-    The Chrome Cleaner prompt dialog was closed without any user interaction.
-    This can happen, for example, if something goes wrong with the Chrome
-    Cleaner IPC or if the user interacts with the Chrome Cleaner webui page from
-    another browser window.
-  </description>
-</action>
-
-<action name="SoftwareReporter.PromptDialog_DetailsButtonClicked">
-  <owner>alito@chromium.org</owner>
-  <description>
-    The user clicked the 'Details' button in the Chrome Cleaner prompt dialog.
-  </description>
-</action>
-
-<action name="SoftwareReporter.PromptDialog_Dismissed">
-  <owner>alito@chromium.org</owner>
-  <description>
-    The user dismissed the Chrome Cleaner prompt dialog, for example by clicking
-    the x in the top right corner or pressing the Escape key.
-  </description>
-</action>
-
-<action name="SoftwareReporter.PromptDialog_Shown">
-  <owner>alito@chromium.org</owner>
-  <description>
-    The Chrome Cleaner prompt dialog was shown to the user.
-  </description>
 </action>
 
 <action name="SoundContentSetting.MuteBy.DefaultSwitch">
@@ -37755,6 +37631,54 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="TrackingProtection.Notice.Closed">
+  <owner>boujane@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <description>
+    User Closed the Tracking Protection onboarding notice.
+  </description>
+</action>
+
+<action name="TrackingProtection.Notice.DismissedOther">
+  <owner>boujane@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <description>
+    User dismissed the Tracking Protection onboarding notice some other way.
+  </description>
+</action>
+
+<action name="TrackingProtection.Notice.GotItClicked">
+  <owner>boujane@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <description>
+    User clicked 'Got it' on the Tracking Protection onboarding notice.
+  </description>
+</action>
+
+<action name="TrackingProtection.Notice.LearnMoreClicked">
+  <owner>boujane@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <description>
+    User clicked 'Learn More' on the Tracking Protection onboarding notice.
+  </description>
+</action>
+
+<action name="TrackingProtection.Notice.SettingsClicked">
+  <owner>boujane@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <description>
+    User clicked 'Settings' on the Tracking Protection onboarding notice.
+  </description>
+</action>
+
+<action name="TrackingProtection.Notice.Shown" not_user_triggered="true">
+  <owner>boujane@google.com</owner>
+  <owner>koilos@google.com</owner>
+  <description>
+    User is shown the Tracking Protection onboarding notice.
+  </description>
+</action>
+
 <action name="TrackpadScroll">
   <obsolete>
     Not needed as of 05/2018 since performance metrics for ScrollBegin show the
@@ -38050,6 +37974,74 @@ should be able to be added at any place in this file.
   <obsolete>Removed from codebase; see GoogleUpdate.UpgradeResult.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="UserEducation.MessageAction.Abort.IPH">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>
+    The In-Product Help Bubble was aborted due to leaving the flow of the
+    feature promotion. This is specific to the IPH implementation and could mean
+    navigation or hiding a surface.
+  </description>
+</action>
+
+<action name="UserEducation.MessageAction.Action.IPH">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>
+    The In-Product Help Bubble was closed after the user selected the action in
+    the IPH. For a Custom Action IPH, this means the custom action was
+    activated. For a Tutorial IPH, this means the tutorial was started.
+  </description>
+</action>
+
+<action name="UserEducation.MessageAction.Cancel.IPH">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>
+    The In-Product Help Bubble was closed after the user pressed Escape or
+    clicked &quot;X&quot; in the IPH.
+  </description>
+</action>
+
+<action name="UserEducation.MessageAction.Dismiss.IPH">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>The user dismissed the In-Product Help Bubble.</description>
+</action>
+
+<action name="UserEducation.MessageAction.FeatureEngaged.IPH">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>
+    The user engaged with the promoted feature outside the In-Product Help
+    Bubble in a way that obviated the need for this IPH.
+  </description>
+</action>
+
+<action name="UserEducation.MessageAction.OverrideForPrecedence.IPH"
+    not_user_triggered="true">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>
+    The In-Product Help Bubble was closed to allow showing a message with higher
+    priority.
+  </description>
+</action>
+
+<action name="UserEducation.MessageAction.OverrideForUIRegionConflict.IPH">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>
+    The In-Product Help Bubble was closed to avoid overlap with an important UI
+    element.
+  </description>
+</action>
+
+<action name="UserEducation.MessageAction.Snooze.IPH">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>The user snoozed the In-Product Help Bubble.</description>
+</action>
+
+<action name="UserEducation.MessageAction.Timeout.IPH">
+  <owner>mickeyburks@chromium.org</owner>
+  <description>
+    The In-Product Help Bubble spontaneously timed out after some time interval.
+  </description>
 </action>
 
 <action name="UserManager_Cleared_Legacy_User_Prefs">
@@ -39205,6 +39197,8 @@ should be able to be added at any place in this file.
 </action-suffix>
 
 <action-suffix separator="_" ordering="suffix">
+  <suffix name="3pcdUserBypass"
+      label="For third party cookie deprecation user bypass feature."/>
   <suffix name="AdaptiveButtonInTopToolbarCustomization_AddToBookmarks"
       label="For AdaptiveButtonInTopToolbarCustomization add to bookmarks
              feature."/>
@@ -39228,8 +39222,6 @@ should be able to be added at any place in this file.
       label="For AutoDarkUserEducationMessageOptIn feature."/>
   <suffix name="AutofillExternalAccountProfileSuggestion"
       label="For AutofillExternalAccountProfileSuggestion feature."/>
-  <suffix name="AutofillFeedbackNewBadge"
-      label="For AutofillFeedbackNewBadge feature."/>
   <suffix name="AutofillVirtualCardSuggestion"
       label="For AutofillVirtualCardSuggestion feature."/>
   <suffix name="BackNavigationMenu" label="For BackNavigationMenu feature."/>
@@ -39371,6 +39363,7 @@ should be able to be added at any place in this file.
   <suffix name="IntentChip"
       label="In product help for opening a webpage in an app using the intent
              chip."/>
+  <suffix name="iOSChoiceScreen" label="For iOSChoiceScreen feature"/>
   <suffix name="iOSDefaultBrowserBadgeEligibility"
       label="For iOSDefaultBrowserBadgeEligibility feature"/>
   <suffix name="iOSDefaultBrowserOverflowMenuBadge"
@@ -39487,6 +39480,8 @@ should be able to be added at any place in this file.
   <suffix name="RequestDesktopSiteOptIn"
       label="For the RequestDesktopSiteOptIn feature."/>
   <suffix name="RestoreTabsOnFRE" label="For the RestoreTabsOnFRE feature."/>
+  <suffix name="ScalableIphGaming"
+      label="For a variant of Scalable Iph feature."/>
   <suffix name="ScalableIphHelpAppBasedEight"
       label="For a variant of Scalable Iph feature."/>
   <suffix name="ScalableIphHelpAppBasedFive"
@@ -39579,6 +39574,8 @@ should be able to be added at any place in this file.
   <suffix name="TabPinnedFeature" label="For tab pinned overflow hint."/>
   <suffix name="TabSearch" label="For the tab search feature."/>
   <suffix name="TabSwitcherButton" label="For tab switcher button."/>
+  <suffix name="TrackingProtectionOnboarding"
+      label="for tracking protection onboarding notice"/>
   <suffix name="TranslateMenuButton" label="For translate menu button."/>
   <suffix name="UpdatedConnectionSecurityIndicators"
       label="For updated omnibox connection security indicators."/>
@@ -39597,6 +39594,8 @@ should be able to be added at any place in this file.
   <suffix name="WebFeedFollow" label="For Web Feed follow recommendations."/>
   <suffix name="WebFeedPostFollowDialog"
       label="For Web Feed successful follow operations."/>
+  <suffix name="WebFeedPostFollowDialogWithUIUpdate"
+      label="For Web Feed successful follow operations after the UI update."/>
   <suffix name="WebUiHelpBubbleTest" label="For WebUiHelpBubbleTest feature."/>
   <suffix name="WebUITabStrip" label="For the WebUI tab strip."/>
   <affected-action name="InProductHelp.NotifyEvent.IPH"/>
@@ -39608,6 +39607,17 @@ should be able to be added at any place in this file.
       name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH"/>
   <affected-action
       name="InProductHelp.ShouldTriggerHelpUIResult.WouldHaveTriggered.IPH"/>
+  <affected-action name="UserEducation.MessageAction.Abort.IPH"/>
+  <affected-action name="UserEducation.MessageAction.Action.IPH"/>
+  <affected-action name="UserEducation.MessageAction.Cancel.IPH"/>
+  <affected-action name="UserEducation.MessageAction.Dismiss.IPH"/>
+  <affected-action name="UserEducation.MessageAction.FeatureEngaged.IPH"/>
+  <affected-action
+      name="UserEducation.MessageAction.OverrideForPrecedence.IPH"/>
+  <affected-action
+      name="UserEducation.MessageAction.OverrideForUIRegionConflict.IPH"/>
+  <affected-action name="UserEducation.MessageAction.Snooze.IPH"/>
+  <affected-action name="UserEducation.MessageAction.Timeout.IPH"/>
 </action-suffix>
 
 <action-suffix separator="." ordering="suffix">

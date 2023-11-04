@@ -8,7 +8,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/glanceables/classroom/glanceables_classroom_client.h"
-#include "ash/glanceables/glanceables_v2_controller.h"
+#include "ash/glanceables/glanceables_controller.h"
 #include "ash/glanceables/tasks/glanceables_tasks_client.h"
 #include "ash/glanceables/tasks/glanceables_tasks_types.h"
 #include "ash/public/cpp/session/user_info.h"
@@ -25,6 +25,7 @@
 #include "base/check.h"
 #include "base/functional/bind.h"
 #include "components/session_manager/session_manager_types.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/list_model.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
@@ -143,12 +144,12 @@ GlanceableTrayBubbleView::GlanceableTrayBubbleView(
       shelf_(shelf),
       detailed_view_delegate_(
           std::make_unique<DetailedViewDelegate>(/*tray_controller=*/nullptr)) {
-  Shell::Get()->glanceables_v2_controller()->RecordGlanceablesBubbleShowTime(
+  Shell::Get()->glanceables_controller()->RecordGlanceablesBubbleShowTime(
       base::TimeTicks::Now());
 }
 
 GlanceableTrayBubbleView::~GlanceableTrayBubbleView() {
-  Shell::Get()->glanceables_v2_controller()->NotifyGlanceablesBubbleClosed();
+  Shell::Get()->glanceables_controller()->NotifyGlanceablesBubbleClosed();
 }
 
 void GlanceableTrayBubbleView::InitializeContents() {
@@ -209,7 +210,7 @@ void GlanceableTrayBubbleView::InitializeContents() {
   }
 
   auto* const tasks_client =
-      Shell::Get()->glanceables_v2_controller()->GetTasksClient();
+      Shell::Get()->glanceables_controller()->GetTasksClient();
   if (should_show_non_calendar_glanceables && tasks_client) {
     CHECK(!tasks_bubble_view_);
     tasks_client->GetTaskLists(
@@ -223,7 +224,7 @@ void GlanceableTrayBubbleView::InitializeContents() {
   ChangeAnchorRect(shelf_->GetSystemTrayAnchorRect());
 
   auto* const classroom_client =
-      Shell::Get()->glanceables_v2_controller()->GetClassroomClient();
+      Shell::Get()->glanceables_controller()->GetClassroomClient();
   if (should_show_non_calendar_glanceables && classroom_client) {
     if (!classroom_bubble_student_view_) {
       classroom_client->IsStudentRoleActive(base::BindOnce(
@@ -346,5 +347,8 @@ void GlanceableTrayBubbleView::OnGlanceablesContainerHeightChanged(
     focused_view->ScrollViewToVisible();
   }
 }
+
+BEGIN_METADATA(GlanceableTrayBubbleView, TrayBubbleView)
+END_METADATA
 
 }  // namespace ash

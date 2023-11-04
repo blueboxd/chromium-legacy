@@ -7,10 +7,10 @@ import {BindingsTestRunner} from 'bindings_test_runner';
 import {SourcesTestRunner} from 'sources_test_runner';
 
 import * as Workspace from 'devtools/models/workspace/workspace.js';
+import * as SourcesModule from 'devtools/panels/sources/sources.js';
 
 (async function() {
   TestRunner.addResult(`Tests that ScriptSearchScope sorts network and dirty results correctly.\n`);
-  await TestRunner.loadLegacyModule('sources');
   await TestRunner.loadLegacyModule('search');
   await TestRunner.showPanel('sources');
 
@@ -27,7 +27,7 @@ import * as Workspace from 'devtools/models/workspace/workspace.js';
     return uiSourceCodes;
   }
 
-  var scope = new Sources.SourcesSearchScope();
+  var scope = new SourcesModule.SourcesSearchScope.SourcesSearchScope();
   var fs = new BindingsTestRunner.TestFileSystem('/var/www');
   var names = ['search.html', 'search.js', 'search.css'];
   var resources = {};

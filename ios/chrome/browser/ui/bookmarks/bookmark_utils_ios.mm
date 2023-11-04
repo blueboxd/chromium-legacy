@@ -91,7 +91,7 @@ const bookmarks::BookmarkNode* FindNodeByNodeReference(
   if (!reference.bookmark_model) {
     return nullptr;
   }
-  return FindNodeByUuid(reference.bookmark_model, reference.uuid);
+  return reference.bookmark_model->GetNodeByUuid(reference.uuid);
 }
 
 NodeSet FindNodesByNodeReferences(NodeReferenceSet references) {
@@ -111,19 +111,6 @@ const BookmarkNode* FindNodeById(bookmarks::BookmarkModel* model, int64_t id) {
   while (iterator.has_next()) {
     const BookmarkNode* node = iterator.Next();
     if (node->id() == id) {
-      return node;
-    }
-  }
-  return nullptr;
-}
-
-const bookmarks::BookmarkNode* FindNodeByUuid(bookmarks::BookmarkModel* model,
-                                              const base::Uuid& uuid) {
-  CHECK(model);
-  ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
-  while (iterator.has_next()) {
-    const BookmarkNode* node = iterator.Next();
-    if (node->uuid() == uuid) {
       return node;
     }
   }

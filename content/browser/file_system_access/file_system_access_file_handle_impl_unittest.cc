@@ -305,7 +305,9 @@ TEST_F(FileSystemAccessFileHandleImplTest, CreateFileWriterOverLimitNotOK) {
         future;
     handle_->CreateFileWriter(
         /*keep_existing_data=*/false,
-        /*auto_close=*/false, future.GetCallback());
+        /*auto_close=*/false,
+        blink::mojom::FileSystemAccessWritableFileStreamLockMode::kSiloed,
+        future.GetCallback());
     blink::mojom::FileSystemAccessErrorPtr result;
     mojo::PendingRemote<blink::mojom::FileSystemAccessFileWriter> writer_remote;
     std::tie(result, writer_remote) = future.Take();
@@ -320,13 +322,137 @@ TEST_F(FileSystemAccessFileHandleImplTest, CreateFileWriterOverLimitNotOK) {
       future;
   handle_->CreateFileWriter(
       /*keep_existing_data=*/false,
-      /*auto_close=*/false, future.GetCallback());
+      /*auto_close=*/false,
+      blink::mojom::FileSystemAccessWritableFileStreamLockMode::kSiloed,
+      future.GetCallback());
   blink::mojom::FileSystemAccessErrorPtr result;
   mojo::PendingRemote<blink::mojom::FileSystemAccessFileWriter> writer_remote;
   std::tie(result, writer_remote) = future.Take();
   EXPECT_EQ(result->status,
             blink::mojom::FileSystemAccessStatus::kOperationFailed);
   EXPECT_FALSE(writer_remote.is_valid());
+}
+
+TEST_F(FileSystemAccessFileHandleImplTest, CreateFileWriterSiloedMode) {
+  mojo::PendingRemote<blink::mojom::FileSystemAccessFileWriter> writer;
+
+  {
+    base::test::TestFuture<
+        blink::mojom::FileSystemAccessErrorPtr,
+        mojo::PendingRemote<blink::mojom::FileSystemAccessFileWriter>>
+        future;
+    handle_->CreateFileWriter(
+        /*keep_existing_data=*/false,
+        /*auto_close=*/false,
+        blink::mojom::FileSystemAccessWritableFileStreamLockMode::kSiloed,
+        future.GetCallback());
+    blink::mojom::FileSystemAccessErrorPtr result;
+    std::tie(result, writer) = future.Take();
+    EXPECT_EQ(result->status, blink::mojom::FileSystemAccessStatus::kOk);
+    EXPECT_TRUE(writer.is_valid());
+  }
+
+  // If file writer in siloed mode exists for a file handle, can create a writer
+  // in siloed mode for the file handle.
+  {
+    base::test::TestFuture<
+        blink::mojom::FileSystemAccessErrorPtr,
+        mojo::PendingRemote<blink::mojom::FileSystemAccessFileWriter>>
+        future;
+    handle_->CreateFileWriter(
+        /*keep_existing_data=*/false,
+        /*auto_close=*/false,
+        blink::mojom::FileSystemAccessWritableFileStreamLockMode::kSiloed,
+        future.GetCallback());
+    blink::mojom::FileSystemAccessErrorPtr result;
+    mojo::PendingRemote<blink::mojom::FileSystemAccessFileWriter> writer_remote;
+    std::tie(result, writer_remote) = future.Take();
+    EXPECT_EQ(result->status, blink::mojom::FileSystemAccessStatus::kOk);
+    EXPECT_TRUE(writer_remote.is_valid());
+  }
+
+  // If file writer in siloed mode exists for a file handle, can't create a
+  // writer in exclusive mode for the file handle.
+  {
+    base::test::TestFuture<
+        blink::mojom::FileSystemAccessErrorPtr,
+        mojo::PendingRemote<blink::mojom::FileSystemAccessFileWriter>>
+        future;
+    handle_->CreateFileWriter(
+        /*keep_existing_data=*/false,
+        /*auto_close=*/false,
+        blink::mojom::FileSystemAccessWritableFileStreamLockMode::kExclusive,
+        future.GetCallback());
+    blink::mojom::FileSystemAccessErrorPtr result;
+    mojo::PendingRemote<blink::mojom::FileSystemAccessFileWriter> writer_remote;
+    std::tie(result, writer_remote) = future.Take();
+    EXPECT_EQ(
+        result->status,
+        blink::mojom::FileSystemAccessStatus::kNoModificationAllowedError);
+    EXPECT_FALSE(writer_remote.is_valid());
+  }
+}
+
+TEST_F(FileSystemAccessFileHandleImplTest, CreateFileWriterExclusiveMode) {
+  mojo::PendingRemote<blink::mojom::FileSystemAccessFileWriter> writer;
+
+  {
+    base::test::TestFuture<
+        blink::mojom::FileSystemAccessErrorPtr,
+        mojo::PendingRemote<blink::mojom::FileSystemAccessFileWriter>>
+        future;
+    handle_->CreateFileWriter(
+        /*keep_existing_data=*/false,
+        /*auto_close=*/false,
+        blink::mojom::FileSystemAccessWritableFileStreamLockMode::kExclusive,
+        future.GetCallback());
+    blink::mojom::FileSystemAccessErrorPtr result;
+    std::tie(result, writer) = future.Take();
+    EXPECT_EQ(result->status, blink::mojom::FileSystemAccessStatus::kOk);
+    EXPECT_TRUE(writer.is_valid());
+  }
+
+  // If file writer in exclusive mode exists for a file handle, can't create a
+  // writer in siloed mode for the file handle.
+  {
+    base::test::TestFuture<
+        blink::mojom::FileSystemAccessErrorPtr,
+        mojo::PendingRemote<blink::mojom::FileSystemAccessFileWriter>>
+        future;
+    handle_->CreateFileWriter(
+        /*keep_existing_data=*/false,
+        /*auto_close=*/false,
+        blink::mojom::FileSystemAccessWritableFileStreamLockMode::kSiloed,
+        future.GetCallback());
+    blink::mojom::FileSystemAccessErrorPtr result;
+    mojo::PendingRemote<blink::mojom::FileSystemAccessFileWriter> writer_remote;
+    std::tie(result, writer_remote) = future.Take();
+    EXPECT_EQ(
+        result->status,
+        blink::mojom::FileSystemAccessStatus::kNoModificationAllowedError);
+    EXPECT_FALSE(writer_remote.is_valid());
+  }
+
+  // If file writer in exclusive mode exists for a file handle, can't create a
+  // writer in exclusive mode for the file handle.
+  {
+    base::test::TestFuture<
+        blink::mojom::FileSystemAccessErrorPtr,
+        mojo::PendingRemote<blink::mojom::FileSystemAccessFileWriter>>
+        future;
+    handle_->CreateFileWriter(
+        /*keep_existing_data=*/false,
+        /*auto_close=*/false,
+        blink::mojom::FileSystemAccessWritableFileStreamLockMode::kExclusive,
+        future.GetCallback());
+    blink::mojom::FileSystemAccessErrorPtr result;
+    mojo::PendingRemote<blink::mojom::FileSystemAccessFileWriter> writer_remote;
+    std::tie(result, writer_remote) = future.Take();
+    EXPECT_EQ(
+        result->status,
+        blink::mojom::FileSystemAccessStatus::kNoModificationAllowedError);
+    EXPECT_FALSE(writer_remote.is_valid());
+  }
 }
 
 TEST_F(FileSystemAccessFileHandleImplTest,
@@ -347,7 +473,9 @@ TEST_F(FileSystemAccessFileHandleImplTest,
       future;
   handle_->CreateFileWriter(
       /*keep_existing_data=*/true,
-      /*auto_close=*/false, future.GetCallback());
+      /*auto_close=*/false,
+      blink::mojom::FileSystemAccessWritableFileStreamLockMode::kSiloed,
+      future.GetCallback());
   blink::mojom::FileSystemAccessErrorPtr result;
   mojo::PendingRemote<blink::mojom::FileSystemAccessFileWriter> writer_remote;
   std::tie(result, writer_remote) = future.Take();
@@ -638,10 +766,6 @@ class FileSystemAccessFileHandleSwapFileCloningTest
       return CloneFileResult::kAttemptedAndCompletedUnexpectedly;
     }
 
-    // TODO(https://crbug.com/1439179): Remove this expectation once we have a
-    // better idea of what's causing the spurious failures.
-    EXPECT_EQ(maybe_clone_result.value(), base::File::Error::FILE_OK);
-
     // Ideally we could just check that the result is FILE_OK, but
     // clonefile() may spuriously fail. See https://crbug.com/1439179. For the
     // purposes of these tests, we'll consider these spurious errors as
@@ -660,7 +784,9 @@ TEST_F(FileSystemAccessFileHandleSwapFileCloningTest, BasicClone) {
       future;
   handle_->CreateFileWriter(
       /*keep_existing_data=*/true,
-      /*auto_close=*/false, future.GetCallback());
+      /*auto_close=*/false,
+      blink::mojom::FileSystemAccessWritableFileStreamLockMode::kSiloed,
+      future.GetCallback());
   blink::mojom::FileSystemAccessErrorPtr result;
   mojo::PendingRemote<blink::mojom::FileSystemAccessFileWriter> writer_remote;
   std::tie(result, writer_remote) = future.Take();
@@ -678,7 +804,9 @@ TEST_F(FileSystemAccessFileHandleSwapFileCloningTest,
       future;
   handle_->CreateFileWriter(
       /*keep_existing_data=*/false,
-      /*auto_close=*/false, future.GetCallback());
+      /*auto_close=*/false,
+      blink::mojom::FileSystemAccessWritableFileStreamLockMode::kSiloed,
+      future.GetCallback());
   blink::mojom::FileSystemAccessErrorPtr result;
   mojo::PendingRemote<blink::mojom::FileSystemAccessFileWriter> writer_remote;
   std::tie(result, writer_remote) = future.Take();
@@ -705,7 +833,9 @@ TEST_F(FileSystemAccessFileHandleSwapFileCloningTest, HandleExistingSwapFile) {
       future;
   handle_->CreateFileWriter(
       /*keep_existing_data=*/true,
-      /*auto_close=*/false, future.GetCallback());
+      /*auto_close=*/false,
+      blink::mojom::FileSystemAccessWritableFileStreamLockMode::kSiloed,
+      future.GetCallback());
   blink::mojom::FileSystemAccessErrorPtr result;
   mojo::PendingRemote<blink::mojom::FileSystemAccessFileWriter> writer_remote;
   std::tie(result, writer_remote) = future.Take();
@@ -725,7 +855,9 @@ TEST_F(FileSystemAccessFileHandleSwapFileCloningTest, HandleCloneFailure) {
       future;
   handle_->CreateFileWriter(
       /*keep_existing_data=*/true,
-      /*auto_close=*/false, future.GetCallback());
+      /*auto_close=*/false,
+      blink::mojom::FileSystemAccessWritableFileStreamLockMode::kSiloed,
+      future.GetCallback());
   blink::mojom::FileSystemAccessErrorPtr result;
   mojo::PendingRemote<blink::mojom::FileSystemAccessFileWriter> writer_remote;
   std::tie(result, writer_remote) = future.Take();

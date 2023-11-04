@@ -186,12 +186,12 @@ void AuthPerformer::AuthenticateUsingKnowledgeKey(
 
   // The login code might speculatively set the "gaia" label in the user
   // context, however at the cryptohome level the existing user key's label can
-  // be either "gaia" or "legacy-N" - which is what we need to use when talking
-  // to cryptohome. If in cryptohome, "gaia" is indeed the label, then at the
-  // end of this operation, gaia would be returned. This case applies to only
-  // "gaia" labels only because they are created at oobe.
+  // be either "gaia", "local-password" or "legacy-N" - which is what we need to
+  // use when talking to cryptohome. If in cryptohome, "gaia" is indeed the
+  // label, then at the end of this operation, gaia would be returned. This case
+  // applies to only "gaia" labels only because they are created at oobe.
   if (key->GetLabel() == kCryptohomeGaiaKeyLabel || key->GetLabel().empty()) {
-    auto* factor = auth_factors.FindOnlinePasswordFactor();
+    const auto* factor = auth_factors.FindAnyPasswordFactor();
     if (factor == nullptr) {
       LOGIN_LOG(ERROR) << "Could not find Password key";
       std::move(callback).Run(
@@ -482,7 +482,8 @@ void AuthPerformer::OnStartAuthSession(
   LOGIN_LOG(EVENT) << "AuthSession started, user "
                    << (reply->user_exists() ? "exists" : "does not exist");
 
-  context->SetAuthSessionId(reply->auth_session_id());
+  context->SetAuthSessionIds(reply->auth_session_id(), reply->broadcast_id());
+
   std::vector<cryptohome::AuthFactor> next_factors;
   cryptohome::AuthFactorType fallback_type =
       cryptohome::AuthFactorType::kPassword;
@@ -516,7 +517,7 @@ void AuthPerformer::OnInvalidateAuthSession(
     AuthOperationCallback callback,
     absl::optional<user_data_auth::InvalidateAuthSessionReply> reply) {
   // The auth session is useless even if we failed to invalidate it.
-  context->ResetAuthSessionId();
+  context->ResetAuthSessionIds();
 
   auto error = user_data_auth::ReplyToCryptohomeError(reply);
   if (error != user_data_auth::CRYPTOHOME_ERROR_NOT_SET &&
@@ -578,6 +579,8 @@ void AuthPerformer::OnAuthenticateAuthFactor(
       context->AddAuthorizedIntent(intent.value());
     }
   }
+  context->SetSessionLifetime(base::Time::Now() +
+                              base::Seconds(reply->seconds_left()));
   LOGIN_LOG(EVENT) << "Authenticated successfully";
   std::move(callback).Run(std::move(context), absl::nullopt);
 }

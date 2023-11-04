@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 
 #include "base/functional/callback.h"
 #include "base/location.h"
@@ -13,15 +14,15 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
-#include "base/test/scoped_feature_list.h"
+#include "base/test/test_future.h"
 #include "base/uuid.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/common/base_telemetry_extension_browser_test.h"
+#include "chrome/browser/chromeos/extensions/telemetry/api/routines/diagnostic_routine_info.h"
 #include "chrome/common/chromeos/extensions/api/diagnostics.h"
 #include "chromeos/crosapi/mojom/telemetry_diagnostic_routine_service.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/common/extension_features.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {
@@ -54,8 +55,7 @@ class EventRegistrationObserver : public extensions::EventRouter::Observer {
   }
 
  private:
-  raw_ptr<content::BrowserContext, DanglingUntriaged | ExperimentalAsh>
-      context_;
+  raw_ptr<content::BrowserContext> context_;
   std::string event_name_;
   base::OnceClosure on_event_added_;
 };
@@ -66,8 +66,16 @@ class TelemetryExtensionDiagnosticRoutineObserverBrowserTest
   void SetUpOnMainThread() override {
     BaseTelemetryExtensionBrowserTest::SetUpOnMainThread();
 
+    DiagnosticRoutineInfo info(extension_id(), uuid_, profile());
     observation_ = std::make_unique<DiagnosticRoutineObservation>(
-        extension_id(), uuid_, profile(), remote_.BindNewPipeAndPassReceiver());
+        info, on_finished_future_.GetCallback(),
+        remote_.BindNewPipeAndPassReceiver());
+  }
+
+  void TearDownOnMainThread() override {
+    registration_observer_.reset();
+    observation_.reset();
+    BaseTelemetryExtensionBrowserTest::TearDownOnMainThread();
   }
 
  protected:
@@ -80,10 +88,15 @@ class TelemetryExtensionDiagnosticRoutineObserverBrowserTest
         registration_observer_.get(), event_name);
   }
 
+  DiagnosticRoutineInfo WaitForFinishedReport() {
+    return on_finished_future_.Take();
+  }
+
   base::Uuid uuid_{base::Uuid::GenerateRandomV4()};
   mojo::Remote<crosapi::TelemetryDiagnosticRoutineObserver> remote_;
 
  private:
+  base::test::TestFuture<DiagnosticRoutineInfo> on_finished_future_;
   std::unique_ptr<EventRegistrationObserver> registration_observer_;
   std::unique_ptr<DiagnosticRoutineObservation> observation_;
 };
@@ -91,97 +104,7 @@ class TelemetryExtensionDiagnosticRoutineObserverBrowserTest
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticRoutineObserverBrowserTest,
-                       CanObserveOnRoutineInitializedWithoutFeatureFlagFail) {
-  CreateExtensionAndRunServiceWorker(R"(
-    chrome.test.runTests([
-      function canObserveOnRoutineInitializedFail() {
-        chrome.test.assertThrows(() => {
-          chrome.os.diagnostics.onRoutineInitialized.addListener((event) => {
-            // unreachable
-          });
-        }, [],
-          'Cannot read properties of undefined (reading \'addListener\')'
-        );
-
-        chrome.test.succeed();
-      }
-    ]);
-  )");
-}
-
-IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticRoutineObserverBrowserTest,
-                       CanObserveOnRoutineRunningWithoutFeatureFlagFail) {
-  CreateExtensionAndRunServiceWorker(R"(
-    chrome.test.runTests([
-      function canObserveOnRoutineRunningFail() {
-        chrome.test.assertThrows(() => {
-          chrome.os.diagnostics.onRoutineRunning.addListener((event) => {
-            // unreachable
-          });
-        }, [],
-          'Cannot read properties of undefined (reading \'addListener\')'
-        );
-
-        chrome.test.succeed();
-      }
-    ]);
-  )");
-}
-
-IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticRoutineObserverBrowserTest,
-                       CanObserveOnRoutineWaitingWithoutFeatureFlagFail) {
-  CreateExtensionAndRunServiceWorker(R"(
-    chrome.test.runTests([
-      function canObserveOnRoutineWaitingFail() {
-        chrome.test.assertThrows(() => {
-          chrome.os.diagnostics.onRoutineWaiting.addListener((event) => {
-            // unreachable
-          });
-        }, [],
-          'Cannot read properties of undefined (reading \'addListener\')'
-        );
-
-        chrome.test.succeed();
-      }
-    ]);
-  )");
-}
-
-IN_PROC_BROWSER_TEST_F(
-    TelemetryExtensionDiagnosticRoutineObserverBrowserTest,
-    CanObserveOnMemoryRoutineFinishedWithoutFeatureFlagFail) {
-  CreateExtensionAndRunServiceWorker(R"(
-    chrome.test.runTests([
-      function canObserveOnMemoryRoutineFinishedFail() {
-        chrome.test.assertThrows(() => {
-          chrome.os.diagnostics.onMemoryRoutineFinished.addListener((event) => {
-            // unreachable
-          });
-        }, [],
-          'Cannot read properties of undefined (reading \'addListener\')'
-        );
-
-        chrome.test.succeed();
-      }
-    ]);
-  )");
-}
-
-class PendingApprovalTelemetryExtensionDiagnosticRoutineObserverBrowserTest
-    : public TelemetryExtensionDiagnosticRoutineObserverBrowserTest {
- public:
-  PendingApprovalTelemetryExtensionDiagnosticRoutineObserverBrowserTest() {
-    feature_list_.InitAndEnableFeature(
-        extensions_features::kTelemetryExtensionPendingApprovalApi);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(
-    PendingApprovalTelemetryExtensionDiagnosticRoutineObserverBrowserTest,
-    CanObserveOnRoutineInitialized) {
+                       CanObserveOnRoutineInitialized) {
   RegisterEventObserver(
       api::os_diagnostics::OnRoutineInitialized::kEventName,
       base::BindLambdaForTesting([this] {
@@ -211,9 +134,8 @@ IN_PROC_BROWSER_TEST_F(
                          uuid_.AsLowercaseString().c_str()));
 }
 
-IN_PROC_BROWSER_TEST_F(
-    PendingApprovalTelemetryExtensionDiagnosticRoutineObserverBrowserTest,
-    CanObserveOnRoutineRunning) {
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticRoutineObserverBrowserTest,
+                       CanObserveOnRoutineRunning) {
   RegisterEventObserver(
       api::os_diagnostics::OnRoutineRunning::kEventName,
       base::BindLambdaForTesting([this] {
@@ -244,9 +166,8 @@ IN_PROC_BROWSER_TEST_F(
                          uuid_.AsLowercaseString().c_str()));
 }
 
-IN_PROC_BROWSER_TEST_F(
-    PendingApprovalTelemetryExtensionDiagnosticRoutineObserverBrowserTest,
-    CanObserveOnRoutineWaiting) {
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticRoutineObserverBrowserTest,
+                       CanObserveOnRoutineWaiting) {
   RegisterEventObserver(
       api::os_diagnostics::OnRoutineWaiting::kEventName,
       base::BindLambdaForTesting([this] {
@@ -282,9 +203,8 @@ IN_PROC_BROWSER_TEST_F(
                          uuid_.AsLowercaseString().c_str()));
 }
 
-IN_PROC_BROWSER_TEST_F(
-    PendingApprovalTelemetryExtensionDiagnosticRoutineObserverBrowserTest,
-    CanObserveOnMemoryRoutineFinished) {
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticRoutineObserverBrowserTest,
+                       CanObserveOnMemoryRoutineFinished) {
   RegisterEventObserver(
       api::os_diagnostics::OnMemoryRoutineFinished::kEventName,
       base::BindLambdaForTesting([this] {
@@ -343,6 +263,10 @@ IN_PROC_BROWSER_TEST_F(
     ]);
   )",
                          uuid_.AsLowercaseString().c_str()));
+
+  auto info = WaitForFinishedReport();
+  EXPECT_EQ(info.extension_id, extension_id());
+  EXPECT_EQ(info.uuid, uuid_);
 }
 
 }  // namespace chromeos

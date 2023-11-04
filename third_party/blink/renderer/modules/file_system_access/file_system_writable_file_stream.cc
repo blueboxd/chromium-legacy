@@ -21,13 +21,14 @@ namespace blink {
 FileSystemWritableFileStream* FileSystemWritableFileStream::Create(
     ScriptState* script_state,
     mojo::PendingRemote<mojom::blink::FileSystemAccessFileWriter>
-        writer_pending_remote) {
+        writer_pending_remote,
+    V8FileSystemWritableFileStreamMode lock_mode) {
   DCHECK(writer_pending_remote);
   ScriptState::Scope scope(script_state);
 
   ExecutionContext* context = ExecutionContext::From(script_state);
 
-  auto* stream = MakeGarbageCollected<FileSystemWritableFileStream>();
+  auto* stream = MakeGarbageCollected<FileSystemWritableFileStream>(lock_mode);
 
   auto* underlying_sink = MakeGarbageCollected<FileSystemUnderlyingSink>(
       context, std::move(writer_pending_remote));
@@ -42,19 +43,25 @@ FileSystemWritableFileStream* FileSystemWritableFileStream::Create(
   ScriptValue strategy_value = ScriptValue::From(script_state, strategy);
 
   v8::Isolate* isolate = script_state->GetIsolate();
-  ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
-                                 "FileSystemWritableFileStream");
+  ExceptionState exception_state(
+      isolate, ExceptionContextType::kConstructorOperationInvoke,
+      "FileSystemWritableFileStream");
   v8::MicrotasksScope microtasks_scope(
       isolate, ToMicrotaskQueue(script_state),
       v8::MicrotasksScope::kDoNotRunMicrotasks);
   stream->InitInternal(script_state, underlying_sink_value, strategy_value,
                        exception_state);
 
-  if (exception_state.HadException())
+  if (exception_state.HadException()) {
     return nullptr;
+  }
 
   return stream;
 }
+
+FileSystemWritableFileStream::FileSystemWritableFileStream(
+    V8FileSystemWritableFileStreamMode lock_mode)
+    : lock_mode_(lock_mode) {}
 
 ScriptPromise FileSystemWritableFileStream::write(
     ScriptState* script_state,
@@ -62,8 +69,9 @@ ScriptPromise FileSystemWritableFileStream::write(
     ExceptionState& exception_state) {
   WritableStreamDefaultWriter* writer =
       WritableStream::AcquireDefaultWriter(script_state, this, exception_state);
-  if (exception_state.HadException())
+  if (exception_state.HadException()) {
     return ScriptPromise();
+  }
 
   v8::Local<v8::Value> v8_data;
   {
@@ -89,8 +97,9 @@ ScriptPromise FileSystemWritableFileStream::truncate(
     ExceptionState& exception_state) {
   WritableStreamDefaultWriter* writer =
       WritableStream::AcquireDefaultWriter(script_state, this, exception_state);
-  if (exception_state.HadException())
+  if (exception_state.HadException()) {
     return ScriptPromise();
+  }
 
   auto* options = WriteParams::Create();
   options->setType(V8WriteCommandType::Enum::kTruncate);
@@ -109,8 +118,9 @@ ScriptPromise FileSystemWritableFileStream::seek(
     ExceptionState& exception_state) {
   WritableStreamDefaultWriter* writer =
       WritableStream::AcquireDefaultWriter(script_state, this, exception_state);
-  if (exception_state.HadException())
+  if (exception_state.HadException()) {
     return ScriptPromise();
+  }
 
   auto* options = WriteParams::Create();
   options->setType(V8WriteCommandType::Enum::kSeek);
@@ -126,6 +136,10 @@ ScriptPromise FileSystemWritableFileStream::seek(
 void FileSystemWritableFileStream::Trace(Visitor* visitor) const {
   WritableStream::Trace(visitor);
   visitor->Trace(underlying_sink_);
+}
+
+const char* FileSystemWritableFileStream::mode() const {
+  return lock_mode_.AsCStr();
 }
 
 }  // namespace blink

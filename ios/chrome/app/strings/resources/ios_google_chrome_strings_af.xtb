@@ -14,7 +14,6 @@
 <translation id="1491435845014430217">Skakel “Sluit Incognito-oortjies wanneer jy Chrome toemaak” aan.</translation>
 <translation id="1493827051843127077">Stel Chrome as verstek om jou oortjies, wagwoorde en betaalinligting op al jou toestelle te sinkroniseer</translation>
 <translation id="1504372625950710826">Chrome kon nie vir opdaterings kyk nie. Probeer jou internetverbinding nagaan.</translation>
-<translation id="1511320244449497906">Jy is aangemeld en sinkroniseer tans jou data met ’n rekening wat deur <ph name="DOMAIN" /> bestuur word. Die administrateur kan nou gebruikerbeleide spesifiek vir dié rekening stel, wat die gedrag van Chrome kan verander.</translation>
 <translation id="1516692594929310090">Maak die Chrome-oortjierooster oop.</translation>
 <translation id="1526327845902180576">Wanneer dit aan is:
 <ph name="BEGIN_INDENT" />  • Help dit om Chrome beter te maak vir mense wat dit gebruik soos wat jy dit gebruik.<ph name="END_INDENT" />
@@ -31,7 +30,6 @@ Dinge om in ag te neem:
 <translation id="1675955119303651351">Sommige van jou Chrome-data is nog nie in jou Google-rekening gestoor nie.
         Probeer om ’n paar minute te wag voordat jy afmeld. As jy nou afmeld, sal hierdie data uitgevee word.</translation>
 <translation id="1682483655351012182">Sinkroniseer jou Chrome-data</translation>
-<translation id="1733654336159102143">Sluit jou Incognito wanneer jy Chrome verlaat of na ’n ander app toe oorskakel.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1843217788865538014">Gebruik Chrome outomaties wanneer jy op skakels in boodskappe, dokumente en ander apps tik.</translation>
 <translation id="1917964099031477364">Hierdie rekening en enige ongstoorde data sal uit Chrome en ander Google-programme op hierdie toestel verwyder word.</translation>
@@ -58,7 +56,6 @@ Dinge om in ag te neem:
 <translation id="2732745070297234559">Chrome kon nie alle wagwoorde nagaan nie. Probeer môre weer.</translation>
 <translation id="2736805085127235148">Chrome-kennisgewings is tans in jou toestelinstellings afgeskakel.</translation>
 <translation id="2767464022270041271">Geen gestoorde wagwoorde nie. Google Wagwoordbestuurder kan jou wagwoorde nagaan wanneer jy hulle stoor.</translation>
-<translation id="2840432500933227975">Maak Chrome-instellings in iOS oop, en tik dan op “Blaaierverstekapp” en kies Chrome.</translation>
 <translation id="2868822340714096138">Vee blaaierdata in Chrome uit</translation>
 <translation id="2869959624320573933">Meld by Chrome aan</translation>
 <translation id="2876628302275096482">Kom meer te wete oor <ph name="BEGIN_LINK" />hoe Chrome jou data privaat hou<ph name="END_LINK" /></translation>
@@ -72,6 +69,7 @@ Dinge om in ag te neem:
 <translation id="3345341804167540816">Gebruik Chrome oral</translation>
 <translation id="3472587960215700950">Chrome gebruik Google Maps om vir jou aanwysings en plaaslike inligting oor bespeurde adresse te gee.</translation>
 <translation id="3503014945441706099">Kry Verbeterde Veiligblaai ook vir hierdie Chrome-profiel</translation>
+<translation id="3506309791702511623">Chrome kan die naspoornommers wat jy invoer, bespeur en jou pakkette op die Nuwe oortjie-bladsy naspoor terwyl dit ander inkopie-ervarings van Google help.</translation>
 <translation id="3522659714780527202">Skakel sinkronisering aan om jou oortjies te sien van waar ook al jy Chrome gebruik</translation>
 <translation id="3533694711092285624">Geen gestoorde wagwoorde nie. Chrome kan jou wagwoorde nagaan wanneer jy hulle stoor.</translation>
 <translation id="3594076341410558780">Versteek “Benut Chrome ten beste”</translation>
@@ -106,6 +104,7 @@ Dinge om in ag te neem:
         Probeer om ’n paar minute te wag voordat jy afmeld. As jy nou afmeld, sal hierdie data uitgevee word.</translation>
 <translation id="484033449593719797">Nie op Chrome Beta gesteun nie</translation>
 <translation id="4840404732697892756">Google Wagwoordbestuurder kan jou wagwoorde nagaan wanneer jy met jou Google-rekening aanmeld.</translation>
+<translation id="4860330141789125848">{COUNT,plural, =1{Chrome kan jou help om hierdie pakkie op die Nuwe oortjie-bladsy na te spoor.}other{Chrome kan jou help om hierdie pakkies op die Nuwe oortjie-bladsy na te spoor.}}</translation>
 <translation id="4903674399067644695">Hierdie kaart wys vir jou voorstelle oor hoe jy Chrome ten beste kan benut.</translation>
 <translation id="49200511069271369">Jou organisasie, <ph name="DOMAIN" />, bestuur die rekening waarby jy aanmeld en hoe Chrome gebruik kan word. Jou administrateur kan sekere kenmerke opstel of beperk.</translation>
 <translation id="5030102366287574140">Chrome kan help om jou teen dataskendings, onveilige webwerwe en meer te beskerm.</translation>
@@ -115,10 +114,12 @@ Dinge om in ag te neem:
 <translation id="5156818928311866442">Maak die Chrome-instelling oop om Chrome as verstekblaaier te stel.</translation>
 <translation id="5162467219239570114">Chrome is verouderd. As geen opdatering in die <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" /> beskikbaar is nie, is dit moontlik dat jou toestel nie meer nuwe weergawes van Chrome steun nie.</translation>
 <translation id="5190139289262548459">Jou organisasie, <ph name="DOMAIN" />, bestuur die rekening waarby jy aangemeld is en hoe Chrome gebruik word.</translation>
+<translation id="5278862365980079760">Sluit jou Incognito-oortjies wanneer jy Chrome verlaat of na ’n ander app toe oorskakel.</translation>
 <translation id="5389212809648216794">Google Chrome kan nie jou kamera gebruik nie omdat dit deur 'n ander program gebruik word</translation>
 <translation id="5395376160638294582">Maak seker dat jy altyd die Chrome-data in jou Google-rekening kan gebruik</translation>
 <translation id="5439191312780166229">Waarsku jou oor gevaarlike werwe – selfs werwe waarvan Google nie voorheen geweet het nie – deur meer data van werwe te ontleed as standaardbeskerming. Jy kan kies om Chrome-waarskuwings oor te slaan.</translation>
 <translation id="5460571915754665838">4. Kies Chrome</translation>
+<translation id="546541279759910616">{COUNT,plural, =1{Chrome sal help om hierdie pakkie op die Nuwe oortjie-bladsy na te spoor.}other{Chrome sal help om hierdie pakkies op die Nuwe oortjie-bladsy na te spoor.}}</translation>
 <translation id="5492504007368565877">Google Wagwoordbestuurder kan nie jou wagwoorde nagaan nie.</translation>
 <translation id="5527026824954593399">Tik op “Bekyk met Google Maps op Chrome”.</translation>
 <translation id="5552137475244467770">Chrome vergelyk jou wagwoorde van tyd tot tyd met lyste wat aanlyn gepubliseer is. Wanneer dit gedoen word, word jou wagwoorde en gebruikername geënkripteer sodat niemand, insluitend Google, hulle kan lees nie.</translation>
@@ -136,17 +137,18 @@ Dinge om in ag te neem:
 <translation id="6063091872902370735">Laat Chrome-aanmelding toe</translation>
 <translation id="6110625574506755980">Sommige Chrome-kenmerke sal nie meer beskikbaar wees nie.</translation>
 <translation id="6181930887571472871">Skakel oor na Chrome</translation>
-<translation id="6228768456496298352">Chrome bespeur adresse met Google Maps om vir jou aanwysings en plaaslike inligting te gee.</translation>
 <translation id="6238746320622508509">Laat Chrome toe om jou Incognito-oortjies te sluit.</translation>
 <translation id="6247557882553405851">Google Wagwoordbestuurder</translation>
 <translation id="6412673304250309937">Vergelyk URL'e met 'n lys onveilige werwe wat in Chrome geberg word. As 'n werf probeer om jou wagwoord te steel, of wanneer jy 'n skadelike lêer aflaai, sal Chrome dalk ook URL'e, insluitend stukkies bladsyinhoud, na Veiligblaai toe stuur.</translation>
 <translation id="6427126399757991875">Jou organisasie stel tans Chrome op …</translation>
+<translation id="6545449117344801102">Chrome bespeur adresse en gebruik Google Maps om vir jou aanwysings en plaaslike inligting te gee.</translation>
 <translation id="6600954340915313787">Na Chrome gekopieer</translation>
 <translation id="6634107063912726160">Chrome sal nie enige nuwe data na jou Google-rekening sinkroniseer nadat jy afgemeld het nie. Data wat voorheen gesinkroniseer is, bly in hierdie rekening.</translation>
 <translation id="6646696210740573446">Stuur ’n verdoeselde gedeelte van die URL na Google deur ’n privaatheidbediener wat jou IP-adres versteek. As ’n werf probeer om jou wagwoord te steel, of wanneer jy ’n skadelike lêer aflaai, sal Chrome dalk ook URL’e, insluitend stukkies bladsyinhoud, na Google toe stuur</translation>
 <translation id="6648150602980899529">Jy meld tans aan met 'n rekening wat deur <ph name="DOMAIN" /> bestuur word en gee sy administrateur beheer oor jou Chrome-data. Jou data sal permanent met hierdie rekening verbind word. As jy uit Chrome afmeld, sal jou data van hierdie toestel af uitgevee word, maar dit sal steeds in jou Google-rekening geberg word.</translation>
 <translation id="6676840375528380067">Vee jou Chrome-data op hierdie toestel uit?</translation>
 <translation id="6683891932310469419">Maak jou Chrome-geskiedenisbladsy oop.</translation>
+<translation id="6698978507424537043">Spoor jou pakkette outomaties op Chrome na</translation>
 <translation id="6709398533399187136">Jou wagwoord is in 'n dataskending blootgestel. Google Wagwoordbestuurder beveel aan dat jy dit nou verander.</translation>
 <translation id="6815466750807582739">Betaalmetodes en adresse sal nie geënkripteer word nie. Blaaigeskiedenis van Chrome af sal nie sinkroniseer nie.
 
@@ -163,6 +165,7 @@ Net iemand met jou wagfrase kan jou geënkripteerde data lees. Die wagfrase word
 <translation id="7165736900384873061">Begin om Google Chrome se QR-skandeerder te gebruik</translation>
 <translation id="7173660919484573146">Chrome gebruik Gesig-ID om gemagtigde toegang tot jou wagwoorde te verseker.</translation>
 <translation id="7187993566681480880">Hou jou veilig op Chrome en kan gebruik word om jou sekuriteit in ander Google-programme te verbeter wanneer jy aangemeld is.</translation>
+<translation id="7200524487407690471">Chrome laat elke dag veiligheidskontrole outomaties loop om jou veilig te hou teen dataskendings, onveilige webwerwe en meer. Jy kan meer oor veiligheidskontrole in instellings kry.</translation>
 <translation id="72119412072970160">Jy kan die wagwoorde wat jy in Google Wagwoordbestuurder gestoor het in ander programme op jou iPad gebruik.</translation>
 <translation id="7254380941803999489">Stel Chrome as verstekblaaier</translation>
 <translation id="7261678641327190792">Chrome kan nie jou wagwoorde nagaan nie</translation>

@@ -102,13 +102,7 @@ class EnableDisableSingleClientTest : public SyncTest {
         })));
 
     registered_data_types_ = GetSyncService(0)->GetRegisteredDataTypesForTest();
-    if (base::FeatureList::IsEnabled(syncer::kSyncEnableHistoryDataType)) {
-      // The "SyncEnableHistoryDataType" feature soft-disables TYPES_URLS: It'll
-      // still be technically registered, but will never actually become active
-      // (due to the controller's GetPreconditionState()). For the purposes of
-      // these tests, consider it not registered.
-      registered_data_types_.Remove(syncer::TYPED_URLS);
-    }
+
     multi_grouped_types_ = MultiGroupTypes(registered_data_types_);
     registered_selectable_types_ = GetRegisteredSelectableTypes(0);
   }

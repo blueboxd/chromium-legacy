@@ -82,6 +82,10 @@
 #include "content/public/browser/posix_file_descriptor_info.h"
 #endif
 
+#if !BUILDFLAG(IS_ANDROID)
+#include "services/video_capture/public/mojom/video_effects_manager.mojom.h"
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 namespace net {
 class SiteForCookies;
 class IsolationInfo;
@@ -949,10 +953,17 @@ class CONTENT_EXPORT ContentBrowserClient {
   // This method must be idempotent.
   virtual bool IsWebAttributionReportingAllowed();
 
-  // Allows the embedder to control if an Os source event should register as
-  // a Web Os or Os (App) source.
+  // Allows the embedder to control if an OS source event should register as
+  // a Web OS or OS (App) source.
   // This method must be idempotent.
-  virtual bool ShouldUseOsWebSourceAttributionReporting();
+  virtual bool ShouldUseOsWebSourceAttributionReporting(
+      content::RenderFrameHost* rfh);
+
+  // Allows the embedder to control if an OS trigger event should register as
+  // a Web OS or OS (App) trigger.
+  // This method must be idempotent.
+  virtual bool ShouldUseOsWebTriggerAttributionReporting(
+      content::RenderFrameHost* rfh);
 
   // Allows the embedder to control if Shared Storage API operations can happen
   // in a given context.
@@ -977,13 +988,21 @@ class CONTENT_EXPORT ContentBrowserClient {
       const url::Origin& top_frame_origin,
       const url::Origin& reporting_origin);
 
+  // Allows the embedder to control if Private Aggregation API debug mode
+  // operations can happen in a given context.
+  virtual bool IsPrivateAggregationDebugModeAllowed(
+      content::BrowserContext* browser_context,
+      const url::Origin& top_frame_origin,
+      const url::Origin& reporting_origin);
+
   // Returns whether cookie deprecation label should be allowed for the
-  // profile.
+  // profile. Defaults to false to ensure no traffic label is sent by default.
   virtual bool IsCookieDeprecationLabelAllowed(
       content::BrowserContext* browser_context);
 
   // Returns whether cookie deprecation label should be allowed for the
-  // profile in a given context.
+  // profile in a given context. Defaults to false to ensure no traffic label
+  // is sent by default.
   virtual bool IsCookieDeprecationLabelAllowedForContext(
       content::BrowserContext* browser_context,
       const url::Origin& top_frame_origin,
@@ -1327,6 +1346,14 @@ class CONTENT_EXPORT ContentBrowserClient {
       BrowserContext* browser_context,
       const ServiceWorkerVersionBaseInfo& service_worker_version_info,
       mojo::BinderMapWithContext<const ServiceWorkerVersionBaseInfo&>* map) {}
+
+  // Allows the embedder to register browser channel-associated interfaces that
+  // are exposed through the ServiceWorker. `service_worker_version_info`
+  // contains the information to uniquely identify the service worker instance.
+  // `associated_registry` contains interfaces provided by the browser.
+  virtual void RegisterAssociatedInterfaceBindersForServiceWorker(
+      const ServiceWorkerVersionBaseInfo& service_worker_version_info,
+      blink::AssociatedInterfaceRegistry& associated_registry) {}
 
   // Allows the embedder to register per-WebUI interface brokers that are used
   // for handling Mojo.bindInterface in WebUI JavaScript.
@@ -1829,8 +1856,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // |site_for_cookies| is empty, no domains are first-party).
   // |top_frame_origin| held by |isolation_info| represents the domain for
   // top-level frame, and can be used to look up preferences that are dependent
-  // on that. |party_context| hold by |isolation_info| is for the purposes of
-  // SameParty cookies inclusion calculation.
+  // on that.
   //
   // |*receiver| is always valid upon entry.
   //
@@ -2400,7 +2426,7 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   enum class PrivateNetworkRequestPolicyOverride {
     kForceAllow,
-    kForcePreflightBlock,
+    kBlockInsteadOfWarn,
     kDefault,
   };
 
@@ -2619,6 +2645,20 @@ class CONTENT_EXPORT ContentBrowserClient {
   // "Cache-control: no-store" header in BFCache.
   virtual bool ShouldAllowBackForwardCacheForCacheControlNoStorePage(
       content::BrowserContext* browser_context);
+
+  // Set whether the browser is running in minimal mode (where most subsystems
+  // are left uninitialized).
+  virtual void SetIsMinimalMode(bool minimal) {}
+
+#if !BUILDFLAG(IS_ANDROID)
+  // Allows the embedder to correlate backend media services with profile-keyed
+  // effect settings.
+  virtual void BindVideoEffectsManager(
+      const std::string& device_id,
+      content::BrowserContext* browser_context,
+      mojo::PendingReceiver<video_capture::mojom::VideoEffectsManager>
+          video_effects_manager);
+#endif  // !BUILDFLAG(IS_ANDROID)
 };
 
 }  // namespace content

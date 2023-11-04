@@ -44,8 +44,8 @@ using web::WebState;
 
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
 
-  // Tracks the last committed URL for each session (tab).
-  std::map<SessionID, GURL> _lastCommittedURLs;
+  // Tracks the last committed URL for each tab.
+  std::map<web::WebStateID, GURL> _lastCommittedURLs;
   // Tracks the number of open tabs with this URL.
   std::map<GURL, NSUInteger> _knownURLCounts;
   // Bridges that observe all web state lists in all non-incognito browsers.
@@ -78,14 +78,14 @@ using web::WebState;
                  browserList:(BrowserList*)browserList
           spotlightInterface:(SpotlightInterface*)spotlightInterface
        searchableItemFactory:(SearchableItemFactory*)searchableItemFactory {
+  self = [super initWithSpotlightInterface:spotlightInterface
+                     searchableItemFactory:searchableItemFactory];
   for (Browser* browser : browserList->AllRegularBrowsers()) {
     [self browserList:browserList browserAdded:browser];
   }
 
   if (self) {
     _browserList = browserList;
-    _spotlightInterface = spotlightInterface;
-    _searchableItemFactory = searchableItemFactory;
     _browserListObserverBridge =
         std::make_unique<BrowserListObserverBridge>(self);
     _browserList->AddObserver(_browserListObserverBridge.get());
@@ -108,12 +108,15 @@ using web::WebState;
         StringFromSpotlightDomain(spotlight::DOMAIN_OPEN_TABS)
       ]
                                completionHandler:^(NSError*) {
+                                 if (weakSelf.isShuttingDown) {
+                                   return;
+                                 }
                                  [weakSelf indexAllOpenTabs];
                                }];
 }
 
 - (void)shutdown {
-  [self.searchableItemFactory cancelItemsGeneration];
+  [super shutdown];
   [self shutdownAllObservation];
 }
 
@@ -201,13 +204,19 @@ using web::WebState;
 
 /// Removes whatever the previously remembered URL was for a given webstate.
 - (void)removeLatestCommittedURLForWebState:(web::WebState*)webState {
+  if (self.isShuttingDown) {
+    return;
+  }
   [self indexURL:nullptr
-                     title:nil
-      forSessionIdentifier:webState->GetUniqueIdentifier()];
+              title:nil
+      forWebStateID:webState->GetUniqueIdentifier()];
 }
 
 /// Updates the remembered URL of the webstate.
 - (void)updateLatestCommittedURLForWebState:(web::WebState*)webState {
+  if (self.isShuttingDown) {
+    return;
+  }
   GURL URL = webState->GetLastCommittedURL();
   if (![OpenTabsSpotlightManager shouldIndexURL:URL]) {
     return;
@@ -215,12 +224,15 @@ using web::WebState;
 
   NSString* title = base::SysUTF16ToNSString(webState->GetTitle());
   [self indexURL:&URL
-                     title:title
-      forSessionIdentifier:webState->GetUniqueIdentifier()];
+              title:title
+      forWebStateID:webState->GetUniqueIdentifier()];
 }
 
 /// Iterates through all webstates in `webStateList` add adds them to the index.
 - (void)addAllURLsFromWebStateList:(WebStateList*)webStateList {
+  if (self.isShuttingDown) {
+    return;
+  }
   for (int i = 0; i < webStateList->count(); i++) {
     web::WebState* webState = webStateList->GetWebStateAt(i);
     [self updateLatestCommittedURLForWebState:webState];
@@ -230,6 +242,9 @@ using web::WebState;
 /// Iterates through all webstates in `webStateList` add removes them from the
 /// index.
 - (void)removeAllURLsFromWebStateList:(WebStateList*)webStateList {
+  if (self.isShuttingDown) {
+    return;
+  }
   for (int i = 0; i < webStateList->count(); i++) {
     web::WebState* webState = webStateList->GetWebStateAt(i);
     [self removeLatestCommittedURLForWebState:webState];
@@ -239,6 +254,9 @@ using web::WebState;
 /// Iterate over all non-incognito web states and adds them to the index
 /// immediately.
 - (void)indexAllOpenTabs {
+  if (self.isShuttingDown) {
+    return;
+  }
   const base::ElapsedTimer timer;
 
   for (Browser* browser : self.browserList->AllRegularBrowsers()) {
@@ -271,10 +289,13 @@ using web::WebState;
 /// Pass nullptr for `URL` to remove the previously indexed URL without
 /// replacing it. In this case, `title` is ignored so `nil` is accepted.
 - (void)indexURL:(GURL*)URL
-                   title:(NSString*)title
-    forSessionIdentifier:(SessionID)sessionID {
-  if (_lastCommittedURLs.contains(sessionID)) {
-    GURL lastKnownURL = _lastCommittedURLs[sessionID];
+            title:(NSString*)title
+    forWebStateID:(web::WebStateID)webStateID {
+  if (self.isShuttingDown) {
+    return;
+  }
+  if (_lastCommittedURLs.contains(webStateID)) {
+    GURL lastKnownURL = _lastCommittedURLs[webStateID];
     DCHECK(_knownURLCounts[lastKnownURL] > 0);
     _knownURLCounts[lastKnownURL]--;
     if (_knownURLCounts[lastKnownURL] == 0) {
@@ -288,7 +309,7 @@ using web::WebState;
   }
 
   if (URL) {
-    _lastCommittedURLs[sessionID] = *URL;
+    _lastCommittedURLs[webStateID] = *URL;
     _knownURLCounts[*URL]++;
     if (_knownURLCounts[*URL] == 1) {
       // The URL is newly added, update Spotlight index.
@@ -301,7 +322,7 @@ using web::WebState;
                }];
     }
   } else {
-    _lastCommittedURLs.erase(sessionID);
+    _lastCommittedURLs.erase(webStateID);
   }
 }
 

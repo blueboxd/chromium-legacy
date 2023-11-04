@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sq">
-<translation id="1006017844123154345">Hap versionin online</translation>
+<translation id="1006017844123154345">Hap versionin në linjë</translation>
 <translation id="1036348656032585052">Çaktivizo</translation>
 <translation id="1044891598689252897">Sajtet do të punojnë normalisht</translation>
 <translation id="1073417869336441572">Na ndihmo të përmirësojmë Chrome duke na treguar se pse ke lejuar kukit e palëve të treta. <ph name="BEGIN_LINK" />Dërgo komente<ph name="END_LINK" /></translation>
@@ -100,6 +100,7 @@
 <translation id="2653659639078652383">Dërgoje</translation>
 <translation id="2677748264148917807">Largohu</translation>
 <translation id="2678468611080193228">Provo të lejosh përkohësisht kukit e palëve të treta, që do të thotë më pak mbrojtje, por veçoritë e sajteve kanë më shumë mundësi të punojnë</translation>
+<translation id="2683434792633810741">Të fshihen dhe të rivendosen?</translation>
 <translation id="2687403674020088961">Blloko të gjitha kukit (nuk rekomandohet)</translation>
 <translation id="2713106313042589954">Çaktivizo kamerën</translation>
 <translation id="2717722538473713889">Adresat e email-it</translation>
@@ -179,6 +180,7 @@
 <translation id="4008040567710660924">Lejo kukit për një sajt specifik.</translation>
 <translation id="4046123991198612571">Kënga tjetër</translation>
 <translation id="4053720452172726777">Personalizo dhe kontrollo Google Chrome</translation>
+<translation id="4149890623864272035">E konfirmon që dëshiron t'i fshish të gjitha të dhënat lokale, duke përfshirë kukit, dhe të rivendosësh të gjitha lejet për këtë uebsajt?</translation>
 <translation id="4149994727733219643">Pamje e thjeshtuar për faqet e uebit</translation>
 <translation id="4151930093518524179">Zmadhimi i parazgjedhur</translation>
 <translation id="4165986682804962316">Cilësimet e sajtit</translation>
@@ -196,6 +198,7 @@
 <translation id="4412992751769744546">Lejo kukit e palëve të treta</translation>
 <translation id="4428065317363009941">Personalizimi i reklamave</translation>
 <translation id="4434045419905280838">Dritaret kërcyese dhe ridrejtimet</translation>
+<translation id="443552056913301231">Ky veprim do të fshijë të gjitha të dhënat lokale, duke përfshirë kukit, dhe do të rivendosë të gjitha lejet për <ph name="ORIGIN" /></translation>
 <translation id="4468959413250150279">Hiq zërin për një sajt specifik.</translation>
 <translation id="4475912480633855319">{COOKIES,plural, =1{# kuki}other{# kuki}}</translation>
 <translation id="4478158430052450698">Bëje më të lehtë të personalizosh zmadhimin për sajte të ndryshme</translation>
@@ -205,6 +208,7 @@
 <translation id="4566417217121906555">Çaktivizo mikrofonin</translation>
 <translation id="4570913071927164677">Detajet</translation>
 <translation id="4598549027014564149">Në modalitetin "e fshehtë", sajtet nuk mund t'i përdorin kukit e tua për të parë aktivitetin e shfletimit nëpër sajte të ndryshme, as edhe në sajtet e ngjashme. Aktiviteti yt i shfletimit nuk përdoret për gjëra të tilla si p.sh. personalizimi i reklamave. Veçoritë në disa sajte mund të mos funksionojnë.</translation>
+<translation id="4644713492825682049">Fshi dhe rivendos</translation>
 <translation id="4645575059429386691">Menaxhohet nga prindi yt</translation>
 <translation id="4670064810192446073">Realiteti virtual</translation>
 <translation id="4751476147751820511">Sensorët e lëvizjes ose të dritës</translation>
@@ -235,6 +239,7 @@
 <translation id="5216942107514965959">Vizituar për herë të fundit sot</translation>
 <translation id="5225463052809312700">Aktivizo kamerën</translation>
 <translation id="5234764350956374838">Hiq</translation>
+<translation id="5246825184569358663">Ky veprim do të fshijë të gjitha të dhënat lokale, duke përfshirë kukit, dhe do të rivendosë të gjitha lejet për <ph name="DOMAIN" /> dhe për sajtet në të</translation>
 <translation id="5264323282659631142">Hiqe "<ph name="CHIP_LABEL" />"</translation>
 <translation id="528192093759286357">Zvarrit nga lart dhe prek butonin e kthimit për të dalë nga ekrani i plotë.</translation>
 <translation id="5300589172476337783">Shfaq</translation>
@@ -278,11 +283,11 @@
 <translation id="5922853908706496913">Po ndan ekranin tënd</translation>
 <translation id="5922967540311291836">Blloko kukit e palëve të treta</translation>
 <translation id="5939518447894949180">Rivendos</translation>
+<translation id="5964247741333118902">Përmbajtjet e integruara</translation>
 <translation id="5968921426641056619">Fut adresën e uebit</translation>
 <translation id="5975083100439434680">Zvogëlo</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Kontrollo qasjen e këtij sajti te pajisja jote</translation>
-<translation id="6018815681665454784">Të pastrohet dhe të rivendoset?</translation>
 <translation id="6040143037577758943">Mbyll</translation>
 <translation id="6042308850641462728">Më shumë</translation>
 <translation id="6064125863973209585">Shkarkimet e përfunduara</translation>
@@ -294,6 +299,7 @@
 <translation id="6192792657125177640">Përjashtimet</translation>
 <translation id="6196640612572343990">Blloko kukit e palëve të treta</translation>
 <translation id="6205314730813004066">Privatësia e reklamave</translation>
+<translation id="6207207788774442484">Fshi të dhënat dhe rivendos lejet</translation>
 <translation id="6216432067784365534">Opsionet për <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6231752747840485235">Të çinstalohet "<ph name="APP_NAME" />"?</translation>
 <translation id="6262191102408817757">Bazuar në skedën tënde të fundit</translation>
@@ -302,13 +308,11 @@
 <translation id="6295158916970320988">Të gjitha sajtet</translation>
 <translation id="6320088164292336938">Dridhja</translation>
 <translation id="6367753977865761591">Blloko identifikimin e palëve të treta për një sajt specifik.</translation>
-<translation id="6388207532828177975">Pastro dhe rivendos</translation>
 <translation id="6398765197997659313">Dil nga ekrani i plotë</translation>
 <translation id="640163077447496506">Skadon sot</translation>
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Blloko sajtet që të mos përdorin pajisjen e realitetit virtual dhe të dhënat e tua</translation>
 <translation id="6447842834002726250">Kukit</translation>
-<translation id="6467852467360539617">Pastro të dhënat dhe rivendos lejet</translation>
 <translation id="6500423977866688905">Kur dritarja është e ngushtë, kërko pamjen për celular</translation>
 <translation id="6527303717912515753">Ndaj</translation>
 <translation id="652937045869844725">Provo të lejosh kukit e palëve të treta, që do të thotë më pak mbrojtje, por veçoritë e sajteve kanë më shumë mundësi të punojnë</translation>
@@ -381,11 +385,9 @@
 <translation id="7846076177841592234">Anulo zgjedhjen</translation>
 <translation id="7882806643839505685">Lejo tingullin për një sajt specifik.</translation>
 <translation id="789180354981963912">Blloko kukit e palëve të treta në modalitetin "e fshehtë"</translation>
-<translation id="7895868624847501462">Ky veprim do të pastrojë të gjitha të dhënat lokale, duke përfshirë kukit, dhe do të rivendosë të gjitha lejet për <ph name="DOMAIN" /> dhe për sajtet nën të</translation>
 <translation id="7940722705963108451">Më kujto</translation>
 <translation id="7974024493641668069">{COUNT,plural, =1{<ph name="FPS_MEMBERS_COUNT" /> sajt në grupin e sajteve të <ph name="FPS_OWNER" /> që mund ta shikojnë aktivitetin tënd në grup}other{<ph name="FPS_MEMBERS_COUNT" /> sajte në grupin e sajteve të <ph name="FPS_OWNER" /> që mund ta shikojnë aktivitetin tënd në këtë grup}}</translation>
 <translation id="7986741934819883144">Zgjidh një kontakt</translation>
-<translation id="7999064672810608036">Je i sigurt që dëshiron t'i pastrosh të gjitha të dhënat lokale, duke përfshirë kukit, dhe të rivendosësh të gjitha lejet për këtë uebsajt?</translation>
 <translation id="8007176423574883786">E çaktivizuar për këtë pajisje</translation>
 <translation id="802154636333426148">Shkarkimi dështoi</translation>
 <translation id="8042586301629853791">Rendit sipas:</translation>
@@ -409,7 +411,6 @@
 <translation id="8284326494547611709">Titrat</translation>
 <translation id="8300705686683892304">Menaxhuar nga aplikacioni</translation>
 <translation id="8324158725704657629">Mos pyet më</translation>
-<translation id="8338445138528827481">Ky veprim do të pastrojë të gjitha të dhënat lokale, duke përfshirë kukit, dhe do të rivendosë të gjitha lejet për <ph name="ORIGIN" /></translation>
 <translation id="8362795839483915693">Mund të zmadhosh ose zvogëlosh në sajtet që viziton ti</translation>
 <translation id="8372893542064058268">Lejo "Sinkronizimin në sfond" për një sajt specifik.</translation>
 <translation id="8376384591331888629">Duke përfshirë kukit e palëve të treta në këtë sajt</translation>
@@ -423,7 +424,7 @@
 <translation id="8444433999583714703">Për të lejuar që <ph name="APP_NAME" /> të ketë qasje te vendndodhja jote, aktivizo gjithashtu vendndodhjen në <ph name="BEGIN_LINK" />Cilësimet e Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Revoko lejen e pajisjes</translation>
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 kuki në përdorim}other{# kuki në përdorim}}</translation>
-<translation id="8487700953926739672">Mundësohet offline</translation>
+<translation id="8487700953926739672">Mundësohet jashtë linje</translation>
 <translation id="848952951823693243">Kërko gjithmonë sajtin për celular</translation>
 <translation id="8499083585497694743">Aktivizo mikrofonin</translation>
 <translation id="8514955299594277296">Mos lejo që sajtet të ruajnë të dhëna në pajisjen tënde (nuk rekomandohet)</translation>
@@ -470,7 +471,7 @@
 <translation id="913657688200966289">Aktivizo lejet për <ph name="APP_NAME" /> në <ph name="BEGIN_LINK" />Cilësimet e Android<ph name="END_LINK" />.</translation>
 <translation id="9138217887606523162">Zmadhimi aktual është në <ph name="ZOOM_LEVEL" />%%</translation>
 <translation id="9162462602695099906">Kjo faqe është e rrezikshme</translation>
-<translation id="9201023452444595544">Çdo e dhënë offline do të fshihet</translation>
+<translation id="9201023452444595544">Çdo e dhënë jashtë linje do të fshihet</translation>
 <translation id="930525582205581608">Të harrohet ky sajt?</translation>
 <translation id="947156494302904893">Sajtet që ti viziton mund të verifikojnë që je një person real dhe jo një robot</translation>
 <translation id="967624055006145463">Të dhënat e ruajtura</translation>

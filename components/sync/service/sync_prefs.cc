@@ -66,10 +66,13 @@ SyncPrefs::SyncPrefs(PrefService* pref_service) : pref_service_(pref_service) {
       prefs::internal::kSyncManaged, pref_service_,
       base::BindRepeating(&SyncPrefs::OnSyncManagedPrefChanged,
                           base::Unretained(this)));
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   pref_initial_sync_feature_setup_complete_.Init(
       prefs::internal::kSyncInitialSyncFeatureSetupComplete, pref_service_,
       base::BindRepeating(&SyncPrefs::OnFirstSetupCompletePrefChange,
                           base::Unretained(this)));
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Cache the value of the kEnableLocalSyncBackend pref to avoid it flipping
   // during the lifetime of the service.
@@ -84,8 +87,6 @@ SyncPrefs::~SyncPrefs() {
 // static
 void SyncPrefs::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   // Actual user-controlled preferences.
-  registry->RegisterBooleanPref(
-      prefs::internal::kSyncInitialSyncFeatureSetupComplete, false);
   registry->RegisterBooleanPref(prefs::internal::kSyncRequested, false);
   registry->RegisterBooleanPref(prefs::internal::kSyncKeepEverythingSynced,
                                 true);
@@ -103,7 +104,10 @@ void SyncPrefs::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::internal::kSyncOsPreferences, false);
   registry->RegisterBooleanPref(prefs::internal::kSyncWifiConfigurations,
                                 false);
-#endif
+#else   // BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterBooleanPref(
+      prefs::internal::kSyncInitialSyncFeatureSetupComplete, false);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   registry->RegisterBooleanPref(prefs::internal::kSyncAppsEnabledByOs, false);
@@ -143,10 +147,15 @@ void SyncPrefs::RemoveObserver(SyncPrefObserver* sync_pref_observer) {
 
 bool SyncPrefs::IsInitialSyncFeatureSetupComplete() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  return true;
+#else   // BUILDFLAG(IS_CHROMEOS_ASH)
   return pref_service_->GetBoolean(
       prefs::internal::kSyncInitialSyncFeatureSetupComplete);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 void SyncPrefs::SetInitialSyncFeatureSetupComplete() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   pref_service_->SetBoolean(
@@ -158,6 +167,7 @@ void SyncPrefs::ClearInitialSyncFeatureSetupComplete() {
   pref_service_->ClearPref(
       prefs::internal::kSyncInitialSyncFeatureSetupComplete);
 }
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 bool SyncPrefs::IsSyncRequested() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -604,8 +614,7 @@ bool SyncPrefs::IsTypeSupportedInTransportMode(UserSelectableType type) {
       return true;
     case UserSelectableType::kHistory:
     case UserSelectableType::kTabs:
-      return base::FeatureList::IsEnabled(kReplaceSyncPromosWithSignInPromos) &&
-             base::FeatureList::IsEnabled(kSyncEnableHistoryDataType);
+      return base::FeatureList::IsEnabled(kReplaceSyncPromosWithSignInPromos);
     case UserSelectableType::kApps:
     case UserSelectableType::kExtensions:
     case UserSelectableType::kThemes:
@@ -622,6 +631,7 @@ void SyncPrefs::OnSyncManagedPrefChanged() {
   }
 }
 
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 void SyncPrefs::OnFirstSetupCompletePrefChange() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (SyncPrefObserver& observer : sync_pref_observers_) {
@@ -629,6 +639,7 @@ void SyncPrefs::OnFirstSetupCompletePrefChange() {
         *pref_initial_sync_feature_setup_complete_);
   }
 }
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 // static
 void SyncPrefs::RegisterTypeSelectedPref(PrefRegistrySimple* registry,
@@ -657,18 +668,18 @@ void SyncPrefs::ClearPassphrasePromptMutedProductVersion() {
       prefs::internal::kSyncPassphrasePromptMutedProductVersion);
 }
 
-void SyncPrefs::MaybeMigratePrefsForSyncToSigninPart1(
+bool SyncPrefs::MaybeMigratePrefsForSyncToSigninPart1(
     SyncAccountState account_state,
     signin::GaiaIdHash gaia_id_hash) {
   if (!base::FeatureList::IsEnabled(kReplaceSyncPromosWithSignInPromos)) {
     // Ensure that the migration runs again when the feature gets enabled.
     pref_service_->ClearPref(kSyncToSigninMigrationState);
-    return;
+    return false;
   }
 
   // Don't migrate again if this profile was previously migrated.
   if (pref_service_->GetInteger(kSyncToSigninMigrationState) != kNotMigrated) {
-    return;
+    return false;
   }
 
   if (IsLocalSyncEnabled()) {
@@ -677,7 +688,7 @@ void SyncPrefs::MaybeMigratePrefsForSyncToSigninPart1(
     // done.
     pref_service_->SetInteger(kSyncToSigninMigrationState,
                               kMigratedPart2AndFullyDone);
-    return;
+    return false;
   }
 
   switch (account_state) {
@@ -688,7 +699,7 @@ void SyncPrefs::MaybeMigratePrefsForSyncToSigninPart1(
       // later sign in / turn on sync.
       pref_service_->SetInteger(kSyncToSigninMigrationState,
                                 kMigratedPart2AndFullyDone);
-      return;
+      return false;
     }
     case SyncAccountState::kSignedInNotSyncing: {
       pref_service_->SetInteger(kSyncToSigninMigrationState,
@@ -741,12 +752,12 @@ void SyncPrefs::MaybeMigratePrefsForSyncToSigninPart1(
         account_settings->Set(pref_name, enabled);
       }
 
-      return;
+      return true;
     }
   }
 }
 
-void SyncPrefs::MaybeMigratePrefsForSyncToSigninPart2(
+bool SyncPrefs::MaybeMigratePrefsForSyncToSigninPart2(
     signin::GaiaIdHash gaia_id_hash,
     bool is_using_explicit_passphrase) {
   // The migration pref shouldn't be set if the feature is disabled, but if it
@@ -754,14 +765,14 @@ void SyncPrefs::MaybeMigratePrefsForSyncToSigninPart2(
   // the migration will get triggered again once the feature gets enabled again.
   if (!base::FeatureList::IsEnabled(kReplaceSyncPromosWithSignInPromos)) {
     pref_service_->ClearPref(kSyncToSigninMigrationState);
-    return;
+    return false;
   }
 
   // Only run part 2 of the migration if part 1 has run but part 2 hasn't yet.
   // This ensures that it only runs once.
   if (pref_service_->GetInteger(kSyncToSigninMigrationState) !=
       kMigratedPart1ButNot2) {
-    return;
+    return false;
   }
   pref_service_->SetInteger(kSyncToSigninMigrationState,
                             kMigratedPart2AndFullyDone);
@@ -782,7 +793,9 @@ void SyncPrefs::MaybeMigratePrefsForSyncToSigninPart2(
     // from kAutofill.
     account_settings->Set(GetPrefNameForType(UserSelectableType::kPayments),
                           false);
+    return true;
   }
+  return false;
 }
 
 // static

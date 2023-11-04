@@ -1,11 +1,13 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_registry_cache.h"
 
 #include "chrome/browser/apps/app_service/package_id.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_update.h"
+#include "chrome/browser/apps/app_service/promise_apps/promise_app_utils.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_wrapper.h"
 
 namespace apps {
@@ -37,15 +39,21 @@ void PromiseAppRegistryCache::OnPromiseApp(PromiseAppPtr delta) {
   DCHECK(!update_in_progress_);
   update_in_progress_ = true;
 
+  // Hide any promise apps marked for deletion.
+  bool to_remove = IsPromiseAppCompleted(delta->status);
+  if (to_remove) {
+    delta->should_show = false;
+  }
+
   // Retrieve the current promise app state.
   apps::PromiseApp* state = FindPromiseApp(delta->package_id);
 
-  for (auto& observer : observers_) {
-    observer.OnPromiseAppUpdate(PromiseAppUpdate(state, delta.get()));
-  }
+  // Maintain a version of the state that doesn't have the delta merged into it.
+  // This will be used to send updates to observers.
+  PromiseAppPtr state_before_update = state ? state->Clone() : nullptr;
 
-  if (delta->status == PromiseStatus::kRemove &&
-      promise_app_map_.contains(delta->package_id)) {
+  // Apply changes to the registry cache.
+  if (to_remove && promise_app_map_.contains(delta->package_id)) {
     promise_app_map_.erase(delta->package_id);
   } else if (state) {
     // Update the existing promise app if it exists.
@@ -53,6 +61,11 @@ void PromiseAppRegistryCache::OnPromiseApp(PromiseAppPtr delta) {
   } else {
     // Add the promise app instance to the cache if it isn't registered yet.
     promise_app_map_[delta->package_id] = delta->Clone();
+  }
+
+  for (auto& observer : observers_) {
+    observer.OnPromiseAppUpdate(
+        PromiseAppUpdate(state_before_update.get(), delta.get()));
   }
 
   update_in_progress_ = false;

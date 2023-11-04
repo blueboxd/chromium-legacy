@@ -94,6 +94,8 @@ Du kan ændre denne indstilling ved at <ph name="BEGIN_LINK" />rydde Chrome-data
 <translation id="1443958768615272145">Fortsæt med at browse</translation>
 <translation id="1449835205994625556">Skjul adgangskode</translation>
 <translation id="1450170672351507823">Standardbeskyttelse er aktiveret. Du kan øge sikkerheden ved at bruge forbedret beskyttelse.</translation>
+<translation id="1469381646033328562">Din konto administreres af din forælder.
+<ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="149095475893949513">Dette website forsøger at downloade en konfigurationsprofil.</translation>
 <translation id="1491277525950327607">Tryk to gange for at skifte indstilling</translation>
 <translation id="1492417797159476138">Du har allerede gemt dette brugernavn for dette website</translation>
@@ -195,6 +197,7 @@ Du kan ændre denne indstilling ved at <ph name="BEGIN_LINK" />rydde Chrome-data
 <translation id="2049727122989709386"><ph name="COUNT" /> konti bruger den samme adgangskode</translation>
 <translation id="2050196510205866090">{count,plural, =1{{count} gemt betalingsmetode er tilgængelig over dit tastatur.}one{{count} gemt betalingsmetode er tilgængelig over dit tastatur.}other{{count} gemte betalingsmetoder er tilgængelige over dit tastatur.}}</translation>
 <translation id="2055515971416882518">Åbn "Indstillinger".</translation>
+<translation id="2059166748188874810">Kommune</translation>
 <translation id="2073572773299281212">Aktiv for <ph name="DAYS" /> dage siden</translation>
 <translation id="2074131957428911366">Du kan altid vælge, hvad der skal synkroniseres, i <ph name="BEGIN_LINK" />indstillingerne<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Fortryd</translation>
@@ -207,6 +210,7 @@ Du kan ændre denne indstilling ved at <ph name="BEGIN_LINK" />rydde Chrome-data
 <translation id="2139502497535990641">Vil du aktivere prisunderretninger?</translation>
 <translation id="2139867232736819575">Søg efter tekst, du har kopieret</translation>
 <translation id="214201757571129614">Log ind…</translation>
+<translation id="2148716181193084225">I dag</translation>
 <translation id="2149973817440762519">Rediger bogmærke</translation>
 <translation id="2155145621546387786">Del Chrome</translation>
 <translation id="2175927920773552910">QR-kode</translation>
@@ -239,6 +243,7 @@ Du kan ændre denne indstilling ved at <ph name="BEGIN_LINK" />rydde Chrome-data
 <translation id="2359043044084662842">Oversæt</translation>
 <translation id="2359808026110333948">Fortsæt</translation>
 <translation id="2360196772093551345">Anmod om mobilversion</translation>
+<translation id="2361721159900796207">Skjuler dette element</translation>
 <translation id="2362083820973145409">Logget ind som <ph name="USER_NAME" />. <ph name="USER_EMAIL" />. Åbner indstillinger.</translation>
 <translation id="236977714248711277">Websites kan ikke anvende cookies til at forbedre din browseroplevelse ved f.eks. at sørge for, at du forbliver logget ind, eller ved at huske varerne i din kurv.
 
@@ -272,6 +277,7 @@ Websites kan ikke bruge cookies til at se din browseraktivitet på forskellige w
 <translation id="2556092377360758201">Ingen beskyttelse (anbefales ikke)</translation>
 <translation id="2562041823070056534">Sender til <ph name="DEVICE_NAME" />...</translation>
 <translation id="2576499762020411840">Brug og gem adgangskoder på din Google-konto</translation>
+<translation id="2577522251608256362">Lokalområde</translation>
 <translation id="2578571896248130439">Send webside</translation>
 <translation id="2584132361465095047">Tilføj konto...</translation>
 <translation id="2587010742985678408">{count,plural, =0{Ingen kompromitterede adgangskoder}=1{{count} kompromitteret adgangskode}one{{count} kompromitteret adgangskode}other{{count} kompromitterede adgangskoder}}</translation>
@@ -307,8 +313,10 @@ Din standardsøgemaskine er <ph name="DSE_NAME" />. I vejledningen til søgemask
 <translation id="271033894570825754">Nyt</translation>
 <translation id="2712127207578915686">Filen kan ikke åbnes</translation>
 <translation id="2718352093833049315">Kun på Wi-Fi</translation>
+<translation id="2738375676495545665">Skjul Nyheder</translation>
 <translation id="2747003861858887689">Forrige felt</translation>
 <translation id="2749231692441336879">Følger <ph name="CHANNEL_NAME" /></translation>
+<translation id="2754492786623500387">Konti på denne enhed</translation>
 <translation id="2762000892062317888">lige nu</translation>
 <translation id="2772667768515195373">Du kan bruge gemte adresser i alle Google-produkter. Denne adresse er gemt på din Google-konto (<ph name="USER_EMAIL" />).</translation>
 <translation id="2773292004659987824">Søgning i inkognitotilstand</translation>
@@ -372,6 +380,7 @@ Kun personer med din adgangssætning kan læse dine krypterede data. Adgangssæt
 <translation id="3037605927509011580">Øv, surt!</translation>
 <translation id="3039722182465315531">Log ikke ind</translation>
 <translation id="3053332585453689122">Sender de webadresser, du besøger, samt et lille uddrag af sideindhold, downloads, udvidelsesaktivitet og systemoplysninger til Google Beskyttet browsing for at tjekke, om indholdet er skadeligt.</translation>
+<translation id="3054631738875941048">Skjul Føj til læseliste</translation>
 <translation id="3074499504015191586">Oversæt hele siden</translation>
 <translation id="3076846064362030967">Du bliver ikke logget ud af din Google-konto. <ph name="BEGIN_LINK" />Andre former for aktivitet<ph name="END_LINK" /> kan blive gemt på din Google-konto, når du er logget ind. Du kan til enhver tid slette dem.
 
@@ -472,6 +481,7 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="3587885837929752825">Din organisation begrænser, hvad du kan gemme på din Google-konto.</translation>
 <translation id="3588820906588687999">Åbn billede på ny fane</translation>
 <translation id="3595252146048399851">Du kan altid vælge, hvad der skal synkroniseres, i <ph name="BEGIN_LINK" />indstillingerne<ph name="END_LINK" />. Google kan personligt tilpasse Søgning og andre tjenester baseret på din historik.</translation>
+<translation id="3599500618468205645">Skjul Følg <ph name="DOMAIN_NAME" /></translation>
 <translation id="3603009562372709545">Kopiér linkets webadresse</translation>
 <translation id="3607167657931203000">AutoFyld-data</translation>
 <translation id="3609785682760573515">Synkroniserer…</translation>
@@ -482,14 +492,18 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="3646736009628185125">Dit familiemedlem kan ikke modtage adgangskoder lige nu. Bed medlemmet om at opdatere Chrome og synkronisere sine adgangskoder. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="3661160521073045932">Der er en tilgængelig konfigurationsprofil</translation>
 <translation id="3670030362669914947">Nummer</translation>
+<translation id="3680970647557344817">Skjul Rediger bogmærke</translation>
 <translation id="368329460027487650">Logget ud. Åbner valgmuligheder for login.</translation>
 <translation id="3688815115226493214">Faneforslag</translation>
 <translation id="3700134753671613714">Log ind for at se dine bogmærker på alle enheder.</translation>
 <translation id="3708944822379815019">{COUNT,plural, =1{{COUNT} adgangskode gemmes kun på denne enhed. Hvis du vil bruge den på dine andre enheder, skal du gemme den på din Google-konto, {EMAIL}.}one{{COUNT} adgangskode gemmes kun på denne enhed. Hvis du vil bruge den på dine andre enheder, skal du gemme den på din Google-konto, {EMAIL}.}other{{COUNT} adgangskoder gemmes kun på denne enhed. Hvis du vil bruge dem på dine andre enheder, skal du gemme dem på din Google-konto, {EMAIL}.}}</translation>
 <translation id="3709582977625132201">Markér som ulæst</translation>
 <translation id="371230970611282515">Forudser og advarer dig om skadelige hændelser, før de opstår.</translation>
+<translation id="371398631992790800">Skjul bogmærker</translation>
 <translation id="37207012422556617">Populære søgninger</translation>
 <translation id="3740397331642243698">Åbner de angivne webadresser i Google Chrome i inkognito.</translation>
+<translation id="374357899112510277">Skjul downloads</translation>
+<translation id="3745190878148784130">Skjul Zoom ind/ud på tekst</translation>
 <translation id="3762232513783804601">Udviklet til din iPad</translation>
 <translation id="3768725474733206671">Åbn seneste fane</translation>
 <translation id="3771033907050503522">Inkognitofaner</translation>
@@ -541,7 +555,6 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="40433179647657191">Opret og del et direkte link til en del af en side, du har fremhævet.</translation>
 <translation id="4045648459118332842">Få adgang til dine gemte adgangskoder i enhver app med et enkelt tryk</translation>
 <translation id="4049507953662678203">Sørg for, at du har forbindelse til et netværk, og prøv igen.</translation>
-<translation id="4063300985191096908">Gå til feed</translation>
 <translation id="4066639687323968621">Log ind med din Google-konto for at synkronisere dine bogmærker, din historik m.m.</translation>
 <translation id="4092655288299341041">Vis Hjælp</translation>
 <translation id="4105841739161771091">{count,plural, =1{Slet adresse}one{Slet adresse}other{Slet adresser}}</translation>
@@ -553,6 +566,7 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="4121993058175073134">For at sende oplysninger om nettoeksporten skal du konfigurere din mailkonto i appen Indstillinger.</translation>
 <translation id="4124987746317609294">Tidsinterval</translation>
 <translation id="4133265950310064865">Forbedret beskyttelse</translation>
+<translation id="4147897805161313378">Google Fotos</translation>
 <translation id="4148023517926189160">Dette website vil gerne downloade en fil og føje den til din kalender.</translation>
 <translation id="4152011295694446843">Her finder du dine bogmærker</translation>
 <translation id="4168651806173792090"><ph name="NETWORK_NAME" />, der slutter med <ph name="LAST_FOUR_DIGITS" /></translation>
@@ -623,10 +637,11 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="457292989631956153">{COUNT,plural, =1{Vil du lukke {COUNT} inaktiv fane?}one{Vil du lukke {COUNT} inaktiv fane?}other{Vil du lukke {COUNT} inaktive faner?}}</translation>
 <translation id="457386861538956877">Flere...</translation>
 <translation id="4587589328781138893">Websites</translation>
-<translation id="4588014171431912783">Dine indstillinger for synkronisering gendannes på baggrund af din seneste sikkerhedskopi. <ph name="BEGIN_LINK" />Se, hvad du kan synkronisere<ph name="END_LINK" /></translation>
+<translation id="4588014171431912783">Dine indstillinger for synkronisering gendannes på baggrund af din seneste backup. <ph name="BEGIN_LINK" />Se, hvad du kan synkronisere<ph name="END_LINK" /></translation>
 <translation id="4592368184551360546">Tastatur</translation>
 <translation id="4601095002996233687">Grundige scanninger efter mistænkelige downloads.</translation>
 <translation id="4606247758155004938">Din browser administreres af din organisation.</translation>
+<translation id="4611811151908969241">Skjul Følg ikke <ph name="DOMAIN_NAME" /></translation>
 <translation id="461440297010471931">Søgning via Google</translation>
 <translation id="4616391354457235490">Fortryd</translation>
 <translation id="4619564267100705184">Verificer din identitet</translation>
@@ -641,6 +656,7 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="4645575059429386691">Administreret af en af dine forældre</translation>
 <translation id="4650125387981512669">Fortsæt som <ph name="FIRST_RUN_ACCOUNT_NAME" /></translation>
 <translation id="4652817563047461855">Sørg for, at dine adgangskoder er beskyttet, find ud af, om de er blevet kompromitteret, og få gode råd til, hvordan du beskytter dig selv online. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
+<translation id="4658335131052370646">Gem</translation>
 <translation id="4659194143325814340">{count,plural, =1{{count} side på din læseliste}one{{count} side på din læseliste}other{{count} sider på din læseliste}}</translation>
 <translation id="4659667755519643272">Åbn Faneskift</translation>
 <translation id="46614316059270592">Gem adgangskode</translation>
@@ -688,6 +704,7 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="4881695831933465202">Åbn</translation>
 <translation id="488785315393301722">Se info</translation>
 <translation id="4894963374040315706">Det giver dig mulighed for at søge ved hjælp af stemmen</translation>
+<translation id="489903206070130262">Din seneste åbne fane</translation>
 <translation id="4901778704868714008">Gem...</translation>
 <translation id="4904877109095351937">Markér som læst</translation>
 <translation id="4908869848243824489">Discover fra Google</translation>
@@ -719,6 +736,7 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="5090832849094901128">Fjernelse af denne adgangskode sletter ikke din konto på <ph name="WEBSITE" />.</translation>
 <translation id="5094827893301452931">Indlæg delt på Twitter.</translation>
 <translation id="5100848274708256363">Bliv medlem af en familiegruppe</translation>
+<translation id="5100969332803472179">Skjul Føj til Bogmærker</translation>
 <translation id="5109892411553231226">Administrer betalingsmetoder</translation>
 <translation id="5118713593561876160">Interesser</translation>
 <translation id="5118764316110575523">Fra</translation>
@@ -750,6 +768,7 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="5228579091201413441">Aktivér synkronisering</translation>
 <translation id="5232485538978018676">Log ind med Managerkonto</translation>
 <translation id="5234764350956374838">Luk</translation>
+<translation id="5235389474593199952">Skjul historik</translation>
 <translation id="5238301240406177137">Gem på din konto</translation>
 <translation id="5245322853195994030">Annuller synkronisering</translation>
 <translation id="5271265092610673171">{count,plural, =1{Et obligatorisk felt er tomt. Udfyld det, inden du gemmer.}one{Et obligatorisk felt er tomt. Udfyld det, inden du gemmer.}other{Nogle obligatoriske felter er tomme. Udfyld dem, inden du gemmer.}}</translation>
@@ -760,6 +779,7 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="5317780077021120954">Gem</translation>
 <translation id="5318298563956633672">Du holder allerede øje med dette produkt.</translation>
 <translation id="5339316356165661760">Aktivér synkronisering</translation>
+<translation id="5345660046352249607">{COUNT,plural, =1{Vil du spore denne pakke?}one{Vil du spore {COUNT} pakke?}other{Vil du spore {COUNT} pakker?}}</translation>
 <translation id="536067926684072644">Vis bogmærker</translation>
 <translation id="5360976571138293719">Du kan finde flere indstillinger vedrørende privatliv, sikkerhed og dataindsamling under <ph name="BEGIN_LINK" />Google-tjenester<ph name="END_LINK" />.</translation>
 <translation id="5386314158584363703">Her finder du de websites, du følger</translation>
@@ -825,9 +845,6 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="574762237186762643">Begivenheder</translation>
 <translation id="5755162682436943950">Logget ud. Åbner dialogboksen, hvor du kan logge ind og aktivere synkronisering.</translation>
 <translation id="5758631781033351321">Her finder du din læseliste</translation>
-<translation id="5762370665605786758">Kryptering med adgangssætning omfatter ikke betalingsmetoder og adresser fra Google Pay.
-
-Kun personer med din adgangssætning kan læse dine krypterede data. Adgangssætningen bliver ikke sendt til eller gemt af Google. Hvis du glemmer din adgangssætning eller vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />rydde Chrome-dataene på din konto<ph name="END_LINK" />.</translation>
 <translation id="5765456154762864099">Menu → Indstillinger → Standardbrowser</translation>
 <translation id="5777888488419460501">Gem på konto</translation>
 <translation id="5782227691023083829">Oversætter ...</translation>
@@ -840,6 +857,7 @@ Kun personer med din adgangssætning kan læse dine krypterede data. Adgangssæt
 <translation id="581659025233126501">Aktivér synkronisering</translation>
 <translation id="5817176759448082654">Adgangskodetjek</translation>
 <translation id="5819208479324046259">Administreres af <ph name="MANAGER" /> <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
+<translation id="5827650163984030263">Skjul Adgangskodeadministrator</translation>
 <translation id="5833643789537100742">Gem adgangskoder, betalingsmetoder og adresser, så Chrome automatisk kan udfylde disse oplysninger senere.</translation>
 <translation id="5834415013958049700">Lens-billede, du har kopieret</translation>
 <translation id="5844284118433003733">Når du er logget ind, knyttes disse data til din Google-konto for at beskytte dig i Google-tjenester, f.eks. ved at øge beskyttelsen i Gmail efter en sikkerhedshændelse.</translation>
@@ -891,6 +909,7 @@ Kun personer med din adgangssætning kan læse dine krypterede data. Adgangssæt
 <translation id="6064824697233747382">Din organisation kræver, at du deaktiverer synkronisering.</translation>
 <translation id="6066301408025741299">Tryk for at annullere.</translation>
 <translation id="6067849159007176401">Tilføj browserbeskyttelse</translation>
+<translation id="607620096698446287"><ph name="FILENAME" /> (<ph name="FILESIZE" />) kunne ikke uploades</translation>
 <translation id="6084848228346514841">Vælg faner</translation>
 <translation id="6100617279104942061">Logget ind som <ph name="USER_EMAIL" />. Åbner indstillinger.</translation>
 <translation id="6103540626693881831">Kryptering på enheden</translation>
@@ -1006,6 +1025,7 @@ Du bør bruge en unik adgangskode for hvert website.</translation>
 <translation id="6585618849026997638">Du kan vende tilbage til en side, der er vigtig for dig, ved at tilføje et bogmærke</translation>
 <translation id="6596481460663245319">Søg efter billedet med Google</translation>
 <translation id="6598875554591387303">Sortér efter udgiver</translation>
+<translation id="6601302169302852717">Billedet er gemt i Google Fotos for <ph name="USER_EMAIL" /></translation>
 <translation id="6603393121510733479">Din organisation har deaktiveret privat browsing.
 <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="6606914854592108404">Der udføres et sikkerhedstjek…</translation>
@@ -1014,7 +1034,7 @@ Du bør bruge en unik adgangskode for hvert website.</translation>
 <translation id="661266467055912436">Forbedrer din og alles sikkerhed på nettet.</translation>
 <translation id="6620279676667515405">Annuller</translation>
 <translation id="6624219055418309072">Bloker i inkognito</translation>
-<translation id="6625830436658400045">Dine indstillinger for synkronisering gendannes på baggrund af din seneste sikkerhedskopi. Du kan altid vælge, hvad der skal synkroniseres, i <ph name="BEGIN_LINK" />indstillingerne<ph name="END_LINK" />.</translation>
+<translation id="6625830436658400045">Dine indstillinger for synkronisering gendannes på baggrund af din seneste backup. Du kan altid vælge, hvad der skal synkroniseres, i <ph name="BEGIN_LINK" />indstillingerne<ph name="END_LINK" />.</translation>
 <translation id="6628106477656132239">Udløbsdatoen er ugyldig</translation>
 <translation id="6634432609054530164">Din organisation har deaktiveret inkognitotilstand</translation>
 <translation id="6638511529934826365">Zoom ind/ud på tekst…</translation>
@@ -1044,6 +1064,7 @@ Når du er i Inkognito, kan websites ikke bruge cookies til at se din browserhis
 <translation id="6753469262000681876">Funktionen Låsning</translation>
 <translation id="6760509555861141183">Gå tilbage til den seneste fane</translation>
 <translation id="6762812039470893796">Fravælg alle</translation>
+<translation id="6771287014037609247">Spor altid registrerede pakker</translation>
 <translation id="6780034285637185932">Postnummer</translation>
 <translation id="6781260999953472352">Vil du aktivere synkronisering?</translation>
 <translation id="6781405765516175232">Tryk på "Få rutevejledning" for at få vist rutemuligheder.</translation>
@@ -1076,6 +1097,7 @@ Når du er i Inkognito, kan websites ikke bruge cookies til at se din browserhis
 <translation id="6930799952781667037">Tryk for at skifte til dette sprog.</translation>
 <translation id="6939941780796374211">Indstillinger til adgangskode</translation>
 <translation id="6944369514868857500">Vælg en anden konto</translation>
+<translation id="6944935964236827145">Skjul Oversæt</translation>
 <translation id="6945221475159498467">Vælg</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6973630695168034713">Mapper</translation>
@@ -1124,11 +1146,11 @@ Når du er i Inkognito, kan websites ikke bruge cookies til at se din browserhis
 <translation id="723787869754590019">Brug Chrome til Autofyld</translation>
 <translation id="7265758999917665941">Aldrig for dette website</translation>
 <translation id="7272437679830969316">Din identitet kunne ikke verificeres. Adgangskoden blev ikke kopieret.</translation>
+<translation id="7284359491594949826">{COUNT,plural, =1{Ny pakke spores}one{Ny pakke spores}other{Nye pakker spores}}</translation>
 <translation id="7291368939935408496">Forbereder adgangskoder...</translation>
 <translation id="7302503784943202842">Brug adgangskoder på alle dine enheder</translation>
 <translation id="730958329302570991">Du kan til enhver tid nemt føje adgangskoder til websites til Google Adgangskodeadministrator.</translation>
 <translation id="7313347584264171202">Her finder du dine inkognitofaner</translation>
-<translation id="7331371412779932885">Giver dig faneforslag baseret på din browseraktivitet på dine andre enheder ved hjælp af din Google-konto. Dine enheder skal være logget ind og synkroniseret med den samme Google-konto.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> procent er downloadet</translation>
 <translation id="7340958967809483333">Indstillinger for Discover</translation>
 <translation id="7346909386216857016">OK</translation>
@@ -1157,6 +1179,7 @@ Når du er i Inkognito, kan websites ikke bruge cookies til at se din browserhis
 <translation id="7473891865547856676">Nej tak</translation>
 <translation id="7491131399623468277">Gå til Indstillinger…</translation>
 <translation id="7492574581995589075">Din organisation har deaktiveret muligheden for at bruge og gemme Chrome-data på din Google-konto. Nye bogmærker, adgangskoder m.m. gemmes kun på denne enhed.</translation>
+<translation id="750149195207506638">Bogmærkerne er skjult</translation>
 <translation id="750228856503700085">Opdateringer er ikke tilgængelige</translation>
 <translation id="750493650310597496">0 valgt</translation>
 <translation id="7508728395076009983">Du kan låse dine inkognitofaner ved at konfigurere Touch ID, Face ID eller en adgangskode.</translation>
@@ -1195,6 +1218,7 @@ Når du er i Inkognito, kan websites ikke bruge cookies til at se din browserhis
 <translation id="7724085059277147439">{count,plural, =1{Elementet er gemt på din Google-konto, {email}}one{Elementet er gemt på din Google-konto, {email}}other{Elementerne er gemt på din Google-konto, {email}}}</translation>
 <translation id="7726702057919861819">Menu → Historik → Ryd browserdata</translation>
 <translation id="7729458878441927652">Hvis du vil se faner fra dine andre enheder, skal du synkronisere dine faner og din historik.</translation>
+<translation id="7730973429297233609">Vælg den konto, du vil bruge til at gemme <ph name="FILENAME" /> – <ph name="FILESIZE" /></translation>
 <translation id="7733646263819020771"><ph name="BOOKMRK_NAME" />. Kun på denne enhed.</translation>
 <translation id="7738120385185846461">Rapportér et problem…</translation>
 <translation id="7741325291586284254">Ny side med inkognitofane</translation>
@@ -1214,6 +1238,7 @@ Når du er i Inkognito, kan websites ikke bruge cookies til at se din browserhis
 <translation id="778855399387580014">Start en søgning i en ny Chrome-fane.</translation>
 <translation id="7791543448312431591">Tilføj</translation>
 <translation id="7807060072011926525">Leveret af Google</translation>
+<translation id="78146569776629510">Downloads</translation>
 <translation id="7839985698273989086">Offlineside</translation>
 <translation id="7840771868269352570">De valgte elementer fjernes.</translation>
 <translation id="7845466610722898">Vis læselisten</translation>
@@ -1222,6 +1247,7 @@ Når du er i Inkognito, kan websites ikke bruge cookies til at se din browserhis
 <translation id="7856733331829174190">Downloaden mislykkedes</translation>
 <translation id="785938070103630874">Åbn Adgangskoder, Betalingsmetoder, Adresse m.m.</translation>
 <translation id="7859704718976024901">Browserhistorik</translation>
+<translation id="7866501058614003444">Denne pakke spores ikke længere.</translation>
 <translation id="7870750252270996949">Lens-billede, du har kopieret</translation>
 <translation id="7879275349003161544">Vis downloads</translation>
 <translation id="7883882164760409935">Du har genbrugt adgangskoder.</translation>
@@ -1291,6 +1317,7 @@ Websites kan bruge cookies til at se din browseraktivitet på forskellige websit
 <translation id="8206354486702514201">Denne indstilling håndhæves af din administrator.</translation>
 <translation id="8214293972734702249"><ph name="TAB_TITLE" /> er fastgjort</translation>
 <translation id="8225985093977202398">Billeder og filer, der er gemt i cache</translation>
+<translation id="823133356836493038">Læselisten er skjult</translation>
 <translation id="8237382152611443140">Åbn indstillingerne for Autoudfyld adgangskoder</translation>
 <translation id="8248969482078657578">Inaktive faner hjælper dig med at holde fokus</translation>
 <translation id="8261506727792406068">Slet</translation>
@@ -1305,18 +1332,21 @@ Websites kan bruge cookies til at se din browseraktivitet på forskellige websit
 <translation id="8286036467436129157">Log ind</translation>
 <translation id="8299417921174340354">Før du kan bruge adgangskoder, skal du angive en adgangskode på din enhed.</translation>
 <translation id="8299613349954694191">Åbn en inkognitofane for at bruge nettet privat.</translation>
+<translation id="8311853334103696030">Skjul prisovervågning</translation>
 <translation id="8316944564970119719">Angiv website og adgangskode, og gem derefter</translation>
 <translation id="8319076807703933069">Ny søgning</translation>
 <translation id="8328777765163860529">Luk alt</translation>
 <translation id="8343993175958086504">Sikkerhedskopiér dit indhold, og få adgang til det på enhver enhed.</translation>
 <translation id="834783239627985533">Mest besøgte websites</translation>
 <translation id="8356276002902955750">{count,plural, =1{{count} bogmærke}one{{count} bogmærke}other{{count} bogmærker}}</translation>
+<translation id="8364841868226993049">Gemmer billedet i Google Fotos for <ph name="USER_EMAIL" />…</translation>
 <translation id="8378714024927312812">Administreret af din organisation</translation>
 <translation id="8386068868580335421">Nulstil</translation>
 <translation id="838867811594159347">Angiv adgangssætning…</translation>
 <translation id="8393889347136007944">Faner, der ikke er blevet brugt i <ph name="THRESHOLD" /> dage</translation>
 <translation id="8395339334550012808">Du får snart vist indhold fra og om <ph name="CHANNEL_NAME" /> i Følger.</translation>
 <translation id="8395378633507873708">Adresselinje</translation>
+<translation id="8402673309244746971">Gå til Følger</translation>
 <translation id="8403629764260204788">Skjul "Fortsæt med at browse"</translation>
 <translation id="8407669440184693619">Der blev ikke fundet nogen adgangskoder til dette website</translation>
 <translation id="842017693807136194">Logget ind med</translation>
@@ -1356,11 +1386,13 @@ Dine data blev krypteret med din adgangssætning <ph name="TIME" />. Angiv adgan
 <translation id="8588404856427128947">Fra</translation>
 <translation id="8591976964826315682">Bloker tredjepartscookies i inkognito</translation>
 <translation id="8605219856220328675">Luk fane.</translation>
+<translation id="8613883225817609844">Skjul seneste faner</translation>
 <translation id="8620640915598389714">Rediger</translation>
 <translation id="8626393685701737946">Du kan også ændre websitets standardvisning på en computer under Indstillinger &gt; Indstillinger for indhold</translation>
 <translation id="8636825310635137004">Aktivér synkronisering for at få adgang til dine faner på dine andre enheder.</translation>
 <translation id="8637431369725868556">Bliv beskyttet mod farlige websites.</translation>
 <translation id="8638151046944329622">{COUNT,plural, =0{Ingen kompromitterede adgangskoder}=1{{COUNT} kompromitteret adgangskode}one{{COUNT} kompromitteret adgangskode}other{{COUNT} kompromitterede adgangskoder}}</translation>
+<translation id="8640430998629397789">Skjul Vis computerversion</translation>
 <translation id="8654802032646794042">Annuller</translation>
 <translation id="8663764600409216912">Du bruger adgangskoder, der er svære at gætte</translation>
 <translation id="8668210798914567634">Denne side er gemt på din læseliste.</translation>
@@ -1375,6 +1407,7 @@ Dine data blev krypteret med din adgangssætning <ph name="TIME" />. Angiv adgan
 <translation id="8725066075913043281">Forsøg igen</translation>
 <translation id="8727043961453758442">Få mest muligt ud af Chrome</translation>
 <translation id="8730621377337864115">Udfør</translation>
+<translation id="8731958888085671579">Skjul Find på siden</translation>
 <translation id="87371078663613140">Se valgmulighederne i menulinjen</translation>
 <translation id="8737620822084008350">{count,plural, =1{{count} gemt profil er tilgængelig over dit tastatur.}one{{count} gemt profil er tilgængelig over dit tastatur.}other{{count} gemte profiler er tilgængelige over dit tastatur.}}</translation>
 <translation id="8741995161408053644">Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
@@ -1387,10 +1420,12 @@ Dine data blev krypteret med din adgangssætning <ph name="TIME" />. Angiv adgan
 <translation id="8780076847684176174">{count,plural, =1{Se fanen…}one{Se alle faner…}other{Se alle faner…}}</translation>
 <translation id="8787968206789828143">Søg på nettet</translation>
 <translation id="8792626944327216835">mikrofon</translation>
+<translation id="8793366654064127924">Spørg mig hver gang</translation>
 <translation id="8803639129939845298">Sikker</translation>
 <translation id="8806823403540278281">Din organisation kræver, at du bruger privat browsing. Faner gemmes ikke i inkognitotilstand.
 <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="8810413591309742901">Websitets standardvisning</translation>
+<translation id="881195471495802652">Denne fil kunne ikke uploades</translation>
 <translation id="8820817407110198400">Bogmærker</translation>
 <translation id="8825562130641217944">Se dine bogmærker, adgangskoder og meget mere.</translation>
 <translation id="882557203579758546">Find på siden…</translation>
@@ -1399,12 +1434,14 @@ Dine data blev krypteret med din adgangssætning <ph name="TIME" />. Angiv adgan
 <translation id="8849001918648564819">Skjult</translation>
 <translation id="8855242995793521265">Gør ikke din browser eller enhed mærkbart langsommere.</translation>
 <translation id="8855781063981781621">Hvis du vil deaktivere Nedlukningstilstand i Chrome, skal du deaktivere den på din iPad.</translation>
+<translation id="886335568110896118">Skjul Anmod om mobilversion</translation>
 <translation id="8863431381414769983">Få rutevejledning og lokale oplysninger fra Google Maps</translation>
 <translation id="8865415417596392024">Chrome-data på din konto</translation>
 <translation id="8868471676553493380">{count,plural, =1{{count} fane}one{{count} fane}other{{count} faner}}</translation>
 <translation id="8870413625673593573">Senest lukkede</translation>
 <translation id="8876882697946675716">Bevar synkroniseringen af dine enheder</translation>
 <translation id="8877287418679067891">Angiv som standard i Indstillinger...</translation>
+<translation id="8879984884633913185">Skjul Ryd browserdata</translation>
 <translation id="8881801611828450202">Søg på <ph name="SEARCH_ENGINE" /> efter dette billede</translation>
 <translation id="8891935667620843985">Du kan åbne links i Chrome automatisk ved at angive Chrome som din standardbrowserapp.</translation>
 <translation id="8898822736010347272">Sender webadresser på visse sider, du besøger, begrænsede systemoplysninger og indhold fra visse sider til Google med henblik på at opdage nye trusler og beskytte brugerne på nettet.</translation>
@@ -1449,15 +1486,18 @@ Dine data blev krypteret med din adgangssætning <ph name="TIME" />. Angiv adgan
 <translation id="9094033019050270033">Opdater adgangskoden</translation>
 <translation id="9097506547406246598">"Følg" kan ikke fortrydes. Der gik noget galt.</translation>
 <translation id="9098541895599151034">Vil du slette <ph name="NUMBER_OF_ACCOUNTS" /> adgangskoder?</translation>
+<translation id="9099233023029360602">Spørg, hvilken konto der skal bruges, hver gang</translation>
 <translation id="9100610230175265781">Adgangssætning kræves</translation>
 <translation id="9106655997975673326">Fra "<ph name="SOURCE_DEVICE" />"</translation>
 <translation id="9107664647686727385">Tjekker, om der er kompromitterede adgangskoder</translation>
 <translation id="9120217828624527905">Skift til oversættelse af hele siden</translation>
 <translation id="9124387962554796433">Google kan bruge din historik til at personligt tilpasse Søgning og andre Google-tjenester.</translation>
 <translation id="9137526406337347448">Google-tjenester</translation>
+<translation id="9144931028079269381">Skjul læseliste</translation>
 <translation id="9148126808321036104">Log ind igen</translation>
 <translation id="9157836665414082580">Skjul dialogbokse</translation>
 <translation id="9162432979321511934">Aktivér Adgangskoder via Autofyld</translation>
+<translation id="9162941801309769488">Pakken spores ikke</translation>
 <translation id="9165320910061267720">Hvis du vil have notifikationer om prisfald, skal du aktivere notifikationer i iOS-indstillingerne.</translation>
 <translation id="9165886811579296457">Under sikkerhedstjekket blev der ikke fundet nogen sikkerhedsrelaterede problemer, som du skal løse.</translation>
 <translation id="9172603439892261948">Synkroniser dine bogmærker, din historik m.m.</translation>

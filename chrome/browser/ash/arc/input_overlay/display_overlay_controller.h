@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/arc_game_controls_flag.h"
 #include "ash/public/cpp/window_properties.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/input_element.h"
 #include "ui/aura/window_observer.h"
@@ -18,10 +19,6 @@
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-
-namespace ash {
-class GameDashboardWidget;
-}
 
 namespace views {
 class View;
@@ -93,10 +90,13 @@ class DisplayOverlayController : public ui::EventHandler,
   // the reference action.
   void ChangeActionType(Action* reference_action_, ActionType type);
   void ChangeActionName(Action* action, int index);
+  void RemoveActionNewState(Action* action);
 
   // Returns the size of active actions which include the deleted default
   // actions.
   size_t GetActiveActionsSize();
+  // Return true if action is not deleted.
+  bool IsActiveAction(Action* action);
 
   // For menu entry hover state:
   void SetMenuEntryHoverState(bool curr_hover_state);
@@ -108,18 +108,24 @@ class DisplayOverlayController : public ui::EventHandler,
   void AddButtonOptionsMenuWidget(Action* action);
   void RemoveButtonOptionsMenuWidget();
   void OnButtonOptionsMenuButtonLabelPressed(Action* action);
+  void SetButtonOptionsMenuWidgetVisibility(bool is_visible);
 
   void AddButtonLabelListWidget(Action* action);
   void RemoveButtonLabelListWidget();
   void OnButtonLabelListBackButtonPressed();
+
+  void AddNudgeWidget(views::View* anchor_view, const std::u16string& text);
+  void RemoveNudgeWidget(views::Widget* widget);
+
+  // Show education nudge for editing tip. It only shows up for the first new
+  // action after closing `ButtonOptionsMenu`.
+  void MayShowEduNudgeForEditingTip();
 
   // Update widget bounds if the view content is changed or the app window
   // bounds are changed.
   void UpdateButtonOptionsMenuWidgetBounds(Action* action);
   void UpdateInputMappingWidgetBounds();
   void UpdateEditingListWidgetBounds();
-  void UpdateEditingListWidgetPosition(const gfx::Vector2d& reposition_delta);
-  gfx::Rect GetEditingListWidgetBoundsInRootWindow();
 
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -165,11 +171,17 @@ class DisplayOverlayController : public ui::EventHandler,
   // event target on the layer underneath the overlay layer.
   void SetEventTarget(views::Widget* overlay_widget, bool on_overlay);
 
+  // Update display mode when initializing DisplayOverlayController or the
+  // window property is changed on `ash::kArcGameControlsFlagsKey`.
+  void UpdateDisplayMode();
+
   // On charge of Add/Remove nudge view.
   void AddNudgeView(views::Widget* overlay_widget);
   void RemoveNudgeView();
   void OnNudgeDismissed();
   gfx::Point CalculateNudgePosition(int nudge_width);
+
+  bool IsNudgeEmpty();
 
   void AddMenuEntryView(views::Widget* overlay_widget);
   void RemoveMenuEntryView();
@@ -207,7 +219,6 @@ class DisplayOverlayController : public ui::EventHandler,
   void SetTouchInjectorEnable(bool enable);
   bool GetTouchInjectorEnable();
   // Used for the magnetic function of the editing list.
-  void SetMagneticPosition();
 
   // Close `MessageView` if `LocatedEvent` happens outside
   // of their view bounds.
@@ -232,7 +243,7 @@ class DisplayOverlayController : public ui::EventHandler,
   // `widget` bounds is in screen coordinate. `bounds_in_root_window` is the
   // window bounds in root window. Convert `bounds_in_root_window` in screen
   // coordinates to set `widget` bounds.
-  void UpdateWidgetBoundsInRootWindow(ash::GameDashboardWidget* widget,
+  void UpdateWidgetBoundsInRootWindow(views::Widget* widget,
                                       const gfx::Rect& bounds_in_root_window);
 
   // `TouchInjector` only rewrite events in `kView` mode. When changing between
@@ -251,12 +262,8 @@ class DisplayOverlayController : public ui::EventHandler,
   // that can be selected.
   // TODO(b/274690042): Replace placeholder text with localized strings.
   const std::vector<std::u16string> action_name_list_ = {
-      u"Move", u"Jump",  u"Attack", u"Special ability", u"Crouch",
-      u"Run",  u"Shoot", u"Magic",  u"Reload",          u"Dodge"};
-
-  // For editing list reposition. It is nullopt only the first time the editing
-  // list view and widget are created.
-  absl::optional<gfx::Point> editing_list_origin_ = absl::nullopt;
+      u"Move",  u"Jump",  u"Attack", u"Special ability", u"Crouch", u"Run",
+      u"Shoot", u"Magic", u"Reload", u"Dodge", u"Menu", u"Other"};
 
   const raw_ptr<TouchInjector> touch_injector_;
 
@@ -268,15 +275,17 @@ class DisplayOverlayController : public ui::EventHandler,
   raw_ptr<MessageView, DanglingUntriaged> message_ = nullptr;
   raw_ptr<EducationalView, DanglingUntriaged> educational_view_ = nullptr;
   raw_ptr<NudgeView, DanglingUntriaged> nudge_view_ = nullptr;
-  raw_ptr<EditingList, DanglingUntriaged> editing_list_ = nullptr;
 
   DisplayMode display_mode_ = DisplayMode::kNone;
 
   // For beta.
-  std::unique_ptr<ash::GameDashboardWidget> input_mapping_widget_;
-  std::unique_ptr<ash::GameDashboardWidget> editing_list_widget_;
-  std::unique_ptr<ash::GameDashboardWidget> button_options_widget_;
-  std::unique_ptr<ash::GameDashboardWidget> button_label_list_widget_;
+  std::unique_ptr<views::Widget> input_mapping_widget_;
+  std::unique_ptr<views::Widget> editing_list_widget_;
+  std::unique_ptr<views::Widget> button_options_widget_;
+  std::unique_ptr<views::Widget> button_label_list_widget_;
+
+  // Each widget can associate with one education nudge widget.
+  base::flat_map<views::Widget*, std::unique_ptr<views::Widget>> nudge_widgets_;
 };
 
 }  // namespace arc::input_overlay

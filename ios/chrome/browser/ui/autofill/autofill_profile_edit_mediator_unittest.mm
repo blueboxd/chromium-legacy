@@ -19,7 +19,7 @@
 #import "ios/chrome/browser/ui/autofill/autofill_profile_edit_mediator_delegate.h"
 #import "ios/chrome/browser/ui/autofill/cells/country_item.h"
 #import "ios/chrome/browser/ui/settings/personal_data_manager_finished_profile_tasks_waiter.h"
-#import "ios/chrome/browser/webdata_services/web_data_service_factory.h"
+#import "ios/chrome/browser/webdata_services/model/web_data_service_factory.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gtest_mac.h"
@@ -48,7 +48,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @property(nonatomic, assign) NSString* fullName;
 @property(nonatomic, assign) NSString* homeAddressLine1;
 @property(nonatomic, assign) NSString* homeAddressLine2;
+@property(nonatomic, assign) NSString* homeAddressDependentLocality;
 @property(nonatomic, assign) NSString* homeAddressCity;
+@property(nonatomic, assign) NSString* homeAddressAdminLevel2;
 @property(nonatomic, assign) NSString* homeAddressState;
 @property(nonatomic, assign) NSString* homeAddressZip;
 @property(nonatomic, assign) NSString* homeAddressCountry;

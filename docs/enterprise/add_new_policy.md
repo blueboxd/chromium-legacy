@@ -97,7 +97,7 @@ design can be found at [policy_design.md](./policy_design.md).**
         -  Declare the atomic group in the [policies.yaml](https://cs.chromium.org/chromium/src/components/policy/resources/templates/policies.yaml) file.
     -  Create a `policy_atomic_groups.yaml` file in the group where you added the
        policies if it does not already exist.
-       You may use [policy.yaml](https://cs.chromium.org/chromium/src/components/policy/resources/new_policy_templates/policy.yaml) as reference.
+       You may use [policy_atomic_groups.yaml](https://cs.chromium.org/chromium/src/components/policy/resources/new_policy_templates/policy_atomic_groups.yaml) as reference.
 6.  Create a preference and map the policy value to it.
     -   All policy values need to be mapped into a prefs value before being used
         unless the policy is needed before PrefService initialization.
@@ -144,20 +144,23 @@ design can be found at [policy_design.md](./policy_design.md).**
     -   Most policies that are used by the browser can be shared between desktop
         and ChromeOS. However, you need a few additional steps for a device
         policy on ChromeOS.
-        -   Add a message for your policy in
+        -   Add a field for your policy in
             `components/policy/proto/chrome_device_policy.proto`. Please note
             that all proto fields are optional.
+        -   Update `components/policy/resources/templates/device_policy_proto_map.yaml`
+            with a mapping from the policy name to the `chrome_device_policy` proto
+            field you added.
         -   Update
             `chrome/browser/ash/policy/core/device_policy_decoder.{h,cc}`
             for the new policy.
-10.  Test the policy.
+10. Test the policy.
     -   Add a test to verify the policy. You can add a test in
         `chrome/browser/policy/<area>_policy_browsertest.cc` or with the policy
         implementation. For example, a network policy test can be put into
         `chrome/browser/net`. Ideally, your test would set the policy, fire up
         the browser, and interact with the browser just as a user would do to
         check whether the policy takes effect.
-11.  Manually testing your policy.
+11. Manually testing your policy.
     -   Windows: The simplest way to test is to write the registry keys manually
         to `Software\Policies\Chromium` (for Chromium builds) or
         `Software\Policies\Google\Chrome` (for Google Chrome branded builds). If
@@ -178,7 +181,7 @@ design can be found at [policy_design.md](./policy_design.md).**
         If you'd just like to do a quick test for ChromeOS, the Linux code is
         also functional on CrOS, see
         [Linux Quick Start](https://www.chromium.org/administrators/linux-quick-start).
-12.  If you are adding a new policy that supersedes an older one, verify that the
+12. If you are adding a new policy that supersedes an older one, verify that the
     new policy works as expected even if the old policy is set (allowing us to
     set both during the transition time when Chrome versions honoring the old
     and the new policies coexist).

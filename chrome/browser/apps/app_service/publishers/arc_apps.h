@@ -75,6 +75,8 @@ class ArcApps : public KeyedService,
 
   WebApkManager* GetWebApkManagerForTesting() { return web_apk_manager_.get(); }
 
+  static void SetArcVersionForTesting(int version);
+
  private:
   friend class ArcAppsFactory;
   friend class PublisherTest;
@@ -157,6 +159,8 @@ class ArcApps : public KeyedService,
                                      float progress) override;
   void OnInstallationActiveChanged(const std::string& package_name,
                                    bool active) override;
+  void OnInstallationFinished(const std::string& package_name,
+                              bool success) override;
 
   // arc::ArcIntentHelperObserver overrides.
   void OnIntentFiltersUpdated(

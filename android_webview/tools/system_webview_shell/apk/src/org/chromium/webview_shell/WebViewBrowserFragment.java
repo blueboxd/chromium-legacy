@@ -110,7 +110,7 @@ public class WebViewBrowserFragment extends Fragment {
     private EditText mUrlBar;
     private WebView mWebView;
     private View mFullscreenView;
-    private final ActivityResultRegistry mRegistry;
+    private ActivityResultRegistry mActivityResultRegistry;
     private final OnBackInvokedCallback mOnBackInvokedCallback =
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ? ()
             -> mWebView.goBack()
@@ -132,14 +132,13 @@ public class WebViewBrowserFragment extends Fragment {
     public void setFilePathCallback(ValueCallback<Uri[]> inCallback) {
         mFilePathCallback = inCallback;
     }
-
-    public WebViewBrowserFragment(ActivityResultRegistry registry) {
-        super();
-        mRegistry = registry;
+    public void setActivityResultRegistry(ActivityResultRegistry activityResultRegistry) {
+        mActivityResultRegistry = activityResultRegistry;
     }
+
+    public WebViewBrowserFragment() {}
     // Work around our wonky API by wrapping a geo permission prompt inside a regular
     // PermissionRequest.
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP) // GeoPermissionRequest class requires API level 21.
     private static class GeoPermissionRequest extends PermissionRequest {
         private String mOrigin;
         private GeolocationPermissions.Callback mCallback;
@@ -174,7 +173,6 @@ public class WebViewBrowserFragment extends Fragment {
 
     // For simplicity, also treat the read access needed for file:// URLs as a regular
     // PermissionRequest.
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP) // FilePermissionRequest class requires API level 21.
     private class FilePermissionRequest extends PermissionRequest {
         private String mOrigin;
 
@@ -270,6 +268,9 @@ public class WebViewBrowserFragment extends Fragment {
         enableStrictMode();
 
         createAndInitializeWebView();
+        mFileContents = registerForActivityResult(mMultiFileSelector, mActivityResultRegistry,
+                result -> mFilePathCallback.onReceiveValue(result));
+
         String url = getUrlFromIntent(requireActivity().getIntent());
         if (url == null) {
             mWebView.restoreState(savedInstanceState);
@@ -296,8 +297,6 @@ public class WebViewBrowserFragment extends Fragment {
         setUrlBarText(url);
         setUrlFail(false);
         loadUrlFromUrlBar(mUrlBar);
-        mFileContents = registerForActivityResult(
-                mMultiFileSelector, mRegistry, result -> mFilePathCallback.onReceiveValue(result));
     }
 
     @Override
@@ -344,11 +343,9 @@ public class WebViewBrowserFragment extends Fragment {
         WebView webview = new WebView(requireContext());
         WebSettings settings = webview.getSettings();
         initializeSettings(settings);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // Third party cookies are off by default on L+;
-            // turn them on for consistency with normal browsers.
-            CookieManager.getInstance().setAcceptThirdPartyCookies(webview, true);
-        }
+        // Third party cookies are off by default on L+;
+        // turn them on for consistency with normal browsers.
+        CookieManager.getInstance().setAcceptThirdPartyCookies(webview, true);
 
         webview.setWebViewClient(new WebViewClientCompat() {
             @Override
@@ -411,13 +408,6 @@ public class WebViewBrowserFragment extends Fragment {
             @Override
             public void onGeolocationPermissionsShowPrompt(
                     String origin, GeolocationPermissions.Callback callback) {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                    // Pre Lollipop versions (< api level 21) do not have PermissionRequest,
-                    // hence grant here immediately.
-                    callback.invoke(origin, true, false);
-                    return;
-                }
-
                 onPermissionRequest(new GeoPermissionRequest(origin, callback));
             }
 
@@ -477,7 +467,6 @@ public class WebViewBrowserFragment extends Fragment {
                 == requireContext().checkSelfPermission(androidPermission);
     }
 
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP) // PermissionRequest#deny requires API level 21.
     private void requestPermissionsForPage(PermissionRequest request) {
         // Deny any unrecognized permissions.
         for (String webkitPermission : request.getResources()) {
@@ -523,7 +512,6 @@ public class WebViewBrowserFragment extends Fragment {
     }
 
     @Override
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP) // PermissionRequest#deny requires API level 21.
     public void onRequestPermissionsResult(
             int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);

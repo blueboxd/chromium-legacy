@@ -179,29 +179,19 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     pre_added_to_workspace_window_bounds_ = absl::make_optional(bounds);
   }
 
-  // Gets/Sets the persistent window info that is used on restoring persistent
+  // Gets the persistent window info that is used on restoring persistent
   // window bounds in multi-displays scenario.
-  const absl::optional<PersistentWindowInfo>
-  persistent_window_info_of_display_removal() {
-    return persistent_window_info_of_display_removal_;
-  }
-  void set_persistent_window_info_of_display_removal(
-      const PersistentWindowInfo& info) {
-    persistent_window_info_of_display_removal_ = absl::make_optional(info);
+  PersistentWindowInfo* persistent_window_info_of_display_removal() {
+    return persistent_window_info_of_display_removal_.get();
   }
   void reset_persistent_window_info_of_display_removal() {
     persistent_window_info_of_display_removal_.reset();
   }
 
-  // Gets/Sets the persistent window info that is used to restore persistent
+  // Gets the persistent window info that is used to restore persistent
   // window bounds on screen rotation.
-  const absl::optional<PersistentWindowInfo>
-  persistent_window_info_of_screen_rotation() {
-    return persistent_window_info_of_screen_rotation_;
-  }
-  void set_persistent_window_info_of_screen_rotation(
-      const PersistentWindowInfo& info) {
-    persistent_window_info_of_screen_rotation_ = absl::make_optional(info);
+  PersistentWindowInfo* persistent_window_info_of_screen_rotation() {
+    return persistent_window_info_of_screen_rotation_.get();
   }
 
   // Whether the window is being dragged.
@@ -239,6 +229,14 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   bool HasDelegate() const;
   void SetDelegate(std::unique_ptr<WindowStateDelegate> delegate);
+
+  // Creates PersistentWindowInfo on display removal or display rotation.
+  // `for_display_removal` indicates to create
+  // `persistent_window_info_of_display_removal_`, otherwise
+  // `persistent_window_info_of_screen_rotation_`.
+  void CreatePersistentWindowInfo(bool was_landscape_before_rotation,
+                                  const gfx::Rect& restore_bounds_in_parent,
+                                  bool for_display_removal);
 
   // Returns the window's current ash state type.
   // Refer to chromeos::WindowStateType definition in wm_types.h as for why Ash
@@ -490,8 +488,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   explicit WindowState(aura::Window* window);
 
-  void Init();
-
   WindowStateDelegate* delegate() { return delegate_.get(); }
   BoundsChangeAnimationType bounds_animation_type() {
     return bounds_animation_type_;
@@ -562,11 +558,11 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   void UpdateWindowStateRestoreHistoryStack(
       chromeos::WindowStateType previous_state_type);
 
-  // Depending on the capabilities of the window we either return
-  // |WindowStateType::kMaximized| or |WindowStateType::kNormal|.
-  // |WindowStateType::kMaximized| can only be returned if the window can be
-  // maximized and is not a transient child window.
-  chromeos::WindowStateType GetMaximizedOrCenteredWindowType() const;
+  // Used in tablet mode to get the window state type depends on whether the
+  // window is maximizable. If not, the window will be put in
+  // `WindowStateType::kNormal` state and be centered to the work area of the
+  // current display.
+  chromeos::WindowStateType GetWindowTypeOnMaximizable() const;
 
   // aura::WindowObserver:
   void OnWindowPropertyChanged(aura::Window* window,
@@ -645,7 +641,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // A property to remember the persistent window info used in multi-displays
   // scenario to attempt to restore windows to their original bounds when
   // displays are restored to their previous states.
-  absl::optional<PersistentWindowInfo>
+  std::unique_ptr<PersistentWindowInfo>
       persistent_window_info_of_display_removal_;
 
   // A property to remember the persistent window info when screen rotation
@@ -654,7 +650,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // `kLandscapeSecondary` will be treated as the same screen orientation, since
   // the window's bounds should be the same in each landscape orientation. Same
   // for portrait screen orientation.
-  absl::optional<PersistentWindowInfo>
+  std::unique_ptr<PersistentWindowInfo>
       persistent_window_info_of_screen_rotation_;
 
   base::ObserverList<WindowStateObserver>::Unchecked observer_list_;

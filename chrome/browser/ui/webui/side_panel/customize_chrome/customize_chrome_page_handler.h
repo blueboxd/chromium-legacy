@@ -9,6 +9,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/manta/manta_service.h"
+#include "chrome/browser/manta/manta_status.h"
+#include "chrome/browser/manta/proto/manta.pb.h"
 #include "chrome/browser/manta/snapper_provider.h"
 #include "chrome/browser/search/background/ntp_background_service.h"
 #include "chrome/browser/search/background/ntp_background_service_observer.h"
@@ -19,7 +21,6 @@
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome.mojom.h"
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome_section.h"
 #include "chrome/common/search/ntp_logging_events.h"
-#include "components/endpoint_fetcher/endpoint_fetcher.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -96,12 +97,15 @@ class CustomizeChromePageHandler
   void SetModuleDisabled(const std::string& module_id, bool disabled) override;
   void UpdateModulesSettings() override;
   void UpdateScrollToSection() override;
-
-  void GetWallpaperSearchBackground();
+  void SearchWallpaper(const std::string& query,
+                       SearchWallpaperCallback callback) override;
 
  private:
   void LogEvent(NTPLoggingEventType event);
-  void WallpaperSearchCallback(std::unique_ptr<EndpointResponse> response);
+
+  void WallpaperSearchCallback(SearchWallpaperCallback callback,
+                               std::unique_ptr<manta::proto::Response> response,
+                               manta::MantaStatus manta_status);
 
   bool IsCustomLinksEnabled() const;
   bool IsShortcutsVisible() const;

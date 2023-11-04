@@ -442,6 +442,12 @@ void Widget::Init(InitParams params) {
   const gfx::Rect bounds = params.bounds;
   const ui::WindowShowState show_state = params.show_state;
   WidgetDelegate* delegate = params.delegate;
+  bool should_set_initial_bounds = true;
+#if BUILDFLAG(IS_CHROMEOS)
+  // If the target display is specified on ChromeOS, the initial bounds will be
+  // set based on the display.
+  should_set_initial_bounds = !params.display_id.has_value();
+#endif
 
   native_widget_->InitNativeWidget(std::move(params));
   if (type == InitParams::TYPE_MENU)
@@ -463,7 +469,9 @@ void Widget::Init(InitParams params) {
     UpdateWindowIcon();
     UpdateWindowTitle();
     non_client_view_->ResetWindowControls();
-    SetInitialBounds(bounds);
+    if (should_set_initial_bounds) {
+      SetInitialBounds(bounds);
+    }
 
     // Perform the initial layout. This handles the case where the size might
     // not actually change when setting the initial bounds. If it did, child
@@ -478,7 +486,9 @@ void Widget::Init(InitParams params) {
     }
   } else if (delegate) {
     SetContentsView(delegate->TransferOwnershipOfContentsView());
-    SetInitialBoundsForFramelessWindow(bounds);
+    if (should_set_initial_bounds) {
+      SetInitialBoundsForFramelessWindow(bounds);
+    }
   }
 
   if (base::FeatureList::IsEnabled(features::kWidgetLayering)) {
@@ -812,9 +822,7 @@ void Widget::Show() {
         !initial_restored_bounds_.IsEmpty() && !IsFullscreen()) {
       native_widget_->Show(ui::SHOW_STATE_MAXIMIZED, initial_restored_bounds_);
     } else {
-      native_widget_->Show(
-          IsFullscreen() ? ui::SHOW_STATE_FULLSCREEN : saved_show_state_,
-          gfx::Rect());
+      native_widget_->Show(saved_show_state_, gfx::Rect());
     }
     // |saved_show_state_| only applies the first time the window is shown.
     // If we don't reset the value the window may be shown maximized every time
@@ -939,7 +947,15 @@ void Widget::SetFullscreen(bool fullscreen, int64_t target_display_id) {
 }
 
 bool Widget::IsFullscreen() const {
-  return native_widget_ ? native_widget_->IsFullscreen() : false;
+  if (native_widget_ && native_widget_->IsFullscreen()) {
+    return true;
+  }
+  // Some widgets are logically the same window as their parent, and thus their
+  // parent must also be checked for fullscreen.
+  if (parent() && check_parent_for_fullscreen_) {
+    return parent()->IsFullscreen();
+  }
+  return false;
 }
 
 void Widget::SetCanAppearInExistingFullscreenSpaces(
@@ -2010,6 +2026,10 @@ const ui::ColorProvider* Widget::GetColorProvider() const {
 
 ui::ColorProviderKey Widget::GetColorProviderKeyForTesting() const {
   return GetColorProviderKey();
+}
+
+void Widget::SetCheckParentForFullscreen() {
+  check_parent_for_fullscreen_ = true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

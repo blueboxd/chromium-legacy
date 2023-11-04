@@ -13,7 +13,8 @@
 #             android-sm-a235m
 #         chromeos-board-amd64-generic chromeos-board-kevin chromeos-board-eve
 #             chromeos-board-jacuzzi chromeos-board-octopus
-#         fuchsia-board-astro fuchsia-board-sherlock fuchsia-board-qemu-x64 ]
+#         fuchsia-board-astro fuchsia-board-nelson fuchsia-board-sherlock
+#             fuchsia-board-qemu-x64 ]
 # Platform
 # tags: [ desktop
 #         mobile ]
@@ -71,7 +72,7 @@
 # WebGPU Compat Mode
 # tags: [ webgpu-compat webgpu-not-compat ]
 # WebGPU DXC
-# tags: [ webgpu-dxc-enabled webgpu-dxc-disabled webgpu-dxc-default ]
+# tags: [ webgpu-dxc-enabled webgpu-dxc-disabled ]
 # Clang coverage
 # tags: [ clang-coverage no-clang-coverage ]
 # Skia Graphite
@@ -136,9 +137,8 @@ crbug.com/1378476 [ mac mac-arm64 ] GpuProcess_swiftshader_for_webgl [ Skip ]
 ###################
 # Non-"Skip" expectations go here to suppress regular flakes/failures.
 
+crbug.com/1487800 [ android android-sm-a135m ] GpuProcess_visibility [ RetryOnFailure ]
 
-
-crbug.com/1384930 [ android android-sm-a135m ] GpuProcess_visibility [ RetryOnFailure ]
 
 
 #######################################################################

@@ -10,7 +10,7 @@
 <translation id="1036348656032585052">Çaktivizo</translation>
 <translation id="1045899828449635435">Të pastrohen edhe të dhënat nga këto sajte?</translation>
 <translation id="1049743911850919806">I fshehtë</translation>
-<translation id="1058669287135776095">Je offline. Kontrollo lidhjen e internetit dhe provo përsëri.</translation>
+<translation id="1058669287135776095">Je jashtë linje. Kontrollo lidhjen e internetit dhe provo përsëri.</translation>
 <translation id="10614374240317010">Nuk u ruaj asnjëherë</translation>
 <translation id="1062628064301375934">Na ndihmo të krijojmë një ueb më privat</translation>
 <translation id="107147699690128016">Nëse e ndryshon prapashtesën e skedarit, skedari mund të hapet në një aplikacion tjetër dhe mund të jetë një rrezik për pajisjen tënde.</translation>
@@ -130,7 +130,7 @@ Kur ti fshin historikun tënd të shfletimit — të gjithë ose për një sajt 
 <translation id="1633659023549081553">Zbulo përmbajtje të reja në faqen kryesore të Chrome</translation>
 <translation id="1641113438599504367">Shfletimi i sigurt</translation>
 <translation id="1642309806724967937">Në varësi të cilësimeve të tua, Chrome mund të dërgojë po ashtu kukit dhe URL-në tënde aktuale.</translation>
-<translation id="164269334534774161">Po shikon një kopje offline të kësaj faqeje nga <ph name="CREATION_TIME" /></translation>
+<translation id="164269334534774161">Po shikon një kopje jashtë linje të kësaj faqeje nga <ph name="CREATION_TIME" /></translation>
 <translation id="1644574205037202324">Historiku</translation>
 <translation id="1657932388559784161">Fleta e poshtme e statistikave të faqes është mbyllur</translation>
 <translation id="1670399744444387456">Themeloret</translation>
@@ -175,6 +175,7 @@ Kur ti fshin historikun tënd të shfletimit — të gjithë ose për një sajt 
 <translation id="19288952978244135">Rihap Chrome.</translation>
 <translation id="1933845786846280168">Skeda e zgjedhur</translation>
 <translation id="1943432128510653496">Ruaj fjalëkalimet</translation>
+<translation id="1944535645109964458">Nuk ofrohet asnjë çelës kalimi</translation>
 <translation id="1952172573699511566">Uebsajtet do ta shfaqin tekstin në gjuhën tënde të preferuar, kur është e mundur.</translation>
 <translation id="1959679933317802873">Në pritje të përmbajtjes</translation>
 <translation id="1960290143419248813">Përditësimet e Chrome nuk mbështeten më për këtë version të Android</translation>
@@ -222,6 +223,7 @@ Kur ti fshin historikun tënd të shfletimit — të gjithë ose për një sajt 
 <translation id="2189903024544168260">Interesi u hoq</translation>
 <translation id="2194856509914051091">Gjëra për t'u pasur parasysh</translation>
 <translation id="2200113223741723867">Menaxho ndarjen e të dhënave të përdorimit</translation>
+<translation id="221494669172414749">Hapja e Chrome pa një kyçje të profilit do të heqë të gjitha fjalëkalimet e ruajtura dhe mënyrat e pagesës nga makina. Përdorimi i një kyçjeje profili i mban këto të dhëna të sigurta.</translation>
 <translation id="2218567645332692482">Përmirëso navigimet në HTTPS dhe paralajmëro përpara ngarkimit të faqeve që nuk e mbështetin</translation>
 <translation id="2227444325776770048">Vazhdo si <ph name="USER_FULL_NAME" /></translation>
 <translation id="2230777942707397948">Dritare bosh</translation>
@@ -262,6 +264,7 @@ Kur ti fshin historikun tënd të shfletimit — të gjithë ose për një sajt 
 <translation id="2461822463642141190">Rryma</translation>
 <translation id="2472163211318554013">Identifikohu për të përfituar sa më shumë nga Chrome</translation>
 <translation id="247737702124049222">Përshkrimet e imazheve janë aktive</translation>
+<translation id="2479148705183875116">Shko te "Cilësimet"</translation>
 <translation id="2482878487686419369">Njoftimet</translation>
 <translation id="2496180316473517155">Historiku i shfletimit</translation>
 <translation id="2497852260688568942">Sinkronizimi është çaktivizuar nga administratori</translation>
@@ -275,7 +278,7 @@ Kur ti fshin historikun tënd të shfletimit — të gjithë ose për një sajt 
 <translation id="2527779675047087889">Fshih përmbajtjet e kujtesës së fragmenteve</translation>
 <translation id="2532336938189706096">Pamja e uebit</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> artikuj të fshirë</translation>
-<translation id="2536728043171574184">Po shikon një kopje offline të kësaj faqeje</translation>
+<translation id="2536728043171574184">Po shikon një kopje jashtë linje të kësaj faqeje</translation>
 <translation id="2546283357679194313">Kukit dhe të dhënat e faqes</translation>
 <translation id="2558569818338050235">Historiku yt i shfletimit ndikon te reklamat që shikon</translation>
 <translation id="2567385386134582609">IMAZHI</translation>
@@ -338,6 +341,7 @@ Kodet e gjendjes private përmirësojnë privatësinë në ueb dhe nuk mund të 
 <translation id="2840810876587895427">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> skedë "e fshehtë" do të mbyllet}other{<ph name="TAB_COUNT_MANY" /> skeda "të fshehta" do të mbyllen}}</translation>
 <translation id="2841216154655874070">{NUM_DAYS,plural, =1{Kontrolluar 1 ditë më parë}other{Kontrolluar # ditë më parë}}</translation>
 <translation id="2842985007712546952">Dosja mëmë</translation>
+<translation id="2853415089995957805">Chrome ngarkon paraprakisht faqet që mund t'i vizitosh që ato të ngarkohen më shpejt kur t'i vizitosh</translation>
 <translation id="2856503607207334158">Identifikimi dështoi</translation>
 <translation id="2860954141821109167">Sigurohu që një aplikacion i telefonit të jetë i aktivizuar në këtë pajisje</translation>
 <translation id="2861923151411510142">Disa veçori të Chrome nuk do të ofrohen më</translation>
@@ -404,7 +408,7 @@ Kodet e gjendjes private përmirësojnë privatësinë në ueb dhe nuk mund të 
 <translation id="3066573403916685335">Lëviz poshtë</translation>
 <translation id="3070005020161560471">Përkthe automatikisht</translation>
 <translation id="3072980200212375806"><ph name="APP_NAME" /> do të hapet në Chrome. Duke vazhduar, ti pranon <ph name="BEGIN_LINK1" />"Kushtet e shërbimit" të Google<ph name="END_LINK1" /> dhe <ph name="BEGIN_LINK2" />"Kushtet shtesë të shërbimit" të Google Chrome dhe të ChromeOS<ph name="END_LINK2" />. Zbatohet gjithashtu <ph name="BEGIN_LINK3" />Politika e privatësisë<ph name="END_LINK3" />.</translation>
-<translation id="3080525922482950719">Mund t'i ruash faqet për t'i lexuar më vonë ose offline</translation>
+<translation id="3080525922482950719">Mund t'i ruash faqet për t'i lexuar më vonë ose jashtë linje</translation>
 <translation id="3091010850649238832">Shfaq përmbajtjet e kujtesës së fragmenteve</translation>
 <translation id="3098745985164956033">Disa imazhet i dërgohen Google për të përmirësuar përshkrimet për ty</translation>
 <translation id="3114507951000454849">Lexo lajmet e sotme <ph name="NEWS_ICON" /></translation>
@@ -477,7 +481,7 @@ Kodet e gjendjes private përmirësojnë privatësinë në ueb dhe nuk mund të 
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="350276055892098337">Rendit nga më i vjetri</translation>
 <translation id="3507132249039706973">"Mbrojtja standarde" është aktive</translation>
-<translation id="3509330069915219067">Offline. Chrome nuk mund të kontrollojë për përditësime</translation>
+<translation id="3509330069915219067">Jashtë linje. Chrome nuk mund të kontrollojë për përditësime</translation>
 <translation id="3513704683820682405">Realiteti i zgjeruar</translation>
 <translation id="3518985090088779359">Prano dhe vazhdo</translation>
 <translation id="3522247891732774234">Një përditësim i disponueshëm. Më shumë opsione</translation>
@@ -533,7 +537,7 @@ Kodet e gjendjes private përmirësojnë privatësinë në ueb dhe nuk mund të 
 <translation id="3810973564298564668">Menaxho</translation>
 <translation id="381861209280417772">Fshi fjalëkalimet</translation>
 <translation id="3819178904835489326">U fshinë <ph name="NUMBER_OF_DOWNLOADS" /> shkarkime</translation>
-<translation id="3819183753496523827">Je offline. Kontrollo lidhjen e internetit dhe provo sërish.</translation>
+<translation id="3819183753496523827">Je jashtë linje. Kontrollo lidhjen e internetit dhe provo sërish.</translation>
 <translation id="3830886834687455630">Përditëso shërbimet e Google Play për të kontrolluar fjalëkalimet e tua</translation>
 <translation id="3845098929839618392">Hape në skedë "të fshehtë"</translation>
 <translation id="3847319713229060696">Ndihmo në përmirësimin e sigurisë për të gjithë</translation>
@@ -555,7 +559,6 @@ Kodet e gjendjes private përmirësojnë privatësinë në ueb dhe nuk mund të 
 <translation id="3958287878205277013">Për të pastruar historikun e shfletimit "Të fshehtë" nga pajisja jote, mbylli të gjitha skedat "E fshehta".</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome do ta ngarkojë faqen tënde kur të jesh gati}other{Chrome do të ngarkojë faqet e tua kur të jesh gati}}</translation>
 <translation id="3962119236270174787">Mbrojtje standarde ndaj sajteve të uebit, shkarkimeve dhe shtesave që njihen si të rrezikshme</translation>
-<translation id="3963007978381181125">Enkriptimi i frazës së kalimit nuk përfshin mënyrat e pagesës dhe adresat nga Google Pay. Vetëm dikush me frazën tënde të kalimit mund t'i lexojë të dhënat e enkriptuara. Fraza e kalimit nuk dërgohet te Google dhe as nuk ruhet nga ai. Nëse e harron frazën e kalimit ose dëshiron ta ndryshosh këtë cilësim, do të duhet të rivendosësh sinkronizimin. <ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /></translation>
 <translation id="3969142555815019568">Chrome nuk mund t'i kontrollojë fjalëkalimet e tua</translation>
 <translation id="3969863827134279083">Lëviz lart</translation>
 <translation id="397105322502079400">Po llogarit...</translation>
@@ -566,7 +569,7 @@ Kodet e gjendjes private përmirësojnë privatësinë në ueb dhe nuk mund të 
 <translation id="3985215325736559418">Dëshiron që ta shkarkosh përsëri <ph name="FILE_NAME" />?</translation>
 <translation id="3987993985790029246">Kopjo lidhjen</translation>
 <translation id="3999683152997576765">Mund të shikosh dhe të heqësh temat e interesit që përdorin sajtet për të të shfaqur reklama. Chrome i përllogarit interesat e tu bazuar në historikun tënd të shfletimit së fundi.</translation>
-<translation id="4000212216660919741">Shtëpia offline</translation>
+<translation id="4000212216660919741">Shtëpia jashtë linje</translation>
 <translation id="4016425174436051808">Nuk mund të ndiqet. Ndodhi një gabim.</translation>
 <translation id="4024768890073681126">Shfletuesi yt menaxhohet nga prindi yt</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# orë}other{# orë}}</translation>
@@ -583,12 +586,13 @@ Kodet e gjendjes private përmirësojnë privatësinë në ueb dhe nuk mund të 
 <translation id="4084712963632273211">Nga <ph name="PUBLISHER_ORIGIN" /> - <ph name="BEGIN_DEEMPHASIZED" />dërguar nga Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="409109920254068737">Mund ta përdorësh këtë tablet për t'u identifikuar në pajisjen që po shfaq këtë kod QR.</translation>
 <translation id="4095146165863963773">Të fshihen të dhënat e aplikacioneve?</translation>
+<translation id="4095425503313512126">Shfletimi dhe kërkimi është më i shpejtë</translation>
 <translation id="4096227151372679484">Fluksi i ruajtjes së faqeshënuesve i hapur në gjysmë lartësi</translation>
 <translation id="4101475238162928417">Sinkronizoje për të marrë fjalëkalimet, faqeshënuesit etj. në pajisjet e tua të tjera</translation>
 <translation id="4106587138345390261">Chrome po eksploron veçori të reja që u lejojnë sajteve të ofrojnë të njëjtën përvojë shfletimi duke përdorur më pak nga informacionet e tua</translation>
 <translation id="4108314971463891922">Ndiq</translation>
 <translation id="4108998448622696017">Zbulon dhe të paralajmëron rreth ngjarjeve të rrezikshme kur ato ndodhin.</translation>
-<translation id="4116038641877404294">Shkarko faqet për t'i përdorur ato offline</translation>
+<translation id="4116038641877404294">Shkarko faqet për t'i përdorur ato jashtë linje</translation>
 <translation id="4121654769234887259">Nuk është nevoja ta kujtosh këtë fjalëkalim. Ai do të ruhet te "Menaxheri i fjalëkalimeve i Google" për <ph name="USERNAME" />.</translation>
 <translation id="4124152339699379357">Rrjedha e lejeve për njoftimet u hap në lartësi të plotë</translation>
 <translation id="4135200667068010335">Lista e pajisjeve për të ndarë një skedë është e mbyllur.</translation>
@@ -624,6 +628,7 @@ Kodet e gjendjes private përmirësojnë privatësinë në ueb dhe nuk mund të 
 <translation id="4257230861809842349">Të fshihen fjalëkalimet nga "Menaxheri i fjalëkalimeve i Google"?</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Çfarë të dhënash përdoren:<ph name="END_BOLD" /> Historiku yt i shfletimit, regjistri i sajteve që ke vizituar duke përdorur Chrome në këtë pajisje.</translation>
 <translation id="4269820728363426813">Kopjo adresën e lidhjes</translation>
+<translation id="4277529130885813215">Përdor një pajisje tjetër</translation>
 <translation id="4283102315569707115">Të kërkohen si parazgjedhje sajtet për desktop?</translation>
 <translation id="4285846616383034558">Kukit, memoria specifike dhe të dhëna të tjera të sajteve</translation>
 <translation id="4291407919474070700"><ph name="BEGIN_LINK" />Aktivizo kyçjen e ekranit te cilësimet e Android<ph name="END_LINK" /></translation>
@@ -681,7 +686,7 @@ Llogaria jote e Google mund të ketë forma të tjera të historikut të shfleti
 <translation id="4578289292431526768">Fillojmë</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minutë më parë}other{# minuta më parë}}</translation>
 <translation id="4587589328781138893">Sajtet</translation>
-<translation id="4594952190837476234">Kjo faqe offline është nga <ph name="CREATION_TIME" /> dhe mund të ndryshojë nga versioni online.</translation>
+<translation id="4594952190837476234">Kjo faqe jashtë linje është nga <ph name="CREATION_TIME" /> dhe mund të ndryshojë nga versioni në linjë.</translation>
 <translation id="4601095002996233687">Skanime të thella për shkarkime të dyshimta.</translation>
 <translation id="4616150815774728855">Hap <ph name="WEBAPK_NAME" /></translation>
 <translation id="4619564267100705184">Verifiko që je ti</translation>
@@ -764,7 +769,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="492284538114688557">U zbulua rënie çmimi</translation>
 <translation id="4925120120285606924">Pamja e ekranit më <ph name="CURRENT_DATE_ISO" /></translation>
 <translation id="49268022542405662">Fjalëkalimet e tua do të eksportohen dhe shkarkohen si skedar teksti. Ato do të jenë të dukshme për këdo dhe çdo aplikacion me qasje në dosjen e destinacionit.</translation>
-<translation id="4926901776383726965">Mund t'i ruash imazhet dhe skedarët që t'i shikosh offline ose t'i ndash në aplikacione të tjera</translation>
+<translation id="4926901776383726965">Mund t'i ruash imazhet dhe skedarët që t'i shikosh jashtë linje ose t'i ndash në aplikacione të tjera</translation>
 <translation id="4932247056774066048">Duke qenë se po del nga një llogari e menaxhuar nga <ph name="DOMAIN_NAME" />, të dhënat e tua të Chrome do të fshihen nga kjo pajisje. Ato do të mbeten në "Llogarinë tënde të Google".</translation>
 <translation id="4943703118917034429">Realiteti virtual</translation>
 <translation id="4943872375798546930">Asnjë rezultat</translation>
@@ -792,6 +797,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5054455334322721892"><ph name="BEGIN_LINK1" />Forma të tjera aktiviteti<ph name="END_LINK1" /> mund të ruhen në "Llogarinë tënde të Google" kur je i identifikuar. Mund t'i fshish ato në çdo kohë.</translation>
 <translation id="506254248375231072">Nuk ka skeda</translation>
 <translation id="5062960805900435602">Përditësimi për shkrirjen e fjalëkalimeve është mbyllur</translation>
+<translation id="5081960376148623587">Zgjidh nëse faqet do të ngarkohen paraprakisht</translation>
 <translation id="5091199029769593641">Së shpejti do të shikosh histori nga <ph name="SITE_NAME" /> kur të hapësh një skedë të re. Sajtet që ndjek ruhen në llogarinë tënde të Google. Mund t'i menaxhosh te cilësimet e "Zbulo".</translation>
 <translation id="5091249083535528968">Të dhënat e zgjeruara të përdorimit</translation>
 <translation id="509429900233858213">Ndodhi një gabim.</translation>
@@ -832,6 +838,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5308380583665731573">Lidh</translation>
 <translation id="5317780077021120954">Ruaj</translation>
 <translation id="5319359161174645648">Google rekomandon Chrome</translation>
+<translation id="5320351714793324716">Nëse lejon kukit, Chrome mund t'i përdorë ato gjatë ngarkimit paraprak</translation>
 <translation id="5321849971085220133">Chrome po gjen mënyra të reja për të zvogëluar gjurmimin dhe për të të mbajtur edhe më të sigurt kur shfleton. Chrome <ph name="BEGIN_LINK" />përllogarit po ashtu interesat e tu<ph name="END_LINK" /> dhe bën të mundur që t'i menaxhosh ato. Më pas, sajtet që viziton mund të pyesin Chrome për interesat e tu për të të shfaqur reklama.</translation>
 <translation id="5326921373682845375">Për shkak se faqet e ngarkuara paraprakisht janë të enkriptuara dhe lidhja e sajtit në faqe është një sajt i Google, serverët e Google nuk marrin informacione të reja kur ngarkojnë paraprakisht këto faqe në mënyrë private.</translation>
 <translation id="5329858041417644019">Shfletuesi yt nuk është i menaxhuar</translation>
@@ -887,7 +894,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5620928963363755975">Gjej skedarët dhe faqet e tua te "Shkarkimet" nga butoni "Më shumë opsione"</translation>
 <translation id="562289928968387744">Menaxho reagimet</translation>
 <translation id="5626134646977739690">Emri:</translation>
-<translation id="5628604359369369630">Të palexuara - ofrohen offline</translation>
+<translation id="5628604359369369630">Të palexuara - ofrohen jashtë linje</translation>
 <translation id="5641456720590409793"><ph name="BEGIN_LINK1" />Historiku i kërkimeve<ph name="END_LINK1" /> dhe <ph name="BEGIN_LINK2" />format e tjera të aktivitetit<ph name="END_LINK2" /> mund të ruhen në "Llogarinë tënde të Google"</translation>
 <translation id="564667659802381754">Udhëzuesi i privatësisë <ph name="BEGIN_NEW" />E re<ph name="END_NEW" /></translation>
 <translation id="5648166631817621825">7 ditët e fundit</translation>
@@ -1010,6 +1017,7 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="6295158916970320988">Të gjitha sajtet</translation>
 <translation id="6303969859164067831">Dil dhe çaktivizo sinkronizimin</translation>
 <translation id="6312687380483398334">Aplikacionet e uebit (në qetësi)</translation>
+<translation id="6315386555979018699">Fshi dhe vazhdo</translation>
 <translation id="6316139424528454185">Versioni i Android s'mbështetet</translation>
 <translation id="6324916366299863871">Modifiko shkurtoren</translation>
 <translation id="6324977638108296054">Nuk mund të krijohet një lidhje për te teksti i theksuar</translation>
@@ -1028,7 +1036,7 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="6391355955030242704">Për të sinkronizuar informacionet e tua të Chrome dhe për t'i mbajtur të sigurta të dhënat e tua në makinën tënde, duhet të krijosh një kyçje profili te cilësimet e tua të sigurisë. Do të përdorësh një kod ose një fjalëkalim sa herë që do të hysh në makinë.</translation>
 <translation id="6394791151443660613">Kërko: <ph name="SEARCH_QUERY" /></translation>
 <translation id="6395288395575013217">LIDHJA</translation>
-<translation id="6397616442223433927">Përsëri online</translation>
+<translation id="6397616442223433927">Përsëri në linjë</translation>
 <translation id="6401458660421980302">Për ta dërguar këtë skedë te një pajisje tjetër, identifikohu në Chrome në të</translation>
 <translation id="6404511346730675251">Redakto faqeshënuesin</translation>
 <translation id="6406506848690869874">Sinkronizo</translation>
@@ -1161,6 +1169,7 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="6955535239952325894">Ky cilësim është i çaktivizuar në shfletuesit e menaxhuar</translation>
 <translation id="6963766334940102469">Fshi faqeshënuesit</translation>
 <translation id="696447261358045621">Dil nga modaliteti "i fshehtë"</translation>
+<translation id="6965382102122355670">Në rregull</translation>
 <translation id="6971862865055170158">Mos e mirato</translation>
 <translation id="6978717888677691380">Sajtet që ke bllokuar</translation>
 <translation id="6979737339423435258">Gjatë të gjithë kohës</translation>
@@ -1221,7 +1230,7 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="7293429513719260019">Zgjidh gjuhën</translation>
 <translation id="729975465115245577">Pajisja jote nuk ka një aplikacion për të ruajtur skedarin e fjalëkalimeve.</translation>
 <translation id="7304072650267745798">Pajisja jote Android mund të përfshijë një cilësim të ngjashëm. Nëse ky cilësim është aktivizuar në Chrome dhe në pajisjen tënde Android, një kompani mund të matë efektivitetin e një reklame nëpër uebsajtet që viziton dhe aplikacionet që përdor ti.</translation>
-<translation id="7304873321153398381">Offline. Chrome nuk mund t'i kontrollojë fjalëkalimet e tua.</translation>
+<translation id="7304873321153398381">Jashtë linje. Chrome nuk mund t'i kontrollojë fjalëkalimet e tua.</translation>
 <translation id="7313188324932846546">Trokit për të konfiguruar sinkronizimin</translation>
 <translation id="7324354302972299151">Dërgo një kërkesë "Do Not Track"</translation>
 <translation id="7332075081379534664">Identifikimi i suksesshëm</translation>
@@ -1301,7 +1310,7 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="7656862631699126784">Aktivizo kyçin e modalitetit "të fshehtë"</translation>
 <translation id="7658239707568436148">Anulo</translation>
 <translation id="7665369617277396874">Shto një llogari</translation>
-<translation id="766587987807204883">Këtu shfaqen artikujt, të cilët mund t'i lexosh edhe kur je offline</translation>
+<translation id="766587987807204883">Këtu shfaqen artikujt, të cilët mund t'i lexosh edhe kur je jashtë linje</translation>
 <translation id="768232549260819724">GIF u kopjua</translation>
 <translation id="7682724950699840886">Provoni këshillat e mëposhtme: sigurohu që ka hapësirë ​​të mjaftueshme në pajisjen tënde dhe provo të eksportosh përsëri.</translation>
 <translation id="7686086654630106285">Më shumë rreth reklamave të sugjeruara nga sajtet</translation>
@@ -1319,6 +1328,7 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="7757787379047923882">Teksti u nda nga <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">Karta SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Shto adresë</translation>
+<translation id="7766587497031415281">Opsione të tjera për të pastruar të dhënat e shfletimit</translation>
 <translation id="7772032839648071052">Konfirmo shprehjen e kalimit</translation>
 <translation id="7772375229873196092">Mbyll <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 dhe <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> tjetër}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 dhe <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> të tjera}}</translation>
@@ -1539,11 +1549,11 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="8820817407110198400">Faqeshënuesit</translation>
 <translation id="8835786707922974220">Sigurohu që gjithmonë të mund të qasesh në fjalëkalimet e tua të ruajtura</translation>
 <translation id="883806473910249246">Ndodhi një gabim gjatë shkarkimit të përmbajtjes.</translation>
-<translation id="8840953339110955557">Kjo faqe mund të ndryshojë nga versioni online.</translation>
+<translation id="8840953339110955557">Kjo faqe mund të ndryshojë nga versioni në linjë.</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8849001918648564819">E fshehur</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, skeda</translation>
-<translation id="8854223127042600341">Shiko skedarët e tu offline</translation>
+<translation id="8854223127042600341">Shiko skedarët e tu jashtë linje</translation>
 <translation id="885480114717186641">Mund të kërkosh sajtin për desktop për <ph name="HOST_NAME" /></translation>
 <translation id="8856607253650333758">Merr përshkrimet</translation>
 <translation id="8856931513242997049">Rrjedha e lejeve për njoftimet u mbyll</translation>
@@ -1552,7 +1562,7 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="8909135823018751308">Ndaj…</translation>
 <translation id="8912362522468806198">Llogaria e Google</translation>
 <translation id="8921980840204105660">Sinkronizoje për të marrë faqeshënuesit nga pajisjet e tua të tjera</translation>
-<translation id="8922289737868596582">Shkarko faqet nga butoni "Më shumë opsione" për t'i përdorur ato offline</translation>
+<translation id="8922289737868596582">Shkarko faqet nga butoni "Më shumë opsione" për t'i përdorur ato jashtë linje</translation>
 <translation id="8924575305646776101"><ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /></translation>
 <translation id="892496902842311796"><ph name="LANG" /> është gati</translation>
 <translation id="8937772741022875483">Dëshiron të heqësh aktivitetin tënd të Chrome nga "Mirëqenia dixhitale"?</translation>
@@ -1572,6 +1582,7 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="8998289560386111590">Nuk ofrohet në pajisjen tënde</translation>
 <translation id="8998729206196772491">Po identifikohesh me një llogari të menaxhuar nga <ph name="MANAGED_DOMAIN" /> dhe po i jep administratorit të saj kontroll mbi të dhënat e tua të Chrome. Duke dalë nga Chrome do të fshihen të dhënat e tua nga kjo pajisje, por do të mbeten të ruajtura në llogarinë tënde të Google.</translation>
 <translation id="9012585441087414258">Të mbron kundër sajteve, shkarkimeve dhe shtesave që njihen si të rrezikshme. Nëse një faqe bën diçka të dyshimtë, URL-të dhe pjesët e përmbajtjes së faqes dërgohen te "Shfletimi i sigurt i Google".</translation>
+<translation id="9019199799064251516">Të vazhdohet pa një kyçje të profilit të makinës?</translation>
 <translation id="9022774213089566801">Të vizituara shpesh</translation>
 <translation id="9022871169049522985">Sajtet dhe reklamuesit mund të matin performancën e reklamave të tyre</translation>
 <translation id="9035378196785279980">Zhvendose te\u2026</translation>
@@ -1601,7 +1612,7 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="9108808586816295166">DNS-ja e sigurt mund të mos jetë e disponueshme në çdo kohë</translation>
 <translation id="9128984223251192329">Kërkesa e Privacy Sandbox u hap në gjysmë lartësi</translation>
 <translation id="9131209053278896908">Sajtet e bllokuara shfaqen këtu</translation>
-<translation id="9133397713400217035">Eksploro offline</translation>
+<translation id="9133397713400217035">Eksploro jashtë linje</translation>
 <translation id="9148126808321036104">Identifikohu sërish</translation>
 <translation id="9158770349521403363">Ndaj vetëm përmbajtjen</translation>
 <translation id="9159716826369098114">Restauro grupin e skedave me <ph name="TAB_COUNT" /> skeda si një grup të ri të skedave në sfond.</translation>
@@ -1630,9 +1641,10 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="96681097142096641">Të shikohet faqja e thjeshtuar?</translation>
 <translation id="968900484120156207">Faqet që viziton shfaqen këtu</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> minuta të mbetura</translation>
-<translation id="981121421437150478">Offline</translation>
+<translation id="981121421437150478">Jashtë linje</translation>
 <translation id="983192555821071799">Mbyll të gjitha skedat</translation>
 <translation id="987264212798334818">Të përgjithshme</translation>
 <translation id="992745192656291733"><ph name="TAB_COUNT" /> skeda</translation>
+<translation id="993520549480398880">Gjithashtu, pastro faqeshënuesit, historikun dhe të tjera nga kjo makinë</translation>
 <translation id="996149300115483134">Menyja e kartave të furnizimit është mbyllur</translation>
 </translationbundle>

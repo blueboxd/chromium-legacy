@@ -1,6 +1,6 @@
 <style include="cr-icons">
   iron-icon {
-    --icon-size: 20px;
+    --icon-size: 16px;
     height: var(--icon-size);
     width: var(--icon-size);
     padding: 0 8px 0 0;
@@ -21,9 +21,26 @@
   :host-context([chrome-refresh-2023]) .dropdown-item:focus {
     background-color: var(--cr-hover-background-color);
   }
+  :host-context([chrome-refresh-2023]) #audio-controls {
+    background: var(--audio-controls-background);
+    border-radius: 18px;
+    padding: 8px 0px;
+    margin-left: 8px;
+  }
   .dropdown-item {
     display: block;
-    padding: 6px 0 6px 16px;
+  }
+  .dropdown-voice-selection {
+    display: flex;
+    min-width: 312px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .dropdown-voice-selection cr-icon-button {
+    margin: 0;
+  }
+  .dropdown-voice-selection p {
+    margin: 8px 0;
   }
   /* TODO(b/1465029): Investigate why chrome refresh colors don't always
      work on first launch. */
@@ -33,7 +50,7 @@
   .back, .section {
     font-weight: bold;
   }
-  #font-size-decrease{
+  #font-size-decrease {
     margin-left: 16px;
   }
   .font-size {
@@ -42,41 +59,106 @@
   .text-button {
     border: none;
   }
+  .check-mark {
+    visibility: hidden;
+  }
+  #toolbar-container {
+    overflow: visible;
+    white-space: nowrap;
+    max-height: 50px;
+  }
+  #more, cr-icon-button#moreOptionsMenu {
+    display: none;
+  }
 </style>
-<div class="toolbar-container">
-  <span id="play-pause-container" hidden="[[!isReadAloudEnabled_]]">
+<div id="toolbar-container" class="toolbar-container">
+  <span id="read-aloud-container" hidden="[[!isReadAloudEnabled_]]">
+    <span id="audio-controls">
+      <cr-icon-button
+        class="toolbar-button"
+        id="play-pause"
+        iron-icon="read-anything-20:play"
+        on-click="onPlayPauseClick_">
+      </cr-icon-button>
+      <span id="granularity-container" hidden="[[isPaused_]]">
+        <cr-icon-button id="previousGranularity"
+          class="toolbar-button"
+        iron-icon="read-anything:previous"
+        on-click="onPreviousGranularityClick_">
+      </cr-icon-button>
+      <cr-icon-button id="nextGranularity"
+        class="toolbar-button"
+        iron-icon="read-anything:next"
+        on-click="onNextGranularityClick_">
+        </cr-icon-button>
+      </span>
+    </span>
     <cr-icon-button
-      id="play-pause"
-      iron-icon="read-anything-20:play"
-      on-click="onPlayPauseClick_">
+      class="toolbar-button"
+      id="rate"
+      iron-icon="voice-rate:1"
+      on-click="onShowRateMenuClick_">
+    </cr-icon-button>
+    <cr-icon-button id="voice-selection" on-click="onVoiceSelectionMenuClick_"
+      class="toolbar-button"
+      iron-icon="read-anything:voice-selection">
+    </cr-icon-button>
+    <cr-icon-button
+      class="toolbar-button"
+      id="highlight"
+      iron-icon="read-anything:highlight-on"
+      title="$i18n{turnHighlightOff}"
+      on-click="onHighlightClick_">
     </cr-icon-button>
   </span>
+  <template is="dom-repeat" items="[[textStyleOptions_]]">
+    <cr-icon-button
+      class="toolbar-button"
+      id="[[item.id]]"
+      iron-icon="[[item.icon]]"
+      on-click="onTextStyleMenuButtonClick_">
+    </cr-icon-button>
+  </template>
   <cr-icon-button
-      id="font-size"
-      iron-icon="read-anything:font-size"
-      on-click="onShowFontSizeMenuClick_">
-  </cr-icon-button>
-  <cr-icon-button
-      id="font"
-      iron-icon="read-anything:font"
-      on-click="onShowFontSubMenuClick_">
-  </cr-icon-button>
-  <cr-icon-button
-      id="color"
-      iron-icon="read-anything:color"
-      on-click="onShowColorSubMenuClick_">
-  </cr-icon-button>
-  <cr-icon-button
-      id="line-spacing"
-      iron-icon="read-anything:line-spacing"
-      on-click="onShowLineSpacingSubMenuClick_">
-  </cr-icon-button>
-  <cr-icon-button
-      id="letter-spacing"
-      iron-icon="read-anything:letter-spacing"
-      on-click="onShowLetterSpacingSubMenuClick_">
+      id="more"
+      iron-icon="cr:more-vert"
+      on-click="onMoreOptionsClick_">
   </cr-icon-button>
 
+  <cr-action-menu id="moreOptionsMenu">
+    <template is="dom-repeat" items="[[textStyleOptions_]]">
+      <cr-icon-button
+        id="[[item.id]]"
+        iron-icon="[[item.icon]]"
+        on-click="onTextStyleMenuButtonClick_">
+      </cr-icon-button>
+    </template>
+  </cr-action-menu>
+  <cr-action-menu id="rateMenu">
+    <template is="dom-repeat" items="[[rateOptions_]]">
+      <button class="dropdown-item" on-click="onRateClick_">
+        <iron-icon class="button-image check-mark"
+            icon="read-anything:check-mark"></iron-icon>
+        [[item]]x
+      </button>
+    </template>
+  </cr-action-menu>
+  <cr-action-menu id="voiceSelectionMenu">
+    <template is="dom-repeat" items="[[voiceSelectionOptions_]]">
+      <!--  TODO(crbug.com/1474951): show a header for each locale group before
+            listing the languages of the locale -->
+      <!--  TODO(crbug.com/1474951): show currently selected language -->
+      <!--  TODO(crbug.com/1474951): allow user to change language -->
+      <button class="dropdown-item dropdown-voice-selection"
+        on-click="onVoiceSelectClick_">
+        <p>[[item.title]]</p>
+        <!-- TODO(crbug.com/1474951): Show pause button when a preview is
+                      playing -->
+        <cr-icon-button on-click="onVoicePreviewClick_" class="button-image"
+          iron-icon="read-anything-20:play-circle"></cr-icon-button>
+      </button>
+    </template>
+  </cr-action-menu>
   <cr-action-menu id="fontSizeMenu">
     <cr-icon-button
         class="font-size"
@@ -90,94 +172,50 @@
         iron-icon="read-anything:font-size-increase"
         on-click="onFontSizeIncreaseClick_">
     </cr-icon-button>
-    <cr-button class="text-button" on-click="onFontResetClick_">
-      Reset
+    <cr-button
+        class="text-button"
+        id="font-size-reset"
+        on-click="onFontResetClick_">
+      $i18n{fontResetTitle}
     </cr-button>
   </cr-action-menu>
-  <cr-action-menu id="colorSubmenu">
-    <button class="dropdown-item" data$="[[menuStateEnum_.DEFAULT_COLOR]]">
-      <iron-icon class="button-image" icon="read-anything:default-theme"></iron-icon>
-      $i18n{defaultColorTitle}
-    </button>
-    <button class="dropdown-item" data$="[[menuStateEnum_.LIGHT]]">
-      <iron-icon class="button-image" icon="read-anything:light-theme"></iron-icon>
-      $i18n{lightColorTitle}
-    </button>
-    <button class="dropdown-item" data$="[[menuStateEnum_.DARK]]">
-      <iron-icon class="button-image" icon="read-anything:dark-theme"></iron-icon>
-      $i18n{darkColorTitle}
-    </button>
-    <button class="dropdown-item" data$="[[menuStateEnum_.YELLOW]]">
-      <iron-icon class="button-image" icon="read-anything:yellow-theme"></iron-icon>
-      $i18n{yellowColorTitle}
-    </button>
-    <button class="dropdown-item" data$="[[menuStateEnum_.BLUE]]">
-      <iron-icon class="button-image" icon="read-anything:blue-theme"></iron-icon>
-      $i18n{blueColorTitle}
-    </button>
-  </cr-action-menu>
-  <cr-action-menu id="lineSpacingSubmenu">
-    <button class="dropdown-item" data$="[[menuStateEnum_.LINE_STANDARD]]">
-      <iron-icon class="button-image"
-      icon="read-anything:line-spacing-standard"></iron-icon>
-      $i18n{lineSpacingStandardTitle}
-    </button>
-    <button class="dropdown-item" data$="[[menuStateEnum_.LOOSE]]">
-      <iron-icon class="button-image"
-      icon="read-anything:line-spacing-loose"></iron-icon>
-      $i18n{lineSpacingLooseTitle}
-    </button>
-    <button class="dropdown-item" data$="[[menuStateEnum_.VERY_LOOSE]]">
-      <iron-icon class="button-image"
-      icon="read-anything:line-spacing-very-loose"></iron-icon>
-      $i18n{lineSpacingVeryLooseTitle}
+  <cr-action-menu id="colorMenu">
+    <template is="dom-repeat" items="[[colorOptions_]]">
+      <button class="dropdown-item" on-click="onColorClick_">
+        <iron-icon class="button-image check-mark"
+            icon="read-anything:check-mark"></iron-icon>
+        <iron-icon class="button-image" icon="[[item.icon]]"></iron-icon>
+        [[item.title]]
       </button>
-    </cr-action-menu>
-  <cr-action-menu id="letterSpacingSubmenu">
-    <!--TODO(b/1465029): Fix icon that is slightly out of alignment. -->
-    <button class="dropdown-item" data$="[[menuStateEnum_.LETTER_STANDARD]]">
-      <iron-icon class="button-image"
-      icon="read-anything:letter-spacing-standard"></iron-icon>
-      $i18n{letterSpacingStandardTitle}
-    </button>
-    <button class="dropdown-item" data$="[[menuStateEnum_.WIDE]]">
-      <iron-icon class="button-image"
-      icon="read-anything:letter-spacing-wide"></iron-icon>
-      $i18n{letterSpacingWideTitle}
-    </button>
-    <button class="dropdown-item" data$="[[menuStateEnum_.VERY_WIDE]]">
-      <iron-icon class="button-image"
-      icon="read-anything:letter-spacing-very-wide"></iron-icon>
-      $i18n{letterSpacingVeryWideTitle}
-    </button>
+    </template>
   </cr-action-menu>
-  <!-- TODO(b/1465029): Use the brower's preferred language to hide unsupported
-       fonts.
-  -->
-  <!-- If you change these fonts, please also update
-       read_anything_constants.h -->
-  <cr-action-menu id="fontSubmenu">
-  <!-- TODO(1266555): Each button should be styled in its own font. -->
-    <button class="dropdown-item">
-      Poppins
+  <cr-action-menu id="lineSpacingMenu">
+    <template is="dom-repeat" items="[[lineSpacingOptions_]]">
+      <button class="dropdown-item" on-click="onLineSpacingClick_">
+        <iron-icon class="button-image check-mark"
+            icon="read-anything:check-mark"></iron-icon>
+        <iron-icon class="button-image" icon="[[item.icon]]"></iron-icon>
+        [[item.title]]
+      </button>
+    </template>
+  </cr-action-menu>
+  <cr-action-menu id="letterSpacingMenu">
+    <template is="dom-repeat" items="[[letterSpacingOptions_]]">
+      <button class="dropdown-item" on-click="onLetterSpacingClick_">
+        <iron-icon class="button-image check-mark"
+            icon="read-anything:check-mark"></iron-icon>
+        <iron-icon class="button-image" icon="[[item.icon]]"></iron-icon>
+        [[item.title]]
+      </button>
+    </template>
+  </cr-action-menu>
+  <cr-action-menu id="fontMenu">
+  <template id="fontTemplate" is="dom-repeat" items="[[fontOptions_]]">
+    <button class="dropdown-item" on-click="onFontClick_">
+      <iron-icon class="button-image check-mark"
+          icon="read-anything:check-mark"></iron-icon>
+      [[item]]
     </button>
-    <button class="dropdown-item">
-      Sans-serif
-    </button>
-    <button class="dropdown-item">
-      Serif
-    </button>
-    <button class="dropdown-item">
-      Comic Neue
-    </button>
-    <button class="dropdown-item">
-      Lexend Deca
-    </button>
-    <button class="dropdown-item">
-      EB Garamond
-    </button>
-    <button class="dropdown-item">
-      STIX Two Text
-    </button>
+  </template>
   </cr-action-menu>
 </div>

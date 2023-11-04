@@ -32,6 +32,7 @@ per-file chromium.coverage.json=chrome-weblayer-builder@chops-service-accounts.i
 
 # For Lacros skylab tests cros image roller related reviews
 per-file chrome.json=skylab-test-cros-roller@chops-service-accounts.iam.gserviceaccount.com
+per-file chrome.gpu.fyi.json=skylab-test-cros-roller@chops-service-accounts.iam.gserviceaccount.com
 per-file chromium.chromiumos.json=skylab-test-cros-roller@chops-service-accounts.iam.gserviceaccount.com
 per-file chromium.fyi.json=skylab-test-cros-roller@chops-service-accounts.iam.gserviceaccount.com
 per-file internal.chromeos.fyi.json=skylab-test-cros-roller@chops-service-accounts.iam.gserviceaccount.com
@@ -51,11 +52,11 @@ per-file chromium.fyi.json=file://infra/config/groups/ios/OWNERS
 per-file chromium.mac.json=file://infra/config/groups/ios/OWNERS
 
 # Fuchsia owners.
-per-file chromium.clang.json=file://build/fuchsia/test/OWNERS
-per-file chromium.fuchsia.fyi.json=file://build/fuchsia/test/OWNERS
-per-file chromium.fuchsia.json=file://build/fuchsia/test/OWNERS
-per-file chromium.fyi.json=file://build/fuchsia/test/OWNERS
-per-file chromium.perf.fyi.json=file://build/fuchsia/test/OWNERS
+per-file chromium.clang.json=file://build/fuchsia/OWNERS
+per-file chromium.fuchsia.fyi.json=file://build/fuchsia/OWNERS
+per-file chromium.fuchsia.json=file://build/fuchsia/OWNERS
+per-file chromium.fyi.json=file://build/fuchsia/OWNERS
+per-file chromium.perf.fyi.json=file://build/fuchsia/OWNERS
 
 # Rust owners
 per-file chromium.rust.json=file://build/rust/OWNERS

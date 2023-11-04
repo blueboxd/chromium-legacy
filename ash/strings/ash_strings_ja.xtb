@@ -206,6 +206,7 @@
 <translation id="1775598828170459419"><ph name="NUM_TOTAL_ITEMS" /> 件中 <ph name="NUM_SHOWN_ITEMS" /> 件を表示しています</translation>
 <translation id="178347895271755507">スマートフォンの最近の写真、メディア、通知の表示を設定</translation>
 <translation id="1787955149152357925">オフ</translation>
+<translation id="1797271123677381264">パスワードをお忘れの場合</translation>
 <translation id="181103072419391116">信号強度 <ph name="SIGNAL_STRENGTH" />、管理者によって管理</translation>
 <translation id="1815245884418711390">アクセス ポイントを切り替えます。アクセス ポイントはオフです。</translation>
 <translation id="1816896987747843206">カメラへのアクセス権を持つすべてのアプリとウェブサイトに対して、カメラへのアクセスを許可します</translation>
@@ -298,7 +299,6 @@
 <translation id="2227179592712503583">候補を削除</translation>
 <translation id="2248634276911611268">新しいタブでリンクを開いて、新しいタブに切り替える</translation>
 <translation id="225680501294068881">デバイスをスキャンしています...</translation>
-<translation id="225716114209817872">最大</translation>
 <translation id="2257486738914982088"><ph name="FILENAME" /> のダウンロード中にエラーが発生しました</translation>
 <translation id="2258734398699965611">候補のファイル</translation>
 <translation id="2268130516524549846">Bluetooth オフ</translation>
@@ -451,6 +451,7 @@
 <translation id="2891209721153296020">「選択解除」</translation>
 <translation id="2894949423239620203">ケーブルがパフォーマンスに影響している可能性があります</translation>
 <translation id="2914580577416829331">画面キャプチャ</translation>
+<translation id="2924416280450782352">アイテムを表示できません。このパネルをもう一度開いてみてください。</translation>
 <translation id="2931572158271115754">この ToDo リストは空です。</translation>
 <translation id="2941112035454246133">低</translation>
 <translation id="2942350706960889382">ドッキング拡大鏡</translation>
@@ -696,7 +697,6 @@
 <translation id="385300504083504382">先頭</translation>
 <translation id="3859364108019690">アプリをストリーミングできません</translation>
 <translation id="3861651314799684201">全画面を録画するには Enter キーを押してください</translation>
-<translation id="3871092408932389764">最も低い</translation>
 <translation id="3886872229787704059">今日開いたファイル</translation>
 <translation id="3891340733213178823">ログアウトするには、Ctrl+Shift+Q を 2 回押します。</translation>
 <translation id="3893630138897523026">ChromeVox（音声フィードバック）</translation>
@@ -738,6 +738,7 @@
 <translation id="4028481283645788203">セキュリティ強化のためパスワードが必要です</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4032988577476260673"><ph name="LAUNCHER_KEY_NAME" />+左矢印</translation>
+<translation id="4039699481424758547">ウィンドウ「<ph name="WINDOW_TITLE" />」のスクリーンショットを撮影するには Enter キーを押してください</translation>
 <translation id="4042660782729322247">画面を共有しています</translation>
 <translation id="404437169852192935">更新は終了しました</translation>
 <translation id="4049230407053723315">クイック設定</translation>
@@ -833,7 +834,6 @@
 <translation id="4406883609789734330">自動字幕起こし</translation>
 <translation id="4412944820643904175"><ph name="FEATURE_NAME" /> はオフになっています。</translation>
 <translation id="4424159417645388645">デスク 5</translation>
-<translation id="4427695046139341014">ゲーム ダッシュボード</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4441283832827406317">アプリは名前順で並べ替えられています</translation>
 <translation id="4445159312344259901">ログインしてロックを解除</translation>
@@ -1214,12 +1214,12 @@
 <translation id="5961960957587052807">低</translation>
 <translation id="5965524703725988602">ダークモードのオンとオフを切り替えます。<ph name="STATE_TEXT" />。</translation>
 <translation id="5975235751479998104">ウィンドウ間を順方向に移動する</translation>
-<translation id="5976112937189445008">ウィンドウを録画するには Enter キーを押してください</translation>
 <translation id="5978382165065462689">リモート サポート経由で画面の制御を共有しています。</translation>
 <translation id="5980301590375426705">ゲストを終了</translation>
 <translation id="5983567367406220847">アクティビティがないため、アクセス ポイントはオフになっています。</translation>
 <translation id="598407983968395253">テンプレートを使用</translation>
 <translation id="598882571027504733">アップデートを取得するには、キーボードを接続した状態で Chromebook を再起動してください。</translation>
+<translation id="6000279412553873020">キー、ボタンなど</translation>
 <translation id="6012623610530968780"><ph name="SELECTED_PAGE" /> / <ph name="TOTAL_PAGE_NUM" /> ページ</translation>
 <translation id="601304062528754300">シェルフで次のアイテムをハイライト表示します</translation>
 <translation id="6015573907265691211">完了とする</translation>
@@ -1436,7 +1436,6 @@
 <translation id="6886172995547742638"><ph name="DEVICE_TYPE" /> のパフォーマンスが低下する可能性があります。正規の <ph name="PREFERRED_MINIMUM_POWER" /> W 以上の USB-C 電源アダプターを使用してください。</translation>
 <translation id="688631446150864480">ウィンドウを切り替えるには、下矢印キーを押します</translation>
 <translation id="6896758677409633944">コピー</translation>
-<translation id="6901883536534621389">ジェスチャー操作をお試しください</translation>
 <translation id="6912841030378044227">アドレスバーにフォーカスする</translation>
 <translation id="6912901278692845878">クイックツアー</translation>
 <translation id="6919251195245069855">スマートカードを認識できませんでした。もう一度お試しください。</translation>
@@ -1743,7 +1742,6 @@
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> を使用しています</translation>
 <translation id="8185090165691050712">ロックモードのサイズ変更メニューのオンとオフを切り替えます</translation>
 <translation id="8192202700944119416">通知は非表示になっています。</translation>
-<translation id="8196787716797768628">タブレット モードで、ジェスチャーを使用してアプリを切り替えたり、Chromebook を操作したりできます。</translation>
 <translation id="8198456017687137612">タブをキャスト中</translation>
 <translation id="8200772114523450471">再開</translation>
 <translation id="8203795194971602413">右クリック</translation>
@@ -1753,7 +1751,6 @@
 <translation id="8230305195727960608">色反転モード</translation>
 <translation id="8236042855478648955">休憩の時間です</translation>
 <translation id="8239034820133090126">右側のデスクを有効にする</translation>
-<translation id="8246282815785366524">ようこそ、<ph name="GIVEN_NAME" /> さん</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" />、電池残量 <ph name="BATTERY_STATUS" /></translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />、アプリ</translation>
 <translation id="8255234195843591763">リセットして更新してください</translation>
@@ -1852,6 +1849,7 @@
 <translation id="8703634754197148428">録画を開始します。録画を開始した後、シェルフにある [録画を停止] ボタンに移動するには、Alt+Shift+L キーを使用してください</translation>
 <translation id="8704155109538237473">ピクチャー イン ピクチャー ウィンドウにフォーカスする</translation>
 <translation id="870917907284186124">音声入力をオンまたはオフにします</translation>
+<translation id="8714138378966541668">プロバイダによってロックされています</translation>
 <translation id="8717459106217102612">前の単語または文字を選択する</translation>
 <translation id="8721053961083920564">音量を切り替えます。<ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">全画面キャプチャ</translation>
@@ -1869,7 +1867,6 @@
 <translation id="878215960996152260"><ph name="APP_NAME" />、インストール済みアプリ、ブロック中</translation>
 <translation id="8785070478575117577"><ph name="NETWORK_NAME" /> に接続</translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />。<ph name="ENTERPRISE_TEXT" /></translation>
-<translation id="8790998409862094015">強</translation>
 <translation id="8792626944327216835">マイク</translation>
 <translation id="8801802992492329306">5G</translation>
 <translation id="8806053966018712535">フォルダ <ph name="FOLDER_NAME" /></translation>
@@ -1882,6 +1879,7 @@
 <translation id="8834539327799336565">現在接続中のデバイス</translation>
 <translation id="8841375032071747811">戻るボタン</translation>
 <translation id="8843682306134542540">画面の向きの固定を切り替えます。<ph name="STATE_TEXT" /></translation>
+<translation id="8849001918648564819">非表示</translation>
 <translation id="8853703225951107899">PIN またはパスワードはまだ確認されていません。注: パスワードを最近変更した場合は、古いパスワードを使用してください。新しいパスワードはログアウトした後に適用されます。</translation>
 <translation id="8855885154700222542">全画面表示キー</translation>
 <translation id="8858369206579825206">プライバシー管理</translation>
@@ -1901,7 +1899,6 @@
 <translation id="8909138438987180327">電池残量は <ph name="PERCENTAGE" />% です。</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google アシスタントはこの言語に対応していません。</translation>
-<translation id="8924458948354692166">ウィンドウのスクリーンショットを撮影するには Enter キーを押してください</translation>
 <translation id="8926951137623668982">シェルフは常に非表示です</translation>
 <translation id="8934926665751933910">{NUM_FILES,plural, =1{1 件のファイル}other{# 件のファイル}}</translation>
 <translation id="8936501819958976551">無効</translation>
@@ -1966,6 +1963,7 @@
 <translation id="9211490828691860325">すべてのデスク</translation>
 <translation id="9211681782751733685">充電完了まであと <ph name="TIME_REMAINING" />です。</translation>
 <translation id="9215934040295798075">壁紙を設定</translation>
+<translation id="9216699844945104164">ウィンドウ「<ph name="WINDOW_TITLE" />」を録画するには Enter キーを押してください</translation>
 <translation id="9219103736887031265">画像</translation>
 <translation id="921989828232331238">保護者の方がこのデバイスを終日ロックしています</translation>
 <translation id="9220525904950070496">アカウントを削除</translation>

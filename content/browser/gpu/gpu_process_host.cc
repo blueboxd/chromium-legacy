@@ -56,7 +56,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_utils.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
@@ -263,6 +262,7 @@ static const char* const kSwitchNames[] = {
     switches::kProfilingFile,
     switches::kProfilingFlush,
     switches::kRunAllCompositorStagesBeforeDraw,
+    switches::kShaderCachePath,
     switches::kSkiaFontCacheLimitMb,
     switches::kSkiaGraphiteBackend,
     switches::kSkiaResourceCacheLimitMb,
@@ -1220,7 +1220,8 @@ bool GpuProcessHost::LaunchGpuProcess() {
 
 #if BUILDFLAG(IS_WIN)
   if (kind_ == GPU_PROCESS_KIND_INFO_COLLECTION &&
-      base::FeatureList::IsEnabled(kGpuInfoCollectionSeparatePrefetch)) {
+      base::FeatureList::IsEnabled(
+          features::kGpuInfoCollectionSeparatePrefetch)) {
     cmd_line->AppendArg(switches::kPrefetchArgumentOther);
   } else {
     cmd_line->AppendArg(switches::kPrefetchArgumentGpu);
@@ -1234,7 +1235,7 @@ bool GpuProcessHost::LaunchGpuProcess() {
 
     // Pass the current device info to the info-collection GPU process for
     // crash key logging.
-    const gpu::GPUInfo::GPUDevice device_info = GetGPUInfo().active_gpu();
+    const gpu::GPUDevice device_info = GetGPUInfo().active_gpu();
     cmd_line->AppendSwitchASCII(
         switches::kGpuVendorId,
         base::StringPrintf("%u", device_info.vendor_id));

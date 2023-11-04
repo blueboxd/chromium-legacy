@@ -168,9 +168,9 @@ void FlossManagerClient::OnSetAdapterEnabled(DBusResult<Void> response) {
   }
 }
 
-void FlossManagerClient::SetLLPrivacy(ResponseCallback<Void> callback,
+void FlossManagerClient::SetLLPrivacy(ResponseCallback<bool> callback,
                                       const bool enable) {
-  CallExperimentalMethod<Void>(std::move(callback), experimental::kSetLLPrivacy,
+  CallExperimentalMethod<bool>(std::move(callback), experimental::kSetLLPrivacy,
                                enable);
 }
 
@@ -286,9 +286,12 @@ void FlossManagerClient::Init(dbus::Bus* bus,
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
   SetLLPrivacy(
-      base::BindOnce([](DBusResult<Void> ret) {
+      base::BindOnce([](DBusResult<bool> ret) {
         if (!ret.has_value())
-          LOG(ERROR) << "Fail to set LL privacy.\n";
+          LOG(ERROR) << "Set LL privacy returned error: " << ret.error();
+        else if (!ret.value()) {
+          LOG(ERROR) << "Dbus call to set LL privary returned false.\n";
+        }
       }),
       base::FeatureList::IsEnabled(bluez::features::kLinkLayerPrivacy));
 
@@ -368,15 +371,15 @@ void FlossManagerClient::OnHciDeviceChanged(int32_t adapter, bool present) {
 }
 
 void FlossManagerClient::OnHciEnabledChanged(int32_t adapter, bool enabled) {
-  if (adapter == GetDefaultAdapter() && adapter_enabled_callback_) {
-    adapter_enabled_callback_->Run(Void{});
-    adapter_enabled_callback_.reset();
-  }
-
   adapter_to_enabled_[adapter] = enabled;
 
   for (auto& observer : observers_) {
     observer.AdapterEnabledChanged(adapter, enabled);
+  }
+
+  if (adapter == GetDefaultAdapter() && adapter_enabled_callback_) {
+    adapter_enabled_callback_->Run(Void{});
+    adapter_enabled_callback_.reset();
   }
 }
 

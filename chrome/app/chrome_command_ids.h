@@ -265,6 +265,7 @@
 #define IDC_SHOW_CHROME_LABS            40276
 #define IDC_RECENT_TABS_LOGIN_FOR_DEVICE_TABS  40277
 #define IDC_OPEN_RECENT_TAB             40278
+#define IDC_OPEN_SAFETY_HUB             40279
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.
@@ -494,16 +495,11 @@
 #define IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_QUERY 52414
 #endif
 
-// Orca feature context menu items.
-#define IDC_CONTENT_CONTEXT_ORCA 52415
-
 // Screen AI layout extraction.
 #define IDC_CONTENT_CONTEXT_RUN_LAYOUT_EXTRACTION 52420
 
 // PDF OCR
 #define IDC_CONTENT_CONTEXT_PDF_OCR 52421
-#define IDC_CONTENT_CONTEXT_PDF_OCR_ALWAYS 52422
-#define IDC_CONTENT_CONTEXT_PDF_OCR_ONCE 52423
 
 // Tab Search
 #define IDC_TAB_SEARCH 52500

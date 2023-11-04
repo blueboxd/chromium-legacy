@@ -132,7 +132,7 @@ suite('CookiesPageTest', function() {
     // This value is deprecated, and users cannot change their prefs to this
     // value, but it is still the default value for the pref. It is treated the
     // as STANDARD and the "Standard preloading" sub label is applied for this
-    // case. See chrome/browser/prefetch/prefetch_prefs.h for more info.
+    // case. See chrome/browser/preloading/preloading_prefs.h for more info.
     page.setPrefValue(
         'net.network_prediction_options',
         NetworkPredictionOptions.WIFI_ONLY_DEPRECATED);
@@ -802,5 +802,51 @@ suite('PreloadingSubpageMovedToPerformanceSettings', function() {
 
   test('PreloadingLinkRowNotShown', function() {
     assertFalse(isChildVisible(page, '#preloadingLinkRow'));
+  });
+});
+
+suite('Settings3pcdOptions', function() {
+  let page: SettingsCookiesPageElement;
+  let settingsPrefs: SettingsPrefsElement;
+
+  suiteSetup(function() {
+    loadTimeData.overrideValues({is3pcdCookieSettingsRedesignEnabled: true});
+    settingsPrefs = document.createElement('settings-prefs');
+    return CrSettingsPrefs.initialized;
+  });
+
+  setup(function() {
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    page = document.createElement('settings-cookies-page');
+    page.prefs = settingsPrefs.prefs!;
+    document.body.appendChild(page);
+    flush();
+  });
+
+  test('CheckVisibility', function() {
+    // Page description
+    assertTrue(isChildVisible(page, '#explanationText'));
+
+    // Advance toggles
+    assertTrue(isChildVisible(page, '#blockThirdPartyToggle'));
+    assertTrue(isChildVisible(page, '#doNotTrack'));
+
+    // Site Exception header
+    assertFalse(isChildVisible(page, '#exceptionHeader'));
+    assertFalse(isChildVisible(page, '#exceptionHeaderSubLabel'));
+    assertTrue(isChildVisible(page, '#exceptionHeader3pcd'));
+  });
+
+  test('Toggle3PCDPref', function() {
+    page.set(
+        'prefs.tracking_protection.block_all_3pc_toggle_enabled.value', false);
+    const blockThirdPartyCookiesToggle =
+        page.shadowRoot!.querySelector<SettingsToggleButtonElement>(
+            '#blockThirdPartyToggle')!;
+    assertTrue(!!blockThirdPartyCookiesToggle);
+    blockThirdPartyCookiesToggle.click();
+    assertEquals(
+        page.getPref('tracking_protection.block_all_3pc_toggle_enabled.value'),
+        true);
   });
 });

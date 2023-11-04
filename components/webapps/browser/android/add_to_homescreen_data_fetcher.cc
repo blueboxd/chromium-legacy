@@ -73,7 +73,12 @@ InstallableParams ParamsToFetchPrimaryIcon() {
 InstallableParams ParamsToPerformInstallableCheck() {
   InstallableParams params;
   params.check_eligibility = true;
-  params.valid_manifest = true;
+  if (base::FeatureList::IsEnabled(features::kUniversalInstallManifest)) {
+    params.installable_criteria =
+        InstallableCriteria::kImplicitManifestFieldsHTML;
+  } else {
+    params.installable_criteria = InstallableCriteria::kValidManifestWithIcons;
+  }
   return params;
 }
 
@@ -252,7 +257,7 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
     return;
 
   bool webapk_compatible =
-      (data.errors.empty() && data.valid_manifest &&
+      (data.errors.empty() && data.installable_check_passed &&
        WebappsUtils::AreWebManifestUrlsWebApkCompatible(*data.manifest));
 
   observer_->OnUserTitleAvailable(

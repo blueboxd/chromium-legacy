@@ -11,7 +11,7 @@
 #import "ios/chrome/browser/settings/sync/utils/account_error_ui_info.h"
 #import "ios/chrome/browser/settings/sync/utils/sync_state.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
-#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
 
@@ -92,6 +92,9 @@ GetUIInfoForTrustedVaultRecoverabilityDegradedErrorForEverything() {
 AccountErrorUIInfo* GetAccountErrorUIInfo(syncer::SyncService* sync_service) {
   DCHECK(sync_service);
 
+  // TODO(crbug.com/1462552): Remove usage of IsSyncFeatureEnabled() after
+  // kSync users are migrated to kSignin in phase 3. See ConsentLevel::kSync
+  // documentation for details.
   if (sync_service->IsSyncFeatureEnabled()) {
     // Don't indicate account errors when Sync is enabled.
     return nil;
@@ -121,7 +124,9 @@ AccountErrorUIInfo* GetAccountErrorUIInfo(syncer::SyncService* sync_service) {
   return nil;
 }
 
-SyncState GetSyncState(syncer::SyncService* sync_service) {
+// TODO(crbug.com/1462552): Remove this function after kSync users are migrated
+// to kSignin in phase 3. See ConsentLevel::kSync documentation for details.
+SyncState GetSyncFeatureState(syncer::SyncService* sync_service) {
   syncer::SyncService::UserActionableError error_state =
       sync_service->GetUserActionableError();
   if (sync_service->HasDisableReason(
@@ -152,5 +157,5 @@ bool ShouldIndicateIdentityErrorInOverflowMenu(
   DCHECK(sync_service);
 
   return GetAccountErrorUIInfo(sync_service) != nil ||
-         GetSyncState(sync_service) == SyncState::kSyncEnabledWithError;
+         GetSyncFeatureState(sync_service) == SyncState::kSyncEnabledWithError;
 }

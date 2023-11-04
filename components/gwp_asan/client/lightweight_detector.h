@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_GWP_ASAN_CLIENT_LIGHTWEIGHT_DETECTOR_H_
 #define COMPONENTS_GWP_ASAN_CLIENT_LIGHTWEIGHT_DETECTOR_H_
 
+#include <atomic>
+
 #include "base/gtest_prod_util.h"
 #include "components/gwp_asan/client/export.h"
 #include "components/gwp_asan/common/lightweight_detector_state.h"
@@ -30,6 +32,8 @@ class GWP_ASAN_EXPORT LightweightDetector {
   // Returns internal memory used by the detector (required for sanitization
   // on supported platforms.)
   std::vector<std::pair<void*, size_t>> GetInternalMemoryRegions();
+
+  bool HasAllocationForTesting(uintptr_t);
 
  private:
   // The state shared with with the crash analyzer.

@@ -21,6 +21,9 @@ extern NSString* const kGoogleShieldSymbol;
 extern NSString* const kChromeSymbol;
 extern NSString* const kGoogleMapsSymbol;
 extern NSString* const kGooglePhotosSymbol;
+extern NSString* const kFedexCarrier;
+extern NSString* const kUPSCarrier;
+extern NSString* const kUSPSCarrier;
 #endif  // BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
 extern NSString* const kPrivacySymbol;
 extern NSString* const kSyncDisabledSymbol;
@@ -175,6 +178,13 @@ extern NSString* const kSpeedometerSymbol;
 extern NSString* const kMovePlatterToTopPhoneSymbol;
 extern NSString* const kMovePlatterToBottomPhoneSymbol;
 extern NSString* const kMapSymbol;
+extern NSString* const kShippingBoxSymbol;
+extern NSString* const kSliderHorizontal;
+extern NSString* const kMacbookAndIPhone;
+extern NSString* const kCheckmarkShield;
+extern NSString* const kListBulletClipboard;
+extern NSString* const kListBulletRectangle;
+extern NSString* const kBoxTruckFill;
 
 // Names of the default symbol being non-monochrome by default. When using them,
 // you probably want to set their color to monochrome.

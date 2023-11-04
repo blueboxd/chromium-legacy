@@ -10,5 +10,9 @@ assert(is_chromeos_ash)
 mojom("mojom") {
   sources = [ "accessibility_features.mojom" ]
 
+  webui_module_path = "/ash/webui/common"
+
+  use_typescript_sources = true
+
   public_deps = [ "//mojo/public/mojom/base" ]
 }

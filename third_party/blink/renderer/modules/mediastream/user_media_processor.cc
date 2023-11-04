@@ -813,6 +813,9 @@ void UserMediaProcessor::SetupVideoInput() {
   stream_controls->dynamic_surface_switching_requested =
       request->dynamic_surface_switching_requested();
 
+  stream_controls->exclude_monitor_type_surfaces =
+      request->exclude_monitor_type_surfaces();
+
   if (blink::IsDeviceMediaType(video_controls.stream_type)) {
     GetMediaDevicesDispatcher()->GetVideoInputCapabilities(
         WTF::BindOnce(&UserMediaProcessor::SelectVideoDeviceSettings,
@@ -1546,8 +1549,10 @@ UserMediaProcessor::CreateAudioSource(
         frame_, device,
         base::OptionalToPtr(current_request_info_->audio_capture_settings()
                                 .requested_buffer_size()),
-        stream_controls->disable_local_echo, std::move(source_ready),
-        task_runner_);
+        stream_controls->disable_local_echo,
+        audio_processing_properties.echo_cancellation_type ==
+            EchoCancellationType::kEchoCancellationSystem,
+        std::move(source_ready), task_runner_);
   }
 
   // The audio device is not associated with screen capture and also requires

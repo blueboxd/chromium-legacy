@@ -758,15 +758,9 @@ void RenderWidgetHostImpl::RendererWidgetCreated(bool for_frame_widget) {
 }
 
 void RenderWidgetHostImpl::Init() {
-  // Note that this may be called after a renderer crash. In this case, we can
-  // just exit early, as there is nothing else to do.  Note that
-  // `waiting_for_init_` should've already been reset to false in that case.
-  if (!renderer_widget_created_) {
-    DCHECK(!waiting_for_init_);
-    return;
-  }
-
+  DCHECK(renderer_widget_created_);
   DCHECK(waiting_for_init_);
+
   waiting_for_init_ = false;
 
   // These two methods avoid running while we are `waiting_for_init_`, so we
@@ -1083,14 +1077,15 @@ blink::VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
         delegate_->GetWindowsControlsOverlayRect();
     visual_properties.virtual_keyboard_resize_height_physical_px =
         delegate_->GetVirtualKeyboardResizeHeight();
+    visual_properties.window_show_state = delegate_->GetWindowShowState();
+    visual_properties.resizable = delegate_->GetResizable();
   } else {
     visual_properties.compositor_viewport_pixel_rect =
         properties_from_parent_local_root_.compositor_viewport;
-  }
+    visual_properties.window_show_state = ui::SHOW_STATE_DEFAULT;
 
-  // These properties come from the top-level main frame's renderer. The
-  // top-level main frame in the browser doesn't specify a value.
-  if (!is_top_most_widget) {
+    // These properties come from the top-level main frame's renderer. The
+    // top-level main frame in the browser doesn't specify a value.
     visual_properties.page_scale_factor =
         properties_from_parent_local_root_.page_scale_factor;
     visual_properties.is_pinch_gesture_active =
@@ -2009,7 +2004,7 @@ void RenderWidgetHostImpl::DragTargetDragEnter(
     const gfx::PointF& screen_pt,
     DragOperationsMask operations_allowed,
     int key_modifiers,
-    base::OnceCallback<void(::ui::mojom::DragOperation)> callback) {
+    DragOperationCallback callback) {
   DragTargetDragEnterWithMetaData(DropDataToMetaData(drop_data), client_pt,
                                   screen_pt, operations_allowed, key_modifiers,
                                   std::move(callback));
@@ -2021,11 +2016,11 @@ void RenderWidgetHostImpl::DragTargetDragEnterWithMetaData(
     const gfx::PointF& screen_pt,
     DragOperationsMask operations_allowed,
     int key_modifiers,
-    base::OnceCallback<void(::ui::mojom::DragOperation)> callback) {
+    DragOperationCallback callback) {
   // TODO(https://crbug.com/1102769): Replace with a for_frame() check.
   if (blink_frame_widget_) {
-    base::OnceCallback<void(::ui::mojom::DragOperation)> callback_wrapper =
-        base::BindOnce(&RenderWidgetHostImpl::OnUpdateDragCursor,
+    DragOperationCallback callback_wrapper =
+        base::BindOnce(&RenderWidgetHostImpl::OnUpdateDragOperation,
                        base::Unretained(this), std::move(callback));
     blink_frame_widget_->DragTargetDragEnter(
         DropMetaDataToDragData(metadata),
@@ -2039,13 +2034,13 @@ void RenderWidgetHostImpl::DragTargetDragOver(
     const gfx::PointF& screen_point,
     DragOperationsMask operations_allowed,
     int key_modifiers,
-    base::OnceCallback<void(ui::mojom::DragOperation)> callback) {
+    DragOperationCallback callback) {
   // TODO(https://crbug.com/1102769): Replace with a for_frame() check.
   if (blink_frame_widget_) {
     blink_frame_widget_->DragTargetDragOver(
         ConvertWindowPointToViewport(client_point), screen_point,
         operations_allowed, key_modifiers,
-        base::BindOnce(&RenderWidgetHostImpl::OnUpdateDragCursor,
+        base::BindOnce(&RenderWidgetHostImpl::OnUpdateDragOperation,
                        base::Unretained(this), std::move(callback)));
   }
 }
@@ -2257,14 +2252,15 @@ void RenderWidgetHostImpl::SelectionBoundsChanged(
   }
 }
 
-void RenderWidgetHostImpl::OnUpdateDragCursor(
+void RenderWidgetHostImpl::OnUpdateDragOperation(
     DragOperationCallback callback,
-    ui::mojom::DragOperation current_op) {
+    ui::mojom::DragOperation current_op,
+    bool document_is_handling_drag) {
   RenderViewHostDelegateView* view = delegate_->GetDelegateView();
   if (view) {
-    view->UpdateDragCursor(current_op);
+    view->UpdateDragOperation(current_op, document_is_handling_drag);
   }
-  std::move(callback).Run(current_op);
+  std::move(callback).Run(current_op, document_is_handling_drag);
 }
 
 void RenderWidgetHostImpl::RendererExited() {
@@ -2279,10 +2275,6 @@ void RenderWidgetHostImpl::RendererExited() {
   waiting_for_init_ = false;
 
   blink_widget_.reset();
-
-  // No need to perform a deferred show after the renderer crashes, and this
-  // wouldn't work anyway as it requires a valid `blink_widget_`.
-  pending_show_params_.reset();
 
   // After the renderer crashes, the view is destroyed and so the
   // RenderWidgetHost cannot track its visibility anymore. We assume such
@@ -2706,6 +2698,7 @@ void RenderWidgetHostImpl::UpdateBrowserControlsState(
 
 void RenderWidgetHostImpl::StartDragging(
     blink::mojom::DragDataPtr drag_data,
+    const url::Origin& source_origin,
     DragOperationsMask drag_operations_mask,
     const SkBitmap& bitmap,
     const gfx::Vector2d& cursor_offset_in_dip,
@@ -2791,8 +2784,8 @@ void RenderWidgetHostImpl::StartDragging(
   scaled_rect.Scale(scale);
   rect = gfx::ToRoundedRect(scaled_rect);
 #endif
-  view->StartDragging(filtered_data, drag_operations_mask, image, offset, rect,
-                      *event_info, this);
+  view->StartDragging(filtered_data, source_origin, drag_operations_mask, image,
+                      offset, rect, *event_info, this);
 }
 
 // static
@@ -2872,6 +2865,9 @@ bool RenderWidgetHostImpl::StoredVisualPropertiesNeedsUpdate(
              new_visual_properties.is_fullscreen_granted ||
          old_visual_properties->display_mode !=
              new_visual_properties.display_mode ||
+         old_visual_properties->window_show_state !=
+             new_visual_properties.window_show_state ||
+         old_visual_properties->resizable != new_visual_properties.resizable ||
          old_visual_properties->browser_controls_params !=
              new_visual_properties.browser_controls_params ||
          old_visual_properties->visible_viewport_size !=

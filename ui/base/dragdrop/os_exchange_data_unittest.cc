@@ -152,9 +152,10 @@ TEST_F(OSExchangeDataTest, TestFileToURLConversion) {
     EXPECT_EQ(std::u16string(), actual_title);
   }
   EXPECT_TRUE(copy.HasFile());
-  base::FilePath actual_path;
-  EXPECT_TRUE(copy.GetFilename(&actual_path));
-  EXPECT_EQ(current_directory, actual_path);
+  std::vector<FileInfo> actual_files;
+  EXPECT_TRUE(copy.GetFilenames(&actual_files));
+  EXPECT_EQ(1u, actual_files.size());
+  EXPECT_EQ(current_directory, actual_files[0].path);
 }
 
 TEST_F(OSExchangeDataTest, TestPickledData) {
@@ -205,7 +206,12 @@ TEST_F(OSExchangeDataTest, TestFilenames) {
 
   std::vector<FileInfo> dropped_filenames;
   EXPECT_TRUE(copy.GetFilenames(&dropped_filenames));
-  EXPECT_EQ(kTestFilenames, dropped_filenames);
+  // Only check the paths, not the display names, as those might be synthesized
+  // during the clone while reading from the clipboard.
+  ASSERT_EQ(kTestFilenames.size(), dropped_filenames.size());
+  for (size_t i = 0; i < kTestFilenames.size(); ++i) {
+    EXPECT_EQ(kTestFilenames[i].path, dropped_filenames[i].path);
+  }
 }
 
 #if defined(USE_AURA)
@@ -230,5 +236,54 @@ TEST_F(OSExchangeDataTest, TestHTML) {
   EXPECT_EQ(url, read_url);
 }
 #endif
+
+TEST_F(OSExchangeDataTest, NotRendererTainted) {
+  const OSExchangeData copy([&] {
+    OSExchangeData data;
+    return data.provider().Clone();
+  }());
+
+  EXPECT_FALSE(copy.IsRendererTainted());
+  EXPECT_EQ(absl::nullopt, copy.GetRendererTaintedOrigin());
+}
+
+TEST_F(OSExchangeDataTest, RendererTaintedOpaqueOrigin) {
+  const url::Origin tuple_origin =
+      url::Origin::Create(GURL("https://www.google.com/"));
+  const url::Origin opaque_origin = tuple_origin.DeriveNewOpaqueOrigin();
+  ASSERT_TRUE(opaque_origin.opaque());
+
+  const OSExchangeData copy([&] {
+    OSExchangeData data;
+    data.MarkRendererTaintedFromOrigin(opaque_origin);
+    return data.provider().Clone();
+  }());
+
+  EXPECT_TRUE(copy.IsRendererTainted());
+  absl::optional<url::Origin> origin = copy.GetRendererTaintedOrigin();
+  EXPECT_TRUE(origin.has_value());
+  EXPECT_TRUE(origin->opaque());
+  // Currently, the actual value of an opaque origin is not actually serialized
+  // into OSExchangeData, so expect a random opaque origin to be read out.
+  EXPECT_NE(opaque_origin, origin);
+  // And there should be no precursor tuple.
+  EXPECT_FALSE(origin->GetTupleOrPrecursorTupleIfOpaque().IsValid());
+}
+
+TEST_F(OSExchangeDataTest, RendererTaintedTupleOrigin) {
+  const url::Origin tuple_origin =
+      url::Origin::Create(GURL("https://www.google.com/"));
+
+  const OSExchangeData copy([&] {
+    OSExchangeData data;
+    data.MarkRendererTaintedFromOrigin(tuple_origin);
+    return data.provider().Clone();
+  }());
+
+  EXPECT_TRUE(copy.IsRendererTainted());
+  absl::optional<url::Origin> origin = copy.GetRendererTaintedOrigin();
+  EXPECT_TRUE(origin.has_value());
+  EXPECT_EQ(tuple_origin, origin);
+}
 
 }  // namespace ui

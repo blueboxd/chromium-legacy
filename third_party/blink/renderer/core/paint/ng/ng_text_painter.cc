@@ -123,8 +123,8 @@ bool SetupPaintForSvgText(const NGTextPainter::SvgTextPaintState& state,
                                           ? *state.InlineText().Parent()
                                           : state.TextDecorationObject();
   if (!SVGObjectPainter(layout_parent)
-           .PreparePaint(state.IsRenderingClipPathAsMaskImage(), style,
-                         resource_mode, flags, state.GetShaderTransform())) {
+           .PreparePaint(state.GetPaintFlags(), style, resource_mode, flags,
+                         state.GetShaderTransform())) {
     return false;
   }
 
@@ -274,8 +274,7 @@ void NGTextPainter::PaintDecorationsExceptLineThrough(
                                   ~TextDecorationLine::kLineThrough))
     return;
 
-  const NGTextDecorationOffset decoration_offset(decoration_info.TargetStyle(),
-                                                 text_item.Style());
+  const NGTextDecorationOffset decoration_offset(text_item.Style());
 
   if (svg_text_paint_state_.has_value() &&
       !decoration_info.HasDecorationOverride()) {
@@ -473,7 +472,7 @@ void NGTextPainter::PaintSvgTextFragment(
 
 void NGTextPainter::PaintSvgDecorationsExceptLineThrough(
     const NGTextFragmentPaintInfo& fragment_paint_info,
-    const TextDecorationOffsetBase& decoration_offset,
+    const NGTextDecorationOffset& decoration_offset,
     TextDecorationInfo& decoration_info,
     TextDecorationLine lines_to_paint,
     const PaintInfo& paint_info,
@@ -569,9 +568,9 @@ NGTextPainter::SvgTextPaintState& NGTextPainter::SetSvgState(
     const LayoutSVGInlineText& svg_inline_text,
     const ComputedStyle& style,
     NGStyleVariant style_variant,
-    bool is_rendering_clip_path_as_mask_image) {
+    PaintFlags paint_flags) {
   return svg_text_paint_state_.emplace(svg_inline_text, style, style_variant,
-                                       is_rendering_clip_path_as_mask_image);
+                                       paint_flags);
 }
 
 NGTextPainter::SvgTextPaintState& NGTextPainter::SetSvgState(
@@ -590,12 +589,11 @@ NGTextPainter::SvgTextPaintState::SvgTextPaintState(
     const LayoutSVGInlineText& layout_svg_inline_text,
     const ComputedStyle& style,
     NGStyleVariant style_variant,
-    bool is_rendering_clip_path_as_mask_image)
+    PaintFlags paint_flags)
     : layout_svg_inline_text_(layout_svg_inline_text),
       style_(style),
       style_variant_(style_variant),
-      is_rendering_clip_path_as_mask_image_(
-          is_rendering_clip_path_as_mask_image) {}
+      paint_flags_(paint_flags) {}
 
 NGTextPainter::SvgTextPaintState::SvgTextPaintState(
     const LayoutSVGInlineText& layout_svg_inline_text,
@@ -642,8 +640,12 @@ bool NGTextPainter::SvgTextPaintState::IsPaintingSelection() const {
   return is_painting_selection_;
 }
 
+PaintFlags NGTextPainter::SvgTextPaintState::GetPaintFlags() const {
+  return paint_flags_;
+}
+
 bool NGTextPainter::SvgTextPaintState::IsRenderingClipPathAsMaskImage() const {
-  return is_rendering_clip_path_as_mask_image_;
+  return paint_flags_ & PaintFlag::kPaintingClipPathAsMask;
 }
 
 bool NGTextPainter::SvgTextPaintState::IsPaintingTextMatch() const {

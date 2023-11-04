@@ -214,6 +214,10 @@ BASE_FEATURE(kSpotlightReadingListSource,
              "SpotlightReadingListSource",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kSpotlightDonateNewIntents,
+             "SpotlightDonateNewIntents",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kConsistencyNewAccountInterface,
              "ConsistencyNewAccountInterface",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -251,11 +255,9 @@ bool IsBottomOmniboxSteadyStateEnabled() {
 BASE_FEATURE(kOnlyAccessClipboardAsync,
              "OnlyAccessClipboardAsync",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kHideSettingsSyncPromo,
-             "HideSettingsSyncPromo",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
+BASE_FEATURE(kDBVideoInSettings,
+             "DBVideoInSettings",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kDefaultBrowserTriggerCriteriaExperiment,
              "DefaultBrowserTriggerCriteriaExperiment",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -264,8 +266,8 @@ BASE_FEATURE(kFullScreenPromoOnOmniboxCopyPaste,
              "FullScreenPromoOnOmniboxCopyPaste",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kThemeColorInToolbar,
-             "ThemeColorInToolbar",
+BASE_FEATURE(kThemeColorInTopToolbar,
+             "ThemeColorInTopToolbar",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTabGridRefactoring,

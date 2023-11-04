@@ -5,12 +5,17 @@
 #import "ios/chrome/browser/ui/settings/password/password_sharing/password_picker_coordinator.h"
 
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
+#import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
+#import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
+#import "ios/chrome/browser/ui/settings/password/password_sharing/password_picker_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_sharing/password_picker_mediator.h"
 #import "ios/chrome/browser/ui/settings/password/password_sharing/password_picker_view_controller.h"
+#import "ios/chrome/browser/ui/settings/password/password_sharing/password_picker_view_controller_presentation_delegate.h"
 
-@interface PasswordPickerCoordinator () {
+@interface PasswordPickerCoordinator () <
+    PasswordPickerViewControllerPresentationDelegate> {
   std::vector<password_manager::CredentialUIEntry> _credentials;
 }
 
@@ -28,14 +33,19 @@
 
 @implementation PasswordPickerCoordinator
 
+@synthesize baseNavigationController = _baseNavigationController;
+
 - (instancetype)
-    initWithBaseViewController:(UIViewController*)viewController
-                       browser:(Browser*)browser
-                   credentials:
-                       (const std::vector<password_manager::CredentialUIEntry>&)
-                           credentials {
-  self = [super initWithBaseViewController:viewController browser:browser];
+    initWithBaseNavigationController:
+        (UINavigationController*)navigationController
+                             browser:(Browser*)browser
+                         credentials:(const std::vector<
+                                         password_manager::CredentialUIEntry>&)
+                                         credentials {
+  self = [super initWithBaseViewController:navigationController
+                                   browser:browser];
   if (self) {
+    _baseNavigationController = navigationController;
     _credentials = credentials;
   }
   return self;
@@ -46,8 +56,12 @@
 
   self.viewController = [[PasswordPickerViewController alloc]
       initWithStyle:ChromeTableViewStyle()];
-  self.mediator =
-      [[PasswordPickerMediator alloc] initWithCredentials:_credentials];
+  self.viewController.delegate = self;
+  self.mediator = [[PasswordPickerMediator alloc]
+      initWithCredentials:_credentials
+            faviconLoader:IOSChromeFaviconLoaderFactory::GetForBrowserState(
+                              self.browser->GetBrowserState())];
+  self.viewController.imageDataSource = self.mediator;
   self.mediator.consumer = self.viewController;
   self.navigationController =
       [[TableViewNavigationController alloc] initWithTable:self.viewController];
@@ -64,18 +78,30 @@
     ];
   }
 
-  [self.baseViewController presentViewController:self.navigationController
-                                        animated:YES
-                                      completion:nil];
+  // Disable animation so that it looks as if the loaded password data replaces
+  // the spinner view displayed from the parent coordinator.
+  [self.baseNavigationController pushViewController:self.viewController
+                                           animated:NO];
 }
 
 - (void)stop {
-  [self.viewController.presentingViewController
-      dismissViewControllerAnimated:YES
-                         completion:nil];
   self.navigationController = nil;
   self.viewController = nil;
   self.mediator = nil;
+}
+
+#pragma mark - PasswordPickerViewControllerPresentationDelegate
+
+- (void)passwordPickerWasDismissed:(PasswordPickerViewController*)controller {
+  [self.baseNavigationController popViewControllerAnimated:NO];
+  [self.delegate passwordPickerCoordinatorWasDismissed:self];
+}
+
+- (void)passwordPickerClosed:(PasswordPickerViewController*)controller
+     withSelectedCredentials:
+         (const std::vector<password_manager::CredentialUIEntry>&)credentials {
+  [self.delegate passwordPickerCoordinator:self
+                      didSelectCredentials:credentials];
 }
 
 @end

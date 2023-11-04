@@ -23,7 +23,6 @@ group("js_modules") {
     ":a11y_announce",
     ":action_model_ui",
     ":actions_submenu",
-    ":autocomplete_list",
     ":combobutton",
     ":commandbutton",
     ":default_task_dialog",
@@ -48,7 +47,6 @@ group("js_modules") {
     ":install_linux_package_dialog",
     ":list",
     ":list_container",
-    ":list_item",
     ":list_selection_controller",
     ":list_selection_model",
     ":list_single_selection_model",
@@ -78,7 +76,6 @@ js_type_check("closure_compile_jsmodules") {
     ":a11y_announce",
     ":action_model_ui",
     ":actions_submenu",
-    ":autocomplete_list",
     ":combobutton",
     ":commandbutton",
     ":default_task_dialog",
@@ -245,7 +242,6 @@ js_library("directory_tree") {
     "//ui/file_manager/file_manager/common/js:file_type",
     "//ui/file_manager/file_manager/common/js:files_app_entry_types",
     "//ui/file_manager/file_manager/common/js:icon_util",
-    "//ui/file_manager/file_manager/common/js:metrics",
     "//ui/file_manager/file_manager/common/js:util",
     "//ui/file_manager/file_manager/common/js:volume_manager_types",
     "//ui/file_manager/file_manager/externs:files_app_entry_interfaces",
@@ -298,7 +294,6 @@ js_library("file_grid") {
     ":file_tap_handler",
     ":grid",
     ":list",
-    ":list_item",
     ":list_selection_model",
     "//ash/webui/common/resources:assert",
     "//ash/webui/common/resources:cr_deprecated",
@@ -311,6 +306,9 @@ js_library("file_grid") {
     "//ui/file_manager/file_manager/foreground/js:file_list_model",
     "//ui/file_manager/file_manager/foreground/js:list_thumbnail_loader",
     "//ui/file_manager/file_manager/foreground/js/metadata:metadata_model",
+  ]
+  externs_list = [
+    "//ui/file_manager/file_manager/externs/polymer_elements/files_tooltip.js",
   ]
 }
 
@@ -394,7 +392,6 @@ js_library("file_manager_ui") {
     "//ui/file_manager/file_manager/common/js:util",
     "//ui/file_manager/file_manager/common/js:volume_manager_types",
     "//ui/file_manager/file_manager/externs:volume_manager",
-    "//ui/file_manager/file_manager/foreground/elements:files_password_dialog",
     "//ui/file_manager/file_manager/foreground/js:launch_param",
     "//ui/file_manager/file_manager/foreground/js:providers_model",
   ]
@@ -457,7 +454,6 @@ js_library("file_table_list") {
     ":file_list_selection_model",
     ":file_tap_handler",
     ":list",
-    ":list_item",
     ":list_selection_controller",
     ":list_selection_model",
     "table:table",
@@ -536,7 +532,6 @@ js_library("gear_menu") {
 js_library("grid") {
   deps = [
     ":list",
-    ":list_item",
     ":list_selection_controller",
     ":list_selection_model",
     "//ui/file_manager/file_manager/common/js:ui",
@@ -577,7 +572,6 @@ js_library("import_crostini_image_dialog") {
 
 js_library("list") {
   deps = [
-    ":list_item",
     ":list_selection_controller",
     ":list_selection_model",
     "//ash/webui/common/resources:cr_deprecated",
@@ -600,7 +594,6 @@ js_library("list_container") {
     ":file_grid",
     ":file_table",
     ":list",
-    ":list_item",
     ":list_selection_model",
     ":list_single_selection_model",
     "//ash/webui/common/resources:assert",
@@ -610,10 +603,6 @@ js_library("list_container") {
     "//ui/file_manager/file_manager/foreground/js:file_list_model",
     "//ui/file_manager/file_manager/foreground/js:list_thumbnail_loader",
   ]
-}
-
-js_library("list_item") {
-  deps = [ "//ash/webui/common/resources:cr_deprecated" ]
 }
 
 js_library("list_selection_controller") {
@@ -794,17 +783,6 @@ js_library("tree") {
   deps = [ "//ash/webui/common/resources:assert" ]
 }
 
-js_library("autocomplete_list") {
-  deps = [
-    ":list",
-    ":list_item",
-    ":list_single_selection_model",
-    ":position_util",
-    "//ash/webui/common/resources:cr_deprecated",
-    "//ui/file_manager/file_manager/common/js:array_data_model",
-  ]
-}
-
 js_test_type_check("js_test_type_check") {
   deps = [
     ":actions_submenu_unittest",
@@ -835,6 +813,7 @@ js_test_type_check("js_test_type_check") {
                     "language_in=ECMASCRIPT_2020",
                     "generate_exports=false",
                     "js_module_root=./gen/ui",
+                    "js_module_root=./gen/ui/file_manager/tsc/",
                     "js_module_root=" +
                         rebase_path("//ui/file_manager/", root_build_dir),
                     "js_module_root=./gen/ui/file_manager/",
@@ -843,5 +822,7 @@ js_test_type_check("js_test_type_check") {
                     "browser_resolver_prefix_replacements=\"chrome://file-manager/=./file_manager/\"",
                     "browser_resolver_prefix_replacements=\"chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp/=./image_loader/\"",
                     "hide_warnings_for=third_party/",
+                    "hide_warnings_for=gen/ui/file_manager/tsc/",
                   ]
+  extra_deps = [ "//ui/file_manager:js_from_ts" ]
 }

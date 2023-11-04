@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_track_video_stats.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
@@ -89,7 +90,7 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
   MediaTrackCapabilities* getCapabilities() const override;
   MediaTrackConstraints* getConstraints() const override;
   MediaTrackSettings* getSettings() const override;
-  ScriptPromise getFrameStats(ScriptState*) const override;
+  MediaStreamTrackVideoStats* stats(ExceptionState&) override;
   CaptureHandle* getCaptureHandle() const override;
   ScriptPromise applyConstraints(ScriptState*,
                                  const MediaTrackConstraints*) override;
@@ -131,6 +132,8 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
   std::unique_ptr<AudioSourceProvider> CreateWebAudioSource(
       int context_sample_rate) override;
 
+  MediaStreamTrackPlatform::VideoFrameStats GetVideoFrameStats() const;
+
   ImageCapture* GetImageCapture() override { return image_capture_; }
 
   absl::optional<const MediaStreamDevice> device() const override;
@@ -156,9 +159,6 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
   // MediaStreamTrack
   void applyConstraints(ScriptPromiseResolver*,
                         const MediaTrackConstraints*) override;
-
-  void OnDeliverableVideoFramesCount(Persistent<ScriptPromiseResolver> resolver,
-                                     size_t deliverable_frames) const;
 
   // MediaStreamSource::Observer
   void SourceChangedState() override;
@@ -198,18 +198,7 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
   bool muted_ = false;
   MediaConstraints constraints_;
   absl::optional<bool> suppress_local_audio_playback_setting_;
-  // Video-only.
-  //   It is the source' job to keep track of the true number of discarded or
-  // dropped frames. But tracks, unlike sources, can be cloned or disabled so
-  // we need to keep track of the baseline for when the track was cloned and
-  // a snapshot for when the track was disabled.
-  size_t video_source_discarded_frames_baseline_ = 0u;
-  size_t video_source_dropped_frames_baseline_ = 0u;
-  // To avoid counters increasing while the track is disabled, a snapshot of the
-  // discarded/dropped stats are taken at the time of disabling the track. These
-  // are also used when adjusting the baseline when the track is re-enabled.
-  size_t discarded_frames_at_last_disable_ = 0u;
-  size_t dropped_frames_at_last_disable_ = 0u;
+  Member<MediaStreamTrackVideoStats> video_stats_;
 };
 
 }  // namespace blink

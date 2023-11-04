@@ -20,6 +20,7 @@ class EventGenerator;
 
 namespace views {
 class Button;
+class Label;
 class LabelButton;
 class View;
 class Widget;
@@ -28,6 +29,7 @@ class Widget;
 namespace ash {
 
 class FeatureTile;
+class GameDashboardButton;
 class GameDashboardMainMenuView;
 class GameDashboardToolbarView;
 class GameDashboardWidget;
@@ -49,9 +51,10 @@ class GameDashboardContextTestApi {
   const base::RepeatingTimer& GetRecordingTimer() const;
   const std::u16string& GetRecordingDuration() const;
 
-  // Returns the main menu button widget and button.
-  GameDashboardWidget* GetMainMenuButtonWidget();
-  PillButton* GetMainMenuButton();
+  // Returns the Game Dashboard button widget, button, and title view.
+  GameDashboardWidget* GetGameDashboardButtonWidget() const;
+  GameDashboardButton* GetGameDashboardButton() const;
+  views::Label* GetGameDashboardButtonTitle() const;
 
   // Returns the main menu widget and all its views.
   views::Widget* GetMainMenuWidget();
@@ -63,19 +66,21 @@ class GameDashboardContextTestApi {
   views::Button* GetMainMenuScreenSizeSettingsButton();
   views::Button* GetMainMenuGameControlsDetailsButton();
   PillButton* GetMainMenuGameControlsSetupButton();
-  Switch* GetMainMenuGameControlsHintSwitch();
+  Switch* GetMainMenuGameControlsFeatureSwitch();
   views::LabelButton* GetMainMenuFeedbackButton();
   IconButton* GetMainMenuHelpButton();
   IconButton* GetMainMenuSettingsButton();
 
   // Opens the main menu.
   // Before opening the main menu, verifies that the main menu is closed.
-  // After opening the main menu, verifies it opened.
+  // After opening the main menu, verifies it opened and waits for the thread to
+  // become idle to ensure that all open `GameDashboardMainMenuView`s close.
   void OpenTheMainMenu();
 
   // Closes the main menu.
   // Before closing the main menu, verifies that the main menu is open.
-  // After closing the main menu, verifies is closed.
+  // After closing the main menu, verifies is closed and waits for the thread to
+  // become idle to ensure that all open `GameDashboardMainMenuView`s close.
   void CloseTheMainMenu();
 
   // Returns the toolbar widget and all its views.
@@ -93,6 +98,9 @@ class GameDashboardContextTestApi {
   // Before opening the toolbar, verifies the main menu is open and the toolbar
   // is closed. After opening the toolbar, verifies it opened.
   void OpenTheToolbar();
+
+  // Places focus on the toolbar without clicking on any buttons.
+  void SetFocusOnToolbar();
 
   // Closes the toolbar.
   // Before closing the toolbar, verifies the main menu widget and toolbar

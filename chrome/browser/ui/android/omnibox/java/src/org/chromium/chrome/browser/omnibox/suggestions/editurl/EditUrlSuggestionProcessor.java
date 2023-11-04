@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.omnibox.styles.OmniboxImageSupplier;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.omnibox.styles.SuggestionSpannable;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionHost;
-import org.chromium.chrome.browser.omnibox.suggestions.UrlBarDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties.Action;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties;
@@ -34,9 +33,6 @@ import org.chromium.components.ukm.UkmRecorder;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.modelutil.PropertyModel;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 
 /**
@@ -45,17 +41,14 @@ import java.util.Arrays;
  * the rest of Chrome.
  */
 public class EditUrlSuggestionProcessor extends BaseSuggestionViewProcessor {
-    private final @NonNull UrlBarDelegate mUrlBarDelegate;
     private final @NonNull Supplier<ShareDelegate> mShareDelegateSupplier;
     private final @NonNull Supplier<Tab> mTabSupplier;
-    private boolean mHasClearedOmniboxForFocus;
 
     public EditUrlSuggestionProcessor(Context context, SuggestionHost suggestionHost,
-            UrlBarDelegate locationBarDelegate, OmniboxImageSupplier imageSupplier,
-            Supplier<Tab> tabSupplier, Supplier<ShareDelegate> shareDelegateSupplier) {
+            OmniboxImageSupplier imageSupplier, Supplier<Tab> tabSupplier,
+            Supplier<ShareDelegate> shareDelegateSupplier) {
         super(context, suggestionHost, imageSupplier);
 
-        mUrlBarDelegate = locationBarDelegate;
         mTabSupplier = tabSupplier;
         mShareDelegateSupplier = shareDelegateSupplier;
     }
@@ -107,30 +100,23 @@ public class EditUrlSuggestionProcessor extends BaseSuggestionViewProcessor {
                 new SuggestionSpannable(suggestion.getDisplayText()));
 
         setActionButtons(model,
-                Arrays.asList(new Action(OmniboxDrawableState.forDefaultIcon(
+                Arrays.asList(new Action(OmniboxDrawableState.forSmallIcon(
                                                  mContext, R.drawable.ic_share_white_24dp, true),
                                       OmniboxResourceProvider.getString(
                                               mContext, R.string.menu_share_page),
                                       null, this::onShareLink),
-                        new Action(OmniboxDrawableState.forDefaultIcon(
+                        new Action(OmniboxDrawableState.forSmallIcon(
                                            mContext, R.drawable.ic_content_copy_black, true),
                                 OmniboxResourceProvider.getString(mContext, R.string.copy_link),
                                 () -> onCopyLink(suggestion)),
                         // TODO(https://crbug.com/1090187): do not re-use bookmark_item_edit here.
-                        new Action(OmniboxDrawableState.forDefaultIcon(
+                        new Action(OmniboxDrawableState.forSmallIcon(
                                            mContext, R.drawable.bookmark_edit_active, true),
                                 OmniboxResourceProvider.getString(
                                         mContext, R.string.bookmark_item_edit),
                                 () -> onEditLink(suggestion))));
 
         fetchSuggestionFavicon(model, suggestion.getUrl());
-    }
-
-    @Override
-    public void onOmniboxSessionStateChange(boolean activated) {
-        super.onOmniboxSessionStateChange(activated);
-        if (activated) return;
-        mHasClearedOmniboxForFocus = false;
     }
 
     @Override
@@ -168,21 +154,6 @@ public class EditUrlSuggestionProcessor extends BaseSuggestionViewProcessor {
     /** Invoked when user interacts with Edit action button. */
     private void onEditLink(AutocompleteMatch suggestion) {
         RecordUserAction.record("Omnibox.EditUrlSuggestion.Edit");
-
-        var text = OmniboxFeatures.sSearchReadyOmniboxAllowQueryEdit.isEnabled()
-                ? mSuggestionHost.queryFromGurl(suggestion.getUrl())
-                : null;
-
-        if (TextUtils.isEmpty(text)) {
-            // Pass the decoded URL to the Omnibox to avoid %-encoded unicode characters.
-            text = suggestion.getUrl().getSpec();
-            try {
-                text = URLDecoder.decode(text, Charset.defaultCharset().name());
-            } catch (UnsupportedEncodingException | IllegalArgumentException e) {
-                // Text should already contain encoded URL.
-            }
-        }
-
-        mUrlBarDelegate.setOmniboxEditingText(text);
+        mSuggestionHost.onRefineSuggestion(suggestion);
     }
 }

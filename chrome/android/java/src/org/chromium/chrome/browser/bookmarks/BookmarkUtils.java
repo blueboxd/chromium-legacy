@@ -566,14 +566,19 @@ public class BookmarkUtils {
 
     /**
      * @param context {@link Context} used to retrieve the drawable.
-     * @param type The bookmark type of the folder.
+     * @param bookmarkId The bookmark id of the folder.
+     * @param bookmarkModel The bookmark model.
      * @return A {@link Drawable} to use for displaying bookmark folders.
      */
-    public static Drawable getFolderIcon(
-            Context context, @BookmarkType int type, @BookmarkRowDisplayPref int displayPref) {
-        ColorStateList tint = getFolderIconTint(context, type);
-        if (type == BookmarkType.READING_LIST) {
+    public static Drawable getFolderIcon(Context context, BookmarkId bookmarkId,
+            BookmarkModel bookmarkModel, @BookmarkRowDisplayPref int displayPref) {
+        ColorStateList tint = getFolderIconTint(context, bookmarkId.getType());
+        if (bookmarkId.getType() == BookmarkType.READING_LIST) {
             return UiUtils.getTintedDrawable(context, R.drawable.ic_reading_list_folder_24dp, tint);
+        } else if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()
+                && bookmarkId.getType() == BookmarkType.NORMAL
+                && Objects.equals(bookmarkId, bookmarkModel.getDesktopFolderId())) {
+            return UiUtils.getTintedDrawable(context, R.drawable.ic_toolbar_24dp, tint);
         }
 
         return UiUtils.getTintedDrawable(context,
@@ -587,6 +592,8 @@ public class BookmarkUtils {
      * @param type The bookmark type of the folder.
      * @return The tint used on the bookmark folder icon.
      */
+    // TODO(crbug.com/1483510): This function isn't used in the new bookmarks manager, remove it
+    // after android-improved-bookmarks is the default.
     public static ColorStateList getFolderIconTint(Context context, @BookmarkType int type) {
         if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()
                 && type == BookmarkType.READING_LIST) {
@@ -603,54 +610,6 @@ public class BookmarkUtils {
         if (context instanceof BookmarkActivity) {
             ((Activity) context).finish();
         }
-    }
-
-    /**
-     * Populates the top level bookmark folder ids.
-     * @param bookmarkModel The bookmark model that talks to bookmark native backend.
-     * @return The list of top level bookmark folder ids.
-     */
-    public static List<BookmarkId> populateTopLevelFolders(BookmarkModel bookmarkModel) {
-        // TODO(crbug.com/1449020): Refactor this to not go through JNI so much.
-        List<BookmarkId> topLevelFolders = new ArrayList<>();
-        BookmarkId desktopNodeId = bookmarkModel.getDesktopFolderId();
-        BookmarkId mobileNodeId = bookmarkModel.getMobileFolderId();
-        BookmarkId othersNodeId = bookmarkModel.getOtherFolderId();
-
-        List<BookmarkId> specialFoldersIds =
-                bookmarkModel.getTopLevelFolderIds(/*getSpecial=*/true, /*getNormal=*/false);
-        BookmarkId rootFolder = bookmarkModel.getRootFolderId();
-
-        // managed and partner bookmark folders will be put to the bottom.
-        List<BookmarkId> managedAndPartnerFolderIds = new ArrayList<>();
-
-        for (BookmarkId bookmarkId : specialFoldersIds) {
-            // Adds reading list as the first top level folder.
-            if (bookmarkId.getType() == BookmarkType.READING_LIST) {
-                topLevelFolders.add(bookmarkId);
-                TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile())
-                        .notifyEvent(EventConstants.READ_LATER_BOTTOM_SHEET_FOLDER_SEEN);
-                continue;
-            }
-            BookmarkId parent = bookmarkModel.getBookmarkById(bookmarkId).getParentId();
-            if (parent.equals(rootFolder)) managedAndPartnerFolderIds.add(bookmarkId);
-        }
-
-        // Adds normal bookmark top level folders.
-        if (bookmarkModel.isFolderVisible(mobileNodeId)) {
-            topLevelFolders.add(mobileNodeId);
-        }
-        if (bookmarkModel.isFolderVisible(desktopNodeId)) {
-            topLevelFolders.add(desktopNodeId);
-        }
-        if (bookmarkModel.isFolderVisible(othersNodeId)) {
-            topLevelFolders.add(othersNodeId);
-        }
-
-        // Add any top-level managed and partner bookmark folders that are children of the root
-        // folder.
-        topLevelFolders.addAll(managedAndPartnerFolderIds);
-        return topLevelFolders;
     }
 
     /**
@@ -682,7 +641,7 @@ public class BookmarkUtils {
      */
     public static int getChildCountForDisplay(BookmarkId id, BookmarkModel bookmarkModel) {
         if (id.getType() == BookmarkType.READING_LIST) {
-            return bookmarkModel.getUnreadCount(id);
+            return bookmarkModel.getUnreadCount();
         } else {
             return bookmarkModel.getTotalBookmarkCount(id);
         }
@@ -820,14 +779,12 @@ public class BookmarkUtils {
     /** Returns whether the given folder should display images. */
     public static boolean shouldShowImagesForFolder(
             BookmarkModel bookmarkModel, BookmarkId folder) {
-        // TODO(crbug.com/1449020): Refactor this to not go through JNI so much.
         BookmarkId rootNodeId = bookmarkModel.getRootFolderId();
         BookmarkId desktopNodeId = bookmarkModel.getDesktopFolderId();
         BookmarkId mobileNodeId = bookmarkModel.getMobileFolderId();
         BookmarkId othersNodeId = bookmarkModel.getOtherFolderId();
 
-        List<BookmarkId> specialFoldersIds =
-                bookmarkModel.getTopLevelFolderIds(/*getSpecial=*/true, /*getNormal=*/false);
+        List<BookmarkId> specialFoldersIds = bookmarkModel.getTopLevelFolderIds();
         return !Objects.equals(folder, rootNodeId) && !Objects.equals(folder, desktopNodeId)
                 && !Objects.equals(folder, mobileNodeId) && !Objects.equals(folder, othersNodeId)
                 && !specialFoldersIds.contains(folder);

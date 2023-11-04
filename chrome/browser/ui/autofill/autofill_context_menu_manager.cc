@@ -92,13 +92,11 @@ AutofillContextMenuManager::AutofillContextMenuManager(
     PersonalDataManager* personal_data_manager,
     RenderViewContextMenuBase* delegate,
     ui::SimpleMenuModel* menu_model,
-    Browser* browser,
-    std::unique_ptr<ScopedNewBadgeTracker> new_badge_tracker)
+    Browser* browser)
     : personal_data_manager_(personal_data_manager),
       menu_model_(menu_model),
       delegate_(delegate),
-      browser_(browser),
-      new_badge_tracker_(std::move(new_badge_tracker)) {
+      browser_(browser) {
   DCHECK(delegate_);
   params_ = delegate_->params();
 }
@@ -130,22 +128,18 @@ void AutofillContextMenuManager::AppendItems() {
   }
 
   // Includes the option of submitting feedback on Autofill.
-  if (base::FeatureList::IsEnabled(features::kAutofillFeedback)) {
+  if (personal_data_manager_->IsAutofillEnabled() &&
+      base::FeatureList::IsEnabled(features::kAutofillFeedback)) {
     menu_model_->AddItemWithStringIdAndIcon(
         IDC_CONTENT_CONTEXT_AUTOFILL_FEEDBACK,
         IDS_CONTENT_CONTEXT_AUTOFILL_FEEDBACK,
         ui::ImageModel::FromVectorIcon(vector_icons::kDogfoodIcon));
-    menu_model_->SetIsNewFeatureAt(
-        menu_model_->GetIndexOfCommandId(IDC_CONTENT_CONTEXT_AUTOFILL_FEEDBACK)
-            .value(),
-        new_badge_tracker_->TryShowNewBadge(
-            feature_engagement::kIPHAutofillFeedbackNewBadgeFeature,
-            &features::kAutofillFeedback));
 
     menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
   }
 
   if (params_.field_renderer_id &&
+      personal_data_manager_->IsAutofillProfileEnabled() &&
       base::FeatureList::IsEnabled(
           features::kAutofillFallbackForAutocompleteUnrecognized)) {
     MaybeAddFallbackForAutocompleteUnrecognizedToMenu(*driver);
@@ -188,7 +182,6 @@ void AutofillContextMenuManager::ExecuteCommand(int command_id) {
 void AutofillContextMenuManager::ExecuteAutofillFeedbackCommand(
     const LocalFrameToken& frame_token,
     AutofillManager& manager) {
-  new_badge_tracker_->ActionPerformed("autofill_feedback_activated");
   chrome::ShowFeedbackPage(
       browser_, chrome::kFeedbackSourceAutofillContextMenu,
       /*description_template=*/std::string(),
@@ -251,10 +244,9 @@ void AutofillContextMenuManager::
 
   menu_model_->AddTitle(l10n_util::GetStringUTF16(
       IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED_TITLE));
-  menu_model_->AddItemWithStringIdAndIcon(
+  menu_model_->AddItemWithStringId(
       kAutofillFallbackForAutocompleteUnrecognized,
-      IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED,
-      ui::ImageModel::FromVectorIcon(vector_icons::kLocationOnIcon));
+      IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED);
   menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
   static_cast<BrowserAutofillManager&>(manager)
       .GetAutocompleteUnrecognizedFallbackEventLogger()

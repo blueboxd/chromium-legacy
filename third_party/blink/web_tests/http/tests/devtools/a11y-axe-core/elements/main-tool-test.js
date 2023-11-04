@@ -1,10 +1,12 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import {TestRunner} from 'test_runner';
 import {AxeCoreTestRunner} from 'axe_core_test_runner';
 import {ElementsTestRunner} from 'elements_test_runner';
+
+import * as ElementsModule from 'devtools/panels/elements/elements.js';
 
 (async function() {
   // axe-core issue #1444 -- role="tree" requires children with role="treeitem",
@@ -45,7 +47,7 @@ import {ElementsTestRunner} from 'elements_test_runner';
   async function testElementsStylesPane() {
     TestRunner.addResult('Tests accessibility of the Styles pane using the axe-core linter');
     await UI.viewManager.showView('elements');
-    const panel = Elements.ElementsPanel.instance();
+    const panel = ElementsModule.ElementsPanel.ElementsPanel.instance();
     const element = panel.stylesWidget.element;
 
     await AxeCoreTestRunner.runValidation(element, NO_REQUIRED_CHILDREN_RULESET);
@@ -55,7 +57,7 @@ import {ElementsTestRunner} from 'elements_test_runner';
     TestRunner.addResult('Tests accessibility in the Computed Styles pane using the axe-core linter');
     await UI.viewManager.showView('elements');
     await ElementsTestRunner.showComputedStyles();
-    const panel = Elements.ElementsPanel.instance();
+    const panel = ElementsModule.ElementsPanel.ElementsPanel.instance();
     const element = panel.computedStyleWidget.element;
 
     await AxeCoreTestRunner.runValidation(element, DEFAULT_RULESET);

@@ -391,10 +391,9 @@ NavigationResult* NavigationApi::navigate(ScriptState* script_state,
   scoped_refptr<SerializedScriptValue> serialized_state = nullptr;
   {
     if (options->hasState()) {
-      ExceptionState exception_state(
-          script_state->GetIsolate(),
-          ExceptionContext::Context::kOperationInvoke, "Navigation",
-          "navigate");
+      ExceptionState exception_state(script_state->GetIsolate(),
+                                     ExceptionContextType::kOperationInvoke,
+                                     "Navigation", "navigate");
       serialized_state = SerializeState(options->state(), exception_state);
       if (exception_state.HadException()) {
         NavigationResult* result =
@@ -456,9 +455,9 @@ NavigationResult* NavigationApi::reload(ScriptState* script_state,
   scoped_refptr<SerializedScriptValue> serialized_state = nullptr;
   {
     if (options->hasState()) {
-      ExceptionState exception_state(
-          script_state->GetIsolate(),
-          ExceptionContext::Context::kOperationInvoke, "Navigation", "reload");
+      ExceptionState exception_state(script_state->GetIsolate(),
+                                     ExceptionContextType::kOperationInvoke,
+                                     "Navigation", "reload");
       serialized_state = SerializeState(options->state(), exception_state);
       if (exception_state.HadException()) {
         NavigationResult* result =
@@ -555,13 +554,16 @@ NavigationResult* NavigationApi::traverseTo(ScriptState* script_state,
     heuristics->SameDocumentNavigationStarted(script_state);
   }
   auto* tracker = ThreadScheduler::Current()->GetTaskAttributionTracker();
-  absl::optional<scheduler::TaskAttributionId> task_id;
+  scheduler::TaskAttributionInfo* task = nullptr;
   if (tracker && script_state->World().IsMainWorld()) {
-    task_id = tracker->RunningTaskAttributionId(script_state);
+    task = tracker->RunningTask(script_state);
+
+    tracker->AddSameDocumentNavigationTask(task);
   }
   window_->GetFrame()->GetLocalFrameHostRemote().NavigateToNavigationApiKey(
       key, LocalFrame::HasTransientUserActivation(window_->GetFrame()),
-      task_id);
+      task ? absl::optional<scheduler::TaskAttributionId>(task->Id())
+           : absl::nullopt);
   return api_method_tracker->GetNavigationResult();
 }
 
@@ -658,7 +660,7 @@ NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
   // fire a navigate event, but all should abort an ongoing navigate event.
   // The main case were that would be a problem (browser-initiated back/forward)
   // is not implemented yet. Move this once it is implemented.
-  InformAboutCanceledNavigation();
+  InformAboutCanceledNavigation(CancelNavigationReason::kNavigateEvent);
   CHECK(window_);
 
   if (HasEntriesAndEventsDisabled()) {
@@ -744,8 +746,18 @@ NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
 
   init->setUserInitiated(params->involvement !=
                          UserNavigationInvolvement::kNone);
-  if (params->form && params->form->Method() == FormSubmission::kPostMethod) {
-    init->setFormData(FormData::Create(params->form, ASSERT_NO_EXCEPTION));
+  if (params->source_element) {
+    HTMLFormElement* form =
+        DynamicTo<HTMLFormElement>(params->source_element.Get());
+    if (!form) {
+      if (auto* control =
+              DynamicTo<HTMLFormControlElement>(params->source_element.Get())) {
+        form = control->formOwner();
+      }
+    }
+    if (form && form->Method() == FormSubmission::kPostMethod) {
+      init->setFormData(FormData::Create(form, ASSERT_NO_EXCEPTION));
+    }
   }
   if (ongoing_api_method_tracker_) {
     init->setInfo(ongoing_api_method_tracker_->GetInfo());
@@ -753,6 +765,10 @@ NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
   auto* controller = AbortController::Create(script_state);
   init->setSignal(controller->signal());
   init->setDownloadRequest(params->download_filename);
+  if (params->source_element &&
+      params->source_element->GetExecutionContext() == window_) {
+    init->setSourceElement(params->source_element);
+  }
   // This unique_ptr needs to be in the function's scope, to maintain the
   // SoftNavigationEventScope until the event handler runs.
   std::unique_ptr<SoftNavigationEventScope> soft_navigation_scope;
@@ -808,6 +824,10 @@ NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
 
 void NavigationApi::InformAboutCanceledNavigation(
     CancelNavigationReason reason) {
+  if (auto* tracker = ThreadScheduler::Current()->GetTaskAttributionTracker();
+      tracker && reason != CancelNavigationReason::kNavigateEvent) {
+    tracker->ResetSameDocumentNavigationTasks();
+  }
   if (reason == CancelNavigationReason::kDropped) {
     has_dropped_navigation_ = true;
     return;

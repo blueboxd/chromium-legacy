@@ -149,6 +149,16 @@ const base::FeatureParam<MemoryUsageInHovercardsUpdateTrigger>
         MemoryUsageInHovercardsUpdateTrigger::kBackground,
         &kMemoryUsageInHovercardsUpdateTriggerOptions};
 
+BASE_FEATURE(kPerformanceControlsSidePanel,
+             "PerformanceControlsSidePanel",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+BASE_FEATURE(kAshUrgentDiscardingFromPerformanceManager,
+             "AshUrgentDiscardingFromPerformanceManager",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 #endif
 
 BASE_FEATURE(kBFCachePerformanceManagerPolicy,
@@ -165,5 +175,8 @@ BASE_FEATURE(kPageTimelineMonitor,
 
 const base::FeatureParam<base::TimeDelta> kPageTimelineStateIntervalTime{
     &kPageTimelineMonitor, "time_between_collect_slice", base::Minutes(5)};
+
+const base::FeatureParam<bool> kUseResourceAttributionCPUMonitor{
+    &kPageTimelineMonitor, "use_resource_attribution_cpu_monitor", false};
 
 }  // namespace performance_manager::features

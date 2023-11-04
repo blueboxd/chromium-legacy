@@ -66,6 +66,7 @@ class StructuredMetricsService final {
 
  private:
   friend class StructuredMetricsServiceTest;
+  friend class StructuredMetricsMixin;
   friend class metrics::StructuredMetricsServiceTestBase;
 
   FRIEND_TEST_ALL_PREFIXES(StructuredMetricsServiceTest, RotateLogs);
@@ -75,6 +76,9 @@ class StructuredMetricsService final {
   StructuredMetricsService(MetricsServiceClient* client,
                            PrefService* local_state,
                            std::unique_ptr<StructuredMetricsRecorder> recorder);
+
+  // Sets the instance of the recorder used for test.
+  void SetRecorderForTest(std::unique_ptr<StructuredMetricsRecorder> recorder);
 
   // Callback function to get the upload interval.
   base::TimeDelta GetUploadTimeInterval();

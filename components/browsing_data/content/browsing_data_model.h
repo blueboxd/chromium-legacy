@@ -106,6 +106,10 @@ class BrowsingDataModel {
     // Returns true if |origin| is within this browsing data's  owning entity.
     bool Matches(const url::Origin& origin) const;
 
+    // Returns the non-1P SchemefulSite this data is partitioned on. Returns
+    // base::nullopt if the data is not partitioned, or is the 1P partition.
+    absl::optional<net::SchemefulSite> GetThirdPartyPartitioningSite() const;
+
     // The logical owner of this browsing data. This is the entity which this
     // information will be most strongly associated with in UX surfaces.
     const raw_ref<const DataOwner, DanglingUntriaged> data_owner;
@@ -258,6 +262,12 @@ class BrowsingDataModel {
       const net::SchemefulSite& top_level_site,
       base::OnceClosure completed);
 
+  // Removes data for `data_owner` which is not partitioned, or is the 1P
+  // partition. This supports more granular data deletion needed by UI surfaces.
+  // Virtual to allow an in-memory only fake to be created.
+  virtual void RemoveUnpartitionedBrowsingData(const DataOwner& data_owner,
+                                               base::OnceClosure completed);
+
   // Returns whether the provided `storage_type` is blocked when third party
   // cookies are blocked.
   bool IsBlockedByThirdPartyCookieBlocking(StorageType storage_type) const;
@@ -277,6 +287,11 @@ class BrowsingDataModel {
       std::unique_ptr<Delegate> delegate
       // TODO(crbug.com/1271155): Inject other dependencies.
   );
+
+  void GetAffectedDataKeyEntriesForRemovePartitionedBrowsingData(
+      const DataOwner& data_owner,
+      const net::SchemefulSite& top_level_site,
+      DataKeyEntries& affected_data_key_entries);
 
   // Pulls information from disk and populate the model.
   // Virtual to allow an in-memory only fake to be created.

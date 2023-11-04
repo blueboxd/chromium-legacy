@@ -50,7 +50,7 @@
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
-#include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 #include "third_party/blink/public/web/modules/canvas/canvas_test_utils.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_image_cache.h"
@@ -62,8 +62,10 @@
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkSerialProcs.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/docs/SkXPSDocument.h"
+#include "third_party/skia/include/encode/SkPngEncoder.h"
 // Note that headers in third_party/skia/src are fragile.  This is
 // an experimental, fragile, and diagnostic-only document type.
 #include "third_party/skia/src/utils/SkMultiPictureDocument.h"
@@ -182,7 +184,14 @@ class SkPictureSerializer {
       SkFILEWStream file(filepath.c_str());
       DCHECK(file.isValid());
 
-      auto data = picture->serialize();
+      SkSerialProcs procs{
+          .fImageProc = [](SkImage* img, void*) -> sk_sp<SkData> {
+            // Note: if the picture contains texture-backed (gpu) images, they
+            // will fail to be read-back and therefore fail to be encoded unless
+            // we can thread the correct GrDirectContext through to here.
+            return SkPngEncoder::Encode(nullptr, img, SkPngEncoder::Options{});
+          }};
+      auto data = picture->serialize(&procs);
       file.write(data->data(), data->size());
       file.fsync();
     }
@@ -581,7 +590,8 @@ gin::WrapperInfo GpuBenchmarking::kWrapperInfo = {gin::kEmbedderNativeGin};
 
 // static
 void GpuBenchmarking::Install(base::WeakPtr<RenderFrameImpl> frame) {
-  v8::Isolate* isolate = blink::MainThreadIsolate();
+  v8::Isolate* isolate =
+      frame->GetWebFrame()->GetAgentGroupScheduler()->Isolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context =
       frame->GetWebFrame()->MainWorldScriptContext();

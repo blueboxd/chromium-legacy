@@ -206,6 +206,7 @@
 <translation id="1775598828170459419"><ph name="NUM_TOTAL_ITEMS" />න් <ph name="NUM_SHOWN_ITEMS" />ක් පෙන්වමින්</translation>
 <translation id="178347895271755507">ඔබේ දුරකථනයේ මෑත ඡායාරූප, මාධ්‍ය සහ දැනුම්දීම් බැලීම පිහිටුවන්න</translation>
 <translation id="1787955149152357925">ක්‍රියාවිරහිතයි</translation>
+<translation id="1797271123677381264">මුරපදය අමතකයි</translation>
 <translation id="181103072419391116">සංඥා ප්‍රබලතාව <ph name="SIGNAL_STRENGTH" />, ඔබේ පරිපාලකයා විසින් කළමනාකරණය කරයි</translation>
 <translation id="1815245884418711390">හොට්ස්පොට් ටොගල් කරන්න. හොට්ස්පොට් ක්‍රියා විරහිතයි.</translation>
 <translation id="1816896987747843206">මෙය කැමරා අවසරය ඇති සියලු යෙදුම් සහ වෙබ් අඩවි සඳහා කැමරා ප්‍රවේශයට ඉඩ දෙයි</translation>
@@ -224,6 +225,7 @@
 <translation id="1831565490995294689"><ph name="APP_TO_OPEN" /> විවෘත කිරීමට තෝරන්න.</translation>
 <translation id="1838895407229022812">රාත්‍රී ආලෝකය අක්‍රියයි.</translation>
 <translation id="1854180393107901205">Cast කිරීම නවත්වන්න</translation>
+<translation id="1862077610023398675">පාලන සඟවන්න</translation>
 <translation id="1862380676329487333">යාවත්කාලීන කර වරන්න</translation>
 <translation id="1864454756846565995">USB-C උපාංගය (පසුපස තොට)</translation>
 <translation id="1869497990620230175">ඉක්මන් ගොනු</translation>
@@ -298,7 +300,6 @@
 <translation id="2227179592712503583">යෝජනාව ඉවත් කරන්න</translation>
 <translation id="2248634276911611268">සබැඳිය නව පටිත්තක විවෘත කර මෙම නව පටිත්තට මාරු වන්න</translation>
 <translation id="225680501294068881">උපාංග සොයයි...</translation>
-<translation id="225716114209817872">උපරිමය</translation>
 <translation id="2257486738914982088"><ph name="FILENAME" /> බාගන්නා අතරතුර යම් දෙයක් වැරදිණි</translation>
 <translation id="2258734398699965611">යෝජිත ගොනු</translation>
 <translation id="2268130516524549846">බ්ලූටූත් අබල කෙරිණි</translation>
@@ -451,6 +452,7 @@
 <translation id="2891209721153296020">"තේරීම ඉවත් කරන්න"</translation>
 <translation id="2894949423239620203">කේබලය කාර්ය සාධනයට බලපෑ හැකිය</translation>
 <translation id="2914580577416829331">තිර ග්‍රහණ</translation>
+<translation id="2924416280450782352">අයිතම පෙන්විය නොහැක. මෙම පැනලය නැවත විවෘත කිරීමට උත්සාහ කරන්න.</translation>
 <translation id="2931572158271115754">මෙම කළ යුතු දේවල ලැයිස්තුවේ කිසිවක් නැත.</translation>
 <translation id="2941112035454246133">අඩු</translation>
 <translation id="2942350706960889382">ඈඳන ලද විශාලකය</translation>
@@ -696,7 +698,6 @@
 <translation id="385300504083504382">ආරම්භය</translation>
 <translation id="3859364108019690">යෙදුම් ප්‍රවාහ කළ නොහැක</translation>
 <translation id="3861651314799684201">සම්පූර්ණ තිරය පටිගත කිරීමට Enter ඔබන්න</translation>
-<translation id="3871092408932389764">අඩුම</translation>
 <translation id="3886872229787704059">අද විවෘත කරන ලදි</translation>
 <translation id="3891340733213178823">වැරිමට Ctrl+Shift+Q දෙසැරයක් ඔබන්න.</translation>
 <translation id="3893630138897523026">ChromeVox (කථා කළ අදහස්)</translation>
@@ -738,6 +739,7 @@
 <translation id="4028481283645788203">වැඩිපුර ආරක්‍ෂාව සඳහා මුරපදය අවශ්‍යයි</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4032988577476260673"><ph name="LAUNCHER_KEY_NAME" /> + වමට ඊතලය</translation>
+<translation id="4039699481424758547">කවුළුවෙහි තිර රුවක් ලබා ගැනීමට එන්ටර් ඔබන්න: <ph name="WINDOW_TITLE" /></translation>
 <translation id="4042660782729322247">ඔබ ඔබේ තිරය බෙදා ගනියි</translation>
 <translation id="404437169852192935">යාවත්කාලීන කිරීම් නිමා විය</translation>
 <translation id="4049230407053723315">ක්ෂණික සැකසීම්</translation>
@@ -785,6 +787,7 @@
 <translation id="4215497585250573029">VPN සැකසුම්</translation>
 <translation id="4217571870635786043">අනුලේඛනය</translation>
 <translation id="4221957499226645091"><ph name="APP_NAME" />, ස්ථාපිත යෙදුම, විරාම කරන ලදී</translation>
+<translation id="4228078597006700451">පාලන සකසා නැත</translation>
 <translation id="4231053948789591973">විකාශය දැනට විරාම කර ඇත. ඔබට ඕනෑම වේලාවක විකාශය නැවත ආරම්භ කිරීමට හෝ ඔබේ තිරය විකාශය කිරීම නැවැත්වීමට හැකිය.</translation>
 <translation id="423685346499232137">මෙම අවස්ථාවේදී අන්තර්ගතය පිටපත් කිරීමට හෝ ඇලවීමට නොහැකිය</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -833,7 +836,6 @@
 <translation id="4406883609789734330">සජීවී සිරස්තලය</translation>
 <translation id="4412944820643904175"><ph name="FEATURE_NAME" /> ක්‍රියාවිරහිතයි.</translation>
 <translation id="4424159417645388645">මේසය 5</translation>
-<translation id="4427695046139341014">ක්‍රීඩා උපකරණ පුවරුව</translation>
 <translation id="4430019312045809116">ශබ්ද තීව්‍රතාවය</translation>
 <translation id="4441283832827406317">නාමය අනුව යෙදුම් අනුපිළිවෙළට සකසා ඇත</translation>
 <translation id="4445159312344259901">අගුලු හැරීමට පුරන්න</translation>
@@ -1214,12 +1216,12 @@
 <translation id="5961960957587052807">ආලෝකය</translation>
 <translation id="5965524703725988602">අඳුරු තේමාව ටොගල් කරන්න. <ph name="STATE_TEXT" />.</translation>
 <translation id="5975235751479998104">කවුළු හරහා ඉදිරියට කාලක්‍රම කරන්න</translation>
-<translation id="5976112937189445008">කවුළුව පටිගත කිරීමට Enter ඔබන්න</translation>
 <translation id="5978382165065462689">දුරස්ථ සහයක මගින් ඔබේ තිරයේ පාලනය බෙදාගනී.</translation>
 <translation id="5980301590375426705">අමුත්තා පිටවන්න</translation>
 <translation id="5983567367406220847">අක්‍රිය වීම හේතුවෙන්, හොට්ස්පොට් ක්‍රියා විරහිත කර ඇත.</translation>
 <translation id="598407983968395253">අච්චුව භාවිත කරන්න</translation>
 <translation id="598882571027504733">යාවත්කාලීනය ලබා ගැනීමට, අමුණා ඇති යතුරුපුවරුව සමගින් ඔබගේ Chromebook නැවත ආරම්භ කරන්න.</translation>
+<translation id="6000279412553873020">යතුරු, බොත්තම්, සහ තවත් දේ</translation>
 <translation id="6012623610530968780"><ph name="TOTAL_PAGE_NUM" /> න් <ph name="SELECTED_PAGE" /> වැනි පිටුව</translation>
 <translation id="601304062528754300">රාක්කයේ ඊළඟ අයිතමය උද්දීපන කරන්න</translation>
 <translation id="6015573907265691211">සම්පූර්ණ බව සලකුණු කරන්න</translation>
@@ -1417,6 +1419,7 @@
 <translation id="6802196538183166658">වේලාව තේරීමෙන් ක්ෂණික සැකසීම් විවෘත කරන්න</translation>
 <translation id="6802687695197837794">මෙය <ph name="APP1_NAME" />, <ph name="APP2_NAME" />, සහ කැමරා සහ මයික්‍රෆෝන අවසර සහිත සියලු යෙදුම් සහ වෙබ් අඩවි සඳහා ප්‍රවේශ වීමට ඉඩ දෙයි</translation>
 <translation id="6803622936009808957">සහාය වන විසඳුම් හමු නොවුන නිසා ප්‍රදර්ශන කැඩපත්කරනය කළ නොහැකි විය. ඒ වෙනුවට දිගු කළ ඩෙස්ක්ටොප් එකට ඇතුළු විය.</translation>
+<translation id="6809556495807506746">පාලන නොලැබේ</translation>
 <translation id="6812232930908427253">මේසය සුරැකීමට නොහැකි විය. කවුළු හෝ ටැබ ඉතා වැඩි ගණනකි.</translation>
 <translation id="6818242057446442178">වචනයෙන් ආපසු</translation>
 <translation id="6819327813400217281">කැමරාව පහළ වම් කෙළවරට සවි කර ඇත</translation>
@@ -1436,12 +1439,12 @@
 <translation id="6886172995547742638">ඔබගේ <ph name="DEVICE_TYPE" /> අඩු ක්‍රියාකාරිත්වයක් අත්විඳිය හැකිය. සහතික කළ <ph name="PREFERRED_MINIMUM_POWER" />W හෝ වඩා ඉහළ USB-C බල ඇඩැප්ටරයක් භාවිත කරන්න.</translation>
 <translation id="688631446150864480">කවුළු මාරු කිරීමට පහළ ඊතල යතුර ඔබන්න</translation>
 <translation id="6896758677409633944">පිටපත්</translation>
-<translation id="6901883536534621389">සංචාලනය කිරීමට ඉංගිත උත්සාහ කරන්න</translation>
 <translation id="6912841030378044227">ලිපින තීරුව කෙරෙහි අවධානය යොමු කරන්න</translation>
 <translation id="6912901278692845878">ඉක්මන් සංචාරය</translation>
 <translation id="6919251195245069855">ඔබේ ස්මාර්ට් කාඩ්පත හඳුනා ගැනීමට නොහැකි විය. නැවත උත්සාහ කරන්න.</translation>
 <translation id="6920245099716267363">හොට්ස්පොට් ටොගල් කරන්න. හොට්ස්පොට් ක්‍රියාත්මකයි, 1 උපාංගයක් සම්බන්ධයි.</translation>
 <translation id="692135145298539227">මකන්න</translation>
+<translation id="6929081673585394903">පාලන පෙන්වන්න</translation>
 <translation id="6931576957638141829">සුරකින්නේ</translation>
 <translation id="6942518653766415536">පටිගත කිරීමේ ආකෘති මෙනුව</translation>
 <translation id="6945221475159498467">තෝරන්න</translation>
@@ -1639,6 +1642,7 @@
 <translation id="7773536009433685931">ඒ වෙනුවට WiFi ක්‍රියාත්මක කරන්න</translation>
 <translation id="7780094051999721182">කෙටි මං</translation>
 <translation id="7780159184141939021">තිරය කරකවන්න</translation>
+<translation id="7792590255364786396">දෘශ්‍යමාන</translation>
 <translation id="7796735576426975947">නව දැනුම්දීම සඟවා ඇත</translation>
 <translation id="7798302898096527229">අවලංගු කිරීමට සෙවීම හෝ Shift ඔබන්න.</translation>
 <translation id="780301667611848630">එපා, ස්තූතියි</translation>
@@ -1742,7 +1746,6 @@
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> භාවිත කිරීම</translation>
 <translation id="8185090165691050712">අගුලු ප්‍රකාරය ප්‍රතිප්‍රමාණ කිරීමට මෙනුව සක්‍රීය/අක්‍රිය කරන්න</translation>
 <translation id="8192202700944119416">දැනුම්දීම් සැඟවී ඇත.</translation>
-<translation id="8196787716797768628">යෙදුම් අතර ක්‍ෂණිකව මාරු වීමටත් ඔබේ Chromebook සමඟ ටැබ්ලට් ප්‍රකාරය තුළ අන්තර්ක්‍රියා කිරීමටත් ඉංගිත භාවිත කරන්න.</translation>
 <translation id="8198456017687137612">විකාශ ටැබය</translation>
 <translation id="8200772114523450471">කරගෙන යන්න</translation>
 <translation id="8203795194971602413">දකුණු ක්ලික් කිරීම</translation>
@@ -1752,7 +1755,6 @@
 <translation id="8230305195727960608">වර්ණ අපවර්තන ප්‍රකාරය</translation>
 <translation id="8236042855478648955">විවේකයක් සඳහා වේලාවයි</translation>
 <translation id="8239034820133090126">දකුණු පස ඇති මේසය සක්‍රිය කරන්න</translation>
-<translation id="8246282815785366524">ආපසු සාදරයෙන් පිළිගනිමු, <ph name="GIVEN_NAME" /></translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, සංඥා ප්‍රබලතාව <ph name="SIGNAL_STRENGTH" />, දුරකථන බැටරිය <ph name="BATTERY_STATUS" /></translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, යෙදුම</translation>
 <translation id="8255234195843591763">යාවත්කාලීන කිරීමට යළි සකසන්න</translation>
@@ -1851,6 +1853,7 @@
 <translation id="8703634754197148428">පටිගත කිරීම ආරම්භ කරන්න. පටිගත කිරීම ආරම්භ වූ පසුව රාක්කයට සංචාලනය කිරීම සහ පටිගත කිරීම නවත්වන්න බොත්තම සොයා ගැනීම සඳහා Alt + Shift + L භාවිත කරන්න</translation>
 <translation id="8704155109538237473">පින්තූරය තුළ පින්තූරය කවුළුව වෙත අවධානය යොමු කරන්න</translation>
 <translation id="870917907284186124">අනුලේඛනය සක්‍රීය/අක්‍රිය කරන්න (ඔබේ හඬ මඟින් ටයිප් කරන්න)</translation>
+<translation id="8714138378966541668">සපයන්නා විසින් අගුළු දමා ඇත</translation>
 <translation id="8717459106217102612">පෙර වචනය හෝ අකුර තෝරන්න</translation>
 <translation id="8721053961083920564">හඬ ටොගල් කරන්න. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">පූර්ණ තිර ග්‍රහණය</translation>
@@ -1869,7 +1872,6 @@
 <translation id="878215960996152260"><ph name="APP_NAME" />, ස්ථාපිත යෙදුම, අවහිර කරන ලදි</translation>
 <translation id="8785070478575117577"><ph name="NETWORK_NAME" /> වෙත සබඳින්න</translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
-<translation id="8790998409862094015">දැඩි</translation>
 <translation id="8792626944327216835">මයික්‍රෝෆෝනය</translation>
 <translation id="8801802992492329306">5G</translation>
 <translation id="8806053966018712535">ෆෝල්ඩරය <ph name="FOLDER_NAME" /></translation>
@@ -1882,6 +1884,7 @@
 <translation id="8834539327799336565">දැනට සම්බන්ධ වී ඇත</translation>
 <translation id="8841375032071747811">ආපසු බොත්තම</translation>
 <translation id="8843682306134542540">කරකැවීමේ අගුල මාරු කරන්න. <ph name="STATE_TEXT" /></translation>
+<translation id="8849001918648564819">සඟවා ඇත</translation>
 <translation id="8853703225951107899">ඔබගේ PIN හෝ මුරපදය තවම සත්‍යාපනය කළ නොහැකි විය. සටහන: ඔබ මෑතකදී ඔබගේ මුරපදය වෙනස් කළේ නම්, ඔබගේ පැරණි මුරපදය භාවිතා කරන්න. ඔබ ඉවත් වූ පසු ඔබගේ නව මුරපදය අදාළ වේ.</translation>
 <translation id="8855885154700222542">සම්පූර්ණ තිරයේ යතුර</translation>
 <translation id="8858369206579825206">පෞද්ගලිකත්ව පාලන</translation>
@@ -1901,7 +1904,6 @@
 <translation id="8909138438987180327">බැටරි ප්‍රතිශතය <ph name="PERCENTAGE" /> කි.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google සහායක මෙම භාෂාව කථා කරන්නේ නැත.</translation>
-<translation id="8924458948354692166">කවුළු තිර රුවක් ලබා ගැනීමට Enter ඔබන්න</translation>
 <translation id="8926951137623668982">රාක්කය සැම විට සඟවා ඇත</translation>
 <translation id="8934926665751933910">{NUM_FILES,plural, =1{1 ගොනුවක්}one{ගොනු #ක්}other{ගොනු #ක්}}</translation>
 <translation id="8936501819958976551">ක්‍රියා විරහිතයි</translation>
@@ -1966,6 +1968,7 @@
 <translation id="9211490828691860325">සියලු වැඩතල</translation>
 <translation id="9211681782751733685">බැටරිය සම්පූර්ණයෙන් ආරෝපණ වන තෙක් <ph name="TIME_REMAINING" />ක් ඉතුරුයි.</translation>
 <translation id="9215934040295798075">වෝල්පේපර සකසන්න</translation>
+<translation id="9216699844945104164">කවුළුව පටිගත කිරීමට එන්ටර් ඔබන්න: <ph name="WINDOW_TITLE" /></translation>
 <translation id="9219103736887031265">රූප</translation>
 <translation id="921989828232331238">ඔබේ මාපියන් ඔබේ උපාංගයට අද අඟුලු දමා ඇත</translation>
 <translation id="9220525904950070496">ගිනුම ඉවත් කරන්න</translation>

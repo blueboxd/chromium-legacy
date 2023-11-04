@@ -14,6 +14,7 @@ import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import './add_input_methods_dialog.js';
 import './add_spellcheck_languages_dialog.js';
 import './os_edit_dictionary_page.js';
@@ -139,6 +140,14 @@ export class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
           return loadTimeData.getBoolean('onDeviceGrammarCheckEnabled');
         },
       },
+
+      languagePacksInSettingsEnabled_: Boolean,
+
+      allowEmojiSuggestion_: Boolean,
+
+      allowOrca_: Boolean,
+
+      allowSuggestionSection_: Boolean,
     };
   }
 
@@ -155,8 +164,9 @@ export class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
   // Internal properties for mixins.
   // From DeepLinkingMixin.
   override supportedSettingIds = new Set([
-    Setting.kShowInputOptionsInShelf,
     Setting.kAddInputMethod,
+    Setting.kShowEmojiSuggestions,
+    Setting.kShowInputOptionsInShelf,
     Setting.kSpellCheck,
   ]);
   // From RouteOriginMixin.
@@ -170,6 +180,13 @@ export class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
   private onDeviceGrammarCheckEnabled_: boolean;
   private languageSettingsJapaneseEnabled_: boolean;
   private shouldShowLanguagePacksNotice_: boolean;
+  private languagePacksInSettingsEnabled_ =
+      loadTimeData.getBoolean('languagePacksInSettingsEnabled');
+  private readonly allowEmojiSuggestion_: boolean =
+      loadTimeData.getBoolean('allowEmojiSuggestion');
+  private readonly allowOrca_: boolean = loadTimeData.getBoolean('allowOrca');
+  private readonly allowSuggestionSection_: boolean =
+      this.allowOrca_ || this.allowEmojiSuggestion_;
 
   // Computed properties.
   private spellCheckLanguages_: SpellCheckLanguageState[]|undefined;
@@ -610,6 +627,11 @@ export class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
     if (this.showNextImeShortcutReminder_) {
       this.setPrefValue('ash.shortcut_reminders.next_ime_dismissed', true);
     }
+  }
+
+  private shouldShowSpinner_(_item: chrome.languageSettingsPrivate.InputMethod):
+      boolean {
+    return this.languagePacksInSettingsEnabled_;
   }
 }
 

@@ -25,8 +25,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_request_options_context.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_identity_provider_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_identity_user_info.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_m_doc_element.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_m_doc_provider.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_creation_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_parameters.h"
@@ -34,6 +32,10 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_rp_entity.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_user_entity.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_remote_desktop_client_override.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_string_walletfieldrequirement.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_wallet_field_requirement.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_wallet_provider.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_wallet_selector.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
 #include "third_party/blink/renderer/modules/credentialmanagement/credential.h"
 #include "third_party/blink/renderer/modules/credentialmanagement/federated_credential.h"
@@ -69,10 +71,6 @@ using blink::mojom::blink::IdentityUserInfoPtr;
 using blink::mojom::blink::LargeBlobSupport;
 using blink::mojom::blink::LogoutRpsRequest;
 using blink::mojom::blink::LogoutRpsRequestPtr;
-using blink::mojom::blink::MDocElement;
-using blink::mojom::blink::MDocElementPtr;
-using blink::mojom::blink::MDocProvider;
-using blink::mojom::blink::MDocProviderPtr;
 using blink::mojom::blink::PRFValues;
 using blink::mojom::blink::PRFValuesPtr;
 using blink::mojom::blink::PublicKeyCredentialCreationOptionsPtr;
@@ -91,6 +89,12 @@ using blink::mojom::blink::RemoteDesktopClientOverridePtr;
 using blink::mojom::blink::ResidentKeyRequirement;
 using blink::mojom::blink::RpContext;
 using blink::mojom::blink::UserVerificationRequirement;
+using blink::mojom::blink::WalletFieldRequirement;
+using blink::mojom::blink::WalletFieldRequirementPtr;
+using blink::mojom::blink::WalletProvider;
+using blink::mojom::blink::WalletProviderPtr;
+using blink::mojom::blink::WalletSelector;
+using blink::mojom::blink::WalletSelectorPtr;
 
 namespace {
 
@@ -763,21 +767,50 @@ TypeConverter<IdentityProviderConfigPtr, blink::IdentityProviderConfig>::
 IdentityProviderPtr
 TypeConverter<IdentityProviderPtr, blink::IdentityProviderConfig>::Convert(
     const blink::IdentityProviderConfig& provider) {
-  if (provider.hasMdoc() &&
+  if (provider.hasHolder() &&
       blink::RuntimeEnabledFeatures::WebIdentityMDocsEnabled() &&
       // TODO(https://crbug.com/1416939): make sure the MDocs API
       // works well with the Multiple IdP API.
       !blink::RuntimeEnabledFeatures::FedCmMultipleIdentityProvidersEnabled()) {
-    WTF::Vector<MDocElementPtr> requested_elements;
-    for (auto element : provider.mdoc()->requestedElements()) {
-      auto requested_element =
-          MDocElement::New(element->elementNamespace(), element->name());
-      requested_elements.push_back(std::move(requested_element));
+    auto mojo_provider = WalletProvider::New();
+    if (provider.holder()->hasParams()) {
+      HashMap<String, String> params;
+      for (const auto& pair : provider.holder()->params()) {
+        params.Set(pair.first, pair.second);
+      }
+      mojo_provider->params = std::move(params);
     }
-    auto mdoc = MDocProvider::New(provider.mdoc()->documentType(),
-                                  provider.mdoc()->readerPublicKey(),
-                                  std::move(requested_elements));
-    return IdentityProvider::NewMdoc(std::move(mdoc));
+    mojo_provider->selector = WalletSelector::New();
+    if (provider.holder()->hasSelector()) {
+      if (provider.holder()->selector()->hasFormat()) {
+        mojo_provider->selector->format =
+            provider.holder()->selector()->format();
+      }
+      if (provider.holder()->selector()->hasDoctype()) {
+        mojo_provider->selector->doctype =
+            provider.holder()->selector()->doctype();
+      }
+      if (provider.holder()->selector()->hasFields()) {
+        WTF::Vector<WalletFieldRequirementPtr> fields;
+        for (auto element : provider.holder()->selector()->fields()) {
+          auto requested_element = WalletFieldRequirement::New();
+          if (element->IsString()) {
+            requested_element->name = element->GetAsString();
+          } else {
+            requested_element->name =
+                element->GetAsWalletFieldRequirement()->name();
+            if (element->GetAsWalletFieldRequirement()->hasEquals()) {
+              requested_element->equals =
+                  element->GetAsWalletFieldRequirement()->equals();
+            }
+          }
+
+          fields.push_back(std::move(requested_element));
+        }
+        mojo_provider->selector->fields = std::move(fields);
+      }
+    }
+    return IdentityProvider::NewHolder(std::move(mojo_provider));
   } else {
     auto config = IdentityProviderConfig::From(provider);
     return IdentityProvider::NewFederated(std::move(config));

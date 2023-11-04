@@ -6,6 +6,7 @@
 
 #include "chrome/browser/page_load_metrics/observers/lcp_critical_path_predictor_page_load_metrics_observer.h"
 #include "content/public/browser/render_frame_host.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace predictors {
 
@@ -40,6 +41,46 @@ void LCPCriticalPathPredictorHost::SetLcpElementLocator(
       plmo->SetLcpElementLocator(lcp_element_locator);
     }
   }
+}
+
+void LCPCriticalPathPredictorHost::SetLcpInfluencerScriptUrls(
+    const std::vector<GURL>& lcp_influencer_scripts) {
+  if (!base::FeatureList::IsEnabled(blink::features::kLCPScriptObserver)) {
+    return;
+  }
+  if (auto* page_data =
+          LcpCriticalPathPredictorPageLoadMetricsObserver::PageData::GetForPage(
+              render_frame_host().GetPage())) {
+    if (auto* plmo =
+            page_data->GetLcpCriticalPathPredictorPageLoadMetricsObserver()) {
+      plmo->SetLcpInfluencerScriptUrls(lcp_influencer_scripts);
+    }
+  }
+}
+
+void LCPCriticalPathPredictorHost::NotifyFetchedFont(const GURL& font_url) {
+  if (!base::FeatureList::IsEnabled(blink::features::kLCPPFontURLPredictor)) {
+    ReportBadMessageAndDeleteThis(
+        "NotifyFetchedFont can be called only if kLCPPFontURLPredictor is "
+        "enabled.");
+    return;
+  }
+  if (!font_url.SchemeIsHTTPOrHTTPS()) {
+    ReportBadMessageAndDeleteThis("url format must be checked in the caller.");
+    return;
+  }
+  auto* page_data =
+      LcpCriticalPathPredictorPageLoadMetricsObserver::PageData::GetForPage(
+          render_frame_host().GetPage());
+  if (!page_data) {
+    return;
+  }
+  auto* plmo = page_data->GetLcpCriticalPathPredictorPageLoadMetricsObserver();
+  if (!plmo) {
+    return;
+  }
+
+  plmo->AppendFetchedFontUrl(font_url);
 }
 
 }  // namespace predictors

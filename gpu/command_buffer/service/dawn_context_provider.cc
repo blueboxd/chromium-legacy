@@ -9,6 +9,7 @@
 
 #include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
@@ -16,6 +17,7 @@
 #include "base/trace_event/trace_arguments.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/crash/core/common/crash_key.h"
 #include "gpu/command_buffer/service/dawn_instance.h"
 #include "gpu/command_buffer/service/dawn_platform.h"
 #include "gpu/config/gpu_finch_features.h"
@@ -40,6 +42,10 @@ void LogInfo(WGPULoggingType type, char const* message, void* userdata) {
 
 void LogError(WGPUErrorType type, char const* message, void* userdata) {
   LOG(ERROR) << message;
+  static crash_reporter::CrashKeyString<1024> error_key(
+      "dawn-validation-error");
+  error_key.Set(message);
+  base::debug::DumpWithoutCrashing();
 }
 
 void LogDeviceLost(WGPUDeviceLostReason reason,
@@ -195,10 +201,10 @@ bool DawnContextProvider::Initialize(wgpu::BackendType backend_type,
 #if DCHECK_IS_ON()
   enabled_toggles.push_back("use_user_defined_labels_in_backend");
 #else
-  // Disable validation in non-DCHECK builds.
-  // TODO(crbug.com/1456492): check if below toggles are necessary.
+  if (features::kSkiaGraphiteDawnSkipValidation.Get()) {
+    enabled_toggles.push_back("skip_validation");
+  }
   enabled_toggles.push_back("disable_robustness");
-  enabled_toggles.push_back("skip_validation");
 #endif
 
 #if BUILDFLAG(IS_APPLE)
@@ -240,8 +246,6 @@ bool DawnContextProvider::Initialize(wgpu::BackendType backend_type,
 #if BUILDFLAG(IS_WIN)
   if (adapter_options.backendType == wgpu::BackendType::D3D11) {
     features.push_back(wgpu::FeatureName::D3D11MultithreadProtected);
-    features.push_back(wgpu::FeatureName::Norm16TextureFormats);
-    features.push_back(wgpu::FeatureName::MultiPlanarFormatP010);
   }
 
   // Request the GPU that ANGLE is using if possible.
@@ -268,6 +272,14 @@ bool DawnContextProvider::Initialize(wgpu::BackendType backend_type,
     }
   }
 
+  if (adapter.HasFeature(wgpu::FeatureName::Norm16TextureFormats)) {
+    features.push_back(wgpu::FeatureName::Norm16TextureFormats);
+  }
+
+  if (adapter.HasFeature(wgpu::FeatureName::MultiPlanarFormatP010)) {
+    features.push_back(wgpu::FeatureName::MultiPlanarFormatP010);
+  }
+
   if (adapter.HasFeature(wgpu::FeatureName::MultiPlanarFormatExtendedUsages)) {
     features.push_back(wgpu::FeatureName::MultiPlanarFormatExtendedUsages);
   }
@@ -291,6 +303,8 @@ bool DawnContextProvider::Initialize(wgpu::BackendType backend_type,
   device_ = std::move(device);
 
   backend_type_ = backend_type;
+  is_vulkan_swiftshader_adapter_ =
+      backend_type == wgpu::BackendType::Vulkan && force_fallback_adapter;
 
 #if BUILDFLAG(IS_WIN)
   // DirectComposition is initialized in ui/gl/init/gl_initializer_win.cc while

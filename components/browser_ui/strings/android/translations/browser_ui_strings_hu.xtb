@@ -100,6 +100,7 @@
 <translation id="2653659639078652383">Küldés</translation>
 <translation id="2677748264148917807">Lap elhagyása</translation>
 <translation id="2678468611080193228">Próbálja meg átmenetileg engedélyezni a harmadik féltől származó cookie-kat, ami kevesebb védelmet jelent, de a webhelyfunkciók nagyobb valószínűséggel fognak működni.</translation>
+<translation id="2683434792633810741">Végrehajtja a törlést és az alaphelyzetbe állítást?</translation>
 <translation id="2687403674020088961">Az összes cookie letiltása (nem ajánlott)</translation>
 <translation id="2713106313042589954">Kamera kikapcsolása</translation>
 <translation id="2717722538473713889">E-mail-címek</translation>
@@ -179,6 +180,7 @@
 <translation id="4008040567710660924">Adott webhely cookie-jainak engedélyezése.</translation>
 <translation id="4046123991198612571">Következő szám</translation>
 <translation id="4053720452172726777">A Google Chrome személyre szabása és beállításai</translation>
+<translation id="4149890623864272035">Biztosan törli az összes helyi adatot (a cookie-kkal együtt), és alaphelyzetbe állítja a webhely összes engedélyét?</translation>
 <translation id="4149994727733219643">Weboldalak egyszerűsített nézete</translation>
 <translation id="4151930093518524179">Alapértelmezett nagyítás</translation>
 <translation id="4165986682804962316">Webhelybeállítások</translation>
@@ -196,6 +198,7 @@
 <translation id="4412992751769744546">Harmadik felektől származó cookie-k engedélyezése</translation>
 <translation id="4428065317363009941">Hirdetések személyre szabása</translation>
 <translation id="4434045419905280838">Előugró ablakok és átirányítások</translation>
+<translation id="443552056913301231">A művelet törli az összes helyi adatot (a cookie-kat is), és alaphelyzetbe állítja a(z) <ph name="ORIGIN" /> összes engedélyét</translation>
 <translation id="4468959413250150279">Egy adott webhely hangjának némítása.</translation>
 <translation id="4475912480633855319">{COOKIES,plural, =1{# cookie}other{# cookie}}</translation>
 <translation id="4478158430052450698">Megkönnyítheti a különböző webhelyek nagyításának személyre szabását</translation>
@@ -205,6 +208,7 @@
 <translation id="4566417217121906555">Mikrofon némítása</translation>
 <translation id="4570913071927164677">Részletek</translation>
 <translation id="4598549027014564149">Inkognitó módban a webhelyek nem használhatják fel az Ön cookie-jait arra, hogy megfigyeljék az Ön böngészési tevékenységeit a különböző webhelyek között, még kapcsolódó webhelyek esetén sem. Böngészési tevékenységeit nem használjuk fel például a hirdetések személyre szabásához. Előfordulhat, hogy bizonyos webhelyek funkciói nem működnek majd megfelelően.</translation>
+<translation id="4644713492825682049">Törlés és alaphelyzetbe állítás</translation>
 <translation id="4645575059429386691">A szülő kezeli</translation>
 <translation id="4670064810192446073">Virtuális valóság</translation>
 <translation id="4751476147751820511">Mozgás- és fényérzékelők</translation>
@@ -235,6 +239,7 @@
 <translation id="5216942107514965959">Utolsó látogatás: ma</translation>
 <translation id="5225463052809312700">Kamera bekapcsolása</translation>
 <translation id="5234764350956374838">Elvetés</translation>
+<translation id="5246825184569358663">A művelet törli az összes helyi adatot (a cookie-kal együtt), és alaphelyzetbe állítja a(z) <ph name="DOMAIN" /> és az alá tartozó webhelyek összes engedélyét</translation>
 <translation id="5264323282659631142">„<ph name="CHIP_LABEL" />“ eltávolítása</translation>
 <translation id="528192093759286357">A teljes képernyős megjelenítésből való kilépéshez húzza le felülről, majd koppintson a vissza gombra.</translation>
 <translation id="5300589172476337783">Megjelenítés</translation>
@@ -278,11 +283,11 @@
 <translation id="5922853908706496913">Képernyő megosztása</translation>
 <translation id="5922967540311291836">Harmadik féltől származó cookie-k letiltása</translation>
 <translation id="5939518447894949180">Visszaállítás</translation>
+<translation id="5964247741333118902">Beágyazott tartalom</translation>
 <translation id="5968921426641056619">Adja meg a kívánt internetcímet</translation>
 <translation id="5975083100439434680">Kicsinyítés</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">A webhelynek az eszközhöz való hozzáférésének vezérlése</translation>
-<translation id="6018815681665454784">Elvégzi a törlést és a visszaállítást?</translation>
 <translation id="6040143037577758943">Bezárás</translation>
 <translation id="6042308850641462728">Továbbiak</translation>
 <translation id="6064125863973209585">Befejezett letöltések</translation>
@@ -294,6 +299,7 @@
 <translation id="6192792657125177640">Kivételek</translation>
 <translation id="6196640612572343990">Harmadik féltől származó cookie-k letiltása</translation>
 <translation id="6205314730813004066">Hirdetésekhez kapcsolódó adatvédelem</translation>
+<translation id="6207207788774442484">Adatok törlése és engedélyek alaphelyzetbe állítása</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> – lehetőségek</translation>
 <translation id="6231752747840485235">Eltávolítja ezt az alkalmazást: <ph name="APP_NAME" />?</translation>
 <translation id="6262191102408817757">A legutóbbi lap alapján</translation>
@@ -302,13 +308,11 @@
 <translation id="6295158916970320988">Az összes webhely</translation>
 <translation id="6320088164292336938">Rezgés</translation>
 <translation id="6367753977865761591">Letilthatja a harmadik félen keresztüli bejelentkezést adott webhelyeken.</translation>
-<translation id="6388207532828177975">Törlés és visszaállítás</translation>
 <translation id="6398765197997659313">Kilépés a teljes képernyős módból</translation>
 <translation id="640163077447496506">Ma jár le</translation>
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">A virtuálisvalóság-eszközök és -adatok használatának letiltása a webhelyek számára</translation>
 <translation id="6447842834002726250">Cookie-k</translation>
-<translation id="6467852467360539617">Adatok törlése és engedélyek visszaállítása</translation>
 <translation id="6500423977866688905">Ha az ablak keskeny, kérjen mobilnézetet</translation>
 <translation id="6527303717912515753">Megosztás</translation>
 <translation id="652937045869844725">Próbálja meg engedélyezni a harmadik féltől származó cookie-kat, ami kevesebb védelmet jelent, de a webhelyfunkciók nagyobb valószínűséggel fognak működni.</translation>
@@ -381,11 +385,9 @@
 <translation id="7846076177841592234">Kijelölés törlése</translation>
 <translation id="7882806643839505685">Egy adott webhely hangjának engedélyezése.</translation>
 <translation id="789180354981963912">Harmadik felektől származó cookie-k letiltása Inkognitó módban:</translation>
-<translation id="7895868624847501462">A művelet törli az összes helyi adatot, beleértve a cookie-kat is, és visszaállítja a(z) <ph name="DOMAIN" /> és az alá tartozó webhelyek összes engedélyét</translation>
 <translation id="7940722705963108451">Emlékeztessen</translation>
 <translation id="7974024493641668069">{COUNT,plural, =1{A(z) <ph name="FPS_OWNER" /> webhelycsoportjában <ph name="FPS_MEMBERS_COUNT" /> webhely található, amely láthatja az Ön által a csoportban végzett tevékenységeket}other{A(z) <ph name="FPS_OWNER" /> webhelycsoportjában <ph name="FPS_MEMBERS_COUNT" /> webhely található, amelyek láthatják az Ön által a csoportban végzett tevékenységeket}}</translation>
 <translation id="7986741934819883144">Válasszon ki egy névjegyet</translation>
-<translation id="7999064672810608036">Biztosan törli a webhellyel kapcsolatos összes helyi adatot (a cookie-kkal együtt), és visszaállítja az összes engedélyt?</translation>
 <translation id="8007176423574883786">Kikapcsolva ezen az eszközön</translation>
 <translation id="802154636333426148">Nem sikerült a letöltés</translation>
 <translation id="8042586301629853791">Rendezés:</translation>
@@ -409,7 +411,6 @@
 <translation id="8284326494547611709">Feliratok</translation>
 <translation id="8300705686683892304">Alkalmazás által kezelt</translation>
 <translation id="8324158725704657629">Ne jelenjen meg többé</translation>
-<translation id="8338445138528827481">A művelet törli az összes helyi adatot, beleértve a cookie-kat is, és visszaállítja a(z) <ph name="ORIGIN" /> összes engedélyét</translation>
 <translation id="8362795839483915693">A felkeresett webhelyeket felnagyíthatja és lekicsinyítheti</translation>
 <translation id="8372893542064058268">Háttérben történő szinkronizálás engedélyezése adott webhely esetében.</translation>
 <translation id="8376384591331888629">Az ezen a webhelyen található, harmadik felektől származó cookie-k is</translation>

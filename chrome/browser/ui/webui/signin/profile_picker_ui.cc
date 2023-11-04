@@ -24,8 +24,8 @@
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/browser_resources.h"
-#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/profile_picker_resources.h"
 #include "chrome/grit/profile_picker_resources_map.h"
@@ -177,6 +177,12 @@ void AddStrings(content::WebUIDataSource* html_source) {
     {"removeWarningSignedInProfile",
      IDS_PROFILE_PICKER_REMOVE_WARNING_SIGNED_IN_PROFILE},
 #endif
+    {"forceSigninErrorDialogTitle",
+     IDS_PROFILE_PICKER_FORCE_SIGN_IN_ERROR_DIALOG_TITLE},
+    {"forceSigninErrorDialogBody",
+     IDS_PROFILE_PICKER_FORCE_SIGN_IN_ERROR_DIALOG_BODY},
+    {"ok", IDS_OK},
+
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 

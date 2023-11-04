@@ -38,7 +38,7 @@
 #include "chrome/browser/ui/webui/signin/signin_url_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_metrics.h"
@@ -194,6 +194,16 @@ void ProfilePicker::SwitchToDiceSignIn(
   if (g_profile_picker_view) {
     g_profile_picker_view->SwitchToDiceSignIn(
         profile_color, std::move(switch_finished_callback));
+  }
+}
+
+// static
+void ProfilePicker::SwitchToReauth(
+    Profile* profile,
+    base::OnceCallback<void()> on_error_callback) {
+  if (g_profile_picker_view) {
+    g_profile_picker_view->SwitchToReauth(profile,
+                                          std::move(on_error_callback));
   }
 }
 #endif
@@ -749,6 +759,12 @@ void ProfilePickerView::OnProfileForDiceForcedSigninCreated(
   ProfilePickerForceSigninDialog::ShowForceSigninDialog(profile);
 }
 
+void ProfilePickerView::SwitchToReauth(
+    Profile* profile,
+    base::OnceCallback<void()> on_error_callback) {
+  GetProfilePickerFlowController()->SwitchToReauth(
+      profile, std::move(on_error_callback));
+}
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -760,7 +776,7 @@ void ProfilePickerView::SwitchToSignedInFlow(
   GetProfilePickerFlowController()->SwitchToPostSignIn(
       signed_in_profile,
       IdentityManagerFactory::GetForProfile(signed_in_profile)
-          ->GetPrimaryAccountId(signin::ConsentLevel::kSignin),
+          ->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin),
       profile_color, std::move(contents));
 }
 #endif

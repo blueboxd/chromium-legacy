@@ -7,6 +7,8 @@
 
 #include <list>
 #include <map>
+#include <memory>
+#include <string>
 
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
@@ -25,6 +27,14 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+
+class PrefChangeRegistrar;
+class PrefService;
+
+constexpr char kUnusedSitePermissionsResultKey[] = "permissions";
+constexpr char kUnusedSitePermissionsResultPermissionTypesKey[] =
+    "permissionTypes";
+constexpr char kUnusedSitePermissionsResultExpirationKey[] = "expiration";
 
 namespace url {
 class Origin;
@@ -67,11 +77,15 @@ class UnusedSitePermissionsService : public SafetyHubService,
    public:
     UnusedSitePermissionsResult();
 
-    UnusedSitePermissionsResult(const UnusedSitePermissionsResult&) = delete;
+    explicit UnusedSitePermissionsResult(const base::Value::Dict& dict);
+
+    UnusedSitePermissionsResult(const UnusedSitePermissionsResult&);
     UnusedSitePermissionsResult& operator=(const UnusedSitePermissionsResult&) =
-        delete;
+        default;
 
     ~UnusedSitePermissionsResult() override;
+
+    std::unique_ptr<SafetyHubService::Result> Clone() const override;
 
     using UnusedPermissionMap =
         std::map<std::string, std::list<ContentSettingEntry>>;
@@ -89,6 +103,20 @@ class UnusedSitePermissionsService : public SafetyHubService,
     }
 
     std::list<RevokedPermission> GetRevokedPermissions();
+
+    std::set<ContentSettingsPattern> GetRevokedOrigins() const;
+
+    // SafetyHubService::Result implementation
+    base::Value::Dict ToDictValue() const override;
+
+    bool IsTriggerForMenuNotification() const override;
+
+    bool WarrantsNewMenuNotification(
+        const Result& previousResult) const override;
+
+    std::u16string GetNotificationString() const override;
+
+    int GetNotificationCommandId() const override;
 
    private:
     std::list<RevokedPermission> revoked_permissions_;
@@ -116,7 +144,8 @@ class UnusedSitePermissionsService : public SafetyHubService,
     WEB_CONTENTS_USER_DATA_KEY_DECL();
   };
 
-  explicit UnusedSitePermissionsService(HostContentSettingsMap* hcsm);
+  explicit UnusedSitePermissionsService(HostContentSettingsMap* hcsm,
+                                        PrefService* prefs);
 
   UnusedSitePermissionsService(const UnusedSitePermissionsService&) = delete;
   UnusedSitePermissionsService& operator=(const UnusedSitePermissionsService&) =
@@ -163,6 +192,9 @@ class UnusedSitePermissionsService : public SafetyHubService,
   // Returns the list of all permissions that have been revoked.
   std::unique_ptr<Result> GetRevokedPermissions();
 
+  // Stops or restarts permissions autorevocation upon the pref change.
+  void OnPermissionsAutorevocationControlChanged();
+
   // Does most of the heavy lifting of the update process: for each permission,
   // it determines whether it should be considered as recently unused (i.e. one
   // week). This list will be further filtered in the UI task to determine which
@@ -172,6 +204,8 @@ class UnusedSitePermissionsService : public SafetyHubService,
       const scoped_refptr<HostContentSettingsMap> hcsm);
 
   // SafetyHubService implementation
+  std::unique_ptr<SafetyHubService::Result> GetResultFromDictValue(
+      const base::Value::Dict& dict) override;
 
   // Returns a weak pointer to the service.
   base::WeakPtr<SafetyHubService> GetAsWeakRef() override;
@@ -207,7 +241,8 @@ class UnusedSitePermissionsService : public SafetyHubService,
 
   // SafetyHubService implementation
 
-  void InitializeLatestResult() override;
+  std::unique_ptr<SafetyHubService::Result> InitializeLatestResultImpl()
+      override;
 
   // Returns the interval at which the repeated updates will be run.
   base::TimeDelta GetRepeatedUpdateInterval() override;
@@ -223,16 +258,20 @@ class UnusedSitePermissionsService : public SafetyHubService,
   std::unique_ptr<Result> UpdateOnUIThread(
       std::unique_ptr<Result> result) override;
 
+  // Returns if the permissions auto-revocation is enabled for unused sites.
+  bool IsAutoRevocationEnabled();
+
   // Set of permissions that haven't been used for at least a week.
   UnusedPermissionMap recently_unused_permissions_;
-  // Repeating timer that updates the recently_unused_permissions_ map.
-  base::RepeatingTimer update_timer_;
 
   const scoped_refptr<HostContentSettingsMap> hcsm_;
 
   // Observer to watch for content settings changed.
   base::ScopedObservation<HostContentSettingsMap, content_settings::Observer>
       content_settings_observation_{this};
+
+  // Observes user profile prefs.
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   raw_ptr<base::Clock> clock_;
 

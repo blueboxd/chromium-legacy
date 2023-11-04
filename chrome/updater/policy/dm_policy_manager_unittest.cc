@@ -121,11 +121,11 @@ TEST(DMPolicyManager, PolicyManagerFromEmptyProto) {
   auto policy_manager(base::MakeRefCounted<DMPolicyManager>(omaha_settings));
 
   EXPECT_TRUE(policy_manager->HasActiveDevicePolicies());
-  EXPECT_EQ(policy_manager->source(), "DeviceManagement");
+  EXPECT_EQ(policy_manager->source(), "Device Management");
 
   EXPECT_EQ(policy_manager->GetLastCheckPeriod(), absl::nullopt);
   EXPECT_EQ(policy_manager->GetUpdatesSuppressedTimes(), absl::nullopt);
-  EXPECT_EQ(policy_manager->GetDownloadPreferenceGroupPolicy(), absl::nullopt);
+  EXPECT_EQ(policy_manager->GetDownloadPreference(), absl::nullopt);
   EXPECT_EQ(policy_manager->GetProxyMode(), absl::nullopt);
   EXPECT_EQ(policy_manager->GetProxyPacUrl(), absl::nullopt);
   EXPECT_EQ(policy_manager->GetProxyServer(), absl::nullopt);
@@ -199,7 +199,7 @@ TEST(DMPolicyManager, PolicyManagerFromProto) {
   auto policy_manager(base::MakeRefCounted<DMPolicyManager>(omaha_settings));
 
   EXPECT_TRUE(policy_manager->HasActiveDevicePolicies());
-  EXPECT_EQ(policy_manager->source(), "DeviceManagement");
+  EXPECT_EQ(policy_manager->source(), "Device Management");
 
   // Verify global policies
   EXPECT_EQ(policy_manager->GetLastCheckPeriod(), base::Minutes(111));
@@ -211,7 +211,7 @@ TEST(DMPolicyManager, PolicyManagerFromProto) {
   EXPECT_EQ(suppressed_times->start_minute_, 30);
   EXPECT_EQ(suppressed_times->duration_minute_, 120);
 
-  EXPECT_EQ(policy_manager->GetDownloadPreferenceGroupPolicy(),
+  EXPECT_EQ(policy_manager->GetDownloadPreference(),
             "test_download_preference");
 
   EXPECT_EQ(policy_manager->GetProxyServer(), "test_proxy_server");
@@ -287,11 +287,11 @@ TEST(DMPolicyManager, PolicyManagerFromDMResponse) {
   auto policy_manager(base::MakeRefCounted<DMPolicyManager>(omaha_settings));
 
   EXPECT_TRUE(policy_manager->HasActiveDevicePolicies());
-  EXPECT_EQ(policy_manager->source(), "DeviceManagement");
+  EXPECT_EQ(policy_manager->source(), "Device Management");
 
   EXPECT_EQ(policy_manager->GetLastCheckPeriod(), absl::nullopt);
   EXPECT_EQ(policy_manager->GetUpdatesSuppressedTimes(), absl::nullopt);
-  EXPECT_EQ(policy_manager->GetDownloadPreferenceGroupPolicy(), absl::nullopt);
+  EXPECT_EQ(policy_manager->GetDownloadPreference(), absl::nullopt);
   EXPECT_EQ(policy_manager->GetProxyMode(), absl::nullopt);
   EXPECT_EQ(policy_manager->GetProxyPacUrl(), absl::nullopt);
   EXPECT_EQ(policy_manager->GetProxyServer(), absl::nullopt);

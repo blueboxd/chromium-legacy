@@ -527,4 +527,50 @@ TEST(WinUtil, GetAppAPValue) {
   DeleteAppClientStateKey(GetTestScope(), base::ASCIIToWide(kTestAppID));
 }
 
+struct WinUtilGetRegKeyContentsTestCase {
+  const std::wstring reg_key;
+  const std::wstring expected_substring;
+};
+
+class WinUtilGetRegKeyContentsTest
+    : public ::testing::TestWithParam<WinUtilGetRegKeyContentsTestCase> {};
+
+INSTANTIATE_TEST_SUITE_P(
+    WinUtilGetRegKeyContentsTestCases,
+    WinUtilGetRegKeyContentsTest,
+    ::testing::ValuesIn(std::vector<WinUtilGetRegKeyContentsTestCase>{
+        {L"HKLM\\SOFTWARE\\Classes\\CLSID\\{00020424-0000-0000-C000-"
+         L"000000000046}",
+         L"{00020424-0000-0000-C000-000000000046}"},
+        {L"HKLM\\SOFTWARE\\WOW6432Node\\Classes\\CLSID\\{00020424-0000-0000-"
+         L"C000-000000000046}",
+         L"{00020424-0000-0000-C000-000000000046}"},
+        {L"HKCR\\CLSID\\{00020424-0000-0000-C000-000000000046}",
+         L"{00020424-0000-0000-C000-000000000046}"},
+        {L"HKCR\\WOW6432Node\\CLSID\\{00020424-0000-0000-C000-000000000046}",
+         L"{00020424-0000-0000-C000-000000000046}"},
+    }));
+
+TEST_P(WinUtilGetRegKeyContentsTest, TestCases) {
+  absl::optional<std::wstring> contents = GetRegKeyContents(GetParam().reg_key);
+  ASSERT_TRUE(contents);
+  ASSERT_NE(contents->find(GetParam().expected_substring), std::wstring::npos);
+}
+
+TEST(WinUtil, GetTextForSystemError) {
+  EXPECT_EQ(GetTextForSystemError(2),
+            "The system cannot find the file specified. ");
+  EXPECT_EQ(GetTextForSystemError(0x80070002),
+            "The system cannot find the file specified. ");
+  EXPECT_EQ(GetTextForSystemError(12007),
+            "The server name or address could not be resolved ");
+  EXPECT_EQ(GetTextForSystemError(0x80072ee7),
+            "The server name or address could not be resolved ");
+  EXPECT_EQ(GetTextForSystemError(-2147012889),
+            "The server name or address could not be resolved ");
+  EXPECT_EQ(
+      GetTextForSystemError(MAKE_HRESULT(SEVERITY_ERROR, FACILITY_ITF, 0x200)),
+      "Unknown error 0x80040200");
+}
+
 }  // namespace updater

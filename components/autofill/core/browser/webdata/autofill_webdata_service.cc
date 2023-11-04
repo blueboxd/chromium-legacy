@@ -201,6 +201,13 @@ void AutofillWebDataService::UpdateCreditCard(
                                 autofill_backend_, credit_card));
 }
 
+void AutofillWebDataService::UpdateLocalCvc(const std::string& guid,
+                                            const std::u16string& cvc) {
+  wdbs_->ScheduleDBTask(
+      FROM_HERE, base::BindOnce(&AutofillWebDataBackendImpl::UpdateLocalCvc,
+                                autofill_backend_, guid, cvc));
+}
+
 void AutofillWebDataService::RemoveCreditCard(const std::string& guid) {
   wdbs_->ScheduleDBTask(
       FROM_HERE, base::BindOnce(&AutofillWebDataBackendImpl::RemoveCreditCard,
@@ -299,12 +306,6 @@ void AutofillWebDataService::MaskServerCreditCard(const std::string& id) {
       FROM_HERE,
       base::BindOnce(&AutofillWebDataBackendImpl::MaskServerCreditCard,
                      autofill_backend_, id));
-}
-
-void AutofillWebDataService::AddUpiId(const std::string& upi_id) {
-  wdbs_->ScheduleDBTask(FROM_HERE,
-                        base::BindOnce(&AutofillWebDataBackendImpl::AddUpiId,
-                                       autofill_backend_, upi_id));
 }
 
 WebDataServiceBase::Handle AutofillWebDataService::GetPaymentsCustomerData(

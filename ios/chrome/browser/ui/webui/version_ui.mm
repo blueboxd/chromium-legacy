@@ -7,6 +7,7 @@
 #import <memory>
 
 #import "base/command_line.h"
+#import "base/i18n/time_formatting.h"
 #import "base/strings/string_number_conversions.h"
 #import "base/strings/stringprintf.h"
 #import "base/time/time.h"
@@ -14,7 +15,7 @@
 #import "components/grit/components_scaled_resources.h"
 #import "components/grit/version_ui_resources.h"
 #import "components/grit/version_ui_resources_map.h"
-#import "components/strings/grit/components_chromium_strings.h"
+#import "components/strings/grit/components_branded_strings.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/variations/service/variations_service.h"
 #import "components/version_info/version_info.h"
@@ -25,7 +26,7 @@
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/webui/version_handler.h"
 #import "ios/chrome/common/channel_info.h"
-#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/webui/web_ui_ios.h"
 #import "ios/web/public/webui/web_ui_ios_data_source.h"
@@ -58,12 +59,11 @@ web::WebUIIOSDataSource* CreateVersionUIDataSource() {
                                   IDS_VERSION_UI_COPY_LABEL);
   html_source->AddLocalizedString(version_ui::kCopyNotice,
                                   IDS_VERSION_UI_COPY_NOTICE);
-  base::Time::Exploded exploded_time;
-  base::Time::Now().LocalExplode(&exploded_time);
   html_source->AddString(
       version_ui::kCopyright,
-      l10n_util::GetStringFUTF16(IDS_IOS_ABOUT_VERSION_COPYRIGHT,
-                                 base::NumberToString16(exploded_time.year)));
+      l10n_util::GetStringFUTF16(
+          IDS_IOS_ABOUT_VERSION_COPYRIGHT,
+          base::LocalizedTimeFormatWithPattern(base::Time::Now(), "y")));
   html_source->AddLocalizedString(version_ui::kRevision,
                                   IDS_VERSION_UI_REVISION);
   std::string last_change(version_info::GetLastChange());

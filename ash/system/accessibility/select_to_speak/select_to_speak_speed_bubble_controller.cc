@@ -13,6 +13,7 @@
 #include "ash/system/accessibility/floating_menu_utils.h"
 #include "ash/system/accessibility/select_to_speak/select_to_speak_constants.h"
 #include "ash/system/accessibility/select_to_speak/select_to_speak_speed_view.h"
+#include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_view.h"
@@ -100,6 +101,9 @@ void SelectToSpeakSpeedBubbleController::BubbleViewDestroyed() {
   bubble_view_ = nullptr;
   bubble_widget_ = nullptr;
 }
+
+void SelectToSpeakSpeedBubbleController::HideBubble(
+    const TrayBubbleView* bubble_view) {}
 
 void SelectToSpeakSpeedBubbleController::OnWindowActivated(
     ActivationReason reason,

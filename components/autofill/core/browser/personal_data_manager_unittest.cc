@@ -21,6 +21,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gmock_callback_support.h"
+#include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -59,6 +60,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
+#if BUILDFLAG(IS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 namespace autofill {
 
 namespace {
@@ -69,7 +74,6 @@ using testing::UnorderedElementsAre;
 
 constexpr char kGuid[] = "a21f010a-eac1-41fc-aee9-c06bbedfb292";
 constexpr char kPrimaryAccountEmail[] = "syncuser@example.com";
-constexpr char kAddressEntryIcon[] = "accountIcon";
 
 const base::Time kArbitraryTime = base::Time::FromDoubleT(25);
 const base::Time kSomeLaterTime = base::Time::FromDoubleT(1000);
@@ -119,13 +123,6 @@ void ExpectSameElements(const std::vector<T*>& expectations,
       results_copy.end());
 }
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-std::vector<std::vector<Suggestion::Text>> ConstructLabelLineMatrix(
-    const std::vector<std::u16string>& parts) {
-  return {{Suggestion::Text(ConstructLabelLine(parts))}};
-}
-#endif
-
 }  // anonymous namespace
 
 class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
@@ -144,12 +141,6 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
     personal_data_ = std::make_unique<PersonalDataManager>("EN", "US");
     PersonalDataManagerTestBase::ResetPersonalDataManager(
         use_sync_transport_mode, personal_data_.get());
-  }
-
-  void ResetProfiles() {
-    std::vector<AutofillProfile> empty_profiles;
-    personal_data_->SetProfilesForAllSources(&empty_profiles);
-    PersonalDataProfileTaskWaiter(*personal_data_).Wait();
   }
 
   bool TurnOnSyncFeature() {
@@ -208,7 +199,7 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
     PersonalDataProfileTaskWaiter waiter(*personal_data_);
     EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
     personal_data_->AddCreditCard(credit_card2);
-    waiter.Wait();
+    std::move(waiter).Wait();
     ASSERT_EQ(3U, personal_data_->GetCreditCards().size());
   }
 
@@ -227,7 +218,7 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
       PersonalDataProfileTaskWaiter waiter(*personal_data_);
       EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
       personal_data_->AddFullServerCreditCard(masked_server_card);
-      waiter.Wait();
+      std::move(waiter).Wait();
     }
     ASSERT_EQ(1U, personal_data_->GetCreditCards().size());
 
@@ -255,7 +246,7 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
       PersonalDataProfileTaskWaiter waiter(*personal_data_);
       EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
       personal_data_->AddCreditCard(local_card);
-      waiter.Wait();
+      std::move(waiter).Wait();
     }
     EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
   }
@@ -297,21 +288,21 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
     PersonalDataProfileTaskWaiter waiter(*personal_data_);
     EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
     personal_data_->AddProfile(profile);
-    waiter.Wait();
+    std::move(waiter).Wait();
   }
 
   void UpdateProfileOnPersonalDataManager(const AutofillProfile& profile) {
     PersonalDataProfileTaskWaiter waiter(*personal_data_);
     EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
     personal_data_->UpdateProfile(profile);
-    waiter.Wait();
+    std::move(waiter).Wait();
   }
 
   void RemoveByGUIDFromPersonalDataManager(const std::string& guid) {
     PersonalDataProfileTaskWaiter waiter(*personal_data_);
     EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
     personal_data_->RemoveByGUID(guid);
-    waiter.Wait();
+    std::move(waiter).Wait();
   }
 
   void SetServerCards(const std::vector<CreditCard>& server_cards) {
@@ -365,60 +356,24 @@ class PersonalDataManagerMockTest : public PersonalDataManagerTestBase,
   void SetUp() override {
     SetUpTest();
     ResetPersonalDataManager();
-    personal_data_->pref_service_->SetInteger(
-        prefs::kAutofillLastVersionDeduped, 0);
   }
 
   void TearDown() override {
-    if (personal_data_)
+    if (personal_data_) {
       personal_data_->Shutdown();
+    }
     personal_data_.reset();
     TearDownTest();
   }
 
   void ResetPersonalDataManager() {
-    if (personal_data_)
+    if (personal_data_) {
       personal_data_->Shutdown();
+    }
     personal_data_ =
         std::make_unique<PersonalDataManagerMock>("en", std::string());
     PersonalDataManagerTestBase::ResetPersonalDataManager(
         /*use_sync_transport_mode=*/true, personal_data_.get());
-  }
-
-  bool TurnOnSyncFeature() {
-    return PersonalDataManagerTestBase::TurnOnSyncFeature(personal_data_.get());
-  }
-
-  void StopTheDedupeProcess() {
-    personal_data_->pref_service_->SetInteger(
-        prefs::kAutofillLastVersionDeduped,
-        version_info::GetMajorVersionNumberAsInt());
-  }
-
-  void AddProfileToPersonalDataManager(const AutofillProfile& profile) {
-    PersonalDataProfileTaskWaiter waiter(*personal_data_);
-    EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
-    personal_data_->AddProfile(profile);
-    waiter.Wait();
-  }
-
-  void UpdateProfileOnPersonalDataManager(const AutofillProfile& profile) {
-    PersonalDataProfileTaskWaiter waiter(*personal_data_);
-    EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
-    personal_data_->UpdateProfile(profile);
-    waiter.Wait();
-  }
-
-  void RemoveByGUIDFromPersonalDataManager(const std::string& guid) {
-    PersonalDataProfileTaskWaiter waiter(*personal_data_);
-    EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
-    personal_data_->RemoveByGUID(guid);
-    waiter.Wait();
-  }
-
-  void AddOfferDataForTest(AutofillOfferData offer_data) {
-    personal_data_->AddOfferDataForTest(
-        std::make_unique<AutofillOfferData>(offer_data));
   }
 
   // Verifies the credit card art image fetching should begin.
@@ -585,49 +540,6 @@ TEST_F(PersonalDataManagerTest, GetProfilesForSettings) {
   EXPECT_THAT(
       personal_data_->GetProfilesForSettings(),
       ElementsAre(Pointee(kLocalOrSyncableProfile), Pointee(kAccountProfile)));
-}
-
-// Tests that `SetProfilesForAllSources()` overwrites profiles with the correct
-// source.
-TEST_F(PersonalDataManagerTest, SetProfiles) {
-  AutofillProfile kAccountProfile = test::GetFullProfile();
-  kAccountProfile.set_source_for_testing(AutofillProfile::Source::kAccount);
-  AutofillProfile kLocalProfile = test::GetFullProfile();
-
-  // Set `kAccount` profiles only.
-  std::vector<AutofillProfile> profiles = {kAccountProfile};
-  personal_data_->SetProfilesForAllSources(&profiles);
-  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
-  EXPECT_THAT(
-      personal_data_->GetProfilesFromSource(AutofillProfile::Source::kAccount),
-      ElementsAre(Pointee(kAccountProfile)));
-  EXPECT_TRUE(
-      personal_data_
-          ->GetProfilesFromSource(AutofillProfile::Source::kLocalOrSyncable)
-          .empty());
-
-  // Set `kLocalOrSyncable` profiles only. This clear the existing `kAccount`
-  // profiles
-  profiles = {kLocalProfile};
-  personal_data_->SetProfilesForAllSources(&profiles);
-  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
-  EXPECT_TRUE(
-      personal_data_->GetProfilesFromSource(AutofillProfile::Source::kAccount)
-          .empty());
-  EXPECT_THAT(personal_data_->GetProfilesFromSource(
-                  AutofillProfile::Source::kLocalOrSyncable),
-              ElementsAre(Pointee(kLocalProfile)));
-
-  // Set profiles of both sources.
-  profiles = {kAccountProfile, kLocalProfile};
-  personal_data_->SetProfilesForAllSources(&profiles);
-  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
-  EXPECT_THAT(
-      personal_data_->GetProfilesFromSource(AutofillProfile::Source::kAccount),
-      ElementsAre(Pointee(kAccountProfile)));
-  EXPECT_THAT(personal_data_->GetProfilesFromSource(
-                  AutofillProfile::Source::kLocalOrSyncable),
-              ElementsAre(Pointee(kLocalProfile)));
 }
 
 // Adding, updating, removing operations without waiting in between.
@@ -799,10 +711,9 @@ TEST_F(PersonalDataManagerTest, AddProfile_CrazyCharacters) {
   profile7.FinalizeAfterImport();
   profiles.push_back(profile7);
 
-  personal_data_->SetProfilesForAllSources(&profiles);
-
-  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
-
+  for (const AutofillProfile& profile : profiles) {
+    AddProfileToPersonalDataManager(profile);
+  }
   ASSERT_EQ(profiles.size(), personal_data_->GetProfiles().size());
   for (size_t i = 0; i < profiles.size(); ++i) {
     EXPECT_TRUE(base::Contains(profiles, *personal_data_->GetProfiles()[i]));
@@ -825,10 +736,7 @@ TEST_F(PersonalDataManagerTest, AddProfile_Invalid) {
   AutofillProfile with_invalid = without_invalid;
   with_invalid.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"Invalid_Phone_Number");
 
-  std::vector<AutofillProfile> profiles;
-  profiles.push_back(with_invalid);
-  personal_data_->SetProfilesForAllSources(&profiles);
-  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
+  AddProfileToPersonalDataManager(with_invalid);
   ASSERT_EQ(1u, personal_data_->GetProfiles().size());
   AutofillProfile profile = *personal_data_->GetProfiles()[0];
   ASSERT_NE(without_invalid.GetRawInfo(PHONE_HOME_WHOLE_NUMBER),
@@ -902,10 +810,38 @@ TEST_F(PersonalDataManagerTest, MigrateProfileToAccount) {
   EXPECT_EQ(kLocalProfile.Compare(kAccountProfile), 0);
 }
 
+#if BUILDFLAG(IS_ANDROID)
+TEST_F(PersonalDataManagerTest,
+       AutofillPaymentMethodsMandatoryReauthAlwaysEnabledOnAutomotive) {
+  if (!base::android::BuildInfo::GetInstance()->is_automotive()) {
+    GTEST_SKIP() << "This test should only run on automotive.";
+  }
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kAutofillEnablePaymentsMandatoryReauth);
+
+  EXPECT_TRUE(personal_data_->IsPaymentMethodsMandatoryReauthEnabled());
+
+  EXPECT_CHECK_DEATH_WITH(
+      { personal_data_->SetPaymentMethodsMandatoryReauthEnabled(false); },
+      "This feature should not be able to be turned off on automotive "
+      "devices.");
+
+  EXPECT_TRUE(personal_data_->IsPaymentMethodsMandatoryReauthEnabled());
+}
+#endif  // BUILDFLAG(IS_ANDROID)
+
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 // Test that setting the `kAutofillEnablePaymentsMandatoryReauth` pref works
 // correctly.
 TEST_F(PersonalDataManagerTest, AutofillPaymentMethodsMandatoryReauthEnabled) {
+#if BUILDFLAG(IS_ANDROID)
+  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
+    GTEST_SKIP() << "This test should not run on automotive.";
+  }
+#endif  // BUILDFLAG(IS_ANDROID)
+
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       features::kAutofillEnablePaymentsMandatoryReauth);
@@ -924,6 +860,11 @@ TEST_F(PersonalDataManagerTest, AutofillPaymentMethodsMandatoryReauthEnabled) {
 // enable the feature when the flag is off.
 TEST_F(PersonalDataManagerTest,
        AutofillPaymentMethodsMandatoryReauthEnabled_FlagOff) {
+#if BUILDFLAG(IS_ANDROID)
+  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
+    GTEST_SKIP() << "This test should not run on automotive.";
+  }
+#endif  // BUILDFLAG(IS_ANDROID)
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(
       features::kAutofillEnablePaymentsMandatoryReauth);
@@ -941,6 +882,12 @@ TEST_F(PersonalDataManagerTest,
 TEST_F(
     PersonalDataManagerTest,
     ShouldShowPaymentMethodsMandatoryReauthPromo_MaxValueForPromoShownCounterReached) {
+#if BUILDFLAG(IS_ANDROID)
+  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
+    GTEST_SKIP() << "This test should not run on automotive.";
+  }
+#endif  // BUILDFLAG(IS_ANDROID)
+
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       features::kAutofillEnablePaymentsMandatoryReauth);
@@ -956,7 +903,7 @@ TEST_F(
   EXPECT_FALSE(personal_data_->ShouldShowPaymentMethodsMandatoryReauthPromo());
   histogram_tester.ExpectUniqueSample(
       "Autofill.PaymentMethods.MandatoryReauth.CheckoutFlow."
-      "ReauthOfferOptInDecision",
+      "ReauthOfferOptInDecision2",
       autofill_metrics::MandatoryReauthOfferOptInDecision::
           kBlockedByStrikeDatabase,
       1);
@@ -977,7 +924,7 @@ TEST_F(PersonalDataManagerTest,
   EXPECT_FALSE(personal_data_->ShouldShowPaymentMethodsMandatoryReauthPromo());
   histogram_tester.ExpectUniqueSample(
       "Autofill.PaymentMethods.MandatoryReauth.CheckoutFlow."
-      "ReauthOfferOptInDecision",
+      "ReauthOfferOptInDecision2",
       autofill_metrics::MandatoryReauthOfferOptInDecision::kAlreadyOptedIn, 1);
 }
 
@@ -986,6 +933,12 @@ TEST_F(PersonalDataManagerTest,
 // returns that we should not show the promo if the user has already opted out.
 TEST_F(PersonalDataManagerTest,
        ShouldShowPaymentMethodsMandatoryReauthPromo_UserOptedOut) {
+#if BUILDFLAG(IS_ANDROID)
+  if (base::android::BuildInfo::GetInstance()->is_automotive()) {
+    GTEST_SKIP() << "This test should not run on automotive.";
+  }
+#endif  // BUILDFLAG(IS_ANDROID)
+
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       features::kAutofillEnablePaymentsMandatoryReauth);
@@ -996,7 +949,7 @@ TEST_F(PersonalDataManagerTest,
   EXPECT_FALSE(personal_data_->ShouldShowPaymentMethodsMandatoryReauthPromo());
   histogram_tester.ExpectUniqueSample(
       "Autofill.PaymentMethods.MandatoryReauth.CheckoutFlow."
-      "ReauthOfferOptInDecision",
+      "ReauthOfferOptInDecision2",
       autofill_metrics::MandatoryReauthOfferOptInDecision::kAlreadyOptedOut, 1);
 }
 
@@ -1013,18 +966,24 @@ TEST_F(PersonalDataManagerTest,
 #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 
 TEST_F(PersonalDataManagerTest, NoIbansAddedIfDisabled) {
-  prefs::SetAutofillIbanEnabled(prefs_.get(), false);
-  personal_data_->AddIban(autofill::test::GetIban());
-  personal_data_->AddIban(autofill::test::GetIban2());
+  prefs::SetAutofillCreditCardEnabled(prefs_.get(), false);
+
+  Iban iban;
+  iban.set_value(base::UTF8ToUTF16(std::string(test::kIbanValue)));
+  Iban iban1;
+  iban1.set_value(base::UTF8ToUTF16(std::string(test::kIbanValue_1)));
+
+  personal_data_->AddIban(iban);
+  personal_data_->AddIban(iban1);
 
   EXPECT_EQ(0U, personal_data_->GetLocalIbans().size());
 }
 
 TEST_F(PersonalDataManagerTest, AddingIbanUpdatesPref) {
-  prefs::SetAutofillIbanEnabled(prefs_.get(), true);
   // The pref should always start disabled.
   ASSERT_FALSE(personal_data_->IsAutofillHasSeenIbanPrefEnabled());
-  Iban iban = test::GetIban();
+  Iban iban;
+  iban.set_value(base::UTF8ToUTF16(std::string(test::kIbanValue)));
 
   personal_data_->AddIban(iban);
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
@@ -1032,27 +991,36 @@ TEST_F(PersonalDataManagerTest, AddingIbanUpdatesPref) {
   EXPECT_TRUE(personal_data_->IsAutofillHasSeenIbanPrefEnabled());
 }
 
-TEST_F(PersonalDataManagerTest, AddUpdateRemoveIbans) {
-  prefs::SetAutofillIbanEnabled(prefs_.get(), true);
-  Iban iban0 = autofill::test::GetIban();
+TEST_F(PersonalDataManagerTest, AddLocalIbans) {
+  Iban iban0;
+  iban0.set_value(base::UTF8ToUTF16(std::string(test::kIbanValue)));
+  iban0.set_nickname(u"Nickname for Iban");
 
-  Iban iban1 = autofill::test::GetIban2();
+  Iban iban1;
+  iban1.set_value(base::UTF8ToUTF16(std::string(test::kIbanValue_1)));
   iban1.set_nickname(u"Nickname 1");
 
   Iban iban1_1 = iban1;
   iban1_1.set_nickname(u"Nickname 1_1");
 
-  Iban iban2 = autofill::test::GetIbanWithoutNickname();
-  iban2.set_nickname(u"Nickname 2");
-
   // Add two test IBANs to the database. `iban1_1` has the same value
   // as `iban1` but with a different nickname. Verify that only `iban1` is
   // added.
-  personal_data_->AddIban(iban0);
-  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
+  std::string guid = personal_data_->AddIban(iban0);
+  // Adding the IBAN as a local IBAN would have set its GUID.
+  EXPECT_NE(guid, "");
 
-  personal_data_->AddIban(iban1);
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
+  // Should set identifier and record_type manually here as `iban0` has been
+  // passed by value above in `AddIban`, and `AddIban` method sets identifier
+  // and record_type to the given `iban0`.
+  iban0.set_identifier(Iban::Guid(guid));
+  iban0.set_record_type(Iban::kLocalIban);
+
+  guid = personal_data_->AddIban(iban1);
+  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
+  iban1.set_identifier(Iban::Guid(guid));
+  iban1.set_record_type(Iban::kLocalIban);
 
   personal_data_->AddIban(iban1_1);
 
@@ -1060,55 +1028,66 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveIbans) {
   ibans.push_back(&iban0);
   ibans.push_back(&iban1);
   ExpectSameElements(ibans, personal_data_->GetLocalIbans());
+}
 
-  // `iban1_2` has the same fields as `iban1_1`, verify that `iban1_2` is
-  // not added.
-  Iban iban1_2 = iban1_1;
-  personal_data_->AddIban(iban1_1);
+TEST_F(PersonalDataManagerTest, UpdateLocalIbans) {
+  Iban iban;
+  iban.set_value(base::UTF8ToUTF16(std::string(test::kIbanValue)));
+  iban.set_nickname(u"Nickname for Iban");
+
+  std::string guid = personal_data_->AddIban(iban);
+  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
+  // Should set identifier and record_type manually here as `iban` has been
+  // passed by value above in `AddIban`, and `AddIban` method sets identifier
+  // and record_type to the given `iban`.
+  iban.set_identifier(Iban::Guid(guid));
+  iban.set_record_type(Iban::kLocalIban);
+
+  // Verify the `iban` has been added successfully.
+  std::vector<Iban*> ibans = {&iban};
   ExpectSameElements(ibans, personal_data_->GetLocalIbans());
 
-  // Update iban0, remove iban1, and add iban2.
-  iban0.set_nickname(u"Nickname new 0");
-  iban0.SetRawInfo(IBAN_VALUE, u"GB98 MIDL 0700 9312 3456 78");
-  personal_data_->UpdateIban(iban0);
-  RemoveByGUIDFromPersonalDataManager(iban1.guid());
-  personal_data_->AddIban(iban2);
-
+  // Update the `iban` with new value and nickname.
+  iban.set_nickname(u"Another nickname");
+  iban.SetRawInfo(IBAN_VALUE, u"GB98 MIDL 0700 9312 3456 78");
+  personal_data_->UpdateIban(iban);
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
 
-  ibans.clear();
-  ibans.push_back(&iban0);
-  ibans.push_back(&iban2);
+  ibans = {&iban};
+  ExpectSameElements(ibans, personal_data_->GetLocalIbans());
+}
+
+TEST_F(PersonalDataManagerTest, RemoveLocalIbans) {
+  Iban iban;
+  iban.set_value(base::UTF8ToUTF16(std::string(test::kIbanValue)));
+  iban.set_nickname(u"Nickname for Iban");
+
+  std::string guid = personal_data_->AddIban(iban);
+  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
+  // Should set identifier and record_type manually here as `iban` has been
+  // passed by value above in `AddIban`, and `AddIban` method sets identifier
+  // and record_type to the given `iban`.
+  iban.set_identifier(Iban::Guid(guid));
+  iban.set_record_type(Iban::kLocalIban);
+
+  // Verify the `iban` has been added successfully.
+  std::vector<Iban*> ibans = {&iban};
   ExpectSameElements(ibans, personal_data_->GetLocalIbans());
 
-  // Verify that a duplicate IBAN should not be added.
-  Iban iban0_dup = iban0;
-  personal_data_->AddIban(iban0_dup);
-  ibans.clear();
-  ibans.push_back(&iban0);
-  ibans.push_back(&iban2);
-  ExpectSameElements(ibans, personal_data_->GetLocalIbans());
-
-  // Reset the PersonalDataManager. This tests that the personal data was saved
-  // to the web database, and that we can load the IBANs from the web database.
-  ResetPersonalDataManager();
-
-  // Verify that we've reloaded the IBANs from the web database.
-  ibans.clear();
-  ibans.push_back(&iban0);
-  ibans.push_back(&iban2);
-  ExpectSameElements(ibans, personal_data_->GetLocalIbans());
+  RemoveByGUIDFromPersonalDataManager(guid);
+  EXPECT_TRUE(personal_data_->GetLocalIbans().empty());
 }
 
 // Ensure that new IBANs can be updated and saved via
 // `OnAcceptedLocalIbanSave()`.
 TEST_F(PersonalDataManagerTest, OnAcceptedLocalIbanSave) {
-  prefs::SetAutofillIbanEnabled(prefs_.get(), true);
-
   // Start with a new IBAN.
-  Iban iban0 = autofill::test::GetIban();
+  Iban iban0;
+  iban0.set_value(base::UTF8ToUTF16(std::string(test::kIbanValue)));
   // Add the IBAN to the database.
-  personal_data_->OnAcceptedLocalIbanSave(iban0);
+  std::string guid = personal_data_->OnAcceptedLocalIbanSave(iban0);
+  iban0.set_identifier(Iban::Guid(guid));
+  iban0.set_record_type(Iban::kLocalIban);
 
   // Make sure everything is set up correctly.
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
@@ -1116,9 +1095,12 @@ TEST_F(PersonalDataManagerTest, OnAcceptedLocalIbanSave) {
 
   // Creates a new IBAN and call `OnAcceptedLocalIbanSave()` and verify that
   // the new IBAN is saved.
-  Iban iban1 = autofill::test::GetIban2();
-  personal_data_->OnAcceptedLocalIbanSave(iban1);
+  Iban iban1;
+  iban1.set_value(base::UTF8ToUTF16(std::string(test::kIbanValue_1)));
+  guid = personal_data_->OnAcceptedLocalIbanSave(iban1);
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
+  iban1.set_identifier(Iban::Guid(guid));
+  iban1.set_record_type(Iban::kLocalIban);
 
   // Expect that the new IBAN is added.
   ASSERT_EQ(2U, personal_data_->GetLocalIbans().size());
@@ -1248,6 +1230,27 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
   personal_data_->AddFullServerCreditCard(duplicate_server_card);
 
   ExpectSameElements(cards, personal_data_->GetCreditCards());
+}
+
+// Test that UpdateLocalCvc function working as expected.
+TEST_F(PersonalDataManagerTest, UpdateLocalCvc) {
+  base::test::ScopedFeatureList features(
+      features::kAutofillEnableCvcStorageAndFilling);
+  CreditCard credit_card = test::GetCreditCard();
+  const std::u16string kCvc = u"111";
+  credit_card.set_cvc(kCvc);
+  PersonalDataProfileTaskWaiter add_waiter(*personal_data_);
+  personal_data_->AddCreditCard(credit_card);
+  std::move(add_waiter).Wait();
+  ASSERT_EQ(personal_data_->GetLocalCreditCards().size(), 1U);
+  EXPECT_EQ(personal_data_->GetLocalCreditCards()[0]->cvc(), kCvc);
+
+  const std::u16string kNewCvc = u"222";
+  PersonalDataProfileTaskWaiter update_waiter(*personal_data_);
+  personal_data_->UpdateLocalCvc(credit_card.guid(), kNewCvc);
+  std::move(update_waiter).Wait();
+  ASSERT_EQ(personal_data_->GetLocalCreditCards().size(), 1U);
+  EXPECT_EQ(personal_data_->GetLocalCreditCards()[0]->cvc(), kNewCvc);
 }
 
 // Test that verify add, update, remove server cvc function working as expected.
@@ -1894,7 +1897,7 @@ TEST_F(PersonalDataManagerTest, GetAutofillOffers) {
 
 // Tests that GetAutofillOffers does not return any offers if
 // |IsAutofillWalletImportEnabled()| returns |false|.
-TEST_F(PersonalDataManagerMockTest, GetAutofillOffers_WalletImportDisabled) {
+TEST_F(PersonalDataManagerTest, GetAutofillOffers_WalletImportDisabled) {
   syncer::TestSyncService sync_service;
   personal_data_->SetSyncServiceForTest(&sync_service);
 
@@ -1916,8 +1919,7 @@ TEST_F(PersonalDataManagerMockTest, GetAutofillOffers_WalletImportDisabled) {
 
 // Tests that GetAutofillOffers does not return any offers if
 // |IsAutofillCreditCardEnabled()| returns |false|.
-TEST_F(PersonalDataManagerMockTest,
-       GetAutofillOffers_AutofillCreditCardDisabled) {
+TEST_F(PersonalDataManagerTest, GetAutofillOffers_AutofillCreditCardDisabled) {
   // Add a card-linked offer and a promo code offer.
   AddOfferDataForTest(test::GetCardLinkedOfferData1());
   AddOfferDataForTest(test::GetPromoCodeOfferData());
@@ -1954,7 +1956,7 @@ TEST_F(PersonalDataManagerTest, GetActiveAutofillPromoCodeOffersForOrigin) {
 
 // Tests that GetActiveAutofillPromoCodeOffersForOrigin does not return any
 // promo code offers if |IsAutofillWalletImportEnabled()| returns |false|.
-TEST_F(PersonalDataManagerMockTest,
+TEST_F(PersonalDataManagerTest,
        GetActiveAutofillPromoCodeOffersForOrigin_WalletImportDisabled) {
   syncer::TestSyncService sync_service;
   personal_data_->SetSyncServiceForTest(&sync_service);
@@ -1983,7 +1985,7 @@ TEST_F(PersonalDataManagerMockTest,
 
 // Tests that GetActiveAutofillPromoCodeOffersForOrigin does not return any
 // promo code offers if |IsAutofillCreditCardEnabled()| returns |false|.
-TEST_F(PersonalDataManagerMockTest,
+TEST_F(PersonalDataManagerTest,
        GetActiveAutofillPromoCodeOffersForOrigin_AutofillCreditCardDisabled) {
   // Add an active promo code offer.
   AddOfferDataForTest(test::GetPromoCodeOfferData(
@@ -2015,7 +2017,6 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeIsCached) {
   // profiles.
   prefs::SetAutofillProfileEnabled(prefs_.get(), false);
   prefs::SetAutofillCreditCardEnabled(prefs_.get(), false);
-  prefs::SetAutofillIbanEnabled(prefs_.get(), false);
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
   EXPECT_EQ(default_country,
             personal_data_->GetDefaultCountryCodeForNewAddress());
@@ -2094,331 +2095,10 @@ TEST_F(PersonalDataManagerTest, UpdateLanguageCodeInProfile) {
   EXPECT_EQ("en", results[0]->language_code());
 }
 
-TEST_F(PersonalDataManagerTest, GetProfileSuggestions) {
-  AutofillProfile profile;
-  test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox",
-                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "12345678910");
-  AddProfileToPersonalDataManager(profile);
-  ResetPersonalDataManager();
-
-  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
-      AutofillType(ADDRESS_HOME_STREET_ADDRESS), u"123", false, {});
-  ASSERT_FALSE(suggestions.empty());
-  EXPECT_EQ(u"123 Zoo St., Second Line, Third line, unit 5",
-            suggestions[0].main_text.value);
-}
-
-// Tests that special characters will be used while prefix matching the user's
-// field input with the available emails to suggest.
-TEST_F(PersonalDataManagerTest,
-       GetProfileSuggestions_UseSpecialCharactersInEmail) {
-  AutofillProfile profile_1, profile_2;
-  profile_1.SetRawInfo(EMAIL_ADDRESS, u"test@email.xyz");
-  profile_2.SetRawInfo(EMAIL_ADDRESS, u"test1@email.xyz");
-  AddProfileToPersonalDataManager(profile_1);
-  AddProfileToPersonalDataManager(profile_2);
-  ASSERT_EQ(personal_data_->GetProfilesToSuggest().size(), 2u);
-
-  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
-      AutofillType(EMAIL_ADDRESS), u"Test@", false, {});
-
-  ASSERT_EQ(suggestions.size(), 1u);
-  EXPECT_EQ(u"test@email.xyz", suggestions[0].main_text.value);
-}
-
-TEST_F(PersonalDataManagerTest,
-       GetProfileSuggestions_PhoneSubstring_NoImprovedDisambiguation) {
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndDisableFeature(
-      features::kAutofillUseImprovedLabelDisambiguation);
-
-  AutofillProfile profile;
-  test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox",
-                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "12345678910");
-  AddProfileToPersonalDataManager(profile);
-  ResetPersonalDataManager();
-
-  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
-      AutofillType(PHONE_HOME_WHOLE_NUMBER), u"234", false, {});
-  ASSERT_FALSE(suggestions.empty());
-  EXPECT_EQ(u"12345678910", suggestions[0].main_text.value);
-}
-
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-TEST_F(PersonalDataManagerTest,
-       GetProfileSuggestions_PhoneSubstring_ImprovedDisambiguation) {
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kAutofillUseImprovedLabelDisambiguation);
-
-  AutofillProfile profile;
-  test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox",
-                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "12345678910");
-  AddProfileToPersonalDataManager(profile);
-  ResetPersonalDataManager();
-
-  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
-      AutofillType(PHONE_HOME_WHOLE_NUMBER), u"234", false, {});
-  ASSERT_FALSE(suggestions.empty());
-  EXPECT_EQ(u"(234) 567-8910", suggestions[0].main_text.value);
-}
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-
-TEST_F(PersonalDataManagerTest, GetProfileSuggestions_HideSubsets) {
-  AutofillProfile profile;
-  test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox",
-                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "12345678910");
-
-  // Dupe profile, except different in email address (irrelevant for this form).
-  AutofillProfile profile1 = profile;
-  profile1.set_guid(base::Uuid::GenerateRandomV4().AsLowercaseString());
-  profile1.SetRawInfo(EMAIL_ADDRESS, u"spam_me@example.com");
-
-  // Dupe profile, except different in address state.
-  AutofillProfile profile2 = profile;
-  profile2.set_guid(base::Uuid::GenerateRandomV4().AsLowercaseString());
-  profile2.SetRawInfo(ADDRESS_HOME_STATE, u"TX");
-
-  // Subset profile.
-  AutofillProfile profile3 = profile;
-  profile3.set_guid(base::Uuid::GenerateRandomV4().AsLowercaseString());
-  profile3.SetRawInfo(ADDRESS_HOME_STATE, std::u16string());
-
-  // For easier results verification, make sure |profile| is suggested first.
-  profile.set_use_count(5);
-  AddProfileToPersonalDataManager(profile);
-  AddProfileToPersonalDataManager(profile1);
-  AddProfileToPersonalDataManager(profile2);
-  AddProfileToPersonalDataManager(profile3);
-  ResetPersonalDataManager();
-
-  // Simulate a form with street address, city and state.
-  ServerFieldTypeSet types = {ADDRESS_HOME_CITY, ADDRESS_HOME_STATE};
-  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
-      AutofillType(ADDRESS_HOME_STREET_ADDRESS), u"123", false, types);
-  ASSERT_EQ(2U, suggestions.size());
-  ASSERT_EQ(1U, suggestions[0].labels.size());
-  ASSERT_EQ(1U, suggestions[0].labels[0].size());
-  EXPECT_EQ(u"Hollywood, CA", suggestions[0].labels[0][0].value);
-  ASSERT_EQ(1U, suggestions[1].labels.size());
-  ASSERT_EQ(1U, suggestions[1].labels.size());
-  EXPECT_EQ(u"Hollywood, TX", suggestions[1].labels[0][0].value);
-}
-
-TEST_F(PersonalDataManagerTest, GetProfileSuggestions_SuggestionsLimit) {
-  // Drawing takes noticeable time when there are more than 10 profiles.
-  // Therefore, we keep only the 10 first suggested profiles.
-  std::vector<AutofillProfile> profiles;
-  for (size_t i = 0; i < 2 * suggestion_selection::kMaxUniqueSuggestionsCount;
-       i++) {
-    AutofillProfile profile;
-    test::SetProfileInfo(&profile, base::StringPrintf("Marion%zu", i).c_str(),
-                         "Mitchell", "Morrison", "johnwayne@me.xyz", "Fox",
-                         "123 Zoo St.\nSecond Line\nThird line", "unit 5",
-                         "Hollywood", "CA", "91601", "US", "12345678910");
-    AddProfileToPersonalDataManager(profile);
-    profiles.push_back(profile);
-  }
-  ResetPersonalDataManager();
-
-  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
-      AutofillType(NAME_FIRST), u"Ma", false, {});
-
-  ASSERT_EQ(2 * suggestion_selection::kMaxUniqueSuggestionsCount,
-            personal_data_->GetProfiles().size());
-  ASSERT_EQ(suggestion_selection::kMaxUniqueSuggestionsCount,
-            suggestions.size());
-}
-
-TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ProfilesLimit) {
-  // Deduping takes noticeable time when there are more than 50 profiles.
-  // Therefore, keep only the 50 first pre-dedupe matching profiles.
-  std::vector<AutofillProfile> profiles;
-  for (size_t i = 0; i < suggestion_selection::kMaxSuggestedProfilesCount;
-       i++) {
-    AutofillProfile profile;
-
-    test::SetProfileInfo(
-        &profile, "Marion", "Mitchell", "Morrison", "johnwayne@me.xyz", "Fox",
-        base::StringPrintf("%zu123 Zoo St.\nSecond Line\nThird line", i)
-            .c_str(),
-        "unit 5", "Hollywood", "CA", "91601", "US", "12345678910");
-
-    // Set ranking score such that they appear before the "last" profile (added
-    // next).
-    profile.set_use_count(12);
-    profile.set_use_date(AutofillClock::Now() - base::Days(1));
-
-    AddProfileToPersonalDataManager(profile);
-    profiles.push_back(profile);
-  }
-
-  // Add another profile that matches, but that will get stripped out.
-  AutofillProfile profile;
-  test::SetProfileInfo(&profile, "Marie", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox",
-                       "000 Zoo St.\nSecond Line\nThird line", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "12345678910");
-  profile.set_use_count(1);
-  profile.set_use_date(AutofillClock::Now() - base::Days(7));
-  AddProfileToPersonalDataManager(profile);
-
-  ResetPersonalDataManager();
-
-  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
-      AutofillType(NAME_FIRST), u"Ma", false, {});
-
-  ASSERT_EQ(suggestion_selection::kMaxSuggestedProfilesCount + 1,
-            personal_data_->GetProfiles().size());
-  ASSERT_EQ(1U, suggestions.size());
-  EXPECT_EQ(u"Marion", suggestions[0].main_text.value);
-}
-
-// Tests that GetProfileSuggestions orders its suggestions based on the ranking
-// formula.
-TEST_F(PersonalDataManagerTest, GetProfileSuggestions_Ranking) {
-  // Set up the profiles. They are named with number suffixes X so the X is the
-  // order in which they should be ordered by the ranking formula.
-  AutofillProfile profile3;
-  test::SetProfileInfo(&profile3, "Marion3", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox",
-                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "12345678910");
-  profile3.set_use_date(AutofillClock::Now() - base::Days(1));
-  profile3.set_use_count(5);
-  AddProfileToPersonalDataManager(profile3);
-
-  AutofillProfile profile1;
-  test::SetProfileInfo(&profile1, "Marion1", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox",
-                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "12345678910");
-  profile1.set_use_date(AutofillClock::Now() - base::Days(1));
-  profile1.set_use_count(10);
-  AddProfileToPersonalDataManager(profile1);
-
-  AutofillProfile profile2;
-  test::SetProfileInfo(&profile2, "Marion2", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox",
-                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "12345678910");
-  profile2.set_use_date(AutofillClock::Now() - base::Days(15));
-  profile2.set_use_count(300);
-  AddProfileToPersonalDataManager(profile2);
-
-  ResetPersonalDataManager();
-  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
-      AutofillType(NAME_FIRST), u"Ma", false, {});
-  ASSERT_EQ(3U, suggestions.size());
-  EXPECT_EQ(suggestions[0].main_text.value, u"Marion1");
-  EXPECT_EQ(suggestions[1].main_text.value, u"Marion2");
-  EXPECT_EQ(suggestions[2].main_text.value, u"Marion3");
-}
-
-// Tests that GetProfileSuggestions returns all profiles suggestions.
-TEST_F(PersonalDataManagerTest, GetProfileSuggestions_NumberOfSuggestions) {
-  // Set up 3 different profiles.
-  AutofillProfile profile1;
-  test::SetProfileInfo(&profile1, "Marion1", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox",
-                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "12345678910");
-  AddProfileToPersonalDataManager(profile1);
-
-  AutofillProfile profile2;
-  test::SetProfileInfo(&profile2, "Marion2", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox",
-                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "12345678910");
-  AddProfileToPersonalDataManager(profile2);
-
-  AutofillProfile profile3;
-  test::SetProfileInfo(&profile3, "Marion3", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox",
-                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "12345678910");
-  AddProfileToPersonalDataManager(profile3);
-
-  ResetPersonalDataManager();
-
-  // Verify that all the profiles are suggested.
-  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
-      AutofillType(NAME_FIRST), std::u16string(), false, {});
-  EXPECT_EQ(3U, suggestions.size());
-}
-
-// Tests that disused profiles are suppressed when suppression is enabled and
-// the input field is empty.
-TEST_F(PersonalDataManagerTest,
-       GetProfileSuggestions_SuppressDisusedProfilesOnEmptyField) {
-  // Set up 2 different profiles.
-  AutofillProfile profile1;
-  test::SetProfileInfo(&profile1, "Marion1", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox",
-                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "12345678910");
-  profile1.set_use_date(AutofillClock::Now() - base::Days(200));
-  AddProfileToPersonalDataManager(profile1);
-
-  AutofillProfile profile2;
-  test::SetProfileInfo(&profile2, "Marion2", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox",
-                       "456 Zoo St.\nSecond Line\nThird line", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "12345678910");
-  profile2.set_use_date(AutofillClock::Now() - base::Days(20));
-  AddProfileToPersonalDataManager(profile2);
-
-  ResetPersonalDataManager();
-
-  // Query with empty string only returns profile2.
-  {
-    std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
-        AutofillType(ADDRESS_HOME_STREET_ADDRESS), std::u16string(), false, {});
-    EXPECT_EQ(1U, suggestions.size());
-  }
-
-  // Query with non-alpha-numeric string only returns profile2.
-  {
-    std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
-        AutofillType(ADDRESS_HOME_STREET_ADDRESS), u"--", false, {});
-    EXPECT_EQ(1U, suggestions.size());
-  }
-
-  // Query with prefix for profile1 returns profile1.
-  {
-    std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
-        AutofillType(ADDRESS_HOME_STREET_ADDRESS), u"123", false, {});
-    ASSERT_EQ(1U, suggestions.size());
-    EXPECT_EQ(u"123 Zoo St., Second Line, Third line, unit 5",
-              suggestions[0].main_text.value);
-  }
-
-  // Query with prefix for profile2 returns profile2.
-  {
-    std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
-        AutofillType(ADDRESS_HOME_STREET_ADDRESS), u"456", false, {});
-    EXPECT_EQ(1U, suggestions.size());
-    EXPECT_EQ(u"456 Zoo St., Second Line, Third line, unit 5",
-              suggestions[0].main_text.value);
-  }
-}
-
-// Test that local and server profiles are not shown if
-// |kAutofillProfileEnabled| is set to |false|.
-TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ProfileAutofillDisabled) {
-  ///////////////////////////////////////////////////////////////////////
-  // Setup.
-  ///////////////////////////////////////////////////////////////////////
+// Test that profiles are not shown if |kAutofillProfileEnabled| is set to
+// |false|.
+TEST_F(PersonalDataManagerTest, GetProfilesToSuggest_ProfileAutofillDisabled) {
   const std::string kServerAddressId("server_address1");
-
   ASSERT_TRUE(TurnOnSyncFeature());
 
   // Add two different profiles, a local and a server one.
@@ -2438,21 +2118,13 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ProfileAutofillDisabled) {
   EXPECT_EQ(expected_profiles, personal_data_->GetProfiles().size());
   // Expect no autofilled values or suggestions.
   EXPECT_EQ(0U, personal_data_->GetProfilesToSuggest().size());
-
-  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
-      AutofillType(ADDRESS_HOME_STREET_ADDRESS), u"123", false, {});
-  ASSERT_EQ(0U, suggestions.size());
 }
 
 // Test that local and server profiles are not loaded into memory on start-up if
 // |kAutofillProfileEnabled| is set to |false|.
 TEST_F(PersonalDataManagerTest,
-       GetProfileSuggestions_NoProfilesLoadedIfDisabled) {
-  ///////////////////////////////////////////////////////////////////////
-  // Setup.
-  ///////////////////////////////////////////////////////////////////////
+       GetProfilesToSuggest_NoProfilesLoadedIfDisabled) {
   const std::string kServerAddressId("server_address1");
-
   ASSERT_TRUE(TurnOnSyncFeature());
 
   // Add two different profiles, a local and a server one.
@@ -2478,16 +2150,12 @@ TEST_F(PersonalDataManagerTest,
 
   // Expect no profile values or suggestions were loaded.
   EXPECT_EQ(0U, personal_data_->GetProfilesToSuggest().size());
-
-  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
-      AutofillType(ADDRESS_HOME_STREET_ADDRESS), u"123", false, {});
-  ASSERT_EQ(0U, suggestions.size());
 }
 
 // Test that local profiles are not added if |kAutofillProfileEnabled| is set to
 // |false|.
 TEST_F(PersonalDataManagerTest,
-       GetProfileSuggestions_NoProfilesAddedIfDisabled) {
+       GetProfilesToSuggest_NoProfilesAddedIfDisabled) {
   // Disable Profile autofill.
   prefs::SetAutofillProfileEnabled(personal_data_->pref_service_, false);
 
@@ -2501,341 +2169,6 @@ TEST_F(PersonalDataManagerTest,
   // Expect no profile values or suggestions were added.
   EXPECT_EQ(0U, personal_data_->GetProfiles().size());
 }
-
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-TEST_F(PersonalDataManagerTest,
-       GetProfileSuggestions_LogProfileSuggestionsMadeWithFormatter) {
-  AutofillProfile profile;
-  test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
-                       "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
-                       "19786744120");
-  AddProfileToPersonalDataManager(profile);
-
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kAutofillUseImprovedLabelDisambiguation);
-
-  base::HistogramTester histogram_tester;
-  EXPECT_THAT(
-      personal_data_->GetProfileSuggestions(
-          AutofillType(NAME_FIRST), std::u16string(), false,
-          {NAME_FIRST, NAME_LAST, EMAIL_ADDRESS, PHONE_HOME_WHOLE_NUMBER}),
-      ElementsAre(testing::Field(
-          &Suggestion::main_text,
-          Suggestion::Text(u"Hoa", Suggestion::Text::IsPrimary(true)))));
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.ProfileSuggestionsMadeWithFormatter", true, 1);
-}
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ForContactForm) {
-  AutofillProfile profile;
-  test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
-                       "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
-                       "19786744120");
-  AddProfileToPersonalDataManager(profile);
-
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kAutofillUseImprovedLabelDisambiguation);
-
-  EXPECT_THAT(
-      personal_data_->GetProfileSuggestions(
-          AutofillType(NAME_FIRST), std::u16string(), false,
-          {NAME_FIRST, NAME_LAST, EMAIL_ADDRESS, PHONE_HOME_WHOLE_NUMBER}),
-      ElementsAre(AllOf(
-          testing::Field(&Suggestion::labels,
-                         ConstructLabelLineMatrix(
-                             {u"(978) 674-4120", u"hoa.pham@comcast.net"})),
-          testing::Field(&Suggestion::icon, kAddressEntryIcon))));
-}
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-TEST_F(PersonalDataManagerTest, GetProfileSuggestions_AddressForm) {
-  AutofillProfile profile;
-  test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
-                       "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
-                       "19786744120");
-  AddProfileToPersonalDataManager(profile);
-
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kAutofillUseImprovedLabelDisambiguation);
-
-  EXPECT_THAT(personal_data_->GetProfileSuggestions(
-                  AutofillType(NAME_FULL), std::u16string(), false,
-                  {NAME_FULL, ADDRESS_HOME_STREET_ADDRESS, ADDRESS_HOME_CITY,
-                   ADDRESS_HOME_STATE, ADDRESS_HOME_ZIP}),
-              ElementsAre(AllOf(
-                  testing::Field(&Suggestion::labels,
-                                 ConstructLabelLineMatrix(
-                                     {u"401 Merrimack St, Lowell, MA 01852"})),
-                  testing::Field(&Suggestion::icon, kAddressEntryIcon))));
-}
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-TEST_F(PersonalDataManagerTest, GetProfileSuggestions_AddressPhoneForm) {
-  AutofillProfile profile;
-  test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
-                       "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
-                       "19786744120");
-  AddProfileToPersonalDataManager(profile);
-
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kAutofillUseImprovedLabelDisambiguation);
-
-  EXPECT_THAT(
-      personal_data_->GetProfileSuggestions(
-          AutofillType(NAME_FULL), std::u16string(), false,
-          {NAME_FULL, ADDRESS_HOME_STREET_ADDRESS, PHONE_HOME_WHOLE_NUMBER}),
-      ElementsAre(
-          AllOf(testing::Field(&Suggestion::labels,
-                               ConstructLabelLineMatrix(
-                                   {u"(978) 674-4120", u"401 Merrimack St"})),
-                testing::Field(&Suggestion::icon, kAddressEntryIcon))));
-}
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-TEST_F(PersonalDataManagerTest, GetProfileSuggestions_AddressEmailForm) {
-  AutofillProfile profile;
-  test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
-                       "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
-                       "19786744120");
-  AddProfileToPersonalDataManager(profile);
-
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kAutofillUseImprovedLabelDisambiguation);
-
-  EXPECT_THAT(
-      personal_data_->GetProfileSuggestions(
-          AutofillType(NAME_FULL), std::u16string(), false,
-          {NAME_FULL, ADDRESS_HOME_STREET_ADDRESS, EMAIL_ADDRESS}),
-      ElementsAre(AllOf(
-          testing::Field(&Suggestion::labels,
-                         ConstructLabelLineMatrix(
-                             {u"401 Merrimack St", u"hoa.pham@comcast.net"})),
-          testing::Field(&Suggestion::icon, kAddressEntryIcon))));
-}
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-TEST_F(PersonalDataManagerTest, GetProfileSuggestions_FormWithOneProfile) {
-  AutofillProfile profile;
-  test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
-                       "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
-                       "19786744120");
-  AddProfileToPersonalDataManager(profile);
-
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kAutofillUseImprovedLabelDisambiguation);
-
-  EXPECT_THAT(
-      personal_data_->GetProfileSuggestions(
-          AutofillType(NAME_FULL), std::u16string(), false,
-          {NAME_FULL, ADDRESS_HOME_STREET_ADDRESS, EMAIL_ADDRESS,
-           PHONE_HOME_WHOLE_NUMBER}),
-      ElementsAre(
-          AllOf(testing::Field(&Suggestion::labels,
-                               ConstructLabelLineMatrix({u"401 Merrimack St"})),
-                testing::Field(&Suggestion::icon, kAddressEntryIcon))));
-}
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-TEST_F(PersonalDataManagerTest,
-       GetProfileSuggestions_AddressContactFormWithProfiles) {
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitWithFeatures(
-      /*enabled_features=*/{features::
-                                kAutofillEnableRankingFormulaAddressProfiles,
-                            features::kAutofillUseImprovedLabelDisambiguation},
-      /*disabled_features=*/{});
-
-  AutofillProfile profile1;
-  test::SetProfileInfo(&profile1, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
-                       "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
-                       "19786744120");
-
-  AutofillProfile profile2;
-  test::SetProfileInfo(&profile2, "Hoa", "", "Pham", "hp@aol.com", "",
-                       "216 Broadway St", "", "Lowell", "MA", "01854", "US",
-                       "19784523366");
-
-  // The profiles' use dates and counts are set make this test deterministic.
-  // The suggestion created with data from profile1 should be ranked higher
-  // than profile2's associated suggestion. This ensures that profile1's
-  // suggestion is the first element in the collection returned by
-  // GetProfileSuggestions.
-  profile1.set_use_date(AutofillClock::Now());
-  profile1.set_use_count(10);
-  profile2.set_use_date(AutofillClock::Now() - base::Days(10));
-  profile2.set_use_count(1);
-
-  EXPECT_TRUE(profile1.HasGreaterRankingThan(&profile2, AutofillClock::Now()));
-
-  AddProfileToPersonalDataManager(profile1);
-  AddProfileToPersonalDataManager(profile2);
-
-  EXPECT_THAT(
-      personal_data_->GetProfileSuggestions(
-          AutofillType(NAME_FULL), std::u16string(), false,
-          {NAME_FULL, ADDRESS_HOME_STREET_ADDRESS, EMAIL_ADDRESS,
-           PHONE_HOME_WHOLE_NUMBER}),
-      ElementsAre(
-          AllOf(testing::Field(&Suggestion::labels,
-                               ConstructLabelLineMatrix(
-                                   {u"401 Merrimack St", u"(978) 674-4120",
-                                    u"hoa.pham@comcast.net"})),
-                testing::Field(&Suggestion::icon, kAddressEntryIcon)),
-          AllOf(testing::Field(&Suggestion::labels,
-                               ConstructLabelLineMatrix({u"216 Broadway St",
-                                                         u"(978) 452-3366",
-                                                         u"hp@aol.com"})),
-                testing::Field(&Suggestion::icon, kAddressEntryIcon))));
-}
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-TEST_F(PersonalDataManagerTest, GetProfileSuggestions_MobileShowOne) {
-  std::map<std::string, std::string> parameters;
-  parameters[features::kAutofillUseMobileLabelDisambiguationParameterName] =
-      features::kAutofillUseMobileLabelDisambiguationParameterShowOne;
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeatureWithParameters(
-      features::kAutofillUseMobileLabelDisambiguation, parameters);
-
-  AutofillProfile profile1;
-  test::SetProfileInfo(&profile1, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
-                       "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
-                       "19786744120");
-  AutofillProfile profile2;
-  test::SetProfileInfo(&profile2, "María", "", "Lòpez", "maria@aol.com", "",
-                       "11 Elkins St", "", "Boston", "MA", "02127", "US",
-                       "6172686862");
-
-  // The profiles' use dates and counts are set make this test deterministic.
-  // The suggestion created with data from profile1 should be ranked higher
-  // than profile2's associated suggestion. This ensures that profile1's
-  // suggestion is the first element in the collection returned by
-  // GetProfileSuggestions.
-  profile1.set_use_date(AutofillClock::Now());
-  profile1.set_use_count(10);
-  profile2.set_use_date(AutofillClock::Now() - base::Days(10));
-  profile2.set_use_count(1);
-
-  AddProfileToPersonalDataManager(profile1);
-  AddProfileToPersonalDataManager(profile2);
-
-  // Tests a form with name, email address, and phone number fields.
-  EXPECT_THAT(
-      personal_data_->GetProfileSuggestions(
-          AutofillType(EMAIL_ADDRESS), std::u16string(), false,
-          {NAME_FIRST, NAME_LAST, EMAIL_ADDRESS, PHONE_HOME_WHOLE_NUMBER}),
-      ElementsAre(
-          AllOf(testing::Field(&Suggestion::labels,
-                               std::vector<std::vector<Suggestion::Text>>{
-                                   {Suggestion::Text(u"(978) 674-4120")}}),
-                testing::Field(&Suggestion::icon, kAddressEntryIcon)),
-          AllOf(testing::Field(&Suggestion::labels,
-                               std::vector<std::vector<Suggestion::Text>>{
-                                   {Suggestion::Text(u"(617) 268-6862")}}),
-                testing::Field(&Suggestion::icon, kAddressEntryIcon))));
-
-  // Tests a form with name, address, phone number, and email address fields.
-  EXPECT_THAT(
-      personal_data_->GetProfileSuggestions(
-          AutofillType(EMAIL_ADDRESS), std::u16string(), false,
-          {NAME_FULL, ADDRESS_HOME_STREET_ADDRESS, ADDRESS_HOME_CITY,
-           EMAIL_ADDRESS, PHONE_HOME_WHOLE_NUMBER}),
-      ElementsAre(
-          AllOf(testing::Field(&Suggestion::labels,
-                               std::vector<std::vector<Suggestion::Text>>{
-                                   {Suggestion::Text(u"401 Merrimack St")}}),
-                testing::Field(&Suggestion::icon, kAddressEntryIcon)),
-          AllOf(testing::Field(&Suggestion::labels,
-                               std::vector<std::vector<Suggestion::Text>>{
-                                   {Suggestion::Text(u"11 Elkins St")}}),
-                testing::Field(&Suggestion::icon, kAddressEntryIcon))));
-}
-#endif  // if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-TEST_F(PersonalDataManagerTest, GetProfileSuggestions_MobileShowAll) {
-  std::map<std::string, std::string> parameters;
-  parameters[features::kAutofillUseMobileLabelDisambiguationParameterName] =
-      features::kAutofillUseMobileLabelDisambiguationParameterShowAll;
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeatureWithParameters(
-      features::kAutofillUseMobileLabelDisambiguation, parameters);
-
-  AutofillProfile profile1;
-  test::SetProfileInfo(&profile1, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
-                       "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
-                       "19786744120");
-  AutofillProfile profile2;
-  test::SetProfileInfo(&profile2, "María", "", "Lòpez", "maria@aol.com", "",
-                       "11 Elkins St", "", "Boston", "MA", "02127", "US",
-                       "6172686862");
-
-  // The profiles' use dates and counts are set make this test deterministic.
-  // The suggestion created with data from profile1 should be ranked higher
-  // than profile2's associated suggestion. This ensures that profile1's
-  // suggestion is the first element in the collection returned by
-  // GetProfileSuggestions.
-  profile1.set_use_date(AutofillClock::Now());
-  profile1.set_use_count(10);
-  profile2.set_use_date(AutofillClock::Now() - base::Days(10));
-  profile2.set_use_count(1);
-
-  AddProfileToPersonalDataManager(profile1);
-  AddProfileToPersonalDataManager(profile2);
-
-  // Tests a form with name, email address, and phone number fields.
-  EXPECT_THAT(
-      personal_data_->GetProfileSuggestions(
-          AutofillType(EMAIL_ADDRESS), std::u16string(), false,
-          {NAME_FIRST, NAME_LAST, EMAIL_ADDRESS, PHONE_HOME_WHOLE_NUMBER}),
-      ElementsAre(
-          AllOf(testing::Field(&Suggestion::labels,
-                               std::vector<std::vector<Suggestion::Text>>{
-                                   {Suggestion::Text(ConstructMobileLabelLine(
-                                       {u"Hoa", u"(978) 674-4120"}))}}),
-                testing::Field(&Suggestion::icon, kAddressEntryIcon)),
-          AllOf(testing::Field(&Suggestion::labels,
-                               std::vector<std::vector<Suggestion::Text>>{
-                                   {Suggestion::Text(ConstructMobileLabelLine(
-                                       {u"María", u"(617) 268-6862"}))}}),
-                testing::Field(&Suggestion::icon, kAddressEntryIcon))));
-
-  // Tests a form with name, address, phone number, and email address fields.
-  EXPECT_THAT(
-      personal_data_->GetProfileSuggestions(
-          AutofillType(EMAIL_ADDRESS), std::u16string(), false,
-          {NAME_FULL, ADDRESS_HOME_STREET_ADDRESS, ADDRESS_HOME_CITY,
-           EMAIL_ADDRESS, PHONE_HOME_WHOLE_NUMBER}),
-      ElementsAre(
-          AllOf(
-              testing::Field(
-                  &Suggestion::labels,
-                  std::vector<std::vector<Suggestion::Text>>{
-                      {Suggestion::Text(ConstructMobileLabelLine(
-                          {u"Hoa", u"401 Merrimack St", u"(978) 674-4120"}))}}),
-              testing::Field(&Suggestion::icon, kAddressEntryIcon)),
-          AllOf(testing::Field(
-                    &Suggestion::labels,
-                    std::vector<std::vector<Suggestion::Text>>{
-                        {Suggestion::Text(ConstructMobileLabelLine(
-                            {u"María", u"11 Elkins St", u"(617) 268-6862"}))}}),
-                testing::Field(&Suggestion::icon, kAddressEntryIcon))));
-}
-#endif  // if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
 TEST_F(PersonalDataManagerTest, IsKnownCard_MatchesMaskedServerCard) {
   // Add a masked server card.
@@ -3457,7 +2790,7 @@ TEST_F(PersonalDataManagerTest, RecordUseOf) {
     PersonalDataProfileTaskWaiter waiter(*personal_data_);
     EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
     personal_data_->RecordUseOf(&profile);
-    waiter.Wait();
+    std::move(waiter).Wait();
   }
 
   added_profile = personal_data_->GetProfileByGUID(profile.guid());
@@ -3472,7 +2805,7 @@ TEST_F(PersonalDataManagerTest, RecordUseOf) {
     PersonalDataProfileTaskWaiter waiter(*personal_data_);
     EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
     personal_data_->RecordUseOf(&credit_card);
-    waiter.Wait();
+    std::move(waiter).Wait();
   }
 
   added_profile = personal_data_->GetProfileByGUID(profile.guid());
@@ -3560,6 +2893,21 @@ TEST_F(PersonalDataManagerTest, DeleteLocalCreditCards) {
     EXPECT_NE(expectedToRemain.end(),
               expectedToRemain.find(card->GetRawInfo(CREDIT_CARD_NAME_FULL)));
   }
+}
+
+TEST_F(PersonalDataManagerTest, DeleteAllLocalCreditCards) {
+  SetUpReferenceLocalCreditCards();
+
+  // Expect 3 local credit cards.
+  EXPECT_EQ(3U, personal_data_->GetLocalCreditCards().size());
+
+  personal_data_->DeleteAllLocalCreditCards();
+
+  // Wait for the data to be refreshed.
+  PersonalDataProfileTaskWaiter(*personal_data_).Wait();
+
+  // Expect the local credit cards to have been deleted.
+  EXPECT_EQ(0U, personal_data_->GetLocalCreditCards().size());
 }
 
 // Tests that Wallet addresses do NOT get converted if they're stored in
@@ -3712,9 +3060,7 @@ TEST_F(PersonalDataManagerTest, LogStoredCreditCardMetrics) {
   // Helper timestamps for setting up the test data.
   base::Time now = AutofillClock::Now();
   base::Time one_month_ago = now - base::Days(30);
-  base::Time::Exploded now_exploded;
   base::Time::Exploded one_month_ago_exploded;
-  now.LocalExplode(&now_exploded);
   one_month_ago.LocalExplode(&one_month_ago_exploded);
 
   std::vector<CreditCard> server_cards;
@@ -3928,10 +3274,10 @@ TEST_F(
   personal_data_->AddCreditCard(credit_card);
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
 
-  // Turn off autofill profile sync.
+  // Turn off payments sync.
   syncer::UserSelectableTypeSet user_selectable_type_set =
       sync_service_.GetUserSettings()->GetSelectedTypes();
-  user_selectable_type_set.Remove(syncer::UserSelectableType::kAutofill);
+  user_selectable_type_set.Remove(syncer::UserSelectableType::kPayments);
   sync_service_.GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/false,
       /*types=*/user_selectable_type_set);
@@ -4131,7 +3477,7 @@ TEST_F(PersonalDataManagerTest,
   // Expect an update and a deletion.
   EXPECT_CALL(update_waiter.mock_observer(), OnPersonalDataChanged()).Times(2);
   personal_data_->UpdateProfile(updated_more_recently_used_profile);
-  update_waiter.Wait();
+  std::move(update_waiter).Wait();
 
   // Verify that less recently used profile was removed.
   ASSERT_EQ(personal_data_->GetProfiles().size(), 1U);

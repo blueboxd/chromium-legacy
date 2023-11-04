@@ -378,7 +378,7 @@ void PropagateSpaceShortage(
     const NGConstraintSpace&,
     const NGLayoutResult*,
     LayoutUnit fragmentainer_block_offset,
-    NGBoxFragmentBuilder*,
+    NGFragmentBuilder*,
     absl::optional<LayoutUnit> block_size_override = absl::nullopt);
 // Calculate how much we would need to stretch the column block-size to fit the
 // current result (if applicable). |block_size_override| should only be supplied
@@ -401,6 +401,16 @@ void UpdateMinimalSpaceShortage(absl::optional<LayoutUnit> space_shortage,
 bool MovePastBreakpoint(
     const NGConstraintSpace& space,
     NGLayoutInputNode child,
+    const NGLayoutResult& layout_result,
+    LayoutUnit fragmentainer_block_offset,
+    NGBreakAppeal appeal_before,
+    NGBoxFragmentBuilder* builder,
+    bool is_row_item = false,
+    NGFlexColumnBreakInfo* flex_column_break_info = nullptr);
+
+// Same as above, but without the parts that require an NGLayoutInputNode.
+bool MovePastBreakpoint(
+    const NGConstraintSpace& space,
     const NGLayoutResult& layout_result,
     LayoutUnit fragmentainer_block_offset,
     NGBreakAppeal appeal_before,

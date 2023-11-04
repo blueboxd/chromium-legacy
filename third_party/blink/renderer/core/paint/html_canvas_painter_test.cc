@@ -31,7 +31,7 @@ class HTMLCanvasPainterTest : public PaintControllerPaintTestBase {
  protected:
   void SetUp() override {
     test_context_provider_ = viz::TestContextProvider::Create();
-    InitializeSharedGpuContext(test_context_provider_.get());
+    InitializeSharedGpuContextGLES2(test_context_provider_.get());
     PaintControllerPaintTestBase::SetUp();
   }
 
@@ -51,11 +51,6 @@ class HTMLCanvasPainterTest : public PaintControllerPaintTestBase {
     return GetChromeClient().HasLayer(layer);
   }
 
-  std::unique_ptr<Canvas2DLayerBridge> MakeCanvas2DLayerBridge(
-      const gfx::Size& size) {
-    return std::make_unique<Canvas2DLayerBridge>(size, kNonOpaque);
-  }
-
  private:
   scoped_refptr<viz::TestContextProvider> test_context_provider_;
 };
@@ -71,15 +66,16 @@ TEST_F(HTMLCanvasPainterTest, Canvas2DLayerAppearsInLayerTree) {
   CanvasRenderingContext* context =
       element->GetCanvasRenderingContext("2d", attributes);
   gfx::Size size(300, 200);
-  std::unique_ptr<Canvas2DLayerBridge> bridge = MakeCanvas2DLayerBridge(size);
+  std::unique_ptr<Canvas2DLayerBridge> bridge =
+      std::make_unique<Canvas2DLayerBridge>();
   element->SetPreferred2DRasterMode(RasterModeHint::kPreferGPU);
   element->SetResourceProviderForTesting(nullptr, std::move(bridge), size);
   ASSERT_EQ(context, element->RenderingContext());
 
   // Force the page to paint.
   element->PreFinalizeFrame();
-  context->FinalizeFrame(CanvasResourceProvider::FlushReason::kTesting);
-  element->PostFinalizeFrame(CanvasResourceProvider::FlushReason::kTesting);
+  context->FinalizeFrame(FlushReason::kTesting);
+  element->PostFinalizeFrame(FlushReason::kTesting);
   UpdateAllLifecyclePhasesForTest();
 
   ASSERT_TRUE(context->IsComposited());

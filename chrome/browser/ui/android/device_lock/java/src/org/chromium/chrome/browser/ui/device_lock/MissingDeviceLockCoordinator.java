@@ -4,12 +4,17 @@
 
 package org.chromium.chrome.browser.ui.device_lock;
 
+import static org.chromium.components.browser_ui.device_lock.DeviceLockBridge.DEVICE_LOCK_PAGE_HAS_BEEN_PASSED;
+
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -52,10 +57,10 @@ public class MissingDeviceLockCoordinator {
             Context context, ModalDialogManager modalDialogManager) {
         mView = MissingDeviceLockView.create(LayoutInflater.from(context));
 
-        mMediator = new MissingDeviceLockMediator((wipeAllData) -> {
-            onContinueWithoutDeviceLock.onResult(wipeAllData);
-            hideDialog(DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
-        }, context);
+        mMediator = new MissingDeviceLockMediator(
+                (wipeAllData)
+                        -> continueWithoutDeviceLock(wipeAllData, onContinueWithoutDeviceLock),
+                context);
 
         mPropertyModelChangeProcessor = PropertyModelChangeProcessor.create(
                 mMediator.getModel(), mView, MissingDeviceLockViewBinder::bind);
@@ -69,6 +74,14 @@ public class MissingDeviceLockCoordinator {
                         .with(ModalDialogProperties.DIALOG_STYLES,
                                 ModalDialogProperties.DialogStyles.NORMAL)
                         .build();
+    }
+
+    @VisibleForTesting
+    void continueWithoutDeviceLock(
+            Boolean wipeAllData, Callback<Boolean> onContinueWithoutDeviceLock) {
+        onContinueWithoutDeviceLock.onResult(wipeAllData);
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+        prefs.edit().remove(DEVICE_LOCK_PAGE_HAS_BEEN_PASSED).apply();
     }
 
     /**

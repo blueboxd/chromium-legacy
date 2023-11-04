@@ -17,6 +17,7 @@ import("//build/util/branding.gni")
 import("//skia/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
+import("//third_party/jni_zero/jni_zero.gni")
 import("//tools/grit/grit_rule.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/qt/qt.gni")
@@ -194,8 +195,6 @@ component("base") {
     "models/tree_model.h",
     "models/tree_node_iterator.h",
     "models/tree_node_model.h",
-    "moving_max.cc",
-    "moving_max.h",
     "nine_image_painter_factory.cc",
     "nine_image_painter_factory.h",
     "page_transition_types.cc",
@@ -601,6 +600,8 @@ component("base") {
       "glib/glib_integers.h",
       "glib/glib_signal.h",
       "glib/scoped_gobject.h",
+      "glib/scoped_gsignal.cc",
+      "glib/scoped_gsignal.h",
     ]
   }
 
@@ -1021,7 +1022,6 @@ test("ui_base_unittests") {
     "models/simple_combobox_model_unittest.cc",
     "models/simple_menu_model_unittest.cc",
     "models/tree_node_iterator_unittest.cc",
-    "moving_max_unittest.cc",
     "pointer/touch_ui_controller_unittest.cc",
     "prediction/empty_filter_unittests.cc",
     "prediction/input_filter_unittest_helpers.cc",
@@ -1314,6 +1314,10 @@ test("ui_base_unittests") {
   # If the platform supports wayland, run wayland library unittests, too.
   if (is_chromeos_ash || ozone_platform_wayland) {
     deps += [ "//ui/base/wayland:unittests" ]
+  }
+
+  if (use_glib) {
+    sources += [ "glib/scoped_gsignal_unittest.cc" ]
   }
 }
 

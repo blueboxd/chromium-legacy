@@ -8,7 +8,7 @@
 #include <queue>
 
 #include "base/containers/queue.h"
-#include "media/base/moving_average.h"
+#include "base/moving_window.h"
 #include "media/filters/hls_rendition.h"
 
 namespace media {
@@ -30,6 +30,7 @@ class MEDIA_EXPORT HlsLiveRendition : public HlsRendition {
                   ManifestDemuxer::DelayCallback time_remaining_cb) override;
   bool Seek(base::TimeDelta seek_time) override;
   void CancelPendingNetworkRequests() override;
+  void Stop() override;
 
  private:
   base::TimeDelta GetForwardBufferSize() const;
@@ -39,7 +40,7 @@ class MEDIA_EXPORT HlsLiveRendition : public HlsRendition {
   void FetchMoreDataFromPendingStream(base::OnceClosure cb);
   void OnSegmentData(base::OnceClosure cb,
                      base::TimeTicks net_req_start,
-                     HlsDataSourceStream::ReadResult result);
+                     HlsDataSourceStreamManager::ReadResult result);
 
   // Manifest fetching.
   void AppendSegments(hls::MediaPlaylist* playlist);
@@ -50,7 +51,7 @@ class MEDIA_EXPORT HlsLiveRendition : public HlsRendition {
   void OnManifestUpdates(base::TimeTicks download_start_time,
                          base::TimeDelta delay_time,
                          ManifestDemuxer::DelayCallback cb,
-                         HlsDataSourceStream::ReadResult result);
+                         HlsDataSourceStreamManager::ReadResult result);
   void ClearOldData(base::TimeDelta time);
   void ResetForPause();
   void ContinuePartialFetching(base::OnceClosure cb);
@@ -85,13 +86,14 @@ class MEDIA_EXPORT HlsLiveRendition : public HlsRendition {
 
   // If this is set, then use it to get more data. Otherwise, fetch another
   // segment.
-  absl::optional<HlsDataSourceStream> partial_stream_ = absl::nullopt;
+  std::unique_ptr<HlsDataSourceStream> partial_stream_;
 
   // Record the time it takes to download content.
-  MovingAverage fetch_time_{32};
+  base::MovingAverage<base::TimeDelta, base::TimeDelta> fetch_time_{32};
 
   bool has_ever_played_ = false;
   bool require_seek_after_unpause_ = false;
+  bool is_stopped_for_shutdown_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

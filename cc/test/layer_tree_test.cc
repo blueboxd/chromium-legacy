@@ -181,16 +181,17 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
       TaskGraphRunner* task_graph_runner,
       RenderingStatsInstrumentation* stats_instrumentation,
       scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner)
-      : LayerTreeHostImpl(settings,
-                          host_impl_client,
-                          task_runner_provider,
-                          stats_instrumentation,
-                          task_graph_runner,
-                          AnimationHost::CreateForTesting(ThreadInstance::IMPL),
-                          nullptr,
-                          0,
-                          std::move(image_worker_task_runner),
-                          scheduling_client),
+      : LayerTreeHostImpl(
+            settings,
+            host_impl_client,
+            task_runner_provider,
+            stats_instrumentation,
+            task_graph_runner,
+            AnimationHost::CreateForTesting(ThreadInstance::kImpl),
+            nullptr,
+            0,
+            std::move(image_worker_task_runner),
+            scheduling_client),
         test_hooks_(test_hooks) {}
 
   std::unique_ptr<RasterBufferProvider> CreateRasterBufferProvider() override {
@@ -730,13 +731,13 @@ LayerTreeTest::LayerTreeTest(viz::RendererType renderer_type)
     init_vulkan = true;
   } else if (renderer_type_ == viz::RendererType::kSkiaGraphite) {
     scoped_feature_list_.InitAndEnableFeature(features::kSkiaGraphite);
-    // Force the use of Graphite even if disallowed for other reasons e.g. ANGLE
-    // Metal is not enabled on Mac.
-    command_line->AppendSwitch(::switches::kSkiaGraphiteBackend);
     init_dawn = true;
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
     init_vulkan = true;
 #endif
+  } else {
+    scoped_feature_list_.InitWithFeatures(
+        {}, {features::kVulkan, features::kSkiaGraphite});
   }
 
   if (init_vulkan) {
@@ -750,6 +751,14 @@ LayerTreeTest::LayerTreeTest(viz::RendererType renderer_type)
   if (init_dawn) {
 #if BUILDFLAG(SKIA_USE_DAWN)
     dawnProcSetProcs(&dawn::native::GetProcs());
+    bool use_gpu = command_line->HasSwitch(::switches::kUseGpuInTests);
+    // Force the use of Graphite even if disallowed for other reasons e.g.
+    // ANGLE Metal is not enabled on Mac. Use dawn-swiftshader backend if
+    // kUseGpuInTests is not set.
+    command_line->AppendSwitchASCII(
+        ::switches::kSkiaGraphiteBackend,
+        use_gpu ? ::switches::kSkiaGraphiteBackendDawn
+                : ::switches::kSkiaGraphiteBackendDawnSwiftshader);
 #endif
   }
 }
@@ -937,7 +946,7 @@ void LayerTreeTest::DoBeginTest() {
   LayerTreeHostSchedulingClient* scheduling_client =
       impl_thread_ ? client_.get() : nullptr;
 
-  animation_host_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+  animation_host_ = AnimationHost::CreateForTesting(ThreadInstance::kMain);
 
   layer_tree_host_ = LayerTreeHostForTesting::Create(
       this, mode_, client_.get(), scheduling_client, client_.get(),

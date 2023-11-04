@@ -1514,12 +1514,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   web_frame_widget->ApplyVisualProperties(
       params->widget_params->visual_properties);
 
-  CHECK(!render_frame->in_frame_tree_);
   render_frame->in_frame_tree_ = true;
-#if !(BUILDFLAG(IS_ANDROID) || \
-      (BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_ARM64)))
-  render_frame->added_to_frame_tree_stack_trace_.emplace();
-#endif
   render_frame->Initialize(nullptr);
 
   if (params->subresource_loader_factories
@@ -1627,12 +1622,7 @@ void RenderFrameImpl::CreateFrame(
 
     // The RenderFrame is created and inserted into the frame tree in the above
     // call to createLocalChild.
-    CHECK(!render_frame->in_frame_tree_);
     render_frame->in_frame_tree_ = true;
-#if !(BUILDFLAG(IS_ANDROID) || \
-      (BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_ARM64)))
-    render_frame->added_to_frame_tree_stack_trace_.emplace();
-#endif
   } else {
     WebFrame* previous_web_frame =
         WebFrame::FromFrameToken(previous_frame_token.value());
@@ -2139,9 +2129,7 @@ void RenderFrameImpl::Unload(
   task_runner->PostTask(FROM_HERE, std::move(send_unload_ack));
 }
 
-void RenderFrameImpl::Delete(
-    mojom::FrameDeleteIntention intent,
-    mojo::PendingRemote<mojom::DebugHelperForCrbug1425281> helper) {
+void RenderFrameImpl::Delete(mojom::FrameDeleteIntention intent) {
   TRACE_EVENT(
       "navigation", "RenderFrameImpl::Delete", [&](perfetto::EventContext ctx) {
         auto* event = ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>();
@@ -2185,32 +2173,11 @@ void RenderFrameImpl::Delete(
       // main frame when a commit (and ownership transfer) is imminent.
       // TODO(dcheng): This is the case of https://crbug.com/838348.
       DCHECK(is_main_frame_);
-      if (in_frame_tree_) {
-        // This remote should always be non-null when intent ==
-        // kSpeculativeMainFrameForNavigationCancelled.
-        mojo::Remote<mojom::DebugHelperForCrbug1425281> helper_remote(
-            std::move(helper));
-        size_t addresses_count = 0;
-        const void* const* addresses_ptr =
-            added_to_frame_tree_stack_trace_
-                ? added_to_frame_tree_stack_trace_->Addresses(&addresses_count)
-                : nullptr;
-        absl::optional<std::vector<uint64_t>> addresses;
-        if (addresses_ptr) {
-          addresses.emplace();
-          addresses->reserve(addresses_count);
-          for (size_t i = 0; i < addresses_count; ++i) {
-            addresses->push_back(reinterpret_cast<uintptr_t>(addresses_ptr[i]));
-          }
-        }
-        auto debug_info = mojom::Crbug1425281DebugInfo::New(
-            addresses, is_main_frame_, frame_->IsProvisional());
-        helper_remote->Failed(std::move(debug_info));
-        helper_remote.reset();
-      } else {
-        // No need to signal anything; only failure is signalled.
-        helper.reset();
-      }
+#if !BUILDFLAG(IS_ANDROID)
+      // This check is not enabled on Android, since it seems like it's much
+      // easier to trigger data races there.
+      CHECK(!in_frame_tree_);
+#endif  // !BUILDFLAG(IS_ANDROID)
       break;
   }
 
@@ -2273,7 +2240,8 @@ void RenderFrameImpl::SetResourceCache(
 
 void RenderFrameImpl::SetWantErrorMessageStackTrace() {
   want_error_message_stack_trace_ = true;
-  v8::Isolate::GetCurrent()->SetCaptureStackTraceForUncaughtExceptions(true);
+  GetAgentGroupScheduler().Isolate()->SetCaptureStackTraceForUncaughtExceptions(
+      true);
 }
 
 void RenderFrameImpl::NotifyObserversOfFailedProvisionalLoad() {
@@ -2383,7 +2351,7 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
 }
 
 void RenderFrameImpl::ExecuteJavaScript(const std::u16string& javascript) {
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  v8::HandleScope handle_scope(GetAgentGroupScheduler().Isolate());
   frame_->ExecuteScript(WebScriptSource(WebString::FromUTF16(javascript)));
 }
 
@@ -2609,8 +2577,10 @@ void RenderFrameImpl::CommitNavigation(
   DCHECK(navigation_client_impl_);
   DCHECK(!blink::IsRendererDebugURL(common_params->url));
   DCHECK(!NavigationTypeUtils::IsSameDocument(common_params->navigation_type));
-  // `origin_to_commit` must only be set on failed navigations.
-  CHECK(!commit_params->origin_to_commit);
+  // `origin_to_commit` must only be set on failed navigations or  data: URL
+  // navigations.
+  CHECK(!commit_params->origin_to_commit ||
+        common_params->url.SchemeIs(url::kDataScheme));
   LogCommitHistograms(commit_params->commit_sent, is_main_frame_);
 
   AssertNavigationCommits assert_navigation_commits(
@@ -3260,13 +3230,6 @@ v8::Local<v8::Object> RenderFrameImpl::GetScriptableObject(
 #endif
 }
 
-void RenderFrameImpl::UpdateSubresourceFactory(
-    std::unique_ptr<blink::PendingURLLoaderFactoryBundle> info) {
-  auto child_info = std::make_unique<blink::ChildPendingURLLoaderFactoryBundle>(
-      std::move(info));
-  GetLoaderFactoryBundle()->Update(std::move(child_info));
-}
-
 void RenderFrameImpl::BindToFrame(blink::WebNavigationControl* frame) {
   DCHECK(!frame_);
 
@@ -3534,8 +3497,7 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
   // Note that Blink can't be changed to just pass |fallback_name| as |name| in
   // the case |name| is empty: |fallback_name| should never affect the actual
   // browsing context name, only unique name generation.
-  bool is_created_by_script =
-      v8::Isolate::GetCurrent() && v8::Isolate::GetCurrent()->InContext();
+  bool is_created_by_script = GetAgentGroupScheduler().Isolate()->InContext();
   std::string frame_unique_name =
       unique_name_helper_.GenerateNameForNewChildFrame(
           name.IsEmpty() ? fallback_name.Utf8() : name.Utf8(),
@@ -3576,12 +3538,7 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
       child_render_frame->blink_interface_registry_.get(), frame_token);
   finish_creation(web_frame, document_token);
 
-  CHECK(!child_render_frame->in_frame_tree_);
   child_render_frame->in_frame_tree_ = true;
-#if !(BUILDFLAG(IS_ANDROID) || \
-      (BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_ARM64)))
-  child_render_frame->added_to_frame_tree_stack_trace_.emplace();
-#endif
   child_render_frame->Initialize(/*parent=*/GetWebFrame());
 
   return web_frame;
@@ -4446,7 +4403,7 @@ void RenderFrameImpl::DidObserveLayoutShift(double score,
 
 void RenderFrameImpl::DidCreateScriptContext(v8::Local<v8::Context> context,
                                              int world_id) {
-  v8::MicrotasksScope microtasks(blink::MainThreadIsolate(),
+  v8::MicrotasksScope microtasks(GetAgentGroupScheduler().Isolate(),
                                  context->GetMicrotaskQueue(),
                                  v8::MicrotasksScope::kDoNotRunMicrotasks);
   if (((enabled_bindings_ & BINDINGS_POLICY_MOJO_WEB_UI) ||
@@ -5079,12 +5036,7 @@ bool RenderFrameImpl::SwapIn(WebFrame* previous_web_frame) {
 
   // `previous_web_frame` is now detached, and should no longer be referenced.
 
-  CHECK(!in_frame_tree_);
   in_frame_tree_ = true;
-#if !(BUILDFLAG(IS_ANDROID) || \
-      (BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_ARM64)))
-  added_to_frame_tree_stack_trace_.emplace();
-#endif
 
   // If this is the main frame going from a remote frame to a local frame,
   // it needs to set RenderViewImpl's pointer for the main frame to itself.
@@ -5259,7 +5211,8 @@ void RenderFrameImpl::BeginNavigation(
 
   if (frame_->IsOutermostMainFrame() && url.is_valid() &&
       url.SchemeIsHTTPOrHTTPS() &&
-      base::FeatureList::IsEnabled(kSpeculativeServiceWorkerStartup)) {
+      base::FeatureList::IsEnabled(
+          features::kSpeculativeServiceWorkerStartup)) {
     frame_->MaybeStartOutermostMainFrameNavigation(WebVector<WebURL>({url}));
   }
 
@@ -5353,6 +5306,16 @@ void RenderFrameImpl::BeginNavigation(
       // when first creating the iframe with an unset/about:blank URL, which
       // means the origin should inherit from the parent.
       WebLocalFrame* parent = static_cast<WebLocalFrame*>(frame_->Parent());
+      SCOPED_CRASH_KEY_STRING256(
+          "sync_about_blank", "parent_origin",
+          url::Origin(parent->GetDocument().GetSecurityOrigin())
+              .GetDebugString());
+      SCOPED_CRASH_KEY_STRING256(
+          "sync_about_blank", "request_origin",
+          url::Origin(info->url_request.RequestorOrigin()).GetDebugString());
+      SCOPED_CRASH_KEY_STRING256(
+          "sync_about_blank", "current_origin",
+          url::Origin(frame_->GetSecurityOrigin()).GetDebugString());
       CHECK(parent);
       CHECK(parent->GetDocument().GetSecurityOrigin().IsSameOriginWith(
           info->url_request.RequestorOrigin()));

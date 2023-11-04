@@ -54,16 +54,28 @@
 <div class="section-header cr-secondary-text">
   $i18n{safetyHubPageModuleSectionHeader}
 </div>
+<template is="dom-if" if="[[showNotificationPermissions_]]">
+  <settings-safety-hub-notification-permissions-module class="module box">
+  </settings-safety-hub-notification-permissions-module>
+</template>
 <template is="dom-if" if="[[showUnusedSitePermissions_]]">
   <settings-safety-hub-unused-site-permissions class="module box">
   </settings-safety-hub-unused-site-permissions>
 </template>
+<template is="dom-if" if="[[showExtensions_]]">
+  <settings-safety-hub-extensions-module class="module box">
+  </settings-safety-hub-extensions-module>
+</template>
 <template is="dom-if" if="[[showNoRecommendationsState_]]">
   <settings-safety-hub-module id="emptyStateModule" class="module box"
-    header="$i18n{safetyHubEmptyStateModuleHeader}"
-    subheader="$i18n{safetyHubEmptyStateModuleSubheader}">
+      header="$i18n{safetyHubEmptyStateModuleHeader}"
+      subheader="$i18n{safetyHubEmptyStateModuleSubheader}">
+  </settings-safety-hub-module>
+  <settings-safety-hub-module
+      id="userEducationModule"
+      class="module box"
+      header="$i18n{safetyHubUserEduModuleHeader}"
+      header-icon="settings20:lightbulb"
+      sites="[[userEducationItemList_]]">
   </settings-safety-hub-module>
 </template>
-<div class="section-header cr-secondary-text">
-  $i18n{safetyHubPageUserEduSectionHeader}
-</div>

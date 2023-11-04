@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,8 @@ import {TestRunner} from 'test_runner';
 import {AxeCoreTestRunner} from 'axe_core_test_runner';
 import {BindingsTestRunner} from 'bindings_test_runner';
 import {SourcesTestRunner} from 'sources_test_runner';
+
+import * as SourcesModule from 'devtools/panels/sources/sources.js';
 
 (async function() {
   TestRunner.addResult('Tests accessibility in the Sources panel Navigator pane Overrides tab using axe-core.');
@@ -33,7 +35,7 @@ import {SourcesTestRunner} from 'sources_test_runner';
 
   async function testA11yForView(ruleSet) {
     await UI.viewManager.showView('navigator-overrides');
-    const sourcesNavigatorView = new Sources.OverridesNavigatorView();
+    const sourcesNavigatorView = new SourcesModule.SourcesNavigator.OverridesNavigatorView();
 
     sourcesNavigatorView.show(UI.inspectorView.element);
     SourcesTestRunner.dumpNavigatorView(sourcesNavigatorView);

@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.flags.PostNativeFlag;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUtils;
+import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.ui.native_page.FrozenNativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -315,6 +316,25 @@ public class TabContentManager {
     }
 
     /**
+     * Call to get an ETC1 thumbnail for a given tab through a {@link Callback}. If there is
+     * no up-to-date thumbnail on disk for the given tab, callback returns null.
+     * @param tabId The ID of the tab to get the thumbnail for.
+     * @param callback The callback to send the {@link Bitmap} with. Can be called up to twice when
+     *                 {@code forceUpdate}; otherwise always called exactly once.
+     */
+    public void getEtc1TabThumbnailWithCallback(int tabId, @NonNull Callback<Bitmap> callback) {
+        if (!mSnapshotsEnabled || mNativeTabContentManager == 0) {
+            callback.onResult(null);
+            return;
+        }
+
+        // Do not capture a JPEG here because we likely already created one when capturing. We just
+        // want to fetch the ETC1 off of disk for a higher resolution image to use for animations.
+        TabContentManagerJni.get().getEtc1TabThumbnail(
+                mNativeTabContentManager, tabId, 0.0f, /*saveJpeg=*/false, callback);
+    }
+
+    /**
      * Call to get a thumbnail for a given tab through a {@link Callback}. If there is
      * no up-to-date thumbnail on disk for the given tab, callback returns null.
      * @param tabId The ID of the tab to get the thumbnail for.
@@ -328,10 +348,17 @@ public class TabContentManager {
             @NonNull Callback<Bitmap> callback, boolean forceUpdate, boolean writeBack) {
         if (!mSnapshotsEnabled) return;
 
-        // TODO(crbug/1444782): Remove forceUpdate and writeBack params from here and don't
-        // trigger a captureThumbnail. This should be feasible once the
-        // ThumbnailCacheRefactor is enabled & the Tab shrink/expand animations are updated
-        // to use Java rather than compositor animations.
+        // TODO(crbug/1444782): Remove forceUpdate and writeBack params once the following features
+        // launch:
+        // * GridTabSwitcherAndroidAnimations
+        // * ThumbnailCacheRefactor
+        // * Start Surface Refactor
+        if (ChromeFeatureList.sGridTabSwitcherAndroidAnimations.isEnabled()
+                && ReturnToChromeUtil.isStartSurfaceRefactorEnabled(mContext)) {
+            getTabThumbnailFromDisk(tabId, thumbnailSize, callback);
+            return;
+        }
+
         if (!forceUpdate) {
             assert !writeBack : "writeBack is ignored if not forceUpdate";
             getTabThumbnailFromDisk(tabId, thumbnailSize, callback);
@@ -348,7 +375,7 @@ public class TabContentManager {
             Tab tab = getTabById(tabId);
             if (tab == null) return;
 
-            captureThumbnail(tab, writeBack, (bitmap) -> {
+            captureThumbnail(tab, writeBack, /*returnBitmap=*/true, (bitmap) -> {
                 // Null check to avoid having a Bitmap from getTabThumbnailFromDisk() but
                 // cleared here.
                 // If invalidation is not needed, readbackNativeBitmap() might not do anything
@@ -523,8 +550,11 @@ public class TabContentManager {
     }
 
     private void refetchEtc1(int tabId, @NonNull Callback<Bitmap> callback, boolean emitMetrics) {
-        TabContentManagerJni.get().getEtc1TabThumbnail(
-                mNativeTabContentManager, tabId, getTabCaptureAspectRatio(), (etc1) -> {
+        // Generate a JPEG because this path is only triggered if the existing JPEG was not of the
+        // the correct size. Create a new JPEG so we can skip this slower path in future requests.
+        // This is only applicable when ThumbnailCacheRefactor is disabled.
+        TabContentManagerJni.get().getEtc1TabThumbnail(mNativeTabContentManager, tabId,
+                getTabCaptureAspectRatio(), /*saveJpeg=*/true, (etc1) -> {
                     if (emitMetrics) {
                         if (etc1 != null) {
                             recordThumbnailFetchingResult(ThumbnailFetchingResult.GOT_ETC1);
@@ -584,9 +614,22 @@ public class TabContentManager {
      * @param tab The tab whose content we will cache.
      */
     public void cacheTabThumbnail(@NonNull final Tab tab) {
+        cacheTabThumbnailWithCallback(tab, /*returnBitmap=*/false, null);
+    }
+
+    /**
+     * Cache the content of a tab as a thumbnail and call the {@code callback} when finished.
+     * @param tab The tab whose content we will cache.
+     * @param returnBitmap Whether to return a bitmap to the callback. Setting to false avoids an
+     *                     expensive bitmap copy if not required.
+     * @param callback Called when the caching is finished. The bitmap argument may be null if
+     *                 unsuccessful or {@code returnBitmap} is false.
+     */
+    public void cacheTabThumbnailWithCallback(
+            @NonNull final Tab tab, boolean returnBitmap, Callback<Bitmap> callback) {
         if (mNativeTabContentManager == 0 || !mSnapshotsEnabled) return;
 
-        captureThumbnail(tab, true, null);
+        captureThumbnail(tab, true, returnBitmap, callback);
     }
 
     private Bitmap cacheNativeTabThumbnail(final Tab tab) {
@@ -604,10 +647,11 @@ public class TabContentManager {
      * @param tab The tab whose content we will capture.
      * @param writeToCache Whether write the captured thumbnail to cache. If not, a downsampled
      *                     thumbnail is captured instead.
+     * @param returnBitmap Whether to return a bitmap to the callback.
      * @param callback The callback to send the {@link Bitmap} with.
      */
-    private void captureThumbnail(
-            @NonNull final Tab tab, boolean writeToCache, @Nullable Callback<Bitmap> callback) {
+    private void captureThumbnail(@NonNull final Tab tab, boolean writeToCache,
+            boolean returnBitmap, @Nullable Callback<Bitmap> callback) {
         assert mNativeTabContentManager != 0;
         assert mSnapshotsEnabled;
 
@@ -620,7 +664,7 @@ public class TabContentManager {
             // downsampled bitmap, but the performance here is not the bottleneck.
             Bitmap bitmap = cacheNativeTabThumbnail(tab);
             if (callback == null) return;
-            if (bitmap == null) {
+            if (bitmap == null || !returnBitmap) {
                 callback.onResult(null);
                 return;
             }
@@ -643,14 +687,19 @@ public class TabContentManager {
             }
             callback.onResult(resized);
         } else {
-            if (tab.getWebContents() == null) return;
+            if (tab.getWebContents() == null || tab.isHidden()) {
+                if (callback != null) {
+                    callback.onResult(null);
+                }
+                return;
+            }
             // If we don't have to write the thumbnail back to the cache, we can use the faster
             // path of capturing a downsampled copy.
             // This faster path is essential to Tab-to-Grid animation to be smooth.
             final float downsamplingScale = writeToCache ? 1 : 0.5f;
             TabContentManagerJni.get().captureThumbnail(mNativeTabContentManager, tab,
                     mThumbnailScale * downsamplingScale, writeToCache, getTabCaptureAspectRatio(),
-                    callback);
+                    returnBitmap, callback);
         }
     }
 
@@ -731,7 +780,8 @@ public class TabContentManager {
         void attachTab(long nativeTabContentManager, Tab tab, int tabId);
         void detachTab(long nativeTabContentManager, Tab tab, int tabId);
         void captureThumbnail(long nativeTabContentManager, Object tab, float thumbnailScale,
-                boolean writeToCache, double aspectRatio, Callback<Bitmap> callback);
+                boolean writeToCache, double aspectRatio, boolean returnBitmap,
+                Callback<Bitmap> callback);
         void cacheTabWithBitmap(long nativeTabContentManager, Object tab, Object bitmap,
                 float thumbnailScale, double aspectRatio);
         void invalidateIfChanged(long nativeTabContentManager, int tabId, GURL url);
@@ -740,7 +790,7 @@ public class TabContentManager {
         void waitForJpegTabThumbnail(
                 long nativeTabContentManager, int tabId, Callback<Boolean> callback);
         void getEtc1TabThumbnail(long nativeTabContentManager, int tabId, double aspectRatio,
-                Callback<Bitmap> callback);
+                boolean saveJpeg, Callback<Bitmap> callback);
         void setCaptureMinRequestTimeForTesting(long nativeTabContentManager, int timeMs);
         int getInFlightCapturesForTesting(long nativeTabContentManager);
         void destroy(long nativeTabContentManager);

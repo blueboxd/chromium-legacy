@@ -32,7 +32,6 @@
 #include "cc/mojom/render_frame_metadata.mojom.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "content/browser/renderer_host/agent_scheduling_group_host.h"
-#include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/input/input_disposition_handler.h"
 #include "content/browser/renderer_host/input/input_router_impl.h"
@@ -46,6 +45,7 @@
 #include "content/browser/scheduler/browser_ui_thread_scheduler.h"
 #include "content/common/content_export.h"
 #include "content/common/frame.mojom-forward.h"
+#include "content/common/input/event_with_latency_info.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_process_host_priority_client.h"
 #include "content/public/browser/render_widget_host.h"
@@ -264,8 +264,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   float GetDeviceScaleFactor() override;
   absl::optional<cc::TouchAction> GetAllowedTouchAction() override;
   void WriteIntoTrace(perfetto::TracedValue context) override;
-  using DragOperationCallback =
-      base::OnceCallback<void(::ui::mojom::DragOperation)>;
   // |drop_data| must have been filtered. The embedder should call
   // FilterDropData before passing the drop data to RWHI.
   void DragTargetDragEnter(const DropData& drop_data,
@@ -909,6 +907,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                                   bool animate);
 
   void StartDragging(blink::mojom::DragDataPtr drag_data,
+                     const url::Origin& source_origin,
                      blink::DragOperationsMask drag_operations_mask,
                      const SkBitmap& unsafe_bitmap,
                      const gfx::Vector2d& cursor_offset_in_dip,
@@ -1030,8 +1029,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // IPC message handlers
   void OnClose();
   void OnUpdateScreenRectsAck();
-  void OnUpdateDragCursor(DragOperationCallback callback,
-                          ui::mojom::DragOperation current_op);
+  void OnUpdateDragOperation(DragOperationCallback callback,
+                             ui::mojom::DragOperation current_op,
+                             bool document_is_handling_drag);
 
   // blink::mojom::FrameWidgetHost overrides.
   void AnimateDoubleTapZoomInMainFrame(const gfx::Point& tap_point,

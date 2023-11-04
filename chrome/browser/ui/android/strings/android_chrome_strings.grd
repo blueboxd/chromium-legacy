@@ -347,6 +347,18 @@ CHAR_LIMIT guidelines:
       <message name="IDS_PREFS_SECTION_PRELOAD_PAGES_TITLE" desc="Title for the Preload Pages section. This section allows the user to control whether Chrome will preload pages that it thinks the user is likely to load in the future. [CHAR_LIMIT=32]">
         Preload Pages
       </message>
+      <message name="IDS_PRELOAD_PAGES_PRIVACY_GUIDE_SUMMARY" desc="Title for a section in Settings that controls pages preloading and informs the user about the data shared by this feature.">
+        Choose whether to preload pages
+      </message>
+      <message name="IDS_PRELOAD_PAGES_STANDARD_PRIVACY_GUIDE_BULLET_ONE" desc="First bullet point under the Preload Pages standard preloading mode. Informs the user about what the standard preloading setting does.">
+        Browsing and searching is faster
+      </message>
+      <message name="IDS_PRELOAD_PAGES_STANDARD_PRIVACY_GUIDE_BULLET_TWO" desc="Second bullet point under the Preload Pages standard preloading mode. Informs the user about what the standard preloading setting does.">
+        Chrome preloads pages you're likely to visit, so that they load more quickly when you visit them
+      </message>
+      <message name="IDS_PRELOAD_PAGES_STANDARD_PRIVACY_GUIDE_BULLET_THREE" desc="Third bullet point under the Preload Pages standard preloading mode. Informs the user about what the standard preloading setting does.">
+        If you allow cookies, Chrome may use them when preloading
+      </message>
       <message name="IDS_PRELOAD_PAGES_TITLE" desc="Title for a section in Settings that controls pages preloading and informs the user about the data shared by this feature.">
         Preload pages
       </message>
@@ -469,6 +481,17 @@ CHAR_LIMIT guidelines:
 
       <message name="IDS_SEARCH_ENGINE_CHOICE_PROMPT" desc="Prompt asking users whether they want to change the search engine">
         You can choose your search engine
+      </message>
+
+      <!-- Search engine choice screen. TODO(b/280753530): replace with final versions -->
+      <message name="IDS_SEARCH_ENGINE_CHOICE_SCREEN_TITLE" desc="" translateable="false">
+        *Title*
+      </message>
+      <message name="IDS_SEARCH_ENGINE_CHOICE_SCREEN_SUBTITLE" desc="" translateable="false">
+        *Subtitle*
+      </message>
+      <message name="IDS_SEARCH_ENGINE_CHOICE_SCREEN_PRIMARY_ACTION" desc="" translateable="false">
+        *Primary Action*
       </message>
 
       <!-- Autofill and Payments preferences -->
@@ -1635,6 +1658,15 @@ Your Google account may have other forms of browsing history like searches and a
         Depending on your settings, Chrome may also send cookies and your current URL
       </message>
 
+      <!-- Tracking protection -->
+      <!-- TODO(b/295926938): Update the strings once finalized. -->
+      <message name="IDS_TRACKING_PROTECTION_TITLE" desc="" translateable="false">
+        Tracking protection
+      </message>
+      <message name="IDS_TRACKING_PROTECTION_SUMMARY" desc="" translateable="false">
+        Protection from trackers (third-party cookies, IP tracking, invasive scripts, and more)
+      </message>
+
       <!-- Safety check -->
       <message name="IDS_PREFS_SAFETY_CHECK" desc="Title of the Safety check element in settings, allowing the user to check multiple areas of browser safety. [CHAR_LIMIT=32]">
         Safety check
@@ -2310,9 +2342,6 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_SIGN_IN_GOOGLE_ACCOUNT" desc="Title of sign in account selection dialog. [CHAR_LIMIT=32]">
         Google Account
-      </message>
-      <message name="IDS_SYNC_CUSTOM_PASSPHRASE" desc="Prompt user to create a custom sync password.">
-        Passphrase encryption doesn’t include payment methods and addresses from Google Pay. Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting you'll need to reset sync. <ph name="BEGIN_LINK">&lt;learnmore&gt;</ph>Learn more<ph name="END_LINK">&lt;/learnmore&gt;</ph>
       </message>
       <message name="IDS_NEW_SYNC_CUSTOM_PASSPHRASE" desc="Prompt user to create a custom sync password.">
         Payment methods and addresses from Google Pay won’t be encrypted. Browsing history from Chrome won’t sync.
@@ -3202,16 +3231,16 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
 
       <!-- Strings for a missing device lock. -->
-      <message name="IDS_MISSING_DEVICE_LOCK_TITLE" translateable="false" desc="">
+      <message name="IDS_MISSING_DEVICE_LOCK_TITLE" desc="Title shown on the missing profile lock page if a user has removed a profile lock that used to be present on the device.">
         Continue without a car profile lock?
       </message>
-      <message name="IDS_MISSING_DEVICE_LOCK_DESCRIPTION" translateable="false" desc="">
-        Opening Chrome without a profile lock will remove your your saved passwords and payment methods from the car. Using a profile lock keeps this data secure.
+      <message name="IDS_MISSING_DEVICE_LOCK_DESCRIPTION" desc="Text description explaining that a profile lock is required on automotive devices, and that sensitive personal data will be deleted from the profile if the user continues to Chrome without re-creating a profile lock.">
+        Opening Chrome without a profile lock will remove your saved passwords and payment methods from the car. Using a profile lock keeps this data secure.
       </message>
-      <message name="IDS_MISSING_DEVICE_LOCK_REMOVE_LOCAL_DATA" translateable="false" desc="">
+      <message name="IDS_MISSING_DEVICE_LOCK_REMOVE_LOCAL_DATA" desc="Option given to the user to delete all Chrome profile data, particularly mentioning bookmarks and history.">
         Also clear bookmarks, history, and more from this car
       </message>
-      <message name="IDS_DELETE_AND_CONTINUE" translateable="false" desc="">
+      <message name="IDS_DELETE_AND_CONTINUE" desc="Text for the button that will delete any sensitive data and then navigate the user back to Chrome.">
         Delete &amp; continue
       </message>
 
@@ -3780,7 +3809,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Find in page
       </message>
       <message name="IDS_MENU_PAGE_INSIGHTS" desc="Menu item showing Page Insights hub. [CHAR_LIMIT=27]">
-        View page insights
+        View Page Insights
       </message>
       <message name="IDS_MENU_FOLLOW" desc="Menu item allowing users to follow the current website. [CHAR_LIMIT=27]">
         Follow
@@ -4185,6 +4214,12 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_RDS_GLOBAL_OPT_IN_MESSAGE_TITLE" desc="Title of the message shown for the user to opt in to the desktop site global setting based on device conditions.">
         Request desktop sites by default?
       </message>
+      <message name="IDS_RDS_WINDOW_SETTING_MESSAGE_TITLE" desc="Title of the message shown after window setting changes the page layout from desktop to mobile.">
+        Chrome will request the mobile site when the screen is narrow
+      </message>
+      <message name="IDS_RDS_WINDOW_SETTING_MESSAGE_BUTTON" desc="Text on the button allowing users to manage the setting.">
+        Go to Settings
+      </message>
       <message name="IDS_RDS_APP_MENU_USER_EDUCATION_DIALOG_TITLE" desc="Title of the dialog shown to educate the user about the desktop site app menu site-level setting.">
         Chrome will remember your choice
       </message>
@@ -4487,7 +4522,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Page insights bottom sheet is closed
       </message>
       <message name="IDS_PAGE_INSIGHTS_HUB_TITLE_TEXT" desc="The title of Page Insights Sheet.">
-        Related Insights
+        Page Insights
       </message>
       <message name="IDS_PAGE_INSIGHTS_BACK_BUTTON_DESCRIPTION" desc="The content description of back button in page insights sheet.">
         Page insights back button
@@ -5714,6 +5749,18 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_IDP_SIGNIN_STATUS_MISMATCH_DIALOG_CONTINUE" desc="Title of the button that allows the user to continue with signing in to an account from an identity provider." translateable="false">
         Continue
       </message>
+      <message name="IDS_SIGNIN_ERROR_DIALOG_GOT_IT_BUTTON" desc="The button text on the error dialog for the user to acknowledge that an error has occurred in their attempt to sign in with an account from an identity provider." translateable="false">
+        Got it
+      </message>
+      <message name="IDS_SIGNIN_ERROR_DIALOG_MORE_DETAILS_BUTTON" desc="The button text on the error dialog for the user to get more details about an error that has occurred in their attempt to sign in with an account from an identity provider." translateable="false">
+        More details
+      </message>
+      <message name="IDS_SIGNIN_GENERIC_ERROR_DIALOG_SUMMARY" desc="Summary of generic error upon user failing to sign in with an account from an identity provider." translateable="false">
+        Can't continue with <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">%1$s<ex>idp.example</ex></ph>
+      </message>
+      <message name="IDS_SIGNIN_GENERIC_ERROR_DIALOG_DESCRIPTION" desc="Description of generic error upon user failing to sign in with an account from an identity provider." translateable="false">
+        Something went wrong
+      </message>
       <message name="IDS_VERIFY_SHEET_TITLE_AUTO_REAUTHN" desc="Header for verify sheet for auto re-authentication.">
         Signing you in…
       </message>
@@ -5878,6 +5925,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_QUICK_DELETE_DIALOG_MORE_OPTIONS_BUTTON_TEXT" desc="Text inside the more options button which redirects users to the advanced page of 'Clear Browsing Data' where the users can customize more deletion options.">
         More options
       </message>
+      <message name="IDS_QUICK_DELETE_DIALOG_MORE_OPTIONS_BUTTON_TEXT_A11Y" desc="A11y text for Talkback, in order to give more context to the button that redirects users to the advanced page of 'Clear Browsing Data'.">
+        More options to clear browsing data
+      </message>
       <message name="IDS_QUICK_DELETE_DIALOG_DATA_PENDING" desc="Text that is shown when data in the dialog is being fetched.">
         Calculating...
       </message>
@@ -5962,6 +6012,35 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_READALOUD_OPTIONS_MENU_BUTTON" desc="Accessibility string for the 'Listen to this page' options menu button.">
         More options
+      </message>
+      <message name="IDS_READALOUD_PLAYBACK_ERROR" desc="Message displayed when an error occured during 'Listen to this page' playback.">
+        Playback is unavailable for this page.
+      </message>
+       <message name="IDS_READALOUD_PLAYBACK_LOADING" desc="Message displayed when 'Listen to this page' playback is buffering.">
+        Loading…
+      </message>
+
+      <!-- Touch To Fill No Passkeys Sheet -->
+      <message name="IDS_NO_PASSKEYS_SHEET_CONTENT_DESCRIPTION" is_accessibility_with_no_ui="true" desc="Accessibility string read when the no passkeys sheet is opened. It describes the bottom sheet informing users that no passkeys are available.">
+        No passkeys sheet
+      </message>
+      <message name="IDS_NO_PASSKEYS_SHEET_FULL_HEIGHT" is_accessibility_with_no_ui="true" desc="Accessibility string read upon opening the bottom sheet that informs users that no passkeys are available. Even at full height, the sheet will occupy the bottom half of the screen.">
+        No passkeys sheet opened at full height
+      </message>
+      <message name="IDS_NO_PASSKEYS_SHEET_CLOSED" is_accessibility_with_no_ui="true" desc="Accessibility string read upon closing the bottom sheet that informs users that no passkeys are available.">
+        No passkeys sheet was closed
+      </message>
+      <message name="IDS_NO_PASSKEYS_SHEET_TITLE" desc="Title of the bottom sheet informing users that no passkeys are available.">
+        No passkeys available
+      </message>
+      <message name="IDS_NO_PASSKEYS_SHEET_SUBTITLE" desc="Explanation text of the bottom sheet informing users that no passkeys are available for this site.">
+        There aren't any passkeys for <ph name="ORIGIN">%1$s<ex>example.com</ex></ph> on this device
+      </message>
+      <message name="IDS_NO_PASSKEYS_SHEET_OK" desc="Label for the button that allows users to dismiss the bottom sheet informing them that no passkeys are available.">
+        OK
+      </message>
+      <message name="IDS_NO_PASSKEYS_SHEET_USE_ANOTHER_DEVICE" desc="Label for the button that allows users to starts a flow allowing them to use a passkey from another device to sign into ths site.">
+        Use another device
       </message>
     </messages>
   </release>

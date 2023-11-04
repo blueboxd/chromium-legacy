@@ -4,7 +4,6 @@
 <translation id="1001534784610492198">安装程序存档文件损坏或无效。请重新下载 Google Chrome。</translation>
 <translation id="1026101648481255140">继续安装</translation>
 <translation id="102763973188675173">有可用的更新。欢迎自定义和控制 Google Chrome。</translation>
-<translation id="1051826050538111504">您的计算机上存在有害软件。Chrome 可以移除该软件、恢复您的设置并停用扩展程序，以确保您的浏览器能够重新正常运行。</translation>
 <translation id="1065672644894730302">系统无法读取您的偏好设置。某些功能可能无法使用，并且对偏好设置所做的更改不会保存。</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> 之前使用的是 Chrome</translation>
 <translation id="110877069173485804">这是您的专属Chrome</translation>
@@ -45,7 +44,7 @@
 <translation id="1713301662689114961">{0,plural, =1{Chrome 将在 1 小时后重新启动}other{Chrome 将在 # 小时后重新启动}}</translation>
 <translation id="1734234790201236882">Chrome 会将此密码保存在您的 Google 账号中，因此您不必记住它。</translation>
 <translation id="1786003790898721085">请确保您已在“<ph name="TARGET_DEVICE_NAME" />”上登录 Chrome，然后再次尝试发送。</translation>
-<translation id="1812689907177901597">关闭此设置后，您无需登录 Chrome 即可登录 Gmail 等 Google 网站</translation>
+<translation id="1812689907177901597">关闭此功能后，您无需登录 Chrome 即可登录 Gmail 等 Google 网站</translation>
 <translation id="1860536484129686729">Chrome 需要获得相应权限，才能允许此网站使用您的摄像头</translation>
 <translation id="1873233029667955273">Google Chrome 不是您的默认浏览器</translation>
 <translation id="1874309113135274312">Google Chrome 测试版 (mDNS-In)</translation>
@@ -285,7 +284,7 @@
 <translation id="6247557882553405851">Google 密码管理工具</translation>
 <translation id="6251759518630934363">通过比“标准保护”机制分析更多的网站数据，针对危险网站（甚至是 Google 未曾得知的网站）向您发出警告。您可以选择忽略 Chrome 警告。</translation>
 <translation id="6273793429163604305">即将就绪…</translation>
-<translation id="6277547788421725101">你的家长已为 Chrome 停用“网站、应用和扩展程序的权限”</translation>
+<translation id="6277547788421725101">您的家长已为 Chrome 停用“网站、应用和扩展程序的权限”</translation>
 <translation id="6291089322031436445">Chrome 开发者版应用</translation>
 <translation id="6291549208091401781">已为您计算机上的所有用户安装 Google Chrome。</translation>
 <translation id="6326175484149238433">从Chrome中移除</translation>

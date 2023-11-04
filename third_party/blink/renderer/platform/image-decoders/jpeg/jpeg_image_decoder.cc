@@ -42,10 +42,10 @@
 
 #include "base/logging.h"
 #include "base/numerics/checked_math.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
 #include "third_party/blink/renderer/platform/image-decoders/exif_reader.h"
-#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/private/SkJpegMetadataDecoder.h"
 
@@ -165,11 +165,6 @@ blink::BitmapImageMetrics::JpegColorSpace ExtractUMAJpegColorSpace(
   }
 }
 
-void UpdateJpegBppHistogram(gfx::Size size, size_t image_size_bytes) {
-  static constexpr char kType[] = "Jpeg";
-  blink::ImageDecoder::UpdateBppHistogram<kType>(size, image_size_bytes);
-}
-
 constexpr base::HistogramBase::Sample kImageAreaHistogramMin = 1;
 constexpr base::HistogramBase::Sample kImageAreaHistogramMax = 8192 * 8192;
 constexpr int32_t kImageAreaHistogramBucketCount = 100;
@@ -223,7 +218,7 @@ struct decoder_error_mgr {
 struct decoder_source_mgr {
   DISALLOW_NEW();
   struct jpeg_source_mgr pub;  // "public" fields for IJG library
-  JPEGImageReader* reader;
+  raw_ptr<JPEGImageReader> reader;
 };
 
 enum jstate {
@@ -370,12 +365,12 @@ class JPEGImageReader final {
     return true;
   }
 
-  void SetData(SegmentReader* data) {
-    if (data_.get() == data) {
+  void SetData(scoped_refptr<SegmentReader> data) {
+    if (data_ == data) {
       return;
     }
 
-    data_ = data;
+    data_ = std::move(data);
 
     // If a restart is needed, the next call to fillBuffer will read from the
     // new SegmentReader.
@@ -748,7 +743,9 @@ class JPEGImageReader final {
         CountJpegColorSpace(ExtractUMAJpegColorSpace(info_));
         if (info_.jpeg_color_space != JCS_GRAYSCALE &&
             decoder_->IsAllDataReceived()) {
-          UpdateJpegBppHistogram(decoder_->Size(), data_->size());
+          static constexpr char kType[] = "Jpeg";
+          ImageDecoder::UpdateBppHistogram<kType>(decoder_->Size(),
+                                                  data_->size());
         }
         return jpeg_finish_decompress(&info_);
     }
@@ -813,7 +810,7 @@ class JPEGImageReader final {
   }
 
   scoped_refptr<SegmentReader> data_;
-  JPEGImageDecoder* decoder_;
+  raw_ptr<JPEGImageDecoder> decoder_;
 
   // Input reading: True if we need to back up to restart_position_.
   bool needs_restart_;
@@ -919,9 +916,9 @@ bool JPEGImageDecoder::SetSize(unsigned width, unsigned height) {
   return true;
 }
 
-void JPEGImageDecoder::OnSetData(SegmentReader* data) {
+void JPEGImageDecoder::OnSetData(scoped_refptr<SegmentReader> data) {
   if (reader_) {
-    reader_->SetData(data);
+    reader_->SetData(std::move(data));
 
     // Changing YUV decoding mode is not allowed after decompression starts.
     if (reader_->HasStartedDecompression()) {
@@ -1335,7 +1332,7 @@ void JPEGImageDecoder::Decode(DecodingMode decoding_mode) {
 
   if (!reader_) {
     reader_ = std::make_unique<JPEGImageReader>(this, offset_);
-    reader_->SetData(data_.get());
+    reader_->SetData(data_);
   }
 
   // If we couldn't decode the image but have received all the data, decoding

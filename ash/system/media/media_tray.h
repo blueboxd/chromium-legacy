@@ -80,6 +80,9 @@ class ASH_EXPORT MediaTray : public MediaNotificationProviderObserver,
   void OnLockStateChanged(bool locked) override;
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
 
+  // Callback called when this TrayBackgroundView is pressed.
+  void OnTrayButtonPressed();
+
   // Show/hide media tray.
   void UpdateDisplayState();
 
@@ -96,6 +99,7 @@ class ASH_EXPORT MediaTray : public MediaNotificationProviderObserver,
 
   // TrayBubbleView::Delegate:
   std::u16string GetAccessibleNameForBubble() override;
+  void HideBubble(const TrayBubbleView* bubble_view) override;
 
   // Called when theme change, set colors for media notification view.
   void SetNotificationColorTheme();

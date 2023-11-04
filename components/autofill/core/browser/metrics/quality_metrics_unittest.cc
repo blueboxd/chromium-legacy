@@ -530,13 +530,12 @@ TEST_P(PredictionQualityMetricsTest, Classification) {
   ServerFieldType predicted_type = GetParam().predicted_field_type;
 
   DVLOG(2) << "Test Case = Predicted: "
-           << AutofillType::ServerFieldTypeToString(predicted_type) << "; "
-           << "Actual: "
-           << AutofillType::ServerFieldTypeToString(actual_field_type);
+           << FieldTypeToStringPiece(predicted_type) << "; "
+           << "Actual: " << FieldTypeToStringPiece(actual_field_type);
 
   FormData form = CreateForm(
       {CreateTestFormField("first", "first", ValueForType(NAME_FIRST), "text"),
-       CreateTestFormField("last", "last", ValueForType(NAME_LAST), "test"),
+       CreateTestFormField("last", "last", ValueForType(NAME_LAST), "text"),
        CreateTestFormField("Unknown", "Unknown",
                            ValueForType(actual_field_type), "text")});
 

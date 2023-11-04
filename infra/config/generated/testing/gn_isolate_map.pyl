@@ -2,7 +2,7 @@
 # Instead:
 # 1. Modify //infra/config/targets/targets.star
 # 2. Run //infra/config/main.star
-# 3. Run //infra/config/scripts/sync-py-files.py
+# 3. Run //infra/config/scripts/sync-pyl-files.py
 
 {
   "absl_hardening_tests": {
@@ -133,6 +133,10 @@
     "label": "//base:base_junit_tests",
     "type": "generated_script",
   },
+  "base_nocompile_tests": {
+    "label": "//base:base_nocompile_tests",
+    "type": "additional_compile_target",
+  },
   "base_perftests": {
     "label": "//base:base_perftests",
     "type": "script",
@@ -162,9 +166,17 @@
     "label": "//third_party/blink/renderer/platform/heap:blink_heap_unittests",
     "type": "console_test_launcher",
   },
+  "blink_platform_nocompile_tests": {
+    "label": "//third_party/blink/renderer/platform:blink_platform_nocompile_tests",
+    "type": "additional_compile_target",
+  },
   "blink_platform_unittests": {
     "label": "//third_party/blink/renderer/platform:blink_platform_unittests",
     "type": "console_test_launcher",
+  },
+  "blink_probes_nocompile_tests": {
+    "label": "//third_party/blink/renderer/core/probe:blink_probes_nocompile_tests",
+    "type": "additional_compile_target",
   },
   "blink_python_tests": {
     "label": "//:blink_python_tests",
@@ -198,10 +210,6 @@
       "--results-directory",
       "${ISOLATED_OUTDIR}",
     ],
-  },
-  "boundary_interface_example_apk": {
-    "label": "//android_webview/support_library/boundary_interfaces:boundary_interface_example_apk",
-    "type": "additional_compile_target",
   },
   "boringssl_crypto_tests": {
     "label": "//third_party/boringssl:boringssl_crypto_tests",
@@ -446,16 +454,8 @@
     "label": "//chrome/test:chromeos_integration_tests",
     "type": "windowed_test_launcher",
   },
-  "webdriver_wpt_tests": {
-    "label": "//:webdriver_wpt_tests",
-    "type": "generated_script",
-    "args": [
-      "--results-directory",
-      "${ISOLATED_OUTDIR}",
-    ],
-  },
-  "chrome_wpt": {
-    "label": "//:chrome_wpt",
+  "chrome_wpt_tests": {
+    "label": "//:chrome_wpt_tests",
     "type": "generated_script",
     "args": [
       "--results-directory",
@@ -538,10 +538,6 @@
   "chromiumos_preflight": {
     "label": "//:chromiumos_preflight",
     "type": "additional_compile_target",
-  },
-  "color_unittests": {
-    "label": "//ui/color:color_unittests",
-    "type": "console_test_launcher",
   },
   "command_buffer_perftests": {
     "label": "//gpu:command_buffer_perftests",
@@ -626,7 +622,7 @@
   },
   "content_nocompile_tests": {
     "label": "//content/test:content_nocompile_tests",
-    "type": "console_test_launcher",
+    "type": "additional_compile_target",
   },
   "content_shell_crash_test": {
     "label": "//content/shell:content_shell_crash_test",
@@ -747,10 +743,6 @@
   "display_unittests": {
     "label": "//ui/display:display_unittests",
     "type": "console_test_launcher",
-  },
-  "dump_syms": {
-    "label": "//third_party/breakpad:dump_syms",
-    "type": "additional_compile_target",
   },
   "elevation_service_unittests": {
     "label": "//chrome/elevation_service:elevation_service_unittests",
@@ -1129,10 +1121,6 @@
     "label": "//ui/message_center:message_center_unittests",
     "type": "windowed_test_launcher",
   },
-  "microdump_stackwalk": {
-    "label": "//third_party/breakpad:microdump_stackwalk",
-    "type": "additional_compile_target",
-  },
   "midi_unittests": {
     "label": "//media/midi:midi_unittests",
     "type": "windowed_test_launcher",
@@ -1153,6 +1141,10 @@
   "minidump_uploader_test": {
     "label": "//components/minidump_uploader:minidump_uploader_test",
     "type": "console_test_launcher",
+  },
+  "model_validation_tests": {
+    "label": "//components/optimization_guide/internal/testing:model_validation_tests",
+    "type": "generated_script",
   },
   "module_installer_junit_tests": {
     "label": "//components/module_installer/android:module_installer_junit_tests",
@@ -1272,6 +1264,10 @@
   },
   "openscreen_unittests": {
     "label": "//chrome/browser/media/router:openscreen_unittests",
+    "type": "console_test_launcher",
+  },
+  "optimization_guide_unittests": {
+    "label": "//components/optimization_guide/internal:optimization_guide_unittests",
     "type": "console_test_launcher",
   },
   "ozone_gl_unittests": {
@@ -1776,6 +1772,10 @@
   "chrome/updater:all": {
     "label": "//chrome/updater:all",
     "type": "additional_compile_target",
+  },
+  "ui_unittests": {
+    "label": "//ui/tests:ui_unittests",
+    "type": "console_test_launcher",
   },
   "upload_trace_processor": {
     "label": "//tools/perf/core/perfetto_binary_roller:upload_trace_processor",

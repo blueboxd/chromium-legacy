@@ -614,14 +614,14 @@ void RendererBlinkPlatformImpl::Collect3DContextInformation(
     blink::Platform::GraphicsInfo* gl_info,
     const gpu::GPUInfo& gpu_info) const {
   DCHECK(gl_info);
-  const gpu::GPUInfo::GPUDevice& active_gpu = gpu_info.active_gpu();
+  const gpu::GPUDevice& active_gpu = gpu_info.active_gpu();
   gl_info->vendor_id = active_gpu.vendor_id;
   gl_info->device_id = active_gpu.device_id;
-  gl_info->renderer_info = WebString::FromUTF8(gpu_info.gl_renderer);
-  gl_info->vendor_info = WebString::FromUTF8(gpu_info.gl_vendor);
+  gl_info->renderer_info = WebString::FromUTF8(active_gpu.gl_renderer);
+  gl_info->vendor_info = WebString::FromUTF8(active_gpu.gl_vendor);
   gl_info->driver_version = WebString::FromUTF8(active_gpu.driver_version);
   gl_info->reset_notification_strategy =
-      gpu_info.gl_reset_notification_strategy;
+      active_gpu.gl_reset_notification_strategy;
   gl_info->sandboxed = gpu_info.sandboxed;
   gl_info->amd_switchable = gpu_info.amd_switchable;
   gl_info->optimus = gpu_info.optimus;
@@ -672,19 +672,16 @@ RendererBlinkPlatformImpl::CreateOffscreenGraphicsContext3DProvider(
 
   constexpr bool automatic_flushes = true;
   constexpr bool support_locking = false;
-  bool use_grcontext =
+  const bool use_grcontext =
       !attributes.enable_oop_rasterization && web_attributes.support_grcontext;
 
-  scoped_refptr<viz::ContextProviderCommandBuffer> provider(
-      new viz::ContextProviderCommandBuffer(
-          std::move(gpu_channel_host),
-
-          kGpuStreamIdDefault, kGpuStreamPriorityDefault,
-          gpu::kNullSurfaceHandle, GURL(document_url), automatic_flushes,
-          support_locking, use_grcontext, gpu::SharedMemoryLimits(), attributes,
-          viz::command_buffer_metrics::ContextType::WEBGL));
   return std::make_unique<WebGraphicsContext3DProviderImpl>(
-      std::move(provider));
+      base::MakeRefCounted<viz::ContextProviderCommandBuffer>(
+          std::move(gpu_channel_host), kGpuStreamIdDefault,
+          kGpuStreamPriorityDefault, gpu::kNullSurfaceHandle,
+          GURL(document_url), automatic_flushes, support_locking, use_grcontext,
+          gpu::SharedMemoryLimits(), attributes,
+          viz::command_buffer_metrics::ContextType::WEBGL));
 }
 
 //------------------------------------------------------------------------------
@@ -748,17 +745,14 @@ RendererBlinkPlatformImpl::CreateWebGPUGraphicsContext3DProvider(
   base::SharedMemoryMapper* buffer_mapper =
       gin::GetSharedMemoryMapperForArrayBuffers();
 
-  scoped_refptr<viz::ContextProviderCommandBuffer> provider(
-      new viz::ContextProviderCommandBuffer(
-          std::move(gpu_channel_host),
-
-          kGpuStreamIdDefault, kGpuStreamPriorityDefault,
-          gpu::kNullSurfaceHandle, GURL(document_url), automatic_flushes,
-          support_locking, support_grcontext,
-          gpu::SharedMemoryLimits::ForWebGPUContext(), attributes,
-          viz::command_buffer_metrics::ContextType::WEBGPU, buffer_mapper));
   return std::make_unique<WebGraphicsContext3DProviderImpl>(
-      std::move(provider));
+      base::MakeRefCounted<viz::ContextProviderCommandBuffer>(
+          std::move(gpu_channel_host), kGpuStreamIdDefault,
+          kGpuStreamPriorityDefault, gpu::kNullSurfaceHandle,
+          GURL(document_url), automatic_flushes, support_locking,
+          support_grcontext, gpu::SharedMemoryLimits::ForWebGPUContext(),
+          attributes, viz::command_buffer_metrics::ContextType::WEBGPU,
+          buffer_mapper));
 #endif
 }
 
@@ -857,7 +851,8 @@ void RendererBlinkPlatformImpl::CreateServiceWorkerSubresourceLoaderFactory(
           /*remote_controller=*/mojo::NullRemote(),
           /*remote_cache_storage=*/mojo::NullRemote(), client_id.Utf8(),
           blink::mojom::ServiceWorkerFetchHandlerBypassOption::kDefault,
-          /*router_rules=*/absl::nullopt, blink::EmbeddedWorkerStatus::STOPPED),
+          /*router_rules=*/absl::nullopt, blink::EmbeddedWorkerStatus::kStopped,
+          /*running_status_receiver=*/mojo::NullReceiver()),
       network::SharedURLLoaderFactory::Create(std::move(fallback_factory)),
       std::move(receiver), std::move(task_runner));
 }

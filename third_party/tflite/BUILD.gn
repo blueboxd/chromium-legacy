@@ -11,10 +11,12 @@ import("//third_party/protobuf/proto_library.gni")
 import("//third_party/tflite/features.gni")
 import("//third_party/tflite/tflite_target.gni")
 
-proto_library("tflite-config-proto") {
+proto_library("tflite_proto") {
   proto_in_dir = "src"
-  sources =
-      [ "src/tensorflow/lite/acceleration/configuration/configuration.proto" ]
+  sources = [
+    "src/tensorflow/lite/acceleration/configuration/configuration.proto",
+    "src/third_party/xla/third_party/tsl/tsl/protobuf/coordination_config.proto",
+  ]
   cc_generator_options = "lite=true:"
 }
 
@@ -22,9 +24,8 @@ if (build_with_mediapipe_lib) {
   proto_library("tflite_op_resolver_proto") {
     proto_in_dir = "src"
     sources = [
-      "src/tensorflow/tsl/protobuf/coordination_config.proto",
-      "src/tensorflow/tsl/protobuf/error_codes.proto",
-      "src/tensorflow/tsl/protobuf/rpc_options.proto",
+      "src/third_party/xla/third_party/tsl/tsl/protobuf/error_codes.proto",
+      "src/third_party/xla/third_party/tsl/tsl/protobuf/rpc_options.proto",
     ]
     cc_generator_options = "lite=true:"
   }
@@ -33,6 +34,7 @@ if (build_with_mediapipe_lib) {
 config("tflite_config") {
   include_dirs = [
     "src",
+    "src/third_party/xla/third_party/tsl",
     "//third_party/pthreadpool/src/include",
   ]
   if (is_android) {
@@ -86,6 +88,8 @@ config("tflite_flags") {
       "/DTFL_COMPILE_LIBRARY",
       "/wd4018",
     ]
+
+    defines += [ "TFLITE_MMAP_DISABLED" ]
   }
 
   if (build_tflite_with_ruy) {
@@ -136,6 +140,7 @@ if (build_with_mediapipe_lib) {
       "src/tensorflow/lite/kernels/conv3d.cc",
       "src/tensorflow/lite/kernels/conv3d_transpose.cc",
       "src/tensorflow/lite/kernels/detection_postprocess.cc",
+      "src/tensorflow/lite/kernels/dilate.cc",
       "src/tensorflow/lite/kernels/dynamic_update_slice.cc",
       "src/tensorflow/lite/kernels/hashtable.cc",
       "src/tensorflow/lite/kernels/hashtable_find.cc",
@@ -144,7 +149,6 @@ if (build_with_mediapipe_lib) {
       "src/tensorflow/lite/kernels/kernel_util.h",
       "src/tensorflow/lite/kernels/mfcc.cc",
       "src/tensorflow/lite/kernels/multinomial.cc",
-      "src/tensorflow/lite/kernels/random_ops.cc",
       "src/tensorflow/lite/kernels/random_standard_normal_custom.cc",
       "src/tensorflow/lite/kernels/random_uniform_custom.cc",
       "src/tensorflow/lite/kernels/right_shift.cc",
@@ -184,6 +188,7 @@ source_set("tflite_public_headers") {
     "src/tensorflow/lite/allocation.h",
     "src/tensorflow/lite/arena_planner.h",
     "src/tensorflow/lite/array.h",
+    "src/tensorflow/lite/builtin_ops.h",
     "src/tensorflow/lite/c/builtin_op_data.h",
     "src/tensorflow/lite/context.h",
     "src/tensorflow/lite/context_util.h",
@@ -455,12 +460,14 @@ tflite_static_library("tflite_kernels") {
     "src/tensorflow/lite/kernels/rank.cc",
     "src/tensorflow/lite/kernels/read_variable.cc",
     "src/tensorflow/lite/kernels/reduce.cc",
+    "src/tensorflow/lite/kernels/rng_bit_generator.cc",
     "src/tensorflow/lite/kernels/reshape.cc",
     "src/tensorflow/lite/kernels/resize_bilinear.cc",
     "src/tensorflow/lite/kernels/resize_nearest_neighbor.cc",
     "src/tensorflow/lite/kernels/reverse.cc",
     "src/tensorflow/lite/kernels/reverse_sequence.cc",
     "src/tensorflow/lite/kernels/rfft2d.cc",
+    "src/tensorflow/lite/kernels/rng_util.cc",
     "src/tensorflow/lite/kernels/round.cc",
     "src/tensorflow/lite/kernels/scatter_nd.cc",
     "src/tensorflow/lite/kernels/segment_sum.cc",
@@ -475,6 +482,7 @@ tflite_static_library("tflite_kernels") {
     "src/tensorflow/lite/kernels/split_v.cc",
     "src/tensorflow/lite/kernels/squared_difference.cc",
     "src/tensorflow/lite/kernels/squeeze.cc",
+    "src/tensorflow/lite/kernels/stablehlo_scatter.cc",
     "src/tensorflow/lite/kernels/strided_slice.cc",
     "src/tensorflow/lite/kernels/sub.cc",
     "src/tensorflow/lite/kernels/svdf.cc",
@@ -679,9 +687,9 @@ tflite_static_library("tflite") {
   conditional_public_deps = [ ":tflite_kernels" ]
 
   public_deps = [
-    ":tflite-config-proto",
     ":tflite_kernel_common_headers",
     ":tflite_kernel_internals",
+    ":tflite_proto",
     ":tflite_public_headers",
     "//third_party/flatbuffers",
     "//third_party/gemmlowp",

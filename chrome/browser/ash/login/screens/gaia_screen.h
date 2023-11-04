@@ -61,13 +61,8 @@ class GaiaScreen : public BaseScreen, public ScreenBacklightObserver {
 
   ~GaiaScreen() override;
 
-  // Loads online Gaia into the webview.
-  void LoadOnline(const AccountId& account);
-  // Loads online Gaia (for child signup) into the webview.
-  void LoadOnlineForChildSignup();
-  // Loads online Gaia (for child signin) into the webview.
-  void LoadOnlineForChildSignin();
-  void ShowAllowlistCheckFailedError();
+  // Loads online GAIA into the webview.
+  void LoadOnlineGaia();
   // Reset authenticator.
   void Reset();
   // Calls authenticator reload on JS side.
@@ -103,6 +98,9 @@ class GaiaScreen : public BaseScreen, public ScreenBacklightObserver {
   // Called when quick start button is clicked.
   void OnQuickStartButtonClicked();
   void SetQuickStartButtonVisibility(bool visible);
+
+  // Loads the default GAIA path.
+  void LoadDefaultOnlineGaia(const AccountId& account);
 
   AuthFactorEditor auth_factor_editor_;
   std::unique_ptr<GaiaReauthTokenFetcher> gaia_reauth_token_fetcher_;

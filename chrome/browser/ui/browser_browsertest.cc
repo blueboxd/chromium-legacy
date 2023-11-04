@@ -73,14 +73,13 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
-#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -99,6 +98,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/common/language_detection_details.h"
+#include "components/webapps/common/web_app_id.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -228,6 +228,44 @@ class TabClosingObserver : public TabStripModelObserver {
 
  private:
   int closing_count_ = 0;
+};
+
+class FullscreenOperationComplete {
+ public:
+  explicit FullscreenOperationComplete(Browser* browser)
+      : browser_(browser), last_state_(IsFullscreened(browser)) {}
+
+  FullscreenOperationComplete(const FullscreenOperationComplete&) = delete;
+  FullscreenOperationComplete& operator=(const FullscreenOperationComplete&) =
+      delete;
+  ~FullscreenOperationComplete() = default;
+
+  void Wait() {
+    base::RunLoop outer_loop;
+    auto wait_for_state = base::BindRepeating(
+        [](base::RunLoop* outer_loop, Browser* browser, bool* last_state) {
+          if (IsFullscreened(browser) != *last_state) {
+            outer_loop->Quit();
+            *last_state = !(*last_state);
+          }
+        },
+        &outer_loop, browser_, &last_state_);
+
+    base::RepeatingTimer timer;
+    timer.Start(FROM_HERE, base::Milliseconds(1), std::move(wait_for_state));
+    outer_loop.Run();
+  }
+
+ private:
+  static bool IsFullscreened(Browser* browser) {
+    FullscreenController* controller =
+        browser->exclusive_access_manager()->fullscreen_controller();
+    return controller->IsFullscreenForBrowser() ||
+           controller->IsTabFullscreen();
+  }
+
+  raw_ptr<Browser> browser_;
+  bool last_state_;
 };
 
 // Used by CloseWithAppMenuOpen. Posts a CloseWindowCallback and shows the app
@@ -1211,7 +1249,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
   // Load an app.
-  web_app::AppId app_id = web_app::test::InstallDummyWebApp(
+  webapps::AppId app_id = web_app::test::InstallDummyWebApp(
       browser()->profile(), "testapp", GURL("https://testapp.com"));
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, app_id);
@@ -2729,13 +2767,16 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DialogsDropFullscreen) {
   web_modal::WebContentsModalDialogManagerDelegate* browser_as_dialog_delegate =
       static_cast<web_modal::WebContentsModalDialogManagerDelegate*>(browser());
 
+  FullscreenOperationComplete full_screen_complete_observer(browser());
   // Simulate the tab requesting fullscreen.
   browser_as_wc_delegate->EnterFullscreenModeForTab(tab->GetPrimaryMainFrame(),
                                                     {});
+  full_screen_complete_observer.Wait();
   EXPECT_TRUE(browser_as_wc_delegate->IsFullscreenForTabOrPending(tab));
 
   // The tab gets a modal dialog.
   browser_as_dialog_delegate->SetWebContentsBlocked(tab, true);
+  full_screen_complete_observer.Wait();
 
   // The dialog should drop fullscreen.
   EXPECT_FALSE(browser_as_wc_delegate->IsFullscreenForTabOrPending(tab));

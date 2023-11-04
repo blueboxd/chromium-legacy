@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,20 +90,18 @@ TEST_F(SparseVectorTest, MemoryUsage) {
   EXPECT_EQ(0u, sparse_vector().size());
   EXPECT_EQ(0u, sparse_vector().capacity());
 
-  // Instead of reserving 4 like WTF::Vector does by default, we want
-  // to reserve two to save a little bit more memory.
+  // We should reserve less than the 4 entries that WTF::Vector does by default.
+  // NOTE: this may be 2 or 3 depending on the platform implementation. See
+  // https://crbug.com/1477466 for more information.
   SetField(20, std::make_unique<TestDataField>(101));
   EXPECT_FALSE(sparse_vector().empty());
   EXPECT_EQ(1u, sparse_vector().size());
-  EXPECT_EQ(2u, sparse_vector().capacity());
+  EXPECT_LT(sparse_vector().capacity(), 4u);
 
   SetField(31, std::make_unique<TestDataField>(202));
   EXPECT_FALSE(sparse_vector().empty());
   EXPECT_EQ(2u, sparse_vector().size());
-  EXPECT_EQ(2u, sparse_vector().capacity());
-
-  // After two elements, what happens next to the capacity of the vector is
-  // platform dependent, so we don't verify capacity.
+  EXPECT_LT(sparse_vector().capacity(), 4u);
 }
 
 TEST_F(SparseVectorTest, SupportsLargerValues) {

@@ -62,6 +62,7 @@ import org.chromium.chrome.browser.password_entry_edit.CredentialEntryFragmentVi
 import org.chromium.chrome.browser.password_manager.settings.PasswordSettings;
 import org.chromium.chrome.browser.privacy_guide.PrivacyGuideFragment;
 import org.chromium.chrome.browser.privacy_sandbox.AdMeasurementFragment;
+import org.chromium.chrome.browser.privacy_sandbox.ChromeTrackingProtectionDelegate;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxSettingsBaseFragment;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
@@ -73,6 +74,7 @@ import org.chromium.chrome.browser.search_engines.settings.SearchEngineSettings;
 import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
 import org.chromium.chrome.browser.site_settings.ChromeSiteSettingsDelegate;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
+import org.chromium.chrome.browser.ui.device_lock.MissingDeviceLockLauncher;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.components.browser_ui.accessibility.AccessibilitySettings;
@@ -85,12 +87,13 @@ import org.chromium.components.browser_ui.settings.FragmentSettingsLauncher;
 import org.chromium.components.browser_ui.settings.PaddedDividerItemDecoration;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
-import org.chromium.components.browser_ui.site_settings.SiteSettingsPreferenceFragment;
+import org.chromium.components.browser_ui.site_settings.BaseSiteSettingsFragment;
 import org.chromium.components.browser_ui.util.TraceEventVectorDrawableCompat;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
 import org.chromium.components.browser_ui.widget.displaystyle.ViewResizer;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
+import org.chromium.components.privacy_sandbox.TrackingProtectionSettings;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -135,6 +138,9 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
     private UiConfig mUiConfig;
 
     private Profile mProfile;
+
+    // This is only used on automotive.
+    private @Nullable MissingDeviceLockLauncher mMissingDeviceLockLauncher;
 
     @SuppressLint("InlinedApi")
     @Override
@@ -312,9 +318,9 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
 
         Fragment fragment = getMainFragment();
 
-        if (fragment instanceof SiteSettingsPreferenceFragment) {
+        if (fragment instanceof BaseSiteSettingsFragment) {
             ChromeSiteSettingsDelegate delegate =
-                    (ChromeSiteSettingsDelegate) (((SiteSettingsPreferenceFragment) fragment)
+                    (ChromeSiteSettingsDelegate) (((BaseSiteSettingsFragment) fragment)
                                                           .getSiteSettingsDelegate());
             delegate.setSnackbarManager(mSnackbarManager);
         }
@@ -344,6 +350,18 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
 
             sResumedInstance = this;
             mIsNewlyCreated = false;
+        }
+
+        checkForMissingDeviceLockOnAutomotive();
+    }
+
+    private void checkForMissingDeviceLockOnAutomotive() {
+        if (BuildInfo.getInstance().isAutomotive) {
+            if (mMissingDeviceLockLauncher == null) {
+                mMissingDeviceLockLauncher = new MissingDeviceLockLauncher(
+                        this, mProfile, getModalDialogManagerSupplier().get());
+            }
+            mMissingDeviceLockLauncher.checkPrivateDataIsProtectedByDeviceLock();
         }
     }
 
@@ -448,16 +466,9 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
 
     @Override
     public void onAttachFragment(Fragment fragment) {
+        // Common dependencies attachments.
         if (fragment instanceof ProfileDependentSetting) {
             ((ProfileDependentSetting) fragment).setProfile(mProfile);
-        }
-        if (fragment instanceof MainSettings) {
-            ((MainSettings) fragment)
-                    .setModalDialogManagerSupplier(getModalDialogManagerSupplier());
-        }
-        if (fragment instanceof SiteSettingsPreferenceFragment) {
-            ((SiteSettingsPreferenceFragment) fragment)
-                    .setSiteSettingsDelegate(new ChromeSiteSettingsDelegate(this, mProfile));
         }
         if (fragment instanceof FragmentSettingsLauncher) {
             FragmentSettingsLauncher fragmentSettingsLauncher = (FragmentSettingsLauncher) fragment;
@@ -468,6 +479,16 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
                     (FragmentHelpAndFeedbackLauncher) fragment;
             fragmentHelpAndFeedbackLauncher.setHelpAndFeedbackLauncher(
                     HelpAndFeedbackLauncherImpl.getForProfile(mProfile));
+        }
+
+        // Settings screen specific attachments.
+        if (fragment instanceof MainSettings) {
+            ((MainSettings) fragment)
+                    .setModalDialogManagerSupplier(getModalDialogManagerSupplier());
+        }
+        if (fragment instanceof BaseSiteSettingsFragment) {
+            ((BaseSiteSettingsFragment) fragment)
+                    .setSiteSettingsDelegate(new ChromeSiteSettingsDelegate(this, mProfile));
         }
         if (fragment instanceof SafetyCheckSettingsFragment) {
             SafetyCheckCoordinator.create((SafetyCheckSettingsFragment) fragment,
@@ -549,7 +570,6 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
             pgFragment.setBottomSheetControllerSupplier(mBottomSheetControllerSupplier);
             pgFragment.setCustomTabIntentHelper(
                     LaunchIntentDispatcher::createCustomTabActivityIntent);
-            pgFragment.setSettingsLauncher(mSettingsLauncher);
         }
         if (fragment instanceof AccessibilitySettings) {
             ((AccessibilitySettings) fragment)
@@ -560,6 +580,10 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         }
         if (fragment instanceof AutofillOptionsFragment) {
             AutofillOptionsCoordinator.createFor((AutofillOptionsFragment) fragment);
+        }
+        if (fragment instanceof TrackingProtectionSettings) {
+            ((TrackingProtectionSettings) fragment)
+                    .setTrackingProtectionDelegate(new ChromeTrackingProtectionDelegate(mProfile));
         }
     }
 

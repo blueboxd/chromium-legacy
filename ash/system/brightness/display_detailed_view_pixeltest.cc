@@ -44,12 +44,14 @@ TEST_F(DisplayDetailedViewPixelTest, Basics) {
       ->ShowDisplayDetailedView();
 
   TrayDetailedView* detailed_view =
-      system_tray->bubble()->quick_settings_view()->GetDetailedViewForTest();
+      system_tray->bubble()
+          ->quick_settings_view()
+          ->GetDetailedViewForTest<TrayDetailedView>();
   ASSERT_TRUE(detailed_view);
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "qs_display_detailed_view",
-      /*revision_number=*/6, detailed_view));
+      /*revision_number=*/8, detailed_view));
 }
 
 }  // namespace ash

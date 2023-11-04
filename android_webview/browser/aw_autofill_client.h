@@ -22,10 +22,8 @@
 
 namespace autofill {
 class AutocompleteHistoryManager;
-class AutofillDriver;
 class AutofillPopupDelegate;
 class CreditCard;
-class FormStructure;
 class PersonalDataManager;
 class StrikeDatabase;
 struct CardUnmaskPromptOptions;
@@ -134,7 +132,8 @@ class AwAutofillClient : public autofill::ContentAutofillClient {
       SaveAddressProfilePromptOptions options,
       AddressProfileSavePromptCallback callback) override;
   void ShowEditAddressProfileDialog(
-      const autofill::AutofillProfile& profile) override;
+      const autofill::AutofillProfile& profile,
+      AddressProfileSavePromptCallback on_user_decision_callback) override;
   void ShowDeleteAddressProfileDialog() override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(CreditCardScanCallback callback) override;
@@ -160,9 +159,6 @@ class AwAutofillClient : public autofill::ContentAutofillClient {
   void HideAutofillPopup(autofill::PopupHidingReason reason) override;
   bool IsAutocompleteEnabled() const override;
   bool IsPasswordManagerEnabled() override;
-  void PropagateAutofillPredictionsDeprecated(
-      autofill::AutofillDriver* driver,
-      const std::vector<autofill::FormStructure*>& forms) override;
   void DidFillOrPreviewForm(
       autofill::mojom::AutofillActionPersistence action_persistence,
       autofill::AutofillTriggerSource trigger_source,

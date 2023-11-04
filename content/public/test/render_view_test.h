@@ -27,6 +27,13 @@
 #include "third_party/blink/public/mojom/page/page.mojom.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/web_frame.h"
+#include "v8/include/v8-forward.h"
+
+#if BUILDFLAG(IS_MAC)
+#include "base/apple/scoped_nsautorelease_pool.h"
+#include "base/memory/stack_allocated.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#endif
 
 namespace blink {
 class PageState;
@@ -91,6 +98,7 @@ class RenderViewTest : public testing::Test {
   // Returns a pointer to the main frame.
   blink::WebLocalFrame* GetMainFrame();
   RenderFrame* GetMainRenderFrame();
+  v8::Isolate* Isolate();
 
   // Executes the given JavaScript in the context of the main frame. The input
   // is a NULL-terminated UTF-8 string.
@@ -243,7 +251,8 @@ class RenderViewTest : public testing::Test {
   mojo::BinderMap binders_;
 
 #if BUILDFLAG(IS_MAC)
-  std::unique_ptr<base::apple::ScopedNSAutoreleasePool> autorelease_pool_;
+  STACK_ALLOCATED_IGNORE("https://crbug.com/1424190")
+  absl::optional<base::apple::ScopedNSAutoreleasePool> autorelease_pool_;
 #endif
 
  private:

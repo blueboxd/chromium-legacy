@@ -10,6 +10,7 @@
 #include "chrome/browser/ash/input_method/editor_consent_enums.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "net/base/network_change_notifier.h"
 #include "ui/base/ime/text_input_type.h"
 
 namespace ash::input_method {
@@ -41,6 +42,8 @@ constexpr AppType kAppTypeAllowlist[] = {
     AppType::LACROS,
 };
 
+constexpr int kTextLengthMaxLimit = 8000;
+
 bool IsCountryAllowed(std::string_view country_code) {
   return base::Contains(kCountryAllowlist, country_code);
 }
@@ -70,28 +73,47 @@ EditorSwitch::EditorSwitch(Profile* profile, std::string_view country_code)
 
 EditorSwitch::~EditorSwitch() = default;
 
-bool EditorSwitch::IsAllowedForUse() {
+bool EditorSwitch::IsAllowedForUse() const {
   bool is_managed = profile_->GetProfilePolicyConnector()->IsManaged();
 
   return  // Conditions required for dogfooding.
-      (base::FeatureList::IsEnabled(features::kOrcaDogfood)) ||
+      (base::FeatureList::IsEnabled(chromeos::features::kOrcaDogfood)) ||
       // Conditions required for the feature to be enabled for non-dogfood
       // population.
-      (chromeos::features::IsOrcaEnabled() &&
+      (base::FeatureList::IsEnabled(chromeos::features::kOrca) &&
        base::FeatureList::IsEnabled(features::kFeatureManagementOrca) &&
        !is_managed && IsCountryAllowed(country_code_));
 }
 
-bool EditorSwitch::CanBeTriggered() {
+bool EditorSwitch::CanBeTriggered() const {
   ConsentStatus current_consent_status = GetConsentStatusFromInteger(
       profile_->GetPrefs()->GetInteger(prefs::kOrcaConsentStatus));
 
   return IsAllowedForUse() && IsInputMethodEngineAllowed(active_engine_id_) &&
          IsInputTypeAllowed(input_type_) && IsAppTypeAllowed(app_type_) &&
          IsTriggerableFromConsentStatus(current_consent_status) &&
+         !net::NetworkChangeNotifier::IsOffline() && !tablet_mode_enabled_ &&
          // user pref value
-         profile_->GetPrefs()->GetBoolean(prefs::kOrcaEnabled);
-  ;
+         profile_->GetPrefs()->GetBoolean(prefs::kOrcaEnabled) &&
+         text_length_ <= kTextLengthMaxLimit;
+}
+
+EditorMode EditorSwitch::GetEditorMode() const {
+  if (!CanBeTriggered()) {
+    return EditorMode::kBlocked;
+  }
+
+  ConsentStatus current_consent_status = GetConsentStatusFromInteger(
+      profile_->GetPrefs()->GetInteger(prefs::kOrcaConsentStatus));
+
+  if (current_consent_status == ConsentStatus::kPending ||
+      current_consent_status == ConsentStatus::kUnset) {
+    return EditorMode::kConsentNeeded;
+  } else if (text_length_ > 0) {
+    return EditorMode::kRewrite;
+  } else {
+    return EditorMode::kWrite;
+  }
 }
 
 void EditorSwitch::OnInputContextUpdated(
@@ -103,6 +125,18 @@ void EditorSwitch::OnInputContextUpdated(
 
 void EditorSwitch::OnActivateIme(std::string_view engine_id) {
   active_engine_id_ = engine_id;
+}
+
+void EditorSwitch::OnTabletModeUpdated(bool is_enabled) {
+  tablet_mode_enabled_ = is_enabled;
+}
+
+void EditorSwitch::OnTextSelectionLengthChanged(size_t text_length) {
+  text_length_ = text_length;
+}
+
+void EditorSwitch::SetProfile(Profile* profile) {
+  profile_ = profile;
 }
 
 }  // namespace ash::input_method

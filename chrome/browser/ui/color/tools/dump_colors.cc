@@ -48,9 +48,9 @@ std::string SkColorToString(SkColor color) {
 int main(int argc, const char* argv[]) {
   const auto add_mixers = [](ui::ColorProvider* provider, auto color_mode,
                              auto contrast_mode) {
-    const ui::ColorProviderKey key = {
-        color_mode, contrast_mode, ui::SystemTheme::kDefault,
-        ui::ColorProviderKey::FrameType::kChromium};
+    ui::ColorProviderKey key;
+    key.color_mode = color_mode;
+    key.contrast_mode = contrast_mode;
     ui::AddColorMixers(provider, key);
     AddChromeColorMixers(provider, key);
     provider->GenerateColorMap();

@@ -157,60 +157,40 @@ class TestInstallableManager : public InstallableManager {
   // data fetcher. The order of errors matches | InstallableManager::GetErrors|.
   void GetData(const InstallableParams& params,
                InstallableCallback callback) override {
-    std::vector<InstallableStatusCode> errors;
-    bool is_installable = true;
-
-    if (blink::IsEmptyManifest(*manifest_)) {
-      errors.push_back(MANIFEST_EMPTY);
-      is_installable = false;
-    }
-
-    if (params.valid_manifest) {
-      auto manifest_errors = InstallableEvaluator::IsManifestValidForWebApp(
-          *manifest_, true /* check_webapp_manifest_display */);
-      if (!manifest_errors.empty()) {
-        errors.insert(errors.end(), manifest_errors.begin(),
-                      manifest_errors.end());
-        is_installable = false;
-      }
-    }
-
-    if (params.valid_primary_icon && !primary_icon_) {
-      errors.push_back(NO_ACCEPTABLE_ICON);
-      is_installable = false;
-    }
-
     if (should_manifest_time_out_) {
       return;
     }
 
-    std::move(callback).Run(
-        {std::move(errors), GURL(kDefaultManifestUrl), *manifest_, *metadata_,
-         params.valid_primary_icon ? primary_icon_url_ : GURL(),
-         params.valid_primary_icon ? primary_icon_.get() : nullptr,
-         params.prefer_maskable_icon,
-         std::vector<webapps::Screenshot>() /* screenshots */,
-         params.valid_manifest ? is_installable : false});
+    InitPageData();
+
+    // Do not check if in secure content in unittest.
+    InstallableParams test_params = params;
+    test_params.check_eligibility = false;
+
+    InstallableManager::GetData(test_params, std::move(callback));
   }
 
   void SetWebPageMetadata(mojom::WebPageMetadataPtr metadata) {
-    DCHECK(metadata);
-    metadata_ = std::move(metadata);
+    page_data_->web_page_metadata->metadata = std::move(metadata);
+    page_data_->web_page_metadata->fetched = true;
   }
 
   void SetManifest(blink::mojom::ManifestPtr manifest) {
-    DCHECK(manifest);
-    manifest_ = std::move(manifest);
-
-    if (!manifest_->icons.empty()) {
-      SetPrimaryIcon(manifest_->icons[0].src);
+    if (!manifest->icons.empty()) {
+      SetPrimaryIcon(manifest->icons[0].src);
     }
+
+    page_data_->manifest->manifest = std::move(manifest);
+    page_data_->manifest->url = GURL(kDefaultManifestUrl);
+    page_data_->manifest->fetched = true;
   }
 
   void SetPrimaryIcon(const GURL& icon_url) {
-    primary_icon_url_ = icon_url;
-    primary_icon_ = std::make_unique<SkBitmap>(
+    page_data_->primary_icon->url = icon_url;
+    page_data_->primary_icon->icon = std::make_unique<SkBitmap>(
         gfx::test::CreateBitmap(kIconSizePx, kIconSizePx));
+    page_data_->primary_icon->error = NO_ERROR_DETECTED;
+    page_data_->primary_icon->fetched = true;
   }
 
   void SetShouldManifestTimeOut(bool should_time_out) {
@@ -218,10 +198,23 @@ class TestInstallableManager : public InstallableManager {
   }
 
  private:
-  blink::mojom::ManifestPtr manifest_ = blink::mojom::Manifest::New();
-  mojom::WebPageMetadataPtr metadata_ = BuildDefaultMetadata();
-  GURL primary_icon_url_;
-  std::unique_ptr<SkBitmap> primary_icon_;
+  void InitPageData() {
+    // Initialize all default values and set "fetched" to be true so the
+    // installable fetcher won't try to fetch the real data.
+    if (!page_data_->manifest->fetched) {
+      page_data_->manifest->fetched = true;
+      page_data_->manifest->error = MANIFEST_EMPTY;
+    }
+    if (!page_data_->web_page_metadata->fetched) {
+      page_data_->web_page_metadata->metadata = BuildDefaultMetadata();
+      page_data_->web_page_metadata->fetched = true;
+    }
+    if (!page_data_->primary_icon->fetched) {
+      page_data_->primary_icon->fetched = true;
+      page_data_->primary_icon->error = NO_ACCEPTABLE_ICON;
+    }
+    page_data_->is_screenshots_fetch_complete = true;
+  }
 
   bool should_manifest_time_out_ = false;
 };
@@ -492,6 +485,89 @@ TEST_F(AddToHomescreenDataFetcherTest, ManifestNoNameNoShortName) {
 
   EXPECT_EQ(fetcher->shortcut_info().name, kWebAppInstallInfoTitle);
   EXPECT_EQ(fetcher->shortcut_info().short_name, kWebAppInstallInfoTitle);
+  EXPECT_FALSE(fetcher->primary_icon().drawsNothing());
+  EXPECT_EQ(fetcher->shortcut_info().best_primary_icon_url,
+            GURL(kDefaultIconUrl));
+}
+
+TEST_F(AddToHomescreenDataFetcherTest,
+       UniversalInstallManifestNoNameNoShortName) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kUniversalInstallManifest);
+  // Test that when the manifest does not provide either Manifest::short_name
+  // nor Manifest::name but web page metadata provides a application-name.
+  blink::mojom::ManifestPtr manifest = BuildDefaultManifest();
+  manifest->name = absl::nullopt;
+  manifest->short_name = absl::nullopt;
+  SetManifest(std::move(manifest));
+  mojom::WebPageMetadataPtr metadata = BuildDefaultMetadata();
+  SetWebPageMetadata(std::move(metadata));
+
+  ObserverWaiter waiter;
+  std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
+  RunFetcher(fetcher.get(), waiter, kWebAppInstallInfoTitle,
+             blink::mojom::DisplayMode::kStandalone, true,
+             InstallableStatusCode::NO_ERROR_DETECTED);
+
+  EXPECT_EQ(fetcher->shortcut_info().name, kWebAppInstallInfoTitle);
+  EXPECT_EQ(fetcher->shortcut_info().short_name, kWebAppInstallInfoTitle);
+  EXPECT_FALSE(fetcher->primary_icon().drawsNothing());
+  EXPECT_EQ(fetcher->shortcut_info().best_primary_icon_url,
+            GURL(kDefaultIconUrl));
+}
+
+TEST_F(AddToHomescreenDataFetcherTest, UniversalInstallNoManifestIcons) {
+  scoped_feature_list_.InitWithFeatures(
+      {features::kUniversalInstallManifest, features::kUniversalInstallIcon},
+      {});
+  // Test that when the manifest does not provide any icon, we fallback to use
+  // favicon.
+  blink::mojom::ManifestPtr manifest = BuildDefaultManifest();
+  manifest->icons.clear();
+  SetManifest(std::move(manifest));
+
+  std::vector<blink::mojom::FaviconURLPtr> favicon_urls;
+  favicon_urls.push_back(blink::mojom::FaviconURL::New(
+      GURL{"http://www.google.com/favicon.ico"},
+      blink::mojom::FaviconIconType::kFavicon, std::vector<gfx::Size>(),
+      /*is_default_icon=*/false));
+  web_contents_tester()->TestSetFaviconURL(mojo::Clone(favicon_urls));
+
+  // Fake that |InstallableIconFetcher| fetched the icon correctly.
+  SetPrimaryIcon(GURL(kDefaultIconUrl));
+
+  ObserverWaiter waiter;
+  std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
+  RunFetcher(fetcher.get(), waiter, kDefaultManifestShortName,
+             kDefaultManifestName, blink::mojom::DisplayMode::kStandalone, true,
+             InstallableStatusCode::NO_ERROR_DETECTED);
+
+  EXPECT_EQ(fetcher->shortcut_info().name, kDefaultManifestName);
+  EXPECT_EQ(fetcher->shortcut_info().short_name, kDefaultManifestShortName);
+  EXPECT_FALSE(fetcher->primary_icon().drawsNothing());
+  EXPECT_EQ(fetcher->shortcut_info().best_primary_icon_url,
+            GURL(kDefaultIconUrl));
+}
+
+TEST_F(AddToHomescreenDataFetcherTest, UniversalManifestDisplay) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kUniversalInstallManifest);
+  // Test that when the manifest does not provide display mode, we fallback to
+  // install with DisplayMode::kMinimalUi.
+  blink::mojom::ManifestPtr manifest = BuildDefaultManifest();
+  manifest->display = blink::mojom::DisplayMode::kUndefined;
+  SetManifest(std::move(manifest));
+  mojom::WebPageMetadataPtr metadata = BuildDefaultMetadata();
+  SetWebPageMetadata(std::move(metadata));
+
+  ObserverWaiter waiter;
+  std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
+  RunFetcher(fetcher.get(), waiter, kDefaultManifestShortName,
+             kDefaultManifestName, blink::mojom::DisplayMode::kMinimalUi, true,
+             InstallableStatusCode::NO_ERROR_DETECTED);
+
+  EXPECT_EQ(fetcher->shortcut_info().name, kDefaultManifestName);
+  EXPECT_EQ(fetcher->shortcut_info().short_name, kDefaultManifestShortName);
   EXPECT_FALSE(fetcher->primary_icon().drawsNothing());
   EXPECT_EQ(fetcher->shortcut_info().best_primary_icon_url,
             GURL(kDefaultIconUrl));

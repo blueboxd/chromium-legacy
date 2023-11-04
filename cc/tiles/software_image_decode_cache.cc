@@ -683,7 +683,7 @@ bool SoftwareImageDecodeCache::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd) {
   base::AutoLock lock(lock_);
 
-  if (args.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND) {
+  if (args.level_of_detail == MemoryDumpLevelOfDetail::kBackground) {
     std::string dump_name = base::StringPrintf(
         "cc/image_memory/cache_0x%" PRIXPTR, reinterpret_cast<uintptr_t>(this));
     MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
@@ -741,16 +741,15 @@ SkColorType SoftwareImageDecodeCache::GetColorTypeForPaintImage(
     const TargetColorParams& target_color_params,
     const PaintImage& paint_image) {
   const gfx::ColorSpace& target_color_space = target_color_params.color_space;
+  // Decode HDR images to half float when targeting HDR.
+  //
   // TODO(crbug.com/1076568): Once we have access to the display's buffer format
   // via gfx::DisplayColorSpaces, we should also do this for HBD images.
-  // Do not decode an image to F16 unless the PaintImage reports that its type
-  // is F16. Otherwise, image decode will fail.
-  // https://crbug.com/1488786
-  if (paint_image.GetColorType() == kRGBA_F16_SkColorType &&
-      paint_image.GetContentColorUsage() == gfx::ContentColorUsage::kHDR &&
+  if (paint_image.GetContentColorUsage() == gfx::ContentColorUsage::kHDR &&
       target_color_space.IsHDR()) {
     return kRGBA_F16_SkColorType;
   }
+
   return color_type_;
 }
 

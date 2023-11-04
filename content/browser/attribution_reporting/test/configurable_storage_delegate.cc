@@ -16,13 +16,12 @@
 #include "base/ranges/algorithm.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "base/types/expected.h"
 #include "components/attribution_reporting/event_report_windows.h"
 #include "content/browser/attribution_reporting/attribution_config.h"
-#include "content/browser/attribution_reporting/attribution_constants.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_storage_delegate.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
-#include "content/browser/attribution_reporting/common_source_info.h"
 #include "services/network/public/cpp/trigger_verification.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -54,10 +53,6 @@ ConfigurableStorageDelegate::ConfigurableStorageDelegate()
                   e.randomized_response_epsilon =
                       std::numeric_limits<double>::infinity();
                   e.max_reports_per_destination =
-                      std::numeric_limits<int>::max();
-                  e.max_attributions_per_navigation_source =
-                      std::numeric_limits<int>::max();
-                  e.max_attributions_per_event_source =
                       std::numeric_limits<int>::max();
                 });
             c.aggregate_limit =
@@ -132,41 +127,25 @@ void ConfigurableStorageDelegate::ShuffleTriggerVerifications(
 }
 
 double ConfigurableStorageDelegate::GetRandomizedResponseRate(
-    const attribution_reporting::EventReportWindows& event_report_windows,
     attribution_reporting::mojom::SourceType,
+    const attribution_reporting::EventReportWindows&,
     int max_event_level_reports) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return randomized_response_rate_;
 }
 
-AttributionStorageDelegate::RandomizedResponse
+AttributionStorageDelegate::GetRandomizedResponseResult
 ConfigurableStorageDelegate::GetRandomizedResponse(
-    const CommonSourceInfo& source,
-    const attribution_reporting::EventReportWindows& event_report_windows,
-    base::Time source_time,
+    attribution_reporting::mojom::SourceType,
+    const attribution_reporting::EventReportWindows&,
     int max_event_level_reports,
-    double randomized_response_rate) {
+    base::Time source_time) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return randomized_response_;
-}
-
-double ConfigurableStorageDelegate::ComputeChannelCapacity(
-    const CommonSourceInfo& source,
-    const attribution_reporting::EventReportWindows& event_report_windows,
-    base::Time source_time,
-    int max_event_level_reports,
-    double randomized_response_rate) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return channel_capacity_;
-}
-
-base::Time ConfigurableStorageDelegate::GetExpiryTime(
-    absl::optional<base::TimeDelta> declared_expiry,
-    base::Time source_time,
-    attribution_reporting::mojom::SourceType) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return GetExpiryTimeForTesting(
-      declared_expiry.value_or(kDefaultAttributionSourceExpiry), source_time);
+  if (exceeds_channel_capacity_limit_) {
+    return base::unexpected(ExceedsChannelCapacityLimit());
+  }
+  return RandomizedResponseData(randomized_response_rate_,
+                                randomized_response_);
 }
 
 absl::optional<base::Time> ConfigurableStorageDelegate::GetReportWindowTime(
@@ -192,12 +171,6 @@ ConfigurableStorageDelegate::GetDefaultEventReportWindows(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return *attribution_reporting::EventReportWindows::CreateWindows(
       base::Seconds(0), {last_report_window});
-}
-
-void ConfigurableStorageDelegate::set_max_attributions_per_source(int max) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  config_.event_level_limit.max_attributions_per_navigation_source = max;
-  config_.event_level_limit.max_attributions_per_event_source = max;
 }
 
 void ConfigurableStorageDelegate::set_max_sources_per_origin(int max) {
@@ -293,10 +266,10 @@ void ConfigurableStorageDelegate::set_randomized_response(
   randomized_response_ = std::move(randomized_response);
 }
 
-void ConfigurableStorageDelegate::set_channel_capacity(
-    double channel_capacity) {
+void ConfigurableStorageDelegate::set_exceeds_channel_capacity_limit(
+    bool exceeds) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  channel_capacity_ = channel_capacity;
+  exceeds_channel_capacity_limit_ = exceeds;
 }
 
 void ConfigurableStorageDelegate::set_trigger_data_cardinality(

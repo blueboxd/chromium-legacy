@@ -25,6 +25,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/observer_list.h"
+#include "base/ranges/algorithm.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/task/updateable_sequenced_task_runner.h"
@@ -32,6 +33,8 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
+#include "components/attribution_reporting/aggregatable_dedup_key.h"
+#include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_registration.h"
@@ -95,6 +98,10 @@ namespace {
 using ScopedUseInMemoryStorageForTesting =
     ::content::AttributionManagerImpl::ScopedUseInMemoryStorageForTesting;
 
+using ::attribution_reporting::AggregatableDedupKey;
+using ::attribution_reporting::FilterConfig;
+using ::attribution_reporting::FilterPair;
+using ::attribution_reporting::FilterValues;
 using ::attribution_reporting::mojom::OsRegistrationResult;
 using ::attribution_reporting::mojom::RegistrationType;
 
@@ -106,6 +113,13 @@ enum class ConversionReportSendOutcome {
   kDropped = 2,
   kFailedToAssemble = 3,
   kMaxValue = kFailedToAssemble,
+};
+enum class ConversionReportSendRetryCount {
+  kNone = 0,
+  kOnce = 1,
+  kTwice = 2,
+  kFailed = 3,
+  kMaxValue = kFailed,
 };
 
 // This class consolidates logic regarding when to schedule the browser to send
@@ -204,6 +218,21 @@ void RecordCreateReportStatus(CreateReportResult result) {
   base::UmaHistogramEnumeration(
       "Conversions.AggregatableReport.CreateReportStatus4",
       result.aggregatable_status());
+}
+
+// If `retry_attempts` <= 2, represents the number of retries before success.
+// If `retry_attempts == 3`, represents failure after two retries.
+void RecordReportRetriesEventLevel(int retry_attempts) {
+  DCHECK_LT(retry_attempts, 4);
+  base::UmaHistogramEnumeration(
+      "Conversions.EventLevelReport.ReportRetriesTillSuccessOrFailure",
+      static_cast<ConversionReportSendRetryCount>(retry_attempts));
+}
+void RecordReportRetriesAggregatable(int retry_attempts) {
+  DCHECK_LT(retry_attempts, 4);
+  base::UmaHistogramEnumeration(
+      "Conversions.AggregatableReport.ReportRetriesTillSuccessOrFailure",
+      static_cast<ConversionReportSendRetryCount>(retry_attempts));
 }
 
 ConversionReportSendOutcome ConvertToConversionReportSendOutcome(
@@ -332,6 +361,8 @@ void LogMetricsOnReportSent(const AttributionReport& report) {
       UMA_HISTOGRAM_COUNTS_1000(
           "Conversions.TimeFromTriggerToReportSentSuccessfully",
           time_from_conversion_to_report_sent.InHours());
+
+      RecordReportRetriesEventLevel(report.failed_send_attempts());
       break;
     case AttributionReport::Type::kAggregatableAttribution:
       UMA_HISTOGRAM_CUSTOM_TIMES(
@@ -344,6 +375,8 @@ void LogMetricsOnReportSent(const AttributionReport& report) {
           "Conversions.AggregatableReport.ExtraReportDelayForSuccessfulSend",
           time_since_original_report_time, base::Seconds(1), base::Days(24),
           /*bucket_count=*/50);
+
+      RecordReportRetriesAggregatable(report.failed_send_attempts());
       break;
     case AttributionReport::Type::kNullAggregatable:
       break;
@@ -558,6 +591,8 @@ AttributionDataHostManager* AttributionManagerImpl::GetDataHostManager() {
 void AttributionManagerImpl::HandleSource(
     StorableSource source,
     GlobalRenderFrameHostId render_frame_id) {
+  RecordReservedKeysUsage(source, render_frame_id);
+
   bool allowed = IsOperationAllowed(
       *storage_partition_,
       ContentBrowserClient::AttributionReportingOperation::kSource,
@@ -615,6 +650,8 @@ void AttributionManagerImpl::OnSourceStored(
 void AttributionManagerImpl::HandleTrigger(
     AttributionTrigger trigger,
     GlobalRenderFrameHostId render_frame_id) {
+  RecordReservedKeysUsage(trigger, render_frame_id);
+
   bool allowed = IsOperationAllowed(
       *storage_partition_,
       ContentBrowserClient::AttributionReportingOperation::kTrigger,
@@ -649,6 +686,57 @@ void AttributionManagerImpl::StoreTrigger(AttributionTrigger trigger,
       .Then(base::BindOnce(&AttributionManagerImpl::OnReportStored,
                            weak_factory_.GetWeakPtr(), std::move(trigger),
                            cleared_debug_key, is_debug_cookie_set));
+}
+
+void AttributionManagerImpl::RecordReservedKeysUsage(
+    const SourceOrTrigger& event,
+    GlobalRenderFrameHostId render_frame_id) const {
+  const auto check_values = [](const FilterValues& filter_values) {
+    return base::ranges::any_of(filter_values, [](const auto& f) {
+      constexpr char kReservedKeyPrefix[] = "_";
+      return base::StartsWith(f.first, kReservedKeyPrefix);
+    });
+  };
+  bool event_uses_reserved_key = absl::visit(
+      base::Overloaded{
+          [&check_values](const StorableSource& source) {
+            bool source_uses_reserved_keys =
+                check_values(source.registration().filter_data.filter_values());
+            base::UmaHistogramBoolean("Conversions.Source.UsesReservedKeys",
+                                      source_uses_reserved_keys);
+            return source_uses_reserved_keys;
+          },
+          [&check_values](const AttributionTrigger& trigger) {
+            const auto check_config = [&check_values](const FilterConfig& c) {
+              return check_values(c.filter_values());
+            };
+            const auto check_pair = [&check_config](const FilterPair& pair) {
+              return base::ranges::any_of(pair.positive, check_config) ||
+                     base::ranges::any_of(pair.negative, check_config);
+            };
+            const auto check_key =
+                [&check_pair](const AggregatableDedupKey& key) {
+                  return check_pair(key.filters);
+                };
+
+            bool trigger_uses_reserved_keys =
+                check_pair(trigger.registration().filters) ||
+                base::ranges::any_of(
+                    trigger.registration().aggregatable_dedup_keys, check_key);
+            base::UmaHistogramBoolean("Conversions.Trigger.UsesReservedKeys",
+                                      trigger_uses_reserved_keys);
+            return trigger_uses_reserved_keys;
+          },
+      },
+      event);
+  if (!event_uses_reserved_key) {
+    return;
+  }
+  if (auto* rfh = RenderFrameHost::FromID(render_frame_id)) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        rfh, blink::mojom::WebFeature::
+                 kAttributionReportingUnderscorePrefixedFilterKey);
+  }
 }
 
 void AttributionManagerImpl::MaybeEnqueueEvent(SourceOrTrigger event) {
@@ -1072,9 +1160,21 @@ void AttributionManagerImpl::OnReportSent(base::OnceClosure done,
   // therefore we could consider subjecting these failures to a different limit.
   if (info.status == SendResult::Status::kTransientFailure ||
       info.status == SendResult::Status::kTransientAssemblyFailure) {
+    int retry_attempts = report.failed_send_attempts() + 1;
     if (absl::optional<base::TimeDelta> delay =
-            GetFailedReportDelay(report.failed_send_attempts() + 1)) {
+            GetFailedReportDelay(retry_attempts)) {
       new_report_time = base::Time::Now() + *delay;
+    } else {
+      switch (report.GetReportType()) {
+        case AttributionReport::Type::kEventLevel:
+          RecordReportRetriesEventLevel(retry_attempts);
+          break;
+        case AttributionReport::Type::kAggregatableAttribution:
+          RecordReportRetriesAggregatable(retry_attempts);
+          break;
+        case AttributionReport::Type::kNullAggregatable:
+          break;
+      }
     }
   }
 
@@ -1276,9 +1376,7 @@ void AttributionManagerImpl::MaybeSendVerboseDebugReport(
   }
 }
 
-void AttributionManagerImpl::HandleOsRegistration(
-    OsRegistration registration,
-    GlobalRenderFrameHostId render_frame_id) {
+void AttributionManagerImpl::HandleOsRegistration(OsRegistration registration) {
   if (!network::HasAttributionOsSupport(GetSupport())) {
     NotifyOsRegistration(registration,
                          /*is_debug_key_allowed=*/false,
@@ -1314,7 +1412,7 @@ void AttributionManagerImpl::HandleOsRegistration(
   }
 
   if (!IsOperationAllowed(*storage_partition_, operation,
-                          RenderFrameHost::FromID(render_frame_id),
+                          RenderFrameHost::FromID(registration.render_frame_id),
                           source_origin, destination_origin,
                           /*reporting_origin=*/&registration_origin)) {
     NotifyOsRegistration(registration,

@@ -445,6 +445,7 @@ void AdAuctionServiceImpl::DeprecatedReplaceInURN(
 
 void AdAuctionServiceImpl::GetInterestGroupAdAuctionData(
     const url::Origin& seller,
+    blink::mojom::AdAuctionCoordinator coordinator,
     GetInterestGroupAdAuctionDataCallback callback) {
   // If the interest group API is not allowed for this origin do nothing.
   if (!IsInterestGroupAPIAllowed(
@@ -456,6 +457,7 @@ void AdAuctionServiceImpl::GetInterestGroupAdAuctionData(
   BiddingAndAuctionDataConstructionState state;
   state.callback = std::move(callback);
   state.seller = seller;
+  state.coordinator = coordinator;
 
   GetInterestGroupManager().GetInterestGroupAdAuctionData(
       GetTopWindowOrigin(),
@@ -798,6 +800,17 @@ void AdAuctionServiceImpl::MaybeLogPrivateAggregationFeatures(
     return;
   }
 
+  if (!has_logged_private_aggregation_enable_debug_mode_web_feature_ &&
+      base::ranges::any_of(private_aggregation_requests,
+                           [](const auto& request) {
+                             return request->debug_mode_details->is_enabled;
+                           })) {
+    has_logged_private_aggregation_enable_debug_mode_web_feature_ = true;
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        &render_frame_host(),
+        blink::mojom::WebFeature::kPrivateAggregationApiEnableDebugMode);
+  }
+
   if (!has_logged_extended_private_aggregation_web_feature_ &&
       base::ranges::any_of(
           private_aggregation_requests, [](const auto& request) {
@@ -829,8 +842,9 @@ void AdAuctionServiceImpl::OnGotAuctionData(
   }
 
   state.data = std::move(data);
+  blink::mojom::AdAuctionCoordinator coordinator = state.coordinator;
   GetInterestGroupManager().GetBiddingAndAuctionServerKey(
-      GetRefCountedTrustedURLLoaderFactory().get(),
+      GetRefCountedTrustedURLLoaderFactory().get(), coordinator,
       base::BindOnce(&AdAuctionServiceImpl::OnGotBiddingAndAuctionServerKey,
                      weak_ptr_factory_.GetWeakPtr(), std::move(state)));
 }
@@ -859,22 +873,34 @@ void AdAuctionServiceImpl::OnGotBiddingAndAuctionServerKey(
   }
 
   std::string data = maybe_request->EncapsulateAndSerialize();
-  const auto* bytes = reinterpret_cast<const uint8_t*>(data.data());
 
   AdAuctionPageData* ad_auction_page_data =
       PageUserData<AdAuctionPageData>::GetOrCreateForPage(
           render_frame_host().GetPage());
 
-  AdAuctionRequestContext context(std::move(state.seller),
-                                  std::move(state.data.group_names),
-                                  std::move(*maybe_request).ReleaseContext());
+  AdAuctionRequestContext context(
+      std::move(state.seller), std::move(state.data.group_names),
+      std::move(*maybe_request).ReleaseContext(), state.start_time);
   ad_auction_page_data->RegisterAdAuctionRequestContext(state.request_id,
                                                         std::move(context));
 
-  std::move(state.callback)
-      .Run(mojo_base::BigBuffer(
-               base::make_span(bytes, data.size() * sizeof(char))),
-           state.request_id);
+  size_t start_offset = 0;
+  if (base::FeatureList::IsEnabled(kBiddingAndAuctionEncryptionMediaType)) {
+    // For the modified request format we need to prepend a version number byte
+    // to the request.
+    start_offset = 1;
+  }
+  mojo_base::BigBuffer buf(data.size() + start_offset);
+
+  // Write the version byte. If we are not using a modified request this will
+  // be immediately overwritten.
+  buf.data()[0] = 0;
+
+  // Write the request starting at `start_offset`
+  CHECK_EQ(data.size() + start_offset, buf.size());
+  std::memcpy(&buf.data()[start_offset], data.data(), data.size());
+
+  std::move(state.callback).Run(std::move(buf), state.request_id);
   // Request sizes only increase by factors of two so we only need to sample
   // the powers of two. The maximum of 1 GB size is much larger than it should
   // ever be.

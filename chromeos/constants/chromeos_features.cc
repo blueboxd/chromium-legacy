@@ -32,11 +32,13 @@ BASE_FEATURE(kCloudGamingDevice,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables ChromeOS Apps APIs.
-BASE_FEATURE(kCrosAppsApis, "CrosAppsApis", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kBlinkExtension,
+             "BlinkExtension",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the ChromeOS Diagnostics API.
-BASE_FEATURE(kCrosDiagnosticsApi,
-             "CrosDiagnosticsApi",
+BASE_FEATURE(kBlinkExtensionDiagnostics,
+             "BlinkExtensionDiagnostics",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the use of cros-component UI elements. Contact:
@@ -91,6 +93,9 @@ BASE_FEATURE(kJellyroll, "Jellyroll", base::FEATURE_ENABLED_BY_DEFAULT);
 // Controls enabling / disabling the orca feature.
 BASE_FEATURE(kOrca, "Orca", base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Controls enabling / disabling the orca feature for dogfood population.
+BASE_FEATURE(kOrcaDogfood, "OrcaDogfood", base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls whether to enable quick answers V2 settings sub-toggles.
 BASE_FEATURE(kQuickAnswersV2SettingsSubToggle,
              "QuickAnswersV2SettingsSubToggle",
@@ -135,13 +140,13 @@ bool IsCloudGamingDeviceEnabled() {
 #endif
 }
 
-bool IsCrosAppsApisEnabled() {
-  return base::FeatureList::IsEnabled(kCrosAppsApis);
+bool IsBlinkExtensionEnabled() {
+  return base::FeatureList::IsEnabled(kBlinkExtension);
 }
 
-bool IsCrosDiagnosticsApiEnabled() {
-  return base::FeatureList::IsEnabled(kCrosDiagnosticsApi) &&
-         IsCrosAppsApisEnabled();
+bool IsBlinkExtensionDiagnosticsEnabled() {
+  return IsBlinkExtensionEnabled() &&
+         base::FeatureList::IsEnabled(kBlinkExtensionDiagnostics);
 }
 
 bool IsCrosComponentsEnabled() {
@@ -163,7 +168,8 @@ bool IsJellyrollEnabled() {
 }
 
 bool IsOrcaEnabled() {
-  return base::FeatureList::IsEnabled(kOrca);
+  return base::FeatureList::IsEnabled(kOrca) ||
+         base::FeatureList::IsEnabled(kOrcaDogfood);
 }
 
 bool IsQuickAnswersV2TranslationDisabled() {

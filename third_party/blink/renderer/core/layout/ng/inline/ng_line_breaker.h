@@ -115,6 +115,8 @@ class CORE_EXPORT NGLineBreaker {
   bool CanBreakInside(const NGInlineItemResult& item_result);
 
  private:
+  Document& GetDocument() const { return node_.GetDocument(); }
+
   const String& Text() const { return text_content_; }
   const HeapVector<NGInlineItem>& Items() const { return items_data_.items; }
 
@@ -202,7 +204,9 @@ class CORE_EXPORT NGLineBreaker {
   void HandleForcedLineBreak(const NGInlineItem*, NGLineInfo*);
   void HandleBidiControlItem(const NGInlineItem&, NGLineInfo*);
   void HandleAtomicInline(const NGInlineItem&, NGLineInfo*);
-  void HandleBlockInInline(const NGInlineItem&, NGLineInfo*);
+  void HandleBlockInInline(const NGInlineItem&,
+                           const NGBlockBreakToken*,
+                           NGLineInfo*);
   void ComputeMinMaxContentSizeForBlockChild(const NGInlineItem&,
                                              NGInlineItemResult*);
 
@@ -215,8 +219,11 @@ class CORE_EXPORT NGLineBreaker {
   const NGInlineItem* TryGetAtomicInlineItemAfter(
       const NGInlineItem& item) const;
 
+  bool ShouldPushFloatAfterLine(NGUnpositionedFloat*, NGLineInfo*);
   void HandleFloat(const NGInlineItem&,
+                   const NGBlockBreakToken* float_break_token,
                    NGLineInfo*);
+
   void HandleInitialLetter(const NGInlineItem&, NGLineInfo*);
   void HandleOutOfFlowPositioned(const NGInlineItem&, NGLineInfo*);
 
@@ -233,6 +240,7 @@ class CORE_EXPORT NGLineBreaker {
   const ComputedStyle& ComputeCurrentStyle(unsigned item_result_index,
                                            NGLineInfo*) const;
   void SetCurrentStyle(const ComputedStyle&);
+  void SetCurrentStyleForce(const ComputedStyle&);
 
   bool IsPreviousItemOfType(NGInlineItem::NGInlineItemType);
   void MoveToNextOf(const NGInlineItem&);
@@ -275,7 +283,7 @@ class CORE_EXPORT NGLineBreaker {
 
   // |WhitespaceState| of the current end. When a line is broken, this indicates
   // the state of trailing whitespaces.
-  WhitespaceState trailing_whitespace_;
+  WhitespaceState trailing_whitespace_ = WhitespaceState::kUnknown;
 
   // The current position from inline_start. Unlike NGInlineLayoutAlgorithm
   // that computes position in visual order, this position in logical order.
@@ -334,11 +342,6 @@ class CORE_EXPORT NGLineBreaker {
 
   // True if ShouldCreateNewSvgSegment() should be called.
   bool needs_svg_segmentation_ = false;
-
-  // True if we need to establish a new parallel flow for contents inside a
-  // block-in-inline that overflowed the fragmentainer (although the
-  // block-in-inline itself didn't overflow).
-  bool needs_new_parallel_flow_ = false;
 
 #if DCHECK_IS_ON()
   bool has_considered_creating_break_token_ = false;

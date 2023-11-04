@@ -14,6 +14,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ptr_exclusion.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/country_type.h"
 #include "components/autofill/core/browser/form_parsing/form_field.h"
 #include "components/autofill/core/common/language_code.h"
 
@@ -25,10 +26,12 @@ class LogManager;
 
 class AddressField : public FormField {
  public:
-  static std::unique_ptr<FormField> Parse(AutofillScanner* scanner,
-                                          const LanguageCode& page_language,
-                                          PatternSource pattern_source,
-                                          LogManager* log_manager);
+  static std::unique_ptr<FormField> Parse(
+      AutofillScanner* scanner,
+      const GeoIpCountryCode& client_country,
+      const LanguageCode& page_language,
+      PatternSource pattern_source,
+      LogManager* log_manager);
 
   // Returns whether a stand-alone zip field is supported for `client_country`.
   // In some countries that's a prevalent UI (the user is first asked to enter
@@ -39,6 +42,7 @@ class AddressField : public FormField {
 
   static std::unique_ptr<FormField> ParseStandaloneZip(
       AutofillScanner* scanner,
+      const GeoIpCountryCode& client_country,
       const LanguageCode& page_language,
       PatternSource pattern_source,
       LogManager* log_manager);
@@ -65,10 +69,12 @@ class AddressField : public FormField {
                     PatternSource pattern_source);
 
   bool ParseAddress(AutofillScanner* scanner,
+                    const GeoIpCountryCode& client_country,
                     const LanguageCode& page_language,
                     PatternSource pattern_source);
 
   bool ParseAddressFieldSequence(AutofillScanner* scanner,
+                                 const GeoIpCountryCode& client_country,
                                  const LanguageCode& page_language,
                                  PatternSource pattern_source);
 
@@ -93,6 +99,7 @@ class AddressField : public FormField {
   // dependent locality, city, state, country, zip, landmark, between streets,
   // admin level 2 or none of those.
   bool ParseAddressField(AutofillScanner* scanner,
+                         const GeoIpCountryCode& client_country,
                          const LanguageCode& page_language,
                          PatternSource pattern_source);
 
@@ -165,6 +172,7 @@ class AddressField : public FormField {
   raw_ptr<LogManager> log_manager_;
 
   raw_ptr<AutofillField> company_ = nullptr;
+  raw_ptr<AutofillField> street_location_ = nullptr;
   raw_ptr<AutofillField> street_name_ = nullptr;
   raw_ptr<AutofillField> house_number_ = nullptr;
   raw_ptr<AutofillField> address1_ = nullptr;

@@ -79,7 +79,7 @@ class ChildWindowMover {
   }
 
  private:
-  NSWindow* __weak window_;
+  NSWindow* __unsafe_unretained window_;
   std::vector<std::pair<NSWindow * __weak, gfx::Point>> initial_origins_;
 };
 

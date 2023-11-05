@@ -58,7 +58,7 @@ bool CanShare() {
   // The following three ivars are provided to the system via NSSharingService
   // delegates. They're needed for the transition animation, and to provide a
   // screenshot of the shared site for services that support it.
-  NSWindow* __weak _windowForShare;
+  NSWindow* __unsafe_unretained _windowForShare;
   NSRect _rectForShare;
   NSImage* __strong _snapshotForShare;
 

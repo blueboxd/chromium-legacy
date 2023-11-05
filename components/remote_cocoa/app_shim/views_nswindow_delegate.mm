@@ -102,6 +102,13 @@
   _parent->OnSystemColorsChanged();
 }
 
+- (void)sheetDidEnd:(NSWindow*)sheet
+         returnCode:(NSInteger)returnCode
+        contextInfo:(void*)contextInfo {
+  [sheet orderOut:nil];
+  _parent->OnWindowWillClose();
+}
+
 // NSWindowDelegate implementation.
 
 - (void)windowDidFailToEnterFullScreen:(NSWindow*)window {

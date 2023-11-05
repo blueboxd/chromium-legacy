@@ -91,6 +91,7 @@
 <translation id="1643449475550628585">Cambia l'immagine di sfondo ogni giorno</translation>
 <translation id="1644574205037202324">Cronologia</translation>
 <translation id="1651925268237749928">Hai selezionato un album condiviso. Altre persone possono aggiungere o modificare foto. È possibile che per lo sfondo vengano usate foto che non sono attualmente incluse in questo album.</translation>
+<translation id="1661865805917886535">Alcune informazioni sull'account e sul sistema potrebbero essere inviate a Google. Utilizziamo queste informazioni per risolvere problemi tecnici e migliorare i nostri servizi, nel rispetto delle nostre Norme sulla privacy (<ph name="PRIVACYPOLICYURL" />) e dei nostri Termini di servizio (<ph name="TERMSOFSERVICEURL" />). Per richiedere modifiche ai contenuti, visita la Guida di approfondimento legale (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">Operazione interrotta - Inchiostro esaurito</translation>
 <translation id="1664796644829245314">Visualizza <ph name="PREVIEW_OBJECT" /> in anteprima</translation>
 <translation id="1668469839109562275">VPN integrata</translation>
@@ -265,6 +266,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">Il dispositivo è collegato.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Rimuovere la pagina?}=1{Rimuovere pagina {PAGE_NUMBER}?}other{Rimuovere pagina {PAGE_NUMBER}?}}</translation>
+<translation id="3146655726035122603">In esclusiva per <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Dati mobili</translation>
 <translation id="3156846309055100599">Scansione pagina <ph name="PAGE_NUMBER" /> in corso…</translation>
 <translation id="315738237743207937">Captive portal rilevato</translation>

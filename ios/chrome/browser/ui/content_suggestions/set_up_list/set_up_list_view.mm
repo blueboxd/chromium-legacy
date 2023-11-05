@@ -440,8 +440,8 @@ constexpr NSString* const kAllSetRight = @"set_up_list_all_set_right";
       l10n_util::GetNSString(IDS_IOS_SET_UP_LIST_COLLAPSE);
 
   // Insert new items just before the expand button.
-  int index = [_itemsStack.arrangedSubviews indexOfObject:_expandButton];
-  CHECK_NE(index, NSNotFound);
+  NSUInteger index = [_itemsStack.arrangedSubviews indexOfObject:_expandButton];
+  CHECK(index != NSNotFound);
   for (SetUpListItemView* item in items) {
     item.alpha = 0;
     item.hidden = YES;

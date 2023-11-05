@@ -45,6 +45,9 @@ class ContentSuggestionsViewControllerTest : public PlatformTest {
     pref_service_.registry()->RegisterIntegerPref(
         prefs::kIosMagicStackSegmentationShortcutsImpressionsSinceFreshness,
         -1);
+    pref_service_.registry()->RegisterIntegerPref(
+        prefs::kIosMagicStackSegmentationSafetyCheckImpressionsSinceFreshness,
+        -1);
     view_controller_.contentSuggestionsMetricsRecorder = metrics_recorder_;
     histogram_tester_.reset(new base::HistogramTester());
   }
@@ -87,12 +90,13 @@ TEST_F(ContentSuggestionsViewControllerTest,
        TestMagicStackTopImpressionMetric) {
   scoped_feature_list_.Reset();
   scoped_feature_list_.InitWithFeatures({kMagicStack}, {});
-  histogram_tester_->ExpectBucketCount(
-      kMagicStackTopModuleImpressionHistogram,
-      ContentSuggestionsModuleType::kMostVisited, 0);
   [view_controller_ setMagicStackOrder:@[
     @(int(ContentSuggestionsModuleType::kMostVisited))
   ]];
+  [view_controller_ loadViewIfNeeded];
+  histogram_tester_->ExpectBucketCount(
+      kMagicStackTopModuleImpressionHistogram,
+      ContentSuggestionsModuleType::kMostVisited, 0);
   [view_controller_ setMostVisitedTilesWithConfigs:@[
     [[ContentSuggestionsMostVisitedItem alloc] init]
   ]];
@@ -143,6 +147,38 @@ TEST_F(ContentSuggestionsViewControllerTest,
   histogram_tester_->ExpectBucketCount(
       kMagicStackTopModuleImpressionHistogram,
       ContentSuggestionsModuleType::kSetUpListSync, 1);
+}
+
+// Tests that the Magic Stack top module impression metric logs correctly even
+// if the Magic Stack module rank is ready after the top module is. This
+// simulates an environment where kSegmentationPlatformFeature is enabled, so
+// the magic stack module rank is asynchonously fetched and could be available
+// only after the initial view construction.
+TEST_F(ContentSuggestionsViewControllerTest,
+       TestMagicStackTopImpressionMetricSegmentation) {
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitWithFeaturesAndParameters(
+      {{segmentation_platform::features::kSegmentationPlatformFeature, {}},
+       {segmentation_platform::features::kSegmentationPlatformIosModuleRanker,
+        {{segmentation_platform::kDefaultModelEnabledParam, "true"}}},
+       {kMagicStack, {}}},
+      {});
+
+  [view_controller_ setShortcutTilesWithConfigs:@[ BookmarkActionItem() ]];
+  histogram_tester_->ExpectBucketCount(kMagicStackTopModuleImpressionHistogram,
+                                       ContentSuggestionsModuleType::kShortcuts,
+                                       0);
+  [view_controller_ loadViewIfNeeded];
+  histogram_tester_->ExpectBucketCount(kMagicStackTopModuleImpressionHistogram,
+                                       ContentSuggestionsModuleType::kShortcuts,
+                                       0);
+  [view_controller_ setMagicStackOrder:@[
+    @(int(ContentSuggestionsModuleType::kShortcuts)),
+    @(int(ContentSuggestionsModuleType::kMostVisited))
+  ]];
+  histogram_tester_->ExpectBucketCount(kMagicStackTopModuleImpressionHistogram,
+                                       ContentSuggestionsModuleType::kShortcuts,
+                                       1);
 }
 
 // Tests that modules are inserted in their correct final positions in the Magic
@@ -527,4 +563,43 @@ TEST_F(ContentSuggestionsViewControllerTest,
       (MagicStackModuleContainer*)subviews[1];
   EXPECT_EQ(ContentSuggestionsModuleType::kParcelTrackingSeeMore,
             parcelTrackingModule.type);
+}
+
+// Tests the Safety Check module correctly displays when the existing module
+// state and current module state differ ([a] multi-row to [b] single-row
+// state).
+TEST_F(ContentSuggestionsViewControllerTest, TestFooBar) {
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitWithFeatures({kMagicStack, kSafetyCheckMagicStack},
+                                        {});
+
+  // Trigger viewDidLoad.
+  [view_controller_ loadViewIfNeeded];
+
+  [view_controller_ setMagicStackOrder:@[
+    @(int(ContentSuggestionsModuleType::kSafetyCheckMultiRow)),
+  ]];
+
+  // Single-row Safety Check state.
+  SafetyCheckState* safetyCheckState = [[SafetyCheckState alloc]
+      initWithUpdateChromeState:UpdateChromeSafetyCheckState::kUpToDate
+                  passwordState:PasswordSafetyCheckState::kSafe
+              safeBrowsingState:SafeBrowsingSafetyCheckState::kSafe
+                   runningState:RunningSafetyCheckState::kDefault];
+
+  [view_controller_ showSafetyCheck:safetyCheckState];
+
+  UIStackView* magicStack = FindMagicStack();
+
+  // Assert order is correct.
+  NSArray<UIView*>* subviews = magicStack.arrangedSubviews;
+
+  // One module should exist.
+  ASSERT_EQ(1u, [subviews count]);
+
+  MagicStackModuleContainer* safetyCheckModule =
+      (MagicStackModuleContainer*)subviews[0];
+
+  // Should be kSafetyCheck now, instead of kSafetyCheckMultiRow.
+  EXPECT_EQ(ContentSuggestionsModuleType::kSafetyCheck, safetyCheckModule.type);
 }

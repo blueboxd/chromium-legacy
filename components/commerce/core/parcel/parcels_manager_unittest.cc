@@ -80,6 +80,22 @@ GetTestIdentifiers(const std::string& tracking_id) {
   return result;
 }
 
+void ExpectGetParcelsCallback(
+    bool expected_success,
+    const std::vector<ParcelTrackingStatus>& expected_parcel_status,
+    bool success,
+    std::unique_ptr<std::vector<ParcelTrackingStatus>> parcel_status) {
+  ASSERT_EQ(success, expected_success);
+  ASSERT_EQ(expected_parcel_status.size(), parcel_status->size());
+  for (size_t i = 0; i < expected_parcel_status.size(); ++i) {
+    auto status = (*parcel_status)[i];
+    auto expected_status = expected_parcel_status[i];
+    ASSERT_EQ(expected_status.tracking_id, status.tracking_id);
+    ASSERT_EQ(expected_status.carrier, status.carrier);
+    ASSERT_EQ(expected_status.state, status.state);
+  }
+}
+
 class MockServerProxy : public ParcelsServerProxy {
  public:
   MockServerProxy()
@@ -105,6 +121,11 @@ class MockServerProxy : public ParcelsServerProxy {
   MOCK_METHOD(void,
               StopTrackingParcel,
               (const std::string& tracking_id,
+               ParcelsServerProxy::StopParcelTrackingCallback callback),
+              (override));
+  MOCK_METHOD(void,
+              StopTrackingParcels,
+              (const std::vector<ParcelIdentifier>& parcel_identifiers,
                ParcelsServerProxy::StopParcelTrackingCallback callback),
               (override));
   MOCK_METHOD(void,
@@ -143,6 +164,12 @@ class MockServerProxy : public ParcelsServerProxy {
                                    StopParcelTrackingCallback callback) {
           std::move(callback).Run(succeeded);
         });
+    ON_CALL(*this, StopTrackingParcels)
+        .WillByDefault(
+            [succeeded](const std::vector<ParcelIdentifier>& parcel_identifiers,
+                        StopParcelTrackingCallback callback) {
+              std::move(callback).Run(succeeded);
+            });
     ON_CALL(*this, StopTrackingAllParcels)
         .WillByDefault([succeeded](StopParcelTrackingCallback callback) {
           std::move(callback).Run(succeeded);
@@ -176,9 +203,15 @@ class MockParcelsStorage : public ParcelsStorage {
               (const std::string& tracking_id, StorageUpdateCallback callback),
               (override));
   MOCK_METHOD(void,
+              DeleteParcelsStatus,
+              (const std::vector<ParcelIdentifier>&,
+               StorageUpdateCallback callback),
+              (override));
+  MOCK_METHOD(void,
               DeleteAllParcelStatus,
               (StorageUpdateCallback callback),
               (override));
+  MOCK_METHOD(void, ModifyOldDoneParcels, (), (override));
 
   void MockInitCallback(bool succeeded) {
     ON_CALL(*this, Init)
@@ -186,6 +219,9 @@ class MockParcelsStorage : public ParcelsStorage {
             [succeeded](ParcelsStorage::OnInitializedCallback callback) {
               std::move(callback).Run(succeeded);
             });
+    if (succeeded) {
+      EXPECT_CALL(*this, ModifyOldDoneParcels()).Times(1);
+    }
   }
 
   void MockGetAllParcelTrackingContents(const std::string& tracking_id,
@@ -308,6 +344,31 @@ TEST_F(ParcelsManagerTest,
 }
 
 TEST_F(ParcelsManagerTest,
+       TestGetAllParcelStatusesCalledTwice_LocalStorageHasFreshStatus) {
+  EXPECT_CALL(*mock_storage_, Init(_)).Times(1);
+  mock_storage_->MockGetAllParcelTrackingContents(kTestTrackingId,
+                                                  ParcelStatus::NEW);
+  mock_server_proxy_->MockParcelStatusResponses(true, kTestTrackingId,
+                                                ParcelStatus::PICKED_UP);
+  mock_storage_->MockInitCallback(true);
+
+  EXPECT_CALL(*mock_server_proxy_, GetParcelStatus(_, _)).Times(0);
+  EXPECT_CALL(*mock_storage_, GetAllParcelTrackingContents()).Times(2);
+  EXPECT_CALL(*mock_storage_, UpdateParcelStatus(_, _)).Times(0);
+  std::vector<ParcelTrackingStatus> expected;
+  ParcelTrackingStatus expected_status;
+  expected_status.carrier = commerce::ParcelIdentifier::UPS;
+  expected_status.state = ParcelStatus::NEW;
+  expected_status.tracking_id = kTestTrackingId;
+  expected.emplace_back(expected_status);
+  parcels_manager_->GetAllParcelStatuses(
+      base::BindOnce(&ExpectGetParcelsCallback, true, expected));
+  parcels_manager_->GetAllParcelStatuses(
+      base::BindOnce(&ExpectGetParcelsCallback, true, expected));
+  task_environment_.RunUntilIdle();
+}
+
+TEST_F(ParcelsManagerTest,
        TestGetAllParcelStatuses_LocalStorageHasStaleStatus) {
   EXPECT_CALL(*mock_storage_, Init(_)).Times(1);
   mock_storage_->MockGetAllParcelTrackingContents(kTestTrackingId,
@@ -316,33 +377,39 @@ TEST_F(ParcelsManagerTest,
                                                 ParcelStatus::PICKED_UP);
   mock_storage_->MockInitCallback(true);
 
-  // Advance clock by 1 day.
-  clock_.Advance(base::Days(1));
+  std::vector<ParcelTrackingStatus> expected;
+  ParcelTrackingStatus expected_status;
+  expected_status.carrier = commerce::ParcelIdentifier::UPS;
+  expected_status.state = ParcelStatus::NEW;
+  expected_status.tracking_id = kTestTrackingId;
+  expected.emplace_back(expected_status);
+
+  // Advance the clock by 10 hours, shouldn't trigger server request.
+  clock_.Advance(base::Hours(10));
+  EXPECT_CALL(*mock_server_proxy_, GetParcelStatus(_, _)).Times(0);
+  EXPECT_CALL(*mock_storage_, GetAllParcelTrackingContents()).Times(1);
+  EXPECT_CALL(*mock_storage_, UpdateParcelStatus(_, _)).Times(0);
+  parcels_manager_->GetAllParcelStatuses(
+      base::BindOnce(&ExpectGetParcelsCallback, true, expected));
+  task_environment_.RunUntilIdle();
+
+  // Advance clock by another 10 hours, the local state is now stale.
+  expected[0].state = ParcelStatus::PICKED_UP;
+  clock_.Advance(base::Hours(10));
   EXPECT_CALL(*mock_server_proxy_, GetParcelStatus(_, _)).Times(1);
   EXPECT_CALL(*mock_storage_, GetAllParcelTrackingContents()).Times(1);
   EXPECT_CALL(*mock_storage_, UpdateParcelStatus(_, _)).Times(1);
-  base::RunLoop run_loop;
-  parcels_manager_->GetAllParcelStatuses(base::BindOnce(
-      [](base::RunLoop* run_loop, bool success,
-         std::unique_ptr<std::vector<ParcelTrackingStatus>> parcel_status) {
-        ASSERT_TRUE(success);
-        ASSERT_EQ(1, static_cast<int>(parcel_status->size()));
-        auto status = (*parcel_status)[0];
-        ASSERT_EQ(kTestTrackingId, status.tracking_id);
-        ASSERT_EQ(commerce::ParcelIdentifier::UPS, status.carrier);
-        ASSERT_EQ(ParcelStatus::PICKED_UP, status.state);
-        run_loop->Quit();
-      },
-      &run_loop));
-  run_loop.Run();
+  parcels_manager_->GetAllParcelStatuses(
+      base::BindOnce(&ExpectGetParcelsCallback, true, expected));
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(ParcelsManagerTest, TestGetAllParcelStatuses_LocalStorageHasDoneStatus) {
   EXPECT_CALL(*mock_storage_, Init(_)).Times(1);
   mock_storage_->MockGetAllParcelTrackingContents(kTestTrackingId,
-                                                  ParcelStatus::PICKED_UP);
+                                                  ParcelStatus::FINISHED);
   mock_server_proxy_->MockParcelStatusResponses(true, kTestTrackingId,
-                                                ParcelStatus::PICKED_UP);
+                                                ParcelStatus::FINISHED);
   mock_storage_->MockInitCallback(true);
 
   // Advance clock by 1 day.
@@ -359,7 +426,7 @@ TEST_F(ParcelsManagerTest, TestGetAllParcelStatuses_LocalStorageHasDoneStatus) {
         auto status = (*parcel_status)[0];
         ASSERT_EQ(kTestTrackingId, status.tracking_id);
         ASSERT_EQ(commerce::ParcelIdentifier::UPS, status.carrier);
-        ASSERT_EQ(ParcelStatus::PICKED_UP, status.state);
+        ASSERT_EQ(ParcelStatus::FINISHED, status.state);
         run_loop->Quit();
       },
       &run_loop));
@@ -487,5 +554,44 @@ TEST_F(ParcelsManagerTest, TestStopTrackingParcel_ServerError) {
                            &run_loop));
   run_loop.Run();
 }
+
+TEST_F(ParcelsManagerTest, TestStopTrackingParcels) {
+  EXPECT_CALL(*mock_storage_, Init(_)).Times(1);
+  mock_storage_->MockInitCallback(true);
+  mock_server_proxy_->MockStopTrackingResponses(true);
+
+  EXPECT_CALL(*mock_server_proxy_, StopTrackingParcels(_, _)).Times(1);
+  EXPECT_CALL(*mock_storage_, DeleteParcelsStatus(_, _)).Times(1);
+  base::RunLoop run_loop;
+  parcels_manager_->StopTrackingParcels(
+      GetTestIdentifiers(kTestTrackingId),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, bool success) {
+            ASSERT_TRUE(success);
+            run_loop->Quit();
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ParcelsManagerTest, TestStopTrackingParcels_ServerError) {
+  EXPECT_CALL(*mock_storage_, Init(_)).Times(1);
+  mock_storage_->MockInitCallback(true);
+  mock_server_proxy_->MockStopTrackingResponses(false);
+
+  EXPECT_CALL(*mock_server_proxy_, StopTrackingParcels(_, _)).Times(1);
+  EXPECT_CALL(*mock_storage_, DeleteParcelsStatus(_, _)).Times(0);
+  base::RunLoop run_loop;
+  parcels_manager_->StopTrackingParcels(
+      GetTestIdentifiers(kTestTrackingId),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, bool success) {
+            ASSERT_FALSE(success);
+            run_loop->Quit();
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
 }  // namespace
 }  // namespace commerce

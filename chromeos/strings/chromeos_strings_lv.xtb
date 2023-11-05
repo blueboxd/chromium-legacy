@@ -91,6 +91,7 @@
 <translation id="1643449475550628585">Katru dienu mainīt fona tapetes attēlu</translation>
 <translation id="1644574205037202324">Vēsture</translation>
 <translation id="1651925268237749928">Jūs esat atlasījis kopīgotu albumu. Citi lietotāji var pievienot vai mainīt fotoattēlus. Jūsu fona tapetē var tikt izmantoti fotoattēli, kas pašlaik nav šajā albumā.</translation>
+<translation id="1661865805917886535">Noteikta konta un sistēmas informācija var tikt nosūtīta uzņēmumam Google. Mēs izmantojam šo informāciju tehnisku problēmu novēršanai un savu pakalpojumu uzlabošanai saskaņā ar savu konfidencialitātes politiku (<ph name="PRIVACYPOLICYURL" />) un pakalpojumu sniegšanas noteikumiem (<ph name="TERMSOFSERVICEURL" />). Lai pieprasītu satura izmaiņas, pārejiet uz juridiskās palīdzības lapu (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">Apturēts — beigusies tinte</translation>
 <translation id="1664796644829245314">Priekšskatīt attēlu <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Iebūvēts VPN</translation>
@@ -265,6 +266,7 @@
 <translation id="3122464029669770682">Maksa par daļas vienību</translation>
 <translation id="3124039320086536031">Ierīce ir pievienota.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Vai noņemt lapu?}=1{Vai noņemt {PAGE_NUMBER}. lapu?}zero{Vai noņemt {PAGE_NUMBER}. lapu?}one{Vai noņemt {PAGE_NUMBER}. lapu?}other{Vai noņemt {PAGE_NUMBER}. lapu?}}</translation>
+<translation id="3146655726035122603">Tikai šeit: <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Mobilie dati</translation>
 <translation id="3156846309055100599">Notiek <ph name="PAGE_NUMBER" />. lapas skenēšana…</translation>
 <translation id="315738237743207937">Konstatēta caurlaides lapa</translation>

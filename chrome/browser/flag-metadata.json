@@ -779,6 +779,11 @@
     "expiry_milestone": 120
   },
   {
+    "name": "auxiliary-search-donation",
+    "owners": [ "gangwu", "chrome-mobile-search@google.com" ],
+    "expiry_milestone": 140
+  },
+  {
     "name": "avif-gainmap-hdr-images",
     "owners": [ "maryla@google.com", "avif-eng@google.com" ],
     "expiry_milestone": 130
@@ -1194,6 +1199,16 @@
     "name": "chrome-refresh-2023",
     "owners":["chrome-views@google.com"],
     "expiry_milestone": 120
+  },
+  {
+    "name": "chrome-refresh-2023-ntb",
+    "owners": [ "chrome-desktop-ui-sea@google.com", "dpenning" ],
+    "expiry_milestone": 122
+  },
+  {
+    "name": "chrome-refresh-2023-top-chrome-font",
+    "owners": [ "chrome-desktop-ui-sea@google.com", "dpenning" ],
+    "expiry_milestone": 122
   },
   {
     "name": "chrome-root-store-enabled",
@@ -1642,6 +1657,11 @@
     "name": "defer-tab-switcher-layout-creation",
     "owners": [ "ckitagawa@google.com", "clank-isochron-team@google.com" ],
     "expiry_milestone": 123
+  },
+  {
+    "name": "delete-undecryptable-passwords",
+    "owners": [ "vasilii", "vsemeniuk@google.com"],
+    "expiry_milestone": 122
   },
   {
     "name": "deprecate-alt-based-six-pack",
@@ -4430,7 +4450,7 @@
   {
     "name": "feed-invisible-foreground-refresh-ios",
     "owners": ["//ios/chrome/browser/discover_feed/OWNERS", "edchin@google.com"],
-    "expiry_milestone": 118
+    "expiry_milestone": 125
   },
   {
     "name": "feed-loading-placeholder",
@@ -4955,6 +4975,11 @@
     "expiry_milestone": 130
   },
   {
+    "name": "ignore-undecryptable-passwords",
+    "owners": [ "vasilii", "vsemeniuk@google.com"],
+    "expiry_milestone": 122
+  },
+  {
     "name": "improved-incognito-screenshot",
     "owners": [ "roagarwal", "zalmashni@google.com", "chrome-incognito@google.com" ],
     "expiry_milestone": 130
@@ -5030,7 +5055,7 @@
   {
     "name": "insecure-download-warnings",
     "owners": [ "jdeblasio", "trusty-transport@chromium.org" ],
-    "expiry_milestone": 118
+    "expiry_milestone": 120
   },
   {
     "name": "install-isolated-web-app-from-url",
@@ -6937,7 +6962,7 @@
     "owners": [
       "lbrady",
       "shivanisha"],
-    "expiry_milestone": 119
+    "expiry_milestone": 134
   },
   {
     "name": "privacy-sandbox-proactive-topics-blocking",
@@ -7233,7 +7258,7 @@
   {
     "name": "replace-sync-promos-with-sign-in-promos",
     "owners": [ "treib", "mastiz", "jood@google.com", "bling-flags@google.com", "chrome-sync-dev@google.com", "chrome-signin-team"],
-    "expiry_milestone": 119
+    "expiry_milestone": 125
   },
   {
     "name": "request-desktop-site-additions",

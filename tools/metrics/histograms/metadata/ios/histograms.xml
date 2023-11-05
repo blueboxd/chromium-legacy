@@ -529,6 +529,29 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="IOS.DefaultBrowserPromo.DaysSinceLastPromoInteraction"
+    units="count" expires_after="2024-02-04">
+  <owner>gayane@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <summary>
+    Represents number of days since last default browser promo was displayed
+    within last 21 days periods. This includes full screen and non-modal promo
+    and default browser promo in FRE. Recorded before every full screen promo
+    displayed.
+  </summary>
+</histogram>
+
+<histogram name="IOS.DefaultBrowserPromo.GenericPromoDisplayCount"
+    units="count" expires_after="2024-02-04">
+  <owner>gayane@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <summary>
+    Represents number of generic default browser promos displayed to the user.
+    This includes all video promo options. Recorded before every full screen
+    promo displayed.
+  </summary>
+</histogram>
+
 <histogram name="IOS.DefaultBrowserPromo.NonModal.OnScreenTime" units="ms"
     expires_after="2024-02-04">
   <owner>sebsg@chromium.org</owner>
@@ -592,6 +615,16 @@ chromium-metrics-reviews@google.com.
   <owner>gayane@chromium.org</owner>
   <owner>bling-get-set-up@google.com</owner>
   <summary>The default browser promo type shown to the user.</summary>
+</histogram>
+
+<histogram name="IOS.DefaultBrowserPromo.TailoredPromoDisplayCount"
+    units="count" expires_after="2024-02-04">
+  <owner>gayane@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <summary>
+    Represents number of tailored default browser promos displayed to the user.
+    Recorded before every full screen promo displayed.
+  </summary>
 </histogram>
 
 <histogram name="IOS.DefaultBrowserPromo.{PromoAction}.{PromoStat}"
@@ -1968,6 +2001,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="IOS.PasswordBottomSheet.UsernameTapped.MinimizedState"
+    enum="Boolean" expires_after="2024-04-26">
+  <owner>sugoi@chromium.org</owner>
+  <owner>veronguyen@google.com</owner>
+  <owner>bling-transactions@google.com</owner>
+  <summary>
+    Records whether the password cell in the password bottom sheet was minimized
+    when the user tapped on it.
+  </summary>
+</histogram>
+
 <histogram name="IOS.PasswordManager.BulkSavePasswordsInAccountCount"
     units="passwords" expires_after="2024-01-28">
   <owner>nicolasmacbeth@google.com</owner>
@@ -2016,6 +2060,15 @@ chromium-metrics-reviews@google.com.
   <summary>
     [iOS Only] Tracks the actions taken by the user on the Password Manager
     widget promo.
+  </summary>
+</histogram>
+
+<histogram name="IOS.PaymentsBottomSheet.ExitReason"
+    enum="PaymentsSuggestionBottomSheetExitReason" expires_after="2024-10-05">
+  <owner>sugoi@chromium.org</owner>
+  <owner>bling-transactions@google.com</owner>
+  <summary>
+    Tracks the bottom sheet dismissal or use of a payments suggestion.
   </summary>
 </histogram>
 
@@ -2257,10 +2310,30 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="IOS.Reauth.Address.Autofill" enum="ReauthenticationEvent"
+    expires_after="2024-10-19">
+  <owner>sugoi@chromium.org</owner>
+  <owner>bling-transactions@google.com</owner>
+  <summary>
+    Tracks the results and attempts of reauthentication when using address
+    Autofill suggestions.
+  </summary>
+</histogram>
+
+<histogram name="IOS.Reauth.CreditCard.Autofill" enum="ReauthenticationEvent"
+    expires_after="2024-10-19">
+  <owner>sugoi@chromium.org</owner>
+  <owner>bling-transactions@google.com</owner>
+  <summary>
+    Tracks the results and attempts of reauthentication when using credit card
+    Autofill suggestions.
+  </summary>
+</histogram>
+
 <histogram name="IOS.Reauth.Password.Autofill" enum="ReauthenticationEvent"
-    expires_after="2022-05-01">
-  <owner>sarraf@google.com</owner>
-  <owner>djean@chromium.org</owner>
+    expires_after="2024-10-19">
+  <owner>sugoi@chromium.org</owner>
+  <owner>bling-transactions@google.com</owner>
   <summary>
     Tracks the results and attempts of reauthentication when using password
     Autofill suggestions.
@@ -2370,6 +2443,17 @@ chromium-metrics-reviews@google.com.
     this invariant violation, and is logged each time that a main-frame
     navigation response is received after a server redirect. True means that the
     request and response URLs have the same host.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SafetyCheck.MagicStack.ModuleExistsInModuleOrder"
+    enum="BooleanMatched" expires_after="2024-06-19">
+  <owner>bwwilliams@google.com</owner>
+  <owner>thegreenfrog@google.com</owner>
+  <summary>
+    This histogram counts the number of times the Safety Check (Magic Stack)
+    module is requested for display, but not yet added to the Magic Stack module
+    order.
   </summary>
 </histogram>
 
@@ -2640,15 +2724,26 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="IOS.SaveToPhotos.ContextMenu"
+    enum="IOSSaveToPhotosContextMenuType" expires_after="2024-04-16">
+  <owner>qpubert@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <summary>
+    Logged when the user performs an action from the context menu which appears
+    after long pressing an image in a web page.
+  </summary>
+</histogram>
+
 <histogram name="IOS.SaveToPhotos.Settings" enum="IOSSaveToPhotosSettingsType"
     expires_after="2024-03-19">
   <owner>qpubert@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>
-    Logged when the Photos service starts, if and only if the Save to Photos
-    settings are accessible from Settings. It gives information about the state
-    of the Save to Photos &quot;default account&quot; settings i.e. whether the
-    user opted-in to skip the account picker.
+    Logged when the Photos service starts. It gives information about the state
+    of the Save to Photos settings i.e. (a) if a default account has been set,
+    and if so, if the account still exists on the device; (b) if the user did
+    opt-in to skip the account picker by disabling the &quot;Ask which account
+    to use every time&quot; switch.
   </summary>
 </histogram>
 
@@ -2876,6 +2971,16 @@ chromium-metrics-reviews@google.com.
   <owner>ameurhosni@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>Recorded each time an intent is donated.</summary>
+</histogram>
+
+<histogram name="IOS.Spotlight.LaunchIntentType"
+    enum="IOSSpotlightDonatedIntentType" expires_after="2024-06-01">
+  <owner>stkhapugin@chromium.org</owner>
+  <owner>ameurhosni@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
+  <summary>
+    Recorded each time the app is opened via a Spotlight intent.
+  </summary>
 </histogram>
 
 <histogram name="IOS.Spotlight.OpenTabsIndexingDuration" units="ms"
@@ -3344,6 +3449,19 @@ chromium-metrics-reviews@google.com.
   <summary>
     This event is recorded on every warm start app open. The value represents
     how long the app was away from the foreground.
+  </summary>
+</histogram>
+
+<histogram name="IOS.Web.ErrorPagePresentationFailed"
+    enum="IOSErrorPagePresentationFailed" expires_after="2024-03-01">
+  <owner>ajuma@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <summary>
+    Logged when the error page fails to load. Sometimes, for example, when the
+    web view no longer exists, this error may be expected. Other times, it will
+    have unknown causes. These unknown cases will cause a blank white page to
+    remain displayed in the web content area after the failed load instead of a
+    descriptive error message. Ref: crbug.com/1489167
   </summary>
 </histogram>
 

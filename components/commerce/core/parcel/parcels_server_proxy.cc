@@ -38,6 +38,7 @@ const char kBaseUrlParam[] = "parcel_service_base_url";
 constexpr base::FeatureParam<std::string> kServiceBaseUrl{
     &commerce::kParcelTracking, kBaseUrlParam, kDefaultServiceBaseUrl};
 const char kGetStatusPath[] = ":status";
+const char kUntrackPath[] = ":untrack";
 
 // lowerCamelCase JSON proto message keys.
 const char kTrackingIdKey[] = "trackingId";
@@ -237,9 +238,16 @@ absl::optional<ParcelStatus> Deserialize(const base::Value& value) {
   }
 
   auto* tracking_id = parcel_identifier->FindString(kTrackingIdKey);
-  auto carrier = parcel_identifier->FindInt(kCarrierKey);
-  auto parcel_state = value_dict.FindInt(kParcelStateKey);
-  if (!tracking_id || !carrier || !parcel_state) {
+  auto* carrier_str = parcel_identifier->FindString(kCarrierKey);
+  auto* parcel_state_str = value_dict.FindString(kParcelStateKey);
+  if (!tracking_id || !carrier_str || !parcel_state_str) {
+    return absl::nullopt;
+  }
+
+  ParcelIdentifier::Carrier carrier;
+  ParcelStatus::ParcelState parcel_state;
+  if (!ParcelIdentifier::Carrier_Parse(*carrier_str, &carrier) ||
+      !ParcelStatus::ParcelState_Parse(*parcel_state_str, &parcel_state)) {
     return absl::nullopt;
   }
 
@@ -249,10 +257,8 @@ absl::optional<ParcelStatus> Deserialize(const base::Value& value) {
   ParcelStatus status;
   auto* identifier = status.mutable_parcel_identifier();
   identifier->set_tracking_id(*tracking_id);
-  identifier->set_carrier(
-      static_cast<ParcelIdentifier::Carrier>(carrier.value()));
-  status.set_parcel_state(
-      static_cast<ParcelStatus::ParcelState>(parcel_state.value()));
+  identifier->set_carrier(carrier);
+  status.set_parcel_state(parcel_state);
   if (tracking_url) {
     status.set_tracking_url(*tracking_url);
   }
@@ -292,6 +298,8 @@ void ParcelsServerProxy::GetParcelStatus(
   CHECK_GT(parcel_identifiers.size(), 0u);
   base::Value::List parcel_list = Serialize(parcel_identifiers);
   if (parcel_list.empty()) {
+    RecordParcelsRequestMetrics(ParcelRequestType::kGetParcelStatus,
+                                ParcelRequestStatus::kInvalidParcelIdentifiers);
     OnInvalidParcelIdentifierError(std::move(callback));
     return;
   }
@@ -302,7 +310,8 @@ void ParcelsServerProxy::GetParcelStatus(
       std::move(request_json), GURL(kServiceBaseUrl.Get() + kGetStatusPath),
       kGetParcelStatusTrafficAnnotation,
       base::BindOnce(&ParcelsServerProxy::ProcessGetParcelStatusResponse,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     ParcelRequestType::kGetParcelStatus, std::move(callback)));
 }
 
 void ParcelsServerProxy::StartTrackingParcels(
@@ -312,6 +321,8 @@ void ParcelsServerProxy::StartTrackingParcels(
   CHECK_GT(parcel_identifiers.size(), 0u);
   base::Value::List parcel_list = Serialize(parcel_identifiers);
   if (parcel_list.empty()) {
+    RecordParcelsRequestMetrics(ParcelRequestType::kStartTrackingParcels,
+                                ParcelRequestStatus::kInvalidParcelIdentifiers);
     OnInvalidParcelIdentifierError(std::move(callback));
     return;
   }
@@ -323,22 +334,50 @@ void ParcelsServerProxy::StartTrackingParcels(
       std::move(request_json), GURL(kServiceBaseUrl.Get()),
       kStartTrackingParcelTrafficAnnotation,
       base::BindOnce(&ParcelsServerProxy::ProcessGetParcelStatusResponse,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     ParcelRequestType::kStartTrackingParcels,
+                     std::move(callback)));
 }
 
 void ParcelsServerProxy::StopTrackingParcel(
     const std::string& tracking_id,
     StopParcelTrackingCallback callback) {
+  // This call is deprecated, using kUnknown as the request type.
   SendStopTrackingRequestToServer(
+      ParcelRequestType::kUnknown,
       GURL(kServiceBaseUrl.Get() + "/" + tracking_id),
       kStopTrackingParcelTrafficAnnotation, std::move(callback));
 }
 
+void ParcelsServerProxy::StopTrackingParcels(
+    const std::vector<ParcelIdentifier>& parcel_identifiers,
+    StopParcelTrackingCallback callback) {
+  CHECK_GT(parcel_identifiers.size(), 0u);
+  base::Value::List parcel_list = Serialize(parcel_identifiers);
+  if (parcel_list.empty()) {
+    RecordParcelsRequestMetrics(ParcelRequestType::kStopTrackingParcels,
+                                ParcelRequestStatus::kInvalidParcelIdentifiers);
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
+    return;
+  }
+  base::Value::Dict request_json;
+  request_json.Set(kParcelIdsKey, std::move(parcel_list));
+
+  SendJsonRequestToServer(
+      std::move(request_json), GURL(kServiceBaseUrl.Get() + kUntrackPath),
+      kStopTrackingParcelTrafficAnnotation,
+      base::BindOnce(&ParcelsServerProxy::OnStopTrackingResponse,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     ParcelRequestType::kStopTrackingParcels,
+                     std::move(callback)));
+}
+
 void ParcelsServerProxy::StopTrackingAllParcels(
     StopParcelTrackingCallback callback) {
-  SendStopTrackingRequestToServer(GURL(kServiceBaseUrl.Get()),
-                                  kStopTrackingAllParcelTrafficAnnotation,
-                                  std::move(callback));
+  SendStopTrackingRequestToServer(
+      ParcelRequestType::kStopTrackingAllParcels, GURL(kServiceBaseUrl.Get()),
+      kStopTrackingAllParcelTrafficAnnotation, std::move(callback));
 }
 
 std::unique_ptr<EndpointFetcher> ParcelsServerProxy::CreateEndpointFetcher(
@@ -349,25 +388,30 @@ std::unique_ptr<EndpointFetcher> ParcelsServerProxy::CreateEndpointFetcher(
   return std::make_unique<EndpointFetcher>(
       url_loader_factory_, kOAuthName, url, http_method, kContentType,
       std::vector<std::string>{kOAuthScope}, kTimeoutMs.Get(), post_data,
-      traffic_annotation, identity_manager_, signin::ConsentLevel::kSync);
+      traffic_annotation, identity_manager_, signin::ConsentLevel::kSignin);
 }
 
 void ParcelsServerProxy::ProcessGetParcelStatusResponse(
+    ParcelRequestType request_type,
     GetParcelStatusCallback callback,
+    std::unique_ptr<EndpointFetcher> endpoint_fetcher,
     std::unique_ptr<EndpointResponse> response) {
   if (response->http_status_code != net::HTTP_OK || response->error_type) {
+    RecordParcelsRequestMetrics(request_type,
+                                ParcelRequestStatus::kServerError);
     std::move(callback).Run(false,
                             std::make_unique<std::vector<ParcelStatus>>());
     return;
   }
-
   data_decoder::DataDecoder::ParseJsonIsolated(
       response->response,
       base::BindOnce(&ParcelsServerProxy::OnGetParcelStatusJsonParsed,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), request_type,
+                     std::move(callback)));
 }
 
 void ParcelsServerProxy::OnGetParcelStatusJsonParsed(
+    ParcelRequestType request_type,
     GetParcelStatusCallback callback,
     data_decoder::DataDecoder::ValueOrError result) {
   auto parcel_status = std::make_unique<std::vector<ParcelStatus>>();
@@ -378,36 +422,43 @@ void ParcelsServerProxy::OnGetParcelStatusJsonParsed(
           parcel_status->push_back(*status);
         }
       }
+      RecordParcelsRequestMetrics(request_type, ParcelRequestStatus::kSuccess);
       std::move(callback).Run(true, std::move(parcel_status));
       return;
     }
   }
+  RecordParcelsRequestMetrics(request_type,
+                              ParcelRequestStatus::kServerReponseParsingError);
   std::move(callback).Run(false, std::make_unique<std::vector<ParcelStatus>>());
 }
 
 void ParcelsServerProxy::OnStopTrackingResponse(
+    ParcelRequestType request_type,
     StopParcelTrackingCallback callback,
     std::unique_ptr<EndpointFetcher> endpoint_fetcher,
     std::unique_ptr<EndpointResponse> response) {
   if (response->http_status_code != net::HTTP_OK || response->error_type) {
+    RecordParcelsRequestMetrics(request_type,
+                                ParcelRequestStatus::kServerError);
     std::move(callback).Run(false);
   } else {
+    RecordParcelsRequestMetrics(request_type, ParcelRequestStatus::kSuccess);
     std::move(callback).Run(true);
   }
 }
 
 void ParcelsServerProxy::OnServerResponse(
-    EndpointFetcherCallback callback,
+    EndpointCallback callback,
     std::unique_ptr<EndpointFetcher> endpoint_fetcher,
     std::unique_ptr<EndpointResponse> response) {
-  std::move(callback).Run(std::move(response));
+  std::move(callback).Run(std::move(endpoint_fetcher), std::move(response));
 }
 
 void ParcelsServerProxy::SendJsonRequestToServer(
     base::Value::Dict request_json,
     const GURL& server_url,
     const net::NetworkTrafficAnnotationTag& network_traffic_annotation,
-    EndpointFetcherCallback callback) {
+    EndpointCallback callback) {
   std::string post_data;
   base::JSONWriter::Write(request_json, &post_data);
   auto fetcher = CreateEndpointFetcher(GURL(server_url), kPostHttpMethod,
@@ -419,6 +470,7 @@ void ParcelsServerProxy::SendJsonRequestToServer(
 }
 
 void ParcelsServerProxy::SendStopTrackingRequestToServer(
+    ParcelRequestType request_type,
     const GURL& server_url,
     const net::NetworkTrafficAnnotationTag& network_traffic_annotation,
     StopParcelTrackingCallback callback) {
@@ -429,7 +481,8 @@ void ParcelsServerProxy::SendStopTrackingRequestToServer(
   auto* const fetcher_ptr = fetcher.get();
   fetcher_ptr->Fetch(base::BindOnce(&ParcelsServerProxy::OnStopTrackingResponse,
                                     weak_ptr_factory_.GetWeakPtr(),
-                                    std::move(callback), std::move(fetcher)));
+                                    request_type, std::move(callback),
+                                    std::move(fetcher)));
 }
 
 }  // namespace commerce

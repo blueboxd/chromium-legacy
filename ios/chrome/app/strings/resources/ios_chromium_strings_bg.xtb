@@ -4,6 +4,7 @@
 <translation id="1046370274005147998">Търсене с глас в Chromium.</translation>
 <translation id="1047130070405668746">Изберете Chromium.</translation>
 <translation id="1091252999271033193">Това означава, че всеки път Chromium ще заявява мобилната версия на сайта.</translation>
+<translation id="1171824629317156389">Отворете настройките на Chromium на устройство с iOS, след което докоснете „Стандартно приложение за браузър“ и изберете Chromium.</translation>
 <translation id="1185134272377778587">Всичко за Chromium</translation>
 <translation id="1257458525759135959">За да запазвате изображения, докоснете Settings и разрешете на Chromium да добавя снимки</translation>
 <translation id="1289216811211435351">Превключване към Chromium</translation>
@@ -140,6 +141,7 @@
 1. Отворете настройките.
 2. Докоснете „Стандартно прилож. за браузър“.
 3. Изберете Chromium.</translation>
+<translation id="6197255575340902638">Ако скриете „<ph name="MODULE_NAME" />“, Chromium повече няма да проследява автоматично бъдещите ви пратки и ще изтрие всички данни за проследяването на минали пратки.</translation>
 <translation id="6247557882553405851">Google Мениджър на паролите</translation>
 <translation id="6268381023930128611">Искате ли да излезете от Chromium?</translation>
 <translation id="6324041800010509197">Отваряне на мрежата с раздели в Chromium</translation>

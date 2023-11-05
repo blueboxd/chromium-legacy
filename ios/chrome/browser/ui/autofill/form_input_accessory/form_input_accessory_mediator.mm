@@ -22,6 +22,8 @@
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/shared/coordinator/chrome_coordinator/chrome_coordinator.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_backed_boolean.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/security_alert_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -72,7 +74,8 @@ class PasswordCounterDelegateBridge
   password_manager::PasswordCounter counter_;
 };
 
-@interface FormInputAccessoryMediator () <FormActivityObserver,
+@interface FormInputAccessoryMediator () <BooleanObserver,
+                                          FormActivityObserver,
                                           FormInputAccessoryViewDelegate,
                                           CRWWebStateObserver,
                                           PasswordCounterObserver,
@@ -151,6 +154,9 @@ class PasswordCounterDelegateBridge
 
   // If YES `_lastSeenParams` is valid.
   BOOL _hasLastSeenParams;
+
+  // Pref tracking if bottom omnibox is enabled.
+  PrefBackedBoolean* _bottomOmniboxEnabled;
 }
 
 - (instancetype)
@@ -267,6 +273,9 @@ class PasswordCounterDelegateBridge
     _webStateListObserver.reset();
     _webStateList = nullptr;
   }
+  [_bottomOmniboxEnabled stop];
+  [_bottomOmniboxEnabled setObserver:nil];
+  _bottomOmniboxEnabled = nil;
 }
 
 - (void)detachFromWebState {
@@ -372,6 +381,11 @@ class PasswordCounterDelegateBridge
   return ChromiumAccessoryViewTextData();
 }
 
+- (void)fromInputAccessoryViewDidTapOmniboxTypingShield:
+    (FormInputAccessoryView*)sender {
+  [self.formNavigationHandler closeKeyboardWithOmniboxTypingShield];
+}
+
 #pragma mark - CRWWebStateObserver
 
 - (void)webStateWasShown:(web::WebState*)webState {
@@ -446,6 +460,22 @@ class PasswordCounterDelegateBridge
   [_currentProvider inputAccessoryViewControllerDidReset];
   _currentProvider = currentProvider;
   _currentProvider.formInputNavigator = self.formNavigationHandler;
+}
+
+- (void)setPrefService:(PrefService*)prefService {
+  _prefService = prefService;
+  if (IsBottomOmniboxSteadyStateEnabled() && _prefService) {
+    _bottomOmniboxEnabled =
+        [[PrefBackedBoolean alloc] initWithPrefService:_prefService
+                                              prefName:prefs::kBottomOmnibox];
+    [_bottomOmniboxEnabled setObserver:self];
+    // Initialize to the current value.
+    [self booleanDidChange:_bottomOmniboxEnabled];
+  } else {
+    [_bottomOmniboxEnabled stop];
+    [_bottomOmniboxEnabled setObserver:nil];
+    _bottomOmniboxEnabled = nil;
+  }
 }
 
 #pragma mark - Private
@@ -578,47 +608,75 @@ class PasswordCounterDelegateBridge
   [self.handler resetFormInputView];
 }
 
+// Logs information about what type of suggestion the user selected.
+- (void)logReauthenticationEvent:(ReauthenticationEvent)reauthenticationEvent
+                     popupItemId:(autofill::PopupItemId)popupItemId {
+  std::string histogramName;
+  if (self.currentProvider.type == SuggestionProviderTypePassword) {
+    histogramName = "IOS.Reauth.Password.Autofill";
+  } else if (self.currentProvider.type == SuggestionProviderTypeAutofill) {
+    switch (popupItemId) {
+      case autofill::PopupItemId::kCreditCardEntry:
+        histogramName = "IOS.Reauth.CreditCard.Autofill";
+        break;
+      case autofill::PopupItemId::kAddressEntry:
+        histogramName = "IOS.Reauth.Address.Autofill";
+        break;
+      default:
+        break;
+    }
+  }
+  if (!histogramName.empty()) {
+    UmaHistogramEnumeration(histogramName, reauthenticationEvent);
+  }
+}
+
+// Handles the selection of a suggestion.
+- (void)handleSuggestion:(FormSuggestion*)formSuggestion {
+  if (self.currentProvider.type == SuggestionProviderTypePassword) {
+    LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeStaySafe);
+  }
+  if (formSuggestion.featureForIPH.length) {
+    // The IPH is only shown if the suggestion was the first one. It doesn't
+    // matter if the IPH was shown for this suggestion as we don't want to
+    // show more IPH's to the user.
+    [self.handler notifyAutofillSuggestionWithIPHSelected];
+  }
+  [self.currentProvider didSelectSuggestion:formSuggestion];
+}
+
+#pragma mark - Boolean Observer
+
+- (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
+  if (observableBoolean == _bottomOmniboxEnabled) {
+    CHECK(IsBottomOmniboxSteadyStateEnabled());
+    [self.consumer newOmniboxPositionIsBottom:_bottomOmniboxEnabled.value];
+  }
+}
+
 #pragma mark - FormSuggestionClient
 
 - (void)didSelectSuggestion:(FormSuggestion*)formSuggestion {
-  UmaHistogramEnumeration("IOS.Reauth.Password.Autofill",
-                          ReauthenticationEvent::kAttempt);
+  [self logReauthenticationEvent:ReauthenticationEvent::kAttempt
+                     popupItemId:formSuggestion.popupItemId];
   LogAutofillUseForDefaultBrowserPromo();
 
-  __weak __typeof(self) weakSelf = self;
-  auto suggestionHandler = ^() {
-    __typeof(self) strongSelf = weakSelf;
-    if (!strongSelf) {
-      return;
-    }
-    if (strongSelf.currentProvider.type == SuggestionProviderTypePassword) {
-      LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeStaySafe);
-    }
-    if (formSuggestion.featureForIPH.length) {
-      // The IPH is only shown if the suggestion was the first one. It doesn't
-      // matter if the IPH was shown for this suggestion as we don't want to
-      // show more IPH's to the user.
-      [self.handler notifyAutofillSuggestionWithIPHSelected];
-    }
-    [strongSelf.currentProvider didSelectSuggestion:formSuggestion];
-  };
-
   if (!formSuggestion.requiresReauth) {
-    UmaHistogramEnumeration("IOS.Reauth.Password.Autofill",
-                            ReauthenticationEvent::kSuccess);
-    suggestionHandler();
+    [self logReauthenticationEvent:ReauthenticationEvent::kSuccess
+                       popupItemId:formSuggestion.popupItemId];
+    [self handleSuggestion:formSuggestion];
     return;
   }
   if ([self.reauthenticationModule canAttemptReauth]) {
     NSString* reason = l10n_util::GetNSString(IDS_IOS_AUTOFILL_REAUTH_REASON);
     auto completionHandler = ^(ReauthenticationResult result) {
       if (result != ReauthenticationResult::kFailure) {
-        UmaHistogramEnumeration("IOS.Reauth.Password.Autofill",
-                                ReauthenticationEvent::kSuccess);
-        suggestionHandler();
+        [self logReauthenticationEvent:ReauthenticationEvent::kSuccess
+                           popupItemId:formSuggestion.popupItemId];
+        [self handleSuggestion:formSuggestion];
       } else {
-        UmaHistogramEnumeration("IOS.Reauth.Password.Autofill",
-                                ReauthenticationEvent::kFailure);
+        [self logReauthenticationEvent:ReauthenticationEvent::kFailure
+                           popupItemId:formSuggestion.popupItemId];
       }
     };
 
@@ -627,9 +685,9 @@ class PasswordCounterDelegateBridge
                     canReusePreviousAuth:YES
                                  handler:completionHandler];
   } else {
-    UmaHistogramEnumeration("IOS.Reauth.Password.Autofill",
-                            ReauthenticationEvent::kMissingPasscode);
-    suggestionHandler();
+    [self logReauthenticationEvent:ReauthenticationEvent::kMissingPasscode
+                       popupItemId:formSuggestion.popupItemId];
+    [self handleSuggestion:formSuggestion];
   }
 }
 

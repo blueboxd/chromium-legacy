@@ -91,6 +91,7 @@
 <translation id="1643449475550628585">Thay đổi hình nền hàng ngày</translation>
 <translation id="1644574205037202324">Nhật ký</translation>
 <translation id="1651925268237749928">Bạn đã chọn một album chia sẻ. Người khác có thể thêm hoặc thay đổi ảnh. Hình nền của bạn có thể sử dụng ảnh hiện không có trong album này.</translation>
+<translation id="1661865805917886535">Một số thông tin về tài khoản và hệ thống có thể được gửi đến Google. Chúng tôi dùng thông tin này theo Chính sách quyền riêng tư (<ph name="PRIVACYPOLICYURL" />) và Điều khoản dịch vụ (<ph name="TERMSOFSERVICEURL" />) để xử lý các vấn đề kỹ thuật và cải thiện dịch vụ. Nếu bạn muốn yêu cầu thay đổi nội dung, hãy chuyển đến trang Trợ giúp pháp lý (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">Đã dừng – Hết mực</translation>
 <translation id="1664796644829245314">Xem trước <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">VPN tích hợp sẵn</translation>
@@ -265,6 +266,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">Thiết bị đã được kết nối.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Xóa trang?}=1{Xóa trang {PAGE_NUMBER}?}other{Xóa trang {PAGE_NUMBER}?}}</translation>
+<translation id="3146655726035122603">Dành riêng cho <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Dữ liệu di động</translation>
 <translation id="3156846309055100599">Đang quét trang <ph name="PAGE_NUMBER" />...</translation>
 <translation id="315738237743207937">Đã phát hiện thấy trang xác thực</translation>

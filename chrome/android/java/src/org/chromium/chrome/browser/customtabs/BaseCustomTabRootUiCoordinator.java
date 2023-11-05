@@ -317,10 +317,19 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                 mActivity.getWindow(), mWindowAndroid.getKeyboardDelegate(),
                 () -> mActivity.findViewById(R.id.page_insights_hub_container));
 
-        mPageInsightsCoordinator = new PageInsightsCoordinator(mActivity, mActivityTabProvider,
-                mShareDelegateSupplier, controller, getBottomSheetController(),
-                mExpandedBottomSheetHelper, mBrowserControlsManager, mBrowserControlsManager,
-                this::isPageInsightsHubEnabled, mPageInsightsFirstLoadTimeMs);
+        mPageInsightsCoordinator =
+                new PageInsightsCoordinator(
+                        mActivity,
+                        mActivityTabProvider,
+                        mShareDelegateSupplier,
+                        mProfileSupplier,
+                        controller,
+                        getBottomSheetController(),
+                        mExpandedBottomSheetHelper,
+                        mBrowserControlsManager,
+                        mBrowserControlsManager,
+                        this::isPageInsightsHubEnabled,
+                        mPageInsightsFirstLoadTimeMs);
 
         mContextualSearchObserver = new ContextualSearchObserver() {
             @Override
@@ -521,18 +530,26 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
      * Runs a set of deferred startup tasks.
      */
     void onDeferredStartup() {
-        new OneShotCallback<>(mProfileSupplier, mCallbackController.makeCancelable((profile) -> {
-            Profile regularProfile = profile.getOriginalProfile();
+        new OneShotCallback<>(
+                mProfileSupplier,
+                mCallbackController.makeCancelable(
+                        (profile) -> {
+                            Profile regularProfile = profile.getOriginalProfile();
 
-            boolean didShowPrompt = RequestDesktopUtils.maybeShowDefaultEnableGlobalSettingMessage(
-                    regularProfile, mMessageDispatcher, mActivity);
-            if (!didShowPrompt && mAppMenuCoordinator != null) {
-                mDesktopSiteSettingsIPHController = DesktopSiteSettingsIPHController.create(
-                        mActivity, mWindowAndroid, mActivityTabProvider, regularProfile,
-                        getToolbarManager().getMenuButtonView(),
-                        mAppMenuCoordinator.getAppMenuHandler());
-            }
-        }));
+                            boolean didShowPrompt =
+                                    RequestDesktopUtils.maybeShowDefaultEnableGlobalSettingMessage(
+                                            regularProfile, mMessageDispatcher, mActivity);
+                            if (!didShowPrompt && mAppMenuCoordinator != null) {
+                                mDesktopSiteSettingsIPHController =
+                                        DesktopSiteSettingsIPHController.create(
+                                                mActivity,
+                                                mWindowAndroid,
+                                                mActivityTabProvider,
+                                                regularProfile,
+                                                getToolbarManager().getMenuButtonView(),
+                                                mAppMenuCoordinator.getAppMenuHandler());
+                            }
+                        }));
     }
 
     CustomTabHeightStrategy getCustomTabSizeStrategyForTesting() {

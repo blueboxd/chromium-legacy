@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/tabs/inactive_tabs/utils.h"
 
+#import "base/strings/sys_string_conversions.h"
+#import "base/test/metrics/histogram_tester.h"
 #import "base/test/scoped_feature_list.h"
 #import "base/test/task_environment.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
@@ -21,6 +23,8 @@
 #import "ios/chrome/browser/tabs/inactive_tabs/utils.h"
 #import "ios/chrome/browser/web/web_navigation_util.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
+#import "ios/web/public/session/crw_navigation_item_storage.h"
+#import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/test/fakes/fake_navigation_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
 #import "ios/web/public/test/web_task_environment.h"
@@ -60,6 +64,8 @@ class InactiveTabsUtilsTest : public PlatformTest {
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   std::unique_ptr<TestBrowser> browser_active_;
   std::unique_ptr<TestBrowser> browser_inactive_;
+  // Used to verify histogram logging.
+  base::HistogramTester histogram_tester_;
 
   std::unique_ptr<web::FakeWebState> CreateActiveTab() {
     std::unique_ptr<web::FakeWebState> web_state =
@@ -75,6 +81,35 @@ class InactiveTabsUtilsTest : public PlatformTest {
     web_state->SetLastActiveTime(base::Time::Now() -
                                  base::Days(inactivity_days_number));
     return web_state;
+  }
+
+  CRWSessionStorage* SessionStorage() {
+    CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
+    session_storage.stableIdentifier = [[NSUUID UUID] UUIDString];
+    session_storage.uniqueIdentifier = web::WebStateID::NewUnique();
+    // Create an item storage.
+    CRWNavigationItemStorage* item_storage =
+        [[CRWNavigationItemStorage alloc] init];
+    item_storage.virtualURL = GURL("http://init.test");
+    item_storage.referrer =
+        web::Referrer(GURL("http://referrer.url"), web::ReferrerPolicyDefault);
+    item_storage.timestamp = base::Time::Now();
+    item_storage.title = base::SysNSStringToUTF16(@"Title");
+    item_storage.HTTPRequestHeaders = @{@"HeaderKey" : @"HeaderValue"};
+    session_storage.itemStorages = @[ item_storage ];
+    session_storage.lastCommittedItemIndex = 0;
+    return session_storage;
+  }
+
+  int InsertNewWebStateWithSessionStorage(Browser* browser,
+                                          CRWSessionStorage* session_storage) {
+    std::unique_ptr<web::WebState> web_state =
+        web::WebState::CreateWithStorageSession(
+            web::WebState::CreateParams(browser->GetBrowserState()),
+            session_storage);
+    return browser->GetWebStateList()->InsertWebState(
+        0, std::move(web_state), WebStateList::INSERT_ACTIVATE,
+        WebStateOpener());
   }
 
   void CheckOrder(WebStateList* web_state_list,
@@ -119,6 +154,10 @@ TEST_F(InactiveTabsUtilsTest, ActiveTabStaysActive) {
 
   EXPECT_EQ(active_web_state_list->count(), 1);
   EXPECT_EQ(inactive_web_state_list->count(), 0);
+
+  // Expect a log of 0 duplicate.
+  histogram_tester_.ExpectUniqueSample(
+      "Tabs.DroppedDuplicatesCountOnMigrateActiveToInactive", 0, 1);
 }
 
 // Ensure that inactive tabs are moved from the active tab list to the inactive
@@ -153,6 +192,10 @@ TEST_F(InactiveTabsUtilsTest, InactiveTabAreMovedFromActiveList) {
 
   EXPECT_EQ(active_web_state_list->count(), 0);
   EXPECT_EQ(inactive_web_state_list->count(), 1);
+
+  // Expect a log of 0 duplicate.
+  histogram_tester_.ExpectUniqueSample(
+      "Tabs.DroppedDuplicatesCountOnMigrateActiveToInactive", 0, 1);
 }
 
 // Ensure there is no active tab in the inactive tab list.
@@ -185,6 +228,10 @@ TEST_F(InactiveTabsUtilsTest, ActiveTabAreMovedFromInactiveList) {
 
   EXPECT_EQ(active_web_state_list->count(), 1);
   EXPECT_EQ(inactive_web_state_list->count(), 0);
+
+  // Expect a log of 0 duplicate.
+  histogram_tester_.ExpectUniqueSample(
+      "Tabs.DroppedDuplicatesCountOnMigrateInactiveToActive", 0, 1);
 }
 
 // Ensure that inactive tab stay in inactive list.
@@ -218,6 +265,10 @@ TEST_F(InactiveTabsUtilsTest, InactiveTabStaysInactive) {
 
   EXPECT_EQ(active_web_state_list->count(), 0);
   EXPECT_EQ(inactive_web_state_list->count(), 1);
+
+  // Expect a log of 0 duplicate.
+  histogram_tester_.ExpectUniqueSample(
+      "Tabs.DroppedDuplicatesCountOnMigrateInactiveToActive", 0, 1);
 }
 
 // Restore all inactive tab.
@@ -240,6 +291,10 @@ TEST_F(InactiveTabsUtilsTest, RestoreAllInactive) {
 
   EXPECT_EQ(active_web_state_list->count(), 1);
   EXPECT_EQ(inactive_web_state_list->count(), 0);
+
+  // Expect a log of 0 duplicate.
+  histogram_tester_.ExpectUniqueSample(
+      "Tabs.DroppedDuplicatesCountOnRestoreAllInactive", 0, 1);
 }
 
 // Ensure that all moving functions are working with complicated lists (multiple
@@ -314,6 +369,10 @@ TEST_F(InactiveTabsUtilsTest, ComplicatedMove) {
   EXPECT_EQ(active_web_state_list->count(), 4);
   EXPECT_EQ(inactive_web_state_list->count(), 8);
 
+  // Expect a log of 0 duplicate.
+  histogram_tester_.ExpectUniqueSample(
+      "Tabs.DroppedDuplicatesCountOnMigrateActiveToInactive", 0, 1);
+
   // "old" inactive first (0, 10, 30, 2, 16, 0) and finally "new" inactive from
   // active list (22, 9).
   std::vector<int> expected_inactive_last_activity_order1 = {0,  10, 30, 2,
@@ -328,6 +387,10 @@ TEST_F(InactiveTabsUtilsTest, ComplicatedMove) {
 
   EXPECT_EQ(active_web_state_list->count(), 7);
   EXPECT_EQ(inactive_web_state_list->count(), 5);
+
+  // Expect a log of 0 duplicate.
+  histogram_tester_.ExpectUniqueSample(
+      "Tabs.DroppedDuplicatesCountOnMigrateInactiveToActive", 0, 1);
 
   // All active (< 8 days of inactivity) are removed.
   std::vector<int> expected_inactive_last_activity_order2 = {10, 30, 16, 22, 9};
@@ -387,6 +450,10 @@ TEST_F(InactiveTabsUtilsTest, ComplicatedRestore) {
   // (0).
   std::vector<int> expected_last_activity_order = {18, 0, 10, 30, 2, 16, 0, 0};
   CheckOrder(active_web_state_list, expected_last_activity_order);
+
+  // Expect a log of 0 duplicate.
+  histogram_tester_.ExpectUniqueSample(
+      "Tabs.DroppedDuplicatesCountOnRestoreAllInactive", 0, 1);
 }
 
 TEST_F(InactiveTabsUtilsTest, DoNotMoveNTPInInactive) {
@@ -444,6 +511,10 @@ TEST_F(InactiveTabsUtilsTest, DoNotMoveNTPInInactive) {
 
   EXPECT_EQ(active_web_state_list->count(), 1);
   EXPECT_EQ(inactive_web_state_list->count(), 0);
+
+  // Expect a log of 0 duplicate.
+  histogram_tester_.ExpectUniqueSample(
+      "Tabs.DroppedDuplicatesCountOnMigrateActiveToInactive", 0, 1);
 }
 
 TEST_F(InactiveTabsUtilsTest, EnsurePreferencePriority) {
@@ -486,12 +557,20 @@ TEST_F(InactiveTabsUtilsTest, EnsurePreferencePriority) {
   EXPECT_EQ(active_web_state_list->count(), 1);
   EXPECT_EQ(inactive_web_state_list->count(), 2);
 
+  // Expect a log of 0 duplicate.
+  histogram_tester_.ExpectUniqueSample(
+      "Tabs.DroppedDuplicatesCountOnMigrateActiveToInactive", 0, 1);
+
   std::vector<int> expected_inactive_order = {10, 30};
   CheckOrder(inactive_web_state_list, expected_inactive_order);
 
   // Set the preference to 14.
   local_state_.Get()->SetInteger(prefs::kInactiveTabsTimeThreshold, 14);
   MoveTabsFromInactiveToActive(browser_inactive_.get(), browser_active_.get());
+
+  // Expect a log of 0 duplicate.
+  histogram_tester_.ExpectUniqueSample(
+      "Tabs.DroppedDuplicatesCountOnMigrateInactiveToActive", 0, 1);
 
   EXPECT_EQ(active_web_state_list->count(), 2);
   EXPECT_EQ(inactive_web_state_list->count(), 1);
@@ -605,4 +684,99 @@ TEST_F(InactiveTabsUtilsTest, NoLimitsTabsMoves) {
   MoveTabsFromInactiveToActive(browser_inactive_.get(), browser_active_.get());
   EXPECT_EQ(active_web_state_list->count(), 505);
   EXPECT_EQ(inactive_web_state_list->count(), 505);
+}
+
+// Checks that Inactive Tabs migration method RestoreAllInactiveTabs filters out
+// duplicates across browsers.
+TEST_F(InactiveTabsUtilsTest, RestoreAllInactiveTabsRemovesCrossDuplicates) {
+  // Create a session storage.
+  CRWSessionStorage* session_storage = SessionStorage();
+
+  // Create and insert an active tab with the session storage.
+  InsertNewWebStateWithSessionStorage(browser_active_.get(), session_storage);
+
+  // Create and insert an inactive tab with the same session storage.
+  InsertNewWebStateWithSessionStorage(browser_inactive_.get(), session_storage);
+
+  // Migrate back all inactive tabs to the active browser.
+  RestoreAllInactiveTabs(browser_inactive_.get(), browser_active_.get());
+
+  EXPECT_EQ(browser_active_->GetWebStateList()->count(), 1);
+  EXPECT_EQ(browser_inactive_->GetWebStateList()->count(), 0);
+
+  // Expect a log of 1 duplicate.
+  histogram_tester_.ExpectUniqueSample(
+      "Tabs.DroppedDuplicatesCountOnRestoreAllInactive", 1, 1);
+}
+
+// Checks that Inactive Tabs migration method MoveTabsFromInactiveToActive
+// filters out duplicates across browsers.
+TEST_F(InactiveTabsUtilsTest,
+       MoveTabsFromInactiveToActiveRemovesCrossDuplicates) {
+  // No inactive tabs on iPad.
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
+    return;
+  }
+  base::test::ScopedFeatureList feature_list;
+  std::map<std::string, std::string> parameters;
+  parameters[kTabInactivityThresholdParameterName] =
+      kTabInactivityThresholdOneWeekParam;
+  feature_list.InitAndEnableFeatureWithParameters(kTabInactivityThreshold,
+                                                  parameters);
+
+  // Create a session storage for a recent tab.
+  CRWSessionStorage* session_storage = SessionStorage();
+  session_storage.lastActiveTime = base::Time::Now();
+
+  // Create and insert an active tab with the session storage.
+  InsertNewWebStateWithSessionStorage(browser_active_.get(), session_storage);
+
+  // Create and insert an inactive tab with the same session storage.
+  InsertNewWebStateWithSessionStorage(browser_inactive_.get(), session_storage);
+
+  // Migrate back all inactive tabs to the active browser.
+  MoveTabsFromInactiveToActive(browser_inactive_.get(), browser_active_.get());
+
+  EXPECT_EQ(browser_active_->GetWebStateList()->count(), 1);
+  EXPECT_EQ(browser_inactive_->GetWebStateList()->count(), 0);
+
+  // Expect a log of 1 duplicate.
+  histogram_tester_.ExpectUniqueSample(
+      "Tabs.DroppedDuplicatesCountOnMigrateInactiveToActive", 1, 1);
+}
+
+// Checks that Inactive Tabs migration method MoveTabsFromActiveToInactive
+// filters out duplicates across browsers.
+TEST_F(InactiveTabsUtilsTest,
+       MoveTabsFromActiveToInactiveRemovesCrossDuplicates) {
+  // No inactive tabs on iPad.
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
+    return;
+  }
+  base::test::ScopedFeatureList feature_list;
+  std::map<std::string, std::string> parameters;
+  parameters[kTabInactivityThresholdParameterName] =
+      kTabInactivityThresholdOneWeekParam;
+  feature_list.InitAndEnableFeatureWithParameters(kTabInactivityThreshold,
+                                                  parameters);
+
+  // Create a session storage for an old tab.
+  CRWSessionStorage* session_storage = SessionStorage();
+  session_storage.lastActiveTime = base::Time::Now() - base::Days(10);
+
+  // Create and insert an active tab with the session storage.
+  InsertNewWebStateWithSessionStorage(browser_active_.get(), session_storage);
+
+  // Create and insert an inactive tab with the same session storage.
+  InsertNewWebStateWithSessionStorage(browser_inactive_.get(), session_storage);
+
+  // Migrate back all inactive tabs to the active browser.
+  MoveTabsFromActiveToInactive(browser_active_.get(), browser_inactive_.get());
+
+  EXPECT_EQ(browser_active_->GetWebStateList()->count(), 0);
+  EXPECT_EQ(browser_inactive_->GetWebStateList()->count(), 1);
+
+  // Expect a log of 1 duplicate.
+  histogram_tester_.ExpectUniqueSample(
+      "Tabs.DroppedDuplicatesCountOnMigrateActiveToInactive", 1, 1);
 }

@@ -2128,6 +2128,8 @@ static_library("browser") {
     "//chrome/common:channel_info",
     "//chrome/common:version_header",
     "//chrome/common/cart:mojo_bindings",
+    "//chrome/common/companion:mojo_bindings",
+    "//chrome/common/companion/visual_search:flags",
     "//chrome/common/net",
     "//chrome/common/notifications",
     "//chrome/installer/util:with_no_strings",
@@ -2162,6 +2164,7 @@ static_library("browser") {
     "//components/commerce/content/browser:browser",
     "//components/commerce/core:commerce_heuristics_data",
     "//components/commerce/core:commerce_subscription_db_content_proto",
+    "//components/commerce/core:country_code_checker",
     "//components/commerce/core:feature_list",
     "//components/commerce/core:parcel_tracking_db_content_proto",
     "//components/commerce/core:persisted_state_db_content_proto",
@@ -2583,7 +2586,6 @@ static_library("browser") {
 
   if (!is_android) {
     deps += [
-      "//chrome/browser/companion/visual_search:flags",
       "//chrome/browser/manta/proto:manta_proto",
       "//components/manta",
       "//components/user_education/common",
@@ -3481,6 +3483,8 @@ static_library("browser") {
       "//chrome/browser/touch_to_fill/password_generation/android",
       "//chrome/browser/touch_to_fill/password_generation/android:public",
       "//chrome/browser/touch_to_fill/payments/android:public",
+      "//chrome/browser/translate/android",
+      "//chrome/browser/translate/android:jni_headers",
       "//chrome/browser/ui/android/layouts:android",
       "//chrome/browser/ui/webui/feed_internals:mojo_bindings",
       "//chrome/browser/usb/android:jni_headers",

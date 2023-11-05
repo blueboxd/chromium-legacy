@@ -5,6 +5,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 
 #include <cstddef>
+#include <memory>
 
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
@@ -24,7 +25,9 @@
 #include "components/content_settings/core/test/content_settings_mock_provider.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
 #include "components/privacy_sandbox/privacy_sandbox_prefs.h"
+#include "components/privacy_sandbox/tracking_protection_onboarding.h"
 #include "components/privacy_sandbox/tracking_protection_prefs.h"
+#include "components/privacy_sandbox/tracking_protection_settings.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/base/features.h"
@@ -56,7 +59,7 @@ struct TestCase {
   // Whether `net::features::kTpcdSupportSettings` is enabled.
   bool eligible_for_3pcd_support;
   // Whether `net::features::kThirdPartyStoragePartitioning` is enabled.
-  bool tpcd_metadata_grant_eligible;
+  bool tpcd_metadata_grants_eligible;
 };
 
 static constexpr TestCase kTestCases[] = {
@@ -155,7 +158,12 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
     std::vector<base::test::FeatureRef> disabled_features;
     enabled_features.push_back(
         {content_settings::features::kUserBypassUI, {{"expiration", "0d"}}});
-    enabled_features.push_back({net::features::kTpcdMetadataGrants, {}});
+
+    if (Is3pcdMetadataGrantEligible()) {
+      enabled_features.push_back({net::features::kTpcdMetadataGrants, {}});
+    } else {
+      disabled_features.push_back(net::features::kTpcdMetadataGrants);
+    }
 #if BUILDFLAG(IS_IOS)
     enabled_features.push_back({kImprovedCookieControls, {}});
     disabled_features.push_back(net::features::kTpcdSupportSettings);
@@ -192,6 +200,15 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
         false /* restore_session */, false /* should_record_metrics */);
     cookie_settings_ = new CookieSettings(settings_map_.get(), &prefs_, false,
                                           "chrome-extension");
+
+    tracking_protection_onboarding_ =
+        std::make_unique<privacy_sandbox::TrackingProtectionOnboarding>(
+            &prefs_);
+    tracking_protection_settings_ =
+        std::make_unique<privacy_sandbox::TrackingProtectionSettings>(
+            &prefs_, tracking_protection_onboarding_.get());
+    tracking_protection_settings_->AddObserver(cookie_settings_.get());
+
     cookie_settings_incognito_ = new CookieSettings(
         settings_map_.get(), &prefs_, true, "chrome-extension");
   }
@@ -213,7 +230,7 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
   }
 
   bool Is3pcdMetadataGrantEligible() const {
-    return GetParam().tpcd_metadata_grant_eligible;
+    return GetParam().tpcd_metadata_grants_eligible;
   }
 
   net::CookieSettingOverrides GetCookieSettingOverrides() const {
@@ -224,9 +241,6 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
     if (IsTopLevelStorageAccessGrantEligible()) {
       overrides.Put(
           net::CookieSettingOverride::kTopLevelStorageAccessGrantEligible);
-    }
-    if (Is3pcdMetadataGrantEligible()) {
-      overrides.Put(net::CookieSettingOverride::k3pcdMetadataGrantEligible);
     }
     return overrides;
   }
@@ -257,7 +271,7 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
   }
 
   // Assumes that cookie access would be blocked if not for a
-  // `net::CookieSettingOverride::k3pcdMetadataGrantEligible` override.
+  // `net::features::kThirdPartyStoragePartitioning` enablement.
   ContentSetting SettingWith3pcdMetadataGrantEligibleOverride() const {
     return Is3pcdMetadataGrantEligible() ? CONTENT_SETTING_ALLOW
                                          : CONTENT_SETTING_BLOCK;
@@ -301,7 +315,7 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
   }
 
   // The storage access result would be blocked if not for a
-  // `net::CookieSettingOverride::k3pcdMetadataGrantEligible` override.
+  // `net::features::kThirdPartyStoragePartitioning` enablement.
   net::cookie_util::StorageAccessResult
   BlockedStorageAccessResultWith3pcdMetadataGrantOverride() const {
     if (Is3pcdMetadataGrantEligible()) {
@@ -322,6 +336,10 @@ class CookieSettingsTest : public testing::TestWithParam<TestCase> {
   base::test::SingleThreadTaskEnvironment task_environment_;
 
   sync_preferences::TestingPrefServiceSyncable prefs_;
+  std::unique_ptr<privacy_sandbox::TrackingProtectionOnboarding>
+      tracking_protection_onboarding_;
+  std::unique_ptr<privacy_sandbox::TrackingProtectionSettings>
+      tracking_protection_settings_;
   scoped_refptr<HostContentSettingsMap> settings_map_;
   scoped_refptr<CookieSettings> cookie_settings_;
   scoped_refptr<CookieSettings> cookie_settings_incognito_;
@@ -1463,8 +1481,7 @@ TEST_P(CookieSettingsTest, GetCookieSetting3pcdSupport) {
   base::HistogramTester histogram_tester;
   histogram_tester.ExpectTotalCount(kAllowedRequestsHistogram, 0);
 
-  prefs_.SetInteger(prefs::kCookieControlsMode,
-                    static_cast<int>(CookieControlsMode::kBlockThirdParty));
+  prefs_.SetBoolean(prefs::kTrackingProtection3pcdEnabled, true);
 
   settings_map_->SetContentSettingCustomScope(
       ContentSettingsPattern::FromURLNoWildcard(url),
@@ -1502,8 +1519,7 @@ TEST_P(CookieSettingsTest, GetCookieSetting3pcdMetadataGrants) {
   base::HistogramTester histogram_tester;
   histogram_tester.ExpectTotalCount(kAllowedRequestsHistogram, 0);
 
-  prefs_.SetInteger(prefs::kCookieControlsMode,
-                    static_cast<int>(CookieControlsMode::kBlockThirdParty));
+  prefs_.SetBoolean(prefs::kTrackingProtection3pcdEnabled, true);
 
   ContentSettingsForOneType tpcd_metadata_grants;
   tpcd_metadata_grants.emplace_back(

@@ -673,7 +673,7 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 - (void)openMostRecentTab {
   [self.NTPMetricsDelegate recentTabTileOpened];
   [self.contentSuggestionsMetricsRecorder recordMostRecentTabOpened];
-  [IntentDonationHelper donateIntent:DonatedIntentType::kOpenLatestTab];
+  [IntentDonationHelper donateIntent:IntentType::kOpenLatestTab];
   [self hideRecentTabTile];
   WebStateList* web_state_list = self.browser->GetWebStateList();
   web::WebState* web_state =
@@ -706,6 +706,15 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
 
   [self hideTabResumption];
+}
+
+- (void)loadParcelTrackingPage:(GURL)parcelTrackingURL {
+  [self.NTPMetricsDelegate parcelTrackingOpened];
+  [self.contentSuggestionsMetricsRecorder
+      recordMagicStackModuleEngagementForType:ContentSuggestionsModuleType::
+                                                  kParcelTracking];
+  UrlLoadingBrowserAgent::FromBrowser(self.browser)
+      ->Load(UrlLoadParams::InCurrentTab(parcelTrackingURL));
 }
 
 #pragma mark - ContentSuggestionsGestureCommands

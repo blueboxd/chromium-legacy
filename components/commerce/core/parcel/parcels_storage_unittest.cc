@@ -237,6 +237,32 @@ TEST_F(ParcelsStorageTest, TestDeleteParcelStatus) {
   ASSERT_EQ(0u, all_parcels->size());
 }
 
+TEST_F(ParcelsStorageTest, TestDeleteMultipleParcelsStatus) {
+  EXPECT_CALL(*proto_db_, UpdateEntries(_, _, _)).Times(2);
+
+  std::vector<ParcelIdentifier> identifiers;
+
+  ParcelIdentifier id;
+  id.set_tracking_id(kTrackingId2);
+  id.set_carrier(kCarrier1);
+  identifiers.emplace_back(id);
+
+  // Delete an invalid parcel tracking id.
+  storage_->DeleteParcelsStatus(identifiers, base::BindOnce(&DoNothing));
+  task_environment_.RunUntilIdle();
+  auto all_parcels = storage_->GetAllParcelTrackingContents();
+  ASSERT_EQ(1u, all_parcels->size());
+
+  id.set_tracking_id(kTrackingId1);
+  identifiers.emplace_back(id);
+  // Delete the tracking id in storage.
+  storage_->DeleteParcelsStatus(identifiers, base::BindOnce(&DoNothing));
+  task_environment_.RunUntilIdle();
+
+  all_parcels = storage_->GetAllParcelTrackingContents();
+  ASSERT_EQ(0u, all_parcels->size());
+}
+
 TEST_F(ParcelsStorageTest, TestUpdateParcelStatus) {
   EXPECT_CALL(*proto_db_, UpdateEntries(_, _, _)).Times(1);
 
@@ -265,6 +291,48 @@ TEST_F(ParcelsStorageTest, TestUpdateParcelStatus) {
 
   ASSERT_EQ(status1.parcel_state(), status_map[kTrackingId1].parcel_state());
   ASSERT_EQ(status2.parcel_state(), status_map[kTrackingId2].parcel_state());
+}
+
+TEST_F(ParcelsStorageTest, TestModifyOldDoneParcels) {
+  EXPECT_CALL(*proto_db_, UpdateEntries(_, _, _)).Times(2);
+
+  int64_t delivery_time =
+      clock_.Now().ToDeltaSinceWindowsEpoch().InMicroseconds();
+
+  std::vector<ParcelStatus> status;
+  ParcelStatus status1 = CreateParcelStatus(kCarrier1, kTrackingId1,
+                                            commerce::ParcelStatus::FINISHED);
+  status1.set_estimated_delivery_time_usec(delivery_time);
+  ParcelStatus status2 =
+      CreateParcelStatus(kCarrier1, kTrackingId2, kDefaultState);
+  status2.set_estimated_delivery_time_usec(delivery_time);
+  status.emplace_back(status1);
+  status.emplace_back(status2);
+  storage_->UpdateParcelStatus(status, base::BindOnce(&DoNothing));
+  task_environment_.RunUntilIdle();
+
+  clock_.Advance(base::Days(20));
+  storage_->ModifyOldDoneParcels();
+  auto all_parcels = storage_->GetAllParcelTrackingContents();
+  ASSERT_EQ(2u, all_parcels->size());
+  for (int i = 0; i < 2; ++i) {
+    ASSERT_EQ(delivery_time,
+              (*all_parcels)[i].parcel_status().estimated_delivery_time_usec());
+  }
+  task_environment_.RunUntilIdle();
+
+  clock_.Advance(base::Days(10));
+  storage_->ModifyOldDoneParcels();
+  all_parcels = storage_->GetAllParcelTrackingContents();
+  ASSERT_EQ(2u, all_parcels->size());
+  std::map<std::string, ParcelStatus> status_map;
+  for (int i = 0; i < 2; ++i) {
+    auto p = (*all_parcels)[i].parcel_status();
+    status_map.emplace(p.parcel_identifier().tracking_id(), p);
+  }
+  ASSERT_EQ(0, status_map[kTrackingId1].estimated_delivery_time_usec());
+  ASSERT_EQ(delivery_time,
+            status_map[kTrackingId2].estimated_delivery_time_usec());
 }
 
 }  // namespace commerce

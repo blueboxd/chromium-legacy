@@ -18,8 +18,6 @@
 #endif  // !BUILDFLAG(IS_ANDROID)
 #include "components/commerce/core/commerce_heuristics_data_metrics_helper.h"
 #include "components/commerce/core/pref_names.h"
-#include "components/country_codes/country_codes.h"
-#include "components/variations/service/variations_service.h"
 #include "third_party/re2/src/re2/re2.h"
 
 namespace commerce {
@@ -116,7 +114,7 @@ const char kEnableChromeCart[] = "enable-chrome-cart";
 
 BASE_FEATURE(kCommerceAllowChipExpansion,
              "CommerceAllowChipExpansion",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCommerceAllowLocalImages,
              "CommerceAllowLocalImages",
@@ -186,6 +184,9 @@ const base::FeatureParam<bool> kPriceInsightsChipLabelExpandOnHighPrice{
 const char kPriceInsightsShowFeedbackParam[] = "price-insights-show-feedback";
 const base::FeatureParam<bool> kPriceInsightsShowFeedback{
     &commerce::kPriceInsights, kPriceInsightsShowFeedbackParam, false};
+const char kPriceInsightsUseCacheParam[] = "price-insights-use-cache";
+const base::FeatureParam<bool> kPriceInsightsUseCache{
+    &commerce::kPriceInsights, kPriceInsightsUseCacheParam, true};
 
 // Tonal colors for the expanded state of the price tracking chip on desktop.
 BASE_FEATURE(kPriceTrackingIconColors,
@@ -199,6 +200,21 @@ BASE_FEATURE(kShowDiscountOnNavigation,
 BASE_FEATURE(kShowDiscountOnNavigationRegionLaunched,
              "ShowDiscountOnNavigationRegionLaunched",
              base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kDiscountDialogAutoPopupBehaviorSetting,
+             "DiscountDialogAutoPopupBehaviorSetting",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+const char kHistoryClustersBehaviorParam[] = "history-cluster-behavior";
+const base::FeatureParam<int> kHistoryClustersBehavior{
+    &commerce::kDiscountDialogAutoPopupBehaviorSetting,
+    kHistoryClustersBehaviorParam, 0};
+const char kMerchantWideBehaviorParam[] = "merchant-wide-behavior";
+const base::FeatureParam<int> kMerchantWideBehavior{
+    &commerce::kDiscountDialogAutoPopupBehaviorSetting,
+    kMerchantWideBehaviorParam, 2};
+const char kNonMerchantWideBehaviorParam[] = "non-merchant-wide-behavior";
+const base::FeatureParam<int> kNonMerchantWideBehavior{
+    &commerce::kDiscountDialogAutoPopupBehaviorSetting,
+    kNonMerchantWideBehaviorParam, 2};
 
 const base::FeatureParam<bool> kDeleteAllMerchantsOnClearBrowsingHistory{
     &kCommerceMerchantViewer, "delete_all_merchants_on_clear_history", false};
@@ -449,21 +465,6 @@ bool IsShoppingListAllowedForEnterprise(PrefService* prefs) {
 
   // Default to true if there is no value set.
   return !pref || pref->GetBool();
-}
-
-std::string GetCurrentCountryCode(variations::VariationsService* variations) {
-  std::string country;
-
-  if (variations)
-    country = variations->GetStoredPermanentCountry();
-
-  // Since variations doesn't provide a permanent country by default on things
-  // like local builds, we try to fall back to the country_codes component which
-  // should always have one.
-  if (country.empty())
-    country = country_codes::GetCurrentCountryCode();
-
-  return country;
 }
 
 bool IsEnabledForCountryAndLocale(const base::Feature& feature,

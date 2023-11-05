@@ -91,6 +91,7 @@
 <translation id="1643449475550628585">Canvia la imatge del fons de pantalla diàriament</translation>
 <translation id="1644574205037202324">Historial</translation>
 <translation id="1651925268237749928">Has seleccionat un àlbum compartit. Altres persones poden afegir o canviar fotos. És possible que el fons de pantalla faci servir fotos que no siguin en aquest àlbum.</translation>
+<translation id="1661865805917886535">És possible que algunes dades del compte i del sistema s'enviïn a Google. Farem servir aquesta informació per ajudar a resoldre problemes tècnics i millorar els nostres serveis de conformitat amb la política de privadesa (<ph name="PRIVACYPOLICYURL" />) i les condicions del servei (<ph name="TERMSOFSERVICEURL" />). Per sol·licitar canvis de contingut, ves a Ajuda legal (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">S'ha aturat: no hi ha tinta</translation>
 <translation id="1664796644829245314">Previsualitza <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">VPN integrada</translation>
@@ -265,6 +266,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">El dispositiu està connectat.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Vols suprimir la pàgina?}=1{Vols suprimir la pàgina {PAGE_NUMBER}?}other{Vols suprimir les pàgines {PAGE_NUMBER}?}}</translation>
+<translation id="3146655726035122603">Exclusiu de <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Dades mòbils</translation>
 <translation id="3156846309055100599">S'està escanejant la pàgina <ph name="PAGE_NUMBER" />...</translation>
 <translation id="315738237743207937">S'ha detectat un portal captiu</translation>

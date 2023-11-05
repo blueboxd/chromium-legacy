@@ -514,7 +514,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                 mFeedSurfaceProvider.getTouchEnabledDelegate(), mFeedSurfaceProvider.getUiConfig(),
                 lifecycleDispatcher, uma, mTab.isIncognito(), windowAndroid,
                 mIsNtpAsHomeSurfaceEnabled, mIsSurfacePolishEnabled,
-                mIsSurfacePolishOmniboxColorEnabled);
+                mIsSurfacePolishOmniboxColorEnabled, mIsTablet);
 
         // If new NewTabPage is created via back operations, re-show the single Tab card with the
         // previously tracked Tab.
@@ -1158,8 +1158,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                 true, isScrollableMvtEnabled(mContext), mostRecentTab, this::onSingleTabCardClicked,
                 ()
                         -> mSnapshotSingleTabCardChanged = true,
-                mTabContentManagerSupplier.get() /* tabContentManager */
-        );
+                mTabContentManagerSupplier.get() /* tabContentManager */,
+                mIsTablet ? mFeedSurfaceProvider.getUiConfig() : null);
         mSingleTabSwitcherCoordinator.initWithNative();
         mSingleTabSwitcherCoordinator.showModule();
     }

@@ -174,7 +174,9 @@ export class LockScreenSettings implements LockScreenSettingsInterface {
       if (toggle === null) {
         return !isAvailable;
       }
-      return toggle.outerHTML.includes('not supported') === !isAvailable;
+      // Check for presence of "learn more" link
+      return toggle.outerHTML.includes('https://support.google.com/chrome') ===
+          !isAvailable;
     };
 
     await assertAsync(property);
@@ -362,9 +364,8 @@ export class GoogleDriveSettings implements GoogleDriveSettingsInterface {
     this.assertRemainingSpace(freeSpace);
   }
 
-  async assertBulkPinningPinnedSize(expectedPinnedSize: string): Promise<void> {
-    assertTrue(
-        this.googleDriveSubpage_?.contentCacheSize === expectedPinnedSize);
+  async assertContentCacheSize(contentCacheSize: string): Promise<void> {
+    assertTrue(this.googleDriveSubpage_?.contentCacheSize === contentCacheSize);
   }
 
   async clickClearOfflineFilesAndAssertNewSize(newSize: string): Promise<void> {

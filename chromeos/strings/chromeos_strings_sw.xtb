@@ -91,6 +91,7 @@
 <translation id="1643449475550628585">Badilisha picha ya mandhari kila siku</translation>
 <translation id="1644574205037202324">Historia</translation>
 <translation id="1651925268237749928">Umechagua albamu inayoshirikiwa. Watu wengine wanaweza kuweka au kubadilisha picha. Mandhari yako inaweza kutumia picha ambazo hazipo kwenye albamu hii kwa sasa.</translation>
+<translation id="1661865805917886535">Huenda baadhi ya maelezo ya akaunti na mfumo yakatumwa kwa Google. Tunatumia maelezo haya ili kusaidia kushughulikia matatizo ya kiufundi na kuboresha huduma zetu, kwa mujibu wa Sera ya Faragha (<ph name="PRIVACYPOLICYURL" />) na Sheria na Masharti yetu (<ph name="TERMSOFSERVICEURL" />). Ili uombe maudhui yabadilishwe, nenda kwenye ukurasa wa Usaidizi wa Kisheria (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">Imesimama - Wino umeisha</translation>
 <translation id="1664796644829245314">Kagua <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">VPN iliyojumuishwa ndani</translation>
@@ -265,6 +266,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">Kifaa kimeunganishwa.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Ungependa kuondoa ukurasa huu?}=1{Ungependa kuondoa ukurasa wa {PAGE_NUMBER}?}other{Ungependa kuondoa ukurasa wa {PAGE_NUMBER}?}}</translation>
+<translation id="3146655726035122603">Inapatikana kwenye <ph name="PRODUCT_NAME" /> pekee</translation>
 <translation id="315116470104423982">Data ya mtandao wa simu</translation>
 <translation id="3156846309055100599">Inachanganua ukurasa wa <ph name="PAGE_NUMBER" />...</translation>
 <translation id="315738237743207937">Ukurasa wa mwanzo umetambuliwa</translation>

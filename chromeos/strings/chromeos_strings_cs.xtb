@@ -91,6 +91,7 @@
 <translation id="1643449475550628585">Denně měnit tapetu</translation>
 <translation id="1644574205037202324">Historie</translation>
 <translation id="1651925268237749928">Vybrali jste sdílené album. Ostatní lidé mohou přidávat nebo měnit fotografie. Jako tapeta se mohou zobrazit fotografie, které v tomto albu aktuálně nejsou.</translation>
+<translation id="1661865805917886535">Některé údaje o účtu a systému mohou být předány společnosti Google. Tyto informace používáme k řešení technických problémů a zlepšování našich služeb v souladu s našimi zásadami ochrany soukromí (<ph name="PRIVACYPOLICYURL" />) a smluvními podmínkami (<ph name="TERMSOFSERVICEURL" />). Pokud chcete požádat o změny obsahu, přejděte na stránku Právní nápověda (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">Zastaveno – došel inkoust</translation>
 <translation id="1664796644829245314">Náhled <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Vestavěná VPN</translation>
@@ -265,6 +266,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">Zařízení je připojeno.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Odstranit stránku?}=1{Odstranit stránku {PAGE_NUMBER}?}few{Odstranit stránku {PAGE_NUMBER}?}many{Odstranit stránku {PAGE_NUMBER}?}other{Odstranit stránku {PAGE_NUMBER}?}}</translation>
+<translation id="3146655726035122603">Exkluzivní pro <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Mobilní datové přenosy</translation>
 <translation id="3156846309055100599">Skenování stránky <ph name="PAGE_NUMBER" />…</translation>
 <translation id="315738237743207937">Byl nalezen captive portál</translation>
@@ -293,7 +295,7 @@
 <translation id="3340011300870565703">Stav baterie pravého sluchátka je <ph name="BATTERY_PERCENTAGE" /> %.</translation>
 <translation id="3340978935015468852">nastavení</translation>
 <translation id="3359218928534347896">přepnout ztlumení mikrofonu</translation>
-<translation id="3360306038446926262">Windows</translation>
+<translation id="3360306038446926262">Okna</translation>
 <translation id="3368922792935385530">Připojeno</translation>
 <translation id="3369013195428705271">Opravdu chcete vymazat celou historii tisku? Probíhající tiskové úlohy vymazány nebudou.</translation>
 <translation id="3373141842870501561">Tapeta Plynoucí Země</translation>

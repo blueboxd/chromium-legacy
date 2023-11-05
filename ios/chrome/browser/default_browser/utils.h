@@ -54,7 +54,8 @@ enum class IOSDefaultBrowserVideoPromoAction {
   kPrimaryActionTapped = 0,
   kSecondaryActionTapped = 1,
   kSwipeDown = 2,
-  kMaxValue = kSwipeDown,
+  kTertiaryActionTapped = 3,
+  kMaxValue = kTertiaryActionTapped,
 };
 
 // The feature parameter to activate the remind me later button.
@@ -345,6 +346,9 @@ void RecordPromoStatsToUMAForAction(PromoStatistics* promo_stats,
 
 // Records given promo stats for "Appear" action into UMA histograms.
 void RecordPromoStatsToUMAForAppear(PromoStatistics* promo_stats);
+
+// Records stats related to promo display to UMA histograms.
+void RecordPromoDisplayStatsToUMA();
 
 // Logs browser launched for default browser promo trigger criteria experiment
 // stats to NSUserDefaults. `LogBrowserIndirectlylaunched` and

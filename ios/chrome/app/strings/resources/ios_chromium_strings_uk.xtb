@@ -4,6 +4,7 @@
 <translation id="1046370274005147998">Шукати за допомогою голосу в Chromium.</translation>
 <translation id="1047130070405668746">Виберіть Chromium</translation>
 <translation id="1091252999271033193">Це означає, що Chromium щоразу буде запитувати мобільний сайт.</translation>
+<translation id="1171824629317156389">На пристрої iOS відкрийте налаштування Chromium, натисніть "Веб-переглядач за умовчанням" і виберіть Chromium.</translation>
 <translation id="1185134272377778587">Про Chromium</translation>
 <translation id="1257458525759135959">Щоб зберегти зображення, натисніть "Налаштування" та дозвольте Chromium додавати фотографії</translation>
 <translation id="1289216811211435351">Переходьте на Chromium</translation>
@@ -140,6 +141,7 @@
 1. Відкрийте налаштування
 2. Натисніть "Веб-переглядач за умовчанням"
 3. Виберіть Chromium.</translation>
+<translation id="6197255575340902638">Якщо ви приховаєте модуль "<ph name="MODULE_NAME" />", Chromium більше не відстежуватиме ваші майбутні відправлення автоматично, а всі попередні дані про відстеження замовлень буде видалено.</translation>
 <translation id="6247557882553405851">Менеджер паролів Google</translation>
 <translation id="6268381023930128611">Вийти з Chromium?</translation>
 <translation id="6324041800010509197">Відкрити сітку вкладок у Chromium</translation>

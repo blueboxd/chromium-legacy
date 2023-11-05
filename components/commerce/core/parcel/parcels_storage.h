@@ -50,8 +50,16 @@ class ParcelsStorage {
   virtual void DeleteParcelStatus(const std::string& tracking_id,
                                   StorageUpdateCallback callback);
 
+  // Deletes multiple parcel status from db.
+  virtual void DeleteParcelsStatus(
+      const std::vector<ParcelIdentifier>& parcel_identifiers,
+      StorageUpdateCallback callback);
+
   // Deletes all the parcel status from db.
   virtual void DeleteAllParcelStatus(StorageUpdateCallback callback);
+
+  // Modify old parcels that are done if necessary.
+  virtual void ModifyOldDoneParcels();
 
  private:
   void OnAllParcelsLoaded(OnInitializedCallback callback,

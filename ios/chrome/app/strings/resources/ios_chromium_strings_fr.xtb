@@ -4,6 +4,7 @@
 <translation id="1046370274005147998">Faire une recherche vocale dans Chromium.</translation>
 <translation id="1047130070405668746">Sélectionnez Chromium</translation>
 <translation id="1091252999271033193">Cela signifie que Chromium demandera la version pour mobile à chaque fois.</translation>
+<translation id="1171824629317156389">Ouvrez les paramètres Chromium dans iOS, appuyez sur "Appli du navigateur par défaut", puis sélectionnez Chromium.</translation>
 <translation id="1185134272377778587">À propos de Chromium</translation>
 <translation id="1257458525759135959">Pour enregistrer une image, appuyez sur "Paramètres" afin que Chromium puisse l'ajouter à vos photos</translation>
 <translation id="1289216811211435351">Passer à Chromium</translation>
@@ -139,6 +140,7 @@ Points à prendre en compte :
 <translation id="6119647025869519954">Pour définir Chromium comme votre navigateur par défaut, procédez comme suit :
 1. Accédez à "Réglages" Appuyez sur "Navigateur par défaut"
 3. Sélectionnez "Chromium".</translation>
+<translation id="6197255575340902638">Si vous masquez "<ph name="MODULE_NAME" />", Chromium ne pourra plus suivre automatiquement vos futurs colis et supprimera toutes vos anciennes données de suivi de colis.</translation>
 <translation id="6247557882553405851">Gestionnaire de mots de passe Google</translation>
 <translation id="6268381023930128611">Se déconnecter de Chromium ?</translation>
 <translation id="6324041800010509197">Accéder à la grille d'onglets dans Chromium</translation>

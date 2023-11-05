@@ -118,6 +118,7 @@
 <translation id="5389212809648216794">다른 애플리케이션에서 카메라를 사용하고 있으므로 Chrome에서 카메라를 사용할 수 없습니다.</translation>
 <translation id="5395376160638294582">Google 계정의 Chrome 데이터를 언제든지 사용할 수 있도록 설정하세요.</translation>
 <translation id="5439191312780166229">표준 보호 모드보다 더 많은 사이트에서 데이터를 분석하여 위험한 사이트에 관해 경고합니다. Google이 이전에 몰랐던 사이트도 여기에 포함됩니다. Chrome 경고를 건너뛸 수 있습니다.</translation>
+<translation id="5442013002200339429">"<ph name="MODULE_NAME" />" 모듈을 숨기면 Chrome에서 더 이상 자동으로 배송을 추적하지 않으며 이전의 모든 배송 추적 데이터를 삭제합니다.</translation>
 <translation id="5460571915754665838">4. Chrome을 선택합니다.</translation>
 <translation id="546541279759910616">{COUNT,plural, =1{Chrome의 새 탭 페이지를 통해 이 택배를 추적할 수 있습니다}other{Chrome의 새 탭 페이지를 통해 이 택배를 추적할 수 있습니다}}</translation>
 <translation id="5492504007368565877">Google 비밀번호 관리자에서 내 비밀번호를 확인할 수 없습니다.</translation>
@@ -154,6 +155,7 @@
 
 암호를 아는 사람만 암호화된 내 데이터를 읽을 수 있습니다. 암호는 Google로 전송되거나 Google에 저장되지 않습니다. 암호가 기억나지 않거나 이 설정을 변경하려면 <ph name="BEGIN_LINK" />계정에서 Chrome 데이터를 삭제<ph name="END_LINK" />하세요.</translation>
 <translation id="6822673484890854830">Chrome에서 일부 비밀번호를 확인할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
+<translation id="6851982868877411675">iOS에서 Chrome Settings(Chrome 설정)를 열고 'Default Browser App(기본 브라우저 앱)'을 탭한 다음 Chrome을 선택합니다.</translation>
 <translation id="6916015246697034114">Chrome에서 음성으로 검색하기</translation>
 <translation id="6964931465519938134">이제 언제든 메시지, 문서 및 다른 앱에서 링크를 탭하여 Chrome을 사용할 수 있습니다.</translation>
 <translation id="6975725306479268850">Chrome 자동 완성을 선택하세요</translation>

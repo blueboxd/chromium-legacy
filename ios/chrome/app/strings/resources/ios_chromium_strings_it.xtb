@@ -4,6 +4,7 @@
 <translation id="1046370274005147998">Ricerca vocale in Chromium.</translation>
 <translation id="1047130070405668746">Seleziona Chromium</translation>
 <translation id="1091252999271033193">Ciò significa che Chromium richiederà ogni volta il sito per dispositivi mobili.</translation>
+<translation id="1171824629317156389">Apri le Impostazioni di Chromium in iOS, quindi tocca "App browser predefinita" e seleziona Chromium.</translation>
 <translation id="1185134272377778587">Informazioni su Chromium</translation>
 <translation id="1257458525759135959">Per salvare le immagini, tocca Impostazioni e consenti a Chromium di aggiungere le tue foto</translation>
 <translation id="1289216811211435351">Passa a Chromium</translation>
@@ -140,6 +141,7 @@ Aspetti da considerare:
 1. Apri le Impostazioni.
 2. Tocca App browser predefinita.
 3. Seleziona Chromium.</translation>
+<translation id="6197255575340902638">Se nascondi "<ph name="MODULE_NAME" />", Chromium non monitorerà più automaticamente i tuoi futuri pacchetti ed eliminerà tutti i dati di monitoraggio della spedizione precedenti.</translation>
 <translation id="6247557882553405851">Gestore delle password di Google</translation>
 <translation id="6268381023930128611">Uscire da Chromium?</translation>
 <translation id="6324041800010509197">Visita la griglia delle schede di Chromium</translation>

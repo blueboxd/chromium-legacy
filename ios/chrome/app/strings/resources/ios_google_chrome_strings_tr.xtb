@@ -118,6 +118,7 @@ Dikkate alınması gereken noktalar:
 <translation id="5389212809648216794">Kameranız başka bir uygulama tarafından kullanıldığından Google Chrome, kameranızı kullanamıyor.</translation>
 <translation id="5395376160638294582">Google Hesabınızdaki Chrome verilerini her zaman kullanabildiğinizden emin olun</translation>
 <translation id="5439191312780166229">Standart korumaya ek olarak sitelerden alınmış daha fazla veriyi analiz ederek Google'ın daha önce bilmedikleri de dahil olmak üzere tehlikeli siteler hakkında sizi uyarır. Chrome uyarılarını atlamayı seçebilirsiniz.</translation>
+<translation id="5442013002200339429">"<ph name="MODULE_NAME" />" öğesini gizlerseniz Chrome gelecekteki kargolarınızı otomatik olarak takip etmez ve tüm geçmiş kargo takibi verilerinizi siler.</translation>
 <translation id="5460571915754665838">4. Chrome'u seçin</translation>
 <translation id="546541279759910616">{COUNT,plural, =1{Chrome, Yeni Sekme sayfasında bu kargoyu takip etmenize yardımcı olacak.}other{Chrome, Yeni Sekme sayfasında bu kargoları takip etmenize yardımcı olacak.}}</translation>
 <translation id="5492504007368565877">Google Şifre Yöneticisi, şifrelerinizi kontrol edemiyor.</translation>
@@ -154,6 +155,7 @@ Dikkate alınması gereken noktalar:
 
 Sadece parolanıza sahip olan kişiler şifrelenmiş verilerinizi okuyabilir. Parola Google'a gönderilmez veya Google tarafından saklanmaz. Parolanızı unutursanız veya bu ayarı değiştirmek isterseniz <ph name="BEGIN_LINK" />hesabınızdaki Chrome verilerini temizleyin<ph name="END_LINK" />.</translation>
 <translation id="6822673484890854830">Chrome, şifrelerin tümünü kontrol edemedi. Daha sonra tekrar deneyin.</translation>
+<translation id="6851982868877411675">iOS'te Chrome Ayarları'nı açtıktan sonra "Varsayılan Tarayıcı Uygulaması"na dokunup Chrome'u seçin.</translation>
 <translation id="6916015246697034114">Chrome'da Sesle Arama Yap</translation>
 <translation id="6964931465519938134">Artık mesajlardaki, dokümanlardaki ve diğer uygulamalardaki bağlantıları tıkladığınızda Chrome'u kullanabilirsiniz.</translation>
 <translation id="6975725306479268850">Otomatik doldurma için Chrome'u seçin</translation>

@@ -91,6 +91,7 @@
 <translation id="1643449475550628585">Cambiar imagen de fondo de pantalla a diario</translation>
 <translation id="1644574205037202324">Historial</translation>
 <translation id="1651925268237749928">Has seleccionado un álbum compartido. Otras personas pueden añadir o cambiar fotos. Puede que tu fondo de pantalla use fotos que no están en este álbum.</translation>
+<translation id="1661865805917886535">Algunos datos de tu cuenta y tu sistema podrían enviarse a Google. Usamos esta información para solucionar problemas técnicos y mejorar nuestros servicios, de acuerdo con nuestra Política de Privacidad (<ph name="PRIVACYPOLICYURL" />) y nuestros Términos del Servicio (<ph name="TERMSOFSERVICEURL" />). Para solicitar cambios de contenido, accede a la Ayuda de Legal (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">Detenido: sin tinta</translation>
 <translation id="1664796644829245314">Consultar vista previa de <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">VPN integrada</translation>
@@ -265,6 +266,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">El dispositivo está conectado.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{¿Quitar página?}=1{¿Quitar página {PAGE_NUMBER}?}other{¿Quitar página {PAGE_NUMBER}?}}</translation>
+<translation id="3146655726035122603">Exclusivo de <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Redes móviles</translation>
 <translation id="3156846309055100599">Escaneando página <ph name="PAGE_NUMBER" />...</translation>
 <translation id="315738237743207937">Portal cautivo detectado</translation>
@@ -743,7 +745,7 @@
 <translation id="6673898378497337661">aumentar brillo del teclado</translation>
 <translation id="6692996468359469499">Obtener información sobre tu selección</translation>
 <translation id="6704062477274546131">Resolución de DNS</translation>
-<translation id="6723839937902243910">Batería</translation>
+<translation id="6723839937902243910">Encendido</translation>
 <translation id="6723847290197874913">Retroiluminación del teclado</translation>
 <translation id="672609503628871915">Consultar las novedades</translation>
 <translation id="6747215703636344499">Detenido: bandeja de salida llena</translation>

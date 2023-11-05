@@ -10,12 +10,15 @@
 #include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "components/commerce/core/parcel/parcels_utils.h"
 #include "components/session_proto_db/session_proto_storage.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace commerce {
 
 namespace {
+constexpr base::TimeDelta kTimeToModifyDoneParcels = base::Days(30);
+
 std::string GetDbKeyFromParcelStatus(
     const ParcelIdentifier& parcel_identifier) {
   return base::StringPrintf("%d_%s", parcel_identifier.carrier(),
@@ -88,6 +91,22 @@ void ParcelsStorage::DeleteParcelStatus(const std::string& tracking_id,
   }
 }
 
+void ParcelsStorage::DeleteParcelsStatus(
+    const std::vector<ParcelIdentifier>& parcel_identifiers,
+    StorageUpdateCallback callback) {
+  DCHECK(is_initialized_);
+  auto keys_to_remove = std::make_unique<std::vector<std::string>>();
+  for (const auto& identifier : parcel_identifiers) {
+    std::string key = GetDbKeyFromParcelStatus(identifier);
+    parcels_cache_.erase(key);
+    keys_to_remove->emplace_back(std::move(key));
+  }
+  proto_db_->UpdateEntries(
+      std::make_unique<
+          std::vector<std::pair<std::string, ParcelTrackingContent>>>(),
+      std::move(keys_to_remove), base::BindOnce(std::move(callback)));
+}
+
 void ParcelsStorage::DeleteAllParcelStatus(StorageUpdateCallback callback) {
   DCHECK(is_initialized_);
   parcels_cache_.clear();
@@ -106,6 +125,30 @@ void ParcelsStorage::OnAllParcelsLoaded(OnInitializedCallback callback,
     parcels_cache_.emplace(std::move(kv.first), std::move(kv.second));
   }
   std::move(callback).Run(success);
+}
+
+void ParcelsStorage::ModifyOldDoneParcels() {
+  std::vector<ParcelStatus> done_statuses;
+  for (auto& kv : parcels_cache_) {
+    auto& content = kv.second;
+    const auto& status = content.parcel_status();
+    if (IsParcelStateDone(status.parcel_state()) &&
+        status.estimated_delivery_time_usec() != 0) {
+      if (clock_->Now() -
+              base::Time::FromDeltaSinceWindowsEpoch(
+                  base::Microseconds(content.last_update_time_usec())) >=
+          kTimeToModifyDoneParcels) {
+        ParcelStatus updated_status = status;
+        updated_status.clear_estimated_delivery_time_usec();
+        done_statuses.emplace_back(updated_status);
+        (*content.mutable_parcel_status()) = std::move(updated_status);
+      }
+    }
+  }
+  if (!done_statuses.empty()) {
+    UpdateParcelStatus(std::move(done_statuses),
+                       base::DoNothingAs<void(bool)>());
+  }
 }
 
 }  // namespace commerce

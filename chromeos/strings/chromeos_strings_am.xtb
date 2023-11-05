@@ -91,6 +91,7 @@
 <translation id="1643449475550628585">የልጣፍ ምስልን በየቀኑ ቀይር</translation>
 <translation id="1644574205037202324">ታሪክ</translation>
 <translation id="1651925268237749928">የተጋራ አልበም መርጠዋል። ሌሎች ሰዎች ፎቶዎችን ማከል ወይም መቀየር ይችላሉ። ልጣፍዎ በአሁኑ ጊዜ በዚህ አልበም ውስጥ የሌሉ ፎቶዎችን ሊጠቀም ይችላል።</translation>
+<translation id="1661865805917886535">የተወሰነ የመለያ እና የሥርዓት መረጃ ለGoogle ሊላክ ይችላል። ይህን መረጃ በእኛ የግላዊነት መመሪያ (<ph name="PRIVACYPOLICYURL" />) እና የአገልግሎት ውል (<ph name="TERMSOFSERVICEURL" />) መሰረት የአድራሻ ቴክኒካዊ ችግሮችን ለመፍታት እና የእኛን አገልግሎቶች ለማሻሻል ለማገዝ ነው። የይዘት ለውጦችን ለመጠየቅ ወደ ሕጋዊ እገዛ (<ph name="LEGALHELPPAGEURL" />) ይሂዱ።</translation>
 <translation id="1662989795263954667">ቆሟል - ቀለም አልቋል</translation>
 <translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" />ን አስቀድመው ይመልከቱ</translation>
 <translation id="1668469839109562275">አብሮገነብ VPN</translation>
@@ -265,6 +266,7 @@
 <translation id="3122464029669770682">ሲፒዩ</translation>
 <translation id="3124039320086536031">መሣሪያ ተገናኝቷል።</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{ገፅ ይወገድ?}=1{ገፅ {PAGE_NUMBER} ይወገድ?}one{ገፅ {PAGE_NUMBER} ይወገድ?}other{ገፅ {PAGE_NUMBER} ይወገድ?}}</translation>
+<translation id="3146655726035122603">ለ<ph name="PRODUCT_NAME" /> የተወሰነ</translation>
 <translation id="315116470104423982">የተንቀሳቃሽ ስልክ ውሂብ</translation>
 <translation id="3156846309055100599">ገፅ <ph name="PAGE_NUMBER" />ን በመቃኘት ላይ...</translation>
 <translation id="315738237743207937">ተያዥ መግቢያ ተገኝቷል</translation>

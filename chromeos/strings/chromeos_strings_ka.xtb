@@ -91,6 +91,7 @@
 <translation id="1643449475550628585">ფონის სურათის ყოველდღიურად შეცვლა</translation>
 <translation id="1644574205037202324">ისტორია</translation>
 <translation id="1651925268237749928">თქვენ აირჩიეთ გაზიარებული ალბომი. ფოტოების დამატება ან შეცვლა სხვებსაც შეუძლიათ. თქვენს ფონზე, შესაძლოა, გამოჩნდეს ფოტოები, რომლებიც ამჟამად არ არის ამ ალბომში.</translation>
+<translation id="1661865805917886535">ანგარიშისა და სისტემის შესახებ გარკვეული ინფორმაცია შეიძლება გაეგზავნოს Google-ს. ამ ინფორმაციას ტექნიკური პრობლემების მოსაგვარებლად და ჩვენი სერვისების გასაუმჯობესებლად გამოვიყენებთ, ჩვენი კონფიდენციალურობის დებულებისა (<ph name="PRIVACYPOLICYURL" />) და მომსახურების პირობების (<ph name="TERMSOFSERVICEURL" />) შესაბამისად. კონტენტის ცვლილებები რომ მოითხოვოთ, გადადით იურიდიული დახმარების გვერდზე (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">გაჩერდა — მელანი გათავდა</translation>
 <translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" />-ის გადახედვა</translation>
 <translation id="1668469839109562275">ჩაშენებული VPN</translation>
@@ -265,6 +266,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">მოწყობილობა დაკავშირებულია.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{გსურთ გვერდის ამოშლა?}=1{გსურთ გვერდი {PAGE_NUMBER}-ის ამოშლა?}other{გსურთ გვერდი {PAGE_NUMBER}-ის ამოშლა?}}</translation>
+<translation id="3146655726035122603">ექსკლუზიურად <ph name="PRODUCT_NAME" />-ისთვის</translation>
 <translation id="315116470104423982">მობილური მონაცემები</translation>
 <translation id="3156846309055100599">სკანირდება გვერდი <ph name="PAGE_NUMBER" />...</translation>
 <translation id="315738237743207937">აღმოჩენილია ავტორიზაციის პორტალი</translation>

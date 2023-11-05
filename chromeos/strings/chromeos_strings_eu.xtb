@@ -91,6 +91,7 @@
 <translation id="1643449475550628585">Aldatu egunero horma-paperaren irudia</translation>
 <translation id="1644574205037202324">Historia</translation>
 <translation id="1651925268237749928">Album partekatu bat hautatu duzu. Beste pertsona batzuek argazkiak gehitu eta alda ditzakete. Baliteke une honetan albumean ez dauden argazkiak erabiltzea horma-paper gisa.</translation>
+<translation id="1661865805917886535">Baliteke kontuari eta sistemari buruzko zenbait datu bidaltzea Google-ri. Arazo teknikoak konpontzeko eta gure zerbitzuak hobetzeko erabiltzen dugu informazio hori, gure Pribatutasun-gidalerroei (<ph name="PRIVACYPOLICYURL" />) eta Zerbitzu-baldintzei (<ph name="TERMSOFSERVICEURL" />) jarraikiz. Edukian aldaketak eskatzeko, joan legezko laguntzari buruzko orrira (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">Geldituta: ez dago tintarik</translation>
 <translation id="1664796644829245314">Aurreikusi <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">VPN integratua</translation>
@@ -265,6 +266,7 @@
 <translation id="3122464029669770682">PUZ</translation>
 <translation id="3124039320086536031">Gailua konektatuta dago.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Orria kendu nahi duzu?}=1{{PAGE_NUMBER}. orria kendu nahi duzu?}other{{PAGE_NUMBER}. orria kendu nahi duzu?}}</translation>
+<translation id="3146655726035122603"><ph name="PRODUCT_NAME" /> gailuan soilik</translation>
 <translation id="315116470104423982">Datu-konexioa</translation>
 <translation id="3156846309055100599"><ph name="PAGE_NUMBER" />. orria eskaneatzen…</translation>
 <translation id="315738237743207937">Sare-zerbitzuaren atari bat hauteman da</translation>
@@ -941,7 +943,7 @@
 <translation id="8347126826554447157"><ph name="SHORCTCUT1" /> edo <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">Inprimatze-lanak</translation>
 <translation id="8351855506390808906">Teklak esleitzeko ukipen-puntua</translation>
-<translation id="8352772353338965963">Gehitu kontu bat saio-hasiera anitzean. Saioa hasita daukaten kontu guztiak pasahitzik gabe atzi daitezkeenez, kontu fidagarriekin soilik erabili behar da eginbide hori.</translation>
+<translation id="8352772353338965963">Gehitu kontu bat saio bat baino gehiago hasteko eginbidean. Saioa hasita daukaten kontu guztiak pasahitzik gabe atzi daitezkeenez, kontu fidagarriekin soilik erabili behar da eginbide hori.</translation>
 <translation id="8364946094152050673">Izenen zerbitzariak hutsik daude</translation>
 <translation id="8372477600026034341">Ostalari gehigarriak</translation>
 <translation id="8373046809163484087">Erabili horma-paperarekin bat datozen kolore sortak</translation>

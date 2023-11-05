@@ -20,17 +20,24 @@
 namespace web_app {
 
 class WebAppProvider;
+class WebApp;
 
+// Used by metrics.
 enum class GeneratedIconFixScheduleDecision {
-  kNoApp,
-  kTimeWindowExpired,
-  kNotRequired,
-  kAlreadyScheduled,
-  kSchedule,
+  kNotSynced = 0,
+  kTimeWindowExpired = 1,
+  kNotRequired = 2,
+  kAttemptLimitReached = 3,
+  kAlreadyScheduled = 4,
+  kSchedule = 5,
+
+  kMaxValue = kSchedule,
 };
 
 class GeneratedIconFixManager {
  public:
+  static void DisableAutoRetryForTesting();
+
   GeneratedIconFixManager();
   ~GeneratedIconFixManager();
 
@@ -40,7 +47,9 @@ class GeneratedIconFixManager {
   // TODO(crbug.com/1216965): Schedule fixes ten minutes after sync install.
   // TODO(crbug.com/1216965): Schedule fixes on network reconnection.
 
-  const base::flat_set<webapps::AppId>& scheduled_fixes_for_testing() const {
+  void InvalidateWeakPtrsForTesting();
+
+  base::flat_set<webapps::AppId>& scheduled_fixes_for_testing() {
     return scheduled_fixes_;
   }
 
@@ -56,12 +65,11 @@ class GeneratedIconFixManager {
   }
 
  private:
-  GeneratedIconFixScheduleDecision MaybeScheduleFix(
-      WithAppResources& resources,
-      const webapps::AppId& app_id);
-  GeneratedIconFixScheduleDecision MakeScheduleDecision(
-      const WebAppRegistrar& registrar,
-      const webapps::AppId& app_id);
+  // Returns whether a fix was newly scheduled for `app_id`.
+  bool MaybeScheduleFix(WithAppResources& resources,
+                        const webapps::AppId& app_id);
+  GeneratedIconFixScheduleDecision MakeScheduleDecision(const WebApp* app);
+  void StartFix(const webapps::AppId& app_id);
   void FixCompleted(const webapps::AppId& app_id,
                     GeneratedIconFixResult result);
 

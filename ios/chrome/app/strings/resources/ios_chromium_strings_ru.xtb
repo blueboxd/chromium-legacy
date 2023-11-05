@@ -4,6 +4,7 @@
 <translation id="1046370274005147998">Голосовой поиск в Chromium.</translation>
 <translation id="1047130070405668746">Выберите Chromium.</translation>
 <translation id="1091252999271033193">Chromium всегда будет запрашивать мобильный сайт.</translation>
+<translation id="1171824629317156389">Откройте настройки Chromium в iOS, затем нажмите "Приложение браузера по умолчанию" и выберите Chromium.</translation>
 <translation id="1185134272377778587">О Chromium</translation>
 <translation id="1257458525759135959">Чтобы сохранять изображения, нажмите "Настройки" и предоставьте Chromium доступ к вашим фото.</translation>
 <translation id="1289216811211435351">Переходите на Chromium</translation>
@@ -140,6 +141,7 @@
 1. Откройте настройки устройства.
 2. Найдите раздел, где выбирается браузер по умолчанию.
 3. Выберите Chromium.</translation>
+<translation id="6197255575340902638">Если вы скроете карточку "<ph name="MODULE_NAME" />", Chromium больше не будет автоматически отслеживать посылки и удалит все данные об отслеживании ваших заказов.</translation>
 <translation id="6247557882553405851">Google Менеджер паролей</translation>
 <translation id="6268381023930128611">Выйти из Chromium?</translation>
 <translation id="6324041800010509197">Страница вкладок в Chromium</translation>

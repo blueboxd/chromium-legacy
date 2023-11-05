@@ -190,17 +190,14 @@ CookieSettingsBase::GetCookieAccessSemanticsForDomain(
   return net::CookieAccessSemantics::UNKNOWN;
 }
 
-bool CookieSettingsBase::ShouldConsider3pcdSupportSettings(
-    net::CookieSettingOverrides overrides) const {
-  // TODO(crbug.com/1466156): Once able, check that third-party cookie blocking
-  // isn't being forced.
-  return base::FeatureList::IsEnabled(net::features::kTpcdSupportSettings);
+bool CookieSettingsBase::ShouldConsider3pcdSupportSettings() const {
+  return base::FeatureList::IsEnabled(net::features::kTpcdSupportSettings) &&
+         MitigationsEnabledFor3pcd();
 }
 
-bool CookieSettingsBase::ShouldConsider3pcdMetadataGrantsSettings(
-    net::CookieSettingOverrides overrides) const {
+bool CookieSettingsBase::ShouldConsider3pcdMetadataGrantsSettings() const {
   return base::FeatureList::IsEnabled(net::features::kTpcdMetadataGrants) &&
-         overrides.Has(net::CookieSettingOverride::k3pcdMetadataGrantEligible);
+         MitigationsEnabledFor3pcd();
 }
 
 bool CookieSettingsBase::ShouldConsiderStorageAccessGrants(
@@ -218,8 +215,6 @@ net::CookieSettingOverrides CookieSettingsBase::SettingOverridesForStorage()
   if (is_storage_partitioned_) {
     overrides.Put(
         net::CookieSettingOverride::kTopLevelStorageAccessGrantEligible);
-
-    overrides.Put(net::CookieSettingOverride::k3pcdMetadataGrantEligible);
   }
   return overrides;
 }
@@ -267,6 +262,26 @@ CookieSettingsBase::GetCookieSettingInternal(
         net::cookie_util::StorageAccessResult::ACCESS_ALLOWED);
   }
 
+  if (block_third && ShouldConsider3pcdMetadataGrantsSettings() &&
+      IsAllowed(GetContentSetting(url, first_party_url,
+                                  ContentSettingsType::TPCD_METADATA_GRANTS))) {
+    block_third = false;
+    FireStorageAccessHistogram(net::cookie_util::StorageAccessResult::
+                                   ACCESS_ALLOWED_3PCD_METADATA_GRANT);
+  }
+
+  if (block_third && ShouldConsider3pcdSupportSettings() &&
+      GetContentSetting(url, first_party_url,
+                        ContentSettingsType::TPCD_SUPPORT) ==
+          CONTENT_SETTING_ALLOW) {
+    // TODO (crbug.com/1466156): Revisit this after a decision has been made
+    // on how an explicit 3PC setting will be differentiated from an
+    // experimental one.
+    block_third = false;
+    FireStorageAccessHistogram(
+        net::cookie_util::StorageAccessResult::ACCESS_ALLOWED_3PCD);
+  }
+
   if (block_third) {
     bool has_storage_access_opt_in =
         ShouldConsiderStorageAccessGrants(overrides);
@@ -293,27 +308,6 @@ CookieSettingsBase::GetCookieSettingInternal(
           net::cookie_util::StorageAccessResult::
               ACCESS_ALLOWED_TOP_LEVEL_STORAGE_ACCESS_GRANT);
     }
-  }
-
-  if (block_third && ShouldConsider3pcdSupportSettings(overrides) &&
-      GetContentSetting(url, first_party_url,
-                        ContentSettingsType::TPCD_SUPPORT) ==
-          CONTENT_SETTING_ALLOW) {
-    // TODO (crbug.com/1466156): Revisit this after a decision has been made on
-    // how an explicit 3PC setting will be differentiated from an experimental
-    // one.
-    block_third = false;
-    FireStorageAccessHistogram(
-        net::cookie_util::StorageAccessResult::ACCESS_ALLOWED_3PCD);
-  }
-
-  if (block_third && ShouldConsider3pcdMetadataGrantsSettings(overrides) &&
-      GetContentSetting(url, first_party_url,
-                        ContentSettingsType::TPCD_METADATA_GRANTS) ==
-          CONTENT_SETTING_ALLOW) {
-    block_third = false;
-    FireStorageAccessHistogram(net::cookie_util::StorageAccessResult::
-                                   ACCESS_ALLOWED_3PCD_METADATA_GRANT);
   }
 
   if (!IsAllowed(setting) || block_third) {

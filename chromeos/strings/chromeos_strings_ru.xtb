@@ -91,6 +91,7 @@
 <translation id="1643449475550628585">Менять обои ежедневно</translation>
 <translation id="1644574205037202324">История</translation>
 <translation id="1651925268237749928">Выбран общий альбом. Другие пользователи могут добавлять или редактировать фотографии. В качестве обоев могут показываться снимки, которых сейчас нет в этом альбоме.</translation>
+<translation id="1661865805917886535">Некоторые сведения об аккаунте и системе могут быть отправлены в Google. Мы используем их, чтобы устранять технические неполадки и улучшать свои сервисы в соответствии с Политикой конфиденциальности (<ph name="PRIVACYPOLICYURL" />) и Условиями использования Google (<ph name="TERMSOFSERVICEURL" />). Чтобы отправить запрос на изменение контента, перейдите в Справочный центр по правовым вопросам (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">Печать прервана: нет чернил</translation>
 <translation id="1664796644829245314">Предварительный просмотр: <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Встроенная VPN</translation>
@@ -265,6 +266,7 @@
 <translation id="3122464029669770682">Процессор</translation>
 <translation id="3124039320086536031">Устройство подключено.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Удалить страницу?}=1{Удалить страницу {PAGE_NUMBER}?}one{Удалить страницу {PAGE_NUMBER}?}few{Удалить страницу {PAGE_NUMBER}?}many{Удалить страницу {PAGE_NUMBER}?}other{Удалить страницу {PAGE_NUMBER}?}}</translation>
+<translation id="3146655726035122603">Эксклюзивно для <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Мобильное подключение</translation>
 <translation id="3156846309055100599">Сканирование страницы <ph name="PAGE_NUMBER" />…</translation>
 <translation id="315738237743207937">Обнаружена страница входа</translation>

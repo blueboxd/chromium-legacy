@@ -4,6 +4,7 @@
 <translation id="1046370274005147998">Pretražujte glasovnim komandama u Chromiumu.</translation>
 <translation id="1047130070405668746">Odaberite Chromium</translation>
 <translation id="1091252999271033193">Ovo znači da će Chromium svaki put zatražiti web lokaciju za mobilni uređaj.</translation>
+<translation id="1171824629317156389">Otvorite Postavke Chromiuma u iOS-u, a zatim dodirnite "Zadana aplikacija preglednika" i odaberite Chromium.</translation>
 <translation id="1185134272377778587">O programu Chromium</translation>
 <translation id="1257458525759135959">Da sačuvate slike, dodirnite Postavke da omogućite Chromiumu dodavanje u vaše fotografije</translation>
 <translation id="1289216811211435351">Pređite na Chromium</translation>
@@ -140,6 +141,7 @@ Stvari za razmatranje:
 1. Otvorite Postavke
 2. Dodirnite Zadana aplikacija preglednika
 3. Odaberite Chromium.</translation>
+<translation id="6197255575340902638">Ako sakrijete modul "<ph name="MODULE_NAME" />", Chromium više neće automatski pratiti vaše buduće pakete i izbrisat će sve prethodne podatke o praćenju paketa.</translation>
 <translation id="6247557882553405851">Google upravitelju lozinki</translation>
 <translation id="6268381023930128611">Odjaviti se iz Chromiuma?</translation>
 <translation id="6324041800010509197">Otvorite mrežu kartica u Chromiumu</translation>

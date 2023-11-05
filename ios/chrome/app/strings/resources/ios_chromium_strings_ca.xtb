@@ -4,6 +4,7 @@
 <translation id="1046370274005147998">Cerca amb la veu a Chromium.</translation>
 <translation id="1047130070405668746">Selecciona Chromium.</translation>
 <translation id="1091252999271033193">Això vol dir que Chromium sol·licitarà el lloc web per a mòbils cada vegada.</translation>
+<translation id="1171824629317156389">Obre la configuració de Chromium a iOS, toca Aplicació de navegació predeterminada i selecciona Chromium.</translation>
 <translation id="1185134272377778587">Quant a Chromium</translation>
 <translation id="1257458525759135959">Si vols desar imatges, toca Configuració per permetre que Chromium les afegeixi a les teves fotos</translation>
 <translation id="1289216811211435351">Canvia a Chromium</translation>
@@ -140,6 +141,7 @@ Aspectes que cal tenir en compte:
 1. Obre Configuració.
 2. Toca App de navegació per omissió.
 3. Selecciona Chromium.</translation>
+<translation id="6197255575340902638">Si amagues "<ph name="MODULE_NAME" />", Chromium deixarà de fer un seguiment automàtic dels paquets futurs i suprimirà totes les teves dades anteriors de seguiment d'enviaments.</translation>
 <translation id="6247557882553405851">Gestor de contrasenyes de Google</translation>
 <translation id="6268381023930128611">Voleu tancar la sessió de Chromium?</translation>
 <translation id="6324041800010509197">Visita la quadrícula de pestanyes a Chromium</translation>

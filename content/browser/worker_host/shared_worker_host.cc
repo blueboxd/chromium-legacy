@@ -350,7 +350,7 @@ void SharedWorkerHost::Start(
   // Send the CreateSharedWorker message.
   factory_.Bind(std::move(factory));
   factory_->CreateSharedWorker(
-      std::move(info), token_, instance_.storage_key().origin(),
+      std::move(info), token_, instance_.storage_key(),
       creator_policy_container_host_ &&
           creator_policy_container_host_->policies().is_web_secure_context,
       GetContentClient()->browser()->GetUserAgentBasedOnPolicy(
@@ -426,14 +426,7 @@ SharedWorkerHost::CreateNetworkFactoryParamsForSubresources() {
   }
   network::mojom::URLLoaderFactoryParamsPtr factory_params =
       URLLoaderFactoryParamsHelper::CreateForWorker(
-          GetProcessHost(), origin,
-          net::IsolationInfo::Create(net::IsolationInfo::RequestType::kOther,
-                                     // TODO(https://crbug.com/1147281): We
-                                     // should pass the top_level_site from
-                                     // `GetStorageKey()` instead.
-                                     origin, origin,
-                                     net::SiteForCookies::FromOrigin(origin),
-                                     GetStorageKey().nonce()),
+          GetProcessHost(), origin, GetStorageKey().ToPartialNetIsolationInfo(),
           std::move(coep_reporter),
           /*url_loader_network_observer=*/mojo::NullRemote(),
           /*devtools_observer=*/mojo::NullRemote(),

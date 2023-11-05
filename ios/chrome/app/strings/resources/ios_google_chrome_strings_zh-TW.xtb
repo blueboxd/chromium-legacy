@@ -118,6 +118,7 @@
 <translation id="5389212809648216794">另一個應用程式正在使用你的相機，因此 Google Chrome 無法使用</translation>
 <translation id="5395376160638294582">確保你隨時可以使用 Google 帳戶中的 Chrome 資料</translation>
 <translation id="5439191312780166229">這項防護機制分析的網站資料比標準防護來得多，因此即使是 Google 不知道的網站，這項防護機制也能提供危險網站警告。你可以選擇略過 Chrome 的警告。</translation>
+<translation id="5442013002200339429">如果隱藏「<ph name="MODULE_NAME" />」，Chrome 將不會再自動追蹤之後的包裹，而且會刪除先前的所有包裹追蹤資料。</translation>
 <translation id="5460571915754665838">4. 選取 [Chrome]</translation>
 <translation id="546541279759910616">{COUNT,plural, =1{Chrome 會在新分頁上追蹤這個包裹。}other{Chrome 會在新分頁上追蹤這些包裹。}}</translation>
 <translation id="5492504007368565877">Google 密碼管理工具無法檢查你的密碼。</translation>
@@ -154,6 +155,7 @@
 
 只有知道通關密語的人才能讀取你的加密資料。系統不會將通關密語傳送給 Google，Google 也不會儲存通關密語。如果忘記通關密語或想要變更這項設定，請<ph name="BEGIN_LINK" />清除帳戶中的 Chrome 資料<ph name="END_LINK" />。</translation>
 <translation id="6822673484890854830">Chrome 無法檢查所有密碼，請稍後再試。</translation>
+<translation id="6851982868877411675">在 iOS 設定中開啟 Chrome，然後依序輕觸「預設瀏覽器 App」和「Chrome」。</translation>
 <translation id="6916015246697034114">在 Chrome 中使用語音搜尋</translation>
 <translation id="6964931465519938134">現在只要在訊息、文件和其他應用程式中輕觸連結，即可透過 Chrome 開啟。</translation>
 <translation id="6975725306479268850">選擇使用 Chrome 的自動填入功能</translation>

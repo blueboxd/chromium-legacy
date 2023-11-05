@@ -100,13 +100,20 @@
 #pragma mark - SaveToPhotosMediatorDelegate
 
 - (void)showAccountPickerWithConfiguration:
-    (AccountPickerConfiguration*)configuration {
+            (AccountPickerConfiguration*)configuration
+                          selectedIdentity:
+                              (id<SystemIdentity>)selectedIdentity {
   _accountPickerCoordinator = [[AccountPickerCoordinator alloc]
       initWithBaseViewController:self.baseViewController
                          browser:self.browser
                    configuration:configuration];
   _accountPickerCoordinator.delegate = self;
   [_accountPickerCoordinator start];
+  if (selectedIdentity) {
+    // If the mediator does not want to override the selected identity, leave
+    // the one presented by default by the account picker.
+    _accountPickerCoordinator.selectedIdentity = selectedIdentity;
+  }
 }
 
 - (void)hideAccountPicker {
@@ -147,7 +154,8 @@
   _alertCoordinator = nil;
 }
 
-- (void)showStoreKitWithProductIdentifier:(NSString*)productIdentifer {
+- (void)showStoreKitWithProductIdentifier:(NSString*)productIdentifer
+                            campaignToken:(NSString*)campaignToken {
   if (_storeKitCoordinator) {
     [_storeKitCoordinator stop];
     _storeKitCoordinator = nil;
@@ -157,8 +165,10 @@
       initWithBaseViewController:self.baseViewController
                          browser:self.browser];
   _storeKitCoordinator.delegate = self;
-  _storeKitCoordinator.iTunesProductParameters =
-      @{SKStoreProductParameterITunesItemIdentifier : productIdentifer};
+  _storeKitCoordinator.iTunesProductParameters = @{
+    SKStoreProductParameterITunesItemIdentifier : productIdentifer,
+    SKStoreProductParameterCampaignToken : campaignToken
+  };
   [_storeKitCoordinator start];
 }
 

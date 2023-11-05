@@ -91,6 +91,7 @@
 <translation id="1643449475550628585">Змяняць відарыс шпалер штодня</translation>
 <translation id="1644574205037202324">Гісторыя</translation>
 <translation id="1651925268237749928">Вы выбралі абагулены альбом. Іншыя карыстальнікі могуць дадаваць або змяняць фота. У якасці шпалер могуць паказвацца фота, якіх зараз няма ў гэтым альбоме.</translation>
+<translation id="1661865805917886535">Некаторыя звесткі аб вашым уліковым запісе і сістэме могуць быць адпраўлены ў Google. Мы будзем выкарыстоўваць гэту інфармацыю, каб у адпаведнасці з Палітыкай прыватнасці (<ph name="PRIVACYPOLICYURL" />) і Умовамі выкарыстання (<ph name="TERMSOFSERVICEURL" />) вызначаць тэхнічныя праблемы і ўдасканальваць нашы сэрвісы. Каб адправіць запыт на змяненне змесціва, перайдзіце на старонку юрыдычнай даведкі (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">Спынена: скончылася чарніла</translation>
 <translation id="1664796644829245314">Перадпрагляд: <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Убудаваная сетка VPN</translation>
@@ -265,6 +266,7 @@
 <translation id="3122464029669770682">Працэсар</translation>
 <translation id="3124039320086536031">Прылада падключана.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Выдаліць старонку?}=1{Выдаліць старонку {PAGE_NUMBER}?}one{Выдаліць старонку {PAGE_NUMBER}?}few{Выдаліць старонку {PAGE_NUMBER}?}many{Выдаліць старонку {PAGE_NUMBER}?}other{Выдаліць старонку {PAGE_NUMBER}?}}</translation>
+<translation id="3146655726035122603">Эксклюзіўна для <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Мабільная перадача даных</translation>
 <translation id="3156846309055100599">Сканіруецца старонка <ph name="PAGE_NUMBER" />…</translation>
 <translation id="315738237743207937">Выяўлены партал узаемадзеяння</translation>
@@ -325,7 +327,7 @@
 <translation id="357889014807611375">Wi-Fi з улікам трафіка</translation>
 <translation id="3583278742022654445">Нізкая магутнасць сігналу. Перамясціцеся бліжэй да крыніцы сігналу Wi-Fi.</translation>
 <translation id="3595596368722241419">Акумулятар поўнасцю зараджаны</translation>
-<translation id="3600339377155080675">Адлюстраваць экран</translation>
+<translation id="3600339377155080675">Дубліраваць экран</translation>
 <translation id="3602290021589620013">Перадпрагляд</translation>
 <translation id="3603829704940252505">Аватар</translation>
 <translation id="3604713164406837697">Змяніць шпалеры</translation>

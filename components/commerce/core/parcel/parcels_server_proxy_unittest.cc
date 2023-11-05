@@ -9,6 +9,7 @@
 #include "base/functional/callback.h"
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/commerce/core/commerce_constants.h"
@@ -34,16 +35,21 @@ const char kParcelsBaseUrl[] =
     "https://memex-pa.googleapis.com/v1/shopping/parcels";
 const char kParcelsStatusUrl[] =
     "https://memex-pa.googleapis.com/v1/shopping/parcels:status";
+const char kParcelsUntrackUrl[] =
+    "https://memex-pa.googleapis.com/v1/shopping/parcels:untrack";
 
 const std::string kExpectedGetParcelStatusPostData =
     "{\"parcelIds\":[{\"carrier\":2,\"trackingId\":\"xyz\"}]}";
 const std::string kResponseSucceeded =
     "{ \"parcelStatus\": [{\"parcelIdentifier\": {\"trackingId\": \"xyz\","
-    "\"carrier\": 1}, \"parcelState\": 2, \"trackingUrl\": \"www.foo.com\","
+    "\"carrier\": \"FEDEX\"}, \"parcelState\": \"PICKED_UP\", \"trackingUrl\": "
+    "\"www.foo.com\","
     "\"estimatedDeliveryDate\": \"2023-10-11\"}]}";
 const std::string kExpectedStartTrackingPostData =
     "{\"parcelIds\":[{\"carrier\":2,\"trackingId\":\"xyz\"}],"
     "\"sourcePageDomain\":\"www.abc.com\"}";
+const std::string kExpectedStopTrackingPostData =
+    "{\"parcelIds\":[{\"carrier\":2,\"trackingId\":\"xyz\"}]}";
 const std::string kTestTrackingUrl = "www.foo.com";
 const std::string kTestTrackingId = "xyz";
 const std::string kTestSourcePageDomain = "www.abc.com";
@@ -110,6 +116,7 @@ class ParcelsServerProxyTest : public testing::Test {
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   std::unique_ptr<MockEndpointFetcher> fetcher_;
   std::unique_ptr<MockParcelsServerProxy> server_proxy_;
+  base::HistogramTester histogram_tester_;
 };
 
 TEST_F(ParcelsServerProxyTest, TestGetParcelStatus) {
@@ -139,6 +146,9 @@ TEST_F(ParcelsServerProxyTest, TestGetParcelStatus) {
           },
           &run_loop));
   run_loop.Run();
+  histogram_tester_.ExpectBucketCount(
+      "Commerce.ParcelTracking.GetParcelStatus.RequestStatus",
+      ParcelRequestStatus::kSuccess, 1);
 }
 
 TEST_F(ParcelsServerProxyTest, TestGetParcelStatusWithErrorResponse) {
@@ -159,6 +169,9 @@ TEST_F(ParcelsServerProxyTest, TestGetParcelStatusWithErrorResponse) {
           },
           &run_loop));
   run_loop.Run();
+  histogram_tester_.ExpectBucketCount(
+      "Commerce.ParcelTracking.GetParcelStatus.RequestStatus",
+      ParcelRequestStatus::kServerReponseParsingError, 1);
 }
 
 TEST_F(ParcelsServerProxyTest, TestGetParcelStatusWithoutTrackingId) {
@@ -174,6 +187,9 @@ TEST_F(ParcelsServerProxyTest, TestGetParcelStatusWithoutTrackingId) {
           },
           &run_loop));
   run_loop.Run();
+  histogram_tester_.ExpectBucketCount(
+      "Commerce.ParcelTracking.GetParcelStatus.RequestStatus",
+      ParcelRequestStatus::kInvalidParcelIdentifiers, 1);
 }
 
 TEST_F(ParcelsServerProxyTest, TestGetParcelStatusWithServerError) {
@@ -194,6 +210,9 @@ TEST_F(ParcelsServerProxyTest, TestGetParcelStatusWithServerError) {
           },
           &run_loop));
   run_loop.Run();
+  histogram_tester_.ExpectBucketCount(
+      "Commerce.ParcelTracking.GetParcelStatus.RequestStatus",
+      ParcelRequestStatus::kServerError, 1);
 }
 
 TEST_F(ParcelsServerProxyTest, TestStartTrackingParcelsWithServerError) {
@@ -214,6 +233,9 @@ TEST_F(ParcelsServerProxyTest, TestStartTrackingParcelsWithServerError) {
           },
           &run_loop));
   run_loop.Run();
+  histogram_tester_.ExpectBucketCount(
+      "Commerce.ParcelTracking.StartTrackingParcels.RequestStatus",
+      ParcelRequestStatus::kServerError, 1);
 }
 
 TEST_F(ParcelsServerProxyTest, TestStartTrackingParcels) {
@@ -243,6 +265,9 @@ TEST_F(ParcelsServerProxyTest, TestStartTrackingParcels) {
           },
           &run_loop));
   run_loop.Run();
+  histogram_tester_.ExpectBucketCount(
+      "Commerce.ParcelTracking.StartTrackingParcels.RequestStatus",
+      ParcelRequestStatus::kSuccess, 1);
 }
 
 TEST_F(ParcelsServerProxyTest, TestStopTrackingParcel) {
@@ -261,6 +286,30 @@ TEST_F(ParcelsServerProxyTest, TestStopTrackingParcel) {
                            },
                            &run_loop));
   run_loop.Run();
+  histogram_tester_.ExpectBucketCount(
+      "Commerce.ParcelTracking.Unknown.RequestStatus",
+      ParcelRequestStatus::kSuccess, 1);
+}
+
+TEST_F(ParcelsServerProxyTest, TestStopTrackingParcels) {
+  fetcher_->SetFetchResponse(kResponseSucceeded);
+  EXPECT_CALL(*server_proxy_,
+              CreateEndpointFetcher(GURL(kParcelsUntrackUrl), kPostHttpMethod,
+                                    kExpectedStopTrackingPostData, _))
+      .Times(1);
+  base::RunLoop run_loop;
+  server_proxy_->StopTrackingParcels(
+      GetTestParcelIdentifiers(),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, bool success) {
+            ASSERT_TRUE(success);
+            run_loop->Quit();
+          },
+          &run_loop));
+  run_loop.Run();
+  histogram_tester_.ExpectBucketCount(
+      "Commerce.ParcelTracking.StopTrackingParcels.RequestStatus",
+      ParcelRequestStatus::kSuccess, 1);
 }
 
 TEST_F(ParcelsServerProxyTest, TestStopTrackingAllParcels) {
@@ -277,6 +326,9 @@ TEST_F(ParcelsServerProxyTest, TestStopTrackingAllParcels) {
       },
       &run_loop));
   run_loop.Run();
+  histogram_tester_.ExpectBucketCount(
+      "Commerce.ParcelTracking.StopTrackingAllParcels.RequestStatus",
+      ParcelRequestStatus::kSuccess, 1);
 }
 
 TEST_F(ParcelsServerProxyTest, TestStopTrackingAllParcelsWithServerError) {
@@ -293,6 +345,9 @@ TEST_F(ParcelsServerProxyTest, TestStopTrackingAllParcelsWithServerError) {
       },
       &run_loop));
   run_loop.Run();
+  histogram_tester_.ExpectBucketCount(
+      "Commerce.ParcelTracking.StopTrackingAllParcels.RequestStatus",
+      ParcelRequestStatus::kServerError, 1);
 }
 
 }  // namespace commerce

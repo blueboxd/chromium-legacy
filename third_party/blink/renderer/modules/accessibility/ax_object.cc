@@ -610,7 +610,11 @@ void AXObject::SetHasDirtyDescendants(bool dirty) const {
 void AXObject::SetAncestorsHaveDirtyDescendants() const {
   CHECK(!IsDetached());
   CHECK(!AXObjectCache().HasBeenDisposed());
-  CHECK(!AXObjectCache().IsFrozen());
+  if (AXObjectCache().IsFrozen()) {
+    // TODO(accessibility): Restore as CHECK(), remove early return.
+    DCHECK(false) << "Attempt to update frozen tree: " << ToString(true, true);
+    return;
+  }
   CHECK(!AXObjectCache().UpdatingTree());
 
   if (!RuntimeEnabledFeatures::AccessibilityEagerAXTreeUpdateEnabled()) {
@@ -629,6 +633,18 @@ void AXObject::SetAncestorsHaveDirtyDescendants() const {
     // Need at least the root object to be flagged in order for
     // UpdateTreeIfNeeded() to do anything.
     SetHasDirtyDescendants(true);
+    return;
+  }
+
+  if (AXObjectCache().EntireDocumentIsDirty()) {
+    // No need to walk parent chain when marking the entire document dirty,
+    // as every node will have the bit set. In addition, attempting to repair
+    // the parent chain while marking everything dirty is actually against
+    // the point, because all child-parent relationships will be rebuilt
+    // from the top down.
+    if (LastKnownIsIncludedInTreeValue()) {
+      SetHasDirtyDescendants(true);
+    }
     return;
   }
 
@@ -901,9 +917,10 @@ bool AXObject::IsMissingParent() const {
     // TODO(accessibility) This is ugly. Consider destroying validation message
     // objects between uses instead. See GetOrCreateValidationMessageObject().
     bool is_missing = !IsRoot() && !IsValidationMessage();
-    CHECK(!is_missing || !AXObjectCache().IsFrozen())
-        << "Should not have missing parent in frozen tree: "
-        << ToString(true, true);
+    // TODO(accessibility) Restore this check. Removed so that we can ship 119.
+    // CHECK(!is_missing || !AXObjectCache().IsFrozen())
+    //     << "Should not have missing parent in frozen tree: "
+    //     << ToString(true, true);
     return is_missing;
   }
 
@@ -3038,7 +3055,7 @@ bool AXObject::IsVisited() const {
 }
 
 bool AXObject::AccessibilityIsIgnored() const {
-  CHECK(CanAccessCachedValues());
+  // CHECK(CanAccessCachedValues());   // Comment out check for M119.
   UpdateCachedAttributeValuesIfNeeded();
 #if defined(AX_FAIL_FAST_BUILD)
   if (!cached_is_ignored_ && IsDetached()) {
@@ -3056,7 +3073,7 @@ bool AXObject::AccessibilityIsIgnored() const {
 }
 
 bool AXObject::AccessibilityIsIgnoredButIncludedInTree() const {
-  CHECK(CanAccessCachedValues());
+  // CHECK(CanAccessCachedValues());   // Comment out check for M119.
 
   UpdateCachedAttributeValuesIfNeeded();
   return cached_is_ignored_but_included_in_tree_;
@@ -3065,7 +3082,7 @@ bool AXObject::AccessibilityIsIgnoredButIncludedInTree() const {
 // AccessibilityIsIncludedInTree should be true for all nodes that should be
 // included in the tree, even if they are ignored
 bool AXObject::AccessibilityIsIncludedInTree() const {
-  CHECK(CanAccessCachedValues());
+  // CHECK(CanAccessCachedValues());   // Comment out check for M119.
 
   return !AccessibilityIsIgnored() || AccessibilityIsIgnoredButIncludedInTree();
 }
@@ -3334,7 +3351,7 @@ bool AXObject::ShouldIgnoreForHiddenOrInert(
 // In practice, it does not matter because nodes in display:none subtrees are
 // marked ignored either way.
 bool AXObject::IsInert() const {
-  CHECK(CanAccessCachedValues());
+  // CHECK(CanAccessCachedValues());   // Comment out check for M119.
 
   UpdateCachedAttributeValuesIfNeeded();
   return cached_is_inert_;
@@ -3437,7 +3454,7 @@ bool AXObject::ComputeIsInert(IgnoredReasons* ignored_reasons) const {
 }
 
 bool AXObject::IsAriaHidden() const {
-  CHECK(CanAccessCachedValues());
+  // CHECK(CanAccessCachedValues());   // Comment out check for M119.
 
   UpdateCachedAttributeValuesIfNeeded();
   return cached_is_aria_hidden_;
@@ -3637,7 +3654,7 @@ bool AXObject::DispatchEventToAOMEventListeners(Event& event) {
 }
 
 bool AXObject::IsDescendantOfDisabledNode() const {
-  CHECK(CanAccessCachedValues());
+  // CHECK(CanAccessCachedValues());   // Comment out check for M119.
 
   UpdateCachedAttributeValuesIfNeeded();
   return cached_is_descendant_of_disabled_node_;
@@ -4072,44 +4089,40 @@ bool AXObject::IsFocusableStyleUsingBestAvailableState() const {
 }
 
 bool AXObject::CanSetFocusAttribute() const {
-  CHECK(CanAccessCachedValues());
+  // CHECK(CanAccessCachedValues());   // Comment out check for M119.
 
   UpdateCachedAttributeValuesIfNeeded();
   return cached_can_set_focus_attribute_;
 }
 
-// This does not use Element::IsFocusable(), as that can sometimes recalculate
-// styles because of IsFocusableStyle() check, resetting the document lifecycle.
+// TODO(accessibility) Look at reusing Element::IsFocusable() or
+// AXObject::IsKeyboardFocusable(). As long as we guard against style recalc by
+// returning early if IsHiddenViaStyle() is true, we can call
+// Element::IsKeyboardFocusable(), which would otherwise recalculate style at an
+// awkward time.
 bool AXObject::ComputeCanSetFocusAttribute() const {
   DCHECK(!IsDetached());
   DCHECK(GetDocument());
+
+  // Focusable: web area -- this is the only focusable non-element. Web areas
+  // inside portals are not focusable though (portal contents cannot get focus).
+  if (IsWebArea()) {
+    return true;
+  }
 
   // Objects within a portal are not focusable.
   // Note that they are ignored but can be included in the tree.
   bool inside_portal =
       GetDocument()->GetPage() && GetDocument()->GetPage()->InsidePortal();
-  if (inside_portal)
-    return false;
-
-  // The portal itself is focusable. Portals are treated as buttons in platform
-  // APIs, hiding their subtree.
-  if (RoleValue() == ax::mojom::blink::Role::kPortal)
-    return true;
-
-  // Display-locked nodes that have content-visibility: hidden are not exposed
-  // to accessibility in any way, so they are not focusable. Note that for
-  // content-visibility: auto cases, `ShouldIgnoreNodeDueToDisplayLock()` would
-  // return false, since we're not ignoring the element in that case.
-  if (GetNode() &&
-      DisplayLockUtilities::ShouldIgnoreNodeDueToDisplayLock(
-          *GetNode(), DisplayLockActivationReason::kAccessibility)) {
+  if (inside_portal) {
     return false;
   }
 
-  // Focusable: web area -- this is the only focusable non-element. Web areas
-  // inside portals are not focusable though (portal contents cannot get focus).
-  if (IsWebArea())
+  // The portal itself is focusable. Portals are treated as buttons in platform
+  // APIs, hiding their subtree.
+  if (RoleValue() == ax::mojom::blink::Role::kPortal) {
     return true;
+  }
 
   // NOT focusable: objects with no DOM node, e.g. extra layout blocks inserted
   // as filler, or objects where the node is not an element, such as a text
@@ -4124,8 +4137,9 @@ bool AXObject::ComputeCanSetFocusAttribute() const {
 
   // NOT focusable: child tree owners (it's the content area that will be marked
   // focusable in the a11y tree).
-  if (IsChildTreeOwner())
+  if (IsChildTreeOwner()) {
     return false;
+  }
 
   // NOT focusable: disabled form controls.
   if (IsDisabledFormControl(elem))
@@ -4135,8 +4149,40 @@ bool AXObject::ComputeCanSetFocusAttribute() const {
   // unless they are part of a <datalist>, in which case they can be displayed
   // by the browser process, but not the renderer.
   // TODO(crbug.com/1399852) Address gaps in datalist a11y.
-  if (auto* option = DynamicTo<HTMLOptionElement>(elem))
+  if (auto* option = DynamicTo<HTMLOptionElement>(elem)) {
     return !option->OwnerDataListElement();
+  }
+
+  // Invisible nodes are never focusable.
+  // We already have these cached, so it's a very quick check.
+  // This also prevents implementations of Element::SupportsFocus()
+  // from trying to update style on descendants of content-visibility:hidden
+  // nodes, or display:none nodes, which are the only nodes that don't have
+  // updated style at this point.
+  if (cached_is_hidden_via_style_) {
+    return false;
+  }
+
+  // TODO(crbug.com/1489580) Investigate why this is not yet true, and the
+  // early return is necessary, rather than just having a CHECK().
+  // At this point, all nodes that are not display:none or
+  // content-visibility:hidden should have updated style, which means it is safe
+  // to call Element::SupportsFocus(), Element::IsKeyboardFocusable(), and
+  // Element::IsFocusableStyle() without causing an update.
+  // Updates are problematic when we are expecting the tree to be frozen,
+  // or are in the middle of ProcessDeferredAccessibilityEvents(), where an
+  // update would cause unwanted recursion.
+  // Code that pvoes that this is impossible to reach is at:
+  // AXObjectCacheImpl::CheckStyleIsComplete().
+  if (elem->NeedsStyleRecalc()) {
+    DCHECK(false) << "Avoiding IsFocusableStyle() crash for style update on:"
+                  << "\n* Element: " << elem
+                  << "\n* LayoutObject: " << elem->GetLayoutObject()
+                  << "\n* NeedsStyleRecalc: " << elem->NeedsStyleRecalc()
+                  << "\n* IsDisplayLockedPreventingPaint: "
+                  << DisplayLockUtilities::IsDisplayLockedPreventingPaint(elem);
+    return false;
+  }
 
   // NOT focusable: hidden elements.
   // TODO(aleventhal) Consider caching visibility when it's safe to compute.
@@ -4166,14 +4212,24 @@ bool AXObject::IsKeyboardFocusable() const {
     // frame owner elements have SupportsFocus() == false.
     return false;
   }
-  // content-visibility:hidden or content-visibility: auto nodes (when locked)
-  // cannot be marked as keyboard focusable, because then we'll need to do a
-  // style/layout update within the locked subtree to get scroller information.
-  // For all practical purposes, it's unlikely to matter if display-locked
-  // content is marked non-focusable, so let's just avoid the lifecycle update.
-  if (DisplayLockUtilities::IsDisplayLockedPreventingPaint(element)) {
+
+  // Invisible/inert nodes are never focusable.
+  // We already have these cached, so it's a very quick check.
+  // This also prevents implementations of Element::IsKeyboardFocusable()
+  // from trying to update style on descendants of content-visibility:hidden
+  // nodes, or display:none nodes, which are the only nodes that don't have
+  // updated style at this point.
+  if (IsHiddenViaStyle() || IsInert()) {
     return false;
   }
+
+  // At this point, all nodes should have updated style. If they don't, it can
+  // cause crashes such as the one at crbug.com/1485059 when
+  // Element::IsKeyboardFocusable() calls IsFocusableStyleAfterUpdate() and
+  // the element doesn't have updated style yet, causing layout to update,
+  // resulting in unwanted recursion into ProcessDeferredAccessibilityEvents().
+  CHECK(!element->NeedsStyleRecalc());
+
   return element->IsKeyboardFocusable();
 }
 
@@ -4420,7 +4476,7 @@ bool AXObject::ComputeIsHiddenViaStyle(const ComputedStyle* style) const {
 }
 
 bool AXObject::IsHiddenViaStyle() const {
-  CHECK(CanAccessCachedValues());
+  // CHECK(CanAccessCachedValues());   // Comment out check for M119.
 
   UpdateCachedAttributeValuesIfNeeded();
   return cached_is_hidden_via_style_;
@@ -5192,7 +5248,7 @@ bool AXObject::IsRichlyEditable() const {
 }
 
 AXObject* AXObject::LiveRegionRoot() const {
-  CHECK(CanAccessCachedValues());
+  // CHECK(CanAccessCachedValues());   // Comment out check for M119.
 
   UpdateCachedAttributeValuesIfNeeded();
   return cached_live_region_root_;
@@ -5210,7 +5266,7 @@ bool AXObject::LiveRegionAtomic() const {
 }
 
 const AtomicString& AXObject::ContainerLiveRegionStatus() const {
-  CHECK(CanAccessCachedValues());
+  // CHECK(CanAccessCachedValues());   // Comment out check for M119.
 
   UpdateCachedAttributeValuesIfNeeded();
   return cached_live_region_root_ ? cached_live_region_root_->LiveRegionStatus()
@@ -5218,7 +5274,7 @@ const AtomicString& AXObject::ContainerLiveRegionStatus() const {
 }
 
 const AtomicString& AXObject::ContainerLiveRegionRelevant() const {
-  CHECK(CanAccessCachedValues());
+  // CHECK(CanAccessCachedValues());   // Comment out check for M119.
 
   UpdateCachedAttributeValuesIfNeeded();
   return cached_live_region_root_
@@ -5227,7 +5283,7 @@ const AtomicString& AXObject::ContainerLiveRegionRelevant() const {
 }
 
 bool AXObject::ContainerLiveRegionAtomic() const {
-  CHECK(CanAccessCachedValues());
+  // CHECK(CanAccessCachedValues());   // Comment out check for M119.
 
   UpdateCachedAttributeValuesIfNeeded();
   return cached_live_region_root_ &&
@@ -5235,7 +5291,7 @@ bool AXObject::ContainerLiveRegionAtomic() const {
 }
 
 bool AXObject::ContainerLiveRegionBusy() const {
-  CHECK(CanAccessCachedValues());
+  // CHECK(CanAccessCachedValues());   // Comment out check for M119.
 
   UpdateCachedAttributeValuesIfNeeded();
   return cached_live_region_root_ &&
@@ -7536,15 +7592,16 @@ const AXObject* AXObject::LowestCommonAncestor(const AXObject& first,
   return common_ancestor;
 }
 
+// Extra checks that only occur during serialization.
 void AXObject::PreSerializationConsistencyCheck() {
-#if defined(AX_FAIL_FAST_BUILD)
   CHECK(!IsDetached()) << "Do not serialize detached nodes: "
                        << ToString(true, true);
-  CHECK(CanAccessCachedValues());
-  CHECK(AccessibilityIsIncludedInTree())
+  DCHECK(AXObjectCache().IsFrozen());
+  DCHECK(!NeedsToUpdateCachedValues());
+  DCHECK(AccessibilityIsIncludedInTree())
       << "Do not serialize unincluded nodes: " << ToString(true, true);
-  CHECK(!IsDetached());
-  // Extra checks that only occur during serialization.
+#if defined(AX_FAIL_FAST_BUILD)
+  // A bit more expensive, so only check in builds used for testing.
   CHECK_EQ(IsAriaHidden(), !!FindAncestorWithAriaHidden(this))
       << "IsAriaHidden() doesn't match existence of an aria-hidden ancestor: "
       << ToString(true);

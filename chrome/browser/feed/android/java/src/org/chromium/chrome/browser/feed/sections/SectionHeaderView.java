@@ -56,10 +56,6 @@ public class SectionHeaderView extends LinearLayout {
 
         @Override
         public void onTabSelected(TabLayout.Tab tab) {
-            if (!mIsSurfacePolishEnabled) {
-                tab.view.setBackground(ResourcesCompat.getDrawable(getResources(),
-                        R.drawable.header_title_tab_selected_background, getContext().getTheme()));
-            }
             if (mListener != null) {
                 mListener.onSectionHeaderSelected(tab.getPosition());
             }
@@ -67,10 +63,6 @@ public class SectionHeaderView extends LinearLayout {
 
         @Override
         public void onTabUnselected(TabLayout.Tab tab) {
-            if (!mIsSurfacePolishEnabled) {
-                tab.view.setBackground(null);
-            }
-
             if (mListener != null) {
                 mListener.onSectionHeaderUnselected(tab.getPosition());
             }
@@ -200,18 +192,11 @@ public class SectionHeaderView extends LinearLayout {
             mTabListener = new SectionHeaderTabListener();
             mTabLayout.addOnTabSelectedListener(mTabListener);
             if (mIsSurfacePolishEnabled) {
-                ViewGroup.LayoutParams layoutParams = mTabLayout.getLayoutParams();
-                layoutParams.height = getResources().getDimensionPixelSize(
-                        R.dimen.feed_header_tab_layout_height_polished);
-                if (!mIsTablet) {
-                    layoutParams.width = LayoutParams.MATCH_PARENT;
-                } else {
-                    layoutParams.width = getResources().getDimensionPixelSize(
-                                                 R.dimen.feed_header_tab_layout_width_max)
-                            * 2;
-                }
+                // Sets the default width for the header.
+                updateTabLayoutHeaderWidth(false);
                 mTabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
-                mTabLayout.setBackground(null);
+                mTabLayout.setBackgroundResource(
+                        R.drawable.header_title_section_tab_background_polished);
             }
         }
 
@@ -230,13 +215,22 @@ public class SectionHeaderView extends LinearLayout {
                     (MarginLayoutParams) mMenuView.getLayoutParams();
             marginLayoutParams.width =
                     getResources().getDimensionPixelSize(R.dimen.feed_header_menu_width_polished);
+            int tabLayoutLateralMargin = getResources().getDimensionPixelSize(
+                    R.dimen.feed_header_tab_layout_lateral_margin);
             marginLayoutParams.setMarginStart(
-                    getResources().getDimensionPixelSize(R.dimen.feed_header_tab_end_margin));
+                    marginLayoutParams.getMarginStart() + tabLayoutLateralMargin);
 
             MarginLayoutParams titleViewMarginLayoutParams =
                     (MarginLayoutParams) mTitleView.getLayoutParams();
             titleViewMarginLayoutParams.setMarginStart(getResources().getDimensionPixelSize(
                     R.dimen.feed_header_title_view_margin_start));
+
+            if (mLeadingStatusIndicator != null) {
+                MarginLayoutParams indicatorViewMarginLayoutParams =
+                        (MarginLayoutParams) mLeadingStatusIndicator.getLayoutParams();
+                indicatorViewMarginLayoutParams.setMarginEnd(
+                        indicatorViewMarginLayoutParams.getMarginEnd() + tabLayoutLateralMargin);
+            }
         }
 
         // #getHitRect() will not be valid until the first layout pass completes. Additionally, if
@@ -266,15 +260,15 @@ public class SectionHeaderView extends LinearLayout {
             tab.view.setClipToPadding(false);
             tab.view.setClipChildren(false);
             if (mIsSurfacePolishEnabled) {
-                ViewGroup.MarginLayoutParams marginLayoutParams =
-                        (ViewGroup.MarginLayoutParams) tab.view.getLayoutParams();
-                marginLayoutParams.setMargins(0, 0,
-                        getResources().getDimensionPixelSize(R.dimen.feed_header_tab_end_margin),
-                        0);
+                tab.view.setForeground(ResourcesCompat.getDrawable(getResources(),
+                        R.drawable.header_title_tab_selected_ripple, getContext().getTheme()));
 
                 tab.view.setBackground(ResourcesCompat.getDrawable(getResources(),
                         R.drawable.header_title_tab_selected_background_polished,
                         getContext().getTheme()));
+            } else {
+                tab.view.setBackground(ResourcesCompat.getDrawable(getResources(),
+                        R.drawable.header_title_tab_selected_background, getContext().getTheme()));
             }
         }
     }
@@ -651,4 +645,24 @@ public class SectionHeaderView extends LinearLayout {
      * Adjust the margin of the sticky header.
      */
     void updateStickyHeaderMargin(int marginValue) {}
+
+    /**
+     * Adjust the width of the TabLayout.
+     *
+     * @param isNarrowWindowOnTablet Whether the window that contains the view is a narrow one on
+     *     tablets.
+     */
+    void updateTabLayoutHeaderWidth(boolean isNarrowWindowOnTablet) {
+        if (mTabLayout == null) return;
+
+        assert mIsSurfacePolishEnabled;
+        MarginLayoutParams layoutParams = (MarginLayoutParams) mTabLayout.getLayoutParams();
+        if (!mIsTablet || isNarrowWindowOnTablet) {
+            layoutParams.width = LayoutParams.MATCH_PARENT;
+        } else {
+            layoutParams.width =
+                    getResources().getDimensionPixelSize(R.dimen.feed_header_tab_layout_width_max)
+                            * 2;
+        }
+    }
 }

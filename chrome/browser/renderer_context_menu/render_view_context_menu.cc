@@ -26,6 +26,7 @@
 #include "base/strings/escape.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/system/sys_info.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -1020,11 +1021,12 @@ void RenderViewContextMenu::IssuePreconnectionToUrl(
 
   GURL anonymization_key_gurl(anonymization_key_url);
   net::SchemefulSite anonymization_key_schemeful_site(anonymization_key_gurl);
-  auto network_anonymziation_key = net::NetworkAnonymizationKey::CreateSameSite(
-      anonymization_key_schemeful_site);
+  auto network_anonymization_key =
+      net::NetworkAnonymizationKey::CreateCrossSite(
+          anonymization_key_schemeful_site);
   loading_predictor->PreconnectURLIfAllowed(GURL(preconnect_url),
                                             /*allow_credentials=*/true,
-                                            network_anonymziation_key);
+                                            network_anonymization_key);
 }
 
 bool RenderViewContextMenu::IsInProgressiveWebApp() const {
@@ -1899,17 +1901,7 @@ void RenderViewContextMenu::AppendSearchWebForImageItems() {
     menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
   }
 
-  if (search::DefaultSearchProviderIsGoogle(GetProfile())) {
-    if (companion::IsSearchImageInCompanionSidePanelSupported(GetBrowser()) &&
-        companion::GetShouldIssuePreconnectForCompanion()) {
-      IssuePreconnectionToUrl(companion::GetPreconnectKeyForCompanion(),
-                              companion::GetImageUploadURLForCompanion());
-    } else if (base::FeatureList::IsEnabled(lens::features::kLensStandalone) &&
-               lens::features::GetShouldIssuePreconnectForLens()) {
-      IssuePreconnectionToUrl(lens::features::GetPreconnectKeyForLens(),
-                              lens::features::GetHomepageURLForLens());
-    }
-  }
+  MaybePrepareForLensQuery();
 
   if (base::FeatureList::IsEnabled(lens::features::kLensStandalone) &&
       base::FeatureList::IsEnabled(lens::features::kEnableImageTranslate) &&
@@ -2501,18 +2493,7 @@ void RenderViewContextMenu::AppendRegionSearchItem() {
       menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
     }
 
-    if (search::DefaultSearchProviderIsGoogle(GetProfile())) {
-      if (companion::IsSearchImageInCompanionSidePanelSupported(GetBrowser()) &&
-          companion::GetShouldIssuePreconnectForCompanion()) {
-        IssuePreconnectionToUrl(companion::GetPreconnectKeyForCompanion(),
-                                companion::GetImageUploadURLForCompanion());
-      } else if (base::FeatureList::IsEnabled(
-                     lens::features::kLensStandalone) &&
-                 lens::features::GetShouldIssuePreconnectForLens()) {
-        IssuePreconnectionToUrl(lens::features::GetPreconnectKeyForLens(),
-                                lens::features::GetHomepageURLForLens());
-      }
-    }
+    MaybePrepareForLensQuery();
   }
 }
 
@@ -4296,6 +4277,40 @@ bool RenderViewContextMenu::CanTranslate(bool menu_logging) {
   return chrome_translate_client &&
          chrome_translate_client->GetTranslateManager()->CanManuallyTranslate(
              menu_logging);
+}
+
+void RenderViewContextMenu::MaybePrepareForLensQuery() {
+  if (!search::DefaultSearchProviderIsGoogle(GetProfile())) {
+    return;
+  }
+
+  // Chrome Search Companion preparation
+  if (companion::IsSearchImageInCompanionSidePanelSupported(GetBrowser())) {
+    if (companion::GetShouldIssuePreconnectForCompanion()) {
+      IssuePreconnectionToUrl(companion::GetPreconnectKeyForCompanion(),
+                              companion::GetImageUploadURLForCompanion());
+    }
+    if (companion::GetShouldIssueProcessPrewarmingForCompanion() &&
+        !base::SysInfo::IsLowEndDevice()) {
+      content::RenderProcessHost::WarmupSpareRenderProcessHost(
+          browser_context_);
+    }
+    return;
+  }
+
+  // Lens Side Panel preparation
+  if (lens::features::IsLensSidePanelEnabled()) {
+    if (lens::features::GetShouldIssuePreconnectForLens()) {
+      IssuePreconnectionToUrl(lens::features::GetPreconnectKeyForLens(),
+                              lens::features::GetHomepageURLForLens());
+    }
+    if (lens::features::GetShouldIssueProcessPrewarmingForLens() &&
+        !base::SysInfo::IsLowEndDevice()) {
+      content::RenderProcessHost::WarmupSpareRenderProcessHost(
+          browser_context_);
+    }
+    return;
+  }
 }
 
 #if BUILDFLAG(IS_CHROMEOS)

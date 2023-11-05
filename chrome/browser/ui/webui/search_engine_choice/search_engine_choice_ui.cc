@@ -22,9 +22,9 @@
 #include "chrome/grit/signin_resources.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/search_engines/search_engine_utils.h"
+#include "components/search_engines/search_engine_choice_utils.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
-#include "components/signin/public/base/signin_switches.h"
 #include "components/strings/grit/components_branded_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
@@ -39,7 +39,6 @@ void AddGeneratedIconResources(content::WebUIDataSource* source) {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   source->AddResourcePath("images/google_com.png", IDR_GOOGLE_COM_PNG);
 #endif
-  source->AddResourcePath("images/ask_com.png", IDR_ASK_COM_PNG);
   source->AddResourcePath("images/baidu_com.png", IDR_BAIDU_COM_PNG);
   source->AddResourcePath("images/bing_com.png", IDR_BING_COM_PNG);
   source->AddResourcePath("images/search_brave_com.png",
@@ -57,9 +56,6 @@ void AddGeneratedIconResources(content::WebUIDataSource* source) {
   source->AddResourcePath("images/nona_de.png", IDR_NONA_DE_PNG);
   source->AddResourcePath("images/panda_search_org.png",
                           IDR_PANDA_SEARCH_ORG_PNG);
-  source->AddResourcePath("images/petalsearch_com.png",
-                          IDR_PETALSEARCH_COM_PNG);
-  source->AddResourcePath("images/presearch_com.png", IDR_PRESEARCH_COM_PNG);
   source->AddResourcePath("images/quendu_com.png", IDR_QUENDU_COM_PNG);
   source->AddResourcePath("images/qwant_com.png", IDR_QWANT_COM_PNG);
   source->AddResourcePath("images/seznam_cz.png", IDR_SEZNAM_CZ_PNG);
@@ -143,7 +139,8 @@ std::string GetChoiceListJSON(Profile& profile) {
 SearchEngineChoiceUI::SearchEngineChoiceUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui, true),
       profile_(CHECK_DEREF(Profile::FromWebUI(web_ui))) {
-  CHECK(base::FeatureList::IsEnabled(switches::kSearchEngineChoice));
+  CHECK(search_engines::IsChoiceScreenFlagEnabled(
+      search_engines::ChoicePromo::kAny));
 
   content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
       web_ui->GetWebContents()->GetBrowserContext(),

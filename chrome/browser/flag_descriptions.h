@@ -99,6 +99,9 @@ extern const char kAttributionReportingDebugModeDescription[];
 extern const char kAppDeduplicationServiceFondueName[];
 extern const char kAppDeduplicationServiceFondueDescription[];
 
+extern const char kAuxiliarySearchDonationName[];
+extern const char kAuxiliarySearchDonationDescription[];
+
 extern const char kBackgroundResourceFetchName[];
 extern const char kBackgroundResourceFetchDescription[];
 
@@ -455,6 +458,12 @@ extern const char kChromeRefresh2023Description[];
 
 extern const char kChromeWebuiRefresh2023Name[];
 extern const char kChromeWebuiRefresh2023Description[];
+
+extern const char kChromeRefresh2023NTBName[];
+extern const char kChromeRefresh2023NTBDescription[];
+
+extern const char kChromeRefresh2023TopChromeFontName[];
+extern const char kChromeRefresh2023TopChromeFontDescription[];
 
 extern const char kCommerceHintAndroidName[];
 extern const char kCommerceHintAndroidDescription[];

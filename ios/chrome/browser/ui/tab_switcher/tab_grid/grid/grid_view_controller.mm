@@ -1913,7 +1913,9 @@ typedef NSDiffableDataSourceSnapshot<NSString*, GridItemIdentifier*> Snapshot;
 
   // Check `index` boundaries in order to filter out possible race conditions
   // while mutating the collection.
-  if (index == NSNotFound || index >= self.items.count) {
+  if (index == NSNotFound || index >= self.items.count ||
+      static_cast<NSInteger>(index) >=
+          [self.collectionView numberOfItemsInSection:kOpenTabsSectionIndex]) {
     return;
   }
 
@@ -2030,10 +2032,13 @@ typedef NSDiffableDataSourceSnapshot<NSString*, GridItemIdentifier*> Snapshot;
   }
 
   // Select the collection view item for the selected index.
-  NSUInteger selectedIndex = self.selectedIndex;
+  NSInteger selectedIndex = self.selectedIndex;
   // Check `selectedIndex` boundaries in order to filter out possible race
   // conditions while mutating the collection.
-  if (selectedIndex == NSNotFound || selectedIndex >= self.items.count) {
+  if (selectedIndex == NSNotFound ||
+      selectedIndex >= static_cast<NSInteger>(self.items.count) ||
+      selectedIndex >=
+          [self.collectionView numberOfItemsInSection:kOpenTabsSectionIndex]) {
     return;
   }
   NSIndexPath* selectedIndexPath = CreateIndexPath(selectedIndex);

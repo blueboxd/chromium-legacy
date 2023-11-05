@@ -10,6 +10,7 @@
 #include "components/autofill/core/browser/payments/autofill_offer_manager.h"
 #include "components/autofill/core/browser/payments/offer_notification_options.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/commerce_utils.h"
 #include "components/search/ntp_features.h"
 #include "url/gurl.h"
@@ -40,6 +41,33 @@ bool IsOfferValid(AutofillOfferData* offer) {
   return true;
 }
 
+bool ShouldAutoPopup(commerce::DiscountDialogAutoPopupBehavior behavior,
+                     bool shown_before) {
+  switch (behavior) {
+    case commerce::DiscountDialogAutoPopupBehavior::kAutoPopupOnce:
+      return !shown_before;
+    case commerce::DiscountDialogAutoPopupBehavior::kAlwaysAutoPopup:
+      return true;
+    case commerce::DiscountDialogAutoPopupBehavior::kNoAutoPopup:
+      return false;
+  }
+}
+
+bool ShouldAutoPopupForHistoryClustersModuleDiscounts(bool shown_before) {
+  auto behavior = static_cast<commerce::DiscountDialogAutoPopupBehavior>(
+      commerce::kHistoryClustersBehavior.Get());
+  return ShouldAutoPopup(behavior, shown_before);
+}
+
+bool ShouldAutoPopupForDiscounts(bool is_merchant_wide, bool shown_before) {
+  auto behavior = is_merchant_wide
+                      ? static_cast<commerce::DiscountDialogAutoPopupBehavior>(
+                            commerce::kMerchantWideBehavior.Get())
+                      : static_cast<commerce::DiscountDialogAutoPopupBehavior>(
+                            commerce::kNonMerchantWideBehavior.Get());
+  return ShouldAutoPopup(behavior, shown_before);
+}
+
 }  // namespace
 
 OfferNotificationHandler::OfferNotificationHandler(
@@ -52,13 +80,21 @@ void OfferNotificationHandler::UpdateOfferNotificationVisibility(
     AutofillClient* client) {
   const GURL url = client->GetLastCommittedPrimaryMainFrameURL();
 
-  bool show_offer_notification_sync =
-      !(base::FeatureList::IsEnabled(
-            ntp_features::kNtpHistoryClustersModuleDiscounts) &&
-        commerce::UrlContainsDiscountUtmTag(url)) &&
-      ValidOfferExistsForUrl(url);
+  bool url_contains_discount_utm_tag =
+      base::FeatureList::IsEnabled(
+          ntp_features::kNtpHistoryClustersModuleDiscounts) &&
+      commerce::UrlContainsDiscountUtmTag(url);
+  bool valid_offer_exists_for_url_on_device = ValidOfferExistsForUrl(url);
 
-  if (show_offer_notification_sync) {
+  bool show_offer_notification_for_server_retrieved_offer = false;
+
+  // Attempt to show an offer notification bubble to the user for offers that
+  // are stored on the device that do not contain a discount UTM tag. These
+  // offers are prioritized because they can instantly be shown, since the other
+  // types of offers that would be shown must be retrieved from the server using
+  // the `offer_manager_- >GetShoppingServiceOfferForUrl()` call below, which
+  // can have a delay.
+  if (valid_offer_exists_for_url_on_device && !url_contains_discount_utm_tag) {
     // Try to show offer notification when the last committed URL has the domain
     // that an offer is applicable for.
     // TODO(crbug.com/1203811): GetOfferForUrl needs to know whether to give
@@ -77,14 +113,26 @@ void OfferNotificationHandler::UpdateOfferNotificationVisibility(
     shown_notification_ids_.insert(offer_id);
   } else {
     client->DismissOfferNotification();
+
+    // The prerequisites were not met to show an offer stored on the device.
+    // This ensures showing server retrieved offers is attempted later.
+    if (base::FeatureList::IsEnabled(commerce::kShowDiscountOnNavigation) ||
+        url_contains_discount_utm_tag) {
+      show_offer_notification_for_server_retrieved_offer = true;
+    }
   }
 
+  // We always need to call GetShoppingServiceOfferForUrl to get the offer from
+  // backend and store locally, If we have shown an offer stored on the device
+  // above, the offer will not be shown here. Otherwise the offer retrieved here
+  // from the server is shown if kShowDiscountOnNavigation is enabled or
+  // kNtpHistoryClustersModuleDiscounts is enabled with the discount UTM.
   auto shopping_service_callback =
-      show_offer_notification_sync
-          ? base::DoNothing()
-          : base::BindOnce(&OfferNotificationHandler::
+      show_offer_notification_for_server_retrieved_offer
+          ? base::BindOnce(&OfferNotificationHandler::
                                UpdateOfferNotificationForShoppingServiceOffer,
-                           weak_ptr_factory_.GetWeakPtr(), client);
+                           weak_ptr_factory_.GetWeakPtr(), client)
+          : base::DoNothing();
 
   offer_manager_->GetShoppingServiceOfferForUrl(
       url, std::move(shopping_service_callback));
@@ -134,18 +182,12 @@ bool OfferNotificationHandler::
   if (base::FeatureList::IsEnabled(
           ntp_features::kNtpHistoryClustersModuleDiscounts) &&
       commerce::UrlContainsDiscountUtmTag(url)) {
-    return !offer_has_been_shown_before;
+    return ShouldAutoPopupForHistoryClustersModuleDiscounts(
+        offer_has_been_shown_before);
   }
 
-  // If the URL doesn't contains the expected UTM tags and the available offer
-  // is a merchant-wide offer, the notification should not show automatically.
-  if (offer.IsMerchantWideOffer()) {
-    return false;
-  }
-
-  // At this point, the notification should show automatically if it hasn't
-  // been shown before.
-  return !offer_has_been_shown_before;
+  return ShouldAutoPopupForDiscounts(offer.IsMerchantWideOffer(),
+                                     offer_has_been_shown_before);
 }
 
 }  // namespace autofill

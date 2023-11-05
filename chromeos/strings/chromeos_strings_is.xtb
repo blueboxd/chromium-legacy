@@ -91,6 +91,7 @@
 <translation id="1643449475550628585">Skipta daglega um veggfóðursmynd</translation>
 <translation id="1644574205037202324">Ferill</translation>
 <translation id="1651925268237749928">Þú valdir sameiginlegt albúm. Aðrir notendur geta bætt við eða breytt myndum. Veggfóðrið þitt kann að nota myndir sem eru ekki í þessu albúmi.</translation>
+<translation id="1661865805917886535">Sumar reiknings- og kerfisupplýsingar gætu verið sendar til Google. Við notum þessar upplýsingar til að bregðast við tæknilegum vandamálum og bæta þjónustur okkar, í samræmi við persónuverndarstefnu okkar (<ph name="PRIVACYPOLICYURL" />) og þjónustuskilmála (<ph name="TERMSOFSERVICEURL" />). Til að óska eftir efnislegum breytingum skaltu fara í lagalega aðstoð (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">Stöðvað – blekið er búið</translation>
 <translation id="1664796644829245314">Forskoða <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Innbyggt VPN</translation>
@@ -265,6 +266,7 @@
 <translation id="3122464029669770682">Örgjörvi</translation>
 <translation id="3124039320086536031">Tæki er tengt.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Fjarlægja síðu?}=1{Fjarlægja síðu {PAGE_NUMBER}?}one{Fjarlægja síðu {PAGE_NUMBER}?}other{Fjarlægja síðu {PAGE_NUMBER}?}}</translation>
+<translation id="3146655726035122603">Aðeins í <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Farsímagögn</translation>
 <translation id="3156846309055100599">Skannar síðu <ph name="PAGE_NUMBER" />...</translation>
 <translation id="315738237743207937">Innskráningarsíða greind</translation>

@@ -91,6 +91,7 @@
 <translation id="1643449475550628585">Schimbă zilnic imaginea de fundal</translation>
 <translation id="1644574205037202324">Istoric</translation>
 <translation id="1651925268237749928">Ai selectat un album comun. Alte persoane pot să adauge sau să schimbe fotografii. Imaginea de fundal poate folosi fotografii care nu se află momentan în acest album.</translation>
+<translation id="1661865805917886535">Unele informații despre cont și sistem pot fi trimise la Google. Folosim aceste informații pentru a rezolva problemele tehnice și pentru a îmbunătăți serviciile, în conformitate cu Politica de confidențialitate (<ph name="PRIVACYPOLICYURL" />) și Termenii și condițiile (<ph name="TERMSOFSERVICEURL" />). Pentru a solicita modificări ale conținutului, accesează Ajutor juridic (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">Oprită – Cerneală epuizată</translation>
 <translation id="1664796644829245314">Previzualizează <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">Rețea VPN încorporată</translation>
@@ -265,6 +266,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">Dispozitivul este conectat.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Elimini pagina?}=1{Elimini pagina {PAGE_NUMBER}?}few{Elimini pagina {PAGE_NUMBER}?}other{Elimini pagina {PAGE_NUMBER}?}}</translation>
+<translation id="3146655726035122603">Exclusiv pentru <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Date mobile</translation>
 <translation id="3156846309055100599">Se scanează pagina <ph name="PAGE_NUMBER" />...</translation>
 <translation id="315738237743207937">S-a detectat un portal captiv</translation>

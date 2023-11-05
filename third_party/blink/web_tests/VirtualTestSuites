@@ -435,6 +435,7 @@
               "external/wpt/element-timing",
               "external/wpt/css/filter-effects",
               "external/wpt/css/css-grid/animation",
+              "external/wpt/css/printing",
               "external/wpt/largest-contentful-paint",
               "fast/forms/file/file-appearance-no-default-width.html",
               "fast/hidpi/static",
@@ -1246,9 +1247,10 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "external/wpt/cookies/third-party-cookies",
+      "external/wpt/service-workers/service-worker/partitioned-cookies.tentative.https.html",
+      "external/wpt/workers/shared-worker-partitioned-cookies.tentative.https.html",
       "http/tests/inspector-protocol/issues/third-party-cookie-phaseout-exclusion.js"
     ],
-    "exclusive_tests": "ALL",
     "args": ["--test-third-party-cookie-phaseout",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
     "expires": "Mar 1, 2024"
@@ -2419,8 +2421,7 @@
     "prefix": "fetch-later",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
-      "external/wpt/fetch/fetch-later",
-      "wpt_internal/fetch/fetch-later"
+      "external/wpt/fetch/fetch-later"
     ],
     "exclusive_tests": "ALL",
     "args": [

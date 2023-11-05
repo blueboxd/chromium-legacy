@@ -91,6 +91,7 @@
 <translation id="1643449475550628585">Дэлгэцийн зургийг өдөр бүр өөрчлөх</translation>
 <translation id="1644574205037202324">Түүх</translation>
 <translation id="1651925268237749928">Та дундын цомог сонгосон байна. Бусад хүн зураг нэмэх эсвэл өөрчлөх боломжтой. Таны дэлгэцийн зураг энэ цомогт одоогоор байхгүй зургийг ашиглаж магадгүй.</translation>
+<translation id="1661865805917886535">Зарим бүртгэл болон системийн мэдээллийг Google рүү илгээж болзошгүй. Бид энэ мэдээллийг техникийн асуудлуудыг шийдвэрлэхэд туслах, мөн өөрсдийн үйлчилгээнүүдийг сайжруулахын тулд манай нууцлалын бодлого (<ph name="PRIVACYPOLICYURL" />) болон үйлчилгээний нөхцөлийн (<ph name="TERMSOFSERVICEURL" />) дагуу ашигладаг. Контентын өөрчлөлт хүсэхийн тулд Хууль эрх зүйн тусламжийн хуудас (<ph name="LEGALHELPPAGEURL" />) руу очно уу.</translation>
 <translation id="1662989795263954667">Зогссон - Хэвлэгчийн хор дууссан</translation>
 <translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" />-г урьдчилан үзэх</translation>
 <translation id="1668469839109562275">Бүрэлдэхүүн VPN</translation>
@@ -265,6 +266,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">Төхөөрөмж холбогдсон байна.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Хуудсыг хасах уу?}=1{{PAGE_NUMBER}-р хуудсыг хасах уу?}other{{PAGE_NUMBER}-р хуудсыг хасах уу?}}</translation>
+<translation id="3146655726035122603"><ph name="PRODUCT_NAME" />-д онцгой</translation>
 <translation id="315116470104423982">Гар утасны дата</translation>
 <translation id="3156846309055100599"><ph name="PAGE_NUMBER" />-р хуудсыг скан хийж байна...</translation>
 <translation id="315738237743207937">Дамжих портал илэрсэн</translation>

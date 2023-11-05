@@ -91,6 +91,7 @@
 <translation id="1643449475550628585">Taustapildi muutmine igapäevaselt</translation>
 <translation id="1644574205037202324">Ajalugu</translation>
 <translation id="1651925268237749928">Valisite jagatud albumi. Teised saavad fotosid lisada või muuta. Teie taustapilt võib kasutada fotosid, mida praegu selles albumis pole.</translation>
+<translation id="1661865805917886535">Osa konto ja süsteemi teabest võidakse saata Google'ile. Kasutame seda teavet tehniliste probleemide lahendamiseks ja oma teenuste täiustamiseks, järgides meie privaatsuseeskirju (<ph name="PRIVACYPOLICYURL" />) ja teenusetingimusi (<ph name="TERMSOFSERVICEURL" />). Sisu muutmise taotlemiseks minge lehele Juriidiline abi (<ph name="LEGALHELPPAGEURL" />).</translation>
 <translation id="1662989795263954667">Peatati – tint on otsas</translation>
 <translation id="1664796644829245314">Üksuse <ph name="PREVIEW_OBJECT" /> eelvaade</translation>
 <translation id="1668469839109562275">Sisseehitatud VPN</translation>
@@ -265,6 +266,7 @@
 <translation id="3122464029669770682">Protsessor</translation>
 <translation id="3124039320086536031">Seade on ühendatud.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Kas eemaldada leht?}=1{Kas eemaldada {PAGE_NUMBER}. leht?}other{Kas eemaldada {PAGE_NUMBER}. leht?}}</translation>
+<translation id="3146655726035122603">Ainult teenuses <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Mobiilne andmeside</translation>
 <translation id="3156846309055100599"><ph name="PAGE_NUMBER" />. lehe skannimine …</translation>
 <translation id="315738237743207937">Tuvastati hõiveportaal</translation>

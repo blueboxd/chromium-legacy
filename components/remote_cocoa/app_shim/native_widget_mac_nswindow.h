@@ -102,7 +102,7 @@ REMOTE_COCOA_APP_SHIM_EXPORT
 // Window to dispatch commands to. Needed for situations where the window that
 // needs to handle events is not the target's immediate parent; for example
 // alerts in immersive fullscreen.
-@property(nonatomic, weak)
+@property(nonatomic, assign)
     NSWindow<CommandDispatchingWindow>* commandDispatchParentOverride;
 
 @end

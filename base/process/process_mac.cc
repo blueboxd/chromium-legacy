@@ -52,15 +52,19 @@ absl::optional<task_role_t> GetTaskCategoryPolicyRole(mach_port_t task_port) {
 // Sets the task role for `task_port`.
 bool SetTaskCategoryPolicy(mach_port_t task_port, task_role_t task_role) {
   task_category_policy task_category_policy{.role = task_role};
-  kern_return_t result =
-      task_policy_set(task_port, TASK_CATEGORY_POLICY,
-                      reinterpret_cast<task_policy_t>(&task_category_policy),
-                      TASK_CATEGORY_POLICY_COUNT);
-  if (result != KERN_SUCCESS) {
-    MACH_LOG(ERROR, result) << "task_policy_set TASK_CATEGORY_POLICY";
+  if (__builtin_available(macOS 10.9, *)) {
+    kern_return_t result =
+        task_policy_set(task_port, TASK_CATEGORY_POLICY,
+                        reinterpret_cast<task_policy_t>(&task_category_policy),
+                        TASK_CATEGORY_POLICY_COUNT);
+    if (result != KERN_SUCCESS) {
+      MACH_LOG(ERROR, result) << "task_policy_set TASK_CATEGORY_POLICY";
+      return false;
+    }
+    return true;
+  } else {
     return false;
   }
-  return true;
 }
 
 // Taken from task_policy_private.h.

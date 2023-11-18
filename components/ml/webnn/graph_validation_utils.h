@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/containers/enum_set.h"
 #include "base/containers/span.h"
 #include "base/types/expected.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -22,12 +23,14 @@ namespace webnn {
 struct Operand {
   // Represents the `MLOperandType` in the WebIDL definition.
   enum DataType {
-    kFloat32,
+    kMinValue = 0,
+    kFloat32 = 0,
     kFloat16,
     kInt32,
     kUint32,
     kInt8,
     kUint8,
+    kMaxValue = kUint8,
   };
 
   Operand(DataType data_type, std::vector<uint32_t> dimensions);
@@ -50,23 +53,58 @@ struct Operand {
   std::vector<uint32_t> dimensions;
 };
 
+using DataTypeConstraintSet = base::EnumSet<Operand::DataType,
+                                            Operand::DataType::kMinValue,
+                                            Operand::DataType::kMaxValue>;
+
+namespace DataTypeConstraint {
+
+static constexpr DataTypeConstraintSet kFloat = {Operand::DataType::kFloat32,
+                                                 Operand::DataType::kFloat16};
+
+static constexpr DataTypeConstraintSet kSignedInteger = {
+    Operand::DataType::kInt32, Operand::DataType::kInt8};
+
+}  // namespace DataTypeConstraint
+
+std::string DataTypeConstraintToString(
+    const DataTypeConstraintSet& constraint_set);
+
 // Represents the `MLInputOperandLayout` that specifies the layout format of
 // the input tensor. N is the batch, C is input channels, H is height and W is
 // the width of the tensor.
-enum InputOperandLayout { kNchw, kNhwc };
+enum class InputOperandLayout { kNchw, kNhwc };
 
 // Represents the `MLConv2dFilterOperandLayout` that specifies the layout format
-// of the filter tensor. O is output channels, I is input channels, H is height
-// and W is the width of filter.
-enum Conv2dFilterOperandLayout { kOihw, kHwio, kOhwi, kIhwo };
+// of the filter tensor. O is output channels, I is input channels / groups, H
+// is height and W is the width of filter.
+enum class Conv2dFilterOperandLayout { kOihw, kHwio, kOhwi, kIhwo };
+
+// Represents the `MLConvTranspose2dFilterOperandLayout` that specifies the
+// layout format of the filter tensor. I is input channels, O is output channels
+// / groups, H is height and W is the width of filter.
+enum class ConvTranspose2dFilterOperandLayout { kIohw, kHwoi, kOhwi };
 
 // Represents the `MLAutoPad`. `Explicit` means that the values in the padding
 // array should be used for calculating input padding, the `SameUpper` and
 // `SameLower` options mean the padding values are automatically computed.
-enum AutoPad { kExplicit, kSameUpper, kSameLower };
+enum class AutoPad { kExplicit, kSameUpper, kSameLower };
 
 // Represents the `MLRoundingType` that is used to compute the output shape.
-enum RoundingType { kFloor, kCeil };
+enum class RoundingType { kFloor, kCeil };
+
+enum ReduceKind {
+  kL1,
+  kL2,
+  kLogSum,
+  kLogSumExp,
+  kMax,
+  kMean,
+  kMin,
+  kProduct,
+  kSum,
+  kSumSquare
+};
 
 // A size has height and width values.
 template <typename T>
@@ -85,15 +123,15 @@ struct Padding2d {
 };
 
 // Contains the attributes of conv2d operator.
-struct Conv2dAttributes {
-  Conv2dAttributes();
-  ~Conv2dAttributes();
+struct Conv2dAttributesBase {
+  Conv2dAttributesBase();
+  ~Conv2dAttributesBase();
 
-  Conv2dAttributes(Conv2dAttributes&& other);
-  Conv2dAttributes& operator=(Conv2dAttributes&& other);
+  Conv2dAttributesBase(Conv2dAttributesBase&& other);
+  Conv2dAttributesBase& operator=(Conv2dAttributesBase&& other);
 
-  Conv2dAttributes(const Conv2dAttributes&) = delete;
-  Conv2dAttributes& operator=(const Conv2dAttributes&) = delete;
+  Conv2dAttributesBase(const Conv2dAttributesBase&) = delete;
+  Conv2dAttributesBase& operator=(const Conv2dAttributesBase&) = delete;
 
   // The additional rows and columns added to the beginning and ending of each
   // spatial dimension of input.
@@ -109,11 +147,45 @@ struct Conv2dAttributes {
   uint32_t groups = 1;
   // The layout format of the input.
   InputOperandLayout input_layout = InputOperandLayout::kNchw;
-  // The layout format of the filter.
-  Conv2dFilterOperandLayout filter_layout = Conv2dFilterOperandLayout::kOihw;
   // The additional 1-D tensor with the shape of [output_channels] whose values
   // are to be added to the convolution result.
   absl::optional<Operand> bias_operand;
+};
+
+// Contains the attributes of conv2d operator.
+struct Conv2dAttributes : Conv2dAttributesBase {
+  Conv2dAttributes();
+  ~Conv2dAttributes();
+
+  Conv2dAttributes(Conv2dAttributes&& other);
+  Conv2dAttributes& operator=(Conv2dAttributes&& other);
+
+  Conv2dAttributes(const Conv2dAttributes&) = delete;
+  Conv2dAttributes& operator=(const Conv2dAttributes&) = delete;
+
+  // The layout format of the conv2d filter.
+  Conv2dFilterOperandLayout filter_layout = Conv2dFilterOperandLayout::kOihw;
+};
+
+// Contains the attributes of convTranspose2d operator.
+struct ConvTranspose2dAttributes : Conv2dAttributesBase {
+  ConvTranspose2dAttributes();
+  ~ConvTranspose2dAttributes();
+
+  ConvTranspose2dAttributes(ConvTranspose2dAttributes&& other);
+  ConvTranspose2dAttributes& operator=(ConvTranspose2dAttributes&& other);
+
+  ConvTranspose2dAttributes(const ConvTranspose2dAttributes&) = delete;
+  ConvTranspose2dAttributes& operator=(const ConvTranspose2dAttributes&) =
+      delete;
+
+  // The padding values applied to each spatial dimension of the output tensor.
+  Size2d<uint32_t> output_padding;
+  // The sizes of the last two dimensions of the output tensor.
+  absl::optional<Size2d<uint32_t>> output_sizes;
+  // The layout format of the convTranspose2d filter.
+  ConvTranspose2dFilterOperandLayout filter_layout =
+      ConvTranspose2dFilterOperandLayout::kIohw;
 };
 
 // Contains the attributes of pool2d operator.
@@ -210,11 +282,40 @@ base::expected<Operand, std::string> ValidateConv2dAndInferOutput(
     const Operand& filter,
     const Conv2dAttributes& attributes);
 
+// Validate and infer output information of 2-D transposed convolution operator
+// defined in WebIDL here
+// https://www.w3.org/TR/webnn/#api-mlgraphbuilder-convtranspose2d
+base::expected<Operand, std::string> ValidateConvTranspose2dAndInferOutput(
+    const Operand& input,
+    const Operand& filter,
+    const ConvTranspose2dAttributes& attributes);
+
+// Validate and infer output information of pad operator defined in
+// WebIDL here https://www.w3.org/TR/webnn/#api-mlgraphbuilder-pad
+base::expected<Operand, std::string> ValidatePadAndInferOutput(
+    const Operand& input,
+    base::span<const uint32_t> beginning_padding,
+    base::span<const uint32_t> ending_padding);
+
+// Validate and infer output information of matmul operator defined in
+// WebIDL here https://www.w3.org/TR/webnn/#api-mlgraphbuilder-matmul
+base::expected<Operand, std::string> ValidateMatmulAndInferOutput(
+    const Operand& a,
+    const Operand& b);
+
 // Validate and infer output information of 2-D pooling operator defined in
 // WebIDL here https://www.w3.org/TR/webnn/#api-mlgraphbuilder-pool2d
 base::expected<Operand, std::string> ValidatePool2dAndInferOutput(
     const Operand& input,
     const Pool2dAttributes& attributes);
+
+// Validate and infer output information of 2-D resample operator defined in
+// WebIDL here https://www.w3.org/TR/webnn/#api-mlgraphbuilder-resample2d
+base::expected<Operand, std::string> ValidateResample2dAndInferOutput(
+    const Operand& input,
+    const absl::variant<base::span<const float>, base::span<const uint32_t>>&
+        scales_or_sizes,
+    base::span<const uint32_t> axes);
 
 // Validate gemm operator defined in WebIDL here
 // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-gemm
@@ -229,6 +330,12 @@ base::expected<Operand, std::string> ValidateConcatAndInferOutput(
     const std::vector<Operand>& input,
     const uint32_t axis);
 
+// Validate prelu operator defined in WebIDL here:
+// https://www.w3.org/TR/webnn/#api-mlgraphbuilder-prelu
+base::expected<Operand, std::string> ValidatePreluAndInferOutput(
+    const Operand& input,
+    const Operand& slope);
+
 // Validate transpose operator defined in WebIDL here
 // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-transpose
 base::expected<Operand, std::string> ValidateTransposeAndInferOutput(
@@ -240,6 +347,14 @@ base::expected<Operand, std::string> ValidateTransposeAndInferOutput(
 base::expected<Operand, std::string> ValidateSliceAndInferOutput(
     const Operand& input,
     const SliceAttributes& attributes);
+
+// Validate and infer output information of reduce operator defined in
+// WebIDL here https://www.w3.org/TR/webnn/#api-mlgraphbuilder-reduce
+base::expected<Operand, std::string> ValidateReduceAndInferOutput(
+    ReduceKind kind,
+    const Operand& input,
+    base::span<const uint32_t> axes,
+    bool keepDimensions = false);
 
 base::expected<size_t, std::string> ValidateAndCalculateElementsNumber(
     base::span<const uint32_t> dimensions);
@@ -279,6 +394,33 @@ absl::optional<PaddingSizes> CalculateConv2dPadding(AutoPad auto_pad,
                                                     const uint32_t filter_size,
                                                     const uint32_t stride,
                                                     const uint32_t dilation);
+
+// Calculate the effective padding for convTranspose2d based on WebNN auto
+// padding rules.
+//
+// TODO(crbug.com/1273291): Add the link to WebNN spec's algorithm once it is
+// defined, tracked by: https://github.com/webmachinelearning/webnn/issues/326
+absl::optional<PaddingSizes> CalculateConvTranspose2dPadding(
+    AutoPad auto_pad,
+    const uint32_t input_size,
+    const uint32_t filter_size,
+    const uint32_t stride,
+    const uint32_t dilation,
+    const uint32_t output_padding);
+
+// Calculate the output size for convTranspose2d based on WebNN spec:
+// https://www.w3.org/TR/webnn/#api-mlgraphbuilder-convtranspose2d
+// Return the calculated output size if no error.
+base::expected<uint32_t, std::string> CalculateConvTranspose2dOutputSize(
+    const uint32_t input_size,
+    const uint32_t filter_size,
+    const uint32_t beginning_padding,
+    const uint32_t ending_padding,
+    const uint32_t stride,
+    const uint32_t dilation,
+    const uint32_t output_padding);
+
+bool IsFloatingPointType(Operand::DataType data_type);
 
 }  // namespace webnn
 

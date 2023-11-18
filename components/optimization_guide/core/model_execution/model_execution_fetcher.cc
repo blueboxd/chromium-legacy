@@ -24,22 +24,6 @@ namespace {
 
 constexpr char kGoogleAPITypeName[] = "type.googleapis.com/";
 
-std::string_view GetStringNameForModelExecutionFeature(
-    proto::ModelExecutionFeature feature) {
-  switch (feature) {
-    case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH:
-      return "WallpaperSearch";
-    case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION:
-      return "TabOrganization";
-    case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_COMPOSE:
-      return "Compose";
-    case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_UNSPECIFIED:
-      return "Unknown";
-      // Must be in sync with the ModelExecutionFeature variant in
-      // optimization/histograms.xml for metric recording.
-  }
-}
-
 void RecordRequestStatusHistogram(proto::ModelExecutionFeature feature,
                                   FetcherRequestStatus status) {
   base::UmaHistogramEnumeration(
@@ -49,6 +33,9 @@ void RecordRequestStatusHistogram(proto::ModelExecutionFeature feature,
 }
 
 }  // namespace
+
+using ModelExecutionError =
+    OptimizationGuideModelExecutionError::ModelExecutionError;
 
 ModelExecutionFetcher::ModelExecutionFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -64,9 +51,12 @@ ModelExecutionFetcher::~ModelExecutionFetcher() {
   if (active_url_loader_) {
     DCHECK_NE(proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_UNSPECIFIED,
               model_execution_feature_);
-    std::move(model_execution_callback_).Run(absl::nullopt);
     RecordRequestStatusHistogram(model_execution_feature_,
                                  FetcherRequestStatus::kRequestCanceled);
+    std::move(model_execution_callback_)
+        .Run(base::unexpected(
+            OptimizationGuideModelExecutionError::FromModelExecutionError(
+                ModelExecutionError::kGenericFailure)));
   }
 }
 
@@ -82,7 +72,9 @@ void ModelExecutionFetcher::ExecuteModel(
 
   if (active_url_loader_) {
     RecordRequestStatusHistogram(feature, FetcherRequestStatus::kFetcherBusy);
-    std::move(callback).Run(absl::nullopt);
+    std::move(callback).Run(base::unexpected(
+        OptimizationGuideModelExecutionError::FromModelExecutionError(
+            ModelExecutionError::kGenericFailure)));
     return;
   }
 
@@ -111,7 +103,10 @@ void ModelExecutionFetcher::OnAccessTokenReceived(
   if (access_token.empty()) {
     RecordRequestStatusHistogram(model_execution_feature_,
                                  FetcherRequestStatus::kUserNotSignedIn);
-    std::move(model_execution_callback_).Run(absl::nullopt);
+    std::move(model_execution_callback_)
+        .Run(base::unexpected(
+            OptimizationGuideModelExecutionError::FromModelExecutionError(
+                ModelExecutionError::kPermissionDenied)));
     return;
   }
 
@@ -167,11 +162,22 @@ void ModelExecutionFetcher::OnURLLoadComplete(
 
   proto::ExecuteResponse execute_response;
 
-  if (net_error != net::OK || response_code != net::HTTP_OK || !response_body ||
-      !execute_response.ParseFromString(*response_body)) {
+  if (net_error != net::OK || response_code != net::HTTP_OK) {
     RecordRequestStatusHistogram(model_execution_feature_,
                                  FetcherRequestStatus::kResponseError);
-    std::move(model_execution_callback_).Run(absl::nullopt);
+    std::move(model_execution_callback_)
+        .Run(base::unexpected(
+            OptimizationGuideModelExecutionError::FromHttpStatusCode(
+                static_cast<net::HttpStatusCode>(response_code))));
+    return;
+  }
+  if (!response_body || !execute_response.ParseFromString(*response_body)) {
+    RecordRequestStatusHistogram(model_execution_feature_,
+                                 FetcherRequestStatus::kResponseError);
+    std::move(model_execution_callback_)
+        .Run(base::unexpected(
+            OptimizationGuideModelExecutionError::FromModelExecutionError(
+                ModelExecutionError::kGenericFailure)));
     return;
   }
   base::UmaHistogramMediumTimes(
@@ -182,7 +188,7 @@ void ModelExecutionFetcher::OnURLLoadComplete(
   RecordRequestStatusHistogram(model_execution_feature_,
                                FetcherRequestStatus::kSuccess);
   // This should be the last call, since the callback could be deleting `this`.
-  std::move(model_execution_callback_).Run(execute_response);
+  std::move(model_execution_callback_).Run(base::ok(execute_response));
 }
 
 }  // namespace optimization_guide

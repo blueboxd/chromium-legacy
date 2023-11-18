@@ -20,7 +20,7 @@
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/password_manager/core/browser/features/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_form.h"
-#include "components/password_manager/core/browser/password_store_interface.h"
+#include "components/password_manager/core/browser/password_store/password_store_interface.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/sync/base/features.h"
 #include "components/sync/engine/cycle/entity_change_metric_recording.h"
@@ -226,6 +226,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTestWithVerifier,
   PasswordForm form = CreateTestPasswordForm(0);
   form.sender_email = u"sender@example.com";
   form.sender_name = u"Sender Name";
+  form.sender_profile_image_url = GURL("http://www.sender.com/profile_image");
   form.date_received = form.date_created;
   form.sharing_notification_displayed = true;
   GetVerifierProfilePasswordStoreInterface()->AddLogin(form);

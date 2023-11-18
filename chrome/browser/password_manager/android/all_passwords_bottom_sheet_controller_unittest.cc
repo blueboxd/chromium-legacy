@@ -19,9 +19,9 @@
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
 #include "components/password_manager/core/browser/password_form.h"
+#include "components/password_manager/core/browser/password_store/test_password_store.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
-#include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/safe_browsing/core/browser/password_protection/stub_password_reuse_detection_manager_client.h"
 #include "content/public/test/browser_task_environment.h"
@@ -325,7 +325,8 @@ TEST_F(AllPasswordsBottomSheetControllerTest,
   if (base::android::BuildInfo::GetInstance()->is_automotive()) {
     auto authenticator = std::make_unique<MockDeviceAuthenticator>();
     ON_CALL(*authenticator, AuthenticateWithMessage)
-        .WillByDefault(RunOnceCallback<1>(/*auth_succeeded=*/true));
+        .WillByDefault(
+            base::test::RunOnceCallbackRepeatedly<1>(/*auth_succeeded=*/true));
     EXPECT_CALL(client(), GetDeviceAuthenticator)
         .WillOnce(Return(testing::ByMove(std::move(authenticator))));
   }

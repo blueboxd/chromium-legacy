@@ -90,7 +90,7 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // false otherwise.
   bool AcceptSelection();
 
-  // Activates the window or window group associated with the `item`.
+  // Activates the window associated with the `item`.
   void SelectWindow(OverviewItemBase* item);
 
   // Sets the dragged window on the split view drag indicators.
@@ -159,7 +159,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   void InitiateDrag(OverviewItemBase* item,
                     const gfx::PointF& location_in_screen,
-                    bool is_touch_dragging);
+                    bool is_touch_dragging,
+                    OverviewItemBase* event_source_item);
   void Drag(OverviewItemBase* item, const gfx::PointF& location_in_screen);
   void CompleteDrag(OverviewItemBase* item,
                     const gfx::PointF& location_in_screen);
@@ -263,8 +264,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   void RestoreWindowActivation(bool restore);
 
   // Handles requests to active or close the currently focused `item`.
-  void OnFocusedItemActivated(OverviewItemBase* item);
-  void OnFocusedItemClosed(OverviewItemBase* item);
+  void OnFocusedItemActivated(OverviewItem* item);
+  void OnFocusedItemClosed(OverviewItem* item);
 
   // Called explicitly (with no list of observers) by the |RootWindowController|
   // of |root|, so that the associated grid is properly removed and destroyed.
@@ -374,12 +375,20 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   }
 
   size_t num_items() const { return num_items_; }
+  void set_num_items(size_t num_items) { num_items_ = num_items; }
 
   OverviewEnterExitType enter_exit_overview_type() const {
     return enter_exit_overview_type_;
   }
+
   void set_enter_exit_overview_type(OverviewEnterExitType val) {
     enter_exit_overview_type_ = val;
+  }
+
+  OverviewEndAction overview_end_action() const { return overview_end_action_; }
+
+  void set_overview_end_action(OverviewEndAction overview_end_action) {
+    overview_end_action_ = overview_end_action;
   }
 
   OverviewWindowDragController* window_drag_controller() {
@@ -487,6 +496,9 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // information on how these types affect overview mode.
   OverviewEnterExitType enter_exit_overview_type_ =
       OverviewEnterExitType::kNormal;
+
+  // Stores the action that ends the overview mode.
+  OverviewEndAction overview_end_action_ = OverviewEndAction::kMaxValue;
 
   // The selected item when exiting overview mode. nullptr if no window
   // selected.

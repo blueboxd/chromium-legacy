@@ -124,6 +124,14 @@ BASE_FEATURE(kCriticalClientHint,
              "CriticalClientHint",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables setting the nonce of the data: opaque origin early in the navigation
+// so the nonce remains stable throughout a navigation.
+// TODO(crbug.com/1447896, yangsharon): Remove this once we're confident that
+// this change isn't causing issues in the wild.
+BASE_FEATURE(kDataUrlsHaveStableNonce,
+             "DataUrlsHaveStableNonce",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Enable changing source dynamically for desktop capture.
 BASE_FEATURE(kDesktopCaptureChangeSource,
              "DesktopCaptureChangeSource",
@@ -167,13 +175,6 @@ BASE_FEATURE(kEnsureAllowBindingsIsAlwaysForWebUI,
              "EnsureAllowBindingsIsAlwaysForWebUI",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// If this feature is enabled and device permission is not granted by the user,
-// media-device enumeration will provide at most one device per type and the
-// device IDs will not be available.
-BASE_FEATURE(kEnumerateDevicesHideDeviceIDs,
-             "EnumerateDevicesHideDeviceIDs",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Content counterpart of ExperimentalContentSecurityPolicyFeatures in
 // third_party/blink/renderer/platform/runtime_enabled_features.json5. Enables
 // experimental Content Security Policy features ('navigate-to').
@@ -203,6 +204,11 @@ BASE_FEATURE(kFledgeLimitNumAuctions,
 const base::FeatureParam<int> kFledgeLimitNumAuctionsParam{
     &kFledgeLimitNumAuctions, "max_auctions_per_page", 8};
 
+// Enables caching when loading interest groups for a bidder in an auction.
+BASE_FEATURE(kFledgeUseInterestGroupCache,
+             "FledgeUseInterestGroupCache",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Enables fixes for matching src: local() for web fonts correctly against full
 // font name or postscript name. Rolling out behind a flag, as enabling this
 // enables a font indexer on Android which we need to test in the field first.
@@ -230,9 +236,6 @@ BASE_FEATURE(kGpuInfoCollectionSeparatePrefetch,
 // Group network isolation key(NIK) by storage interest group joining origin to
 // improve privacy and performance -- IGs of the same joining origin can reuse
 // sockets, so we don't need to renegotiate those connections.
-//
-// TODO(crbug.com/1479754): Keep this feature DISABLED until all the cross site
-// leaks are fixed. Check comments for more information.
 BASE_FEATURE(kGroupNIKByJoiningOrigin,
              "GroupNIKByJoiningOrigin",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -277,10 +280,6 @@ BASE_FEATURE(kIOSurfaceCapturer,
 BASE_FEATURE(kJavaScriptArrayGrouping,
              "JavaScriptArrayGrouping",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kLazyFrameLoading,
-             "LazyFrameLoading",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables a fix for a macOS IME Live Conversion issue. crbug.com/1328530 and
 // crbug.com/1342551
@@ -380,7 +379,16 @@ BASE_FEATURE(kProactivelySwapBrowsingInstance,
 // https://crbug.com/1286501.
 BASE_FEATURE(kRestrictCanAccessDataForOriginToUIThread,
              "RestrictCanAccessDataForOriginToUIThread",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Kill switch for moving the checking of specific requested files from
+// SecurityState::CanCommitURL() to SecurityState::CanRequestURL() in
+// ChildProcessSecurityPolicy.
+// TODO(https://crbug.com/764958): Remove this once the move is verified to be
+// safe.
+BASE_FEATURE(kRequestFileSetCheckedInCanRequestURL,
+             "RequestFileSetCheckedInCanRequestURL",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Make sendBeacon throw for a Blob with a non simple type.
 BASE_FEATURE(kSendBeaconThrowForBlobWithNonSimpleType,

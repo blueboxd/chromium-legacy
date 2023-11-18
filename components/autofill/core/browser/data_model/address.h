@@ -19,7 +19,6 @@ namespace autofill {
 // A form group that stores address information.
 class Address : public FormGroup {
  public:
-  Address();
   explicit Address(AddressCountryCode country_code);
   ~Address() override;
 
@@ -79,6 +78,12 @@ class Address : public FormGroup {
   // Return the verification status of a structured name value.
   VerificationStatus GetVerificationStatusImpl(
       ServerFieldType type) const override;
+
+  // Updates the address' country, builds the hierarchy model corresponding to
+  // `country_code` and transfers the content of the old data model into the new
+  // one.
+  void SetAddressCountryCode(const std::u16string& country_code,
+                             VerificationStatus status);
 
   // This data structure holds the address information if the structured address
   // feature is enabled.

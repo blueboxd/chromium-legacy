@@ -6,12 +6,13 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <deque>
 #include <memory>
 #include <string>
 #include <type_traits>
 #include <utility>
 
-#include "base/containers/cxx20_erase.h"
+#include "base/debug/alias.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
@@ -90,6 +91,7 @@ constexpr int kCompositorLatencyHistogramBucketCount = 50;
 constexpr const char kEventLatencyBaseHistogramName[] = "EventLatency";
 constexpr int kEventLatencyEventTypeCount =
     static_cast<int>(EventMetrics::EventType::kMaxValue) + 1;
+constexpr const char kGenerationToBrowserMainName[] = "GenerationToBrowserMain";
 
 // Scroll and pinch events report a separate metrics for each input type. Scroll
 // events also report an aggregate metric over all input types. Other event
@@ -132,8 +134,8 @@ std::string GetCompositorLatencyHistogramName(
     FrameReportType report_type,
     FrameSequenceTrackerType frame_sequence_tracker_type,
     StageType stage_type,
-    absl::optional<VizBreakdown> viz_breakdown,
-    absl::optional<BlinkBreakdown> blink_breakdown) {
+    std::optional<VizBreakdown> viz_breakdown,
+    std::optional<BlinkBreakdown> blink_breakdown) {
   DCHECK_LE(frame_sequence_tracker_type, FrameSequenceTrackerType::kMaxType);
   const char* tracker_type_name =
       FrameSequenceTracker::GetFrameSequenceTrackerTypeName(
@@ -154,7 +156,7 @@ void ReportEventLatencyMetric(
     const std::string& name,
     int index,
     base::TimeDelta latency,
-    const absl::optional<EventMetrics::HistogramBucketing>& bucketing) {
+    const std::optional<EventMetrics::HistogramBucketing>& bucketing) {
   STATIC_HISTOGRAM_POINTER_GROUP(
       name, index, kMaxEventLatencyHistogramIndex,
       AddTimeMicrosecondsGranularity(latency),
@@ -253,6 +255,29 @@ void TraceScrollJankMetrics(const EventMetrics::List& events_metrics,
                                             normal_input_count);
   scroll_data->set_original_delta_in_gpu_frame_y(delta);
   scroll_data->set_predicted_delta_in_gpu_frame_y(predicted_delta);
+}
+
+// For measuring the queuing issues with GenerationToBrowserMain we are only
+// looking at scrolling events. So we will not create a histogram that
+// encompasses all EventMetrics::EventType options.
+constexpr int kMaxGenerationToBrowserMainHistogramIndex = 5;
+int GetGenerationToBrowserMainIndex(EventMetrics::EventType type) {
+  switch (type) {
+    case EventMetrics::EventType::kFirstGestureScrollUpdate:
+      return 0;
+    case EventMetrics::EventType::kGestureScrollBegin:
+      return 1;
+    case EventMetrics::EventType::kGestureScrollEnd:
+      return 2;
+    case EventMetrics::EventType::kGestureScrollUpdate:
+      return 3;
+    case EventMetrics::EventType::kInertialGestureScrollUpdate:
+      return 4;
+    default:
+      // We are only interested in 5 categories of EventType for scroll input
+      NOTREACHED();
+  }
+  return kMaxGenerationToBrowserMainHistogramIndex;
 }
 
 }  // namespace
@@ -517,8 +542,8 @@ CompositorFrameReporter::CompositorFrameReporter(
 // static
 const char* CompositorFrameReporter::GetStageName(
     StageType stage_type,
-    absl::optional<VizBreakdown> viz_breakdown,
-    absl::optional<BlinkBreakdown> blink_breakdown,
+    std::optional<VizBreakdown> viz_breakdown,
+    std::optional<BlinkBreakdown> blink_breakdown,
     bool impl_only) {
   DCHECK(!viz_breakdown ||
          stage_type ==
@@ -1045,8 +1070,8 @@ void CompositorFrameReporter::ReportStageHistogramWithBreakdown(
   base::TimeDelta stage_delta = stage.end_time - stage.start_time;
   ReportCompositorLatencyHistogram(
       frame_sequence_tracker_type, stage.stage_type,
-      /*viz_breakdown=*/absl::nullopt,
-      /*blink_breakdown=*/absl::nullopt, stage_delta);
+      /*viz_breakdown=*/std::nullopt,
+      /*blink_breakdown=*/std::nullopt, stage_delta);
   switch (stage.stage_type) {
     case StageType::kSendBeginMainFrameToCommit:
       ReportCompositorLatencyBlinkBreakdowns(frame_sequence_tracker_type);
@@ -1066,7 +1091,7 @@ void CompositorFrameReporter::ReportCompositorLatencyBlinkBreakdowns(
        it.Advance()) {
     ReportCompositorLatencyHistogram(
         frame_sequence_tracker_type, StageType::kSendBeginMainFrameToCommit,
-        /*viz_breakdown=*/absl::nullopt, it.GetBreakdown(), it.GetLatency());
+        /*viz_breakdown=*/std::nullopt, it.GetBreakdown(), it.GetLatency());
   }
 }
 
@@ -1078,15 +1103,15 @@ void CompositorFrameReporter::ReportCompositorLatencyVizBreakdowns(
     ReportCompositorLatencyHistogram(
         frame_sequence_tracker_type,
         StageType::kSubmitCompositorFrameToPresentationCompositorFrame,
-        it.GetBreakdown(), /*blink_breakdown=*/absl::nullopt, it.GetDuration());
+        it.GetBreakdown(), /*blink_breakdown=*/std::nullopt, it.GetDuration());
   }
 }
 
 void CompositorFrameReporter::ReportCompositorLatencyHistogram(
     FrameSequenceTrackerType frame_sequence_tracker_type,
     StageType stage_type,
-    absl::optional<VizBreakdown> viz_breakdown,
-    absl::optional<BlinkBreakdown> blink_breakdown,
+    std::optional<VizBreakdown> viz_breakdown,
+    std::optional<BlinkBreakdown> blink_breakdown,
     base::TimeDelta time_delta) const {
   DCHECK(!viz_breakdown ||
          stage_type ==
@@ -1205,6 +1230,31 @@ void CompositorFrameReporter::ReportEventLatencyMetrics() const {
         ReportEventLatencyMetric(gesture_total_latency_histogram_name,
                                  gesture_histogram_index, total_latency,
                                  event_metrics->GetHistogramBucketing());
+      }
+
+      if (scroll_metrics) {
+        const base::TimeTicks browser_main_timestamp =
+            event_metrics->GetDispatchStageTimestamp(
+                EventMetrics::DispatchStage::kArrivedInBrowserMain);
+        if (!browser_main_timestamp.is_null()) {
+          const std::string generation_to_browser_main_name = base::JoinString(
+              {histogram_base_name, kGenerationToBrowserMainName}, ".");
+          const base::TimeDelta browser_main_delay =
+              browser_main_timestamp - generated_timestamp;
+          const std::optional<EventMetrics::HistogramBucketing>& bucketing =
+              event_metrics->GetHistogramBucketing();
+          if (bucketing) {
+            STATIC_HISTOGRAM_POINTER_GROUP(
+                generation_to_browser_main_name,
+                GetGenerationToBrowserMainIndex(scroll_metrics->type()),
+                kMaxGenerationToBrowserMainHistogramIndex,
+                AddTimeMicrosecondsGranularity(browser_main_delay),
+                base::Histogram::FactoryMicrosecondsTimeGet(
+                    generation_to_browser_main_name, bucketing->min,
+                    bucketing->max, bucketing->count,
+                    base::HistogramBase::kUmaTargetedHistogramFlag));
+          }
+        }
       }
 
       // Finally, report total latency up to presentation for all event types in
@@ -1804,6 +1854,8 @@ void CompositorFrameReporter::SetPartialUpdateDecider(
   DCHECK(partial_update_dependents_.empty());
   has_partial_update_ = true;
   partial_update_decider_ = decider->GetWeakPtr();
+  size_t size = decider->partial_update_dependents_.size();
+  base::debug::Alias(&size);
   decider->partial_update_dependents_.push_back(GetWeakPtr());
 }
 
@@ -1824,10 +1876,10 @@ void CompositorFrameReporter::DiscardOldPartialUpdateReporters() {
     return;
   }
   // Remove all destroyed reporters from `partial_update_dependents_`.
-  base::EraseIf(partial_update_dependents_,
+  std::erase_if(partial_update_dependents_,
                 [](const base::WeakPtr<CompositorFrameReporter>& reporter) {
-    return !reporter;
-  });
+                  return !reporter;
+                });
 }
 
 base::WeakPtr<CompositorFrameReporter> CompositorFrameReporter::GetWeakPtr() {
@@ -2028,7 +2080,7 @@ void CompositorFrameReporter::FindHighLatencyAttribution(
   }
   for (auto index : highest_blink_contribution_change_index) {
     high_latency_substages_.push_back(
-        GetStageName(StageType::kSendBeginMainFrameToCommit, absl::nullopt,
+        GetStageName(StageType::kSendBeginMainFrameToCommit, std::nullopt,
                      static_cast<BlinkBreakdown>(index)));
   }
   for (auto index : highest_viz_contribution_change_index) {

@@ -14,10 +14,10 @@
 
 namespace blink {
 
-struct AutoDarkMode;
+class FragmentItem;
 class LayoutObject;
 class LayoutSVGInlineText;
-class NGFragmentItem;
+struct AutoDarkMode;
 struct NGTextFragmentPaintInfo;
 
 // Text painter for LayoutNG, logic shared between legacy layout and LayoutNG
@@ -35,7 +35,7 @@ class CORE_EXPORT NGTextPainter : public TextPainterBase {
    public:
     SvgTextPaintState(const LayoutSVGInlineText&,
                       const ComputedStyle&,
-                      NGStyleVariant style_variant,
+                      StyleVariant style_variant,
                       PaintFlags paint_flags);
     SvgTextPaintState(const LayoutSVGInlineText&,
                       const ComputedStyle&,
@@ -59,7 +59,7 @@ class CORE_EXPORT NGTextPainter : public TextPainterBase {
     const ComputedStyle& style_;
     absl::optional<AffineTransform> shader_transform_;
     absl::optional<Color> text_match_color_;
-    NGStyleVariant style_variant_ = NGStyleVariant::kStandard;
+    StyleVariant style_variant_ = StyleVariant::kStandard;
     PaintFlags paint_flags_ = PaintFlag::kNoFlag;
     bool is_painting_selection_ = false;
     friend class NGTextPainter;
@@ -69,13 +69,11 @@ class CORE_EXPORT NGTextPainter : public TextPainterBase {
                 const Font& font,
                 const gfx::Rect& visual_rect,
                 const LineRelativeOffset& text_origin,
-                const LineRelativeRect& text_frame_rect,
                 NGInlinePaintContext* inline_context,
                 bool horizontal)
       : TextPainterBase(context,
                         font,
                         text_origin,
-                        text_frame_rect,
                         inline_context,
                         horizontal),
         visual_rect_(visual_rect) {
@@ -100,14 +98,14 @@ class CORE_EXPORT NGTextPainter : public TextPainterBase {
 
   void PaintDecorationsExceptLineThrough(
       const NGTextFragmentPaintInfo& fragment_paint_info,
-      const NGFragmentItem& text_item,
+      const FragmentItem& text_item,
       const PaintInfo& paint_info,
       const ComputedStyle& style,
       const TextPaintStyle& text_style,
       TextDecorationInfo& decoration_info,
       TextDecorationLine lines_to_paint);
 
-  void PaintDecorationsOnlyLineThrough(const NGFragmentItem& text_item,
+  void PaintDecorationsOnlyLineThrough(const FragmentItem& text_item,
                                        const PaintInfo& paint_info,
                                        const ComputedStyle& style,
                                        const TextPaintStyle& text_style,
@@ -115,7 +113,7 @@ class CORE_EXPORT NGTextPainter : public TextPainterBase {
 
   SvgTextPaintState& SetSvgState(const LayoutSVGInlineText&,
                                  const ComputedStyle&,
-                                 NGStyleVariant style_variant,
+                                 StyleVariant style_variant,
                                  PaintFlags paint_flags);
   SvgTextPaintState& SetSvgState(const LayoutSVGInlineText& svg_inline_text,
                                  const ComputedStyle& style,

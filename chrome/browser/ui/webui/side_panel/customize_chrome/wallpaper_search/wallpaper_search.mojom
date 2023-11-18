@@ -1,0 +1,84 @@
+// Copyright 2023 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module side_panel.customize_chrome.mojom;
+
+import "mojo/public/mojom/base/token.mojom";
+import "skia/public/mojom/skcolor.mojom";
+
+struct DescriptorA {
+  string category;
+  array<string> labels;
+};
+
+struct DescriptorB {
+  string label;
+  string image_path;
+};
+
+union DescriptorDValue {
+  skia.mojom.SkColor color;
+  float hue;
+};
+
+struct Descriptors {
+  array<DescriptorA> descriptor_a;
+  array<DescriptorB> descriptor_b;
+  array<string> descriptor_c;
+};
+
+struct WallpaperSearchResult {
+  mojo_base.mojom.Token id;
+  string image;
+};
+
+enum WallpaperSearchStatus {
+  kOk,
+  // Generic error, not specified.
+  kError,
+  // Too many requests.
+  kRequestThrottled,
+  // Browser offline.
+  kOffline,
+};
+
+// Used by the WebUI page to bootstrap bidirectional communication.
+interface WallpaperSearchHandlerFactory {
+  // The WebUI calls this method when the page is first initialized.
+  CreateWallpaperSearchHandler(pending_remote<WallpaperSearchClient> client,
+                pending_receiver<WallpaperSearchHandler> handler);
+};
+
+// Browser-side handler for requests from WebUI page.
+interface WallpaperSearchHandler {
+  // Retrieves NTP descriptors.
+  GetDescriptors() => (Descriptors? descriptors);
+
+  // Searches NTP wallpaper for descriptors.
+  // Returns list of sanitized image data.
+  GetWallpaperSearchResults(string descriptor_a,
+      string? descriptor_b, string? descriptor_c,
+      DescriptorDValue? descriptor_d_value)
+        => (WallpaperSearchStatus status, array<WallpaperSearchResult> results);
+
+  // Tells the handler that wallpaper search results with `result_ids` rendered
+  // in the side panel at Unix epoch time stamp `time`.
+  SetResultRenderTime(array<mojo_base.mojom.Token> result_ids, double time);
+
+  // Sets wallpaper search result identified by `result_id` to background image.
+  // `time` is Unix epoch time stamp of when the user selected the respective
+  // preview.
+  SetBackgroundToWallpaperSearchResult(mojo_base.mojom.Token result_id,
+      double time);
+
+  // Triggers a call to |WallpaperSearchClient.SetHistory|.
+  UpdateHistory();
+};
+
+// WebUI-side handler for requests from the browser.
+interface WallpaperSearchClient {
+  // Sets the list of history images.
+  // Contains a list of sanitized image data and their ids.
+  SetHistory(array<WallpaperSearchResult> history);
+};

@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/clipboard/clipboard_util.h"
@@ -35,12 +35,12 @@ TEST(ClipboardDataTest, BitmapTest) {
 TEST(ClipboardDataTest, DataSrcTest) {
   GURL url("www.example.com");
   ClipboardData data1;
-  data1.set_source(std::make_unique<DataTransferEndpoint>(url));
+  data1.set_source(absl::make_optional<DataTransferEndpoint>(url));
 
   ClipboardData data2;
   EXPECT_NE(data1, data2);
 
-  data2.set_source(std::make_unique<DataTransferEndpoint>(url));
+  data2.set_source(absl::make_optional<DataTransferEndpoint>(url));
   EXPECT_EQ(data1, data2);
 }
 

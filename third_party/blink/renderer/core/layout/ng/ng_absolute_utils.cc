@@ -113,7 +113,7 @@ void ComputeUnclampedIMCBInOneAxis(
 
 InsetModifiedContainingBlock ComputeUnclampedIMCB(
     const LogicalSize& available_size,
-    const NGLogicalOutOfFlowInsets& insets,
+    const LogicalOofInsets& insets,
     const LogicalStaticPosition& static_position,
     const WritingDirectionMode& container_writing_direction,
     const WritingDirectionMode& self_writing_direction) {
@@ -273,7 +273,7 @@ bool CanComputeBlockSizeWithoutLayout(const NGBlockNode& node) {
 
 }  // namespace
 
-NGLogicalOutOfFlowInsets ComputeOutOfFlowInsets(
+LogicalOofInsets ComputeOutOfFlowInsets(
     const ComputedStyle& style,
     const LogicalSize& available_logical_size,
     NGAnchorEvaluatorImpl* anchor_evaluator) {
@@ -327,7 +327,7 @@ NGLogicalOutOfFlowInsets ComputeOutOfFlowInsets(
 InsetModifiedContainingBlock ComputeInsetModifiedContainingBlock(
     const NGBlockNode& node,
     const LogicalSize& available_size,
-    const NGLogicalOutOfFlowInsets& insets,
+    const LogicalOofInsets& insets,
     const LogicalStaticPosition& static_position,
     const WritingDirectionMode& container_writing_direction,
     const WritingDirectionMode& self_writing_direction) {
@@ -361,7 +361,7 @@ InsetModifiedContainingBlock ComputeInsetModifiedContainingBlock(
 
 InsetModifiedContainingBlock ComputeIMCBForPositionFallback(
     const LogicalSize& available_size,
-    const NGLogicalOutOfFlowInsets& insets,
+    const LogicalOofInsets& insets,
     const LogicalStaticPosition& static_position,
     const WritingDirectionMode& container_writing_direction,
     const WritingDirectionMode& self_writing_direction) {
@@ -370,7 +370,7 @@ InsetModifiedContainingBlock ComputeIMCBForPositionFallback(
                               self_writing_direction);
 }
 
-bool ComputeOutOfFlowInlineDimensions(
+bool ComputeOofInlineDimensions(
     const NGBlockNode& node,
     const ComputedStyle& style,
     const NGConstraintSpace& space,
@@ -379,7 +379,7 @@ bool ComputeOutOfFlowInlineDimensions(
     const absl::optional<LogicalSize>& replaced_size,
     const WritingDirectionMode container_writing_direction,
     const Length::AnchorEvaluator* anchor_evaluator,
-    NGLogicalOutOfFlowDimensions* dimensions) {
+    LogicalOofDimensions* dimensions) {
   DCHECK(dimensions);
   DCHECK_GE(imcb.InlineSize(), LayoutUnit());
 
@@ -400,10 +400,10 @@ bool ComputeOutOfFlowInlineDimensions(
 
     // Compute our block-size if we haven't already.
     if (dimensions->size.block_size == kIndefiniteSize) {
-      ComputeOutOfFlowBlockDimensions(node, style, space, imcb, border_padding,
-                                      /* replaced_size */ absl::nullopt,
-                                      container_writing_direction,
-                                      anchor_evaluator, dimensions);
+      ComputeOofBlockDimensions(node, style, space, imcb, border_padding,
+                                /* replaced_size */ absl::nullopt,
+                                container_writing_direction, anchor_evaluator,
+                                dimensions);
     }
 
     // Create a new space, setting the fixed block-size.
@@ -481,9 +481,10 @@ bool ComputeOutOfFlowInlineDimensions(
       container_writing_direction.GetWritingMode(), style.GetWritingMode());
 
   ComputeMargins(space.PercentageResolutionInlineSizeForParentWritingMode(),
-                 imcb.InlineSize(), style.MarginStart(), style.MarginEnd(),
-                 inline_size, has_auto_inline_inset, is_margin_start_dominant,
-                 is_block_direction, &dimensions->margins.inline_start,
+                 imcb.InlineSize(), style.MarginInlineStart(),
+                 style.MarginInlineEnd(), inline_size, has_auto_inline_inset,
+                 is_margin_start_dominant, is_block_direction,
+                 &dimensions->margins.inline_start,
                  &dimensions->margins.inline_end);
 
   ComputeInsets(space.AvailableSize().inline_size, imcb.inline_start,
@@ -495,7 +496,7 @@ bool ComputeOutOfFlowInlineDimensions(
   return depends_on_min_max_sizes;
 }
 
-const NGLayoutResult* ComputeOutOfFlowBlockDimensions(
+const NGLayoutResult* ComputeOofBlockDimensions(
     const NGBlockNode& node,
     const ComputedStyle& style,
     const NGConstraintSpace& space,
@@ -504,7 +505,7 @@ const NGLayoutResult* ComputeOutOfFlowBlockDimensions(
     const absl::optional<LogicalSize>& replaced_size,
     const WritingDirectionMode container_writing_direction,
     const Length::AnchorEvaluator* anchor_evaluator,
-    NGLogicalOutOfFlowDimensions* dimensions) {
+    LogicalOofDimensions* dimensions) {
   DCHECK(dimensions);
   DCHECK_GE(imcb.BlockSize(), LayoutUnit());
 
@@ -543,7 +544,8 @@ const NGLayoutResult* ComputeOutOfFlowBlockDimensions(
       result = node.Layout(builder.ToConstraintSpace());
     }
 
-    return NGFragment(style.GetWritingDirection(), result->PhysicalFragment())
+    return LogicalFragment(style.GetWritingDirection(),
+                           result->PhysicalFragment())
         .BlockSize();
   };
 
@@ -607,9 +609,10 @@ const NGLayoutResult* ComputeOutOfFlowBlockDimensions(
       container_writing_direction.GetWritingMode(), style.GetWritingMode());
 
   ComputeMargins(space.PercentageResolutionInlineSizeForParentWritingMode(),
-                 imcb.BlockSize(), style.MarginBefore(), style.MarginAfter(),
-                 block_size, has_auto_block_inset, is_margin_start_dominant,
-                 is_block_direction, &dimensions->margins.block_start,
+                 imcb.BlockSize(), style.MarginBlockStart(),
+                 style.MarginBlockEnd(), block_size, has_auto_block_inset,
+                 is_margin_start_dominant, is_block_direction,
+                 &dimensions->margins.block_start,
                  &dimensions->margins.block_end);
 
   ComputeInsets(space.AvailableSize().block_size, imcb.block_start,
@@ -624,6 +627,7 @@ const NGLayoutResult* ComputeOutOfFlowBlockDimensions(
 void AdjustOffsetForSplitInline(const NGBlockNode& node,
                                 const NGBoxFragmentBuilder* container_builder,
                                 LogicalOffset& offset) {
+  DCHECK(!RuntimeEnabledFeatures::LayoutNewContainingBlockEnabled());
   // Special case: oof css container is a split inline.
   // When css container spans multiple anonymous blocks, its dimensions can
   // only be computed by a block that is an ancestor of all fragments

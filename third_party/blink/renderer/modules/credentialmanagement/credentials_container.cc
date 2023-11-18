@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_federated_credential_request_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_request_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_identity_provider_config.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_identity_provider_request_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_otp_credential_request_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_creation_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_descriptor.h"
@@ -478,6 +479,51 @@ DOMException* AuthenticatorStatusToDOMException(
           DOMExceptionCode::kSecurityError,
           "The relying party ID is not a registrable domain suffix of, nor "
           "equal to the current domain.");
+    case AuthenticatorStatus::BAD_RELYING_PARTY_ID_ATTEMPTED_FETCH:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSecurityError,
+          "The relying party ID is not a registrable domain suffix of, nor "
+          "equal to the current domain. Subsequently, an attempt to fetch the "
+          ".well-known/passkey-origins resource of the claimed RP ID failed.");
+    case AuthenticatorStatus::BAD_RELYING_PARTY_ID_WRONG_CONTENT_TYPE:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSecurityError,
+          "The relying party ID is not a registrable domain suffix of, nor "
+          "equal to the current domain. Subsequently, the "
+          ".well-known/passkey-origins resource of the claimed RP ID had the "
+          "wrong content-type. (It should be application/json.)");
+    case AuthenticatorStatus::BAD_RELYING_PARTY_ID_JSON_PARSE_ERROR:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSecurityError,
+          "The relying party ID is not a registrable domain suffix of, nor "
+          "equal to the current domain. Subsequently, fetching the "
+          ".well-known/passkey-origins resource of the claimed RP ID resulted "
+          "in a JSON parse error.");
+    case AuthenticatorStatus::BAD_RELYING_PARTY_ID_NO_JSON_MATCH:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSecurityError,
+          "The relying party ID is not a registrable domain suffix of, nor "
+          "equal to the current domain. Subsequently, fetching the "
+          ".well-known/passkey-origins resource of the claimed RP ID was "
+          "successful, but no listed origin matched the caller.");
+    case AuthenticatorStatus::BAD_RELYING_PARTY_ID_NO_JSON_MATCH_HIT_LIMITS:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSecurityError,
+          "The relying party ID is not a registrable domain suffix of, nor "
+          "equal to the current domain. Subsequently, fetching the "
+          ".well-known/passkey-origins resource of the claimed RP ID was "
+          "successful, but no listed origin matched the caller. Note that a "
+          "match may have been found but the limit on the number of eTLD+1 "
+          "labels was reached, causing some entries to be ignored.");
+    case AuthenticatorStatus::BAD_RELYING_PARTY_ID_NO_JSON_MATCH_EXTENSION:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSecurityError,
+          "The relying party ID is not a registrable domain suffix of, nor "
+          "equal to the current domain. Subsequently, fetching the "
+          ".well-known/passkey-origins resource of the claimed RP ID was "
+          "successful, but no listed origin matched the caller. Note that "
+          "since the caller is an extension, it must be listed in an "
+          "'extensions' list, not 'origins'.");
     case AuthenticatorStatus::CANNOT_READ_AND_WRITE_LARGE_BLOB:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError,
@@ -538,7 +584,7 @@ void OnRequestToken(ScriptPromiseResolver* resolver,
                     const absl::optional<KURL>& selected_idp_config_url,
                     const WTF::String& token,
                     mojom::blink::TokenErrorPtr error,
-                    bool is_identity_credential_auto_selected) {
+                    bool is_auto_selected) {
   switch (status) {
     case RequestTokenStatus::kErrorTooManyRequests: {
       resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -571,8 +617,8 @@ void OnRequestToken(ScriptPromiseResolver* resolver,
       return;
     }
     case RequestTokenStatus::kSuccess: {
-      IdentityCredential* credential = IdentityCredential::Create(
-          token, is_identity_credential_auto_selected);
+      IdentityCredential* credential =
+          IdentityCredential::Create(token, is_auto_selected);
       resolver->Resolve(credential);
       return;
     }
@@ -1475,7 +1521,6 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
       // TODO(kenrb): Add some renderer-side validation here, such as
       // validating |provider|, and making sure the calling context is legal.
       // Some of this has not been spec'd yet.
-
       if (!provider->hasConfigURL()) {
         exception_state.ThrowTypeError("Missing the provider's configURL.");
         resolver->Detach();
@@ -1493,7 +1538,9 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
       String client_id = provider->clientId();
 
       ++provider_index;
-      if (!provider_url.IsValid() || client_id == "") {
+      if ((!provider_url.IsValid() &&
+           (!provider->hasRegistered() || !provider->registered())) ||
+          client_id == "") {
         resolver->Reject(MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kInvalidStateError,
             String::Format("Provider %i information is incomplete.",
@@ -1657,7 +1704,7 @@ ScriptPromise CredentialsContainer::store(ScriptState* script_state,
         credential->IsPasswordCredential())) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError,
-        "Store operation not permitted for PublicKey credentials."));
+        "Store operation not permitted for this credential type."));
     return promise;
   }
 

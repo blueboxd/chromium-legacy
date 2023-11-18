@@ -11,14 +11,19 @@ namespace extensions_features {
 // API Features
 ///////////////////////////////////////////////////////////////////////////////
 
+// Controls the availability of contentSettings.clipboard.
+BASE_FEATURE(kApiContentSettingsClipboard,
+             "ApiContentSettingsClipboard",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls the availability of the enterprise.kioskInput API.
+BASE_FEATURE(kApiEnterpriseKioskInput,
+             "ApiEnterpriseKioskInput",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Controls the availability of the ReadingList API.
 BASE_FEATURE(kApiReadingList,
              "ApiReadingList",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Controls the availability of the runtime.getContexts() API.
-BASE_FEATURE(kApiRuntimeGetContexts,
-             "ApiRuntimeGetContexts",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls the availability of the sidePanel.open() API.
@@ -29,7 +34,7 @@ BASE_FEATURE(kApiSidePanelOpen,
 // Controls the availability of the userScripts API.
 BASE_FEATURE(kApiUserScripts,
              "ApiUserScripts",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls the availability of navigation to file URLs.
 BASE_FEATURE(kRestrictFileURLNavigation,
@@ -71,12 +76,6 @@ BASE_FEATURE(kCheckingNoExtensionIdInExtensionIpcs,
              "EMF_NO_EXTENSION_ID_FOR_EXTENSION_SOURCE",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables support for the "match_origin_as_fallback" property in content
-// scripts.
-BASE_FEATURE(kContentScriptsMatchOriginAsFallback,
-             "ContentScriptsMatchOriginAsFallback",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Determine if dynamic extension URLs are handled and redirected.
 BASE_FEATURE(kExtensionDynamicURLRedirection,
              "ExtensionDynamicURLRedirection",
@@ -95,7 +94,7 @@ BASE_FEATURE(kExtensionSourceUrlEnforcement,
 // File Handlers.
 BASE_FEATURE(kExtensionWebFileHandlers,
              "ExtensionWebFileHandlers",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, only manifest v3 extensions is allowed while v2 will be disabled.
 // Note that this feature is now only checked by `ExtensionManagement` which
@@ -149,7 +148,7 @@ BASE_FEATURE(kReportKeepaliveUkm,
 // user is in the developer mode.
 BASE_FEATURE(kRestrictDeveloperModeAPIs,
              "RestrictDeveloperModeAPIs",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Reports Extensions.WebRequest.KeepaliveRequestFinished when enabled.
 // Automatically disable extensions not included in the Safe Browsing CRX
@@ -187,7 +186,7 @@ BASE_FEATURE(kTelemetryExtensionPendingApprovalApi,
 // ExtensionWebRequestEventRouter.
 BASE_FEATURE(kUsePerBrowserContextWebRequestEventRouter,
              "kUsePerBrowserContextWebRequestEventRouter",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls the <webview> tag behaviour changes proposed as part of the guest
 // view MPArch migration. See
@@ -224,6 +223,12 @@ BASE_FEATURE(kNewWebstoreURL,
 // limit.
 BASE_FEATURE(kDeclarativeNetRequestSafeRuleLimits,
              "DeclarativeNetRequestSafeDynamicRules",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables declarative net request rules to specify response headers as a
+// matching condition.
+BASE_FEATURE(kDeclarativeNetRequestResponseHeaderMatching,
+             "DeclarativeNetRequestResponseHeaderMatching",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace extensions_features

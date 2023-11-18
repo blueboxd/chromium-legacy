@@ -21,6 +21,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
@@ -29,6 +30,7 @@
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
+#include "base/test/protobuf_matchers.h"
 #include "base/test/repeating_test_future.h"
 #include "base/test/test_future.h"
 #include "base/time/time.h"
@@ -43,17 +45,17 @@
 #include "chrome/browser/ash/policy/dlp/test/files_policy_notification_manager_test_utils.h"
 #include "chrome/browser/ash/policy/dlp/test/mock_files_policy_notification_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_reporting_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/test/dlp_files_test_base.h"
+#include "chrome/browser/enterprise/data_controls/dlp_reporting_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dlp/dlp_client.h"
+#include "chromeos/dbus/dlp/dlp_service.pb.h"
 #include "chromeos/ui/base/file_icon_util.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/enterprise/data_controls/component.h"
 #include "components/enterprise/data_controls/dlp_histogram_helper.h"
 #include "components/enterprise/data_controls/dlp_policy_event.pb.h"
 #include "components/file_access/scoped_file_access.h"
-#include "components/reporting/util/test_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "extensions/common/constants.h"
@@ -62,6 +64,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
+using ::base::test::EqualsProto;
 using blink::mojom::FileSystemFileInfo;
 using blink::mojom::NativeFileInfo;
 using storage::FileSystemURL;
@@ -71,6 +74,12 @@ using testing::Mock;
 namespace policy {
 
 namespace {
+
+// System application URLs.
+// Please keep them updated with dlp_files_controller_ash.cc.
+constexpr char kFileManagerUrl[] = "chrome://file-manager/";
+constexpr char kImageLoaderUrl[] =
+    "chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp/";
 
 constexpr char kExampleUrl1[] = "https://1.example.com/";
 constexpr char kExampleUrl2[] = "https://2.example.com/";
@@ -650,7 +659,7 @@ TEST_F(DlpFilesControllerAshTest, FilterDisallowedUploads_ErrorResponse) {
   base::test::TestFuture<std::vector<ui::SelectedFileInfo>> future;
   ASSERT_TRUE(files_controller_);
   files_controller_->FilterDisallowedUploads(
-      selected_files, DlpFileDestination(GURL(kExampleUrl1)),
+      selected_files, DlpFileDestination(data_controls::Component::kArc),
       future.GetCallback());
 
   ASSERT_EQ(3u, future.Get().size());
@@ -670,7 +679,7 @@ TEST_F(DlpFilesControllerAshTest, FilterDisallowedUploads_ErrorResponse) {
                                            request.files_paths().end());
   EXPECT_THAT(requested_files,
               testing::UnorderedElementsAreArray(expected_requested_files));
-  EXPECT_EQ(kExampleUrl1, request.destination_url());
+  EXPECT_EQ(::dlp::ARC, request.destination_component());
   EXPECT_EQ(::dlp::FileAction::UPLOAD, request.file_action());
   EXPECT_FALSE(request.has_io_task_id());
 }
@@ -1115,31 +1124,7 @@ TEST_F(DlpFilesControllerAshTest, CheckReportingOnIsDlpPolicyMatched) {
       .WillOnce(
           testing::DoAll(testing::SetArgPointee<2>(kExampleSourcePattern4),
                          testing::SetArgPointee<3>(kRuleMetadata4),
-                         testing::Return(DlpRulesManager::Level::kAllow)))
-      .WillOnce(
-          testing::DoAll(testing::SetArgPointee<2>(kExampleSourcePattern1),
-                         testing::SetArgPointee<3>(kRuleMetadata1),
-                         testing::Return(DlpRulesManager::Level::kBlock)))
-      .WillOnce(
-          testing::DoAll(testing::SetArgPointee<2>(kExampleSourcePattern2),
-                         testing::SetArgPointee<3>(kRuleMetadata2),
-                         testing::Return(DlpRulesManager::Level::kReport)))
-      .WillOnce(
-          testing::DoAll(testing::SetArgPointee<2>(kExampleSourcePattern3),
-                         testing::SetArgPointee<3>(kRuleMetadata3),
-                         testing::Return(DlpRulesManager::Level::kWarn)))
-      .WillOnce(
-          testing::DoAll(testing::SetArgPointee<2>(kExampleSourcePattern1),
-                         testing::SetArgPointee<3>(kRuleMetadata1),
-                         testing::Return(DlpRulesManager::Level::kBlock)))
-      .WillOnce(
-          testing::DoAll(testing::SetArgPointee<2>(kExampleSourcePattern2),
-                         testing::SetArgPointee<3>(kRuleMetadata2),
-                         testing::Return(DlpRulesManager::Level::kReport)))
-      .WillOnce(
-          testing::DoAll(testing::SetArgPointee<2>(kExampleSourcePattern1),
-                         testing::SetArgPointee<3>(kRuleMetadata1),
-                         testing::Return(DlpRulesManager::Level::kWarn)));
+                         testing::Return(DlpRulesManager::Level::kAllow)));
 
   EXPECT_CALL(*rules_manager_, GetReportingManager).Times(testing::AnyNumber());
 
@@ -1158,59 +1143,12 @@ TEST_F(DlpFilesControllerAshTest, CheckReportingOnIsDlpPolicyMatched) {
       kInode4, kCrtime4, base::FilePath(kFilePath4), kExampleUrl4,
       kReferrerUrl4);
 
-  auto CreateEvent =
-      [](const std::string& src_pattern, DlpRulesManager::Level level,
-         const std::string& filename, const std::string& rule_name,
-         const std::string& rule_id) {
-        auto event_builder = DlpPolicyEventBuilder::Event(
-            src_pattern, rule_name, rule_id,
-            DlpRulesManager::Restriction::kFiles, level);
-        event_builder->SetDestinationComponent(
-            data_controls::Component::kUnknownComponent);
-        event_builder->SetContentName(filename);
-        return event_builder->Create();
-      };
-
-  const auto event1 =
-      CreateEvent(kExampleSourcePattern1, DlpRulesManager::Level::kBlock,
-                  kFilePath1, kRuleName1, kRuleId1);
-  const auto event2 =
-      CreateEvent(kExampleSourcePattern2, DlpRulesManager::Level::kReport,
-                  kFilePath2, kRuleName2, kRuleId2);
-  const auto event3 =
-      CreateEvent(kExampleSourcePattern3, DlpRulesManager::Level::kWarn,
-                  kFilePath3, kRuleName3, kRuleId3);
-
-  base::TimeDelta cooldown_time =
-      event_storage_->GetDeduplicationCooldownForTesting();
-
-  // Report `event1`, `event2`, and `event3` after these calls.
   ASSERT_TRUE(files_controller_->IsDlpPolicyMatched(file1));
   ASSERT_FALSE(files_controller_->IsDlpPolicyMatched(file2));
-  ASSERT_FALSE(files_controller_->IsDlpPolicyMatched(file3));
+  ASSERT_TRUE(files_controller_->IsDlpPolicyMatched(file3));
   ASSERT_FALSE(files_controller_->IsDlpPolicyMatched(file4));
 
-  task_runner_->FastForwardBy(cooldown_time);
-
-  // Report `event1`, `event2`, and `event3` after these calls.
-  ASSERT_TRUE(files_controller_->IsDlpPolicyMatched(file1));
-  ASSERT_FALSE(files_controller_->IsDlpPolicyMatched(file2));
-  ASSERT_FALSE(files_controller_->IsDlpPolicyMatched(file3));
-
-  task_runner_->FastForwardBy(cooldown_time / 2);
-
-  // Do not report after these calls.
-  ASSERT_TRUE(files_controller_->IsDlpPolicyMatched(file1));
-  ASSERT_FALSE(files_controller_->IsDlpPolicyMatched(file2));
-  ASSERT_FALSE(files_controller_->IsDlpPolicyMatched(file3));
-
-  const auto expected_events = std::vector<const DlpPolicyEvent*>(
-      {&event1, &event2, &event3, &event1, &event2, &event3});
-
-  ASSERT_EQ(events.size(), 6u);
-  for (size_t i = 0; i < events.size(); ++i) {
-    EXPECT_THAT(events[i], IsDlpPolicyEvent(*expected_events[i]));
-  }
+  ASSERT_EQ(events_.size(), 0u);
 }
 
 TEST_F(DlpFilesControllerAshTest, CheckReportingOnIsFilesTransferRestricted) {
@@ -1296,7 +1234,7 @@ TEST_F(DlpFilesControllerAshTest, CheckReportingOnIsFilesTransferRestricted) {
   MockIsFilesTransferRestrictedCallback cb;
   EXPECT_CALL(cb, Run(files_levels)).Times(::testing::AnyNumber());
 
-  auto event_builder = DlpPolicyEventBuilder::Event(
+  auto event_builder = data_controls::DlpPolicyEventBuilder::Event(
       kExampleSourcePattern1, kRuleName1, kRuleId1,
       DlpRulesManager::Restriction::kFiles, DlpRulesManager::Level::kBlock);
   event_builder->SetContentName(kFilePath1);
@@ -1331,9 +1269,10 @@ TEST_F(DlpFilesControllerAshTest, CheckReportingOnIsFilesTransferRestricted) {
   const auto expected_events =
       std::vector<const DlpPolicyEvent*>({&event1, &event2, &event1, &event2});
 
-  ASSERT_EQ(events.size(), 4u);
-  for (size_t i = 0; i < events.size(); ++i) {
-    EXPECT_THAT(events[i], IsDlpPolicyEvent(*expected_events[i]));
+  ASSERT_EQ(events_.size(), 4u);
+  for (size_t i = 0; i < events_.size(); ++i) {
+    EXPECT_THAT(events_[i],
+                data_controls::IsDlpPolicyEvent(*expected_events[i]));
   }
 }
 
@@ -1377,7 +1316,7 @@ TEST_F(DlpFilesControllerAshTest, CheckReportingOnMixedCalls) {
   MockIsFilesTransferRestrictedCallback cb;
   EXPECT_CALL(cb, Run(files_levels)).Times(1);
 
-  auto event_builder = DlpPolicyEventBuilder::Event(
+  auto event_builder = data_controls::DlpPolicyEventBuilder::Event(
       kExampleSourcePattern1, kRuleName1, kRuleId1,
       DlpRulesManager::Restriction::kFiles, DlpRulesManager::Level::kBlock);
   event_builder->SetContentName(kFilePath1);
@@ -1392,8 +1331,45 @@ TEST_F(DlpFilesControllerAshTest, CheckReportingOnMixedCalls) {
   // Do not report after these calls
   ASSERT_TRUE(files_controller_->IsDlpPolicyMatched(file1));
 
-  ASSERT_EQ(events.size(), 1u);
-  EXPECT_THAT(events[0], IsDlpPolicyEvent(event));
+  ASSERT_EQ(events_.size(), 1u);
+  EXPECT_THAT(events_[0], data_controls::IsDlpPolicyEvent(event));
+}
+
+// Test that no file event is generated for a selected list of system apps.
+// These apps may access files without a user-initiated action (e.g.,
+// thumbnails loaded when Files app is opened). We should probably not
+// report in these scenarios.
+TEST_F(DlpFilesControllerAshTest, DoNotReportOnSystemApps) {
+  const auto histogram_tester = base::HistogramTester();
+
+  const auto file = DlpFilesControllerAsh::FileDaemonInfo(
+      kInode1, kCrtime1, base::FilePath(kFilePath1), kExampleUrl1,
+      kReferrerUrl1);
+
+  EXPECT_CALL(*rules_manager_, IsRestrictedDestination(_, _, _, _, _, _))
+      .WillOnce(
+          testing::DoAll(testing::SetArgPointee<3>(kExampleSourcePattern1),
+                         testing::SetArgPointee<4>(kFileManagerUrl),
+                         testing::SetArgPointee<5>(kRuleMetadata1),
+                         testing::Return(DlpRulesManager::Level::kBlock)))
+      .WillOnce(
+          testing::DoAll(testing::SetArgPointee<3>(kExampleSourcePattern1),
+                         testing::SetArgPointee<4>(kImageLoaderUrl),
+                         testing::SetArgPointee<5>(kRuleMetadata1),
+                         testing::Return(DlpRulesManager::Level::kBlock)));
+
+  files_controller_->IsFilesTransferRestricted(
+      /*task_id=*/1234, {file}, DlpFileDestination(GURL(kFileManagerUrl)),
+      dlp::FileAction::kTransfer, base::DoNothing());
+
+  files_controller_->IsFilesTransferRestricted(
+      /*task_id=*/1234, {file}, DlpFileDestination(GURL(kImageLoaderUrl)),
+      dlp::FileAction::kTransfer, base::DoNothing());
+
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  data_controls::GetDlpHistogramPrefix() +
+                  std::string(data_controls::dlp::kFileActionBlockedUMA)),
+              base::BucketsAre(base::Bucket(dlp::FileAction::kTransfer, 0)));
 }
 
 TEST_F(DlpFilesControllerAshTest, CheckIfDropAllowed_ErrorResponse) {
@@ -1538,7 +1514,7 @@ TEST_F(DlpFilesControllerAshTest, IsFilesTransferRestricted_MyFiles) {
       /*task_id=*/1234, transferred_files, DlpFileDestination(),
       dlp::FileAction::kTransfer, cb.Get());
 
-  ASSERT_EQ(events.size(), 0u);
+  ASSERT_EQ(events_.size(), 0u);
 }
 
 class DlpFilesExternalDestinationTest
@@ -1627,15 +1603,19 @@ TEST_P(DlpFilesExternalDestinationTest, IsFilesTransferRestricted_Component) {
       DlpFileDestination(expected_component), dlp::FileAction::kTransfer,
       cb.Get());
 
-  ASSERT_EQ(events.size(), 2u);
-  EXPECT_THAT(events[0], IsDlpPolicyEvent(CreateDlpPolicyEvent(
-                             kExampleSourcePattern1, expected_component,
-                             DlpRulesManager::Restriction::kFiles, kRuleName1,
-                             kRuleId1, DlpRulesManager::Level::kBlock)));
-  EXPECT_THAT(events[1], IsDlpPolicyEvent(CreateDlpPolicyEvent(
-                             kExampleSourcePattern3, expected_component,
-                             DlpRulesManager::Restriction::kFiles, kRuleName3,
-                             kRuleId3, DlpRulesManager::Level::kBlock)));
+  ASSERT_EQ(events_.size(), 2u);
+  EXPECT_THAT(
+      events_[0],
+      data_controls::IsDlpPolicyEvent(data_controls::CreateDlpPolicyEvent(
+          kExampleSourcePattern1, expected_component,
+          DlpRulesManager::Restriction::kFiles, kRuleName1, kRuleId1,
+          DlpRulesManager::Level::kBlock)));
+  EXPECT_THAT(
+      events_[1],
+      data_controls::IsDlpPolicyEvent(data_controls::CreateDlpPolicyEvent(
+          kExampleSourcePattern3, expected_component,
+          DlpRulesManager::Restriction::kFiles, kRuleName3, kRuleId3,
+          DlpRulesManager::Level::kBlock)));
 }
 
 TEST_P(DlpFilesExternalDestinationTest, FileDownloadBlocked) {
@@ -1666,16 +1646,17 @@ TEST_P(DlpFilesExternalDestinationTest, FileDownloadBlocked) {
   files_controller_->CheckIfDownloadAllowed(
       DlpFileDestination(GURL(kExampleUrl1)), dst_url.path(), cb.Get());
 
-  ASSERT_EQ(events.size(), 1u);
+  ASSERT_EQ(events_.size(), 1u);
 
-  auto event_builder = DlpPolicyEventBuilder::Event(
+  auto event_builder = data_controls::DlpPolicyEventBuilder::Event(
       kExampleSourcePattern1, kRuleName1, kRuleId1,
       DlpRulesManager::Restriction::kFiles, DlpRulesManager::Level::kBlock);
 
   event_builder->SetDestinationComponent(expected_component);
   event_builder->SetContentName(base::FilePath(path).BaseName().value());
 
-  EXPECT_THAT(events[0], IsDlpPolicyEvent(event_builder->Create()));
+  EXPECT_THAT(events_[0],
+              data_controls::IsDlpPolicyEvent(event_builder->Create()));
 }
 
 TEST_P(DlpFilesExternalDestinationTest, FilePromptForDownload) {
@@ -1794,11 +1775,11 @@ TEST_P(DlpFilesUrlDestinationTest, IsFilesTransferRestricted_Url) {
       DlpFileDestination(GURL(destination_url)), dlp::FileAction::kDownload,
       cb.Get());
 
-  ASSERT_EQ(events.size(), disallowed_source_patterns.size());
+  ASSERT_EQ(events_.size(), disallowed_source_patterns.size());
   for (size_t i = 0u; i < disallowed_source_patterns.size(); ++i) {
     EXPECT_THAT(
-        events[i],
-        IsDlpPolicyEvent(CreateDlpPolicyEvent(
+        events_[i],
+        data_controls::IsDlpPolicyEvent(data_controls::CreateDlpPolicyEvent(
             disallowed_source_patterns[i], destination_pattern,
             DlpRulesManager::Restriction::kFiles, triggered_rule_names[i],
             triggered_rule_ids[i], DlpRulesManager::Level::kBlock)));
@@ -1829,7 +1810,7 @@ TEST_P(DlpFilesWarningDialogChoiceTest, FileDownloadWarned) {
 
   EXPECT_CALL(*fpnm_, ShowDlpWarning)
       .WillOnce([&choice_result](
-                    OnDlpRestrictionCheckedWithJustificationCallback callback,
+                    WarningWithJustificationCallback callback,
                     absl::optional<file_manager::io_task::IOTaskId> task_id,
                     const std::vector<base::FilePath>& warning_files,
                     const DlpFileDestination& destination,
@@ -1872,10 +1853,10 @@ TEST_P(DlpFilesWarningDialogChoiceTest, FileDownloadWarned) {
       [&](absl::optional<DlpRulesManager::Level> level) -> DlpPolicyEvent {
     auto event_builder =
         level.has_value()
-            ? DlpPolicyEventBuilder::Event(
+            ? data_controls::DlpPolicyEventBuilder::Event(
                   kExampleSourcePattern1, kRuleName1, kRuleId1,
                   DlpRulesManager::Restriction::kFiles, level.value())
-            : DlpPolicyEventBuilder::WarningProceededEvent(
+            : data_controls::DlpPolicyEventBuilder::WarningProceededEvent(
                   kExampleSourcePattern1, kRuleName1, kRuleId1,
                   DlpRulesManager::Restriction::kFiles);
     event_builder->SetDestinationComponent(data_controls::Component::kUsb);
@@ -1883,11 +1864,12 @@ TEST_P(DlpFilesWarningDialogChoiceTest, FileDownloadWarned) {
     return event_builder->Create();
   };
 
-  ASSERT_EQ(events.size(), 1u + (choice_result ? 1 : 0));
-  EXPECT_THAT(events[0],
-              IsDlpPolicyEvent(CreateEvent(DlpRulesManager::Level::kWarn)));
+  ASSERT_EQ(events_.size(), 1u + (choice_result ? 1 : 0));
+  EXPECT_THAT(events_[0], data_controls::IsDlpPolicyEvent(
+                              CreateEvent(DlpRulesManager::Level::kWarn)));
   if (choice_result) {
-    EXPECT_THAT(events[1], IsDlpPolicyEvent(CreateEvent(absl::nullopt)));
+    EXPECT_THAT(events_[1],
+                data_controls::IsDlpPolicyEvent(CreateEvent(absl::nullopt)));
   }
 
   EXPECT_THAT(
@@ -2010,7 +1992,7 @@ TEST_P(DlpFilesWarningDialogContentTest,
                              std::move(expected_files),
                              DlpFileDestination(data_controls::Component::kUsb),
                              transfer_info.files_action))
-      .WillOnce([](OnDlpRestrictionCheckedWithJustificationCallback callback,
+      .WillOnce([](WarningWithJustificationCallback callback,
                    absl::optional<file_manager::io_task::IOTaskId> task_id,
                    const std::vector<base::FilePath>& confidential_files,
                    const DlpFileDestination& destination,
@@ -2255,7 +2237,7 @@ INSTANTIATE_TEST_SUITE_P(
     DlpFilesAppLaunchTest_ExtensionApp,
     ::testing::Values(
         std::make_tuple(apps::AppType::kStandaloneBrowserChromeApp,
-                        kStandaloneBrowserExtensionAppId),
+                        kStandaloneBrowserChromeAppId),
         std::make_tuple(apps::AppType::kExtension, kExtensionAppId),
         std::make_tuple(apps::AppType::kStandaloneBrowserExtension,
                         kStandaloneBrowserExtensionAppId),

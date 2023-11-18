@@ -4,14 +4,21 @@
 package org.chromium.chrome.browser.readaloud.player;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
-import android.app.Activity;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -20,17 +27,19 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.readaloud.ReadAloudPrefs;
+import org.chromium.chrome.browser.readaloud.ReadAloudPrefsJni;
+import org.chromium.chrome.browser.readaloud.testing.MockPrefServiceHelper;
 import org.chromium.chrome.modules.readaloud.Playback;
 import org.chromium.chrome.modules.readaloud.PlaybackArgs.PlaybackVoice;
 import org.chromium.chrome.modules.readaloud.PlaybackListener;
 import org.chromium.chrome.modules.readaloud.Player;
-import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.prefs.PrefService;
 import org.chromium.ui.modelutil.PropertyModel;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,9 +52,17 @@ public class PlayerMediatorUnitTest {
     private static final long POSITION_NS = 1_000_000_000L; // one second
     private static final long DURATION_NS = 10_000_000_000L; // ten seconds
 
+    @Rule public JniMocker mJniMocker = new JniMocker();
+    @Mock ReadAloudPrefs.Natives mPrefsNative;
     @Mock private PlayerCoordinator mPlayerCoordinator;
     @Mock private Playback mPlayback;
     @Mock private Playback.Metadata mPlaybackMetadata;
+    @Mock private SeekBar mSeekbar;
+    private MockPrefServiceHelper mMockPrefServiceHelper;
+    private OnSeekBarChangeListener mOnSeekBarChangeListener;
+
+    private ObservableSupplierImpl<List<PlaybackVoice>> mVoicesSupplier;
+    private ObservableSupplierImpl<String> mSelectedVoiceIdSupplier;
 
     @Captor private ArgumentCaptor<PlaybackListener> mPlaybackListenerCaptor;
 
@@ -92,54 +109,7 @@ public class PlayerMediatorUnitTest {
     }
 
     private TestPlaybackData mPlaybackData;
-
-    private static class TestPlayer implements Player.Delegate {
-        @Override
-        public BottomSheetController getBottomSheetController() {
-            return null;
-        }
-
-        @Override
-        public boolean isHighlightingSupported() {
-            return true;
-        }
-
-        @Override
-        public ObservableSupplierImpl<Boolean> getHighlightingEnabledSupplier() {
-            return new ObservableSupplierImpl<Boolean>();
-        }
-
-        @Override
-        public ObservableSupplier<List<PlaybackVoice>> getCurrentLanguageVoicesSupplier() {
-            return new ObservableSupplierImpl<List<PlaybackVoice>>();
-        }
-
-        @Override
-        public ObservableSupplier<String> getVoiceIdSupplier() {
-            return new ObservableSupplierImpl<String>();
-        }
-
-        @Override
-        public Map<String, String> getVoiceOverrides() {
-            return new HashMap<String, String>();
-        }
-
-        @Override
-        public void setVoiceOverride(PlaybackVoice voice) {}
-
-        @Override
-        public void previewVoice(PlaybackVoice voice) {}
-
-        @Override
-        public void navigateToPlayingTab() {}
-
-        @Override
-        public Activity getActivity() {
-            return null;
-        }
-    }
-
-    private TestPlayer mPlayer;
+    @Mock private Player.Delegate mDelegate;
 
     private PlayerMediator mMediator;
 
@@ -149,9 +119,25 @@ public class PlayerMediatorUnitTest {
         resetPlayback();
         doReturn(TITLE).when(mPlaybackMetadata).title();
         doReturn(PUBLISHER).when(mPlaybackMetadata).publisher();
+        mVoicesSupplier = new ObservableSupplierImpl<>();
+        mVoicesSupplier.set(List.of(new PlaybackVoice("en", "a", "description")));
+        mSelectedVoiceIdSupplier = new ObservableSupplierImpl<>();
+        mSelectedVoiceIdSupplier.set("a");
+        mJniMocker.mock(ReadAloudPrefsJni.TEST_HOOKS, mPrefsNative);
+        mMockPrefServiceHelper = new MockPrefServiceHelper();
         mPlaybackData = new TestPlaybackData();
+
+        doReturn(true).when(mDelegate).isHighlightingSupported();
+        doReturn(new ObservableSupplierImpl<Boolean>())
+                .when(mDelegate)
+                .getHighlightingEnabledSupplier();
+        doReturn(mVoicesSupplier).when(mDelegate).getCurrentLanguageVoicesSupplier();
+        doReturn(mSelectedVoiceIdSupplier).when(mDelegate).getVoiceIdSupplier();
+        doReturn(mMockPrefServiceHelper.getPrefService()).when(mDelegate).getPrefService();
+
         mModel = new PropertyModel.Builder(PlayerProperties.ALL_KEYS).build();
-        mMediator = new PlayerMediator(mPlayerCoordinator, mPlayer, mModel);
+        mMediator = new PlayerMediator(mPlayerCoordinator, mDelegate, mModel);
+        mOnSeekBarChangeListener = mMediator.getSeekBarChangeListener();
     }
 
     @Test
@@ -167,6 +153,8 @@ public class PlayerMediatorUnitTest {
         verify(mPlayback).addListener(mPlaybackListenerCaptor.capture());
         assertEquals(TITLE, mModel.get(PlayerProperties.TITLE));
         assertEquals(PUBLISHER, mModel.get(PlayerProperties.PUBLISHER));
+        assertEquals(true, mModel.get(PlayerProperties.HIGHLIGHTING_SUPPORTED));
+        assertEquals(true, mModel.get(PlayerProperties.HIGHLIGHTING_ENABLED));
     }
 
     @Test
@@ -261,9 +249,116 @@ public class PlayerMediatorUnitTest {
     }
 
     @Test
+    public void testOnSeekBack() {
+        // make sure nothing happens if playback hasn't been set yet
+        mMediator.setPlayback(null);
+        mMediator.onSeekBackClick();
+        verify(mPlayback, never()).seekRelative(anyLong());
+
+        mModel.set(PlayerProperties.ELAPSED_NANOS, 0L);
+        mModel.set(PlayerProperties.DURATION_NANOS, 40 * 1_000_000_000L);
+        mMediator.setPlayback(mPlayback);
+        mMediator.onSeekBackClick();
+        verify(mPlayback).seekRelative(-10 * 1_000_000_000L);
+    }
+
+    @Test
+    public void testOnSeekForward() {
+        mMediator.setPlayback(mPlayback);
+        mModel.set(PlayerProperties.ELAPSED_NANOS, 0L);
+        mModel.set(PlayerProperties.DURATION_NANOS, 40 * 1_000_000_000L);
+
+        mMediator.onSeekForwardClick();
+        verify(mPlayback).seekRelative(30 * 1_000_000_000L);
+    }
+
+    @Test
+    public void testOnSeekForwardPastEnd() {
+        // Set playback duration shorter to test the pause at end when seeking beyond duration
+        mMediator.setPlayback(mPlayback);
+        mModel.set(PlayerProperties.ELAPSED_NANOS, 0L);
+        mModel.set(PlayerProperties.DURATION_NANOS, 1L);
+        mMediator.onSeekForwardClick();
+        verify(mPlayback).pause();
+        verify(mPlayback).seek(1L);
+    }
+
+    @Test
+    public void testOnSpeedChange() {
+        mMediator.setPlayback(mPlayback);
+        mMediator.onSpeedChange(0.5f);
+        verify(mPlayback).setRate(0.5f);
+        mMediator.onSpeedChange(2f);
+        assertEquals(2f, ReadAloudPrefs.getSpeed(mDelegate.getPrefService()), /* delta= */ 0f);
+        assertEquals(2f, mModel.get(PlayerProperties.SPEED), /* delta= */ 0f);
+    }
+
+    @Test
     public void testOnMiniPlayerExpandClick() {
         mMediator.onMiniPlayerExpandClick();
         verify(mPlayerCoordinator).expand();
+    }
+
+    @Test
+    public void testOnVoiceSelected() {
+        PlaybackVoice voice = new PlaybackVoice("language", "voice", "description");
+        mMediator.onVoiceSelected(voice);
+        verify(mDelegate).setVoiceOverrideAndApplyToPlayback(eq(voice));
+    }
+
+    @Test
+    public void testOnHighlightingChanged() {
+        mMediator.onHighlightingChange(false);
+
+        PrefService prefs = mDelegate.getPrefService();
+        assertFalse(ReadAloudPrefs.isHighlightingEnabled(prefs));
+
+        mMediator.onHighlightingChange(true);
+        assertTrue(ReadAloudPrefs.isHighlightingEnabled(prefs));
+    }
+
+    @Test
+    public void testOnProgressChanged() {
+        mMediator.setPlayback(mPlayback);
+        mModel.set(PlayerProperties.DURATION_NANOS, 100L);
+        // if not from user, make sure doesn't seek playback
+        mOnSeekBarChangeListener.onProgressChanged(mSeekbar, 20, false);
+        verify(mPlayback, never()).seek(anyLong());
+
+        // from user, so should seek
+        mOnSeekBarChangeListener.onProgressChanged(mSeekbar, 20, true);
+        verify(mPlayback).seek(anyLong());
+    }
+
+    @Test
+    public void testObserveVoiceList() {
+        // Set up a Spanish voice pref that isn't the first in the list.
+        MockPrefServiceHelper.setVoices(mPrefsNative, Map.of("es", "c"));
+
+        // Setting the voice list here should trigger UI updates.
+        mVoicesSupplier.set(
+                List.of(new PlaybackVoice("es", "b", ""), new PlaybackVoice("es", "c", "")));
+
+        // Voice list is set in model.
+        List<PlaybackVoice> voicesInModel = mModel.get(PlayerProperties.VOICES_LIST);
+        assertNotNull(voicesInModel);
+        assertEquals(2, voicesInModel.size());
+        assertEquals("es", voicesInModel.get(0).getLanguage());
+        assertEquals("b", voicesInModel.get(0).getVoiceId());
+        assertEquals("es", voicesInModel.get(1).getLanguage());
+        assertEquals("c", voicesInModel.get(1).getVoiceId());
+
+        // Current language voice selection should be applied.
+        assertEquals("c", mModel.get(PlayerProperties.SELECTED_VOICE_ID));
+    }
+
+    @Test
+    public void testObserveVoiceList_defaultVoiceSelection() {
+        // Setting the voice list here should trigger UI updates. There's no voice ID
+        // set for "es" so the first one should be displayed.
+        mVoicesSupplier.set(
+                List.of(new PlaybackVoice("es", "b", ""), new PlaybackVoice("es", "c", "")));
+        assertEquals("b", mModel.get(PlayerProperties.SELECTED_VOICE_ID));
     }
 
     private void resetPlayback() {

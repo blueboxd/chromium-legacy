@@ -710,15 +710,14 @@ class TabStrip::TabDragContextImpl : public TabDragContext,
     ~ResetDraggingStateDelegate() override = default;
 
     void AnimationProgressed(const gfx::Animation* animation) override {
-      tab_container_->OnTabSlotAnimationProgressed(
-          base::to_address(slot_view_));
+      tab_container_->OnTabSlotAnimationProgressed(std::to_address(slot_view_));
     }
 
     void AnimationEnded(const gfx::Animation* animation) override {
       AnimationProgressed(animation);
       slot_view_->set_animating(false);
       slot_view_->set_dragging(false);
-      tab_container_->ReturnTabSlotView(base::to_address(slot_view_));
+      tab_container_->ReturnTabSlotView(std::to_address(slot_view_));
     }
 
     void AnimationCanceled(const gfx::Animation* animation) override {
@@ -917,7 +916,7 @@ TabStrip::TabStrip(std::unique_ptr<TabStripController> controller)
       tab_container_(
           *AddChildViewAt(MakeTabContainer(this,
                                            hover_card_controller_.get(),
-                                           base::to_address(drag_context_)),
+                                           std::to_address(drag_context_)),
                           0)),
       style_(TabStyle::Get()) {
   // TODO(pbos): This is probably incorrect, the background of individual tabs
@@ -946,8 +945,8 @@ TabStrip::~TabStrip() {
   // |tab_container_|'s tabs may call back to us or to |drag_context_| from
   // their destructors. Delete them first so that if they call back we aren't in
   // a weird state.
-  RemoveChildViewT(base::to_address(tab_container_));
-  RemoveChildViewT(base::to_address(drag_context_));
+  RemoveChildViewT(std::to_address(tab_container_));
+  RemoveChildViewT(std::to_address(drag_context_));
 
   CHECK(!IsInObserverList());
 }
@@ -1304,7 +1303,7 @@ int TabStrip::GetModelPinnedTabCount() const {
 }
 
 TabDragContext* TabStrip::GetDragContext() {
-  return base::to_address(drag_context_);
+  return std::to_address(drag_context_);
 }
 
 bool TabStrip::IsAnimating() const {
@@ -1442,7 +1441,6 @@ void TabStrip::AddSelectionFromAnchorTo(Tab* tab) {
 void TabStrip::CloseTab(Tab* tab, CloseTabSource source) {
   const absl::optional<int> index_to_close =
       tab_container_->GetModelIndexOfFirstNonClosingTab(tab);
-
   if (index_to_close.has_value())
     CloseTabInternal(index_to_close.value(), source);
 }
@@ -1601,11 +1599,32 @@ void TabStrip::MaybeStartDrag(
              TabSlotView::ViewType::kTabGroupHeader);
 
   drag_context_->MaybeStartDrag(source, event, original_selection);
+  has_reported_tab_drag_metrics_ = false;
 }
 
 TabSlotController::Liveness TabStrip::ContinueDrag(
     views::View* view,
     const ui::LocatedEvent& event) {
+  // We enter here when dragging really happens.
+  // Note that `MaybeStartDrag()` is invoked as soon as mouse pressed.
+  if (!has_reported_tab_drag_metrics_) {
+    base::TimeTicks drag_time = base::TimeTicks::Now();
+    if (mouse_entered_tabstrip_time_.has_value()) {
+      UmaHistogramMediumTimes("TabStrip.Dragging.TimeFromMouseEntered",
+                              drag_time - mouse_entered_tabstrip_time_.value());
+    }
+
+    tab_drag_count_30min_++;
+    tab_drag_count_5min_++;
+
+    if (last_tab_drag_time_.has_value()) {
+      UmaHistogramLongTimes("TabStrip.Dragging.TimeFromLastDrag",
+                            drag_time - last_tab_drag_time_.value());
+    }
+    last_tab_drag_time_ = drag_time;
+
+    has_reported_tab_drag_metrics_ = true;
+  }
   return drag_context_->ContinueDrag(view, event);
 }
 
@@ -1639,11 +1658,12 @@ void TabStrip::OnMouseEventInTab(views::View* source,
   // Record time from cursor entering the tabstrip to first tap on a tab to
   // switch.
   if (mouse_entered_tabstrip_time_.has_value() &&
+      !has_reported_time_mouse_entered_to_switch_ &&
       event.type() == ui::ET_MOUSE_PRESSED && views::IsViewClass<Tab>(source)) {
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "TabStrip.TimeToSwitch",
         base::TimeTicks::Now() - mouse_entered_tabstrip_time_.value());
-    mouse_entered_tabstrip_time_.reset();
+    has_reported_time_mouse_entered_to_switch_ = true;
   }
 }
 
@@ -1765,7 +1785,7 @@ const Browser* TabStrip::GetBrowser() const {
 views::SizeBounds TabStrip::GetAvailableSize(const views::View* child) const {
   // We can only reach here if SetAvailableWidthCallback() was never called,
   // e.g. if tab scrolling is disabled. Defer to our parent.
-  DCHECK(child == base::to_address(tab_container_));
+  DCHECK(child == std::to_address(tab_container_));
   return parent()->GetAvailableSize(this);
 }
 
@@ -1846,6 +1866,25 @@ void TabStrip::Init() {
   // So we only get enter/exit messages when the mouse enters/exits the whole
   // tabstrip, even if it is entering/exiting a specific Tab, too.
   SetNotifyEnterExitOnChild(true);
+
+  tab_drag_count_timer_5min_ = std::make_unique<base::RepeatingTimer>(
+      FROM_HERE, base::Minutes(5),
+      base::BindRepeating(
+          [](TabStrip* tab_strip) {
+            base::UmaHistogramCounts100("TabStrip.Dragging.Count5Min",
+                                        tab_strip->tab_drag_count_5min_);
+            tab_strip->tab_drag_count_5min_ = 0;
+          },
+          base::Unretained(this)));
+  tab_drag_count_timer_30min_ = std::make_unique<base::RepeatingTimer>(
+      FROM_HERE, base::Minutes(30),
+      base::BindRepeating(
+          [](TabStrip* tab_strip) {
+            base::UmaHistogramCounts100("TabStrip.Dragging.Count30Min",
+                                        tab_strip->tab_drag_count_30min_);
+            tab_strip->tab_drag_count_5min_ = 0;
+          },
+          base::Unretained(this)));
 }
 
 void TabStrip::NewTabButtonPressed(const ui::Event& event) {
@@ -1875,10 +1914,16 @@ void TabStrip::NewTabButtonPressed(const ui::Event& event) {
       return;
     }
   }
-
+  const int tab_count = GetTabCount();
   controller_->CreateNewTab();
   if (event.type() == ui::ET_GESTURE_TAP)
     TouchUMA::RecordGestureAction(TouchUMA::kGestureNewTabTap);
+
+  if (GetTabCount() != tab_count + 1) {
+    UMA_HISTOGRAM_ENUMERATION("TabStrip.Failures.Action",
+                              TabFailureContext::kNewTabOpen,
+                              TabFailureContext::kMaxValue);
+  }
 }
 
 bool TabStrip::ShouldHighlightCloseButtonAfterRemove() {
@@ -2125,6 +2170,7 @@ void TabStrip::TabContextMenuController::ShowContextMenuForViewImpl(
 
 void TabStrip::OnMouseEntered(const ui::MouseEvent& event) {
   mouse_entered_tabstrip_time_ = base::TimeTicks::Now();
+  has_reported_time_mouse_entered_to_switch_ = false;
 }
 
 void TabStrip::OnMouseExited(const ui::MouseEvent& event) {

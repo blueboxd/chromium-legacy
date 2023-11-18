@@ -15,7 +15,6 @@
 #import "components/autofill/core/browser/logging/log_manager.h"
 #import "components/autofill/core/browser/logging/log_router.h"
 #import "components/keyed_service/core/service_access_type.h"
-#import "components/password_manager/core/browser/password_change_success_tracker.h"
 #import "components/password_manager/core/browser/password_form.h"
 #import "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #import "components/password_manager/core/browser/password_manager.h"
@@ -30,7 +29,6 @@
 #import "components/ukm/ios/ukm_url_recorder.h"
 #import "ios/chrome/browser/credential_provider_promo/model/features.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_account_password_store_factory.h"
-#import "ios/chrome/browser/passwords/model/ios_chrome_password_change_success_tracker_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_password_reuse_manager_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_password_requirements_service_factory.h"
@@ -43,7 +41,7 @@
 #import "ios/chrome/browser/shared/public/commands/credential_provider_promo_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
-#import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/signin/model/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/translate/model/chrome_ios_translate_client.h"
 #import "net/cert/cert_status_flags.h"
@@ -148,7 +146,8 @@ void IOSChromePasswordManagerClient::FocusedInputChanged(
 }
 
 void IOSChromePasswordManagerClient::AutomaticPasswordSave(
-    std::unique_ptr<PasswordFormManagerForUI> saved_form_manager) {
+    std::unique_ptr<PasswordFormManagerForUI> saved_form_manager,
+    bool is_update_confirmation) {
   NOTIMPLEMENTED();
 }
 
@@ -201,12 +200,6 @@ IOSChromePasswordManagerClient::GetAccountPasswordStore() const {
 password_manager::PasswordReuseManager*
 IOSChromePasswordManagerClient::GetPasswordReuseManager() const {
   return IOSChromePasswordReuseManagerFactory::GetForBrowserState(
-      bridge_.browserState);
-}
-
-password_manager::PasswordChangeSuccessTracker*
-IOSChromePasswordManagerClient::GetPasswordChangeSuccessTracker() {
-  return IOSChromePasswordChangeSuccessTrackerFactory::GetForBrowserState(
       bridge_.browserState);
 }
 

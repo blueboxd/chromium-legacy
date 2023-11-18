@@ -22,6 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/typed_macros.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/dom_distiller/core/url_constants.h"
@@ -895,8 +896,7 @@ bool OmniboxEditModel::AcceptKeyword(
     OmniboxEventProto::KeywordModeEntryMethod entry_method) {
   TRACE_EVENT0("omnibox", "OmniboxEditModel::AcceptKeyword");
 
-  DCHECK(is_keyword_hint_ && !keyword_.empty())
-      << "is_keyword_hint_: " << is_keyword_hint_ << ", keyword_: " << keyword_;
+  DCHECK(!keyword_.empty()) << keyword_;
 
   controller_->autocomplete_controller()->Stop(false);
 
@@ -1261,8 +1261,9 @@ void OmniboxEditModel::OnUpOrDownPressed(bool down, bool page) {
   // (user_input_in_progress_ is false) unless the first result is a
   // verbatim match of the omnibox input (on-focus query refinements on SERP).
   const OmniboxPopupSelection next_selection =
-      popup_selection_.GetNextSelection(controller_->result(), GetPrefService(),
-                                        direction, step);
+      popup_selection_.GetNextSelection(
+          controller_->result(), GetPrefService(),
+          controller_->client()->GetTemplateURLService(), direction, step);
   if (controller_->result().default_match() && has_temporary_text_ &&
       next_selection.line == 0 &&
       (user_input_in_progress_ ||
@@ -2107,15 +2108,34 @@ void OmniboxEditModel::StepPopupSelection(
   // called before changing the selected line.
   // AcceptKeyword should be called after changing the selected line so we don't
   // accept keyword on the wrong suggestion when stepping backwards.
-  const auto old_selection = GetPopupSelection();
-  const auto new_selection = old_selection.GetNextSelection(
-      controller_->result(), GetPrefService(), direction, step);
-  if (old_selection.IsChangeToKeyword(new_selection)) {
-    ClearKeyword();
-  }
-  SetPopupSelection(new_selection);
-  if (new_selection.IsChangeToKeyword(old_selection)) {
-    AcceptKeyword(metrics::OmniboxEventProto::TAB);
+  const OmniboxPopupSelection old_selection = GetPopupSelection();
+  OmniboxPopupSelection new_selection = old_selection.GetNextSelection(
+      controller_->result(), GetPrefService(),
+      controller_->client()->GetTemplateURLService(), direction, step);
+  if (OmniboxFieldTrial::IsKeywordModeRefreshEnabled()) {
+    if (old_selection.IsChangeToKeyword(new_selection)) {
+      ClearKeyword();
+      SetPopupSelection(new_selection);
+    } else if (new_selection.state ==
+               OmniboxPopupSelection::LineState::KEYWORD_MODE) {
+      // Prepare for keyword mode before accepting it.
+      SetPopupSelection(OmniboxPopupSelection(
+          new_selection.line, OmniboxPopupSelection::LineState::NORMAL));
+      // Note: Popup behavior currently depends on the entry method being tab.
+      // This is not ideal for nuanced metrics, but it is how it has worked
+      // for a long time. Consider refactoring to fix this if needed.
+      AcceptKeyword(metrics::OmniboxEventProto::TAB);
+    } else {
+      SetPopupSelection(new_selection);
+    }
+  } else {
+    if (old_selection.IsChangeToKeyword(new_selection)) {
+      ClearKeyword();
+    }
+    SetPopupSelection(new_selection);
+    if (new_selection.IsChangeToKeyword(old_selection)) {
+      AcceptKeyword(metrics::OmniboxEventProto::TAB);
+    }
   }
 }
 

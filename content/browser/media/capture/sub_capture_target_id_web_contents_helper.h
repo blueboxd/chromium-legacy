@@ -12,12 +12,14 @@
 #include "base/token.h"
 #include "base/uuid.h"
 #include "build/build_config.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
+#include "media/capture/mojom/video_capture_types.mojom.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #error Region Capture not supported on Android.
@@ -31,7 +33,7 @@ class CONTENT_EXPORT SubCaptureTargetIdWebContentsHelper final
     : public WebContentsObserver,
       public WebContentsUserData<SubCaptureTargetIdWebContentsHelper> {
  public:
-  using Type = blink::mojom::SubCaptureTargetType;
+  using Type = media::mojom::SubCaptureTargetType;
 
   // Limits the number of SubCaptureTargetIds a given Web-application can
   // produce of a given type, so as to limit the potential for abuse.
@@ -39,6 +41,17 @@ class CONTENT_EXPORT SubCaptureTargetIdWebContentsHelper final
   // by producing too many IDs. It's up to the Web-application to not
   // embed such iframes.
   constexpr static size_t kMaxIdsPerWebContents = 100;
+
+  // Returns the WebContents associated with a given GlobalRenderFrameHostId.
+  //
+  // This would normally be the WebContents for that very RFH.
+  // But if the relevant setting is set in ContentBrowserClient,
+  // this function returns the WebContents for the *outermost* main frame
+  // or embedder, traversing the parent tree across <iframe> and <webview>
+  // boundaries.
+  //
+  // If no such WebContents is found, nullptr is returned.
+  static WebContents* GetRelevantWebContents(GlobalRenderFrameHostId rfh_id);
 
   explicit SubCaptureTargetIdWebContentsHelper(WebContents* web_contents);
   SubCaptureTargetIdWebContentsHelper(

@@ -184,6 +184,15 @@ InputHandler::ScrollStatus InputHandler::ScrollBegin(ScrollState* scroll_state,
     // still need to walk up the scroll tree looking for the first node that
     // can consume delta from the scroll state.
     scrolling_node = FindNodeToLatch(scroll_state, starting_node, type);
+
+    // When using fluent overlay scrollbars and a subscroller receives a scroll
+    // event, but the scroll chains up to a different node, we want to flash the
+    // scrollbars to show that the node is scrollable.
+    if (scrolling_node &&
+        compositor_delegate_->GetSettings().enable_fluent_overlay_scrollbar &&
+        scrolling_node->element_id != starting_node->element_id) {
+      compositor_delegate_->WillScrollContent(starting_node->element_id);
+    }
   }
 
   if (!scrolling_node) {
@@ -821,7 +830,7 @@ bool InputHandler::ScrollLayerTo(ElementId element_id,
   return true;
 }
 
-absl::optional<gfx::PointF> InputHandler::ConstrainFling(gfx::PointF original) {
+std::optional<gfx::PointF> InputHandler::ConstrainFling(gfx::PointF original) {
   gfx::PointF fling = original;
   if (fling_snap_constrain_x_) {
     fling.set_x(std::clamp(fling.x(), fling_snap_constrain_x_->GetMin(),
@@ -831,7 +840,26 @@ absl::optional<gfx::PointF> InputHandler::ConstrainFling(gfx::PointF original) {
     fling.set_y(std::clamp(fling.y(), fling_snap_constrain_y_->GetMin(),
                            fling_snap_constrain_y_->GetMax()));
   }
-  return original == fling ? absl::nullopt : absl::make_optional(fling);
+  return original == fling ? std::nullopt : std::make_optional(fling);
+}
+
+double InputHandler::PredictViewportBoundsDelta(
+    gfx::Vector2dF scroll_distance) {
+  // This adjustment is just an estimate. If we're wrong about where to aim a
+  // snap fling curve, SnapAtScrollEnd will probably take us to a good place.
+  // And if all else fails, the main thread will fix things in SnapAfterLayout
+  // which runs after cc has stopped scrolling. But it does look nicer when no
+  // corrections are needed, so we try to achieve that in the common cases.
+
+  // The outer_viewport_container_bounds_delta is how much the true viewport
+  // size currently differs from what Blink thinks it is.
+  double current_bounds_delta = GetScrollTree()
+                                    .property_trees()
+                                    ->outer_viewport_container_bounds_delta()
+                                    .y();
+  return compositor_delegate_->GetImplDeprecated()
+      .browser_controls_manager()
+      ->PredictViewportBoundsDelta(current_bounds_delta, scroll_distance);
 }
 
 bool InputHandler::GetSnapFlingInfoAndSetAnimatingSnapTarget(
@@ -844,7 +872,7 @@ bool InputHandler::GetSnapFlingInfoAndSetAnimatingSnapTarget(
       snap_fling_state_ == kNativeFling) {
     return false;
   }
-  const SnapContainerData& data = scroll_node->snap_container_data.value();
+  SnapContainerData& data = scroll_node->snap_container_data.value();
 
   float scale_factor = ActiveTree().page_scale_factor_for_scroll();
   gfx::Vector2dF current_delta_in_content =
@@ -856,7 +884,7 @@ bool InputHandler::GetSnapFlingInfoAndSetAnimatingSnapTarget(
   gfx::PointF new_offset = current_offset + current_delta_in_content;
 
   if (snap_fling_state_ == kConstrainedNativeFling) {
-    if (absl::optional<gfx::PointF> constrained = ConstrainFling(new_offset)) {
+    if (std::optional<gfx::PointF> constrained = ConstrainFling(new_offset)) {
       snap_displacement = *constrained - current_offset;
     } else {
       return false;
@@ -869,7 +897,12 @@ bool InputHandler::GetSnapFlingInfoAndSetAnimatingSnapTarget(
       SnapSelectionStrategy::CreateForEndAndDirection(
           current_offset, snap_displacement, use_fractional_offsets);
 
-  SnapPositionData snap = data.FindSnapPosition(*strategy);
+  double snapport_height_adjustment =
+      scroll_node->scrolls_outer_viewport
+          ? PredictViewportBoundsDelta(snap_displacement)
+          : 0;
+  SnapPositionData snap = data.FindSnapPositionWithViewportAdjustment(
+      *strategy, snapport_height_adjustment);
   if (snap.type == SnapPositionData::Type::kNone) {
     snap_fling_state_ = kNativeFling;
     return false;
@@ -912,7 +945,7 @@ void InputHandler::ScrollEndForSnapFling(bool did_finish) {
     SetNeedsCommit();
   }
   scroll_animating_snap_target_ids_ = TargetSnapAreaElementIds();
-  ScrollEnd(false /* should_snap */);
+  ScrollEnd(true /* should_snap */);
 }
 
 void InputHandler::NotifyInputEvent() {
@@ -1853,7 +1886,12 @@ bool InputHandler::SnapAtScrollEnd(SnapReason reason) {
         did_scroll_y_for_scroll_gesture_);
   }
 
-  SnapPositionData snap = data.FindSnapPosition(*strategy);
+  double snapport_height_adjustment =
+      scroll_node->scrolls_outer_viewport
+          ? PredictViewportBoundsDelta(gfx::Vector2dF())
+          : 0;
+  SnapPositionData snap = data.FindSnapPositionWithViewportAdjustment(
+      *strategy, snapport_height_adjustment);
   if (snap.type == SnapPositionData::Type::kNone) {
     return false;
   }

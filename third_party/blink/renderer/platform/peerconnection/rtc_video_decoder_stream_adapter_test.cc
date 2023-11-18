@@ -483,8 +483,8 @@ TEST_P(RTCVideoDecoderStreamAdapterTest, SlowDecodingCausesReset) {
   // All Decodes succeed immediately.  The backup will come from the fact that
   // we won't run the media thread while sending decode requests in.
   EXPECT_CALL(*decoder, Decode_(_, _))
-      .WillRepeatedly(
-          base::test::RunOnceCallback<1>(media::DecoderStatus::Codes::kOk));
+      .WillRepeatedly(base::test::RunOnceCallbackRepeatedly<1>(
+          media::DecoderStatus::Codes::kOk));
   // At some point, `adapter_` should trigger a reset.
   EXPECT_CALL(*decoder, Reset_(_)).WillOnce(base::test::RunOnceCallback<0>());
 
@@ -532,8 +532,8 @@ TEST_P(RTCVideoDecoderStreamAdapterTest, ReallySlowDecodingCausesFallback) {
   // All Decodes succeed immediately.  The backup will come from the fact that
   // we won't run the media thread while sending decode requests in.
   EXPECT_CALL(*decoder, Decode_(_, _))
-      .WillRepeatedly(
-          base::test::RunOnceCallback<1>(media::DecoderStatus::Codes::kOk));
+      .WillRepeatedly(base::test::RunOnceCallbackRepeatedly<1>(
+          media::DecoderStatus::Codes::kOk));
   // At some point, `adapter_` should trigger a reset, before it falls back.  It
   // should not do so more than once, since we won't complete the reset.
   EXPECT_CALL(*decoder, Reset_(_)).WillOnce(base::test::RunOnceCallback<0>());
@@ -652,11 +652,9 @@ TEST_P(RTCVideoDecoderStreamAdapterTest, UseD3D11ToDecodeVP9kSVCStream) {
   FinishDecode(0);
   EXPECT_TRUE(BasicTeardown());
 }
-#endif
-
+#elif !(defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS))
 // On ChromeOS, only based on x86(use VaapiDecoder) architecture has the ability
 // to decode VP9 kSVC Stream. Other cases should fallback to sw decoder.
-#if !(defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS))
 TEST_P(RTCVideoDecoderStreamAdapterTest,
        FallbackToSoftwareWhenDecodeVP9kSVCStream) {
   auto* decoder = decoder_factory_->decoder();
@@ -669,7 +667,7 @@ TEST_P(RTCVideoDecoderStreamAdapterTest,
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(BasicTeardown());
 }
-#endif
+#endif  // BUILDFLAG(IS_WIN)
 
 INSTANTIATE_TEST_SUITE_P(
     UseHwDecoding,

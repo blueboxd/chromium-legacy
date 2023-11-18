@@ -18,12 +18,8 @@
 #import "components/feed/feed_feature_list.h"
 #import "components/policy/policy_constants.h"
 #import "components/pref_registry/pref_registry_syncable.h"
-#import "components/prefs/ios/pref_observer_bridge.h"
-#import "components/prefs/pref_change_registrar.h"
 #import "components/prefs/pref_service.h"
-#import "components/search_engines/default_search_manager.h"
-#import "components/search_engines/template_url.h"
-#import "components/search_engines/template_url_service.h"
+#import "components/search/search.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #import "components/sync/base/features.h"
@@ -37,14 +33,11 @@
 #import "ios/chrome/browser/follow/follow_browser_agent.h"
 #import "ios/chrome/browser/follow/followed_web_site.h"
 #import "ios/chrome/browser/follow/followed_web_site_state.h"
-#import "ios/chrome/browser/ntp/features.h"
-#import "ios/chrome/browser/ntp/home/features.h"
 #import "ios/chrome/browser/ntp/new_tab_page_state.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
-#import "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/layout_guide/layout_guide_util.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
-#import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -62,14 +55,14 @@
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
-#import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/signin/authentication_service_observer_bridge.h"
-#import "ios/chrome/browser/signin/capabilities_types.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
-#import "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/chrome/browser/signin/system_identity_manager.h"
+#import "ios/chrome/browser/signin/model/authentication_service.h"
+#import "ios/chrome/browser/signin/model/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/model/authentication_service_observer_bridge.h"
+#import "ios/chrome/browser/signin/model/capabilities_types.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service_factory.h"
+#import "ios/chrome/browser/signin/model/identity_manager_factory.h"
+#import "ios/chrome/browser/signin/model/system_identity_manager.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
@@ -136,13 +129,7 @@
                                      NewTabPageHeaderCommands,
                                      NewTabPageMetricsDelegate,
                                      OverscrollActionsControllerDelegate,
-                                     PrefObserverDelegate,
                                      SceneStateObserver> {
-  // Pref observer to track changes to prefs.
-  std::unique_ptr<PrefObserverBridge> _prefObserverBridge;
-  // Registrar for pref changes notifications.
-  std::unique_ptr<PrefChangeRegistrar> _prefChangeRegistrar;
-
   // Observes changes in the IdentityManager.
   std::unique_ptr<signin::IdentityManagerObserverBridge>
       _identityObserverBridge;
@@ -293,8 +280,7 @@
   DCHECK(NewTabPageTabHelper::FromWebState(self.webState)->IsActive());
 
   // Start observing SceneState changes.
-  SceneState* sceneState =
-      SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
+  SceneState* sceneState = self.browser->GetSceneState();
   [sceneState addObserver:self];
 
   // Configures incognito NTP if user is in incognito mode.
@@ -330,13 +316,12 @@
   // Updates feed asynchronously if the account is subject to parental controls.
   [self updateFeedVisibilityForSupervision];
 
-  // Configures NTP components.
-  if ([self isFeedHeaderVisible]) {
+  [self configureNTPMediator];
+  if (self.NTPMediator.feedHeaderVisible) {
     [self configureFeedAndHeader];
   }
   [self configureHeaderViewController];
   [self configureContentSuggestionsCoordinator];
-  [self configureNTPMediator];
   [self configureFeedMetricsRecorder];
   [self configureNTPViewController];
 
@@ -350,8 +335,7 @@
 
   _webState = nullptr;
 
-  SceneState* sceneState =
-      SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
+  SceneState* sceneState = self.browser->GetSceneState();
   [sceneState removeObserver:self];
 
   if (self.browser->GetBrowserState()->IsOffTheRecord()) {
@@ -376,9 +360,9 @@
   [self.containedViewController.view removeFromSuperview];
   [self.containedViewController removeFromParentViewController];
   self.containedViewController = nil;
-  self.NTPViewController.feedHeaderViewController = nil;
+  [self.NTPViewController invalidate];
   self.NTPViewController = nil;
-  self.feedHeaderViewController.ntpDelegate = nil;
+  self.feedHeaderViewController.NTPDelegate = nil;
   self.feedHeaderViewController = nil;
   [self.feedTopSectionCoordinator stop];
   self.feedTopSectionCoordinator = nil;
@@ -410,8 +394,6 @@
   [self.feedMenuCoordinator stop];
   self.feedMenuCoordinator = nil;
 
-  _prefChangeRegistrar.reset();
-  _prefObserverBridge.reset();
   _discoverFeedObserverBridge.reset();
   _identityObserverBridge.reset();
   _authServiceObserverBridge.reset();
@@ -582,19 +564,6 @@
   DCHECK(self.prefService);
   DCHECK(self.headerViewController);
 
-  _prefChangeRegistrar = std::make_unique<PrefChangeRegistrar>();
-  _prefChangeRegistrar->Init(self.prefService);
-  _prefObserverBridge = std::make_unique<PrefObserverBridge>(self);
-  _prefObserverBridge->ObserveChangesForPreference(
-      prefs::kArticlesForYouEnabled, _prefChangeRegistrar.get());
-  _prefObserverBridge->ObserveChangesForPreference(
-      prefs::kNTPContentSuggestionsEnabled, _prefChangeRegistrar.get());
-  _prefObserverBridge->ObserveChangesForPreference(
-      prefs::kNTPContentSuggestionsForSupervisedUserEnabled,
-      _prefChangeRegistrar.get());
-  _prefObserverBridge->ObserveChangesForPreference(
-      DefaultSearchManager::kDefaultSearchProviderDataPrefName,
-      _prefChangeRegistrar.get());
   self.feedExpandedPref = [[PrefBackedBoolean alloc]
       initWithPrefService:self.prefService
                  prefName:feed::prefs::kArticlesListVisible];
@@ -626,10 +595,10 @@
       self.componentFactory;
   self.logoVendor = ios::provider::CreateLogoVendor(browser, self.webState);
   self.NTPViewController = [componentFactory NTPViewController];
-  self.headerViewController = [componentFactory headerViewController];
+  self.headerViewController =
+      [componentFactory headerViewControllerForBrowser:browser];
   self.NTPMediator =
       [componentFactory NTPMediatorForBrowser:browser
-                                     webState:self.webState
                      identityDiscImageUpdater:self.headerViewController];
   self.contentSuggestionsCoordinator =
       [componentFactory contentSuggestionsCoordinatorForBrowser:browser];
@@ -642,7 +611,7 @@
 
 // Creates and configures the feed and feed header based on user prefs.
 - (void)configureFeedAndHeader {
-  CHECK([self isFeedHeaderVisible]);
+  CHECK(self.NTPMediator.feedHeaderVisible);
   CHECK(self.NTPViewController);
 
   if (!self.feedHeaderViewController) {
@@ -667,7 +636,7 @@
   }
 
   self.feedHeaderViewController.feedControlDelegate = self;
-  self.feedHeaderViewController.ntpDelegate = self;
+  self.feedHeaderViewController.NTPDelegate = self;
   self.feedHeaderViewController.feedMetricsRecorder = self.feedMetricsRecorder;
   if (!IsFollowUIUpdateEnabled()) {
     self.feedHeaderViewController.followingFeedSortType =
@@ -728,6 +697,7 @@
   self.contentSuggestionsCoordinator.NTPDelegate = self;
   self.contentSuggestionsCoordinator.delegate = self;
   self.contentSuggestionsCoordinator.NTPMetricsDelegate = self;
+  self.contentSuggestionsCoordinator.NTPViewDelegate = self.NTPViewController;
   [self.contentSuggestionsCoordinator start];
 }
 
@@ -967,7 +937,7 @@
 }
 
 - (BOOL)shouldFeedBeVisible {
-  return [self isFeedHeaderVisible] && [self.feedExpandedPref value];
+  return self.NTPMediator.feedHeaderVisible && [self.feedExpandedPref value];
 }
 
 - (BOOL)isFollowingFeedAvailable {
@@ -977,6 +947,24 @@
 
 - (NSUInteger)lastVisibleFeedCardIndex {
   return [self.feedWrapperViewController lastVisibleFeedCardIndex];
+}
+
+- (void)setFeedAndHeaderVisibility:(BOOL)visible {
+  if (!self.NTPViewController.viewLoaded) {
+    return;
+  }
+  [self updateNTPForFeed];
+  [self.NTPViewController setContentOffsetToTop];
+}
+
+- (void)updateFeedForDefaultSearchEngineChanged {
+  if (!self.NTPViewController.viewLoaded) {
+    return;
+  }
+  [self.feedHeaderViewController updateForDefaultSearchEngineChanged];
+  [self updateFeedLayout];
+  [self cancelOmniboxEdit];
+  [self.NTPViewController setContentOffsetToTop];
 }
 
 #pragma mark - ContentSuggestionsDelegate
@@ -1108,7 +1096,8 @@
 #pragma mark - NewTabPageContentDelegate
 
 - (BOOL)isContentHeaderSticky {
-  return [self isFollowingFeedAvailable] && [self isFeedHeaderVisible] &&
+  return [self isFollowingFeedAvailable] &&
+         self.NTPMediator.feedHeaderVisible &&
          !IsStickyHeaderDisabledForFollowingFeed();
 }
 
@@ -1182,14 +1171,7 @@
 }
 
 - (BOOL)isGoogleDefaultSearchEngine {
-  DCHECK(self.templateURLService);
-  const TemplateURL* defaultURL =
-      self.templateURLService->GetDefaultSearchProvider();
-  BOOL isGoogleDefaultSearchProvider =
-      defaultURL &&
-      defaultURL->GetEngineType(self.templateURLService->search_terms_data()) ==
-          SEARCH_ENGINE_GOOGLE;
-  return isGoogleDefaultSearchProvider;
+  return search::DefaultSearchProviderIsGoogle(self.templateURLService);
 }
 
 - (BOOL)isStartSurface {
@@ -1421,24 +1403,6 @@
   }
 }
 
-#pragma mark - PrefObserverDelegate
-
-- (void)onPreferenceChanged:(const std::string&)preferenceName {
-  if (!self.started) {
-    return;
-  }
-  if (preferenceName == prefs::kArticlesForYouEnabled ||
-      preferenceName == prefs::kNTPContentSuggestionsEnabled ||
-      preferenceName == prefs::kNTPContentSuggestionsForSupervisedUserEnabled) {
-    [self updateNTPForFeed];
-    [self setContentOffsetToTop];
-  }
-  if (preferenceName ==
-      DefaultSearchManager::kDefaultSearchProviderDataPrefName) {
-    [self defaultSearchEngineDidChange];
-  }
-}
-
 #pragma mark - SceneStateObserver
 
 - (void)sceneState:(SceneState*)sceneState
@@ -1496,10 +1460,6 @@
 - (void)updateNTPForFeed {
   DCHECK(self.NTPViewController);
 
-  if (!self.started) {
-    return;
-  }
-
   [self.NTPViewController resetViewHierarchy];
 
   if (self.feedViewController) {
@@ -1516,7 +1476,7 @@
 
   // Fetches feed header and conditionally fetches feed. Feed can only be
   // visible if feed header is visible.
-  if ([self isFeedHeaderVisible]) {
+  if (self.NTPMediator.feedHeaderVisible) {
     [self configureFeedAndHeader];
   } else {
     self.NTPViewController.feedHeaderViewController = nil;
@@ -1540,21 +1500,6 @@
   [self.NTPViewController layoutContentInParentCollectionView];
 
   [self updateFeedLayout];
-}
-
-// Feed header is always visible unless it is disabled (eg. Disabled from Chrome
-// settings, enterprise policy, safe mode, etc.).
-- (BOOL)isFeedHeaderVisible {
-  // Feed is disabled in safe mode.
-  SceneState* sceneState =
-      SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
-  BOOL isSafeMode = [sceneState.appState resumingFromSafeMode];
-
-  return self.prefService->GetBoolean(prefs::kArticlesForYouEnabled) &&
-         self.prefService->GetBoolean(prefs::kNTPContentSuggestionsEnabled) &&
-         !IsFeedAblationEnabled() &&
-         IsContentSuggestionsForSupervisedUserEnabled(self.prefService) &&
-         !isSafeMode;
 }
 
 // Returns `YES` if the feed is currently visible on the NTP.
@@ -1599,13 +1544,6 @@
           }));
 }
 
-// Handles how the NTP reacts when the default search engine is changed.
-- (void)defaultSearchEngineDidChange {
-  [self.feedHeaderViewController updateForDefaultSearchEngineChanged];
-  [self updateFeedLayout];
-  [self.NTPViewController setContentOffsetToTop];
-}
-
 // Toggles feed visibility between hidden or expanded using the feed header
 // menu. A hidden feed will continue to show the header, with a modified label.
 // TODO(crbug.com/1304382): Modify this comment when Web Channels is launched.
@@ -1622,7 +1560,7 @@
       [[FeedTopSectionCoordinator alloc]
           initWithBaseViewController:self.NTPViewController
                              browser:self.browser];
-  feedTopSectionCoordinator.ntpDelegate = self;
+  feedTopSectionCoordinator.NTPDelegate = self;
   [feedTopSectionCoordinator start];
   return feedTopSectionCoordinator;
 }
@@ -1645,6 +1583,7 @@
 // changed.
 - (void)handleFeedVisibilityDidChange {
   [self updateNTPForFeed];
+  [self cancelOmniboxEdit];
   [self setContentOffsetToTop];
   [self.feedHeaderViewController updateForFeedVisibilityChanged];
 }
@@ -1674,7 +1613,7 @@
   if (!self.browser->GetBrowserState()->IsOffTheRecord()) {
     if (visible) {
       self.didAppearTime = base::TimeTicks::Now();
-      if ([self isFeedHeaderVisible]) {
+      if (self.NTPMediator.feedHeaderVisible) {
         if ([self.feedExpandedPref value]) {
           [self.NTPMetricsRecorder
               recordHomeImpression:IOSNTPImpressionType::kFeedVisible

@@ -23,7 +23,9 @@
 
 #import "third_party/blink/renderer/platform/fonts/mac/font_platform_data_mac.h"
 
+#if BUILDFLAG(IS_MAC)
 #import <AppKit/AppKit.h>
+#endif  // BUILDFLAG(IS_MAC)
 #import <AvailabilityMacros.h>
 
 #include "base/apple/bridging.h"
@@ -43,11 +45,14 @@
 #import "third_party/skia/include/ports/SkTypeface_mac.h"
 
 namespace {
+#if BUILDFLAG(IS_MAC)
 constexpr SkFourByteTag kOpszTag = SkSetFourByteTag('o', 'p', 's', 'z');
+#endif  // BUILDFLAG(IS_MAC)
 }
 
 namespace blink {
 
+#if BUILDFLAG(IS_MAC)
 bool VariableAxisChangeEffective(SkTypeface* typeface,
                                  SkFourByteTag axis,
                                  float new_value) {
@@ -96,7 +101,7 @@ static bool CanLoadInProcess(NSFont* ns_font) {
   base::apple::ScopedCFTypeRef<CGFontRef> cg_font(CTFontCopyGraphicsFont(
       base::apple::NSToCFPtrCast(ns_font), /*attributes=*/nullptr));
   NSString* font_name =
-      base::apple::CFToNSOwnershipCast(CGFontCopyPostScriptName(cg_font));
+      base::apple::CFToNSOwnershipCast(CGFontCopyPostScriptName(cg_font.get()));
   return ![font_name isEqualToString:@"LastResort"];
 }
 
@@ -198,6 +203,7 @@ std::unique_ptr<FontPlatformData> FontPlatformDataFromNSFont(
   typeface = cloned_typeface;
   return make_typeface_fontplatformdata();
 }
+#endif  // BUILDFLAG(IS_MAC)
 
 SkFont FontPlatformData::CreateSkFont(
     const FontDescription* font_description) const {

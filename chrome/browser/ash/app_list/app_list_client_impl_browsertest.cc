@@ -10,6 +10,8 @@
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/test/app_list_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
@@ -452,7 +454,14 @@ class AppListClientImplBrowserPromiseAppTest
   }
 
   // AppListModelUpdaterObserver:
-  void OnAppListItemUpdated(ChromeAppListItem* item) override { updates_++; }
+  void OnAppListItemUpdated(ChromeAppListItem* item) override {
+    last_updated_metadata_ = item->CloneMetadata();
+    updates_++;
+  }
+
+  ash::AppListItemMetadata* GetMetadataFromLastUpdate() {
+    return last_updated_metadata_.get();
+  }
 
   int GetAndResetUpdateCount() {
     int cached_updates = updates_;
@@ -462,6 +471,7 @@ class AppListClientImplBrowserPromiseAppTest
 
  private:
   int updates_ = 0;
+  std::unique_ptr<ash::AppListItemMetadata> last_updated_metadata_;
   base::test::ScopedFeatureList feature_list_;
 };
 
@@ -469,6 +479,7 @@ class AppListClientImplBrowserPromiseAppTest
 // launcher.
 IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserPromiseAppTest,
                        PromiseAppsInLauncher) {
+  std::string app_name = "Long App Name";
   AppListClientImpl* client = AppListClientImpl::GetInstance();
   EXPECT_TRUE(client);
 
@@ -476,6 +487,7 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserPromiseAppTest,
   apps::PromiseAppPtr promise_app =
       std::make_unique<apps::PromiseApp>(kTestPackageId);
   promise_app->status = apps::PromiseStatus::kPending;
+  promise_app->name = app_name;
   promise_app->should_show = true;
   cache()->OnPromiseApp(std::move(promise_app));
 
@@ -491,6 +503,11 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserPromiseAppTest,
   ASSERT_EQ(item->name(),
             base::UTF16ToUTF8(ShelfControllerHelper::GetLabelForPromiseStatus(
                 apps::PromiseStatus::kPending)));
+  ASSERT_EQ(item->accessible_name(),
+            base::UTF16ToUTF8(
+                ShelfControllerHelper::GetAccessibleLabelForPromiseStatus(
+                    app_name, apps::PromiseStatus::kPending)));
+  GetAndResetUpdateCount();
 
   // Update the promise app in the promise app registry cache.
   apps::PromiseAppPtr update =
@@ -499,13 +516,20 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserPromiseAppTest,
   update->status = apps::PromiseStatus::kInstalling;
   cache()->OnPromiseApp(std::move(update));
 
+  // Verify that OnAppListItemUpdated was called four times:
+  // For accessible name, for name, for progress and for app_status.
+  EXPECT_EQ(4, GetAndResetUpdateCount());
+
   // Promise app item should have updated fields.
   EXPECT_EQ(item->progress(), 0.3f);
   EXPECT_EQ(item->app_status(), ash::AppStatus::kInstalling);
   EXPECT_EQ(item->name(),
             base::UTF16ToUTF8(ShelfControllerHelper::GetLabelForPromiseStatus(
                 apps::PromiseStatus::kInstalling)));
-  GetAndResetUpdateCount();
+  ASSERT_EQ(item->accessible_name(),
+            base::UTF16ToUTF8(
+                ShelfControllerHelper::GetAccessibleLabelForPromiseStatus(
+                    app_name, apps::PromiseStatus::kInstalling)));
 
   // Register (i.e. "install") an app with a matching package ID. This should
   // trigger removal of the promise app.
@@ -519,7 +543,13 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserPromiseAppTest,
   app_service_proxy()->OnApps(std::move(apps), apps::AppType::kArc,
                               /*should_notify_initialized=*/false);
 
+  // Verify that the promise app was updated correctly into a successful status
+  // before it was removed.
+  ash::AppListItemMetadata* metadata_before_removal =
+      GetMetadataFromLastUpdate();
   EXPECT_EQ(1, GetAndResetUpdateCount());
+  EXPECT_EQ(ash::AppStatus::kInstallSuccess,
+            metadata_before_removal->app_status);
   EXPECT_FALSE(model_updater->FindItem(kTestPackageId.ToString()));
 }
 

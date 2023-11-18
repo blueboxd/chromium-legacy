@@ -7,7 +7,7 @@ import("//build/config/features.gni")
 import(
     "//chrome/browser/resources/chromeos/accessibility/tools/run_jsbundler.gni")
 import("//chrome/common/features.gni")
-import("//chrome/test/base/js2gtest.gni")
+import("//chrome/test/base/ash/js2gtest.gni")
 import("//testing/test.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/typescript/ts_library.gni")
@@ -151,7 +151,6 @@ js_type_check("closure_compile") {
     ":ui_manager",
     "../common:automation_predicate",
     "../common:automation_util",
-    "../common:closure_shim",
     "../common:constants",
     "../common:key_code",
     "../common:node_navigation_utils",

@@ -130,14 +130,15 @@ Length Length::BlendSameTypes(const Length& from,
 PixelsAndPercent Length::GetPixelsAndPercent() const {
   switch (GetType()) {
     case kFixed:
-      return PixelsAndPercent(Value(), 0);
+      return PixelsAndPercent(Value());
     case kPercent:
-      return PixelsAndPercent(0, Value());
+      return PixelsAndPercent(0.0f, Value(), /*has_explicit_pixels=*/false,
+                              /*has_explicit_percent=*/true);
     case kCalculated:
       return GetCalculationValue().GetPixelsAndPercent();
     default:
       NOTREACHED();
-      return PixelsAndPercent(0, 0);
+      return PixelsAndPercent(0.0f, 0.0f, false, false);
   }
 }
 
@@ -151,15 +152,7 @@ Length Length::SubtractFromOneHundredPercent() const {
   if (IsPercent())
     return Length::Percent(100 - Value());
   DCHECK(IsSpecified());
-  scoped_refptr<const CalculationValue> result =
-      AsCalculationValue()->SubtractFromOneHundredPercent();
-  if (result->IsExpression() ||
-      (result->Pixels() != 0 && result->Percent() != 0)) {
-    return Length(std::move(result));
-  }
-  if (result->Percent())
-    return Length::Percent(result->Percent());
-  return Length::Fixed(result->Pixels());
+  return Length(AsCalculationValue()->SubtractFromOneHundredPercent());
 }
 
 Length Length::Add(const Length& other) const {
@@ -170,17 +163,7 @@ Length Length::Add(const Length& other) const {
   if (IsPercent() && other.IsPercent()) {
     return Length::Percent(Percent() + other.Percent());
   }
-
-  scoped_refptr<const CalculationValue> result =
-      AsCalculationValue()->Add(*other.AsCalculationValue());
-  if (result->IsExpression() ||
-      (result->Pixels() != 0 && result->Percent() != 0)) {
-    return Length(std::move(result));
-  }
-  if (result->Percent()) {
-    return Length::Percent(result->Percent());
-  }
-  return Length::Fixed(result->Pixels());
+  return Length(AsCalculationValue()->Add(*other.AsCalculationValue()));
 }
 
 Length Length::Zoom(double factor) const {

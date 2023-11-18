@@ -24,6 +24,7 @@
 
 #include <string.h>
 
+#include <concepts>
 #include <limits>
 #include <memory>
 #include <type_traits>
@@ -226,13 +227,12 @@ struct IntHashTraits
 
 // Default traits for an enum type.  0 is very popular, and -1 is also popular.
 // So we use -128 and -127.
-template <typename T, auto empty_value = -128, auto deleted_value = -127>
-struct EnumHashTraits
-    : internal::IntOrEnumHashTraits<T, empty_value, deleted_value> {
+template <typename T>
+struct EnumHashTraits : internal::IntOrEnumHashTraits<T, -128, -127> {
   static_assert(std::is_enum_v<T>);
 };
 
-template <typename T, typename Enable = void>
+template <typename T>
 struct GenericHashTraits : internal::GenericHashTraitsBase<T> {
   static_assert(!std::is_integral_v<T>);
   static_assert(!std::is_enum_v<T>);
@@ -240,16 +240,16 @@ struct GenericHashTraits : internal::GenericHashTraitsBase<T> {
 };
 
 template <typename T>
-struct GenericHashTraits<T, std::enable_if_t<std::is_integral_v<T>>>
-    : IntHashTraits<T> {};
+  requires std::integral<T>
+struct GenericHashTraits<T> : IntHashTraits<T> {};
 
 template <typename T>
-struct GenericHashTraits<T, std::enable_if_t<std::is_enum_v<T>>>
-    : EnumHashTraits<T> {};
+  requires std::is_enum_v<T>
+struct GenericHashTraits<T> : EnumHashTraits<T> {};
 
 template <typename T>
-struct GenericHashTraits<T, std::enable_if_t<std::is_floating_point_v<T>>>
-    : internal::GenericHashTraitsBase<T> {
+  requires std::floating_point<T>
+struct GenericHashTraits<T> : internal::GenericHashTraitsBase<T> {
   static unsigned GetHash(T key) { return HashFloat(key); }
   static bool Equal(T a, T b) { return FloatEqualForHash(a, b); }
   static constexpr T EmptyValue() { return std::numeric_limits<T>::infinity(); }

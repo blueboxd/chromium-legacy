@@ -16,6 +16,7 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/ash/policy/enrollment/auto_enrollment_client.h"
+#include "chrome/browser/ash/policy/enrollment/auto_enrollment_state.h"
 #include "chrome/browser/ash/policy/server_backed_state/server_backed_state_keys_broker.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/ash/components/dbus/system_clock/fake_system_clock_client.h"
@@ -347,7 +348,7 @@ class AutoEnrollmentControllerBaseTest : public testing::Test {
 
   void SetupOwnership(ash::DeviceSettingsService::OwnershipStatus status) {
     ON_CALL(mock_device_settings_service_, GetOwnershipStatusAsync)
-        .WillByDefault(base::test::RunOnceCallback<0>(
+        .WillByDefault(base::test::RunOnceCallbackRepeatedly<0>(
             ash::DeviceSettingsService::OwnershipStatus::kOwnershipNone));
   }
 
@@ -357,7 +358,7 @@ class AutoEnrollmentControllerBaseTest : public testing::Test {
 
   void SetupStateKeysAvailable() {
     ON_CALL(mock_state_keys_broker_, RequestStateKeys)
-        .WillByDefault(base::test::RunOnceCallback<0>(
+        .WillByDefault(base::test::RunOnceCallbackRepeatedly<0>(
             std::vector<std::string>{kTestStateKey}));
   }
 
@@ -427,13 +428,10 @@ TEST_F(AutoEnrollmentControllerSafeguardTimeoutTest,
   EXPECT_FALSE(controller.SafeguardTimerForTesting().IsRunning());
 
   // Start auto-enrollment check and kick-off the tasks.
-  RunAndWaitForStateUpdate(controller,
-                           base::BindLambdaForTesting([this, &controller]() {
-                             controller.Start();
-                             task_environment_.FastForwardBy(base::TimeDelta());
-                           }));
+  controller.Start();
+  task_environment_.FastForwardBy(base::TimeDelta());
 
-  EXPECT_EQ(controller.state(), AutoEnrollmentState::kPending);
+  EXPECT_FALSE(controller.state().has_value());
   EXPECT_TRUE(controller.SafeguardTimerForTesting().IsRunning());
 
   RunAndWaitForStateUpdate(controller, base::BindLambdaForTesting([this]() {
@@ -467,13 +465,10 @@ TEST_F(AutoEnrollmentControllerSafeguardTimeoutTest,
   EXPECT_FALSE(controller.SafeguardTimerForTesting().IsRunning());
 
   // Start auto-enrollment check and kick-off the tasks.
-  RunAndWaitForStateUpdate(controller,
-                           base::BindLambdaForTesting([this, &controller]() {
-                             controller.Start();
-                             task_environment_.FastForwardBy(base::TimeDelta());
-                           }));
+  controller.Start();
+  task_environment_.FastForwardBy(base::TimeDelta());
 
-  EXPECT_EQ(controller.state(), AutoEnrollmentState::kPending);
+  EXPECT_FALSE(controller.state().has_value());
   EXPECT_TRUE(controller.SafeguardTimerForTesting().IsRunning());
 
   RunAndWaitForStateUpdate(controller, base::BindLambdaForTesting([this]() {
@@ -505,7 +500,7 @@ TEST_F(AutoEnrollmentControllerSafeguardTimeoutTest,
   EXPECT_CALL(mock_state_keys_broker_, RequestStateKeys)
       .Times(kMaxRequestStateKeysTries - 1)
       .WillRepeatedly(
-          base::test::RunOnceCallback<0>(std::vector<std::string>{}))
+          base::test::RunOnceCallbackRepeatedly<0>(std::vector<std::string>{}))
       .RetiresOnSaturation();
 
   auto controller = CreateController();
@@ -513,16 +508,14 @@ TEST_F(AutoEnrollmentControllerSafeguardTimeoutTest,
   EXPECT_FALSE(controller.SafeguardTimerForTesting().IsRunning());
 
   // Start auto-enrollment check and kick-off the tasks.
-  RunAndWaitForStateUpdate(controller,
-                           base::BindLambdaForTesting([this, &controller]() {
-                             controller.Start();
-                             task_environment_.FastForwardBy(base::TimeDelta());
-                           }));
+  controller.Start();
+  task_environment_.FastForwardBy(base::TimeDelta());
 
   EXPECT_EQ(controller.auto_enrollment_check_type(),
             AutoEnrollmentTypeChecker::CheckType::
                 kForcedReEnrollmentExplicitlyRequired);
-  EXPECT_EQ(controller.state(), AutoEnrollmentState::kPending);
+  EXPECT_FALSE(controller.state().has_value());
+  EXPECT_TRUE(controller.SafeguardTimerForTesting().IsRunning());
   ASSERT_TRUE(last_state_keys_callback);
 
   // Run out of state keys attempts and check that timeout is triggered.
@@ -554,11 +547,13 @@ TEST_F(AutoEnrollmentControllerNetworkTest, DoesNotStartWhenGoesOnline) {
 
   auto controller = CreateController();
 
-  EXPECT_EQ(controller.state(), AutoEnrollmentState::kIdle);
+  EXPECT_FALSE(controller.state().has_value());
+  EXPECT_FALSE(controller.SafeguardTimerForTesting().IsRunning());
 
   testing_network_.GoOnline();
 
-  EXPECT_EQ(controller.state(), AutoEnrollmentState::kIdle);
+  EXPECT_FALSE(controller.state().has_value());
+  EXPECT_FALSE(controller.SafeguardTimerForTesting().IsRunning());
 }
 
 // Tests that the controller retries when the network goes online.
@@ -571,12 +566,12 @@ TEST_F(AutoEnrollmentControllerNetworkTest, RetriesWhenGoesOnline) {
     EXPECT_CALL(mock_auto_enrollment_client_, Start).Times(1);
     EXPECT_CALL(mock_auto_enrollment_client_, Retry).Times(0);
 
-    RunAndWaitForStateUpdate(
-        controller,
-        base::BindLambdaForTesting([&controller]() { controller.Start(); }));
+    controller.Start();
+    task_environment_.FastForwardBy(base::TimeDelta());
 
     testing::Mock::VerifyAndClearExpectations(&mock_auto_enrollment_client_);
-    EXPECT_EQ(controller.state(), AutoEnrollmentState::kPending);
+    EXPECT_FALSE(controller.state().has_value());
+    EXPECT_TRUE(controller.SafeguardTimerForTesting().IsRunning());
   }
 
   // Flip-flop the network state and check that retry is triggered.
@@ -584,13 +579,13 @@ TEST_F(AutoEnrollmentControllerNetworkTest, RetriesWhenGoesOnline) {
     EXPECT_CALL(mock_auto_enrollment_client_, Start).Times(0);
     EXPECT_CALL(mock_auto_enrollment_client_, Retry).Times(1);
 
-    RunAndExpectNoStateUpdate(controller, base::BindLambdaForTesting([this]() {
-                                testing_network_.GoOffline();
-                                testing_network_.GoOnline();
-                              }));
+    testing_network_.GoOffline();
+    testing_network_.GoOnline();
+    task_environment_.FastForwardBy(base::TimeDelta());
 
     testing::Mock::VerifyAndClearExpectations(&mock_auto_enrollment_client_);
-    EXPECT_EQ(controller.state(), AutoEnrollmentState::kPending);
+    EXPECT_FALSE(controller.state().has_value());
+    EXPECT_TRUE(controller.SafeguardTimerForTesting().IsRunning());
   }
 
   // Stop the client with connection error so the controller can retry.

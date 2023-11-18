@@ -507,6 +507,7 @@ interface CSSImportRule : CSSRule
     getter layerName
     getter media
     getter styleSheet
+    getter supportsText
     method constructor
     setter media
 interface CSSKeyframeRule : CSSRule
@@ -682,7 +683,7 @@ interface CSSScale : CSSTransformComponent
     setter x
     setter y
     setter z
-interface CSSScopeRule : CSSConditionRule
+interface CSSScopeRule : CSSGroupingRule
     attribute @@toStringTag
     getter end
     getter start
@@ -948,6 +949,11 @@ interface ChannelMergerNode : AudioNode
 interface ChannelSplitterNode : AudioNode
     attribute @@toStringTag
     method constructor
+interface CharacterBoundsUpdateEvent : Event
+    attribute @@toStringTag
+    getter rangeEnd
+    getter rangeStart
+    method constructor
 interface CharacterData : Node
     attribute @@toStringTag
     attribute @@unscopables
@@ -978,6 +984,7 @@ interface ClipboardEvent : Event
     getter clipboardData
     method constructor
 interface ClipboardItem
+    static method supports
     attribute @@toStringTag
     getter types
     method constructor
@@ -988,6 +995,16 @@ interface CloseEvent : Event
     getter reason
     getter wasClean
     method constructor
+interface CloseWatcher : EventTarget
+    attribute @@toStringTag
+    getter oncancel
+    getter onclose
+    method close
+    method constructor
+    method destroy
+    method requestClose
+    setter oncancel
+    setter onclose
 interface Comment : CharacterData
     attribute @@toStringTag
     method constructor
@@ -1846,6 +1863,30 @@ interface DynamicsCompressorNode : AudioNode
     getter release
     getter threshold
     method constructor
+interface EditContext : EventTarget
+    attribute @@toStringTag
+    getter characterBoundsRangeStart
+    getter oncharacterboundsupdate
+    getter oncompositionend
+    getter oncompositionstart
+    getter ontextformatupdate
+    getter ontextupdate
+    getter selectionEnd
+    getter selectionStart
+    getter text
+    method attachedElements
+    method characterBounds
+    method constructor
+    method updateCharacterBounds
+    method updateControlBounds
+    method updateSelection
+    method updateSelectionBounds
+    method updateText
+    setter oncharacterboundsupdate
+    setter oncompositionend
+    setter oncompositionstart
+    setter ontextformatupdate
+    setter ontextupdate
 interface Element : Node
     attribute @@toStringTag
     attribute @@unscopables
@@ -2644,6 +2685,7 @@ interface GPUSupportedFeatures
 interface GPUSupportedLimits
     attribute @@toStringTag
     getter maxBindGroups
+    getter maxBindGroupsPlusVertexBuffers
     getter maxBindingsPerBindGroup
     getter maxBufferSize
     getter maxColorAttachmentBytesPerSample
@@ -3093,6 +3135,7 @@ interface HTMLElement : Element
     getter dataset
     getter dir
     getter draggable
+    getter editContext
     getter enterKeyHint
     getter hidden
     getter inert
@@ -3230,6 +3273,7 @@ interface HTMLElement : Element
     setter contentEditable
     setter dir
     setter draggable
+    setter editContext
     setter enterKeyHint
     setter hidden
     setter inert
@@ -4143,6 +4187,7 @@ interface HTMLSelectElement : HTMLElement
     method remove
     method reportValidity
     method setCustomValidity
+    method showPicker
     setter autocomplete
     setter disabled
     setter length
@@ -4645,9 +4690,16 @@ interface IIRFilterNode : AudioNode
     method getFrequencyResponse
 interface IdentityCredential : Credential
     attribute @@toStringTag
+    getter isAutoSelected
     getter token
     method constructor
+interface IdentityCredentialError : DOMException
+    attribute @@toStringTag
+    getter code
+    getter url
+    method constructor
 interface IdentityProvider
+    static method close
     static method getUserInfo
     attribute @@toStringTag
     method constructor
@@ -4793,6 +4845,7 @@ interface IntersectionObserver
     getter delay
     getter root
     getter rootMargin
+    getter scrollMargin
     getter thresholds
     getter trackVisibility
     method constructor
@@ -5656,6 +5709,7 @@ interface Navigator
     getter language
     getter languages
     getter locks
+    getter login
     getter managed
     getter maxTouchPoints
     getter mediaCapabilities
@@ -5702,6 +5756,10 @@ interface Navigator
     method unregisterProtocolHandler
     method vibrate
     method webkitGetUserMedia
+interface NavigatorLogin
+    attribute @@toStringTag
+    method constructor
+    method setStatus
 interface NavigatorManagedData : EventTarget
     attribute @@toStringTag
     getter onmanagedconfigurationchange
@@ -8502,6 +8560,17 @@ interface TextEvent : UIEvent
     getter data
     method constructor
     method initTextEvent
+interface TextFormat
+    attribute @@toStringTag
+    getter rangeEnd
+    getter rangeStart
+    getter underlineStyle
+    getter underlineThickness
+    method constructor
+interface TextFormatUpdateEvent : Event
+    attribute @@toStringTag
+    method constructor
+    method getTextFormats
 interface TextMetrics
     attribute @@toStringTag
     getter actualBoundingBoxAscent
@@ -8564,6 +8633,14 @@ interface TextTrackList : EventTarget
     setter onaddtrack
     setter onchange
     setter onremovetrack
+interface TextUpdateEvent : Event
+    attribute @@toStringTag
+    getter selectionEnd
+    getter selectionStart
+    getter text
+    getter updateRangeEnd
+    getter updateRangeStart
+    method constructor
 interface TimeRanges
     attribute @@toStringTag
     getter length
@@ -8687,6 +8764,7 @@ interface UIEvent : Event
     method constructor
     method initUIEvent
 interface URL
+    static method canParse
     static method createObjectURL
     static method revokeObjectURL
     attribute @@toStringTag
@@ -10982,6 +11060,7 @@ interface webkitSpeechRecognitionEvent : Event
     getter resultIndex
     getter results
 interface webkitURL
+    static method canParse
     static method createObjectURL
     static method revokeObjectURL
     attribute @@toStringTag

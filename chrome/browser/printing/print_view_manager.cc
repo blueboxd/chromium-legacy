@@ -118,7 +118,7 @@ bool PrintViewManager::PrintForSystemDialogNow(
   }
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
-  if (printing::features::kEnableOopPrintDriversJobPrint.Get()) {
+  if (printing::features::ShouldPrintJobOop()) {
     // Register this worker so that the service persists as long as the user
     // keeps the system print dialog UI displayed.
     if (!RegisterSystemPrintClient())
@@ -449,7 +449,7 @@ void PrintViewManager::OnScriptedPrintPreviewCallback(
   // Running a dialog causes an exit to webpage-initiated fullscreen.
   // http://crbug.com/728276
   if (web_contents()->IsFullscreen())
-    web_contents()->ExitFullscreen(true);
+    web_contents()->ExitFullscreen();
 
   auto* dialog_controller = PrintPreviewDialogController::GetInstance();
   CHECK(dialog_controller);

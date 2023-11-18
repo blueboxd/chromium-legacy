@@ -4,7 +4,8 @@
 
 import {startIOTask} from '../../common/js/api.js';
 import {PolicyErrorType, ProgressCenterItem, ProgressItemState, ProgressItemType} from '../../common/js/progress_center_common.js';
-import {str, strf, util} from '../../common/js/util.js';
+import {getFileErrorString, str, strf} from '../../common/js/translations.js';
+import {checkAPIError, visitURL} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {ProgressCenter} from '../../externs/background/progress_center.js';
 import {getStore} from '../../state/store.js';
@@ -84,7 +85,7 @@ export class FileOperationHandler {
                   chrome.fileManagerPrivate.showPolicyDialog(
                       event.taskId,
                       chrome.fileManagerPrivate.PolicyDialogType.WARNING,
-                      util.checkAPIError);
+                      checkAPIError);
                 });
           }
           break;
@@ -135,7 +136,7 @@ export class FileOperationHandler {
               // might be required to review the details. Notify when dismissed
               // that this can be cleared.
               chrome.fileManagerPrivate.dismissIOTask(
-                  event.taskId, util.checkAPIError);
+                  event.taskId, checkAPIError);
             };
             const extraButtonText = getPolicyExtraButtonText(event);
             if (event.policyError.type !==
@@ -147,12 +148,12 @@ export class FileOperationHandler {
                     chrome.fileManagerPrivate.showPolicyDialog(
                         event.taskId,
                         chrome.fileManagerPrivate.PolicyDialogType.ERROR,
-                        util.checkAPIError);
+                        checkAPIError);
                   });
             } else {
               item.setExtraButton(
                   ProgressItemState.ERROR, extraButtonText, () => {
-                    util.visitURL(str('DLP_HELP_URL'));
+                    visitURL(str('DLP_HELP_URL'));
                   });
             }
           }
@@ -226,7 +227,7 @@ function getMessageFromProgressEvent(
         return str('DELETE_IN_USE_ERROR');
     }
   }
-  const detail = util.getFileErrorString(event.errorName);
+  const detail = getFileErrorString(event.errorName);
   switch (event.type) {
     case chrome.fileManagerPrivate.IOTaskType.COPY:
       return strf('COPY_FILESYSTEM_ERROR', detail);

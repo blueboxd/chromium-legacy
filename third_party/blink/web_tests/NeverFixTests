@@ -1,4 +1,4 @@
-# tags: [ Android Fuchsia Linux Mac Mac10.15 Mac11 Mac11-arm64 Mac12 Mac12-arm64 Mac13 Mac13-arm64 Win Win10.20h2 Win11 Win11-arm64 ]
+# tags: [ Android Chrome Fuchsia Linux Mac Mac10.15 Mac11 Mac11-arm64 Mac12 Mac12-arm64 Mac13 Mac13-arm64 Win Win10.20h2 Win11 Win11-arm64 ]
 # tags: [ Release Debug ]
 # results: [ Skip Pass ]
 
@@ -1560,15 +1560,12 @@ crbug.com/1005518 external/wpt/css/css-writing-modes/table-progression-vlr-004.h
 crbug.com/1005518 external/wpt/css/css-writing-modes/table-progression-vrl-003.html [ Skip ]
 crbug.com/1005518 external/wpt/css/css-writing-modes/table-progression-vrl-004.html [ Skip ]
 
-# css-pseudo-4 ::spelling-error and ::grammar-error not implemented
-crbug.com/1035708 external/wpt/css/css-pseudo/spelling-error-001.html [ Skip ]
-crbug.com/1035708 external/wpt/css/css-pseudo/grammar-error-001.html [ Skip ]
+# css-pseudo-4 ::spelling-error and ::grammar-error manual tests
 crbug.com/1035708 external/wpt/css/css-pseudo/grammar-error-002-manual.html [ Skip ]
 crbug.com/1035708 external/wpt/css/css-pseudo/grammar-error-003-manual.html [ Skip ]
-crbug.com/1035708 external/wpt/css/css-pseudo/selection-overlay-and-grammar-001.html [ Skip ]
-crbug.com/1035708 external/wpt/css/css-pseudo/selection-overlay-and-spelling-001.html [ Skip ]
 crbug.com/1035708 external/wpt/css/css-pseudo/spelling-error-002-manual.html [ Skip ]
 crbug.com/1035708 external/wpt/css/css-pseudo/spelling-error-003-manual.html [ Skip ]
+
 crbug.com/626703 external/wpt/html/browsers/windows/restore-window-name-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/pointerevents/html/pointerevent_drag_interaction-manual.html [ Skip ]
 crbug.com/626703 external/wpt/pointerevents/pointerevent_multiple_primary_pointers_boundary_events-manual.html [ Skip ]
@@ -2010,11 +2007,6 @@ crbug.com/1446931 [ Fuchsia ] inspector-protocol/heap-profiler/heap-snapshot-exp
 crbug.com/1446931 [ Mac ] inspector-protocol/heap-profiler/heap-snapshot-exposes-cpp-internals.js [ Skip ]
 crbug.com/1446931 [ Win ] inspector-protocol/heap-profiler/heap-snapshot-exposes-cpp-internals.js [ Skip ]
 
-# See crbug.com/1454404. This is currently being prototyped and at this time is an Android only feature.
-# Because we don't meaningfully run WPT against any non Android Pie builders, we are disabling
-# this across the board and will iterate on these tests locally.
-wpt_internal/environment-integrity/* [ Skip ]
-
 # HEVC Webcodecs encoder is only available when passing `--enable-features=PlatformHEVCEncoderSupport`.
 external/wpt/webcodecs/full-cycle-test.https.any.html?h265_annexb [ Skip ]
 external/wpt/webcodecs/full-cycle-test.https.any.worker.html?h265_annexb [ Skip ]
@@ -2071,3 +2063,39 @@ crbug.com/1476305 external/wpt/subapps/* [ Skip ]
 # Web-animations tests that use short-lived animations for performance reasons
 # can be problematic on debug builds.
 crbug.com/1197087 [ Debug ] external/wpt/web-animations/interfaces/Animation/finished.html [ Skip ]
+
+# Chrome only runs nonvirtual WPT tests at the moment.
+[ Chrome ] * [ Skip ]
+[ Chrome ] external/wpt/* [ Pass ]
+[ Chrome ] wpt_internal/* [ Pass ]
+
+# At the moment, no plans to run wdspec tests for anything other than Chrome on
+# Linux due to resource constraints.
+[ Mac ] external/wpt/webdriver/tests/* [ Skip ]
+[ Win ] external/wpt/webdriver/tests/* [ Skip ]
+
+# Bluetooth tests do not work on Chrome
+[ Chrome ] external/wpt/bluetooth/* [ Skip ]
+[ Chrome ] wpt_internal/bluetooth/* [ Skip ]
+[ Chrome ] external/wpt/fledge/* [ Skip ]
+[ Chrome ] wpt_internal/import-maps/* [ Skip ]
+# many failures in the folders below, skip for now
+crbug.com/1499775 [ Chrome ] external/wpt/html/cross-origin-opener-policy/* [ Skip ]
+[ Chrome ] external/wpt/speculation-rules/prerender/* [ Skip ]
+[ Chrome ] external/wpt/speculation-rules/prerender/credentialed-prerender-not-opt-in.html [ Pass ]
+[ Chrome ] external/wpt/speculation-rules/prerender/csp-script-src-self.html [ Pass ]
+[ Chrome ] external/wpt/speculation-rules/prerender/referrer-policy-from-rules.html?2-last [ Pass ]
+[ Chrome ] external/wpt/speculation-rules/prerender/remove-script-element.html [ Pass ]
+[ Chrome ] external/wpt/speculation-rules/prerender/response-code-non-successful.html?code=204 [ Pass ]
+[ Chrome ] external/wpt/speculation-rules/prerender/response-code-non-successful.html?code=205 [ Pass ]
+[ Chrome ] external/wpt/speculation-rules/prerender/response-code-non-successful.html?code=402 [ Pass ]
+[ Chrome ] external/wpt/speculation-rules/prerender/response-code-non-successful.html?code=500 [ Pass ]
+[ Chrome ] external/wpt/speculation-rules/prerender/response-code-successful.html?code=202 [ Pass ]
+crbug.com/1499775 [ Chrome ] external/wpt/notifications/getnotifications-across-processes.https.window.html [ Skip ]
+crbug.com/1499775 [ Chrome ] external/wpt/screen-orientation/lock-sandboxed-iframe.html [ Skip ]
+crbug.com/1499775 [ Chrome ] wpt_internal/webmidi/loopback-receive.https.html [ Skip ]
+crbug.com/1499775 [ Chrome ] wpt_internal/webmidi/loopback-with-timestamp.https.html [ Skip ]
+crbug.com/1499775 [ Chrome ] wpt_internal/webmidi/requestmidiaccess-upgrade.https.html [ Skip ]
+
+# WebNN GPU backend is supported on Win11 by default.
+crbug.com/1500120 [ Win10.20h2 ] virtual/webnn-service-enabled/external/wpt/webnn/gpu/* [ Skip ]

@@ -4,11 +4,12 @@
 
 /** @fileoverview Tests for shared Polymer 3 elements. */
 // Polymer BrowserTest fixture.
-GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
+GEN_INCLUDE(['//chrome/test/data/webui/chromeos/polymer_browser_test_base.js']);
 
 GEN('#include "ash/constants/ash_features.h"');
 GEN('#include "build/branding_buildflags.h"');
 GEN('#include "chrome/browser/ash/crostini/fake_crostini_features.h"');
+GEN('#include "chromeos/ash/components/standalone_browser/standalone_browser_features.h"');
 GEN('#include "chrome/browser/nearby_sharing/common/nearby_share_features.h"');
 GEN('#include "chrome/common/buildflags.h"');
 GEN('#include "chrome/common/chrome_features.h"');
@@ -209,11 +210,10 @@ TEST_F(
 
 [['AboutPage', 'os_about_page_tests.js'],
  ['ApnDetailDialog', 'apn_detail_dialog_test.js'],
- // TODO(crbug.com/1455866): Enable the ApnSubpage test.
- // [
- //   'ApnSubpage', 'apn_subpage_tests.js',
- //   {enabled: ['ash::features::kApnRevamp']}
- // ],
+ [
+   'ApnSubpage', 'apn_subpage_tests.js',
+   {enabled: ['ash::features::kApnRevamp']}
+ ],
  ['AppManagementFileHandlingItem', 'app_management/file_handling_item_test.js'],
  ['AppManagementManagedApps', 'app_management/managed_apps_test.js'],
  ['AppManagementToggleRow', 'app_management/toggle_row_test.js'],
@@ -229,12 +229,20 @@ TEST_F(
  ['DateTimePageTimezoneSubpage', 'date_time_page/timezone_subpage_test.js'],
  ['DevicePageAudioPage', 'device_page/audio_page_test.js'],
  [
+   'DevicePageCustomizeButtonDropdownItem',
+   'device_page/customize_button_dropdown_item_test.js'
+ ],
+ [
    'DevicePageCustomizeButtonRow', 'device_page/customize_button_row_test.js', {
      enabled: [
        'ash::features::kPeripheralCustomization',
        'ash::features::kInputDeviceSettingsSplit'
      ]
    }
+ ],
+ [
+   'DevicePageCustomizeButtonSelect',
+   'device_page/customize_button_select_test.js'
  ],
  [
    'DevicePageCustomizeButtonsSubsection',
@@ -300,7 +308,12 @@ TEST_F(
  ],
  [
    'DevicePageKeyCombinationInputDialog',
-   'device_page/key_combination_input_dialog_test.js'
+   'device_page/key_combination_input_dialog_test.js', {
+     enabled: [
+       'ash::features::kPeripheralCustomization',
+       'ash::features::kInputDeviceSettingsSplit'
+     ]
+   }
  ],
  [
    'DevicePageKeyboardSixPackKeyRow',
@@ -442,7 +455,7 @@ TEST_F(
  ],
  [
    'InternetPageInternetDetailSubpage',
-   'internet_page/internet_detail_subpage_tests.js', {
+   'internet_page/internet_detail_subpage_test.js', {
      enabled: [
        'ash::features::kApnRevamp',
        'ash::features::kPasspointARCSupport',
@@ -685,6 +698,10 @@ TEST_F(
    'os_apps_page/app_management_page/app_item_test.js'
  ],
  [
+   'OsAppsPageAppManagementPageAppLanguageItem',
+   'os_apps_page/app_management_page/app_language_item_test.js'
+ ],
+ [
    'OsAppsPageAppManagementPage',
    'os_apps_page/app_management_page/app_management_page_test.js'
  ],
@@ -759,7 +776,7 @@ TEST_F(
  ],
  [
    'OsBluetoothPageOsBluetoothDeviceDetailSubpage',
-   'os_bluetooth_page/os_bluetooth_device_detail_subpage_tests.js',
+   'os_bluetooth_page/os_bluetooth_device_detail_subpage_test.js',
    {enabled: ['ash::features::kInputDeviceSettingsSplit']}
  ],
  [
@@ -889,6 +906,20 @@ TEST_F(
    'os_privacy_page/manage_users_subpage_test.js'
  ],
  [
+   'OsPrivacyPagePrivacyHubAppPermissionRow',
+   'os_privacy_page/privacy_hub_app_permission_row_test.js'
+ ],
+ [
+   'OsPrivacyPagePrivacyHubCameraSubpage',
+   'os_privacy_page/privacy_hub_camera_subpage_test.js',
+   {
+     enabled: [
+       'ash::features::kCrosPrivacyHubV0',
+       'ash::features::kCrosPrivacyHubAppPermissions'
+     ]
+   },
+ ],
+ [
    'OsPrivacyPagePrivacyHubMicrophoneSubpage',
    'os_privacy_page/privacy_hub_microphone_subpage_test.js',
    {
@@ -986,15 +1017,15 @@ TEST_F(
  [
    'OsPeoplePageAccountManagerSubpage',
    'os_people_page/account_manager_subpage_test.js',
-   {disabled: ['ash::features::kLacrosOnly']},
+   {disabled: ['ash::standalone_browser::features::kLacrosOnly']},
  ],
  [
    'OsPeoplePageAccountManagerSubpageWithArcAccountRestrictionsEnabled',
    'os_people_page/account_manager_subpage_test.js',
    {
      enabled: [
-       'ash::features::kLacrosOnly',
-       'ash::features::kLacrosProfileMigrationForceOff'
+       'ash::standalone_browser::features::kLacrosOnly',
+       'ash::standalone_browser::features::kLacrosProfileMigrationForceOff'
      ]
    },
  ],
@@ -1057,6 +1088,10 @@ TEST_F(
 ].forEach(test => registerTest(...test));
 
 function registerTest(testName, module, featureList) {
+  if (testName.startsWith('DISABLED')) {
+    return;
+  }
+
   const className = `OSSettings${testName}Test`;
   this[className] = class extends OSSettingsBrowserTest {
     /** @override */

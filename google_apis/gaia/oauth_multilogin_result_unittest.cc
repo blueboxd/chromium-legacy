@@ -90,32 +90,28 @@ TEST(OAuthMultiloginResultTest, TryParseCookiesFromValue) {
 
   base::Time time_now = base::Time::Now();
   base::Time expiration_time = (time_now + base::Seconds(34560000.));
-  double now = time_now.ToDoubleT();
-  double expiration = expiration_time.ToDoubleT();
+  double now = time_now.InSecondsFSinceUnixEpoch();
+  double expiration = expiration_time.InSecondsFSinceUnixEpoch();
   const std::vector<CanonicalCookie> cookies = {
       *CanonicalCookie::CreateUnsafeCookieForTesting(
           "SID", "vAlUe1", ".google.ru", "/", time_now, time_now,
           expiration_time, time_now, /*secure=*/true,
           /*httponly=*/false, net::CookieSameSite::UNSPECIFIED,
-          net::CookiePriority::COOKIE_PRIORITY_HIGH,
-          /*same_party=*/false),
+          net::CookiePriority::COOKIE_PRIORITY_HIGH),
       *CanonicalCookie::CreateUnsafeCookieForTesting(
           "SAPISID", "vAlUe2", "google.com", "/", time_now, time_now,
           expiration_time, time_now, /*secure=*/false,
           /*httponly=*/true, net::CookieSameSite::LAX_MODE,
-          net::CookiePriority::COOKIE_PRIORITY_HIGH,
-          /*same_party=*/false),
+          net::CookiePriority::COOKIE_PRIORITY_HIGH),
       *CanonicalCookie::CreateUnsafeCookieForTesting(
           "HSID", "vAlUe4", "", "/", time_now, time_now, time_now, time_now,
           /*secure=*/true, /*httponly=*/true, net::CookieSameSite::STRICT_MODE,
-          net::CookiePriority::COOKIE_PRIORITY_HIGH,
-          /*same_party=*/false),
+          net::CookiePriority::COOKIE_PRIORITY_HIGH),
       *CanonicalCookie::CreateUnsafeCookieForTesting(
           "__Secure-1PSID", "vAlUe4", ".google.fr", "/", time_now, time_now,
           expiration_time, time_now, /*secure=*/true, /*httponly=*/true,
           net::CookieSameSite::UNSPECIFIED,
-          net::CookiePriority::COOKIE_PRIORITY_HIGH,
-          /*same_party=*/true)};
+          net::CookiePriority::COOKIE_PRIORITY_HIGH)};
 
   EXPECT_EQ((int)result.cookies().size(), 4);
 
@@ -176,15 +172,15 @@ TEST(OAuthMultiloginResultTest, TryParseCookiesFromValue) {
               ElementsAre(Property(&CanonicalCookie::IsSameParty, Eq(false)),
                           Property(&CanonicalCookie::IsSameParty, Eq(false)),
                           Property(&CanonicalCookie::IsSameParty, Eq(false)),
-                          Property(&CanonicalCookie::IsSameParty, Eq(true))));
+                          Property(&CanonicalCookie::IsSameParty, Eq(false))));
 
-  EXPECT_THAT(result.cookies()[0].CreationDate().ToDoubleT(),
+  EXPECT_THAT(result.cookies()[0].CreationDate().InSecondsFSinceUnixEpoch(),
               DoubleNear(now, 0.5));
-  EXPECT_THAT(result.cookies()[0].LastAccessDate().ToDoubleT(),
+  EXPECT_THAT(result.cookies()[0].LastAccessDate().InSecondsFSinceUnixEpoch(),
               DoubleNear(now, 0.5));
-  EXPECT_THAT(result.cookies()[0].ExpiryDate().ToDoubleT(),
+  EXPECT_THAT(result.cookies()[0].ExpiryDate().InSecondsFSinceUnixEpoch(),
               DoubleNear(expiration, 0.5));
-  EXPECT_THAT(result.cookies()[0].LastUpdateDate().ToDoubleT(),
+  EXPECT_THAT(result.cookies()[0].LastUpdateDate().InSecondsFSinceUnixEpoch(),
               DoubleNear(now, 0.5));
 }
 

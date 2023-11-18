@@ -13,12 +13,12 @@ namespace compose {
 class ComposeManager : public autofill::AutofillComposeDelegate {
  public:
   // TODO(b/300325327): Add non-Autofill specific methods.
-  // Opens compose from the context menu given the 'frame_token',
-  // 'field_renderer_id', and 'bounds'.
+  // Opens compose from the context menu given the 'driver',
+  // 'form_renderer_id', and 'field_renderer_id'.
   virtual void OpenComposeFromContextMenu(
-      const autofill::LocalFrameToken frame_token,
-      const autofill::FieldRendererId field_renderer_id,
-      const gfx::RectF bounds) = 0;
+      autofill::AutofillDriver* driver,
+      const autofill::FormRendererId form_renderer_id,
+      const autofill::FieldRendererId field_renderer_id) = 0;
 };
 
 }  // namespace compose

@@ -75,11 +75,11 @@ namespace net {
 // and hence the buffer it was reading into must remain alive. Using
 // reference counting we can add a reference to the IOBuffer and make sure
 // it is not destroyed until after the synchronous operation has completed.
+
+// Base class, never instantiated, does not own the buffer.
 class NET_EXPORT IOBuffer : public base::RefCountedThreadSafe<IOBuffer> {
  public:
-  IOBuffer();
-
-  explicit IOBuffer(size_t buffer_size);
+  int size() const { return size_; }
 
   char* data() { return data_; }
   const char* data() const { return data_; }
@@ -93,35 +93,25 @@ class NET_EXPORT IOBuffer : public base::RefCountedThreadSafe<IOBuffer> {
   friend class base::RefCountedThreadSafe<IOBuffer>;
 
   static void AssertValidBufferSize(size_t size);
-  static void AssertValidBufferSize(int size);
 
-  // Only allow derived classes to specify data_.
-  // In all other cases, we own data_, and must delete it at destruction time.
-  explicit IOBuffer(char* data);
+  IOBuffer();
+  IOBuffer(char* data, size_t size);
 
   virtual ~IOBuffer();
 
-  raw_ptr<char, AcrossTasksDanglingUntriaged | AllowPtrArithmetic> data_;
+  raw_ptr<char, AcrossTasksDanglingUntriaged | AllowPtrArithmetic> data_ =
+      nullptr;
+  int size_ = 0;
 };
 
-// This version stores the size of the buffer so that the creator of the object
-// doesn't have to keep track of that value.
-// NOTE: This doesn't mean that we want to stop sending the size as an explicit
-// argument to IO functions. Please keep using IOBuffer* for API declarations.
+// Class which owns its buffer and manages its destruction.
 class NET_EXPORT IOBufferWithSize : public IOBuffer {
  public:
+  IOBufferWithSize();
   explicit IOBufferWithSize(size_t size);
 
-  int size() const { return size_; }
-
  protected:
-  // Purpose of this constructor is to give a subclass access to the base class
-  // constructor IOBuffer(char*) thus allowing subclass to use underlying
-  // memory it does not own.
-  IOBufferWithSize(char* data, size_t size);
   ~IOBufferWithSize() override;
-
-  int size_;
 };
 
 // This is a read only IOBuffer.  The data is stored in a string and
@@ -129,8 +119,6 @@ class NET_EXPORT IOBufferWithSize : public IOBuffer {
 class NET_EXPORT StringIOBuffer : public IOBuffer {
  public:
   explicit StringIOBuffer(std::string s);
-
-  int size() const { return static_cast<int>(string_data_.size()); }
 
  private:
   ~StringIOBuffer() override;
@@ -157,8 +145,6 @@ class NET_EXPORT StringIOBuffer : public IOBuffer {
 //
 class NET_EXPORT DrainableIOBuffer : public IOBuffer {
  public:
-  // TODO(eroman): Deprecated. Use the size_t flavor instead. crbug.com/488553
-  DrainableIOBuffer(scoped_refptr<IOBuffer> base, int size);
   DrainableIOBuffer(scoped_refptr<IOBuffer> base, size_t size);
 
   // DidConsume() changes the |data_| pointer so that |data_| always points
@@ -175,13 +161,10 @@ class NET_EXPORT DrainableIOBuffer : public IOBuffer {
   // and remaining are updated appropriately.
   void SetOffset(int bytes);
 
-  int size() const { return size_; }
-
  private:
   ~DrainableIOBuffer() override;
 
   scoped_refptr<IOBuffer> base_;
-  int size_;
   int used_ = 0;
 };
 
@@ -250,7 +233,7 @@ class NET_EXPORT PickledIOBuffer : public IOBuffer {
 // of the buffer can be completely managed by its intended owner.
 class NET_EXPORT WrappedIOBuffer : public IOBuffer {
  public:
-  explicit WrappedIOBuffer(const char* data);
+  WrappedIOBuffer(const char* data, size_t size);
 
  protected:
   ~WrappedIOBuffer() override;

@@ -254,7 +254,7 @@ ContentAnalysisDialog::ContentAnalysisDialog(
   top_level_contents_ =
       constrained_window::GetTopLevelWebContents(web_contents_)->GetWeakPtr();
   top_level_contents_->StoreFocus();
-  top_level_contents_->SetIgnoreInputEvents(true);
+  scoped_ignore_input_events_ = top_level_contents_->IgnoreInputEvents();
 
   if (ShowDialogDelay().is_zero() || !is_pending()) {
     DVLOG(1) << __func__ << ": Showing in ctor";
@@ -328,7 +328,7 @@ void ContentAnalysisDialog::SuccessCallback() {
     // dialog closes. This results in the behaviour detailed in
     // crbug.com/1139050. The fix is to preemptively take back focus when this
     // dialog closes on its own.
-    web_contents_->SetIgnoreInputEvents(false);
+    scoped_ignore_input_events_.reset();
     web_contents_->Focus();
   }
 #endif
@@ -473,7 +473,7 @@ ContentAnalysisDialog::~ContentAnalysisDialog() {
   DVLOG(1) << __func__;
 
   if (top_level_contents_) {
-    top_level_contents_->SetIgnoreInputEvents(false);
+    scoped_ignore_input_events_.reset();
     top_level_contents_->RestoreFocus();
   }
   if (download_item_)
@@ -488,6 +488,7 @@ void ContentAnalysisDialog::UpdateStateFromFinalResult(
   switch (final_result_) {
     case FinalContentAnalysisResult::ENCRYPTED_FILES:
     case FinalContentAnalysisResult::LARGE_FILES:
+    case FinalContentAnalysisResult::FAIL_CLOSED:
     case FinalContentAnalysisResult::FAILURE:
       dialog_state_ = State::FAILURE;
       break;
@@ -540,21 +541,26 @@ void ContentAnalysisDialog::UpdateViews() {
   }
 }
 
-void ContentAnalysisDialog::UpdateDialog() {
-  if (!contents_view_) {
-    // If the dialog is no longer pending, a final verdict was received before
-    // the dalog was displayed.  If the verdict is success and this is not a
-    // cloud analysis, don't bother the user at all and close the dialog.
-    // Otherwise make sure it show right away with the verdict.
-    if (!is_pending()) {
-      if (is_success() || !is_cloud_) {
-        CancelDialogAndDelete();
-      } else {
-        ShowDialogNow();
-      }
+bool ContentAnalysisDialog::ShouldShowDialogNow() {
+  DCHECK(!is_pending());
+  // If the final result is fail closed, display ui regardless of cloud or local
+  // analysis.
+  if (final_result_ == FinalContentAnalysisResult::FAIL_CLOSED) {
+    DVLOG(1) << __func__ << ": show fail-closed ui.";
+    return true;
+  }
+  // Otherwise, show dialog now only if it is cloud analysis and the verdict is
+  // not success.
+  return is_cloud_ && !is_success();
+}
 
-      return;
-    }
+void ContentAnalysisDialog::UpdateDialog() {
+  if (!contents_view_ && !is_pending()) {
+    // If the dialog is no longer pending, a final verdict was received before
+    // the dialog was displayed.  Show the verdict right away only if
+    // ShouldShowDialogNow() returns true.
+    ShouldShowDialogNow() ? ShowDialogNow() : CancelDialogAndDelete();
+    return;
   }
 
   DCHECK(is_result());
@@ -798,6 +804,12 @@ std::u16string ContentAnalysisDialog::GetFailureMessage() const {
   if (has_custom_message())
     return GetCustomMessage();
 
+  if (final_result_ == FinalContentAnalysisResult::FAIL_CLOSED) {
+    DVLOG(1) << __func__ << ": display fail-closed message.";
+    return l10n_util::GetStringUTF16(
+        IDS_DEEP_SCANNING_DIALOG_UPLOAD_FAIL_CLOSED_MESSAGE);
+  }
+
   if (final_result_ == FinalContentAnalysisResult::LARGE_FILES) {
     if (is_print_scan()) {
       return l10n_util::GetStringUTF16(
@@ -981,6 +993,10 @@ bool ContentAnalysisDialog::is_print_scan() const {
 }
 
 void ContentAnalysisDialog::CancelDialogAndDelete() {
+  if (observer_for_testing) {
+    observer_for_testing->CancelDialogAndDeleteCalled(this, final_result_);
+  }
+
   if (contents_view_) {
     DVLOG(1) << __func__ << ": dialog will be canceled";
     CancelDialog();

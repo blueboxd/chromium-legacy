@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {stringToMojoString16} from 'chrome://resources/js/mojo_type_util.js';
+
 import {PageCallbackRouter, PageHandlerFactory, PageHandlerRemote, ProfileData, SwitchToTabInfo, Tab, TabOrganizationSession} from './tab_search.mojom-webui.js';
 
 /**
@@ -39,6 +41,14 @@ export interface TabSearchApiProxy {
 
   setTabIndex(index: number): void;
 
+  startTabGroupTutorial(): void;
+
+  triggerSync(): void;
+
+  triggerSignIn(): void;
+
+  openSyncSettings(): void;
+
   showUi(): void;
 }
 
@@ -59,7 +69,8 @@ export class TabSearchApiProxyImpl implements TabSearchApiProxy {
 
   acceptTabOrganization(
       sessionId: number, organizationId: number, name: string, tabs: Tab[]) {
-    this.handler.acceptTabOrganization(sessionId, organizationId, name, tabs);
+    this.handler.acceptTabOrganization(
+        sessionId, organizationId, stringToMojoString16(name), tabs);
   }
 
   rejectTabOrganization(sessionId: number, organizationId: number) {
@@ -108,6 +119,22 @@ export class TabSearchApiProxyImpl implements TabSearchApiProxy {
 
   setTabIndex(index: number) {
     this.handler.setTabIndex(index);
+  }
+
+  startTabGroupTutorial() {
+    this.handler.startTabGroupTutorial();
+  }
+
+  triggerSync() {
+    this.handler.triggerSync();
+  }
+
+  triggerSignIn() {
+    this.handler.triggerSignIn();
+  }
+
+  openSyncSettings() {
+    this.handler.openSyncSettings();
   }
 
   showUi() {

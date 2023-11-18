@@ -37,7 +37,6 @@ import android.app.Activity;
 import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build.VERSION_CODES;
 import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatDelegate;
@@ -64,7 +63,6 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.HistogramWatcher;
@@ -81,6 +79,7 @@ import org.chromium.chrome.browser.firstrun.PolicyLoadListener;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.signin.services.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.services.FREMobileIdentityConsistencyFieldTrial;
 import org.chromium.chrome.browser.signin.services.FREMobileIdentityConsistencyFieldTrial.VariationsGroup;
@@ -159,6 +158,7 @@ public class SigninFirstRunFragmentTest {
     @Mock private IdentityServicesProvider mIdentityServicesProviderMock;
     @Captor private ArgumentCaptor<Callback<Boolean>> mCallbackCaptor;
     @Mock private PrivacyPreferencesManagerImpl mPrivacyPreferencesManagerMock;
+    @Mock private ProfileProvider mProfileProvider;
 
     private Promise<Void> mNativeInitializationPromise;
     private final FakeEnterpriseInfo mFakeEnterpriseInfo = new FakeEnterpriseInfo();
@@ -210,14 +210,17 @@ public class SigninFirstRunFragmentTest {
                 .thenReturn(mChildAccountStatusListenerMock);
         when(mFirstRunPageDelegateMock.isLaunchedFromCct()).thenReturn(false);
 
-        OneshotSupplierImpl<Profile> profileSupplier =
+        OneshotSupplierImpl<ProfileProvider> profileSupplier =
                 TestThreadUtils.runOnUiThreadBlockingNoException(
                         () -> {
-                            OneshotSupplierImpl<Profile> supplier = new OneshotSupplierImpl<>();
-                            supplier.set(Profile.getLastUsedRegularProfile());
+                            OneshotSupplierImpl<ProfileProvider> supplier =
+                                    new OneshotSupplierImpl<>();
+                            when(mProfileProvider.getOriginalProfile())
+                                    .thenReturn(Profile.getLastUsedRegularProfile());
+                            supplier.set(mProfileProvider);
                             return supplier;
                         });
-        when(mFirstRunPageDelegateMock.getProfileSupplier()).thenReturn(profileSupplier);
+        when(mFirstRunPageDelegateMock.getProfileProviderSupplier()).thenReturn(profileSupplier);
 
         mActivityTestRule.launchActivity(null);
         mFragment = new CustomSigninFirstRunFragment();
@@ -255,11 +258,11 @@ public class SigninFirstRunFragmentTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "https://crbug.com/1429072")
     public void testFragmentWhenRemovingChildAccountDynamically() {
         mSigninTestRule.addAccount(
                 CHILD_ACCOUNT_EMAIL, CHILD_FULL_NAME, /* givenName= */ null, /* avatar= */ null);
         launchActivityWithFragment();
+        checkFragmentWithChildAccount(true, true);
 
         mSigninTestRule.removeAccount(CHILD_ACCOUNT_EMAIL);
 
@@ -290,10 +293,10 @@ public class SigninFirstRunFragmentTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "https://crbug.com/1434098")
     public void testRemovingAllAccountsDismissesAccountPickerDialog() {
         mSigninTestRule.addAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1, /* avatar= */ null);
         launchActivityWithFragment();
+        checkFragmentWithSelectedAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1);
         onView(withText(TEST_EMAIL1)).perform(click());
         onView(withText(R.string.signin_account_picker_dialog_title))
                 .inRoot(isDialog())
@@ -319,7 +322,6 @@ public class SigninFirstRunFragmentTest {
 
     @Test
     @MediumTest
-    @SuppressWarnings("CheckReturnValue")
     public void testFragmentWhenCannotUseGooglePlayService() {
         when(mExternalAuthUtilsMock.canUseGooglePlayServices()).thenReturn(false);
 
@@ -332,11 +334,9 @@ public class SigninFirstRunFragmentTest {
                             .findViewById(R.id.signin_fre_selected_account)
                             .isShown();
                 });
-        // TODO(crbug.com/1469988): This is a no-op, replace with ViewUtils.waitForVisibleView().
-        ViewUtils.isEventuallyVisible(withText(R.string.continue_button));
+        ViewUtils.waitForVisibleView(withText(R.string.continue_button));
         onView(withId(R.id.signin_fre_dismiss_button)).check(matches(not(isDisplayed())));
-        // TODO(crbug.com/1469988): This is a no-op, replace with ViewUtils.waitForVisibleView().
-        ViewUtils.isEventuallyVisible(withId(R.id.signin_fre_footer));
+        ViewUtils.waitForVisibleView(withId(R.id.signin_fre_footer));
     }
 
     @Test
@@ -375,7 +375,7 @@ public class SigninFirstRunFragmentTest {
                                     .getIdentityManager(Profile.getLastUsedRegularProfile()))
                             .thenReturn(mIdentityManagerMock);
                 });
-        doCallback(/*index*/ 2, (SignInCallback callback) -> callback.onSignInAborted())
+        doCallback(/* index= */ 2, (SignInCallback callback) -> callback.onSignInAborted())
                 .when(mSigninManagerMock)
                 .signin(eq(AccountUtils.createAccountFromName(TEST_EMAIL1)), anyInt(), any());
         launchActivityWithFragment();
@@ -437,14 +437,14 @@ public class SigninFirstRunFragmentTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_less_than = VERSION_CODES.Q, message = "https://crbug.com/1434098")
     public void testFragmentWhenChoosingAnotherAccount() {
         mSigninTestRule.addAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1, null);
         mSigninTestRule.addAccount(
                 TEST_EMAIL2, /* fullName= */ null, /* givenName= */ null, /* avatar= */ null);
         launchActivityWithFragment();
-        onView(withText(TEST_EMAIL1)).perform(click());
+        checkFragmentWithSelectedAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1);
 
+        onView(withText(TEST_EMAIL1)).perform(click());
         onView(withText(TEST_EMAIL2)).inRoot(isDialog()).perform(click());
 
         checkFragmentWithSelectedAccount(TEST_EMAIL2, /* fullName= */ null, /* givenName= */ null);
@@ -968,11 +968,11 @@ public class SigninFirstRunFragmentTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "https://crbug.com/1429072")
     public void testFragmentWhenAddingAnotherAccount() {
         mSigninTestRule.setResultForNextAddAccountFlow(Activity.RESULT_OK, TEST_EMAIL2);
         mSigninTestRule.addAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1, null);
         launchActivityWithFragment();
+        checkFragmentWithSelectedAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1);
 
         onView(withText(TEST_EMAIL1)).perform(click());
         onView(withText(R.string.signin_add_account_to_device)).perform(click());
@@ -1410,7 +1410,6 @@ public class SigninFirstRunFragmentTest {
                 .signinAndEnableSync(any(Account.class), anyInt(), any());
     }
 
-    @SuppressWarnings("CheckReturnValue")
     private void checkFragmentWhenSigninIsDisabledByPolicy() {
         CriteriaHelper.pollUiThread(
                 () -> {
@@ -1420,14 +1419,12 @@ public class SigninFirstRunFragmentTest {
                             .isShown();
                 });
         verify(mFirstRunPageDelegateMock).recordNativePolicyAndChildStatusLoadedHistogram();
-        // TODO(crbug.com/1469988): These are no-ops, replace with ViewUtils.waitForVisibleView().
-        ViewUtils.isEventuallyVisible(withId(R.id.fre_browser_managed_by));
-        ViewUtils.isEventuallyVisible(withText(R.string.continue_button));
-        ViewUtils.isEventuallyVisible(withId(R.id.signin_fre_footer));
+        ViewUtils.waitForVisibleView(withId(R.id.fre_browser_managed_by));
+        ViewUtils.waitForVisibleView(withText(R.string.continue_button));
+        ViewUtils.waitForVisibleView(withId(R.id.signin_fre_footer));
         onView(withId(R.id.signin_fre_dismiss_button)).check(matches(not(isDisplayed())));
     }
 
-    @SuppressWarnings("CheckReturnValue")
     private void launchActivityWithFragment() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
@@ -1443,8 +1440,7 @@ public class SigninFirstRunFragmentTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     // Replace all the progress bars with dummies. Currently the progress bar cannot
-                    // be
-                    // stopped otherwise due to some espresso issues (crbug/1115067).
+                    // be stopped otherwise due to some espresso issues (crbug/1115067).
                     ProgressBar nativeAndPolicyProgressBar =
                             mFragment
                                     .getView()
@@ -1459,9 +1455,7 @@ public class SigninFirstRunFragmentTest {
                                     SemanticColorUtils.getDefaultBgColor(mFragment.getContext())));
                 });
 
-        // TODO(crbug.com/1469988): This is a no-op, replace with ViewUtils.waitForVisibleView().
-        ViewUtils.isEventuallyVisible(
-                allOf(withId(R.id.signin_fre_continue_button), isDisplayed()));
+        ViewUtils.waitForVisibleView(allOf(withId(R.id.fre_logo), isDisplayed()));
     }
 
     /**

@@ -11,7 +11,8 @@ import {assert} from 'chrome://resources/ash/common/assert.js';
 
 import {getEntry, getParentEntry, moveEntryTo, validatePathNameLength} from '../../common/js/api.js';
 import {createDOMError} from '../../common/js/dom_utils.js';
-import {str, strf, util} from '../../common/js/util.js';
+import {getFileErrorString, str, strf} from '../../common/js/translations.js';
+import {FileErrorToDomError} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 
 /**
@@ -167,7 +168,7 @@ export async function renameFile(entry, newName) {
       await getEntry(parent, newName, entry.isFile, {create: false});
     } catch (error) {
       // @ts-ignore: error TS18046: 'error' is of type 'unknown'.
-      if (error.name == util.FileError.NOT_FOUND_ERR) {
+      if (error.name == FileErrorToDomError.NOT_FOUND_ERR) {
         return moveEntryTo(entry, parent, newName);
       }
 
@@ -176,7 +177,7 @@ export async function renameFile(entry, newName) {
     }
 
     // The entry with the name already exists.
-    throw createDOMError(util.FileError.PATH_EXISTS_ERR);
+    throw createDOMError(FileErrorToDomError.PATH_EXISTS_ERR);
   } catch (error) {
     // @ts-ignore: error TS2345: Argument of type 'unknown' is not assignable to
     // parameter of type 'DOMError'.
@@ -193,8 +194,8 @@ export async function renameFile(entry, newName) {
  */
 function getRenameErrorMessage(error, entry, newName) {
   if (error &&
-      (error.name == util.FileError.PATH_EXISTS_ERR ||
-       error.name == util.FileError.TYPE_MISMATCH_ERR)) {
+      (error.name == FileErrorToDomError.PATH_EXISTS_ERR ||
+       error.name == FileErrorToDomError.TYPE_MISMATCH_ERR)) {
     // Check the existing entry is file or not.
     // 1) If the entry is a file:
     //   a) If we get PATH_EXISTS_ERR, a file exists.
@@ -203,14 +204,14 @@ function getRenameErrorMessage(error, entry, newName) {
     //   a) If we get PATH_EXISTS_ERR, a directory exists.
     //   b) If we get TYPE_MISMATCH_ERR, a file exists.
     return Error(strf(
-        (entry.isFile && error.name == util.FileError.PATH_EXISTS_ERR) ||
+        (entry.isFile && error.name == FileErrorToDomError.PATH_EXISTS_ERR) ||
                 (!entry.isFile &&
-                 error.name == util.FileError.TYPE_MISMATCH_ERR) ?
+                 error.name == FileErrorToDomError.TYPE_MISMATCH_ERR) ?
             'FILE_ALREADY_EXISTS' :
             'DIRECTORY_ALREADY_EXISTS',
         newName));
   }
 
   return Error(
-      strf('ERROR_RENAMING', entry.name, util.getFileErrorString(error.name)));
+      strf('ERROR_RENAMING', entry.name, getFileErrorString(error.name)));
 }

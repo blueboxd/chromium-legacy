@@ -4,7 +4,7 @@
 
 import("//build/buildflag_header.gni")
 import("//build/config/android/config.gni")
-import("//build/config/chromecast_build.gni")
+import("//build/config/cast.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/dcheck_always_on.gni")
@@ -16,6 +16,16 @@ import("../../partition_alloc.gni")
 config("partition_alloc_implementation") {
   # See also: `partition_alloc_base/component_export.h`
   defines = [ "IS_PARTITION_ALLOC_IMPL" ]
+}
+
+config("partition_alloc_base_implementation") {
+  # See also: `partition_alloc_base/component_export.h`
+  defines = [ "IS_PARTITION_ALLOC_BASE_IMPL" ]
+}
+
+config("allocator_shim_implementation") {
+  # See also: `partition_alloc_base/component_export.h`
+  defines = [ "IS_ALLOCATOR_SHIM_IMPL" ]
 }
 
 # TODO(https://crbug.com/1467773): Split PartitionAlloc into a public and
@@ -113,7 +123,7 @@ if (!is_debug || partition_alloc_optimized_debug) {
   _add_configs += [ "//build/config/compiler:no_optimize" ]
 }
 
-component("partition_alloc") {
+group("partition_alloc") {
   public_deps = [
     ":allocator_base",
     ":allocator_core",
@@ -128,7 +138,7 @@ component("partition_alloc") {
 # Only usable when pointers are 64-bit.
 use_freelist_pool_offsets = has_64_bit_pointers && false
 
-source_set("allocator_core") {
+component("allocator_core") {
   visibility = [ ":*" ]
 
   sources = [
@@ -151,6 +161,8 @@ source_set("allocator_core") {
     "freeslot_bitmap_constants.h",
     "gwp_asan_support.cc",
     "gwp_asan_support.h",
+    "lightweight_quarantine.cc",
+    "lightweight_quarantine.h",
     "memory_reclaimer.cc",
     "memory_reclaimer.h",
     "oom.cc",
@@ -345,7 +357,7 @@ source_set("allocator_core") {
   }
 }
 
-source_set("allocator_base") {
+component("allocator_base") {
   visibility = [ ":*" ]
 
   sources = [
@@ -365,7 +377,6 @@ source_set("allocator_base") {
     "partition_alloc_base/debug/stack_trace.cc",
     "partition_alloc_base/debug/stack_trace.h",
     "partition_alloc_base/export_template.h",
-    "partition_alloc_base/gtest_prod_util.h",
     "partition_alloc_base/immediate_crash.h",
     "partition_alloc_base/log_message.cc",
     "partition_alloc_base/log_message.h",
@@ -517,7 +528,7 @@ source_set("allocator_base") {
   ]
   public_configs = [ ":public_includes" ]
   configs += [
-    ":partition_alloc_implementation",
+    ":partition_alloc_base_implementation",
     "//build/config/compiler:wexit_time_destructors",
   ]
 
@@ -538,107 +549,118 @@ source_set("allocator_base") {
   configs += _add_configs
 }
 
-source_set("allocator_shim") {
+component("allocator_shim") {
   visibility = [ ":*" ]
 
   sources = []
-  deps = [ ":allocator_base" ]
+  deps = []
   all_dependent_configs = []
   public_configs = [ ":public_includes" ]
   configs += [
-    ":partition_alloc_implementation",
+    ":allocator_shim_implementation",
     "//build/config/compiler:wexit_time_destructors",
   ]
+  frameworks = []
 
   configs -= _remove_configs
   configs += _add_configs
 
-  if (use_allocator_shim) {
-    sources += [
-      "shim/allocator_shim.cc",
-      "shim/allocator_shim.h",
-      "shim/allocator_shim_internals.h",
+  shim_headers = []
+  shim_sources = []
+
+  shim_sources += [ "shim/allocator_shim.cc" ]
+  shim_headers += [
+    "shim/allocator_shim.h",
+    "shim/allocator_shim_internals.h",
+  ]
+  if (use_partition_alloc) {
+    shim_sources += [
+      "shim/allocator_shim_default_dispatch_to_partition_alloc.cc",
+      "shim/nonscannable_allocator.cc",
     ]
-    if (use_partition_alloc) {
-      sources += [
-        "shim/allocator_shim_default_dispatch_to_partition_alloc.cc",
-        "shim/allocator_shim_default_dispatch_to_partition_alloc.h",
-        "shim/nonscannable_allocator.cc",
-        "shim/nonscannable_allocator.h",
-      ]
-    }
-    if (is_android) {
-      sources += [
-        "shim/allocator_shim_override_cpp_symbols.h",
-        "shim/allocator_shim_override_linker_wrapped_symbols.h",
-      ]
+    shim_headers += [
+      "shim/allocator_shim_default_dispatch_to_partition_alloc.h",
+      "shim/nonscannable_allocator.h",
+    ]
+  }
+  if (is_android) {
+    shim_headers += [
+      "shim/allocator_shim_override_cpp_symbols.h",
+      "shim/allocator_shim_override_linker_wrapped_symbols.h",
+    ]
+    if (use_allocator_shim) {
       all_dependent_configs += [ ":wrap_malloc_symbols" ]
     }
-    if (is_apple) {
-      sources += [
-        "shim/allocator_shim_override_apple_default_zone.h",
-        "shim/allocator_shim_override_apple_symbols.h",
-        "shim/early_zone_registration_constants.h",
-      ]
-      configs += [ ":mac_no_default_new_delete_symbols" ]
-    }
-    if (is_chromeos || is_linux) {
-      sources += [
-        "shim/allocator_shim_override_cpp_symbols.h",
-        "shim/allocator_shim_override_glibc_weak_symbols.h",
-        "shim/allocator_shim_override_libc_symbols.h",
-      ]
-    }
-    if (is_win) {
-      sources += [
-        "shim/allocator_shim_override_ucrt_symbols_win.h",
-        "shim/winheap_stubs_win.cc",
-        "shim/winheap_stubs_win.h",
-      ]
-    }
-
-    if (!use_partition_alloc_as_malloc) {
-      if (is_android) {
-        sources += [
-          "shim/allocator_shim_default_dispatch_to_linker_wrapped_symbols.cc",
-        ]
-      }
-      if (is_apple) {
-        sources +=
-            [ "shim/allocator_shim_default_dispatch_to_apple_zoned_malloc.cc" ]
-      }
-      if (is_chromeos || is_linux) {
-        sources += [ "shim/allocator_shim_default_dispatch_to_glibc.cc" ]
-      }
-      if (is_win) {
-        sources += [ "shim/allocator_shim_default_dispatch_to_winheap.cc" ]
-      }
-    }
-
-    deps += [
-      ":allocator_base",
-      ":allocator_core",
-      ":buildflags",
-    ]
   }
-
   if (is_apple) {
-    sources += [
+    shim_headers += [
+      "shim/allocator_shim_override_apple_default_zone.h",
+      "shim/allocator_shim_override_apple_symbols.h",
+      "shim/early_zone_registration_constants.h",
       "shim/allocator_interception_apple.h",
-      "shim/allocator_interception_apple.mm",
-      "shim/malloc_zone_functions_apple.cc",
       "shim/malloc_zone_functions_apple.h",
     ]
+    shim_sources += [
+      "shim/allocator_interception_apple.mm",
+      "shim/malloc_zone_functions_apple.cc",
+    ]
+    frameworks += [ "CoreFoundation.framework" ]
 
-    # Do not compile with ARC because this target has to interface with
-    # low-level Objective-C and having ARC would interfere.
-    configs -= [ "//build/config/compiler:enable_arc" ]
-    deps += [
-      ":allocator_base",
-      ":allocator_core",
-      ":buildflags",
+    if (use_allocator_shim) {
+      configs += [ ":mac_no_default_new_delete_symbols" ]
+
+      # Do not compile with ARC because this target has to interface with
+      # low-level Objective-C and having ARC would interfere.
+      configs -= [ "//build/config/compiler:enable_arc" ]
+    }
+  }
+  if (is_chromeos || is_linux) {
+    shim_headers += [
+      "shim/allocator_shim_override_cpp_symbols.h",
+      "shim/allocator_shim_override_glibc_weak_symbols.h",
+      "shim/allocator_shim_override_libc_symbols.h",
     ]
   }
+  if (is_win) {
+    shim_headers += [
+      "shim/allocator_shim_override_ucrt_symbols_win.h",
+      "shim/winheap_stubs_win.h",
+    ]
+    shim_sources += [ "shim/winheap_stubs_win.cc" ]
+  }
+
+  if (!use_partition_alloc_as_malloc) {
+    if (is_android) {
+      shim_sources += [
+        "shim/allocator_shim_default_dispatch_to_linker_wrapped_symbols.cc",
+      ]
+    }
+    if (is_apple) {
+      shim_sources +=
+          [ "shim/allocator_shim_default_dispatch_to_apple_zoned_malloc.cc" ]
+    }
+    if (is_chromeos || is_linux) {
+      shim_sources += [ "shim/allocator_shim_default_dispatch_to_glibc.cc" ]
+    }
+    if (is_win) {
+      shim_sources += [ "shim/allocator_shim_default_dispatch_to_winheap.cc" ]
+    }
+  }
+
+  sources = shim_headers
+  if (use_allocator_shim) {
+    sources += shim_sources
+  } else {
+    # To avoid "lld-link: error: <root>: undefined symbol: _DllMainCRTStartup",
+    # at least one object file is required when linking allocator_shim.dll.
+    sources += [ "shim/empty.cc" ]
+  }
+
+  deps += [
+    ":allocator_base",
+    ":allocator_core",
+    ":buildflags",
+  ]
 }
 
 source_set("raw_ptr") {

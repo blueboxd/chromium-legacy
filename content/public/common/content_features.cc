@@ -78,7 +78,7 @@ BASE_FEATURE(kBackForwardTransitions,
 // back/forward cache.
 BASE_FEATURE(kBackForwardCacheMediaSessionService,
              "BackForwardCacheMediaSessionService",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Set a time limit for the page to enter the cache. Disabling this prevents
 // flakes during testing.
@@ -133,6 +133,11 @@ BASE_FEATURE(kBlockInsecurePrivateNetworkRequestsFromPrivate,
 BASE_FEATURE(kBlockInsecurePrivateNetworkRequestsDeprecationTrial,
              "BlockInsecurePrivateNetworkRequestsDeprecationTrial",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables disallowing MIDI permission by default.
+BASE_FEATURE(kBlockMidiByDefault,
+             "BlockMidiByDefault",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Broker file operations on disk cache in the Network Service.
 // This is no-op if the network service is hosted in the browser process.
@@ -303,11 +308,6 @@ BASE_FEATURE(kDisconnectExtensionMessagePortWhenPageEntersBFCache,
              "DisconnectExtensionMessagePortWhenPageEntersBFCache",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enable document policy for configuring and restricting feature behavior.
-BASE_FEATURE(kDocumentPolicy,
-             "DocumentPolicy",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enable drawing under System Bars within DisplayCutout.
 BASE_FEATURE(kDrawCutoutEdgeToEdge,
              "DrawCutoutEdgeToEdge",
@@ -353,33 +353,47 @@ BASE_FEATURE(kEnableServiceWorkersForChromeScheme,
 // We enable it here by default to support use in origin trials.
 BASE_FEATURE(kFedCm, "FedCm", base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables usage of the FedCM IdentityCredentialAutoSelectedFlag feature.
-// ChromeStatus entry: https://chromestatus.com/feature/5384360374566912
-BASE_FEATURE(kFedCmIdentityCredentialAutoSelectedFlag,
-             "FedCmIdentityCredentialAutoSelectedFlag",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+// Enables the "Add Account" button in the FedCM account chooser to log in to
+// another IDP account, if the IDP opts in.
+BASE_FEATURE(kFedCmAddAccount,
+             "FedCmAddAccount",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables usage of the FedCM Authz API.
 BASE_FEATURE(kFedCmAuthz, "FedCmAuthz", base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables usage of the FedCM Error API.
-BASE_FEATURE(kFedCmError, "FedCmError", base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables usage of the FedCM HostedDomain feature. ChromeStatus entry:
-// https://chromestatus.com/feature/5202286040580096
-BASE_FEATURE(kFedCmHostedDomain,
-             "FedCmHostedDomain",
+// Enables usage of the FedCM AutoSelectedFlag feature.
+// ChromeStatus entry: https://chromestatus.com/feature/5384360374566912
+BASE_FEATURE(kFedCmAutoSelectedFlag,
+             "FedCmAutoSelectedFlag",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables usage of the FedCM DomainHint feature. ChromeStatus entry:
+// https://chromestatus.com/feature/5202286040580096
+BASE_FEATURE(kFedCmDomainHint,
+             "FedCmDomainHint",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables usage of the FedCM Error API.
+// ChromeStatus entry: https://chromestatus.com/feature/5384360374566912
+BASE_FEATURE(kFedCmError, "FedCmError", base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Allows browser to exempt the IdP if they have third-party-cookies access on
+// the RP site.
+BASE_FEATURE(kFedCmExemptIdpWithThirdPartyCookies,
+             "FedCmExemptIdpWithThirdPartyCookies",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables usage of the FedCM IdP Registration API.
 BASE_FEATURE(kFedCmIdPRegistration,
              "FedCmIdPregistration",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables usage of the FedCM logoutRPs method.
-BASE_FEATURE(kFedCmLogoutRps,
-             "FedCmLogoutRps",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+// Enables the IDP signin status API for use with FedCM, including avoiding
+// network requests when not signed in and mismatch handling.
+BASE_FEATURE(kFedCmIdpSigninStatusEnabled,
+             "FedCmIdpSigninStatusEnabled",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables usage of the FedCM API with metrics endpoint at the same time.
 BASE_FEATURE(kFedCmMetricsEndpoint,
@@ -392,16 +406,13 @@ BASE_FEATURE(kFedCmMultipleIdentityProviders,
              "FedCmMultipleIdentityProviders",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables the revoke method within the FedCM API.
+BASE_FEATURE(kFedCmRevoke, "FedCmRevoke", base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Enables usage of the FedCM API with the Selective Disclosure API at the same
 // time.
 BASE_FEATURE(kFedCmSelectiveDisclosure,
              "FedCmSelectiveDisclosure",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables the IDP signin status API for use with FedCM, including avoiding
-// network requests when not signed in and mismatch handling.
-BASE_FEATURE(kFedCmIdpSigninStatusEnabled,
-             "FedCmIdpSigninStatusEnabled",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables bypassing the well-known file enforcement.
@@ -460,11 +471,6 @@ BASE_FEATURE(kNetworkQualityEstimatorWebHoldback,
 // (activated by kUserAgentClientHint)
 BASE_FEATURE(kGreaseUACH, "GreaseUACH", base::FEATURE_ENABLED_BY_DEFAULT);
 
-// This is intended as a kill switch for the Idle Detection feature. To enable
-// this feature, the experimental web platform features flag should be set,
-// or the site should obtain an Origin Trial token.
-BASE_FEATURE(kIdleDetection, "IdleDetection", base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Kill switch for the GetInstalledRelatedApps API.
 BASE_FEATURE(kInstalledApp, "InstalledApp", base::FEATURE_ENABLED_BY_DEFAULT);
 
@@ -514,11 +520,16 @@ BASE_FEATURE(kLazyInitializeMediaControls,
              "LazyInitializeMediaControls",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables reporting of Cookie Issues for Legacy Technology Report.
+BASE_FEATURE(kLegacyTechReportEnableCookieIssueReports,
+             "LegacyTechReportEnableCookieIssueReports",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Using top-level document URL when create an enterprise report for legacy
 // technologies usage
 BASE_FEATURE(kLegacyTechReportTopLevelUrl,
              "LegacyTechReportTopLevelUrl",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Configures whether Blink on Windows 8.0 and below should use out of process
 // API font fallback calls to retrieve a fallback font family name as opposed to
@@ -772,6 +783,11 @@ BASE_FEATURE(kRenderDocument,
              "RenderDocument",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Reuse compositor instances with RenderDocument
+BASE_FEATURE(kRenderDocumentCompositorReuse,
+             "RenderDocumentCompositorReuse",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables retrying to obtain list of available cameras after restarting the
 // video capture service if a previous attempt failed, which could be caused
 // by a service crash.
@@ -859,14 +875,14 @@ const base::FeatureParam<ServiceWorkerBypassFetchHandlerTarget>
 // identified as ignorable.
 BASE_FEATURE(kServiceWorkerSkipIgnorableFetchHandler,
              "ServiceWorkerSkipIgnorableFetchHandler",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // This feature param controls if the empty service worker fetch handler is
 // skipped.
 constexpr base::FeatureParam<bool> kSkipEmptyFetchHandler{
     &kServiceWorkerSkipIgnorableFetchHandler,
     "SkipEmptyFetchHandler",
-    false,
+    true,
 };
 
 // This feature param controls if the service worker is started for an
@@ -874,7 +890,7 @@ constexpr base::FeatureParam<bool> kSkipEmptyFetchHandler{
 constexpr base::FeatureParam<bool> kStartServiceWorkerForEmptyFetchHandler{
     &kServiceWorkerSkipIgnorableFetchHandler,
     "StartServiceWorkerForEmptyFetchHandler",
-    false,
+    true,
 };
 
 // This feature param controls if the service worker is started for an
@@ -884,7 +900,7 @@ constexpr base::FeatureParam<bool> kStartServiceWorkerForEmptyFetchHandler{
 constexpr base::FeatureParam<bool> kAsyncStartServiceWorkerForEmptyFetchHandler{
     &kServiceWorkerSkipIgnorableFetchHandler,
     "AsyncStartServiceWorkerForEmptyFetchHandler",
-    false,
+    true,
 };
 
 // This feature param controls duration to start fetch handler
@@ -895,7 +911,7 @@ constexpr base::FeatureParam<int>
     kAsyncStartServiceWorkerForEmptyFetchHandlerDurationInMs{
         &kServiceWorkerSkipIgnorableFetchHandler,
         "AsyncStartServiceWorkerForEmptyFetchHandlerDurationInMs",
-        0,
+        50,
     };
 
 // Enables ServiceWorker static routing API.
@@ -1113,6 +1129,11 @@ BASE_FEATURE(kViewportSegments,
 // Enables future V8 VM features
 BASE_FEATURE(kV8VmFuture, "V8VmFuture", base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables per PWA System Media Controls on Windows
+BASE_FEATURE(kWebAppSystemMediaControlsWin,
+             "WebAppSystemMediaControlsWin",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enable WebAssembly baseline compilation (Liftoff).
 BASE_FEATURE(kWebAssemblyBaseline,
              "WebAssemblyBaseline",
@@ -1204,6 +1225,12 @@ BASE_FEATURE(kWebUsb, "WebUSB", base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kWebXr, "WebXR", base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_ANDROID)
+// When enabled, includes the ACTION_LONG_CLICK action to all relevant nodes in
+// the web contents accessibility tree.
+BASE_FEATURE(kAccessibilityIncludeLongClickAction,
+             "AccessibilityIncludeLongClickAction",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Allows the use of page zoom in place of accessibility text autosizing, and
 // updated UI to replace existing Chrome Accessibility Settings.
 BASE_FEATURE(kAccessibilityPageZoom,
@@ -1227,6 +1254,11 @@ BASE_FEATURE(kSmartZoom, "SmartZoom", base::FEATURE_DISABLED_BY_DEFAULT);
 // technologies are present
 BASE_FEATURE(kAutoDisableAccessibilityV2,
              "AutoDisableAccessibilityV2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the mojo based gin java bridge implementation.
+BASE_FEATURE(kGinJavaBridgeMojo,
+             "GinJavaBridgeMojo",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Reduce the priority of GPU process when in background so it is more likely

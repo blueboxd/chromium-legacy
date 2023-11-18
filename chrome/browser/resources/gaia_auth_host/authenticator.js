@@ -6,7 +6,7 @@
 // <if expr="not chromeos_ash">
 import {assert} from 'chrome://resources/js/assert.js';
 import {sendWithPromise} from 'chrome://resources/js/cr.js';
-import {$, appendParam} from 'chrome://resources/js/util_ts.js';
+import {$, appendParam} from 'chrome://resources/js/util.js';
 // </if>
 // <if expr="chromeos_ash">
 import {assert} from 'chrome://resources/ash/common/assert.js';
@@ -109,6 +109,8 @@ export let AuthCompletedCredentials;
  *   ssoProfile: string,
  *   urlParameterToAutofillSAMLUsername: string,
  *   frameUrl: URL,
+ *   isFirstUser : (boolean|undefined),
+ *   recordAccountCreation : (boolean|undefined),
  * }}
  */
 export let AuthParams;
@@ -117,10 +119,11 @@ const SIGN_IN_HEADER = 'google-accounts-signin';
 const EMBEDDED_FORM_HEADER = 'google-accounts-embedded';
 const LOCATION_HEADER = 'location';
 const SERVICE_ID = 'chromeoslogin';
-const SAML_REDIRECTION_PATH = 'samlredirect';
 const BLANK_PAGE_URL = 'about:blank';
 
 const GAIA_DONE_ELAPSED_TIME = 'ChromeOS.Gaia.Done.ElapsedTime';
+const GAIA_CREATE_ACCOUNT_FIRST_USER =
+      'ChromeOS.Gaia.CreateAccount.IsFirstUser';
 
 // Metric names for messages we get from Gaia.
 const GAIA_MESSAGE_SAML_USER_INFO = 'ChromeOS.Gaia.Message.Saml.UserInfo';
@@ -167,7 +170,7 @@ export const SUPPORTED_PARAMS = [
   'service',       // Name of Gaia service.
   'frameUrl',      // Initial frame URL to use. If empty defaults to
                    // gaiaUrl.
-  'constrained',   // Whether the extension is loaded in a constrained
+  'constrained',   // Whether authentication happens in a constrained
                    // window.
   'clientId',      // Chrome client id.
   'needPassword',  // Whether the host is interested in getting a password.
@@ -229,6 +232,8 @@ export const SUPPORTED_PARAMS = [
   // A tri-state value which indicates the support level for passwordless login.
   // Refer to `GaiaView::PasswordlessSupportLevel` for details.
   'pwl',
+  // Control if the account creation during sign in flow should be handled.
+  'recordAccountCreation',
 ];
 
 // Timeout in ms to wait for the message from Gaia indicating end of the flow.
@@ -404,6 +409,7 @@ export class Authenticator extends EventTarget {
     /** @type {AuthMode} */
     this.authMode = AuthMode.DEFAULT;
     this.dontResizeNonEmbeddedPages = false;
+    this.isFirstUser_ = false;
 
     /**
      * @type {!SamlHandler|undefined}
@@ -596,6 +602,9 @@ export class Authenticator extends EventTarget {
         this.samlHandler_, 'apiPasswordAdded',
         e => this.onSamlApiPasswordAdded_(e));
     this.webviewEventManager_.addEventListener(
+          this.samlHandler_, 'apiAccountCreated',
+          e => this.onSamlApiAccountCreated_(e));
+    this.webviewEventManager_.addEventListener(
         this.samlHandler_, 'apiPasswordConfirmed',
         e => this.onSamlApiPasswordConfirmed_(e));
     this.webviewEventManager_.addEventListener(
@@ -725,6 +734,14 @@ export class Authenticator extends EventTarget {
     if (data.startsOnSamlPage) {
       this.samlHandler_.startsOnSamlPage = true;
     }
+
+    // True if this is non-enterprise device and there are no users yet.
+    this.isFirstUser_ = !!data.isFirstUser;
+
+    // Enable or disable handling account create message from Gaia.
+    this.samlHandler_.shouldHandleAccountCreationMessage =
+        !!data.recordAccountCreation;
+
     // Don't block insecure content for desktop flow because it lands on
     // http. Otherwise, block insecure content as long as gaia is https.
     this.samlHandler_.blockInsecureContent =
@@ -763,8 +780,11 @@ export class Authenticator extends EventTarget {
   }
 
   constructInitialFrameUrl_(data) {
+    assert(this.idpOrigin_ !== undefined, "this.idpOrigin_ must be defined");
+    assert(data.gaiaPath !== undefined, "data.gaiaPath must be defined");
+    let url = this.idpOrigin_ + data.gaiaPath;
+
     if (data.doSamlRedirect) {
-      let url = this.idpOrigin_ + SAML_REDIRECTION_PATH;
       url = appendParam(url, 'domain', data.enterpriseEnrollmentDomain);
       if (data.ssoProfile) {
         url = appendParam(url, 'sso_profile', data.ssoProfile);
@@ -781,10 +801,6 @@ export class Authenticator extends EventTarget {
 
       return url;
     }
-
-    assert(this.idpOrigin_ !== undefined, "this.idpOrigin_ must be defined");
-    assert(data.gaiaPath !== undefined, "data.gaiaPath must be defined");
-    let url = this.idpOrigin_ + data.gaiaPath;
 
     if (data.chromeType) {
       url = appendParam(url, 'chrometype', data.chromeType);
@@ -1003,7 +1019,8 @@ export class Authenticator extends EventTarget {
   }
 
   /**
-   * Returns true if given HTML5 message is received from the webview element.
+   * Returns true if given HTML5 message is received from `this.idpOrigin_` -
+   * which is usually Gaia.
    * @param {Object} e Payload of the received HTML5 message.
    */
   isGaiaMessage_(e) {
@@ -1011,7 +1028,8 @@ export class Authenticator extends EventTarget {
       return false;
     }
 
-    // The event origin does not have a trailing slash.
+    // The event origin does not have a trailing slash, while `idpOrigin_` does.
+    // Strip the trailing slash from `idpOrigin_` before comparison.
     if (e.origin !== this.idpOrigin_.substring(0, this.idpOrigin_.length - 1)) {
       return false;
     }
@@ -1313,6 +1331,14 @@ export class Authenticator extends EventTarget {
   }
 
   /**
+   * Invoked when |samlHandler_| fires 'apiAccountCreated' event.
+   * @private
+   */
+  onSamlApiAccountCreated_(e) {
+    this.recordAccountCreated_();
+  }
+
+  /**
    * Invoked when |samlHandler_| fires 'apiPasswordConfirmed' event. Could be
    * from 3rd-party SAML IdP or Gaia which also uses the API.
    * @private
@@ -1428,9 +1454,6 @@ export class Authenticator extends EventTarget {
    * @private
    */
   isWebviewEvent_(e) {
-    // Note: <webview> prints error message to console if |contentWindow| is
-    // not defined.
-    // TODO(dzhioev): remove the message. http://crbug.com/469522
     const webviewWindow = this.webview_.contentWindow;
     return !!webviewWindow && webviewWindow === e.source;
   }
@@ -1482,6 +1505,21 @@ export class Authenticator extends EventTarget {
       Date.now() - this.gaiaStartTime,
     ]);
     this.gaiaStartTime = null;
+  }
+
+  /**
+   * Record new account creation.
+   * @private
+   */
+  recordAccountCreated_() {
+    // Record true account is created during the first sign in event
+    // and false if another account existed.
+    // TODO (b/307591058): add metric to track if account is created
+    // during login or not.
+    chrome.send('metricsHandler:recordBooleanHistogram',[
+      GAIA_CREATE_ACCOUNT_FIRST_USER,
+      this.isFirstUser_
+    ]);
   }
 
   /**

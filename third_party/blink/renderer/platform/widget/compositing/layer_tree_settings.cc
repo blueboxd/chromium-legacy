@@ -72,8 +72,15 @@ void InitializeScrollbarFadeAndDelay(cc::LayerTreeSettings& settings) {
 
 #if !BUILDFLAG(IS_ANDROID)
   if (ui::IsOverlayScrollbarEnabled()) {
-    settings.scrollbar_fade_delay = ui::kOverlayScrollbarFadeDelay;
-    settings.scrollbar_fade_duration = ui::kOverlayScrollbarFadeDuration;
+    settings.idle_thickness_scale = ui::kOverlayScrollbarIdleThicknessScale;
+    if (ui::IsFluentOverlayScrollbarEnabled()) {
+      settings.scrollbar_fade_delay = ui::kFluentOverlayScrollbarFadeDelay;
+      settings.scrollbar_fade_duration =
+          ui::kFluentOverlayScrollbarFadeDuration;
+    } else {
+      settings.scrollbar_fade_delay = ui::kOverlayScrollbarFadeDelay;
+      settings.scrollbar_fade_duration = ui::kOverlayScrollbarFadeDuration;
+    }
   }
 #endif  // !BUILDFLAG(IS_ANDROID)
 
@@ -537,10 +544,7 @@ cc::LayerTreeSettings GenerateLayerTreeSettings(
         &settings.initial_debug_state.slow_down_raster_scale_factor);
   }
 
-  // This is default overlay scrollbar settings for Android and DevTools mobile
-  // emulator. Aura Overlay Scrollbar will override below.
   settings.scrollbar_animator = cc::LayerTreeSettings::ANDROID_OVERLAY;
-  settings.solid_color_scrollbar_color = {0.5f, 0.5f, 0.5f, 0.5f};
 
   InitializeScrollbarFadeAndDelay(settings);
 
@@ -574,7 +578,7 @@ cc::LayerTreeSettings GenerateLayerTreeSettings(
     // hide_scrollbars setting because supporting -webkit custom scrollbars is
     // still desired on sublayers.
     settings.scrollbar_animator = cc::LayerTreeSettings::NO_ANIMATOR;
-    settings.solid_color_scrollbar_color = SkColors::kTransparent;
+    // Rendering of scrollbars will be disabled in cc::SolidColorScrollbarLayer.
 
     // Early damage check works in combination with synchronous compositor.
     settings.enable_early_damage_check =
@@ -609,11 +613,14 @@ cc::LayerTreeSettings GenerateLayerTreeSettings(
     settings.scrollbar_flash_after_any_scroll_update =
         !settings.enable_fluent_overlay_scrollbar;
     // Avoid animating in web tests to improve reliability.
-    if (settings.enable_fluent_overlay_scrollbar &&
-        WebTestSupport::IsRunningWebTest()) {
-      settings.scrollbar_thinning_duration = base::Milliseconds(0);
-      settings.scrollbar_fade_delay = base::Milliseconds(0);
-      settings.scrollbar_fade_duration = base::Milliseconds(0);
+    if (settings.enable_fluent_overlay_scrollbar) {
+      settings.scrollbar_thinning_duration =
+          ui::kFluentOverlayScrollbarThinningDuration;
+      if (WebTestSupport::IsRunningWebTest()) {
+        settings.scrollbar_thinning_duration = base::Milliseconds(0);
+        settings.scrollbar_fade_delay = base::Milliseconds(0);
+        settings.scrollbar_fade_duration = base::Milliseconds(0);
+      }
     }
   }
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -690,7 +697,7 @@ cc::LayerTreeSettings GenerateLayerTreeSettings(
       cmd.HasSwitch(::switches::kDisableFrameRateLimit);
 
   settings.enable_variable_refresh_rate =
-      ::features::IsVariableRefreshRateEnabled();
+      ::features::IsVariableRefreshRateAlwaysOn();
 
   std::tie(settings.tiling_interest_area_padding,
            settings.skewport_extrapolation_limit_in_screen_pixels) =

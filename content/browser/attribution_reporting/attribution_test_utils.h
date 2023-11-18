@@ -21,10 +21,10 @@
 #include "components/attribution_reporting/source_type.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/test_utils.h"
+#include "components/attribution_reporting/trigger_data_matching.mojom-forward.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
-#include "content/browser/attribution_reporting/attribution_storage_delegate.h"
 #include "content/browser/attribution_reporting/create_report_result.h"
 #include "content/browser/attribution_reporting/send_result.h"
 #include "content/browser/attribution_reporting/storable_source.h"
@@ -48,9 +48,9 @@ class TriggerVerification;
 
 namespace content {
 
-class AttributionManager;
 class AttributionTrigger;
 class CommonSourceInfo;
+struct FakeEventLevelReport;
 
 enum class RateLimitResult : int;
 
@@ -119,6 +119,11 @@ class SourceBuilder {
 
   SourceBuilder& SetMaxEventLevelReports(int max_event_level_reports);
 
+  SourceBuilder& SetTriggerDataMatching(
+      attribution_reporting::mojom::TriggerDataMatching);
+
+  SourceBuilder& SetDebugCookieSet(bool debug_cookie_set);
+
   StorableSource Build() const;
 
   StoredSource BuildStored() const;
@@ -141,6 +146,7 @@ class SourceBuilder {
   double randomized_response_rate_ = 0;
   std::vector<uint64_t> aggregatable_dedup_keys_;
   bool is_within_fenced_frame_ = false;
+  bool debug_cookie_set_ = false;
 };
 
 // Returns a AttributionTrigger with default data which matches the default
@@ -300,40 +306,21 @@ class ReportBuilder {
           attribution_reporting::mojom::SourceRegistrationTimeConfig::kInclude;
 };
 
-bool operator==(const AttributionTrigger& a, const AttributionTrigger& b);
+bool operator==(const StoredSource&, const StoredSource&);
 
-bool operator==(const CommonSourceInfo& a, const CommonSourceInfo& b);
+bool operator==(const AttributionReport::EventLevelData&,
+                const AttributionReport::EventLevelData&);
 
-bool operator==(const AttributionInfo& a, const AttributionInfo& b);
+bool operator==(const AttributionReport::CommonAggregatableData&,
+                const AttributionReport::CommonAggregatableData&);
 
-bool operator==(const AttributionStorageDelegate::FakeReport& a,
-                const AttributionStorageDelegate::FakeReport& b);
+bool operator==(const AttributionReport::AggregatableAttributionData&,
+                const AttributionReport::AggregatableAttributionData&);
 
-bool operator<(const AttributionStorageDelegate::FakeReport& a,
-               const AttributionStorageDelegate::FakeReport& b);
+bool operator==(const AttributionReport::NullAggregatableData&,
+                const AttributionReport::NullAggregatableData&);
 
-bool operator==(const StorableSource& a, const StorableSource& b);
-
-bool operator==(const StoredSource& a, const StoredSource& b);
-
-bool operator==(const AggregatableHistogramContribution& a,
-                const AggregatableHistogramContribution& b);
-
-bool operator==(const AttributionReport::EventLevelData& a,
-                const AttributionReport::EventLevelData& b);
-
-bool operator==(const AttributionReport::CommonAggregatableData& a,
-                const AttributionReport::CommonAggregatableData& b);
-
-bool operator==(const AttributionReport::AggregatableAttributionData& a,
-                const AttributionReport::AggregatableAttributionData& b);
-
-bool operator==(const AttributionReport::NullAggregatableData& a,
-                const AttributionReport::NullAggregatableData& b);
-
-bool operator==(const AttributionReport& a, const AttributionReport& b);
-
-bool operator==(const SendResult& a, const SendResult& b);
+bool operator==(const AttributionReport&, const AttributionReport&);
 
 std::ostream& operator<<(std::ostream& out, RateLimitResult result);
 
@@ -345,8 +332,7 @@ std::ostream& operator<<(std::ostream& out, const CommonSourceInfo& source);
 std::ostream& operator<<(std::ostream& out,
                          const AttributionInfo& attribution_info);
 
-std::ostream& operator<<(std::ostream& out,
-                         const AttributionStorageDelegate::FakeReport&);
+std::ostream& operator<<(std::ostream& out, const FakeEventLevelReport&);
 
 std::ostream& operator<<(std::ostream& out, const StorableSource& source);
 
@@ -385,9 +371,6 @@ std::ostream& operator<<(std::ostream& out,
 std::ostream& operator<<(std::ostream& out,
                          const AttributionDataModel::DataKey& key);
 
-std::vector<AttributionReport> GetAttributionReportsForTesting(
-    AttributionManager* manager);
-
 // Source matchers
 
 MATCHER_P(SourceRegistrationIs, matcher, "") {
@@ -415,6 +398,10 @@ MATCHER_P(SourceTypeIs, matcher, "") {
 
 MATCHER_P(SourceDebugKeyIs, matcher, "") {
   return ExplainMatchResult(matcher, arg.debug_key(), result_listener);
+}
+
+MATCHER_P(SourceDebugCookieSetIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.debug_cookie_set(), result_listener);
 }
 
 MATCHER_P(SourceFilterDataIs, matcher, "") {
@@ -446,11 +433,6 @@ MATCHER_P(RandomizedResponseRateIs, matcher, "") {
 
 MATCHER_P(SourceActiveStateIs, matcher, "") {
   return ExplainMatchResult(matcher, arg.active_state(), result_listener);
-}
-
-MATCHER_P(EventReportWindowsIs, matcher, "") {
-  return ExplainMatchResult(matcher, arg.event_report_windows(),
-                            result_listener);
 }
 
 // Trigger matchers.

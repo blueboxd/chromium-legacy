@@ -12,7 +12,7 @@
 #include "base/test/gtest_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/app_mode/kiosk_chrome_app_manager.h"
 #include "chrome/browser/ash/login/app_mode/kiosk_launch_controller.h"
 #include "chrome/browser/ash/login/app_mode/test/kiosk_apps_mixin.h"
 #include "chrome/browser/ash/login/app_mode/test/kiosk_test_helpers.h"
@@ -359,7 +359,7 @@ class InitialEnrollmentTest : public EnrollmentEmbeddedPolicyServerBase {
     // we already checked the existence of the pref with non-default value.
     EXPECT_FALSE(psm_determination_timestamp.is_null());
 
-    return psm_determination_timestamp.ToJavaTime();
+    return psm_determination_timestamp.InMillisecondsSinceUnixEpoch();
   }
 
  private:
@@ -1359,9 +1359,9 @@ class KioskEnrollmentTest : public EnrollmentEmbeddedPolicyServerBase {
   }
 
   void SetupAutoLaunchApp(FakeOwnerSettingsService* service) {
-    KioskAppManager::Get()->AddApp(KioskAppsMixin::kKioskAppId, service);
-    KioskAppManager::Get()->SetAutoLaunchApp(KioskAppsMixin::kKioskAppId,
-                                             service);
+    KioskChromeAppManager::Get()->AddApp(KioskAppsMixin::kKioskAppId, service);
+    KioskChromeAppManager::Get()->SetAutoLaunchApp(KioskAppsMixin::kKioskAppId,
+                                                   service);
   }
 
  private:

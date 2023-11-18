@@ -51,9 +51,18 @@ PaintRecord ScrollbarDisplayItem::Paint() const {
   recorder.beginRecording();
   auto* canvas = recorder.getRecordingCanvas();
   auto* scrollbar = data_->scrollbar_.get();
-  scrollbar->PaintPart(canvas, cc::ScrollbarPart::kTrackButtonsTickmarks, rect);
+
+  // Skip track and button painting for Minimal mode Fluent scrollbars.
+  if (!scrollbar->IsFluentOverlayScrollbarMinimalMode()) {
+    scrollbar->PaintPart(canvas, cc::ScrollbarPart::kTrackButtonsTickmarks,
+                         rect);
+  }
+
   gfx::Rect thumb_rect = scrollbar->ThumbRect();
   thumb_rect.Offset(rect.OffsetFromOrigin());
+  if (scrollbar->IsFluentOverlayScrollbarMinimalMode()) {
+    thumb_rect = scrollbar->ShrinkMainThreadedMinimalModeThumbRect(thumb_rect);
+  }
   scrollbar->PaintPart(canvas, cc::ScrollbarPart::kThumb, thumb_rect);
 
   scrollbar->ClearNeedsUpdateDisplay();
@@ -101,8 +110,8 @@ scoped_refptr<cc::ScrollbarLayerBase> ScrollbarDisplayItem::CreateOrReuseLayer(
 
 bool ScrollbarDisplayItem::IsOpaque() const {
   DCHECK(!IsTombstone());
-  // The native themes should ensure opaqueness of non-overlay scrollbars.
-  return !data_->scrollbar_->IsOverlay();
+
+  return data_->scrollbar_->IsOpaque();
 }
 
 bool ScrollbarDisplayItem::EqualsForUnderInvalidationImpl(
@@ -135,6 +144,7 @@ void ScrollbarDisplayItem::Record(
   // Must check PaintController::UseCachedItemIfPossible before this function.
   DCHECK(RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
          !paint_controller.UseCachedItemIfPossible(client, type));
+  CHECK(IsScrollbarElementId(element_id));
 
   paint_controller.CreateAndAppend<ScrollbarDisplayItem>(
       client, type, std::move(scrollbar), visual_rect,

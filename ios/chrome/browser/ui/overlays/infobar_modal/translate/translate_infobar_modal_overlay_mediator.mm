@@ -13,7 +13,7 @@
 #import "components/translate/core/common/translate_metrics.h"
 #import "components/translate/core/common/translate_util.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_util.h"
-#import "ios/chrome/browser/overlays/public/default/default_infobar_overlay_request_config.h"
+#import "ios/chrome/browser/overlays/model/public/default/default_infobar_overlay_request_config.h"
 #import "ios/chrome/browser/shared/ui/list_model/list_model.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/translate/model/translate_infobar_metrics_recorder.h"
@@ -333,8 +333,7 @@ const int kInvalidLanguageIndex = -1;
   languageMapping.reserve(languageNames.size());
 
   for (size_t i = 0; i < languageNames.size(); ++i) {
-    if (translate::IsForceTranslateEnabled() && shouldSkipFirstLanguage &&
-        i == 0) {
+    if (shouldSkipFirstLanguage && i == 0) {
       // "Detected Language" is the first item in the languages list and should
       // only be added to the source language menu.
       continue;

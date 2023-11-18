@@ -1,0 +1,428 @@
+<style include="sp-shared-style cr-hidden-style">
+  sp-heading {
+    margin: 0 0 8px;
+  }
+
+  .sp-cards-separator {
+    border: none;
+    height: 2px;
+    margin: 0;
+    width: 100%;
+  }
+
+  .content {
+    margin: 16px 16px 8px;
+    position: relative;
+  }
+
+  #error {
+    height: 100px;
+    line-height: 20px;
+  }
+
+  #errorTitle {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-side-panel-card-primary-foreground);
+    margin-block-end: 8px;
+  }
+
+  #errorDescription {
+    color: var(--color-side-panel-card-secondary-foreground);
+    font-size: 13px;
+    margin-block-end: 16px;
+  }
+
+  #errorCTA {
+    background-color: var(
+        --color-side-panel-wallpaper-search-error-button-background);
+    border-color: var(
+        --color-side-panel-wallpaper-search-error-button-background);
+    color: var(
+        --color-side-panel-wallpaper-search-error-button-text);
+    float: right;
+    min-width: auto;
+  }
+
+  customize-chrome-combobox {
+    color: var(--color-side-panel-card-primary-foreground);
+    font-size: 12px;
+    line-height: 16px;
+  }
+
+  #descriptorComboboxA {
+    width: 100%;
+  }
+
+  .category-item {
+    display: flex;
+    font-weight: 700;
+  }
+
+  .category-item iron-icon {
+    --iron-icon-height: 16px;
+    --iron-icon-width: 16px;
+    margin-inline-start: auto;
+  }
+
+  .category-item,
+  .dropdown-item {
+    align-items: center;
+    box-sizing: border-box;
+    border: none;
+    display: flex;
+    height: 28px;
+    padding: 0 20px;
+  }
+
+  .category-item[highlighted],
+  .dropdown-item[highlighted] {
+    background: var(--cr-active-neutral-on-subtle-background-color);
+  }
+
+  .dropdown-item iron-icon {
+    --iron-icon-height: 16px;
+    --iron-icon-width: 16px;
+    flex-shrink: 0;
+    visibility: hidden;
+    margin-inline-end: 8px;
+  }
+
+  .dropdown-item[selected] iron-icon {
+    visibility: visible;
+  }
+
+  .dropdown-item span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  #optionalDetails {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  #optionalDetailsLabel {
+    color: var(--color-side-panel-card-secondary-foreground);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    width: 100%;
+  }
+
+  #optionalDetails customize-chrome-combobox {
+    width: 132px;
+  }
+
+  #descriptorComboboxB .dropdown-item {
+    height: 48px;
+  }
+
+  #descriptorComboboxB customize-chrome-check-mark-wrapper {
+    --customize-chrome-check-mark-wrapper-end: -8px;
+    --customize-chrome-check-mark-wrapper-size: 16px;
+    --customize-chrome-check-mark-wrapper-top: -3px;
+  }
+
+  #descriptorComboboxB img {
+    border-radius: 8px;
+    height: 40px;
+    width: 40px;
+  }
+
+  #descriptorComboboxB span {
+    padding-inline-start: 16px;
+  }
+
+  #descriptorMenuD {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    width: 100%;
+  }
+
+  #descriptorMenuD cr-button {
+    background-color: var(--color-menu-button-background);
+    border-radius: 8px;
+    border-color: var(--color-menu-button-background);
+    height: 40px;
+    min-width: 40px;
+    padding: 0px;
+  }
+
+  .color-check-mark {
+    --customize-chrome-check-mark-wrapper-end: -2px;
+    --customize-chrome-check-mark-wrapper-size: 16px;
+    --customize-chrome-check-mark-wrapper-top: -2px;
+  }
+
+  .descriptor-d {
+    border-radius: 50%;
+    display: block;
+    height: 28px;
+    width: 28px;
+  }
+
+  #colorPickerIcon {
+    -webkit-mask-image: url(chrome://resources/cr_components/customize_themes/colorize.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: 100%;
+    background-color: var(
+        --color-theme-color-picker-custom-color-icon-background,
+        var(--cr-fallback-color-on-surface-subtle));
+    height: 16px;
+    left: calc(50% - 8px);
+    pointer-events: none;
+    position: absolute;
+    top: calc(50% - 8px);
+    width: 16px;
+  }
+
+  #btnContainer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+  }
+
+  .sp-hr {
+    margin: 16px 0;
+  }
+
+  cr-grid {
+    --cr-column-width: 1fr;
+    --cr-grid-gap: 10px;
+    --cr-grid-width: 100%;
+    display: block;
+  }
+
+  .tile {
+    outline-width: 0;
+    place-self: stretch;
+  }
+
+  :host-context(.focus-outline-visible) .tile:focus {
+    box-shadow: 0 0 0 2px var(--cr-focus-outline-color);
+  }
+
+  .result {
+    background: none;
+    cursor: pointer;
+  }
+
+  .result img {
+    height: 100%;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+  }
+
+  .image-check-mark {
+    --customize-chrome-check-mark-wrapper-end: -4px;
+    --customize-chrome-check-mark-wrapper-size: 20px;
+    --customize-chrome-check-mark-wrapper-top: -6px;
+  }
+
+  .image-check-mark[checked] .image-container {
+    padding-top: calc(100% - 4px);
+    width: calc(100% - 4px);
+  }
+
+  .image-container {
+    background-color: var(
+        --color-side-panel-wallpaper-search-tile-background);
+    border-radius: 12px;
+    overflow: hidden;
+    padding-top: 100%;
+    position: relative;
+    width: 100%;
+  }
+
+  .image-container img {
+    position: absolute;
+  }
+
+  @media (forced-colors: active) {
+    :host-context(.focus-outline-visible) .tile:focus {
+      /* Set outline to hcm (high contrast mode) value. */
+      outline: var(--cr-focus-outline-hcm);
+    }
+  }
+
+  #footer {
+    align-items: center;
+    display: flex;
+    gap: 16px;
+    margin-block-start: 16px;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 16px;
+    color: var(--color-side-panel-card-secondary-foreground);
+  }
+</style>
+<div class="sp-card">
+  <sp-heading id="heading" on-back-button-click="onBackClick_"
+      back-button-aria-label="$i18n{backButton}"
+      back-button-title="$i18n{backButton}">
+    <h2 slot="heading">$i18n{wallpaperSearchHeader}</h2>
+  </sp-heading>
+  <div class="content" id="error" hidden$="[[!errorState_]]">
+    <div id="errorTitle">[[errorState_.title]]</div>
+    <div id="errorDescription">[[errorState_.description]]</div>
+    <cr-button id="errorCTA" on-click="onErrorClick_">
+      [[errorState_.callToAction]]
+    </cr-button>
+  </div>
+  <div class="content" id="wallpaperSearch" hidden$="[[errorState_]]">
+    <customize-chrome-combobox id="descriptorComboboxA" label="Descriptor A"
+        value="{{selectedDescriptorA_}}">
+      <template is="dom-repeat" items="[[descriptors_.descriptorA]]">
+        <div class="category" role="group">
+          <label class="category-item" on-click="onComboboxCategoryClick_">
+            [[item.category]]
+            <iron-icon icon="[[
+                getCategoryIcon_(index, expandedCategories_.*)]]">
+            </iron-icon>
+          </label>
+          <template is="dom-if" restamp if="[[
+              isCategoryExpanded_(index, expandedCategories_.*)]]">
+            <template is="dom-repeat" items="[[item.labels]]">
+              <div class="dropdown-item" role="option" value="[[item]]">
+                <iron-icon icon="cr:check"></iron-icon>
+                <span>[[item]]</span>
+              </div>
+            </template>
+          </template>
+        </div>
+      </template>
+    </customize-chrome-combobox>
+    <div id="optionalDetails">
+      <div id="optionalDetailsLabel">$i18n{optionalDetailsLabel}</div>
+      <customize-chrome-combobox id="descriptorComboboxB" label="Descriptor B"
+          value="{{selectedDescriptorB_}}">
+        <template is="dom-repeat" items="[[descriptors_.descriptorB]]">
+          <div class="dropdown-item" role="option" value="[[item.label]]">
+            <customize-chrome-check-mark-wrapper
+                checked="[[isOptionSelectedInDescriptorB_(
+                    item, selectedDescriptorB_)]]">
+              <img is="cr-auto-img" auto-src="[[item.imagePath]]"></img>
+            </customize-chrome-check-mark-wrapper>
+            <span>[[item.label]]</span>
+          </div>
+        </template>
+      </customize-chrome-combobox>
+      <customize-chrome-combobox id="descriptorComboboxC" label="Descriptor C"
+          value="{{selectedDescriptorC_}}" right-align-dropbox>
+        <template is="dom-repeat" items="[[descriptors_.descriptorC]]">
+          <div class="dropdown-item" role="option" value="[[item]]">
+            <iron-icon icon="cr:check"></iron-icon>
+            <span>[[item]]</span>
+          </div>
+        </template>
+      </customize-chrome-combobox>
+      <div id="descriptorMenuD">
+        <template is="dom-repeat" items="[[descriptorD_]]">
+          <cr-button class="default-color" on-click="onDefaultColorClick_">
+            <customize-chrome-check-mark-wrapper class="color-check-mark"
+                checked="[[isColorSelected_(item, selectedDefaultColor_)]]"
+                checkmark-border-hidden>
+              <span class="descriptor-d" style$="background-color: [[item]];">
+              </span>
+            </customize-chrome-check-mark-wrapper>
+          </cr-button>
+        </template>
+        <cr-button id="customColorContainer" on-click="onCustomColorClick_">
+          <customize-chrome-check-mark-wrapper class="color-check-mark"
+              checked="[[selectedHue_]]" checkmark-border-hidden>
+            <div class="descriptor-d"
+                style$="background: hsl([[selectedHue_]], 100%, 50%);">
+              <div id="colorPickerIcon"></div>
+            </div>
+          </customize-chrome-check-mark-wrapper>
+        </cr-button>
+      </div>
+    </div>
+    <cr-theme-hue-slider-dialog id="hueSlider"
+        on-selected-hue-changed="onSelectedHueChanged_">
+    </cr-theme-hue-slider-dialog>
+    <div id="btnContainer">
+      <cr-button
+          id="submitButton"
+          on-click="onSearchClick_"
+          class="action-button">
+        [[submitBtnText_]]
+      </cr-button>
+    </div>
+    <hr class="sp-hr">
+    <div id="loading" hidden$="[[!loading_]]">
+      <cr-loading-gradient>
+        <svg width="280" height="183" xmlns="http://www.w3.org/2000/svg">
+          <clipPath>
+            <rect x="0" y="0" width="86.67" height="86.67" rx="12"></rect>
+            <rect x="96.67" y="0" width="86.67" height="86.67" rx="12"></rect>
+            <rect x="193.34" y="0" width="86.67" height="86.67" rx="12"></rect>
+            <rect x="0" y="96.67" width="86.67" height="86.67" rx="12"></rect>
+            <rect x="96.67" y="96.67" width="86.67" height="86.67" rx="12">
+            </rect>
+            <rect x="193.34" y="96.67" width="86.67" height="86.67" rx="12">
+            </rect>
+          </clipPath>
+        </svg>
+      </cr-loading-gradient>
+    </div>
+    <cr-grid columns="3" disable-arrow-navigation
+        hidden$="[[!shouldShowGrid_(results_, emptyContainers_)]]">
+      <template is="dom-repeat" id="resultsRepeat" items="[[results_]]"
+          on-dom-change="onResultsRender_">
+        <div class="tile result" tabindex="0" role="button"
+            on-click="onResultClick_">
+          <customize-chrome-check-mark-wrapper class="image-check-mark"
+              checked="[[isBackgroundSelected_(item.id, theme_)]]">
+            <div class="image-container">
+              <img src="data:image/png;base64,[[item.image]]">
+              </img>
+            </div>
+          </customize-chrome-check-mark-wrapper>
+        </div>
+      </template>
+      <template is="dom-repeat"
+          id="emptyResultRepeat"
+          items="[[emptyResultContainers_]]">
+        <div class="tile empty">
+          <div class="image-container"></div>
+        </div>
+      </template>
+    </cr-grid>
+    <div id="footer">
+      $i18n{experimentalFeatureDisclaimer}
+    </div>
+  </div>
+</div>
+<hr class="sp-cards-separator">
+<div class="sp-card" id="historyCard">
+  <sp-heading hide-back-button>
+    <h2 slot="heading">$i18n{wallpaperSearchHistoryHeader}</h2>
+  </sp-heading>
+  <div class="content">
+    <cr-grid columns="3" disable-arrow-navigation>
+      <template is="dom-repeat" id="historyRepeat" items="[[history_]]">
+        <div class="tile result" tabindex="0" role="button">
+          <div class="image-container">
+            <img src="data:image/png;base64,[[item.image]]">
+            </img>
+          </div>
+        </div>
+      </template>
+      <template is="dom-repeat"
+          id="emptyHistoryRepeat"
+          items="[[emptyHistoryContainers_]]">
+        <div class="tile empty">
+          <div class="image-container"></div>
+        </div>
+      </template>
+    </cr-grid>
+  </div>
+</div>

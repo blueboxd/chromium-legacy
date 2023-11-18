@@ -30,8 +30,6 @@
 #include "chrome/browser/ash/login/screens/choobe_screen.h"
 #include "chrome/browser/ash/login/screens/consolidated_consent_screen.h"
 #include "chrome/browser/ash/login/screens/consumer_update_screen.h"
-#include "chrome/browser/ash/login/screens/cryptohome_recovery_screen.h"
-#include "chrome/browser/ash/login/screens/cryptohome_recovery_setup_screen.h"
 #include "chrome/browser/ash/login/screens/demo_preferences_screen.h"
 #include "chrome/browser/ash/login/screens/demo_setup_screen.h"
 #include "chrome/browser/ash/login/screens/display_size_screen.h"
@@ -42,15 +40,12 @@
 #include "chrome/browser/ash/login/screens/family_link_notice_screen.h"
 #include "chrome/browser/ash/login/screens/fingerprint_setup_screen.h"
 #include "chrome/browser/ash/login/screens/gaia_info_screen.h"
-#include "chrome/browser/ash/login/screens/gaia_password_changed_screen.h"
-#include "chrome/browser/ash/login/screens/gaia_password_changed_screen_legacy.h"
 #include "chrome/browser/ash/login/screens/gaia_screen.h"
 #include "chrome/browser/ash/login/screens/gesture_navigation_screen.h"
 #include "chrome/browser/ash/login/screens/guest_tos_screen.h"
 #include "chrome/browser/ash/login/screens/hardware_data_collection_screen.h"
 #include "chrome/browser/ash/login/screens/hid_detection_screen.h"
 #include "chrome/browser/ash/login/screens/kiosk_autolaunch_screen.h"
-#include "chrome/browser/ash/login/screens/local_password_setup_screen.h"
 #include "chrome/browser/ash/login/screens/locale_switch_screen.h"
 #include "chrome/browser/ash/login/screens/marketing_opt_in_screen.h"
 #include "chrome/browser/ash/login/screens/multidevice_setup_screen.h"
@@ -59,13 +54,22 @@
 #include "chrome/browser/ash/login/screens/online_authentication_screen.h"
 #include "chrome/browser/ash/login/screens/os_install_screen.h"
 #include "chrome/browser/ash/login/screens/os_trial_screen.h"
+#include "chrome/browser/ash/login/screens/osauth/apply_online_password_screen.h"
+#include "chrome/browser/ash/login/screens/osauth/cryptohome_recovery_screen.h"
+#include "chrome/browser/ash/login/screens/osauth/cryptohome_recovery_setup_screen.h"
+#include "chrome/browser/ash/login/screens/osauth/factor_setup_success_screen.h"
+#include "chrome/browser/ash/login/screens/osauth/gaia_password_changed_screen.h"
+#include "chrome/browser/ash/login/screens/osauth/gaia_password_changed_screen_legacy.h"
+#include "chrome/browser/ash/login/screens/osauth/local_password_setup_screen.h"
+#include "chrome/browser/ash/login/screens/osauth/osauth_error_screen.h"
+#include "chrome/browser/ash/login/screens/osauth/password_selection_screen.h"
+#include "chrome/browser/ash/login/screens/osauth/recovery_eligibility_screen.h"
 #include "chrome/browser/ash/login/screens/packaged_license_screen.h"
 #include "chrome/browser/ash/login/screens/parental_handoff_screen.h"
-#include "chrome/browser/ash/login/screens/password_selection_screen.h"
 #include "chrome/browser/ash/login/screens/pin_setup_screen.h"
 #include "chrome/browser/ash/login/screens/quick_start_screen.h"
 #include "chrome/browser/ash/login/screens/recommend_apps_screen.h"
-#include "chrome/browser/ash/login/screens/recovery_eligibility_screen.h"
+#include "chrome/browser/ash/login/screens/remote_activity_notification_screen.h"
 #include "chrome/browser/ash/login/screens/saml_confirm_password_screen.h"
 #include "chrome/browser/ash/login/screens/signin_fatal_error_screen.h"
 #include "chrome/browser/ash/login/screens/smart_privacy_protection_screen.h"
@@ -307,6 +311,7 @@ class WizardController : public OobeUI::Observer {
   void ShowSyncConsentScreen();
   void ShowFingerprintSetupScreen();
   void ShowRecommendAppsScreen();
+  void ShowRemoteActivityNotificationScreen();
   void ShowAppDownloadingScreen();
   void ShowWrongHWIDScreen();
   void ShowAutoEnrollmentCheckScreen();
@@ -343,6 +348,9 @@ class WizardController : public OobeUI::Observer {
   void ShowConsumerUpdateScreen();
   void ShowPasswordSelectionScreen();
   void ShowLocalPasswordSetupScreen();
+  void ShowApplyOnlinePasswordScreen();
+  void ShowOSAuthErrorScreen();
+  void ShowFactorSetupSuccessScreen();
 
   // Shows images login screen.
   void ShowLoginScreen();
@@ -402,6 +410,7 @@ class WizardController : public OobeUI::Observer {
   void FinishAuthFactorsSetup();
   // End of Local authentication setup sub-group
   void OnRecommendAppsScreenExit(RecommendAppsScreen::Result result);
+  void OnRemoteActivityNotificationScreenExit();
   void OnAppDownloadingScreenExit();
   void OnAssistantOptInFlowScreenExit(AssistantOptInFlowScreen::Result result);
   void OnMultiDeviceSetupScreenExit(MultiDeviceSetupScreen::Result result);
@@ -442,7 +451,10 @@ class WizardController : public OobeUI::Observer {
   void OnAddChildScreenExit(AddChildScreen::Result result);
   void OnConsumerUpdateScreenExit(ConsumerUpdateScreen::Result result);
   void OnLocalPasswordSetupScreenExit(LocalPasswordSetupScreen::Result result);
-
+  void OnApplyOnlinePasswordScreenExit(
+      ApplyOnlinePasswordScreen::Result result);
+  void OnOSAuthErrorScreenExit(OSAuthErrorScreen::Result result);
+  void OnFactorSetupSuccessScreenExit(FactorSetupSuccessScreen::Result result);
   // Callback invoked once it has been determined whether the device is disabled
   // or not.
   void OnDeviceDisabledChecked(bool device_disabled);
@@ -538,6 +550,10 @@ class WizardController : public OobeUI::Observer {
   // the TPM being un-owned until enrollment. b/187429309
   void MaybeTakeTPMOwnership();
 
+  // Hides the current screen if it's not set to `nullptr` and sets it to
+  // `nullptr`.
+  void ResetCurrentScreen();
+
   std::unique_ptr<policy::AutoEnrollmentController> auto_enrollment_controller_;
   std::unique_ptr<ChoobeFlowController> choobe_flow_controller_;
   std::unique_ptr<quick_start::QuickStartController> quickstart_controller_;
@@ -583,10 +599,10 @@ class WizardController : public OobeUI::Observer {
   friend class WizardControllerOnboardingResumeTest;
   friend class WizardControllerScreenPriorityTest;
   friend class WizardControllerManagementTransitionOobeTest;
+  friend class WizardControllerRemoteActivityNotificationTest;
 
   base::CallbackListSubscription accessibility_subscription_;
 
-  std::unique_ptr<SimpleGeolocationProvider> geolocation_provider_;
   std::unique_ptr<TimeZoneProvider> timezone_provider_;
 
   // Controller of the demo mode setup. It has the lifetime of the single demo

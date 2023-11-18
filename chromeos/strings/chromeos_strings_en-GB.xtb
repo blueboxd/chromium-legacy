@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
+<translation id="1003363546227723021">When your screen is idle, show photos, time, weather and media info</translation>
 <translation id="1014750484722996375">Desks</translation>
 <translation id="1018219910092211213">Can't resolve DNS</translation>
 <translation id="1018656279737460067">Cancelled</translation>
@@ -29,6 +30,7 @@
 <translation id="1175951029573070619">Average (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Remove</translation>
 <translation id="1195447618553298278">Unknown error.</translation>
+<translation id="1195784767091936222">Turn on auto dark mode</translation>
 <translation id="1196959502276349371">Version <ph name="VERSION" /></translation>
 <translation id="1199355487114804640">Play/Pause</translation>
 <translation id="1201402288615127009">Next</translation>
@@ -42,6 +44,7 @@
 <translation id="1290331692326790741">Weak signal</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1308754910631152188">Updating (<ph name="PERCENTAGE_VALUE" />% complete)</translation>
+<translation id="1309341072016605398"><ph name="MINUTES" /> minutes</translation>
 <translation id="1310380015393971138">No <ph name="NETWORK_NAME" /> network available</translation>
 <translation id="131421566576084655">Date of last data reset is unavailable</translation>
 <translation id="1314565355471455267">Android VPN</translation>
@@ -86,6 +89,7 @@
 <translation id="1572585716423026576">Set as wallpaper</translation>
 <translation id="1578784163189013834">Choose screensaver background</translation>
 <translation id="160633243685262989">Preview image</translation>
+<translation id="1611649489706141841">forward</translation>
 <translation id="1615335640928990664">Data usage since <ph name="FRIENDLY_DATE" /></translation>
 <translation id="1621067168122174824">Run charge test</translation>
 <translation id="1639239467298939599">Loading</translation>
@@ -132,6 +136,7 @@
 <translation id="1852934301711881861">Install Chrome OS Flex</translation>
 <translation id="1856388568474281774">Down arrow</translation>
 <translation id="1858620243986915808">Attach screenshot</translation>
+<translation id="1871413952174074704">APN can’t have more than <ph name="CHAR_LIMIT" /> characters</translation>
 <translation id="1871569928317311284">Turn Dark theme off</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Turn dark mode off</translation>
@@ -145,6 +150,7 @@
 <translation id="1923388006036088459">Accent colours</translation>
 <translation id="1947737735496445907">Printed</translation>
 <translation id="1951012854035635156">Assistant</translation>
+<translation id="1954687945444914660">Photography</translation>
 <translation id="1962550982027027473">A default APN is required</translation>
 <translation id="1973886230221301399">ChromeVox</translation>
 <translation id="1977994649430373166">Google profile photo</translation>
@@ -169,7 +175,9 @@
 <translation id="2152882202543497059"><ph name="NUMBER" /> photos</translation>
 <translation id="2157660087437850958">emoji picker</translation>
 <translation id="2157959690810728433">QUEUED</translation>
+<translation id="2158450850127366833">{NUM_ROOL_APPS,plural,offset:2 =1{Your administrator has set <ph name="APP_NAME_1" /> to start automatically every time you log in.}=2{Your administrator has set <ph name="APP_NAME_1" /> and <ph name="APP_NAME_2" /> to start automatically every time you log in.}=3{Your administrator has set <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> and <ph name="APP_NAME_3" /> to start automatically every time you log in.}other{Your administrator has set <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> and # other apps to start automatically every time you log in.}}</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: Retry</translation>
+<translation id="215916044711630446">Add APN button is now disabled</translation>
 <translation id="2161394479394250669">Cancel print job</translation>
 <translation id="2161656808144014275">Text</translation>
 <translation id="2163937499206714165">Turn dark mode on</translation>
@@ -185,6 +193,7 @@
 <translation id="2236746079896696523">Keyboard backlight toggle</translation>
 <translation id="2240366984605217732">Layout switch</translation>
 <translation id="225692081236532131">Activation status</translation>
+<translation id="2267285889943769271">Add screenshot</translation>
 <translation id="2271469253353559191">Dark mode schedule</translation>
 <translation id="2276999893457278469">Top help content</translation>
 <translation id="2279051792571591988">Restore defaults</translation>
@@ -270,6 +279,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">Device is connected.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Remove page?}=1{Remove page {PAGE_NUMBER}?}other{Remove page {PAGE_NUMBER}?}}</translation>
+<translation id="3136905423678675159">Turn on auto dark mode?</translation>
 <translation id="3146655726035122603">Exclusive to <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Mobile data</translation>
 <translation id="3156846309055100599">Scanning page <ph name="PAGE_NUMBER" />...</translation>
@@ -349,6 +359,7 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (<ph name="AGGREGATED_COUNT" /> reviews)</translation>
 <translation id="3748026146096797577">Not Connected</translation>
 <translation id="3749289110408117711">File name</translation>
+<translation id="3754384069690464321">For best results with this wallpaper, please turn on auto dark mode. You can change it back in the app at any time.</translation>
 <translation id="3771294271822695279">Video Files</translation>
 <translation id="3784455785234192852">Lock</translation>
 <translation id="380097101658023925">rgb controls</translation>
@@ -399,6 +410,7 @@
 <translation id="4117637339509843559">Dark mode</translation>
 <translation id="4130035430755296270">Keep hovering for more layout options</translation>
 <translation id="4131410914670010031">Black and white</translation>
+<translation id="4143820682073026914">{NUM_ROOL_APPS,plural, =1{<ph name="APP_NAME_1" /> was started automatically}other{# apps were started automatically}}</translation>
 <translation id="4145784616224233563">HTTP firewall</translation>
 <translation id="4147897805161313378">Google Photos</translation>
 <translation id="4150201353443180367">Display</translation>
@@ -427,6 +439,7 @@
 <translation id="4297501883039923494">Stopped – unknown error</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> images</translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" /> key pressed</translation>
+<translation id="4354430579665871434">key</translation>
 <translation id="435692326371619097">Manage network APN settings. APNs establish a connection between a mobile network and the Internet. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="437294888293595148">Reset all shortcuts</translation>
 <translation id="4378373042927530923">Not run</translation>
@@ -444,6 +457,7 @@
 <translation id="445059817448385655">Old password</translation>
 <translation id="4453205916657964690">Subnet mask</translation>
 <translation id="4454245904991689773">Scan to</translation>
+<translation id="4456812688969919973">Save APN button is now disabled</translation>
 <translation id="4469288414739283461">Earth flow screen saver</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Failed to ping the non-default network gateway</translation>
@@ -526,7 +540,6 @@
 <translation id="4999333166442584738">Hide report</translation>
 <translation id="500920857929044050">Stop test</translation>
 <translation id="5017508259293544172">LEAP</translation>
-<translation id="5019310272469539976">When your screen is idle, show photos, time, weather and media info.</translation>
 <translation id="5035083460461104704">Theme colour</translation>
 <translation id="5038292761217083259">keyboard multicolour</translation>
 <translation id="5039804452771397117">Allow</translation>
@@ -580,6 +593,7 @@
 <translation id="5389224261615877010">Rainbow</translation>
 <translation id="5400907029458559844">Device is connecting.</translation>
 <translation id="5401938042319910061">Run all routines</translation>
+<translation id="540604120278030498">New York</translation>
 <translation id="5423849171846380976">Activated</translation>
 <translation id="5430931332414098647">Instant Tethering</translation>
 <translation id="5431318178759467895">Colour</translation>
@@ -688,9 +702,11 @@
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">Turn Dark theme on</translation>
 <translation id="628726841779494414">Manage your printers in printer settings</translation>
+<translation id="6292095526077353682">While charging, show screen saver for</translation>
 <translation id="629550705077076970">keyboard dimming</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> test has been cancelled</translation>
 <translation id="631063167932043783">Explore app</translation>
+<translation id="6318437367327684789">forever</translation>
 <translation id="6319207335391420837">Update firmware on <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Turn on screensaver</translation>
 <translation id="6324916366299863871">Edit shortcut</translation>
@@ -714,6 +730,7 @@
 <translation id="6423239382391657905">Open VPN</translation>
 <translation id="6439505561246192797">Weak (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Go to account settings</translation>
+<translation id="6462978824459367242">Add APN button is now enabled</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Rescan page?}=1{Rescan page {PAGE_NUMBER}?}other{Rescan page {PAGE_NUMBER}?}}</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6480327114083866287">Managed by <ph name="MANAGER" /></translation>
@@ -785,6 +802,7 @@
 <translation id="7046522406494308071">Reset all shortcuts to defaults?</translation>
 <translation id="7058278511608979688">End and save</translation>
 <translation id="7059230779847288458">Charging; <ph name="TIME_VALUE" /> until full</translation>
+<translation id="7065364575846974659">Paris</translation>
 <translation id="7066538517128343186">the <ph name="KEY" /> key</translation>
 <translation id="7068619307603204412">Prepare your device</translation>
 <translation id="708426984172631313">STOPPED</translation>
@@ -924,6 +942,7 @@
 <translation id="8094062939584182041">Allow Google to email you about this issue</translation>
 <translation id="8104083085214006426">You are using an open and unsecure network</translation>
 <translation id="8111706652656628199">Shortcut not available. Press a new shortcut using shift and one more modifier key (ctrl, alt, search or launcher).</translation>
+<translation id="8112538018114444149">A park in <ph name="CHIP_CITY" /> in the style of <ph name="CHIP_STYLE" />.</translation>
 <translation id="811820734797650957">(Android) Gateway can be pinged</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" />° C</translation>
 <translation id="8132480444149501833">Request traffic counters</translation>
@@ -939,6 +958,7 @@
 <translation id="8227119283605456246">Attach file</translation>
 <translation id="8230672074305416752">Failed to ping the default network gateway</translation>
 <translation id="8246209727385807362">Unknown operator</translation>
+<translation id="8262870577632766028">1 hour</translation>
 <translation id="827422111966801947">Indigo</translation>
 <translation id="8286154143153872371">Please connect to a network and reload the page to view wallpaper.</translation>
 <translation id="8291967909914612644">Home provider country</translation>
@@ -1003,6 +1023,7 @@
 <translation id="8747900814994928677">Confirm change</translation>
 <translation id="8764414543112028321">WireGuard</translation>
 <translation id="87646919272181953">Google Photos album</translation>
+<translation id="8775713578693478175">Modem APN</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8789196995628578448">Shortcut is being used for '<ph name="CONFLICT_ACCEL_NAME" />'. Press a new shortcut. To replace the original shortcut, press this shortcut again.</translation>
 <translation id="879568662008399081">This network may have a captive portal</translation>
@@ -1052,9 +1073,11 @@
 <translation id="902638246363752736">Keyboard settings</translation>
 <translation id="9028832514430399253">Turn on the toggle to select the screen saver options</translation>
 <translation id="9039663905644212491">PEAP</translation>
+<translation id="9049868303458988905">Save APN button is now enabled</translation>
 <translation id="9058932992221914855">IPv6</translation>
 <translation id="9062831201344759865">DNS resolution has high latency</translation>
 <translation id="9065203028668620118">Edit</translation>
+<translation id="9068296451330120661">Watercolour</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9082718469794970195">Use this video</translation>
@@ -1089,4 +1112,5 @@
 <translation id="979450713603643090">Light pink</translation>
 <translation id="982713511914535780">Run discharge test</translation>
 <translation id="987264212798334818">General</translation>
+<translation id="995062385528875723">Can’t use accented letters, non-Latin alphabet or symbols</translation>
 </translationbundle>

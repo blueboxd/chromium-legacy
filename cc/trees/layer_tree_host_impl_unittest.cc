@@ -10,6 +10,7 @@
 #include <memory>
 #include <utility>
 
+#include <optional>
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/memory_pressure_listener.h"
@@ -91,7 +92,6 @@
 #include "media/base/media.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
 #include "ui/events/types/scroll_input_type.h"
 #include "ui/gfx/geometry/angle_conversions.h"
@@ -288,6 +288,7 @@ class LayerTreeHostImplTest : public testing::Test,
   void NotifyThroughputTrackerResults(CustomTrackerResults results) override {}
 
   void DidObserveFirstScrollDelay(
+      int source_frame_number,
       base::TimeDelta first_scroll_delay,
       base::TimeTicks first_scroll_timestamp) override {
     first_scroll_observed++;
@@ -772,9 +773,9 @@ class LayerTreeHostImplTest : public testing::Test,
     return overflow;
   }
 
-  absl::optional<SnapContainerData> GetSnapContainerData(LayerImpl* layer) {
+  std::optional<SnapContainerData> GetSnapContainerData(LayerImpl* layer) {
     return GetScrollNode(layer) ? GetScrollNode(layer)->snap_container_data
-                                : absl::nullopt;
+                                : std::nullopt;
   }
 
   void ClearLayersAndPropertyTrees(LayerTreeImpl* layer_tree_impl) {
@@ -916,6 +917,7 @@ class FluentOverlayScrollbarLayerTreeHostImplTest
     settings.scrollbar_animator = LayerTreeSettings::AURA_OVERLAY;
     settings.scrollbar_fade_delay = base::Milliseconds(500);
     settings.scrollbar_fade_duration = base::Milliseconds(300);
+    settings.idle_thickness_scale = 0.4f;
     CreateHostImpl(settings, CreateLayerTreeFrameSink());
   }
 
@@ -3041,6 +3043,10 @@ TEST_F(LayerTreeHostImplTest,
   EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
+  GetInputHandler().ScrollUpdate(UpdateState(pointer_position,
+                                             gfx::Vector2dF(6, 6),
+                                             ui::ScrollInputType::kWheel)
+                                     .get());
   GetInputHandler().ScrollEndForSnapFling(true /* did_finish */);
   EXPECT_FALSE(GetInputHandler().animating_for_snap_for_testing());
   EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId(10)),
@@ -3083,7 +3089,7 @@ TEST_F(LayerTreeHostImplTest, SnapFlingAnimationEndWithoutFinishing) {
 
   // The snap targets should not be set if the snap fling did not finish.
   GetInputHandler().ScrollEndForSnapFling(false /* did_finish */);
-  EXPECT_FALSE(GetInputHandler().animating_for_snap_for_testing());
+  EXPECT_TRUE(GetInputHandler().animating_for_snap_for_testing());
   EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 }
@@ -7242,6 +7248,69 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
 
   host_impl_->browser_controls_manager()->ScrollEnd();
   GetInputHandler().ScrollEnd();
+}
+
+TEST_F(LayerTreeHostImplBrowserControlsTest,
+       HidingBrowserControlsAdjustsSnapFling) {
+  gfx::Size view_size(100, 100);
+  gfx::Size content_size(100, 1000);
+  gfx::RectF snap_area_1(0, 0, 100, 700);
+  SetupBrowserControlsAndScrollLayerWithVirtualViewport(view_size, view_size,
+                                                        content_size);
+
+  SnapContainerData container(
+      ScrollSnapType(false, SnapAxis::kY, SnapStrictness::kMandatory),
+      gfx::RectF(0, 0, 100, 100), gfx::PointF(0, 900));
+  ScrollSnapAlign start = ScrollSnapAlign(SnapAlignment::kStart);
+  container.AddSnapAreaData(
+      SnapAreaData(start, snap_area_1, false, ElementId(10)));
+  host_impl_->OuterViewportScrollNode()->snap_container_data.emplace(container);
+
+  DrawFrame();
+  EXPECT_VIEWPORT_GEOMETRIES(1.0f);
+
+  LayerTreeImpl* active_tree = host_impl_->active_tree();
+  PropertyTrees* property_trees = active_tree->property_trees();
+  LayerImpl* outer_scroll_layer = OuterViewportScrollLayer();
+  InputHandler& handler = GetInputHandler();
+  gfx::PointF initial_offset, target_offset;
+  gfx::Point position(50, 50);
+  ui::ScrollInputType type = ui::ScrollInputType::kTouchscreen;
+
+  handler.ScrollBegin(&*BeginState(position, gfx::Vector2dF(0, 15), type),
+                      type);
+  handler.ScrollUpdate(&*UpdateState(position, gfx::Vector2dF(0, 15), type));
+
+  // The browser controls, now partially hidden, are consuming all of the scroll
+  // delta so far.
+  EXPECT_FLOAT_EQ(0.7, active_tree->CurrentTopControlsShownRatio());
+  EXPECT_EQ(gfx::Vector2dF(0, 15),
+            property_trees->outer_viewport_container_bounds_delta());
+  EXPECT_POINTF_EQ(gfx::PointF(0, 0), CurrentScrollOffset(outer_scroll_layer));
+
+  // Enter "constrained native fling" mode inside snap_area_1.
+  EXPECT_FALSE(handler.GetSnapFlingInfoAndSetAnimatingSnapTarget(
+      gfx::Vector2dF(0, 30), gfx::Vector2dF(0, 600), &initial_offset,
+      &target_offset));
+
+  // Finish hiding the browser controls and start scrolling the content.
+  handler.ScrollUpdate(&*UpdateState(position, gfx::Vector2dF(0, 435), type));
+  EXPECT_POINTF_EQ(gfx::PointF(0, 400),
+                   CurrentScrollOffset(outer_scroll_layer));
+
+  // Try to scroll past the bottom of snap_area_1.
+  EXPECT_TRUE(handler.GetSnapFlingInfoAndSetAnimatingSnapTarget(
+      gfx::Vector2dF(0, 300), gfx::Vector2dF(0, 1000), &initial_offset,
+      &target_offset));
+
+  // The fling constraint should take us to 550, which aligns with the bottom of
+  // snap_area_1 using the expanded viewport size of 100x150 from hiding browser
+  // controls, even though SnapContainerData is still based on 100x100 viewport.
+  EXPECT_TRUE(handler.animating_for_snap_for_testing());
+  EXPECT_POINTF_EQ(gfx::PointF(0, 400), initial_offset);
+  EXPECT_POINTF_EQ(gfx::PointF(0, 550), target_offset);
+
+  handler.ScrollEnd();
 }
 
 // Ensure that moving the browser controls (i.e. omnibox/url-bar on mobile) on
@@ -13851,9 +13920,10 @@ TEST_P(FluentOverlayScrollbarOpacityLayerTreeHostImplTest,
 
   int const step = GetParam();
   float const thickness_scale_step =
-      (1 - scrollbar->kIdleThicknessScale) / kParamSteps;
+      (1 - scrollbar->GetIdleThicknessScale()) / kParamSteps;
   VerifyCorrectOpacityForThickness(
-      scrollbar, scrollbar->kIdleThicknessScale + thickness_scale_step * step,
+      scrollbar,
+      scrollbar->GetIdleThicknessScale() + thickness_scale_step * step,
       step / static_cast<float>(kParamSteps));
 }
 
@@ -13862,6 +13932,86 @@ INSTANTIATE_TEST_SUITE_P(
     FluentOverlayScrollbarOpacityLayerTreeHostImplTest,
     Range(0,
           FluentOverlayScrollbarOpacityLayerTreeHostImplTest::kParamSteps + 1));
+
+TEST_F(FluentOverlayScrollbarLayerTreeHostImplTest,
+       FluentScrollbarFlashAfterScrollUpdate) {
+  auto* root_scrollbar = CreateAndRegisterPaintedScrollbarLayer();
+  
+  // Register child scrollable area layer and scrollbar.
+  LayerImpl* root_scroll = OuterViewportScrollLayer();
+  gfx::Size child_layer_size(250, 150);
+  gfx::Size child_scrollbar_size(gfx::Size(15, child_layer_size.height()));
+  auto* child =
+      AddScrollableLayer(root_scroll, gfx::Size(100, 100), child_layer_size);
+  GetTransformNode(child)->post_translation = gfx::Vector2dF(50, 50);
+
+  auto* child_scrollbar = AddLayer<PaintedScrollbarLayerImpl>(
+      host_impl_->active_tree(), ScrollbarOrientation::kVertical, false, true);
+  // SetupScrollbarLayerCommon will register the scrollbar, which sets the
+  // layer's opacity to 0. An effect node for the scrollbar layer object needs
+  // to be registered in the EffectTree before this happens.
+  auto& effect_node =
+      CreateEffectNode(child_scrollbar, child->effect_tree_index());
+  SetupScrollbarLayerCommon(child, child_scrollbar);
+  // SetupScrollbarLayerCommon calls CopyProperties which overrides the effect
+  // tree node registered to the scrollbar layer. We need to reset it to the
+  // one we registered above.
+  child_scrollbar->SetEffectTreeIndex(effect_node.id);
+  child_scrollbar->SetHitTestOpaqueness(HitTestOpaqueness::kMixed);
+  child_scrollbar->SetBounds(child_scrollbar_size);
+
+  auto reset_scrollbars = [root_scrollbar, child_scrollbar](
+                              LayerTreeImpl* active_tree,
+                              base::OnceClosure& animation_task) {
+    GetEffectNode(root_scrollbar)->opacity = 0;
+    GetEffectNode(child_scrollbar)->opacity = 0;
+    UpdateDrawProperties(active_tree);
+    animation_task.Reset();
+  };
+
+  reset_scrollbars(host_impl_->active_tree(), animation_task_);
+  UpdateDrawProperties(host_impl_->active_tree());
+  host_impl_->active_tree()->UpdateScrollbarGeometries();
+  host_impl_->active_tree()->DidBecomeActive();
+
+  EXPECT_EQ(root_scrollbar->Opacity(), 0);
+  EXPECT_EQ(child_scrollbar->Opacity(), 0);
+
+  // Scroll on root should only flash root.
+  GetInputHandler().RootScrollBegin(
+      BeginState(gfx::Point(20, 20), gfx::Vector2dF(0, 10),
+                 ui::ScrollInputType::kWheel)
+          .get(),
+      ui::ScrollInputType::kWheel);
+  GetInputHandler().ScrollUpdate(UpdateState(gfx::Point(20, 20),
+                                             gfx::Vector2d(0, 10),
+                                             ui::ScrollInputType::kWheel)
+                                     .get());
+  GetInputHandler().ScrollEnd();
+
+  EXPECT_EQ(root_scrollbar->Opacity(), 1.f);
+  EXPECT_EQ(child_scrollbar->Opacity(), 0);
+  EXPECT_FALSE(animation_task_.is_null());
+
+  reset_scrollbars(host_impl_->active_tree(), animation_task_);
+
+  // Scrolling on child in a direction in which it can't scroll (upwards) should
+  // flash the hit tested scrollbar and the one that ends up receiving the
+  // scroll event (the root scrollbar in this case).
+  GetInputHandler().ScrollBegin(
+      BeginState(gfx::Point(70, 70), gfx::Vector2dF(0, -100),
+                 ui::ScrollInputType::kWheel)
+          .get(),
+      ui::ScrollInputType::kWheel);
+  GetInputHandler().ScrollUpdate(
+      AnimatedUpdateState(gfx::Point(70, 70), gfx::Vector2d(0, -100)).get());
+  GetInputHandler().ScrollEnd();
+
+  EXPECT_TRUE(root_scrollbar->Opacity());
+  EXPECT_TRUE(child_scrollbar->Opacity());
+
+  EXPECT_FALSE(animation_task_.is_null());
+}
 
 // Fluent Overlay Scrollbars opacity should be set to zero when creating
 // the animation controller.
@@ -16749,13 +16899,13 @@ class TestRenderFrameMetadataObserver : public RenderFrameMetadataObserver {
   void DidEndScroll() override {}
 #endif
 
-  const absl::optional<RenderFrameMetadata>& last_metadata() const {
+  const std::optional<RenderFrameMetadata>& last_metadata() const {
     return last_metadata_;
   }
 
  private:
   bool increment_counter_;
-  absl::optional<RenderFrameMetadata> last_metadata_;
+  std::optional<RenderFrameMetadata> last_metadata_;
 };
 
 TEST_F(LayerTreeHostImplTest, RenderFrameMetadata) {
@@ -17124,10 +17274,10 @@ TEST_F(HitTestRegionListGeneratingLayerTreeHostImplTest, BuildHitTestData) {
                                              base::UnguessableToken::Create());
   viz::FrameSinkId frame_sink_id(2, 0);
   viz::SurfaceId child_surface_id(frame_sink_id, child_local_surface_id);
-  surface_child1->SetRange(viz::SurfaceRange(absl::nullopt, child_surface_id),
-                           absl::nullopt);
-  surface_child2->SetRange(viz::SurfaceRange(absl::nullopt, child_surface_id),
-                           absl::nullopt);
+  surface_child1->SetRange(viz::SurfaceRange(std::nullopt, child_surface_id),
+                           std::nullopt);
+  surface_child2->SetRange(viz::SurfaceRange(std::nullopt, child_surface_id),
+                           std::nullopt);
 
   CopyProperties(root, intermediate_layer);
   intermediate_layer->SetOffsetToTransformParent(gfx::Vector2dF(200, 300));
@@ -17148,7 +17298,7 @@ TEST_F(HitTestRegionListGeneratingLayerTreeHostImplTest, BuildHitTestData) {
 
   constexpr gfx::Rect kFrameRect(0, 0, 1024, 768);
 
-  absl::optional<viz::HitTestRegionList> hit_test_region_list =
+  std::optional<viz::HitTestRegionList> hit_test_region_list =
       host_impl_->BuildHitTestData();
   // Generating HitTestRegionList should have been enabled for this test.
   ASSERT_TRUE(hit_test_region_list);
@@ -17222,13 +17372,13 @@ TEST_F(HitTestRegionListGeneratingLayerTreeHostImplTest, PointerEvents) {
                                              base::UnguessableToken::Create());
   viz::FrameSinkId frame_sink_id(2, 0);
   viz::SurfaceId child_surface_id(frame_sink_id, child_local_surface_id);
-  surface_child1->SetRange(viz::SurfaceRange(absl::nullopt, child_surface_id),
-                           absl::nullopt);
+  surface_child1->SetRange(viz::SurfaceRange(std::nullopt, child_surface_id),
+                           std::nullopt);
 
   constexpr gfx::Rect kFrameRect(0, 0, 1024, 768);
 
   UpdateDrawProperties(host_impl_->active_tree());
-  absl::optional<viz::HitTestRegionList> hit_test_region_list =
+  std::optional<viz::HitTestRegionList> hit_test_region_list =
       host_impl_->BuildHitTestData();
   // Generating HitTestRegionList should have been enabled for this test.
   ASSERT_TRUE(hit_test_region_list);
@@ -17278,8 +17428,8 @@ TEST_F(HitTestRegionListGeneratingLayerTreeHostImplTest, ComplexPage) {
                                              base::UnguessableToken::Create());
   viz::FrameSinkId frame_sink_id(2, 0);
   viz::SurfaceId child_surface_id(frame_sink_id, child_local_surface_id);
-  surface_child->SetRange(viz::SurfaceRange(absl::nullopt, child_surface_id),
-                          absl::nullopt);
+  surface_child->SetRange(viz::SurfaceRange(std::nullopt, child_surface_id),
+                          std::nullopt);
 
   CopyProperties(root, surface_child);
 
@@ -17295,7 +17445,7 @@ TEST_F(HitTestRegionListGeneratingLayerTreeHostImplTest, ComplexPage) {
   constexpr gfx::Rect kFrameRect(0, 0, 1024, 768);
 
   UpdateDrawProperties(host_impl_->active_tree());
-  absl::optional<viz::HitTestRegionList> hit_test_region_list =
+  std::optional<viz::HitTestRegionList> hit_test_region_list =
       host_impl_->BuildHitTestData();
   // Generating HitTestRegionList should have been enabled for this test.
   ASSERT_TRUE(hit_test_region_list);
@@ -17348,8 +17498,8 @@ TEST_F(HitTestRegionListGeneratingLayerTreeHostImplTest, InvalidFrameSinkId) {
                                              base::UnguessableToken::Create());
   viz::FrameSinkId frame_sink_id(2, 0);
   viz::SurfaceId child_surface_id(frame_sink_id, child_local_surface_id);
-  surface_child1->SetRange(viz::SurfaceRange(absl::nullopt, child_surface_id),
-                           absl::nullopt);
+  surface_child1->SetRange(viz::SurfaceRange(std::nullopt, child_surface_id),
+                           std::nullopt);
 
   auto* surface_child2 = AddLayer<SurfaceLayerImpl>(host_impl_->active_tree());
 
@@ -17360,13 +17510,13 @@ TEST_F(HitTestRegionListGeneratingLayerTreeHostImplTest, InvalidFrameSinkId) {
   surface_child2->SetHasPointerEventsNone(false);
   CopyProperties(root, surface_child2);
 
-  surface_child2->SetRange(viz::SurfaceRange(absl::nullopt, viz::SurfaceId()),
-                           absl::nullopt);
+  surface_child2->SetRange(viz::SurfaceRange(std::nullopt, viz::SurfaceId()),
+                           std::nullopt);
 
   constexpr gfx::Rect kFrameRect(0, 0, 1024, 768);
 
   UpdateDrawProperties(host_impl_->active_tree());
-  absl::optional<viz::HitTestRegionList> hit_test_region_list =
+  std::optional<viz::HitTestRegionList> hit_test_region_list =
       host_impl_->BuildHitTestData();
   // Generating HitTestRegionList should have been enabled for this test.
   ASSERT_TRUE(hit_test_region_list);

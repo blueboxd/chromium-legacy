@@ -47,12 +47,6 @@ class TestPrefetchService : public PrefetchService {
 
 class PrefetchDocumentManagerTest : public RenderViewHostTestHarness {
  public:
-  PrefetchDocumentManagerTest() {
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kPrefetchUseContentRefactor,
-        {{"proxy_host", "https://testproxyhost.com"}});
-  }
-
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
 
@@ -149,8 +143,6 @@ class PrefetchDocumentManagerTest : public RenderViewHostTestHarness {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<TestWebContents> web_contents_;
   std::unique_ptr<TestPrefetchService> prefetch_service_;
@@ -389,38 +381,44 @@ TEST_F(PrefetchDocumentManagerTest, ProcessSpeculationCandidates) {
   ASSERT_EQ(prefetch_urls.size(), 6U);
   EXPECT_EQ(prefetch_urls[0]->GetURL(), GetCrossOriginUrl("/candidate1.html"));
   EXPECT_EQ(prefetch_urls[0]->GetPrefetchType(),
-            PrefetchType(/*use_prefetch_proxy=*/true,
+            PrefetchType(PreloadingTriggerType::kSpeculationRule,
+                         /*use_prefetch_proxy=*/true,
                          blink::mojom::SpeculationEagerness::kEager));
   EXPECT_TRUE(
       prefetch_urls[0]->IsIsolatedNetworkContextRequiredForCurrentPrefetch());
   EXPECT_EQ(prefetch_urls[1]->GetURL(), GetCrossOriginUrl("/candidate2.html"));
   EXPECT_EQ(prefetch_urls[1]->GetPrefetchType(),
-            PrefetchType(/*use_prefetch_proxy=*/false,
+            PrefetchType(PreloadingTriggerType::kSpeculationRule,
+                         /*use_prefetch_proxy=*/false,
                          blink::mojom::SpeculationEagerness::kEager));
   EXPECT_TRUE(
       prefetch_urls[1]->IsIsolatedNetworkContextRequiredForCurrentPrefetch());
   EXPECT_EQ(prefetch_urls[2]->GetURL(), GetSameOriginUrl("/candidate3.html"));
   EXPECT_EQ(prefetch_urls[2]->GetPrefetchType(),
-            PrefetchType(/*use_prefetch_proxy=*/false,
+            PrefetchType(PreloadingTriggerType::kSpeculationRule,
+                         /*use_prefetch_proxy=*/false,
                          blink::mojom::SpeculationEagerness::kEager));
   EXPECT_FALSE(
       prefetch_urls[2]->IsIsolatedNetworkContextRequiredForCurrentPrefetch());
   EXPECT_EQ(prefetch_urls[3]->GetURL(), GetCrossOriginUrl("/candidate6.html"));
   EXPECT_EQ(prefetch_urls[3]->GetPrefetchType(),
-            PrefetchType(/*use_prefetch_proxy=*/true,
+            PrefetchType(PreloadingTriggerType::kSpeculationRule,
+                         /*use_prefetch_proxy=*/true,
                          blink::mojom::SpeculationEagerness::kConservative));
   EXPECT_TRUE(
       prefetch_urls[3]->IsIsolatedNetworkContextRequiredForCurrentPrefetch());
   EXPECT_EQ(prefetch_urls[4]->GetURL(),
             GetSameSiteCrossOriginUrl("/candidate7.html"));
   EXPECT_EQ(prefetch_urls[4]->GetPrefetchType(),
-            PrefetchType(/*use_prefetch_proxy=*/false,
+            PrefetchType(PreloadingTriggerType::kSpeculationRule,
+                         /*use_prefetch_proxy=*/false,
                          blink::mojom::SpeculationEagerness::kEager));
   EXPECT_FALSE(
       prefetch_urls[4]->IsIsolatedNetworkContextRequiredForCurrentPrefetch());
   EXPECT_EQ(prefetch_urls[5]->GetURL(), GetSameOriginUrl("/candidate8.html"));
   EXPECT_EQ(prefetch_urls[5]->GetPrefetchType(),
-            PrefetchType(/*use_prefetch_proxy=*/true,
+            PrefetchType(PreloadingTriggerType::kSpeculationRule,
+                         /*use_prefetch_proxy=*/true,
                          blink::mojom::SpeculationEagerness::kEager));
   EXPECT_FALSE(
       prefetch_urls[5]->IsIsolatedNetworkContextRequiredForCurrentPrefetch());
@@ -447,7 +445,7 @@ TEST_F(PrefetchDocumentManagerTest, ProcessSpeculationCandidates) {
   EXPECT_FALSE(prefetch_document_manager->IsPrefetchAttemptFailedOrDiscarded(
       GetCrossOriginUrl("/candidate1.html")));
   prefetch_urls[0]->SetPrefetchStatus(
-      PrefetchStatus::kPrefetchNotEligibleSchemeIsNotHttps);
+      PrefetchStatus::kPrefetchIneligibleSchemeIsNotHttps);
   EXPECT_TRUE(prefetch_document_manager->IsPrefetchAttemptFailedOrDiscarded(
       GetCrossOriginUrl("/candidate1.html")));
   prefetch_urls[0]->SetPrefetchStatus(PrefetchStatus::kPrefetchFailedNetError);

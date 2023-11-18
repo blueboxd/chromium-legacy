@@ -30,12 +30,13 @@ suite('<settings-cups-printers>', () => {
     page = document.createElement('settings-cups-printers');
     document.body.appendChild(page);
     assertTrue(!!page);
+    await flushTasks();
 
     // Simulate internet connection.
     wifi = OncMojo.getDefaultNetworkState(NetworkType.kWiFi, 'wifi');
     wifi.connectionState = ConnectionStateType.kOnline;
-
-    await flushTasks();
+    page.onActiveNetworksChanged([wifi]);
+    return Promise.resolve();
   }
 
   setup(async () => {

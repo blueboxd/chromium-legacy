@@ -756,12 +756,14 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method initMessageEvent
 [Worker] interface MessagePort : EventTarget
 [Worker]     attribute @@toStringTag
+[Worker]     getter onclose
 [Worker]     getter onmessage
 [Worker]     getter onmessageerror
 [Worker]     method close
 [Worker]     method constructor
 [Worker]     method postMessage
 [Worker]     method start
+[Worker]     setter onclose
 [Worker]     setter onmessage
 [Worker]     setter onmessageerror
 [Worker] interface Mojo
@@ -1223,6 +1225,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter referrer
 [Worker]     getter referrerPolicy
 [Worker]     getter signal
+[Worker]     getter targetAddressSpace
 [Worker]     getter url
 [Worker]     method arrayBuffer
 [Worker]     method blob
@@ -1326,6 +1329,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     setter onquotachange
 [Worker] interface Subscriber
 [Worker]     attribute @@toStringTag
+[Worker]     getter active
 [Worker]     getter signal
 [Worker]     method complete
 [Worker]     method constructor

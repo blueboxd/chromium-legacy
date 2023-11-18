@@ -470,7 +470,7 @@ int TestWebContents::AddPrerender(const GURL& url) {
 
   TestRenderFrameHost* rfhi = GetPrimaryMainFrame();
   return GetPrerenderHostRegistry()->CreateAndStartHost(PrerenderAttributes(
-      url, PrerenderTriggerType::kSpeculationRule,
+      url, PreloadingTriggerType::kSpeculationRule,
       /*embedder_histogram_suffix=*/"",
       blink::mojom::SpeculationTargetHint::kNoHint, Referrer(),
       blink::mojom::SpeculationEagerness::kEager,
@@ -532,7 +532,7 @@ void TestWebContents::ActivatePrerenderedPage(const GURL& url) {
   DCHECK_EQ(GetPrimaryMainFrame()->GetLastCommittedURL(), url);
 
   DCHECK(prerender_host_observer.was_activated());
-  DCHECK_EQ(registry->FindReservedHostById(prerender_host_id), nullptr);
+  DCHECK(!registry->HasReservedHost());
 }
 
 void TestWebContents::ActivatePrerenderedPageFromAddressBar(const GURL& url) {
@@ -554,7 +554,7 @@ void TestWebContents::ActivatePrerenderedPageFromAddressBar(const GURL& url) {
   DCHECK_EQ(GetPrimaryMainFrame()->GetLastCommittedURL(), url);
 
   DCHECK(prerender_host_observer.was_activated());
-  DCHECK_EQ(registry->FindReservedHostById(prerender_host_id), nullptr);
+  DCHECK(!registry->HasReservedHost());
 }
 
 base::TimeTicks TestWebContents::GetTabSwitchStartTime() {

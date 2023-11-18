@@ -23,17 +23,19 @@
 namespace {
 
 // The spacing between the title and description.
-constexpr CGFloat kTitleDescriptionSpacing = 5;
+constexpr CGFloat kTitleDescriptionSpacing = 2;
 
 // The spacing between elements within the item.
-constexpr CGFloat kContentStackSpacing = 16;
+constexpr CGFloat kContentStackSpacing = 14;
 
 // Constants related to the icon container view.
 constexpr CGFloat kIconContainerSize = 56;
 constexpr CGFloat kIconContainerCornerRadius = 12;
 
 // The size of the checkmark icon.
-constexpr CGFloat kCheckmarkSize = 16;
+constexpr CGFloat kCheckmarkSize = 19;
+constexpr CGFloat kCheckmarkTopOffset = -6;
+constexpr CGFloat kCheckmarkTrailingOffset = 6;
 
 // The checkmark icon used for a hero-cell complete item.
 UIImageView* CheckmarkIcon() {
@@ -185,10 +187,10 @@ int PasswordIssuesTypeCount(NSInteger weak_passwords_count,
 
       [NSLayoutConstraint activateConstraints:@[
         [checkmark.topAnchor constraintEqualToAnchor:iconContainerView.topAnchor
-                                            constant:-(0.3 * kCheckmarkSize)],
+                                            constant:kCheckmarkTopOffset],
         [checkmark.trailingAnchor
             constraintEqualToAnchor:iconContainerView.trailingAnchor
-                           constant:(0.4 * kCheckmarkSize)],
+                           constant:kCheckmarkTrailingOffset],
       ]];
     }
 

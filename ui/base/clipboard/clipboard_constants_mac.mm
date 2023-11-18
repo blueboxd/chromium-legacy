@@ -31,4 +31,6 @@ NSString* const kWebSmartPastePboardType = @"NeXT smart paste pasteboard type";
 // convention. See http://nspasteboard.org/ for more info.
 NSString* const kUTTypeConfidentialData = @"org.nspasteboard.ConcealedType";
 
+NSString* const kUTTypeChromiumSourceURL = @"org.chromium.source-url";
+
 }  // namespace ui

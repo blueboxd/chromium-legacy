@@ -36,15 +36,19 @@ class Metric {
                 "The underlying type of the MetricType must be an int");
 
  public:
-  explicit Metric(std::string metric_name_to_set)
-      : metric_name(metric_name_to_set) {}
+  Metric(std::string metric_name_to_set,
+         std::string companion_metric_name_to_set)
+      : metric_name(metric_name_to_set),
+        companion_metric_name_(companion_metric_name_to_set) {}
   ~Metric() = default;
 
   // Logs a `new_value` to the metric with `metric_name` and saves it to
   // `value`. Update the state:
   //   kCorrectlyNotLogged  -> kCorrectlyLogged
   //   !kCorrectlyNotLogged -> kIncorrectlyLoggedMultipleTimes
-  void Log(MetricType new_value) {
+  // Return false if there was a metric inconsistency. That is, if the latter
+  // state change occurred.
+  bool Log(MetricType new_value) {
     LogMetric(new_value);
     if (state == MetricState::kCorrectlyNotLogged) {
       state = MetricState::kCorrectlyLogged;
@@ -53,6 +57,7 @@ class Metric {
     }
     old_value = value;
     value = new_value;
+    return state == MetricState::kCorrectlyLogged;
   }
 
   // Return true if the `state` is a logged state.
@@ -69,45 +74,41 @@ class Metric {
     }
   }
 
-  // Metric should not be logged.
-  void MakeInconsistentIfLogged() {
+  // Check metric is not logged, otherwise mark the metric as inconsistent and
+  // return false.
+  bool IsNotLogged() {
     if (logged()) {
       state = MetricState::kIncorrectlyLogged;
+      return false;
     }
+    return true;
   }
 
-  // Metric should be logged but not with a value in `values`.
-  void MakeInconsistentIfLoggedWith(const std::vector<MetricType>& values) {
+  // Check metric is logged, otherwise mark the metric as inconsistent and
+  // return false.
+  bool IsLogged() {
     if (!logged()) {
       state = MetricState::kIncorrectlyNotLogged;
-    } else if (base::Contains(values, value)) {
-      state = MetricState::kWrongValueLogged;
+      return false;
     }
+    return true;
   }
 
-  // Metric should be logged.
-  void MakeInconsistentIfNotLogged() {
-    if (!logged()) {
-      state = MetricState::kIncorrectlyNotLogged;
-    }
+  void LogCompanionMetric() {
+    base::UmaHistogramEnumeration(companion_metric_name_, state);
   }
 
-  // Metric should be logged with a value in `values`.
-  void MakeInconsistentIfNotLoggedWith(const std::vector<MetricType>& values) {
-    if (!logged()) {
-      state = MetricState::kIncorrectlyNotLogged;
-    } else if (!base::Contains(values, value)) {
-      state = MetricState::kWrongValueLogged;
-    }
-  }
+  void set_state(MetricState new_state) { state = new_state; }
 
-  const std::string metric_name;
+  std::string metric_name;
   MetricState state = MetricState::kCorrectlyNotLogged;
   MetricType value;
   MetricType old_value;
 
  private:
   void LogMetric(MetricType new_value);
+
+  std::string companion_metric_name_;
 };
 
 // Specialise for base::File::Error.
@@ -122,14 +123,12 @@ inline void Metric<MetricType>::LogMetric(MetricType new_value) {
   base::UmaHistogramEnumeration(metric_name, new_value);
 }
 
-// TODO(b/300861997): Add "LogMetric" functions so metrics can be logged through
-// this class. Add ability to track the state of each relevant metric in the
-// flow and detect inconsistencies.
 // Passed through the cloud upload and open flow. Accessed as a `unique_ptr` or
-// a SafeRef.
+// a SafeRef. Log metrics through this class. Track the state of each metric in
+// the flow and detect inconsistencies.
 class CloudOpenMetrics {
  public:
-  explicit CloudOpenMetrics(CloudProvider cloud_provider);
+  explicit CloudOpenMetrics(CloudProvider cloud_provider, size_t file_count);
   ~CloudOpenMetrics();
 
   // Not copyable. Create a SafeRef instead.
@@ -164,55 +163,74 @@ class CloudOpenMetrics {
   // Log the `value` for the UploadResult metric.
   void LogUploadResult(OfficeFilesUploadResult value);
 
+  // Updates the cloud provider for the cloud upload flow.
+  void set_cloud_provider(CloudProvider cloud_provider);
+
   base::SafeRef<CloudOpenMetrics> GetSafeRef() const;
 
   // For testing.
   base::WeakPtr<CloudOpenMetrics> GetWeakPtr();
 
  private:
-  // Print the debug information for each metric.
-  void PrintMetrics();
-
-  // If the metric has moved to an inconsistent state print debug information
-  // about the inconsistency. Only handle the kIncorrectlyLoggedMultipleTimes
-  // state during the cloud upload flow and not when the `destructor` is
-  // running.
+  // Print debug information about the detected inconsistency and every metric.
+  // If `immediately_dump`, `DumpWithoutCrashing()`, otherwise set
+  // `delayed_dump_`.
   template <typename MetricType>
-  void PrintDebugInformationIfInconsistent(Metric<MetricType>& metric,
-                                           bool destructor = true);
+  void OnInconsistencyFound(Metric<MetricType>& metric,
+                            bool immediately_dump = true);
 
   // Expect that the `metric` is not logged. Otherwise update the state and
-  // print debug information.
+  // call `OnInconsistencyFound()` with `immediately_dump` as false.
   template <typename MetricType>
   void ExpectNotLogged(Metric<MetricType>& metric);
 
-  // Expect that the `metric` is logged but not with a value in `values`.
-  // Otherwise update the state and print debug information.
-  template <typename MetricType>
-  void ExpectNotLoggedWith(Metric<MetricType>& metric,
-                           const std::vector<MetricType>& values);
-
   // Expect that the `metric` metric is logged with a value. Otherwise update
-  // the state and print debug information.
+  // the state and call `OnInconsistencyFound()` with `immediately_dump` as
+  // false.
   template <typename MetricType>
   void ExpectLogged(Metric<MetricType>& metric);
 
-  // Expect that the `metric` metric is logged with a value from `values`.
-  // Otherwise update the state and print debug information.
+  // Update the `metric` state to `kWrongValueLogged` and call
+  // `OnInconsistencyFound()` with `immediately_dump` as false.
   template <typename MetricType>
-  void ExpectLoggedWith(Metric<MetricType>& metric,
-                        const std::vector<MetricType>& values);
+  void SetWrongValueLogged(Metric<MetricType>& metric);
 
-  bool inconsistency_found_ = false;
+  // Check metric consistency and update metric states as required.
+  void CheckForInconsistencies(
+      Metric<base::File::Error>& copy_error,
+      Metric<base::File::Error>& move_error,
+      Metric<OfficeDriveOpenErrors>& drive_open_error,
+      Metric<OfficeOneDriveOpenErrors>& one_drive_open_error,
+      Metric<OfficeFilesSourceVolume>& source_volume,
+      Metric<OfficeTaskResult>& task_result,
+      Metric<OfficeFilesTransferRequired>& transfer_required,
+      Metric<OfficeFilesUploadResult>& upload_result);
+
+  // Log the `value` to the metric corresponding to the `cloud_provider_`. If
+  // there is an inconsistency, call `OnInconsistencyFound()`.
+  template <typename MetricType>
+  void LogAndCheckForInconsistency(Metric<MetricType>& drive_metric,
+                                   Metric<MetricType>& one_drive_metric,
+                                   MetricType value);
+
+  bool multiple_files_;
+  // Whether to `DumpWithoutCrashing()` at the end of the destructor.
+  bool delayed_dump_ = false;
   CloudProvider cloud_provider_;
-  Metric<base::File::Error> copy_error_;
-  Metric<base::File::Error> move_error_;
+  Metric<base::File::Error> drive_copy_error_;
+  Metric<base::File::Error> one_drive_copy_error_;
+  Metric<base::File::Error> drive_move_error_;
+  Metric<base::File::Error> one_drive_move_error_;
   Metric<OfficeDriveOpenErrors> drive_open_error_;
   Metric<OfficeOneDriveOpenErrors> one_drive_open_error_;
-  Metric<OfficeFilesSourceVolume> source_volume_;
-  Metric<OfficeTaskResult> task_result_;
-  Metric<OfficeFilesTransferRequired> transfer_required_;
-  Metric<OfficeFilesUploadResult> upload_result_;
+  Metric<OfficeFilesSourceVolume> drive_source_volume_;
+  Metric<OfficeFilesSourceVolume> one_drive_source_volume_;
+  Metric<OfficeTaskResult> drive_task_result_;
+  Metric<OfficeTaskResult> one_drive_task_result_;
+  Metric<OfficeFilesTransferRequired> drive_transfer_required_;
+  Metric<OfficeFilesTransferRequired> one_drive_transfer_required_;
+  Metric<OfficeFilesUploadResult> drive_upload_result_;
+  Metric<OfficeFilesUploadResult> one_drive_upload_result_;
   base::WeakPtrFactory<CloudOpenMetrics> weak_ptr_factory_{this};
 };
 

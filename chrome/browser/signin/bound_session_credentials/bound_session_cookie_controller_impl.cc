@@ -20,18 +20,25 @@
 
 namespace {
 using Result = BoundSessionRefreshCookieFetcher::Result;
+
+void RecordNumberOfSuccessiveTimeoutIfAny(size_t successive_timeout) {
+  if (successive_timeout == 0) {
+    return;
+  }
+
+  base::UmaHistogramCounts100(
+      "Signin.BoundSessionCredentials.ThrottledRequestsSuccessiveTimeout",
+      successive_timeout);
 }
+}  // namespace
 
 BoundSessionCookieControllerImpl::BoundSessionCookieControllerImpl(
     unexportable_keys::UnexportableKeyService& key_service,
     content::StoragePartition* storage_partition,
     network::NetworkConnectionTracker* network_connection_tracker,
     const bound_session_credentials::BoundSessionParams& bound_session_params,
-    const base::flat_set<std::string>& cookie_names,
     Delegate* delegate)
-    : BoundSessionCookieController(bound_session_params,
-                                   cookie_names,
-                                   delegate),
+    : BoundSessionCookieController(bound_session_params, delegate),
       key_service_(key_service),
       storage_partition_(storage_partition),
       network_connection_tracker_(network_connection_tracker),
@@ -51,6 +58,7 @@ BoundSessionCookieControllerImpl::~BoundSessionCookieControllerImpl() {
   // On shutdown or session termination, resume blocked requests if any.
   ResumeBlockedRequests(
       ResumeBlockedRequestsTrigger::kShutdownOrSessionTermination);
+  RecordNumberOfSuccessiveTimeoutIfAny(successive_timeout_);
 }
 
 void BoundSessionCookieControllerImpl::Initialize() {
@@ -80,7 +88,7 @@ bool BoundSessionCookieControllerImpl::IsConnectionTypeAvailableAndOffline() {
          type == network::mojom::ConnectionType::CONNECTION_NONE;
 }
 
-void BoundSessionCookieControllerImpl::OnRequestBlockedOnCookie(
+void BoundSessionCookieControllerImpl::HandleRequestBlockedOnCookie(
     base::OnceClosure resume_blocked_request) {
   if (AreAllCookiesFresh()) {
     // Cookie is fresh.
@@ -130,6 +138,8 @@ void BoundSessionCookieControllerImpl::SetCookieExpirationTimeAndNotify(
   it->second = expiration_time;
   if (AreAllCookiesFresh()) {
     ResumeBlockedRequests(ResumeBlockedRequestsTrigger::kObservedFreshCookies);
+    RecordNumberOfSuccessiveTimeoutIfAny(successive_timeout_);
+    successive_timeout_ = 0;
   }
 
   if (min_cookie_expiration_time() != old_min_expiration_time) {
@@ -189,7 +199,6 @@ void BoundSessionCookieControllerImpl::MaybeRefreshCookie() {
 
 void BoundSessionCookieControllerImpl::OnCookieRefreshFetched(
     BoundSessionRefreshCookieFetcher::Result result) {
-  // TODO(b/263263352): Record histogram with the result of the fetch.
   refresh_cookie_fetcher_.reset();
 
   ResumeBlockedRequestsTrigger trigger =
@@ -197,13 +206,15 @@ void BoundSessionCookieControllerImpl::OnCookieRefreshFetched(
           ? ResumeBlockedRequestsTrigger::kCookieRefreshFetchSuccess
           : ResumeBlockedRequestsTrigger::kCookieRefreshFetchFailure;
   // Resume blocked requests regardless of the result.
+  // `SetCookieExpirationTimeAndNotify()` should be called around the same time
+  // as `OnCookieRefreshFetched()` if the fetch was successful.
   ResumeBlockedRequests(trigger);
 
   // Persistent errors result in session termination.
   // Transient errors have no impact on future requests.
 
   if (BoundSessionRefreshCookieFetcher::IsPersistentError(result)) {
-    delegate_->TerminateSession();
+    delegate_->OnPersistentErrorEncountered();
     // `this` should be deleted.
   }
 }
@@ -246,4 +257,5 @@ void BoundSessionCookieControllerImpl::OnResumeBlockedRequestsTimeout() {
   // kResumeBlockedRequestTimeout. New requests will trigger a new fetch.
   refresh_cookie_fetcher_.reset();
   ResumeBlockedRequests(ResumeBlockedRequestsTrigger::kTimeout);
+  successive_timeout_++;
 }

@@ -14,6 +14,7 @@
 #include "base/callback_list.h"
 #include "base/clang_profiling_buildflags.h"
 #include "base/containers/id_map.h"
+#include "base/functional/function_ref.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/supports_user_data.h"
@@ -51,7 +52,6 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "content/public/browser/android/child_process_importance.h"
-#include "services/network/public/mojom/attribution.mojom-forward.h"
 #endif
 
 #if BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
@@ -467,7 +467,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Calls |on_frame| for every RenderFrameHost whose frames live in this
   // process. Note that speculative RenderFrameHosts will be skipped.
   virtual void ForEachRenderFrameHost(
-      base::RepeatingCallback<void(RenderFrameHost*)> on_frame) = 0;
+      base::FunctionRef<void(RenderFrameHost*)> on_frame) = 0;
 
   // Register/unregister a RenderFrameHost instance whose frame lives in this
   // process. RegisterRenderFrameHost and UnregisterRenderFrameHost are the
@@ -696,6 +696,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // workers. Once Permissions Policy applies to workers, a worker-specific
   // API to access isolation capability may need to be introduced which should
   // be used instead of this.
+  //
+  // Note that this function doesn't account for API availability for certain
+  // documents and URLs that might be force-enabled by the embedder even if they
+  // lack the necessary privilege; in order for this matter to be taken into
+  // consideration, use content::IsIsolatedContext(RenderProcessHost*).
   WebExposedIsolationLevel GetWebExposedIsolationLevel();
 
   // Posts |task|, if this RenderProcessHost is ready or when it becomes ready
@@ -731,13 +736,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void ReinitializeLogging(uint32_t logging_dest,
                                    base::ScopedFD log_file_descriptor) = 0;
 #endif
-
-  // Sets whether web or OS-level Attribution Reporting is supported. This may
-  // be called if the renderer process was created before the Measurement API
-  // state is returned from the underlying platform. See
-  // https://github.com/WICG/attribution-reporting-api/blob/main/app_to_web.md.
-  virtual void SetAttributionReportingSupport(
-      network::mojom::AttributionSupport) = 0;
 
   // Static management functions -----------------------------------------------
 

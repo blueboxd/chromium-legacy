@@ -39,8 +39,11 @@ class TargetDeviceBootstrapController
     ADVERTISING_WITHOUT_QR_CODE,
     PIN_VERIFICATION,
     CONNECTED,
-    CONNECTING_TO_WIFI,
+    REQUESTING_WIFI_CREDENTIALS,
+    EMPTY_WIFI_CREDENTIALS_RECEIVED,
     WIFI_CREDENTIALS_RECEIVED,
+    REQUESTING_GOOGLE_ACCOUNT_INFO,
+    GOOGLE_ACCOUNT_INFO_RECEIVED,
     TRANSFERRING_GOOGLE_ACCOUNT_DETAILS,
     TRANSFERRED_GOOGLE_ACCOUNT_DETAILS,
   };
@@ -49,23 +52,25 @@ class TargetDeviceBootstrapController
     START_ADVERTISING_FAILED,
     CONNECTION_REJECTED,
     CONNECTION_CLOSED,
-    WIFI_CREDENTIALS_NOT_RECEIVED,
     USER_VERIFICATION_FAILED,
     GAIA_ASSERTION_NOT_RECEIVED,
     FETCHING_CHALLENGE_BYTES_FAILED,
   };
 
-  using Payload = absl::
-      variant<absl::monostate, ErrorCode, QRCode::PixelData, FidoAssertionInfo>;
+  using Pin = std::string;
 
-  // TODO(b/288054370) - Consolidate fields.
+  using Payload = absl::variant<absl::monostate,
+                                ErrorCode,
+                                QRCode::PixelData,
+                                Pin,
+                                mojom::WifiCredentials,
+                                FidoAssertionInfo>;
+
   struct Status {
     Status();
     ~Status();
     Step step = Step::NONE;
     Payload payload;
-    mojom::WifiCredentials wifi_credentials;
-    std::string pin;
   };
 
   class AccessibilityManagerWrapper {
@@ -140,18 +145,29 @@ class TargetDeviceBootstrapController
 
   std::string GetDiscoverableName();
   void AttemptWifiCredentialTransfer();
+
+  // The first step in the account transfer is to request basic account info via
+  // the BootstrapConfigurations message, which will give us the account email
+  // address among other info.
+  void RequestGoogleAccountInfo();
+
+  // Initiates the actual account transfer via a cryptographic handshake between
+  // the two devices in conjunction with Google servers.
   void AttemptGoogleAccountTransfer();
+
+  // Called when the flow is aborted due to an error, or cancelled by the user.
+  void Cleanup();
 
  private:
   friend class TargetDeviceBootstrapControllerTest;
 
+  void UpdateStatus(Step step, Payload payload);
   void NotifyObservers();
   void OnStartAdvertisingResult(bool success);
   void OnStopAdvertising();
 
-  void WaitForUserVerification(base::OnceClosure on_verification);
-  void OnUserVerificationResult(base::OnceClosure on_verification,
-                                absl::optional<mojom::UserVerificationResponse>
+  void WaitForUserVerification();
+  void OnUserVerificationResult(absl::optional<mojom::UserVerificationResponse>
                                     user_verification_response);
 
   // If the target device successfully receives an ack message, it prepares to
@@ -162,6 +178,7 @@ class TargetDeviceBootstrapController
 
   void OnWifiCredentialsReceived(
       absl::optional<mojom::WifiCredentials> credentials);
+  void OnGoogleAccountInfoReceived();
   void OnFidoAssertionReceived(absl::optional<FidoAssertionInfo> assertion);
 
   void OnChallengeBytesReceived(
@@ -177,7 +194,6 @@ class TargetDeviceBootstrapController
 
   std::unique_ptr<TargetDeviceConnectionBroker> connection_broker_;
 
-  std::string pin_;
   // TODO: Should we enforce one observer at a time here too?
   base::ObserverList<Observer> observers_;
 
@@ -206,6 +222,9 @@ class TargetDeviceBootstrapController
 
   base::WeakPtrFactory<TargetDeviceBootstrapController> weak_ptr_factory_{this};
 };
+
+std::ostream& operator<<(std::ostream& stream,
+                         const TargetDeviceBootstrapController::Step& step);
 
 }  // namespace ash::quick_start
 

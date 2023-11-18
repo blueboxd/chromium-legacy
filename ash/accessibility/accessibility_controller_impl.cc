@@ -22,6 +22,7 @@
 #include "ash/accessibility/ui/accessibility_panel_layout_manager.h"
 #include "ash/color_enhancement/color_enhancement_controller.h"
 #include "ash/constants/ash_constants.h"
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/events/accessibility_event_rewriter.h"
@@ -35,6 +36,8 @@
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/system/anchored_nudge_data.h"
+#include "ash/public/cpp/system/anchored_nudge_manager.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
@@ -116,14 +119,14 @@ const FeatureData kFeatures[] = {
     {FeatureType::kCursorHighlight, prefs::kAccessibilityCursorHighlightEnabled,
      nullptr, IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGHLIGHT_MOUSE_CURSOR},
     {FeatureType::kCursorColor, prefs::kAccessibilityCursorColorEnabled,
-     nullptr, 0, /*toggleable_in_quicksettings*/ false},
+     nullptr, 0, /*toggleable_in_quicksettings=*/false},
     {FeatureType::kDictation, prefs::kAccessibilityDictationEnabled,
      &kDictationMenuIcon, IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DICTATION},
     {FeatureType::kColorCorrection, prefs::kAccessibilityColorCorrectionEnabled,
      &kColorCorrectionIcon, IDS_ASH_STATUS_TRAY_ACCESSIBILITY_COLOR_CORRECTION},
     {FeatureType::kFocusHighlight, prefs::kAccessibilityFocusHighlightEnabled,
      nullptr, IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGHLIGHT_KEYBOARD_FOCUS,
-     /*toggleable_in_quicksettings*/ true,
+     /*toggleable_in_quicksettings=*/true,
      /* conflicting_feature= */ FeatureType::kSpokenFeedback},
     {FeatureType::kFloatingMenu, prefs::kAccessibilityFloatingMenuEnabled,
      nullptr, IDS_ASH_FLOATING_ACCESSIBILITY_MAIN_MENU,
@@ -158,7 +161,10 @@ const FeatureData kFeatures[] = {
      &kSwitchAccessIcon, IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SWITCH_ACCESS},
     {FeatureType::kVirtualKeyboard, prefs::kAccessibilityVirtualKeyboardEnabled,
      &kSystemMenuKeyboardLegacyIcon,
-     IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD}};
+     IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD},
+    {FeatureType::kFaceGaze, prefs::kAccessibilityFaceGazeEnabled, nullptr, 0,
+     /*toggleable_in_quicksettings=*/false},
+};
 
 // An array describing the confirmation dialogs for the features which have
 // them.
@@ -175,6 +181,8 @@ const FeatureDialogData kFeatureDialogs[] = {
 
 constexpr char kNotificationId[] = "chrome://settings/accessibility";
 constexpr char kNotifierAccessibility[] = "ash.accessibility";
+constexpr char kDictationLanguageUpgradedNudgeId[] =
+    "dictation_language_upgraded.nudge_id";
 
 // TODO(warx): Signin screen has more controllable accessibility prefs. We may
 // want to expand this to a complete list. If so, merge this with
@@ -232,6 +240,7 @@ constexpr const char* const kCopiedOnSigninAccessibilityPrefs[]{
     prefs::kAccessibilityFocusHighlightEnabled,
     prefs::kAccessibilityHighContrastEnabled,
     prefs::kAccessibilityLargeCursorEnabled,
+    prefs::kAccessibilityFaceGazeEnabled,
     prefs::kAccessibilityMonoAudioEnabled,
     prefs::kAccessibilityScreenMagnifierEnabled,
     prefs::kAccessibilityScreenMagnifierFocusFollowingEnabled,
@@ -1042,8 +1051,7 @@ void AccessibilityControllerImpl::RegisterProfilePrefs(
                                 false);
   registry->RegisterBooleanPref(
       prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled, false);
-  registry->RegisterBooleanPref(prefs::kAccessibilityFaceTrackingEnabled,
-                                false);
+  registry->RegisterBooleanPref(prefs::kAccessibilityFaceGazeEnabled, false);
 
   // Not syncable because it might change depending on application locale,
   // user settings, and because different languages can cause speech recognition
@@ -1359,6 +1367,11 @@ AccessibilityControllerImpl::Feature& AccessibilityControllerImpl::dictation()
 AccessibilityControllerImpl::Feature&
 AccessibilityControllerImpl::color_correction() const {
   return GetFeature(FeatureType::kColorCorrection);
+}
+
+AccessibilityControllerImpl::Feature& AccessibilityControllerImpl::face_gaze()
+    const {
+  return GetFeature(FeatureType::kFaceGaze);
 }
 
 AccessibilityControllerImpl::Feature&
@@ -1914,6 +1927,19 @@ void AccessibilityControllerImpl::OnDictationKeyboardDialogDismissed() {
 void AccessibilityControllerImpl::ShowDictationLanguageUpgradedNudge(
     const std::string& dictation_locale,
     const std::string& application_locale) {
+  if (features::IsSystemNudgeMigrationEnabled()) {
+    const std::u16string language_name = l10n_util::GetDisplayNameForLocale(
+        dictation_locale, application_locale, /*is_for_ui=*/true);
+    const std::u16string body_text = l10n_util::GetStringFUTF16(
+        IDS_ASH_DICTATION_LANGUAGE_SUPPORTED_OFFLINE_NUDGE, language_name);
+
+    AnchoredNudgeData nudge_data(kDictationLanguageUpgradedNudgeId,
+                                 NudgeCatalogName::kDictation, body_text);
+
+    AnchoredNudgeManager::Get()->Show(nudge_data);
+    return;
+  }
+
   // TODO(b:259352600): Move dictation_nudge_controller_ into
   // accessibility_notification_controller.
   dictation_nudge_controller_ = std::make_unique<DictationNudgeController>(
@@ -2186,16 +2212,16 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
       base::BindRepeating(
           &AccessibilityControllerImpl::UpdateCursorColorFromPrefs,
           base::Unretained(this)));
-    pref_change_registrar_->Add(
-        prefs::kAccessibilityColorVisionCorrectionAmount,
-        base::BindRepeating(
-            &AccessibilityControllerImpl::UpdateColorCorrectionFromPrefs,
-            base::Unretained(this)));
-    pref_change_registrar_->Add(
-        prefs::kAccessibilityColorVisionCorrectionType,
-        base::BindRepeating(
-            &AccessibilityControllerImpl::UpdateColorCorrectionFromPrefs,
-            base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilityColorVisionCorrectionAmount,
+      base::BindRepeating(
+          &AccessibilityControllerImpl::UpdateColorCorrectionFromPrefs,
+          base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilityColorVisionCorrectionType,
+      base::BindRepeating(
+          &AccessibilityControllerImpl::UpdateColorCorrectionFromPrefs,
+          base::Unretained(this)));
 
   // Load current state.
   for (const std::unique_ptr<Feature>& feature : features_) {
@@ -2213,7 +2239,11 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
   UpdateCursorColorFromPrefs();
   UpdateShortcutsEnabledFromPref();
   UpdateTabletModeShelfNavigationButtonsFromPref();
-    UpdateColorCorrectionFromPrefs();
+  UpdateColorCorrectionFromPrefs();
+
+  if (::features::IsAccessibilityFaceGazeEnabled()) {
+    UpdateFaceGazeFromPrefs();
+  }
 }
 
 void AccessibilityControllerImpl::UpdateAutoclickDelayFromPref() {
@@ -2383,6 +2413,13 @@ void AccessibilityControllerImpl::UpdateCursorColorFromPrefs() {
               : kDefaultCursorColor);
   NotifyAccessibilityStatusChanged();
   shell->UpdateCursorCompositingEnabled();
+}
+
+void AccessibilityControllerImpl::UpdateFaceGazeFromPrefs() {
+  if (!::features::IsAccessibilityFaceGazeEnabled()) {
+    return;
+  }
+  // TODO(b/309121742): Start getting camera data.
 }
 
 void AccessibilityControllerImpl::UpdateColorCorrectionFromPrefs() {
@@ -2697,6 +2734,9 @@ void AccessibilityControllerImpl::ShowConfirmationDialog(
   // Save the dialog so it doesn't go out of scope before it is
   // used and closed.
   confirmation_dialog_ = dialog->GetWeakPtr();
+  if (show_confirmation_dialog_callback_for_testing_) {
+    show_confirmation_dialog_callback_for_testing_.Run();
+  }
 }
 
 void AccessibilityControllerImpl::
@@ -2868,6 +2908,9 @@ void AccessibilityControllerImpl::UpdateFeatureFromPref(FeatureType feature) {
       }
       UpdateColorCorrectionFromPrefs();
       break;
+    case FeatureType::kFaceGaze:
+      UpdateFaceGazeFromPrefs();
+      break;
     case FeatureType::kFeatureCount:
     case FeatureType::kNoConflictingFeature:
       NOTREACHED();
@@ -2904,6 +2947,11 @@ void AccessibilityControllerImpl::AddShowToastCallbackForTesting(
     base::RepeatingCallback<void(AccessibilityToastType)> callback) {
   accessibility_notification_controller_->AddShowToastCallbackForTesting(
       std::move(callback));
+}
+
+void AccessibilityControllerImpl::AddShowConfirmationDialogCallbackForTesting(
+    base::RepeatingCallback<void()> callback) {
+  show_confirmation_dialog_callback_for_testing_ = std::move(callback);
 }
 
 }  // namespace ash

@@ -535,8 +535,7 @@ HelpBubbleView::HelpBubbleView(const HelpBubbleDelegate* delegate,
   timeout_ = params.timeout.value_or(params.buttons.empty()
                                          ? kDefaultTimeoutWithoutButtons
                                          : kDefaultTimeoutWithButtons);
-  if (!timeout_.is_zero())
-    timeout_callback_ = std::move(params.timeout_callback);
+  timeout_callback_ = std::move(params.timeout_callback);
   SetCancelCallback(std::move(params.dismiss_callback));
 
   accessible_name_ = params.title_text;
@@ -628,6 +627,12 @@ HelpBubbleView::HelpBubbleView(const HelpBubbleDelegate* delegate,
   for (views::Label* label : labels_) {
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label->SetMultiLine(true);
+    // There is a problem with FlexLayout under the current layout, CloseButton
+    // cannot stretch its width to achieve kEnd alignment behavior. Let's
+    // temporarily disable the bounded layout of views::Label. Waiting for
+    // FlexLayout to be fixed.
+    // TODO(crbug.com/1495581): Remove this.
+    label->SetUseLegacyPreferredSize(true);
     label->SetElideBehavior(gfx::NO_ELIDE);
   }
 
@@ -871,6 +876,11 @@ HelpBubbleView::HelpBubbleView(const HelpBubbleDelegate* delegate,
     frame_view->set_use_anchor_window_bounds(false);
   }
 
+  // Bubbles get a 1-dip border that's either light or dark depending on system
+  // light or dark mode, but this does not match with the help bubble (see
+  // b/303069420).
+  frame_view->bubble_border()->set_draw_border_stroke(false);
+
   SizeToContents();
 
   // Most help bubbles with buttons take focus when they show.
@@ -905,7 +915,9 @@ void HelpBubbleView::MaybeStartAutoCloseTimer() {
 }
 
 void HelpBubbleView::OnTimeout() {
-  std::move(timeout_callback_).Run();
+  if (timeout_callback_) {
+    std::move(timeout_callback_).Run();
+  }
   GetWidget()->Close();
 }
 

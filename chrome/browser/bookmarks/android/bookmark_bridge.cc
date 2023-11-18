@@ -29,13 +29,14 @@
 #include "base/uuid.h"
 #include "chrome/android/chrome_jni_headers/BookmarkBridge_jni.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_reader.h"
-#include "chrome/browser/android/reading_list/reading_list_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/commerce/shopping_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/reading_list/android/reading_list_manager_impl.h"
+#include "chrome/browser/reading_list/reading_list_model_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -143,7 +144,8 @@ ScopedJavaLocalRef<jobject> JNI_BookmarkBridge_GetForProfile(
         profile, model, ManagedBookmarkServiceFactory::GetForProfile(profile),
         PartnerBookmarksShim::BuildForBrowserContext(
             chrome::GetBrowserContextRedirectedInIncognito(profile)),
-        ReadingListManagerFactory::GetForBrowserContext(profile),
+        std::make_unique<ReadingListManagerImpl>(
+            ReadingListModelFactory::GetForBrowserContext(profile)),
         page_image_service::ImageServiceFactory::GetForBrowserContext(profile));
     model->SetUserData(kBookmarkBridgeUserDataKey,
                        base::WrapUnique(bookmark_bridge));
@@ -157,13 +159,13 @@ BookmarkBridge::BookmarkBridge(
     BookmarkModel* model,
     bookmarks::ManagedBookmarkService* managed_bookmark_service,
     PartnerBookmarksShim* partner_bookmarks_shim,
-    ReadingListManager* reading_list_manager,
+    std::unique_ptr<ReadingListManager> reading_list_manager,
     page_image_service::ImageService* image_service)
     : profile_(profile),
       bookmark_model_(model),
       managed_bookmark_service_(managed_bookmark_service),
       partner_bookmarks_shim_(partner_bookmarks_shim),
-      reading_list_manager_(reading_list_manager),
+      reading_list_manager_(std::move(reading_list_manager)),
       image_service_(image_service),
       weak_ptr_factory_(this) {
   profile_observation_.Observe(profile_.get());
@@ -224,47 +226,32 @@ void BookmarkBridge::GetImageUrlForBookmark(
 }
 
 base::android::ScopedJavaLocalRef<jobject>
-BookmarkBridge::GetBookmarkIdForWebContents(
+BookmarkBridge::GetMostRecentlyAddedUserBookmarkIdForUrl(
     JNIEnv* env,
-    const JavaParamRef<jobject>& jweb_contents,
-    jboolean only_editable) {
+    const JavaParamRef<jobject>& j_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  std::unique_ptr<GURL> url = url::GURLAndroid::ToNativeGURL(env, j_url);
 
-  auto* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
-  if (!web_contents)
-    return nullptr;
-
-  GURL url = dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
-      web_contents->GetLastCommittedURL());
-
-  // TODO(crbug.com/1150559): This is a hack to avoid a historical issue that
-  // this function doesn't wait for any backend loaded.
-  if (reading_list_manager_->IsLoaded()) {
-    const auto* node = reading_list_manager_->Get(url);
-    if (node)
-      return JavaBookmarkIdCreateBookmarkId(env, node->id(),
-                                            GetBookmarkType(node));
+  std::vector<const bookmarks::BookmarkNode*> nodes;
+  const auto* readingListNode = reading_list_manager_->Get(*url);
+  if (readingListNode) {
+    nodes.push_back(readingListNode);
   }
 
-  // Get all the nodes for |url| and sort them by date added.
-  bookmarks::ManagedBookmarkService* managed =
-      ManagedBookmarkServiceFactory::GetForProfile(profile_);
-  bookmarks::BookmarkModel* model =
-      BookmarkModelFactory::GetForBrowserContext(profile_);
-
-  std::vector<const bookmarks::BookmarkNode*> nodes = model->GetNodesByURL(url);
+  // Get all the nodes for |url| from BookmarkModel and sort them by date added.
+  std::vector<const bookmarks::BookmarkNode*> bookmarkModelResult =
+      BookmarkModelFactory::GetForBrowserContext(profile_)->GetNodesByURL(*url);
+  nodes.insert(nodes.end(), bookmarkModelResult.begin(),
+               bookmarkModelResult.end());
   std::sort(nodes.begin(), nodes.end(), &bookmarks::MoreRecentlyAdded);
 
-  // Return the first node matching the search criteria.
-  for (const auto* node : nodes) {
-    if (only_editable && managed->IsNodeManaged(node)) {
-      continue;
-    }
-    return JavaBookmarkIdCreateBookmarkId(env, node->id(),
-                                          GetBookmarkType(node));
+  if (nodes.size() == 0) {
+    return nullptr;
   }
 
-  return nullptr;
+  // Return the first node matching the search criteria.
+  return JavaBookmarkIdCreateBookmarkId(env, nodes.front()->id(),
+                                        GetBookmarkType(nodes.front()));
 }
 
 jboolean BookmarkBridge::IsEditBookmarksEnabled(JNIEnv* env) {
@@ -903,17 +890,6 @@ ScopedJavaLocalRef<jobject> BookmarkBridge::AddToReadingList(
               : ScopedJavaLocalRef<jobject>();
 }
 
-ScopedJavaLocalRef<jobject> BookmarkBridge::GetReadingListItem(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& j_url) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(IsLoaded());
-
-  const BookmarkNode* node =
-      reading_list_manager_->Get(*url::GURLAndroid::ToNativeGURL(env, j_url));
-  return node ? CreateJavaBookmark(node) : ScopedJavaLocalRef<jobject>();
-}
-
 void BookmarkBridge::SetReadStatus(JNIEnv* env,
                                    const JavaParamRef<jobject>& j_url,
                                    jboolean j_read) {
@@ -987,8 +963,8 @@ ScopedJavaLocalRef<jobject> BookmarkBridge::CreateJavaBookmark(
       env, node->id(), type, ConvertUTF16ToJavaString(env, GetTitle(node)),
       url::GURLAndroid::FromNativeGURL(env, url), node->is_folder(), parent_id,
       GetBookmarkType(parent), IsEditable(node), IsManaged(node),
-      node->date_added().ToJavaTime(), read,
-      node->date_last_used().ToJavaTime());
+      node->date_added().InMillisecondsSinceUnixEpoch(), read,
+      node->date_last_used().InMillisecondsSinceUnixEpoch());
 }
 
 void BookmarkBridge::ExtractBookmarkNodeInformation(

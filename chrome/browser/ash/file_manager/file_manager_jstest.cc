@@ -113,14 +113,6 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileManagerDialogBaseTest) {
   RunTestURL("foreground/js/ui/file_manager_dialog_base_unittest.js");
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileOperationHandlerTest) {
-  RunTestURL("background/js/file_operation_handler_unittest.js");
-}
-
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileOperationManagerTest) {
-  RunTestURL("background/js/file_operation_manager_unittest.js");
-}
-
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesAppEntryTypes) {
   RunTestURL("common/js/files_app_entry_types_unittest.js");
 }
@@ -279,6 +271,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ThumbnailModel) {
   RunTestURL("foreground/js/metadata/thumbnail_model_unittest.js");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, TranslationsTest) {
+  RunTestURL("common/js/translations_unittest.js");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, UtilTest) {
   RunTestURL("common/js/util_unittest.js");
 }
@@ -337,6 +333,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DucksDevice) {
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DucksDrive) {
   RunTestURL("state/ducks/drive_unittest.js");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DucksLaunchParams) {
+  RunTestURL("state/ducks/launch_params_unittest.js");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DucksFolderShortcuts) {

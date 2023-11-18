@@ -35,6 +35,7 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_types.h"
+#include "ui/base/metadata/metadata_utils.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer_delegate.h"
 #include "ui/compositor/layer_observer.h"
@@ -50,6 +51,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/action_view_controller.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/layout/layout_types.h"
 #include "ui/views/metadata/view_factory.h"
@@ -423,6 +425,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
     DCHECK(!view->owned_by_client())
         << "This should only be called if the client is passing ownership of "
            "|view| to the parent View.";
+    CHECK_CLASS_HAS_METADATA(T)
     return AddChildView<T>(view.release());
   }
   template <typename T>
@@ -430,6 +433,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
     DCHECK(!view->owned_by_client())
         << "This should only be called if the client is passing ownership of "
            "|view| to the parent View.";
+    CHECK_CLASS_HAS_METADATA(T)
     return AddChildViewAt<T>(view.release(), index);
   }
 
@@ -437,22 +441,26 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // for new code.
   template <typename T>
   T* AddChildView(T* view) {
+    CHECK_CLASS_HAS_METADATA(T)
     AddChildViewAtImpl(view, children_.size());
     return view;
   }
   template <typename T>
   T* AddChildViewAt(T* view, size_t index) {
+    CHECK_CLASS_HAS_METADATA(T)
     AddChildViewAtImpl(view, index);
     return view;
   }
 
   template <typename T, base::RawPtrTraits Traits = base::RawPtrTraits::kEmpty>
   T* AddChildView(raw_ptr<T, Traits> view) {
+    CHECK_CLASS_HAS_METADATA(T)
     AddChildViewAtImpl(view.get(), children_.size());
     return view;
   }
   template <typename T, base::RawPtrTraits Traits = base::RawPtrTraits::kEmpty>
   T* AddChildViewAt(raw_ptr<T, Traits> view, size_t index) {
+    CHECK_CLASS_HAS_METADATA(T)
     AddChildViewAtImpl(view.get(), index);
     return view;
   }
@@ -869,6 +877,13 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // The default implementation simply returns the first View found for that
   // group.
   virtual View* GetSelectedViewForGroup(int group);
+
+  // Returns the name of this particular instance of the class. This is useful
+  // to identify multiple instances of the same class within the same view
+  // hierarchy. The default value returned is GetClassName().
+  // Note: GetClassName() will eventually be made non-virtual. Override this
+  // method instead to provide a more unique object name for the instance.
+  virtual std::string GetObjectName() const;
 
   // Coordinate conversion -----------------------------------------------------
 
@@ -1350,6 +1365,15 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // |p| provides the coordinates of the mouse (relative to this view).
   virtual std::u16string GetTooltipText(const gfx::Point& p) const;
 
+  // Views will normally display tooltips (if any) when they are focused
+  // (which usually happens via a keyboard event). Because they are both
+  // visible and displayed asynchronously, some tests may wish to disable
+  // them so that they don't interfere with whatever is being tested. If the
+  // tooltips are disabled via a feature flag, these routines will have no
+  // effect (i.e., the feature flag overrides them).
+  static void DisableKeyboardTooltipsForTesting();
+  static void EnableKeyboardTooltipsForTesting();
+
   // Context menus -------------------------------------------------------------
 
   // Sets the ContextMenuController. Setting this to non-null makes the View
@@ -1808,6 +1832,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Views must invoke this when the tooltip text they are to display changes.
   void TooltipTextChanged();
+
+  // Propagates UpdateTooltipForFocus() to the TooltipManager for the Widget.
+  // This must be invoked whenever the focus changes in the View hierarchy.
+  // Subclasses may override this to disable keyboard-based tooltips.
+  virtual void UpdateTooltipForFocus();
 
   // Drag and drop -------------------------------------------------------------
 
@@ -2337,6 +2366,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // The focus behavior of the view in regular and accessibility mode.
   FocusBehavior focus_behavior_ = FocusBehavior::NEVER;
 
+  // By default, we should show tooltips when a View is focused via a
+  // key event. For testing purposes, we may not want that behavior.
+  // This is controlled by DisableKeyboardTooltipsForTesting() and
+  // EnableKeyboardTooltipsForTesting(), above.
+  static bool kShouldDisableKeyboardTooltipsForTesting;
+
   // This is set when focus events should be skipped after focus reaches this
   // View.
   bool suppress_default_focus_handling_ = false;
@@ -2394,6 +2429,16 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // http://crbug.com/1162949 : Instrumentation that indicates if this is alive.
   LifeCycleState life_cycle_state_ = LifeCycleState::kAlive;
 };
+
+template <>
+struct ActionViewControllerSuperClassT<View> {
+  using SuperClass = ActionController;
+};
+
+template <>
+void ActionViewController<View, ActionController>::ActionItemChangedImpl(
+    View* action_view,
+    actions::ActionItem* action_item);
 
 BEGIN_VIEW_BUILDER(VIEWS_EXPORT, View, BaseView)
 template <typename LayoutManager>

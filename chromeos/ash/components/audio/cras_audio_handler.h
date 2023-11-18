@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <cstdint>
+#include <optional>
 #include <queue>
 #include <string>
 #include <vector>
@@ -72,6 +73,15 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
           AudioDevicePriorityQueue;
   typedef std::vector<uint64_t> NodeIdList;
 
+  enum class SurveyType {
+    kGeneral,
+    kBluetooth,
+  };
+
+  static constexpr char kSurveyNameKey[] = "SurveyName";
+  static constexpr char kSurveyNameGeneral[] = "GENERAL";
+  static constexpr char kSurveyNameBluetooth[] = "BLUETOOTH";
+
   // Key-value mapping type for audio survey specific data.
   // For audio satisfaction survey, it contains
   //  - StreamType: Usage of the stream, e.g., multimedia.
@@ -79,6 +89,27 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   //  - NodeType: Pair of the active input/output device types, e.g., USB_USB.
   // The content can be extended when other types of survey is added.
   typedef base::flat_map<std::string, std::string> AudioSurveyData;
+  class AudioSurvey {
+   public:
+    AudioSurvey();
+    ~AudioSurvey();
+    AudioSurvey(const AudioSurvey&) = delete;
+    AudioSurvey& operator=(const AudioSurvey&) = delete;
+
+    SurveyType type() const { return type_; }
+    AudioSurveyData data() const { return data_; }
+
+    void set_type(SurveyType type) { type_ = type; }
+    void clear_data() { data_.clear(); }
+    void AddData(std::string key, std::string value) {
+      data_.emplace(key, value);
+    }
+
+   private:
+    SurveyType type_;
+    AudioSurveyData data_;
+  };
+
   static constexpr int32_t kSystemAecGroupIdNotAvailable = -1;
 
   enum class InputMuteChangeMethod {
@@ -114,6 +145,33 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
       "Cras.OutputVolumeMutedSource";
   static constexpr char kNoiseCancellationEnabledSourceHistogramName[] =
       "Cras.NoiseCancellationEnabledSource";
+
+  // A series of user action metrics to record when user switches the
+  // input/output audio device and if this switch overrides the system decision.
+  static constexpr char kUserActionSwitchInput[] =
+      "StatusArea_Audio_SwitchInputDevice";
+  static constexpr char kUserActionSwitchOutput[] =
+      "StatusArea_Audio_SwitchOutputDevice";
+  static constexpr char kUserActionSwitchInputOverridden[] =
+      "StatusArea_Audio_AutoInputSelectionOverridden";
+  static constexpr char kUserActionSwitchOutputOverridden[] =
+      "StatusArea_Audio_AutoOutputSelectionOverridden";
+
+  // A series of histogram metrics to record system selection decision after
+  // audio device has changed. And the time delta if user has overridden the
+  // system selection afterwards.
+  static constexpr char kSystemSwitchInputAudio[] =
+      "ChromeOS.AudioSelection.Input.SystemSwitchAudio";
+  static constexpr char kSystemSwitchOutputAudio[] =
+      "ChromeOS.AudioSelection.Output.SystemSwitchAudio";
+  static constexpr char kUserOverrideSystemSwitchInputAudio[] =
+      "ChromeOS.AudioSelection.Input.UserOverrideSystemSwitchTimeElapsed";
+  static constexpr char kUserOverrideSystemSwitchOutputAudio[] =
+      "ChromeOS.AudioSelection.Output.UserOverrideSystemSwitchTimeElapsed";
+  static constexpr char kUserOverrideSystemNotSwitchInputAudio[] =
+      "ChromeOS.AudioSelection.Input.UserOverrideSystemNotSwitchTimeElapsed";
+  static constexpr char kUserOverrideSystemNotSwitchOutputAudio[] =
+      "ChromeOS.AudioSelection.Output.UserOverrideSystemNotSwitchTimeElapsed";
 
   class AudioObserver {
    public:
@@ -191,9 +249,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
     // for >= 30 seconds is closed.
     // CRAS also has full control on what data to send to Chrome. These survey
     // specific data will be attached with each survey response for analysis.
-    // Currently this only supports one general audio satisfaction survey and
-    // should be modified and extended when other types of survey is added.
-    virtual void OnSurveyTriggered(const AudioSurveyData& survey_specific_data);
+    // Currently this supports general audio and Bluetooth audio surveys.
+    // The survey to trigger is determined by the type of the `AudioSurvey`
+    // passed in.
+    virtual void OnSurveyTriggered(const AudioSurvey& survey);
 
     // Called when a speak-on-mute is detected.
     virtual void OnSpeakOnMuteDetected();
@@ -726,9 +785,6 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   void HandleGetNumActiveOutputStreams(
       absl::optional<int> num_active_output_streams);
 
-  void HandleGetDeprioritizeBtWbsMic(
-      absl::optional<bool> deprioritize_bt_wbs_mic);
-
   // Adds an active node.
   // If there is no active node, |node_id| will be switched to become the
   // primary active node. Otherwise, it will be added as an additional active
@@ -901,6 +957,22 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   void HandleGetNumStreamIgnoreUiGains(
       absl::optional<int32_t> num_stream_ignore_ui_gains);
 
+  // Record metrics when user switches audio device.
+  void RecordUserSwitchAudioDevice(bool is_input);
+
+  // Record the histogram of system decision of switching or not switching after
+  // audio device is added or removed. Only record if there are more than one
+  // available devices.
+  void MaybeRecordSystemSwitchDecision(bool is_input, bool is_switched);
+
+  // Clear the timer of system switch/not switch decision.
+  void ResetSystemSwitchTimestamp(bool is_input);
+
+  // Static helper function to abstract the |AudioSurvey| from input
+  // |survey_specific_data|.
+  static std::unique_ptr<CrasAudioHandler::AudioSurvey> AbstractAudioSurvey(
+      const base::flat_map<std::string, std::string>& survey_specific_data);
+
   mojo::Remote<media_session::mojom::MediaControllerManager>
       media_controller_manager_;
 
@@ -968,11 +1040,6 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
 
   bool fetch_media_session_duration_ = false;
 
-  // On a few platforms that Bluetooth WBS is still working to be
-  // stabilized, CRAS may report to deprioritze the BT WBS mic's node
-  // priority.
-  bool deprioritize_bt_wbs_mic_ = false;
-
   // Whether the audio input is muted because the microphone mute switch is on.
   // In this case, input mute changes will be disabled.
   bool input_muted_by_microphone_mute_switch_ = false;
@@ -983,6 +1050,15 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
 
   // Whether the speak-on-mute detection is enabled in CRAS.
   bool speak_on_mute_detection_on_ = false;
+
+  // The timestamp for recording the metrics of user overriding system decision
+  // of switching or not switching the active audio device.
+  std::optional<base::TimeTicks> input_switched_by_system_at_ = std::nullopt;
+  std::optional<base::TimeTicks> input_not_switched_by_system_at_ =
+      std::nullopt;
+  std::optional<base::TimeTicks> output_switched_by_system_at_ = std::nullopt;
+  std::optional<base::TimeTicks> output_not_switched_by_system_at_ =
+      std::nullopt;
 
   // Task runner of browser main thread. All member variables should be accessed
   // on this thread.

@@ -80,8 +80,6 @@ namespace SetCompositionRange =
 namespace OnInputMethodOptionsChanged =
     extensions::api::input_method_private::OnInputMethodOptionsChanged;
 namespace OnAutocorrect = extensions::api::input_method_private::OnAutocorrect;
-namespace GetTextFieldBounds =
-    extensions::api::input_method_private::GetTextFieldBounds;
 namespace GetLanguagePackStatus =
     extensions::api::input_method_private::GetLanguagePackStatus;
 namespace OnLanguagePackStatusChanged =
@@ -426,17 +424,17 @@ InputMethodPrivateSetCompositionRangeFunction::Run() {
       segment_info.start = segments_arg.start;
       segment_info.end = segments_arg.end;
       switch (segments_arg.style) {
-        case input_method_private::UNDERLINE_STYLE_UNDERLINE:
+        case input_method_private::UnderlineStyle::kUnderline:
           segment_info.style = InputMethodEngine::SEGMENT_STYLE_UNDERLINE;
           break;
-        case input_method_private::UNDERLINE_STYLE_DOUBLEUNDERLINE:
+        case input_method_private::UnderlineStyle::kDoubleUnderline:
           segment_info.style =
               InputMethodEngine::SEGMENT_STYLE_DOUBLE_UNDERLINE;
           break;
-        case input_method_private::UNDERLINE_STYLE_NOUNDERLINE:
+        case input_method_private::UnderlineStyle::kNoUnderline:
           segment_info.style = InputMethodEngine::SEGMENT_STYLE_NO_UNDERLINE;
           break;
-        case input_method_private::UNDERLINE_STYLE_NONE:
+        case input_method_private::UnderlineStyle::kNone:
           EXTENSION_FUNCTION_VALIDATE(false);
           break;
       }
@@ -450,29 +448,6 @@ InputMethodPrivateSetCompositionRangeFunction::Run() {
     return RespondNow(Error(InformativeError(error, static_function_name())));
   }
   return RespondNow(WithArguments(base::Value(true)));
-}
-
-ExtensionFunction::ResponseAction
-InputMethodPrivateGetTextFieldBoundsFunction::Run() {
-  std::string error;
-  InputMethodEngine* engine =
-      GetEngineIfActive(browser_context(), extension_id(), &error);
-  if (!engine)
-    return RespondNow(Error(InformativeError(error, static_function_name())));
-
-  const auto parent_params = GetTextFieldBounds::Params::Create(args());
-  const auto& params = parent_params->parameters;
-  const gfx::Rect rect =
-      engine->InputMethodEngine::GetTextFieldBounds(params.context_id, &error);
-  if (rect.IsEmpty()) {
-    return RespondNow(Error(InformativeError(error, static_function_name())));
-  }
-  base::Value::Dict ret;
-  ret.Set("x", rect.x());
-  ret.Set("y", rect.y());
-  ret.Set("width", rect.width());
-  ret.Set("height", rect.height());
-  return RespondNow(WithArguments(std::move(ret)));
 }
 
 ExtensionFunction::ResponseAction InputMethodPrivateResetFunction::Run() {
@@ -537,9 +512,8 @@ InputMethodPrivateGetLanguagePackStatusFunction::Run() {
   // If there are no language packs associated with an input method, installed
   // is returned.
   if (!handwriting_locale.has_value()) {
-    return RespondNow(
-        WithArguments(ToString(input_method_private::LanguagePackStatus::
-                                   LANGUAGE_PACK_STATUS_INSTALLED)));
+    return RespondNow(WithArguments(
+        ToString(input_method_private::LanguagePackStatus::kInstalled)));
   }
   if (!ash::language_packs::HandwritingLocaleToDlc(*handwriting_locale)
            .has_value()) {
@@ -554,12 +528,11 @@ InputMethodPrivateGetLanguagePackStatusFunction::Run() {
                      "does not have DLC: "
                   << *handwriting_locale;
     }
-    return RespondNow(
-        WithArguments(ToString(input_method_private::LanguagePackStatus::
-                                   LANGUAGE_PACK_STATUS_INSTALLED)));
+    return RespondNow(WithArguments(
+        ToString(input_method_private::LanguagePackStatus::kInstalled)));
   }
 
-  ash::language_packs::LanguagePackManager::GetInstance()->GetPackState(
+  ash::language_packs::LanguagePackManager::GetPackState(
       ash::language_packs::kHandwritingFeatureId, *handwriting_locale,
       // This `BindOnce` into a `.Then` is required to avoid having a method on
       // this class which has a language pack type in its function signature,

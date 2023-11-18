@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "components/segmentation_platform/internal/execution/model_execution_status.h"
 #include "components/segmentation_platform/internal/selection/segment_selector_impl.h"
 
@@ -85,12 +85,12 @@ class MockTrainingDataCollector : public TrainingDataCollector {
   MOCK_METHOD0(OnModelMetadataUpdated, void());
   MOCK_METHOD0(OnServiceInitialized, void());
   MOCK_METHOD0(ReportCollectedContinuousTrainingData, void());
-  MOCK_METHOD4(
-      OnDecisionTime,
-      TrainingRequestId(proto::SegmentId id,
-                        scoped_refptr<InputContext> input_context,
-                        DecisionType type,
-                        absl::optional<ModelProvider::Request> inputs));
+  MOCK_METHOD5(OnDecisionTime,
+               TrainingRequestId(proto::SegmentId id,
+                                 scoped_refptr<InputContext> input_context,
+                                 DecisionType type,
+                                 absl::optional<ModelProvider::Request> inputs,
+                                 bool decision_result_update_trigger));
   MOCK_METHOD4(CollectTrainingData,
                void(SegmentId segment_id,
                     TrainingRequestId request_id,

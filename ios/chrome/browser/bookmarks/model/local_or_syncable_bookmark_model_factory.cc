@@ -13,6 +13,7 @@
 #include "components/bookmarks/common/storage_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/base/features.h"
 #include "components/undo/bookmark_undo_service.h"
 #include "ios/chrome/browser/bookmarks/model/bookmark_client_impl.h"
 #include "ios/chrome/browser/bookmarks/model/bookmark_undo_service_factory.h"

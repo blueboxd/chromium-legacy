@@ -38,11 +38,13 @@ namespace base::internal {
 
 enum class MemorySafetyCheck : uint32_t {
   kForcePartitionAlloc = (1u << 0),
+  // Enables |FreeFlags::kSchedulerLoopQuarantine|.
+  // Requires PA-E.
+  kSchedulerLoopQuarantine = (1u << 1),
 
-  // TODO(crbug.com/1462223): Implement some advanced checks and add flags here.
-  // kEventLoopQuarantine = (1u << 1),
-  // kBRPDereferenceAfterFree = (1u << 2),
-  // kZapOnFree = (1u << 3), etc.
+  // Enables |FreeFlags::kZap|.
+  // Requires PA-E.
+  kZapOnFree = (1u << 2),
 };
 
 constexpr MemorySafetyCheck operator|(MemorySafetyCheck a,
@@ -59,27 +61,19 @@ constexpr MemorySafetyCheck operator&(MemorySafetyCheck a,
 
 // Set of checks for ADVANCED_MEMORY_SAFETY_CHECKS() annotated objects.
 constexpr auto kAdvancedMemorySafetyChecks =
-    MemorySafetyCheck::kForcePartitionAlloc;
+    MemorySafetyCheck::kForcePartitionAlloc |
+    MemorySafetyCheck::kSchedulerLoopQuarantine | MemorySafetyCheck::kZapOnFree;
 
 // Define type traits to determine type |T|'s memory safety check status.
 namespace {
 
-// Primary template: having |value = 0| (none) as a default.
-template <typename T, typename AlwaysVoid = void>
-struct GetChecksInternal {
-  static constexpr MemorySafetyCheck kValue = static_cast<MemorySafetyCheck>(0);
-};
-
-// Specialization: having |value = T::kMemorySafetyChecks| is present.
-template <typename T>
-struct GetChecksInternal<T, std::void_t<decltype(T::kMemorySafetyChecks)>> {
-  static constexpr MemorySafetyCheck kValue = T::kMemorySafetyChecks;
-};
-
 // Allocator type traits.
 constexpr bool ShouldUsePartitionAlloc(MemorySafetyCheck checks) {
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-  return static_cast<bool>(checks & (MemorySafetyCheck::kForcePartitionAlloc));
+  return static_cast<bool>(checks &
+                           (MemorySafetyCheck::kForcePartitionAlloc |
+                            MemorySafetyCheck::kSchedulerLoopQuarantine |
+                            MemorySafetyCheck::kZapOnFree));
 #else
   return false;
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
@@ -93,27 +87,51 @@ constexpr partition_alloc::AllocFlags GetAllocFlags(MemorySafetyCheck checks) {
 
 // Returns |partition_alloc::FreeFlags| corresponding to |checks|.
 constexpr partition_alloc::FreeFlags GetFreeFlags(MemorySafetyCheck checks) {
-  return partition_alloc::FreeFlags::kNone;
+  auto flags = partition_alloc::FreeFlags::kNone;
+  if (static_cast<bool>(checks & MemorySafetyCheck::kSchedulerLoopQuarantine)) {
+    flags |= partition_alloc::FreeFlags::kSchedulerLoopQuarantine;
+  }
+  if (static_cast<bool>(checks & MemorySafetyCheck::kZapOnFree)) {
+    flags |= partition_alloc::FreeFlags::kZap;
+  }
+  return flags;
 }
 
 }  // namespace
 
 // Public utility type traits.
 template <typename T>
-constexpr MemorySafetyCheck get_memory_safety_checks =
-    GetChecksInternal<T>::kValue;
+inline constexpr MemorySafetyCheck get_memory_safety_checks = [] {
+  if constexpr (requires { T::kMemorySafetyChecks; }) {
+    return T::kMemorySafetyChecks;
+  } else {
+    return static_cast<MemorySafetyCheck>(0);
+  }
+}();
 
 template <typename T, MemorySafetyCheck c>
-constexpr bool is_memory_safety_checked =
+inline constexpr bool is_memory_safety_checked =
     (get_memory_safety_checks<T> & c) == c;
 
 // Allocator functions.
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+ALWAYS_INLINE partition_alloc::PartitionRoot*
+GetPartitionRootForMemorySafetyCheckedAllocation() {
+  return allocator_shim::internal::PartitionAllocMalloc::Allocator();
+}
+
+ALWAYS_INLINE partition_alloc::PartitionRoot*
+GetAlignedPartitionRootForMemorySafetyCheckedAllocation() {
+  return allocator_shim::internal::PartitionAllocMalloc::AlignedAllocator();
+}
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+
 template <MemorySafetyCheck checks>
 NOINLINE void* HandleMemorySafetyCheckedOperatorNew(std::size_t count) {
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   if constexpr (ShouldUsePartitionAlloc(checks)) {
-    auto* root = allocator_shim::internal::PartitionAllocMalloc::Allocator();
-    return root->AllocInline<GetAllocFlags(checks)>(count);
+    return GetPartitionRootForMemorySafetyCheckedAllocation()
+        ->AllocInline<GetAllocFlags(checks)>(count);
   } else
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   {
@@ -127,10 +145,9 @@ NOINLINE void* HandleMemorySafetyCheckedOperatorNew(
     std::align_val_t alignment) {
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   if constexpr (ShouldUsePartitionAlloc(checks)) {
-    auto* root =
-        allocator_shim::internal::PartitionAllocMalloc::AlignedAllocator();
-    return root->AlignedAlloc<GetAllocFlags(checks)>(
-        static_cast<size_t>(alignment), count);
+    return GetAlignedPartitionRootForMemorySafetyCheckedAllocation()
+        ->AlignedAlloc<GetAllocFlags(checks)>(static_cast<size_t>(alignment),
+                                              count);
   } else
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   {
@@ -142,8 +159,8 @@ template <MemorySafetyCheck checks>
 NOINLINE void HandleMemorySafetyCheckedOperatorDelete(void* ptr) {
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   if constexpr (ShouldUsePartitionAlloc(checks)) {
-    auto* root = allocator_shim::internal::PartitionAllocMalloc::Allocator();
-    root->Free<GetFreeFlags(checks)>(ptr);
+    GetPartitionRootForMemorySafetyCheckedAllocation()
+        ->Free<GetFreeFlags(checks)>(ptr);
   } else
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   {
@@ -157,9 +174,8 @@ NOINLINE void HandleMemorySafetyCheckedOperatorDelete(
     std::align_val_t alignment) {
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   if constexpr (ShouldUsePartitionAlloc(checks)) {
-    auto* root =
-        allocator_shim::internal::PartitionAllocMalloc::AlignedAllocator();
-    root->Free<GetFreeFlags(checks)>(ptr);
+    GetAlignedPartitionRootForMemorySafetyCheckedAllocation()
+        ->Free<GetFreeFlags(checks)>(ptr);
   } else
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   {

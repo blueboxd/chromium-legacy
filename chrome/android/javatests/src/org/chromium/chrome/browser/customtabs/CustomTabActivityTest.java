@@ -4,7 +4,10 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import static androidx.browser.customtabs.CustomTabsIntent.EXTRA_ACTIVITY_SIDE_SHEET_BREAKPOINT_DP;
+import static androidx.browser.customtabs.CustomTabsIntent.EXTRA_ACTIVITY_SIDE_SHEET_ENABLE_MAXIMIZATION;
 import static androidx.browser.customtabs.CustomTabsIntent.EXTRA_INITIAL_ACTIVITY_HEIGHT_PX;
+import static androidx.browser.customtabs.CustomTabsIntent.EXTRA_INITIAL_ACTIVITY_WIDTH_PX;
 import static androidx.browser.customtabs.CustomTabsIntent.SHARE_STATE_ON;
 import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -1934,12 +1937,13 @@ public class CustomTabActivityTest {
         Assert.assertTrue(connection.mayLaunchUrl(token, Uri.parse(url), null, null));
         CriteriaHelper.pollUiThread(
                 () -> {
-                    Criteria.checkThat(connection.getHiddenTab(), Matchers.notNullValue());
+                    Criteria.checkThat(
+                            connection.getHiddenTabForTesting(), Matchers.notNullValue());
                 });
         Tab hiddenTab =
                 TestThreadUtils.runOnUiThreadBlocking(
                         () -> {
-                            return connection.getHiddenTab();
+                            return connection.getHiddenTabForTesting();
                         });
         ChromeTabUtils.waitForTabPageLoaded(hiddenTab, url);
         String actualHeader = webServer.getLastRequest("/ok.html").headerValue("X-CCT-Client-Data");
@@ -2068,10 +2072,9 @@ public class CustomTabActivityTest {
         CustomTabsConnection connection = CustomTabsConnection.getInstance();
         connection.newSession(token);
         connection.overridePackageNameForSessionForTesting(token, "org.chromium.testapp");
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_ACTIVITY_SIDE_SHEET_BREAKPOINT_DP, 100);
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_INITIAL_ACTIVITY_WIDTH_PX, 300);
-        intent.putExtra(
-                CustomTabIntentDataProvider.EXTRA_ACTIVITY_SIDE_SHEET_ENABLE_MAXIMIZATION, true);
+        intent.putExtra(EXTRA_ACTIVITY_SIDE_SHEET_BREAKPOINT_DP, 100);
+        intent.putExtra(EXTRA_INITIAL_ACTIVITY_WIDTH_PX, 300);
+        intent.putExtra(EXTRA_ACTIVITY_SIDE_SHEET_ENABLE_MAXIMIZATION, true);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         rotateCustomTabActivity(
@@ -2130,9 +2133,9 @@ public class CustomTabActivityTest {
         CustomTabsConnection connection = CustomTabsConnection.getInstance();
         connection.newSession(token);
         connection.overridePackageNameForSessionForTesting(token, "org.chromium.testapp");
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_ACTIVITY_SIDE_SHEET_BREAKPOINT_DP, 600);
+        intent.putExtra(EXTRA_ACTIVITY_SIDE_SHEET_BREAKPOINT_DP, 600);
         intent.putExtra(EXTRA_INITIAL_ACTIVITY_HEIGHT_PX, 300);
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_INITIAL_ACTIVITY_WIDTH_PX, 300);
+        intent.putExtra(EXTRA_INITIAL_ACTIVITY_WIDTH_PX, 300);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         rotateCustomTabActivity(
@@ -2214,8 +2217,8 @@ public class CustomTabActivityTest {
         intent.setData(Uri.parse("https://example.com"));
         String packageName = ContextUtils.getApplicationContext().getPackageName();
         intent.setPackage(packageName);
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_INITIAL_ACTIVITY_WIDTH_PX, 300);
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_ACTIVITY_SIDE_SHEET_BREAKPOINT_DP, 600);
+        intent.putExtra(EXTRA_INITIAL_ACTIVITY_WIDTH_PX, 300);
+        intent.putExtra(EXTRA_ACTIVITY_SIDE_SHEET_BREAKPOINT_DP, 600);
         mChromeTabbedActivityTestRule.startMainActivityOnBlankPage();
 
         CustomTabActivity resultActivity =
@@ -2264,12 +2267,13 @@ public class CustomTabActivityTest {
             Assert.assertTrue(connection.mayLaunchUrl(token, Uri.parse(url), null, null));
             CriteriaHelper.pollUiThread(
                     () -> {
-                        Criteria.checkThat(connection.getHiddenTab(), Matchers.notNullValue());
+                        Criteria.checkThat(
+                                connection.getHiddenTabForTesting(), Matchers.notNullValue());
                     });
             Tab hiddenTab =
                     TestThreadUtils.runOnUiThreadBlocking(
                             () -> {
-                                return connection.getHiddenTab();
+                                return connection.getHiddenTabForTesting();
                             });
             ChromeTabUtils.waitForTabPageLoaded(hiddenTab, url);
         } else {

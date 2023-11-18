@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {DialogType} from '../../common/js/dialog_type.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {MetadataItem} from '../../foreground/js/metadata/metadata_item.js';
 import {FilesAppEntry} from '../files_app_entry_interfaces.js';
@@ -42,19 +43,19 @@ export const EntryType = {
  *
  * @typedef {{
  *   entry: (Entry|FilesAppEntry),
- *   icon: (!string|!chrome.fileManagerPrivate.IconSet),
+ *   icon: (string|chrome.fileManagerPrivate.IconSet),
  *   label: string,
  *   volumeId: (VolumeId|null),
  *   rootType: (VolumeManagerCommon.RootType|null),
- *   metadata: !MetadataItem,
+ *   metadata: MetadataItem,
  *   isDirectory: boolean,
- *   type: !EntryType,
- *   isRootEntry: !boolean,
- *   isEjectable: !boolean,
- *   shouldDelayLoadingChildren: !boolean,
- *   children: (!Array<!FileKey>),
- *   expanded: !boolean,
- *   disabled: !boolean,
+ *   type: EntryType,
+ *   isRootEntry: boolean,
+ *   isEjectable: boolean,
+ *   shouldDelayLoadingChildren: boolean,
+ *   children: (Array<FileKey>),
+ *   expanded: boolean,
+ *   disabled: boolean,
  * }}
  */
 // @ts-ignore: error TS7005: Variable 'FileData' implicitly has an 'any' type.
@@ -86,7 +87,7 @@ export let VolumeId;
  * @typedef {{
  *   name: string,
  *   label: string,
- *   key: !FileKey,
+ *   key: FileKey,
  * }}
  */
 // @ts-ignore: error TS7005: Variable 'PathComponent' implicitly has an 'any'
@@ -137,7 +138,7 @@ export const FileTaskType = {
  * For more details see //chrome/browser/ash/file_manager/file_tasks.h
  * @typedef {{
  *   appId: string,
- *   taskType: !FileTaskType,
+ *   taskType: FileTaskType,
  *   actionId: string,
  * }}
  */
@@ -154,7 +155,7 @@ export let FileTaskDescriptor;
  * non-Store version doesn't have to be supported anymore.
  *
  * @typedef {{
- *   descriptor: !FileTaskDescriptor,
+ *   descriptor: FileTaskDescriptor,
  *   title: string,
  *   iconUrl: (string|undefined),
  *   iconType: string,
@@ -175,27 +176,37 @@ export let FileTask;
  * TODO(lucmult): keys might not be needed here.
  *
  * @typedef {{
- *   tasks: !Array<!FileTask>,
+ *   tasks: Array<FileTask>,
  *   policyDefaultHandlerStatus:
  *      (chrome.fileManagerPrivate.PolicyDefaultHandlerStatus|undefined),
  *   defaultTask: (FileTask|undefined),
- *   status: !PropStatus,
+ *   status: PropStatus,
  * }}
  */
 // @ts-ignore: error TS7005: Variable 'FileTasks' implicitly has an 'any' type.
 export let FileTasks;
 
 /**
+ * Launch parameters for the file manager.
+ * @typedef {{
+ *   dialogType: (DialogType|undefined),
+ * }}
+ */
+// @ts-ignore: error TS7005: Variable 'LaunchParams' implicitly has an 'any'
+// type.
+export let LaunchParams;
+
+/**
  * This represents the entries currently selected, out of the entries displayed
  * in the file list/grid.
  *
  * @typedef {{
- *    keys: !Array<!FileKey>,
+ *    keys: Array<FileKey>,
  *    dirCount: number,
  *    fileCount: number,
  *    hostedCount: (number|undefined),
- *    offlineCachedCount: (number|undefined),
- *    fileTasks: !FileTasks,
+ *    offlineCachedCount: number,
+ *    fileTasks: FileTasks,
  * }}
  */
 // @ts-ignore: error TS7005: Variable 'Selection' implicitly has an 'any' type.
@@ -205,7 +216,7 @@ export let Selection;
  * Represents the entries displayed in the file list/grid.
  *
  * @typedef {{
- *    keys: !Array<!FileKey>,
+ *    keys: Array<FileKey>,
  * }}
  */
 // @ts-ignore: error TS7005: Variable 'DirectoryContent' implicitly has an 'any'
@@ -216,10 +227,10 @@ export let DirectoryContent;
  * The current directory.
  * The directory is only effectively active when the `status` is SUCCESS.
  * @typedef {{
- *   status: !PropStatus,
- *   key: !FileKey,
- *   pathComponents: !Array<PathComponent>,
- *   content: !DirectoryContent,
+ *   status: PropStatus,
+ *   key: FileKey,
+ *   pathComponents: Array<PathComponent>,
+ *   content: DirectoryContent,
  *   selection: Selection,
  *   rootType: (VolumeManagerCommon.RootType|undefined),
  *   hasDlpDisabledFiles: boolean,
@@ -256,7 +267,7 @@ export const SearchRecency = {
 /**
  * The options used by the file search operation.
  * @typedef {{
- *   location: !SearchLocation,
+ *   location: SearchLocation,
  *   recency: SearchRecency,
  *   fileCategory:  chrome.fileManagerPrivate.FileCategory,
  * }}
@@ -270,7 +281,7 @@ export let SearchOptions;
  * @typedef {{
  *   status: (PropStatus|undefined),
  *   query: (string|undefined),
- *   options: (!SearchOptions|undefined),
+ *   options: (SearchOptions|undefined),
  * }}
  */
 // @ts-ignore: error TS7005: Variable 'SearchData' implicitly has an 'any' type.
@@ -335,10 +346,10 @@ export let NavigationKey;
  * file key.
  *
  * @typedef {{
- *   key: !NavigationKey,
- *   section: !NavigationSection,
- *   type: !NavigationType,
- *   separator: !boolean,
+ *   key: NavigationKey,
+ *   section: NavigationSection,
+ *   type: NavigationType,
+ *   separator: boolean,
  * }}
  */
 // @ts-ignore: error TS7005: Variable 'NavigationRoot' implicitly has an 'any'
@@ -348,7 +359,7 @@ export let NavigationRoot;
 /**
  * `roots` is just a ordered array with NavigationRoot.
  * @typedef {{
- *   roots: !Array<!NavigationRoot>,
+ *   roots: Array<NavigationRoot>,
  * }}
  */
 // @ts-ignore: error TS7005: Variable 'NavigationTree' implicitly has an 'any'
@@ -367,10 +378,10 @@ export let NavigationTree;
  * with `error`=="unknown".
  *
  * @typedef {{
- *   volumeId: !VolumeId,
- *   volumeType: !VolumeManagerCommon.VolumeType,
+ *   volumeId: VolumeId,
+ *   volumeType: VolumeManagerCommon.VolumeType,
  *   rootKey: (FileKey|undefined),
- *   status: !PropStatus,
+ *   status: PropStatus,
  *   label: string,
  *   error: (string|undefined),
  *   deviceType: (chrome.fileManagerPrivate.DeviceType|undefined),
@@ -394,7 +405,7 @@ export let NavigationTree;
 export let Volume;
 
 /**
- * @typedef {Object<VolumeId, Volume>}
+ * @typedef {Record<VolumeId, Volume>}
  */
 // @ts-ignore: error TS7005: Variable 'VolumeMap' implicitly has an 'any' type.
 export let VolumeMap;
@@ -415,7 +426,7 @@ export let Device;
  * effectively paused state when on a metered network.
  *
  * @typedef {{
- *   connectionType: (chrome.fileManagerPrivate.DeviceConnectionState),
+ *   connectionType: (chrome.fileManagerPrivate.DriveConnectionStateType),
  *   offlineReason: (chrome.fileManagerPrivate.DriveOfflineReason|undefined),
  * }}
  */
@@ -436,8 +447,8 @@ export let Drive;
  *   name: string,
  *   packageName: string,
  *   activityName: string,
- *   iconSet: (!chrome.fileManagerPrivate.IconSet|undefined),
- *   icon: (!string|!chrome.fileManagerPrivate.IconSet),
+ *   iconSet: (chrome.fileManagerPrivate.IconSet|undefined),
+ *   icon: (string|chrome.fileManagerPrivate.IconSet),
  * }}
  */
 // @ts-ignore: error TS7005: Variable 'AndroidApp' implicitly has an 'any' type.
@@ -446,18 +457,19 @@ export let AndroidApp;
 /**
  * Files app's state.
  * @typedef {{
- *   allEntries: !Object<!FileKey, !FileData>,
+ *   allEntries: Record<FileKey, FileData>,
  *   currentDirectory: (CurrentDirectory|undefined),
- *   device: !Device,
- *   drive: !Drive,
- *   search: (!SearchData|undefined),
- *   navigation: !NavigationTree,
- *   volumes: !Object<!VolumeId, !Volume>,
- *   uiEntries: !Array<!FileKey>,
- *   folderShortcuts: !Array<!FileKey>,
- *   androidApps: !Object<!string, !AndroidApp>,
- *   bulkPinning: (chrome.fileManagerPrivate.BulkPinProgress|undefined),
- *   preferences: (chrome.fileManagerPrivate.Preferences|undefined),
+ *   device: Device,
+ *   drive: Drive,
+ *   launchParams: !LaunchParams,
+ *   search: (SearchData|undefined),
+ *   navigation: NavigationTree,
+ *   volumes: Record<VolumeId, Volume>,
+ *   uiEntries: Array<FileKey>,
+ *   folderShortcuts: Array<FileKey>,
+ *   androidApps: Record<string, AndroidApp>,
+ *   bulkPinning?: chrome.fileManagerPrivate.BulkPinProgress,
+ *   preferences?: chrome.fileManagerPrivate.Preferences,
  * }}
  */
 // @ts-ignore: error TS7005: Variable 'State' implicitly has an 'any' type.

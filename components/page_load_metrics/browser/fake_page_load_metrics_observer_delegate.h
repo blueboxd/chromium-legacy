@@ -62,10 +62,10 @@ class FakePageLoadMetricsObserverDelegate
       BfcacheStrategy bfcache_strategy) const override;
   const NormalizedCLSData& GetSoftNavigationIntervalNormalizedCLSData()
       const override;
-  const NormalizedResponsivenessMetrics& GetNormalizedResponsivenessMetrics()
-      const override;
-  const NormalizedResponsivenessMetrics&
-  GetSoftNavigationIntervalNormalizedResponsivenessMetrics() const override;
+  const ResponsivenessMetricsNormalization&
+  GetResponsivenessMetricsNormalization() const override;
+  const ResponsivenessMetricsNormalization&
+  GetSoftNavigationIntervalResponsivenessMetricsNormalization() const override;
   const mojom::InputTiming& GetPageInputTiming() const override;
   const absl::optional<blink::SubresourceLoadMetrics>&
   GetSubresourceLoadMetrics() const override;
@@ -83,6 +83,7 @@ class FakePageLoadMetricsObserverDelegate
   bool IsFirstNavigationInWebContents() const override;
   bool IsOriginVisit() const override;
   bool IsTerminalVisit() const override;
+  int64_t GetNavigationId() const override;
 
   // Helpers to add a BackForwardCacheRestore to this fake.
   void AddBackForwardCacheRestore(BackForwardCacheRestore bfcache_restore);
@@ -102,7 +103,7 @@ class FakePageLoadMetricsObserverDelegate
   mojom::FrameMetadata subframe_metadata_;
   PageRenderData page_render_data_;
   NormalizedCLSData normalized_cls_data_;
-  NormalizedResponsivenessMetrics normalized_responsiveness_metrics_;
+  ResponsivenessMetricsNormalization responsiveness_metrics_normalization_;
   mojom::InputTiming page_input_timing_;
   absl::optional<blink::SubresourceLoadMetrics> subresource_load_metrics_;
   PageRenderData main_frame_render_data_;
@@ -110,6 +111,7 @@ class FakePageLoadMetricsObserverDelegate
   ResourceTracker resource_tracker_;
   LargestContentfulPaintHandler largest_contentful_paint_handler_;
   LargestContentfulPaintHandler experimental_largest_contentful_paint_handler_;
+  int64_t navigation_id_;
   base::TimeTicks navigation_start_;
   absl::optional<base::TimeTicks> first_background_time_ = absl::nullopt;
   bool started_in_foreground_ = true;

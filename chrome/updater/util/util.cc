@@ -4,6 +4,7 @@
 
 #include "chrome/updater/util/util.h"
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -28,6 +29,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/escape.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
@@ -39,7 +41,6 @@
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_LINUX)
@@ -58,13 +59,6 @@ namespace updater {
 namespace {
 
 constexpr int64_t kLogRotateAtSize = 1024 * 1024;  // 1 MiB.
-
-const char kHexString[] = "0123456789ABCDEF";
-inline char IntToHex(int i) {
-  CHECK_GE(i, 0) << i << " not a hex value";
-  CHECK_LE(i, 15) << i << " not a hex value";
-  return kHexString[i];
-}
 
 // A fast bit-vector map for ascii characters.
 //
@@ -104,8 +98,7 @@ std::string Escape(base::StringPiece text,
       escaped.push_back('%');
     } else if (charmap.Contains(c)) {
       escaped.push_back('%');
-      escaped.push_back(IntToHex(c >> 4));
-      escaped.push_back(IntToHex(c & 0xf));
+      base::AppendHexEncodedByte(c, escaped);
     } else {
       escaped.push_back(c);
     }
@@ -119,65 +112,63 @@ std::string EscapeQueryParamValue(base::StringPiece text, bool use_plus) {
 
 }  // namespace
 
-absl::optional<base::FilePath> GetVersionedInstallDirectory(
+std::optional<base::FilePath> GetVersionedInstallDirectory(
     UpdaterScope scope,
     const base::Version& version) {
-  const absl::optional<base::FilePath> path = GetInstallDirectory(scope);
+  const std::optional<base::FilePath> path = GetInstallDirectory(scope);
   if (!path)
-    return absl::nullopt;
+    return std::nullopt;
   return path->AppendASCII(version.GetString());
 }
 
-absl::optional<base::FilePath> GetVersionedInstallDirectory(
-    UpdaterScope scope) {
+std::optional<base::FilePath> GetVersionedInstallDirectory(UpdaterScope scope) {
   return GetVersionedInstallDirectory(scope, base::Version(kUpdaterVersion));
 }
 
-absl::optional<base::FilePath> GetUpdaterExecutablePath(
+std::optional<base::FilePath> GetUpdaterExecutablePath(
     UpdaterScope scope,
     const base::Version& version) {
-  absl::optional<base::FilePath> path =
+  std::optional<base::FilePath> path =
       GetVersionedInstallDirectory(scope, version);
   if (!path) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   return path->Append(GetExecutableRelativePath());
 }
 
 #if !BUILDFLAG(IS_MAC)
-absl::optional<base::FilePath> GetCacheBaseDirectory(UpdaterScope scope) {
+std::optional<base::FilePath> GetCacheBaseDirectory(UpdaterScope scope) {
   return GetInstallDirectory(scope);
 }
 #endif
 
-absl::optional<base::FilePath> GetCrxDiffCacheDirectory(UpdaterScope scope) {
-  const absl::optional<base::FilePath> cache_path(GetCacheBaseDirectory(scope));
+std::optional<base::FilePath> GetCrxDiffCacheDirectory(UpdaterScope scope) {
+  const std::optional<base::FilePath> cache_path(GetCacheBaseDirectory(scope));
   if (!cache_path) {
-    return absl::nullopt;
+    return std::nullopt;
   }
-  return absl::optional<base::FilePath>(cache_path->AppendASCII("crx_cache"));
+  return std::optional<base::FilePath>(cache_path->AppendASCII("crx_cache"));
 }
 
-absl::optional<base::FilePath> GetUpdaterExecutablePath(UpdaterScope scope) {
+std::optional<base::FilePath> GetUpdaterExecutablePath(UpdaterScope scope) {
   return GetUpdaterExecutablePath(scope, base::Version(kUpdaterVersion));
 }
 
-absl::optional<base::FilePath> GetCrashDatabasePath(UpdaterScope scope) {
-  const absl::optional<base::FilePath> path(
-      GetVersionedInstallDirectory(scope));
-  return path ? absl::optional<base::FilePath>(path->AppendASCII("Crashpad"))
-              : absl::nullopt;
+std::optional<base::FilePath> GetCrashDatabasePath(UpdaterScope scope) {
+  const std::optional<base::FilePath> path(GetVersionedInstallDirectory(scope));
+  return path ? std::optional<base::FilePath>(path->AppendASCII("Crashpad"))
+              : std::nullopt;
 }
 
-absl::optional<base::FilePath> EnsureCrashDatabasePath(UpdaterScope scope) {
-  const absl::optional<base::FilePath> database_path(
+std::optional<base::FilePath> EnsureCrashDatabasePath(UpdaterScope scope) {
+  const std::optional<base::FilePath> database_path(
       GetCrashDatabasePath(scope));
   return database_path && base::CreateDirectory(*database_path) ? database_path
-                                                                : absl::nullopt;
+                                                                : std::nullopt;
 }
 
 TagParsingResult::TagParsingResult() = default;
-TagParsingResult::TagParsingResult(absl::optional<tagging::TagArgs> tag_args,
+TagParsingResult::TagParsingResult(std::optional<tagging::TagArgs> tag_args,
                                    tagging::ErrorCode error)
     : tag_args(tag_args), error(error) {}
 TagParsingResult::~TagParsingResult() = default;
@@ -205,10 +196,10 @@ TagParsingResult GetTagArgs() {
   return GetTagArgsForCommandLine(*base::CommandLine::ForCurrentProcess());
 }
 
-absl::optional<tagging::AppArgs> GetAppArgs(const std::string& app_id) {
-  const absl::optional<tagging::TagArgs> tag_args = GetTagArgs().tag_args;
+std::optional<tagging::AppArgs> GetAppArgs(const std::string& app_id) {
+  const std::optional<tagging::TagArgs> tag_args = GetTagArgs().tag_args;
   if (!tag_args || tag_args->apps.empty()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   const std::vector<tagging::AppArgs>& apps_args = tag_args->apps;
@@ -216,12 +207,12 @@ absl::optional<tagging::AppArgs> GetAppArgs(const std::string& app_id) {
       apps_args, [&app_id](const tagging::AppArgs& app_args) {
         return base::EqualsCaseInsensitiveASCII(app_args.app_id, app_id);
       });
-  return it != std::end(apps_args) ? absl::optional<tagging::AppArgs>(*it)
-                                   : absl::nullopt;
+  return it != std::end(apps_args) ? std::optional<tagging::AppArgs>(*it)
+                                   : std::nullopt;
 }
 
 std::string GetDecodedInstallDataFromAppArgs(const std::string& app_id) {
-  const absl::optional<tagging::AppArgs> app_args = GetAppArgs(app_id);
+  const std::optional<tagging::AppArgs> app_args = GetAppArgs(app_id);
   if (!app_args) {
     return std::string();
   }
@@ -239,21 +230,21 @@ std::string GetDecodedInstallDataFromAppArgs(const std::string& app_id) {
 }
 
 std::string GetInstallDataIndexFromAppArgs(const std::string& app_id) {
-  const absl::optional<tagging::AppArgs> app_args = GetAppArgs(app_id);
+  const std::optional<tagging::AppArgs> app_args = GetAppArgs(app_id);
   return app_args ? app_args->install_data_index : std::string();
 }
 
 // The log file is created in DIR_LOCAL_APP_DATA or DIR_ROAMING_APP_DATA.
-absl::optional<base::FilePath> GetLogFilePath(UpdaterScope scope) {
-  const absl::optional<base::FilePath> log_dir = GetInstallDirectory(scope);
+std::optional<base::FilePath> GetLogFilePath(UpdaterScope scope) {
+  const std::optional<base::FilePath> log_dir = GetInstallDirectory(scope);
   if (log_dir) {
     return log_dir->Append(FILE_PATH_LITERAL("updater.log"));
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 void InitLogging(UpdaterScope updater_scope) {
-  absl::optional<base::FilePath> log_file = GetLogFilePath(updater_scope);
+  std::optional<base::FilePath> log_file = GetLogFilePath(updater_scope);
   if (!log_file) {
     LOG(ERROR) << "Error getting base dir.";
     return;
@@ -322,35 +313,35 @@ std::wstring GetTaskDisplayName(UpdaterScope scope) {
 }
 
 base::CommandLine GetCommandLineLegacyCompatible() {
-  absl::optional<base::CommandLine> cmd_line =
+  std::optional<base::CommandLine> cmd_line =
       CommandLineForLegacyFormat(::GetCommandLine());
   return cmd_line ? *cmd_line : *base::CommandLine::ForCurrentProcess();
 }
 
 #endif  // BUILDFLAG(IS_WIN)
 
-absl::optional<base::FilePath> WriteInstallerDataToTempFile(
+std::optional<base::FilePath> WriteInstallerDataToTempFile(
     const base::FilePath& directory,
     const std::string& installer_data) {
   VLOG(2) << __func__ << ": " << directory << ": " << installer_data;
 
   if (!base::DirectoryExists(directory))
-    return absl::nullopt;
+    return std::nullopt;
 
   if (installer_data.empty())
-    return absl::nullopt;
+    return std::nullopt;
 
   base::FilePath path;
   base::File file = base::CreateAndOpenTemporaryFileInDir(directory, &path);
   if (!file.IsValid())
-    return absl::nullopt;
+    return std::nullopt;
 
   const std::string installer_data_utf8_bom =
       base::StrCat({kUTF8BOM, installer_data});
   if (file.Write(0, installer_data_utf8_bom.c_str(),
                  installer_data_utf8_bom.length()) == -1) {
     VLOG(2) << __func__ << " file.Write failed";
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return path;
@@ -370,7 +361,7 @@ void InitializeThreadPool(const char* name) {
   base::ThreadPoolInstance::Get()->Start(init_params);
 }
 
-bool DeleteExcept(const absl::optional<base::FilePath>& except) {
+bool DeleteExcept(const std::optional<base::FilePath>& except) {
   if (!except) {
     return false;
   }

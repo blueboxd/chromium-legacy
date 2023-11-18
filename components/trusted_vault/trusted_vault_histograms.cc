@@ -37,7 +37,8 @@ std::string GetReasonSuffix(TrustedVaultURLFetchReasonForUMA reason) {
 enum class SecurityDomainIdOrInvalidForUma {
   kInvalid = 0,
   kChromeSync = 1,
-  kMaxValue = kChromeSync,
+  kPasskeys = 2,
+  kMaxValue = kPasskeys,
 };
 
 SecurityDomainIdOrInvalidForUma GetSecurityDomainIdOrInvalidForUma(
@@ -48,6 +49,8 @@ SecurityDomainIdOrInvalidForUma GetSecurityDomainIdOrInvalidForUma(
   switch (*security_domain) {
     case SecurityDomainId::kChromeSync:
       return SecurityDomainIdOrInvalidForUma::kChromeSync;
+    case SecurityDomainId::kPasskeys:
+      return SecurityDomainIdOrInvalidForUma::kPasskeys;
   }
   NOTREACHED_NORETURN();
 }
@@ -104,15 +107,10 @@ void RecordTrustedVaultDownloadKeysStatus(
   }
 }
 
-void RecordVerifyRegistrationStatus(TrustedVaultDownloadKeysStatusForUMA status,
-                                    bool also_log_with_v1_suffix) {
+void RecordVerifyRegistrationStatus(
+    TrustedVaultDownloadKeysStatusForUMA status) {
   base::UmaHistogramEnumeration(
-      "Sync.TrustedVaultVerifyDeviceRegistrationState", status);
-
-  if (also_log_with_v1_suffix) {
-    base::UmaHistogramEnumeration(
-        "Sync.TrustedVaultVerifyDeviceRegistrationStateV1", status);
-  }
+      "Sync.TrustedVaultVerifyDeviceRegistrationStateV1", status);
 }
 
 void RecordTrustedVaultFileReadStatus(TrustedVaultFileReadStatusForUMA status) {

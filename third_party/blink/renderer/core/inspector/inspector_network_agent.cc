@@ -837,7 +837,7 @@ static std::unique_ptr<protocol::Network::SecurityDetails> BuildSecurityDetails(
                 .setLogDescription(String::FromUTF8(sct.sct->log_description))
                 .setLogId(StringFromASCII(base::HexEncode(
                     sct.sct->log_id.c_str(), sct.sct->log_id.length())))
-                .setTimestamp(sct.sct->timestamp.ToJavaTime())
+                .setTimestamp(sct.sct->timestamp.InMillisecondsSinceUnixEpoch())
                 .setHashAlgorithm(
                     StringFromASCII(net::ct::HashAlgorithmToString(
                         sct.sct->signature.hash_algorithm)))
@@ -893,8 +893,8 @@ static std::unique_ptr<protocol::Network::SecurityDetails> BuildSecurityDetails(
               String::FromUTF8(ssl_info.cert->subject().common_name))
           .setSanList(std::move(san_list))
           .setIssuer(String::FromUTF8(ssl_info.cert->issuer().common_name))
-          .setValidFrom(ssl_info.cert->valid_start().ToDoubleT())
-          .setValidTo(ssl_info.cert->valid_expiry().ToDoubleT())
+          .setValidFrom(ssl_info.cert->valid_start().InSecondsFSinceUnixEpoch())
+          .setValidTo(ssl_info.cert->valid_expiry().InSecondsFSinceUnixEpoch())
           .setCertificateId(0)  // Keep this in protocol for compatibility.
           .setSignedCertificateTimestampList(
               std::move(signed_certificate_timestamp_list))
@@ -1056,7 +1056,7 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
   }
   if (!response.ResponseTime().is_null()) {
     response_object->setResponseTime(
-        response.ResponseTime().ToJsTimeIgnoringNull());
+        response.ResponseTime().InMillisecondsFSinceUnixEpochIgnoringNull());
   }
   if (!response.CacheStorageCacheName().empty()) {
     response_object->setCacheStorageCacheName(response.CacheStorageCacheName());
@@ -1275,8 +1275,9 @@ void InspectorNetworkAgent::WillSendRequestInternal(
   }
   GetFrontend()->requestWillBeSent(
       request_id, loader_id, documentURL, std::move(request_info),
-      timestamp.since_origin().InSecondsF(), base::Time::Now().ToDoubleT(),
-      std::move(initiator_object), redirect_response.EmittedExtraInfo(),
+      timestamp.since_origin().InSecondsF(),
+      base::Time::Now().InSecondsFSinceUnixEpoch(), std::move(initiator_object),
+      redirect_response.EmittedExtraInfo(),
       BuildObjectForResourceResponse(redirect_response), resource_type,
       std::move(maybe_frame_id), request.HasUserGesture());
   if (options.synchronous_policy == SynchronousPolicy::kRequestSynchronously)
@@ -1473,8 +1474,8 @@ void InspectorNetworkAgent::DidReceiveResourceResponse(
                         ? IdentifiersFactory::FrameId(loader->GetFrame())
                         : "";
   String loader_id = IdentifiersFactory::LoaderId(loader);
-  resources_data_->ResponseReceived(request_id, frame_id, response);
   resources_data_->SetResourceType(request_id, type);
+  resources_data_->ResponseReceived(request_id, frame_id, response);
 
   const absl::optional<net::SSLInfo>& ssl_info = response.GetSSLInfo();
   if (ssl_info.has_value() && ssl_info->cert) {
@@ -1814,7 +1815,7 @@ void InspectorNetworkAgent::WillSendWebSocketHandshakeRequest(
   GetFrontend()->webSocketWillSendHandshakeRequest(
       IdentifiersFactory::SubresourceRequestId(identifier),
       base::TimeTicks::Now().since_origin().InSecondsF(),
-      base::Time::Now().ToDoubleT(), std::move(request_object));
+      base::Time::Now().InSecondsFSinceUnixEpoch(), std::move(request_object));
 }
 
 void InspectorNetworkAgent::DidReceiveWebSocketHandshakeResponse(
@@ -2262,14 +2263,6 @@ protocol::Response InspectorNetworkAgent::GetResponseBody(
   if (resource_data->IsContentEvicted()) {
     return protocol::Response::ServerError(
         "Request content was evicted from inspector cache");
-  }
-
-  if (resource_data->Buffer() && !resource_data->TextEncodingName().IsNull()) {
-    bool success = InspectorPageAgent::SharedBufferContent(
-        resource_data->Buffer(), resource_data->MimeType(),
-        resource_data->TextEncodingName(), content, base64_encoded);
-    DCHECK(success);
-    return protocol::Response::Success();
   }
 
   if (resource_data->CachedResource() &&

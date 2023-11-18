@@ -8,10 +8,10 @@
 
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/to_string.h"
-#include "chrome/browser/web_applications/isolated_web_apps/remove_isolated_web_app_browsing_data.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
+#include "chrome/browser/web_applications/isolated_web_apps/remove_isolated_web_app_data.h"
 #include "chrome/browser/web_applications/jobs/uninstall/remove_install_source_job.h"
 #include "chrome/browser/web_applications/locks/all_apps_lock.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
@@ -20,6 +20,7 @@
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
@@ -27,16 +28,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/webapps/browser/uninstall_result_code.h"
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "base/feature_list.h"
-#include "base/functional/callback_helpers.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile_attributes_storage.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/profiles/profile_metrics.h"
-#include "chrome/browser/web_applications/web_app_utils.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace web_app {
 
@@ -143,6 +134,8 @@ void RemoveWebAppJob::Start(AllAppsLock& lock, Callback callback) {
     profile_->GetPrefs()->SetBoolean(
         prefs::kShouldGarbageCollectStoragePartitions, true);
 
+    location_ = app->isolation_data()->location;
+
     url::Origin iwa_origin = url::Origin::Create(app->scope());
     web_app::RemoveIsolatedWebAppBrowsingData(
         &profile_.get(), iwa_origin,
@@ -172,29 +165,6 @@ void RemoveWebAppJob::Start(AllAppsLock& lock, Callback callback) {
       app_id_, base::BindOnce(&RemoveWebAppJob::OnTranslationDataDeleted,
                               weak_ptr_factory_.GetWeakPtr()));
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (ResolveExperimentalWebAppIsolationFeature() ==
-      ExperimentalWebAppIsolationMode::kProfile) {
-    if (app->chromeos_data() && app->chromeos_data()->app_profile_path) {
-      const base::FilePath& app_profile_path =
-          app->chromeos_data()->app_profile_path.value();
-      CHECK(Profile::IsWebAppProfilePath(app_profile_path));
-      if (g_browser_process->profile_manager()
-              ->GetProfileAttributesStorage()
-              .GetProfileAttributesWithPath(app_profile_path)) {
-        pending_app_profile_deletion_ = true;
-        g_browser_process->profile_manager()
-            ->GetDeleteProfileHelper()
-            .MaybeScheduleProfileForDeletion(
-                app_profile_path,
-                base::BindOnce(&RemoveWebAppJob::OnWebAppProfileDeleted,
-                               weak_ptr_factory_.GetWeakPtr()),
-                ProfileMetrics::ProfileDelete::DELETE_PROFILE_USER_MANAGER);
-      } else {
-      }
-    }
-  }
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 
 base::Value RemoveWebAppJob::ToDebugValue() const {
@@ -206,7 +176,6 @@ base::Value RemoveWebAppJob::ToDebugValue() const {
   dict.Set("app_data_deleted", app_data_deleted_);
   dict.Set("translation_data_deleted", translation_data_deleted_);
   dict.Set("hooks_uninstalled", hooks_uninstalled_);
-  dict.Set("pending_app_profile_deletion", pending_app_profile_deletion_);
   dict.Set("errors", errors_);
   dict.Set("primary_removal_result",
            primary_removal_result_
@@ -233,7 +202,6 @@ void RemoveWebAppJob::OnOsHooksUninstalled(OsHooksErrors errors) {
   CHECK(!primary_removal_result_.has_value());
   CHECK(!hooks_uninstalled_);
   hooks_uninstalled_ = true;
-  base::UmaHistogramBoolean("WebApp.Uninstall.OsHookSuccess", errors.none());
   errors_ = errors_ || errors.any();
   MaybeFinishPrimaryRemoval();
 }
@@ -242,7 +210,6 @@ void RemoveWebAppJob::OnIconDataDeleted(bool success) {
   CHECK(!primary_removal_result_.has_value());
   CHECK(!app_data_deleted_);
   app_data_deleted_ = true;
-  base::UmaHistogramBoolean("WebApp.Uninstall.IconDataSuccess", success);
   errors_ = errors_ || !success;
   MaybeFinishPrimaryRemoval();
 }
@@ -255,30 +222,35 @@ void RemoveWebAppJob::OnTranslationDataDeleted(bool success) {
   MaybeFinishPrimaryRemoval();
 }
 
-void RemoveWebAppJob::OnWebAppProfileDeleted(Profile* profile) {
-  CHECK(!primary_removal_result_.has_value());
-  CHECK(pending_app_profile_deletion_);
-  // This must be an isolated web app profile rather than the WebAppProvider
-  // profile.
-  CHECK_NE(&profile_.get(), profile);
-  pending_app_profile_deletion_ = false;
-  MaybeFinishPrimaryRemoval();
-}
-
 void RemoveWebAppJob::OnIsolatedWebAppBrowsingDataCleared() {
   CHECK(!primary_removal_result_.has_value());
   CHECK(!isolated_web_app_browsing_data_cleared_);
   // Must be an Isolated Web App.
   CHECK(has_isolated_storage_);
+  CHECK(location_.has_value());
   isolated_web_app_browsing_data_cleared_ = true;
+
+  web_app::CloseAndDeleteBundle(
+      &profile_.get(), location_.value(),
+      base::BindOnce(&RemoveWebAppJob::OnIsolatedWebAppOwnedLocationDeleted,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void RemoveWebAppJob::OnIsolatedWebAppOwnedLocationDeleted() {
+  CHECK(!primary_removal_result_.has_value());
+  CHECK(has_isolated_storage_);
+  CHECK(!isolated_web_app_owned_location_deleted_);
+
+  isolated_web_app_owned_location_deleted_ = true;
   MaybeFinishPrimaryRemoval();
 }
 
 void RemoveWebAppJob::MaybeFinishPrimaryRemoval() {
   CHECK(!primary_removal_result_.has_value());
+  const bool is_iwa_fully_removed = isolated_web_app_browsing_data_cleared_ &&
+                                    isolated_web_app_owned_location_deleted_;
   if (!hooks_uninstalled_ || !app_data_deleted_ || !translation_data_deleted_ ||
-      pending_app_profile_deletion_ ||
-      (has_isolated_storage_ && !isolated_web_app_browsing_data_cleared_)) {
+      (has_isolated_storage_ && !is_iwa_fully_removed)) {
     return;
   }
 

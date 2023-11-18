@@ -4,6 +4,8 @@
 
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/user_metrics.h"
 #include "base/notreached.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -14,6 +16,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_storage.h"
+#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/bookmarks/managed/managed_bookmark_util.h"
 #include "components/commerce/core/commerce_feature_list.h"
@@ -25,6 +28,8 @@
 #include "components/history/core/browser/url_database.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/power_bookmarks/core/suggested_save_location_provider.h"
+#include "components/sync/base/features.h"
+#include "components/sync_bookmarks/bookmark_model_view.h"
 #include "components/sync_bookmarks/bookmark_sync_service.h"
 #include "components/undo/bookmark_undo_service.h"
 
@@ -53,9 +58,18 @@ class ShoppingCollectionProvider
     return commerce::GetShoppingCollectionBookmarkFolder(model_.get(), true);
   }
 
-  const base::TimeDelta GetBackoffTime() override {
+  base::TimeDelta GetBackoffTime() override {
     // TODO(b:291326480): Make this configurable.
     return base::Hours(2);
+  }
+
+  std::string GetFeatureNameForMetrics() override {
+    return "ShoppingCollection";
+  }
+
+  void OnSuggestionRejected() override {
+    base::RecordAction(base::UserMetricsAction(
+        "Commerce.PriceTracking.ShoppingCollection.RejectedSuggestion"));
   }
 
  private:
@@ -68,12 +82,21 @@ class ShoppingCollectionProvider
 ChromeBookmarkClient::ChromeBookmarkClient(
     Profile* profile,
     bookmarks::ManagedBookmarkService* managed_bookmark_service,
-    sync_bookmarks::BookmarkSyncService* bookmark_sync_service,
+    sync_bookmarks::BookmarkSyncService*
+        local_or_syncable_bookmark_sync_service,
+    sync_bookmarks::BookmarkSyncService* account_bookmark_sync_service,
     BookmarkUndoService* bookmark_undo_service)
     : profile_(profile),
       managed_bookmark_service_(managed_bookmark_service),
-      bookmark_sync_service_(bookmark_sync_service),
-      bookmark_undo_service_(bookmark_undo_service) {}
+      local_or_syncable_bookmark_sync_service_(
+          local_or_syncable_bookmark_sync_service),
+      account_bookmark_sync_service_(account_bookmark_sync_service),
+      bookmark_undo_service_(bookmark_undo_service) {
+  CHECK(profile_);
+  base::UmaHistogramBoolean(
+      "Bookmarks.BookmarkBar.Shown",
+      profile_->GetPrefs()->GetBoolean(bookmarks::prefs::kShowBookmarkBar));
+}
 
 ChromeBookmarkClient::~ChromeBookmarkClient() {
   if (shopping_save_location_provider_) {
@@ -102,6 +125,11 @@ void ChromeBookmarkClient::Init(bookmarks::BookmarkModel* model) {
       offline_page_observer_.get());
   model_observation_->Observe(model);
 #endif
+}
+
+bool ChromeBookmarkClient::AreFoldersForAccountStorageAllowed() {
+  return base::FeatureList::IsEnabled(
+      syncer::kEnableBookmarkFoldersForAccountStorage);
 }
 
 base::CancelableTaskTracker::TaskId
@@ -140,31 +168,6 @@ void ChromeBookmarkClient::GetTypedCountForUrls(
   }
 }
 
-bool ChromeBookmarkClient::IsPermanentNodeVisibleWhenEmpty(
-    bookmarks::BookmarkNode::Type type) {
-#if BUILDFLAG(IS_ANDROID)
-  const bool is_mobile = true;
-#else
-  const bool is_mobile = false;
-#endif
-
-  switch (type) {
-    case bookmarks::BookmarkNode::URL:
-      NOTREACHED();
-      return false;
-    case bookmarks::BookmarkNode::FOLDER:
-      // Managed node.
-      return false;
-    case bookmarks::BookmarkNode::BOOKMARK_BAR:
-    case bookmarks::BookmarkNode::OTHER_NODE:
-      return !is_mobile;
-    case bookmarks::BookmarkNode::MOBILE:
-      return is_mobile;
-  }
-
-  return false;
-}
-
 bookmarks::LoadManagedNodeCallback
 ChromeBookmarkClient::GetLoadManagedNodeCallback() {
   if (!managed_bookmark_service_)
@@ -175,9 +178,16 @@ ChromeBookmarkClient::GetLoadManagedNodeCallback() {
 
 bookmarks::metrics::StorageStateForUma
 ChromeBookmarkClient::GetStorageStateForUma() {
-  return bookmark_sync_service_->IsTrackingMetadata()
-             ? bookmarks::metrics::StorageStateForUma::kSyncEnabled
-             : bookmarks::metrics::StorageStateForUma::kLocalOnly;
+  if (local_or_syncable_bookmark_sync_service_->IsTrackingMetadata()) {
+    return bookmarks::metrics::StorageStateForUma::kSyncEnabled;
+  }
+
+  if (account_bookmark_sync_service_ &&
+      account_bookmark_sync_service_->IsTrackingMetadata()) {
+    return bookmarks::metrics::StorageStateForUma::kAccount;
+  }
+
+  return bookmarks::metrics::StorageStateForUma::kLocalOnly;
 }
 
 bool ChromeBookmarkClient::CanSetPermanentNodeTitle(
@@ -192,14 +202,26 @@ bool ChromeBookmarkClient::IsNodeManaged(const bookmarks::BookmarkNode* node) {
 }
 
 std::string ChromeBookmarkClient::EncodeBookmarkSyncMetadata() {
-  return bookmark_sync_service_->EncodeBookmarkSyncMetadata();
+  // TODO(crbug.com/1494120): Also encode metadata produced by
+  // `account_bookmark_sync_service_` once BookmarkClient API allows it.
+  return local_or_syncable_bookmark_sync_service_->EncodeBookmarkSyncMetadata();
 }
 
 void ChromeBookmarkClient::DecodeBookmarkSyncMetadata(
     const std::string& metadata_str,
     const base::RepeatingClosure& schedule_save_closure) {
-  bookmark_sync_service_->DecodeBookmarkSyncMetadata(
-      metadata_str, schedule_save_closure, model_);
+  local_or_syncable_bookmark_sync_service_->DecodeBookmarkSyncMetadata(
+      metadata_str, schedule_save_closure,
+      std::make_unique<
+          sync_bookmarks::BookmarkModelViewUsingLocalOrSyncableNodes>(model_));
+  // TODO(crbug.com/1494120): Pass along sync metadata once BookmarkClient API
+  // is capable of reading it from BookmarkModel.
+  if (account_bookmark_sync_service_) {
+    account_bookmark_sync_service_->DecodeBookmarkSyncMetadata(
+        std::string(), schedule_save_closure,
+        std::make_unique<sync_bookmarks::BookmarkModelViewUsingAccountNodes>(
+            model_));
+  }
 }
 
 void ChromeBookmarkClient::OnBookmarkNodeRemovedUndoable(

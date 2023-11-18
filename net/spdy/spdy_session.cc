@@ -30,7 +30,7 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/values.h"
 #include "net/base/features.h"
-#include "net/base/proxy_server.h"
+#include "net/base/proxy_chain.h"
 #include "net/base/proxy_string_util.h"
 #include "net/base/tracing.h"
 #include "net/base/url_util.h"
@@ -220,7 +220,7 @@ base::Value::Dict NetLogSpdySessionCloseParams(int net_error,
 base::Value::Dict NetLogSpdySessionParams(const HostPortProxyPair& host_pair) {
   return base::Value::Dict()
       .Set("host", host_pair.first.ToString())
-      .Set("proxy", ProxyServerToPacResultElement(host_pair.second));
+      .Set("proxy", host_pair.second.ToDebugString());
 }
 
 base::Value::Dict NetLogSpdyInitializedParams(NetLogSource source) {
@@ -1383,7 +1383,7 @@ base::Value::Dict SpdySession::GetInfoAsValue() const {
       base::Value::Dict()
           .Set("source_id", static_cast<int>(net_log_.source().id))
           .Set("host_port_pair", host_port_pair().ToString())
-          .Set("proxy", ProxyServerToProxyUri(host_port_proxy_pair().second))
+          .Set("proxy", host_port_proxy_pair().second.ToDebugString())
           .Set("network_anonymization_key",
                spdy_session_key_.network_anonymization_key().ToDebugString())
           .Set("active_streams", static_cast<int>(active_streams_.size()))
@@ -1510,7 +1510,7 @@ bool SpdySession::ChangeSocketTag(const SocketTag& new_tag) {
   socket_->ApplySocketTag(new_tag);
 
   SpdySessionKey new_key(
-      spdy_session_key_.host_port_pair(), spdy_session_key_.proxy_server(),
+      spdy_session_key_.host_port_pair(), spdy_session_key_.proxy_chain(),
       spdy_session_key_.privacy_mode(), spdy_session_key_.is_proxy_session(),
       new_tag, spdy_session_key_.network_anonymization_key(),
       spdy_session_key_.secure_dns_policy());
@@ -1883,7 +1883,7 @@ int SpdySession::DoRead() {
 
   CHECK(socket_);
   read_state_ = READ_STATE_DO_READ_COMPLETE;
-  read_buffer_ = base::MakeRefCounted<IOBuffer>(kReadBufferSize);
+  read_buffer_ = base::MakeRefCounted<IOBufferWithSize>(kReadBufferSize);
   int rv = socket_->ReadIfReady(
       read_buffer_.get(), kReadBufferSize,
       base::BindOnce(&SpdySession::PumpReadLoop, weak_factory_.GetWeakPtr(),
@@ -2828,6 +2828,8 @@ void SpdySession::OnStreamFrameData(spdy::SpdyStreamId stream_id,
 
 void SpdySession::OnStreamEnd(spdy::SpdyStreamId stream_id) {
   CHECK(in_io_loop_);
+  // TODO(https://crbug.com/1502838): Log END_STREAM on corresponding frames,
+  // instead of as an extra fictional DATA frame.
   net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_DATA,
                     [&] { return NetLogSpdyDataParams(stream_id, 0, true); });
 
@@ -2863,6 +2865,21 @@ void SpdySession::OnSettings() {
 
   net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_SETTINGS);
   net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_SEND_SETTINGS_ACK);
+
+  if (!settings_frame_received_) {
+    base::UmaHistogramCounts1000(
+        "Net.SpdySession.OnSettings.CreatedStreamCount2",
+        created_streams_.size());
+    base::UmaHistogramCounts1000(
+        "Net.SpdySession.OnSettings.ActiveStreamCount2",
+        active_streams_.size());
+    base::UmaHistogramCounts1000(
+        "Net.SpdySession.OnSettings.CreatedAndActiveStreamCount2",
+        created_streams_.size() + active_streams_.size());
+    base::UmaHistogramCounts1000(
+        "Net.SpdySession.OnSettings.PendingStreamCount2",
+        GetTotalSize(pending_create_stream_queues_));
+  }
 
   // Send an acknowledgment of the setting.
   spdy::SpdySettingsIR settings_ir;

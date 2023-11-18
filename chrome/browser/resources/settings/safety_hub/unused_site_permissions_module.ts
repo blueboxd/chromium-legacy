@@ -4,6 +4,7 @@
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
+import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 import '../i18n_setup.js';
 import '../icons.html.js';
 import './safety_hub_module.js';
@@ -15,7 +16,7 @@ import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener
 import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
-import {isUndoKeyboardEvent} from 'chrome://resources/js/util_ts.js';
+import {isUndoKeyboardEvent} from 'chrome://resources/js/util.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {routes} from '../route.js';
@@ -23,6 +24,7 @@ import {Route, RouteObserverMixin, Router} from '../router.js';
 import {ContentSettingsTypes} from '../site_settings/constants.js';
 import {SiteSettingsMixin} from '../site_settings/site_settings_mixin.js';
 import {getLocalizationStringForContentType} from '../site_settings_page/site_settings_page_util.js';
+import {TooltipMixin} from '../tooltip_mixin.js';
 
 import {SafetyHubBrowserProxy, SafetyHubBrowserProxyImpl, SafetyHubEvent, UnusedSitePermissions} from './safety_hub_browser_proxy.js';
 import {SettingsSafetyHubModuleElement, SiteInfo} from './safety_hub_module.js';
@@ -55,8 +57,9 @@ interface UnusedSitePermissionsDisplay extends UnusedSitePermissions, SiteInfo {
   detail: string;
 }
 
-const SettingsSafetyHubUnusedSitePermissionsModuleElementBase = I18nMixin(
-    RouteObserverMixin(WebUiListenerMixin(SiteSettingsMixin(PolymerElement))));
+const SettingsSafetyHubUnusedSitePermissionsModuleElementBase =
+    TooltipMixin(I18nMixin(RouteObserverMixin(
+        WebUiListenerMixin(SiteSettingsMixin(PolymerElement)))));
 
 export class SettingsSafetyHubUnusedSitePermissionsModuleElement extends
     SettingsSafetyHubUnusedSitePermissionsModuleElementBase {
@@ -227,6 +230,7 @@ export class SettingsSafetyHubUnusedSitePermissionsModuleElement extends
     assert(this.sites_ !== null);
     this.lastUserAction_ = Action.GOT_IT;
     this.lastUnusedSitePermissionsListAcknowledged_ = this.sites_;
+
     this.$.module.animateHide(
         /* all origins */ null,
         this.browserProxy_.acknowledgeRevokedUnusedSitePermissionsList.bind(
@@ -256,6 +260,14 @@ export class SettingsSafetyHubUnusedSitePermissionsModuleElement extends
             ({...site, detail: this.getPermissionsText_(site.permissions)}));
   }
 
+  private setHeaderToCompletionState_() {
+    this.headerString_ = this.toastText_ ?
+        this.toastText_ :
+        this.i18n('safetyCheckUnusedSitePermissionsDoneLabel');
+    this.subheaderString_ = '';
+    this.headerIconString_ = 'cr:check';
+  }
+
   private async onSitesChanged_() {
     if (this.sites_ === null) {
       return;
@@ -269,12 +281,7 @@ export class SettingsSafetyHubUnusedSitePermissionsModuleElement extends
     this.renderedOrigins_ = this.sites_.map(site => site.origin);
 
     if (this.shouldShowCompletionInfo_) {
-      // In the completion state, the header string should be replaced with
-      // completion string.
-      this.headerString_ =
-          this.i18n('safetyCheckUnusedSitePermissionsDoneLabel');
-      this.subheaderString_ = '';
-      this.headerIconString_ = 'cr:check';
+      this.setHeaderToCompletionState_();
       return;
     }
 
@@ -336,6 +343,16 @@ export class SettingsSafetyHubUnusedSitePermissionsModuleElement extends
   private showUndoToast_(text: string) {
     this.toastText_ = text;
     this.$.undoToast.show();
+  }
+
+  // TODO(crbug.com/1443466): Move common functionality between
+  // unused_site_permissions_module.ts and notification_permissions_module.ts to
+  // a util class.
+  private showUndoTooltip_(e: Event) {
+    e.stopPropagation();
+    const tooltip = this.shadowRoot!.querySelector('paper-tooltip');
+    assert(tooltip);
+    this.showTooltipAtTarget(tooltip, e.target!);
   }
 }
 

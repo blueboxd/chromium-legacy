@@ -10,11 +10,13 @@
 
 namespace autofill::features {
 
+// LINT.IfChange(autofill_across_iframes_ios)
 // Controls whether to flatten and fill cross-iframe forms on iOS.
 // TODO(crbug.com/1441921) Remove once launched.
 BASE_FEATURE(kAutofillAcrossIframesIos,
              "AutofillAcrossIframesIos",
              base::FEATURE_DISABLED_BY_DEFAULT);
+// LINT.ThenChange(//components/autofill/ios/form_util/resources/autofill_form_features.ts:autofill_across_iframes_ios)
 
 // When enabled, address data will be verified and autocorrected in the
 // save/update prompt before saving an address profile. Relevant only if the
@@ -28,19 +30,6 @@ BASE_FEATURE(kAutofillAddressProfileSavePromptAddressVerificationSupport,
 BASE_FEATURE(kAutofillGivePrecedenceToNumericQuantities,
              "AutofillGivePrecedenceToNumericQuantities",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// When enabled, creating new kAccount profiles becomes possible for eligible
-// users. Moreover, users are prompted to migrate existing kLocalOrSyncable
-// profiles to the kAccount storage.
-// TODO(crbug.com/1423319): Remove once launched.
-BASE_FEATURE(kAutofillAccountProfileStorage,
-             "AutofillAccountProfileStorage",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Determines if users located in an unsupported country (based on GeoIP) are
-// eligible to write to the account storage.
-const base::FeatureParam<bool> kAutofillAccountProfileStorageFromUnsupportedIPs{
-    &kAutofillAccountProfileStorage, "allow_writes_from_unsupported_ips", true};
 
 // TODO(crbug.com/1135188): Remove this feature flag after the explicit save
 // prompts for address profiles is complete.
@@ -92,6 +81,7 @@ BASE_FEATURE(kAutofillContentEditables,
 
 // Crowdsourcing already prefers PHONE_HOME_CITY_AND_NUMBER over
 // PHONE_HOME_WHOLE_NUMBER. With this feature, local heuristics do the same.
+// TODO(crbug.com/1474308): Clean up when launched.
 BASE_FEATURE(kAutofillDefaultToCityAndNumber,
              "AutofillDefaultToCityAndNumber",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -122,7 +112,7 @@ BASE_FEATURE(kAutofillDeferSubmissionClassificationAfterAjax,
 // TODO(crbug.com/1446318): Remove the feature when the experiment is completed.
 BASE_FEATURE(kAutofillPredictionsForAutocompleteUnrecognized,
              "AutofillPredictionsForAutocompleteUnrecognized",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 const base::FeatureParam<bool> kAutofillImportFromAutocompleteUnrecognized{
     &kAutofillPredictionsForAutocompleteUnrecognized,
     "import_from_autocomplete_unrecognized", false};
@@ -134,12 +124,12 @@ const base::FeatureParam<bool> kAutofillImportFromAutocompleteUnrecognized{
 // TODO(crbug.com/1446318): Remove when launched.
 BASE_FEATURE(kAutofillFallbackForAutocompleteUnrecognized,
              "AutofillFallbackForAutocompleteUnrecognized",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 // If true, the context menu entry is shown for all address fields.
 const base::FeatureParam<bool>
     kAutofillFallForAutocompleteUnrecognizedOnAllAddressField{
         &kAutofillFallbackForAutocompleteUnrecognized,
-        "show_on_all_address_fields", false};
+        "show_on_all_address_fields", true};
 
 // Kill switch for Autofill filling.
 BASE_FEATURE(kAutofillDisableFilling,
@@ -230,6 +220,15 @@ BASE_FEATURE(kAutofillEnableSupportForBetweenStreetsOrLandmark,
 // TODO(crbug.com/1441904) Remove once launched.
 BASE_FEATURE(kAutofillEnableSupportForLandmark,
              "AutofillEnableSupportForLandmark",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls if Chrome parses fields at street locations. This field type is
+// generally supported in the legacy hierarchy but there is a risk of confusing
+// an address line 1 with a street location. We don't have a good strategy for
+// that yet. Therefore, this behavior is limited to MX at the moment.
+// TODO(crbug.com/1441904) Remove once launched.
+BASE_FEATURE(kAutofillEnableParsingOfStreetLocation,
+             "AutofillEnableParsingOfStreetLocation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls if the heuristic field parsing utilizes shared labels.
@@ -328,9 +327,18 @@ BASE_FEATURE(kAutofillExtractAllDatalists,
              "AutofillExtractAllDatalists",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables support to submit feedback on Autofill. Used only in Desktop.
-BASE_FEATURE(kAutofillFeedback,
-             "AutofillFeedback",
+// If enabled, whenever form controls are removed from the DOM, the ChromeClient
+// is informed about this. This enables Autofill to trigger a reparsing of
+// forms.
+BASE_FEATURE(kAutofillDetectRemovedFormControls,
+             "AutofillDetectRemovedFormControls",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Replaces cached web elements in AutofillAgent and FormTracker by their
+// renderer ids.
+// DONOTSUMBIT: Disable.
+BASE_FEATURE(kAutofillReplaceCachedWebElementsByRendererIds,
+             "AutofillReplaceCachedWebElementsByRendererIds",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Makes AutofillProfile::IsSubsetOfForFieldSet stop ignoring street address
@@ -349,11 +357,6 @@ BASE_FEATURE(kAutofillUseI18nAddressModel,
 
 // Changes Autofill Clear Form into Undo Autofill.
 BASE_FEATURE(kAutofillUndo, "AutofillUndo", base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Makes is_autofilled = true cached only after filling and not previewing.
-BASE_FEATURE(kAutofillOnlyCacheIsAutofilledOnFill,
-             "AutofillOnlyCacheIsAutofilledOnFill",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables converging towards the longer or shorter street address in profile
 // merging.
@@ -418,7 +421,6 @@ BASE_FEATURE(kAutofillLabelAffixRemoval,
 
 // When enabled, all behaviours related to the on-device machine learning
 // model for field type predictions will be guarded.
-// TODO(crbug.com/1465926): Remove when launched.
 BASE_FEATURE(kAutofillModelPredictions,
              "AutofillModelPredictions",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -436,26 +438,6 @@ const base::FeatureParam<std::string> kAutofillModelDictionaryFilePath{
 // TODO(crbug.com/1465926): Remove when launched.
 const base::FeatureParam<bool> kAutofillModelPredictionsAreActive{
     &kAutofillModelPredictions, "model_active", false};
-
-// Allows passing a set of overrides for Autofill server predictions.
-// Example command line to override server predictions manually:
-// chrome --enable-features=AutofillOverridePredictions:spec/1_2_4-7_8_9
-// This creates two manual overrides that supersede server predictions as
-// follows:
-// * The server prediction for the field with signature 2 in the form with
-//   signature 1 is overridden to be 4 (NAME_MIDDLE).
-// * The server prediction for the field with signature 8 in the form with
-//   signature 7 is overridden to be 9 (EMAIL_ADDRESS).
-//
-// See components/autofill/core/browser/server_prediction_overrides.h for more
-// examples and details on how to specify overrides.
-BASE_FEATURE(kAutofillOverridePredictions,
-             "AutofillOverridePredictions",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// The override specification in string form.
-const base::FeatureParam<std::string> kAutofillOverridePredictionsSpecification{
-    &kAutofillOverridePredictions, "spec", "[]"};
 
 // If enabled, Autofill will first look at field labels and then at field
 // attributes when classifying address fields in Mexico.
@@ -611,6 +593,13 @@ BASE_FEATURE(kAutofillGranularFillingAvailable,
              "AutofillGranularFillingAvailable",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Controls whether field filling through the context menu will be available for
+// the unclassified fields.
+// TODO(crbug.com/1493361): Clean up when launched.
+BASE_FEATURE(kAutofillForUnclassifiedFieldsAvailable,
+             "AutofillForUnclassifiedFieldsAvailable",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls whether testing forms using devtools will be available.
 // TODO(crbug.com/1459990): Clean up when launched.
 BASE_FEATURE(kAutofillTestFormWithDevtools,
@@ -621,6 +610,12 @@ BASE_FEATURE(kAutofillTestFormWithDevtools,
 // not met.
 BASE_FEATURE(kAutofillSilentProfileUpdateForInsufficientImport,
              "AutofillSilentProfileUpdateForInsufficientImport",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Sends text change events for textarea elements. When this is off, only input
+// elements send text change events.
+BASE_FEATURE(kAutofillTextAreaChangeEvents,
+             "AutofillTextAreaChangeEvents",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, on form submit, observations for every used profile are
@@ -708,6 +703,19 @@ BASE_FEATURE(kAutofillVirtualCardsOnTouchToFillAndroid,
              "AutofillVirtualCardsOnTouchToFillAndroid",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Controls whether user tap on an element is needed to show autofill
+// suggestions. If enabled, this flag would disable android autofill suggestions
+// if the focus on an element is Javascript-originated.
+// DidReceiveLeftMouseDownOrGestureTapInNode() will show suggestions if the
+// focus change occurred as a result of a gesture. See crbug.com/730764 for why
+// showing autofill suggestions as a result of JavaScript changing focus is
+// enabled on WebView.
+// TODO(crbug.com/1496382) Clean up autofill feature flag
+// `kAutofillAndroidDisableSuggestionsOnJSFocus`
+BASE_FEATURE(kAutofillAndroidDisableSuggestionsOnJSFocus,
+             "AutofillAndroidDisableSuggestionsOnJSFocus",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 #if BUILDFLAG(IS_ANDROID)
 // When enabled, Autofill suggestions are displayed in the keyboard accessory
 // instead of the regular popup.
@@ -746,7 +754,7 @@ const char kAutofillUseMobileLabelDisambiguationParameterShowOne[] = "show-one";
 // TODO(crbug.com/1446318): Remove when launched.
 BASE_FEATURE(kAutofillSuggestionsForAutocompleteUnrecognizedFieldsOnMobile,
              "AutofillSuggestionsForAutocompleteUnrecognizedFieldsOnMobile",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
 namespace test {
@@ -801,6 +809,31 @@ BASE_FEATURE(kAutofillDisableSilentProfileUpdates,
 BASE_FEATURE(kAutofillLogToTerminal,
              "AutofillLogToTerminal",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Allows passing a set of overrides for Autofill server predictions.
+// Example command line to override server predictions manually:
+// chrome --enable-features=AutofillOverridePredictions:spec/1_2_4-7_8_9
+// This creates two manual overrides that supersede server predictions as
+// follows:
+// * The server prediction for the field with signature 2 in the form with
+//   signature 1 is overridden to be 4 (NAME_MIDDLE).
+// * The server prediction for the field with signature 8 in the form with
+//   signature 7 is overridden to be 9 (EMAIL_ADDRESS).
+//
+// See components/autofill/core/browser/server_prediction_overrides.h for more
+// examples and details on how to specify overrides.
+BASE_FEATURE(kAutofillOverridePredictions,
+             "AutofillOverridePredictions",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// The override specification in string form.
+const base::FeatureParam<std::string> kAutofillOverridePredictionsSpecification{
+    &kAutofillOverridePredictions, "spec", "[]"};
+
+// The override specification using alternative_form_signature in string form.
+const base::FeatureParam<std::string>
+    kAutofillOverridePredictionsForAlternativeFormSignaturesSpecification{
+        &kAutofillOverridePredictions, "alternative_signature_spec", "[]"};
 
 // Enables or Disables (mostly for hermetic testing) autofill server
 // communication. The URL of the autofill server can further be controlled via

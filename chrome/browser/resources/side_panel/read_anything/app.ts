@@ -17,7 +17,7 @@ import {SkColor} from '//resources/mojo/skia/public/mojom/skcolor.mojom-webui.js
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './app.html.js';
-import {ReadAnythingToolbar} from './read_anything_toolbar.js';
+import {ReadAnythingToolbarElement} from './read_anything_toolbar.js';
 
 const ReadAnythingElementBase = WebUiListenerMixin(PolymerElement);
 
@@ -68,18 +68,18 @@ const previousReadHighlightClass = 'previous-read-highlight';
 
 // A two-way map where each key is unique and each value is unique. The keys are
 // DOM nodes and the values are numbers, representing AXNodeIDs.
-class TwoWayMap extends Map {
-  #reverseMap;
+class TwoWayMap<K, V> extends Map<K, V> {
+  #reverseMap: Map<V, K>;
   constructor() {
     super();
     this.#reverseMap = new Map();
   }
-  override set(key: Node, value: number) {
+  override set(key: K, value: V) {
     super.set(key, value);
     this.#reverseMap.set(value, key);
     return this;
   }
-  keyFrom(value: number) {
+  keyFrom(value: V) {
     return this.#reverseMap.get(value);
   }
   override clear() {
@@ -140,6 +140,12 @@ if (chrome.readingMode) {
   };
 }
 
+export interface ReadAnythingElement {
+  $: {
+    toolbar: ReadAnythingToolbarElement,
+  };
+}
+
 export class ReadAnythingElement extends ReadAnythingElementBase {
   static get is() {
     return 'read-anything-app';
@@ -166,7 +172,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   // Maps a DOM node to the AXNodeID that was used to create it. DOM nodes and
   // AXNodeIDs are unique, so this is a two way map where either DOM node or
   // AXNodeID can be used to access the other.
-  private domNodeToAxNodeIdMap_: TwoWayMap = new TwoWayMap();
+  private domNodeToAxNodeIdMap_: TwoWayMap<Node, number> = new TwoWayMap();
 
   private scrollingOnSelection_: boolean;
   private hasContent_: boolean;
@@ -259,6 +265,13 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
       return this.createTextNode_(nodeId);
     }
 
+    // For Google Docs, we extract text from Annotated Canvas. The Annotated
+    // Canvas elements with text are leaf nodes with <rect> html tag.
+    if (chrome.readingMode.isGoogleDocs() &&
+        chrome.readingMode.isLeafNode(nodeId)) {
+      return this.createTextNode_(nodeId);
+    }
+
     // getHtmlTag might return '#document' which is not a valid to pass to
     // createElement.
     if (htmlTag === '#document') {
@@ -298,8 +311,23 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     const textContent = chrome.readingMode.getTextContent(nodeId);
     const textNode = document.createTextNode(textContent);
     this.domNodeToAxNodeIdMap_.set(textNode, nodeId);
-    const shouldBold = chrome.readingMode.shouldBold(nodeId);
     const isOverline = chrome.readingMode.isOverline(nodeId);
+    let shouldBold = chrome.readingMode.shouldBold(nodeId);
+
+    if (chrome.readingMode.isGoogleDocs()) {
+      const dataFontCss = chrome.readingMode.getDataFontCss(nodeId);
+      if (dataFontCss) {
+        const styleNode = document.createElement('style');
+        styleNode.style.cssText = `font:${dataFontCss}`;
+        if (styleNode.style.fontStyle === 'italic') {
+          shouldBold = true;
+        }
+        const fontWeight = +styleNode.style.fontWeight;
+        if (!isNaN(fontWeight) && fontWeight > 500) {
+          shouldBold = true;
+        }
+      }
+    }
 
     if (!shouldBold && !isOverline) {
       return textNode;
@@ -457,28 +485,27 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   getVoices(): VoicesByLanguage {
     // TODO(crbug.com/1474951): Filter by localService. Doing this now prevents
     // voices from loading on Linux, which slows down development.
-    return this.synth.getVoices()
-        .reduce(
-            (voicesByLang: VoicesByLanguage, voice: SpeechSynthesisVoice) => {
-              (voicesByLang[voice.lang] = voicesByLang[voice.lang] || [])
-                  .push(voice);
-              return voicesByLang;
-            },
-            {});
+    return this.synth.getVoices().reduce(
+        (voicesByLang: VoicesByLanguage, voice: SpeechSynthesisVoice) => {
+          (voicesByLang[voice.lang] = voicesByLang[voice.lang] || [])
+              .push(voice);
+          return voicesByLang;
+        },
+        {});
   }
 
-  setSpeechSynthesisVoice(voice: SpeechSynthesisVoice) {
+  setSpeechSynthesisVoice(voice: SpeechSynthesisVoice|undefined) {
     this.voice = voice;
   }
 
   previewSpeechSynthesisVoice(voice: SpeechSynthesisVoice) {
     const defaultUtteranceSettings = this.defaultUtteranceSettings();
 
-    // TODO(crbug.com/1474951): Translate the utterance into the language of
-    // the voice being previewed, and remove the hard-coded string.
+    // TODO(crbug.com/1474951): Finalize the default voice preview text.
     // TODO(crbug.com/1474951): Call this.synth.cancel() to interrupt reading
     // and reset the play icon.
-    const utterance = new SpeechSynthesisUtterance('Hi. This is a preview');
+    const utterance = new SpeechSynthesisUtterance(
+        loadTimeData.getString('readingModeVoicePreviewText'));
     utterance.voice = voice;
     utterance.lang = defaultUtteranceSettings.lang;
     utterance.volume = defaultUtteranceSettings.volume;
@@ -487,19 +514,11 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
 
     // TODO(crbug.com/1474951): Add tests for pause button
     utterance.onstart = event => {
-      const toolbar = this.shadowRoot?.getElementById('toolbar');
-      assert(toolbar);
-      if (toolbar instanceof ReadAnythingToolbar) {
-        toolbar.showVoicePreviewPlaying(event.utterance.voice);
-      }
+      this.$.toolbar.showVoicePreviewPlaying(event.utterance.voice);
     };
 
     utterance.onend = () => {
-      const toolbar = this.shadowRoot?.getElementById('toolbar');
-      assert(toolbar);
-      if (toolbar instanceof ReadAnythingToolbar) {
-        toolbar.showVoicePreviewDone();
-      }
+      this.$.toolbar.showVoicePreviewDone();
     };
 
     this.synth.speak(utterance);
@@ -753,13 +772,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     this.currentUtteranceIndex_ = 0;
     this.utterancesToSpeak_ = [];
     this.previousHighlight_ = null;
-    const shadowRoot = this.shadowRoot;
-    assert(shadowRoot);
-    const toolbar = shadowRoot.getElementById('toolbar');
-    assert(toolbar);
-    if (toolbar instanceof ReadAnythingToolbar) {
-      toolbar.updateUiForPausing();
-    }
+    this.$.toolbar.updateUiForPausing();
   }
 
   // TODO(b/1465029): Once the IsReadAnythingWebUIEnabled flag is removed
@@ -816,6 +829,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   restoreSettingsFromPrefs() {
     if (this.isReadAloudEnabled_) {
       this.onSpeechRateChange(chrome.readingMode.speechRate);
+      this.restoreVoiceFromPrefs_();
     }
     this.updateLineSpacing(chrome.readingMode.lineSpacing);
     this.updateLetterSpacing(chrome.readingMode.letterSpacing);
@@ -846,11 +860,32 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     }
     // TODO(crbug.com/1474951): investigate using parent/child relationshiop
     // instead of element by id.
-    const toolbar = this.shadowRoot?.getElementById('toolbar');
-    assert(toolbar);
-    if (toolbar instanceof ReadAnythingToolbar) {
-      toolbar.restoreSettingsFromPrefs(colorSuffix);
+    this.$.toolbar.restoreSettingsFromPrefs(colorSuffix);
+  }
+
+  private restoreVoiceFromPrefs_() {
+    const storedLang = chrome.readingMode.speechSynthesisLanguageCode;
+    const storedVoice = chrome.readingMode.getStoredVoice(storedLang);
+    if (!storedVoice) {
+      this.setSpeechSynthesisVoice(this.defaultVoice());
+      return;
     }
+
+    // TODO(crbug.com/1474951): Ensure various locales are handled such as
+    // "en-US" vs. "en-UK." This should be fixed by using page language instead
+    // of browser language.
+    const voices: VoicesByLanguage = this.getVoices();
+    const entry =
+        Object.entries(voices).find(([key, _]) => key.startsWith(storedLang));
+    let voice;
+    if (entry) {
+      const voicesForLang: SpeechSynthesisVoice[] = entry[1];
+      if (voicesForLang) {
+        voice = voicesForLang.find(voice => voice.name === storedVoice);
+      }
+    }
+    this.setSpeechSynthesisVoice(
+        (voice === null) ? this.defaultVoice() : voice);
   }
 
   updateLineSpacing(newLineHeight: number) {
@@ -872,12 +907,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     });
 
     // Also update the font on the toolbar itself with the validated font name.
-    const shadowRoot = this.shadowRoot;
-    assert(shadowRoot);
-    const toolbar = shadowRoot.getElementById('toolbar');
-    if (toolbar) {
-      toolbar.style.fontFamily = validatedFontName;
-    }
+    this.$.toolbar.style.fontFamily = validatedFontName;
   }
 
   updateFontSize() {
@@ -964,24 +994,13 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
 
   updateFonts() {
     // Also update the font on the toolbar itself with the validated font name.
-    const shadowRoot = this.shadowRoot;
-    assert(shadowRoot);
-    const toolbar = shadowRoot.getElementById('toolbar');
-    if (toolbar instanceof ReadAnythingToolbar) {
-      toolbar.updateFonts();
-    }
+    this.$.toolbar.updateFonts();
   }
 
   private onKeyDown_(e: KeyboardEvent) {
     if (e.key === 'k') {
       e.stopPropagation();
-      const shadowRoot = this.shadowRoot;
-      assert(shadowRoot);
-      const toolbar = shadowRoot.getElementById('toolbar');
-      assert(toolbar);
-      if (toolbar instanceof ReadAnythingToolbar) {
-        toolbar.onPlayPauseClick();
-      }
+      this.$.toolbar.onPlayPauseClick();
     }
   }
 }

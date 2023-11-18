@@ -86,7 +86,7 @@ export function createCreditCardEntry():
     chrome.autofillPrivate.CreditCardEntry {
   const cards = ['Visa', 'Mastercard', 'Discover', 'Card'];
   const card = cards[Math.floor(Math.random() * cards.length)];
-  const cardNumber = patternMaker('xxxx xxxx xxxx xxxx', 10);
+  const cardNumber = patternMaker('xxxx', 10);
   return {
     guid: makeGuid(),
     name: 'Jane Doe',
@@ -261,7 +261,8 @@ export class PaymentsManagerExpectations {
   removedIbans: number = 0;
   isValidIban: number = 0;
   authenticateUserAndFlipMandatoryAuthToggle: number = 0;
-  authenticateUserToEditLocalCard: number = 0;
+  getLocalCard: number = 0;
+  bulkDeleteAllCvcs: number = 0;
 }
 
 /**
@@ -284,17 +285,18 @@ export class TestPaymentsManager extends TestBrowserProxy implements
 
   constructor() {
     super([
-      'setPersonalDataManagerListener',
-      'removePersonalDataManagerListener',
+      'addVirtualCard',
+      'authenticateUserAndFlipMandatoryAuthToggle',
+      'bulkDeleteAllCvcs',
+      'clearCachedCreditCard',
       'getCreditCardList',
       'getIbanList',
-      'clearCachedCreditCard',
+      'getLocalCard',
+      'isValidIban',
       'removeCreditCard',
       'removeIban',
-      'addVirtualCard',
-      'isValidIban',
-      'authenticateUserAndFlipMandatoryAuthToggle',
-      'authenticateUserToEditLocalCard',
+      'removePersonalDataManagerListener',
+      'setPersonalDataManagerListener',
     ]);
 
     // Set these to have non-empty data.
@@ -373,9 +375,14 @@ export class TestPaymentsManager extends TestBrowserProxy implements
     this.methodCalled('authenticateUserAndFlipMandatoryAuthToggle');
   }
 
-  authenticateUserToEditLocalCard() {
-    this.methodCalled('authenticateUserToEditLocalCard');
-    return Promise.resolve(true);
+  getLocalCard(_guid: string) {
+    this.methodCalled('getLocalCard');
+    const card =
+        this.data.creditCards.find(creditCard => creditCard.guid === _guid);
+    if (card !== undefined) {
+      return Promise.resolve(card);
+    }
+    return Promise.resolve(null);
   }
 
   // <if expr="is_win or is_macosx">
@@ -387,6 +394,10 @@ export class TestPaymentsManager extends TestBrowserProxy implements
     return Promise.resolve(this.isDeviceAuthAvailable_);
   }
   // </if>
+
+  bulkDeleteAllCvcs() {
+    this.methodCalled('bulkDeleteAllCvcs');
+  }
 
   /**
    * Verifies expectations.
@@ -421,8 +432,10 @@ export class TestPaymentsManager extends TestBrowserProxy implements
         this.getCallCount('authenticateUserAndFlipMandatoryAuthToggle'),
         'authenticateUserAndFlipMandatoryAuthToggle mismatch');
     assertEquals(
-        expected.authenticateUserToEditLocalCard,
-        this.getCallCount('authenticateUserToEditLocalCard'),
-        'authenticateUserToEditLocalCard mismatch');
+        expected.getLocalCard, this.getCallCount('getLocalCard'),
+        'getLocalCard mismatch');
+    assertEquals(
+        expected.bulkDeleteAllCvcs, this.getCallCount('bulkDeleteAllCvcs'),
+        'bulkDeleteAllCvcs mismatch');
   }
 }

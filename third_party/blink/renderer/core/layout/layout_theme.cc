@@ -67,6 +67,8 @@
 
 namespace blink {
 
+using mojom::blink::FormControlType;
+
 namespace {
 
 // This function should match to the user-agent stylesheet.
@@ -217,7 +219,8 @@ ControlPart LayoutTheme::AdjustAppearanceWithElementType(
 
     case kTextFieldPart:
       if (const auto* input_element = DynamicTo<HTMLInputElement>(*element);
-          input_element && input_element->type() == input_type_names::kSearch) {
+          input_element &&
+          input_element->FormControlType() == FormControlType::kInputSearch) {
         return part;
       }
       return auto_appearance;
@@ -283,6 +286,9 @@ void LayoutTheme::AdjustStyle(const Element* element,
 }
 
 String LayoutTheme::ExtraDefaultStyleSheet() {
+  if (RuntimeEnabledFeatures::CssDisplayRubyEnabled()) {
+    return "ruby { display: ruby; }\nruby > rt { display: ruby-text; }\n";
+  }
   return g_empty_string;
 }
 
@@ -701,7 +707,8 @@ Color LayoutTheme::DefaultSystemColor(
     default:
       break;
   }
-  NOTREACHED();
+  DUMP_WILL_BE_NOTREACHED_NORETURN()
+      << getValueName(css_value_id) << " is not a recognized system color";
   return Color();
 }
 

@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js';
-import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
+import 'chrome://webui-test/mojo_webui_test_support.js';
 
-import {fakeEmptyFeedbackContext, fakeFeedbackContext, fakeInternalUserFeedbackContext, fakeLoginFeedbackContext} from 'chrome://os-feedback/fake_data.js';
+import {fakeEmptyFeedbackContext, fakeFeedbackContext, fakeInternalUserFeedbackContext, fakeLoginFlowFeedbackContext} from 'chrome://os-feedback/fake_data.js';
 import {FakeFeedbackServiceProvider} from 'chrome://os-feedback/fake_feedback_service_provider.js';
 import {FeedbackFlowState} from 'chrome://os-feedback/feedback_flow.js';
-import {FeedbackAppPreSubmitAction, FeedbackContext} from 'chrome://os-feedback/feedback_types.js';
 import {setFeedbackServiceProviderForTesting} from 'chrome://os-feedback/mojo_interface_provider.js';
+import {FeedbackAppPreSubmitAction, FeedbackContext} from 'chrome://os-feedback/os_feedback_ui.mojom-webui.js';
 import {ShareDataPageElement} from 'chrome://os-feedback/share_data_page.js';
 import {getDeepActiveElement} from 'chrome://resources/ash/common/util.js';
 import {mojoString16ToString, stringToMojoString16} from 'chrome://resources/js/mojo_type_util.js';
@@ -25,7 +24,7 @@ const fakeImageUrl = 'chrome://os_feedback/app_icon_48.png';
 /**
  * @suppress {missingProperties} for test.skip is not defined in mocha-2.5.js
  */
-export function shareDataPageTestSuite() {
+suite('shareDataPageTestSuite', () => {
   /** @type {?ShareDataPageElement} */
   let page = null;
 
@@ -122,14 +121,6 @@ export function shareDataPageTestSuite() {
     assertEquals('Send', getElementContent('#buttonSend'));
     assertTrue(page.i18nExists('sendButtonLabel'));
 
-    // Verify the attach files label is in the page.
-    assertTrue(page.i18nExists('attachFilesLabel'));
-    assertEquals('Attach files', getElementContent('#attachFilesLabel'));
-
-    // Verify the add files Icon is in the page.
-    const addFilesIcon = getElement('#attachFilesIcon');
-    assertTrue(!!addFilesIcon);
-
     // Verify the user email label is in the page.
     assertTrue(page.i18nExists('userEmailLabel'));
     assertEquals('Email', getElementContent('#userEmailLabel'));
@@ -198,7 +189,7 @@ export function shareDataPageTestSuite() {
   // Test the privacy note displayed to logged out users.
   test('privacyNote_loggedOut_users', async () => {
     await initializePage();
-    page.feedbackContext = fakeLoginFeedbackContext;
+    page.feedbackContext = fakeLoginFlowFeedbackContext;
     assertEquals(
         'Some account and system information may be sent to Google. We use ' +
             'this information to help address technical issues and improve ' +
@@ -210,16 +201,34 @@ export function shareDataPageTestSuite() {
         getElementContent('#privacyNote'));
   });
 
+  // Test the add file section is visible to logged in users.
+  test('addFileVisible_loggedIn_users', async () => {
+    await initializePage();
+    page.feedbackContext = fakeFeedbackContext;
+    assertNotEquals('Login', page.feedbackContext.categoryTag);
+
+    assertTrue(page.i18nExists('attachFilesLabelLoggedIn'));
+    // Add file section is visible.
+    assertTrue(isVisible(getElement('#addFileContainer')));
+    // Attach files Icon should be visible.
+    assertTrue(isVisible(getElement('#attachFilesIcon')));
+    // Attach files label should be "Attach files".
+    assertEquals('Attach files', getElementContent('#attachFilesLabel'));
+  });
+
   // Test the add file section is invisible to logged out users.
   test('addFileInvisible_loggedOut_users', async () => {
     await initializePage();
-    page.feedbackContext = fakeLoginFeedbackContext;
+    page.feedbackContext = fakeLoginFlowFeedbackContext;
     assertEquals('Login', page.feedbackContext.categoryTag);
-    assertFalse(isVisible(getElement('#addFileContainer')));
 
-    page.feedbackContext = fakeFeedbackContext;
-    assertNotEquals('Login', page.feedbackContext.categoryTag);
-    assertTrue(isVisible(getElement('#addFileContainer')));
+    assertTrue(page.i18nExists('attachFilesLabelLoggedOut'));
+    // Add file section is invisible.
+    assertFalse(isVisible(getElement('#addFileContainer')));
+    // Attach files Icon should be invisible.
+    assertFalse(isVisible(getElement('#attachFilesIcon')));
+    // Attach files label should be "Add screenshot".
+    assertEquals('Add screenshot', getElementContent('#attachFilesLabel'));
   });
 
   // Test that the email drop down is populated with two options.
@@ -591,6 +600,42 @@ export function shareDataPageTestSuite() {
     assertFalse(request.includeAutofillMetadata);
   });
 
+
+  /**
+   * Test that the sendWifiDebugLogs flag of the report is set to true when
+   * - shouldShowWifiDebugLogsCheckbox = true
+   * - wifiDebugLogsCheckbox is checked.
+   */
+  test('SendWifiDebugLogs_If_Checked', async () => {
+    await initializePage();
+    page.feedbackContext = fakeInternalUserFeedbackContext;
+    page.shouldShowWifiDebugLogsCheckbox = true;
+    assertTrue(isVisible(getElement('#wifiDebugLogsCheckboxContainer')));
+    getElement('#wifiDebugLogsCheckbox').checked = true;
+
+    const report = (await clickSendAndWait(page)).report;
+
+    assertTrue(report.sendWifiDebugLogs);
+  });
+
+
+  /**
+   * Test that the sendWifiDebugLogs flag of the report is set to false when
+   * - shouldShowWifiDebugLogsCheckbox = true
+   * - wifiDebugLogsCheckbox is unchecked.
+   */
+  test('SendWifiDebugLogs_If_Not_Checked', async () => {
+    await initializePage();
+    page.feedbackContext = fakeInternalUserFeedbackContext;
+    page.shouldShowWifiDebugLogsCheckbox = true;
+    assertTrue(isVisible(getElement('#wifiDebugLogsCheckboxContainer')));
+    getElement('#wifiDebugLogsCheckbox').checked = false;
+
+    const report = (await clickSendAndWait(page)).report;
+
+    assertFalse(report.sendWifiDebugLogs);
+  });
+
   // Test that the send button will be disabled once clicked.
   test('DisableSendButtonAfterClick', async () => {
     await initializePage();
@@ -814,6 +859,25 @@ export function shareDataPageTestSuite() {
     const reportNoSysInfo = (await clickSendAndWait(page)).report;
     assertFalse(!!reportNoSysInfo.feedbackContext.extraDiagnostics);
   });
+
+  test(
+      'WifiDebugLogsCheckboxVisible_When_ShowWifiDebugLogsCheckbox_True',
+      async () => {
+        await initializePage();
+        page.shouldShowWifiDebugLogsCheckbox = true;
+
+        assertTrue(isVisible(getElement('#wifiDebugLogsCheckboxContainer')));
+        assertTrue(getElement('#wifiDebugLogsCheckbox').checked);
+      });
+
+  test(
+      'WifiDebugLogsCheckboxInvisible_When_ShowWifiDebugLogsCheckbox_False',
+      async () => {
+        await initializePage();
+        page.shouldShowWifiDebugLogsCheckbox = false;
+
+        assertFalse(isVisible(getElement('#wifiDebugLogsCheckboxContainer')));
+      });
 
   /**
    * Test that when feedback context contains categoryTag matching value
@@ -1044,6 +1108,38 @@ export function shareDataPageTestSuite() {
   });
 
   /**
+   * Test that clicking the "View more details" link will open the dialog and
+   * set the focus on the close dialog icon button.
+   */
+  test('openWifiDebugLogsDialog', async () => {
+    await initializePage();
+    page.feedbackContext = fakeInternalUserFeedbackContext;
+
+    // The dialog is not visible as default.
+    const closeDialogButton = getElement('#wifiDebugLogsDialogDoneButton');
+    assertFalse(isVisible(closeDialogButton));
+
+    // After clicking the #wifiDebugLogsInfoLink, the dialog pops up.
+    const dialog = /** @type {!Element} */ (getElement('#wifiDebugLogsDialog'));
+    const dialogOpenedEvent = eventToPromise('cr-dialog-open', dialog);
+    getElement('#wifiDebugLogsInfoLink').click();
+    await dialogOpenedEvent;
+
+    assertTrue(isVisible(closeDialogButton));
+
+    // The preview dialog's close icon button is focused.
+    assertEquals(closeDialogButton, getDeepActiveElement());
+
+    // Press enter should close the preview dialog.
+    closeDialogButton.dispatchEvent(
+        new KeyboardEvent('keydown', {key: 'Enter'}));
+    await flushTasks();
+
+    // The preview dialog's close icon button is not visible now.
+    assertFalse(isVisible(closeDialogButton));
+  });
+
+  /**
    * Test that clicking the #linkCrossDeviceDogfoodFeedbackInfoLink will open
    * the dialog and set the focus on the close dialog icon button.
    */
@@ -1182,4 +1278,4 @@ export function shareDataPageTestSuite() {
     assertFalse(requestWithoutBluetoothFlag.sendBluetoothLogs);
     assertFalse(!!requestWithoutBluetoothFlag.feedbackContext.categoryTag);
   });
-}
+});

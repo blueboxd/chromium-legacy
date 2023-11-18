@@ -22,6 +22,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/resources/grit/webui_resources.h"
 #include "ui/views/style/platform_style.h"
 
 ReadAnythingUIUntrustedConfig::ReadAnythingUIUntrustedConfig()
@@ -87,6 +88,7 @@ ReadAnythingUntrustedUI::ReadAnythingUntrustedUI(content::WebUI* web_ui)
       {"decreaseFontSizeLabel",
        IDS_READING_MODE_DECREASE_FONT_SIZE_BUTTON_LABEL},
       {"readingModeToolbarLabel", IDS_READING_MODE_TOOLBAR_LABEL},
+      {"readingModeVoicePreviewText", IDS_READING_MODE_VOICE_PREVIEW_STRING},
   };
   for (const auto& str : kLocalizedStrings) {
     webui::AddLocalizedString(source, str.name, str.id);
@@ -97,6 +99,10 @@ ReadAnythingUntrustedUI::ReadAnythingUntrustedUI(content::WebUI* web_ui)
   // but not chrome-untrusted://, ReadAnythingUntrustedUI does not inherit them.
   source->UseStringsJs();
   source->EnableReplaceI18nInJS();
+  source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER_JS);
+  source->AddResourcePath("test_loader_util.js",
+                          IDR_WEBUI_JS_TEST_LOADER_UTIL_JS);
+  source->AddResourcePath("test_loader.html", IDR_WEBUI_TEST_LOADER_HTML);
   webui::EnableTrustedTypesCSP(source);
   webui::SetupChromeRefresh2023(source);
   source->AddResourcePaths(base::make_span(
@@ -106,7 +112,8 @@ ReadAnythingUntrustedUI::ReadAnythingUntrustedUI(content::WebUI* web_ui)
                                            kSidePanelSharedResourcesSize));
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
-      "script-src 'self' chrome-untrusted://resources;");
+      "script-src 'self' chrome-untrusted://resources "
+      "chrome-untrusted://webui-test;");
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::StyleSrc,
       "style-src 'self' chrome-untrusted://resources chrome-untrusted://theme "

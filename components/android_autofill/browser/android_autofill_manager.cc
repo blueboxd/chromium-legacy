@@ -11,6 +11,7 @@
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "components/android_autofill/browser/autofill_provider.h"
 #include "components/android_autofill/browser/form_event_logger_weblayer_android.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
@@ -53,23 +54,6 @@ CreditCardAccessManager* AndroidAutofillManager::GetCreditCardAccessManager() {
 
 bool AndroidAutofillManager::ShouldClearPreviewedForm() {
   return false;
-}
-
-void AndroidAutofillManager::FillCreditCardFormImpl(
-    const FormData& form,
-    const FormFieldData& field,
-    const CreditCard& credit_card,
-    const std::u16string& cvc,
-    const AutofillTriggerDetails& trigger_details) {
-  NOTREACHED();
-}
-
-void AndroidAutofillManager::FillProfileFormImpl(
-    const FormData& form,
-    const FormFieldData& field,
-    const autofill::AutofillProfile& profile,
-    const AutofillTriggerDetails& trigger_details) {
-  NOTREACHED();
 }
 
 void AndroidAutofillManager::OnFormSubmittedImpl(
@@ -225,7 +209,7 @@ void AndroidAutofillManager::OnFieldTypesDetermined(AutofillManager& manager,
 
   forms_with_server_predictions_.insert(form);
   if (auto* provider = GetAutofillProvider()) {
-    provider->OnServerPredictionsAvailable(this, form);
+    provider->OnServerPredictionsAvailable(*this, form);
   }
 }
 
@@ -264,6 +248,16 @@ void AndroidAutofillManager::FillOrPreviewForm(
   if (auto* logger = GetEventFormLogger(field_type_group)) {
     logger->OnDidFillSuggestion();
   }
+}
+
+void AndroidAutofillManager::FillOrPreviewField(
+    mojom::ActionPersistence action_persistence,
+    mojom::TextReplacement text_replacement,
+    const FormData& form,
+    const FormFieldData& field,
+    const std::u16string& value,
+    PopupItemId popup_item_id) {
+  NOTIMPLEMENTED();
 }
 
 void AndroidAutofillManager::StartNewLoggingSession() {

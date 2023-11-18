@@ -51,6 +51,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/javascript_framework_detection.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/metrics/accept_language_and_content_language_usage.h"
 #include "third_party/blink/public/common/page/browsing_context_group_info.h"
@@ -122,6 +123,9 @@
 #include "third_party/blink/renderer/core/performance_entry_names.h"
 #include "third_party/blink/renderer/core/permissions_policy/document_policy_parser.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/speculation_rules/auto_speculation_rules_config.h"
+#include "third_party/blink/renderer/core/speculation_rules/document_speculation_rules.h"
+#include "third_party/blink/renderer/core/speculation_rules/speculation_rule_set.h"
 #include "third_party/blink/renderer/core/speculation_rules/speculation_rules_header.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/profiler_group.h"
@@ -313,6 +317,7 @@ struct SameSizeAsDocumentLoader
   bool is_cross_site_cross_browsing_context_group;
   WebVector<WebHistoryItem> navigation_api_back_entries;
   WebVector<WebHistoryItem> navigation_api_forward_entries;
+  Member<HistoryItem> navigation_api_previous_entry;
   std::unique_ptr<CodeCacheHost> code_cache_host;
   HashMap<KURL, EarlyHintsPreloadEntry> early_hints_preloaded_resources;
   absl::optional<Vector<KURL>> ad_auction_components;
@@ -327,6 +332,8 @@ struct SameSizeAsDocumentLoader
   const absl::optional<BrowsingContextGroupInfo> browsing_context_group_info;
   const base::flat_map<mojom::blink::RuntimeFeature, bool>
       modified_runtime_features;
+  AtomicString cookie_deprecation_label;
+  mojom::RendererContentSettingsPtr content_settings;
 };
 
 // Asserts size of DocumentLoader, so that whenever a new attribute is added to
@@ -469,9 +476,7 @@ DocumentLoader::DocumentLoader(
       // at commit time in |params_|. Set it as the current history item of this
       // DocumentLoader. For other navigations, |history_item_| will be created
       // when the FrameLoader calls SetHistoryItemStateForCommit.
-      history_item_(IsBackForwardLoadType(params_->frame_load_type)
-                        ? params_->history_item
-                        : nullptr),
+      history_item_(params_->history_item),
       original_referrer_(referrer_),
       response_(params_->response.ToResourceResponse()),
       response_wrapper_(response_),
@@ -522,14 +527,16 @@ DocumentLoader::DocumentLoader(
           params_->is_cross_site_cross_browsing_context_group),
       navigation_api_back_entries_(params_->navigation_api_back_entries),
       navigation_api_forward_entries_(params_->navigation_api_forward_entries),
+      navigation_api_previous_entry_(params_->navigation_api_previous_entry),
       extra_data_(std::move(extra_data)),
       reduced_accept_language_(params_->reduced_accept_language),
       navigation_delivery_type_(params_->navigation_delivery_type),
       view_transition_state_(std::move(params_->view_transition_state)),
       load_with_storage_access_(params_->load_with_storage_access),
       browsing_context_group_info_(params_->browsing_context_group_info),
-      modified_runtime_features_(
-          std::move(params_->modified_runtime_features)) {
+      modified_runtime_features_(std::move(params_->modified_runtime_features)),
+      cookie_deprecation_label_(params_->cookie_deprecation_label),
+      content_settings_(std::move(params_->content_settings)) {
   DCHECK(frame_);
   DCHECK(params_);
 
@@ -580,8 +587,7 @@ DocumentLoader::DocumentLoader(
   for (const auto& resource : params_->early_hints_preloaded_resources)
     early_hints_preloaded_resources_.insert(resource, EarlyHintsPreloadEntry());
 
-  if (IsBackForwardLoadType(params_->frame_load_type))
-    DCHECK(history_item_);
+  CHECK_EQ(IsBackForwardOrRestore(params_->frame_load_type), !!history_item_);
 
   if (params_->ad_auction_components) {
     ad_auction_components_.emplace();
@@ -679,6 +685,8 @@ DocumentLoader::CreateWebNavigationParamsToCloneDocument() {
   params->navigation_delivery_type = navigation_delivery_type_;
   params->load_with_storage_access = load_with_storage_access_;
   params->modified_runtime_features = modified_runtime_features_;
+  params->cookie_deprecation_label = cookie_deprecation_label_;
+  params->content_settings = content_settings_->Clone();
   return params;
 }
 
@@ -713,6 +721,7 @@ void DocumentLoader::Trace(Visitor* visitor) const {
   visitor->Trace(document_load_timing_);
   visitor->Trace(prefetched_signed_exchange_manager_);
   visitor->Trace(use_counter_);
+  visitor->Trace(navigation_api_previous_entry_);
 }
 
 uint64_t DocumentLoader::MainResourceIdentifier() const {
@@ -778,17 +787,13 @@ void DocumentLoader::DispatchLcppFontPreloads(
                                      frame_->GetDocument(), mode, viewport,
                                      nullptr /* alternate_resource_info */,
                                      nullptr /* recursive_prefetch_token */);
+  base::UmaHistogramCounts1000("Blink.LCPP.PreloadedFontCount",
+                               lcpp->fetched_fonts().size());
 }
 
 void DocumentLoader::DidChangePerformanceTiming() {
   if (frame_ && state_ >= kCommitted) {
     GetLocalFrameClient().DidChangePerformanceTiming();
-  }
-}
-
-void DocumentLoader::DidObserveInputDelay(base::TimeDelta input_delay) {
-  if (frame_ && state_ >= kCommitted) {
-    GetLocalFrameClient().DidObserveInputDelay(input_delay);
   }
 }
 
@@ -804,6 +809,37 @@ void DocumentLoader::DidObserveJavaScriptFrameworks(
   if (frame_) {
     DCHECK_GE(state_, kCommitted);
     GetLocalFrameClient().DidObserveJavaScriptFrameworks(result);
+    InjectAutoSpeculationRules(result);
+  }
+}
+
+void DocumentLoader::InjectAutoSpeculationRules(
+    const JavaScriptFrameworkDetectionResult& result) {
+  if (!base::FeatureList::IsEnabled(features::kAutoSpeculationRules)) {
+    return;
+  }
+
+  const auto& config = AutoSpeculationRulesConfig::GetInstance();
+
+  for (const auto& detected_version : result.detected_versions) {
+    if (String speculation_rules =
+            config.ForFramework(detected_version.first)) {
+      auto* source = SpeculationRuleSet::Source::FromBrowserInjected(
+          speculation_rules, this->Url());
+      auto* rule_set = SpeculationRuleSet::Parse(source, frame_->DomWindow());
+      CHECK(rule_set);
+
+      // The JSON string in speculation_rules comes from a potentially-fallible
+      // remote config, so this should not be a CHECK failure.
+      if (rule_set->HasError()) {
+        LOG(ERROR) << "Failed to parse speculation rules for "
+                   << detected_version.first << ": " << speculation_rules;
+        continue;
+      }
+
+      DocumentSpeculationRules::From(*frame_->GetDocument())
+          .AddRuleSet(rule_set);
+    }
   }
 }
 
@@ -813,6 +849,7 @@ WebHistoryCommitType LoadTypeToCommitType(WebFrameLoadType type) {
     case WebFrameLoadType::kStandard:
       return kWebStandardCommit;
     case WebFrameLoadType::kBackForward:
+    case WebFrameLoadType::kRestore:
       return kWebBackForwardCommit;
     case WebFrameLoadType::kReload:
     case WebFrameLoadType::kReplaceCurrentItem:
@@ -853,7 +890,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
     bool is_synchronously_committed,
     absl::optional<scheduler::TaskAttributionId>
         soft_navigation_heuristics_task_id) {
-  DCHECK_EQ(IsBackForwardLoadType(type), !!history_item);
+  CHECK_EQ(IsBackForwardOrRestore(type), !!history_item);
 
   TRACE_EVENT1("blink", "FrameLoader::updateForSameDocumentNavigation", "url",
                new_url.GetString().Ascii());
@@ -972,7 +1009,8 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
         // need to do that now.
         soft_navigation_event_scope =
             std::make_unique<SoftNavigationEventScope>(
-                heuristics, script_state, /*is_unfocused_keydown=*/false,
+                heuristics, script_state,
+                SoftNavigationHeuristics::EventScopeType::Navigate,
                 /*is_new_interaction=*/true);
         heuristics->SameDocumentNavigationStarted(script_state);
       }
@@ -1037,8 +1075,9 @@ void DocumentLoader::SetHistoryItemStateForCommit(
     WebFrameLoadType load_type,
     HistoryNavigationType navigation_type,
     CommitReason commit_reason) {
-  if (!history_item_ || !IsBackForwardLoadType(load_type))
+  if (!history_item_ || !IsBackForwardOrRestore(load_type)) {
     history_item_ = MakeGarbageCollected<HistoryItem>();
+  }
 
   history_item_->SetURL(UrlForHistory());
   history_item_->SetReferrer(referrer_.GetString());
@@ -1056,8 +1095,9 @@ void DocumentLoader::SetHistoryItemStateForCommit(
   // Don't propagate state from the old item to the new item if there isn't an
   // old item (obviously), or if this is a back/forward navigation, since we
   // explicitly want to restore the state we just committed.
-  if (!old_item || IsBackForwardLoadType(load_type))
+  if (!old_item || IsBackForwardOrRestore(load_type)) {
     return;
+  }
 
   // The navigation API key corresponds to a "slot" in the back/forward list,
   // and should be shared for all replacing navigations so long as the
@@ -1458,7 +1498,7 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
     return mojom::blink::CommitResult::RestartCrossDocument;
   }
 
-  if (!IsBackForwardLoadType(frame_load_type)) {
+  if (!IsBackForwardOrRestore(frame_load_type)) {
     // For the browser to send a same-document navigation, it will always have a
     // fragment. When no fragment is present, the browser loads a new document.
     CHECK(url.HasFragmentIdentifier());
@@ -1563,7 +1603,7 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
   if (!frame_)
     return;
 
-  if (!IsBackForwardLoadType(frame_load_type)) {
+  if (!IsBackForwardOrRestore(frame_load_type)) {
     SetNavigationType(triggering_event_info !=
                               mojom::blink::TriggeringEventInfo::kNotFromEvent
                           ? kWebNavigationTypeLinkClicked
@@ -1919,8 +1959,9 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
 
   frame_->DomWindow()->BindContentSecurityPolicy();
 
-  if (history_item_ && IsBackForwardLoadType(load_type_))
+  if (history_item_ && IsBackForwardOrRestore(load_type_)) {
     document->SetStateForNewControls(history_item_->GetDocumentState());
+  }
 
   DCHECK(document->GetFrame());
   // TODO(dgozman): modify frame's client hints directly once we commit
@@ -2627,10 +2668,6 @@ void DocumentLoader::CommitNavigation() {
 
   RecordUseCountersForCommit();
   RecordConsoleMessagesForCommit();
-  if (!response_.HttpHeaderField(http_names::kExpectCT).empty()) {
-    Deprecation::CountDeprecation(frame_->DomWindow(),
-                                  mojom::blink::WebFeature::kExpectCTHeader);
-  }
   for (const auto& policy : security_init.PermissionsPolicyHeader()) {
     if (policy.deprecated_feature.has_value()) {
       Deprecation::CountDeprecation(frame_->DomWindow(),
@@ -2701,11 +2738,12 @@ void DocumentLoader::CommitNavigation() {
     frame_->DomWindow()->navigation()->InitializeForNewWindow(
         *history_item_, load_type_, commit_reason_,
         previous_window->navigation(), navigation_api_back_entries_,
-        navigation_api_forward_entries_);
+        navigation_api_forward_entries_, navigation_api_previous_entry_);
     // Now that the navigation API's entries array is initialized, we don't need
     // to retain the state from which it was initialized.
     navigation_api_back_entries_.Clear();
     navigation_api_forward_entries_.Clear();
+    navigation_api_previous_entry_ = WebHistoryItem();
   }
 
   if (commit_reason_ == CommitReason::kXSLT)
@@ -2823,7 +2861,7 @@ void DocumentLoader::CommitNavigation() {
   // metrics to be correctly sent to the browser process.
   if (commit_reason_ != CommitReason::kInitialization)
     use_counter_.DidCommitLoad(frame_);
-  if (load_type_ == WebFrameLoadType::kBackForward) {
+  if (IsBackForwardOrRestore(load_type_)) {
     if (Page* page = frame_->GetPage())
       page->HistoryNavigationVirtualTimePauser().UnpauseVirtualTime();
   }
@@ -3115,9 +3153,7 @@ void DocumentLoader::RecordUseCountersForCommit() {
       hints_context.CountClientHints(type);
   }
 
-  if (RuntimeEnabledFeatures::EarlyHintsPreloadForNavigationOptInEnabled(
-          frame_->DomWindow()) &&
-      !early_hints_preloaded_resources_.empty()) {
+  if (!early_hints_preloaded_resources_.empty()) {
     CountUse(WebFeature::kEarlyHintsPreload);
   }
 
@@ -3186,7 +3222,7 @@ void DocumentLoader::InitializePrefetchedSignedExchangeManager() {
 
 PrefetchedSignedExchangeManager*
 DocumentLoader::GetPrefetchedSignedExchangeManager() const {
-  return prefetched_signed_exchange_manager_;
+  return prefetched_signed_exchange_manager_.Get();
 }
 
 base::TimeDelta DocumentLoader::RemainingTimeToLCPLimit() const {
@@ -3265,8 +3301,10 @@ void DocumentLoader::NotifyPrerenderingDocumentActivated(
 
   GetTiming().SetActivationStart(params.activation_start);
 
-  DCHECK(!view_transition_state_);
-  view_transition_state_ = std::move(params.view_transition_state);
+  if (params.view_transition_state) {
+    CHECK(!view_transition_state_);
+    view_transition_state_ = std::move(params.view_transition_state);
+  }
   StartViewTransitionIfNeeded(*frame_->GetDocument());
 }
 
@@ -3459,6 +3497,10 @@ void DocumentLoader::DisableCodeCacheForTesting() {
 void DocumentLoader::UpdateSubresourceLoadMetrics(
     const SubresourceLoadMetrics& subresource_load_metrics) {
   GetLocalFrameClient().DidObserveSubresourceLoad(subresource_load_metrics);
+}
+
+const mojom::RendererContentSettingsPtr& DocumentLoader::GetContentSettings() {
+  return content_settings_;
 }
 
 DEFINE_WEAK_IDENTIFIER_MAP(DocumentLoader)

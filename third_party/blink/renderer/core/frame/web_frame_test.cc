@@ -1023,9 +1023,6 @@ class CapabilityDelegationMessageListener final : public NativeEventListener {
 }  // namespace
 
 TEST_F(WebFrameTest, CapabilityDelegationMessageEventTest) {
-  ScopedCapabilityDelegationFullscreenRequestForTest fullscreen_delegation(
-      true);
-
   RegisterMockedHttpURLLoad("single_iframe.html");
   RegisterMockedHttpURLLoad("visible_iframe.html");
 
@@ -5931,7 +5928,8 @@ TEST_F(WebFrameTest, SelectRangeDefaultHandleVisibility) {
 
   WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
   frame->SelectRange(WebRange(0, 5), WebLocalFrame::kHideSelectionHandle,
-                     SelectionMenuBehavior::kHide);
+                     SelectionMenuBehavior::kHide,
+                     WebLocalFrame::kSelectionSetFocus);
   EXPECT_FALSE(frame->SelectionRange().IsNull());
 
   EXPECT_FALSE(frame->GetFrame()->Selection().IsHandleVisible())
@@ -5947,7 +5945,8 @@ TEST_F(WebFrameTest, SelectRangeHideHandle) {
 
   WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
   frame->SelectRange(WebRange(0, 5), WebLocalFrame::kHideSelectionHandle,
-                     SelectionMenuBehavior::kHide);
+                     SelectionMenuBehavior::kHide,
+                     WebLocalFrame::kSelectionSetFocus);
 
   EXPECT_FALSE(frame->GetFrame()->Selection().IsHandleVisible())
       << "Selection handle should not be visible with kHideSelectionHandle";
@@ -5962,7 +5961,8 @@ TEST_F(WebFrameTest, SelectRangeShowHandle) {
 
   WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
   frame->SelectRange(WebRange(0, 5), WebLocalFrame::kShowSelectionHandle,
-                     SelectionMenuBehavior::kHide);
+                     SelectionMenuBehavior::kHide,
+                     WebLocalFrame::kSelectionSetFocus);
 
   EXPECT_TRUE(frame->GetFrame()->Selection().IsHandleVisible())
       << "Selection handle should be visible with kShowSelectionHandle";
@@ -5977,17 +5977,21 @@ TEST_F(WebFrameTest, SelectRangePreserveHandleVisibility) {
 
   WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
   frame->SelectRange(WebRange(0, 5), WebLocalFrame::kHideSelectionHandle,
-                     SelectionMenuBehavior::kHide);
+                     SelectionMenuBehavior::kHide,
+                     WebLocalFrame::kSelectionSetFocus);
   frame->SelectRange(WebRange(0, 6), WebLocalFrame::kPreserveHandleVisibility,
-                     SelectionMenuBehavior::kHide);
+                     SelectionMenuBehavior::kHide,
+                     WebLocalFrame::kSelectionSetFocus);
 
   EXPECT_FALSE(frame->GetFrame()->Selection().IsHandleVisible())
       << "kPreserveHandleVisibility should keep handles invisible";
 
   frame->SelectRange(WebRange(0, 5), WebLocalFrame::kShowSelectionHandle,
-                     SelectionMenuBehavior::kHide);
+                     SelectionMenuBehavior::kHide,
+                     WebLocalFrame::kSelectionSetFocus);
   frame->SelectRange(WebRange(0, 6), WebLocalFrame::kPreserveHandleVisibility,
-                     SelectionMenuBehavior::kHide);
+                     SelectionMenuBehavior::kHide,
+                     WebLocalFrame::kSelectionSetFocus);
 
   EXPECT_TRUE(frame->GetFrame()->Selection().IsHandleVisible())
       << "kPreserveHandleVisibility should keep handles visible";
@@ -7009,7 +7013,8 @@ TEST_F(WebFrameTest, ReplaceMisspelledRange) {
   const int kAllTextLength = 11;
   frame->SelectRange(WebRange(kAllTextBeginOffset, kAllTextLength),
                      WebLocalFrame::kHideSelectionHandle,
-                     SelectionMenuBehavior::kHide);
+                     SelectionMenuBehavior::kHide,
+                     WebLocalFrame::kSelectionSetFocus);
   EphemeralRange selection_range = frame->GetFrame()
                                        ->Selection()
                                        .ComputeVisibleSelectionInDOMTree()
@@ -7057,7 +7062,8 @@ TEST_F(WebFrameTest, RemoveSpellingMarkers) {
   const int kAllTextLength = 11;
   frame->SelectRange(WebRange(kAllTextBeginOffset, kAllTextLength),
                      WebLocalFrame::kHideSelectionHandle,
-                     SelectionMenuBehavior::kHide);
+                     SelectionMenuBehavior::kHide,
+                     WebLocalFrame::kSelectionSetFocus);
   EphemeralRange selection_range = frame->GetFrame()
                                        ->Selection()
                                        .ComputeVisibleSelectionInDOMTree()
@@ -9889,7 +9895,8 @@ TEST_F(WebFrameSwapTest, SetTimeoutAfterSwap) {
     EXPECT_EQ(
         "SecurityError: Blocked a frame with origin \"http://internal.test\" "
         "from accessing a cross-origin frame.",
-        ToCoreString(exception
+        ToCoreString(isolate,
+                     exception
                          ->ToString(ToScriptStateForMainWorld(
                                         WebView()->MainFrameImpl()->GetFrame())
                                         ->GetContext())
@@ -11623,14 +11630,16 @@ TEST(WebFrameGlobalReuseTest, ReuseForMainFrameIfEnabled) {
   helper.Initialize(nullptr, nullptr, EnableGlobalReuseForUnownedMainFrames);
 
   WebLocalFrame* main_frame = helper.LocalMainFrame();
-  v8::HandleScope scope(helper.GetAgentGroupScheduler().Isolate());
+  v8::Isolate* isolate = helper.GetAgentGroupScheduler().Isolate();
+  v8::HandleScope scope(isolate);
   main_frame->ExecuteScript(WebScriptSource("hello = 'world';"));
   frame_test_helpers::LoadFrame(main_frame, "data:text/html,new page");
   v8::Local<v8::Value> result =
       main_frame->ExecuteScriptAndReturnValue(WebScriptSource("hello"));
   ASSERT_TRUE(result->IsString());
   EXPECT_EQ("world",
-            ToCoreString(result->ToString(main_frame->MainWorldScriptContext())
+            ToCoreString(isolate,
+                         result->ToString(main_frame->MainWorldScriptContext())
                              .ToLocalChecked()));
 }
 
@@ -13462,8 +13471,8 @@ TEST_F(WebFrameTest, ContextMenuDataPasswordSelectedText) {
 
   RunPendingTasks();
   web_view_helper.Reset();
-  EXPECT_EQ(frame.GetMenuData().input_field_type,
-            blink::mojom::ContextMenuDataInputFieldType::kPassword);
+  EXPECT_EQ(frame.GetMenuData().form_control_type,
+            blink::mojom::FormControlType::kInputPassword);
   EXPECT_FALSE(frame.GetMenuData().selected_text.empty());
 }
 
@@ -13584,14 +13593,14 @@ void RecursiveCollectTextRunDOMNodeIds(
     DOMNodeId dom_node_id,
     std::vector<TextRunDOMNodeIdInfo>* text_runs) {
   for (const cc::PaintOp& op : paint_record) {
-    if (op.GetType() == cc::PaintOpType::kDrawrecord) {
+    if (op.GetType() == cc::PaintOpType::kDrawRecord) {
       const auto& draw_record_op = static_cast<const cc::DrawRecordOp&>(op);
       RecursiveCollectTextRunDOMNodeIds(draw_record_op.record, dom_node_id,
                                         text_runs);
-    } else if (op.GetType() == cc::PaintOpType::kSetnodeid) {
+    } else if (op.GetType() == cc::PaintOpType::kSetNodeId) {
       const auto& set_node_id_op = static_cast<const cc::SetNodeIdOp&>(op);
       dom_node_id = set_node_id_op.node_id;
-    } else if (op.GetType() == cc::PaintOpType::kDrawtextblob) {
+    } else if (op.GetType() == cc::PaintOpType::kDrawTextBlob) {
       const auto& draw_text_op = static_cast<const cc::DrawTextBlobOp&>(op);
       SkTextBlob::Iter iter(*draw_text_op.blob);
       SkTextBlob::Iter::Run run;

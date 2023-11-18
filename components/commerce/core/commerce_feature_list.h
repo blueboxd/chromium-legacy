@@ -115,6 +115,8 @@ enum class DiscountDialogAutoPopupBehavior {
 };
 BASE_DECLARE_FEATURE(kShowDiscountOnNavigation);
 BASE_DECLARE_FEATURE(kShowDiscountOnNavigationRegionLaunched);
+BASE_DECLARE_FEATURE(kEnableDiscountInfoApi);
+BASE_DECLARE_FEATURE(kEnableDiscountInfoApiRegionLaunched);
 BASE_DECLARE_FEATURE(kDiscountDialogAutoPopupBehaviorSetting);
 extern const char kHistoryClustersBehaviorParam[];
 extern const base::FeatureParam<int> kHistoryClustersBehavior;
@@ -146,6 +148,12 @@ BASE_DECLARE_FEATURE(kChromeCartDomBasedHeuristics);
 // Feature flag for parcel tracking.
 BASE_DECLARE_FEATURE(kParcelTracking);
 BASE_DECLARE_FEATURE(kParcelTrackingRegionLaunched);
+BASE_DECLARE_FEATURE(kParcelTrackingTestData);
+
+extern const char kParcelTrackingTestDataParam[];
+extern const char kParcelTrackingTestDataParamDelivered[];
+extern const char kParcelTrackingTestDataParamInProgress[];
+extern const char kParcelTrackingTestDataParamOutForDelivery[];
 
 // Shopping list update interval.
 constexpr base::FeatureParam<base::TimeDelta>

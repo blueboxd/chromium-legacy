@@ -16,7 +16,9 @@
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/password_manager/sync_handler.h"
 #include "chrome/browser/ui/webui/plural_string_handler.h"
+#include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/sanitized_image_source.h"
+#include "chrome/browser/ui/webui/settings/safety_hub_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -292,6 +294,7 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
      IDS_PASSWORD_MANAGER_UI_NOTE_CHARACTER_COUNT},
     {"passwordNoteCharacterCountWarning",
      IDS_PASSWORD_MANAGER_UI_NOTE_CHARACTER_COUNT_WARNING},
+    {"passwordListAriaLabel", IDS_PASSWORD_MANAGER_UI_PASSWORD_LIST_ARIA_LABEL},
     {"passwords", IDS_PASSWORD_MANAGER_UI_PASSWORDS},
     {"phishedAndLeakedPassword",
      IDS_PASSWORD_MANAGER_UI_PASSWORD_PHISHED_AND_LEAKED},
@@ -329,6 +332,8 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
      IDS_PASSWORD_MANAGER_UI_SHARE_PASSWORD_VIEW_FAMILY},
     {"sharePasswordMemeberUnavailable",
      IDS_PASSWORD_MANAGER_UI_SHARE_PASSWORD_MEMBER_UNAVAILABLE},
+    {"sharePasswordManagedByAdmin",
+     IDS_PASSWORD_MANAGER_UI_SHARING_IS_MANAGED_BY_ADMIN},
     {"sharePasswordNotAvailable",
      IDS_PASSWORD_MANAGER_UI_SHARE_PASSWORD_NOT_AVAILABLE},
     {"sharePasswordErrorDescription",
@@ -384,8 +389,9 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
      IDS_PASSWORD_MANAGER_UI_BIOMETRIC_AUTHENTICATION_FOR_FILLING_TOGGLE_SUBLABEL_WIN},
 #endif
   };
-  for (const auto& str : kStrings)
+  for (const auto& str : kStrings) {
     webui::AddLocalizedString(source, str.name, str.id);
+  }
 
   source->AddString(
       "passwordsSectionDescription",
@@ -424,10 +430,6 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
       "createPasskeysInICloudKeychainToggleVisible",
       base::FeatureList::IsEnabled(device::kWebAuthnICloudKeychain));
 #endif
-
-  source->AddBoolean("enablePasswordsImportM2",
-                     base::FeatureList::IsEnabled(
-                         password_manager::features::kPasswordsImportM2));
 
   source->AddBoolean(
       "enableSendPasswords",
@@ -587,17 +589,16 @@ PasswordManagerUI::PasswordManagerUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(
       std::make_unique<password_manager::SyncHandler>(profile));
   web_ui->AddMessageHandler(std::make_unique<ExtensionControlHandler>());
+  web_ui->AddMessageHandler(std::make_unique<SafetyHubHandler>(profile));
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   web_ui->AddMessageHandler(
-      std::make_unique<password_manager::PromoCardsHandler>(
-          profile,
-          password_manager::PromoCardInterface::GetAllPromoCardsForProfile(
-              profile)));
+      std::make_unique<password_manager::PromoCardsHandler>(profile));
 #endif
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   web_ui->AddMessageHandler(std::make_unique<settings::PasskeysHandler>());
 #endif
   auto* source = CreateAndAddPasswordsUIHTMLSource(profile, web_ui);
+  policy_indicator::AddLocalizedStrings(source);
   AddPluralStrings(web_ui);
   ManagedUIHandler::Initialize(web_ui, source);
   content::URLDataSource::Add(profile,

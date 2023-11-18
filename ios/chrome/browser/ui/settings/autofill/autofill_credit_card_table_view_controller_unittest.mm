@@ -7,24 +7,28 @@
 #import "base/apple/foundation_util.h"
 #import "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "base/test/scoped_feature_list.h"
 #import "base/uuid.h"
 #import "components/autofill/core/browser/data_model/credit_card.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
 #import "components/autofill/core/common/autofill_features.h"
+#import "components/autofill/core/common/autofill_payments_features.h"
+#import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/shared/ui/table_view/chrome_table_view_controller_test.h"
+#import "ios/chrome/browser/shared/ui/table_view/legacy_chrome_table_view_controller_test.h"
 #import "ios/chrome/browser/ui/settings/personal_data_manager_finished_profile_tasks_waiter.h"
 #import "ios/chrome/browser/webdata_services/model/web_data_service_factory.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gtest/include/gtest/gtest.h"
+#import "ui/base/l10n/l10n_util.h"
 
 namespace {
 
 class AutofillCreditCardTableViewControllerTest
-    : public ChromeTableViewControllerTest {
+    : public LegacyChromeTableViewControllerTest {
  protected:
   AutofillCreditCardTableViewControllerTest() {
     TestChromeBrowserState::Builder test_cbs_builder;
@@ -43,7 +47,7 @@ class AutofillCreditCardTableViewControllerTest
         ->SetSyncServiceForTest(nullptr);
   }
 
-  ChromeTableViewController* InstantiateController() override {
+  LegacyChromeTableViewController* InstantiateController() override {
     return [[AutofillCreditCardTableViewController alloc]
         initWithBrowser:browser_.get()];
   }
@@ -51,7 +55,7 @@ class AutofillCreditCardTableViewControllerTest
   void TearDown() override {
     [base::apple::ObjCCastStrict<AutofillCreditCardTableViewController>(
         controller()) settingsWillBeDismissed];
-    ChromeTableViewControllerTest::TearDown();
+    LegacyChromeTableViewControllerTest::TearDown();
   }
 
   void AddCreditCard(const std::string& origin,
@@ -134,4 +138,33 @@ TEST_F(AutofillCreditCardTableViewControllerTest,
   }));
 }
 
+// Tests that when the MandatoryReauth feature is enabled a switch
+// appears
+TEST_F(AutofillCreditCardTableViewControllerTest,
+       TestMandatoryReauthSwitchExists) {
+  base::test::ScopedFeatureList feature_list_{
+      autofill::features::kAutofillEnablePaymentsMandatoryReauth};
+  CreateController();
+  CheckController();
+
+  // Expect 2 sections, 1 for switches and 1 for mandatory reauth.
+  EXPECT_EQ(2, NumberOfSections());
+
+  // Expect Mandatory Reauth section to have 2 items, the switch and the
+  // subtitle.
+  EXPECT_EQ(1, NumberOfItemsInSection(1));
+
+  // Confirm the text to the side of the switch.
+  CheckSwitchCellStateAndText(
+      true,
+      l10n_util::GetNSString(
+          IDS_PAYMENTS_AUTOFILL_ENABLE_MANDATORY_REAUTH_TOGGLE_LABEL),
+      1, 0);
+
+  // Confirm the sublabel of the switch.
+  CheckSectionFooter(
+      l10n_util::GetNSString(
+          IDS_PAYMENTS_AUTOFILL_ENABLE_MANDATORY_REAUTH_TOGGLE_SUBLABEL),
+      1);
+}
 }  // namespace

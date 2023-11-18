@@ -61,15 +61,16 @@
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "ui/accessibility/ax_enums.mojom-blink-forward.h"
+#include "ui/accessibility/ax_error_types.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 
 namespace blink {
 
 class AXRelationCache;
+class AbstractInlineTextBox;
 class HTMLAreaElement;
 class LocalFrameView;
-class NGAbstractInlineTextBox;
 class WebLocalFrameClient;
 
 // Describes a decicion on whether to create an AXNodeObject, an AXLayoutObject,
@@ -155,9 +156,9 @@ class MODULES_EXPORT AXObjectCacheImpl
       pause_tree_updates_until_more_loaded_content_ = false;
       UpdateAXForAllDocuments();
     }
-    CHECK(FocusedObject());
     ax_tree_source_->Freeze();
     is_frozen_ = true;
+    CHECK(FocusedObject());
   }
   void Thaw() override {
     is_frozen_ = false;
@@ -196,7 +197,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void Remove(LayoutObject*) override;
   void Remove(Node*) override;
   void RemovePopup(Document*) override;
-  void Remove(NGAbstractInlineTextBox*) override;
+  void Remove(AbstractInlineTextBox*) override;
   // Remove an AXObject or its subtree, and if |notify_parent| is true,
   // recompute the parent's children and reserialize the parent.
   void Remove(AXObject*, bool notify_parent);
@@ -319,19 +320,29 @@ class MODULES_EXPORT AXObjectCacheImpl
   void OnTouchAccessibilityHover(const gfx::Point&) override;
 
   AXObject* ObjectFromAXID(AXID id) const override;
-  AXObject* Root();
+  AXObject* Root() override;
 
+  // Create an AXObject, and do not check if a previous one exists.
+  // Also, initialize the object and add it to maps for later retrieval.
+  AXObject* CreateAndInit(Node*, LayoutObject*, AXObject* parent_if_known);
   // Used for objects without backing DOM nodes, layout objects, etc.
   AXObject* CreateAndInit(ax::mojom::blink::Role, AXObject* parent);
 
+  // Note that these functions do NOT guarantee that an AXObject will
+  // be created. For instance, not all HTMLElements can have an AXObject,
+  // such as <head> or <script> tags.
   AXObject* GetOrCreate(AccessibleNode*, AXObject* parent);
-  AXObject* GetOrCreate(LayoutObject*, AXObject* parent_if_known) override;
+  AXObject* GetOrCreate(LayoutObject*, AXObject* parent_if_known);
   AXObject* GetOrCreate(LayoutObject* layout_object);
-  AXObject* GetOrCreate(const Node*, AXObject* parent_if_known);
+  AXObject* GetOrCreate(const Node*, AXObject* parent_if_known) override;
   AXObject* GetOrCreate(Node*, AXObject* parent_if_known);
   AXObject* GetOrCreate(Node*);
   AXObject* GetOrCreate(const Node*);
-  AXObject* GetOrCreate(NGAbstractInlineTextBox*, AXObject* parent_if_known);
+  AXObject* GetOrCreate(AbstractInlineTextBox*, AXObject* parent_if_known);
+
+  // Compute the included parent and its children, and then return
+  // the AXObject for |child|.
+  AXObject* RepairChildrenOfIncludedParent(Node* child);
 
   AXID GetAXID(Node*) override;
 
@@ -340,10 +351,11 @@ class MODULES_EXPORT AXObjectCacheImpl
   // Return an AXObject for the AccessibleNode. If the AccessibleNode is
   // attached to an element, will return the AXObject for that element instead.
   AXObject* Get(AccessibleNode*);
-  AXObject* Get(NGAbstractInlineTextBox*);
+  AXObject* Get(AbstractInlineTextBox*);
 
   // Get an AXObject* backed by the passed-in DOM node.
-  AXObject* Get(const Node*);
+  AXObject* Get(const Node*) override;
+
   // Get an AXObject* backed by the passed-in LayoutObject, or the
   // LayoutObject's DOM node, if that is available.
   // If |parent_for_repair| is provided, and the object had been detached from
@@ -367,16 +379,13 @@ class MODULES_EXPORT AXObjectCacheImpl
   void MarkAXObjectDirty(AXObject*);
 
   void MarkAXObjectDirtyWithCleanLayout(AXObject*);
-  void MarkAXObjectDirtyWithCleanLayoutAndEvent(
-      AXObject*,
-      ax::mojom::blink::EventFrom event_from,
-      ax::mojom::blink::Action event_from_action);
 
   void MarkAXSubtreeDirtyWithCleanLayout(AXObject*);
 
   // Set the parent of |child|. If no parent is possible, this means the child
   // can no longer be in the AXTree, so remove the child.
   AXObject* RestoreParentOrPrune(AXObject* child);
+  AXObject* RestoreParentOrPruneWithCleanLayout(AXObject* child);
 
   // When an object is created or its id changes, this must be called so that
   // the relation cache is updated.
@@ -399,6 +408,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void HandleValidationMessageVisibilityChangedWithCleanLayout(const Node*);
   void HandleUpdateActiveMenuOptionWithCleanLayout(Node*);
   void HandleEditableTextContentChangedWithCleanLayout(Node*);
+  void UpdateAriaOwnsWithCleanLayout(Node*);
   void UpdateTableRoleWithCleanLayout(Node*);
 
   AXID GenerateAXID() const override;
@@ -451,12 +461,14 @@ class MODULES_EXPORT AXObjectCacheImpl
   // granted, it only applies to the next event received.
   void RequestAOMEventListenerPermission();
 
-  // For built-in HTML form validation messages. Set notify_children_changed to
-  // true if not already processing changed children.
-  AXObject* ValidationMessageObjectIfInvalid(bool notify_children_changed);
+  // For built-in HTML form validation messages.
+  AXObject* ValidationMessageObjectIfInvalid();
 
-  WebAXAutofillState GetAutofillState(AXID id) const;
-  void SetAutofillState(AXID id, WebAXAutofillState state);
+  WebAXAutofillSuggestionAvailability GetAutofillSuggestionAvailability(
+      AXID id) const;
+  void SetAutofillSuggestionAvailability(
+      AXID id,
+      WebAXAutofillSuggestionAvailability suggestion_availability);
 
   std::pair<ax::mojom::blink::EventFrom, ax::mojom::blink::Action>
   active_event_from_data() const {
@@ -495,9 +507,11 @@ class MODULES_EXPORT AXObjectCacheImpl
     return result;
   }
 
-  bool SerializeEntireTree(size_t max_node_count,
-                           base::TimeDelta timeout,
-                           ui::AXTreeUpdate*) override;
+  bool SerializeEntireTree(
+      size_t max_node_count,
+      base::TimeDelta timeout,
+      ui::AXTreeUpdate*,
+      std::set<ui::AXSerializationErrorFlag>* out_error = nullptr) override;
 
   void MarkAXObjectDirtyWithDetails(
       AXObject* obj,
@@ -547,12 +561,13 @@ class MODULES_EXPORT AXObjectCacheImpl
   bool IsProcessingDeferredEvents() const {
     return processing_deferred_events_;
   }
+  bool EntireDocumentIsDirty() const { return mark_all_dirty_; }
   // Returns true if UpdateTreeIfNeeded has been called and has not finished.
   bool UpdatingTree() { return updating_tree_; }
   // The document/cache are in the tear-down phase.
   bool HasBeenDisposed() const { return has_been_disposed_; }
   // Assert that tree is completely up-to-date.
-  void CheckTreeIsUpdated() const;
+  void CheckTreeIsUpdated();
   void CheckStyleIsComplete(Document& document) const;
 
   // Returns the `TextChangedOperation` associated with the `id` from the
@@ -626,14 +641,11 @@ class MODULES_EXPORT AXObjectCacheImpl
   // clean layout.
   void EnsureRelationCache();
 
-  // Create an AXObject, and do not check if a previous one exists.
-  // Also, initialize the object and add it to maps for later retrieval.
-  AXObject* CreateAndInit(Node*, LayoutObject*, AXObject* parent_if_known);
   // Helpers for CreateAndInit().
   AXObject* CreateFromRenderer(LayoutObject*);
   AXObject* CreateFromNode(Node*);
 
-  AXObject* CreateFromInlineTextBox(NGAbstractInlineTextBox*);
+  AXObject* CreateFromInlineTextBox(AbstractInlineTextBox*);
 
   // Removes AXObject backed by passed-in object, if there is one.
   // It will also notify the parent that its children have changed, so that the
@@ -641,7 +653,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   // |notify_parent| is passed in as false.
   void Remove(AccessibleNode*, bool notify_parent);
   void Remove(LayoutObject*, bool notify_parent);
-  void Remove(NGAbstractInlineTextBox*, bool notify_parent);
+  void Remove(AbstractInlineTextBox*, bool notify_parent);
 
   // Helper to remove the object from the cache.
   // Most callers should be using Remove(AXObject) instead.
@@ -661,7 +673,6 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   bool IsMainDocumentDirty() const;
   bool IsPopupDocumentDirty() const;
-
   void ProcessSubtreeRemoval(Node*, bool remove_root);
 
   HeapHashSet<WeakMember<InspectorAccessibilityAgent>> agents_;
@@ -730,9 +741,10 @@ class MODULES_EXPORT AXObjectCacheImpl
     kTextMarkerDataAdded = 30,
     kUpdateActiveMenuOption = 31,
     kNodeIsAttached = 32,
-    kUpdateTableRole = 33,
-    kUseMapAttributeChanged = 34,
-    kValidationMessageVisibilityChanged = 35,
+    kUpdateAriaOwns = 33,
+    kUpdateTableRole = 34,
+    kUseMapAttributeChanged = 35,
+    kValidationMessageVisibilityChanged = 36,
 
     // These updates are associated with an AXID:
     kChildrenChanged = 100,
@@ -810,7 +822,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   HeapHashMap<Member<AccessibleNode>, AXID> accessible_node_mapping_;
   HeapHashMap<Member<const LayoutObject>, AXID> layout_object_mapping_;
   HeapHashMap<Member<const Node>, AXID> node_object_mapping_;
-  HeapHashMap<Member<NGAbstractInlineTextBox>, AXID>
+  HeapHashMap<Member<AbstractInlineTextBox>, AXID>
       inline_text_box_object_mapping_;
 
   // Used for a mock AXObject representing the message displayed in the
@@ -1012,8 +1024,9 @@ class MODULES_EXPORT AXObjectCacheImpl
   wtf_size_t max_pending_updates_ = 1UL << 16;
   bool tree_updates_paused_ = false;
 
-  // Maps ids to their object's autofill state.
-  HashMap<AXID, WebAXAutofillState> autofill_state_map_;
+  // Maps ids to their object's autofill suggestion availability.
+  HashMap<AXID, WebAXAutofillSuggestionAvailability>
+      autofill_suggestion_availability_map_;
 
   // The set of node IDs whose bounds has changed since the last time
   // SerializeLocationChanges was called.

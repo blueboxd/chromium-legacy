@@ -12,6 +12,7 @@
 
 #include "base/apple/foundation_util.h"
 #include "base/functional/bind.h"
+#import "base/functional/callback_helpers.h"
 #include "base/json/json_writer.h"
 #import "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
@@ -240,13 +241,8 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
   DCHECK(web::features::UseSessionSerializationOptimizations());
   return web::WebState::CreateWithStorage(
       browserState, self.webStateID, _storage.metadata(),
-      base::BindOnce(^(web::proto::WebStateStorage& storage) {
-        // Capturing `self` is fine since the WebState will either be
-        // deleted before the current object (since they have the same
-        // owner), or the block will be destroyed after invocation.
-        storage = std::move(self->_storage);
-      }),
-      base::BindOnce([]() -> NSData* { return nil; }));
+      base::ReturnValueOnce(std::move(_storage)),
+      base::ReturnValueOnce<NSData*>(nil));
 }
 
 - (const web::proto::WebStateStorage&)storage {
@@ -325,11 +321,10 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
   if (!web::features::UseSessionSerializationOptimizations()) {
     if (!_cachedSessionStorage) {
       _cachedSessionStorage = [[CRWSessionStorage alloc]
-          initWithProto:_cachedProtobufStorage.storage];
+             initWithProto:_cachedProtobufStorage.storage
+          uniqueIdentifier:_cachedProtobufStorage.webStateID
+          stableIdentifier:[[NSUUID UUID] UUIDString]];
 
-      _cachedSessionStorage.stableIdentifier = [[NSUUID UUID] UUIDString];
-      _cachedSessionStorage.uniqueIdentifier =
-          _cachedProtobufStorage.webStateID;
       _cachedProtobufStorage = nil;
     }
     DCHECK(_cachedSessionStorage);
@@ -848,8 +843,7 @@ BOOL gWebInspectorEnabled = NO;
 
 - (void)webState:(web::WebState*)webState
     handlePermissions:(NSArray<NSNumber*>*)permissions
-      decisionHandler:(web::WebStatePermissionDecisionHandler)decisionHandler
-    API_AVAILABLE(ios(15.0)) {
+      decisionHandler:(web::WebStatePermissionDecisionHandler)decisionHandler {
   DCHECK(decisionHandler);
   CWVMediaCaptureType mediaCaptureType;
   BOOL cameraPermissionRequested =

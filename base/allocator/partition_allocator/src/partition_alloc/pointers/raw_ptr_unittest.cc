@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/allocator/partition_allocator/src/partition_alloc/pointers/raw_ptr.h"
+#include "partition_alloc/pointers/raw_ptr.h"
 
 #include <climits>
 #include <cstddef>
@@ -15,22 +15,7 @@
 
 #include "base/allocator/partition_alloc_features.h"
 #include "base/allocator/partition_alloc_support.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/chromeos_buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/dangling_raw_ptr_checks.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc-inl.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/numerics/checked_math.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_config.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_constants.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_hooks.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_root.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/pointers/raw_ptr_counting_impl_for_test.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/pointers/raw_ptr_test_support.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/pointers/raw_ref.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/tagging.h"
 #include "base/cpu.h"
-#include "base/cxx20_to_address.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr_asan_service.h"
 #include "base/task/thread_pool.h"
@@ -41,6 +26,20 @@
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
+#include "partition_alloc/chromeos_buildflags.h"
+#include "partition_alloc/dangling_raw_ptr_checks.h"
+#include "partition_alloc/partition_alloc-inl.h"
+#include "partition_alloc/partition_alloc.h"
+#include "partition_alloc/partition_alloc_base/numerics/checked_math.h"
+#include "partition_alloc/partition_alloc_buildflags.h"
+#include "partition_alloc/partition_alloc_config.h"
+#include "partition_alloc/partition_alloc_constants.h"
+#include "partition_alloc/partition_alloc_hooks.h"
+#include "partition_alloc/partition_root.h"
+#include "partition_alloc/pointers/raw_ptr_counting_impl_for_test.h"
+#include "partition_alloc/pointers/raw_ptr_test_support.h"
+#include "partition_alloc/pointers/raw_ref.h"
+#include "partition_alloc/tagging.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -1486,12 +1485,12 @@ TEST_F(RawPtrTest, CrossKindAssignment) {
 }
 
 // Without the explicitly customized `raw_ptr::to_address()`,
-// `base::to_address()` will use the dereference operator. This is not
+// `std::to_address()` will use the dereference operator. This is not
 // what we want; this test enforces extraction semantics for
 // `to_address()`.
 TEST_F(RawPtrTest, ToAddressDoesNotDereference) {
   CountingRawPtr<int> ptr = nullptr;
-  int* raw = base::to_address(ptr);
+  int* raw = std::to_address(ptr);
   std::ignore = raw;
   EXPECT_THAT((CountingRawPtrExpectations{.get_for_dereference_cnt = 0,
                                           .get_for_extraction_cnt = 1,
@@ -1503,7 +1502,7 @@ TEST_F(RawPtrTest, ToAddressDoesNotDereference) {
 TEST_F(RawPtrTest, ToAddressGivesBackRawAddress) {
   int* raw = nullptr;
   raw_ptr<int> miracle = raw;
-  EXPECT_EQ(base::to_address(raw), base::to_address(miracle));
+  EXPECT_EQ(std::to_address(raw), std::to_address(miracle));
 }
 
 void InOutParamFuncWithPointer(int* in, int** out) {
@@ -1548,6 +1547,13 @@ TEST_F(RawPtrTest, EphemeralRawAddrPointerReference) {
   EXPECT_EQ(ptr.get(), &v1);
 }
 
+#if defined(COMPILER_GCC) && !defined(__clang__)
+// In GCC this test will optimize the return value of the constructor, so
+// assert fails. Disable optimizations to verify uninitialized attribute works
+// as expected.
+#pragma GCC push_options
+#pragma GCC optimize("O0")
+#endif
 TEST_F(RawPtrTest, AllowUninitialized) {
   constexpr uintptr_t kPattern = 0x12345678;
   uintptr_t storage = kPattern;
@@ -1555,6 +1561,9 @@ TEST_F(RawPtrTest, AllowUninitialized) {
   new (&storage) CountingRawPtrUninitialized<int>;
   EXPECT_EQ(storage, kPattern);
 }
+#if defined(COMPILER_GCC) && !defined(__clang__)
+#pragma GCC pop_options
+#endif
 
 }  // namespace
 
@@ -2085,13 +2094,15 @@ TEST_F(BackupRefPtrTest, SpatialAlgoCompat) {
   ASSERT_EQ(
       requested_size,
       allocator_.root()->AllocationCapacityFromRequestedSize(requested_size));
-  size_t requested_elements = requested_size / sizeof(int);
+  size_t requested_elements = requested_size / sizeof(uint32_t);
 
-  int* ptr = reinterpret_cast<int*>(allocator_.root()->Alloc(requested_size));
-  int* ptr_end = ptr + requested_elements;
+  uint32_t* ptr =
+      reinterpret_cast<uint32_t*>(allocator_.root()->Alloc(requested_size));
+  uint32_t* ptr_end = ptr + requested_elements;
 
-  CountingRawPtr<int> protected_ptr = ptr;
-  CountingRawPtr<int> protected_ptr_end = protected_ptr + requested_elements;
+  CountingRawPtr<uint32_t> protected_ptr = ptr;
+  CountingRawPtr<uint32_t> protected_ptr_end =
+      protected_ptr + requested_elements;
 
 #if BUILDFLAG(BACKUP_REF_PTR_POISON_OOB_PTR)
   EXPECT_DEATH_IF_SUPPORTED(*protected_ptr_end = 1, "");
@@ -2099,7 +2110,7 @@ TEST_F(BackupRefPtrTest, SpatialAlgoCompat) {
 
   RawPtrCountingImpl::ClearCounters();
 
-  int gen_val = 1;
+  uint32_t gen_val = 1;
   std::generate(protected_ptr, protected_ptr_end, [&gen_val]() {
     gen_val ^= gen_val + 1;
     return gen_val;
@@ -2114,7 +2125,7 @@ TEST_F(BackupRefPtrTest, SpatialAlgoCompat) {
 
   RawPtrCountingImpl::ClearCounters();
 
-  for (CountingRawPtr<int> protected_ptr_i = protected_ptr;
+  for (CountingRawPtr<uint32_t> protected_ptr_i = protected_ptr;
        protected_ptr_i < protected_ptr_end; protected_ptr_i++) {
     *protected_ptr_i ^= *protected_ptr_i + 1;
   }
@@ -2128,7 +2139,7 @@ TEST_F(BackupRefPtrTest, SpatialAlgoCompat) {
 
   RawPtrCountingImpl::ClearCounters();
 
-  for (CountingRawPtr<int> protected_ptr_i = protected_ptr;
+  for (CountingRawPtr<uint32_t> protected_ptr_i = protected_ptr;
        protected_ptr_i < ptr_end; protected_ptr_i++) {
     *protected_ptr_i ^= *protected_ptr_i + 1;
   }
@@ -2142,7 +2153,7 @@ TEST_F(BackupRefPtrTest, SpatialAlgoCompat) {
 
   RawPtrCountingImpl::ClearCounters();
 
-  for (int* ptr_i = ptr; ptr_i < protected_ptr_end; ptr_i++) {
+  for (uint32_t* ptr_i = ptr; ptr_i < protected_ptr_end; ptr_i++) {
     *ptr_i ^= *ptr_i + 1;
   }
 
@@ -2156,7 +2167,7 @@ TEST_F(BackupRefPtrTest, SpatialAlgoCompat) {
   RawPtrCountingImpl::ClearCounters();
 
   size_t iter_cnt = 0;
-  for (int *ptr_i = protected_ptr, *ptr_i_end = protected_ptr_end;
+  for (uint32_t *ptr_i = protected_ptr, *ptr_i_end = protected_ptr_end;
        ptr_i < ptr_i_end; ptr_i++) {
     *ptr_i ^= *ptr_i + 1;
     iter_cnt++;

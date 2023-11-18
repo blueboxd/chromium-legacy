@@ -8,8 +8,8 @@
 #import "components/sync/base/features.h"
 #import "ios/chrome/browser/flags/chrome_switches.h"
 #import "ios/chrome/browser/metrics/metrics_app_interface.h"
-#import "ios/chrome/browser/signin/capabilities_types.h"
-#import "ios/chrome/browser/signin/fake_system_identity.h"
+#import "ios/chrome/browser/signin/model/capabilities_types.h"
+#import "ios/chrome/browser/signin/model/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_app_interface.h"
@@ -80,13 +80,13 @@ void OpenNTPAndBackgroundAndForegroundApp() {
   GREYAssertNil([MetricsAppInterface setupHistogramTester],
                 @"Cannot setup histogram tester.");
   [ChromeEarlGrey
-      removeUserDefaultObjectForKey:kDisplayedSSORecallPromoCountKey];
+      removeUserDefaultsObjectForKey:kDisplayedSSORecallPromoCountKey];
   [ChromeEarlGrey
-      removeUserDefaultObjectForKey:kDisplayedSSORecallForMajorVersionKey];
+      removeUserDefaultsObjectForKey:kDisplayedSSORecallForMajorVersionKey];
   [ChromeEarlGrey
-      removeUserDefaultObjectForKey:kLastShownAccountGaiaIdVersionKey];
+      removeUserDefaultsObjectForKey:kLastShownAccountGaiaIdVersionKey];
   [ChromeEarlGrey
-      removeUserDefaultObjectForKey:kSigninPromoViewDisplayCountKey];
+      removeUserDefaultsObjectForKey:kSigninPromoViewDisplayCountKey];
 }
 
 - (void)tearDown {
@@ -132,8 +132,8 @@ void OpenNTPAndBackgroundAndForegroundApp() {
       selectElementWithMatcher:chrome_test_util::SigninScreenPromoMatcher()]
       assertWithMatcher:grey_notVisible()];
   VerifyHystoryOptInPromoSufficientlyVisible();
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                          HistoryOptInPrimaryButtonMatcher()]
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::SigninScreenPromoPrimaryButtonMatcher()]
       performAction:grey_tap()];
   [ChromeEarlGreyUI waitForAppToIdle];
   [self expectUpgradePromoMetricsAndPreferences];
@@ -181,15 +181,12 @@ void OpenNTPAndBackgroundAndForegroundApp() {
   OpenNTPAndBackgroundAndForegroundApp();
 
   VerifySigninPromoSufficientlyVisible();
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_allOf(grey_accessibilityID(
-                         kPromoStylePrimaryActionAccessibilityIdentifier),
-                     grey_sufficientlyVisible(), nil)]
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::SigninScreenPromoPrimaryButtonMatcher()]
       performAction:grey_tap()];
   [ChromeEarlGreyUI waitForAppToIdle];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                          HistoryOptInPrimaryButtonMatcher()]
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::SigninScreenPromoPrimaryButtonMatcher()]
       performAction:grey_tap()];
   [ChromeEarlGreyUI waitForAppToIdle];
   [self expectUpgradePromoMetricsAndPreferences];
@@ -242,11 +239,11 @@ void OpenNTPAndBackgroundAndForegroundApp() {
   GREYAssertNil(error, @"Failed to record show count histogram %s %@",
                 kUMASSORecallPromoAction, error);
   NSNumber* value =
-      [ChromeEarlGrey userDefaultObjectForKey:kSigninPromoViewDisplayCountKey];
+      [ChromeEarlGrey userDefaultsObjectForKey:kSigninPromoViewDisplayCountKey];
   GREYAssertEqual(1, value.integerValue, @"Failed to increase %@ pref",
                   kSigninPromoViewDisplayCountKey);
   NSArray* gaiaIds = [ChromeEarlGrey
-      userDefaultObjectForKey:kLastShownAccountGaiaIdVersionKey];
+      userDefaultsObjectForKey:kLastShownAccountGaiaIdVersionKey];
   // It is not possible to do `GREYAssertEqualObjects(expectedGaiaIds, gaiaIds),
   // since gaiaIds is EDOObject type (the object is in Chrome app).
   GREYAssertEqual(1, gaiaIds.count, @"Expect to have only one gaia id %@",

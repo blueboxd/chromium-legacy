@@ -10,13 +10,13 @@
 #import "components/sync/base/user_selectable_type.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
-#import "ios/chrome/browser/first_run/first_run_metrics.h"
+#import "ios/chrome/browser/first_run/model/first_run_metrics.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
-#import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
-#import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/signin/model/authentication_service.h"
+#import "ios/chrome/browser/signin/model/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service_factory.h"
+#import "ios/chrome/browser/signin/model/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
 #import "ios/chrome/browser/ui/authentication/history_sync/history_sync_mediator.h"
@@ -59,11 +59,6 @@
             authenticationService:(AuthenticationService*)authenticationService
                       prefService:(PrefService*)prefService
             isHistorySyncOptional:(BOOL)isOptional {
-  if (!authenticationService->GetPrimaryIdentity(
-          signin::ConsentLevel::kSignin)) {
-    // Don't show history sync opt-in screen if no signed-in user account.
-    return HistorySyncSkipReason::kNotSignedIn;
-  }
   if (syncService->HasDisableReason(
           syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY) ||
       syncService->GetUserSettings()->IsTypeManagedByPolicy(
@@ -74,8 +69,12 @@
     // tabs sync is disabled by policy.
     return HistorySyncSkipReason::kSyncForbiddenByPolicies;
   }
+  if (!authenticationService->GetPrimaryIdentity(
+          signin::ConsentLevel::kSignin)) {
+    // Don't show history sync opt-in screen if no signed-in user account.
+    return HistorySyncSkipReason::kNotSignedIn;
+  }
   syncer::SyncUserSettings* userSettings = syncService->GetUserSettings();
-
   if (userSettings->GetSelectedTypes().HasAll(
           {syncer::UserSelectableType::kHistory,
            syncer::UserSelectableType::kTabs})) {

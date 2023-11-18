@@ -147,9 +147,13 @@ bool D3DImageBackingFactory::IsD3DSharedImageSupported(
 }
 
 // static
-bool D3DImageBackingFactory::IsSwapChainSupported() {
+bool D3DImageBackingFactory::IsSwapChainSupported(
+    const GpuPreferences& gpu_preferences) {
+  // TODO(crbug.com/1492685): enable swapchain support when d3d11 is shared with
+  // ANGLE.
   return gl::DirectCompositionSupported() &&
-         gl::DXGISwapChainTearingSupported();
+         gl::DXGISwapChainTearingSupported() &&
+         gpu_preferences.gr_context_type == GrContextType::kGL;
 }
 
 // static
@@ -175,9 +179,6 @@ D3DImageBackingFactory::CreateSwapChain(const Mailbox& front_buffer_mailbox,
                                         GrSurfaceOrigin surface_origin,
                                         SkAlphaType alpha_type,
                                         uint32_t usage) {
-  if (!D3DImageBackingFactory::IsSwapChainSupported())
-    return {nullptr, nullptr};
-
   DXGI_FORMAT swap_chain_format;
   if ((format == viz::SinglePlaneFormat::kRGBA_8888) ||
       (format == viz::SinglePlaneFormat::kRGBX_8888) ||
@@ -385,7 +386,8 @@ std::unique_ptr<SharedImageBacking> D3DImageBackingFactory::CreateSharedImage(
     // Early return before creating D3D shared handle resources.
     return D3DImageBacking::Create(
         mailbox, format, size, color_space, surface_origin, alpha_type, usage,
-        std::move(d3d11_texture), nullptr, texture_target);
+        std::move(d3d11_texture), nullptr, texture_target, /*array_slice=*/0u,
+        /*plane_index=*/0u);
   }
 
   Microsoft::WRL::ComPtr<IDXGIResource1> dxgi_resource;
@@ -413,7 +415,7 @@ std::unique_ptr<SharedImageBacking> D3DImageBackingFactory::CreateSharedImage(
   return D3DImageBacking::Create(
       mailbox, format, size, color_space, surface_origin, alpha_type, usage,
       std::move(d3d11_texture), std::move(dxgi_shared_handle_state),
-      texture_target);
+      texture_target, /*array_slice=*/0u, /*plane_index=*/0u);
 }
 
 std::unique_ptr<SharedImageBacking> D3DImageBackingFactory::CreateSharedImage(

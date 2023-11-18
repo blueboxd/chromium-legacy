@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include <optional>
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/shared_memory_mapping.h"
@@ -45,6 +46,7 @@
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/shared_image_format.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/client_shared_image.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
@@ -52,7 +54,6 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "skia/ext/legacy_display_globals.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkFont.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -144,8 +145,9 @@ std::unique_ptr<LayerImpl> HeadsUpDisplayLayerImpl::CreateLayerImpl(
 class HudGpuBacking : public ResourcePool::GpuBacking {
  public:
   ~HudGpuBacking() override {
-    if (mailbox.IsZero())
+    if (mailbox.IsZero()) {
       return;
+    }
     if (returned_sync_token.HasData())
       shared_image_interface->DestroySharedImage(returned_sync_token, mailbox);
     else if (mailbox_sync_token.HasData())
@@ -157,8 +159,9 @@ class HudGpuBacking : public ResourcePool::GpuBacking {
       const base::trace_event::MemoryAllocatorDumpGuid& buffer_dump_guid,
       uint64_t tracing_process_id,
       int importance) const override {
-    if (mailbox.IsZero())
+    if (mailbox.IsZero()) {
       return;
+    }
 
     auto tracing_guid = gpu::GetSharedImageGUIDForTracing(mailbox);
     pmd->CreateSharedGlobalAllocatorDump(tracing_guid);
@@ -247,7 +250,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
   UpdateHudContents();
 
   viz::RasterContextProvider* raster_context_provider = nullptr;
-  absl::optional<viz::RasterContextProvider::ScopedRasterContextLock> lock;
+  std::optional<viz::RasterContextProvider::ScopedRasterContextLock> lock;
   if (draw_mode == DRAW_MODE_HARDWARE) {
     // TODO(penghuang): It would be better to use context_provider() instead of
     // worker_context_provider() if/when it's switched to RasterContextProvider.
@@ -297,11 +300,13 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
       if (backing->overlay_candidate) {
         flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
       }
-      backing->mailbox = sii->CreateSharedImage(
+      auto client_shared_image = sii->CreateSharedImage(
           pool_resource.format(), pool_resource.size(),
           pool_resource.color_space(), kTopLeft_GrSurfaceOrigin,
           kPremul_SkAlphaType, flags, "HeadsUpDisplayLayer",
           gpu::kNullSurfaceHandle);
+      CHECK(client_shared_image);
+      backing->mailbox = client_shared_image->mailbox();
       auto* ri = raster_context_provider->RasterInterface();
       ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
       pool_resource.set_gpu_backing(std::move(backing));

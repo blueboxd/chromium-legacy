@@ -813,6 +813,8 @@ const char kUseFakeUIForFedCM[] = "use-fake-ui-for-fedcm";
 
 // Bypass the media stream infobar by selecting the default device for media
 // streams (e.g. WebRTC). Works with --use-fake-device-for-media-stream.
+// Prefer --auto-accept-camera-and-microphone-capture which does not interact
+// with screen/tab capture.
 const char kUseFakeUIForMediaStream[]     = "use-fake-ui-for-media-stream";
 
 // Texture target for CHROMIUM_image backed video frame textures.
@@ -989,6 +991,19 @@ const char kEnableAggressiveDOMStorageFlushing[] =
 
 // Enable indication that browser is controlled by automation.
 const char kEnableAutomation[] = "enable-automation";
+
+#if BUILDFLAG(IS_IOS)
+// For mobile devices, tests should include a viewport meta tag to specify page
+// dimension adjustments. Omitting the tag can lead to automatic resizing to
+// the standard mobile fallback size (980), which results in content shrinking
+// as it first expands to 980, then scales down to 800 to fit the screen, as
+// observed in the issue at https://crrev.com/c/4615623.
+// This flag is intended for use in tests that do not include a viewport meta
+// tag. When enabled, it ensures the viewport size matches the standard mobile
+// fallback size, thereby helping to prevent content resizing in such tests.
+const char kPreventResizingContentsForTesting[] =
+    "prevent-resizing-contents-for-testing";
+#endif
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.

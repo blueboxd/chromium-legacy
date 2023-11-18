@@ -43,15 +43,22 @@ using mojom::blink::FormControlType;
 
 namespace {
 
-bool WillReattachChildLayoutObject(const Node& parent) {
+bool WillReattachChildLayoutObject(const Element& parent) {
   for (const Node* child = LayoutTreeBuilderTraversal::FirstChild(parent);
        child; child = LayoutTreeBuilderTraversal::NextSibling(*child)) {
-    if (child->NeedsReattachLayoutTree())
+    if (child->NeedsReattachLayoutTree()) {
       return true;
-    if (child->ChildNeedsReattachLayoutTree() && child->GetComputedStyle() &&
-        child->GetComputedStyle()->Display() == EDisplay::kContents &&
-        WillReattachChildLayoutObject(*child))
-      return true;
+    }
+    const auto* element = DynamicTo<Element>(child);
+    if (!element || !element->ChildNeedsReattachLayoutTree()) {
+      continue;
+    }
+    if (const ComputedStyle* style = element->GetComputedStyle()) {
+      if (style->Display() == EDisplay::kContents &&
+          WillReattachChildLayoutObject(*element)) {
+        return true;
+      }
+    }
   }
   return false;
 }
@@ -141,8 +148,9 @@ void HTMLFieldSetElement::ChildrenChanged(const ChildrenChange& change) {
     focused_element->blur();
 }
 
-bool HTMLFieldSetElement::SupportsFocus() const {
-  return HTMLElement::SupportsFocus() && !IsDisabledFormControl();
+bool HTMLFieldSetElement::SupportsFocus(UpdateBehavior update_behavior) const {
+  return HTMLElement::SupportsFocus(update_behavior) &&
+         !IsDisabledFormControl();
 }
 
 FormControlType HTMLFieldSetElement::FormControlType() const {
@@ -180,13 +188,10 @@ HTMLCollection* HTMLFieldSetElement::elements() {
 }
 
 bool HTMLFieldSetElement::IsDisabledFormControl() const {
-  if (RuntimeEnabledFeatures::SendMouseEventsDisabledFormControlsEnabled()) {
-    // The fieldset element itself should never be considered disabled, it is
-    // only supposed to affect its descendants:
-    // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#concept-fe-disabled
-    return false;
-  }
-  return HTMLFormControlElement::IsDisabledFormControl();
+  // The fieldset element itself should never be considered disabled, it is
+  // only supposed to affect its descendants:
+  // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#concept-fe-disabled
+  return false;
 }
 
 // <fieldset> should never be considered disabled, but should still match the
@@ -194,10 +199,7 @@ bool HTMLFieldSetElement::IsDisabledFormControl() const {
 // set or not. See here for context:
 // https://github.com/whatwg/html/issues/5886#issuecomment-1582410112
 bool HTMLFieldSetElement::MatchesEnabledPseudoClass() const {
-  if (RuntimeEnabledFeatures::SendMouseEventsDisabledFormControlsEnabled()) {
-    return !IsActuallyDisabled();
-  }
-  return HTMLFormControlElement::MatchesEnabledPseudoClass();
+  return !IsActuallyDisabled();
 }
 
 }  // namespace blink

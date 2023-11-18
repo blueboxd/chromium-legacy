@@ -423,6 +423,13 @@ public class OmniboxResourceProvider {
         return themeRes.resourceId;
     }
 
+    /** Gets the margin, in pixels, on either side of an omnibox suggestion list. */
+    public static @Px int getDropdownSideSpacing(@NonNull Context context) {
+        return getSideSpacing(context)
+                + context.getResources()
+                        .getDimensionPixelSize(R.dimen.omnibox_suggestion_dropdown_side_spacing);
+    }
+
     /** Gets the margin, in pixels, on either side of an omnibox suggestion. */
     public static @Px int getSideSpacing(@NonNull Context context) {
         return context.getResources()
@@ -566,6 +573,15 @@ public class OmniboxResourceProvider {
                                         R.dimen.toolbar_edge_padding_modern_smaller,
                                         R.dimen.toolbar_edge_padding)
                                 : R.dimen.toolbar_edge_padding);
+    }
+
+    /**
+     * Returns the amount of pixels for the toolbar's side padding when the omnibox is pinned on the
+     * top of the screen in both the start surface and NTP.
+     */
+    public static @Px int getToolbarSidePaddingForStartSurfaceOrNtp(Context context) {
+        return context.getResources()
+                .getDimensionPixelSize(R.dimen.toolbar_edge_padding_modern_polish);
     }
 
     /** Return the width of the Omnibox Suggestion decoration icon. */

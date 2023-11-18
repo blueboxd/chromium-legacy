@@ -5,8 +5,9 @@
 #ifndef CHROMEOS_ASH_SERVICES_RECORDING_GIF_ENCODER_H_
 #define CHROMEOS_ASH_SERVICES_RECORDING_GIF_ENCODER_H_
 
-#include <vector>
+#include <cstdint>
 
+#include "base/memory/weak_ptr.h"
 #include "base/threading/sequence_bound.h"
 #include "base/time/time.h"
 #include "base/types/pass_key.h"
@@ -16,6 +17,8 @@
 #include "chromeos/ash/services/recording/recording_encoder.h"
 
 namespace recording {
+
+class RgbVideoFrame;
 
 // Encapsulates encoding video frames into an animated GIF and writes the
 // encoded output to a file that it creates at the given `gif_file_path`. An
@@ -99,7 +102,7 @@ class GifEncoder : public RecordingEncoder {
   // earlier in the Logical Screen Descriptor block). It also specifies whether
   // the frame has its own Local Color Table.
   // This block repeats once per every received video frame.
-  void WriteImageDescriptor(const gfx::Size& frame_size,
+  void WriteImageDescriptor(const RgbVideoFrame& rgb_video_frame,
                             uint8_t color_bit_depth);
 
   // Writes the `color_palette_` which has the given `color_bit_depth` to the
@@ -107,6 +110,24 @@ class GifEncoder : public RecordingEncoder {
   // color tables. However, we only write Local Color Tables in this
   // implementation.
   void WriteColorPalette(uint8_t color_bit_depth);
+
+  // Sets the encoder's `color_palette_` to the given `new_color_palette`.
+  void SetColorPalette(ColorTable new_color_palette);
+
+  // The thread pool task runner on which the color palettes are built every
+  // `kMinNumberOfFramesBetweenPaletteRebuilds` frames except for the very first
+  // frame (in which case, the palette is built synchronously on the same
+  // sequence of the encoder).
+  // This is needed because building a new color palette is a costly operation.
+  // If we do it on the same sequence of the encoder, we will block it for a
+  // long time, resulting in video frames backing up, and filling the in-flight
+  // video frame pool (see `FrameSinkVideoCapturerImpl::kFramePoolCapacity`).
+  // This would cause the resulting GIF to be janky as many frames would be
+  // dropped.
+  scoped_refptr<base::SequencedTaskRunner> color_palette_task_runner_;
+
+  // The number of frames received so far.
+  size_t frame_count_ = 0;
 
   // The presentation time of the most recent video frame prior to the one being
   // encoded at the moment.
@@ -130,6 +151,8 @@ class GifEncoder : public RecordingEncoder {
   // Variable-Length-Code LZW compression algorithm and writing the output
   // stream to the GIF file.
   LzwPixelColorIndicesWriter lzw_encoder_;
+
+  base::WeakPtrFactory<GifEncoder> weak_ptr_factory_{this};
 };
 
 }  // namespace recording

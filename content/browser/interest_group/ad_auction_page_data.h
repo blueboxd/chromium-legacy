@@ -13,6 +13,7 @@
 #include "base/containers/flat_map.h"
 #include "base/time/time.h"
 #include "base/uuid.h"
+#include "content/browser/interest_group/header_direct_from_seller_signals.h"
 #include "content/public/browser/page_user_data.h"
 #include "net/third_party/quiche/src/quiche/oblivious_http/oblivious_http_client.h"
 #include "url/origin.h"
@@ -36,7 +37,6 @@ struct CONTENT_EXPORT AdAuctionRequestContext {
   base::flat_map<url::Origin, std::vector<std::string>> group_names;
   quiche::ObliviousHttpRequest::Context context;
   base::TimeTicks start_time;
-  std::unique_ptr<data_decoder::DataDecoder> decoder;
 };
 
 // Contains auction header responses within a page. This will only be created
@@ -55,8 +55,10 @@ class CONTENT_EXPORT AdAuctionPageData
   void AddAuctionSignalsWitnessForOrigin(const url::Origin& origin,
                                          const std::string& response);
 
-  const std::set<std::string>& GetAuctionSignalsForOrigin(
-      const url::Origin& origin) const;
+  void ParseAndFindAdAuctionSignals(
+      const url::Origin& origin,
+      const std::string& ad_slot,
+      HeaderDirectFromSellerSignals::ParseAndFindCompletedCallback callback);
 
   void AddAuctionAdditionalBidsWitnessForOrigin(
       const url::Origin& origin,
@@ -71,17 +73,29 @@ class CONTENT_EXPORT AdAuctionPageData
                                        AdAuctionRequestContext context);
   AdAuctionRequestContext* GetContextForAdAuctionRequest(const base::Uuid& id);
 
+  // Returns a pointer to a DataDecoder owned by this AdAuctionPageData instance
+  // The DataDecoder is only valid for the life of the page.
+  data_decoder::DataDecoder* GetDecoderFor(const url::Origin& origin);
+
  private:
   explicit AdAuctionPageData(Page& page);
 
   friend class PageUserData<AdAuctionPageData>;
   PAGE_USER_DATA_KEY_DECL();
 
+  void OnAddAuctionSignalsWitnessForOriginCompleted(
+      std::vector<std::string> errors);
+
   std::map<url::Origin, std::set<std::string>> origin_auction_result_map_;
-  std::map<url::Origin, std::set<std::string>> origin_auction_signals_map_;
+  HeaderDirectFromSellerSignals header_direct_from_seller_signals_;
   std::map<url::Origin, std::map<std::string, std::vector<std::string>>>
       origin_nonce_additional_bids_map_;
   std::map<base::Uuid, AdAuctionRequestContext> context_map_;
+
+  // Must be declared last -- DataDecoder destruction cancels decoding
+  // completion callbacks.
+  std::map<url::Origin, std::unique_ptr<data_decoder::DataDecoder>>
+      decoder_map_;
 };
 
 }  // namespace content

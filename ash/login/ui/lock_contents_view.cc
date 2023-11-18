@@ -264,6 +264,8 @@ struct MediumViewLayout {
 };
 
 class UserAddingScreenIndicator : public views::View {
+  METADATA_HEADER(UserAddingScreenIndicator, views::View)
+
  public:
   UserAddingScreenIndicator() {
     views::BoxLayout* layout_manager =
@@ -308,6 +310,9 @@ class UserAddingScreenIndicator : public views::View {
   raw_ptr<views::ImageView, ExperimentalAsh> info_icon_ = nullptr;
   raw_ptr<views::Label, ExperimentalAsh> label_ = nullptr;
 };
+
+BEGIN_METADATA(UserAddingScreenIndicator)
+END_METADATA
 
 }  // namespace
 
@@ -2339,7 +2344,7 @@ void LockContentsView::RecoverUserButtonPressed() {
                           static_cast<int>(ReauthReason::kForgotPassword));
   RecordAndResetPasswordAttempts(
       AuthEventsRecorder::AuthenticationOutcome::kRecovery, account_id);
-  Shell::Get()->login_screen_controller()->ShowGaiaSignin(account_id);
+  Shell::Get()->login_screen_controller()->StartUserRecovery(account_id);
   HideAuthErrorMessage();
 }
 

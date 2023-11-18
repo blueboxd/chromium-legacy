@@ -527,9 +527,10 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
                                       : omnibox::kPageIcon;
 
     case Type::SEARCH_SUGGEST: {
-      if (subtypes.contains(/*SUBTYPE_TRENDS=*/143))
+      if (IsTrendSuggestion()) {
         return use_chrome_refresh_icons ? omnibox::kTrendingUpChromeRefreshIcon
                                         : omnibox::kTrendingUpIcon;
+      }
       return use_chrome_refresh_icons ? vector_icons::kSearchChromeRefreshIcon
                                       : vector_icons::kSearchIcon;
     }
@@ -1088,6 +1089,19 @@ bool AutocompleteMatch::IsActionCompatible() const {
          type != AutocompleteMatchType::SEARCH_SUGGEST_TAIL;
 }
 
+bool AutocompleteMatch::HasInstantKeyword(
+    TemplateURLService* template_url_service) const {
+  if (!associated_keyword) {
+    return false;
+  }
+  TemplateURL* turl =
+      associated_keyword->GetTemplateURL(template_url_service, false);
+  if (!turl) {
+    return false;
+  }
+  return turl->starter_pack_id() != 0;
+}
+
 void AutocompleteMatch::GetKeywordUIState(
     TemplateURLService* template_url_service,
     std::u16string* keyword_out,
@@ -1307,6 +1321,10 @@ bool AutocompleteMatch::IsOnDeviceSearchSuggestion() const {
 bool AutocompleteMatch::IsUrlScoringEligible() const {
   return scoring_signals.has_value() &&
          type != AutocompleteMatchType::URL_WHAT_YOU_TYPED;
+}
+
+bool AutocompleteMatch::IsTrendSuggestion() const {
+  return subtypes.contains(/*omnibox::SUBTYPE_TRENDS=*/143);
 }
 
 void AutocompleteMatch::FilterOmniboxActions(

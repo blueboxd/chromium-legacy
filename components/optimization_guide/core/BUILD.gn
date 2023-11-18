@@ -22,6 +22,7 @@ static_library("bloomfilter") {
     "//base",
     "//third_party/smhasher:murmurhash3",
   ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 static_library("entities") {
@@ -37,6 +38,7 @@ static_library("entities") {
     "//third_party/abseil-cpp:absl",
   ]
   deps = [ ":features" ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 static_library("model_executor") {
@@ -88,6 +90,8 @@ static_library("model_executor") {
     "//url",
   ]
 
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   if (build_with_tflite_lib) {
     public_deps += [
       "//components/optimization_guide/core:machine_learning",
@@ -110,7 +114,6 @@ static_library("model_executor") {
 mojom("interfaces") {
   sources = [ "optimization_guide_common.mojom" ]
   webui_module_path = "/"
-  use_typescript_sources = true
   public_deps = [ "//mojo/public/mojom/base" ]
 }
 
@@ -129,6 +132,7 @@ if (build_with_tflite_lib) {
       "//third_party/tflite",
       "//third_party/tflite:tflite_public_headers",
     ]
+    configs += [ "//build/config/compiler:wexit_time_destructors" ]
   }
 }
 
@@ -156,7 +160,12 @@ static_library("features") {
     "//net",
     "//ui/base",
   ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
+
+input_proto_descriptor_file =
+    "$root_gen_dir/components/optimization_guide/proto/compose.descriptor"
+output_proto_descriptors_cc_file = "$root_gen_dir/components/optimization_guide/core/model_execution/on_device_model_execution_proto_descriptors.cc"
 
 static_library("core") {
   sources = [
@@ -179,11 +188,11 @@ static_library("core") {
     "hints_processing_util.h",
     "memory_hint.cc",
     "memory_hint.h",
-    "model_execution/model_execution_fetcher.cc",
-    "model_execution/model_execution_fetcher.h",
-    "model_execution/model_execution_manager.cc",
-    "model_execution/model_execution_manager.h",
     "model_handler.h",
+    "model_quality/feature_type_map.h",
+    "model_quality/model_quality_log_entry.cc",
+    "model_quality/model_quality_log_entry.h",
+    "model_quality/model_quality_logs_uploader.h",
     "noisy_metrics_recorder.cc",
     "noisy_metrics_recorder.h",
     "optimization_filter.cc",
@@ -193,6 +202,7 @@ static_library("core") {
     "optimization_guide_enums.h",
     "optimization_guide_logger.cc",
     "optimization_guide_logger.h",
+    "optimization_guide_model_executor.cc",
     "optimization_guide_model_executor.h",
     "optimization_guide_model_provider.h",
     "optimization_guide_navigation_data.cc",
@@ -225,6 +235,34 @@ static_library("core") {
     "url_pattern_with_wildcards.cc",
     "url_pattern_with_wildcards.h",
   ]
+  if (!is_fuchsia || !optimize_for_size) {
+    sources += [
+      "model_execution/model_execution_features.cc",
+      "model_execution/model_execution_features.h",
+      "model_execution/model_execution_features_controller.cc",
+      "model_execution/model_execution_features_controller.h",
+      "model_execution/model_execution_fetcher.cc",
+      "model_execution/model_execution_fetcher.h",
+      "model_execution/model_execution_manager.cc",
+      "model_execution/model_execution_manager.h",
+      "model_execution/on_device_model_execution_config_interpreter.cc",
+      "model_execution/on_device_model_execution_config_interpreter.h",
+      "model_execution/on_device_model_execution_proto_descriptors.h",
+      "model_execution/on_device_model_execution_proto_value_utils.cc",
+      "model_execution/on_device_model_execution_proto_value_utils.h",
+      "model_execution/on_device_model_service_controller.cc",
+      "model_execution/on_device_model_service_controller.h",
+      "model_execution/on_device_model_stream_receiver.cc",
+      "model_execution/on_device_model_stream_receiver.h",
+      "model_execution/on_device_session.cc",
+      "model_execution/on_device_session.h",
+      "model_execution/optimization_guide_model_execution_error.cc",
+      "model_execution/optimization_guide_model_execution_error.h",
+      "model_execution/settings_enabled_observer.cc",
+      "model_execution/settings_enabled_observer.h",
+      output_proto_descriptors_cc_file,
+    ]
+  }
   if (build_with_tflite_lib) {
     sources += [
       "bert_model_handler.cc",
@@ -283,8 +321,16 @@ static_library("core") {
     "//services/metrics/public/cpp:metrics_cpp",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/network/public/cpp",
+    "//services/on_device_model/public/mojom",
     "//url:url",
   ]
+
+  if (!is_fuchsia || !optimize_for_size) {
+    deps += [ ":on_device_model_execution_proto_generator" ]
+  }
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   if (!is_android && build_with_tflite_lib &&
       build_with_internal_optimization_guide) {
     data_deps = [
@@ -321,6 +367,7 @@ static_library("prediction") {
     "//net/traffic_annotation",
     "//services/network/public/cpp",
   ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
   if (is_ios) {
     deps += [ "//components/services/unzip:in_process" ]
   } else {
@@ -389,6 +436,7 @@ if (is_ios) {
     deps = [
       "//base",
       "//components/optimization_guide/proto:optimization_guide_proto",
+      "//google_apis",
       "//url",
     ]
   }
@@ -406,8 +454,8 @@ source_set("unit_tests") {
     "hints_manager_unittest.cc",
     "hints_processing_util_unittest.cc",
     "insertion_ordered_set_unittest.cc",
-    "model_execution/model_execution_fetcher_unittest.cc",
     "model_handler_unittest.cc",
+    "model_quality/model_quality_log_entry_unittest.cc",
     "model_store_metadata_entry_unittest.cc",
     "model_util_unittest.cc",
     "noisy_metrics_recorder_unittest.cc",
@@ -430,6 +478,17 @@ source_set("unit_tests") {
     "store_update_data_unittest.cc",
     "url_pattern_with_wildcards_unittest.cc",
   ]
+
+  if (!is_fuchsia || !optimize_for_size) {
+    sources += [
+      "model_execution/model_execution_fetcher_unittest.cc",
+      "model_execution/model_execution_manager_unittest.cc",
+      "model_execution/on_device_model_execution_config_interpreter_unittest.cc",
+      "model_execution/on_device_model_execution_proto_value_utils_unittest.cc",
+      "model_execution/on_device_model_service_controller_unittest.cc",
+      "model_execution/optimization_guide_model_execution_error_unittest.cc",
+    ]
+  }
   if (build_with_tflite_lib) {
     sources += [
       "bert_model_executor_unittest.cc",
@@ -550,4 +609,24 @@ if (build_with_tflite_lib) {
       "//components/optimization_guide/proto:optimization_guide_proto",
     ]
   }
+}
+
+action("on_device_model_execution_proto_generator") {
+  script =
+      "//components/optimization_guide/tools/gen_on_device_proto_descriptors.py"
+
+  inputs = [ input_proto_descriptor_file ]
+  outputs = [ output_proto_descriptors_cc_file ]
+
+  args = [
+    "--input_file=" + rebase_path(input_proto_descriptor_file, root_build_dir),
+    "--output_cc=" +
+        rebase_path(output_proto_descriptors_cc_file, root_build_dir),
+    "--include=\"components/optimization_guide/proto/features/compose.pb.h\"",
+  ]
+
+  deps = [
+    "//components/optimization_guide/proto:compose_proto_descriptor",
+    "//third_party/protobuf:py_proto_runtime",
+  ]
 }

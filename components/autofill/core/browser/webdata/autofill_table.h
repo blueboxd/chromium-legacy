@@ -12,10 +12,10 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/span.h"
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/payment_instrument.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/sync_metadata_store.h"
 #include "components/webdata/common/web_database_table.h"
@@ -32,12 +32,13 @@ class MetadataBatch;
 
 namespace autofill {
 
-class AutofillChange;
-class AutofillEntry;
+class AutocompleteChange;
+class AutocompleteEntry;
 struct AutofillMetadata;
 class AutofillOfferData;
 class AutofillTableEncryptor;
 class AutofillTableTest;
+class BankAccount;
 class CreditCard;
 struct CreditCardCloudTokenData;
 struct FormFieldData;
@@ -55,6 +56,31 @@ struct ServerCvc {
   const std::u16string cvc;
   // The timestamp of the most recent update to the data entry.
   const base::Time last_updated_timestamp;
+};
+
+// Temporary struct used to store the data retrieved from the
+// `payment_instrument` and `payment_instrument_supported_rails` tables.
+struct PaymentInstrumentFields {
+ public:
+  PaymentInstrumentFields();
+  ~PaymentInstrumentFields();
+
+  // The server generated id for the payment instrument.
+  int64_t instrument_id = 0;
+
+  // The nickname set by the user for the payment instrument.
+  std::u16string nickname;
+
+  // The type of payment instrument. This is used to determine which table to
+  // fetch the remaining instrument details from.
+  PaymentInstrument::InstrumentType instrument_type =
+      PaymentInstrument::InstrumentType::kUnknown;
+
+  // The URL for the display icon that can be used in the UI.
+  GURL display_icon_url;
+
+  // The payment rails that are supported for this payment instrument.
+  std::set<PaymentInstrument::PaymentRail> payment_rails;
 };
 
 // This class manages the various Autofill tables within the SQLite database
@@ -390,48 +416,6 @@ struct ServerCvc {
 //   use_date           The date this IBAN was last used to fill a form,
 //                      in time_t.
 //
-// server_addresses     This table contains Autofill address data synced from
-//                      the wallet server. It's basically the same as the
-//                      autofill_profiles table but locally immutable.
-//
-//   id                 String assigned by the server to identify this address.
-//                      This is opaque to the client.
-//   recipient_name     Added in v63.
-//   company_name
-//   street_address     The combined lines of the street address.
-//   address_1          Also known as "administrative area". This is normally
-//                      the state or province in most countries.
-//   address_2          Also known as "locality". In the US this is the city.
-//   address_3          A sub-classification beneath the city, e.g. an
-//                      inner-city district or suburb. Also known as
-//                      "dependent_locality".
-//   address_4          Used in certain countries. Also known as
-//                      "sub_dependent_locality".
-//   postal_code
-//   sorting_code       Similar to the zipcode column, but used for businesses
-//                      or organizations that might not be geographically
-//                      contiguous. The canonical example is CEDEX in France.
-//   country_code
-//   language_code      The BCP 47 language code used to format the address for
-//                      display. For example, a JP address with "ja" language
-//                      code starts with the postal code, but a JP address with
-//                      "ja-latn" language code starts with the recipient name.
-//   phone_number       Phone number. This is a string and has no formatting
-//                      constraints. Added in version 64.
-//
-// server_address_metadata
-//                      Metadata (currently, usage data) about server addresses.
-//                      This will be synced.
-//
-//   id                 The server ID, which matches an ID from the
-//                      server_addresses table.
-//   use_count          The number of times this address has been used to fill
-//                      a form.
-//   use_date           The date this address was last used to fill a form,
-//                      in internal t.
-//   has_converted      Whether this server address has been converted to a
-//                      local autofill profile.
-//
 // autofill_sync_metadata
 //                      Sync-specific metadata for autofill records.
 //
@@ -574,7 +558,69 @@ struct ServerCvc {
 //  last_updated_timestamp
 //                      The timestamp of the most recent update to the data
 //                      entry.
-
+//
+// payment_instruments  This table contains basic details that apply to all
+//                      payment instruments synced from Payments backend via
+//                      Chrome Sync. This does not apply to credit cards or IBAN
+//                      for legacy reasons.
+//                      The pair of (`instrument_id`, `instrument_type`) are the
+//                      composite primary key for this table
+//
+//  instrument_id       The server-generated id for the payment instrument.
+//  instrument_type     The type of payment instrument. This is an integer
+//                      mapping to one of the following types: {BankAccount}.
+//                      This determines which table to query for fetching the
+//                      instrument details.
+//  nickname            The nickname set by the user for the payment instrument.
+//  display_icon_url    The URL for the icon to be displayed when showing the
+//                      payment instrument to the user.
+//
+// payment_instruments_metadata
+//                      Metadata (currently, usage data) about payment
+//                      instruments. This will be synced.
+//                      The pair of (`instrument_id`, `instrument_type`) are the
+//                      composite primary key for this table and can be used as
+//                      the foreign key to the `payment_instruments` table.
+//
+//  instrument_id       The server-generated id for the payment instrument.
+//  instrument_type     The type of payment instrument. This is an integer
+//                      mapping to one of the following types: {BankAccount}.
+//  use_count           The number of times this payment instrument has been
+//                      used.
+//  use_date            The date this payment instrument was last used.
+//
+// payment_instrument_supported_rails
+//                      This table stores the mapping of what payment instrument
+//                      is supported for which payment rails, where a rail can
+//                      loosely represent the different ways in which Chrome can
+//                      intercept a user's payment journey and assist in
+//                      completing it. For example: Pix, UPI, Card number, IBAN
+//                      etc.
+//                      The tuple of (`instrument_id`, `instrument_type`,
+//                      `payment_rail`) are the composite primary key for this
+//                      table. The pair of can (`instrument_id`,
+//                      `instrument_type`) can be used as foreign key to the
+//                      `payment_instruments` table.
+//
+//  instrument_id       The server-generated id for the payment instrument.
+//  instrument_type     The type of payment instrument. This is an integer
+//                      mapping to one of the following types: {BankAccount}.
+//  payment_rail        This is an integer mapping to one of the following
+//                      types: {Pix}.
+//
+// bank_accounts        This table contains the bank account data synced via
+//                      Chrome Sync.
+//
+//  instrument_id       The identifier assigned by the GPay server to this bank
+//                      account. This is intended to be a unique field.
+//  bank_name           The name of the bank where the account is registered.
+//  account_number_suffix
+//                      The last four digits of the bank account, with which the
+//                      user can identify the account.
+//  account_type        The type of bank account. This is an integer mapping to
+//                      one of the following types: {Checking, Savings, Current,
+//                      Salary, Transacting}
+//
 class AutofillTable : public WebDatabaseTable,
                       public syncer::SyncMetadataStore {
  public:
@@ -588,19 +634,6 @@ class AutofillTable : public WebDatabaseTable,
   // Retrieves the AutofillTable* owned by |db|.
   static AutofillTable* FromWebDatabase(WebDatabase* db);
 
-  // All ServerFieldTypes stored for an AutofillProfile in the local_addresses
-  // or contact_info table (depending on the profile source).
-  // When introducing a new field type, it suffices to add it here. When
-  // removing a field type, removing it from the list suffices (no additional
-  // clean-up in the table necessary). This is not reusing
-  // `AutofillProfile::SupportedTypes()` for three reasons:
-  // - Due to the table design, the stored types are already ambiguous, so we
-  //   prefer the explicitness here.
-  // - Some supported types (like PHONE_HOME_CITY_CODE) are not stored.
-  // - Some non-supported types are stored (usually types that don't have
-  //   filling support yet).
-  static base::span<const ServerFieldType> GetStoredTypesForAutofillProfile();
-
   // WebDatabaseTable:
   WebDatabaseTable::TypeKey GetTypeKey() const override;
   bool CreateTablesIfNecessary() override;
@@ -610,37 +643,37 @@ class AutofillTable : public WebDatabaseTable,
   // autofill table.  A list of all added and updated autofill entries
   // is returned in the changes out parameter.
   bool AddFormFieldValues(const std::vector<FormFieldData>& elements,
-                          std::vector<AutofillChange>* changes);
+                          std::vector<AutocompleteChange>* changes);
 
   // Records a single form element in the database in the autofill table. A list
-  // of all added and updated autofill entries is returned in the changes out
-  // parameter.
+  // of all added and updated autocomplete entries is returned in the changes
+  // out parameter.
   bool AddFormFieldValue(const FormFieldData& element,
-                         std::vector<AutofillChange>* changes);
+                         std::vector<AutocompleteChange>* changes);
 
   // Retrieves a vector of all values which have been recorded in the autofill
   // table as the value in a form element with name |name| and which start with
-  // |prefix|.  The comparison of the prefix is case insensitive.
+  // |prefix|. The comparison of the prefix is case insensitive.
   bool GetFormValuesForElementName(const std::u16string& name,
                                    const std::u16string& prefix,
-                                   std::vector<AutofillEntry>* entries,
+                                   std::vector<AutocompleteEntry>* entries,
                                    int limit);
 
   // Removes rows from the autofill table if they were created on or after
-  // |delete_begin| and last used strictly before |delete_end|.  For rows where
+  // |delete_begin| and last used strictly before |delete_end|. For rows where
   // the time range [date_created, date_last_used] overlaps with [delete_begin,
   // delete_end), but is not entirely contained within the latter range, updates
   // the rows so that their resulting time range [new_date_created,
   // new_date_last_used] lies entirely outside of [delete_begin, delete_end),
-  // updating the count accordingly.  A list of all changed keys and whether
+  // updating the count accordingly. A list of all changed keys and whether
   // each was updater or removed is returned in the changes out parameter.
   bool RemoveFormElementsAddedBetween(const base::Time& delete_begin,
                                       const base::Time& delete_end,
-                                      std::vector<AutofillChange>* changes);
+                                      std::vector<AutocompleteChange>* changes);
 
   // Removes rows from the autofill table if they were last accessed strictly
-  // before |AutofillEntry::ExpirationTime()|.
-  bool RemoveExpiredFormElements(std::vector<AutofillChange>* changes);
+  // before |AutocompleteEntry::ExpirationTime()|.
+  bool RemoveExpiredFormElements(std::vector<AutocompleteChange>* changes);
 
   // Removes the row from the autofill table for the given |name| |value| pair.
   virtual bool RemoveFormElement(const std::u16string& name,
@@ -653,7 +686,8 @@ class AutofillTable : public WebDatabaseTable,
                                                const base::Time& end);
 
   // Retrieves all of the entries in the autofill table.
-  virtual bool GetAllAutofillEntries(std::vector<AutofillEntry>* entries);
+  virtual bool GetAllAutocompleteEntries(
+      std::vector<AutocompleteEntry>* entries);
 
   // Retrieves a single entry from the autofill table.
   virtual bool GetAutofillTimestamps(const std::u16string& name,
@@ -661,10 +695,10 @@ class AutofillTable : public WebDatabaseTable,
                                      base::Time* date_created,
                                      base::Time* date_last_used);
 
-  // Replaces existing autofill entries with the entries supplied in
-  // the argument.  If the entry does not already exist, it will be
-  // added.
-  virtual bool UpdateAutofillEntries(const std::vector<AutofillEntry>& entries);
+  // Replaces existing autocomplete entries with the entries supplied in
+  // the argument. If the entry does not already exist, it will be added.
+  virtual bool UpdateAutocompleteEntries(
+      const std::vector<AutocompleteEntry>& entries);
 
   // Records a single Autofill profile in the autofill_profiles table.
   virtual bool AddAutofillProfile(const AutofillProfile& profile);
@@ -687,19 +721,32 @@ class AutofillTable : public WebDatabaseTable,
       const std::string& guid,
       AutofillProfile::Source profile_source) const;
 
-  // Retrieves local/server profiles in the database. They are returned in
-  // unspecified order.
+  // Retrieves profiles in the database. They are returned in unspecified order.
   // The `profile_source` specifies if profiles from the legacy or the remote
   // backend should be retrieved.
   virtual bool GetAutofillProfiles(
       AutofillProfile::Source profile_source,
       std::vector<std::unique_ptr<AutofillProfile>>* profiles) const;
-  virtual bool GetServerProfiles(
-      std::vector<std::unique_ptr<AutofillProfile>>* profiles) const;
 
-  // Sets the server profiles. All old profiles are deleted and replaced with
-  // the given ones.
-  void SetServerProfiles(const std::vector<AutofillProfile>& profiles);
+  // Fetches a PaymentInstrument from the autofill db. This will query the below
+  // 3 tables to generate a PaymentInstrument object.
+  //  `payment_instruments`
+  //  `payment_instrument_supported_rails`
+  //  instrument type specific table
+  // Note: The actual object will be one of the derived class of
+  // PaymentInstrument and can be determined
+  // by calling the `GetInstrumentType` method on it.
+  std::unique_ptr<PaymentInstrument> GetPaymentInstrument(
+      int64_t instrument_id,
+      PaymentInstrument::InstrumentType instrument_type);
+
+  // Records a single BankAccount in the bank accounts table. Returns true if
+  // the BankAccount was successfully added to the database.
+  bool AddBankAccount(const BankAccount& bank_account);
+  // Returns true if the BankAccount was successfully updated in the database.
+  bool UpdateBankAccount(const BankAccount& bank_account);
+  // Delete the bank account from the database.
+  bool RemoveBankAccount(const BankAccount& bank_account);
 
   // Records a single IBAN in the local_ibans table.
   bool AddLocalIban(const Iban& iban);
@@ -741,7 +788,7 @@ class AutofillTable : public WebDatabaseTable,
   virtual bool GetCreditCards(
       std::vector<std::unique_ptr<CreditCard>>* credit_cards);
   virtual bool GetServerCreditCards(
-      std::vector<std::unique_ptr<CreditCard>>* credit_cards) const;
+      std::vector<std::unique_ptr<CreditCard>>& credit_cards) const;
 
   // Replaces all server credit cards with the given vector. Unmasked cards
   // present in the new list will be preserved (even if the input is MASKED).
@@ -773,39 +820,35 @@ class AutofillTable : public WebDatabaseTable,
   // Get all server cvcs from `server_stored_cvc` table.
   std::vector<std::unique_ptr<ServerCvc>> GetAllServerCvcs() const;
 
-  // Methods to add, update, remove and get the metadata for server cards,
-  // addresses, and IBANs. Return true if the operations succeeded.
+  // This will clear all the local cvcs.
+  bool ClearLocalCvcs();
+
+  // Methods to add, update, remove and get the metadata for server cards and
+  // IBANs. Return true if the operations succeeded.
   bool AddServerCardMetadata(const AutofillMetadata& card_metadata);
   bool UpdateServerCardMetadata(const CreditCard& credit_card);
   bool UpdateServerCardMetadata(const AutofillMetadata& card_metadata);
   bool RemoveServerCardMetadata(const std::string& id);
   bool GetServerCardsMetadata(
-      std::map<std::string, AutofillMetadata>* cards_metadata) const;
-  bool AddServerAddressMetadata(const AutofillMetadata& address_metadata);
-  bool UpdateServerAddressMetadata(const AutofillProfile& profile);
-  bool UpdateServerAddressMetadata(const AutofillMetadata& address_metadata);
-  bool RemoveServerAddressMetadata(const std::string& id);
-  bool GetServerAddressesMetadata(
-      std::map<std::string, AutofillMetadata>* addresses_metadata) const;
-  bool AddOrUpdateServerIbanMetadata(const Iban& iban);
+      std::vector<AutofillMetadata>& cards_metadata) const;
+  bool AddOrUpdateServerIbanMetadata(const AutofillMetadata& iban_metadata);
   bool RemoveServerIbanMetadata(const std::string& instrument_id);
   std::vector<AutofillMetadata> GetServerIbansMetadata() const;
 
-  // Methods to add the server cards and addresses data independently from the
-  // metadata.
+  // Method to add the server cards independently from the metadata.
   void SetServerCardsData(const std::vector<CreditCard>& credit_cards);
-  void SetServerAddressesData(const std::vector<AutofillProfile>& profiles);
 
   // Setters and getters related to the CreditCardCloudTokenData of server
   // cards. Used by AutofillWalletSyncBridge to interact with the stored data.
   void SetCreditCardCloudTokenData(const std::vector<CreditCardCloudTokenData>&
                                        credit_card_cloud_token_data);
   bool GetCreditCardCloudTokenData(
-      std::vector<std::unique_ptr<CreditCardCloudTokenData>>*
+      std::vector<std::unique_ptr<CreditCardCloudTokenData>>&
           credit_card_cloud_token_data);
 
-  // Gets the list of server IBANs from the database.
-  std::vector<std::unique_ptr<Iban>> GetServerIbans();
+  // Returns true if server IBANs are successfully returned via `ibans` from
+  // the database.
+  bool GetServerIbans(std::vector<std::unique_ptr<Iban>>& ibans);
   // Overwrite the IBANs in the database with the given `ibans`.
   bool SetServerIbans(const std::vector<Iban>& ibans);
 
@@ -813,9 +856,9 @@ class AutofillTable : public WebDatabaseTable,
   // Passing null to the setter will clear the data.
   void SetPaymentsCustomerData(const PaymentsCustomerData* customer_data);
   // Getter returns false if it could not execute the database statement, and
-  // may return true but leave |customer_data| untouched if there is no data.
+  // may return true but leave `customer_data` untouched if there is no data.
   bool GetPaymentsCustomerData(
-      std::unique_ptr<PaymentsCustomerData>* customer_data) const;
+      std::unique_ptr<PaymentsCustomerData>& customer_data) const;
 
   // |autofill_offer_data| must include all existing offers, since table will
   // be completely overwritten.
@@ -931,6 +974,8 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion117AddProfileObservationColumn();
   bool MigrateToVersion118RemovePaymentsUpiVpaTable();
   bool MigrateToVersion119AddMaskedIbanTablesAndRenameLocalIbanTable();
+  bool MigrateToVersion120AddPaymentInstrumentAndBankAccountTables();
+  bool MigrateToVersion121DropServerAddressTables();
 
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.
@@ -938,58 +983,57 @@ class AutofillTable : public WebDatabaseTable,
   static const size_t kMaxDataLength;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill);
-  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill_AddChanges);
+  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autocomplete);
+  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autocomplete_AddChanges);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest,
-                           Autofill_GetCountOfValuesContainedBetween);
-  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill_RemoveBetweenChanges);
-  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill_UpdateDontReplace);
+                           Autocomplete_GetCountOfValuesContainedBetween);
+  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest,
+                           Autocomplete_RemoveBetweenChanges);
+  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autocomplete_UpdateDontReplace);
   FRIEND_TEST_ALL_PREFIXES(
       AutofillTableTest,
-      Autofill_RemoveFormElementsAddedBetween_UsedOnlyBefore);
+      Autocomplete_RemoveFormElementsAddedBetween_UsedOnlyBefore);
   FRIEND_TEST_ALL_PREFIXES(
       AutofillTableTest,
-      Autofill_RemoveFormElementsAddedBetween_UsedOnlyAfter);
+      Autocomplete_RemoveFormElementsAddedBetween_UsedOnlyAfter);
   FRIEND_TEST_ALL_PREFIXES(
       AutofillTableTest,
-      Autofill_RemoveFormElementsAddedBetween_UsedOnlyDuring);
+      Autocomplete_RemoveFormElementsAddedBetween_UsedOnlyDuring);
   FRIEND_TEST_ALL_PREFIXES(
       AutofillTableTest,
-      Autofill_RemoveFormElementsAddedBetween_UsedBeforeAndDuring);
+      Autocomplete_RemoveFormElementsAddedBetween_UsedBeforeAndDuring);
   FRIEND_TEST_ALL_PREFIXES(
       AutofillTableTest,
-      Autofill_RemoveFormElementsAddedBetween_UsedDuringAndAfter);
+      Autocomplete_RemoveFormElementsAddedBetween_UsedDuringAndAfter);
   FRIEND_TEST_ALL_PREFIXES(
       AutofillTableTest,
-      Autofill_RemoveFormElementsAddedBetween_OlderThan30Days);
+      Autocomplete_RemoveFormElementsAddedBetween_OlderThan30Days);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest,
                            RemoveExpiredFormElements_Expires_DeleteEntry);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest,
                            RemoveExpiredFormElements_NotOldEnough);
-  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill_AddFormFieldValues);
+  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autocomplete_AddFormFieldValues);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, AutofillProfile);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, UpdateAutofillProfile);
-  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, AutofillProfileTrash);
-  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, AutofillProfileTrashInteraction);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest,
                            RemoveAutofillDataModifiedBetween);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, CreditCard);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, UpdateCreditCard);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest,
-                           Autofill_GetAllAutofillEntries_OneResult);
+                           Autocomplete_GetAllAutocompleteEntries_OneResult);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest,
-                           Autofill_GetAllAutofillEntries_TwoDistinct);
+                           Autocomplete_GetAllAutocompleteEntries_TwoDistinct);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest,
-                           Autofill_GetAllAutofillEntries_TwoSame);
-  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill_GetEntry_Populated);
+                           Autocomplete_GetAllAutocompleteEntries_TwoSame);
+  FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autocomplete_GetEntry_Populated);
 
-  // Methods for adding autofill entries at a specified time.  For
-  // testing only.
+  // Methods for adding autocomplete entries at a specified time. For testing
+  // only.
   bool AddFormFieldValuesTime(const std::vector<FormFieldData>& elements,
-                              std::vector<AutofillChange>* changes,
+                              std::vector<AutocompleteChange>* changes,
                               base::Time time);
   bool AddFormFieldValueTime(const FormFieldData& element,
-                             std::vector<AutofillChange>* changes,
+                             std::vector<AutocompleteChange>* changes,
                              base::Time time);
 
   bool SupportsMetadataForModelType(syncer::ModelType model_type) const;
@@ -1001,8 +1045,8 @@ class AutofillTable : public WebDatabaseTable,
   bool GetModelTypeState(syncer::ModelType model_type,
                          sync_pb::ModelTypeState* state);
 
-  // Insert a single AutofillEntry into the autofill table.
-  bool InsertAutofillEntry(const AutofillEntry& entry);
+  // Insert a single AutocompleteEntry into the autofill table.
+  bool InsertAutocompleteEntry(const AutocompleteEntry& entry);
 
   // Adds to |masked_credit_cards| and updates |server_card_metadata|.
   // Must already be in a transaction.
@@ -1016,17 +1060,38 @@ class AutofillTable : public WebDatabaseTable,
   bool DeleteFromMaskedCreditCards(const std::string& id);
   bool DeleteFromUnmaskedCreditCards(const std::string& id);
 
-  // Helper function extracting common code between `SetServerProfiles()` and
-  // `SetServerAddressData()`.
-  void SetServerProfilesAndMetadata(
-      const std::vector<AutofillProfile>& profiles,
-      bool update_metadata);
-
   // Reads profiles from the deprecated autofill_profiles table.
   std::unique_ptr<AutofillProfile> GetAutofillProfileFromLegacyTable(
       const std::string& guid) const;
   bool GetAutofillProfilesFromLegacyTable(
       std::vector<std::unique_ptr<AutofillProfile>>* profiles) const;
+
+  // Retrieve the data from the `bank_accounts` table and return a BankAccount
+  // object. The `payment_instrument_fields` contain the fields retrieved from
+  // the `payment_instruments` and `payment_instrument_supported_rails` tables
+  // which are required to generate the BankAccount object.
+  std::unique_ptr<BankAccount> GetBankAccount(
+      const PaymentInstrumentFields& payment_instrument_fields);
+
+  // Adds a single PaymentInstrument to the autofill db. This will add at least
+  // one row to the `payment_instruments` and
+  // `payment_instrument_supported_rails` tables and depending on the type of
+  // PaymentInstrument, an entry will be added to the corresponding instrument
+  // type specific table. Returns true only if all of the updates to
+  // `payment_instruments`,`payment_instrument_supported_rails` and the
+  // instrument type specific tables are successfully updated. This method
+  // should be called from within an sql transaction.
+  bool AddPaymentInstrument(const PaymentInstrument& payment_instrument);
+  // Updates the `payment_instrument`, `payment_instrument_supported_rails` and
+  // the instrument type specific tables. Returns true only if the updates to
+  // all three tables are successful.This method should be called from within an
+  // sql transaction.
+  bool UpdatePaymentInstrument(const PaymentInstrument& payment_instrument);
+  // Deletes the payment instrument from the `payment_instrument`,
+  // `payment_instrument_supported_rails` and the instrument type specific
+  // tables. Returns true only if the updates to all the three tables are
+  // successful.This method should be called from within an sql transaction.
+  bool RemovePaymentInstrument(const PaymentInstrument& payment_instrument);
 
   bool InitMainTable();
   bool InitCreditCardsTable();
@@ -1042,8 +1107,6 @@ class AutofillTable : public WebDatabaseTable,
   bool InitMaskedIbansMetadataTable();
   bool InitUnmaskedCreditCardsTable();
   bool InitServerCardMetadataTable();
-  bool InitServerAddressesTable();
-  bool InitServerAddressMetadataTable();
   bool InitAutofillSyncMetadataTable();
   bool InitModelTypeStateTable();
   bool InitPaymentsCustomerDataTable();
@@ -1055,6 +1118,10 @@ class AutofillTable : public WebDatabaseTable,
   bool InitProfileMetadataTable(AutofillProfile::Source source);
   bool InitProfileTypeTokensTable(AutofillProfile::Source source);
   bool InitVirtualCardUsageDataTable();
+  bool InitBankAccountsTable();
+  bool InitPaymentInstrumentsTable();
+  bool InitPaymentInstrumentsMetadataTable();
+  bool InitPaymentInstrumentSupportedRailsTable();
 
   std::unique_ptr<AutofillTableEncryptor> autofill_table_encryptor_;
 };

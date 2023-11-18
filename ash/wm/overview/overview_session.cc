@@ -10,14 +10,12 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/frame_throttler/frame_throttling_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/utility/haptics_util.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/legacy_desk_bar_view.h"
@@ -38,8 +36,6 @@
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/scoped_float_container_stacker.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
-#include "ash/wm/splitview/auto_snap_controller.h"
-#include "ash/wm/splitview/split_view_overview_session.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
@@ -49,10 +45,10 @@
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
+#include "chromeos/utils/haptics_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/devices/haptic_touchpad_effects.h"
@@ -430,7 +426,12 @@ void OverviewSession::SelectWindow(OverviewItemBase* item) {
   const aura::Window::Windows window_list =
       Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal(
           kActiveDesk);
-  aura::Window* window = GetWindowForSelection(item, window_list);
+
+  const auto windows = item->GetWindows();
+  CHECK(!windows.empty());
+  aura::Window* window = windows.size() > 1u
+                             ? GetWindowForSelection(item, window_list)
+                             : windows[0];
 
   if (!window_list.empty()) {
     // Record `WindowSelector_ActiveWindowChanged` if the user is selecting a
@@ -443,8 +444,8 @@ void OverviewSession::SelectWindow(OverviewItemBase* item) {
           TaskSwitchSource::OVERVIEW_MODE);
     }
 
-    const auto it = base::ranges::find(window_list, window);
-    if (it != window_list.end()) {
+    if (const auto it = base::ranges::find(window_list, window);
+        it != window_list.end()) {
       // Record 1-based index so that selecting a top MRU window will record 1.
       UMA_HISTOGRAM_COUNTS_100("Ash.Overview.SelectionDepth",
                                1 + it - window_list.begin());
@@ -534,7 +535,7 @@ void OverviewSession::UpdateDropTargetsBackgroundVisibilities(
     OverviewItemBase* dragged_item,
     const gfx::PointF& location_in_screen) {
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
-    if (grid->GetDropTarget()) {
+    if (grid->drop_target()) {
       grid->UpdateDropTargetBackgroundVisibility(dragged_item,
                                                  location_in_screen);
     }
@@ -623,14 +624,16 @@ void OverviewSession::RemoveItem(OverviewItemBase* overview_item,
 
 void OverviewSession::RemoveDropTargets() {
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
-    if (grid->GetDropTarget())
+    if (grid->drop_target()) {
       grid->RemoveDropTarget();
+    }
   }
 }
 
 void OverviewSession::InitiateDrag(OverviewItemBase* item,
                                    const gfx::PointF& location_in_screen,
-                                   bool is_touch_dragging) {
+                                   bool is_touch_dragging,
+                                   OverviewItemBase* event_source_item) {
   if (OverviewController::Get()->IsInStartAnimation() ||
       SplitViewController::Get(Shell::GetPrimaryRootWindow())
           ->IsDividerAnimating()) {
@@ -639,7 +642,7 @@ void OverviewSession::InitiateDrag(OverviewItemBase* item,
 
   focus_cycler_->SetFocusVisibility(false);
   window_drag_controller_ = std::make_unique<OverviewWindowDragController>(
-      this, item, is_touch_dragging);
+      this, item, is_touch_dragging, event_source_item);
   window_drag_controller_->InitiateDrag(location_in_screen);
 
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
@@ -649,7 +652,7 @@ void OverviewSession::InitiateDrag(OverviewItemBase* item,
 
   // Fire a haptic event if necessary.
   if (!is_touch_dragging) {
-    haptics_util::PlayHapticTouchpadEffect(
+    chromeos::haptics_util::PlayHapticTouchpadEffect(
         ui::HapticTouchpadEffect::kTick,
         ui::HapticTouchpadEffectStrength::kMedium);
   }
@@ -890,7 +893,7 @@ void OverviewSession::OnWindowActivating(
     // Cancel overview session and do not restore activation when active window
     // is set to nullptr. This happens when removing a display.
     RestoreWindowActivation(false);
-    EndOverview(OverviewEndAction::kWindowActivating);
+    EndOverview(OverviewEndAction::kWindowDeactivating);
     return;
   }
 
@@ -904,22 +907,11 @@ void OverviewSession::OnWindowActivating(
     return;
   }
 
-  if (auto* split_view_overview_session =
-          RootWindowController::ForWindow(gained_active)
-              ->split_view_overview_session()) {
-    base::AutoReset<bool> ignore(&ignore_activations_, true);
-    if (auto* auto_snap_controller =
-            split_view_overview_session->auto_snap_controller();
-        auto_snap_controller &&
-        auto_snap_controller->OnWindowActivatingFromOverview(reason,
-                                                             gained_active)) {
-      // If `SplitViewOverviewSession` created `AutoSnapController`, let it
-      // handle `OnWindowActivatingFromOverview()` first in case it needs to
-      // auto snap the window, before we fall through to `EndOverview()`.
-      RestoreWindowActivation(false);
-      EndOverview(OverviewEndAction::kWindowActivating);
-      return;
-    }
+  if (RootWindowController::ForWindow(gained_active)
+          ->split_view_overview_session()) {
+    // Let `SplitViewOverviewSession` handle the window activation change.
+    RestoreWindowActivation(false);
+    return;
   }
 
   // Do not cancel overview mode if the window activation happens when split
@@ -943,8 +935,9 @@ void OverviewSession::OnWindowActivating(
   // dragged as evidenced by the presence of a drop target. (Dragging to close
   // does not count; canceling overview mode is okay then.)
   for (std::unique_ptr<OverviewGrid>& overview_grid : grid_list_) {
-    if (overview_grid->GetDropTarget())
+    if (overview_grid->drop_target()) {
       return;
+    }
   }
 
   auto* grid = GetGridWithRootWindow(gained_active->GetRootWindow());
@@ -1024,7 +1017,7 @@ void OverviewSession::RestoreWindowActivation(bool restore) {
   active_window_before_overview_ = nullptr;
 }
 
-void OverviewSession::OnFocusedItemActivated(OverviewItemBase* item) {
+void OverviewSession::OnFocusedItemActivated(OverviewItem* item) {
   UMA_HISTOGRAM_COUNTS_100("Ash.Overview.ArrowKeyPresses", num_key_presses_);
   UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.Overview.KeyPressesOverItemsRatio",
                               (num_key_presses_ * 100) / num_items_, 1, 300,
@@ -1034,7 +1027,7 @@ void OverviewSession::OnFocusedItemActivated(OverviewItemBase* item) {
   SelectWindow(item);
 }
 
-void OverviewSession::OnFocusedItemClosed(OverviewItemBase* item) {
+void OverviewSession::OnFocusedItemClosed(OverviewItem* item) {
   base::RecordAction(
       base::UserMetricsAction("WindowSelector_OverviewCloseKey"));
   item->CloseWindows();
@@ -1122,6 +1115,10 @@ void OverviewSession::ShowSavedDeskLibrary(
     const base::Uuid& item_to_focus,
     const std::u16string& saved_desk_name,
     aura::Window* const root_window) {
+  // Some windows such as the print preview may request activation due to
+  // occlusion computations. These should not cause use to exit overview.
+  base::AutoReset<bool> ignore(&ignore_activations_, true);
+
   if (Shell::Get()->tablet_mode_controller()->InTabletMode() ||
       IsShowingSavedDeskLibrary()) {
     return;
@@ -1182,11 +1179,9 @@ void OverviewSession::ShowSavedDeskLibrary(
 }
 
 void OverviewSession::HideSavedDeskLibrary() {
-  // Before hiding the saved desk library, we need to explicitly activate the
-  // focus window. Otherwise, some other window may get activated as the saved
-  // desk library is hidden, and this could in turn lead to exiting overview
-  // mode.
-  wm::ActivateWindow(GetOverviewFocusWindow());
+  // Some windows such as the print preview may request activation due to
+  // occlusion computations. These should not cause use to exit overview.
+  base::AutoReset<bool> ignore(&ignore_activations_, true);
 
   for (auto& grid : grid_list_)
     grid->HideSavedDeskLibrary(/*exit_overview=*/false);
@@ -1233,10 +1228,8 @@ void OverviewSession::UpdateAccessibilityFocus() {
     if (grid->IsSaveDeskButtonContainerVisible())
       a11y_widgets.push_back(grid->save_desk_button_container_widget());
 
-    auto* no_windows_widget = grid->no_windows_widget();
-    if (no_windows_widget) {
-      a11y_widgets.push_back(
-          static_cast<views::Widget*>(grid->no_windows_widget()));
+    if (auto* no_windows_widget = grid->no_windows_widget()) {
+      a11y_widgets.push_back(no_windows_widget);
     }
   }
 
@@ -1630,12 +1623,6 @@ void OverviewSession::OnItemAdded(aura::Window* window) {
   UpdateNoWindowsWidgetOnEachGrid(/*animate=*/true,
                                   /*is_continuous_enter=*/false);
 
-  OverviewGrid* grid = GetGridWithRootWindow(window->GetRootWindow());
-  // The drop target window is non-activatable, so no need to transfer focus.
-  if (grid && grid->IsDropTargetItem(grid->GetOverviewItemContaining(window))) {
-    return;
-  }
-
   // Transfer focus from `window` to `overview_focus_widget_` to match the
   // behavior of entering overview mode in the beginning.
   DCHECK(overview_focus_widget_);
@@ -1663,7 +1650,9 @@ void OverviewSession::UpdateFrameThrottling() {
       }
 
       for (auto& item : grid->window_list()) {
-        windows_to_throttle.push_back(item->GetWindow());
+        for (auto* window : item->GetWindows()) {
+          windows_to_throttle.push_back(window);
+        }
       }
     }
   }

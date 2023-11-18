@@ -4,9 +4,9 @@
 
 #include "third_party/blink/renderer/core/layout/list/unpositioned_list_marker.h"
 
+#include "third_party/blink/renderer/core/layout/inline/fragment_items_builder.h"
+#include "third_party/blink/renderer/core/layout/inline/physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/list/layout_outside_list_marker.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items_builder.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
@@ -58,7 +58,7 @@ absl::optional<LayoutUnit> UnpositionedListMarker::ContentAlignmentBaseline(
     const NGPhysicalFragment& content) const {
   // Compute the baseline of the child content.
   if (content.IsLineBox()) {
-    const auto& line_box = To<NGPhysicalLineBoxFragment>(content);
+    const auto& line_box = To<PhysicalLineBoxFragment>(content);
 
     // If this child is an empty line-box, the list marker should be aligned
     // with the next non-empty line box produced. (This can occur with floats
@@ -72,8 +72,8 @@ absl::optional<LayoutUnit> UnpositionedListMarker::ContentAlignmentBaseline(
   // If this child content does not have any line boxes, the list marker
   // should be aligned to the first line box of next child.
   // https://github.com/w3c/csswg-drafts/issues/2417
-  return NGBoxFragment(space.GetWritingDirection(),
-                       To<NGPhysicalBoxFragment>(content))
+  return LogicalBoxFragment(space.GetWritingDirection(),
+                            To<NGPhysicalBoxFragment>(content))
       .FirstBaseline();
 }
 
@@ -90,8 +90,8 @@ void UnpositionedListMarker::AddToBox(
       To<NGPhysicalBoxFragment>(marker_layout_result.PhysicalFragment());
 
   // Compute the inline offset of the marker.
-  NGBoxFragment marker_fragment(space.GetWritingDirection(),
-                                marker_physical_fragment);
+  LogicalBoxFragment marker_fragment(space.GetWritingDirection(),
+                                     marker_physical_fragment);
   LogicalOffset marker_offset(InlineOffset(marker_fragment.Size().inline_size),
                               *block_offset);
 
@@ -114,8 +114,7 @@ void UnpositionedListMarker::AddToBox(
       marker_offset.block_offset);
 
   DCHECK(container_builder);
-  if (NGFragmentItemsBuilder* items_builder =
-          container_builder->ItemsBuilder()) {
+  if (FragmentItemsBuilder* items_builder = container_builder->ItemsBuilder()) {
     items_builder->AddListMarker(marker_physical_fragment, marker_offset);
     return;
   }
@@ -198,12 +197,12 @@ LayoutUnit UnpositionedListMarker::ComputeIntrudedFloatOffset(
 #if DCHECK_IS_ON()
 // TODO: Currently we haven't supported ::marker, so the margin-top of marker
 // should always be zero. And this make us could resolve LI's BFC block-offset
-// in NGBlockLayoutAlgorithm::PositionOrPropagateListMarker and
-// NGBlockLayoutAlgorithm::PositionListMarkerWithoutLineBoxes without consider
+// in BlockLayoutAlgorithm::PositionOrPropagateListMarker and
+// BlockLayoutAlgorithm::PositionListMarkerWithoutLineBoxes without consider
 // marker's margin-top.
 void UnpositionedListMarker::CheckMargin() const {
   DCHECK(marker_layout_object_);
-  DCHECK(marker_layout_object_->StyleRef().MarginBefore().IsZero());
+  DCHECK(marker_layout_object_->StyleRef().MarginBlockStart().IsZero());
 }
 #endif
 

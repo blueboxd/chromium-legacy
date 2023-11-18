@@ -34,10 +34,6 @@ namespace gfx {
 class RectF;
 }  // namespace gfx
 
-namespace password_manager {
-class ContentPasswordManagerDriver;
-}
-
 namespace ui {
 class AXPlatformNode;
 }
@@ -46,7 +42,6 @@ namespace autofill {
 
 class AutofillPopupDelegate;
 class AutofillPopupView;
-class ContentAutofillDriver;
 
 // Sub-popups and their parent popups are connected by providing children
 // with links to their parents. This interface defines the API exposed by
@@ -61,6 +56,11 @@ class ExpandablePopupParentControllerImpl {
   // `nullptr` is returned in these cases.
   virtual base::WeakPtr<AutofillPopupView> CreateSubPopupView(
       base::WeakPtr<AutofillPopupController> sub_controller) = 0;
+
+  // Returns the number of popups above this one. For example, if `this` is the
+  // second popup, `GetPopupLevel()` returns 1, if `this` is the root popup,
+  // it returns 0.
+  virtual int GetPopupLevel() const = 0;
 };
 
 // This class is a controller for an AutofillPopupView. It implements
@@ -94,8 +94,7 @@ class AutofillPopupControllerImpl
                     AutoselectFirstSuggestion autoselect_first_suggestion);
 
   // Updates the data list values currently shown with the popup.
-  virtual void UpdateDataListValues(const std::vector<std::u16string>& values,
-                                    const std::vector<std::u16string>& labels);
+  virtual void UpdateDataListValues(base::span<const SelectOption> options);
 
   // Informs the controller that the popup may not be hidden by stale data or
   // interactions with native Chrome UI. This state remains active until the
@@ -223,15 +222,10 @@ class AutofillPopupControllerImpl
   // a case, we should hide the popup.
   bool IsMouseLocked() const;
 
-  // Casts `delegate_->GetDriver()` to ContentAutofillDriver or
-  // ContentPasswordManagerDriver, respectively.
-  absl::variant<ContentAutofillDriver*,
-                password_manager::ContentPasswordManagerDriver*>
-  GetDriver();
-
   // ExpandablePopupParentControllerImpl:
   base::WeakPtr<AutofillPopupView> CreateSubPopupView(
       base::WeakPtr<AutofillPopupController> controller) override;
+  int GetPopupLevel() const override;
 
   // Returns `true` if this popup has no parent, and `false` for sub-popups.
   bool IsRootPopup() const;
@@ -263,7 +257,8 @@ class AutofillPopupControllerImpl
   std::vector<Suggestion> suggestions_;
 
   // The trigger source of the `suggestions_`.
-  AutofillSuggestionTriggerSource trigger_source_;
+  AutofillSuggestionTriggerSource trigger_source_ =
+      AutofillSuggestionTriggerSource::kUnspecified;
 
   // If set to true, the popup will stay open regardless of external changes on
   // the machine that would normally cause the popup to be hidden.

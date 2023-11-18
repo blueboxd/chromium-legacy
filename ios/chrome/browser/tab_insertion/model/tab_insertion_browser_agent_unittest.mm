@@ -4,11 +4,16 @@
 
 #import "ios/chrome/browser/tab_insertion/model/tab_insertion_browser_agent.h"
 
+#import "ios/chrome/browser/sessions/session_restoration_service.h"
+#import "ios/chrome/browser/sessions/session_restoration_service_factory.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/web_state_list/test/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/url_loading/model/new_tab_animation_tab_helper.h"
+#import "ios/chrome/browser/web/features.h"
+#import "ios/chrome/browser/web/session_state/web_session_state_tab_helper.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/navigation/referrer.h"
 #import "ios/web/public/test/web_task_environment.h"
@@ -18,13 +23,44 @@ namespace {
 
 const char kURL1[] = "https://www.some.url.com";
 
+// A WebStateListDelegate that creates the WebSessionStateTabHelper for
+// WebState inserted in the WebStateList (as this is required by the
+// LegacySessionRestorationService).
+class TestWebStateListDelegate final : public FakeWebStateListDelegate {
+ public:
+  TestWebStateListDelegate(bool force_realization_on_activation)
+      : FakeWebStateListDelegate(force_realization_on_activation) {}
+
+  void WillAddWebState(web::WebState* web_state) final {
+    if (web::UseNativeSessionRestorationCache()) {
+      WebSessionStateTabHelper::CreateForWebState(web_state);
+    }
+  }
+};
+
+}  // namespace
+
 class TabInsertionBrowserAgentTest : public PlatformTest {
  public:
   TabInsertionBrowserAgentTest() {
     browser_state_ = TestChromeBrowserState::Builder().Build();
-    browser_ = std::make_unique<TestBrowser>(browser_state_.get());
+    browser_ = std::make_unique<TestBrowser>(
+        browser_state_.get(), std::make_unique<TestWebStateListDelegate>(
+                                  /* force_realization_on_activation */ true));
     TabInsertionBrowserAgent::CreateForBrowser(browser_.get());
     agent_ = TabInsertionBrowserAgent::FromBrowser(browser_.get());
+  }
+
+  void SetUp() override {
+    PlatformTest::SetUp();
+    SessionRestorationServiceFactory::GetForBrowserState(browser_state_.get())
+        ->SetSessionID(browser_.get(), "browser");
+  }
+
+  void TearDown() override {
+    SessionRestorationServiceFactory::GetForBrowserState(browser_state_.get())
+        ->Disconnect(browser_.get());
+    PlatformTest::TearDown();
   }
 
   const web::NavigationManager::WebLoadParams LoadParams(GURL url) {
@@ -46,8 +82,6 @@ class TabInsertionBrowserAgentTest : public PlatformTest {
   std::unique_ptr<TestBrowser> browser_;
   TabInsertionBrowserAgent* agent_;
 };
-
-}  // namespace
 
 TEST_F(TabInsertionBrowserAgentTest, InsertUrlSingle) {
   web::WebState* web_state =

@@ -47,6 +47,14 @@ constexpr int kEditingListOffsetInsideMainWindow = 24;
 // The offset from the action view list item to the editing list border.
 constexpr int kEditingListInsideBorderInsets = 16;
 
+// Width of `EditingList`.
+constexpr int kEditingListWidth = 296;
+// Width of `ButtonOptionsMenu` minus the triangle height.
+constexpr int kButtonOptionsMenuWidth = 296;
+
+// Horizontal order inset for `ArrowContainer` and its children.
+constexpr int kArrowContainerHorizontalBorderInset = 16;
+
 // Display mode for display overlay.
 enum class DisplayMode {
   kNone,

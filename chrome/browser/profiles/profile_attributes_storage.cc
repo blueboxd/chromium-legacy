@@ -54,12 +54,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "base/feature_list.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chromeos/constants/chromeos_features.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-
 namespace {
 
 using ImageData = std::vector<unsigned char>;
@@ -317,15 +311,7 @@ ProfileAttributesStorage::ProfileAttributesStorage(
 
     // `info` may become invalid after this call.
     // Profiles loaded from disk can never be omitted.
-    bool is_omitted = false;
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-    // Lacros has one exception to the above rule: web app profiles are
-    // persisted on disk and hidden from the UI.
-    is_omitted = base::FeatureList::IsEnabled(
-                     chromeos::features::kExperimentalWebAppProfileIsolation) &&
-                 Profile::IsWebAppProfileName(kv.first);
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-    InitEntryWithKey(kv.first, is_omitted);
+    InitEntryWithKey(kv.first, /*is_omitted=*/false);
   }
 
   // A profile name can depend on other profile names. Do an additional pass to
@@ -782,8 +768,7 @@ const gfx::Image* ProfileAttributesStorage::LoadAvatarPictureFromPath(
   file_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE, base::BindOnce(&ReadBitmap, image_path),
       base::BindOnce(&ProfileAttributesStorage::OnAvatarPictureLoaded,
-                     const_cast<ProfileAttributesStorage*>(this)->AsWeakPtr(),
-                     profile_path, key));
+                     weak_ptr_factory_.GetWeakPtr(), profile_path, key));
   return nullptr;
 }
 bool ProfileAttributesStorage::IsGAIAPictureLoaded(
@@ -800,8 +785,9 @@ void ProfileAttributesStorage::SaveGAIAImageAtPath(
   cached_avatar_images_.erase(key);
   SaveAvatarImageAtPath(
       profile_path, image, key, image_path,
-      base::BindOnce(&ProfileAttributesStorage::OnGAIAPictureSaved, AsWeakPtr(),
-                     image_url_with_size, profile_path));
+      base::BindOnce(&ProfileAttributesStorage::OnGAIAPictureSaved,
+                     weak_ptr_factory_.GetWeakPtr(), image_url_with_size,
+                     profile_path));
 }
 
 void ProfileAttributesStorage::DeleteGAIAImageAtPath(
@@ -989,7 +975,7 @@ void ProfileAttributesStorage::DownloadHighResAvatarIfNeeded(
       profiles::GetPathOfHighResAvatarAtIndex(icon_index);
   base::OnceClosure callback =
       base::BindOnce(&ProfileAttributesStorage::DownloadHighResAvatar,
-                     AsWeakPtr(), icon_index, profile_path);
+                     weak_ptr_factory_.GetWeakPtr(), icon_index, profile_path);
   file_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&RunCallbackIfFileMissing, file_path,
                                 std::move(callback)));
@@ -1014,7 +1000,7 @@ void ProfileAttributesStorage::DownloadHighResAvatar(
   current_downloader = std::make_unique<ProfileAvatarDownloader>(
       icon_index,
       base::BindOnce(&ProfileAttributesStorage::SaveAvatarImageAtPathNoCallback,
-                     AsWeakPtr(), profile_path));
+                     weak_ptr_factory_.GetWeakPtr(), profile_path));
 
   current_downloader->Start();
 #endif
@@ -1049,7 +1035,8 @@ void ProfileAttributesStorage::SaveAvatarImageAtPath(
     file_task_runner_->PostTaskAndReplyWithResult(
         FROM_HERE, base::BindOnce(&SaveBitmap, std::move(data), image_path),
         base::BindOnce(&ProfileAttributesStorage::OnAvatarPictureSaved,
-                       AsWeakPtr(), key, profile_path, std::move(callback)));
+                       weak_ptr_factory_.GetWeakPtr(), key, profile_path,
+                       std::move(callback)));
   }
 }
 

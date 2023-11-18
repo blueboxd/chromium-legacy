@@ -17,9 +17,10 @@ import {fakeAcceleratorConfig, fakeDefaultAccelerators, fakeLayoutInfo} from 'ch
 import {FakeShortcutProvider} from 'chrome://shortcut-customization/js/fake_shortcut_provider.js';
 import {setShortcutProviderForTesting} from 'chrome://shortcut-customization/js/mojo_interface_provider.js';
 import {Accelerator, AcceleratorConfigResult, AcceleratorInfo, AcceleratorKeyState, AcceleratorState, Modifier} from 'chrome://shortcut-customization/js/shortcut_types.js';
-import {AcceleratorResultData, UserAction} from 'chrome://shortcut-customization/mojom-webui/ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom-webui.js';
+import {AcceleratorResultData, EditDialogCompletedActions, UserAction} from 'chrome://shortcut-customization/mojom-webui/ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom-webui.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
+import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
 import {createAliasedStandardAcceleratorInfo, createCustomStandardAcceleratorInfo, createUserAcceleratorInfo} from './shortcut_customization_test_util.js';
 
@@ -80,13 +81,14 @@ suite('acceleratorEditDialogTest', function() {
     assertEquals(3, acceleratorElements.length);
     assertEquals(
         description,
-        dialog!.querySelector('#dialogTitle')!.textContent!.trim());
+        dialog!.querySelector('#shortcutDescription')!.textContent!.trim());
 
     // Accelerator is sorted, the order is updated to be [c], [ctrl+c],
     // [ctrl+shift+g]
     const accelView1 =
         acceleratorElements[0]!.shadowRoot!.querySelector('accelerator-view');
-    const keys1 = accelView1!.shadowRoot!.querySelectorAll('input-key');
+    const keys1 =
+        accelView1!.shadowRoot!.querySelectorAll('shortcut-input-key');
     // [c]
     assertEquals(1, keys1.length);
     assertEquals(
@@ -94,7 +96,8 @@ suite('acceleratorEditDialogTest', function() {
 
     const accelView2 =
         acceleratorElements[1]!.shadowRoot!.querySelector('accelerator-view');
-    const keys2 = accelView2!.shadowRoot!.querySelectorAll('input-key');
+    const keys2 =
+        accelView2!.shadowRoot!.querySelectorAll('shortcut-input-key');
     // [ctrl + c]
     assertEquals(2, keys2.length);
     assertEquals(
@@ -105,7 +108,8 @@ suite('acceleratorEditDialogTest', function() {
 
     const accelView3 =
         acceleratorElements[2]!.shadowRoot!.querySelector('accelerator-view');
-    const keys3 = accelView3!.shadowRoot!.querySelectorAll('input-key');
+    const keys3 =
+        accelView3!.shadowRoot!.querySelectorAll('shortcut-input-key');
     // [ctrl + shift + g]
     assertEquals(3, keys3.length);
     assertEquals(
@@ -240,6 +244,18 @@ suite('acceleratorEditDialogTest', function() {
     // Expect call count for `restoreDefault` to be 1.
     assertEquals(1, provider.getRestoreDefaultCallCount());
     assertEquals(UserAction.kResetAction, provider.getLatestRecordedAction());
+
+    // Click done button.
+    const doneButton = dialog!.querySelector('#doneButton') as CrButtonElement;
+    doneButton.click();
+
+    // Wait until dialog is closed to make sure onDialogClose() is triggered.
+    await eventToPromise('edit-dialog-closed', viewElement!);
+
+    // Now verify last action was recorded.
+    assertEquals(
+        EditDialogCompletedActions.kReset,
+        provider.getLastEditDialogCompletedActions());
   });
 
   test('RestoreDefaultButtonConflict', async () => {
@@ -728,6 +744,46 @@ suite('acceleratorEditDialogTest', function() {
         HTMLDivElement;
     assertTrue(maxAccelReachedHint.hidden);
     assertFalse(addButtonContainer.hidden);
+  });
+
+  test('showEmptyState', async () => {
+    // Create disabled accelerator info.
+    const acceleratorInfo: AcceleratorInfo =
+        createCustomStandardAcceleratorInfo(
+            Modifier.CONTROL | Modifier.SHIFT,
+            /*key=*/ 71,
+            /*keyDisplay=*/ 'g', AcceleratorState.kDisabledByUser);
+
+    viewElement!.acceleratorInfos = [acceleratorInfo];
+    viewElement!.description = 'test shortcut';
+    await flush();
+
+    // Open dialog.
+    const dialog =
+        viewElement!.shadowRoot!.querySelector('cr-dialog') as CrDialogElement;
+    assertTrue(dialog.open);
+
+    let noShortcutAssigned = viewElement!.shadowRoot!.querySelector(
+                                 '#noShortcutAssigned') as HTMLDivElement;
+
+    // Expect "No shortcut assigned" message is shown when there's no enabled
+    // accelerators in the dialog.
+    assertTrue(!!noShortcutAssigned);
+    assertEquals(
+        'No shortcut assigned', noShortcutAssigned.textContent!.trim());
+
+    // Click add button, ViewState change to ADD.
+    const addButton =
+        dialog!.querySelector('#addAcceleratorButton') as CrButtonElement;
+    assertTrue(!!addButton);
+    addButton!.click();
+    await flush();
+
+    // Expect "No shortcut assigned" message is not displayed when ViewState
+    // becomes ADD.
+    noShortcutAssigned = viewElement!.shadowRoot!.querySelector(
+                             '#noShortcutAssigned') as HTMLDivElement;
+    assertFalse(!!noShortcutAssigned);
   });
 
   test('buttonsVisibility', async () => {

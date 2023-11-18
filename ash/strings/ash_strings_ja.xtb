@@ -29,6 +29,7 @@
 <translation id="109942774857561566">退屈だな</translation>
 <translation id="1104084341931202936">ユーザー補助機能の設定を表示</translation>
 <translation id="1104621072296271835">デバイスを連携させると活用の幅が広がります</translation>
+<translation id="1106446201446919638">1 台のデバイスが接続されています。アクセス ポイントの使用中、Wi-Fi はオフになります。</translation>
 <translation id="1111021433905331574">[設定] &gt; [<ph name="APP_TITLE" />] でキーボードのバックライトの色を変更できます</translation>
 <translation id="1117719261843403176">モバイルデータのオンとオフを切り替える。<ph name="STATE" />。</translation>
 <translation id="112308213915226829">シェルフを自動的に非表示にする</translation>
@@ -92,7 +93,6 @@
 <translation id="1293556467332435079">ファイル</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1294046132466831888">「使い方・ヒント」を開く</translation>
-<translation id="1294929383540927798">ロック画面の通知設定を変更</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1306549533752902673">おすすめのアプリ</translation>
 <translation id="1311294419381837540">タブをキャストしています。いつでもキャストを一時停止または停止できます。</translation>
@@ -115,12 +115,14 @@
 <translation id="1391102559483454063">オン</translation>
 <translation id="1407069428457324124">ダークモード</translation>
 <translation id="1410568680128842168"><ph name="DATE_CELL_TOOL_TIP" />。矢印キーを使用して日付を変更します。</translation>
+<translation id="141170878022560212">中央ボタン</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" />、インストール済みアプリ</translation>
 <translation id="1414919006379339073">現在のウィンドウを閉じる</translation>
 <translation id="1415846719612499304">ネットワーク リストを表示します。<ph name="STATE_TEXT" />。</translation>
 <translation id="1419738280318246476">通知に関する操作を行うには、デバイスのロックを解除してください</translation>
 <translation id="1420408895951708260">夜間モードのオンとオフを切り替えます。<ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">はい</translation>
+<translation id="1435537621343861112">音声入力を開始できません。マイクがオフになっています。</translation>
 <translation id="1455242230282523554">言語設定を表示</translation>
 <translation id="1460620680449458626">音量はミュートされています。</translation>
 <translation id="14648076227129703">カメラへのアクセス権を持つ <ph name="APP1_NAME" />、<ph name="APP2_NAME" />、およびすべてのアプリとウェブサイトに対して、カメラへのアクセスを許可します</translation>
@@ -128,8 +130,8 @@
 <translation id="146902737843070955">管理者がこの変更をリクエストしました</translation>
 <translation id="1469148162491666137">カメラとマイクへのアクセス権を持つ <ph name="APP1_NAME" />、<ph name="APP2_NAME" />、およびすべてのアプリとウェブサイトに対して、アクセスを許可します。ウェブページの更新またはアプリの再起動が必要となる場合があります。</translation>
 <translation id="147310119694673958">スマートフォンのバッテリー <ph name="BATTERY_PERCENTAGE" />%</translation>
+<translation id="1475340220124222168">アクセス ポイントを切り替えます。アクセス ポイントはオンです。1 台のデバイスが接続されています。</translation>
 <translation id="1479909375538722835">フローティング ユーザー補助機能メニュー</translation>
-<translation id="1480845547124508962"><ph name="CURRENT_TIME" />、カレンダー表示を開くには Enter キーを押してください</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" />（HDMI / DP）</translation>
 <translation id="1486307154719069822">音声入力では、声を使って入力できます。テキスト欄にカーソルを置いて、音声入力キーを押すか、画面下部のマイクアイコンを選択します。音声入力の言語は<ph name="LANGUAGE" />に設定されています。音声は Google に送信されて処理されます。音声入力の言語は [設定] &gt; [ユーザー補助] でいつでも変更できます。</translation>
 <translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> と <ph name="SECOND_ITEM_TITLE" /> が置き換わりました</translation>
@@ -202,7 +204,6 @@
 <translation id="1757857692711134412">日の入りまでオフ</translation>
 <translation id="1768366657309696705">キーボード ショートカット「<ph name="LAUNCHER_KEY_NAME" />+ピリオド」が変更されました。Insert キーを使用するには、<ph name="LAUNCHER_KEY_NAME" />+Shift+Backspace キーを押してください。</translation>
 <translation id="1770726142253415363">行 <ph name="ROW_NUMBER" />、列 <ph name="COLUMN_NUMBER" /> に移動しました。</translation>
-<translation id="1771458705381257690">デバイスのセットアップとカスタマイズを行うには <ph name="NAME" /> を開いてください</translation>
 <translation id="1771761307086386028">右にスクロール</translation>
 <translation id="1774796056689732716">カレンダー、<ph name="CURRENT_MONTH_YEAR" />、現在 <ph name="DATE" /> が選択されています。</translation>
 <translation id="1775598828170459419"><ph name="NUM_TOTAL_ITEMS" /> 件中 <ph name="NUM_SHOWN_ITEMS" /> 件を表示しています</translation>
@@ -210,17 +211,7 @@
 <translation id="1787955149152357925">オフ</translation>
 <translation id="1796561540704213354">アクセスしたページ、開いているページなどのウェブサイト</translation>
 <translation id="181103072419391116">信号強度 <ph name="SIGNAL_STRENGTH" />、管理者によって管理</translation>
-<translation id="1815245884418711390">アクセス ポイントを切り替えます。アクセス ポイントはオフです。</translation>
 <translation id="1816896987747843206">カメラへのアクセス権を持つすべてのアプリとウェブサイトに対して、カメラへのアクセスを許可します</translation>
-<translation id="1823280932251546115">ステータス トレイ、時間 <ph name="TIME" />、
-        <ph name="BATTERY" />
-        <ph name="CHANNEL" />
-        <ph name="NETWORK" />、
-        <ph name="PRIVACY" />、
-        <ph name="MANAGED" />
-        <ph name="NOTIFICATION" />、
-        <ph name="IME" />
-        <ph name="LOCALE" /></translation>
 <translation id="1823873187264960516">イーサネット: <ph name="ADDRESS" /></translation>
 <translation id="1824922790784036530">位置情報へのアクセスをオンにする</translation>
 <translation id="1830308660060964064"><ph name="ITEM_TITLE" /> の固定を解除しました</translation>
@@ -281,6 +272,7 @@
 <translation id="2086334242442703436">絵文字選択ツールを開く</translation>
 <translation id="2088116547584365419">ゲーム</translation>
 <translation id="209965399369889474">ネットワークに接続されていません</translation>
+<translation id="2107581415810719320">他のボタン <ph name="BUTTON_NUMBER" /></translation>
 <translation id="2107914222138020205">USB-C ケーブルは Thunderbolt に対応していません。デバイスのパフォーマンスが制限される可能性があります。</translation>
 <translation id="2108303511227308752">キーボード ショートカット「Alt+Backspace」が変更されました。Delete キーを使用するには、<ph name="LAUNCHER_KEY_NAME" />+Backspace キーを押してください。</translation>
 <translation id="2126242104232412123">新しいデスク</translation>
@@ -307,7 +299,6 @@
 <translation id="2258734398699965611">候補のファイル</translation>
 <translation id="2268130516524549846">Bluetooth オフ</translation>
 <translation id="2268813581635650749">すべてログアウト</translation>
-<translation id="2269016722240250274">アプリケーションがマイクを使用しています</translation>
 <translation id="2276987123919776440">15 分</translation>
 <translation id="2277103315734023688">前方に移動</translation>
 <translation id="2282073721614284166">タブでリンクを開く</translation>
@@ -352,7 +343,6 @@
 <translation id="243878895369688216">昨日開いたファイル</translation>
 <translation id="2440978926514840421">GIF の録画が完了しました</translation>
 <translation id="2441427462554639370">保存容量が非常に少なくなっているため、録画を終了しました</translation>
-<translation id="2448312741937722512">種類</translation>
 <translation id="2449089818483227734">バッテリー残量が少なくなっています</translation>
 <translation id="2450205753526923158">スクリーンショット モード</translation>
 <translation id="2455994958736234930">アドレスバーに「www.」と「.com」を追加してからウェブサイトを開く</translation>
@@ -360,6 +350,7 @@
 <translation id="2465145153332031561">バッテリーの状態 <ph name="BATTERY_HEALTH_PERCENTAGE" />%、サイクル数 <ph name="CYCLE_COUNT" /></translation>
 <translation id="2473177541599297363">解像度の確定</translation>
 <translation id="2475982808118771221">エラーが発生しました</translation>
+<translation id="2478076885740497414">アプリをインストール</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2484513351006226581">キーボード レイアウトを切り替えるには <ph name="KEYBOARD_SHORTCUT" /> キーを押します。</translation>
 <translation id="2487915095798731898">参加</translation>
@@ -503,6 +494,7 @@
 <translation id="3105917916468784889">スクリーンショットを撮る</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" />（Bluetooth）</translation>
 <translation id="3113492864356515707">シェルフで前のアイテムをハイライト表示します</translation>
+<translation id="311799651966070385">アクションの提案を閉じる</translation>
 <translation id="3120421559657122717">デバイスをシャットダウンしますか？</translation>
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3125690294288312932">授業の種類</translation>
@@ -518,6 +510,7 @@
 <translation id="3160929076476941240">2 時間</translation>
 <translation id="3161500364292033097">デスクとウィンドウを閉じる</translation>
 <translation id="316356270129335934"><ph name="MANAGER" /> が <ph name="DEVICE_TYPE" /> をロールバックしています。デバイスはリセットされ、データはすべて削除されます。</translation>
+<translation id="3170769098533255179">デバイスは接続されていません。アクセス ポイントの使用中、Wi-Fi はオフになります。</translation>
 <translation id="3171170659304083361">入力方法の設定</translation>
 <translation id="3176221688814061633">Chromebook または Bluetooth デバイスで古いバージョンの Bluetooth が使用されています。Bluetooth 超解像をオンにするか、内蔵マイクを使用すると音質が向上します。</translation>
 <translation id="3181441307743005334">再起動には時間がかかる場合があります</translation>
@@ -552,6 +545,7 @@
 <translation id="3306386552969601301"><ph name="DEVICECOUNT" /> 台のデバイスが <ph name="DEVICE_NAME" /> のアクセス ポイントに接続されています</translation>
 <translation id="3307642347673023554">ノートパソコン モードに切り替えました</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> が後でログインすることは引き続き可能です。</translation>
+<translation id="3317779231018057649"><ph name="DEVICECOUNT" /> 台のデバイスが接続されています。アクセス ポイントの使用中、Wi-Fi はオフになります。</translation>
 <translation id="3321628682574733415">保護者のコードが間違っています</translation>
 <translation id="332827762492701193">通知は非表示になっています</translation>
 <translation id="3333674550998107387"><ph name="NOTIFICATION_TITLE" /> の通知を開く</translation>
@@ -559,6 +553,7 @@
 <translation id="3340978935015468852">設定</translation>
 <translation id="3341303451326249809">スクリーンショットをキャプチャしました</translation>
 <translation id="334252345105450327">スクリーンショットを撮って</translation>
+<translation id="3346728094401457853"><ph name="EMAIL" /> のデバイス パスワードを入力してください</translation>
 <translation id="334927402682780278">カーソル位置から行末までのテキストを選択する</translation>
 <translation id="3349345708646875009">タスク マネージャーを開きます</translation>
 <translation id="3364721542077212959">タッチペン ツール</translation>
@@ -590,6 +585,7 @@
 <translation id="3441920967307853524"><ph name="RECEIVED_BYTES" />/<ph name="TOTAL_BYTES" /></translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />分</translation>
 <translation id="3445925074670675829">USB-C デバイス</translation>
+<translation id="3454555520521576458">サイズ変更可能</translation>
 <translation id="3455468639467374593">テンプレート、<ph name="TEMPLATE_NAME" /></translation>
 <translation id="3456931972722214204">1 台のデバイスが <ph name="DEVICE_NAME" /> のアクセス ポイントに接続されています</translation>
 <translation id="346243998268439747">拡大縮小をリセットする</translation>
@@ -631,8 +627,6 @@
 <translation id="3600061223661453002">オフ</translation>
 <translation id="3604801046548457007">デスク <ph name="DESK_TITILE" /> が作成されました</translation>
 <translation id="3606978283550408104">ブライユ点字ディスプレイが接続されています。</translation>
-<translation id="3609301425104788351"><ph name="MIC" />、
-        <ph name="CAMERA" /></translation>
 <translation id="3615926715408477684">モバイルデータ通信を有効にすると、Bluetooth も有効になります</translation>
 <translation id="3616113530831147358">音声</translation>
 <translation id="3616883743181209306">メニューは画面右上に移動しました。</translation>
@@ -682,9 +676,7 @@
 <translation id="3781910048497807059">前のペインにフォーカスを移動する</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">ロック</translation>
-<translation id="3789841737615482174">インストール</translation>
 <translation id="3796215473395753611">Alt+上矢印</translation>
-<translation id="3796746699333205839">アプリケーションがカメラとマイクを使用しています</translation>
 <translation id="3798670284305777884">スピーカー（内蔵）</translation>
 <translation id="3799080171973636491">全画面拡大鏡のキーボード ショートカットを押しました。この機能をオンにしますか？</translation>
 <translation id="380165613292957338">はい、どんなご用でしょう？</translation>
@@ -709,6 +701,7 @@
 <translation id="3899995891769452915">音声入力</translation>
 <translation id="3900355044994618856">セッションの制限時間まであと <ph name="SESSION_TIME_REMAINING" /> です</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> に接続しています</translation>
+<translation id="3906954721959377182">タブレット</translation>
 <translation id="3922427723338465344">{0,plural, =1{1 分以内にデバイスを以前のバージョンに戻してください}other{# 分以内にデバイスを以前のバージョンに戻してください}}</translation>
 <translation id="3923494859158167397">モバイル ネットワークが設定されていません</translation>
 <translation id="3925540965556789199"><ph name="DATE" />、予定を読み込んでいます。</translation>
@@ -761,7 +754,6 @@
 <translation id="412298498316631026">ウィンドウ</translation>
 <translation id="4123259114412175274">Chromebook のロックを解除するには、スマートフォンの Bluetooth がオンになっていることをご確認ください</translation>
 <translation id="4125970834901680537">タブレット モードでアプリをストリーミングできません。ノートパソコン モードでもう一度お試しください。</translation>
-<translation id="4129129681837227511">ロック画面に通知を表示するには、ロックを解除して設定を変更してください</translation>
 <translation id="4131973331381812765">温度: <ph name="TEMPERATURE" />°C - 現在の速度: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ" /> GHz</translation>
 <translation id="4132502210362661715">Chromebook には、作業効率化に役立つアプリが組み込まれています。ランチャーでアプリを探してみてください。</translation>
 <translation id="4136724716305260864">日の出までオン</translation>
@@ -814,6 +806,7 @@
 <translation id="428715201724021596">プロファイルに接続しています。この処理には数分かかることがあります。</translation>
 <translation id="4294319844246081198">おはようございます、<ph name="GIVEN_NAME" /> さん</translation>
 <translation id="4296136865091727875"><ph name="COUNT" /> 件の通知をすべて消去</translation>
+<translation id="4300272766492248925">アプリを開く</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> をフォルダ <ph name="FOLDER_NAME" /> に移動しました。</translation>
 <translation id="4302592941791324970">使用できません</translation>
 <translation id="4303223480529385476">ステータス領域を拡大</translation>
@@ -826,10 +819,12 @@
 <translation id="4324840740119394760">カメラへのアクセス権を持つ <ph name="APP_NAME" /> およびすべてのアプリとウェブサイトに対して、カメラへのアクセスを許可します</translation>
 <translation id="4333628967105022692">複数のユーザーがログインしている場合、Lacros はサポートされません。</translation>
 <translation id="4338109981321384717">虫メガネ</translation>
+<translation id="4351244548802238354">ダイアログを閉じる</translation>
 <translation id="4356872429719185452">アクセス ポイントの詳細を表示します。アクセス ポイントはオンです。</translation>
 <translation id="4364101114148522660"><ph name="DURATION" /> 録画中</translation>
 <translation id="4371348193907997655">キャスト設定</translation>
 <translation id="4375482231364171368">アドレスバーで検索する</translation>
+<translation id="4378154925671717803">電話</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />、電波強度 <ph name="SIGNAL_STRENGTH" />%</translation>
 <translation id="4378551569595875038">接続中...</translation>
 <translation id="4379531060876907730">タッチペン ツール</translation>
@@ -879,13 +874,16 @@
 <translation id="4566144812051858745">提案自体に興味がない</translation>
 <translation id="4569753163207712681">スマートフォンの最近の写真、メディア、アプリを表示する</translation>
 <translation id="4573176682887762361">"[単語 / フレーズ] をタイプ"</translation>
+<translation id="4577188182049003486">アクセス ポイントがオンのとき、Wi-Fi はオフになります</translation>
 <translation id="4577274620589681794">時間です · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">プレビューを表示</translation>
 <translation id="4578906031062871102">設定メニューが開いています</translation>
 <translation id="458210817642223147">GIF を撮影</translation>
+<translation id="4582666543382004902">Wi-Fi を使用するためアクセス ポイントがオフになりました。アクセス ポイントを使用するには、Wi-Fi をオフにしてください。</translation>
 <translation id="4585337515783392668">不明な受信デバイスへのキャストを停止します</translation>
 <translation id="4596144739579517758">ダークモードはオフになっています</translation>
 <translation id="4611292653554630842">ログイン</translation>
+<translation id="462160925400706389"><ph name="NAME" /> を接続しました</translation>
 <translation id="4623167406982293031">アカウントを確認</translation>
 <translation id="4628757576491864469">デバイス</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />、評価 <ph name="RATING_SCORE" /></translation>
@@ -969,7 +967,6 @@
 <translation id="4936329710968938986">全ユーザー対象（オフ）</translation>
 <translation id="4937170330762390348">音声入力では、声を使って入力できます。テキスト欄にカーソルを置いて、音声入力キーを押すか、画面下部のマイクアイコンを選択します。音声入力の言語は<ph name="LANGUAGE" />に設定されています。音声ファイルがダウンロードされ、オフラインで音声入力を使用できます。音声入力の言語は [設定] &gt; [ユーザー補助] でいつでも変更できます。</translation>
 <translation id="4938176435186993759">すべての候補を非表示</translation>
-<translation id="4943007472417128747">Wi-Fi を使用するためアクセス ポイントがオフになりました。アクセス ポイントを使用するには、Wi-Fi をオフにしてください。</translation>
 <translation id="4945196315133970626">通知をオフにする</translation>
 <translation id="4946376291507881335">キャプチャ</translation>
 <translation id="495046168593986294">上にスクロール</translation>
@@ -990,7 +987,6 @@
 <translation id="5009463889040999939">プロファイルの名前を変更しています。この処理には数分かかることがあります。</translation>
 <translation id="5016558321564993266">マーカーを切り替えます。<ph name="STATE_TEXT" /></translation>
 <translation id="5020360656995955353">検索カテゴリ</translation>
-<translation id="5029356738310729434">デバイスのマイクへのアクセスはオンになっています</translation>
 <translation id="5030659775136592441">ブックマーク マネージャーを表示する</translation>
 <translation id="5030687792513154421">時間切れです</translation>
 <translation id="5033299697334913360">全画面をキャプチャするには任意の場所をクリックしてください</translation>
@@ -1018,7 +1014,6 @@
 <translation id="5117590920725113268">次の月を表示</translation>
 <translation id="5121628974188116412">ページの一番下に移動する</translation>
 <translation id="5136175204352732067">別のキーボードが接続されています</translation>
-<translation id="5145331109270917438">更新日</translation>
 <translation id="5147567197700016471">ロック解除済み</translation>
 <translation id="5150070631291639005">プライバシー設定</translation>
 <translation id="5155897006997040331">読み上げ速度</translation>
@@ -1090,7 +1085,7 @@
 <translation id="5393156353051693207">任意の場所を長押ししてアプリを並べ替えられます</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" />を<ph name="IN_PLACE_APP" />の上にドラッグしました。指を離すとフォルダが作成されます。</translation>
 <translation id="5397578532367286026">このユーザーの利用状況や履歴は、chrome.com で管理者（<ph name="MANAGER_EMAIL" />）によって確認されます。</translation>
-<translation id="5400461572260843123">クイック設定: 検索+左方向キーを押して、通知センターを開きます。</translation>
+<translation id="540713187982329711">アクセス ポイントを切り替えます。アクセス ポイントはオンです。接続されているデバイスはありません。</translation>
 <translation id="5413656666631274079">設定ページ</translation>
 <translation id="5414198321558177633">プロファイル リストを更新しています。この処理には数分かかることがあります。</translation>
 <translation id="5426063383988017631">設定メニューは閉じています</translation>
@@ -1137,7 +1132,6 @@
 <translation id="558849140439112033">キャプチャする領域をドラッグして選択してください</translation>
 <translation id="5590609058453685222">ミュート通知はオンです。ミュートしているときに話すと、通知されます。</translation>
 <translation id="5596627076506792578">その他のオプション</translation>
-<translation id="5597451508971090205"><ph name="DATE" /> (<ph name="SHORT_WEEKDAY" />)</translation>
 <translation id="5599242528220103262">キーボード ショートカットは無効になっています</translation>
 <translation id="5600837773213129531">音声フィードバックを無効にするには Ctrl+Alt+Z を押してください。</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -1147,7 +1141,6 @@
 <translation id="5620979661744857819">カメラとマイクへのアクセス権を持つ <ph name="APP_NAME" /> およびすべてのアプリとウェブサイトに対して、アクセスを許可します。ウェブページの更新またはアプリの再起動が必要となる場合があります。</translation>
 <translation id="5625955975703555628">LTE+</translation>
 <translation id="5627392655516693966">パスワードを確認できませんでした。もう一度お試しください。</translation>
-<translation id="5646376287012673985">保存先</translation>
 <translation id="5648021990716966815">マイク差込口</translation>
 <translation id="5652575806481723716"><ph name="FOCUSED_APP_NAME" /> から通知が届いています。</translation>
 <translation id="5662075790140998213">デスク 10</translation>
@@ -1182,14 +1175,18 @@
 <translation id="576341972084747908">危険な <ph name="FILENAME" /> をダウンロードしています</translation>
 <translation id="576453121877257266">夜間モードはオンです。</translation>
 <translation id="5764569119212455782">前回選択した言語に切り替える</translation>
+<translation id="5767730327234918501">管理者がアクセス ポイントをオフにしています。</translation>
 <translation id="5769373120130404283">プライバシー スクリーン</translation>
 <translation id="5773950591113557721">カメラとマイクへのアクセス権を持つ <ph name="APP_NAME" /> およびすべてのアプリとウェブサイトに対して、アクセスを許可します</translation>
 <translation id="5774295353725270860">ファイルのアプリを開く</translation>
+<translation id="5775936059231769503">アクセス ポイントを切り替えます。アクセス ポイントはオフです。</translation>
 <translation id="5777841717266010279">画面の共有を解除しますか？</translation>
 <translation id="5779721926447984944">固定したファイル</translation>
+<translation id="5785221443435874078">この候補を削除</translation>
 <translation id="5788127256798019331">Play ファイル</translation>
 <translation id="5788535737706478207">最後に閉じたタブまたはウィンドウを開く</translation>
 <translation id="5790085346892983794">完了</translation>
+<translation id="5802516411616338943">クイック設定を開く</translation>
 <translation id="5804651031882187592">[SIM をロックする] 設定をオフにする</translation>
 <translation id="5805809050170488595">クリックすると <ph name="NETWORK_NAME" /> が有効になります</translation>
 <translation id="5823239091726045201">ウェブの Google ToDo リスト</translation>
@@ -1207,8 +1204,6 @@
 <translation id="5876535466645959772">選択した一覧は空です。新しいタスクを追加するには、下にスクロールしてください</translation>
 <translation id="5876666360658629066">保護者のコードを入力してください</translation>
 <translation id="5881540930187678962">スマートフォン ハブを後で設定</translation>
-<translation id="5881663018261910378">オフ</translation>
-<translation id="5883017113634523865">利用可能なすべての機能を見るには、Google Play から <ph name="NAME" /> のアプリをインストールしてください</translation>
 <translation id="5887954372087850114">ウィンドウ <ph name="WINDOW_TITLE" /> を <ph name="DESK_TITLE" /> に割り当て、他のすべてのデスクへの割り当てを解除しました</translation>
 <translation id="588817334757907802">Chrome ブラウザでファイルを開く</translation>
 <translation id="5895138241574237353">再起動</translation>
@@ -1217,6 +1212,7 @@
 <translation id="5901630391730855834">黄</translation>
 <translation id="5911231045062997865">Lacros ウィンドウは現在サポートされていません。他のアプリは保存されます。</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" />（<ph name="MAIL" />）</translation>
+<translation id="5916646100036936191">新しい通知、合計 <ph name="NOTIFICATION_COUNT" /> 件</translation>
 <translation id="5916664084637901428">ON</translation>
 <translation id="5920710855273935292">マイクはミュートです。</translation>
 <translation id="5946788582095584774"><ph name="FEATURE_NAME" /> はオンになっています。</translation>
@@ -1267,7 +1263,6 @@
 <translation id="6095008505822982596">話す速さ</translation>
 <translation id="6095425951508823973"><ph name="PROVIDER" /> との接続を追加</translation>
 <translation id="6099678161144790572">過去 1 か月以内に編集したファイル</translation>
-<translation id="6099793635444444289">マイクがミュートになっているため、音声入力を開始できません</translation>
 <translation id="6103838137565245112">システム</translation>
 <translation id="6114505516289286752"><ph name="LANGUAGE" />の音声ファイルをダウンロードしました</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />。<ph name="BATTERY_SAVER_STATE" /></translation>
@@ -1313,6 +1308,7 @@
 <translation id="6284232397434400372">解像度が変更されました</translation>
 <translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> は、保護者の許可があれば後から追加できます。</translation>
 <translation id="6291221004442998378">充電していません</translation>
+<translation id="6298183524022479114">アプリでこのデバイスをカスタマイズ</translation>
 <translation id="6309219492973062892">シェルフ アイコン 1～8 をクリックまたはタップします</translation>
 <translation id="6315170314923504164">音声</translation>
 <translation id="6324916366299863871">ショートカットの編集</translation>
@@ -1336,7 +1332,6 @@
 <translation id="643147933154517414">すべて確認済み</translation>
 <translation id="6431865393913628856">画面録画</translation>
 <translation id="643593192654616063">合計容量 <ph name="STORAGE_TOTAL_SIZE" /> 中 <ph name="STORAGE_IN_USE_SIZE" /> を使用しています</translation>
-<translation id="6442259747294754014">デバイスのマイクへのアクセスはオフになっています</translation>
 <translation id="6445835306623867477"><ph name="RECEIVER_NAME" /> に「<ph name="ROUTE_TITLE" />」をキャスト中</translation>
 <translation id="6445915701151710649">CPU</translation>
 <translation id="6446225358675593408">コンテンツから画像を探す</translation>
@@ -1435,7 +1430,6 @@
 <translation id="679368458793552943">拡大鏡がオンのときにズームインします</translation>
 <translation id="6794287755901682422">このアイテムには <ph name="GLANCEABLES_TASK_ITEM_METADATA" /> があります。</translation>
 <translation id="6801878137098616817">最近編集したファイル</translation>
-<translation id="6802196538183166658">時刻を選択してクイック設定を開きます</translation>
 <translation id="6802687695197837794">カメラとマイクへのアクセス権を持つ <ph name="APP1_NAME" />、<ph name="APP2_NAME" />、およびすべてのアプリとウェブサイトに対して、アクセスを許可します</translation>
 <translation id="6803622936009808957">サポートされている解像度が見つからなかったため、ディスプレイをミラーリングできませんでした。代わりに拡張デスクトップ モードに切り替えました。</translation>
 <translation id="6809556495807506746">コントロールを利用できません</translation>
@@ -1463,7 +1457,6 @@
 <translation id="6912841030378044227">アドレスバーにフォーカスする</translation>
 <translation id="6912901278692845878">クイックツアー</translation>
 <translation id="6919251195245069855">スマートカードを認識できませんでした。もう一度お試しください。</translation>
-<translation id="6920245099716267363">アクセス ポイントを切り替えます。アクセス ポイントはオンです。1 台のデバイスが接続されています。</translation>
 <translation id="692135145298539227">削除</translation>
 <translation id="6929081673585394903">コントロールを表示</translation>
 <translation id="6931576957638141829">保存先</translation>
@@ -1504,6 +1497,7 @@
 <translation id="7068360136237591149">ファイルを開いて</translation>
 <translation id="7076293881109082629">ログイン中</translation>
 <translation id="7076878155205969899">音声をミュートする</translation>
+<translation id="7084678090004350185">アクセス ポイントを切り替えます。アクセス ポイントはオンです。<ph name="DEVICECOUNT" /> 台のデバイスが接続されています。</translation>
 <translation id="7086931198345821656">このアップデートを適用するには、<ph name="DEVICE_TYPE" /> を Powerwash　する必要があります。データはすべて削除されます。<ph name="SYSTEM_APP_NAME" /> の最新アップデートの詳細をご確認ください。</translation>
 <translation id="7088960765736518739">スイッチ アクセス</translation>
 <translation id="709015856939120012">ページを拡大する</translation>
@@ -1536,10 +1530,6 @@
 <translation id="726276584504105859">分割画面を使用するにはここにドラッグします</translation>
 <translation id="7262906531272962081">リマインダーの作成</translation>
 <translation id="7278787617901301220"><ph name="LAUNCHER_KEY_NAME" />+Backspace</translation>
-<translation id="7297440678881127227"><ph name="START_TIME" /> から
-        <ph name="END_TIME" />、
-        <ph name="TIME_ZONE" />、
-        <ph name="EVENT_SUMMARY" />。選択すると、Google カレンダーで詳細を確認できます。</translation>
 <translation id="7302889331339392448">自動字幕起こしはオフになっています。</translation>
 <translation id="7303365578352795231">別のデバイスで応答しています。</translation>
 <translation id="7305884605064981971">EDGE</translation>
@@ -1564,7 +1554,6 @@
 <translation id="7378203170292176219">録画する領域をドラッグして選択してください</translation>
 <translation id="7378594059915113390">メディアの操作</translation>
 <translation id="7378889811480108604">バッテリー セーバー モードがオフです</translation>
-<translation id="7382640522316003298">アクセス ポイントを切り替えます。アクセス ポイントはオンです。<ph name="DEVICECOUNT" /> 台のデバイスが接続されています。</translation>
 <translation id="7382680553121047388">オン</translation>
 <translation id="7384028040782072252">任意の場所を右クリックしてアプリを並べ替えられます</translation>
 <translation id="7386767620098596324">ネットワーク接続を切り替えます。<ph name="STATE_TEXT" />。</translation>
@@ -1579,7 +1568,6 @@
 <translation id="742594950370306541">カメラが使用中です。</translation>
 <translation id="742608627846767349">おはようございます</translation>
 <translation id="743058460480092004">カメラとマイクが使用中です。</translation>
-<translation id="7452560014878697800">アプリケーションがカメラを使用しています</translation>
 <translation id="7453330308669753048">検索履歴の結果が削除されました</translation>
 <translation id="7459485586006128091">内部エラーにより、アクセス ポイントはオフになっています。数分後にもう一度接続してみてください。</translation>
 <translation id="7461924472993315131">固定</translation>
@@ -1589,6 +1577,7 @@
 <translation id="7489261257412536105">全画面表示を開始または終了する</translation>
 <translation id="7490360161041035804">Google ドライブなどの重要なファイルを固定できます。固定するには、該当のファイルにカーソルを合わせるか、ファイルアプリで該当のファイルを右クリックします。</translation>
 <translation id="7497767806359279797">言語とキーボードを選択</translation>
+<translation id="7507162824403726948">本人確認を完了してください</translation>
 <translation id="7508690557411636492">過去 1 か月以内に開いたファイル</translation>
 <translation id="7509246181739783082">本人確認</translation>
 <translation id="7512509370370076552">右クリックのショートカットが、Alt キー+クリックから <ph name="LAUNCHER_KEY_NAME" />キー+クリックに変更されました</translation>
@@ -1728,14 +1717,12 @@
 <translation id="8001755249288974029">カーソル位置から行頭までのテキストを選択する</translation>
 <translation id="8004512796067398576">増やす</translation>
 <translation id="8026334261755873520">閲覧履歴データの削除</translation>
-<translation id="8028993641010258682">サイズ</translation>
 <translation id="8029247720646289474">アクセス ポイント接続エラー</translation>
 <translation id="8029629653277878342">セキュリティ強化のため PIN またはパスワードが必要です</translation>
 <translation id="8030169304546394654">切断済み</translation>
 <translation id="8036504271468642248">前の文</translation>
 <translation id="8042893070933512245">ユーザー補助機能の設定メニューを開く</translation>
 <translation id="8044457332620420407">キーボードのバックライトはオフです</translation>
-<translation id="8048077032188362328">管理者がアクセス ポイントをオフにしています。</translation>
 <translation id="8048123526339889627">Bluetooth 設定</translation>
 <translation id="8051716679295756675">「<ph name="DESK_TEMPLATE_NAME" />」という名前のテンプレートはすでに存在しています</translation>
 <translation id="8052898407431791827">クリップボードにコピーしました</translation>
@@ -1756,7 +1743,6 @@
 <translation id="8131740175452115882">確認</translation>
 <translation id="8131994907636310308">並べ替えのトーストを閉じます</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> に接続しました</translation>
-<translation id="8135163608236671037">アクセス ポイントを切り替えます。アクセス ポイントはオンです。接続されているデバイスはありません。</translation>
 <translation id="8138705869659070104">デバイスのセットアップ後に有効にします</translation>
 <translation id="813913629614996137">初期化しています...</translation>
 <translation id="8142441511840089262">ダブルクリック</translation>
@@ -1770,7 +1756,6 @@
 <translation id="8155628902202578800"><ph name="USER_EMAIL_ADDRESS" /> の情報ダイアログを開きます</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> を使用しています</translation>
 <translation id="8185090165691050712">ロックモードのサイズ変更メニューのオンとオフを切り替えます</translation>
-<translation id="8192202700944119416">通知は非表示になっています。</translation>
 <translation id="8198456017687137612">タブをキャスト中</translation>
 <translation id="8200772114523450471">再開</translation>
 <translation id="8203795194971602413">右クリック</translation>
@@ -1815,7 +1800,6 @@
 <translation id="8416730306157376817"><ph name="BATTERY_PERCENTAGE" />%（ケース）</translation>
 <translation id="8420205633584771378">この候補を削除しますか？</translation>
 <translation id="8421270167862077762"><ph name="UNAVAILABLE_APPS" /> はこのデバイスにありません。</translation>
-<translation id="8425213833346101688">変更</translation>
 <translation id="8426708595819210923">こんばんは、<ph name="GIVEN_NAME" /> さん</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8428810263141909179"><ph name="MODIFIER_ONE" />+<ph name="MODIFIER_TWO" /><ph name="DELIMITER" /><ph name="KEY_ONE" />～<ph name="KEY_TWO" /> キーを押す</translation>
@@ -1834,7 +1818,6 @@
 <translation id="8487699605742506766">アクセス ポイント</translation>
 <translation id="8491237443345908933">新しいタブでリンクを開く</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> は <ph name="SPECIFIED_RESOLUTION" /> に対応していません。解像度を <ph name="FALLBACK_RESOLUTION" /> に変更しました。変更を保存するには確定してください。<ph name="TIMEOUT_SECONDS" /> 秒後に以前の設定に戻ります。</translation>
-<translation id="8496402167048257517">ニアバイシェア設定を表示します</translation>
 <translation id="8507563469658346379">全ユーザー対象（<ph name="REMAINING_TIME" />）</translation>
 <translation id="8511123073331775246">新しいデスクを作成する</translation>
 <translation id="85123341071060231">Chromebook の Bluetooth がオフになっています。ロックを解除するにはパスワードをご入力ください</translation>
@@ -1960,7 +1943,6 @@
 <translation id="9070640332319875144">アシスタントの設定</translation>
 <translation id="9072519059834302790">あと <ph name="TIME_LEFT" />で電池がなくなります。</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
-<translation id="9077404278023321866">テンプレート</translation>
 <translation id="9077515519330855811">メディア コントロールで <ph name="MEDIA_TITLE" /> を再生しています</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080073830732419341">カメラは左上にスナップされています</translation>

@@ -8,9 +8,11 @@
 #include <map>
 #include <set>
 
-#include "base/files/file.h"
+#include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
+#include "base/sequence_checker.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -18,6 +20,9 @@
 #include "ios/chrome/browser/sessions/session_restoration_service.h"
 
 class WebStateList;
+namespace sessions {
+class TabRestoreService;
+}  // namespace sessions
 
 // Concrete implementation of the SessionRestorationService.
 //
@@ -31,7 +36,8 @@ class SessionRestorationServiceImpl final : public SessionRestorationService {
       base::TimeDelta save_delay,
       bool enable_pinned_web_states,
       const base::FilePath& storage_path,
-      const scoped_refptr<base::SequencedTaskRunner> task_runner);
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      sessions::TabRestoreService* tab_restore_service);
 
   ~SessionRestorationServiceImpl() final;
 
@@ -41,9 +47,18 @@ class SessionRestorationServiceImpl final : public SessionRestorationService {
   // SessionRestorationService implementation.
   void AddObserver(SessionRestorationObserver* observer) final;
   void RemoveObserver(SessionRestorationObserver* observer) final;
+  void SaveSessions() final;
+  void ScheduleSaveSessions() final;
   void SetSessionID(Browser* browser, const std::string& identifier) final;
   void LoadSession(Browser* browser) final;
   void Disconnect(Browser* browser) final;
+  std::unique_ptr<web::WebState> CreateUnrealizedWebState(
+      Browser* browser,
+      web::proto::WebStateStorage storage) final;
+  void DeleteDataForDiscardedSessions(const std::set<std::string>& identifiers,
+                                      base::OnceClosure closure) final;
+  void InvokeClosureWhenBackgroundProcessingDone(
+      base::OnceClosure closure) final;
 
  private:
   // Helper type used to record information about a single WebStateList.
@@ -56,6 +71,9 @@ class SessionRestorationServiceImpl final : public SessionRestorationService {
 
   // Helper method that post a task to save state to storage.
   void SaveDirtySessions();
+
+  // Used to enforce use on the correct sequence.
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Observer list.
   base::ObserverList<SessionRestorationObserver, true> observers_;
@@ -74,6 +92,10 @@ class SessionRestorationServiceImpl final : public SessionRestorationService {
 
   // Task runner used to perform background actions.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  // Pointer to the TabRestoreService used to report closed tabs if the
+  // session migration fails.
+  raw_ptr<sessions::TabRestoreService> tab_restore_service_ = nullptr;
 
   // Maps from observed WebStateList to the object tracking the information
   // about said WebStateList (including the observer).

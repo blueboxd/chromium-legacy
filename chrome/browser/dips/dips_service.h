@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_DIPS_DIPS_SERVICE_H_
 
 #include "base/functional/bind.h"
-#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"

@@ -72,12 +72,12 @@ struct AXRelativeBounds;
 
 namespace blink {
 
+class AbstractInlineTextBox;
 class AccessibleNodeList;
 class AXObject;
 class AXObjectCacheImpl;
 class LayoutObject;
 class LocalFrameView;
-class NGAbstractInlineTextBox;
 class Node;
 class ScrollableArea;
 
@@ -358,7 +358,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool HasAOMPropertyOrARIAAttribute(AOMStringProperty,
                                      AtomicString& result) const;
   virtual AccessibleNode* GetAccessibleNode() const;
-  virtual NGAbstractInlineTextBox* GetInlineTextBox() const { return nullptr; }
+  virtual AbstractInlineTextBox* GetInlineTextBox() const { return nullptr; }
 
   static void TokenVectorFromAttribute(Element* element,
                                        Vector<String>&,
@@ -1144,6 +1144,12 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // Can AXObjects backed by this element have AXObject children?
   static bool CanHaveChildren(Element& element);
 
+  // Given the candidate parent node, return a node that can be used for the
+  // parent, or null if no parent is possible. For example, passing in a <map>
+  // will return the associated <img>, because the image would parent any of the
+  // map's descendants.
+  static Node* GetParentNodeForComputeParent(AXObjectCacheImpl&, Node*);
+
   // Compute the AXObject parent for the given node.
   // Does not take aria-owns into account.
   static AXObject* ComputeNonARIAParent(AXObjectCacheImpl& cache, Node* node);
@@ -1164,10 +1170,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool IsRoot() const;
 
 #if DCHECK_IS_ON()
-  // When the parent on children during AddChildren(), take the opportunity to
-  // check out ComputeParent() implementation. It should match.
-  void EnsureCorrectParentComputation();
-
   // Get/Prints the entire AX subtree to the screen for debugging, with |this|
   // highlighted via a "*" notation.
   std::string GetAXTreeForThis() const;
@@ -1324,7 +1326,8 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // TODO(accessibility): Remove virtual -- the only override is in a unit test.
   virtual void ChildrenChangedWithCleanLayout();
   virtual void HandleActiveDescendantChanged() {}
-  virtual void HandleAutofillStateChanged(WebAXAutofillState) {}
+  virtual void HandleAutofillSuggestionAvailabilityChanged(
+      WebAXAutofillSuggestionAvailability) {}
   virtual void HandleAriaExpandedChanged() {}
 
   // Static helper functions.
@@ -1482,11 +1485,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   virtual void SerializeMarkerAttributes(ui::AXNodeData* node_data) const;
 
  private:
-  // Given the candidate parent node, return a node that can be used for the
-  // parent, or null if no parent is possible. For example, passing in a <map>
-  // will return the associated <img>, because the image would parent any of the
-  // map's descendants.
-  static Node* GetParentNodeForComputeParent(AXObjectCacheImpl&, Node*);
   bool ComputeCanSetFocusAttribute() const;
   String KeyboardShortcut() const;
 

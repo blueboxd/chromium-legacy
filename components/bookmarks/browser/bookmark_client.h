@@ -40,8 +40,18 @@ class BookmarkClient {
 
   virtual ~BookmarkClient() = default;
 
+  // Returns whether the embedder wants permanent node of type |type|
+  // to always be visible or to only show them when not empty.
+  bool IsPermanentNodeVisibleWhenEmpty(BookmarkNode::Type type) const;
+
   // Called during initialization of BookmarkModel.
   virtual void Init(BookmarkModel* model);
+
+  // Controls whether this BookmarkModel is allowed to use permanent folders for
+  // account storage. If false, calling BookmarkModel's
+  // `CreateAccountPermanentFolders`/`RemoveAccountPermanentFolders` will
+  // trigger a CHECK failure.
+  virtual bool AreFoldersForAccountStorageAllowed() = 0;
 
   // Gets a bookmark folder that the provided URL can be saved to. If nullptr is
   // returned, the bookmark is saved to the default location (usually this is
@@ -67,10 +77,6 @@ class BookmarkClient {
   // the corresponding value will be updated with the typed count of that URL.
   // |url_typed_count_map| must not be null.
   virtual void GetTypedCountForUrls(UrlTypedCountMap* url_typed_count_map);
-
-  // Returns whether the embedder wants permanent node of type |type|
-  // to always be visible or to only show them when not empty.
-  virtual bool IsPermanentNodeVisibleWhenEmpty(BookmarkNode::Type type) = 0;
 
   // Returns a task that will be used to load a managed root node. This task
   // will be invoked in the Profile's IO task runner.

@@ -134,7 +134,8 @@ void ExecuteScript(blink::WebLocalFrame* frame,
                    const base::Value& parameters) {
   std::string json;
   base::JSONWriter::Write(parameters, &json);
-  std::string script = base::StringPrintf(script_format, json.c_str());
+  std::string script =
+      base::StringPrintfNonConstexpr(script_format, json.c_str());
   frame->ExecuteScript(
       blink::WebScriptSource(blink::WebString::FromUTF8(script)));
 }
@@ -680,7 +681,8 @@ void PrintHeaderAndFooter(cc::PaintCanvas* canvas,
   ExecuteScript(frame, kPageLoadScriptFormat, html);
 
   base::Value::Dict options;
-  options.Set(kSettingHeaderFooterDate, base::Time::Now().ToJsTime());
+  options.Set(kSettingHeaderFooterDate,
+              base::Time::Now().InMillisecondsFSinceUnixEpoch());
   options.Set("width", static_cast<double>(page_size.width()));
   options.Set("height", static_cast<double>(page_size.height()));
   options.Set("topMargin", page_layout.margin_top);
@@ -2265,6 +2267,10 @@ bool PrintRenderFrameHelper::PrintPagesNative(
         print_params.printed_doc_type == mojom::SkiaDocumentType::kMSKP
             ? &accessibility_tree
             : &metafile.accessibility_tree());
+    metafile.set_generate_document_outline(
+        print_params.generate_document_outline
+            ? GeneratePdfDocumentOutline::kFromHeaders
+            : GeneratePdfDocumentOutline::kNone);
   }
 
   mojom::DidPrintDocumentParamsPtr page_params =

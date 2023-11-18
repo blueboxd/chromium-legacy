@@ -61,17 +61,17 @@ export class EduCoexistenceUi extends EduCoexistenceUiBase {
     };
   }
 
-  protected loading: boolean;
-  protected showGaiaButtons: boolean;
-  protected showGaiaNextButton: boolean;
+  loading: boolean;
+  showGaiaButtons: boolean;
+  showGaiaNextButton: boolean;
   private webview: chrome.webviewTag.WebView;
   private controller: EduCoexistenceController;
 
   override ready() {
     super.ready();
     this.addWebUiListener(
-        'load-auth-extension',
-        (data: AuthParams) => this.loadAuthExtension(data));
+        'load-authenticator',
+        (data: AuthParams) => this.loadAuthenticator(data));
     this.webview = this.$.signinFrame;
 
     this.webview.addEventListener('loadabort', () => {
@@ -107,9 +107,9 @@ export class EduCoexistenceUi extends EduCoexistenceUiBase {
     EduCoexistenceBrowserProxyImpl.getInstance().dialogClose();
   }
 
-  private loadAuthExtension(data: AuthParams) {
+  private loadAuthenticator(data: AuthParams) {
     // Set up the controller.
-    this.controller.loadAuthExtension(data);
+    this.controller.loadAuthenticator(data);
 
     this.webview.addEventListener('contentload', () => {
       this.loading = false;

@@ -115,10 +115,12 @@ public class StartSurfaceCoordinatorUnitTestRule implements TestRule {
     private static class MockTabModelFilterProvider extends TabModelFilterProvider {
         public MockTabModelFilterProvider(Activity activity) {
             List<TabModel> tabModels = new ArrayList<>();
-            tabModels.add(new MockTabModel(false, null));
-            MockTabModel tabModel = new MockTabModel(true, null);
-            tabModel.setAsActiveModelForTesting();
-            tabModels.add(tabModel);
+            tabModels.add(new MockTabModel(Profile.getLastUsedRegularProfile(), null));
+            MockTabModel incognitoTabModel =
+                    new MockTabModel(
+                            Profile.getLastUsedRegularProfile().getPrimaryOTRProfile(true), null);
+            incognitoTabModel.setAsActiveModelForTesting();
+            tabModels.add(incognitoTabModel);
 
             init(new ChromeTabModelFilterFactory(activity), tabModels);
         }
@@ -144,6 +146,7 @@ public class StartSurfaceCoordinatorUnitTestRule implements TestRule {
             @Override
             public void evaluate() {
                 ChromeFeatureList.sStartSurfaceAndroid.setForTesting(true);
+                ChromeFeatureList.sShowNtpAtStartupAndroid.setForTesting(false);
 
                 mTabModelSelector = Mockito.mock(TabModelSelector.class);
                 mContainerView = Mockito.mock(ViewGroup.class);
@@ -168,7 +171,11 @@ public class StartSurfaceCoordinatorUnitTestRule implements TestRule {
     }
 
     private void initJniMocks() {
+        Profile incognitoProfile = Mockito.mock(Profile.class);
+        Mockito.when(incognitoProfile.isOffTheRecord()).thenReturn(true);
         Profile profile = Mockito.mock(Profile.class);
+        Mockito.when(profile.getPrimaryOTRProfile(Mockito.anyBoolean()))
+                .thenReturn(incognitoProfile);
         PrefService prefService = Mockito.mock(PrefService.class);
         Profile.setLastUsedProfileForTesting(profile);
 

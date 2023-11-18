@@ -31,6 +31,7 @@ import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.StrictModeContext;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.ui.splashscreen.trustedwebactivity.TwaSplashController;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -66,7 +67,7 @@ public class LaunchIntentDispatcher {
     public static final String EXTRA_LAUNCH_MODE =
             "com.google.android.apps.chrome.EXTRA_LAUNCH_MODE";
 
-    private static final String TAG = "ActivitiyDispatcher";
+    private static final String TAG = "ActivityDispatcher";
 
     private final Activity mActivity;
     private Intent mIntent;
@@ -246,6 +247,10 @@ public class LaunchIntentDispatcher {
      */
     public static boolean isCustomTabIntent(Intent intent) {
         if (intent == null) return false;
+        Log.w(
+                TAG,
+                "CustomTabsIntent#shouldAlwaysUseBrowserUI() = "
+                        + CustomTabsIntent.shouldAlwaysUseBrowserUI(intent));
         if (CustomTabsIntent.shouldAlwaysUseBrowserUI(intent)
                 || !intent.hasExtra(CustomTabsIntent.EXTRA_SESSION)) {
             return false;
@@ -420,6 +425,12 @@ public class LaunchIntentDispatcher {
                 // the flag to take effect only once.
                 newIntent.setFlags(newIntent.getFlags() & ~Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
             }
+            RecordHistogram.recordBooleanHistogram(
+                    "Android.Intent.HasNonSpoofablePackageName", hasNonSpoofablePackageName());
+        }
+
+        if (mActivity instanceof ChromeLauncherActivity) {
+            newIntent.putExtra(IntentHandler.EXTRA_LAUNCHED_VIA_CHROME_LAUNCHER_ACTIVITY, true);
         }
 
         Uri extraReferrer = mActivity.getReferrer();
@@ -487,6 +498,16 @@ public class LaunchIntentDispatcher {
             // mistakenly lead to a Chrome task being removed.
             return true;
         }
+    }
+
+    private boolean hasNonSpoofablePackageName() {
+        ComponentName callingActivity = mActivity.getCallingActivity();
+        String packageName = "";
+        if (callingActivity != null) {
+            packageName = callingActivity.getPackageName();
+        }
+        return !TextUtils.isEmpty(packageName)
+                || !TextUtils.isEmpty(getClientPackageNameFromIdentitySharing());
     }
 
     /**

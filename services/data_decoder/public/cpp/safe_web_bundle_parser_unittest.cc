@@ -32,7 +32,7 @@ constexpr char kConnectionError[] =
 
 base::File OpenTestFile(const base::FilePath& path) {
   base::FilePath test_data_dir;
-  base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir);
+  base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &test_data_dir);
   test_data_dir = test_data_dir.Append(
       base::FilePath(FILE_PATH_LITERAL("components/test/data/web_package")));
   test_data_dir = test_data_dir.Append(path);
@@ -151,9 +151,9 @@ class SafeWebBundleParserTest : public testing::Test {
     DCHECK(!factory_);
     factory_ = std::make_unique<MockFactory>();
 
-    in_process_data_decoder_.service()
-        .SetWebBundleParserFactoryBinderForTesting(base::BindRepeating(
-            &MockFactory::AddReceiver, base::Unretained(factory_.get())));
+    in_process_data_decoder_.SetWebBundleParserFactoryBinder(
+        base::BindRepeating(&MockFactory::AddReceiver,
+                            base::Unretained(factory_.get())));
 
     return factory_.get();
   }

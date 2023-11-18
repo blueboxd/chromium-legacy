@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/ranges/algorithm.h"
 #include "cc/base/features.h"
+#include "cc/layers/solid_color_scrollbar_layer.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/trees/effect_node.h"
@@ -947,13 +948,11 @@ void PaintArtifactCompositor::Update(
 
   g_s_property_tree_sequence_number++;
 
-  if (RuntimeEnabledFeatures::SimplifiedClearPropertyTreeChangeEnabled()) {
-    // For information about |sequence_number|, see:
-    // PaintPropertyNode::changed_sequence_number_|;
-    for (auto& chunk : artifact->PaintChunks()) {
-      chunk.properties.GetPropertyTreeState().ClearChangedToRoot(
-          g_s_property_tree_sequence_number);
-    }
+  // For information about |sequence_number|, see:
+  // PaintPropertyNode::changed_sequence_number_|;
+  for (auto& chunk : artifact->PaintChunks()) {
+    chunk.properties.GetPropertyTreeState().ClearChangedToRoot(
+        g_s_property_tree_sequence_number);
   }
 
   DVLOG(2) << "PaintArtifactCompositor::Update() done\n"
@@ -1263,34 +1262,6 @@ Vector<cc::Layer*> PaintArtifactCompositor::SynthesizedClipLayersForTesting()
   return synthesized_clip_layers;
 }
 
-void PaintArtifactCompositor::ClearPropertyTreeChangedState() {
-  CHECK(!RuntimeEnabledFeatures::SimplifiedClearPropertyTreeChangeEnabled());
-  // For information about |sequence_number|, see:
-  // PaintPropertyNode::changed_sequence_number_|;
-  static int changed_sequence_number = 1;
-
-  for (auto& layer : pending_layers_) {
-    // The chunks ref-counted property tree state keeps the |layer|'s non-ref
-    // property tree pointers alive and all chunk property tree states should
-    // be descendants of the |layer|'s. Therefore, we can just CHECK that the
-    // first chunk's references are keeping the |layer|'s property tree state
-    // alive.
-    CHECK(!layer.Chunks().IsEmpty());
-    const auto& layer_state = layer.GetPropertyTreeState();
-    const auto& first_chunk_state =
-        layer.Chunks()[0].properties.GetPropertyTreeState();
-    CHECK(layer_state.Transform().IsAncestorOf(first_chunk_state.Transform()));
-    CHECK(layer_state.Clip().IsAncestorOf(first_chunk_state.Clip()));
-    CHECK(layer_state.Effect().IsAncestorOf(first_chunk_state.Effect()));
-
-    for (auto& chunk : layer.Chunks()) {
-      chunk.properties.GetPropertyTreeState().ClearChangedToRoot(
-          changed_sequence_number);
-    }
-  }
-  changed_sequence_number++;
-}
-
 size_t PaintArtifactCompositor::ApproximateUnsharedMemoryUsage() const {
   size_t result = sizeof(*this) + synthesized_clip_cache_.CapacityInBytes() +
                   pending_layers_.CapacityInBytes();
@@ -1308,14 +1279,34 @@ size_t PaintArtifactCompositor::ApproximateUnsharedMemoryUsage() const {
 
 bool PaintArtifactCompositor::SetScrollbarNeedsDisplay(
     CompositorElementId element_id) {
-  for (auto& pending_layer : pending_layers_) {
-    if (pending_layer.GetCompositingType() == PendingLayer::kScrollbarLayer &&
-        pending_layer.CcLayer().element_id() == element_id) {
-      pending_layer.CcLayer().SetNeedsDisplay();
+  DCHECK(root_layer_);
+  CHECK(ScrollbarDisplayItem::IsScrollbarElementId(element_id));
+  if (cc::LayerTreeHost* host = root_layer_->layer_tree_host()) {
+    if (cc::Layer* layer = host->LayerByElementId(element_id)) {
+      layer->SetNeedsDisplay();
       return true;
     }
   }
-  // The scrollbar isn't correctly composited.
+  // The scrollbar isn't currently composited.
+  return false;
+}
+
+bool PaintArtifactCompositor::SetScrollbarSolidColor(
+    CompositorElementId element_id,
+    SkColor4f color) {
+  DCHECK(root_layer_);
+  CHECK(ScrollbarDisplayItem::IsScrollbarElementId(element_id));
+  if (cc::LayerTreeHost* host = root_layer_->layer_tree_host()) {
+    if (cc::Layer* layer = host->LayerByElementId(element_id)) {
+      if (static_cast<cc::ScrollbarLayerBase*>(layer)
+              ->GetScrollbarLayerType() ==
+          cc::ScrollbarLayerBase::kSolidColor) {
+        static_cast<cc::SolidColorScrollbarLayer*>(layer)->SetColor(color);
+        return true;
+      }
+    }
+  }
+  // The scrollbar isn't currently composited.
   return false;
 }
 

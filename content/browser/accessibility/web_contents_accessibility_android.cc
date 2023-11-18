@@ -320,13 +320,6 @@ void WebContentsAccessibilityAndroid::ReEnableRendererAccessibility(
   if (root_manager) {
     root_manager->set_web_contents_accessibility(GetWeakPtr());
   }
-
-  // The AXMode should have been set when the accessibility state was changed,
-  // so by this method it should be something other than kNone.
-  BrowserAccessibilityStateImpl* accessibility_state =
-      BrowserAccessibilityStateImpl::GetInstance();
-  DCHECK(accessibility_state->GetAccessibilityMode().flags() !=
-         ui::AXMode::kNone);
 }
 
 jboolean WebContentsAccessibilityAndroid::IsRootManagerConnected(JNIEnv* env) {
@@ -337,15 +330,6 @@ void WebContentsAccessibilityAndroid::SetAllowImageDescriptions(
     JNIEnv* env,
     jboolean allow_image_descriptions) {
   allow_image_descriptions_ = allow_image_descriptions;
-}
-
-void WebContentsAccessibilityAndroid::SetPasswordRules(
-    JNIEnv* env,
-    jboolean should_respect_displayed_password_text,
-    jboolean should_expose_password_text) {
-  should_respect_displayed_password_text_ =
-      should_respect_displayed_password_text;
-  should_expose_password_text_ = should_expose_password_text;
 }
 
 void WebContentsAccessibilityAndroid::HandleContentChanged(int32_t unique_id) {

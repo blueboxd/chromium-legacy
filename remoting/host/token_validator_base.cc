@@ -51,7 +51,7 @@ TokenValidatorBase::TokenValidatorBase(
     : third_party_auth_config_(third_party_auth_config),
       token_scope_(token_scope),
       request_context_getter_(request_context_getter),
-      buffer_(base::MakeRefCounted<net::IOBuffer>(kBufferSize)) {
+      buffer_(base::MakeRefCounted<net::IOBufferWithSize>(kBufferSize)) {
   DCHECK(third_party_auth_config_.token_url.is_valid());
   DCHECK(third_party_auth_config_.token_validation_url.is_valid());
 }
@@ -246,7 +246,7 @@ protocol::TokenValidator::ValidationResult TokenValidatorBase::ProcessResponse(
           ? data_.substr(sizeof(kJsonSafetyPrefix) - 1)
           : data_;
 
-  absl::optional<base::Value> value = base::JSONReader::Read(responseData);
+  std::optional<base::Value> value = base::JSONReader::Read(responseData);
   if (!value || !value->is_dict()) {
     LOG(ERROR) << "Invalid token validation response: '" << data_ << "'";
     return RejectionReason::INVALID_CREDENTIALS;

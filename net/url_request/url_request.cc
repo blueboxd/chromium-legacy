@@ -947,7 +947,7 @@ void URLRequest::PrepareToRestart() {
 
   status_ = OK;
   is_pending_ = false;
-  proxy_server_ = ProxyServer();
+  proxy_chain_ = ProxyChain();
 }
 
 void URLRequest::Redirect(
@@ -984,8 +984,8 @@ void URLRequest::Redirect(
   referrer_ = redirect_info.new_referrer;
   referrer_policy_ = redirect_info.new_referrer_policy;
   site_for_cookies_ = redirect_info.new_site_for_cookies;
-  isolation_info_ = isolation_info_.CreateForRedirect(
-      url::Origin::Create(redirect_info.new_url));
+  set_isolation_info(isolation_info_.CreateForRedirect(
+      url::Origin::Create(redirect_info.new_url)));
 
   if ((load_flags_ & LOAD_CAN_USE_SHARED_DICTIONARY) &&
       (load_flags_ &
@@ -1073,14 +1073,16 @@ void URLRequest::NotifySSLCertificateError(int net_error,
   delegate_->OnSSLCertificateError(this, net_error, ssl_info, fatal);
 }
 
-bool URLRequest::CanSetCookie(const net::CanonicalCookie& cookie,
-                              CookieOptions* options,
-                              CookieInclusionStatus* inclusion_status) const {
+bool URLRequest::CanSetCookie(
+    const net::CanonicalCookie& cookie,
+    CookieOptions* options,
+    const net::FirstPartySetMetadata& first_party_set_metadata,
+    CookieInclusionStatus* inclusion_status) const {
   DCHECK(!(load_flags_ & LOAD_DO_NOT_SAVE_COOKIES));
   bool can_set_cookies = g_default_can_use_cookies;
   if (network_delegate()) {
-    can_set_cookies = network_delegate()->CanSetCookie(*this, cookie, options,
-                                                       inclusion_status);
+    can_set_cookies = network_delegate()->CanSetCookie(
+        *this, cookie, options, first_party_set_metadata, inclusion_status);
   }
   if (!can_set_cookies)
     net_log_.AddEvent(NetLogEventType::COOKIE_SET_BLOCKED_BY_NETWORK_DELEGATE);

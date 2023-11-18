@@ -4,7 +4,7 @@
 
 import './policy_test_table.js';
 
-import {getRequiredElement} from 'chrome://resources/js/util_ts.js';
+import {getRequiredElement} from 'chrome://resources/js/util.js';
 
 import {LevelNamesToValues, PolicyInfo, PolicyLevel, PolicyScope, PolicySource, PolicyTestBrowserProxy, ScopeNamesToValues, SourceNamesToValues} from './policy_test_browser_proxy.js';
 import {PolicyTestTableElement} from './policy_test_table.js';
@@ -12,7 +12,8 @@ import {PolicyTestTableElement} from './policy_test_table.js';
 const policyTestBrowserProxy: PolicyTestBrowserProxy =
     PolicyTestBrowserProxy.getInstance();
 
-function initialize() {
+async function initialize() {
+  await initializeTable();
   getRequiredElement('import-policies-file-input')
       .addEventListener('change', uploadPoliciesFile);
   getRequiredElement('apply-policies').addEventListener('click', applyPolicies);
@@ -23,6 +24,13 @@ function initialize() {
       .addEventListener('click', exportAndDownloadPolicies);
   getRequiredElement('restart-browser')
       .addEventListener('click', restartBrowser);
+  getRequiredElement<HTMLTextAreaElement>('profile-separation-response')
+      .placeholder = `Fake profile separation external response:
+  {
+    "policyValue": "ManagedAccountsSigninRestrictions value",
+    "profileSeparationSettings": 1,
+    "profileSeparationDataMigrationSettings": 2
+  }`;
 }
 
 function uploadPoliciesFile() {
@@ -33,6 +41,22 @@ function uploadPoliciesFile() {
   if (jsonFile) {
     applyPoliciesFromFile(jsonFile!);
   }
+}
+
+async function initializeTable() {
+  const policies = await policyTestBrowserProxy.getAppliedTestPolicies();
+  if (policies.length === 0) {
+    return;
+  }
+  const policyTable =
+      getRequiredElement<PolicyTestTableElement>('policy-test-table');
+  // Empty policy table
+  policyTable.clearRows();
+  policies.forEach((policy: PolicyInfo) => {
+    policyTable.addRow(policy);
+  });
+  getRequiredElement<HTMLButtonElement>('revert-applied-policies').disabled =
+      false;
 }
 
 function applyPoliciesFromFile(jsonFile: File) {
@@ -95,34 +119,43 @@ function convertToPolicyInfo(policyName: string, value: {[key: string]: any}) {
         PolicyScope.SCOPE_USER_VAL,
     level: Number(LevelNamesToValues[value['level']]) ??
         PolicyLevel.LEVEL_MANDATORY_VAL,
-    value: JSON.stringify(value['value']),
+    value: value['value'],
   };
 
   return policy;
 }
 
 async function applyPolicies() {
-  const jsonString =
+  const policies =
       getRequiredElement<PolicyTestTableElement>('policy-test-table')
           .getTestPoliciesJsonString();
-  if (jsonString) {
-    // Set user affiliation
-    const userAffiliation =
-        getRequiredElement<HTMLInputElement>('user-affiliated').checked;
-    await policyTestBrowserProxy.setUserAffiliation(userAffiliation);
+  const profileSeparationResponse =
+      getRequiredElement<HTMLTextAreaElement>('profile-separation-response')
+          .value;
 
-    // Disable the Apply policies button and re-enable after sending, to ensure
-    // that the JSON string is not accidentally sent twice.
-    getRequiredElement<HTMLButtonElement>('apply-policies').disabled = true;
-    await policyTestBrowserProxy.applyTestPolicies(jsonString);
-    getRequiredElement<HTMLButtonElement>('revert-applied-policies').disabled =
-        false;
-    getRequiredElement<HTMLButtonElement>('apply-policies').disabled = false;
+  // If no policy is set, there is nothing to do.
+  if (!policies && !profileSeparationResponse) {
+    return;
   }
+
+  // Disable the Apply policies button and re-enable after sending, to ensure
+  // that the JSON string is not accidentally sent twice.
+  getRequiredElement<HTMLButtonElement>('apply-policies').disabled = true;
+  const userAffiliation =
+      getRequiredElement<HTMLInputElement>('user-affiliated').checked;
+  await policyTestBrowserProxy.setUserAffiliation(userAffiliation);
+  await policyTestBrowserProxy.applyTestPolicies(
+      policies || '[]', profileSeparationResponse);
+
+  getRequiredElement<HTMLButtonElement>('revert-applied-policies').disabled =
+      false;
+  getRequiredElement<HTMLButtonElement>('apply-policies').disabled = false;
 }
 
 function clearPolicies() {
   getRequiredElement<PolicyTestTableElement>('policy-test-table').clearRows();
+  getRequiredElement<HTMLTextAreaElement>('profile-separation-response').value =
+      '';
   getRequiredElement<PolicyTestTableElement>('policy-test-table').addEmptyRow();
 }
 

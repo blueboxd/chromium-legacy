@@ -299,7 +299,7 @@ def bind_callback_local_vars(code_node, cg_context):
     local_vars.extend([
         S("blink_property_name",
           ("const AtomicString& ${blink_property_name} = "
-           "ToCoreAtomicString(${v8_property_name});")),
+           "ToCoreAtomicString(${isolate}, ${v8_property_name});")),
         S("blink_property_index",
           ("const AtomicString& ${blink_property_index} = "
            "AtomicString::Number(${index});")),
@@ -459,8 +459,9 @@ def bind_callback_local_vars(code_node, cg_context):
                 "LocalDOMWindow* ${blink_receiver} = &UnsafeTo<LocalDOMWindow>("
                 "*${class_name}::ToWrappableUnsafe(${v8_receiver}));")
     else:
-        pattern = ("{_1}* ${blink_receiver} = "
-                   "${class_name}::ToWrappableUnsafe(${v8_receiver});")
+        pattern = (
+            "{_1}* ${blink_receiver} = "
+            "${class_name}::ToWrappableUnsafe(${isolate}, ${v8_receiver});")
         _1 = blink_class_name(cg_context.class_like)
         text = _format(pattern, _1=_1)
     local_vars.append(S("blink_receiver", text))
@@ -806,9 +807,10 @@ def bind_return_value(code_node, cg_context, overriding_args=None):
                                   overriding_args=overriding_args)))
 
         nodes = []
-        is_return_type_void = ((not cg_context.return_type
-                                or cg_context.return_type.unwrap().is_void) and
-                               not cg_context.does_override_idl_return_type)
+        is_return_type_void = (
+            (not cg_context.return_type
+             or cg_context.return_type.unwrap().is_undefined)
+            and not cg_context.does_override_idl_return_type)
         if not (is_return_type_void
                 or cg_context.does_override_idl_return_type):
             return_type = blink_type_info(cg_context.return_type).value_t
@@ -1692,7 +1694,8 @@ def make_v8_set_return_value(cg_context):
     if cg_context.does_override_idl_return_type:
         return T("bindings::V8SetReturnValue(${info}, ${return_value});")
 
-    if not cg_context.return_type or cg_context.return_type.unwrap().is_void:
+    if (not cg_context.return_type
+            or cg_context.return_type.unwrap().is_undefined):
         # Request a SymbolNode |return_value| to define itself without
         # rendering any text.
         return T("<% return_value.request_symbol_definition() %>")
@@ -1732,8 +1735,17 @@ def make_v8_set_return_value(cg_context):
                 "${blink_receiver}->contentWindow()->GetFrame()"),
             T("DCHECK(IsA<LocalFrame>(blink_frame));"),
             CxxUnlikelyIfNode(
-                cond=T("UNLIKELY(!blink_frame->IsAttached())"),
+                cond=T("UNLIKELY(!blink_frame->IsAttached() && "
+                       "To<LocalFrame>(blink_frame)"
+                       "->WindowProxyMaybeUninitialized("
+                       "${script_state}->World())->ContextIfInitialized()"
+                       ".IsEmpty())"),
                 body=[
+                    T("""\
+// Don't wrap the return value if its frame is in the process of detaching and
+// has already invalidated its v8::Context, as it is not safe to
+// re-initialize the v8::Context in that state. Return null instead.\
+"""),
                     T("bindings::V8SetReturnValue(${info}, nullptr);"),
                     T("return;")
                 ]),
@@ -1749,6 +1761,7 @@ def make_v8_set_return_value(cg_context):
         ])
         node.accumulate(
             CodeGenAccumulator.require_include_headers([
+                "third_party/blink/renderer/bindings/core/v8/local_window_proxy.h",
                 "third_party/blink/renderer/core/frame/local_frame.h",
             ]))
         return node
@@ -2338,9 +2351,10 @@ def list_no_alloc_direct_call_callbacks(cg_context):
 
     Example:
       Given the following Web IDL fragments,
-        void f(DOMString);                                             // (a)
-        [NoAllocDirectCall] void f(Node node);                         // (b)
-        [NoAllocDirectCall] void f(optional long a, optional long b);  // (c)
+        undefined f(DOMString);                            // (a)
+        [NoAllocDirectCall] undefined f(Node node);        // (b)
+        [NoAllocDirectCall] undefined f(optional long a,
+                                        optional long b);  // (c)
       the following callback functions should be generated,
         void F(v8::Local<v8::Value> node);  // (b)
         void F();                           // (c)
@@ -2517,7 +2531,7 @@ def make_no_alloc_direct_call_callback_def(cg_context, function_name,
         map(lambda arg: "{} {}".format(arg.v8_type, arg.v8_arg_name),
             arg_list)) +
                  ["v8::FastApiCallbackOptions& v8_arg_callback_options"])
-    return_type = ("void" if function_like.return_type.is_void else
+    return_type = ("void" if function_like.return_type.is_undefined else
                    blink_type_info(function_like.return_type).value_t)
 
     func_def = CxxFuncDefNode(name=function_name,
@@ -4671,7 +4685,7 @@ def _make_operation_registration_table(table_name, operation_entries):
             T("};"),
             T("// Disable compiler warnings for unused functions."),
             ListNode([
-                F("(void){};", nadc_entry.callback_name)
+                F("std::ignore = {};", nadc_entry.callback_name)
                 for entry in operation_entries
                 for nadc_entry in entry.no_alloc_direct_call_callbacks
             ]),
@@ -5109,6 +5123,34 @@ ${prototype_object}->Delete(
     ${v8_context}, V8AtomicString(${isolate}, "constructor")).ToChecked();
 """))
 
+    if interface and interface.iterable and not interface.iterable.key_type:
+        conditional = expr_from_exposure(interface.iterable.exposure)
+        if not conditional.is_always_true:
+            body = [
+                TextNode("""\
+// The value-iterator-returning properties of the intrinsic values can be
+// installed only per v8::Template (via
+// v8::Template::SetIntrinsicDataProperty). So the property installation
+// logic is reversed in this case like below.
+//   1. Unconditionally install the properties on prototype_object_template
+//      per V8 isolate in ${class_name}::InstallInterfaceTemplate.
+//   2. Conditionally remove the properties from prototype_object per V8
+//      context if they're not enabled.
+// https://webidl.spec.whatwg.org/#define-the-iteration-methods\
+""")
+            ]
+            body.extend([
+                FormatNode(
+                    "${prototype_object}->Delete("
+                    "${v8_context}, "
+                    "V8AtomicString(${isolate}, \"{property}\"))"
+                    ".ToChecked();",
+                    property=property)
+                for property in ("entries", "keys", "values", "forEach")
+            ])
+            nodes.append(
+                CxxUnlikelyIfNode(cond=expr_not(conditional), body=body))
+
     # Install @@asyncIterator property.
     if interface and interface.async_iterable:
         for operation_group in interface.async_iterable.operation_groups:
@@ -5150,9 +5192,12 @@ ${prototype_object}->Delete(
   v8::Local<v8::Value> v8_value = ${prototype_object}->Get(
       ${v8_context}, V8AtomicString(${isolate}, "{property_name}"))
       .ToLocalChecked();
-  ${prototype_object}->DefineOwnProperty(
-      ${v8_context}, v8::Symbol::GetIterator(${isolate}), v8_value,
-      v8::DontEnum).ToChecked();
+  // "{property_name}" may be hidden in this context.
+  if (!v8_value->IsUndefined()) {{
+    ${prototype_object}->DefineOwnProperty(
+        ${v8_context}, v8::Symbol::GetIterator(${isolate}), v8_value,
+        v8::DontEnum).ToChecked();
+  }}
 }}
 """
         nodes.append(FormatNode(pattern, property_name=property_name))

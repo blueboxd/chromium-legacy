@@ -6,7 +6,7 @@
 
 #import "components/search_engines/template_url.h"
 #import "components/search_engines/template_url_service.h"
-#import "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
@@ -51,7 +51,7 @@ bool LensBrowserAgent::CanGoBackToLensViewFinder() const {
 void LensBrowserAgent::GoBackToLensViewFinder() const {
   DCHECK(browser_);
 
-  absl::optional<LensEntrypoint> lens_entrypoint = CurrentResultsEntrypoint();
+  std::optional<LensEntrypoint> lens_entrypoint = CurrentResultsEntrypoint();
   if (!lens_entrypoint) {
     return;
   }
@@ -73,19 +73,19 @@ void LensBrowserAgent::GoBackToLensViewFinder() const {
 
 #pragma mark - Private
 
-absl::optional<LensEntrypoint> LensBrowserAgent::CurrentResultsEntrypoint()
+std::optional<LensEntrypoint> LensBrowserAgent::CurrentResultsEntrypoint()
     const {
   DCHECK(browser_);
 
   if (!ios::provider::IsLensSupported()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   WebStateList* web_state_list = browser_->GetWebStateList();
   web::WebState* web_state = web_state_list->GetActiveWebState();
   // Return null optional if there is no active WebState.
   if (!web_state) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   // Lens camera is unsupported if the default search engine is not Google.
@@ -99,40 +99,27 @@ absl::optional<LensEntrypoint> LensBrowserAgent::CurrentResultsEntrypoint()
   if (!default_url ||
       default_url->GetEngineType(url_service->search_terms_data()) !=
           SEARCH_ENGINE_GOOGLE) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   // The URL must be a valid Lens Web results URL from the camera with a defined
   // entry point.
-  absl::optional<LensEntrypoint> entry_point =
+  std::optional<LensEntrypoint> entry_point =
       ios::provider::GetLensEntryPointFromURL(web_state->GetVisibleURL());
   if (!entry_point) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   // Return a null optional if the entrypoint is not an enabled camera
   // experience.
   switch (entry_point.value()) {
     case LensEntrypoint::Keyboard:
-      if (!base::FeatureList::IsEnabled(kEnableLensInKeyboard)) {
-        return absl::nullopt;
-      }
-      break;
     case LensEntrypoint::NewTabPage:
-      if (!base::FeatureList::IsEnabled(kEnableLensInNTP)) {
-        return absl::nullopt;
-      }
-      break;
     case LensEntrypoint::HomeScreenWidget:
-      if (!base::FeatureList::IsEnabled(kEnableLensInHomeScreenWidget)) {
-        return absl::nullopt;
-      }
-      break;
+      return entry_point;
     default:
-      return absl::nullopt;
+      return std::nullopt;
   }
-
-  return entry_point;
 }
 
 #pragma mark - BrowserObserver

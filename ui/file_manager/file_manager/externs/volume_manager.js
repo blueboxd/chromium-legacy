@@ -63,9 +63,7 @@ export class VolumeManager {
    * @return {chrome.fileManagerPrivate.DriveConnectionState} Connection state.
    */
   getDriveConnectionState() {
-    // @ts-ignore: error TS2322: Type 'string' is not assignable to type
-    // 'DriveConnectionState'.
-    return chrome.fileManagerPrivate.DriveConnectionStateType.ONLINE;
+    return {type: chrome.fileManagerPrivate.DriveConnectionStateType.ONLINE};
   }
 
   /**
@@ -202,7 +200,7 @@ export class VolumeManager {
 
   /**
    * Obtains the default display root entry.
-   * @param {function((DirectoryEntry|FilesAppDirEntry)):void} callback
+   * @param {function((DirectoryEntry|FilesAppDirEntry|null)):void} callback
    * Callback passed the default display root.
    */
   // @ts-ignore: error TS6133: 'callback' is declared but its value is never

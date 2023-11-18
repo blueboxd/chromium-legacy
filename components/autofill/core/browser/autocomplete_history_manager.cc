@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/containers/cxx20_erase.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/functional/bind.h"
 #include "base/memory/weak_ptr.h"
@@ -19,7 +18,7 @@
 #include "components/autofill/core/browser/suggestions_context.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/browser/validation.h"
-#include "components/autofill/core/browser/webdata/autofill_entry.h"
+#include "components/autofill/core/browser/webdata/autocomplete_entry.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
@@ -171,8 +170,8 @@ void AutocompleteHistoryManager::OnSingleFieldSuggestionSelected(
     return;
   }
 
-  // The AutofillEntry was found, use it to log the DaysSinceLastUsed.
-  const AutofillEntry& entry = last_entries_iter->second;
+  // The AutocompleteEntry was found, use it to log the DaysSinceLastUsed.
+  const AutocompleteEntry& entry = last_entries_iter->second;
   base::TimeDelta time_delta = AutofillClock::Now() - entry.date_last_used();
   AutofillMetrics::LogAutocompleteDaysSinceLastUse(time_delta.InDays());
 }
@@ -232,7 +231,7 @@ void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
 }
 
 void AutocompleteHistoryManager::SendSuggestions(
-    const std::vector<AutofillEntry>& entries,
+    const std::vector<AutocompleteEntry>& entries,
     const QueryHandler& query_handler) {
   if (!query_handler.handler_) {
     // Either the handler has been destroyed, or it is invalid.
@@ -248,9 +247,9 @@ void AutocompleteHistoryManager::SendSuggestions(
   last_entries_.clear();
 
   if (!hide_suggestions) {
-    for (const AutofillEntry& entry : entries) {
+    for (const AutocompleteEntry& entry : entries) {
       suggestions.push_back(Suggestion(entry.key().value()));
-      last_entries_.insert({entry.key().value(), AutofillEntry(entry)});
+      last_entries_.insert({entry.key().value(), AutocompleteEntry(entry)});
     }
   }
 
@@ -270,7 +269,7 @@ void AutocompleteHistoryManager::CancelAllPendingQueries() {
 
 void AutocompleteHistoryManager::CleanupEntries(
     const SuggestionsHandler* handler) {
-  base::EraseIf(pending_queries_, [handler](const auto& pending_query) {
+  std::erase_if(pending_queries_, [handler](const auto& pending_query) {
     const QueryHandler& query_handler = pending_query.second;
     return !query_handler.handler_ || query_handler.handler_.get() == handler;
   });
@@ -294,9 +293,10 @@ void AutocompleteHistoryManager::OnAutofillValuesReturned(
   // Removing the query, as it is no longer pending.
   pending_queries_.erase(pending_queries_iter);
 
-  const WDResult<std::vector<AutofillEntry>>* autofill_result =
-      static_cast<const WDResult<std::vector<AutofillEntry>>*>(result.get());
-  std::vector<AutofillEntry> entries = autofill_result->GetValue();
+  const WDResult<std::vector<AutocompleteEntry>>* autocomplete_result =
+      static_cast<const WDResult<std::vector<AutocompleteEntry>>*>(
+          result.get());
+  std::vector<AutocompleteEntry> entries = autocomplete_result->GetValue();
   SendSuggestions(entries, query_handler);
 }
 

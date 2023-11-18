@@ -17,18 +17,17 @@
 #import "components/sync_preferences/pref_service_syncable.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
-#import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/browser_prefs.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
-#import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
-#import "ios/chrome/browser/signin/fake_authentication_service_delegate.h"
-#import "ios/chrome/browser/signin/fake_system_identity_manager.h"
+#import "ios/chrome/browser/signin/model/authentication_service.h"
+#import "ios/chrome/browser/signin/model/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service_factory.h"
+#import "ios/chrome/browser/signin/model/fake_authentication_service_delegate.h"
+#import "ios/chrome/browser/signin/model/fake_system_identity_manager.h"
 #import "ios/chrome/browser/sync/model/mock_sync_service_utils.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/sync/model/sync_setup_service.h"
@@ -62,14 +61,14 @@ std::unique_ptr<KeyedService> CreateNiceMockSyncService(
 }  // anonymous namespace
 
 PassphraseTableViewControllerTest::PassphraseTableViewControllerTest()
-    : ChromeTableViewControllerTest(),
+    : LegacyChromeTableViewControllerTest(),
       fake_sync_service_(NULL),
       default_auth_error_(GoogleServiceAuthError::NONE) {}
 
 PassphraseTableViewControllerTest::~PassphraseTableViewControllerTest() {}
 
 void PassphraseTableViewControllerTest::SetUp() {
-  ChromeTableViewControllerTest::SetUp();
+  LegacyChromeTableViewControllerTest::SetUp();
 
   // Set up the default return values for non-trivial return types.
   DefaultValue<const GoogleServiceAuthError&>::Set(default_auth_error_);
@@ -91,10 +90,10 @@ void PassphraseTableViewControllerTest::SetUp() {
   AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
       chrome_browser_state_.get(),
       std::make_unique<FakeAuthenticationServiceDelegate>());
-  browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get());
   app_state_ = [[AppState alloc] initWithStartupInformation:nil];
   scene_state_ = [[SceneState alloc] initWithAppState:app_state_];
-  SceneStateBrowserAgent::CreateForBrowser(browser_.get(), scene_state_);
+  browser_ =
+      std::make_unique<TestBrowser>(chrome_browser_state_.get(), scene_state_);
 
   fake_sync_service_ = static_cast<syncer::MockSyncService*>(
       SyncServiceFactory::GetForBrowserState(chrome_browser_state_.get()));
@@ -125,7 +124,7 @@ void PassphraseTableViewControllerTest::TearDown() {
   // controllers.
   [nav_controller_ cleanUpSettings];
   nav_controller_ = nil;
-  ChromeTableViewControllerTest::TearDown();
+  LegacyChromeTableViewControllerTest::TearDown();
 }
 
 void PassphraseTableViewControllerTest::RegisterTestingFactories(

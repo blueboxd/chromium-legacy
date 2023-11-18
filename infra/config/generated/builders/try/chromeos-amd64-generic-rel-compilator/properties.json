@@ -1,12 +1,15 @@
 {
   "$build/chromium_tests_builder_config": {
     "builder_config": {
+      "additional_exclusions": [
+        "infra/config/generated/builders/try/chromeos-amd64-generic-rel-renamed/gn-args.json"
+      ],
       "builder_db": {
         "entries": [
           {
             "builder_id": {
               "bucket": "ci",
-              "builder": "chromeos-amd64-generic-rel",
+              "builder": "chromeos-amd64-generic-rel-renamed",
               "project": "chromium"
             },
             "builder_spec": {
@@ -43,7 +46,7 @@
       "builder_ids": [
         {
           "bucket": "ci",
-          "builder": "chromeos-amd64-generic-rel",
+          "builder": "chromeos-amd64-generic-rel-renamed",
           "project": "chromium"
         }
       ]

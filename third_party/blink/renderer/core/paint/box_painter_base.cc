@@ -21,17 +21,20 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/rounded_border_geometry.h"
 #include "third_party/blink/renderer/core/paint/rounded_inner_rect_clipper.h"
+#include "third_party/blink/renderer/core/paint/svg_mask_painter.h"
 #include "third_party/blink/renderer/core/paint/timing/image_element_timing.h"
 #include "third_party/blink/renderer/core/paint/timing/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/style/border_edge.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/core/style/style_fetched_image.h"
+#include "third_party/blink/renderer/core/style/style_mask_source_image.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/graphics/paint_generated_image.h"
 #include "third_party/blink/renderer/platform/graphics/scoped_image_rendering_settings.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -1077,6 +1080,39 @@ bool ShouldApplyBlendOperation(const BoxPainterBase::FillLayerInfo& info,
   return !info.is_bottom_layer || layer.GetType() != EFillLayerType::kMask;
 }
 
+bool NeedsMaskLuminanceLayer(const FillLayer& layer) {
+  if (layer.GetType() != EFillLayerType::kMask) {
+    return false;
+  }
+  // We only need a luminance layer if the mask-mode is explicitly
+  // 'luminance'. A mask-mode of 'match-source' only applies to SVG <mask>
+  // references, and that code-path will create a layer if needed in that case.
+  return layer.MaskMode() == EFillMaskMode::kLuminance;
+}
+
+const StyleMaskSourceImage* ToMaskSourceIfSVGMask(
+    const StyleImage& style_image) {
+  const auto* mask_source = DynamicTo<StyleMaskSourceImage>(style_image);
+  if (!mask_source || !mask_source->HasSVGMask()) {
+    return nullptr;
+  }
+  return mask_source;
+}
+
+class ScopedMaskLuminanceLayer {
+  STACK_ALLOCATED();
+
+ public:
+  ScopedMaskLuminanceLayer(GraphicsContext& context, SkBlendMode composite_op)
+      : context_(context) {
+    context.BeginLayer(cc::ColorFilter::MakeLuma(), &composite_op);
+  }
+  ~ScopedMaskLuminanceLayer() { context_.EndLayer(); }
+
+ private:
+  GraphicsContext& context_;
+};
+
 }  // anonymous namespace
 
 PhysicalBoxStrut BoxPainterBase::ComputeSnappedBorders() const {
@@ -1120,19 +1156,54 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
   scoped_refptr<Image> image;
   SkBlendMode composite_op = SkBlendMode::kSrcOver;
   absl::optional<ScopedImageRenderingSettings> image_rendering_settings_context;
+  absl::optional<ScopedMaskLuminanceLayer> mask_luminance_scope;
   if (fill_layer_info.should_paint_image) {
-    geometry.Calculate(paint_info, bg_layer, scrolled_paint_rect);
-    image = fill_layer_info.image->GetImage(
-        geometry.ImageClient(), geometry.ImageDocument(),
-        geometry.ImageStyle(style_), gfx::SizeF(geometry.TileSize()));
-    image_rendering_settings_context.emplace(
-        context, geometry.ImageInterpolationQuality(),
-        geometry.DynamicRangeLimit());
-
+    // Prepare compositing state first so that it's ready in case the layer
+    // references an SVG <mask> element.
     if (ShouldApplyBlendOperation(fill_layer_info, bg_layer)) {
       composite_op = WebCoreCompositeToSkiaComposite(bg_layer.Composite(),
                                                      bg_layer.GetBlendMode());
     }
+
+    if (NeedsMaskLuminanceLayer(bg_layer)) {
+      mask_luminance_scope.emplace(context, composite_op);
+      // The mask luminance layer will apply `composite_op`, so reset it to
+      // avoid applying it twice.
+      composite_op = SkBlendMode::kSrcOver;
+    }
+
+    const ComputedStyle& image_style = geometry.ImageStyle(style_);
+
+    // If the "image" referenced by the FillLayer is an SVG <mask> reference
+    // (and this is a layer for a mask), then repeat, position, clip, origin and
+    // size should have no effect.
+    if (bg_layer.GetType() == EFillLayerType::kMask) {
+      if (const auto* mask_source =
+              ToMaskSourceIfSVGMask(*fill_layer_info.image)) {
+        const PhysicalRect positioning_area = geometry.ComputePositioningArea(
+            paint_info, bg_layer, scrolled_paint_rect);
+        const gfx::RectF reference_box(gfx::SizeF(positioning_area.size));
+        const float zoom = image_style.EffectiveZoom();
+
+        clip_with_scrolling_state_saver.SaveIfNeeded();
+        // Move the origin to the upper-left corner of the positioning area.
+        context.Translate(positioning_area.X().ToFloat(),
+                          positioning_area.Y().ToFloat());
+        SVGMaskPainter::PaintSVGMaskLayer(
+            context, *mask_source, geometry.ImageClient(), reference_box, zoom,
+            composite_op, bg_layer.MaskMode() == EFillMaskMode::kMatchSource);
+        return;
+      }
+    }
+    geometry.Calculate(paint_info, bg_layer, scrolled_paint_rect);
+
+    image = fill_layer_info.image->GetImage(
+        geometry.ImageClient(), geometry.ImageDocument(), image_style,
+        gfx::SizeF(geometry.TileSize()));
+
+    image_rendering_settings_context.emplace(
+        context, geometry.ImageInterpolationQuality(),
+        geometry.DynamicRangeLimit());
   }
 
   PhysicalBoxStrut border = ComputeSnappedBorders();

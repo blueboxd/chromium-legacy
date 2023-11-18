@@ -37,9 +37,9 @@
 #include "components/password_manager/core/browser/origin_credential_store.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/password_manager/core/browser/password_store/test_password_store.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
-#include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/browser/webauthn_credentials_delegate.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/security_state/core/security_state.h"
@@ -1281,7 +1281,8 @@ TEST_F(PasswordAccessoryControllerTest,
   if (base::android::BuildInfo::GetInstance()->is_automotive()) {
     auto mock_authenticator = std::make_unique<MockDeviceAuthenticator>();
     ON_CALL(*mock_authenticator, AuthenticateWithMessage)
-        .WillByDefault(RunOnceCallback<1>(/*auth_succeeded=*/true));
+        .WillByDefault(
+            base::test::RunOnceCallbackRepeatedly<1>(/*auth_succeeded=*/true));
     EXPECT_CALL(*password_client(), GetDeviceAuthenticator)
         .WillOnce(Return(testing::ByMove(std::move(mock_authenticator))))
         .RetiresOnSaturation();
@@ -1318,7 +1319,8 @@ TEST_F(PasswordAccessoryControllerTest, DontShowMigrationSheetlIfDisabled) {
   if (base::android::BuildInfo::GetInstance()->is_automotive()) {
     auto mock_authenticator = std::make_unique<MockDeviceAuthenticator>();
     ON_CALL(*mock_authenticator, AuthenticateWithMessage)
-        .WillByDefault(RunOnceCallback<1>(/*auth_succeeded=*/true));
+        .WillByDefault(
+            base::test::RunOnceCallbackRepeatedly<1>(/*auth_succeeded=*/true));
     EXPECT_CALL(*password_client(), GetDeviceAuthenticator)
         .WillOnce(Return(testing::ByMove(std::move(mock_authenticator))))
         .RetiresOnSaturation();

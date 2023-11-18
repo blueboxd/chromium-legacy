@@ -4,10 +4,12 @@
 
 #include "gpu/command_buffer/service/shared_image_interface_in_process.h"
 
+#include <optional>
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
+#include "gpu/command_buffer/client/client_shared_image.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -22,7 +24,6 @@
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gl/gl_context.h"
 
 namespace gpu {
@@ -203,7 +204,8 @@ bool SharedImageInterfaceInProcess::LazyCreateSharedImageFactory() {
   return true;
 }
 
-Mailbox SharedImageInterfaceInProcess::CreateSharedImage(
+scoped_refptr<ClientSharedImage>
+SharedImageInterfaceInProcess::CreateSharedImage(
     viz::SharedImageFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
@@ -229,7 +231,7 @@ Mailbox SharedImageInterfaceInProcess::CreateSharedImage(
             MakeSyncToken(next_fence_sync_release_++)),
         {});
   }
-  return mailbox;
+  return base::MakeRefCounted<ClientSharedImage>(mailbox);
 }
 
 void SharedImageInterfaceInProcess::CreateSharedImageOnGpuThread(
@@ -260,7 +262,8 @@ void SharedImageInterfaceInProcess::CreateSharedImageOnGpuThread(
   sync_point_client_state_->ReleaseFenceSync(sync_token.release_count());
 }
 
-Mailbox SharedImageInterfaceInProcess::CreateSharedImage(
+scoped_refptr<ClientSharedImage>
+SharedImageInterfaceInProcess::CreateSharedImage(
     viz::SharedImageFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
@@ -287,7 +290,7 @@ Mailbox SharedImageInterfaceInProcess::CreateSharedImage(
                                    std::move(pixel_data_copy)),
                     {});
   }
-  return mailbox;
+  return base::MakeRefCounted<ClientSharedImage>(mailbox);
 }
 
 void SharedImageInterfaceInProcess::CreateSharedImageWithDataOnGpuThread(
@@ -318,7 +321,8 @@ void SharedImageInterfaceInProcess::CreateSharedImageWithDataOnGpuThread(
   sync_point_client_state_->ReleaseFenceSync(sync_token.release_count());
 }
 
-Mailbox SharedImageInterfaceInProcess::CreateSharedImage(
+scoped_refptr<ClientSharedImage>
+SharedImageInterfaceInProcess::CreateSharedImage(
     viz::SharedImageFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
@@ -345,7 +349,12 @@ Mailbox SharedImageInterfaceInProcess::CreateSharedImage(
                        MakeSyncToken(next_fence_sync_release_++)),
         {});
   }
-  return mailbox;
+
+  // Ensure that the GMB is created. This paves the path for an upcoming CL that
+  // will have ClientSharedImage own the GMB.
+  GetGpuMemoryBuffer(mailbox);
+
+  return base::MakeRefCounted<ClientSharedImage>(mailbox);
 }
 
 void SharedImageInterfaceInProcess::CreateSharedImageWithBufferUsageOnGpuThread(
@@ -386,14 +395,13 @@ void SharedImageInterfaceInProcess::CreateSharedImageWithBufferUsageOnGpuThread(
   sync_point_client_state_->ReleaseFenceSync(sync_token.release_count());
 }
 
-GpuMemoryBufferHandleInfo
-SharedImageInterfaceInProcess::GetGpuMemoryBufferHandleInfo(
+gfx::GpuMemoryBuffer* SharedImageInterfaceInProcess::GetGpuMemoryBuffer(
     const Mailbox& mailbox) {
   {
     base::AutoLock lock(lock_);
-    auto it = gmb_handle_infos_.find(mailbox);
-    if (it != gmb_handle_infos_.end()) {
-      return it->second;
+    auto it = gpu_memory_buffers_.find(mailbox);
+    if (it != gpu_memory_buffers_.end()) {
+      return it->second.get();
     }
   }
 
@@ -413,32 +421,41 @@ SharedImageInterfaceInProcess::GetGpuMemoryBufferHandleInfo(
                      &buffer_usage, &completion),
       {});
   completion.Wait();
-  GpuMemoryBufferHandleInfo handle_info(std::move(handle), format, size,
-                                        buffer_usage);
+  auto gpu_memory_buffer =
+      SharedImageInterface::CreateGpuMemoryBufferForUseByScopedMapping(
+          GpuMemoryBufferHandleInfo(std::move(handle), format, size,
+                                    buffer_usage));
+  auto* raw_gpu_memory_buffer = gpu_memory_buffer.get();
   {
     base::AutoLock lock(lock_);
-    gmb_handle_infos_[mailbox] = handle_info;
+    gpu_memory_buffers_[mailbox] = std::move(gpu_memory_buffer);
   }
 
-  return handle_info;
+  return raw_gpu_memory_buffer;
 }
 
 std::unique_ptr<SharedImageInterface::ScopedMapping>
 SharedImageInterfaceInProcess::MapSharedImage(const Mailbox& mailbox) {
-  auto handle_info = GetGpuMemoryBufferHandleInfo(mailbox);
-  if (handle_info.handle.is_null()) {
+  auto* gpu_memory_buffer = GetGpuMemoryBuffer(mailbox);
+  if (!gpu_memory_buffer) {
     LOG(ERROR) << "Buffer is null.";
     return nullptr;
   }
 
   auto scoped_mapping =
-      SharedImageInterface::ScopedMapping::Create(std::move(handle_info));
+      SharedImageInterface::ScopedMapping::Create(gpu_memory_buffer);
 
   if (!scoped_mapping) {
     LOG(ERROR) << "Unable to create ScopedMapping.";
   }
 
   return scoped_mapping;
+}
+
+std::unique_ptr<gpu::SharedImageInterface::ScopedMapping>
+SharedImageInterfaceInProcess::MapSharedImage(
+    const scoped_refptr<gpu::ClientSharedImage>& client_shared_image) {
+  return MapSharedImage(client_shared_image->mailbox());
 }
 
 void SharedImageInterfaceInProcess::GetGpuMemoryBufferHandleInfoOnGpuThread(
@@ -471,7 +488,8 @@ void SharedImageInterfaceInProcess::GetGpuMemoryBufferHandleInfoOnGpuThread(
   }
 }
 
-Mailbox SharedImageInterfaceInProcess::CreateSharedImage(
+scoped_refptr<ClientSharedImage>
+SharedImageInterfaceInProcess::CreateSharedImage(
     viz::SharedImageFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
@@ -503,7 +521,7 @@ Mailbox SharedImageInterfaceInProcess::CreateSharedImage(
                     {});
   }
 
-  return mailbox;
+  return base::MakeRefCounted<ClientSharedImage>(mailbox);
 }
 
 void SharedImageInterfaceInProcess::CreateSharedImageWithBufferOnGpuThread(
@@ -536,7 +554,8 @@ void SharedImageInterfaceInProcess::CreateSharedImageWithBufferOnGpuThread(
   sync_point_client_state_->ReleaseFenceSync(sync_token.release_count());
 }
 
-Mailbox SharedImageInterfaceInProcess::CreateSharedImage(
+scoped_refptr<ClientSharedImage>
+SharedImageInterfaceInProcess::CreateSharedImage(
     gfx::GpuMemoryBuffer* gpu_memory_buffer,
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gfx::BufferPlane plane,
@@ -571,7 +590,7 @@ Mailbox SharedImageInterfaceInProcess::CreateSharedImage(
         {});
   }
 
-  return mailbox;
+  return base::MakeRefCounted<ClientSharedImage>(mailbox);
 }
 
 void SharedImageInterfaceInProcess::CreateGMBSharedImageOnGpuThread(
@@ -683,6 +702,19 @@ void SharedImageInterfaceInProcess::DestroySharedImage(
       {sync_token});
 }
 
+void SharedImageInterfaceInProcess::DestroySharedImage(
+    const SyncToken& sync_token,
+    scoped_refptr<ClientSharedImage> client_shared_image) {
+  CHECK(client_shared_image->HasOneRef());
+  // Use sync token dependency to ensure that the destroy task does not run
+  // before sync token is released.
+  ScheduleGpuTask(
+      base::BindOnce(
+          &SharedImageInterfaceInProcess::DestroyClientSharedImageOnGpuThread,
+          base::Unretained(this), std::move(client_shared_image)),
+      {sync_token});
+}
+
 void SharedImageInterfaceInProcess::DestroySharedImageOnGpuThread(
     const Mailbox& mailbox) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
@@ -696,8 +728,13 @@ void SharedImageInterfaceInProcess::DestroySharedImageOnGpuThread(
 
   {
     base::AutoLock lock(lock_);
-    gmb_handle_infos_.erase(mailbox);
+    gpu_memory_buffers_.erase(mailbox);
   }
+}
+
+void SharedImageInterfaceInProcess::DestroyClientSharedImageOnGpuThread(
+    scoped_refptr<ClientSharedImage> client_shared_image) {
+  DestroySharedImageOnGpuThread(client_shared_image->mailbox());
 }
 
 void SharedImageInterfaceInProcess::WaitSyncTokenOnGpuThread(

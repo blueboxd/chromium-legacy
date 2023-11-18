@@ -5,7 +5,9 @@
 #import "ios/chrome/browser/ui/promos_manager/promos_manager_coordinator.h"
 
 #import <Foundation/Foundation.h>
+
 #import <map>
+#import <optional>
 
 #import "base/check.h"
 #import "base/containers/small_map.h"
@@ -15,11 +17,11 @@
 #import "base/strings/sys_string_conversions.h"
 #import "components/crash/core/common/crash_key.h"
 #import "components/feature_engagement/public/tracker.h"
+#import "components/sync/service/sync_service.h"
 #import "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/credential_provider_promo/model/features.h"
 #import "ios/chrome/browser/default_browser/model/utils.h"
 #import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
-#import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/promos_manager/features.h"
 #import "ios/chrome/browser/promos_manager/promo_config.h"
 #import "ios/chrome/browser/promos_manager/promos_manager.h"
@@ -29,7 +31,9 @@
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/credential_provider_promo_commands.h"
 #import "ios/chrome/browser/shared/public/commands/promos_manager_commands.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
+#import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/app_store_rating/app_store_rating_display_handler.h"
 #import "ios/chrome/browser/ui/app_store_rating/features.h"
 #import "ios/chrome/browser/ui/credential_provider_promo/credential_provider_promo_display_handler.h"
@@ -51,7 +55,6 @@
 #import "ios/chrome/common/ui/promo_style/promo_style_view_controller_delegate.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/choice_api.h"
-#import "third_party/abseil-cpp/absl/types/optional.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
 @interface PromosManagerCoordinator () <
@@ -79,7 +82,7 @@
       _alertProviderPromos;
 
   // The currently displayed promo data, if any.
-  absl::optional<PromoDisplayData> _currentPromoData;
+  std::optional<PromoDisplayData> _currentPromoData;
 
   // The handler for the CredentialProviderPromoCommands.
   id<CredentialProviderPromoCommands> _credentialProviderPromoCommandHandler;
@@ -178,7 +181,7 @@
     return;
   }
 
-  absl::optional<PromoDisplayData> nextPromoForDisplay =
+  std::optional<PromoDisplayData> nextPromoForDisplay =
       [self.mediator nextPromoForDisplay:isFirstShownPromo];
 
   if (nextPromoForDisplay.has_value()) {
@@ -218,7 +221,7 @@
             self.browser->GetBrowserState());
     tracker->Dismissed(*it->feature_engagement_feature);
   }
-  _currentPromoData = absl::nullopt;
+  _currentPromoData = std::nullopt;
 }
 
 - (void)displayPromo:(PromoDisplayData)promoData {
@@ -387,7 +390,7 @@
     //
     // These are niche edge cases that almost exclusively occur during local,
     // manual testing.
-    absl::optional<promos_manager::Promo> maybeForcedPromo =
+    std::optional<promos_manager::Promo> maybeForcedPromo =
         promos_manager::PromoForName(base::SysNSStringToUTF8(
             experimental_flags::GetForcedPromoToDisplay()));
 
@@ -550,8 +553,12 @@
   // TODO(crbug.com/1360880): Create first StandardPromoViewProvider promo.
 
   // StandardPromoAlertProvider promo(s) below:
+  syncer::SyncUserSettings* syncUserSettings =
+      SyncServiceFactory::GetForBrowserState(self.browser->GetBrowserState())
+          ->GetUserSettings();
   _alertProviderPromos[promos_manager::Promo::PostRestoreSignInAlert] =
-      [[PostRestoreSignInProvider alloc] init];
+      [[PostRestoreSignInProvider alloc]
+          initWithSyncUserSettings:syncUserSettings];
   if (GetPostRestoreDefaultBrowserPromoType() ==
       PostRestoreDefaultBrowserPromoType::kAlert) {
     _alertProviderPromos
@@ -566,25 +573,20 @@
                                     self.browser->GetBrowserState())];
 
   // CredentialProvider Promo handler
-  if (IsCredentialProviderExtensionPromoEnabled() || IsIOSSetUpListEnabled()) {
-    _displayHandlerPromos[promos_manager::Promo::CredentialProviderExtension] =
-        [[CredentialProviderPromoDisplayHandler alloc]
-            initWithHandler:_credentialProviderPromoCommandHandler];
-  }
+  _displayHandlerPromos[promos_manager::Promo::CredentialProviderExtension] =
+      [[CredentialProviderPromoDisplayHandler alloc]
+          initWithHandler:_credentialProviderPromoCommandHandler];
 
   // DefaultBrowser Promo handler
-  if (IsDefaultBrowserInPromoManagerEnabled()) {
-    _displayHandlerPromos[promos_manager::Promo::DefaultBrowser] =
-        [[DefaultBrowserPromoDisplayHandler alloc] init];
-    _displayHandlerPromos[promos_manager::Promo::DefaultBrowserRemindMeLater] =
-        [[DefaultBrowserRemindMeLaterPromoDisplayHandler alloc] init];
-  }
+  _displayHandlerPromos[promos_manager::Promo::DefaultBrowser] =
+      [[DefaultBrowserPromoDisplayHandler alloc] init];
+  _displayHandlerPromos[promos_manager::Promo::DefaultBrowserRemindMeLater] =
+      [[DefaultBrowserRemindMeLaterPromoDisplayHandler alloc] init];
 
   // Choice Promo handler
   if (ios::provider::IsChoiceEnabled()) {
     _displayHandlerPromos[promos_manager::Promo::Choice] =
-        ios::provider::CreateChoiceDisplayHandler(
-            self.browser->GetBrowserState());
+        ios::provider::CreateChoiceDisplayHandler();
   }
 }
 

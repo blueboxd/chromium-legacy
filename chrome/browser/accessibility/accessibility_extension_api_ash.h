@@ -33,12 +33,22 @@ class AccessibilityPrivateDarkenScreenFunction : public ExtensionFunction {
                              ACCESSIBILITY_PRIVATE_DARKENSCREEN)
 };
 
-// API function that enables or disables mouse events in ChromeVox / Magnifier.
+// API function that enables or disables mouse events in ChromeVox / Magnifier /
+// FaceGaze.
 class AccessibilityPrivateEnableMouseEventsFunction : public ExtensionFunction {
   ~AccessibilityPrivateEnableMouseEventsFunction() override {}
   ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.enableMouseEvents",
                              ACCESSIBILITY_PRIVATE_ENABLEMOUSEEVENTS)
+};
+
+// API function that sets the cursor position on the screen in absolute
+// coordinates.
+class AccessibilityPrivateSetCursorPositionFunction : public ExtensionFunction {
+  ~AccessibilityPrivateSetCursorPositionFunction() override {}
+  ResponseAction Run() override;
+  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.setCursorPosition",
+                             ACCESSIBILITY_PRIVATE_SETCURSORPOSITION)
 };
 
 // API function that requests that key events be forwarded to the Switch
@@ -74,6 +84,17 @@ class AccessibilityPrivateGetDlcContentsFunction : public ExtensionFunction {
  private:
   void OnDlcContentsRetrieved(const std::vector<uint8_t>& contents,
                               absl::optional<std::string> error);
+};
+
+// API function that retrieves TTS DLC file contents.
+class AccessibilityPrivateGetTtsDlcContentsFunction : public ExtensionFunction {
+  ~AccessibilityPrivateGetTtsDlcContentsFunction() override = default;
+  ResponseAction Run() override;
+  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.getTtsDlcContents",
+                             ACCESSIBILITY_PRIVATE_GETTTSDLCCONTENTS)
+ private:
+  void OnTtsDlcContentsRetrieved(const std::vector<uint8_t>& contents,
+                                 absl::optional<std::string> error);
 };
 
 // API function that gets the localized DOM key string for a given key code.

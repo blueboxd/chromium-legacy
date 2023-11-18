@@ -221,6 +221,15 @@ constexpr const char kValidJsonActionMoveMouse[] =
       ]
     })json";
 
+void VerifyEventsSize(test::EventCapturer& event_capturer,
+                      size_t expected_key_event_size,
+                      size_t expected_mouse_event_size,
+                      size_t expected_touch_event_size) {
+  EXPECT_EQ(expected_key_event_size, event_capturer.key_events().size());
+  EXPECT_EQ(expected_mouse_event_size, event_capturer.mouse_events().size());
+  EXPECT_EQ(expected_touch_event_size, event_capturer.touch_events().size());
+}
+
 }  // namespace
 
 class TouchInjectorTest : public views::ViewsTestBase {
@@ -331,8 +340,10 @@ TEST_F(TouchInjectorTest, TestAddRemoveActionWithProtoConversion) {
                /*expect_ids=*/{0, 1});
   EXPECT_EQ(2u, injector_->GetActiveActionsSize());
 
+  auto bounds = injector_->content_bounds();
+  auto center = gfx::Point(bounds.width() / 2, bounds.height() / 2);
   // Step 1: Add a new action move.
-  injector_->AddNewAction(ActionType::MOVE);
+  injector_->AddNewAction(ActionType::MOVE, center);
   CheckActions(
       injector_.get(), /*expect_size=*/3u,
       /*expect_types=*/{ActionType::TAP, ActionType::TAP, ActionType::MOVE},
@@ -340,7 +351,7 @@ TEST_F(TouchInjectorTest, TestAddRemoveActionWithProtoConversion) {
   EXPECT_EQ(3u, injector_->GetActiveActionsSize());
 
   // Step 2: Add a new action tap.
-  injector_->AddNewAction(ActionType::TAP);
+  injector_->AddNewAction(ActionType::TAP, center);
   CheckActions(
       injector_.get(), /*expect_size=*/4u,
       /*expect_types=*/
@@ -357,7 +368,7 @@ TEST_F(TouchInjectorTest, TestAddRemoveActionWithProtoConversion) {
   EXPECT_EQ(3u, injector_->GetActiveActionsSize());
 
   // Step 4: Add a new action tap.
-  injector_->AddNewAction(ActionType::TAP);
+  injector_->AddNewAction(ActionType::TAP, center);
   // Re-use the minimum new user-added ID which is removed at step 3.
   CheckActions(
       injector_.get(), /*expect_size=*/4u,
@@ -384,8 +395,8 @@ TEST_F(TouchInjectorTest, TestAddRemoveActionWithProtoConversion) {
   // Step 6: Add two more actions, remove the first added action in this
   // step and then add a new action again. This is to test it gets the right
   // action ID in the middle. Add two new actions.
-  injector_->AddNewAction(ActionType::TAP);
-  injector_->AddNewAction(ActionType::MOVE);
+  injector_->AddNewAction(ActionType::TAP, center);
+  injector_->AddNewAction(ActionType::MOVE, center);
   CheckActions(injector_.get(), /*expect_size=*/6u,
                /*expect_types=*/
                {ActionType::TAP, ActionType::TAP, ActionType::TAP,
@@ -409,7 +420,7 @@ TEST_F(TouchInjectorTest, TestAddRemoveActionWithProtoConversion) {
   EXPECT_TRUE(injector_->actions()[0]->IsDeleted());
   EXPECT_FALSE(injector_->actions()[1]->IsDeleted());
   // Add a new action.
-  injector_->AddNewAction(ActionType::TAP);
+  injector_->AddNewAction(ActionType::TAP, center);
   CheckActions(injector_.get(), /*expect_size=*/6u,
                /*expect_types=*/
                {ActionType::TAP, ActionType::TAP, ActionType::TAP,
@@ -453,7 +464,9 @@ TEST_F(TouchInjectorTest, TestActionTypeChangeWithProtoConversion) {
   EXPECT_EQ(1, injector_->actions()[1]->id());
 
   // Step 1: Add a new action.
-  injector_->AddNewAction(ActionType::TAP);
+  auto bounds = injector_->content_bounds();
+  injector_->AddNewAction(ActionType::TAP,
+                          gfx::Point(bounds.width() / 2, bounds.height() / 2));
   EXPECT_EQ(3u, injector_->actions().size());
   EXPECT_EQ(kMaxDefaultActionID + 1, injector_->actions()[2]->id());
 
@@ -928,6 +941,66 @@ TEST_P(VersionTouchInjectorTest, TestEventRewriterActionMoveMouse) {
   event_capturer_.Clear();
 }
 
+TEST_P(VersionTouchInjectorTest, TestEventRewriterWithModifierKey) {
+  auto json_value =
+      base::JSONReader::ReadAndReturnValueWithError(kValidJsonActionTapKey);
+  injector_->ParseActions(json_value->GetDict());
+  auto* actionA = injector_->actions()[0].get();
+  injector_->RegisterEventRewriter();
+
+  // Press key `A`, then key `Ctrl` and then release key `A` and then key
+  // `Ctrl`. The keyboard-binded `Action` injects simulated touch events.
+  EXPECT_EQ(0u, event_capturer_.touch_events().size());
+  event_generator_->PressKey(ui::VKEY_A, ui::EF_NONE);
+  EXPECT_EQ(1u, event_capturer_.touch_events().size());
+  EXPECT_TRUE(actionA->touch_id());
+  event_generator_->PressKey(ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(1u, event_capturer_.touch_events().size());
+  event_generator_->ReleaseKey(ui::VKEY_A, ui::EF_CONTROL_DOWN, kTolerance);
+  EXPECT_EQ(2u, event_capturer_.touch_events().size());
+  EXPECT_FALSE(actionA->touch_id());
+  event_generator_->ReleaseKey(ui::VKEY_CONTROL, ui::EF_NONE);
+  EXPECT_EQ(2u, event_capturer_.touch_events().size());
+  event_capturer_.Clear();
+
+  // Press key `A`, then key `Ctrl` and then release key `Ctrl` and then key
+  // `A`. The keyboard-binded `Action` injects simulated touch events.
+  EXPECT_EQ(0u, event_capturer_.touch_events().size());
+  event_generator_->PressKey(ui::VKEY_A, ui::EF_NONE);
+  EXPECT_EQ(1u, event_capturer_.touch_events().size());
+  EXPECT_TRUE(actionA->touch_id());
+  event_generator_->PressKey(ui::VKEY_CONTROL, ui::EF_NONE);
+  EXPECT_EQ(1u, event_capturer_.touch_events().size());
+  event_generator_->ReleaseKey(ui::VKEY_CONTROL, ui::EF_NONE);
+  EXPECT_EQ(1u, event_capturer_.touch_events().size());
+  event_generator_->ReleaseKey(ui::VKEY_A, ui::EF_NONE, kTolerance);
+  EXPECT_EQ(2u, event_capturer_.touch_events().size());
+  EXPECT_FALSE(actionA->touch_id());
+  event_capturer_.Clear();
+
+  // Press key `Ctrl`, then key `A` and then release key `A` and then key
+  // `Ctrl`. The keyboard-binded `Action` doesn't inject simulated touch events.
+  event_generator_->PressKey(ui::VKEY_CONTROL, ui::EF_NONE);
+  EXPECT_EQ(0u, event_capturer_.touch_events().size());
+  event_generator_->PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(0u, event_capturer_.touch_events().size());
+  event_generator_->ReleaseKey(ui::VKEY_A, ui::EF_CONTROL_DOWN, kTolerance);
+  EXPECT_EQ(0u, event_capturer_.touch_events().size());
+  event_generator_->ReleaseKey(ui::VKEY_CONTROL, ui::EF_NONE);
+  EXPECT_EQ(0u, event_capturer_.touch_events().size());
+
+  // Press key `Ctrl`, then key `A` and then release key `Ctrl` and then key
+  // `A`. The keyboard-binded `Action` doesn't inject simulated touch events.
+  event_generator_->PressKey(ui::VKEY_CONTROL, ui::EF_NONE);
+  EXPECT_EQ(0u, event_capturer_.touch_events().size());
+  event_generator_->PressKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  EXPECT_EQ(0u, event_capturer_.touch_events().size());
+  event_generator_->ReleaseKey(ui::VKEY_CONTROL, ui::EF_NONE);
+  EXPECT_EQ(0u, event_capturer_.touch_events().size());
+  event_generator_->ReleaseKey(ui::VKEY_A, ui::EF_NONE, kTolerance);
+  EXPECT_EQ(0u, event_capturer_.touch_events().size());
+}
+
 TEST_P(VersionTouchInjectorTest, TestEventRewriterTouchToTouch) {
   // Setup.
   auto json_value =
@@ -1045,35 +1118,8 @@ TEST_P(VersionTouchInjectorTest, TestCleanupTouchEvents) {
   EXPECT_EQ(0, (int)event_capturer_.touch_events().size());
   EXPECT_EQ(0, GetRewrittenTouchInfoSizeForTesting());
 
-  // Case 1: Verify the logic about CleanupTouchEvents and
-  // DispatchTouchReleaseEvent by creating a touch by a key press, and then the
-  // mouse event interrupting. This should result in touch release events
-  // occurring for the events.
-  event_generator_->PressKey(ui::VKEY_A, ui::EF_NONE, /*source_device_id=*/0);
-  EXPECT_TRUE(event_capturer_.key_events().empty());
-  EXPECT_EQ(1, (int)event_capturer_.touch_events().size());
-  EXPECT_EQ(0, GetRewrittenTouchInfoSizeForTesting());
-  EXPECT_TRUE(GetHasPendingTouchEvents());
-
-  event_generator_->PressTouchId(0, gfx::Point(360, 420));
-  EXPECT_EQ(2, (int)event_capturer_.touch_events().size());
-  EXPECT_EQ(1, GetRewrittenTouchInfoSizeForTesting());
-
-  event_generator_->SendMouseEnter();
-  EXPECT_FALSE(GetHasPendingTouchEvents());
-
-  // Verify the existing events have generated release events.
-  EXPECT_EQ(4, (int)event_capturer_.touch_events().size());
-  auto* touchEvent = event_capturer_.touch_events()[2].get();
-  EXPECT_EQ(ui::EventType::ET_TOUCH_RELEASED, touchEvent->type());
-  touchEvent = event_capturer_.touch_events()[3].get();
-  EXPECT_EQ(ui::EventType::ET_TOUCH_RELEASED, touchEvent->type());
-  EXPECT_EQ(0, GetRewrittenTouchInfoSizeForTesting());
-
-  event_capturer_.Clear();
-
-  // Case 2: Verify the logic by creating a touch by a key press,
-  // then unregistering the event rewriter.
+  // Verify the logic by creating a touch by a key press, then unregistering the
+  // event rewriter.
   event_generator_->PressKey(ui::VKEY_A, ui::EF_NONE, /*source_device_id=*/0);
   EXPECT_TRUE(event_capturer_.key_events().empty());
   EXPECT_EQ(1, (int)event_capturer_.touch_events().size());
@@ -1091,13 +1137,66 @@ TEST_P(VersionTouchInjectorTest, TestCleanupTouchEvents) {
 
   // Verify the existing events have generated release events.
   EXPECT_EQ(4, (int)event_capturer_.touch_events().size());
-  touchEvent = event_capturer_.touch_events()[2].get();
-  EXPECT_EQ(ui::EventType::ET_TOUCH_RELEASED, touchEvent->type());
-  touchEvent = event_capturer_.touch_events()[3].get();
-  EXPECT_EQ(ui::EventType::ET_TOUCH_RELEASED, touchEvent->type());
+  auto* touch_event = event_capturer_.touch_events()[2].get();
+  EXPECT_EQ(ui::EventType::ET_TOUCH_RELEASED, touch_event->type());
+  touch_event = event_capturer_.touch_events()[3].get();
+  EXPECT_EQ(ui::EventType::ET_TOUCH_RELEASED, touch_event->type());
   EXPECT_EQ(0, GetRewrittenTouchInfoSizeForTesting());
 
   event_capturer_.Clear();
+}
+
+TEST_P(VersionTouchInjectorTest, TestActivePlayMode) {
+  // Setup.
+  auto json_value =
+      base::JSONReader::ReadAndReturnValueWithError(kValidJsonActionTapKey);
+  injector_->ParseActions(json_value->GetDict());
+  injector_->RegisterEventRewriter();
+  EXPECT_FALSE(GetHasPendingTouchEvents());
+
+  // Verify initial states.
+  VerifyEventsSize(event_capturer_, /*expected_key_event_size=*/0u,
+                   /*expected_mouse_event_size=*/0u,
+                   /*expected_touch_event_size=*/0u);
+  EXPECT_EQ(0, GetRewrittenTouchInfoSizeForTesting());
+
+  // Verify mouse event is discarded in the active play mode.
+  event_generator_->PressKey(ui::VKEY_A, ui::EF_NONE, /*source_device_id=*/0);
+  VerifyEventsSize(event_capturer_, /*expected_key_event_size=*/0u,
+                   /*expected_mouse_event_size=*/0u,
+                   /*expected_touch_event_size=*/1u);
+  EXPECT_TRUE(GetHasPendingTouchEvents());
+
+  event_generator_->PressTouchId(/*touch_id=*/0, gfx::Point(360, 420));
+  VerifyEventsSize(event_capturer_, /*expected_key_event_size=*/0u,
+                   /*expected_mouse_event_size=*/0u,
+                   /*expected_touch_event_size=*/2u);
+  EXPECT_EQ(1, GetRewrittenTouchInfoSizeForTesting());
+
+  // Mouse starts to interrupt and verify the mouse event is discarded and other
+  // touch events stay the same.
+  event_generator_->SendMouseEnter();
+  event_generator_->ClickLeftButton();
+  VerifyEventsSize(event_capturer_, /*expected_key_event_size=*/0u,
+                   /*expected_mouse_event_size=*/0u,
+                   /*expected_touch_event_size=*/2u);
+  EXPECT_EQ(1, GetRewrittenTouchInfoSizeForTesting());
+  EXPECT_TRUE(GetHasPendingTouchEvents());
+
+  // Release the key A and release the native touch event.
+  event_generator_->ReleaseTouchId(/*touch_id=*/0);
+  event_generator_->ReleaseKey(ui::VKEY_A, ui::EF_NONE, /*source_device_id=*/0);
+  VerifyEventsSize(event_capturer_, /*expected_key_event_size=*/0u,
+                   /*expected_mouse_event_size=*/0u,
+                   /*expected_touch_event_size=*/4u);
+  EXPECT_EQ(0, GetRewrittenTouchInfoSizeForTesting());
+
+  // Mouse event is resumed if it is not in the active play mode anymore.
+  event_generator_->PressLeftButton();
+  VerifyEventsSize(event_capturer_, /*expected_key_event_size=*/0u,
+                   /*expected_mouse_event_size=*/1u,
+                   /*expected_touch_event_size=*/4u);
+  EXPECT_EQ(0, GetRewrittenTouchInfoSizeForTesting());
 }
 
 TEST_P(VersionTouchInjectorTest, TestProtoConversion) {

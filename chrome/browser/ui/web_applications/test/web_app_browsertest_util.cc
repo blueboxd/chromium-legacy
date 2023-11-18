@@ -102,7 +102,6 @@ webapps::AppId InstallWebAppFromPage(Browser* browser, const GURL& app_url) {
   provider->scheduler().FetchManifestAndInstall(
       webapps::WebappInstallSource::MENU_BROWSER_TAB,
       browser->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
-      /*bypass_service_worker_check=*/false,
       base::BindOnce(&AutoAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&run_loop, &app_id](const webapps::AppId& installed_app_id,
@@ -153,7 +152,6 @@ webapps::AppId InstallWebAppFromManifest(Browser* browser,
   provider->scheduler().FetchManifestAndInstall(
       webapps::WebappInstallSource::MENU_BROWSER_TAB,
       browser->tab_strip_model()->GetActiveWebContents()->GetWeakPtr(),
-      /*bypass_service_worker_check=*/false,
       base::BindOnce(&AutoAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&run_loop, &app_id](const webapps::AppId& installed_app_id,
@@ -177,7 +175,11 @@ Browser* LaunchWebAppBrowser(Profile* profile,
           ->LaunchAppWithParamsForTesting(apps::AppLaunchParams(
               app_id, apps::LaunchContainer::kLaunchContainerWindow,
               disposition, apps::LaunchSource::kFromTest));
-  EXPECT_TRUE(web_contents);
+
+  if (!web_contents) {
+    return nullptr;
+  }
+
   Browser* browser = chrome::FindBrowserWithTab(web_contents);
   EXPECT_TRUE(AppBrowserController::IsForWebApp(browser, app_id));
   return browser;
@@ -206,7 +208,10 @@ Browser* LaunchBrowserForWebAppInTab(Profile* profile,
               app_id, apps::LaunchContainer::kLaunchContainerTab,
               WindowOpenDisposition::NEW_FOREGROUND_TAB,
               apps::LaunchSource::kFromTest));
-  DCHECK(web_contents);
+
+  if (!web_contents) {
+    return nullptr;
+  }
 
   EXPECT_EQ(app_id, *WebAppTabHelper::GetAppId(web_contents));
 

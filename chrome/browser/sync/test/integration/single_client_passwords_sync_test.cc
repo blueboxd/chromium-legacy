@@ -19,7 +19,7 @@
 #include "components/password_manager/core/browser/features/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
-#include "components/password_manager/core/browser/password_store_interface.h"
+#include "components/password_manager/core/browser/password_store/password_store_interface.h"
 #include "components/password_manager/core/browser/sync/password_sync_bridge.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/base/features.h"
@@ -559,9 +559,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsWithAccountStorageSyncTest,
   ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
   ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
 
-  // The account-storage opt-in gets cleared when turning off Sync, so opt in
-  // again.
-  OptInToAccountStorage(GetProfile(0)->GetPrefs(), GetSyncService(0));
+  // The account-storage opt-in is still present, so PASSWORDS should become
+  // active.
   PasswordSyncActiveChecker(GetSyncService(0)).Wait();
 
   // Now the password should be in both stores: The profile store does *not* get

@@ -27,6 +27,8 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/owned_window_anchor.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
@@ -270,6 +272,8 @@ bool TestDragDropClient::IsDragDropInProgress() {
 
 // View which cancels the menu it belongs to on mouse press.
 class CancelMenuOnMousePressView : public View {
+  METADATA_HEADER(CancelMenuOnMousePressView, View)
+
  public:
   explicit CancelMenuOnMousePressView(base::WeakPtr<MenuController> controller)
       : controller_(controller) {}
@@ -293,6 +297,9 @@ gfx::Size CancelMenuOnMousePressView::CalculatePreferredSize() const {
   // determines if the menu contains the mouse press location doesn't work.
   return size();
 }
+
+BEGIN_METADATA(CancelMenuOnMousePressView)
+END_METADATA
 
 }  // namespace
 
@@ -3180,6 +3187,15 @@ TEST_F(MenuControllerTest, ChildMenuOpenDirectionStateUpdatesCorrectly) {
             GetChildMenuOpenDirectionAtDepth(4));
   EXPECT_EQ(MenuController::MenuOpenDirection::kLeading,
             GetChildMenuOpenDirectionAtDepth(10));
+}
+
+TEST_F(MenuControllerTest, MenuHostHasCorrectZOrderLevel) {
+  ShowSubmenu();
+  SubmenuView* const submenu = menu_item()->GetSubmenu();
+  MenuHost* const host = menu_host_for_submenu(submenu);
+
+  // Ensure that the menu host has the correct z order level.
+  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow, host->GetZOrderLevel());
 }
 
 }  // namespace views

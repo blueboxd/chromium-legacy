@@ -11,15 +11,15 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_collection_commands.h"
 
-@class GridViewController;
 namespace web {
 class WebStateID;
 }  // namespace web
 
 // Commands issued to a model backing a grid UI.
 @protocol GridCommands <TabCollectionCommands>
-// Tells the receiver to insert a new item at the end of the list.
-- (void)addNewItem;
+// Tells the receiver to insert a new item at the end of the list. Return YES if
+// it inserted an element, NO otherwise.
+- (BOOL)addNewItem;
 // Tells the receiver to insert a new item at `index`. It is an error to call
 // this method with an `index` greater than the number of items in the model.
 - (void)insertNewItemAtIndex:(NSUInteger)index;
@@ -44,15 +44,6 @@ class WebStateID;
 // Tells the receiver to discard saved closed items. If the consumer has saved
 // closed items, it will discard them. Otherwise, this is a no-op.
 - (void)discardSavedClosedItems;
-// Shows an action sheet, anchored to the UIBarButtonItem, that asks for
-// confirmation when 'Close Items' button is tapped.
-- (void)showCloseItemsConfirmationActionSheetWithItems:
-            (const std::set<web::WebStateID>&)itemIDs
-                                                anchor:(UIBarButtonItem*)
-                                                           buttonAnchor;
-// Shows a share sheet to share `items`, anchored to the `buttonAnchor`.
-- (void)shareItems:(const std::set<web::WebStateID>&)itemIDs
-            anchor:(UIBarButtonItem*)buttonAnchor;
 // Returns the menu to display when the Add To button is selected for `items`.
 - (NSArray<UIMenuElement*>*)addToButtonMenuElementsForItems:
     (const std::set<web::WebStateID>&)itemIDs;

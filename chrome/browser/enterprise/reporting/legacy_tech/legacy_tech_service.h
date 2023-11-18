@@ -14,9 +14,9 @@
 namespace enterprise_reporting {
 
 using LegacyTechReportTrigger = base::RepeatingCallback<void(
-    const LegacyTechReportGenerator::LegacyTechData& data)>;
+    LegacyTechReportGenerator::LegacyTechData data)>;
 
-// A `KeyedService` provides an API that allows content layor to upload report.
+// A `KeyedService` provides an API that allows content layer to upload report.
 // It will trigger a report if the event URL matches the policy setting.
 class LegacyTechService : public KeyedService {
  public:
@@ -51,7 +51,7 @@ class LegacyTechServiceFactory : public ProfileKeyedServiceFactory {
       content::BrowserContext* context) const override;
 
  private:
-  void ReportEventImpl(const LegacyTechReportGenerator::LegacyTechData& data);
+  void ReportEventImpl(LegacyTechReportGenerator::LegacyTechData data);
 
   friend base::NoDestructor<LegacyTechServiceFactory>;
 

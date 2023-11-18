@@ -43,6 +43,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/highlight_path_generator.h"
 
 namespace ash {
@@ -80,6 +81,8 @@ bool HasNonLinuxMediaApps(const MediaApps& apps) {
 
 // A customized toggle button for the VC tray's toggle bubble button.
 class ToggleBubbleButton : public IconButton {
+  METADATA_HEADER(ToggleBubbleButton, IconButton)
+
  public:
   ToggleBubbleButton(VideoConferenceTray* tray, PressedCallback callback)
       : IconButton(std::move(callback),
@@ -89,6 +92,11 @@ class ToggleBubbleButton : public IconButton {
                    /*is_togglable=*/true,
                    /*has_border=*/true),
         tray_(tray) {
+    SetButtonController(std::make_unique<views::ButtonController>(
+        /*views::Button*=*/this,
+        std::make_unique<TrayBackgroundView::TrayButtonControllerDelegate>(
+            /*views::Button*=*/this,
+            TrayBackgroundViewCatalogName::kVideoConferenceTray)));
     // Reduce the focus ring padding which is installed by default by
     // `IconButton`. The default padding results in the focus ring being painted
     // outside of the available bounds.
@@ -119,6 +127,9 @@ class ToggleBubbleButton : public IconButton {
   const raw_ptr<VideoConferenceTray, ExperimentalAsh> tray_;
 };
 
+BEGIN_METADATA(ToggleBubbleButton)
+END_METADATA
+
 }  // namespace
 
 VideoConferenceTrayButton::VideoConferenceTrayButton(
@@ -136,10 +147,16 @@ VideoConferenceTrayButton::VideoConferenceTrayButton(
       accessible_name_id_(accessible_name_id),
       icon_(icon),
       capturing_icon_(capturing_icon) {
-  SetBackgroundToggledColorId(cros_tokens::kCrosSysSystemNegativeContainer);
-  SetIconToggledColorId(cros_tokens::kCrosSysSystemOnNegativeContainer);
+  SetButtonController(std::make_unique<views::ButtonController>(
+      /*views::Button*=*/this,
+      std::make_unique<TrayBackgroundView::TrayButtonControllerDelegate>(
+          /*views::Button*=*/this,
+          TrayBackgroundViewCatalogName::kVideoConferenceTray)));
 
-  SetBackgroundColorId(cros_tokens::kCrosSysSystemOnBase1);
+  SetBackgroundToggledColor(cros_tokens::kCrosSysSystemNegativeContainer);
+  SetIconToggledColor(cros_tokens::kCrosSysSystemOnNegativeContainer);
+
+  SetBackgroundColor(cros_tokens::kCrosSysSystemOnBase1);
 
   SetToggledVectorIcon(*toggled_icon);
 
@@ -229,6 +246,9 @@ void VideoConferenceTrayButton::UpdateTooltip() {
       base_string_id, l10n_util::GetStringUTF16(accessible_name_id_),
       l10n_util::GetStringUTF16(capture_state_id)));
 }
+
+BEGIN_METADATA(VideoConferenceTrayButton)
+END_METADATA
 
 VideoConferenceTray::VideoConferenceTray(Shelf* shelf)
     : TrayBackgroundView(shelf,
@@ -352,7 +372,7 @@ void VideoConferenceTray::OnAnimationEnded() {
 
   auto* controller = VideoConferenceTrayController::Get();
   controller->MaybeRunNudgeRequest();
-  controller->MaybeShowSpeakOnMuteOptInNudge(this);
+  controller->MaybeShowSpeakOnMuteOptInNudge();
 }
 
 bool VideoConferenceTray::ShouldEnterPushedState(const ui::Event& event) {

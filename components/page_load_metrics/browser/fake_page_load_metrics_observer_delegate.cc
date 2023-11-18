@@ -9,11 +9,16 @@
 
 namespace page_load_metrics {
 
+namespace {
+static int g_next_navigation_id_ = 1;
+}
+
 FakePageLoadMetricsObserverDelegate::FakePageLoadMetricsObserverDelegate()
     : user_initiated_info_(UserInitiatedInfo::NotUserInitiated()),
       page_end_user_initiated_info_(UserInitiatedInfo::NotUserInitiated()),
       visibility_tracker_(base::DefaultTickClock::GetInstance(),
                           /*is_shown=*/true),
+      navigation_id_(g_next_navigation_id_++),
       navigation_start_(base::TimeTicks::Now()) {}
 FakePageLoadMetricsObserverDelegate::~FakePageLoadMetricsObserverDelegate() =
     default;
@@ -140,15 +145,15 @@ const NormalizedCLSData& FakePageLoadMetricsObserverDelegate::
   return normalized_cls_data_;
 }
 
-const NormalizedResponsivenessMetrics&
-FakePageLoadMetricsObserverDelegate::GetNormalizedResponsivenessMetrics()
+const ResponsivenessMetricsNormalization&
+FakePageLoadMetricsObserverDelegate::GetResponsivenessMetricsNormalization()
     const {
-  return normalized_responsiveness_metrics_;
+  return responsiveness_metrics_normalization_;
 }
 
-const NormalizedResponsivenessMetrics& FakePageLoadMetricsObserverDelegate::
-    GetSoftNavigationIntervalNormalizedResponsivenessMetrics() const {
-  return normalized_responsiveness_metrics_;
+const ResponsivenessMetricsNormalization& FakePageLoadMetricsObserverDelegate::
+    GetSoftNavigationIntervalResponsivenessMetricsNormalization() const {
+  return responsiveness_metrics_normalization_;
 }
 
 const mojom::InputTiming&
@@ -217,6 +222,10 @@ bool FakePageLoadMetricsObserverDelegate::IsOriginVisit() const {
 
 bool FakePageLoadMetricsObserverDelegate::IsTerminalVisit() const {
   return false;
+}
+
+int64_t FakePageLoadMetricsObserverDelegate::GetNavigationId() const {
+  return navigation_id_;
 }
 
 void FakePageLoadMetricsObserverDelegate::AddBackForwardCacheRestore(

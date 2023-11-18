@@ -31,10 +31,10 @@
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/views/apps/app_dialog/shortcut_removal_dialog_view.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/app_constants/constants.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/shortcut/shortcut.h"
@@ -68,7 +68,7 @@ class AppServiceShortcutItemBrowserTest
  public:
   AppServiceShortcutItemBrowserTest() {
     scoped_feature_list_.InitAndEnableFeature(
-        features::kCrosWebAppShortcutUiUpdate);
+        chromeos::features::kCrosWebAppShortcutUiUpdate);
   }
   ~AppServiceShortcutItemBrowserTest() override = default;
 
@@ -184,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(AppServiceShortcutItemBrowserTest, ContextMenuOpen) {
       ->AppRegistryCache()
       .ForOneApp(app_constants::kChromeAppId,
                  [&host_app_name](const apps::AppUpdate& update) {
-                   host_app_name = base::UTF8ToUTF16(update.ShortName());
+                   host_app_name = base::UTF8ToUTF16(update.Name());
                  });
 
   EXPECT_EQ(u"Open " + shortcut_name + u" - " + host_app_name,
@@ -306,8 +306,9 @@ IN_PROC_BROWSER_TEST_F(AppServiceShortcutItemBrowserTest, ContextMenuRemove) {
       ->OverrideShortcutInnerIconLoaderForTesting(&shortcut_stub_icon_loader);
   apps::AppServiceProxyFactory::GetForProfile(profile())
       ->OverrideInnerIconLoaderForTesting(&app_stub_icon_loader);
-  shortcut_stub_icon_loader.timelines_by_app_id_[shortcut_id.value()] = 1;
-  app_stub_icon_loader.timelines_by_app_id_[app_constants::kChromeAppId] = 1;
+  shortcut_stub_icon_loader.update_version_by_app_id_[shortcut_id.value()] = 1;
+  app_stub_icon_loader.update_version_by_app_id_[app_constants::kChromeAppId] =
+      1;
 
   menu_model->ActivatedAt(uninstall_command_index.value());
 
@@ -411,8 +412,9 @@ IN_PROC_BROWSER_TEST_F(AppServiceShortcutItemBrowserTest, LoadIcon) {
       ->OverrideShortcutInnerIconLoaderForTesting(&shortcut_stub_icon_loader);
   apps::AppServiceProxyFactory::GetForProfile(profile())
       ->OverrideInnerIconLoaderForTesting(&app_stub_icon_loader);
-  shortcut_stub_icon_loader.timelines_by_app_id_[shortcut_id.value()] = 1;
-  app_stub_icon_loader.timelines_by_app_id_[app_constants::kChromeAppId] = 1;
+  shortcut_stub_icon_loader.update_version_by_app_id_[shortcut_id.value()] = 1;
+  app_stub_icon_loader.update_version_by_app_id_[app_constants::kChromeAppId] =
+      1;
 
   EXPECT_EQ(0, shortcut_stub_icon_loader.NumLoadIconFromIconKeyCalls());
   EXPECT_EQ(0, app_stub_icon_loader.NumLoadIconFromIconKeyCalls());
@@ -453,7 +455,8 @@ IN_PROC_BROWSER_TEST_F(AppServiceShortcutItemBrowserTest, IconVersionUpdated) {
   apps::ShortcutPtr delta =
       std::make_unique<Shortcut>(cache()->GetShortcutHostAppId(shortcut_id),
                                  cache()->GetShortcutLocalId(shortcut_id));
-  delta->icon_key = IconKey(100, 0, 0);
+  delta->icon_key = IconKey();
+  delta->icon_key->update_version = true;
   cache()->UpdateShortcut(std::move(delta));
 
   EXPECT_EQ(app_list_item->CloneMetadata()->icon_version, 1);

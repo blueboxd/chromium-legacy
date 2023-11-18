@@ -43,13 +43,8 @@ SystemNotificationController::SystemNotificationController()
       caps_lock_(std::make_unique<CapsLockNotificationController>()),
       cast_(std::make_unique<CastNotificationController>()),
       cellular_setup_notifier_(std::make_unique<ash::CellularSetupNotifier>()),
-      do_not_disturb_(
-          features::IsQsRevampEnabled()
-              ? std::make_unique<DoNotDisturbNotificationController>()
-              : nullptr),
-      lock_screen_(features::IsQsRevampEnabled()
-                       ? std::make_unique<LockScreenNotificationController>()
-                       : nullptr),
+      do_not_disturb_(std::make_unique<DoNotDisturbNotificationController>()),
+      lock_screen_(std::make_unique<LockScreenNotificationController>()),
       power_(std::make_unique<PowerNotificationController>(
           message_center::MessageCenter::Get())),
       power_sounds_(MaybeCreatePowerSoundsController()),
@@ -63,7 +58,9 @@ SystemNotificationController::SystemNotificationController()
   if (features::IsHotspotEnabled()) {
     hotspot_notifier_ = std::make_unique<ash::HotspotNotifier>();
   }
-  if (features::IsPrivacyIndicatorsEnabled()) {
+
+  // Privacy indicator is only enabled when Video Conference is disabled.
+  if (!features::IsVideoConferenceEnabled()) {
     privacy_indicators_controller_ =
         std::make_unique<PrivacyIndicatorsController>();
   }

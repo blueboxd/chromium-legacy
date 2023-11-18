@@ -11,7 +11,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/notreached.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/file_utils.h"
@@ -327,6 +327,7 @@ extensions::AppLaunchSource GetAppLaunchSource(LaunchSource launch_source) {
     case LaunchSource::kFromReparenting:
     case LaunchSource::kFromProfileMenu:
     case LaunchSource::kFromSysTrayCalendar:
+    case LaunchSource::kFromInstaller:
       return extensions::AppLaunchSource::kSourceNone;
   }
 }

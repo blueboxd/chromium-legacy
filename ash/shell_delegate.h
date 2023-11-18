@@ -31,12 +31,17 @@ class OSExchangeData;
 
 namespace ash {
 
+namespace api {
+class TasksDelegate;
+}  // namespace api
+
 class AcceleratorPrefsDelegate;
 class AccessibilityDelegate;
 class BackGestureContextualNudgeController;
 class BackGestureContextualNudgeDelegate;
 class CaptureModeDelegate;
 class ClipboardHistoryControllerDelegate;
+class DeskProfilesDelegate;
 class GameDashboardDelegate;
 class MediaNotificationProvider;
 class NearbyShareController;
@@ -93,6 +98,8 @@ class ASH_EXPORT ShellDelegate {
 
   virtual std::unique_ptr<SavedDeskDelegate> CreateSavedDeskDelegate()
       const = 0;
+
+  virtual std::unique_ptr<api::TasksDelegate> CreateTasksDelegate() const = 0;
 
   // Creates and returns the delegate of the System Sounds feature.
   virtual std::unique_ptr<SystemSoundsDelegate> CreateSystemSoundsDelegate()
@@ -177,6 +184,9 @@ class ASH_EXPORT ShellDelegate {
   virtual void OpenFeedbackDialog(FeedbackSource source,
                                   const std::string& description_template) = 0;
 
+  // Calls browser service to open the profile manager.
+  virtual void OpenProfileManager() = 0;
+
   // Returns the last committed URL from the web contents if the given |window|
   // contains a browser frame, otherwise returns GURL::EmptyURL().
   virtual const GURL& GetLastCommittedURLForWindowIfAny(aura::Window* window);
@@ -197,6 +207,10 @@ class ASH_EXPORT ShellDelegate {
   using ShouldExitFullscreenCallback = base::OnceCallback<void(bool)>;
   virtual void ShouldExitFullscreenBeforeLock(
       ShouldExitFullscreenCallback callback);
+
+  // Returns the DeskProfilesDelegate, or nullptr if it isn't available. The
+  // delegate (when available) is owned by `CrosapiAsh`.
+  virtual DeskProfilesDelegate* GetDeskProfilesDelegate();
 };
 
 }  // namespace ash

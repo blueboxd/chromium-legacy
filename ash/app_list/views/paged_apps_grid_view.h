@@ -16,6 +16,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/compositor/presentation_time_recorder.h"
 #include "ui/compositor/throughput_tracker.h"
 #include "ui/events/types/event_type.h"
@@ -44,6 +45,8 @@ class PaginationController;
 class ASH_EXPORT PagedAppsGridView : public AppsGridView,
                                      public PaginationModelObserver,
                                      public views::ViewTargeterDelegate {
+  METADATA_HEADER(PagedAppsGridView, AppsGridView)
+
  public:
   class ContainerDelegate {
    public:
@@ -124,7 +127,6 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   void EnsureViewVisible(const GridIndex& index) override;
   absl::optional<VisibleItemIndexRange> GetVisibleItemIndexRange()
       const override;
-  base::ScopedClosureRunner LockAppsGridOpacity() override;
   bool ShouldContainerHandleDragEvents() override;
 
   // PaginationModelObserver:
@@ -348,9 +350,6 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   int margin_for_gradient_mask_ = 0;
 
   void StackCardsAtBottom() override;
-
-  // If true, ignore the calls on `UpdateOpacity()`.
-  bool lock_opacity_ = false;
 
   // Whether the apps grid is currently animating  the cardified state.
   bool is_animating_cardified_state_ = false;

@@ -7,7 +7,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
+#include "third_party/blink/renderer/core/layout/inline/inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_inline_paint_context.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_text_decoration_painter.h"
@@ -20,13 +20,11 @@
 
 namespace blink {
 
-class NGHighlightPainterTest : public PaintControllerPaintTest,
-                               private ScopedHighlightOverlayPaintingForTest {
+class NGHighlightPainterTest : public PaintControllerPaintTest {
  public:
   explicit NGHighlightPainterTest(
       LocalFrameClient* local_frame_client = nullptr)
-      : PaintControllerPaintTest(local_frame_client),
-        ScopedHighlightOverlayPaintingForTest(true) {}
+      : PaintControllerPaintTest(local_frame_client) {}
 };
 
 INSTANTIATE_PAINT_TEST_SUITE_P(NGHighlightPainterTest);
@@ -52,7 +50,7 @@ TEST_P(NGHighlightPainterTest, FastSpellingGrammarPaintCase) {
     gfx::Rect rect{};
     PhysicalOffset physical_offset{};
     PhysicalRect physical_rect{};
-    const NGFragmentItem& text_item = *cursor.CurrentItem();
+    const FragmentItem& text_item = *cursor.CurrentItem();
     const ComputedStyle& style = text_item.Style();
     absl::optional<NGHighlightPainter::SelectionPaintState> maybe_selection;
     NGHighlightPainter::SelectionPaintState* selection = nullptr;
@@ -75,7 +73,7 @@ TEST_P(NGHighlightPainterTest, FastSpellingGrammarPaintCase) {
         LineRelativeRect::CreateFromLineBox(physical_rect, true);
     NGTextPainter text_painter(
         graphics_context, text_item.ScaledFont(), rect,
-        LineRelativeOffset::CreateFromBoxOrigin(physical_offset), rotated_rect,
+        LineRelativeOffset::CreateFromBoxOrigin(physical_offset),
         &inline_context, true);
     NGTextDecorationPainter decoration_painter(text_painter, text_item,
                                                paint_info, style, text_style,

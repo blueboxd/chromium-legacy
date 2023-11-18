@@ -117,10 +117,13 @@ def _generated_script(*, name, label, skip_usage_check = False, args = None):
         args = args,
     )
 
-def _junit_test(*, name, label, skip_usage_check = False):
+def _junit_test(*, name, label, skip_usage_check = False, args = None):
     """Define a junit test target to use in targets specs.
 
     A junit test target is a test using the JUnit test framework.
+
+    crbug/1401052: we're migrating these tests to isolated scripts,
+    but leaving the junit_tests defs around as documentation.
 
     Args:
         name: The name that can be used to refer to the target.
@@ -128,12 +131,7 @@ def _junit_test(*, name, label, skip_usage_check = False):
         skip_usage_check: Disables checking that the target is actually
             referenced in a targets spec for some builder.
     """
-    _create_target(
-        name = name,
-        type = "junit_test",
-        label = label,
-        skip_usage_check = skip_usage_check,
-    )
+    _generated_script(name = name, label = label, skip_usage_check = skip_usage_check, args = args)
 
 def _script(*, name, label, script, skip_usage_check = False, args = None):
     """Define a script target to use in targets specs.
@@ -349,6 +347,30 @@ def _skylab(
         public_builder = None,
         public_builder_bucket = None,
         shards = None):
+    """Define a Skylab test target.
+
+    Args:
+        cros_board: The CrOS build target name, e.g. "eve", "kevin".
+        cros_img: ChromeOS image version to be deployed to DUT.
+            Must be empty when use_lkgm is true.
+            For example, "brya-release/R118-15604.42.0"
+        use_lkgm: If True, use a ChromeOS image version derived from
+            chromeos/CHROMEOS_LKGM file.
+        cros_model: Optional ChromeOS DUT model.
+        autotest_name: The name of the autotest to be executed in
+            Skylab.
+        bucket: Optional Google Storage bucket where the specified
+            image(s) are stored.
+        dut_pool: The skylab device pool to run the test. By default the
+            quota pool, shared by all CrOS tests.
+        public_builder: Optional Public CTP Builder.
+            The public_builder and public_builder_bucket fields can be
+            used when default CTP builder is not sufficient/advised
+            (ex: chromium cq, satlab for partners).
+        public_builder_bucket: Optional luci bucket. See public_builder
+            above.
+        shards: The number of shards used to run the test.
+    """
     return struct(
         cros_board = cros_board,
         cros_img = cros_img,
@@ -372,6 +394,7 @@ def _mixin_values(
         lacros_args = None,
         linux_args = None,
         mac_args = None,
+        win_args = None,
         win64_args = None,
         swarming = None,
         android_swarming = None,
@@ -420,6 +443,9 @@ def _mixin_values(
         mac_args: Arguments to be passed to the test when the builder is
             targeting mac. Will be appended to any existing mac_args for
             the test.
+        win_args: Arguments to be passed to the test when the builder
+            is targeting win. Will be appended to any existing
+            win_args for the test.
         win64_args: Arguments to be passed to the test when the builder
             is targeting win64. Will be appended to any existing
             win64_args for the test.
@@ -469,6 +495,7 @@ def _mixin_values(
         lacros_args = lacros_args,
         linux_args = linux_args,
         mac_args = mac_args,
+        win_args = win_args,
         win64_args = win64_args,
         swarming = swarming,
         android_swarming = android_swarming,
@@ -884,6 +911,7 @@ def _generate_mixin_values(formatter, mixin, generate_skylab_container = False):
         "lacros_args",
         "linux_args",
         "mac_args",
+        "win_args",
         "win64_args",
     ):
         if args_attr in mixin:

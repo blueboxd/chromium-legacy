@@ -11,10 +11,11 @@
 #import "components/signin/public/base/signin_switches.h"
 #import "components/supervised_user/core/common/features.h"
 #import "components/sync/base/features.h"
+#import "ios/chrome/browser/parcel_tracking/features.h"
 #import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
-#import "ios/chrome/browser/signin/fake_system_identity.h"
+#import "ios/chrome/browser/signin/model/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/authentication/signin_matchers.h"
@@ -129,6 +130,9 @@ void SetSigninEnterprisePolicyValue(BrowserSigninMode signinMode) {
     // displayed.
     config.features_enabled.push_back(
         syncer::kReplaceSyncPromosWithSignInPromos);
+  }
+  if ([self isRunningTest:@selector(testParcelTrackingSetting)]) {
+    config.features_enabled.push_back(kIOSParcelTracking);
   }
   return config;
 }
@@ -519,6 +523,20 @@ void SetSigninEnterprisePolicyValue(BrowserSigninMode signinMode) {
   // Assert that sign-in cell shows the "Off" status instead of the knob.
   [[EarlGrey selectElementWithMatcher:grey_text(l10n_util::GetNSString(
                                           IDS_IOS_SETTING_OFF))]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests the parcel tracking settings row is properly shown.
+- (void)testParcelTrackingSetting {
+  [self openGoogleServicesSettings];
+
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(
+              grey_accessibilityLabel(GetNSString(
+                  IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_TITLE)),
+              grey_kindOfClassName(@"UITableViewCell"),
+              grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 

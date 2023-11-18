@@ -1588,7 +1588,7 @@ RenderFrameHostManager::GetFrameHostForNavigation(
 
   // Speculative RFHs are deleted immediately.
   if (speculative_render_frame_host_)
-    DCHECK(!speculative_render_frame_host_->must_be_replaced());
+    DUMP_WILL_BE_CHECK(!speculative_render_frame_host_->must_be_replaced());
 
   // The appropriate RenderFrameHost to commit the navigation.
   RenderFrameHostImpl* navigation_rfh = nullptr;
@@ -1911,7 +1911,8 @@ void RenderFrameHostManager::CreateWebUIForNavigationIfNeeded(
       // type if it will be reused.
       CHECK_EQ(render_frame_host_->web_ui_type(),
                WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
-                   browser_context, request->common_params().url));
+                   browser_context, request->common_params().url))
+          << "WebUI type mismatch for " << request->common_params().url;
       render_frame_host_->web_ui()->RenderFrameReused(render_frame_host_.get());
     } else if (!render_frame_host_->web_ui()) {
       // It is possible to reuse a RenderFrameHost when going to a WebUI URL
@@ -2317,11 +2318,21 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     // Web UI URL. Exclude the case where the navigation starts from an initial
     // RenderFrameHost in an unassigned SiteInstance and unused process, since
     // in that case the WebUI navigation can safely reuse them.
+    //
+    // Subtle: using both !has_committed_any_navigation() and
+    // is_initial_empty_document() to check for an initial RFH is intentional.
+    // has_committed_any_navigation() becomes true when the first navigation
+    // sends a CommitNavigation IPC, which avoids races where a WebUI navigation
+    // incorrectly tries to reuse an initial RFH while another navigation in it
+    // is pending commit. is_initial_empty_document() is additionally used to
+    // avoid reusing an initial RFH after crashes and after document.open().
+    // See https://crbug.com/1492076 and https://crbug.com/1485586.
     if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
             browser_context, destination_effective_url)) {
       bool starts_from_initial_rfh =
           render_frame_host_->GetProcess()->IsUnused() &&
           !current_instance->HasSite() &&
+          !render_frame_host_->has_committed_any_navigation() &&
           render_frame_host_->is_initial_empty_document();
       if (!starts_from_initial_rfh ||
           !base::FeatureList::IsEnabled(
@@ -3575,11 +3586,15 @@ RenderFrameHostManager::CreateRenderFrameHost(
           : CreateRenderViewHostCase::kDefault;
 
   scoped_refptr<RenderViewHostImpl> render_view_host = nullptr;
+  absl::optional<viz::FrameSinkId> frame_sink_id;
   // In the case a speculative RenderViewHost will be created, we don't need to
   // check if there's an existing RenderViewHost. Otherwise, get the appropriate
   // RenderViewHost.
   if (create_rvh_case == CreateRenderViewHostCase::kDefault) {
     render_view_host = frame_tree.GetRenderViewHost(site_instance->group());
+  } else if (current_frame_host()->ShouldReuseCompositing(*site_instance)) {
+    frame_sink_id =
+        current_frame_host()->GetRenderWidgetHost()->GetFrameSinkId();
   }
 
   switch (create_frame_case) {
@@ -3613,6 +3628,7 @@ RenderFrameHostManager::CreateRenderFrameHost(
       DCHECK(!renderer_initiated_creation);
       break;
   }
+
   if (!render_view_host) {
     render_view_host = frame_tree.CreateRenderViewHost(
         site_instance, frame_routing_id, renderer_initiated_creation,
@@ -3621,7 +3637,7 @@ RenderFrameHostManager::CreateRenderFrameHost(
                     kSwapForCrossBrowsingInstanceNavigations
             ? browsing_context_state
             : nullptr,
-        create_rvh_case);
+        create_rvh_case, frame_sink_id);
   }
   CHECK(render_view_host);
 
@@ -3919,7 +3935,7 @@ void RenderFrameHostManager::CreateRenderFrameProxy(
                       kSwapForCrossBrowsingInstanceNavigations
               ? render_frame_host_->browsing_context_state()
               : nullptr,
-          CreateRenderViewHostCase::kDefault);
+          CreateRenderViewHostCase::kDefault, absl::nullopt);
     } else {
       TRACE_EVENT_INSTANT("navigation",
                           "RenderFrameHostManager::CreateRenderFrameProxy_RVH",
@@ -4203,8 +4219,9 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
 
 bool RenderFrameHostManager::InitRenderFrame(
     RenderFrameHostImpl* render_frame_host) {
-  if (render_frame_host->IsRenderFrameLive())
+  if (render_frame_host->IsRenderFrameLive()) {
     return true;
+  }
 
   SiteInstanceGroup* site_instance_group =
       render_frame_host->GetSiteInstance()->group();
@@ -4476,9 +4493,8 @@ void RenderFrameHostManager::CommitPending(
       }
     }
 
-    StoredPage::StoredPage::RenderViewHostImplSafeRefSet
-        render_view_hosts_to_restore =
-            pending_stored_page->TakeRenderViewHosts();
+    StoredPage::RenderViewHostImplSafeRefSet render_view_hosts_to_restore =
+        pending_stored_page->TakeRenderViewHosts();
     if (prev_state ==
         RenderFrameHostImpl::LifecycleStateImpl::kInBackForwardCache) {
       for (const auto& rvh : render_view_hosts_to_restore) {
@@ -4497,9 +4513,9 @@ void RenderFrameHostManager::CommitPending(
     } else {
       DCHECK_EQ(prev_state,
                 RenderFrameHostImpl::LifecycleStateImpl::kPrerendering);
-      current_frame_host()->GetPage().ActivateForPrerendering(
-          render_view_hosts_to_restore,
-          pending_stored_page->TakeViewTransitionState());
+      current_frame_host()->GetPage().Activate(
+          PageImpl::ActivationType::kPrerendering, render_view_hosts_to_restore,
+          pending_stored_page->TakeViewTransitionState(), base::DoNothing());
     }
   }
 

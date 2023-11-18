@@ -165,13 +165,6 @@ class FileManagerBrowserTestBase
     // Whether test should run with the DriveFsMirroring flag.
     bool enable_mirrorsync = false;
 
-    // Whether test should run with the FilesInlineSyncStatus flag.
-    bool enable_inline_sync_status = false;
-
-    // Whether test should run with the FilesInlineSyncStatusProgressEvents
-    // flag.
-    bool enable_inline_sync_status_progress_events = false;
-
     // Whether test should enable the file transfer connector.
     bool enable_file_transfer_connector = false;
 
@@ -184,9 +177,6 @@ class FileManagerBrowserTestBase
     // Whether tests should set up justification mode for the file transfer
     // connector.
     bool bypass_requires_justification = false;
-
-    // Whether tests should enable V2 of search.
-    bool enable_search_v2 = false;
 
     // Whether tests should enable local image search by query.
     bool enable_local_image_search = false;

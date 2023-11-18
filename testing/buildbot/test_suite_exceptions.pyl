@@ -88,7 +88,6 @@
         'args': [
           # https://crbug.com/1414886
           '--gtest_filter=-OfferNotificationControllerAndroidBrowserTestForMessagesUi.MessageShown',
-          '--emulator-debug-tags=kernel',
         ],
         'swarming': {
           'shards': 4,
@@ -337,7 +336,7 @@
           'dimensions': {
             'gpu': None,
           },
-          'shards': 10,
+          'shards': 1,
         },
       },
       'Mac11 Tests': {
@@ -365,7 +364,6 @@
         },
       },
       'Mac13 Tests (dbg)': {
-        'experiment_percentage': 100,
         'args': [
           '--debug',
         ],
@@ -584,7 +582,7 @@
       },
       'mac10.15-blink-rel': {
         'swarming': {
-          'shards': 8,
+          'shards': 1,
           'hard_timeout': 2400,
         },
       },
@@ -685,7 +683,7 @@
           'dimensions': {
             'gpu': None,
           },
-          'shards': 15,
+          'shards': 1,
         },
       },
       'Mac11 Tests': {
@@ -713,7 +711,6 @@
         },
       },
       'Mac13 Tests (dbg)': {
-        'experiment_percentage': 100,
         'args': [
           '--debug',
         ],
@@ -903,7 +900,7 @@
       },
       'mac10.15-blink-rel': {
         'swarming': {
-          'shards': 12,
+          'shards': 1,
           'hard_timeout': 2400,
         },
       },
@@ -1024,8 +1021,10 @@
       'Linux Chromium OS ASan LSan Tests (1)': {
         # These are very slow on the ASAN trybot for some reason.
         # crbug.com/1257927
+        # And even more slow on linux-chromeos: crbug.com/1491533.
         'swarming': {
-          'shards': 120,
+          'shards': 140,
+          'hard_timeout': 7200,
         },
       },
       'Linux ChromiumOS MSan Tests': {
@@ -1184,7 +1183,7 @@
       },
       'linux-chromeos-dbg': {
         'swarming': {
-          'shards': 80,
+          'shards': 110,
         },
       },
       'linux-chromeos-rel': {
@@ -1223,7 +1222,7 @@
       # asan tests is slower.
       'linux-lacros-asan-lsan-rel': {
         'swarming': {
-          'shards': 20,
+          'shards': 30,
         },
         # TODO(crbug.com/1324240): Enable tests.
         'args': [
@@ -1399,7 +1398,7 @@
   },
   'chrome_all_tast_tests': {
     'modifications': {
-      'chromeos-amd64-generic-rel': {
+      'chromeos-amd64-generic-rel-renamed': {
         'swarming': {
           'shards': 7,
         },
@@ -1490,7 +1489,6 @@
       'android-13-x64-fyi-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_13.chrome_public_test_apk.filter',
-          '--emulator-debug-tags=kernel',
         ],
       },
       'android-13-x64-rel': {
@@ -1672,6 +1670,14 @@
       },
     },
   },
+  # TODO(weizhong): Remove this once experiment completes
+  'chrome_wpt_tests': {
+    'modifications': {
+      'Linux Tests': {
+        'experiment_percentage': 10,
+      },
+    },
+  },
   'chromedriver_py_tests': {
     'modifications': {
       'Win10 Tests x64': {
@@ -1841,7 +1847,13 @@
           'shards': 10, # https://crbug.com/1471857
         },
       },
+      'Linux MSan Tests': {
+        'swarming': {
+          'shards': 10, # https://crbug.com/1497706
+        },
+      },
       'Linux TSan Tests': {
+        'ci_only': True, # https://crbug.com/1498240
         'swarming': {
           'shards': 30,
         },
@@ -1951,7 +1963,7 @@
         'ci_only': True,
         'experiment_percentage': 100,
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12l_13.content_browsertests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12l.content_browsertests.filter',
         ],
         'swarming': {
           'shards': 40,
@@ -1959,7 +1971,7 @@
       },
       'android-12l-x64-fyi-dbg': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12l_13.content_browsertests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12l.content_browsertests.filter',
         ],
         'swarming': {
           'shards': 40,
@@ -1967,8 +1979,7 @@
       },
       'android-13-x64-fyi-rel': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12l_13.content_browsertests.filter',
-          '--emulator-debug-tags=kernel',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_13.content_browsertests.filter',
         ],
         'swarming': {
           'shards': 40,
@@ -1976,7 +1987,7 @@
       },
       'android-13-x64-rel': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12l_13.content_browsertests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_13.content_browsertests.filter',
         ],
         'swarming': {
           'shards': 40,
@@ -3079,6 +3090,7 @@
         },
       },
       'Linux TSan Tests': {
+        'ci_only': True, # https://crbug.com/1498240
         # Only retry the individual failed tests instead of rerunning entire
         # shards.
         'retry_only_failed_tests': True,
@@ -3624,15 +3636,6 @@
       'ToTWin64(dll)',
     ],
   },
-  'oop_network_service_content_browsertests': {
-    'modifications': {
-       'android-12-x64-fyi-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.oop_network_service_content_browsertests.filter',
-        ],
-      },
-    },
-  },
   'ozone_unittests': {
     'modifications': {
       'chromeos-betty-pi-arc-chrome': {
@@ -4058,6 +4061,7 @@
         },
       },
       'Linux TSan Tests': {
+        'ci_only': True, # https://crbug.com/1498240
         'swarming': {
           'shards': 6,
         },
@@ -4640,7 +4644,7 @@
       'Mac FYI Retina ASAN (AMD)',
     ],
   },
-  'webdriver_tests_suite': {
+  'webdriver_wpt_tests': {
     'modifications': {
       'Linux Tests (dbg)(1)': {
         'args': [
@@ -4731,6 +4735,14 @@
         ],
       },
     },
+    'replacements': {
+      'Mac Pro FYI Release (AMD)': {
+        'args': {
+          # Causes problems on older hardware. crbug.com/1499911.
+          '--enable-metal-debug-layers': None,
+        },
+      },
+    },
   },
   'webgl2_conformance_validating_tests': {
     'remove_from': [
@@ -4802,10 +4814,18 @@
         ],
       },
     },
+    'replacements': {
+      'Mac Pro FYI Release (AMD)': {
+        'args': {
+          # Causes problems on older hardware. crbug.com/1499911.
+          '--enable-metal-debug-layers': None,
+        },
+      },
+    },
   },
   'webgl_conformance_tests': {
     'modifications': {
-      'chromeos-amd64-generic-rel': {
+      'chromeos-amd64-generic-rel-renamed': {
         'args': [
           # Added to debug crbug.com/1293967.
           '--extra-browser-args=--disable-features=BackgroundVideoPauseOptimization --disable-background-media-suspend --disable-renderer-backgrounding --disable-background-timer-throttling',
@@ -4878,6 +4898,18 @@
       'mac-code-coverage',
       'win10-code-coverage',
     ],
+  },
+  'webgpu_cts_compat_tests': {
+    'modifications': {
+      # TODO(crbug.com/1483449): Enable on Intel trybots once there is
+      # sufficient capacity.
+      'Dawn Linux x64 DEPS Release (Intel UHD 630)': {
+        'ci_only': True,
+      },
+      'Dawn Linux x64 Release (Intel UHD 630)': {
+        'ci_only': True,
+      },
+    },
   },
   'webgpu_cts_tests': {
     'modifications': {
@@ -5066,17 +5098,11 @@
         },
       },
       'android-12l-x64-dbg-tests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12l.webview_instrumentation_test_apk.filter',
-        ],
         'swarming': {
           'shards': 9,
         },
       },
       'android-12l-x64-fyi-dbg': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12l.webview_instrumentation_test_apk.filter',
-        ],
         'swarming': {
           'shards': 9,
         },

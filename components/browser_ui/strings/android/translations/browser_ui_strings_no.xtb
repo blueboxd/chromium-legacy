@@ -22,10 +22,10 @@
 <translation id="1384959399684842514">Nedlastingen er satt på pause</translation>
 <translation id="1415402041810619267">Nettadressen er avkortet</translation>
 <translation id="1426410128494586442">Ja</translation>
-<translation id="1446450296470737166">Full kontroll over MIDI-enheter</translation>
 <translation id="1448064542941920355">Zoom ut</translation>
 <translation id="1510341833810331442">Nettsteder har ikke lov til å lagre data på enheten din</translation>
 <translation id="1547123415014299762">Informasjonskapsler fra tredjeparter tillates</translation>
+<translation id="1568470248891039841">Nettsteder du besøker, kan bygge inn innhold fra andre nettsteder, for eksempel bilder, annonser og tekst. Disse andre nettstedene kan be om tillatelse til å bruke informasjon de har lagret om deg, når du besøker nettstedet. <ph name="BEGIN_LINK" />Finn ut mer om innebygd innhold<ph name="END_LINK" /></translation>
 <translation id="1593426485665524382">Nye handlinger er tilgjengelige nær toppen av skjermen</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1633720957382884102">Relaterte nettsteder</translation>
@@ -80,6 +80,7 @@
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> og <ph name="NUM_MORE" /> til er tillatt}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> og <ph name="NUM_MORE" /> til er tillatt}}</translation>
 <translation id="2410940059315936967">Et nettsted du besøker, kan bygge inn innhold fra andre nettsteder, for eksempel bilder, annonser og tekst. Informasjonskapsler som angis av disse andre nettstedene, kalles informasjonskapsler fra tredjeparter.</translation>
 <translation id="2434158240863470628">Nedlasting fullført <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
+<translation id="2438120137003069591">Du har midlertidig tillatt dette nettstedet å bruke informasjonskapsler fra tredjeparter, noe som innebærer mindre beskyttelse under surfing, men øker sannsynligheten for at nettstedsfunksjoner virker som forventet. <ph name="BEGIN_LINK" />Send tilbakemelding<ph name="END_LINK" /></translation>
 <translation id="244264527810019436">Det kan hende at funksjoner på enkelte nettsteder ikke fungerer i Inkognitomodus</translation>
 <translation id="2442870161001914531">Be alltid om nettstedet for datamaskiner</translation>
 <translation id="2469312991797799607">Denne handlingen sletter alle data og informasjonskapsler for <ph name="ORIGIN" /> og alle undernettsteder</translation>
@@ -112,9 +113,11 @@
 <translation id="2891975107962658722">Blokker et nettsted fra å lagre data på enheten din</translation>
 <translation id="2903493209154104877">Adresser</translation>
 <translation id="2910701580606108292">Spør før nettsteder kan spille av beskyttet innhold</translation>
-<translation id="2932883381142163287">Rapportér uriktig bruk</translation>
+<translation id="2932883381142163287">Rapporter uriktig bruk</translation>
 <translation id="2968755619301702150">Visningsprogram for sertifikater</translation>
+<translation id="2979365474350987274">Informasjonskapsler fra tredjeparter er begrenset</translation>
 <translation id="3008272652534848354">Tilbakestill tillatelser</translation>
+<translation id="3013291976881901233">MIDI-enheter</translation>
 <translation id="301521992641321250">Automatisk blokkert</translation>
 <translation id="3069226013421428034">Tillat tredjepartspålogging for et bestemt nettsted.</translation>
 <translation id="3082992102194421695">{COUNT,plural, =1{Utløper i morgen}other{Utløper om # dager}}</translation>
@@ -169,13 +172,13 @@
 <translation id="3918378745482005425">Enkelte funksjoner vil kanskje ikke fungere. Relaterte nettsteder kan fortsatt bruke informasjonskapsler fra tredjepart.</translation>
 <translation id="3955193568934677022">Gi nettsteder tillatelse til å spille av beskyttet innhold (anbefales)</translation>
 <translation id="3967822245660637423">Nedlasting fullført</translation>
+<translation id="3974105241379491420">Nettsteder kan be om å få bruke informasjon de har lagret om deg</translation>
 <translation id="3987993985790029246">Kopiér link</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="3992684624889376114">Om denne siden</translation>
 <translation id="4002066346123236978">Tittel</translation>
 <translation id="4008040567710660924">Tillat informasjonskapsler for et spesifikt nettsted.</translation>
 <translation id="4046123991198612571">Neste spor</translation>
-<translation id="4053720452172726777">Tilpass og kontroller Google Chrome</translation>
 <translation id="4149890623864272035">Er du sikker på at du vil slette alle lokale data, inkludert informasjonskapsler, og tilbakestille alle tillatelsene for dette nettstedet?</translation>
 <translation id="4149994727733219643">Forenklet visning av nettsider</translation>
 <translation id="4151930093518524179">Standard zoom</translation>
@@ -243,6 +246,7 @@
 <translation id="5335288049665977812">Tillat nettsteder å kjøre JavaScript (anbefales)</translation>
 <translation id="534295439873310000">NFC-enheter</translation>
 <translation id="5344522958567249764">Administrer annonsepersonvern</translation>
+<translation id="5389626883706033615">Nettsteder blokkeres fra å be deg om å bruke informasjon de har lagret om deg</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 til)}other{(+ # til)}}</translation>
 <translation id="5403592356182871684">Navn</translation>
 <translation id="5438097262470833822">Dette valget tilbakestiller tillatelser for <ph name="WEBSITE" /></translation>
@@ -289,16 +293,17 @@
 <translation id="6177128806592000436">Tilkoblingen til dette nettstedet er ikke sikker</translation>
 <translation id="6181444274883918285">Legg til et nettsted som unntak</translation>
 <translation id="6192792657125177640">Unntak</translation>
+<translation id="6195163219142236913">Informasjonskapsler fra tredjeparter er begrenset</translation>
 <translation id="6196640612572343990">Blokkér informasjonskapsler fra tredjeparter</translation>
 <translation id="6205314730813004066">Annonsepersonvern</translation>
 <translation id="6207207788774442484">Slett data og tilbakestill tillatelser</translation>
-<translation id="6216432067784365534">Alternativer for <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6231752747840485235">Vil du avinstallere «<ph name="APP_NAME" />»?</translation>
 <translation id="6262191102408817757">Basert på den siste fanen din</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> og <ph name="PERMISSION_2" /> er blokkert</translation>
 <translation id="6270391203985052864">Nettsteder kan be om å få sende deg varsler</translation>
 <translation id="6295158916970320988">Alle nettsteder</translation>
 <translation id="6320088164292336938">Vibrering</translation>
+<translation id="6344622098450209924">Sporingsbeskyttelse</translation>
 <translation id="6367753977865761591">Blokkér pålogging fra tredjeparter for bestemte nettsteder.</translation>
 <translation id="6398765197997659313">Avslutt fullskjerm</translation>
 <translation id="640163077447496506">Utløper i dag</translation>
@@ -329,6 +334,7 @@
 <translation id="6864395892908308021">Denne enheten kan ikke lese NFC</translation>
 <translation id="6912998170423641340">Blokkér nettsteder fra å få tilgang til tekst og bilder fra utklippstavlen</translation>
 <translation id="6945221475159498467">Velg</translation>
+<translation id="6950072572526089586">Nettsteder du besøker, kan lagre informasjon om hva du gjør, slik at nettstedene fungerer som forventet – for eksempel for å holde deg pålogget eller for å lagre varer i handlekurven din. Ofte lagrer nettsteder denne informasjonen midlertidig på enheten din.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6981982820502123353">Tilgjengelighet</translation>
 <translation id="6992289844737586249">Spør før nettsteder får bruke mikrofonen (anbefales)</translation>
@@ -338,6 +344,7 @@
 <translation id="7053983685419859001">Blokkér</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 er valgt}other{# er valgt}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> er valgt. Du finner alternativer oppe på skjermen</translation>
+<translation id="7137403271056944713">MIDI-styring og -omprogrammering</translation>
 <translation id="7141896414559753902">Blokkér nettsteder fra å vise forgrunnsvinduer og viderekoblinger (anbefales)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7180611975245234373">Last inn på nytt</translation>
@@ -349,6 +356,7 @@
 <translation id="7243308994586599757">Du finner alternativer ved bunnen av skjermen</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> er valgt</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> og <ph name="PERMISSION_2" /> er tillatt</translation>
+<translation id="7284451015630589124">Du har blokkert nettsteder fra å bruke informasjonskapsler fra tredjeparter til å spore deg mens du surfer. Gå til innstillingene for å <ph name="BEGIN_LINK" />administrere sporingsbeskyttelser<ph name="END_LINK" />.</translation>
 <translation id="7302486331832100261">Du blokkerer vanligvis varsler. For å tillate dette trykker du på Detaljer.</translation>
 <translation id="7366415735885268578">Legg til et nettsted</translation>
 <translation id="7368695150573390554">Alle data som er lagret for bruk uten nett, blir slettet</translation>
@@ -357,6 +365,7 @@
 <translation id="7423098979219808738">Spør først</translation>
 <translation id="7423538860840206698">Blokkert fra å lese utklippstavlen</translation>
 <translation id="7425915948813553151">Mørkt tema for nettsteder</translation>
+<translation id="7474522811371247902">Chrome begrenser de fleste nettsteder fra å bruke informasjonskapsler fra tredjeparter. Men informasjonskapsler fra tredjeparter er tillatt på dette nettstedet fordi det trenger dem for å kunne levere grunnleggende tjenester.\n\nGå til innstillingene for å <ph name="BEGIN_LINK" />administrere sporingsbeskyttelsene dine<ph name="END_LINK" />.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Et nettsted bruker mikrofonen din</translation>
 <translation id="7561196759112975576">Alltid</translation>
@@ -427,6 +436,7 @@
 <translation id="8564613706851221529">{COUNT,plural, =1{Informasjonskapsler er tillatt for <ph name="FPS_MEMBERS_COUNT" /> <ph name="FPS_OWNER" />-nettsted}other{Informasjonskapsler er tillatt for <ph name="FPS_MEMBERS_COUNT" /> <ph name="FPS_OWNER" />-nettsteder}}</translation>
 <translation id="857943718398505171">Tillatt (anbefales)</translation>
 <translation id="8609465669617005112">Flytt opp</translation>
+<translation id="8649036394979866943">Chrome begrenser de fleste nettsteder fra å bruke informasjonskapsler fra tredjeparter til å spore deg mens du surfer. Gå til innstillingene for å <ph name="BEGIN_LINK" />administrere sporingsbeskyttelser<ph name="END_LINK" /></translation>
 <translation id="8676374126336081632">Slett teksten</translation>
 <translation id="8681886425883659911">Annonser blokkeres på nettsteder som er kjent for å vise forstyrrende eller villedende annonser</translation>
 <translation id="868929229000858085">Søk i kontaktene dine</translation>
@@ -443,12 +453,14 @@
 <translation id="8816026460808729765">Blokkér nettsteder fra å få tilgang til sensorer</translation>
 <translation id="8823559166155093873">Blokkering av informasjonskapsler</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8874790741333031443">Prøv å tillate informasjonskapsler fra tredjeparter midlertidig. Det innebærer mindre beskyttelse under surfing, men øker sannsynligheten for at nettstedsfunksjoner virker som forventet.</translation>
 <translation id="8889294078294184559">Når du fortsetter å surfe, kan nettsteder kontrollere denne informasjonen i Chrome og få bekreftet av nettsteder du har besøkt tidligere, at du sannsynligvis er en ekte person</translation>
 <translation id="8899807382908246773">Forstyrrende annonser</translation>
 <translation id="8903921497873541725">Zoom inn</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC er av for denne enheten. Slå det på i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="8928445016601307354">Blokker nettsteder fra å se og endre informasjon på NFC-enheter</translation>
+<translation id="8944485226638699751">Begrenset</translation>
 <translation id="8958424370300090006">Blokkér informasjonskapsler for et spesifikt nettsted.</translation>
 <translation id="8959122750345127698">Nettadressen er utilgjengelig: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Glem</translation>

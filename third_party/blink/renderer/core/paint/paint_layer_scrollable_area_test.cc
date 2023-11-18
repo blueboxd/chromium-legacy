@@ -82,6 +82,14 @@ class MAYBE_PaintLayerScrollableAreaTest : public PaintControllerPaintTest {
     return false;
   }
 
+  void ExpectEqAllScrollControlsNeedPaintInvalidation(
+      const PaintLayerScrollableArea* area,
+      bool expectation) const {
+    EXPECT_EQ(area->VerticalScrollbarNeedsPaintInvalidation(), expectation);
+    EXPECT_EQ(area->HorizontalScrollbarNeedsPaintInvalidation(), expectation);
+    EXPECT_EQ(area->ScrollCornerNeedsPaintInvalidation(), expectation);
+  }
+
  private:
   void SetUp() override {
     EnableCompositing();
@@ -529,11 +537,7 @@ TEST_P(MAYBE_PaintLayerScrollableAreaTest,
   ASSERT_TRUE(scrollable_area);
   scrollable_area->SetScrollOffset(ScrollOffset(100, 0),
                                    mojom::blink::ScrollType::kClamping);
-  if (RuntimeEnabledFeatures::OverflowOverlayAliasesAutoEnabled()) {
-    EXPECT_EQ(scrollable_area->GetScrollOffset().x(), 15);
-  } else {
-    EXPECT_EQ(scrollable_area->GetScrollOffset().x(), 0);
-  }
+  EXPECT_EQ(scrollable_area->GetScrollOffset().x(), 15);
 }
 
 TEST_P(MAYBE_PaintLayerScrollableAreaTest,
@@ -1452,57 +1456,6 @@ TEST_P(MAYBE_PaintLayerScrollableAreaTest, LowEndCompositeWithTrivial3D) {
   EXPECT_TRUE(UsesCompositedScrolling(GetLayoutBoxByElementId("scroller")));
 }
 
-TEST_P(MAYBE_PaintLayerScrollableAreaTest, SetSnapContainerDataNeedsUpdate) {
-  if (RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled()) {
-    return;
-  }
-  SetBodyInnerHTML(R"HTML(
-    <style>
-    .scroller {
-      overflow: scroll;
-      height: 200px;
-      width: 200px;
-    }
-    </style>
-    <div id='first_scroller' class='scroller'>
-      <div style='height: 2000px;'></div>
-    </div>
-    <div id='second_scroller' class='scroller'>
-      <div style='height: 2000px;'></div>
-    </div>
-  )HTML");
-
-  auto* first_scroller = GetLayoutBoxByElementId("first_scroller");
-  auto* first_scrollable_area =
-      To<LayoutBoxModelObject>(first_scroller)->GetScrollableArea();
-
-  auto* second_scroller = GetLayoutBoxByElementId("second_scroller");
-  auto* second_scrollable_area =
-      To<LayoutBoxModelObject>(second_scroller)->GetScrollableArea();
-
-  EXPECT_EQ(&first_scroller->GetDocument().GetSnapCoordinator(),
-            &second_scroller->GetDocument().GetSnapCoordinator());
-
-  auto& snap_coordinator = first_scroller->GetDocument().GetSnapCoordinator();
-  EXPECT_FALSE(snap_coordinator.AnySnapContainerDataNeedsUpdate());
-
-  // SnapCoordinator needs to update all its snap containers if one of them asks
-  // for an update.
-  first_scrollable_area->SetSnapContainerDataNeedsUpdate(true);
-  EXPECT_TRUE(snap_coordinator.AnySnapContainerDataNeedsUpdate());
-
-  // SnapCoordinator still needs to update all its snap containers even if one
-  // of them asks not to.
-  second_scrollable_area->SetSnapContainerDataNeedsUpdate(false);
-  EXPECT_TRUE(snap_coordinator.AnySnapContainerDataNeedsUpdate());
-
-  first_scrollable_area->SetSnapContainerDataNeedsUpdate(false);
-  EXPECT_TRUE(snap_coordinator.AnySnapContainerDataNeedsUpdate());
-
-  snap_coordinator.UpdateAllSnapContainerDataIfNeeded();
-  EXPECT_FALSE(snap_coordinator.AnySnapContainerDataNeedsUpdate());
-}
-
 TEST_P(MAYBE_PaintLayerScrollableAreaTest,
        RootScrollbarShouldUseParentOfOverscrollNodeAsTransformNode) {
   SetPreferCompositingToLCDText(true);
@@ -1773,6 +1726,155 @@ TEST_P(MAYBE_PaintLayerScrollableAreaTest,
 
   EXPECT_EQ(root_scrollable_area->UsedColorSchemeScrollbars(),
             mojom::blink::ColorScheme::kDark);
+}
+
+TEST_P(MAYBE_PaintLayerScrollableAreaTest,
+       UsedColorSchemeRootScrollbarsInvalidateOnPreferredColorSchemeChange) {
+  USE_NON_OVERLAY_SCROLLBARS();
+
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      html { height: 1000px; width: 1000px; }
+      .container { overflow: scroll; width: 100px; height: 100px; }
+      .scrollable { height: 400px; width: 400px; }
+    </style>
+    <div id="normal" class="container">
+      <div class="scrollable"></div>
+    </div>
+  )HTML");
+
+  ASSERT_EQ(GetDocument().GetPreferredColorScheme(),
+            mojom::blink::PreferredColorScheme::kLight);
+
+  const auto* non_root_scroller = GetLayoutBoxByElementId("normal");
+  ASSERT_TRUE(non_root_scroller);
+
+  // Change preferred color scheme to dark.
+  ColorSchemeHelper color_scheme_helper(GetDocument());
+  color_scheme_helper.SetPreferredColorScheme(
+      mojom::blink::PreferredColorScheme::kDark);
+
+  // Root scrollbars should be set for invalidation after the preferred color
+  // scheme change.
+  EXPECT_TRUE(GetLayoutView().ShouldDoFullPaintInvalidation());
+
+  // Non root scrollbars should not change.
+  EXPECT_FALSE(non_root_scroller->ShouldDoFullPaintInvalidation());
+}
+
+TEST_P(MAYBE_PaintLayerScrollableAreaTest,
+       UsedColorSchemeRootScrollbarsInvalidateOnNormalToLightChange) {
+  USE_NON_OVERLAY_SCROLLBARS();
+
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      html { height: 1000px; width: 1000px; }
+      .container { overflow: scroll; width: 100px; height: 100px; }
+      .scrollable { height: 400px; width: 400px; }
+    </style>
+    <div id="normal" class="container">
+      <div class="scrollable"></div>
+    </div>
+  )HTML");
+
+  ASSERT_EQ(GetDocument().GetPreferredColorScheme(),
+            mojom::blink::PreferredColorScheme::kLight);
+
+  const auto* root_scrollable_area = GetLayoutView().GetScrollableArea();
+  ASSERT_TRUE(root_scrollable_area);
+  const auto* non_root_scrollable_area =
+      GetPaintLayerByElementId("normal")->GetScrollableArea();
+  ASSERT_TRUE(non_root_scrollable_area);
+
+  // Change preferred color scheme to dark.
+  ColorSchemeHelper color_scheme_helper(GetDocument());
+  color_scheme_helper.SetPreferredColorScheme(
+      mojom::blink::PreferredColorScheme::kDark);
+  UpdateAllLifecyclePhasesForTest();
+
+  // Set root element's color scheme to light.
+  GetDocument().documentElement()->SetInlineStyleProperty(
+      CSSPropertyID::kColorScheme, AtomicString("light"));
+
+  // Update lifecycle up until the pre-paint before the scrollbars paint is
+  // invalidated.
+  GetDocument().View()->UpdateLifecycleToCompositingInputsClean(
+      DocumentUpdateReason::kTest);
+
+  // Root scrollbars should be set for invalidation after the color scheme
+  // change.
+  if (RuntimeEnabledFeatures::UsedColorSchemeRootScrollbarsEnabled()) {
+    ExpectEqAllScrollControlsNeedPaintInvalidation(root_scrollable_area, true);
+  } else {
+    ExpectEqAllScrollControlsNeedPaintInvalidation(root_scrollable_area, false);
+  }
+
+  // Non root scrollbars should not change.
+  ExpectEqAllScrollControlsNeedPaintInvalidation(non_root_scrollable_area,
+                                                 false);
+
+  EXPECT_EQ(root_scrollable_area->UsedColorSchemeScrollbars(),
+            mojom::blink::ColorScheme::kLight);
+}
+
+TEST_P(MAYBE_PaintLayerScrollableAreaTest,
+       UsedColorSchemeRootScrollbarsInvalidateOnLightToNormalChange) {
+  USE_NON_OVERLAY_SCROLLBARS();
+
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      html { height: 1000px; width: 1000px; color-scheme: light; }
+      .container { overflow: scroll; width: 100px; height: 100px; }
+      .scrollable { height: 400px; width: 400px; }
+    </style>
+    <div id="normal" class="container">
+      <div class="scrollable"></div>
+    </div>
+  )HTML");
+
+  ASSERT_EQ(GetDocument().GetPreferredColorScheme(),
+            mojom::blink::PreferredColorScheme::kLight);
+
+  const auto* root_scrollable_area = GetLayoutView().GetScrollableArea();
+  ASSERT_TRUE(root_scrollable_area);
+  const auto* non_root_scrollable_area =
+      GetPaintLayerByElementId("normal")->GetScrollableArea();
+  ASSERT_TRUE(non_root_scrollable_area);
+
+  // Change preferred color scheme to dark.
+  ColorSchemeHelper color_scheme_helper(GetDocument());
+  color_scheme_helper.SetPreferredColorScheme(
+      mojom::blink::PreferredColorScheme::kDark);
+  UpdateAllLifecyclePhasesForTest();
+
+  // Set root element's color scheme to normal.
+  GetDocument().documentElement()->SetInlineStyleProperty(
+      CSSPropertyID::kColorScheme, AtomicString("normal"));
+
+  // Update lifecycle up until the pre-paint before the scrollbars paint is
+  // invalidated.
+  GetDocument().View()->UpdateLifecycleToCompositingInputsClean(
+      DocumentUpdateReason::kTest);
+
+  // Root scrollbars should be set for invalidation after the color scheme
+  // change.
+  if (RuntimeEnabledFeatures::UsedColorSchemeRootScrollbarsEnabled()) {
+    ExpectEqAllScrollControlsNeedPaintInvalidation(root_scrollable_area, true);
+  } else {
+    ExpectEqAllScrollControlsNeedPaintInvalidation(root_scrollable_area, false);
+  }
+
+  // Non root scrollbars should not change.
+  ExpectEqAllScrollControlsNeedPaintInvalidation(non_root_scrollable_area,
+                                                 false);
+
+  if (RuntimeEnabledFeatures::UsedColorSchemeRootScrollbarsEnabled()) {
+    EXPECT_EQ(root_scrollable_area->UsedColorSchemeScrollbars(),
+              mojom::blink::ColorScheme::kDark);
+  } else {
+    EXPECT_EQ(root_scrollable_area->UsedColorSchemeScrollbars(),
+              mojom::blink::ColorScheme::kLight);
+  }
 }
 
 // TODO(crbug.com/1020913): Actually this tests a situation that should not

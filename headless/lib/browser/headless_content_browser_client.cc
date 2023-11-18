@@ -197,6 +197,9 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
       *base::CommandLine::ForCurrentProcess());
   if (old_command_line.HasSwitch(switches::kDisablePDFTagging))
     command_line->AppendSwitch(switches::kDisablePDFTagging);
+  if (old_command_line.HasSwitch(switches::kGeneratePDFDocumentOutline)) {
+    command_line->AppendSwitch(switches::kGeneratePDFDocumentOutline);
+  }
 
   // If we're spawning a renderer, then override the language switch.
   std::string process_type =
@@ -345,7 +348,7 @@ HeadlessContentBrowserClient::GetGeolocationManager() {
 
 #if BUILDFLAG(IS_WIN)
 void HeadlessContentBrowserClient::SessionEnding(
-    absl::optional<DWORD> control_type) {
+    std::optional<DWORD> control_type) {
   DCHECK_LT(control_type.value_or(0), 0x7fu);
   browser_->ShutdownWithExitCode(control_type.value_or(0) + 0x80u);
 }

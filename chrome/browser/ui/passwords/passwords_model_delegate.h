@@ -57,8 +57,8 @@ class PasswordsModelDelegate {
   virtual password_manager::ui::State GetState() const = 0;
 
   // Returns the pending password in PENDING_PASSWORD_STATE and
-  // PENDING_PASSWORD_UPDATE_STATE, the saved password in CONFIRMATION_STATE,
-  // the returned credential in AUTO_SIGNIN_STATE.
+  // PENDING_PASSWORD_UPDATE_STATE, the saved password in
+  // SAVE_CONFIRMATION_STATE, the returned credential in AUTO_SIGNIN_STATE.
   virtual const password_manager::PasswordForm& GetPendingPassword() const = 0;
 
   // Returns unsynced credentials being deleted upon signout.
@@ -194,6 +194,9 @@ class PasswordsModelDelegate {
   // Called from the Save/Update bubble controller to decide whether or not we
   // should show the user the Chrome for iOS promo.
   virtual void MaybeShowIOSPasswordPromo() = 0;
+
+  // Called from the Relaunch Chrome bubble to gracefully restart the Chrome.
+  virtual void RelaunchChrome() = 0;
 
  protected:
   virtual ~PasswordsModelDelegate() = default;

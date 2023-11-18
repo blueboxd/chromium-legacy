@@ -17,7 +17,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -172,7 +172,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       bool is_outermost_main_frame,
       const GURL& candidate_url,
       const GURL& destination_url) override;
-  bool ShouldUseMobileFlingCurve() override;
   bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
                                const GURL& site_url) override;
   bool ShouldUseSpareRenderProcessHost(content::BrowserContext* browser_context,
@@ -272,9 +271,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const absl::optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
       content::BrowserContext* context) override;
-  void SetCanResizeFromWebAPI(content::Page* page,
-                              absl::optional<bool> can_resize) override;
-  bool GetCanResize(content::Page* page) override;
   bool MayDeleteServiceWorkerRegistration(
       const GURL& scope,
       content::BrowserContext* browser_context) override;
@@ -333,7 +329,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool IsPrivacySandboxReportingDestinationAttested(
       content::BrowserContext* browser_context,
       const url::Origin& destination_origin,
-      content::PrivacySandboxInvokingAPI invoking_api) override;
+      content::PrivacySandboxInvokingAPI invoking_api,
+      bool post_impression_reporting) override;
   void OnAuctionComplete(content::RenderFrameHost* render_frame_host,
                          content::InterestGroupManager::InterestGroupDataKey
                              winner_data_key) override;
@@ -343,7 +340,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::RenderFrameHost* rfh,
       const url::Origin* impression_origin,
       const url::Origin* conversion_origin,
-      const url::Origin* reporting_origin) override;
+      const url::Origin* reporting_origin,
+      bool* can_bypass) override;
   bool IsSharedStorageAllowed(content::BrowserContext* browser_context,
                               content::RenderFrameHost* rfh,
                               const url::Origin& top_frame_origin,
@@ -523,6 +521,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::WebUIBrowserInterfaceBrokerRegistry& registry) override;
   void RegisterMojoBinderPoliciesForSameOriginPrerendering(
       content::MojoBinderPolicyMap& policy_map) override;
+  void RegisterMojoBinderPoliciesForPreview(
+      content::MojoBinderPolicyMap& policy_map) override;
   void RegisterBrowserInterfaceBindersForServiceWorker(
       content::BrowserContext* browser_context,
       const content::ServiceWorkerVersionBaseInfo& service_worker_version_info,
@@ -553,6 +553,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                content::WebContents* web_contents) override;
   void RemovePresentationObserver(content::PresentationObserver* observer,
                                   content::WebContents* web_contents) override;
+  bool AddPrivacySandboxAttestationsObserver(
+      content::PrivacySandboxAttestationsObserver* observer) override;
+  void RemovePrivacySandboxAttestationsObserver(
+      content::PrivacySandboxAttestationsObserver* observer) override;
   std::vector<std::unique_ptr<content::NavigationThrottle>>
   CreateThrottlesForNavigation(content::NavigationHandle* handle) override;
   std::vector<std::unique_ptr<content::CommitDeferringCondition>>
@@ -587,7 +591,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       int frame_tree_node_id) override;
   void RegisterNonNetworkNavigationURLLoaderFactories(
       int frame_tree_node_id,
-      ukm::SourceIdObj ukm_source_id,
       NonNetworkURLLoaderFactoryMap* factories) override;
   void RegisterNonNetworkWorkerMainResourceURLLoaderFactories(
       content::BrowserContext* browser_context,
@@ -675,6 +678,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   content::UsbDelegate* GetUsbDelegate() override;
   content::PrivateNetworkDeviceDelegate* GetPrivateNetworkDeviceDelegate()
       override;
+  bool IsSecurityLevelAcceptableForWebAuthn(
+      content::RenderFrameHost* rfh,
+      const url::Origin& caller_origin) override;
 #if !BUILDFLAG(IS_ANDROID)
   void CreateDeviceInfoService(
       content::RenderFrameHost* render_frame_host,
@@ -922,6 +928,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context,
       const url::Origin& top_level_origin) override;
 
+  bool AreDeprecatedAutomaticBeaconCredentialsAllowed(
+      content::BrowserContext* browser_context,
+      const GURL& destination_url,
+      const url::Origin& top_frame_origin) override;
+
   bool IsTransientActivationRequiredForShowFileOrDirectoryPicker(
       content::WebContents* web_contents) override;
 
@@ -947,6 +958,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   void SetIsMinimalMode(bool minimal) override;
 
+  bool UseOutermostMainFrameOrEmbedderForSubCaptureTargets() const override;
+
 #if !BUILDFLAG(IS_ANDROID)
   void BindVideoEffectsManager(
       const std::string& device_id,
@@ -954,6 +967,15 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       mojo::PendingReceiver<video_capture::mojom::VideoEffectsManager>
           video_effects_manager) override;
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+  void PreferenceRankAudioDeviceInfos(
+      content::BrowserContext* browser_context,
+      blink::WebMediaDeviceInfoArray& infos) override;
+  void PreferenceRankVideoDeviceInfos(
+      content::BrowserContext* browser_context,
+      blink::WebMediaDeviceInfoArray& infos) override;
+  network::mojom::IpProtectionProxyBypassPolicy
+  GetIpProtectionProxyBypassPolicy() override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);

@@ -59,8 +59,6 @@ class COMPONENT_EXPORT(DBUS_AUDIO) FakeCrasAudioClient
       chromeos::DBusMethodCallback<int> callback) override;
   void GetNumberOfInputStreamsWithPermission(
       chromeos::DBusMethodCallback<ClientTypeToInputStreamCount>) override;
-  void GetDeprioritizeBtWbsMic(
-      chromeos::DBusMethodCallback<bool> callback) override;
   void GetSpeakOnMuteDetectionEnabled(
       chromeos::DBusMethodCallback<bool> callback) override;
   void SetOutputNodeVolume(uint64_t node_id, int32_t volume) override;
@@ -137,6 +135,10 @@ class COMPONENT_EXPORT(DBUS_AUDIO) FakeCrasAudioClient
   // the client type.
   void SetActiveInputStreamsWithPermission(
       const ClientTypeToInputStreamCount& input_streams);
+
+  // Generates fake signal for SurveyTriggered.
+  void NotifySurveyTriggered(
+      const base::flat_map<std::string, std::string>& survey_specific_data);
 
   const AudioNodeList& node_list() const { return node_list_; }
   const uint64_t& active_input_node_id() const { return active_input_node_id_; }

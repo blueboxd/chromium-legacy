@@ -20,7 +20,9 @@ class EdidTimingEntry {
   //  `height` should maintain an aspect ratio (width:height) of 16:10, 4:3,
   //  5:4, 16:9.
   //  `freq` should be between 60 and 123.
-  bool SetMode(unsigned short width, unsigned short height, unsigned char freq);
+  bool SetMode(unsigned short width,
+               unsigned short height,
+               unsigned short freq);
   // Get the width (in pixels) of the currently set mode.
   int GetWidth();
   // Get the height (in pixels) of the currently set mode.
@@ -54,6 +56,9 @@ class Edid {
   // Return a specified timing entry (Standard timing information; EDID 1.4).
   // There are 8 entries. `entry` should be in in the range [0,8).
   EdidTimingEntry* GetTimingEntry(int entry);
+
+  // Set the manufacturer product code (EDID 1.4).
+  void SetProductCode(unsigned short code);
 
   // Updates the checksum byte to be valid.
   void UpdateChecksum();

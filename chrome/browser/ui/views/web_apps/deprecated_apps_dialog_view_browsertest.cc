@@ -9,7 +9,7 @@
 #include "base/feature_list.h"
 #include "base/functional/callback_helpers.h"
 #include "base/run_loop.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -156,7 +156,7 @@ class DeprecatedAppsDialogViewBrowserTest
                                                      const char* url) {
     extensions::TestExtensionDir test_app_dir;
     test_app_dir.WriteManifest(
-        base::StringPrintf(app_manifest, GURL(url).spec().c_str()));
+        base::StringPrintfNonConstexpr(app_manifest, GURL(url).spec().c_str()));
     const extensions::Extension* app = InstallExtensionWithSourceAndFlags(
         test_app_dir.UnpackedPath(), /*expected_change=*/1,
         extensions::mojom::ManifestLocation::kInternal,

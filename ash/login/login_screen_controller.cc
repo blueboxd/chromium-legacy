@@ -195,6 +195,12 @@ bool LoginScreenController::GetSecurityTokenPinRequestCanceled() const {
 }
 
 void LoginScreenController::OnFocusPod(const AccountId& account_id) {
+  session_manager::SessionState session_state =
+      Shell::Get()->session_controller()->GetSessionState();
+  if (session_state == session_manager::SessionState::LOGGED_IN_NOT_ACTIVE) {
+    // b/308840749 do not propagate OnFocusPod while a user is mid login.
+    return;
+  }
   GetModel()->NotifyFocusPod(account_id);
   if (!client_) {
     return;
@@ -236,6 +242,14 @@ void LoginScreenController::ShowGaiaSignin(const AccountId& prefilled_account) {
     return;
   }
   client_->ShowGaiaSignin(prefilled_account);
+}
+
+void LoginScreenController::StartUserRecovery(
+    const AccountId& account_to_recover) {
+  if (!client_) {
+    return;
+  }
+  client_->StartUserRecovery(account_to_recover);
 }
 
 void LoginScreenController::ShowOsInstallScreen() {

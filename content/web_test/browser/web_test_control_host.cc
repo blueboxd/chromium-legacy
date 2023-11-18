@@ -299,6 +299,20 @@ void ApplyWebTestDefaultPreferences(blink::web_pref::WebPreferences* prefs) {
 #endif
   prefs->sans_serif_font_family_map[blink::web_pref::kCommonScript] =
       u"Helvetica";
+
+#if BUILDFLAG(IS_IOS)
+  // For web platform tests, the viewport should be set to 800x600.
+  // However, most of web platform tests do not include <meta
+  // name="viewport"..>, which leads to a scrollbar appearing with an 800x600
+  // size due to ViewportStyle::kMobile. To address this, the viewport style is
+  // changed to kDefault.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kPreventResizingContentsForTesting)) {
+    if (prefs->viewport_enabled) {
+      prefs->viewport_style = blink::mojom::ViewportStyle::kDefault;
+    }
+  }
+#endif
 }
 
 }  // namespace
@@ -527,7 +541,7 @@ WebTestControlHost::~WebTestControlHost() {
   // WebTestBrowserMainRunner will close all Shell windows including those.
 }
 
-bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
+void WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
   TRACE_EVENT0("shell", "WebTestControlHost::PrepareForWebTest");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   current_working_directory_ = test_info.current_working_directory;
@@ -552,6 +566,11 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
   all_observed_render_process_hosts_.clear();
   render_process_host_observations_.RemoveAllObservations();
   frame_to_layout_dump_map_.clear();
+
+  if (!test_info.trace_file.empty()) {
+    tracing_controller_.emplace(test_info.trace_file);
+    tracing_controller_->StartTracing();
+  }
 
   ShellBrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
@@ -657,11 +676,9 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
     params.should_clear_history_list = true;
     main_window_->web_contents()->GetController().LoadURLWithParams(params);
   }
-
-  return true;
 }
 
-bool WebTestControlHost::ResetBrowserAfterWebTest() {
+void WebTestControlHost::ResetBrowserAfterWebTest() {
   TRACE_EVENT0("shell", "WebTestControlHost::ResetBrowserAfterWebTest");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -674,6 +691,13 @@ bool WebTestControlHost::ResetBrowserAfterWebTest() {
   web_test_render_frame_map_.clear();
   web_test_render_thread_map_.clear();
   receiver_bindings_.Clear();
+
+  // StopTracing() must be called before the printer_ calls, to ensure the trace
+  // file is flushed to disk before control returns to the test runner
+  if (tracing_controller_.has_value()) {
+    tracing_controller_->StopTracing();
+    tracing_controller_.reset();
+  }
 
   printer_->PrintTextFooter();
   printer_->PrintImageFooter();
@@ -746,8 +770,6 @@ bool WebTestControlHost::ResetBrowserAfterWebTest() {
   }
 
   weak_factory_.InvalidateWeakPtrs();
-
-  return true;
 }
 
 void WebTestControlHost::DidCreateOrAttachWebContents(
@@ -1251,7 +1273,7 @@ void WebTestControlHost::OnTestFinished() {
   if (!printer_->output_finished())
     printer_->PrintImageFooter();
   if (main_window_)
-    main_window_->web_contents()->ExitFullscreen(/*will_cause_resize=*/false);
+    main_window_->web_contents()->ExitFullscreen();
   devtools_bindings_.reset();
   devtools_protocol_test_bindings_.reset();
   accumulated_web_test_runtime_flags_changes_.clear();
@@ -2055,9 +2077,6 @@ void WebTestControlHost::BlockThirdPartyCookies(bool block) {
       browser_context->GetDefaultStoragePartition();
   storage_partition->GetCookieManagerForBrowserProcess()
       ->BlockThirdPartyCookies(block);
-  ShellFederatedPermissionContext* federated_context =
-      browser_context->GetShellFederatedPermissionContext();
-  federated_context->SetThirdPartyCookiesBlocked(block);
 }
 
 void WebTestControlHost::BindWebTestControlHostForRenderer(

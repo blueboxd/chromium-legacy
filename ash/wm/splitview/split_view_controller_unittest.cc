@@ -33,8 +33,6 @@
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_window_builder.h"
-#include "ash/wallpaper/views/wallpaper_widget_controller.h"
-#include "ash/wallpaper/wallpaper_constants.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/float/float_controller.h"
@@ -728,44 +726,6 @@ TEST_F(SplitViewControllerTest, SnapWindowWithUnresizableSnapProperty) {
   EXPECT_EQ(window->GetBoundsInScreen().width(), 300);
 }
 
-// Tests that in split view with a single overview window, when overview is
-// ended, the wallpaper stays blurred until the window finishes animating.
-TEST_F(SplitViewControllerTest,
-       WallpaperUnblurredAfterLoneOverviewWindowSnapAnimationCompleted) {
-  const gfx::Rect bounds(400, 400);
-  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-  ToggleOverview();
-  split_view_controller()->SnapWindow(
-      window1.get(), SplitViewController::SnapPosition::kPrimary);
-
-  WallpaperWidgetController* wallpaper_widget_controller =
-      Shell::GetPrimaryRootWindowController()->wallpaper_widget_controller();
-
-  const bool is_jellyroll_enabled = chromeos::features::IsJellyrollEnabled();
-  // When Jellyroll is enabled, the wallpaper blur is removed in overview mode.
-  EXPECT_EQ(wallpaper_widget_controller->GetWallpaperBlur(),
-            chromeos::features::IsJellyrollEnabled()
-                ? wallpaper_constants::kClear
-                : wallpaper_constants::kOverviewBlur);
-  EXPECT_FALSE(wallpaper_widget_controller->IsAnimating());
-
-  ui::ScopedAnimationDurationScaleMode animation_scale(
-      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
-  ToggleOverview();
-
-  EXPECT_EQ(wallpaper_widget_controller->GetWallpaperBlur(),
-            is_jellyroll_enabled ? wallpaper_constants::kClear
-                                 : wallpaper_constants::kOverviewBlur);
-  EXPECT_FALSE(wallpaper_widget_controller->IsAnimating());
-
-  WaitForOverviewExitAnimation();
-  // The wallpaper is unblurred without animation, because the wallpaper is
-  // covered by the windows and the split view divider.
-  EXPECT_EQ(wallpaper_widget_controller->GetWallpaperBlur(), 0);
-  EXPECT_FALSE(wallpaper_widget_controller->IsAnimating());
-}
-
 // Tests that if split view mode is active when entering overview, the overview
 // windows grid should show in the non-default side of the screen, and the
 // default snapped window should not be shown in the overview window grid.
@@ -903,7 +863,7 @@ TEST_F(SplitViewControllerTest, DividerStateWhenDraggedOverviewItemDestroyed) {
       overview_session->GetOverviewItemForWindow(window2.get());
   gfx::PointF drag_point = overview_item->target_bounds().CenterPoint();
   overview_session->InitiateDrag(overview_item, drag_point,
-                                 /*is_touch_dragging=*/false);
+                                 /*is_touch_dragging=*/false, overview_item);
   drag_point.Offset(5.f, 0.f);
   overview_session->Drag(overview_item, drag_point);
   EXPECT_EQ(ui::ZOrderLevel::kNormal,
@@ -942,7 +902,7 @@ TEST_F(SplitViewControllerTest, DividerStateWhenOverviewItemDragCancelled) {
       overview_session->GetOverviewItemForWindow(window2.get());
   gfx::PointF drag_point = overview_item->target_bounds().CenterPoint();
   overview_session->InitiateDrag(overview_item, drag_point,
-                                 /*is_touch_dragging=*/false);
+                                 /*is_touch_dragging=*/false, overview_item);
   drag_point.Offset(5.f, 0.f);
   overview_session->Drag(overview_item, drag_point);
   EXPECT_EQ(ui::ZOrderLevel::kNormal,
@@ -1408,8 +1368,7 @@ TEST_F(SplitViewControllerTest, SwapWindows) {
 
   // Verify that after swapping windows, the windows and their bounds have been
   // swapped.
-  split_view_controller()->SwapWindows(
-      SplitViewController::SwapWindowsSource::kDoubleTap);
+  split_view_controller()->SwapWindows();
   EXPECT_EQ(split_view_controller()->primary_window(), window2.get());
   EXPECT_EQ(split_view_controller()->secondary_window(), window1.get());
   EXPECT_EQ(left_bounds, window2->GetBoundsInScreen());
@@ -1428,8 +1387,7 @@ TEST_F(SplitViewControllerTest, SwapWindows) {
   left_bounds = window2->GetBoundsInScreen();
   right_bounds = window1->GetBoundsInScreen();
 
-  split_view_controller()->SwapWindows(
-      SplitViewController::SwapWindowsSource::kDoubleTap);
+  split_view_controller()->SwapWindows();
   EXPECT_EQ(split_view_controller()->primary_window(), window1.get());
   EXPECT_EQ(split_view_controller()->secondary_window(), window2.get());
   EXPECT_EQ(left_bounds, window1->GetBoundsInScreen());
@@ -1547,8 +1505,7 @@ TEST_F(SplitViewControllerTest, OverviewNotStealFocusOnSwapWindows) {
   split_view_controller()->SnapWindow(
       window2.get(), SplitViewController::SnapPosition::kPrimary);
   wm::ActivateWindow(window2.get());
-  split_view_controller()->SwapWindows(
-      SplitViewController::SwapWindowsSource::kDoubleTap);
+  split_view_controller()->SwapWindows();
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
 }
 
@@ -2562,8 +2519,7 @@ TEST_F(SplitViewControllerTest, ShadowDisappearsWhenSnapped) {
 // windows in overview mode to snap to both side of the screen), or toggle
 // overview to end overview causes a window to snap, we should not have the
 // exiting animation.
-// TODO(crbug.com/1493835): Re-enable this test
-TEST_F(SplitViewControllerTest, DISABLED_OverviewExitAnimationTest) {
+TEST_F(SplitViewControllerTest, OverviewExitAnimationTest) {
   ui::ScopedAnimationDurationScaleMode anmatin_scale(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
@@ -3317,7 +3273,7 @@ TEST_F(SplitViewControllerTest, SplitViewDividerObserveSnappedWindow) {
 
   // The left and right windows are observed by split view divider.
   aura::Window::Windows observed_windows =
-      split_view_divider()->observed_windows_for_testing();
+      split_view_divider()->observed_windows();
   EXPECT_TRUE(base::Contains(observed_windows, left_window.get()));
   EXPECT_TRUE(base::Contains(observed_windows, right_window.get()));
 }
@@ -3404,8 +3360,7 @@ TEST_F(SplitViewControllerTest, SwapPartialWindows) {
 
   // Verify that after swapping windows, the window widths remain the same, and
   // the divider is now at 1/3 of the work area.
-  split_view_controller()->SwapWindows(
-      SplitViewController::SwapWindowsSource::kDoubleTap);
+  split_view_controller()->SwapWindows();
   EXPECT_EQ(WindowState::Get(window1.get())->GetStateType(),
             chromeos::WindowStateType::kSecondarySnapped);
   EXPECT_EQ(WindowState::Get(window2.get())->GetStateType(),

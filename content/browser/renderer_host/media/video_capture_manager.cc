@@ -33,6 +33,7 @@
 #include "content/public/common/content_client.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_facing.h"
+#include "media/capture/mojom/video_capture_types.mojom.h"
 #include "media/capture/video/video_capture_device.h"
 #include "services/video_capture/public/mojom/video_effects_manager.mojom.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
@@ -236,10 +237,11 @@ void VideoCaptureManager::Close(
   sessions_.erase(session_it);
 }
 
-void VideoCaptureManager::Crop(
+void VideoCaptureManager::ApplySubCaptureTarget(
     const base::UnguessableToken& session_id,
-    const base::Token& crop_id,
-    uint32_t crop_version,
+    media::mojom::SubCaptureTargetType type,
+    const base::Token& target,
+    uint32_t sub_capture_target_version,
     base::OnceCallback<void(media::mojom::ApplySubCaptureTargetResult)>
         callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -251,7 +253,8 @@ void VideoCaptureManager::Crop(
         media::mojom::ApplySubCaptureTargetResult::kErrorGeneric);
     return;
   }
-  controller->Crop(crop_id, crop_version, std::move(callback));
+  controller->ApplySubCaptureTarget(type, target, sub_capture_target_version,
+                                    std::move(callback));
 }
 
 void VideoCaptureManager::QueueStartDevice(
@@ -624,7 +627,7 @@ VideoCaptureManager::GetDeviceFormatInUse(
   return device_in_use ? device_in_use->GetVideoCaptureFormat() : absl::nullopt;
 }
 
-GlobalRoutingID VideoCaptureManager::GetGlobalRoutingID(
+GlobalRenderFrameHostId VideoCaptureManager::GetGlobalRenderFrameHostId(
     const base::UnguessableToken& session_id) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -632,7 +635,7 @@ GlobalRoutingID VideoCaptureManager::GetGlobalRoutingID(
       LookupControllerBySessionId(session_id);
   if (!controller || !controller->IsDeviceAlive() ||
       !blink::IsVideoDesktopCaptureMediaType(controller->stream_type())) {
-    return GlobalRoutingID();
+    return GlobalRenderFrameHostId();
   }
 
   const DesktopMediaID desktop_media_id =
@@ -640,11 +643,12 @@ GlobalRoutingID VideoCaptureManager::GetGlobalRoutingID(
 
   if (desktop_media_id.type != DesktopMediaID::Type::TYPE_WEB_CONTENTS ||
       desktop_media_id.web_contents_id.is_null()) {
-    return GlobalRoutingID();
+    return GlobalRenderFrameHostId();
   }
 
-  return GlobalRoutingID(desktop_media_id.web_contents_id.render_process_id,
-                         desktop_media_id.web_contents_id.main_render_frame_id);
+  return GlobalRenderFrameHostId(
+      desktop_media_id.web_contents_id.render_process_id,
+      desktop_media_id.web_contents_id.main_render_frame_id);
 }
 
 void VideoCaptureManager::SetDesktopCaptureWindowId(

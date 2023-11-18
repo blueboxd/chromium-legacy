@@ -162,6 +162,7 @@ AppPtr ExtensionAppsBase::CreateAppImpl(const extensions::Extension* extension,
   DCHECK(policy);
   app->allow_uninstall = policy->UserMayModifySettings(extension, nullptr) &&
                          !policy->MustRemainInstalled(extension, nullptr);
+  app->allow_close = true;
   return app;
 }
 
@@ -348,6 +349,7 @@ void ExtensionAppsBase::Launch(const std::string& app_id,
     case apps::LaunchSource::kFromReparenting:
     case apps::LaunchSource::kFromProfileMenu:
     case apps::LaunchSource::kFromSysTrayCalendar:
+    case apps::LaunchSource::kFromInstaller:
       break;
   }
 

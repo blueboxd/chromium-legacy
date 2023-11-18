@@ -15,6 +15,8 @@
 #include "chromeos/ash/components/cryptohome/auth_factor_input.h"
 #include "chromeos/ash/components/cryptohome/common_types.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_util.h"
+#include "chromeos/ash/components/cryptohome/error_types.h"
+#include "chromeos/ash/components/cryptohome/error_util.h"
 #include "chromeos/ash/components/cryptohome/system_salt_getter.h"
 #include "chromeos/ash/components/cryptohome/userdataauth_util.h"
 #include "chromeos/ash/components/dbus/constants/cryptohome_key_delegate_constants.h"
@@ -422,21 +424,62 @@ void AuthFactorEditor::RemoveRecoveryFactor(
   client_->RemoveAuthFactor(req, std::move(remove_auth_factor_callback));
 }
 
-void AuthFactorEditor::ReplaceLocalPasswordFactor(
-    std::unique_ptr<UserContext> context,
-    cryptohome::RawPassword new_password,
-    AuthOperationCallback callback) {
-  LOGIN_LOG(EVENT) << "Replacing local password";
+void AuthFactorEditor::SetPasswordFactor(std::unique_ptr<UserContext> context,
+                                         cryptohome::RawPassword new_password,
+                                         const cryptohome::KeyLabel& label,
+                                         AuthOperationCallback callback) {
+  LOGIN_LOG(EVENT) << "Setting password with label: " << label;
 
-  SystemSaltGetter::Get()->GetSystemSalt(
-      base::BindOnce(&AuthFactorEditor::ReplaceLocalPasswordFactorImpl,
-                     weak_factory_.GetWeakPtr(), std::move(context),
-                     std::move(new_password), std::move(callback)));
+  SystemSaltGetter::Get()->GetSystemSalt(base::BindOnce(
+      &AuthFactorEditor::SetPasswordFactorImpl, weak_factory_.GetWeakPtr(),
+      std::move(context), std::move(new_password), std::move(label),
+      std::move(callback)));
 }
 
-void AuthFactorEditor::ReplaceLocalPasswordFactorImpl(
+void AuthFactorEditor::ReplacePasswordFactor(
     std::unique_ptr<UserContext> context,
     cryptohome::RawPassword new_password,
+    const cryptohome::KeyLabel& label,
+    AuthOperationCallback callback) {
+  LOGIN_LOG(EVENT) << "Replacing password with label: " << label;
+
+  SystemSaltGetter::Get()->GetSystemSalt(base::BindOnce(
+      &AuthFactorEditor::ReplacePasswordFactorImpl, weak_factory_.GetWeakPtr(),
+      std::move(context), std::move(new_password), std::move(label),
+      std::move(callback)));
+}
+
+void AuthFactorEditor::SetPasswordFactorImpl(
+    std::unique_ptr<UserContext> context,
+    cryptohome::RawPassword new_password,
+    const cryptohome::KeyLabel& label,
+    AuthOperationCallback callback,
+    const std::string& system_salt) {
+  Key key{std::move(new_password).value()};
+  key.Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF, system_salt);
+
+  user_data_auth::AddAuthFactorRequest request;
+  request.set_auth_session_id(context->GetAuthSessionId());
+
+  cryptohome::AuthFactorRef ref{cryptohome::AuthFactorType::kPassword, label};
+
+  cryptohome::AuthFactorCommonMetadata metadata;
+  cryptohome::AuthFactor factor(ref, std::move(metadata));
+
+  cryptohome::AuthFactorInput input(
+      cryptohome::AuthFactorInput::Password{std::move(key.GetSecret())});
+  cryptohome::SerializeAuthFactor(factor, request.mutable_auth_factor());
+  cryptohome::SerializeAuthInput(ref, input, request.mutable_auth_input());
+  client_->AddAuthFactor(
+      request, base::BindOnce(&AuthFactorEditor::OnAddAuthFactor,
+                              weak_factory_.GetWeakPtr(), std::move(context),
+                              std::move(callback)));
+}
+
+void AuthFactorEditor::ReplacePasswordFactorImpl(
+    std::unique_ptr<UserContext> context,
+    cryptohome::RawPassword new_password,
+    const cryptohome::KeyLabel& label,
     AuthOperationCallback callback,
     const std::string& system_salt) {
   Key key{std::move(new_password).value()};
@@ -445,8 +488,7 @@ void AuthFactorEditor::ReplaceLocalPasswordFactorImpl(
   user_data_auth::UpdateAuthFactorRequest request;
   request.set_auth_session_id(context->GetAuthSessionId());
 
-  cryptohome::AuthFactorRef ref{cryptohome::AuthFactorType::kPassword,
-                                KeyLabel{kCryptohomeLocalPasswordKeyLabel}};
+  cryptohome::AuthFactorRef ref{cryptohome::AuthFactorType::kPassword, label};
 
   request.set_auth_factor_label(ref.label().value());
 
@@ -470,7 +512,7 @@ void AuthFactorEditor::OnListAuthFactors(
     AuthOperationCallback callback,
     absl::optional<user_data_auth::ListAuthFactorsReply> reply) {
   auto error = user_data_auth::ReplyToCryptohomeError(reply);
-  if (error != user_data_auth::CRYPTOHOME_ERROR_NOT_SET) {
+  if (cryptohome::HasError(error)) {
     LOGIN_LOG(ERROR) << "Could not list auth factors " << error;
     std::move(callback).Run(std::move(context), AuthenticationError{error});
     return;
@@ -544,7 +586,7 @@ void AuthFactorEditor::OnAddAuthFactor(
     AuthOperationCallback callback,
     absl::optional<user_data_auth::AddAuthFactorReply> reply) {
   auto error = user_data_auth::ReplyToCryptohomeError(reply);
-  if (error != user_data_auth::CRYPTOHOME_ERROR_NOT_SET) {
+  if (cryptohome::HasError(error)) {
     LOGIN_LOG(ERROR) << "AddAuthFactor failed with error " << error;
     std::move(callback).Run(std::move(context), AuthenticationError{error});
     return;
@@ -562,7 +604,7 @@ void AuthFactorEditor::OnUpdateAuthFactor(
     AuthOperationCallback callback,
     absl::optional<user_data_auth::UpdateAuthFactorReply> reply) {
   auto error = user_data_auth::ReplyToCryptohomeError(reply);
-  if (error != user_data_auth::CRYPTOHOME_ERROR_NOT_SET) {
+  if (cryptohome::HasError(error)) {
     LOGIN_LOG(ERROR) << "UpdateAuthFactor failed with error " << error;
     std::move(callback).Run(std::move(context), AuthenticationError{error});
     return;
@@ -578,7 +620,7 @@ void AuthFactorEditor::OnRemoveAuthFactor(
     AuthOperationCallback callback,
     absl::optional<::user_data_auth::RemoveAuthFactorReply> reply) {
   auto error = user_data_auth::ReplyToCryptohomeError(reply);
-  if (error != user_data_auth::CRYPTOHOME_ERROR_NOT_SET) {
+  if (cryptohome::HasError(error)) {
     LOG(WARNING) << "RemoveAuthFactor failed with error " << error;
     std::move(callback).Run(std::move(context), AuthenticationError{error});
     return;

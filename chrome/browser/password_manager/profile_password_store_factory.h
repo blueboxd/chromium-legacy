@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service_factory.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/password_manager/core/browser/password_store_interface.h"
+#include "components/password_manager/core/browser/password_store/password_store_interface.h"
 
 class Profile;
 
@@ -27,6 +27,10 @@ class ProfilePasswordStoreFactory
   ProfilePasswordStoreFactory(const ProfilePasswordStoreFactory&) = delete;
   ProfilePasswordStoreFactory& operator=(const ProfilePasswordStoreFactory&) =
       delete;
+
+  // Returns the default factory, useful in tests where the service is null by
+  // default.
+  static TestingFactory GetDefaultFactoryForTesting();
 
  private:
   friend base::NoDestructor<ProfilePasswordStoreFactory>;

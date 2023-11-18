@@ -13,10 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/functional/callback_forward.h"
 
-namespace gfx {
-class ImageSkia;
-}  // namespace gfx
-
 namespace ash {
 
 class AmbientClient;
@@ -46,19 +42,16 @@ class ASH_EXPORT AmbientPhotoCache {
   static void SetFactoryForTesting(
       base::RepeatingCallback<std::unique_ptr<AmbientPhotoCache>()> factory_fn);
 
-  virtual void DownloadPhoto(
+  static void DownloadPhoto(
       const std::string& url,
-      base::OnceCallback<void(std::string&&)> callback) = 0;
+      AmbientAccessTokenController& access_token_controller,
+      base::OnceCallback<void(std::string&&)> callback);
 
   // Saves the photo at |url| to |cache_index| and calls |callback| with a
   // boolean that indicates success.
   virtual void DownloadPhotoToFile(const std::string& url,
                                    int cache_index,
                                    base::OnceCallback<void(bool)> callback) = 0;
-
-  virtual void DecodePhoto(
-      const std::string& data,
-      base::OnceCallback<void(const gfx::ImageSkia&)> callback) = 0;
 
   // Write photo cache to disk at |cache_index| and call |callback| when
   // complete.

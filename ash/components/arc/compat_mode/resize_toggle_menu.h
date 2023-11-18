@@ -15,6 +15,7 @@
 #include "base/scoped_multi_source_observation.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -38,6 +39,8 @@ class ResizeToggleMenu : public views::WidgetObserver,
                          public aura::WindowObserver {
  public:
   class MenuButtonView : public views::Button {
+    METADATA_HEADER(MenuButtonView, views::Button)
+
    public:
     MenuButtonView(PressedCallback callback,
                    const gfx::VectorIcon& icon,
@@ -89,7 +92,7 @@ class ResizeToggleMenu : public views::WidgetObserver,
 
   void UpdateSelectedButton();
 
-  void ApplyResizeCompatMode(ResizeCompatMode mode);
+  void ApplyResizeCompatMode(ash::ResizeCompatMode mode);
 
   gfx::Rect GetAnchorRect() const;
 
@@ -98,7 +101,7 @@ class ResizeToggleMenu : public views::WidgetObserver,
   std::unique_ptr<views::BubbleDialogDelegateView> MakeBubbleDelegateView(
       views::Widget* parent,
       gfx::Rect anchor_rect,
-      base::RepeatingCallback<void(ResizeCompatMode)> command_handler);
+      base::RepeatingCallback<void(ash::ResizeCompatMode)> command_handler);
 
   void CloseBubble();
 

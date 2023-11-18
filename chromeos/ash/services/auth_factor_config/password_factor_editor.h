@@ -20,14 +20,28 @@ class AuthFactorConfig;
 
 class PasswordFactorEditor : public mojom::PasswordFactorEditor {
  public:
-  PasswordFactorEditor(AuthFactorConfig* auth_factor_config,
-                       QuickUnlockStorageDelegate* storage);
+  explicit PasswordFactorEditor(AuthFactorConfig* auth_factor_config);
   ~PasswordFactorEditor() override;
 
   PasswordFactorEditor(const mojom::PasswordFactorEditor&) = delete;
   PasswordFactorEditor& operator=(const PasswordFactorEditor&) = delete;
 
+  void UpdateLocalPassword(
+      const std::string& auth_token,
+      const std::string& new_password,
+      base::OnceCallback<void(mojom::ConfigureResult)> callback) override;
+
+  void UpdateOnlinePassword(
+      const std::string& auth_token,
+      const std::string& new_password,
+      base::OnceCallback<void(mojom::ConfigureResult)> callback) override;
+
   void SetLocalPassword(
+      const std::string& auth_token,
+      const std::string& new_password,
+      base::OnceCallback<void(mojom::ConfigureResult)> callback) override;
+
+  void SetOnlinePassword(
       const std::string& auth_token,
       const std::string& new_password,
       base::OnceCallback<void(mojom::ConfigureResult)> callback) override;
@@ -40,9 +54,17 @@ class PasswordFactorEditor : public mojom::PasswordFactorEditor {
       mojo::PendingReceiver<mojom::PasswordFactorEditor> receiver);
 
  private:
-  void SetLocalPasswordWithContext(
+  void UpdatePasswordWithContext(
       const std::string& auth_token,
       const std::string& new_password,
+      const cryptohome::KeyLabel& label,
+      base::OnceCallback<void(mojom::ConfigureResult)> callback,
+      std::unique_ptr<UserContext> user_context);
+
+  void SetPasswordWithContext(
+      const std::string& auth_token,
+      const std::string& new_password,
+      const cryptohome::KeyLabel& label,
       base::OnceCallback<void(mojom::ConfigureResult)> callback,
       std::unique_ptr<UserContext> user_context);
 
@@ -53,7 +75,6 @@ class PasswordFactorEditor : public mojom::PasswordFactorEditor {
       absl::optional<AuthenticationError> error);
 
   raw_ptr<AuthFactorConfig> auth_factor_config_;
-  raw_ptr<QuickUnlockStorageDelegate> quick_unlock_storage_;
   mojo::ReceiverSet<mojom::PasswordFactorEditor> receivers_;
   AuthFactorEditor auth_factor_editor_;
   base::WeakPtrFactory<PasswordFactorEditor> weak_factory_{this};

@@ -7,6 +7,9 @@ package org.chromium.media;
 import android.annotation.SuppressLint;
 import android.media.MediaCrypto;
 import android.media.MediaDrm;
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
 
 import org.jni_zero.CalledByNative;
 import org.jni_zero.JNINamespace;
@@ -748,7 +751,7 @@ public class MediaDrmBridge {
             Log.e(TAG, "Failed to getKeyRequest().", e);
         }
 
-        String result = (request != null) ? "successed" : "failed";
+        String result = (request != null) ? "succeeded" : "failed";
         Log.d(TAG, "getKeyRequest %s!", result);
 
         return request;
@@ -950,6 +953,15 @@ public class MediaDrmBridge {
         int systemCode = MediaDrmSystemCode.UPDATE_FAILED;
         try {
             SessionInfo sessionInfo = mSessionManager.get(sessionId);
+            if (sessionInfo == null) {
+                assert false; // Should never happen.
+                onPromiseRejected(
+                        promiseId,
+                        MediaDrmSystemCode.INVALID_SESSION_ID,
+                        "Internal error: No info for session: " + sessionId.toHexString());
+                return;
+            }
+
             boolean isKeyRelease = sessionInfo.keyType() == MediaDrm.KEY_TYPE_RELEASE;
 
             byte[] keySetId = null;
@@ -1031,6 +1043,14 @@ public class MediaDrmBridge {
             assert Arrays.equals(sessionId.drmId(), drmId);
 
             SessionInfo sessionInfo = mSessionManager.get(sessionId);
+            if (sessionInfo == null) {
+                assert false; // Should never happen.
+                onPromiseRejected(
+                        promiseId,
+                        MediaDrmSystemCode.INVALID_SESSION_ID,
+                        "Internal error: No info for session: " + sessionId.toHexString());
+                return;
+            }
 
             // If persistent license (KEY_TYPE_OFFLINE) is released but we don't receive the ack
             // from the server, we should avoid restoring the keys. Report success to JS so that
@@ -1045,8 +1065,8 @@ public class MediaDrmBridge {
                 onSessionKeysChange(
                         sessionId,
                         getPlaceholderKeysInfo(MediaDrm.KeyStatus.STATUS_EXPIRED).toArray(),
-                        false /* hasAdditionalUsableKey */,
-                        true /* isKeyRelease */);
+                        /* hasAdditionalUsableKey= */ false,
+                        /* isKeyRelease= */ true);
                 return;
             }
 
@@ -1112,6 +1132,15 @@ public class MediaDrmBridge {
         }
 
         final SessionInfo sessionInfo = mSessionManager.get(sessionId);
+        if (sessionInfo == null) {
+            assert false; // Should never happen.
+            onPromiseRejected(
+                    promiseId,
+                    MediaDrmSystemCode.INVALID_SESSION_ID,
+                    "Internal error: No info for session: " + sessionId.toHexString());
+            return;
+        }
+
         if (sessionInfo.keyType() == MediaDrm.KEY_TYPE_STREAMING) {
             // TODO(yucliu): Support 'remove' of temporary session.
             onPromiseRejected(promiseId, MediaDrmSystemCode.NOT_PERSISTENT_LICENSE,
@@ -1215,22 +1244,105 @@ public class MediaDrmBridge {
             sMediaCryptoDeferrer.onProvisionStarted();
         }
 
-        // getProvisionRequest() may fail with android.media.MediaDrm.MediaDrmStateException or
-        // android.media.MediaDrmResetException, both of which extend IllegalStateException. As
-        // these specific exceptions are only available in API 21 and 23 respectively, using the
-        // base exception so that this will work for all API versions.
+        // Due to error handling and API requirements, call a version appropriate function to do the
+        // actual getProvisionRequest() call.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            return startProvisioningPreQ();
+        } else {
+            return startProvisioningQorLater(/* retryAllowed= */ true);
+        }
+    }
+
+    /**
+     * Start provisioning on Android P or earlier. Returns true if a provisioning request can be
+     * generated and has been forwarded to C++ code for handling, false otherwise.
+     */
+    private boolean startProvisioningPreQ() {
         MediaDrm.ProvisionRequest request;
         try {
             request = mMediaDrm.getProvisionRequest();
         } catch (java.lang.IllegalStateException e) {
+            // getProvisionRequest() may fail with android.media.MediaDrm.MediaDrmStateException or
+            // android.media.MediaDrmResetException, both of which extend IllegalStateException. As
+            // these specific exceptions are only available in API 21 and 23 respectively, using the
+            // base exception so that this will work for all API versions.
             Log.e(TAG, "Failed to get provisioning request", e);
             return false;
         }
 
         Log.i(TAG, "Provisioning origin ID %s", mOriginSet ? mOrigin : "<none>");
-        MediaDrmBridgeJni.get().onProvisionRequest(mNativeMediaDrmBridge, MediaDrmBridge.this,
-                request.getDefaultUrl(), request.getData());
+        MediaDrmBridgeJni.get()
+                .onProvisionRequest(
+                        mNativeMediaDrmBridge,
+                        MediaDrmBridge.this,
+                        request.getDefaultUrl(),
+                        request.getData());
         return true;
+    }
+
+    /**
+     * Start provisioning on Android Q or later, as it allows for better error diagnostics. Returns
+     * true if a provisioning request can be generated and has been forwarded to C++ code for
+     * handling, false otherwise.
+     *
+     * @param retryAllowed Flag set to true if transient failures should be retried.
+     */
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private boolean startProvisioningQorLater(boolean retryAllowed) {
+        MediaDrm.ProvisionRequest request;
+        try {
+            request = mMediaDrm.getProvisionRequest();
+        } catch (MediaDrm.SessionException e) {
+            // SessionException may be thrown when an operation failed in a way that is likely to
+            // succeed on a subsequent attempt. However, checking for transient errors is only
+            // available on S and later. Try only once to repeat it if possible.
+            if (retryAllowed && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && e.isTransient()) {
+                return startProvisioningQorLater(false);
+            }
+            Log.e(TAG, "Failed to get provisioning request", e);
+            displayMetrics();
+            return false;
+        } catch (MediaDrm.MediaDrmStateException e) {
+            Log.e(TAG, "Failed to get provisioning request", e);
+            Log.e(TAG, "getDiagnosticInfo:", e.getDiagnosticInfo());
+            displayMetrics();
+            return false;
+        } catch (java.lang.IllegalStateException e) {
+            // This should only be MediaDrmResetException, but catching all IllegalStateExceptions
+            // to be compatible with the pre-Q version.
+            Log.e(TAG, "Failed to get provisioning request", e);
+            displayMetrics();
+            return false;
+        }
+
+        Log.i(TAG, "Provisioning origin ID %s", mOriginSet ? mOrigin : "<none>");
+        MediaDrmBridgeJni.get()
+                .onProvisionRequest(
+                        mNativeMediaDrmBridge,
+                        MediaDrmBridge.this,
+                        request.getDefaultUrl(),
+                        request.getData());
+        return true;
+    }
+
+    /** Display MediaDrm metrics to the error log if available. */
+    @RequiresApi(Build.VERSION_CODES.P)
+    private void displayMetrics() {
+        assert mMediaDrm != null;
+
+        // Property "metrics" specific to Widevine.
+        if (isWidevine()) {
+            try {
+                byte[] metrics = mMediaDrm.getPropertyByteArray("metrics");
+                if (metrics != null) {
+                    // SessionId class converts an arbitrary byte[] to string.
+                    Log.e(TAG, "metrics: ", SessionId.toHexString(metrics));
+                }
+            } catch (Exception e) {
+                // Ignore any errors if this fails as it's just logging additional data
+                // and we don't want the caller to fail if this doesn't work.
+            }
+        }
     }
 
     /**
@@ -1411,18 +1523,32 @@ public class MediaDrmBridge {
         public void onEvent(
                 MediaDrm mediaDrm, byte[] drmSessionId, int event, int extra, byte[] data) {
             if (drmSessionId == null) {
-                Log.e(TAG, "EventListener: No session for event %d.", event);
+                // Prior to Android M EVENT_PROVISION_REQUIRED was used to signify that provisioning
+                // was required before the session could be created. Unprovisioned errors are
+                // handled elsewhere, so no need to log a message.
+                if (event != MediaDrm.EVENT_PROVISION_REQUIRED) {
+                    Log.e(TAG, "EventListener: No session for event %d.", event);
+                }
                 return;
             }
-            SessionId sessionId = getSessionIdByDrmId(drmSessionId);
 
+            SessionId sessionId = getSessionIdByDrmId(drmSessionId);
             if (sessionId == null) {
-                Log.e(TAG, "EventListener: Invalid session %s",
+                // May happen if the event gets scheduled after the session is gone.
+                Log.w(
+                        TAG,
+                        "EventListener: Invalid session %s",
                         SessionId.toHexString(drmSessionId));
                 return;
             }
 
             SessionInfo sessionInfo = mSessionManager.get(sessionId);
+            if (sessionInfo == null) {
+                // May happen if the event gets scheduled after the session is gone.
+                Log.w(TAG, "EventListener: No info for session %s", sessionId.toHexString());
+                return;
+            }
+
             MediaDrm.KeyRequest request = null;
             switch (event) {
                 case MediaDrm.EVENT_KEY_REQUIRED:
@@ -1452,7 +1578,7 @@ public class MediaDrmBridge {
                     }
                     break;
                 default:
-                    Log.e(TAG, "Invalid DRM event " + event);
+                    Log.w(TAG, "Ignoring MediaDrm event " + event);
                     break;
             }
         }

@@ -43,14 +43,13 @@ class BookmarkClientImpl : public power_bookmarks::BookmarkClientBase {
 
   // bookmarks::BookmarkClient:
   void Init(bookmarks::BookmarkModel* model) override;
+  bool AreFoldersForAccountStorageAllowed() override;
   base::CancelableTaskTracker::TaskId GetFaviconImageForPageURL(
       const GURL& page_url,
       favicon_base::FaviconImageCallback callback,
       base::CancelableTaskTracker* tracker) override;
   bool SupportsTypedCountForUrls() override;
   void GetTypedCountForUrls(UrlTypedCountMap* url_typed_count_map) override;
-  bool IsPermanentNodeVisibleWhenEmpty(
-      bookmarks::BookmarkNode::Type type) override;
   bookmarks::LoadManagedNodeCallback GetLoadManagedNodeCallback() override;
   bookmarks::metrics::StorageStateForUma GetStorageStateForUma() override;
   bool CanSetPermanentNodeTitle(

@@ -19,6 +19,7 @@
 #include "ash/wm/overview/delayed_animation_observer_impl.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_drop_target.h"
 #include "ash/wm/overview/overview_focus_cycler.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_grid_event_handler.h"
@@ -164,18 +165,19 @@ bool IsContinuousScrollInProgress() {
 OverviewItem::OverviewItem(aura::Window* window,
                            OverviewSession* overview_session,
                            OverviewGrid* overview_grid,
-                           WindowDestructionDelegate* delegate,
+                           WindowDestructionDelegate* destruction_delegate,
+                           EventHandlerDelegate* event_handler_delegate,
                            bool eligible_for_shadow_config)
     : OverviewItemBase(overview_session,
                        overview_grid,
                        window->GetRootWindow()),
       root_window_(window->GetRootWindow()),
       transform_window_(this, window),
-      window_destruction_delegate_(delegate),
+      window_destruction_delegate_(destruction_delegate),
       eligible_for_shadow_config_(eligible_for_shadow_config),
       animation_disabler_(window) {
   CHECK(window_destruction_delegate_);
-  CreateItemWidget();
+  CreateItemWidget(event_handler_delegate);
   window->AddObserver(this);
   WindowState::Get(window)->AddObserver(this);
 }
@@ -184,6 +186,14 @@ OverviewItem::~OverviewItem() {
   aura::Window* window = GetWindow();
   WindowState::Get(window)->RemoveObserver(this);
   window->RemoveObserver(this);
+}
+
+void OverviewItem::OnFocusedViewActivated() {
+  overview_session_->OnFocusedItemActivated(this);
+}
+
+void OverviewItem::OnFocusedViewClosed() {
+  overview_session_->OnFocusedItemClosed(this);
 }
 
 void OverviewItem::UpdateItemContentViewForMinimizedWindow() {
@@ -350,15 +360,18 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
                                       weak_ptr_factory_.GetWeakPtr())}
           : nullptr);
 
+  // If the window was minimized while in overview, the preview may not exist.
+  // `OverviewItemView::SetShowPreview()` is a no-op if the preview already
+  // exists, so it is free to ensure it here.
+  overview_item_view_->SetShowPreview(true);
+  ui::Layer* preview_layer = overview_item_view_->preview_view()->layer();
+
   // Minimized windows have a `WindowPreviewView` which mirrors content from the
   // window. `target_bounds` may not have a matching aspect ratio to the
   // actual window (eg. in splitview overview). In this case, the contents
   // will be squashed to fit the given bounds. To get around this, stretch out
   // the contents so that it matches `unclipped_size_`, then clip the layer to
   // match `target_bounds`. This is what is done on non-minimized windows.
-  auto* preview_view = overview_item_view_->preview_view();
-  CHECK(preview_view);
-  ui::Layer* preview_layer = preview_view->layer();
   if (unclipped_size_) {
     gfx::SizeF target_size(*unclipped_size_);
     gfx::SizeF preview_size = GetTargetBoundsWithInsets().size();
@@ -407,26 +420,11 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
 
   FadeInWidgetToOverview(item_widget_.get(), fade_animation,
                          /*observe=*/true);
-
-  // Update the item header visibility immediately if entering from home
-  // launcher.
-  if (new_animation_type == OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER) {
-    overview_item_view_->SetHeaderVisibility(
-        OverviewItemView::HeaderVisibility::kVisible, /*animate=*/true);
-  }
-
-  // Update the item header visibility immediately without an animation.
-  if (new_animation_type == OVERVIEW_ANIMATION_NONE) {
-    overview_item_view_->SetHeaderVisibility(
-        OverviewItemView::HeaderVisibility::kVisible, /*animate=*/false);
-  }
 }
 
 gfx::Transform OverviewItem::ComputeTargetTransform(
     const gfx::RectF& target_bounds) {
-  CHECK(!overview_grid_->IsDropTargetItem(this));
-
-  gfx::RectF screen_rect = gfx::RectF(GetTargetBoundsInScreen());
+  gfx::RectF screen_rect = gfx::RectF(GetWindowsUnionScreenBounds());
 
   // Avoid division by zero by ensuring screen bounds is not empty.
   gfx::SizeF screen_size(screen_rect.size());
@@ -512,8 +510,8 @@ void OverviewItem::RestoreWindow(bool reset_transform, bool animate) {
   FadeOutWidgetFromOverview(std::move(item_widget_), animation_type);
 }
 
-gfx::RectF OverviewItem::GetTargetBoundsInScreen() const {
-  return ash::GetTargetBoundsInScreen(transform_window_.window());
+gfx::RectF OverviewItem::GetWindowsUnionScreenBounds() const {
+  return GetUnionScreenBoundsForWindow(transform_window_.window());
 }
 
 gfx::RectF OverviewItem::GetTargetBoundsWithInsets() const {
@@ -528,7 +526,7 @@ gfx::RectF OverviewItem::GetTransformedBounds() const {
 
 float OverviewItem::GetItemScale(int height) {
   return ScopedOverviewTransformWindow::GetItemScale(
-      GetTargetBoundsInScreen().height(), height,
+      GetWindowsUnionScreenBounds().height(), height,
       transform_window_.GetTopInset(), kHeaderHeightDp);
 }
 
@@ -555,8 +553,12 @@ void OverviewItem::EnsureVisible() {
   transform_window_.EnsureVisible();
 }
 
-OverviewFocusableView* OverviewItem::GetFocusableView() const {
-  return overview_item_view_;
+std::vector<OverviewFocusableView*> OverviewItem::GetFocusableViews() const {
+  // `overview_item_view_` might be set to nullptr in `RestoreWindow()` or
+  // `ShutDown()`.
+  return overview_item_view_
+             ? std::vector<OverviewFocusableView*>{overview_item_view_}
+             : std::vector<OverviewFocusableView*>{};
 }
 
 views::View* OverviewItem::GetBackDropView() const {
@@ -575,15 +577,13 @@ void OverviewItem::UpdateRoundedCornersAndShadow() {
 
   // The shadow should be hidden if
   // 1) Rounded corners are available;
-  // 2) `this` is the drop target window;
-  // 3) `this` is being animated.
+  // 2) `this` is being animated.
   const bool is_animating = transform_window_.GetOverviewWindow()
                                 ->layer()
                                 ->GetAnimator()
                                 ->is_animating() ||
                             IsContinuousScrollInProgress();
   const bool shadow_visible = !GetRoundedCorners().IsEmpty() &&
-                              !overview_grid_->IsDropTargetItem(this) &&
                               !is_animating;
 
   // The shadow should always match the size of the item minus the border
@@ -613,17 +613,11 @@ void OverviewItem::PrepareForOverview() {
 }
 
 void OverviewItem::OnStartingAnimationComplete() {
-  DCHECK(item_widget_);
+  CHECK(item_widget_);
 
-  if (transform_window_.IsMinimizedOrTucked()) {
-    // Fade the title in if minimized or tucked. The rest of `item_widget_`
-    // should already be shown.
-    overview_item_view_->SetHeaderVisibility(
-        OverviewItemView::HeaderVisibility::kVisible, /*animate=*/true);
-  } else if (!IsContinuousScrollInProgress() &&
-             overview_session_->enter_exit_overview_type() ==
-                 OverviewEnterExitType::
-                     kContinuousAnimationEnterOnScrollUpdate) {
+  if (!IsContinuousScrollInProgress() &&
+      overview_session_->enter_exit_overview_type() ==
+          OverviewEnterExitType::kContinuousAnimationEnterOnScrollUpdate) {
     // If a continuous scroll has ended, make the header visible again.
     item_widget_->GetLayer()->SetOpacity(1.f);
   } else {
@@ -734,14 +728,11 @@ void OverviewItem::Restack() {
   // `window` and has the same parent.
   for (const std::unique_ptr<OverviewItemBase>& overview_item :
        overview_grid_->window_list()) {
-    // `Restack` is sometimes called when there is a drop target, but is never
-    // used to restack an item that comes after a drop target. In other words,
-    // `overview_grid_` might have a drop target, but we will break out of the
-    // for loop before reaching it.
-    CHECK(!overview_grid_->IsDropTargetItem(this));
-    if (overview_item.get() == this) {
+    if (overview_item.get() == this ||
+        overview_item.get() == overview_grid_->drop_target()) {
       break;
     }
+
     if (overview_item->GetWindow()->parent() == parent_window) {
       stacking_target = overview_item->item_widget()->GetNativeWindow();
     }
@@ -775,16 +766,7 @@ void OverviewItem::StartDrag() {
 
 void OverviewItem::OnOverviewItemDragStarted(OverviewItemBase* item) {
   is_being_dragged_ = (item == this);
-
-  if (chromeos::features::IsJellyrollEnabled()) {
-    overview_item_view_->SetCloseButtonVisible(false);
-  } else {
-    overview_item_view_->SetHeaderVisibility(
-        is_being_dragged_
-            ? OverviewItemView::HeaderVisibility::kInvisible
-            : OverviewItemView::HeaderVisibility::kCloseButtonInvisibleOnly,
-        /*animate=*/true);
-  }
+  overview_item_view_->SetCloseButtonVisible(false);
 }
 
 void OverviewItem::OnOverviewItemDragEnded(bool snap) {
@@ -793,12 +775,7 @@ void OverviewItem::OnOverviewItemDragEnded(bool snap) {
       overview_item_view_->HideCloseInstantlyAndThenShowItSlowly();
     }
   } else {
-    if (chromeos::features::IsJellyrollEnabled()) {
-      overview_item_view_->SetCloseButtonVisible(true);
-    } else {
-      overview_item_view_->SetHeaderVisibility(
-          OverviewItemView::HeaderVisibility::kVisible, /*animate=*/true);
-    }
+    overview_item_view_->SetCloseButtonVisible(true);
   }
   is_being_dragged_ = false;
 }
@@ -826,32 +803,16 @@ void OverviewItem::OnOverviewItemContinuousScroll(
 }
 
 void OverviewItem::SetVisibleDuringItemDragging(bool visible, bool animate) {
-  aura::Window::Windows windows = GetWindowsForHomeGesture();
-  float new_opacity = visible ? 1.f : 0.f;
-  for (auto* window : windows) {
-    ui::Layer* layer = window->layer();
-    if (layer->GetTargetOpacity() == new_opacity) {
-      continue;
-    }
-
-    if (animate) {
-      ScopedOverviewAnimationSettings settings(
-          OVERVIEW_ANIMATION_OPACITY_ON_WINDOW_DRAG, window);
-      layer->SetOpacity(new_opacity);
-    } else {
-      layer->SetOpacity(new_opacity);
-    }
-  }
+  SetWindowsVisibleDuringItemDragging(GetWindowsForHomeGesture(), visible,
+                                      animate);
 }
 
 void OverviewItem::UpdateCannotSnapWarningVisibility(bool animate) {
-  // Windows which can snap will never show this warning. Or if the window is
-  // the drop target window, also do not show this warning.
+  // Windows which can snap will never show this warning.
   bool visible = true;
   if (SplitViewController::Get(root_window_)
           ->ComputeSnapRatio(GetWindow())
-          .has_value() ||
-      overview_grid_->IsDropTargetItem(this)) {
+          .has_value()) {
     visible = false;
   } else {
     const SplitViewController::State state =
@@ -870,7 +831,7 @@ void OverviewItem::UpdateCannotSnapWarningVisibility(bool animate) {
     params.vertical_padding = kSplitviewLabelVerticalInsetDp;
     params.rounding_dp = kSplitviewLabelRoundRectRadiusDp;
     params.preferred_height = kSplitviewLabelPreferredHeightDp;
-    params.message_id = IDS_ASH_SPLIT_VIEW_CANNOT_SNAP;
+    params.message = IDS_ASH_SPLIT_VIEW_CANNOT_SNAP;
     params.parent = GetWindow()->parent();
     cannot_snap_widget_ = std::make_unique<RoundedLabelWidget>();
     cannot_snap_widget_->Init(std::move(params));
@@ -1068,13 +1029,6 @@ void OverviewItem::OnWindowBoundsChanged(aura::Window* window,
   if (SplitViewController::Get(window)->IsWindowInTransitionalState(window))
     return;
 
-  // The drop target will get its bounds set as opposed to its transform
-  // set in `SetItemBounds` so do not position windows again when that
-  // particular window has its bounds changed.
-  if (overview_grid_->IsDropTargetItem(this)) {
-    return;
-  }
-
   if (reason == ui::PropertyChangeReason::NOT_FROM_ANIMATION)
     overview_item_view_->RefreshPreviewView();
 
@@ -1150,13 +1104,15 @@ void OverviewItem::OnPostWindowStateTypeChange(WindowState* window_state,
   overview_grid_->PositionWindows(/*animate=*/false);
 }
 
-void OverviewItem::CreateItemWidget() {
+void OverviewItem::CreateItemWidget(
+    EventHandlerDelegate* event_handler_delegate) {
   TRACE_EVENT0("ui", "OverviewItem::CreateItemWidget");
 
   item_widget_ = std::make_unique<views::Widget>();
   item_widget_->set_focus_on_creation(false);
   item_widget_->Init(CreateOverviewItemWidgetParams(
-      transform_window_.window()->parent(), "OverviewItemWidget"));
+      transform_window_.window()->parent(), "OverviewItemWidget",
+      /*accept_events=*/true));
   aura::Window* widget_window = item_widget_->GetNativeWindow();
   widget_window->parent()->StackChildBelow(widget_window, GetWindow());
   // Overview uses custom animations so remove the default ones.
@@ -1168,7 +1124,7 @@ void OverviewItem::CreateItemWidget() {
 
   overview_item_view_ =
       item_widget_->SetContentsView(std::make_unique<OverviewItemView>(
-          this,
+          this, event_handler_delegate ? event_handler_delegate : this,
           base::BindRepeating(&OverviewItem::CloseButtonPressed,
                               base::Unretained(this)),
           GetWindow(), transform_window_.IsMinimizedOrTucked()));
@@ -1268,17 +1224,6 @@ void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
   aura::Window* window = GetWindow();
   CHECK_EQ(root_window_, window->GetRootWindow());
 
-  // Do not set transform for drop target, set bounds instead.
-  if (overview_grid_->IsDropTargetItem(this)) {
-    const gfx::Rect drop_target_bounds = ToStableSizeRoundedRect(
-        chromeos::features::IsJellyrollEnabled() ? target_bounds_
-                                                 : GetTargetBoundsWithInsets());
-    SetWidgetBoundsAndMaybeAnimateTransform(
-        overview_grid_->drop_target_widget(), drop_target_bounds,
-        animation_type, /*observer=*/nullptr);
-    return;
-  }
-
   const gfx::Transform transform = ComputeTargetTransform(target_bounds);
 
   // Determine the amount of clipping we should put on the window. Note that the
@@ -1315,37 +1260,6 @@ void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
 }
 
 void OverviewItem::UpdateHeaderLayout(OverviewAnimationType animation_type) {
-  if (chromeos::features::IsJellyrollEnabled()) {
-    UpdateHeaderLayoutCrOSNext(animation_type);
-    return;
-  }
-
-  aura::Window* widget_window = item_widget_->GetNativeWindow();
-  ScopedOverviewAnimationSettings animation_settings(animation_type,
-                                                     widget_window);
-  // Create a start animation observer if this is an enter overview layout
-  // animation.
-  if (animation_type == OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_ON_ENTER ||
-      animation_type == OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER) {
-    auto enter_observer = std::make_unique<EnterAnimationObserver>();
-    animation_settings.AddObserver(enter_observer.get());
-    OverviewController::Get()->AddEnterAnimationObserver(
-        std::move(enter_observer));
-  }
-
-  gfx::RectF item_bounds = target_bounds_;
-  ::wm::TranslateRectFromScreen(root_window_, &item_bounds);
-  const gfx::Point origin = gfx::ToRoundedPoint(item_bounds.origin());
-  item_bounds.set_origin(gfx::PointF());
-  widget_window->SetBounds(ToStableSizeRoundedRect(item_bounds));
-
-  gfx::Transform label_transform;
-  label_transform.Translate(origin.x(), origin.y());
-  widget_window->SetTransform(label_transform);
-}
-
-void OverviewItem::UpdateHeaderLayoutCrOSNext(
-    OverviewAnimationType animation_type) {
   gfx::RectF current_item_bounds(item_widget_->GetWindowBoundsInScreen());
   gfx::RectF target_item_bounds = target_bounds_;
 

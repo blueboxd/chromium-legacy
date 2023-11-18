@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/messaging/message_port.h"
 
+#include "extensions/common/api/messaging/port_context.h"
+
 namespace extensions {
 
 MessagePort::MessagePort(base::WeakPtr<ChannelDelegate> channel_delegate,
@@ -23,14 +25,14 @@ void MessagePort::RevalidatePort() {}
 void MessagePort::DispatchOnConnect(
     mojom::ChannelType channel_type,
     const std::string& channel_name,
-    absl::optional<base::Value::Dict> source_tab,
+    std::optional<base::Value::Dict> source_tab,
     const ExtensionApiFrameIdMap::FrameData& source_frame,
     int guest_process_id,
     int guest_render_frame_routing_id,
     const MessagingEndpoint& source_endpoint,
     const std::string& target_extension_id,
     const GURL& source_url,
-    absl::optional<url::Origin> source_origin) {}
+    std::optional<url::Origin> source_origin) {}
 
 void MessagePort::DispatchOnDisconnect(const std::string& error_message) {}
 
@@ -45,5 +47,38 @@ void MessagePort::IncrementLazyKeepaliveCount(Activity::Type activity_type) {}
 void MessagePort::DecrementLazyKeepaliveCount(Activity::Type activity_type) {}
 
 void MessagePort::NotifyResponsePending() {}
+
+#if !BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
+void MessagePort::ClosePort(bool close_channel) {
+  if (!weak_channel_delegate_) {
+    return;
+  }
+  auto& context = receivers_.current_context();
+  weak_channel_delegate_->ClosePort(port_id_, context.first, context.second,
+                                    close_channel);
+}
+
+void MessagePort::PostMessage(Message message) {
+  if (!weak_channel_delegate_) {
+    return;
+  }
+  weak_channel_delegate_->PostMessage(port_id_, message);
+}
+
+void MessagePort::ResponsePending() {
+  if (!weak_channel_delegate_) {
+    return;
+  }
+  weak_channel_delegate_->NotifyResponsePending(port_id_);
+}
+
+void MessagePort::AddReceiver(
+    mojo::PendingAssociatedReceiver<mojom::MessagePortHost> receiver,
+    int render_process_id,
+    const PortContext& port_context) {
+  receivers_.Add(this, std::move(receiver),
+                 std::make_pair(render_process_id, port_context));
+}
+#endif
 
 }  // namespace extensions

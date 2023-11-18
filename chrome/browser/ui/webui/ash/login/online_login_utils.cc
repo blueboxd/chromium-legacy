@@ -4,10 +4,12 @@
 
 #include "chrome/browser/ui/webui/ash/login/online_login_utils.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/types/expected.h"
 #include "chrome/browser/ash/login/signin_partition_manager.h"
 #include "chrome/browser/ash/login/ui/login_display_host_webui.h"
 #include "chrome/browser/ash/login/ui/signin_ui.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/common/chrome_features.h"
@@ -182,7 +184,10 @@ void BuildUserContextForGaiaSignIn(
     if (using_saml) {
       user_context->SetSamlPassword(SamlPassword{password});
     } else {
-      user_context->SetGaiaPassword(GaiaPassword{password});
+      if (!features::AreLocalPasswordsEnabledForConsumers() ||
+          !password.empty()) {
+        user_context->SetGaiaPassword(GaiaPassword{password});
+      }
     }
     user_context->SetPasswordKey(Key(password));
   }
@@ -217,6 +222,19 @@ AccountId GetAccountId(const std::string& authenticated_email,
   }
 
   return account_id;
+}
+
+bool IsFamilyLinkAllowed() {
+  if (!features::IsFamilyLinkOnSchoolDeviceEnabled()) {
+    return false;
+  }
+
+  CrosSettings* cros_settings = CrosSettings::Get();
+  bool family_link_allowed = false;
+  cros_settings->GetBoolean(kAccountsPrefFamilyLinkAccountsAllowed,
+                            &family_link_allowed);
+
+  return family_link_allowed;
 }
 
 }  // namespace login

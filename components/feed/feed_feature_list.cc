@@ -99,8 +99,8 @@ std::string GetFeedReferrerUrl() {
 }
 
 bool IsCormorantEnabledForLocale(std::string country) {
-  const std::vector<std::string> launched_countries = {"AU", "CA", "GB",
-                                                       "NZ", "US", "ZA"};
+  const std::vector<std::string> launched_countries = {"AU", "GB", "NZ", "US",
+                                                       "ZA"};
   return base::Contains(launched_countries, country);
 }
 
@@ -116,10 +116,6 @@ signin::ConsentLevel GetConsentLevelNeededForPersonalizedFeed() {
 BASE_FEATURE(kInfoCardAcknowledgementTracking,
              "InfoCardAcknowledgementTracking",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kShareCrowButton,
-             "ShareCrowButton",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kFeedCloseRefresh,
              "FeedCloseRefresh",
@@ -167,6 +163,10 @@ BASE_FEATURE(kFeedFollowUiUpdate,
 
 BASE_FEATURE(kFeedSportsCard,
              "FeedSportsCard",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRefreshFeedOnRestart,
+             "RefreshFeedOnRestart",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace feed

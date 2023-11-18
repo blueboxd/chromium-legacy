@@ -10,7 +10,7 @@
 #import "components/segmentation_platform/embedder/default_model/device_switcher_model.h"
 #import "components/segmentation_platform/embedder/default_model/device_switcher_result_dispatcher.h"
 #import "components/segmentation_platform/public/result.h"
-#import "ios/chrome/browser/first_run/first_run.h"
+#import "ios/chrome/browser/first_run/model/first_run.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/segmentation_platform/segmentation_platform_service_factory.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_backed_boolean.h"
@@ -44,7 +44,7 @@ BOOL IsNewUser() {
   if (IsFirstRun()) {
     return YES;
   }
-  absl::optional<base::File::Info> info = FirstRun::GetSentinelInfo();
+  std::optional<base::File::Info> info = FirstRun::GetSentinelInfo();
   if (!info.has_value()) {
     return NO;
   }
@@ -150,12 +150,8 @@ BOOL ShouldSwitchOmniboxToBottom(
     _webStateList->AddObserver(_webStateListObserverBridge.get());
 
     if (IsBottomOmniboxSteadyStateEnabled()) {
-      std::string featureParam = base::GetFieldTrialParamValueByFeature(
-          kBottomOmniboxDefaultSetting, kBottomOmniboxDefaultSettingParam);
-      if (featureParam == kBottomOmniboxDefaultSettingParamSafariSwitcher) {
-        // Device switcher data is not available in incognito.
-        _shouldCheckSafariSwitcherOnFRE = !isIncognito && IsFirstRun();
-      }
+      // Device switcher data is not available in incognito.
+      _shouldCheckSafariSwitcherOnFRE = !isIncognito && IsFirstRun();
     }
   }
   return self;
@@ -280,7 +276,8 @@ BOOL ShouldSwitchOmniboxToBottom(
   NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
   _isNTP = NTPHelper && NTPHelper->IsActive();
   if (IsBottomOmniboxSteadyStateEnabled()) {
-    if (_shouldCheckSafariSwitcherOnFRE) {
+    if (_shouldCheckSafariSwitcherOnFRE &&
+        IsBottomOmniboxDeviceSwitcherResultsEnabled()) {
       [self checkSafariSwitcherOnFRE];
     }
     [self updateOmniboxPosition];
@@ -344,10 +341,14 @@ BOOL ShouldSwitchOmniboxToBottom(
         self.deviceSwitcherResultDispatcher->GetCachedClassificationResult();
     if (result.status == segmentation_platform::PredictionStatus::kSucceeded) {
       if (ShouldSwitchOmniboxToBottom(result)) {
-        self.originalPrefService->SetDefaultPrefValue(prefs::kBottomOmnibox,
-                                                      base::Value(YES));
-        self.originalPrefService->SetBoolean(prefs::kBottomOmniboxByDefault,
-                                             YES);
+        std::string featureParam = base::GetFieldTrialParamValueByFeature(
+            kBottomOmniboxDefaultSetting, kBottomOmniboxDefaultSettingParam);
+        if (featureParam == kBottomOmniboxDefaultSettingParamSafariSwitcher) {
+          self.originalPrefService->SetDefaultPrefValue(prefs::kBottomOmnibox,
+                                                        base::Value(YES));
+          self.originalPrefService->SetBoolean(prefs::kBottomOmniboxByDefault,
+                                               YES);
+        }
         base::UmaHistogramEnumeration(
             kOmniboxDeviceSwitcherResultAtFRE,
             OmniboxDeviceSwitcherResult::kBottomOmnibox);
@@ -423,12 +424,16 @@ BOOL ShouldSwitchOmniboxToBottom(
       kBottomOmniboxDefaultSetting, kBottomOmniboxDefaultSettingParam);
   if (featureParam == kBottomOmniboxDefaultSettingParamBottom) {
     bottomOmniboxEnabledByDefault = YES;
-  } else if (featureParam == kBottomOmniboxDefaultSettingParamSafariSwitcher) {
-    if ([self isSafariSwitcherAtStartup:bottomOmniboxEnabledByDefault]) {
-      bottomOmniboxEnabledByDefault = YES;
-    }
   } else if (featureParam == kBottomOmniboxDefaultSettingParamTop) {
     bottomOmniboxEnabledByDefault = NO;
+  }
+
+  // Call `isSafariSwitcherAtStartup` in all cases to collect metrics on the
+  // device switcher result availability.
+  if (IsBottomOmniboxDeviceSwitcherResultsEnabled() &&
+      [self isSafariSwitcherAtStartup:bottomOmniboxEnabledByDefault] &&
+      featureParam == kBottomOmniboxDefaultSettingParamSafariSwitcher) {
+    bottomOmniboxEnabledByDefault = YES;
   }
 
   // Make sure that users who have already seen the bottom omnibox by default
@@ -455,6 +460,11 @@ BOOL ShouldSwitchOmniboxToBottom(
                                            : OmniboxPositionType::kTop;
     base::UmaHistogramEnumeration(kOmniboxSteadyStatePositionAtStartup,
                                   positionType);
+
+    if (self.originalPrefService->GetUserPrefValue(prefs::kBottomOmnibox)) {
+      base::UmaHistogramEnumeration(
+          kOmniboxSteadyStatePositionAtStartupSelected, positionType);
+    }
   });
 }
 

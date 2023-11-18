@@ -260,6 +260,8 @@ static_library("browser") {
     "open_tab_provider.h",
     "page_classification_functions.cc",
     "page_classification_functions.h",
+    "provider_state_service.cc",
+    "provider_state_service.h",
     "query_tile_provider.cc",
     "query_tile_provider.h",
     "remote_suggestions_service.cc",
@@ -324,6 +326,7 @@ static_library("browser") {
   ]
 
   deps = [
+    "//build:branding_buildflags",
     "//components/bookmarks/browser",
     "//components/component_updater",
     "//components/dom_distiller/core:core",
@@ -766,6 +769,7 @@ source_set("unit_tests") {
     "bookmark_provider_unittest.cc",
     "bookmark_scoring_signals_annotator_unittest.cc",
     "builtin_provider_unittest.cc",
+    "calculator_provider_unittest.cc",
     "clipboard_provider_unittest.cc",
     "document_provider_unittest.cc",
     "document_suggestions_service_unittest.cc",
@@ -786,6 +790,7 @@ source_set("unit_tests") {
     "omnibox_edit_model_unittest.cc",
     "omnibox_field_trial_unittest.cc",
     "omnibox_metrics_provider_unittest.cc",
+    "omnibox_popup_selection_unittest.cc",
     "omnibox_prefs_unittest.cc",
     "omnibox_triggered_feature_service_unittest.cc",
     "omnibox_view_unittest.cc",
@@ -925,10 +930,10 @@ fuzzer_test("search_suggestion_parser_fuzzer") {
 mojom("mojo_bindings") {
   sources = [ "omnibox.mojom" ]
   webui_module_path = "/"
-  use_typescript_sources = true
 
   public_deps = [
     "//mojo/public/mojom/base",
+    "//ui/gfx/mojom",
     "//url/mojom:url_mojom_gurl",
   ]
 }

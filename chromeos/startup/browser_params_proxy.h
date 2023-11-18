@@ -56,10 +56,6 @@ class COMPONENT_EXPORT(CHROMEOS_STARTUP) BrowserParamsProxy {
 
   const crosapi::mojom::AccountPtr& DeviceAccount() const;
 
-  bool WebAppsEnabled() const;
-
-  bool StandaloneBrowserIsPrimary() const;
-
   const crosapi::mojom::NativeThemeInfoPtr& NativeThemeInfo() const;
 
   const crosapi::mojom::DevicePropertiesPtr& DeviceProperties() const;
@@ -75,9 +71,9 @@ class COMPONENT_EXPORT(CHROMEOS_STARTUP) BrowserParamsProxy {
 
   const absl::optional<std::string>& MetricsServiceClientId() const;
 
-  uint64_t UkmClientId() const;
+  const crosapi::mojom::EntropySourcePtr& EntropySource() const;
 
-  bool StandaloneBrowserIsOnlyBrowser() const;
+  uint64_t UkmClientId() const;
 
   bool PublishChromeApps() const;
 
@@ -118,8 +114,6 @@ class COMPONENT_EXPORT(CHROMEOS_STARTUP) BrowserParamsProxy {
 
   crosapi::mojom::BrowserInitParams::LacrosSelection LacrosSelection() const;
 
-  bool IsWindowLayoutMenuEnabled() const;
-
   bool IsCloudGamingDevice() const;
 
   crosapi::mojom::BrowserInitParams::GpuSandboxStartMode GpuSandboxStartMode()
@@ -140,7 +134,7 @@ class COMPONENT_EXPORT(CHROMEOS_STARTUP) BrowserParamsProxy {
 
   bool EnableClipboardHistoryRefresh() const;
 
-  bool IsVariableRefreshRateEnabled() const;
+  bool IsVariableRefreshRateAlwaysOn() const;
 
   bool IsPdfOcrEnabled() const;
 
@@ -153,6 +147,10 @@ class COMPONENT_EXPORT(CHROMEOS_STARTUP) BrowserParamsProxy {
   bool IsAppInstallServiceUriEnabled() const;
 
   bool IsDeskProfilesEnabled() const;
+
+  bool IsCrosWebAppShortcutUiUpdateEnabled() const;
+
+  bool IsCrosShortstandEnabled() const;
 
  private:
   friend base::NoDestructor<BrowserParamsProxy>;

@@ -32,7 +32,7 @@ class FieldDataManager : public base::RefCounted<FieldDataManager> {
   // Flags in |mask| are added with bitwise OR operation.
   // If |value| is empty, kUserTyped and kAutofilled should be cleared.
   void UpdateFieldDataMap(FieldRendererId id,
-                          const std::u16string& value,
+                          std::u16string_view value,
                           FieldPropertiesMask mask);
   // Only update FieldPropertiesMask when value is null.
   void UpdateFieldDataMapWithNullValue(FieldRendererId id,
@@ -44,7 +44,7 @@ class FieldDataManager : public base::RefCounted<FieldDataManager> {
   FieldPropertiesMask GetFieldPropertiesMask(FieldRendererId id) const;
 
   // Check if the string |value| is saved in |field_value_and_properties_map_|.
-  bool FindMachedValue(const std::u16string& value) const;
+  bool FindMatchedValue(const std::u16string& value) const;
 
   bool DidUserType(FieldRendererId id) const;
 

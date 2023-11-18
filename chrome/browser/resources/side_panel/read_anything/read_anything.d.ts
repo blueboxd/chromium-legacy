@@ -4,6 +4,11 @@
 
 /** @fileoverview Definitions for chrome.readingMode API */
 
+// Add non-standard function to element for TS to compile correctly.
+interface Element {
+  scrollIntoViewIfNeeded: () => void;
+}
+
 declare namespace chrome {
   export namespace readingMode {
     /////////////////////////////////////////////////////////////////////
@@ -68,11 +73,18 @@ declare namespace chrome {
     // The language code that should be used for speech synthesis voices.
     let speechSynthesisLanguageCode: string;
 
+    // Returns the stored user voice preference for the given language.
+    function getStoredVoice(lang: string): string;
+
     // Returns a list of AXNodeIDs corresponding to the unignored children of
     // the AXNode for the provided AXNodeID. If there is a selection contained
     // in this node, only returns children which are partially or entirely
     // contained within the selection.
     function getChildren(nodeId: number): number[];
+
+    // Returns content of "data-font-css" html attribute. This is needed for
+    // rendering content from annotated canvas in Google Docs.
+    function getDataFontCss(nodeId: number): string;
 
     // Returns the HTML tag of the AXNode for the provided AXNodeID.
     function getHtmlTag(nodeId: number): string;
@@ -96,6 +108,12 @@ declare namespace chrome {
 
     // Returns true if the element has overline text styling.
     function isOverline(nodeId: number): boolean;
+
+    // Returns true if the element is a leaf node.
+    function isLeafNode(nodeId: number): boolean;
+
+    // Returns true if the webpage corresponds to a Google Doc.
+    function isGoogleDocs(): boolean;
 
     // Connects to the browser process. Called by ts when the read anything
     // element is added to the document.
@@ -138,6 +156,9 @@ declare namespace chrome {
 
     // Called when the speech rate is changed via the webui toolbar.
     function onSpeechRateChange(rate: number): void;
+
+    // Called when the voice used for speech is changed via the webui toolbar.
+    function onVoiceChange(voice: string, lang: string): void;
 
     // Called when the highlight granularity is changed via the webui toolbar.
     function turnedHighlightOn(): void;

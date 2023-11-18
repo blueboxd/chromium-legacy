@@ -54,7 +54,7 @@ TranslateScript::TranslateScript()
 TranslateScript::~TranslateScript() {}
 
 void TranslateScript::Request(RequestCallback callback, bool is_incognito) {
-  script_fetch_start_time_ = base::Time::Now().ToJsTime();
+  script_fetch_start_time_ = base::Time::Now().InMillisecondsFSinceUnixEpoch();
 
   DCHECK(data_.empty()) << "Do not fetch the script if it is already fetched";
   callback_list_.AddUnsafe(std::move(callback));
@@ -84,12 +84,14 @@ GURL TranslateScript::GetTranslateScriptURL() {
   if (command_line.HasSwitch(translate::switches::kTranslateScriptURL)) {
     translate_script_url = GURL(command_line.GetSwitchValueASCII(
         translate::switches::kTranslateScriptURL));
-    if (!translate_script_url.is_valid() ||
-        !translate_script_url.query().empty()) {
+    if (!translate_script_url.is_valid()) {
       LOG(WARNING) << "The following translate URL specified at the "
                    << "command-line is invalid: "
                    << translate_script_url.spec();
       translate_script_url = GURL();
+    } else {
+      LOG(WARNING) << "Using custom translate URL: "
+                   << translate_script_url.spec();
     }
   }
 
@@ -131,7 +133,8 @@ void TranslateScript::OnScriptFetchComplete(bool success,
     std::map<std::string, std::string> params;
     base::StringAppendF(
         &data_, "var gtTimeInfo = {'fetchStart': %0.f, 'fetchEnd': %0.f};\n",
-        script_fetch_start_time_, base::Time::Now().ToJsTime());
+        script_fetch_start_time_,
+        base::Time::Now().InMillisecondsFSinceUnixEpoch());
     base::StringAppendF(&data_, "var serverParams = '%s';\n",
                         server_params.c_str());
 

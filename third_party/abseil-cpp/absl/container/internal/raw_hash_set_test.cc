@@ -409,19 +409,15 @@ struct StringTable
   using Base::Base;
 };
 
-struct IntTable
-    : raw_hash_set<IntPolicy, hash_default_hash<int64_t>,
-                   std::equal_to<int64_t>, std::allocator<int64_t>> {
-  using Base = typename IntTable::raw_hash_set;
+template <typename T>
+struct ValueTable : raw_hash_set<ValuePolicy<T>, hash_default_hash<T>,
+                                 std::equal_to<T>, std::allocator<T>> {
+  using Base = typename ValueTable::raw_hash_set;
   using Base::Base;
 };
 
-struct Uint8Table
-    : raw_hash_set<Uint8Policy, hash_default_hash<uint8_t>,
-                   std::equal_to<uint8_t>, std::allocator<uint8_t>> {
-  using Base = typename Uint8Table::raw_hash_set;
-  using Base::Base;
-};
+using IntTable = ValueTable<int64_t>;
+using Uint8Table = ValueTable<uint8_t>;
 
 template <typename T>
 struct CustomAlloc : std::allocator<T> {
@@ -2377,10 +2373,17 @@ TEST(Iterator, InvalidUseWithMoveCrashesWithSanitizers) {
   IntTable t1, t2;
   t1.insert(1);
   auto it = t1.begin();
+  // ptr will become invalidated on rehash.
+  const int64_t* ptr = &*it;
+  (void)ptr;
+
   t2 = std::move(t1);
   EXPECT_DEATH_IF_SUPPORTED(*it, kInvalidIteratorDeathMessage);
   EXPECT_DEATH_IF_SUPPORTED(void(it == t2.begin()),
                             kInvalidIteratorDeathMessage);
+#ifdef ABSL_HAVE_ADDRESS_SANITIZER
+  EXPECT_DEATH_IF_SUPPORTED(std::cout << *ptr, "heap-use-after-free");
+#endif
 }
 
 TEST(Table, ReservedGrowthUpdatesWhenTableDoesntGrow) {

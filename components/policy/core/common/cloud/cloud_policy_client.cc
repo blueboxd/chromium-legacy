@@ -300,6 +300,7 @@ void CloudPolicyClient::SetupRegistration(
   if (device_dm_token_callback_) {
     device_dm_token_ = device_dm_token_callback_.Run(user_affiliation_ids);
   }
+  user_affiliation_ids_ = user_affiliation_ids;
 
   NotifyRegistrationStateChanged();
 }
@@ -500,7 +501,8 @@ void CloudPolicyClient::FetchPolicy(PolicyFetchReason reason) {
         fetch_request->set_device_dm_token(device_dm_token_);
       }
       if (!last_policy_timestamp_.is_null()) {
-        fetch_request->set_timestamp(last_policy_timestamp_.ToJavaTime());
+        fetch_request->set_timestamp(
+            last_policy_timestamp_.InMillisecondsSinceUnixEpoch());
       }
       if (!invalidation_payload_.empty()) {
         fetch_request->set_invalidation_version(invalidation_version_);
@@ -812,32 +814,6 @@ void CloudPolicyClient::CancelAppInstallReportUpload() {
   if (app_install_report_request_job_) {
     RemoveJob(app_install_report_request_job_);
     DCHECK_EQ(app_install_report_request_job_, nullptr);
-  }
-}
-
-void CloudPolicyClient::UploadExtensionInstallReport(base::Value::Dict report,
-                                                     ResultCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!is_registered()) {
-    std::move(callback).Run(CloudPolicyClient::Result(NotRegistered()));
-    return;
-  }
-
-  CancelExtensionInstallReportUpload();
-  extension_install_report_request_job_ = CreateNewRealtimeReportingJob(
-      std::move(report),
-      service()->configuration()->GetRealtimeReportingServerUrl(),
-      /* include_device_info */ true,
-      /* add_connector_url_params=*/false, std::move(callback));
-  DCHECK(extension_install_report_request_job_);
-}
-
-void CloudPolicyClient::CancelExtensionInstallReportUpload() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (extension_install_report_request_job_) {
-    RemoveJob(extension_install_report_request_job_);
-    DCHECK_EQ(extension_install_report_request_job_, nullptr);
   }
 }
 
@@ -1190,11 +1166,12 @@ void CloudPolicyClient::OnRegisterCompleted(DMServerJobResult result) {
           result.response.register_response().enrollment_type());
     }
 
+    user_affiliation_ids_ = std::vector<std::string>(
+        result.response.register_response().user_affiliation_ids().begin(),
+        result.response.register_response().user_affiliation_ids().end());
+
     if (device_dm_token_callback_) {
-      std::vector<std::string> user_affiliation_ids(
-          result.response.register_response().user_affiliation_ids().begin(),
-          result.response.register_response().user_affiliation_ids().end());
-      device_dm_token_ = device_dm_token_callback_.Run(user_affiliation_ids);
+      device_dm_token_ = device_dm_token_callback_.Run(user_affiliation_ids_);
     }
     NotifyRegistrationStateChanged();
   } else {

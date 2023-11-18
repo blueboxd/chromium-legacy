@@ -75,7 +75,6 @@ void Display::Shutdown() {
 
 std::unique_ptr<Surface> Display::CreateSurface() {
   TRACE_EVENT0("exo", "Display::CreateSurface");
-
   return std::make_unique<Surface>();
 }
 
@@ -184,7 +183,8 @@ Display::CreateOrGetClientControlledShellSurface(
 
   if (shell_surface) {
     shell_surface->RebindRootSurface(surface, can_minimize, container,
-                                     default_scale_cancellation);
+                                     default_scale_cancellation,
+                                     supports_floated_state);
   } else {
     shell_surface = std::make_unique<ClientControlledShellSurface>(
         surface, can_minimize, container, default_scale_cancellation,

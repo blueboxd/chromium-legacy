@@ -11,10 +11,10 @@
 #include <limits>
 #include <type_traits>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/numerics/safe_conversions_impl.h"
+#include "partition_alloc/partition_alloc_base/numerics/safe_conversions_impl.h"
 
 #if defined(__ARMEL__) && !defined(__native_client__)
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/numerics/safe_conversions_arm_impl.h"
+#include "partition_alloc/partition_alloc_base/numerics/safe_conversions_arm_impl.h"
 #define PA_BASE_HAS_OPTIMIZED_SAFE_CONVERSIONS (1)
 #else
 #define PA_BASE_HAS_OPTIMIZED_SAFE_CONVERSIONS (0)
@@ -206,8 +206,8 @@ constexpr Dst saturated_cast(Src value) {
   using SrcType = typename UnderlyingType<Src>::type;
   return !PA_IsConstantEvaluated() &&
                  SaturateFastOp<Dst, SrcType>::is_supported &&
-                 std::is_same<SaturationHandler<Dst>,
-                              SaturationDefaultLimits<Dst>>::value
+                 std::is_same_v<SaturationHandler<Dst>,
+                                SaturationDefaultLimits<Dst>>
              ? SaturateFastOp<Dst, SrcType>::Do(static_cast<SrcType>(value))
              : saturated_cast_impl<Dst, SaturationHandler, SrcType>(
                    static_cast<SrcType>(value),

@@ -94,6 +94,58 @@ TEST(OptimizationGuideFeaturesTest,
   EXPECT_TRUE(features::ShouldExecutePageEntitiesModelOnPageContent("en-US"));
 }
 
+TEST(OptimizationGuideFeaturesTest, ModelQualityLoggingDefault) {
+  base::test::ScopedFeatureList scoped_feature_list;
+
+  scoped_feature_list.InitAndEnableFeature(features::kModelQualityLogging);
+
+  // By default compose feature should be disabled.
+  EXPECT_TRUE(features::IsModelQualityLoggingEnabled());
+  EXPECT_FALSE(features::IsModelQualityLoggingEnabledForFeature(
+      proto::MODEL_EXECUTION_FEATURE_COMPOSE));
+
+  // Both wallpaper search and tab organization should be enabled by default.
+  EXPECT_TRUE(features::IsModelQualityLoggingEnabledForFeature(
+      proto::MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION));
+  EXPECT_TRUE(features::IsModelQualityLoggingEnabledForFeature(
+      proto::MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+}
+
+TEST(OptimizationGuideFeaturesTest, ComposeModelQualityLoggingEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kModelQualityLogging,
+      {{"model_execution_feature_compose", "true"},
+       {"model_execution_feature_wallpaper_search", "false"},
+       {"model_execution_feature_tab_organization", "false"}});
+
+  EXPECT_TRUE(features::IsModelQualityLoggingEnabled());
+  EXPECT_TRUE(features::IsModelQualityLoggingEnabledForFeature(
+      proto::MODEL_EXECUTION_FEATURE_COMPOSE));
+
+  // Both wallpaper search and tab organization should be disabled.
+  EXPECT_FALSE(features::IsModelQualityLoggingEnabledForFeature(
+      proto::MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION));
+  EXPECT_FALSE(features::IsModelQualityLoggingEnabledForFeature(
+      proto::MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+}
+
+TEST(OptimizationGuideFeaturesTest, ModelQualityLoggingDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+
+  scoped_feature_list.InitAndDisableFeature(features::kModelQualityLogging);
+
+  // All features logging should be disabled if ModelQualityLogging is disabled.
+  EXPECT_FALSE(features::IsModelQualityLoggingEnabled());
+  EXPECT_FALSE(features::IsModelQualityLoggingEnabledForFeature(
+      proto::MODEL_EXECUTION_FEATURE_COMPOSE));
+  EXPECT_FALSE(features::IsModelQualityLoggingEnabledForFeature(
+      proto::MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION));
+  EXPECT_FALSE(features::IsModelQualityLoggingEnabledForFeature(
+      proto::MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+}
+
 TEST(OptimizationGuideFeaturesTest,
      ShouldExecutePageEntitiesModelOnPageContentWithAllowlist) {
   base::test::ScopedFeatureList scoped_feature_list;
@@ -181,46 +233,13 @@ TEST(OptimizationGuideFeaturesTest, ShouldPersistSalientImageMetadata) {
   EXPECT_FALSE(features::ShouldPersistSalientImageMetadata("badlocale", "US"));
 }
 
-TEST(OptimizationGuideFeaturesTest,
-     OptimizationGuidePersonalizedFetchingScopes) {
-  {
-    EXPECT_THAT(
-        features::GetOAuthScopesForPersonalizedMetadata(),
-        ::testing::UnorderedElementsAre(GaiaConstants::kGoogleUserInfoProfile));
-  }
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeatureWithParameters(
-        features::kOptimizationGuidePersonalizedFetching, {});
-    EXPECT_THAT(
-        features::GetOAuthScopesForPersonalizedMetadata(),
-        ::testing::UnorderedElementsAre(GaiaConstants::kGoogleUserInfoProfile));
-  }
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeatureWithParameters(
-        features::kOptimizationGuidePersonalizedFetching,
-        {
-            {"oauth_scopes", ""},
-        });
-    EXPECT_THAT(
-        features::GetOAuthScopesForPersonalizedMetadata(),
-        ::testing::UnorderedElementsAre(GaiaConstants::kGoogleUserInfoProfile));
-  }
-}
-
 TEST(OptimizationGuideFeaturesTest, OptimizationGuidePersonalizedFetching) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       features::kOptimizationGuidePersonalizedFetching,
       {
           {"allowed_contexts", "CONTEXT_PAGE_NAVIGATION,CONTEXT_BOOKMARKS"},
-          {"oauth_scopes", "scope,scope2"},
       });
-
-  // Check scopes.
-  EXPECT_THAT(features::GetOAuthScopesForPersonalizedMetadata(),
-              ::testing::UnorderedElementsAre("scope", "scope2"));
 
   // Check contexts.
   EXPECT_FALSE(features::ShouldEnablePersonalizedMetadata(

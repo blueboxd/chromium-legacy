@@ -9,6 +9,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/ash/nearby/presence/credential_storage/metrics/credential_storage_metrics.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -37,9 +38,12 @@ const leveldb_proto::KeyFilter& DeleteKeyFilter() {
 namespace ash::nearby::presence {
 
 NearbyPresenceCredentialStorage::NearbyPresenceCredentialStorage(
+    mojo::PendingReceiver<mojom::NearbyPresenceCredentialStorage>
+        pending_receiver,
     leveldb_proto::ProtoDatabaseProvider* db_provider,
     const base::FilePath& profile_filepath) {
   CHECK(db_provider);
+  CHECK(pending_receiver);
 
   base::FilePath private_database_path =
       profile_filepath.Append(kPrivateCredentialDatabaseName);
@@ -65,14 +69,17 @@ NearbyPresenceCredentialStorage::NearbyPresenceCredentialStorage(
           leveldb_proto::ProtoDbType::
               NEARBY_PRESENCE_REMOTE_PUBLIC_CREDENTIAL_DATABASE,
           remote_public_database_path, database_task_runner);
-  NearbyPresenceCredentialStorage(std::move(private_db),
-                                  std::move(local_public_db),
-                                  std::move(remote_public_db));
+  NearbyPresenceCredentialStorage(
+      std::move(pending_receiver), std::move(private_db),
+      std::move(local_public_db), std::move(remote_public_db));
 }
 
 NearbyPresenceCredentialStorage::NearbyPresenceCredentialStorage(
-    std::unique_ptr<leveldb_proto::ProtoDatabase<
-        ::nearby::internal::LocalCredential>> private_db,
+    mojo::PendingReceiver<mojom::NearbyPresenceCredentialStorage>
+        pending_receiver,
+    std::unique_ptr<
+        leveldb_proto::ProtoDatabase<::nearby::internal::LocalCredential>>
+        private_db,
     std::unique_ptr<
         leveldb_proto::ProtoDatabase<::nearby::internal::SharedCredential>>
         local_public_db,
@@ -81,10 +88,12 @@ NearbyPresenceCredentialStorage::NearbyPresenceCredentialStorage(
         remote_public_db)
     : private_db_(std::move(private_db)),
       local_public_db_(std::move(local_public_db)),
-      remote_public_db_(std::move(remote_public_db)) {
+      remote_public_db_(std::move(remote_public_db)),
+      pending_receiver_(std::move(pending_receiver)) {
   CHECK(private_db_);
   CHECK(local_public_db_);
   CHECK(remote_public_db_);
+  CHECK(pending_receiver_);
 }
 
 NearbyPresenceCredentialStorage::~NearbyPresenceCredentialStorage() = default;
@@ -93,7 +102,9 @@ void NearbyPresenceCredentialStorage::Initialize(
     base::OnceCallback<void(bool)> on_fully_initialized) {
   // First attempt to initialize the private database. If successful,
   // the local public database, followed by the remote public database,
-  // will attempt initialization.
+  // will attempt initialization. If all databases successfully initialize,
+  // `pending_receiver` will be bound and `on_fully_initialized` will return
+  // true.
   private_db_->Init(base::BindOnce(
       &NearbyPresenceCredentialStorage::OnPrivateDatabaseInitialized,
       weak_ptr_factory_.GetWeakPtr(), std::move(on_fully_initialized)));
@@ -172,6 +183,49 @@ void NearbyPresenceCredentialStorage::GetPrivateCredentials(
       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void NearbyPresenceCredentialStorage::UpdateLocalCredential(
+    mojom::LocalCredentialPtr local_credential,
+    UpdateLocalCredentialCallback callback) {
+  CHECK(callback);
+
+  ::nearby::internal::LocalCredential local_credential_proto =
+      proto::LocalCredentialFromMojom(local_credential.get());
+
+  // |UpdateEntriesWithRemoveFilter()| expects a unique_ptr, so we cannot
+  // create a vector with a single pair in-line using an initializer list.
+  auto credential_pair_to_update = std::make_unique<std::vector<
+      std::pair<std::string, ::nearby::internal::LocalCredential>>>();
+  credential_pair_to_update->emplace_back(std::make_pair(
+      local_credential_proto.secret_id(), local_credential_proto));
+
+  // Only match the credential being updated.
+  leveldb_proto::KeyFilter update_filter = base::BindRepeating(
+      [](const std::string& key, const std::string& target_key) {
+        return key == target_key;
+      },
+      local_credential_proto.secret_id());
+
+  private_db_->UpdateEntriesWithRemoveFilter(
+      /*entries_to_save=*/std::move(credential_pair_to_update),
+      /*delete_key_filter=*/update_filter,
+      base::BindOnce(&NearbyPresenceCredentialStorage::OnLocalCredentialUpdated,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void NearbyPresenceCredentialStorage::OnLocalCredentialUpdated(
+    UpdateLocalCredentialCallback callback,
+    bool success) {
+  CHECK(callback);
+
+  if (!success) {
+    LOG(ERROR) << __func__ << ": failed to update private credential.";
+    std::move(callback).Run(mojo_base::mojom::AbslStatusCode::kAborted);
+    return;
+  }
+
+  std::move(callback).Run(mojo_base::mojom::AbslStatusCode::kOk);
+}
+
 void NearbyPresenceCredentialStorage::OnPrivateCredentialsRetrieved(
     GetPrivateCredentialsCallback callback,
     bool success,
@@ -234,10 +288,12 @@ void NearbyPresenceCredentialStorage::OnLocalPublicCredentialsSaved(
     bool success) {
   CHECK(on_credentials_fully_saved_callback);
 
+  metrics::RecordCredentialStorageSaveLocalPublicCredentialsResult(
+      /*success=*/success);
+
   // If local public credentials failed to save, skip saving the
   // private credentials.
   if (!success) {
-    // TODO(b/287334363): Emit a failure metric.
     LOG(ERROR) << __func__ << ": failed to save local public credentials";
     std::move(on_credentials_fully_saved_callback)
         .Run(mojo_base::mojom::AbslStatusCode::kAborted);
@@ -269,11 +325,13 @@ void NearbyPresenceCredentialStorage::OnLocalPublicCredentialsSaved(
 void NearbyPresenceCredentialStorage::OnRemotePublicCredentialsSaved(
     SaveCredentialsCallback on_credentials_fully_saved_callback,
     bool success) {
+  metrics::RecordCredentialStorageSaveRemotePublicCredentialsResult(
+      /*success=*/success);
+
   mojo_base::mojom::AbslStatusCode save_status;
   if (success) {
     save_status = mojo_base::mojom::AbslStatusCode::kOk;
   } else {
-    // TODO(b/287334363): Emit failure metric for remote public credential save.
     LOG(ERROR) << __func__ << ": failed to save remote public credentials";
     save_status = mojo_base::mojom::AbslStatusCode::kAborted;
   }
@@ -285,11 +343,13 @@ void NearbyPresenceCredentialStorage::OnRemotePublicCredentialsSaved(
 void NearbyPresenceCredentialStorage::OnPrivateCredentialsSaved(
     SaveCredentialsCallback on_credentials_fully_saved_callback,
     bool success) {
+  metrics::RecordCredentialStorageSavePrivateCredentialsResult(
+      /*success=*/success);
+
   mojo_base::mojom::AbslStatusCode save_status;
   if (success) {
     save_status = mojo_base::mojom::AbslStatusCode::kOk;
   } else {
-    // TODO(b/287334363): Emit a failure metric.
     LOG(ERROR) << __func__ << ": failed to save private credentials";
     save_status = mojo_base::mojom::AbslStatusCode::kAborted;
   }
@@ -355,6 +415,11 @@ void NearbyPresenceCredentialStorage::OnRemotePublicDatabaseInitialized(
     std::move(on_fully_initialized).Run(/*success=*/false);
     return;
   }
+
+  CHECK(pending_receiver_);
+  // All databases were successfully initialized, so it's safe to process
+  // interface calls.
+  receiver_.Bind(std::move(pending_receiver_));
 
   std::move(on_fully_initialized).Run(/*success=*/true);
 }

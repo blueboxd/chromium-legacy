@@ -59,6 +59,12 @@ export class TabSearchAppElement extends PolymerElement {
   }
 
   private onSelectedTabChanged_(event: CustomEvent<{value: number}>) {
+    if (event.detail.value === 1) {
+      const tabOrganizationPage =
+          this.shadowRoot!.querySelector('tab-organization-page')!;
+      tabOrganizationPage.classList.toggle('changed-state', false);
+      tabOrganizationPage.updateContentsHeightAfterNextRender();
+    }
     this.apiProxy_.setTabIndex(event.detail.value);
   }
 }

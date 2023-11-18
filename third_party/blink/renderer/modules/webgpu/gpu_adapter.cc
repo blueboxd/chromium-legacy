@@ -34,9 +34,6 @@ absl::optional<V8GPUFeatureName::Enum> ToV8FeatureNameEnum(WGPUFeatureName f) {
     case WGPUFeatureName_ChromiumExperimentalTimestampQueryInsidePasses:
       return V8GPUFeatureName::Enum::
           kChromiumExperimentalTimestampQueryInsidePasses;
-    case WGPUFeatureName_ChromiumExperimentalPipelineStatisticsQuery:
-      return V8GPUFeatureName::Enum::
-          kChromiumExperimentalPipelineStatisticsQuery;
     case WGPUFeatureName_TextureCompressionBC:
       return V8GPUFeatureName::Enum::kTextureCompressionBc;
     case WGPUFeatureName_TextureCompressionETC2:
@@ -53,9 +50,6 @@ absl::optional<V8GPUFeatureName::Enum> ToV8FeatureNameEnum(WGPUFeatureName f) {
       return V8GPUFeatureName::Enum::kBgra8UnormStorage;
     case WGPUFeatureName_ChromiumExperimentalDp4a:
       return V8GPUFeatureName::Enum::kChromiumExperimentalDp4A;
-    case WGPUFeatureName_ChromiumExperimentalReadWriteStorageTexture:
-      return V8GPUFeatureName::Enum::
-          kChromiumExperimentalReadWriteStorageTexture;
     case WGPUFeatureName_ChromiumExperimentalSubgroups:
       return V8GPUFeatureName::Enum::kChromiumExperimentalSubgroups;
     case WGPUFeatureName_ChromiumExperimentalSubgroupUniformControlFlow:
@@ -119,11 +113,19 @@ GPUAdapter::GPUAdapter(
   description_ = properties.name;
   driver_ = properties.driverDescription;
 
+  features_ = MakeFeatureNameSet(GetProcs(), handle_);
+
   WGPUSupportedLimits limits = {};
+  // Chain to get experimental subgroup limits, if support experimental
+  // subgroups feature.
+  WGPUDawnExperimentalSubgroupLimits subgroupLimits = {};
+  subgroupLimits.chain.sType = WGPUSType_DawnExperimentalSubgroupLimits;
+  if (features_->has(V8GPUFeatureName::Enum::kChromiumExperimentalSubgroups)) {
+    limits.nextInChain = &subgroupLimits.chain;
+  }
+
   GetProcs().adapterGetLimits(handle_, &limits);
   limits_ = MakeGarbageCollected<GPUSupportedLimits>(limits);
-
-  features_ = MakeFeatureNameSet(GetProcs(), handle_);
 }
 
 void GPUAdapter::AddConsoleWarning(ExecutionContext* execution_context,
@@ -169,8 +171,8 @@ bool GPUAdapter::isCompatibilityMode() const {
 }
 
 void GPUAdapter::OnRequestDeviceCallback(ScriptState* script_state,
-                                         ScriptPromiseResolver* resolver,
                                          const GPUDeviceDescriptor* descriptor,
+                                         ScriptPromiseResolver* resolver,
                                          WGPURequestDeviceStatus status,
                                          WGPUDevice dawn_device,
                                          const char* error_message) {
@@ -230,9 +232,8 @@ void GPUAdapter::OnRequestDeviceCallback(ScriptState* script_state,
         // If a device is not returned, that means that an error occurred while
         // validating features or limits, and as a result the promise should be
         // rejected with an OperationError.
-        resolver->Reject(MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kOperationError,
-            StringFromASCIIAndUTF8(error_message)));
+        resolver->RejectWithDOMException(DOMExceptionCode::kOperationError,
+                                         StringFromASCIIAndUTF8(error_message));
       }
       break;
     default:
@@ -253,10 +254,8 @@ ScriptPromise GPUAdapter::requestDevice(ScriptState* script_state,
   if (descriptor->hasRequiredLimits()) {
     dawn_desc.requiredLimits = &required_limits;
     GPUSupportedLimits::MakeUndefined(&required_limits);
-    DOMException* exception = GPUSupportedLimits::Populate(
-        &required_limits, descriptor->requiredLimits());
-    if (exception) {
-      resolver->Reject(exception);
+    if (!GPUSupportedLimits::Populate(&required_limits,
+                                      descriptor->requiredLimits(), resolver)) {
       return promise;
     }
   }
@@ -282,10 +281,9 @@ ScriptPromise GPUAdapter::requestDevice(ScriptState* script_state,
     dawn_desc.requiredFeatureCount = required_features.size();
   }
 
-  auto* callback = BindWGPUOnceCallback(
-      &GPUAdapter::OnRequestDeviceCallback, WrapPersistent(this),
-      WrapPersistent(script_state), WrapPersistent(resolver),
-      WrapPersistent(descriptor));
+  auto* callback = MakeWGPUOnceCallback(resolver->WrapCallbackInScriptScope(
+      WTF::BindOnce(&GPUAdapter::OnRequestDeviceCallback, WrapPersistent(this),
+                    WrapPersistent(script_state), WrapPersistent(descriptor))));
 
   GetProcs().adapterRequestDevice(
       handle_, &dawn_desc, callback->UnboundCallback(), callback->AsUserdata());

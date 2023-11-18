@@ -43,7 +43,8 @@ const int64_t kTestTimeMs = 1500000000000;
 
 constexpr const multidevice::SoftwareFeature kPotentialHostSoftwareFeatures[] =
     {multidevice::SoftwareFeature::kSmartLockHost,
-     multidevice::SoftwareFeature::kInstantTetheringHost};
+     multidevice::SoftwareFeature::kInstantTetheringHost,
+     multidevice::SoftwareFeature::kMessagesForWebHost};
 
 const char kRetryTimestampPrefName[] =
     "multidevice_setup.current_retry_timestamp_ms";
@@ -98,7 +99,8 @@ class MultiDeviceSetupHostVerifierImplTest
     HostVerifierImpl::RegisterPrefs(test_pref_service_->registry());
 
     test_clock_ = std::make_unique<base::SimpleTestClock>();
-    test_clock_->SetNow(base::Time::FromJavaTime(kTestTimeMs));
+    test_clock_->SetNow(
+        base::Time::FromMillisecondsSinceUnixEpoch(kTestTimeMs));
   }
 
   void TearDown() override {

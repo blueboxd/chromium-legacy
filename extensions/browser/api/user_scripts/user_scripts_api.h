@@ -31,7 +31,7 @@ class UserScriptsRegisterFunction : public ExtensionFunction {
   void OnUserScriptFilesValidated(scripting::ValidateScriptsResult result);
 
   // Called when user scripts have been registered.
-  void OnUserScriptsRegistered(const absl::optional<std::string>& error);
+  void OnUserScriptsRegistered(const std::optional<std::string>& error);
 };
 
 class UserScriptsGetScriptsFunction : public ExtensionFunction {
@@ -66,7 +66,7 @@ class UserScriptsUnregisterFunction : public ExtensionFunction {
   ~UserScriptsUnregisterFunction() override = default;
 
   // Called when user scripts have been unregistered..
-  void OnUserScriptsUnregistered(const absl::optional<std::string>& error);
+  void OnUserScriptsUnregistered(const std::optional<std::string>& error);
 };
 
 class UserScriptsUpdateFunction : public ExtensionFunction {
@@ -96,7 +96,25 @@ class UserScriptsUpdateFunction : public ExtensionFunction {
   void OnUserScriptFilesValidated(scripting::ValidateScriptsResult result);
 
   // Called when user scripts have been updated..
-  void OnUserScriptsUpdated(const absl::optional<std::string>& error);
+  void OnUserScriptsUpdated(const std::optional<std::string>& error);
+};
+
+class UserScriptsConfigureWorldFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("userScripts.configureWorld",
+                             USERSCRIPTS_CONFIGUREWORLD)
+
+  UserScriptsConfigureWorldFunction() = default;
+  UserScriptsConfigureWorldFunction(const UserScriptsConfigureWorldFunction&) =
+      delete;
+  const UserScriptsConfigureWorldFunction& operator=(
+      const UserScriptsConfigureWorldFunction&) = delete;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  ~UserScriptsConfigureWorldFunction() override = default;
 };
 
 }  // namespace extensions

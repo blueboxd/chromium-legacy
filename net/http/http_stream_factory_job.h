@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "net/base/completion_repeating_callback.h"
 #include "net/base/net_export.h"
-#include "net/base/proxy_server.h"
+#include "net/base/proxy_chain.h"
 #include "net/base/request_priority.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "net/dns/public/secure_dns_policy.h"
@@ -157,7 +157,6 @@ class HttpStreamFactory::Job
       RequestPriority priority,
       const ProxyInfo& proxy_info,
       const SSLConfig& server_ssl_config,
-      const SSLConfig& proxy_ssl_config,
       url::SchemeHostPort destination,
       GURL origin_url,
       NextProto alternative_protocol,
@@ -342,8 +341,9 @@ class HttpStreamFactory::Job
                               bool is_websocket);
 
   // Called in Job constructor. Use |spdy_session_key_| after construction.
+  // TODO(crbug.com/1491092): Update to take a proxy_chain.
   static SpdySessionKey GetSpdySessionKey(
-      const ProxyServer& proxy_server,
+      const ProxyChain& proxy_chain,
       const GURL& origin_url,
       PrivacyMode privacy_mode,
       const SocketTag& socket_tag,
@@ -371,7 +371,6 @@ class HttpStreamFactory::Job
   RequestPriority priority_;
   const ProxyInfo proxy_info_;
   SSLConfig server_ssl_config_;
-  SSLConfig proxy_ssl_config_;
   const NetLogWithSource net_log_;
 
   const CompletionRepeatingCallback io_callback_;
@@ -504,7 +503,6 @@ class HttpStreamFactory::JobFactory {
       RequestPriority priority,
       const ProxyInfo& proxy_info,
       const SSLConfig& server_ssl_config,
-      const SSLConfig& proxy_ssl_config,
       url::SchemeHostPort destination,
       GURL origin_url,
       bool is_websocket,

@@ -13,12 +13,12 @@
 #import "components/prefs/pref_service.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/photos/photos_metrics.h"
-#import "ios/chrome/browser/photos/photos_service.h"
+#import "ios/chrome/browser/photos/model/photos_metrics.h"
+#import "ios/chrome/browser/photos/model/photos_service.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service.h"
-#import "ios/chrome/browser/signin/system_identity.h"
+#import "ios/chrome/browser/signin/model/authentication_service.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service.h"
+#import "ios/chrome/browser/signin/model/system_identity.h"
 #import "ios/chrome/browser/ui/account_picker/account_picker_configuration.h"
 #import "ios/chrome/browser/ui/save_to_photos/save_to_photos_mediator_delegate.h"
 #import "ios/chrome/browser/web/image_fetch/image_fetch_tab_helper.h"
@@ -27,12 +27,8 @@
 
 namespace {
 
-NSString* const kGooglePhotosAppProductIdentifier = @"962194608";
-
-NSString* const kGooglePhotosRecentlyAddedURLString =
-    @"https://photos.google.com/search/_tra_?obfsgid=";
-
-NSString* const kGooglePhotosAppURLScheme = @"googlephotos";
+// Maximum length of the suggested image name passed to the Photos service.
+constexpr size_t kSuggestedImageNameMaxLength = 100;
 
 NSURL* GetGooglePhotosAppURL() {
   NSURLComponents* photosAppURLComponents = [[NSURLComponents alloc] init];
@@ -59,6 +55,15 @@ void StartMediatorHelper(__weak SaveToPhotosMediator* mediator,
 
 }  // namespace
 
+NSString* const kGooglePhotosAppProductIdentifier = @"962194608";
+
+NSString* const kGooglePhotosStoreKitCampaignToken = @"chrome-x-photos";
+
+NSString* const kGooglePhotosRecentlyAddedURLString =
+    @"https://photos.google.com/search/_tra_?obfsgid=";
+
+NSString* const kGooglePhotosAppURLScheme = @"googlephotos";
+
 @implementation SaveToPhotosMediator {
   PhotosService* _photosService;
   PrefService* _prefService;
@@ -69,6 +74,7 @@ void StartMediatorHelper(__weak SaveToPhotosMediator* mediator,
   id<SystemIdentity> _identity;
   BOOL _userTappedSuccessSnackbarButton;
   base::TimeTicks _uploadStart;
+  BOOL _showingAccountPicker;
   BOOL _successSnackbarAppeared;
   BOOL _successSnackbarDisappeared;
   BOOL _uploadCompletedSuccessfully;
@@ -138,7 +144,6 @@ void StartMediatorHelper(__weak SaveToPhotosMediator* mediator,
   base::UmaHistogramEnumeration(
       kSaveToPhotosAccountPickerActionsHistogram,
       SaveToPhotosAccountPickerActions::kSelectedIdentity);
-  [self.delegate hideAccountPicker];
 
   // Memorize the account that was picked and whether to ask which account to
   // use every time.
@@ -148,12 +153,25 @@ void StartMediatorHelper(__weak SaveToPhotosMediator* mediator,
                            !askEveryTime);
 
   _identity = identity;
+
+  [self.delegate startValidationSpinnerForAccountPicker];
+  [self tryUploadImage];
 }
 
 - (void)accountPickerDidCancel {
-  base::UmaHistogramEnumeration(kSaveToPhotosAccountPickerActionsHistogram,
-                                SaveToPhotosAccountPickerActions::kCancelled);
-  [self.delegate hideAccountPicker];
+  if (!_identity) {
+    base::UmaHistogramEnumeration(kSaveToPhotosAccountPickerActionsHistogram,
+                                  SaveToPhotosAccountPickerActions::kCancelled);
+    [self.delegate hideAccountPicker];
+    _showingAccountPicker = NO;
+    return;
+  }
+
+  // If `_identity` is not nil while the account picker is presented, that means
+  // the user has already tapped "Save" for a given identity.
+  _photosService->CancelUpload();
+  [self.delegate stopValidationSpinnerForAccountPicker];
+  _identity = nil;
 }
 
 - (void)accountPickerWasHidden {
@@ -164,7 +182,10 @@ void StartMediatorHelper(__weak SaveToPhotosMediator* mediator,
     [self.delegate hideSaveToPhotos];
     return;
   }
-  [self tryUploadImage];
+
+  // If `_identity` is not nil at this point, then an image has been uploaded
+  // with this identity successfully.
+  [self showSnackbarWithSuccessMessageAndOpenButton];
 }
 
 - (void)storeKitWantsToHide {
@@ -243,6 +264,7 @@ void StartMediatorHelper(__weak SaveToPhotosMediator* mediator,
       IDS_IOS_SAVE_TO_PHOTOS_ACCOUNT_PICKER_ASK_EVERY_TIME);
   [self.delegate showAccountPickerWithConfiguration:configuration
                                    selectedIdentity:defaultIdentity];
+  _showingAccountPicker = YES;
 }
 
 // Once the destination account is known, tries to upload the image using the
@@ -265,7 +287,7 @@ void StartMediatorHelper(__weak SaveToPhotosMediator* mediator,
     return;
   }
 
-  // Else start uploading the image and let the user know with a snackbar.
+  // Else start uploading the image.
   auto uploadCompletionCallback =
       base::BindOnce(^(PhotosService::UploadResult result) {
         [weakSelf photosServiceFinishedUploadWithResult:result];
@@ -275,7 +297,9 @@ void StartMediatorHelper(__weak SaveToPhotosMediator* mediator,
       base::BindRepeating(^(const PhotosService::UploadProgress& progress) {
         [weakSelf photosServiceReportedUploadProgress:progress];
       });
-  _photosService->UploadImage(_imageName, _imageData, _identity,
+  NSString* suggestedImageName =
+      _imageName.length > kSuggestedImageNameMaxLength ? nil : _imageName;
+  _photosService->UploadImage(suggestedImageName, _imageData, _identity,
                               std::move(uploadProgressCallback),
                               std::move(uploadCompletionCallback));
 }
@@ -287,7 +311,9 @@ void StartMediatorHelper(__weak SaveToPhotosMediator* mediator,
     base::UmaHistogramTimes("IOS.SaveToPhotos.UploadFailureLatency",
                             base::TimeTicks::Now() - _uploadStart);
     __weak __typeof(self) weakSelf = self;
+    [self.delegate stopValidationSpinnerForAccountPicker];
     [self showTryAgainOrCancelAlertWithTryAgainBlock:^{
+      [weakSelf.delegate startValidationSpinnerForAccountPicker];
       [weakSelf tryUploadImage];
     }];
     return;
@@ -296,6 +322,17 @@ void StartMediatorHelper(__weak SaveToPhotosMediator* mediator,
   base::UmaHistogramTimes("IOS.SaveToPhotos.UploadSuccessLatency",
                           base::TimeTicks::Now() - _uploadStart);
   _uploadCompletedSuccessfully = YES;
+
+  // Option 1: user did not skip the account picker so it is on the screen now,
+  // and it can be hidden.
+  if (_showingAccountPicker) {
+    [self.delegate hideAccountPicker];
+    _showingAccountPicker = NO;
+    return;
+  }
+
+  // Option 2: user did skip the account picker and so it is not on the screen
+  // now.
 
   if (!_successSnackbarAppeared) {
     // If the success snackbar did not appear for some reason (no progress has
@@ -322,6 +359,12 @@ void StartMediatorHelper(__weak SaveToPhotosMediator* mediator,
 
 - (void)photosServiceReportedUploadProgress:
     (const PhotosService::UploadProgress&)progress {
+  if (_showingAccountPicker) {
+    // If the account picker is presented, do nothing here.
+    return;
+  }
+
+  // Otherwise, if all of the image data has been uploaded, show success early.
   if (progress.total_bytes_sent == progress.total_bytes_expected_to_send) {
     [self showSnackbarWithSuccessMessageAndOpenButton];
   }
@@ -341,6 +384,7 @@ void StartMediatorHelper(__weak SaveToPhotosMediator* mediator,
   NSString* tryAgainTitle = l10n_util::GetNSString(
       IDS_IOS_SAVE_TO_PHOTOS_THIS_FILE_COULD_NOT_BE_UPLOADED_TRY_AGAIN);
   __weak __typeof(self.delegate) weakDelegate = self.delegate;
+  BOOL showingAccountPicker = _showingAccountPicker;
   [self.delegate
       showTryAgainOrCancelAlertWithTitle:title
                                  message:message
@@ -348,6 +392,15 @@ void StartMediatorHelper(__weak SaveToPhotosMediator* mediator,
                           tryAgainAction:tryAgain
                              cancelTitle:cancelTitle
                             cancelAction:^{
+                              if (showingAccountPicker) {
+                                // Do nothing if the account picker is
+                                // presented. The alert will be dismissed and
+                                // the account picker will remain presented to
+                                // let the user pick another account if they
+                                // want to.
+                                return;
+                              }
+
                               base::UmaHistogramEnumeration(
                                   kSaveToPhotosActionsHistogram,
                                   SaveToPhotosActions::
@@ -386,15 +439,19 @@ void StartMediatorHelper(__weak SaveToPhotosMediator* mediator,
 - (void)successSnackbarDisappearedUserTriggered:(BOOL)userTriggered {
   _successSnackbarDisappeared = YES;
   if (!_uploadCompletedSuccessfully) {
-    // If the upload has not completed, wait until it does to finish.
+    // If the upload has not completed, wait until it does to finish. The
+    // success snackbar can disappear before the upload has completed because it
+    // is presented early.
     return;
   }
 
-  // If the upload completed, maybe open the photo and finish.
+  // If the upload completed and the user tapped "Open", open the photo.
   if (_userTappedSuccessSnackbarButton) {
     [self openPhotosAppOrShowInStoreKit];
     return;
   }
+
+  // If the user did not interact with the snackbar, finish.
   base::UmaHistogramEnumeration(kSaveToPhotosActionsHistogram,
                                 SaveToPhotosActions::kSuccess);
   [self.delegate hideSaveToPhotos];
@@ -406,7 +463,8 @@ void StartMediatorHelper(__weak SaveToPhotosMediator* mediator,
   // If the Photos app is not installed, show StoreKit.
   if (![UIApplication.sharedApplication canOpenURL:GetGooglePhotosAppURL()]) {
     [self.delegate
-        showStoreKitWithProductIdentifier:kGooglePhotosAppProductIdentifier];
+        showStoreKitWithProductIdentifier:kGooglePhotosAppProductIdentifier
+                            campaignToken:kGooglePhotosStoreKitCampaignToken];
     return;
   }
 

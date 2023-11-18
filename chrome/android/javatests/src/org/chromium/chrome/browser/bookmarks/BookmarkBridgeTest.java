@@ -343,14 +343,6 @@ public class BookmarkBridgeTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @Feature({"Bookmark"})
-    public void testGetUserBookmarkIdForTab() {
-        Assert.assertNull(mBookmarkBridge.getUserBookmarkIdForTab(null));
-    }
-
-    @Test
-    @SmallTest
-    @UiThreadTest
     @RequiresRestart
     public void testAddToReadingList() {
         Assert.assertNull(
@@ -360,8 +352,7 @@ public class BookmarkBridgeTest {
                 mBookmarkBridge.addToReadingList("a", new GURL("https://www.google.com/"));
         Assert.assertNotNull("Failed to add to reading list", readingListId);
         Assert.assertEquals(BookmarkType.READING_LIST, readingListId.getType());
-        BookmarkItem readingListItem =
-                mBookmarkBridge.getReadingListItem(new GURL("https://www.google.com/"));
+        BookmarkItem readingListItem = mBookmarkBridge.getBookmarkById(readingListId);
         Assert.assertNotNull("Failed to find the reading list", readingListItem);
         Assert.assertEquals(
                 "https://www.google.com/", readingListItem.getUrl().getValidSpecOrEmpty());

@@ -9,6 +9,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 import android.app.Activity;
 import android.util.SparseBooleanArray;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
@@ -20,6 +21,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -27,6 +31,7 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StreamUtil;
+import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.SequencedTaskRunner;
 import org.chromium.base.task.TaskRunner;
@@ -40,6 +45,8 @@ import org.chromium.chrome.browser.app.tabmodel.AsyncTabParamsManagerSingleton;
 import org.chromium.chrome.browser.app.tabmodel.ChromeTabModelFilterFactory;
 import org.chromium.chrome.browser.app.tabmodel.CustomTabsTabModelOrchestrator;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
@@ -67,6 +74,10 @@ import java.util.concurrent.atomic.AtomicReference;
 /** Tests for the Custom Tab persistence logic. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class CustomTabTabPersistencePolicyTest {
+    @Mock private ProfileProvider mProfileProvider;
+    @Mock private Profile mProfile;
+    @Mock private Profile mIncognitoProfile;
+
     private TestTabModelDirectory mMockDirectory;
     private AdvancedMockContext mAppContext;
     private SequencedTaskRunner mSequencedTaskRunner =
@@ -74,6 +85,10 @@ public class CustomTabTabPersistencePolicyTest {
 
     @Before
     public void setUp() throws Exception {
+        MockitoAnnotations.initMocks(this);
+
+        Mockito.when(mIncognitoProfile.isOffTheRecord()).thenReturn(true);
+
         // CustomTabsConnection needs a true context, not the mock context set below.
         TestThreadUtils.runOnUiThreadBlocking(() -> CustomTabsConnection.getInstance());
 
@@ -177,7 +192,7 @@ public class CustomTabTabPersistencePolicyTest {
         File stateDirectory = policy.getOrCreateStateDirectory();
         Assert.assertNotNull(stateDirectory);
 
-        String stateFileName = policy.getStateFileName();
+        String stateFileName = policy.getMetadataFileName();
         File existingStateFile = new File(stateDirectory, stateFileName);
         Assert.assertTrue(existingStateFile.createNewFile());
 
@@ -260,7 +275,9 @@ public class CustomTabTabPersistencePolicyTest {
         assertThat(tabDataToDelete.get().getMetadataFiles(), Matchers.emptyIterable());
 
         // Create an unreferenced tab state file and ensure it is marked for deletion.
-        File tab999File = TabStateFileManager.getTabStateFile(stateDirectory, 999, false);
+        File tab999File =
+                TabStateFileManager.getTabStateFile(
+                        stateDirectory, 999, false, /* isFlatBuffer= */ false);
         Assert.assertTrue(tab999File.createNewFile());
         policy.cleanupUnusedFiles(tabDataToDeleteCallback);
         callbackSignal.waitForCallback(1);
@@ -295,18 +312,24 @@ public class CustomTabTabPersistencePolicyTest {
                             }
                         });
         FileOutputStream fos = null;
-        File metadataFile = new File(stateDirectory, TabPersistentStore.getStateFileName("3"));
+        File metadataFile = new File(stateDirectory, TabPersistentStore.getMetadataFileName("3"));
         try {
             fos = new FileOutputStream(metadataFile);
             fos.write(data);
         } finally {
             StreamUtil.closeQuietly(fos);
         }
-        File tab111File = TabStateFileManager.getTabStateFile(stateDirectory, 111, false);
+        File tab111File =
+                TabStateFileManager.getTabStateFile(
+                        stateDirectory, 111, false, /* isFlatBuffer= */ false);
         Assert.assertTrue(tab111File.createNewFile());
-        File tab222File = TabStateFileManager.getTabStateFile(stateDirectory, 222, false);
+        File tab222File =
+                TabStateFileManager.getTabStateFile(
+                        stateDirectory, 222, false, /* isFlatBuffer= */ false);
         Assert.assertTrue(tab222File.createNewFile());
-        File tab333File = TabStateFileManager.getTabStateFile(stateDirectory, 333, false);
+        File tab333File =
+                TabStateFileManager.getTabStateFile(
+                        stateDirectory, 333, false, /* isFlatBuffer= */ false);
         Assert.assertTrue(tab333File.createNewFile());
         policy.cleanupUnusedFiles(tabDataToDeleteCallback);
         callbackSignal.waitForCallback(3);
@@ -340,7 +363,7 @@ public class CustomTabTabPersistencePolicyTest {
         File stateDirectory = policy.getOrCreateStateDirectory();
         Assert.assertNotNull(stateDirectory);
 
-        File metadataFile = new File(stateDirectory, policy.getStateFileName());
+        File metadataFile = new File(stateDirectory, policy.getMetadataFileName());
         Assert.assertTrue(metadataFile.createNewFile());
 
         long previousTimestamp =
@@ -414,14 +437,13 @@ public class CustomTabTabPersistencePolicyTest {
             }
 
             @Override
-            @Nullable
-            public List<String> getStateToBeMergedFileNames() {
+            public @Nullable String getMetadataFileNameToBeMerged() {
                 return null;
             }
 
             @Override
-            public String getStateFileName() {
-                return TabPersistentStore.getStateFileName("cct_testing0");
+            public @NonNull String getMetadataFileName() {
+                return TabPersistentStore.getMetadataFileName("cct_testing0");
             }
 
             @Override
@@ -452,7 +474,8 @@ public class CustomTabTabPersistencePolicyTest {
                 new MockTabModel.MockTabModelDelegate() {
                     @Override
                     public MockTab createTab(int id, boolean incognito) {
-                        return new MockTab(id, incognito) {
+                        Profile profile = incognito ? mIncognitoProfile : mProfile;
+                        return new MockTab(id, profile) {
                             @Override
                             public GURL getUrl() {
                                 return new GURL("https://www.google.com");
@@ -460,11 +483,12 @@ public class CustomTabTabPersistencePolicyTest {
                         };
                     }
                 };
-        final MockTabModel normalTabModel = new MockTabModel(false, tabModelDelegate);
+        final MockTabModel normalTabModel = new MockTabModel(mProfile, tabModelDelegate);
         if (normalTabIds != null) {
             for (int tabId : normalTabIds) normalTabModel.addTab(tabId);
         }
-        final MockTabModel incognitoTabModel = new MockTabModel(true, tabModelDelegate);
+        final MockTabModel incognitoTabModel =
+                new MockTabModel(mIncognitoProfile, tabModelDelegate);
         if (incognitoTabIds != null) {
             for (int tabId : incognitoTabIds) incognitoTabModel.addTab(tabId);
         }
@@ -472,8 +496,7 @@ public class CustomTabTabPersistencePolicyTest {
         CustomTabActivity customTabActivity =
                 new CustomTabActivity() {
                     // This is intended to pretend we've started the activity, so we can attach a
-                    // base
-                    // context to the activity.
+                    // base context to the activity.
                     @Override
                     public void onStart() {
                         attachBaseContext(mAppContext);
@@ -489,9 +512,13 @@ public class CustomTabTabPersistencePolicyTest {
         ApplicationStatus.registerStateListenerForActivity(stateListener, customTabActivity);
         ApplicationStatus.onStateChangeForTesting(customTabActivity, ActivityState.STARTED);
 
+        OneshotSupplierImpl<ProfileProvider> profileProviderSupplier = new OneshotSupplierImpl<>();
+        profileProviderSupplier.set(mProfileProvider);
+        Mockito.when(mProfileProvider.getOriginalProfile()).thenReturn(mProfile);
+
         CustomTabsTabModelOrchestrator orchestrator = new CustomTabsTabModelOrchestrator();
         orchestrator.createTabModels(
-                customTabActivity::getWindowAndroid,
+                profileProviderSupplier,
                 customTabActivity,
                 new ChromeTabModelFilterFactory(customTabActivity),
                 buildTestPersistencePolicy(),

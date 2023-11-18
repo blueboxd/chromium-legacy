@@ -39,6 +39,8 @@ found in the LICENSE file.
     <!-- Seek bar -->
     <dimen name="readaloud_expanded_player_seek_bar_height">4dp</dimen>
     <dimen name="readaloud_expanded_player_seek_bar_margin_top">38dp</dimen>
+    <dimen name="readaloud_expanded_player_seek_bar_scrubber_handle_width">4dp</dimen>
+    <dimen name="readaloud_expanded_player_seek_bar_scrubber_handle_height">16dp</dimen>
 
     <!-- Times -->
     <dimen name="readaloud_expanded_player_times_margin_top">4dp</dimen>
@@ -49,4 +51,10 @@ found in the LICENSE file.
     <dimen name="readaloud_control_button_diameter">72dp</dimen>
     <dimen name="readaloud_play_button_width">104dp</dimen>
     <dimen name="readaloud_control_button_spacing">12dp</dimen>
+
+    <!-- Menus -->
+    <!-- Shared -->
+    <dimen name="readaloud_menu_margin_horizontal">24dp</dimen>
+    <!-- Top bar -->
+    <dimen name="readaloud_menu_title_margin_start">16dp</dimen>
 </resources>

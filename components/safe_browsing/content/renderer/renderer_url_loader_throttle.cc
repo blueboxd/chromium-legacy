@@ -55,16 +55,17 @@ void LogTotalDelay2MetricsWithResponseType(bool is_response_from_cache,
 
 RendererURLLoaderThrottle::RendererURLLoaderThrottle(
     mojom::SafeBrowsing* safe_browsing,
-    int render_frame_id)
-    : safe_browsing_(safe_browsing), render_frame_id_(render_frame_id) {}
+    base::optional_ref<const blink::LocalFrameToken> local_frame_token)
+    : safe_browsing_(safe_browsing),
+      frame_token_(local_frame_token.CopyAsOptional()) {}
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 RendererURLLoaderThrottle::RendererURLLoaderThrottle(
     mojom::SafeBrowsing* safe_browsing,
-    int render_frame_id,
+    base::optional_ref<const blink::LocalFrameToken> local_frame_token,
     mojom::ExtensionWebRequestReporter* extension_web_request_reporter)
     : safe_browsing_(safe_browsing),
-      render_frame_id_(render_frame_id),
+      frame_token_(local_frame_token.CopyAsOptional()),
       extension_web_request_reporter_(extension_web_request_reporter) {}
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
@@ -147,7 +148,7 @@ void RendererURLLoaderThrottle::WillStartRequest(
   // Use a weak pointer to self because |safe_browsing_| may not be owned by
   // this object.
   safe_browsing_->CreateCheckerAndCheck(
-      render_frame_id_, url_checker_.BindNewPipeAndPassReceiver(), request->url,
+      frame_token_, url_checker_.BindNewPipeAndPassReceiver(), request->url,
       request->method, request->headers, request->load_flags,
       request->destination, request->has_user_gesture,
       request->originated_from_service_worker,
@@ -179,7 +180,10 @@ void RendererURLLoaderThrottle::WillRedirectRequest(
       redirect_info->new_url.SchemeIsHTTPOrHTTPS()) {
     extension_web_request_reporter_->SendWebRequestData(
         origin_extension_id_, redirect_info->new_url,
-        mojom::WebRequestProtocolType::kHttpHttps);
+        mojom::WebRequestProtocolType::kHttpHttps,
+        initiated_from_content_script_
+            ? mojom::WebRequestContactInitiatorType::kContentScript
+            : mojom::WebRequestContactInitiatorType::kExtension);
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
@@ -374,13 +378,32 @@ void RendererURLLoaderThrottle::MaybeSendExtensionWebRequestData(
     network::ResourceRequest* request) {
   BindExtensionWebRequestReporterPipeIfDetached();
 
+  // Skip if request destination isn't HTTP/HTTPS (ex. extension scheme).
+  if (!request->url.SchemeIsHTTPOrHTTPS()) {
+    return;
+  }
+
+  // Populate |origin_extension_id_| if request is initiated from an extension
+  // page/service worker or content script.
   if (request->request_initiator &&
-      request->request_initiator->scheme() == extensions::kExtensionScheme &&
-      request->url.SchemeIsHTTPOrHTTPS()) {
+      request->request_initiator->scheme() == extensions::kExtensionScheme) {
     origin_extension_id_ = request->request_initiator->host();
+  } else if (request->isolated_world_origin &&
+             request->isolated_world_origin->scheme() ==
+                 extensions::kExtensionScheme) {
+    origin_extension_id_ = request->isolated_world_origin->host();
+    initiated_from_content_script_ = true;
+  }
+
+  // Send data only if |origin_extension_id_| is populated, which means the
+  // request originated from an extension.
+  if (!origin_extension_id_.empty()) {
     extension_web_request_reporter_->SendWebRequestData(
         origin_extension_id_, request->url,
-        mojom::WebRequestProtocolType::kHttpHttps);
+        mojom::WebRequestProtocolType::kHttpHttps,
+        initiated_from_content_script_
+            ? mojom::WebRequestContactInitiatorType::kContentScript
+            : mojom::WebRequestContactInitiatorType::kExtension);
   }
 }
 #endif

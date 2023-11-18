@@ -76,7 +76,6 @@ import org.chromium.chrome.browser.prefetch.settings.PreloadPagesSettingsBridgeJ
 import org.chromium.chrome.browser.prefetch.settings.PreloadPagesState;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.profiles.ProfileJni;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -89,6 +88,7 @@ import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -170,7 +170,7 @@ public class LocationBarMediatorTest {
     @Mock private LocationBarDataProvider mLocationBarDataProvider;
     @Mock private OverrideUrlLoadingDelegate mOverrideUrlLoadingDelegate;
     @Mock private LocaleManager mLocaleManager;
-    @Mock private Profile.Natives mProfileNativesJniMock;
+    @Mock private UrlUtilities.Natives mUrlUtilitiesJniMock;
     @Mock private Tab mTab;
     @Mock private ObservableSupplierImpl<TabModelSelector> mTabModelSelectorSupplier;
     @Mock private TabModelSelector mTabModelSelector;
@@ -186,8 +186,8 @@ public class LocationBarMediatorTest {
     @Mock private WindowAndroid mWindowAndroid;
     @Mock private ObjectAnimator mUrlAnimator;
     @Mock private View mRootView;
+    @Mock private SearchEngineUtils mSearchEngineUtils;
 
-    @Mock private SearchEngineLogoUtils mSearchEngineLogoUtils;
     @Mock private LensController mLensController;
     @Mock private IdentityServicesProvider mIdentityServicesProvider;
     @Mock private IdentityManager mIdentityManager;
@@ -213,16 +213,17 @@ public class LocationBarMediatorTest {
                         ApplicationProvider.getApplicationContext(),
                         R.style.Theme_BrowserUI_DayNight);
         mUrlBarData = UrlBarData.create(null, "text", 0, 0, "text");
+        doReturn(true).when(mSearchEngineUtils).shouldShowSearchEngineLogo();
+        SearchEngineUtils.setInstanceForTesting(mSearchEngineUtils);
         doReturn(mUrlBarData).when(mLocationBarDataProvider).getUrlBarData();
         doReturn(mTabModelSelector).when(mTabModelSelectorSupplier).get();
         doReturn(mRootView).when(mLocationBarLayout).getRootView();
         doReturn(mRootView).when(mLocationBarTablet).getRootView();
         doReturn(new WeakReference<Activity>(null)).when(mWindowAndroid).getActivity();
-        mJniMocker.mock(ProfileJni.TEST_HOOKS, mProfileNativesJniMock);
+        mJniMocker.mock(UrlUtilitiesJni.TEST_HOOKS, mUrlUtilitiesJniMock);
         mJniMocker.mock(OmniboxPrerenderJni.TEST_HOOKS, mPrerenderJni);
         mJniMocker.mock(PreloadPagesSettingsBridgeJni.TEST_HOOKS, mPreloadPagesSettingsJni);
-        SearchEngineLogoUtils.setInstanceForTesting(mSearchEngineLogoUtils);
-        Profile.setLastUsedProfileForTesting(mProfile);
+        doReturn(mProfile).when(mTab).getProfile();
         doReturn(mIdentityManager).when(mIdentityServicesProvider).getIdentityManager(mProfile);
         IdentityServicesProvider.setInstanceForTests(mIdentityServicesProvider);
         OneshotSupplierImpl<TemplateUrlService> templateUrlServiceSupplier =
@@ -241,7 +242,6 @@ public class LocationBarMediatorTest {
                         mOverrideBackKeyBehaviorDelegate,
                         mWindowAndroid,
                         /* isTablet= */ false,
-                        mSearchEngineLogoUtils,
                         mLensController,
                         tab -> true,
                         mOmniboxUma,
@@ -264,7 +264,6 @@ public class LocationBarMediatorTest {
                         mOverrideBackKeyBehaviorDelegate,
                         mWindowAndroid,
                         /* isTablet= */ true,
-                        mSearchEngineLogoUtils,
                         mLensController,
                         tab -> true,
                         (tab, transition, isNtp) -> {},
@@ -833,7 +832,6 @@ public class LocationBarMediatorTest {
                         mOverrideBackKeyBehaviorDelegate,
                         mWindowAndroid,
                         /* isTablet= */ false,
-                        mSearchEngineLogoUtils,
                         mLensController,
                         tab -> true,
                         mOmniboxUma,

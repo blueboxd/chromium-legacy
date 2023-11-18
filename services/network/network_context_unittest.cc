@@ -65,6 +65,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_isolation_key.h"
+#include "net/base/proxy_chain.h"
 #include "net/base/proxy_server.h"
 #include "net/base/proxy_string_util.h"
 #include "net/base/test_completion_callback.h"
@@ -501,7 +502,7 @@ class NetworkContextTest : public testing::Test {
         ->GetSession()
         ->GetSocketPool(
             net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL,
-            net::ProxyServer::Direct())
+            net::ProxyChain::Direct())
         ->GetInfoAsValue("", "")
         .GetDict()
         .FindInt(name)
@@ -516,7 +517,7 @@ class NetworkContextTest : public testing::Test {
             ->GetSession()
             ->GetSocketPool(
                 net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL,
-                net::ProxyServer::Direct())
+                net::ProxyChain::Direct())
             ->GetInfoAsValue("", "")
             .TakeDict();
 
@@ -2860,7 +2861,7 @@ bool SetCookieHelper(NetworkContext* network_context,
       *net::CanonicalCookie::CreateUnsafeCookieForTesting(
           key, value, url.host(), "/", base::Time(), base::Time(), base::Time(),
           base::Time(), true, false, net::CookieSameSite::NO_RESTRICTION,
-          net::COOKIE_PRIORITY_LOW, false),
+          net::COOKIE_PRIORITY_LOW),
       url, net::CookieOptions::MakeAllInclusive(),
       base::BindOnce(&SetCookieCallback, &run_loop, &result));
   run_loop.Run();
@@ -2881,7 +2882,7 @@ TEST_F(NetworkContextTest, CookieManager) {
   auto cookie = net::CanonicalCookie::CreateUnsafeCookieForTesting(
       "TestCookie", "1", "www.test.com", "/", base::Time(), base::Time(),
       base::Time(), base::Time(), false, false, net::CookieSameSite::LAX_MODE,
-      net::COOKIE_PRIORITY_LOW, false);
+      net::COOKIE_PRIORITY_LOW);
   cookie_manager_remote->SetCanonicalCookie(
       *cookie, net::cookie_util::SimulatedCookieSource(*cookie, "https"),
       net::CookieOptions::MakeAllInclusive(),
@@ -4578,16 +4579,18 @@ TEST_F(NetworkContextTest, CanSetCookieFalseIfCookiesBlocked) {
   auto cookie = net::CanonicalCookie::CreateUnsafeCookieForTesting(
       "TestCookie", "1", "www.test.com", "/", base::Time(), base::Time(),
       base::Time(), base::Time(), false, false, net::CookieSameSite::LAX_MODE,
-      net::COOKIE_PRIORITY_LOW, false);
+      net::COOKIE_PRIORITY_LOW);
   EXPECT_TRUE(
       network_context->url_request_context()->network_delegate()->CanSetCookie(
           *request, *cookie, /* options */ nullptr,
+          net::FirstPartySetMetadata(),
           /* inclusion_status */ nullptr));
   SetDefaultContentSetting(CONTENT_SETTING_BLOCK, network_context.get());
   net::CookieInclusionStatus status;
   EXPECT_FALSE(
       network_context->url_request_context()->network_delegate()->CanSetCookie(
-          *request, *cookie, /* options */ nullptr, &status));
+          *request, *cookie, /* options */ nullptr,
+          net::FirstPartySetMetadata(), &status));
   EXPECT_FALSE(status.HasWarningReason(
       net::CookieInclusionStatus::WARN_THIRD_PARTY_PHASEOUT));
 }
@@ -4603,13 +4606,14 @@ TEST_F(NetworkContextTest, CanSetCookieTrueIfCookiesAllowed) {
   auto cookie = net::CanonicalCookie::CreateUnsafeCookieForTesting(
       "TestCookie", "1", "www.test.com", "/", base::Time(), base::Time(),
       base::Time(), base::Time(), false, false, net::CookieSameSite::LAX_MODE,
-      net::COOKIE_PRIORITY_LOW, false);
+      net::COOKIE_PRIORITY_LOW);
 
   SetDefaultContentSetting(CONTENT_SETTING_ALLOW, network_context.get());
   net::CookieInclusionStatus status;
   EXPECT_TRUE(
       network_context->url_request_context()->network_delegate()->CanSetCookie(
-          *request, *cookie, /* options */ nullptr, &status));
+          *request, *cookie, /* options */ nullptr,
+          net::FirstPartySetMetadata(), &status));
 
   EXPECT_TRUE(status.HasWarningReason(
       net::CookieInclusionStatus::WARN_THIRD_PARTY_PHASEOUT));
@@ -5363,7 +5367,7 @@ TEST_F(NetworkContextTest, GetHSTSState) {
 
   absl::optional<double> dynamic_sts_expiry =
       state.FindDouble("dynamic_sts_expiry");
-  EXPECT_EQ(expiry.ToDoubleT(), dynamic_sts_expiry);
+  EXPECT_EQ(expiry.InSecondsFSinceUnixEpoch(), dynamic_sts_expiry);
 }
 
 TEST_F(NetworkContextTest, ForceReloadProxyConfig) {
@@ -5435,9 +5439,9 @@ TEST_F(NetworkContextTest, ClearBadProxiesCache) {
   net::ProxyInfo proxy_info;
   proxy_info.UseNamedProxy("http://foo1.com");
   proxy_resolution_service->ReportSuccess(proxy_info);
-  std::vector<net::ProxyServer> proxies;
-  proxies.push_back(net::ProxyUriToProxyServer("http://foo1.com",
-                                               net::ProxyServer::SCHEME_HTTP));
+  std::vector<net::ProxyChain> proxies;
+  proxies.push_back(net::ProxyUriToProxyChain("http://foo1.com",
+                                              net::ProxyServer::SCHEME_HTTP));
   proxy_resolution_service->MarkProxiesAsBadUntil(
       proxy_info, base::Days(1), proxies, net::NetLogWithSource());
   base::RunLoop().RunUntilIdle();
@@ -5729,11 +5733,11 @@ TEST_F(NetworkContextTest, ProxyErrorClientNotifiedOfPacError) {
             "Failed: FindProxyForURL(url=http://server.bad.dns/)");
 }
 
-// Test ensures that ProxyServer data is populated correctly across Mojo calls.
+// Test ensures that ProxyChain data is populated correctly across Mojo calls.
 // Basically it performs a set of URLLoader network requests, whose requests
-// configure proxies. Then it checks whether the expected proxy scheme is
-// respected.
-TEST_F(NetworkContextTest, EnsureProperProxyServerIsUsed) {
+// configure proxies. Then it checks whether the expected proxy chain is
+// propagated.
+TEST_F(NetworkContextTest, EnsureProperProxyChainIsUsed) {
   net::test_server::EmbeddedTestServer test_server;
   test_server.AddDefaultHandlers(
       base::FilePath(FILE_PATH_LITERAL("services/test/data")));
@@ -5760,6 +5764,9 @@ TEST_F(NetworkContextTest, EnsureProperProxyServerIsUsed) {
   proxy_config_set[1].expected_proxy_config_scheme =
       net::ProxyServer::SCHEME_DIRECT;
 
+  // TODO(https://crbug.com/1491092): Add a test case for a proxy chain with
+  // more than one hop.
+
   for (const auto& proxy_data : proxy_config_set) {
     mojom::NetworkContextParamsPtr context_params =
         CreateNetworkContextParamsForTesting();
@@ -5784,15 +5791,28 @@ TEST_F(NetworkContextTest, EnsureProperProxyServerIsUsed) {
     mojo::PendingRemote<mojom::URLLoader> loader;
     TestURLLoaderClient client;
     loader_factory->CreateLoaderAndStart(
-        loader.InitWithNewPipeAndPassReceiver(), 0 /* request_id */,
-        0 /* options */, request, client.CreateRemote(),
+        loader.InitWithNewPipeAndPassReceiver(), /*request_id=*/0,
+        /*options=*/0, request, client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     client.RunUntilComplete();
 
     EXPECT_TRUE(client.has_received_completion());
-    EXPECT_EQ(client.response_head()->proxy_server.scheme(),
-              proxy_data.expected_proxy_config_scheme);
+
+    ASSERT_TRUE(client.response_head()->proxy_chain.IsValid());
+    if (proxy_data.expected_proxy_config_scheme ==
+        net::ProxyServer::SCHEME_DIRECT) {
+      EXPECT_TRUE(client.response_head()->proxy_chain.is_direct());
+    } else {
+      const auto& proxy_chain = client.response_head()->proxy_chain;
+      for (size_t proxy_index = 0; proxy_index < proxy_chain.length();
+           ++proxy_index) {
+        // For simplicity the test assumes each proxy in the list has the same
+        // scheme, although this isn't necessarily the case.
+        EXPECT_EQ(proxy_chain.GetProxyServer(proxy_index).scheme(),
+                  proxy_data.expected_proxy_config_scheme);
+      }
+    }
   }
 }
 
@@ -6312,8 +6332,9 @@ TEST_F(NetworkContextMockHostTest, MAYBE_CustomProxyUsesSpecifiedProxyList) {
 
   // |invalid_server| has no handlers set up so would return an empty response.
   EXPECT_EQ(response, "Echo");
-  EXPECT_EQ(client->response_head()->proxy_server,
-            ConvertToProxyServer(proxy_test_server));
+  EXPECT_EQ(
+      client->response_head()->proxy_chain.GetProxyServer(/*chain_index=*/0),
+      ConvertToProxyServer(proxy_test_server));
 }
 
 TEST_F(NetworkContextTest, MaximumCount) {

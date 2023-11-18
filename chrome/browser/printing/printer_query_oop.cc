@@ -211,7 +211,7 @@ void PrinterQueryOop::UpdatePrintSettings(base::Value::Dict new_settings,
     // http://crbug.com/728276
     content::WebContents* web_contents = GetWebContents();
     if (web_contents && web_contents->IsFullscreen()) {
-      web_contents->ExitFullscreen(true);
+      web_contents->ExitFullscreen();
     }
 #endif
   } else {
@@ -250,6 +250,16 @@ void PrinterQueryOop::OnDidUpdatePrintSettings(
     // `PrintViewManagerBase` owns the client ID, so `PrinterQueryOop` must not
     // unregister it.  Just drop any local reference to it.
     query_with_ui_client_id_.reset();
+
+    // With the failure to update the setting, the registered client must be
+    // released.  The context ID is also no longer relevant to use.
+    if (print_document_client_id_.has_value()) {
+      PrintBackendServiceManager::GetInstance().UnregisterClient(
+          print_document_client_id_.value());
+      print_document_client_id_.reset();
+      CHECK(context_id_.has_value());
+      context_id_.reset();
+    }
 
     // TODO(crbug.com/809738)  Fill in support for handling of access-denied
     // result code.
@@ -291,7 +301,7 @@ void PrinterQueryOop::SendEstablishPrintingContext(
     PrintBackendServiceManager::ClientId client_id,
     const std::string& printer_name) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(features::kEnableOopPrintDriversJobPrint.Get());
+  DCHECK(features::ShouldPrintJobOop());
 
   DVLOG(1) << "Establishing printing context for system print";
 
@@ -314,7 +324,7 @@ void PrinterQueryOop::SendEstablishPrintingContext(
 
 void PrinterQueryOop::SendUseDefaultSettings(SettingsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(features::kEnableOopPrintDriversJobPrint.Get());
+  DCHECK(features::ShouldPrintJobOop());
   CHECK(query_with_ui_client_id_.has_value());
 
   PrintBackendServiceManager& service_mgr =
@@ -332,7 +342,7 @@ void PrinterQueryOop::SendAskUserForSettings(uint32_t document_page_count,
                                              bool is_scripted,
                                              SettingsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(features::kEnableOopPrintDriversJobPrint.Get());
+  DCHECK(features::ShouldPrintJobOop());
 
   if (document_page_count > kMaxPageCount) {
     InvokeSettingsCallback(std::move(callback), mojom::ResultCode::kFailed);
@@ -344,7 +354,7 @@ void PrinterQueryOop::SendAskUserForSettings(uint32_t document_page_count,
   // Running a dialog causes an exit to webpage-initiated fullscreen.
   // http://crbug.com/728276
   if (web_contents && web_contents->IsFullscreen()) {
-    web_contents->ExitFullscreen(true);
+    web_contents->ExitFullscreen();
   }
 
   PrintBackendServiceManager& service_mgr =

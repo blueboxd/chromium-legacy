@@ -11,8 +11,8 @@
 # tags: [ android-nexus-5x android-pixel-2 android-pixel-4
 #             android-pixel-6 android-shield-android-tv android-sm-a135m
 #             android-sm-a235m
-#         chromeos-board-amd64-generic chromeos-board-kevin chromeos-board-eve
-#             chromeos-board-jacuzzi chromeos-board-octopus
+#         chromeos-board-amd64-generic chromeos-board-eve chromeos-board-jacuzzi
+#             chromeos-board-octopus
 #         fuchsia-board-astro fuchsia-board-nelson fuchsia-board-sherlock
 #             fuchsia-board-qemu-x64 ]
 # Platform
@@ -223,36 +223,28 @@ crbug.com/1409457 [ win amd ] OverlayModeTraceTest_DirectComposition_Video_VP9_Y
 crbug.com/1402261 [ win intel ] OverlayModeTraceTest_DirectComposition_Video_* [ RetryOnFailure ]
 crbug.com/1402261 [ win amd ] OverlayModeTraceTest_DirectComposition_Video_* [ Failure ]
 
-crbug.com/1453832 [ win nvidia ] OverlayModeTraceTest_DirectComposition_Underlay [ RetryOnFailure ]
-crbug.com/1453832 [ win nvidia ] OverlayModeTraceTest_DirectComposition_Underlay_Fullsize [ RetryOnFailure ]
-crbug.com/1453832 [ win nvidia ] OverlayModeTraceTest_DirectComposition_Video_MP4 [ RetryOnFailure ]
-crbug.com/1453832 [ win nvidia ] OverlayModeTraceTest_DirectComposition_Video_MP4_BGRA [ RetryOnFailure ]
-crbug.com/1453832 [ win nvidia ] OverlayModeTraceTest_DirectComposition_Video_MP4_FourColors_Aspect_4x3 [ RetryOnFailure ]
-crbug.com/1453832 [ win nvidia ] OverlayModeTraceTest_DirectComposition_Video_MP4_FourColors_Rot_180 [ RetryOnFailure ]
-crbug.com/1453832 [ win nvidia ] OverlayModeTraceTest_DirectComposition_Video_MP4_FourColors_Rot_270 [ RetryOnFailure ]
-crbug.com/1453832 [ win nvidia ] OverlayModeTraceTest_DirectComposition_Video_MP4_FourColors_Rot_90 [ RetryOnFailure ]
-crbug.com/1453832 [ win nvidia ] OverlayModeTraceTest_DirectComposition_Video_MP4_Fullsize [ RetryOnFailure ]
-crbug.com/1453832 [ win nvidia ] OverlayModeTraceTest_DirectComposition_Video_MP4_NV12 [ RetryOnFailure ]
-crbug.com/1453832 [ win nvidia ] OverlayModeTraceTest_DirectComposition_Video_MP4_Rounded_Corner [ RetryOnFailure ]
-crbug.com/1453832 [ win nvidia ] OverlayModeTraceTest_DirectComposition_Video_MP4_VP_SCALING [ RetryOnFailure ]
-crbug.com/1453832 [ win nvidia ] OverlayModeTraceTest_DirectComposition_Video_VP9_BGRA [ RetryOnFailure ]
-crbug.com/1453832 [ win nvidia ] OverlayModeTraceTest_DirectComposition_Video_VP9_Fullsize [ RetryOnFailure ]
-crbug.com/1453832 [ win nvidia ] OverlayModeTraceTest_DirectComposition_Video_VP9_NV12 [ RetryOnFailure ]
-crbug.com/1453832 [ win nvidia ] OverlayModeTraceTest_DirectComposition_Video_VP9_VP_SCALING [ RetryOnFailure ]
-crbug.com/1453832 [ win nvidia ] OverlayModeTraceTest_DirectComposition_Video_VP9_YUY2 [ RetryOnFailure ]
+crbug.com/1453832 [ nvidia target-cpu-64 win ] OverlayModeTraceTest_DirectComposition_Underlay [ RetryOnFailure ]
+crbug.com/1453832 [ nvidia target-cpu-64 win ] OverlayModeTraceTest_DirectComposition_Underlay_Fullsize [ RetryOnFailure ]
+crbug.com/1453832 [ nvidia target-cpu-64 win ] OverlayModeTraceTest_DirectComposition_Video_MP4 [ RetryOnFailure ]
+crbug.com/1453832 [ nvidia target-cpu-64 win ] OverlayModeTraceTest_DirectComposition_Video_MP4_BGRA [ RetryOnFailure ]
+crbug.com/1453832 [ nvidia target-cpu-64 win ] OverlayModeTraceTest_DirectComposition_Video_MP4_FourColors_Aspect_4x3 [ RetryOnFailure ]
+crbug.com/1453832 [ nvidia target-cpu-64 win ] OverlayModeTraceTest_DirectComposition_Video_MP4_FourColors_Rot_180 [ RetryOnFailure ]
+crbug.com/1453832 [ nvidia target-cpu-64 win ] OverlayModeTraceTest_DirectComposition_Video_MP4_FourColors_Rot_270 [ RetryOnFailure ]
+crbug.com/1453832 [ nvidia target-cpu-64 win ] OverlayModeTraceTest_DirectComposition_Video_MP4_FourColors_Rot_90 [ RetryOnFailure ]
+crbug.com/1453832 [ nvidia target-cpu-64 win ] OverlayModeTraceTest_DirectComposition_Video_MP4_Fullsize [ RetryOnFailure ]
+crbug.com/1453832 [ nvidia target-cpu-64 win ] OverlayModeTraceTest_DirectComposition_Video_MP4_NV12 [ RetryOnFailure ]
+crbug.com/1453832 [ nvidia target-cpu-64 win ] OverlayModeTraceTest_DirectComposition_Video_MP4_Rounded_Corner [ RetryOnFailure ]
+crbug.com/1453832 [ nvidia target-cpu-64 win ] OverlayModeTraceTest_DirectComposition_Video_MP4_VP_SCALING [ RetryOnFailure ]
+crbug.com/1453832 [ nvidia target-cpu-64 win ] OverlayModeTraceTest_DirectComposition_Video_VP9_BGRA [ RetryOnFailure ]
+crbug.com/1453832 [ nvidia target-cpu-64 win ] OverlayModeTraceTest_DirectComposition_Video_VP9_Fullsize [ RetryOnFailure ]
+crbug.com/1453832 [ nvidia target-cpu-64 win ] OverlayModeTraceTest_DirectComposition_Video_VP9_NV12 [ RetryOnFailure ]
+crbug.com/1453832 [ nvidia target-cpu-64 win ] OverlayModeTraceTest_DirectComposition_Video_VP9_VP_SCALING [ RetryOnFailure ]
+crbug.com/1453832 [ nvidia target-cpu-64 win ] OverlayModeTraceTest_DirectComposition_Video_VP9_YUY2 [ RetryOnFailure ]
 
 # Win AMD failure since test added
 crbug.com/1446057 [ win10 amd-0x7340 angle-d3d11 ] VideoPathTraceTest_DirectComposition_Video_SW_Decode [ Failure ]
 
-# Android devices
-crbug.com/1487723 [ android android-shield-android-tv ] TraceTest_CSS3DBlueBox [ RetryOnFailure ]
-crbug.com/1487723 [ android android-shield-android-tv ] TraceTest_SolidColorBackground [ RetryOnFailure ]
 
-# Canvas capture trace tests on M1 Mac
-crbug.com/1493530 [ mac apple angle-metal ] WebGLCanvasCaptureTraceTest_VideoStreamFromWebGLCanvas_TwoCopy_Accelerated [ RetryOnFailure ]
-crbug.com/1493530 [ mac apple angle-metal ] WebGPUTraceTest_WebGPUCanvasDisableOneCopyCapture_Accelerated [ RetryOnFailure ]
-crbug.com/1493530 [ mac apple angle-metal ] WebGPUTraceTest_WebGPUCanvasOneCopyCapture_Hidden [ RetryOnFailure ]
-crbug.com/1493530 [ mac apple angle-metal no-asan ] WebGPUTraceTest_WebGPUCanvasOneCopyCapture [ RetryOnFailure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

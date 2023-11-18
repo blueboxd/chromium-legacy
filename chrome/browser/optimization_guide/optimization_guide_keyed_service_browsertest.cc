@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/strings/escape.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -18,10 +19,13 @@
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/optimization_guide/core/command_line_top_host_provider.h"
+#include "components/optimization_guide/core/model_execution/model_execution_features.h"
+#include "components/optimization_guide/core/model_execution/model_execution_features_controller.h"
 #include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_prefs.h"
@@ -153,8 +157,12 @@ class OptimizationGuideKeyedServiceBrowserTest
   OptimizationGuideKeyedServiceBrowserTest()
       : network_connection_tracker_(
             network::TestNetworkConnectionTracker::CreateInstance()) {
+    // Enable visibility of tab organization feature.
     scoped_feature_list_.InitWithFeatures(
-        {optimization_guide::features::kOptimizationHints}, {});
+        {optimization_guide::features::kOptimizationHints,
+         optimization_guide::features::internal::
+             kTabOrganizationSettingsVisibility},
+        {});
   }
 
   OptimizationGuideKeyedServiceBrowserTest(
@@ -186,8 +194,27 @@ class OptimizationGuideKeyedServiceBrowserTest
         https_server_->GetURL("/redirect?https://nohints.com/");
 
     SetConnectionType(network::mojom::ConnectionType::CONNECTION_2G);
+
+    identity_test_env_adaptor_ =
+        std::make_unique<IdentityTestEnvironmentProfileAdaptor>(
+            browser()->profile());
   }
 
+  void SetUpInProcessBrowserTestFixture() override {
+    create_services_subscription_ =
+        BrowserContextDependencyManager::GetInstance()
+            ->RegisterCreateServicesCallbackForTesting(
+                base::BindRepeating(&OptimizationGuideKeyedServiceBrowserTest::
+                                        OnWillCreateBrowserContextServices,
+                                    base::Unretained(this)));
+  }
+
+  void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
+    IdentityTestEnvironmentProfileAdaptor::
+        SetIdentityTestEnvironmentFactoriesOnBrowserContext(context);
+  }
+
+  base::CallbackListSubscription create_services_subscription_;
   void TearDownOnMainThread() override {
     EXPECT_TRUE(https_server_->ShutdownAndWaitUntilComplete());
 
@@ -275,6 +302,23 @@ class OptimizationGuideKeyedServiceBrowserTest
 
   base::HistogramTester* histogram_tester() { return &histogram_tester_; }
 
+  void EnableSignIn() {
+    identity_test_env_adaptor_->identity_test_env()
+        ->MakePrimaryAccountAvailable("user@gmail.com",
+                                      signin::ConsentLevel::kSignin);
+  }
+
+  void SignOut() {
+    identity_test_env_adaptor_->identity_test_env()->ClearPrimaryAccount();
+  }
+
+  bool IsSettingVisible(
+      optimization_guide::proto::ModelExecutionFeature feature) {
+    return OptimizationGuideKeyedServiceFactory::GetForProfile(
+               browser()->profile())
+        ->IsSettingVisible(feature);
+  }
+
  private:
   std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
@@ -308,6 +352,10 @@ class OptimizationGuideKeyedServiceBrowserTest
   // Histogram tester used specifically to capture metrics that are recorded
   // during browser initialization.
   base::HistogramTester histogram_tester_;
+
+  // Identity test support.
+  std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
+      identity_test_env_adaptor_;
 };
 
 IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
@@ -614,7 +662,7 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
       {optimization_guide::proto::OptimizationType::NOSCRIPT});
   std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
 
-  // Beforw the hints or navigation are initiated, we should get a negative
+  // Before the hints or navigation are initiated, we should get a negative
   // response.
   ogks->CanApplyOptimization(
       url_with_hints(), optimization_guide::proto::OptimizationType::NOSCRIPT,
@@ -668,6 +716,433 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   run_loop->Run();
 }
 
+class TestSettingsEnabledObserver
+    : public optimization_guide::SettingsEnabledObserver {
+ public:
+  explicit TestSettingsEnabledObserver(
+      optimization_guide::proto::ModelExecutionFeature feature)
+      : SettingsEnabledObserver(feature) {}
+  void PrepareToEnableOnRestart() override {
+    ++count_received_prepare_to_enable_on_restart_notifications_;
+  }
+
+  int count_received_prepare_to_enable_on_restart_notifications_ = 0;
+};
+
+IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
+                       SettingsVisibilitySignedOutVsSignedIn) {
+  // User is not signed-in.
+  EXPECT_FALSE(
+      IsSettingVisible(optimization_guide::proto::ModelExecutionFeature::
+                           MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+
+  // Visibility of tab organizer is enabled via finch but the feature is still
+  // not visible.
+  EXPECT_FALSE(
+      IsSettingVisible(optimization_guide::proto::ModelExecutionFeature::
+                           MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION));
+
+  EXPECT_FALSE(
+      IsSettingVisible(optimization_guide::proto::ModelExecutionFeature::
+                           MODEL_EXECUTION_FEATURE_COMPOSE));
+
+  // MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION should now be visible after
+  // sign-in.
+  EnableSignIn();
+
+  EXPECT_FALSE(
+      IsSettingVisible(optimization_guide::proto::ModelExecutionFeature::
+                           MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+
+  EXPECT_TRUE(
+      IsSettingVisible(optimization_guide::proto::ModelExecutionFeature::
+                           MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION));
+
+  EXPECT_FALSE(
+      IsSettingVisible(optimization_guide::proto::ModelExecutionFeature::
+                           MODEL_EXECUTION_FEATURE_COMPOSE));
+
+#if !BUILDFLAG(IS_CHROMEOS)
+  // SignOut not supported on ChromeOS.
+  SignOut();
+  EXPECT_FALSE(
+      IsSettingVisible(optimization_guide::proto::ModelExecutionFeature::
+                           MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION));
+#endif
+}
+
+// Verifies that Model Execution Features Controller is available for incognito
+// profiles and the visibility of settings is correct.
+IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
+                       SettingsVisibilityUpdatedCorrectly) {
+  EnableSignIn();
+
+  EXPECT_FALSE(
+      IsSettingVisible(optimization_guide::proto::ModelExecutionFeature::
+                           MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+
+  // Visibility of tab organizer is enabled via finch.
+  EXPECT_TRUE(
+      IsSettingVisible(optimization_guide::proto::ModelExecutionFeature::
+                           MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION));
+
+  EXPECT_FALSE(
+      IsSettingVisible(optimization_guide::proto::ModelExecutionFeature::
+                           MODEL_EXECUTION_FEATURE_COMPOSE));
+
+  auto* prefs = browser()->profile()->GetPrefs();
+  prefs->SetInteger(
+      optimization_guide::prefs::GetSettingEnabledPrefName(
+          optimization_guide::proto::ModelExecutionFeature::
+              MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH),
+      static_cast<int>(optimization_guide::prefs::FeatureOptInState::kEnabled));
+
+  EXPECT_FALSE(
+      IsSettingVisible(optimization_guide::proto::ModelExecutionFeature::
+                           MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+
+  OptimizationGuideKeyedService* ogks =
+      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
+
+  ogks->SimulateBrowserRestartForControllerTesting();
+
+  // Restarting the browser should cause wallpaper setting to be visible since
+  // the feature is enabled.
+  EXPECT_TRUE(
+      IsSettingVisible(optimization_guide::proto::ModelExecutionFeature::
+                           MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+
+  EXPECT_TRUE(
+      IsSettingVisible(optimization_guide::proto::ModelExecutionFeature::
+                           MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION));
+
+  EXPECT_FALSE(
+      IsSettingVisible(optimization_guide::proto::ModelExecutionFeature::
+                           MODEL_EXECUTION_FEATURE_COMPOSE));
+
+  prefs->SetInteger(
+      optimization_guide::prefs::GetSettingEnabledPrefName(
+          optimization_guide::proto::ModelExecutionFeature::
+              MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH),
+      static_cast<int>(
+          optimization_guide::prefs::FeatureOptInState::kDisabled));
+
+  EXPECT_TRUE(
+      IsSettingVisible(optimization_guide::proto::ModelExecutionFeature::
+                           MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+
+  ogks->SimulateBrowserRestartForControllerTesting();
+
+  // Restarting the browser should cause wallpaper setting to be not visible
+  // since the feature is no-longer enabled.
+  EXPECT_FALSE(
+      IsSettingVisible(optimization_guide::proto::ModelExecutionFeature::
+                           MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+
+  EXPECT_TRUE(
+      IsSettingVisible(optimization_guide::proto::ModelExecutionFeature::
+                           MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION));
+
+  EXPECT_FALSE(
+      IsSettingVisible(optimization_guide::proto::ModelExecutionFeature::
+                           MODEL_EXECUTION_FEATURE_COMPOSE));
+}
+
+IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
+                       SettingsOptInRevokedAfterSignOut) {
+  OptimizationGuideKeyedService* ogks =
+      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
+
+  EnableSignIn();
+
+  TestSettingsEnabledObserver wallpaper_search_observer(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH);
+  TestSettingsEnabledObserver compose_observer(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_COMPOSE);
+
+  ogks->AddModelExecutionSettingsEnabledObserver(&wallpaper_search_observer);
+  ogks->AddModelExecutionSettingsEnabledObserver(&compose_observer);
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION));
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_COMPOSE));
+
+  auto* prefs = browser()->profile()->GetPrefs();
+  prefs->SetInteger(
+      optimization_guide::prefs::GetSettingEnabledPrefName(
+          optimization_guide::proto::ModelExecutionFeature::
+              MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH),
+      static_cast<int>(optimization_guide::prefs::FeatureOptInState::kEnabled));
+  EXPECT_EQ(1, wallpaper_search_observer
+                   .count_received_prepare_to_enable_on_restart_notifications_);
+  EXPECT_EQ(0, compose_observer
+                   .count_received_prepare_to_enable_on_restart_notifications_);
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+
+  ogks->SimulateBrowserRestartForControllerTesting();
+
+  EXPECT_TRUE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION));
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_COMPOSE));
+
+#if !BUILDFLAG(IS_CHROMEOS)
+  // SignOut not supported on ChromeOS.
+  SignOut();
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION));
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_COMPOSE));
+#endif
+}
+
+// Verifies that Model Execution Features Controller is available for incognito
+// profiles and the setting opt-in toggle and pref is updated correctly.
+IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
+                       SettingsOptInUpdatedCorrectly) {
+  OptimizationGuideKeyedService* ogks =
+      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
+
+  EnableSignIn();
+
+  TestSettingsEnabledObserver wallpaper_search_observer(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH);
+  TestSettingsEnabledObserver compose_observer(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_COMPOSE);
+
+  ogks->AddModelExecutionSettingsEnabledObserver(&wallpaper_search_observer);
+  ogks->AddModelExecutionSettingsEnabledObserver(&compose_observer);
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION));
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_COMPOSE));
+
+  auto* prefs = browser()->profile()->GetPrefs();
+  prefs->SetInteger(
+      optimization_guide::prefs::GetSettingEnabledPrefName(
+          optimization_guide::proto::ModelExecutionFeature::
+              MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH),
+      static_cast<int>(optimization_guide::prefs::FeatureOptInState::kEnabled));
+  EXPECT_EQ(1, wallpaper_search_observer
+                   .count_received_prepare_to_enable_on_restart_notifications_);
+  EXPECT_EQ(0, compose_observer
+                   .count_received_prepare_to_enable_on_restart_notifications_);
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+
+  ogks->SimulateBrowserRestartForControllerTesting();
+
+  EXPECT_TRUE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION));
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_COMPOSE));
+
+  prefs->SetInteger(
+      optimization_guide::prefs::GetSettingEnabledPrefName(
+          optimization_guide::proto::ModelExecutionFeature::
+              MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH),
+      static_cast<int>(
+          optimization_guide::prefs::FeatureOptInState::kDisabled));
+  EXPECT_EQ(1, wallpaper_search_observer
+                   .count_received_prepare_to_enable_on_restart_notifications_);
+  EXPECT_EQ(0, compose_observer
+                   .count_received_prepare_to_enable_on_restart_notifications_);
+
+  EXPECT_TRUE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+
+  ogks->SimulateBrowserRestartForControllerTesting();
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION));
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_COMPOSE));
+}
+
+// Verifies that Model Execution Features Controller updates feature prefs
+// correctly when the main toggle pref changes.
+IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
+                       MainToggleUpdatesSettingsCorrectly) {
+  OptimizationGuideKeyedService* ogks =
+      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
+
+  EnableSignIn();
+
+  TestSettingsEnabledObserver wallpaper_search_observer(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH);
+  TestSettingsEnabledObserver compose_observer(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_COMPOSE);
+  TestSettingsEnabledObserver tab_observer(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION);
+
+  ogks->AddModelExecutionSettingsEnabledObserver(&wallpaper_search_observer);
+  ogks->AddModelExecutionSettingsEnabledObserver(&compose_observer);
+  ogks->AddModelExecutionSettingsEnabledObserver(&tab_observer);
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION));
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_COMPOSE));
+
+  // Enable the main feature toggle. This should enable the tab organizer
+  // feature on restart.
+  auto* prefs = browser()->profile()->GetPrefs();
+  prefs->SetInteger(
+      optimization_guide::prefs::kModelExecutionMainToggleSettingState,
+      static_cast<int>(optimization_guide::prefs::FeatureOptInState::kEnabled));
+  // Visibility of tab organizer feature is enabled via finch. Only tab
+  // organizer feature should be enabled.
+  EXPECT_EQ(0, wallpaper_search_observer
+                   .count_received_prepare_to_enable_on_restart_notifications_);
+  EXPECT_EQ(0, compose_observer
+                   .count_received_prepare_to_enable_on_restart_notifications_);
+  EXPECT_EQ(
+      1,
+      tab_observer.count_received_prepare_to_enable_on_restart_notifications_);
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+
+  ogks->SimulateBrowserRestartForControllerTesting();
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+
+  EXPECT_TRUE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION));
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_COMPOSE));
+
+  // Disable main toggle. The tab organizer feature should be disabled on
+  // restart.
+  prefs->SetInteger(
+      optimization_guide::prefs::kModelExecutionMainToggleSettingState,
+      static_cast<int>(
+          optimization_guide::prefs::FeatureOptInState::kDisabled));
+  EXPECT_EQ(0, wallpaper_search_observer
+                   .count_received_prepare_to_enable_on_restart_notifications_);
+  EXPECT_EQ(0, compose_observer
+                   .count_received_prepare_to_enable_on_restart_notifications_);
+  EXPECT_EQ(
+      1,
+      tab_observer.count_received_prepare_to_enable_on_restart_notifications_);
+
+  EXPECT_TRUE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION));
+
+  ogks->SimulateBrowserRestartForControllerTesting();
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION));
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_COMPOSE));
+}
+
+// Verifies that Model Execution Features Controller returns null for incognito
+// profiles.
+IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
+                       SettingsVisibilityIncognito) {
+  // Set up incognito browser and incognito OptimizationGuideKeyedService
+  // consumer.
+  Browser* otr_browser = CreateIncognitoBrowser(browser()->profile());
+  EXPECT_TRUE(otr_browser);
+
+  // Instantiate off the record Optimization Guide Service.
+  OptimizationGuideKeyedService* otr_ogks =
+      OptimizationGuideKeyedServiceFactory::GetForProfile(
+          browser()->profile()->GetPrimaryOTRProfile(
+              /*create_if_needed=*/true));
+
+  auto* prefs = browser()->profile()->GetPrefs();
+  prefs->SetInteger(
+      optimization_guide::prefs::GetSettingEnabledPrefName(
+          optimization_guide::proto::ModelExecutionFeature::
+              MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH),
+      static_cast<int>(optimization_guide::prefs::FeatureOptInState::kEnabled));
+
+  EXPECT_FALSE(otr_ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+}
+
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 // CreateGuestBrowser() is not supported for Android or ChromeOS out of the box.
 IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
@@ -682,6 +1157,39 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   EXPECT_TRUE(guest_ogks);
   EXPECT_TRUE(ogks);
   EXPECT_NE(guest_ogks, ogks);
+
+  auto* prefs = browser()->profile()->GetPrefs();
+  auto* guest_prefs = guest_browser->profile()->GetPrefs();
+
+  EnableSignIn();
+
+  prefs->SetInteger(
+      optimization_guide::prefs::GetSettingEnabledPrefName(
+          optimization_guide::proto::ModelExecutionFeature::
+              MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH),
+      static_cast<int>(optimization_guide::prefs::FeatureOptInState::kEnabled));
+  guest_prefs->SetInteger(
+      optimization_guide::prefs::GetSettingEnabledPrefName(
+          optimization_guide::proto::ModelExecutionFeature::
+              MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH),
+      static_cast<int>(optimization_guide::prefs::FeatureOptInState::kEnabled));
+
+  EXPECT_FALSE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+  EXPECT_FALSE(guest_ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+
+  ogks->SimulateBrowserRestartForControllerTesting();
+  guest_ogks->SimulateBrowserRestartForControllerTesting();
+
+  EXPECT_TRUE(ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+  EXPECT_FALSE(guest_ogks->ShouldFeatureBeCurrentlyEnabledForUser(
+      optimization_guide::proto::ModelExecutionFeature::
+          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
 }
 #endif
 

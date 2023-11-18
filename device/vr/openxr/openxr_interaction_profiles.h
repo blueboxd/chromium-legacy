@@ -8,7 +8,6 @@
 #include "base/containers/flat_map.h"
 #include "base/stl_util.h"
 #include "device/gamepad/public/cpp/gamepad.h"
-#include "device/vr/openxr/openxr_defs.h"
 #include "device/vr/openxr/openxr_interaction_profile_type.h"
 #include "third_party/openxr/src/include/openxr/openxr.h"
 

@@ -4,27 +4,28 @@
 
 #include "ash/webui/personalization_app/personalization_app_ui.h"
 
+#include <memory>
 #include <string>
 
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
 #include "ash/public/cpp/ambient/ambient_client.h"
-#include "ash/public/cpp/wallpaper/wallpaper_controller.h"
 #include "ash/rgb_keyboard/rgb_keyboard_manager.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_constants.h"
 #include "ash/webui/common/trusted_types_util.h"
 #include "ash/webui/grit/ash_personalization_app_resources.h"
 #include "ash/webui/grit/ash_personalization_app_resources_map.h"
+#include "ash/webui/personalization_app/mojom/sea_pen.mojom.h"
 #include "ash/webui/personalization_app/personalization_app_ambient_provider.h"
 #include "ash/webui/personalization_app/personalization_app_keyboard_backlight_provider.h"
+#include "ash/webui/personalization_app/personalization_app_sea_pen_provider.h"
 #include "ash/webui/personalization_app/personalization_app_theme_provider.h"
 #include "ash/webui/personalization_app/personalization_app_user_provider.h"
 #include "ash/webui/personalization_app/personalization_app_wallpaper_provider.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -34,7 +35,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "content/public/common/url_constants.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/mojom/content_security_policy.mojom-shared.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -330,13 +331,34 @@ void AddStrings(content::WebUIDataSource* source) {
       {"googlePhotosAlbumZeroStateMessage",
        IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_ALBUM_ZERO_STATE_MESSAGE},
 
+      // SeaPen strings
+      {"templatePark", IDS_PERSONALIZATION_APP_SEA_PEN_TEMPLATE_PARK},
+      {"templateOptionParis",
+       IDS_PERSONALIZATION_APP_SEA_PEN_CHIP_CITY_OPTION_PARIS},
+      {"templateOptionNewYork",
+       IDS_PERSONALIZATION_APP_SEA_PEN_CHIP_CITY_OPTION_NEW_YORK},
+      {"templateOptionPhotography",
+       IDS_PERSONALIZATION_APP_SEA_PEN_CHIP_STYLE_OPTION_PHOTOGRAPHY},
+      {"templateOptionWatercolor",
+       IDS_PERSONALIZATION_APP_SEA_PEN_CHIP_STYLE_OPTION_WATERCOLOR},
+
       // Time of day Wallpaper/Screen saver strings
       {"timeOfDayBannerDescription",
        IDS_PERSONALIZATION_APP_TIME_OF_DAY_BANNER_DESCRIPTION},
       {"timeOfDayBannerDescriptionNoScreensaver",
        IDS_PERSONALIZATION_APP_TIME_OF_DAY_BANNER_DESCRIPTION_NO_SCREENSAVER},
       {"timeOfDayWallpaperCollectionSublabel",
-       IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_COLLECTION_SUBLABEL}};
+       IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_COLLECTION_SUBLABEL},
+
+      // TODO(b/309715996): Add finalized strings.
+      {"timeOfDayWallpaperDialogTitle",
+       IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_DIALOG_TITLE},
+      {"timeOfDayWallpaperDialogContent",
+       IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_DIALOG_CONTENT},
+      {"timeOfDayWallpaperDialogBackButton",
+       IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_DIALOG_BACK_BUTTON},
+      {"timeOfDayWallpaperDialogConfirmButton",
+       IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_DIALOG_CONFIRM_BUTTON}};
 
   source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -391,12 +413,14 @@ PersonalizationAppUI::PersonalizationAppUI(
     std::unique_ptr<PersonalizationAppAmbientProvider> ambient_provider,
     std::unique_ptr<PersonalizationAppKeyboardBacklightProvider>
         keyboard_backlight_provider,
+    std::unique_ptr<PersonalizationAppSeaPenProvider> sea_pen_provider,
     std::unique_ptr<PersonalizationAppThemeProvider> theme_provider,
     std::unique_ptr<PersonalizationAppUserProvider> user_provider,
     std::unique_ptr<PersonalizationAppWallpaperProvider> wallpaper_provider)
     : ui::MojoWebUIController(web_ui),
       ambient_provider_(std::move(ambient_provider)),
       keyboard_backlight_provider_(std::move(keyboard_backlight_provider)),
+      sea_pen_provider_(std::move(sea_pen_provider)),
       theme_provider_(std::move(theme_provider)),
       user_provider_(std::move(user_provider)),
       wallpaper_provider_(std::move(wallpaper_provider)) {
@@ -415,8 +439,7 @@ PersonalizationAppUI::PersonalizationAppUI(
 
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
-      "script-src chrome://resources chrome://test chrome://webui-test "
-      "'self';");
+      "script-src chrome://resources chrome://webui-test 'self';");
 
   ash::EnableTrustedTypesCSP(source);
 
@@ -444,6 +467,12 @@ void PersonalizationAppUI::BindInterface(
     mojo::PendingReceiver<personalization_app::mojom::KeyboardBacklightProvider>
         receiver) {
   keyboard_backlight_provider_->BindInterface(std::move(receiver));
+}
+
+void PersonalizationAppUI::BindInterface(
+    mojo::PendingReceiver<::ash::personalization_app::mojom::SeaPenProvider>
+        receiver) {
+  sea_pen_provider_->BindInterface(std::move(receiver));
 }
 
 void PersonalizationAppUI::BindInterface(
@@ -496,6 +525,9 @@ void PersonalizationAppUI::AddBooleans(content::WebUIDataSource* source) {
 
   source->AddBoolean("isTimeOfDayWallpaperEnabled",
                      features::IsTimeOfDayWallpaperEnabled());
+
+  source->AddBoolean("isTimeOfDayWallpaperForcedAutoScheduleEnabled",
+                     features::IsTimeOfDayWallpaperForcedAutoScheduleEnabled());
 
   source->AddBoolean(
       "isSeaPenEnabled",

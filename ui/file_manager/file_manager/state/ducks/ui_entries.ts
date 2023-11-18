@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {isVolumeEntry, sortEntries} from '../../common/js/entry_utils.js';
-import {FakeEntryImpl} from '../../common/js/files_app_entry_types.js';
-import {util} from '../../common/js/util.js';
+import {isSameEntry, isVolumeEntry, sortEntries} from '../../common/js/entry_utils.js';
+import {EntryList} from '../../common/js/files_app_entry_types.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {FakeEntry} from '../../externs/files_app_entry_interfaces.js';
 import {FileKey, State} from '../../externs/ts/state.js';
 import {Slice} from '../../lib/base_store.js';
 import {cacheEntries, getMyFiles} from '../ducks/all_entries.js';
@@ -35,7 +35,7 @@ const uiEntryRootTypesInMyFiles = new Set([
 export const addUiEntry = slice.addReducer('add', addUiEntryReducer);
 
 export function addUiEntryReducer(currentState: State, payload: {
-  entry: FakeEntryImpl,
+  entry: FakeEntry|EntryList,
 }): State {
   // Cache entries, so the reducers can use any entry from `allEntries`.
   cacheEntries(currentState, [payload.entry]);
@@ -52,7 +52,7 @@ export function addUiEntryReducer(currentState: State, payload: {
         childEntry =>
             isVolumeEntry(childEntry) && childEntry.name === entry.name);
     const isUiEntryExistedInMyFiles =
-        !!children.find(childEntry => util.isSameEntry(childEntry, entry));
+        !!children.find(childEntry => isSameEntry(childEntry, entry));
     // We only add the UI entry here if:
     // 1. it is not existed in MyFiles entry
     // 2. its corresponding volume (which ui entry is a placeholder for) is not
@@ -97,7 +97,7 @@ export function removeUiEntryReducer(currentState: State, payload: {
   key: FileKey,
 }): State {
   const {key} = payload;
-  const entry = getEntry(currentState, key) as FakeEntryImpl | null;
+  const entry = getEntry(currentState, key) as FakeEntry | null;
   if (currentState.uiEntries.find(k => k === key)) {
     // Shallow copy.
     currentState.uiEntries = currentState.uiEntries.filter(k => k !== key);
@@ -109,7 +109,7 @@ export function removeUiEntryReducer(currentState: State, payload: {
     const {myFilesEntry} = getMyFiles(currentState);
     const children = myFilesEntry.getUIChildren();
     const isUiEntryExistedInMyFiles =
-        !!children.find(childEntry => util.isSameEntry(childEntry, entry));
+        !!children.find(childEntry => isSameEntry(childEntry, entry));
     if (isUiEntryExistedInMyFiles) {
       myFilesEntry.removeChildEntry(entry);
       const fileData = getFileData(currentState, myFilesEntry.toURL());

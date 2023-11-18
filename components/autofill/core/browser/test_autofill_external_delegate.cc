@@ -17,7 +17,7 @@ TestAutofillExternalDelegate::TestAutofillExternalDelegate(
     : AutofillExternalDelegate(autofill_manager),
       call_parent_methods_(call_parent_methods) {}
 
-TestAutofillExternalDelegate::~TestAutofillExternalDelegate() {}
+TestAutofillExternalDelegate::~TestAutofillExternalDelegate() = default;
 
 void TestAutofillExternalDelegate::OnPopupShown() {
   popup_hidden_ = false;
@@ -66,11 +66,14 @@ bool TestAutofillExternalDelegate::HasActiveScreenReader() const {
 }
 
 void TestAutofillExternalDelegate::OnAutofillAvailabilityEvent(
-    const mojom::AutofillState state) {
-  if (state == mojom::AutofillState::kAutofillAvailable)
+    mojom::AutofillSuggestionAvailability suggestion_availability) {
+  if (suggestion_availability ==
+      mojom::AutofillSuggestionAvailability::kAutofillAvailable) {
     has_suggestions_available_on_field_focus_ = true;
-  else if (state == mojom::AutofillState::kNoSuggestions)
+  } else if (suggestion_availability ==
+             mojom::AutofillSuggestionAvailability::kNoSuggestions) {
     has_suggestions_available_on_field_focus_ = false;
+  }
 }
 
 void TestAutofillExternalDelegate::WaitForPopupHidden() {
@@ -103,6 +106,13 @@ void TestAutofillExternalDelegate::CheckSuggestions(
   ASSERT_EQ(expected_num_suggestions, suggestions_.size());
 }
 
+void TestAutofillExternalDelegate::CheckSuggestionsNotReturned(
+    FieldGlobalId field_id) {
+  if (on_suggestions_returned_seen_) {
+    EXPECT_NE(field_id, field_id_);
+  }
+}
+
 void TestAutofillExternalDelegate::CheckNoSuggestions(FieldGlobalId field_id) {
   CheckSuggestions(field_id, 0, nullptr);
 }
@@ -115,6 +125,11 @@ void TestAutofillExternalDelegate::CheckSuggestionCount(
 
   EXPECT_EQ(field_id, field_id_);
   ASSERT_EQ(expected_num_suggestions, suggestions_.size());
+}
+
+const std::vector<Suggestion>& TestAutofillExternalDelegate::suggestions()
+    const {
+  return suggestions_;
 }
 
 bool TestAutofillExternalDelegate::on_query_seen() const {

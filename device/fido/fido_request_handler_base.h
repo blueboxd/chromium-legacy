@@ -19,7 +19,7 @@
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_discovery_base.h"
@@ -411,10 +411,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   // |OnTransportAvailabilityEnumerated| on |observer_|.
   std::unique_ptr<TransportAvailabilityCallbackReadiness>
       transport_availability_callback_readiness_;
-
-  // internal_authenticator_found_ is used to check that at most one kInternal
-  // authenticator is discovered.
-  bool internal_authenticator_found_ = false;
 
   base::WeakPtrFactory<FidoRequestHandlerBase> weak_factory_{this};
 };

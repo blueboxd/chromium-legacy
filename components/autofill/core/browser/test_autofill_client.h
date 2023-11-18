@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_AUTOFILL_CLIENT_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_AUTOFILL_CLIENT_H_
 
+#include <concepts>
 #include <memory>
 #include <string>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -40,7 +40,7 @@
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/test/mock_mandatory_reauth_manager.h"
 #include "components/autofill/core/browser/payments/test/test_credit_card_risk_based_authenticator.h"
-#include "components/autofill/core/browser/payments/test_payments_client.h"
+#include "components/autofill/core/browser/payments/test_payments_network_interface.h"
 #include "components/autofill/core/browser/strike_databases/payments/test_strike_database.h"
 #include "components/autofill/core/browser/test_address_normalizer.h"
 #include "components/autofill/core/browser/test_form_data_importer.h"
@@ -83,11 +83,9 @@ namespace autofill {
 //
 // If you enable the Finch feature `kAutofillLoggingToTerminal`,
 // autofill-internals logs are recorded to LOG(INFO).
-template <typename T>
+template <std::derived_from<AutofillClient> T>
 class TestAutofillClientTemplate : public T {
  public:
-  static_assert(std::is_base_of_v<AutofillClient, T>);
-
   using T::T;
   TestAutofillClientTemplate(const TestAutofillClientTemplate&) = delete;
   TestAutofillClientTemplate& operator=(const TestAutofillClientTemplate&) =
@@ -187,15 +185,15 @@ class TestAutofillClientTemplate : public T {
   FormDataImporter* GetFormDataImporter() override {
     if (!form_data_importer_) {
       set_test_form_data_importer(std::make_unique<FormDataImporter>(
-          /*client=*/this, /*payments_client=*/nullptr,
+          /*client=*/this, /*payments_network_interface=*/nullptr,
           /*personal_data_manager=*/nullptr, /*app_locale=*/"en-US"));
     }
 
     return form_data_importer_.get();
   }
 
-  payments::PaymentsClient* GetPaymentsClient() override {
-    return payments_client_.get();
+  payments::PaymentsNetworkInterface* GetPaymentsNetworkInterface() override {
+    return payments_network_interface_.get();
   }
 
   StrikeDatabase* GetStrikeDatabase() override {
@@ -269,14 +267,6 @@ class TestAutofillClientTemplate : public T {
 
   void ShowAutofillSettings(PopupType popup_type) override {}
 
-  void ShowUnmaskPrompt(
-      const autofill::CreditCard& card,
-      const autofill::CardUnmaskPromptOptions& card_unmask_prompt_options,
-      base::WeakPtr<autofill::CardUnmaskDelegate> delegate) override {}
-
-  void OnUnmaskVerificationResult(
-      AutofillClient::PaymentsRpcResult result) override {}
-
   VirtualCardEnrollmentManager* GetVirtualCardEnrollmentManager() override {
     return form_data_importer_->GetVirtualCardEnrollmentManager();
   }
@@ -341,20 +331,7 @@ class TestAutofillClientTemplate : public T {
     offer_to_save_iban_bubble_was_shown_ = should_show_prompt;
   }
 
-  void ShowWebauthnOfferDialog(
-      AutofillClient::WebauthnDialogCallback offer_dialog_callback) override {}
-
-  void ShowWebauthnVerifyPendingDialog(
-      AutofillClient::WebauthnDialogCallback verify_pending_dialog_callback)
-      override {}
-
-  void UpdateWebauthnOfferDialogWithError() override {}
-
   bool CloseWebauthnDialog() override { return true; }
-
-  void OfferVirtualCardOptions(
-      const std::vector<CreditCard*>& candidates,
-      base::OnceCallback<void(const std::string&)> callback) override {}
 
 #else  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
@@ -443,8 +420,7 @@ class TestAutofillClientTemplate : public T {
   }
 
   void UpdateAutofillPopupDataListValues(
-      const std::vector<std::u16string>& values,
-      const std::vector<std::u16string>& labels) override {}
+      base::span<const SelectOption> options) override {}
 
   std::vector<Suggestion> GetPopupSuggestions() const override { return {}; }
 
@@ -504,8 +480,6 @@ class TestAutofillClientTemplate : public T {
     // Simplified secure context check for tests.
     return form_origin_.SchemeIs("https");
   }
-
-  void OpenPromoCodeOfferDetailsURL(const GURL& url) override {}
 
   LogManager* GetLogManager() const override { return log_manager_.get(); }
 
@@ -590,9 +564,10 @@ class TestAutofillClientTemplate : public T {
     test_strike_database_ = std::move(test_strike_database);
   }
 
-  void set_test_payments_client(
-      std::unique_ptr<payments::TestPaymentsClient> payments_client) {
-    payments_client_ = std::move(payments_client);
+  void set_test_payments_network_interface(
+      std::unique_ptr<payments::TestPaymentsNetworkInterface>
+          payments_network_interface) {
+    payments_network_interface_ = std::move(payments_network_interface);
   }
 
   void set_test_form_data_importer(
@@ -774,11 +749,12 @@ class TestAutofillClientTemplate : public T {
   // The below objects must be destroyed before `TestPersonalDataManager`
   // because they keep a reference to it.
   std::unique_ptr<AutofillOfferManager> autofill_offer_manager_;
-  std::unique_ptr<payments::PaymentsClient> payments_client_;
+  std::unique_ptr<payments::PaymentsNetworkInterface>
+      payments_network_interface_;
   std::unique_ptr<testing::NiceMock<MockIbanManager>> mock_iban_manager_;
 
-  // The below objects must be destroyed before `PaymentsClient` because they
-  // (or their members) keep a reference to it.
+  // The below objects must be destroyed before `PaymentsNetworkInterface`
+  // because they (or their members) keep a reference to it.
   std::unique_ptr<CreditCardCvcAuthenticator> cvc_authenticator_;
   std::unique_ptr<CreditCardOtpAuthenticator> otp_authenticator_;
   std::unique_ptr<TestCreditCardRiskBasedAuthenticator>

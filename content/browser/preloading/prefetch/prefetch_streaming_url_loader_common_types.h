@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_PRELOADING_PREFETCH_PREFETCH_STREAMING_URL_LOADER_COMMON_TYPES_H_
 #define CONTENT_BROWSER_PRELOADING_PREFETCH_PREFETCH_STREAMING_URL_LOADER_COMMON_TYPES_H_
 
+#include <optional>
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader.mojom-forward.h"
@@ -41,7 +42,8 @@ enum class PrefetchStreamingURLLoaderStatus {
   kSuccessfulServedAfterCompletion = 4,
   kSuccessfulServedBeforeCompletion = 5,
 
-  // Failure reasons based on the head of the response.
+  // Failure reasons based on the head of the response, corresponding to
+  // `PrefetchErrorOnResponseReceived`.
   kPrefetchWasDecoy = 6,
   kFailedInvalidHead = 7,
   kFailedInvalidHeaders = 8,
@@ -75,10 +77,17 @@ using PrefetchRequestHandler = base::OnceCallback<void(
 
 // This callback is used by the owner to determine if the prefetch is valid
 // based on |head|. If the prefetch should be servable based on |head|, then
-// the callback should return |kHeadReceivedWaitingOnBody|. Otherwise it
-// should return a valid failure reason.
+// the callback should return `std::nullopt`. Otherwise it should return a
+// failure reason.
+enum class PrefetchErrorOnResponseReceived {
+  kPrefetchWasDecoy,
+  kFailedInvalidHead,
+  kFailedInvalidHeaders,
+  kFailedNon2XX,
+  kFailedMIMENotSupported
+};
 using OnPrefetchResponseStartedCallback =
-    base::OnceCallback<PrefetchStreamingURLLoaderStatus(
+    base::OnceCallback<std::optional<PrefetchErrorOnResponseReceived>(
         network::mojom::URLResponseHead* head)>;
 
 using OnPrefetchResponseCompletedCallback = base::OnceCallback<void(

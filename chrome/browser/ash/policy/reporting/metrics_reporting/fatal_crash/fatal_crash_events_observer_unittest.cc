@@ -3,24 +3,32 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/fatal_crash/fatal_crash_events_observer.h"
+#include "chrome/browser/ash/policy/reporting/metrics_reporting/fatal_crash/fatal_crash_events_observer_reported_local_id_manager.h"
+#include "chrome/browser/ash/policy/reporting/metrics_reporting/fatal_crash/fatal_crash_events_observer_uploaded_crash_info_manager.h"
 
+#include <atomic>
 #include <memory>
 #include <sstream>
 #include <string>
 #include <string_view>
 #include <tuple>
 #include <utility>
+#include <vector>
 
 #include "ash/test/ash_test_base.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_file_util.h"
 #include "base/test/test_future.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/policy/reporting/metrics_reporting/fatal_crash/fatal_crash_events_observer_settings_for_test.h"
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/fatal_crash/fatal_crash_events_observer_test_util.h"
 #include "chromeos/ash/components/mojo_service_manager/fake_mojo_service_manager.h"
 #include "chromeos/ash/services/cros_healthd/public/cpp/fake_cros_healthd.h"
@@ -31,7 +39,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace reporting {
-namespace {
 
 using std::literals::string_view_literals::operator""sv;
 
@@ -41,7 +48,10 @@ using ::ash::cros_healthd::mojom::CrashEventInfoPtr;
 using ::ash::cros_healthd::mojom::CrashUploadInfo;
 using ::ash::cros_healthd::mojom::EventCategoryEnum;
 using ::ash::cros_healthd::mojom::EventInfo;
+using ::testing::Eq;
+using ::testing::SizeIs;
 
+namespace {
 // RAII class to interrupt after event is observed.
 class ScopedInterruptedAfterEventObserved {
  public:
@@ -49,13 +59,13 @@ class ScopedInterruptedAfterEventObserved {
   explicit ScopedInterruptedAfterEventObserved(
       FatalCrashEventsObserver& observer)
       : observer_(&observer) {
-    FatalCrashEventsObserver::TestEnvironment::SetInterruptedAfterEventObserved(
-        *observer_, /*interrupted_after_event_observed=*/true);
+    FatalCrashEventsObserver::TestEnvironment::GetTestSettings(*observer_)
+        .interrupted_after_event_observed = true;
   }
 
   virtual ~ScopedInterruptedAfterEventObserved() {
-    FatalCrashEventsObserver::TestEnvironment::SetInterruptedAfterEventObserved(
-        *observer_, /*interrupted_after_event_observed=*/false);
+    FatalCrashEventsObserver::TestEnvironment::GetTestSettings(*observer_)
+        .interrupted_after_event_observed = false;
   }
 
   ScopedInterruptedAfterEventObserved(
@@ -73,6 +83,8 @@ class ScopedInterruptedAfterEventObserved {
  private:
   raw_ptr<FatalCrashEventsObserver> observer_;
 };
+
+}  // namespace
 
 // Base class for testing `FatalCrashEventsObserver`. `NoSessionAshTestBase` is
 // needed here because the observer uses `ash::Shell()` to obtain the user
@@ -129,6 +141,26 @@ class FatalCrashEventsObserverTestBase : public ::ash::NoSessionAshTestBase {
     return observer;
   }
 
+  // Recreate a `FatalCrashEventsObserver` object and enables reporting. It
+  // optionally sets the OnEventObserved callback if test_event is provided. It
+  // ensures that the existing `FatalCrashEventsObserver` object is destroyed
+  // and all its IO tasks are executed first before creating the new object.
+  void RecreateAndEnableFatalCrashEventsObserver(
+      std::unique_ptr<FatalCrashEventsObserver>& observer,
+      base::test::TestFuture<MetricData>* test_event = nullptr) const {
+    // Clear the current sequence as IO tasks may be posted.
+    base::RunLoop().RunUntilIdle();
+    // Make sure all save file changes in the observer instance to be destroyed
+    // are finished. Otherwise, the new observer instance may fail to read the
+    // save file.
+    FatalCrashEventsObserver::TestEnvironment::FlushIoTasks(*observer);
+    // Don't assign directly as assignment will cause the current observer to be
+    // destroyed after the new observer is created. Explicitly call `reset` here
+    // to ensure the current observer is destroyed first.
+    observer.reset();
+    observer = CreateAndEnableFatalCrashEventsObserver(test_event);
+  }
+
   // Let the fake cros_healthd emit the crash event and wait for the
   // `FatalCrashTelemetry` message to become available.
   //
@@ -141,6 +173,9 @@ class FatalCrashEventsObserverTestBase : public ::ash::NoSessionAshTestBase {
   // by the caller. This is useful when the caller needs to wait for fatal crash
   // telemetry for multiple times from the same observer, as the observer's
   // OnEventObserved callback cannot be set twice.
+  //
+  // Also performs some simple verifications, such as event types and the
+  // existence of fatal crash telemetry in the resulted `MetricData`.
   FatalCrashTelemetry WaitForFatalCrashTelemetry(
       CrashEventInfoPtr crash_event_info,
       FatalCrashEventsObserver* fatal_crash_events_observer = nullptr,
@@ -164,6 +199,11 @@ class FatalCrashEventsObserverTestBase : public ::ash::NoSessionAshTestBase {
         EventInfo::NewCrashEventInfo(std::move(crash_event_info)));
 
     auto metric_data = result_metric_data->Take();
+
+    EXPECT_TRUE(metric_data.has_event_data());
+    EXPECT_TRUE(metric_data.event_data().has_type());
+    EXPECT_EQ(metric_data.event_data().type(), MetricEventType::CRASH_FATALLY);
+
     EXPECT_TRUE(metric_data.has_telemetry_data());
     EXPECT_TRUE(metric_data.telemetry_data().has_fatal_crash_telemetry());
     return std::move(metric_data.telemetry_data().fatal_crash_telemetry());
@@ -361,6 +401,132 @@ TEST_P(FatalCrashEventsObserverTest, ObserveMultipleEvents) {
   }
 }
 
+TEST_P(FatalCrashEventsObserverTest, SlowFileLoadingFieldsPassedThrough) {
+  // Test that fields are passed through for crash events that either:
+  //   1. come before save files are loaded, or
+  //   2. before all crashes queued before save files are loaded.
+
+  // Because FakeCrosHealthd::Get()->EmitEventForCategory() causes tasks on the
+  // current thread to be processed, for this test alone, we call
+  // FatalCrashEventsObserver::OnEvent directly to emulate the effect of
+  // FakeCrosHealthd::Get()->EmitEventForCategory().
+
+  // Need 4 crash events to work around limitations in manipulating tasks in a
+  // sequence.
+  static constexpr size_t kNumCrashes = 4;
+  static constexpr std::array<std::string_view, kNumCrashes> kLocalIds = {
+      "First local ID", "Second local ID", "Third Local ID", "Fourth Local ID"};
+
+  std::array<CrashEventInfoPtr, kNumCrashes> crash_event_infos = {
+      NewCrashEventInfo(is_uploaded()), NewCrashEventInfo(is_uploaded()),
+      NewCrashEventInfo(is_uploaded()), NewCrashEventInfo(is_uploaded())};
+  for (size_t i = 0; i < crash_event_infos.size(); ++i) {
+    // Test the local ID field sufficient.
+    crash_event_infos[i]->local_id = kLocalIds[i];
+
+    // Make uploaded crashes have increasing offset, which is the most practical
+    // scenario.
+    if (crash_event_infos[i]->upload_info) {
+      crash_event_infos[i]->upload_info->offset = i;
+    }
+  }
+
+  const auto io_task_runner = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::TaskShutdownBehavior::BLOCK_SHUTDOWN, base::MayBlock()});
+
+  // Block the IO thread.
+  FatalCrashEventsObserver::TestEnvironment::SequenceBlocker sequence_blocker(
+      io_task_runner);
+
+  // Create and set up the observer object.
+  auto observer = fatal_crash_test_environment_.CreateFatalCrashEventsObserver(
+      /*reported_local_id_io_task_runner=*/is_uploaded() ? nullptr
+                                                         : io_task_runner,
+      /*uploaded_crash_info_io_task_runner=*/is_uploaded() ? io_task_runner
+                                                           : nullptr);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(
+      FatalCrashEventsObserver::TestEnvironment::GetTestSettings(*observer)
+          .sequence_checker);
+  observer->SetReportingEnabled(true);
+  // Not using `TestFuture`, because it can only accept one value at a time and
+  // generates an error if another values comes in before the first value is
+  // taken. Due to the racing of the task sequence in unit tests, pushing
+  // results to a vector would not be flaky.
+  std::vector<MetricData> results;
+  results.reserve(4u);
+  observer->SetOnEventObservedCallback(base::BindRepeating(
+      [](std::vector<MetricData>* results,
+         scoped_refptr<base::SequencedTaskRunner> main_task_runner,
+         MetricData metric_data) {
+        ASSERT_THAT(base::SequencedTaskRunner::GetCurrentDefault(),
+                    Eq(main_task_runner));
+        results->push_back(std::move(metric_data));
+      },
+      &results, base::SequencedTaskRunner::GetCurrentDefault()));
+  base::test::TestFuture<CrashEventInfoPtr> queued_crash_event_result;
+  FatalCrashEventsObserver::TestEnvironment::GetTestSettings(*observer)
+      .event_collected_before_save_files_loaded_callback =
+      queued_crash_event_result.GetRepeatingCallback();
+
+  // Emit the first 3 events before the save file is loaded. The event is queued
+  // and saved in RAM.
+  for (size_t i = 0; i < 3u; ++i) {
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, base::BindOnce(&FatalCrashEventsObserver::OnEvent,
+                                  observer->weak_factory_.GetWeakPtr(),
+                                  EventInfo::NewCrashEventInfo(
+                                      std::move(crash_event_infos[i]))));
+    // Sanity check to ensure that the crash event is indeed queued.
+    EXPECT_THAT(queued_crash_event_result.Take()->local_id, Eq(kLocalIds[i]));
+  }
+
+  // Unblock the IO, flush the IO (thus save files are loaded), and emit the
+  // fourth event. Because the third event has not been processed yet when
+  // `OnEvent` for the fourth event is called, the fourth event is also expected
+  // to be queued up.
+  ASSERT_TRUE(!observer->AreSaveFilesLoaded())
+      << "Internal error: Save files are loaded even task thread is blocked";
+  sequence_blocker.Unblock();
+  FatalCrashEventsObserver::TestEnvironment::
+      FlushTaskRunnerWithCurrentSequenceBlocked(io_task_runner);
+  ASSERT_TRUE(observer->AreSaveFilesLoaded())
+      << "Internal error: Flushing IO tasks does not finish loading save files";
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, base::BindOnce(&FatalCrashEventsObserver::OnEvent,
+                                observer->weak_factory_.GetWeakPtr(),
+                                EventInfo::NewCrashEventInfo(
+                                    std::move(crash_event_infos[3]))));
+  // Flushing IO tasks causes the first ProcessEventsBeforeSaveFilesLoaded task
+  // (which has filled result_metric_data) executed and the second
+  // ProcessEventsBeforeSaveFilesLoaded task left in the sequence. Therefore,
+  // the current sequence contains the second ProcessEventsBeforeSaveFilesLoaded
+  // task followed by one OnEvent task.
+  // Sanity check to ensure that the crash event is indeed queued.
+  EXPECT_THAT(queued_crash_event_result.Take()->local_id, Eq(kLocalIds[3]));
+
+  // All crash events should be available in order, and the event collected call
+  // back should never be called from this point on.
+  FatalCrashEventsObserver::TestEnvironment::GetTestSettings(*observer)
+      .event_collected_before_save_files_loaded_callback =
+      base::BindRepeating([](CrashEventInfoPtr crash_event_info) {
+        // Sanity check to ensure that no more crash event is queued.
+        EXPECT_FALSE(true) << "Found unexpected queued crash event: "
+                           << crash_event_info->local_id;
+      });
+  base::RunLoop().RunUntilIdle();
+  ASSERT_THAT(results, SizeIs(4u));
+  for (size_t i = 0; i < results.size(); ++i) {
+    const auto& metric_data = results[i];
+    ASSERT_TRUE(metric_data.has_telemetry_data());
+    ASSERT_TRUE(metric_data.telemetry_data().has_fatal_crash_telemetry());
+    const auto& fatal_crash_telemetry =
+        metric_data.telemetry_data().fatal_crash_telemetry();
+
+    ASSERT_TRUE(fatal_crash_telemetry.has_local_id());
+    EXPECT_EQ(fatal_crash_telemetry.local_id(), kLocalIds[i]);
+  }
+}
+
 INSTANTIATE_TEST_SUITE_P(
     FatalCrashEventsObserverTests,
     FatalCrashEventsObserverTest,
@@ -471,8 +637,9 @@ class FatalCrashEventsObserverReportedLocalIdsTestBase
   ~FatalCrashEventsObserverReportedLocalIdsTestBase() override = default;
 
   // Gets the path to the save file.
-  const base::FilePath& GetSaveFilePath() const {
-    return fatal_crash_test_environment_.GetReportedLocalIdSaveFilePath();
+  base::FilePath GetSaveFilePath() const {
+    return fatal_crash_test_environment_.GetSaveFilePathsProvider()
+        .GetReportedLocalIdSaveFilePath();
   }
 
   // Generates an uninteresting fatal crash event to alter the observer's state
@@ -512,9 +679,15 @@ class FatalCrashEventsObserverReportedLocalIdsTestBase
       std::string_view local_id,
       base::Time capture_time,
       FatalCrashEventsObserver& fatal_crash_observer) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(
+        FatalCrashEventsObserver::TestEnvironment::GetTestSettings(
+            fatal_crash_observer)
+            .sequence_checker);
+
     base::test::TestFuture<FatalCrashEventsObserver::LocalIdEntry> result;
-    fatal_crash_observer.SetSkippedUnuploadedCrashCallback(
-        result.GetRepeatingCallback());
+    FatalCrashEventsObserver::TestEnvironment::GetTestSettings(
+        fatal_crash_observer)
+        .skipped_unuploaded_crash_callback = result.GetRepeatingCallback();
 
     auto crash_event_info = NewCrashEventInfo(/*is_uploaded=*/false);
     crash_event_info->local_id = local_id;
@@ -574,7 +747,7 @@ TEST_P(FatalCrashEventsObserverReportedLocalIdsTest,
   CreateFatalCrashEvent(/*local_id=*/kLocalId, /*capture_time=*/kCaptureTime,
                         *fatal_crash_events_observer);
   if (reload()) {
-    fatal_crash_events_observer = CreateAndEnableFatalCrashEventsObserver();
+    RecreateAndEnableFatalCrashEventsObserver(fatal_crash_events_observer);
   }
 
   base::HistogramTester histogram_tester;
@@ -601,7 +774,7 @@ TEST_P(FatalCrashEventsObserverReportedLocalIdsTest,
   if (reload()) {
     // As a sanity test, if the observer is reloaded, then the repeated local ID
     // would not lead to a skipped crash.
-    fatal_crash_events_observer = CreateAndEnableFatalCrashEventsObserver();
+    RecreateAndEnableFatalCrashEventsObserver(fatal_crash_events_observer);
     // We are uninterested in the crash itself since this is a sanity test, only
     // need to know that a new crash is reported.
     CreateFatalCrashEvent(/*local_id=*/kLocalId, /*capture_time=*/kCaptureTime,
@@ -623,8 +796,8 @@ TEST_P(FatalCrashEventsObserverReportedLocalIdsTest,
       CreateFatalCrashEventsObserverFilledWithMaxNumberOfSavedLocalIds();
 
   if (reload()) {
-    fatal_crash_events_observer =
-        CreateAndEnableFatalCrashEventsObserver(result_metric_data.get());
+    RecreateAndEnableFatalCrashEventsObserver(fatal_crash_events_observer,
+                                              result_metric_data.get());
   }
 
   // Crashes with an earlier timestamp are skipped. Repeat twice for robustness
@@ -656,8 +829,8 @@ TEST_P(FatalCrashEventsObserverReportedLocalIdsTest,
       CreateFatalCrashEventsObserverFilledWithMaxNumberOfSavedLocalIds();
 
   if (reload()) {
-    fatal_crash_events_observer =
-        CreateAndEnableFatalCrashEventsObserver(result_metric_data.get());
+    RecreateAndEnableFatalCrashEventsObserver(fatal_crash_events_observer,
+                                              result_metric_data.get());
   }
 
   // Crashes with the same timestamp are skipped. Repeat twice for robustness --
@@ -691,8 +864,8 @@ TEST_P(FatalCrashEventsObserverReportedLocalIdsTest,
       CreateFatalCrashEventsObserverFilledWithMaxNumberOfSavedLocalIds();
 
   if (reload()) {
-    fatal_crash_events_observer =
-        CreateAndEnableFatalCrashEventsObserver(result_metric_data.get());
+    RecreateAndEnableFatalCrashEventsObserver(fatal_crash_events_observer,
+                                              result_metric_data.get());
   }
 
   // Crash with later timestamps are reported.
@@ -729,8 +902,8 @@ TEST_P(FatalCrashEventsObserverReportedLocalIdsTest,
                         /*is_uploaded=*/true);
 
   if (reload()) {
-    fatal_crash_events_observer =
-        CreateAndEnableFatalCrashEventsObserver(&result_metric_data);
+    RecreateAndEnableFatalCrashEventsObserver(fatal_crash_events_observer,
+                                              &result_metric_data);
   }
 
   // Create kMaxNumOfLocalIds - 1 crashes with an earlier capture time.
@@ -819,8 +992,8 @@ TEST_F(FatalCrashEventsObserverReportedLocalIdsTest,
   }
 
   // Reload.
-  fatal_crash_events_observer =
-      CreateAndEnableFatalCrashEventsObserver(&result_metric_data);
+  RecreateAndEnableFatalCrashEventsObserver(fatal_crash_events_observer,
+                                            &result_metric_data);
 
   // Create kMaxNumOfLocalIds - 1 crashes with an earlier capture time.
   for (size_t i = 0u; i < kMaxNumOfLocalIds - 1u; ++i) {
@@ -984,6 +1157,8 @@ TEST_F(FatalCrashEventsObserverReportedLocalIdsCorruptSaveFileTest,
   auto fatal_crash_events_observer =
       CreateAndEnableFatalCrashEventsObserver(&result_metric_data);
 
+  // (kMaxNumOfLocalIds - 1) more crashes to fill saved local IDs to maximum
+  // capacity.
   for (size_t i = 0u; i < kMaxNumOfLocalIds - 1; ++i) {
     std::ostringstream ss;
     ss << kLocalId << i;
@@ -993,7 +1168,7 @@ TEST_F(FatalCrashEventsObserverReportedLocalIdsCorruptSaveFileTest,
   }
 
   // Because one good line is still parsed and loaded, the
-  // kMaxNumOfLocalIds'th crash with the zero capture time would be skipped.
+  // (kMaxNumOfLocalIds+1)'th crash with the zero capture time would be skipped.
   const auto local_id_entry = WaitForSkippedFatalCrashEvent(
       /*local_id=*/kLocalId,
       /*capture_time=*/kCaptureTimeZero, *fatal_crash_events_observer);
@@ -1006,6 +1181,10 @@ TEST_F(FatalCrashEventsObserverReportedLocalIdsCorruptSaveFileTest,
       CreateAndEnableFatalCrashEventsObserver(&result_metric_data);
   CreateFatalCrashEvent(kLocalId, kCaptureTime, *fatal_crash_events_observer,
                         &result_metric_data);
+
+  // Make sure the save file writing task is executed.
+  FatalCrashEventsObserver::TestEnvironment::FlushIoTasks(
+      *fatal_crash_events_observer);
 
   // The save file is now available. Make it unreadable.
   ASSERT_TRUE(base::PathExists(GetSaveFilePath()));
@@ -1072,8 +1251,9 @@ class FatalCrashEventsObserverUploadedCrashTestBase
   ~FatalCrashEventsObserverUploadedCrashTestBase() override = default;
 
   // Gets the path to the save file.
-  const base::FilePath& GetSaveFilePath() const {
-    return fatal_crash_test_environment_.GetUploadedCrashInfoSaveFilePath();
+  base::FilePath GetSaveFilePath() const {
+    return fatal_crash_test_environment_.GetSaveFilePathsProvider()
+        .GetUploadedCrashInfoSaveFilePath();
   }
 
   // Generates an uninteresting fatal crash event to alter the observer's state
@@ -1104,12 +1284,18 @@ class FatalCrashEventsObserverUploadedCrashTestBase
       base::Time creation_time,
       uint64_t offset,
       FatalCrashEventsObserver& fatal_crash_observer) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(
+        FatalCrashEventsObserver::TestEnvironment::GetTestSettings(
+            fatal_crash_observer)
+            .sequence_checker);
+
     base::test::TestFuture<std::string /* crash_report_id */,
                            base::Time /* creation_time */,
                            uint64_t /* offset */>
         result;
-    fatal_crash_observer.SetSkippedUploadedCrashCallback(
-        result.GetRepeatingCallback());
+    FatalCrashEventsObserver::TestEnvironment::GetTestSettings(
+        fatal_crash_observer)
+        .skipped_uploaded_crash_callback = result.GetRepeatingCallback();
 
     auto crash_event_info = NewCrashEventInfo(/*is_uploaded=*/true);
     crash_event_info->upload_info->crash_report_id = crash_report_id;
@@ -1241,8 +1427,8 @@ TEST_P(FatalCrashEventsObserverUploadedCrashTest,
   }
 
   if (reload()) {
-    fatal_crash_events_observer =
-        CreateAndEnableFatalCrashEventsObserver(&result_metric_data);
+    RecreateAndEnableFatalCrashEventsObserver(fatal_crash_events_observer,
+                                              &result_metric_data);
   }
 
   if (should_be_reported()) {
@@ -1446,6 +1632,10 @@ TEST_F(FatalCrashEventsObserverUploadedCrashCorruptSaveFileTest,
   CreateFatalCrashEvent(kCrashReportId, kZeroCreationTime, kZeroOffset,
                         *fatal_crash_events_observer, &result_metric_data);
 
+  // Make sure the save file writing task is executed.
+  FatalCrashEventsObserver::TestEnvironment::FlushIoTasks(
+      *fatal_crash_events_observer);
+
   // The save file is now available. Make it unreadable.
   ASSERT_TRUE(base::PathExists(GetSaveFilePath()));
   ASSERT_TRUE(base::MakeFileUnreadable(GetSaveFilePath()));
@@ -1525,6 +1715,4 @@ INSTANTIATE_TEST_SUITE_P(
     [](const testing::TestParamInfo<
         FatalCrashEventsObserverUploadedCrashCorruptSaveFileTest::ParamType>&
            info) { return info.param.name; });
-
-}  // namespace
 }  // namespace reporting

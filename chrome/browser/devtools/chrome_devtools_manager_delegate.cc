@@ -105,7 +105,10 @@ bool GetExtensionInfo(content::WebContents* wc,
     *type = ChromeDevToolsManagerDelegate::kTypePage;
     return true;
   }
-  return false;
+
+  // Set type to other for extensions if not matched previously.
+  *type = DevToolsAgentHost::kTypeOther;
+  return true;
 }
 
 ChromeDevToolsManagerDelegate* g_instance;

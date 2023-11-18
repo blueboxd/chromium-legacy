@@ -68,9 +68,11 @@ class TestAccessManager : public CreditCardAccessManager {
                                 personal_data,
                                 /*credit_card_form_event_logger=*/nullptr) {}
 
-  void FetchCreditCard(const CreditCard* card,
-                       base::WeakPtr<Accessor> accessor) override {
-    accessor->OnCreditCardFetched(CreditCardFetchResult::kSuccess, card);
+  void FetchCreditCard(
+      const CreditCard* card,
+      OnCreditCardFetchedCallback on_credit_card_fetched) override {
+    std::move(on_credit_card_fetched)
+        .Run(CreditCardFetchResult::kSuccess, card);
   }
 };
 
@@ -80,6 +82,7 @@ class MockAutofillDriver : public TestContentAutofillDriver {
   MOCK_METHOD(void,
               ApplyFieldAction,
               (mojom::ActionPersistence action_persistence,
+               mojom::TextReplacement text_replacement,
                const FieldGlobalId& field,
                const std::u16string&),
               (override));
@@ -312,7 +315,8 @@ TEST_P(CreditCardAccessoryControllerCardUnmaskTest, CardUnmask) {
                          .renderer_id = FieldRendererId(123)};
 
   EXPECT_CALL(autofill_driver(),
-              ApplyFieldAction(mojom::ActionPersistence::kFill, field_id,
+              ApplyFieldAction(mojom::ActionPersistence::kFill,
+                               mojom::TextReplacement::kReplaceAll, field_id,
                                card.number()));
 
   controller()->OnFillingTriggered(field_id, field);

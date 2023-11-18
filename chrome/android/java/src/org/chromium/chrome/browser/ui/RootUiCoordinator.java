@@ -12,7 +12,6 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.CancellationSignal;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.view.View;
@@ -58,7 +57,6 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.crash.ChromePureJavaExceptionReporter;
 import org.chromium.chrome.browser.device_lock.DeviceLockActivityLauncherImpl;
-import org.chromium.chrome.browser.directactions.DirectActionInitializer;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeToolbarButtonController;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -153,6 +151,7 @@ import org.chromium.chrome.browser.ui.fold_transitions.FoldTransitionController;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController.StatusBarColorProvider;
+import org.chromium.chrome.browser.wallet.BoardingPassController;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.components.browser_ui.accessibility.PageZoomCoordinator;
 import org.chromium.components.browser_ui.accessibility.PageZoomCoordinatorDelegate;
@@ -193,7 +192,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
 
 /**
  * The root UI coordinator. This class will eventually be responsible for inflating and managing
@@ -259,7 +257,6 @@ public class RootUiCoordinator
     private SnackbarManager mBottomSheetSnackbarManager;
 
     private ScrimCoordinator mScrimCoordinator;
-    private DirectActionInitializer mDirectActionInitializer;
     private List<ButtonDataProvider> mButtonDataProviders;
     @Nullable
     private AdaptiveToolbarButtonController mAdaptiveToolbarButtonController;
@@ -321,8 +318,7 @@ public class RootUiCoordinator
     private final boolean mInitializeUiWithIncognitoColors;
     private HistoryClustersCoordinator mHistoryClustersCoordinator;
     private final Supplier<EphemeralTabCoordinator> mEphemeralTabCoordinatorSupplier;
-    @Nullable
-    private final BackPressManager mBackPressManager;
+    @Nullable protected final BackPressManager mBackPressManager;
     private final boolean mIsIncognitoReauthPendingOnRestore;
     protected final ExpandedSheetHelper mExpandedBottomSheetHelper;
     private final ObservableSupplierImpl<ReadAloudController> mReadAloudControllerSupplier =
@@ -338,6 +334,7 @@ public class RootUiCoordinator
     private FoldTransitionController mFoldTransitionController;
     private RestoreTabsFeatureHelper mRestoreTabsFeatureHelper;
     private @Nullable EdgeToEdgeController mE2eController;
+    private @Nullable BoardingPassController mBoardingPassController;
 
     /**
      * Create a new {@link RootUiCoordinator} for the given activity.
@@ -548,6 +545,13 @@ public class RootUiCoordinator
         return mTopUiThemeColorProvider;
     }
 
+    /** Returns the controller for the Page Insights bottom sheet, if it is enabled. */
+    // TODO(b/307046796): Remove this once we have found better way to integrate with back handling
+    // logic.
+    public @Nullable ManagedBottomSheetController getPageInsightsBottomSheetController() {
+        return null;
+    }
+
     public void onAttachFragment(Fragment fragment) {
         if (fragment instanceof QrCodeDialog) {
             QrCodeDialog qrCodeDialog = (QrCodeDialog) fragment;
@@ -703,6 +707,11 @@ public class RootUiCoordinator
             mE2eController = null;
         }
 
+        if (mBoardingPassController != null) {
+            mBoardingPassController.destroy();
+            mBoardingPassController = null;
+        }
+
         mActivity = null;
     }
 
@@ -733,7 +742,6 @@ public class RootUiCoordinator
     @Override
     public void onPostInflationStartup() {
         initAppMenu();
-        initDirectActionInitializer();
         initBottomSheetObserver();
         initSnackbarObserver();
         initBrowserControlsObserver();
@@ -747,22 +755,30 @@ public class RootUiCoordinator
             mModalDialogManagerSupplier.get().addObserver(mModalDialogManagerObserver);
         }
         mChromeActionModeHandler =
-                new ChromeActionModeHandler(mActivityTabProvider, (searchText) -> {
-                    if (mTabModelSelectorSupplier.get() == null) return;
+                new ChromeActionModeHandler(
+                        mActivityTabProvider,
+                        (searchText) -> {
+                            if (mTabModelSelectorSupplier.get() == null) return;
 
-                    String query = ActionModeCallbackHelper.sanitizeQuery(
-                            searchText, ActionModeCallbackHelper.MAX_SEARCH_QUERY_LENGTH);
-                    if (TextUtils.isEmpty(query)) return;
+                            String query =
+                                    ActionModeCallbackHelper.sanitizeQuery(
+                                            searchText,
+                                            ActionModeCallbackHelper.MAX_SEARCH_QUERY_LENGTH);
+                            if (TextUtils.isEmpty(query)) return;
 
-                    Tab tab = mActivityTabProvider.get();
-                    TrackerFactory
-                            .getTrackerForProfile(Profile.fromWebContents(tab.getWebContents()))
-                            .notifyEvent(EventConstants.WEB_SEARCH_PERFORMED);
+                            Tab tab = mActivityTabProvider.get();
+                            TrackerFactory.getTrackerForProfile(tab.getProfile())
+                                    .notifyEvent(EventConstants.WEB_SEARCH_PERFORMED);
 
-                    mTabModelSelectorSupplier.get().openNewTab(
-                            generateUrlParamsForSearch(tab, query),
-                            TabLaunchType.FROM_LONGPRESS_FOREGROUND, tab, tab.isIncognito());
-                }, mShareDelegateSupplier);
+                            mTabModelSelectorSupplier
+                                    .get()
+                                    .openNewTab(
+                                            generateUrlParamsForSearch(tab, query),
+                                            TabLaunchType.FROM_LONGPRESS_FOREGROUND,
+                                            tab,
+                                            tab.isIncognito());
+                        },
+                        mShareDelegateSupplier);
 
         mCaptureController = new MediaCaptureOverlayController(
                 mWindowAndroid, mActivity.findViewById(R.id.capture_overlay));
@@ -828,6 +844,7 @@ public class RootUiCoordinator
         initMerchantTrustSignals();
         initScrollCapture();
         initializeEdgeToEdgeController(mActivity, mActivityTabProvider);
+        initBoardingPassDetector();
 
         new OneShotCallback<>(mProfileSupplier, this::initHistoryClustersCoordinator);
 
@@ -848,10 +865,14 @@ public class RootUiCoordinator
                 mActivity, Profile.getLastUsedRegularProfile());
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.READALOUD)) {
-            ViewStub miniPlayerStub = mActivity.findViewById(R.id.readaloud_mini_player_stub);
-            ReadAloudController controller = new ReadAloudController(mActivity, mProfileSupplier,
-                    mTabModelSelectorSupplier.get().getModel(false), miniPlayerStub,
-                    getBottomSheetController());
+            ReadAloudController controller =
+                    new ReadAloudController(
+                            mActivity,
+                            mProfileSupplier,
+                            mTabModelSelectorSupplier.get().getModel(false),
+                            getBottomSheetController(),
+                            mBrowserControlsManager,
+                            mLayoutManager);
             mReadAloudControllerSupplier.set(controller);
         }
     }
@@ -971,9 +992,9 @@ public class RootUiCoordinator
      * Generate the LoadUrlParams necessary to load the specified search query.
      */
     private static LoadUrlParams generateUrlParamsForSearch(Tab tab, String query) {
-        String url = TemplateUrlServiceFactory
-                             .getForProfile(Profile.fromWebContents(tab.getWebContents()))
-                             .getUrlForSearchQuery(query);
+        String url =
+                TemplateUrlServiceFactory.getForProfile(tab.getProfile())
+                        .getUrlForSearchQuery(query);
         String headers = GeolocationHeader.getGeoHeader(url, tab);
 
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);
@@ -1042,7 +1063,7 @@ public class RootUiCoordinator
             return true;
         } else if (id == R.id.page_zoom_id) {
             Tab tab = mActivityTabProvider.get();
-            TrackerFactory.getTrackerForProfile(Profile.fromWebContents(tab.getWebContents()))
+            TrackerFactory.getTrackerForProfile(tab.getProfile())
                     .notifyEvent(EventConstants.PAGE_ZOOM_OPENED);
             mPageZoomCoordinator.show(tab.getWebContents());
         }
@@ -1081,35 +1102,6 @@ public class RootUiCoordinator
             // value simultaneously.
             mPageZoomCoordinator.hide();
         }
-    }
-
-    /**
-     * Performs a direct action.
-     *
-     * @param actionId Name of the direct action to perform.
-     * @param arguments Arguments for this action.
-     * @param cancellationSignal Signal used to cancel a direct action from the caller.
-     * @param callback Callback to run when the action is done.
-     */
-    public void onPerformDirectAction(String actionId, Bundle arguments,
-            CancellationSignal cancellationSignal, Consumer<Bundle> callback) {
-        if (mDirectActionInitializer == null) return;
-        mDirectActionInitializer.onPerformDirectAction(
-                actionId, arguments, cancellationSignal, callback);
-    }
-
-    /**
-     * Lists direct actions supported.
-     *
-     * Returns a list of direct actions supported by the Activity associated with this
-     * RootUiCoordinator.
-     *
-     * @param cancellationSignal Signal used to cancel a direct action from the caller.
-     * @param callback Callback to run when the action is done.
-     */
-    public void onGetDirectActions(CancellationSignal cancellationSignal, Consumer<List> callback) {
-        if (mDirectActionInitializer == null) return;
-        mDirectActionInitializer.onGetDirectActions(cancellationSignal, callback);
     }
 
     // Protected class methods
@@ -1578,11 +1570,18 @@ public class RootUiCoordinator
         }
     }
 
+    /**
+     * @returns whether the Android Edge To Edge Feature is supported for the current activity.
+     */
+    protected boolean supportsEdgeToEdge() {
+        return false;
+    }
+
     /** Setup drawing using Android Edge-to-Edge. */
     @VisibleForTesting
     void initializeEdgeToEdgeController(
             Activity activity, ActivityTabProvider activityTabProvider) {
-        if (EdgeToEdgeControllerFactory.isEnabled()) {
+        if (supportsEdgeToEdge() && EdgeToEdgeControllerFactory.isEnabled()) {
             mE2eController = EdgeToEdgeControllerFactory.create(activity, activityTabProvider);
         }
     }
@@ -1636,13 +1635,6 @@ public class RootUiCoordinator
     /** @return The {@link SnackbarManager} for the {@link BottomSheetController}. */
     public SnackbarManager getBottomSheetSnackbarManager() {
         return mBottomSheetSnackbarManager;
-    }
-
-    private void initDirectActionInitializer() {
-        mDirectActionInitializer = new DirectActionInitializer(mActivityType,
-                mMenuOrKeyboardActionController, mActivity::onBackPressed,
-                mTabModelSelectorSupplier.get(), mFindToolbarManager);
-        mActivityLifecycleDispatcher.register(mDirectActionInitializer);
     }
 
     /**
@@ -1773,6 +1765,12 @@ public class RootUiCoordinator
                 gtsTabListModelSizeSupplier, scrollGTSToRestoredTabsCallback);
     }
 
+    private void initBoardingPassDetector() {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.BOARDING_PASS_DETECTOR)) {
+            mBoardingPassController = new BoardingPassController(mActivityTabProvider);
+        }
+    }
+
     // Testing methods
 
     public AppMenuCoordinator getAppMenuCoordinatorForTesting() {
@@ -1783,8 +1781,8 @@ public class RootUiCoordinator
         return mScrimCoordinator;
     }
 
-    public OneshotSupplier<LayoutStateProvider> getLayoutStateProviderForTesting() {
-        return mLayoutStateProviderOneShotSupplier;
+    public EdgeToEdgeController getEdgeToEdgeControllerForTesting() {
+        return mE2eController;
     }
 
     public void destroyActivityForTesting() {

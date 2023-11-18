@@ -1,6 +1,9 @@
 {
   "$build/chromium_tests_builder_config": {
     "builder_config": {
+      "additional_exclusions": [
+        "infra/config/generated/builders/ci/ios-simulator/gn-args.json"
+      ],
       "builder_db": {
         "entries": [
           {
@@ -43,10 +46,6 @@
       "mirroring_builder_group_and_names": [
         {
           "builder": "ios-simulator",
-          "group": "tryserver.chromium.mac"
-        },
-        {
-          "builder": "ios-simulator-inverse-fieldtrials-fyi",
           "group": "tryserver.chromium.mac"
         },
         {

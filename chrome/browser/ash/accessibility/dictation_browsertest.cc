@@ -340,18 +340,6 @@ class DictationTest : public DictationTestBase {
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    NetworkTextArea,
-    DictationTest,
-    ::testing::Values(TestConfig(speech::SpeechRecognitionType::kNetwork,
-                                 EditableType::kTextArea)));
-
-INSTANTIATE_TEST_SUITE_P(
-    NetworkInput,
-    DictationTest,
-    ::testing::Values(TestConfig(speech::SpeechRecognitionType::kNetwork,
-                                 EditableType::kInput)));
-
-INSTANTIATE_TEST_SUITE_P(
     NetworkContentEditable,
     DictationTest,
     ::testing::Values(TestConfig(speech::SpeechRecognitionType::kNetwork,
@@ -521,7 +509,10 @@ IN_PROC_BROWSER_TEST_P(DictationTest, WorksWithSelectToSpeak) {
   aura::Window* root_window = Shell::Get()->GetPrimaryRootWindow();
   ui::test::EventGenerator generator(root_window);
 
-  sts_test_utils::StartSelectToSpeakInBrowserWindow(browser(), &generator);
+  gfx::Rect bounds =
+      utils()->automation_test_utils()->GetBoundsForNodeInRootByClassName(
+          "editableForDictation");
+  sts_test_utils::StartSelectToSpeakWithBounds(bounds, &generator);
 
   // Now ensure STS still works properly.
   sm.ExpectSpeechPattern("Not idly do the leaves of Lorien fall*");
@@ -886,12 +877,6 @@ INSTANTIATE_TEST_SUITE_P(
                                  EditableType::kTextArea)));
 
 INSTANTIATE_TEST_SUITE_P(
-    NetworkInput,
-    DictationJaTest,
-    ::testing::Values(TestConfig(speech::SpeechRecognitionType::kNetwork,
-                                 EditableType::kInput)));
-
-INSTANTIATE_TEST_SUITE_P(
     NetworkContentEditable,
     DictationJaTest,
     ::testing::Values(TestConfig(speech::SpeechRecognitionType::kNetwork,
@@ -1020,12 +1005,6 @@ class DictationRegexCommandsTest : public DictationTest {
     DictationTest::TearDownOnMainThread();
   }
 };
-
-INSTANTIATE_TEST_SUITE_P(
-    NetworkTextArea,
-    DictationRegexCommandsTest,
-    ::testing::Values(TestConfig(speech::SpeechRecognitionType::kNetwork,
-                                 EditableType::kTextArea)));
 
 INSTANTIATE_TEST_SUITE_P(
     NetworkInput,
@@ -1683,12 +1662,6 @@ INSTANTIATE_TEST_SUITE_P(
                                  EditableType::kTextArea)));
 
 INSTANTIATE_TEST_SUITE_P(
-    NetworkInput,
-    DictationPumpkinTest,
-    ::testing::Values(TestConfig(speech::SpeechRecognitionType::kNetwork,
-                                 EditableType::kInput)));
-
-INSTANTIATE_TEST_SUITE_P(
     NetworkContentEditable,
     DictationPumpkinTest,
     ::testing::Values(TestConfig(speech::SpeechRecognitionType::kNetwork,
@@ -1971,12 +1944,6 @@ class DictationContextCheckingTest : public DictationTest {
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    NetworkTextArea,
-    DictationContextCheckingTest,
-    ::testing::Values(TestConfig(speech::SpeechRecognitionType::kNetwork,
-                                 EditableType::kTextArea)));
-
-INSTANTIATE_TEST_SUITE_P(
     NetworkInput,
     DictationContextCheckingTest,
     ::testing::Values(TestConfig(speech::SpeechRecognitionType::kNetwork,
@@ -2105,7 +2072,6 @@ class NotificationCenterDictationTest : public DictationTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     DictationTest::SetUpCommandLine(command_line);
-    scoped_feature_list_.InitAndEnableFeature(features::kQsRevamp);
   }
 
   void SetUpOnMainThread() override {
@@ -2122,15 +2088,12 @@ class NotificationCenterDictationTest : public DictationTest {
 
   NotificationCenterTestApi* test_api() {
     if (!test_api_) {
-      test_api_ = std::make_unique<NotificationCenterTestApi>(
-          StatusAreaWidgetTestHelper::GetStatusAreaWidget()
-              ->notification_center_tray());
+      test_api_ = std::make_unique<NotificationCenterTestApi>();
     }
     return test_api_.get();
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<NotificationCenterTestApi> test_api_;
 };
 

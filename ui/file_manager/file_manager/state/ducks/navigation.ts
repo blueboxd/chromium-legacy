@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {DialogType} from '../../common/js/dialog_type.js';
+import {isOneDriveId} from '../../common/js/entry_utils.js';
 import {EntryList, VolumeEntry} from '../../common/js/files_app_entry_types.js';
-import {util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 import {AndroidApp, NavigationKey, NavigationRoot, NavigationSection, NavigationType, State, Volume} from '../../externs/ts/state.js';
@@ -131,9 +132,16 @@ function refreshNavigationRootsReducer(currentState: State): State {
   processedEntryKeys.add(myFilesEntry.toURL());
 
   // 4. Add Google Drive - the only Drive.
+  // When drive pref changes from enabled to disabled, we remove the drive root
+  // key from the `state.uiEntries` immediately, but the drive root entry itself
+  // is removed asynchronously, so here we need to check both, if the key
+  // doesn't exist any more, we shouldn't render Drive item even if the drive
+  // root entry is still available.
+  const driveEntryKeyExist =
+      currentState.uiEntries.includes(driveRootEntryListKey);
   const driveEntry =
       getEntry(currentState, driveRootEntryListKey) as EntryList | null;
-  if (driveEntry) {
+  if (driveEntryKeyExist && driveEntry) {
     roots.push({
       key: driveEntry.toURL(),
       section: NavigationSection.GOOGLE_DRIVE,
@@ -166,7 +174,7 @@ function refreshNavigationRootsReducer(currentState: State): State {
       });
 
   function getVolumeOrder(volume: Volume) {
-    if (util.isOneDriveId(volume.providerId)) {
+    if (isOneDriveId(volume.providerId)) {
       return 0;
     }
     return volumesOrder[volume.volumeType] ?? 999;
@@ -199,7 +207,7 @@ function refreshNavigationRootsReducer(currentState: State): State {
     if (volumeEntry && !processedEntryKeys.has(volumeEntry.toURL())) {
       let section =
           sections.get(volume.volumeType) ?? NavigationSection.REMOVABLE;
-      if (util.isOneDriveId(volume.providerId)) {
+      if (isOneDriveId(volume.providerId)) {
         section = NavigationSection.ODFS;
       }
       const isSectionStart = section !== lastSection;
@@ -227,9 +235,23 @@ function refreshNavigationRootsReducer(currentState: State): State {
       });
 
   // 10. Trash
+  // Trash should only show when Files app is open as a standalone app. The ARC
+  // file selector, however, opens Files app as a standalone app but passes a
+  // query parameter to indicate the mode. As Trash is a fake volume, it is
+  // not filtered out in the filtered volume manager so perform it here
+  // instead.
+  const {dialogType} = window.fileManager;
+  const shouldShowTrash = dialogType === DialogType.FULL_PAGE &&
+      !volumeManager.getMediaStoreFilesOnlyFilterEnabled();
+  // When trash pref changes from enabled to disabled, we remove the trash root
+  // key from the `state.uiEntries` immediately, but the trash entry itself is
+  // removed asynchronously, so here we need to check both, if the key doesn't
+  // exist any more, we shouldn't render Trash item even if the trash entry is
+  // still available.
+  const trashEntryKeyExist = currentState.uiEntries.includes(trashRootKey);
   const trashEntry =
       getEntry(currentState, trashRootKey) as FilesAppEntry | null;
-  if (trashEntry) {
+  if (shouldShowTrash && trashEntryKeyExist && trashEntry) {
     roots.push({
       key: trashRootKey,
       section: NavigationSection.TRASH,

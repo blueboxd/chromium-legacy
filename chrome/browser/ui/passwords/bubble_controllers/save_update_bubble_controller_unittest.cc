@@ -28,7 +28,7 @@
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
-#include "components/password_manager/core/browser/statistics_table.h"
+#include "components/password_manager/core/browser/password_store/interactions_stats.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "components/sync/test/test_sync_service.h"
@@ -771,4 +771,18 @@ TEST_F(SaveUpdateBubbleControllerTest, NullDelegate) {
 
   EXPECT_FALSE(
       controller.IsCurrentStateAffectingPasswordsStoredInTheGoogleAccount());
+}
+
+TEST_F(SaveUpdateBubbleControllerTest, ShowsUpdateEvenIfNoExistingCredential) {
+  EXPECT_CALL(*delegate(), GetPendingPassword())
+      .WillOnce(ReturnRef(pending_password()));
+  std::vector<std::unique_ptr<password_manager::PasswordForm>> empty_list;
+
+  // PSL matches aren't included in GetCurrentForms(), return empty list to
+  // emulate this.
+  EXPECT_CALL(*delegate(), GetCurrentForms()).WillOnce(ReturnRef(empty_list));
+  SetUpWithState(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE,
+                 PasswordBubbleControllerBase::DisplayReason::kAutomatic);
+
+  EXPECT_TRUE(controller()->IsCurrentStateUpdate());
 }

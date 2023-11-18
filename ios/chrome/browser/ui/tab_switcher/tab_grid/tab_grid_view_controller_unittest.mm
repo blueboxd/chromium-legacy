@@ -10,16 +10,15 @@
 #import "ios/chrome/browser/shared/model/web_state_list/test/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/snapshots/model/snapshot_browser_agent.h"
 #import "ios/chrome/browser/snapshots/model/snapshot_tab_helper.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_container_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_bottom_toolbar.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_new_tab_button.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_top_toolbar.h"
-#import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
-#import "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -62,6 +61,13 @@ class TabGridViewControllerTest : public PlatformTest {
         [[TabGridTopToolbar alloc] initWithFrame:CGRectZero];
     view_controller_.bottomToolbar =
         [[TabGridBottomToolbar alloc] initWithFrame:CGRectZero];
+
+    regular_grids_ = [[GridContainerViewController alloc] init];
+    incognito_grids_ = [[GridContainerViewController alloc] init];
+    remote_grids_ = [[GridContainerViewController alloc] init];
+    view_controller_.incognitoGridContainerViewController = incognito_grids_;
+    view_controller_.regularGridContainerViewController = regular_grids_;
+    view_controller_.remoteGridContainerViewController = remote_grids_;
   }
 
   // Checks that `view_controller_` can perform the `action`. The sender is set
@@ -83,6 +89,9 @@ class TabGridViewControllerTest : public PlatformTest {
   TabGridViewController* view_controller_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   std::unique_ptr<TestBrowser> browser_;
+  GridContainerViewController* regular_grids_;
+  GridContainerViewController* incognito_grids_;
+  GridContainerViewController* remote_grids_;
 };
 
 // Checks that TabGridViewController returns key commands.
@@ -162,8 +171,6 @@ TEST_F(TabGridViewControllerTest, ImplementsActions) {
   [view_controller_ keyCommand_openNewTab];
   [view_controller_ keyCommand_openNewRegularTab];
   [view_controller_ keyCommand_openNewIncognitoTab];
-  [view_controller_ keyCommand_find];
-  [view_controller_ keyCommand_close];
 }
 
 // Checks that metrics are correctly reported.
@@ -175,38 +182,5 @@ TEST_F(TabGridViewControllerTest, Metrics) {
             "MobileKeyCommandOpenNewRegularTab");
   ExpectUMA(@"keyCommand_openNewIncognitoTab",
             "MobileKeyCommandOpenNewIncognitoTab");
-  ExpectUMA(@"keyCommand_find", "MobileKeyCommandSearchTabs");
-  ExpectUMA(@"keyCommand_close", "MobileKeyCommandClose");
 }
-
-// This test ensure 2 things:
-// * the key command find is available when the tab grid is currently visible,
-// * the key command associated title is correct.
-TEST_F(TabGridViewControllerTest, ValidateCommand_find) {
-  InitializeViewController(TabGridPageConfiguration::kIncognitoPageOnly);
-  EXPECT_FALSE(CanPerform(@"keyCommand_find"));
-
-  [view_controller_ contentWillAppearAnimated:NO];
-
-  EXPECT_TRUE(CanPerform(@"keyCommand_find"));
-  id findTarget = [view_controller_ targetForAction:@selector(keyCommand_find)
-                                         withSender:nil];
-  EXPECT_EQ(findTarget, view_controller_);
-
-  // Ensures that the title is correct.
-  for (UIKeyCommand* command in view_controller_.keyCommands) {
-    [view_controller_ validateCommand:command];
-    if (command.action == @selector(keyCommand_find)) {
-      EXPECT_TRUE([command.discoverabilityTitle
-          isEqualToString:l10n_util::GetNSStringWithFixup(
-                              IDS_IOS_KEYBOARD_SEARCH_TABS)]);
-    }
-  }
-}
-
-// Checks that the ESC keyboard shortcut is always possible.
-TEST_F(TabGridViewControllerTest, CanPerform_Close) {
-  EXPECT_TRUE(CanPerform(@"keyCommand_close"));
-}
-
 }  // namespace

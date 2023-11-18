@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/views/download/bubble/download_bubble_password_prompt_view.h"
 #include "chrome/browser/ui/views/download/bubble/download_bubble_row_view.h"
 #include "chrome/browser/ui/views/download/bubble/download_toolbar_button_view.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/safe_browsing/core/common/features.h"
@@ -76,8 +77,9 @@ const char kSubpageActionHistogram[] = "Download.Bubble.SubpageAction";
 bool ShouldReturnToPrimaryDialog(download::DownloadDangerType danger_type,
                                  const DownloadUIModel::BubbleUIInfo& ui_info) {
   return danger_type == download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED ||
-         // The only non-terminal danger type where the security subpage view
-         // shows is `DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING`. We should then
+         // The only non-terminal danger types where the security subpage view
+         // shows are `DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING` and
+         // `DOWNLOAD_DANGER_TYPE_ASYNC_LOCAL_PASSWORD_SCANNING`. We should then
          // return to the row view when the deep scan completes and is in a
          // state that doesn't have a security subpage. Specifically, that's
          // both safe and failed deep scans, but not scans that find malware.
@@ -328,10 +330,18 @@ void DownloadBubbleSecurityView::UpdateIconAndText() {
 
   // TODO(chlily): Implement deep_scanning_link_ as a learn_more_link_.
   if (danger_type_ == download::DownloadDangerType::
-                          DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING &&
-      base::FeatureList::IsEnabled(safe_browsing::kDeepScanningUpdatedUX)) {
-    std::u16string link_text = l10n_util::GetStringUTF16(
-        IDS_DOWNLOAD_BUBBLE_SUBPAGE_DEEP_SCANNING_LINK);
+                          DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING ||
+      danger_type_ ==
+          download::DownloadDangerType::
+              DOWNLOAD_DANGER_TYPE_PROMPT_FOR_LOCAL_PASSWORD_SCANNING) {
+    std::u16string link_text =
+        danger_type_ ==
+                download::DownloadDangerType::
+                    DOWNLOAD_DANGER_TYPE_PROMPT_FOR_LOCAL_PASSWORD_SCANNING
+            ? l10n_util::GetStringUTF16(
+                  IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_WARNING_BLOCKED_LEARN_MORE_LINK)
+            : l10n_util::GetStringUTF16(
+                  IDS_DOWNLOAD_BUBBLE_SUBPAGE_DEEP_SCANNING_LINK);
     deep_scanning_link_->SetText(link_text);
     gfx::Range link_range(0, link_text.length());
     // Unretained is safe because `delegate_` outlives this, which owns
@@ -563,8 +573,8 @@ void DownloadBubbleSecurityView::AddProgressBar() {
   progress_bar_holder->SetProperty(views::kTableHorizAlignKey,
                                    views::LayoutAlignment::kStretch);
   progress_bar_ =
-      progress_bar_holder->AddChildView(std::make_unique<views::ProgressBar>(
-          /*preferred_height=*/kProgressBarHeight));
+      progress_bar_holder->AddChildView(std::make_unique<views::ProgressBar>());
+  progress_bar_->SetPreferredHeight(kProgressBarHeight);
   progress_bar_->SetProperty(
       views::kMarginsKey,
       gfx::Insets().set_top(ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -589,9 +599,8 @@ void DownloadBubbleSecurityView::AddPasswordPrompt(views::View* parent) {
                                /*adjust_height_for_width=*/false));
   password_prompt_->SetProperty(
       views::kMarginsKey,
-      gfx::Insets::VH(ChromeLayoutProvider::Get()->GetDistanceMetric(
-                          views::DISTANCE_RELATED_CONTROL_VERTICAL),
-                      0));
+      gfx::Insets().set_top(ChromeLayoutProvider::Get()->GetDistanceMetric(
+          views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
   UpdatePasswordPrompt();
 }
 
@@ -606,8 +615,22 @@ bool DownloadBubbleSecurityView::ProcessButtonClick(
     return true;
   }
 
+  // TODO(crbug/1482901): Remove the special-cased DownloadCommands by creating
+  // a dedicated View for local decryption prompts and deep scanning.
   if (command == DownloadCommands::DEEP_SCAN) {
-    return ProcessDeepScanClick();
+    if (danger_type_ ==
+        download::DownloadDangerType::
+            DOWNLOAD_DANGER_TYPE_PROMPT_FOR_LOCAL_PASSWORD_SCANNING) {
+      return ProcessLocalPasswordDecryptionClick();
+    } else {
+      return ProcessDeepScanClick();
+    }
+  }
+
+  if (danger_type_ == download::DownloadDangerType::
+                          DOWNLOAD_DANGER_TYPE_ASYNC_LOCAL_PASSWORD_SCANNING) {
+    delegate_->ProcessLocalPasswordInProgressClick(content_id_, command);
+    return false;
   }
 
   // Record metrics only if we are actually processing the command.
@@ -703,6 +726,9 @@ void DownloadBubbleSecurityView::UpdatePasswordPrompt() {
   bool should_show =
       danger_type_ == download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING &&
       delegate_->IsEncryptedArchive(content_id_);
+  should_show |=
+      danger_type_ ==
+      download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_LOCAL_PASSWORD_SCANNING;
 
   DownloadBubblePasswordPromptView::State state =
       delegate_->HasPreviousIncorrectPassword(content_id_)
@@ -850,13 +876,7 @@ void DownloadBubbleSecurityView::UpdateAccessibilityTextAndFocus() {
   }
   // Announce that the subpage was opened to inform the user about the changes
   // in the UI.
-#if BUILDFLAG(IS_MAC)
-  GetViewAccessibility().OverrideRole(ax::mojom::Role::kAlert);
-  GetViewAccessibility().OverrideName(ui_info_.warning_summary);
-  NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
-#else
   GetViewAccessibility().AnnounceText(ui_info_.warning_summary);
-#endif
 
   // Focus the back button by default to ensure that focus is set when new
   // content is displayed.
@@ -932,7 +952,25 @@ bool DownloadBubbleSecurityView::ProcessDeepScanClick() {
 
   delegate_->ProcessDeepScanPress(content_id_, password);
   bubble_delegate_->SizeToContents();
-  return !base::FeatureList::IsEnabled(safe_browsing::kDeepScanningUpdatedUX);
+  return false;
+}
+
+bool DownloadBubbleSecurityView::ProcessLocalPasswordDecryptionClick() {
+  if (!IsInitialized()) {
+    return true;
+  }
+
+  std::string password = base::UTF16ToUTF8(password_prompt_->GetText());
+  if (password.empty()) {
+    password_prompt_->SetState(
+        DownloadBubblePasswordPromptView::State::kInvalidEmpty);
+    bubble_delegate_->SizeToContents();
+    return false;
+  }
+
+  delegate_->ProcessLocalDecryptionPress(content_id_, password);
+  bubble_delegate_->SizeToContents();
+  return false;
 }
 
 BEGIN_METADATA(DownloadBubbleSecurityView, views::View)

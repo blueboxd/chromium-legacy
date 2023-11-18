@@ -13,7 +13,6 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/utility/haptics_util.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
@@ -24,9 +23,11 @@
 #include "ash/wm/window_util.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/utils/haptics_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_type.h"
@@ -125,6 +126,8 @@ SplitViewDragIndicators::ComputeWindowDraggingState(
 // by `SplitViewDragIndicatorsView`.
 class SplitViewDragIndicators::RotatedImageLabelView
     : public views::BoxLayoutView {
+  METADATA_HEADER(RotatedImageLabelView, views::BoxLayoutView)
+
  public:
   explicit RotatedImageLabelView(bool is_right_or_bottom)
       : is_right_or_bottom_(is_right_or_bottom) {
@@ -211,6 +214,11 @@ class SplitViewDragIndicators::RotatedImageLabelView
   raw_ptr<views::Label, ExperimentalAsh> label_ = nullptr;
 };
 
+BEGIN_METADATA(SplitViewDragIndicators,
+               RotatedImageLabelView,
+               views::BoxLayoutView)
+END_METADATA
+
 // View which contains two highlights on each side indicator where a user should
 // drag a selected window in order to initiate splitview. Each highlight has a
 // label with instructions to further guide users. The highlights are on the
@@ -221,6 +229,8 @@ class SplitViewDragIndicators::RotatedImageLabelView
 class SplitViewDragIndicators::SplitViewDragIndicatorsView
     : public views::View,
       public aura::WindowObserver {
+  METADATA_HEADER(SplitViewDragIndicatorsView, views::View)
+
  public:
   SplitViewDragIndicatorsView() {
     left_highlight_view_ = AddChildView(
@@ -615,6 +625,11 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
   raw_ptr<aura::Window, ExperimentalAsh> dragged_window_ = nullptr;
 };
 
+BEGIN_METADATA(SplitViewDragIndicators,
+               SplitViewDragIndicatorsView,
+               views::View)
+END_METADATA
+
 SplitViewDragIndicators::SplitViewDragIndicators(aura::Window* root_window) {
   widget_ = CreateWidget(root_window);
   widget_->SetBounds(GetWorkAreaBoundsNoOverlapWithShelf(root_window));
@@ -653,7 +668,7 @@ void SplitViewDragIndicators::SetWindowDraggingState(
         !overview_controller->overview_session()
              ->window_drag_controller()
              ->is_touch_dragging()) {
-      haptics_util::PlayHapticTouchpadEffect(
+      chromeos::haptics_util::PlayHapticTouchpadEffect(
           ui::HapticTouchpadEffect::kSnap,
           ui::HapticTouchpadEffectStrength::kMedium);
     }

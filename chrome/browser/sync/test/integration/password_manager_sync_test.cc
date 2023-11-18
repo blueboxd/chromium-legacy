@@ -41,7 +41,7 @@
 #include "components/password_manager/core/browser/features/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
-#include "components/password_manager/core/browser/password_store_interface.h"
+#include "components/password_manager/core/browser/password_store/password_store_interface.h"
 #include "components/password_manager/core/browser/password_sync_util.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -882,6 +882,25 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, OptInSurvivesSignout) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  SetupSyncTransportWithoutPasswordAccountStorage();
+  ASSERT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
+
+  password_manager::features_util::OptInToAccountStorage(
+      GetProfile(0)->GetPrefs(), GetSyncService(0));
+  PasswordSyncActiveChecker(GetSyncService(0)).Wait();
+
+  SignOut();
+  PasswordSyncInactiveChecker(GetSyncService(0)).Wait();
+
+  // The opt-in should be remembered.
+  SetupSyncTransportWithoutPasswordAccountStorage();
+  PasswordSyncActiveChecker(GetSyncService(0)).Wait();
+}
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
 IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
                        PasswordDeletionsPropagateToServer) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
@@ -997,9 +1016,10 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, SyncUtilApis) {
           GetSyncService(0)));
   EXPECT_NE(absl::nullopt,
             password_manager::sync_util::GetSyncingAccount(GetSyncService(0)));
-  EXPECT_EQ(password_manager::sync_util::GetSyncUsernameIfSyncingPasswords(
-                GetSyncService(0),
-                IdentityManagerFactory::GetForProfile(GetProfile(0))),
+  EXPECT_EQ(password_manager::sync_util::
+                GetAccountEmailIfSyncFeatureEnabledIncludingPasswords(
+                    GetSyncService(0),
+                    IdentityManagerFactory::GetForProfile(GetProfile(0))),
             kExpectedUsername);
   EXPECT_EQ(
       password_manager::sync_util::GetPasswordSyncState(GetSyncService(0)),
@@ -1024,9 +1044,10 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, SyncUtilApis) {
           GetSyncService(0)));
   EXPECT_NE(absl::nullopt,
             password_manager::sync_util::GetSyncingAccount(GetSyncService(0)));
-  EXPECT_EQ(password_manager::sync_util::GetSyncUsernameIfSyncingPasswords(
-                GetSyncService(0),
-                IdentityManagerFactory::GetForProfile(GetProfile(0))),
+  EXPECT_EQ(password_manager::sync_util::
+                GetAccountEmailIfSyncFeatureEnabledIncludingPasswords(
+                    GetSyncService(0),
+                    IdentityManagerFactory::GetForProfile(GetProfile(0))),
             kExpectedUsername);
 }
 

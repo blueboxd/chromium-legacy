@@ -10,6 +10,7 @@
 #include "ash/system/tray/tray_utils.h"
 #include "ash/system/unified/glanceable_tray_bubble_view.h"
 #include "ash/system/unified/tasks_bubble_view.h"
+#include "ui/views/view.h"
 #include "ui/views/view_utils.h"
 
 namespace ash {
@@ -19,7 +20,7 @@ GlanceableTrayBubble::GlanceableTrayBubble(DateTray* tray, bool from_keyboard)
   TrayBubbleView::InitParams init_params =
       CreateInitParamsForTrayBubble(tray, /*anchor_to_shelf_corner=*/true);
   // TODO(b:277268122): Update with glanceable spec.
-  init_params.preferred_width = kRevampedTrayMenuWidth;
+  init_params.preferred_width = kWideTrayMenuWidth;
   init_params.transparent = true;
   init_params.has_shadow = false;
   init_params.translucent = false;
@@ -50,7 +51,7 @@ views::Widget* GlanceableTrayBubble::GetBubbleWidget() const {
   ;
 }
 
-TasksBubbleView* GlanceableTrayBubble::GetTasksView() {
+views::View* GlanceableTrayBubble::GetTasksView() {
   return GetGlanceableTrayBubbleView()->GetTasksView();
 }
 

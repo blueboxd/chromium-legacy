@@ -24,9 +24,9 @@ use serde::Serialize;
 /// * A :cargo_tests_support target for building third-party tests
 /// * A :buildrs_support target for third-party build script dependents
 /// * Binary targets for crate executables
-#[derive(Serialize)]
+#[derive(Default, Serialize)]
 pub struct BuildFile {
-    pub rules: Vec<(String, Rule)>,
+    pub rules: Vec<Rule>,
 }
 
 /// Identifies a package version. A package's dependency list uses this to refer
@@ -39,17 +39,39 @@ pub struct PackageId {
     pub epoch: Option<String>,
 }
 
-#[derive(Debug, Serialize)]
-pub struct RuleCommon {
+/// Defines what other GN targets can depend on this one.
+#[derive(Debug, Default, Serialize)]
+pub struct GnVisibility {
     pub testonly: bool,
     /// Controls the visibility constraint on the GN target. If this is true, no
     /// visibility constraint is generated. If false, it's defined so that only
     /// other third party Rust crates can depend on this target.
-    pub public_visibility: bool,
+    pub public: bool,
 }
 
+/// A GN rule in a generated build file.
+#[derive(Debug, Serialize)]
+pub struct Rule {
+    /// The GN rule name, which can be unrelated to the Cargo package name.
+    pub name: String,
+    pub gn_visibility: GnVisibility,
+    pub detail: RuleDetail,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "snake_case")]
+#[allow(clippy::large_enum_variant)]
+pub enum RuleDetail {
+    /// A concrete build rule for a Rust bin or lib crate.
+    Crate(CrateDetail),
+    /// An alias to a concrete rule with different visibility.
+    TestonlyAlias(TestonlyAliasDetail),
+}
+
+/// A concrete build rule. Refer to //build/rust/cargo_crate.gni for fields
+/// undocumented here.
 #[derive(Clone, Debug, Default, Serialize)]
-pub struct RuleConcrete {
+pub struct CrateDetail {
     pub crate_name: Option<String>,
     pub epoch: Option<Epoch>,
     pub crate_type: String,
@@ -62,39 +84,25 @@ pub struct RuleConcrete {
     pub cargo_pkg_name: String,
     pub cargo_pkg_description: Option<String>,
     pub deps: Vec<DepGroup>,
-    pub dev_deps: Vec<DepGroup>,
     pub build_deps: Vec<DepGroup>,
     pub aliased_deps: Vec<(String, String)>,
     pub features: Vec<String>,
     pub build_root: Option<String>,
+    pub build_script_sources: Vec<String>,
+    pub build_script_inputs: Vec<String>,
     pub build_script_outputs: Vec<String>,
+    /// Data passed unchanged from gnrt_config.toml to the build file template.
     pub extra_kv: HashMap<String, serde_json::Value>,
     /// Whether this rule depends on the main lib target in its group (e.g. a
     /// bin target alongside a lib inside a package).
     pub dep_on_lib: bool,
 }
 
-/// Describes a single GN build rule for a crate configuration. Each field
-/// corresponds directly to a argument to the `cargo_crate()` template defined
-/// in build/rust/cargo_crate.gni.
-///
-/// For undocumented fields, refer to the docs in the above file.
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "snake_case")]
-#[allow(clippy::large_enum_variant)]
-pub enum Rule {
-    Concrete {
-        #[serde(flatten)]
-        common: RuleCommon,
-        #[serde(flatten)]
-        details: RuleConcrete,
-    },
-    /// The rule is an alias to a different concrete rule.
-    Group {
-        #[serde(flatten)]
-        common: RuleCommon,
-        concrete_target: String,
-    },
+/// TODO(danakj): Alias groups will go away, then delete this.
+#[derive(Clone, Debug, Serialize)]
+pub struct TestonlyAliasDetail {
+    /// The actual GN rule to alias. This matches a `Rule`'s `name` field.
+    pub real_target: String,
 }
 
 /// Set of rule dependencies with a shared condition.
@@ -146,10 +154,17 @@ where
         .collect()
 }
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum NameLibStyle {
+    PackageName,
+    LibLiteral,
+}
+
 pub fn build_file_from_std_deps<'a, 'b, Iter, GetFiles>(
     deps: Iter,
     paths: &'b paths::ChromiumPaths,
     extra_config: &'b BuildConfig,
+    name_lib_style: NameLibStyle,
     get_files: GetFiles,
 ) -> BuildFile
 where
@@ -160,8 +175,9 @@ where
         .into_iter()
         .map(|dep| {
             let crate_id = dep.crate_id();
-            build_rule_from_std_dep(dep, paths, get_files(&crate_id), extra_config)
+            build_rule_from_std_dep(dep, paths, get_files(&crate_id), extra_config, name_lib_style)
         })
+        .flatten()
         .collect();
 
     BuildFile { rules }
@@ -172,17 +188,16 @@ pub fn build_rule_from_std_dep(
     paths: &paths::ChromiumPaths,
     details: &CrateFiles,
     extra_config: &BuildConfig,
-) -> (String, Rule) {
-    let lib_target = dep.lib_target.as_ref().expect("dependency had no lib target");
-    let crate_root_from_src = paths.to_gn_abs_path(&lib_target.root).unwrap();
-    let build_script_from_src = dep.build_script.as_ref().map(|p| paths.to_gn_abs_path(p).unwrap());
+    name_lib_style: NameLibStyle,
+) -> Vec<Rule> {
     let cargo_pkg_authors =
         if dep.authors.is_empty() { None } else { Some(dep.authors.join(", ")) };
+    let per_crate_config = extra_config.per_crate_config.get(&*dep.package_name);
+    let normalized_crate_name = NormalizedName::from_crate_name(&dep.package_name);
+    let crate_epoch = Epoch::from_version(&dep.version);
 
     // Get deps to exclude from resolved deps.
-    let exclude_deps: Vec<String> = extra_config
-        .per_crate_config
-        .get(&*dep.package_name)
+    let exclude_deps: Vec<String> = per_crate_config
         .iter()
         .flat_map(|c| &c.exclude_deps_in_gn)
         .chain(&extra_config.all_config.exclude_deps_in_gn)
@@ -192,76 +207,257 @@ pub fn build_rule_from_std_dep(
     // Get the config's extra (key, value) pairs, which are passed as-is to the
     // build file template engine.
     let mut extra_kv = extra_config.all_config.extra_kv.clone();
-    if let Some(per_crate) = extra_config.per_crate_config.get(&*dep.package_name) {
+    if let Some(per_crate) = per_crate_config {
         extra_kv.extend(per_crate.extra_kv.iter().map(|(k, v)| (k.clone(), v.clone())));
     }
 
-    let mut rule = RuleConcrete {
-        crate_type: "rlib".to_string(),
-        crate_root: format!("//{crate_root_from_src}"),
-        sources: details
-            .sources
-            .iter()
-            .map(|p| format!("//{}", paths.to_gn_abs_path(p).unwrap().to_string()))
-            .collect(),
-        inputs: details
-            .inputs
-            .iter()
-            .map(|p| format!("//{}", paths.to_gn_abs_path(p).unwrap().to_string()))
-            .collect(),
+    let allow_first_party_usage = match extra_kv.get("allow_first_party_usage") {
+        Some(serde_json::Value::Bool(b)) => *b,
+        _ => dep.is_toplevel_dep,
+    };
+    #[derive(Debug, PartialEq, Eq)]
+    enum Group {
+        Safe,
+        Sandbox,
+        Test,
+    }
+    let group = match per_crate_config.map(|config| config.group.as_ref()).flatten() {
+        Some(s) if s == "safe" => Some(Group::Safe),
+        Some(s) if s == "sandbox" => Some(Group::Sandbox),
+        Some(s) if s == "test" => Some(Group::Test),
+        Some(s) => {
+            panic!("invalid group '{}' in config for crate {}", s, dep.package_name)
+        }
+        None => None,
+    };
+
+    let mut detail_template = CrateDetail {
         edition: dep.edition.clone(),
         cargo_pkg_version: dep.version.to_string(),
         cargo_pkg_authors,
         cargo_pkg_name: dep.package_name.to_string(),
         cargo_pkg_description: dep.description.as_ref().map(|s| s.trim_end().to_string()),
-        build_root: build_script_from_src.as_ref().map(|p| format!("//{p}")),
+
         extra_kv,
         ..Default::default()
     };
 
-    rule.features = dep
-        .dependency_kinds
-        .get(&deps::DependencyKind::Normal)
-        .map(|pki| pki.features.clone())
-        .unwrap_or(vec![]);
-    rule.features.sort_unstable();
-    rule.features.dedup();
-
-    // Add only normal dependencies: we don't run unit tests, and we don't run
-    // build scripts (instead manually configuring build flags and env vars).
-    let dep_deps: Vec<&DepOfDep> = dep
+    // Add only normal and build dependencies: we don't run unit tests.
+    let normal_deps: Vec<&DepOfDep> = dep
         .dependencies
         .iter()
         .filter(|d| !exclude_deps.iter().any(|e| e.as_str() == &*d.package_name))
         .collect();
+    let build_deps: Vec<&DepOfDep> = dep
+        .build_dependencies
+        .iter()
+        .filter(|d| !exclude_deps.iter().any(|e| e.as_str() == &*d.package_name))
+        .collect();
+    let aliased_normal_deps = {
+        let mut aliases = Vec::new();
+        for dep in &normal_deps {
+            let target_name = NormalizedName::from_crate_name(&dep.package_name).to_string();
+            if target_name != dep.use_name {
+                aliases.push((dep.use_name.clone(), format!(":{target_name}__rlib")));
+            }
+        }
+        aliases.sort_unstable();
+        aliases.dedup();
+        aliases
+    };
+    // TODO(danakj): There is no support for `aliased_build_deps` in the
+    // `cargo_crate` GN template as there's been no usage needed. So we don't
+    // compute it here.
 
     // Group the dependencies by condition, where the unconditional deps come
-    // first. `group_deps` always returns at least one element, even if the
-    // first set is empty.
-    rule.deps = group_deps(&dep_deps, |d| PackageId {
-        name: normalize_target_name(&d.package_name),
-        epoch: None,
+    // first.
+    detail_template.deps = group_deps(&normal_deps, |d| PackageId {
+        name: NormalizedName::from_crate_name(&d.package_name).to_string(),
+        epoch: match name_lib_style {
+            // TODO(danakj): Separate this choice to another parameter option.
+            NameLibStyle::LibLiteral => Some(Epoch::from_version(&d.version).to_string()),
+            NameLibStyle::PackageName => None,
+        },
     });
+    detail_template.build_deps = group_deps(&build_deps, |d| PackageId {
+        name: NormalizedName::from_crate_name(&d.package_name).to_string(),
+        epoch: match name_lib_style {
+            // TODO(danakj): Separate this choice to another parameter option.
+            NameLibStyle::LibLiteral => Some(Epoch::from_version(&d.version).to_string()),
+            NameLibStyle::PackageName => None,
+        },
+    });
+    detail_template.aliased_deps = aliased_normal_deps;
 
-    for dep in dep_deps {
-        let target_name = normalize_target_name(&dep.package_name);
-        if target_name != dep.use_name {
-            rule.aliased_deps.push((dep.use_name.clone(), format!(":{target_name}__rlib")));
+    let requested_features_for_normal = {
+        let mut features = dep
+            .dependency_kinds
+            .get(&deps::DependencyKind::Normal)
+            .map(|per_kind_info| per_kind_info.features.clone())
+            .unwrap_or(vec![]);
+        features.sort_unstable();
+        features.dedup();
+        features
+    };
+
+    let requested_features_for_build = {
+        let mut features = dep
+            .dependency_kinds
+            .get(&deps::DependencyKind::Build)
+            .map(|per_kind_info| per_kind_info.features.clone())
+            .unwrap_or(vec![]);
+        features.sort_unstable();
+        features.dedup();
+        features
+    };
+
+    if !per_crate_config.map(|config| config.remove_build_rs).unwrap_or(false) {
+        let build_script_from_src =
+            dep.build_script.as_ref().map(|p| paths.to_gn_abs_path(p).unwrap());
+
+        detail_template.build_root = build_script_from_src.as_ref().map(|p| format!("//{p}"));
+        detail_template.build_script_sources = build_script_from_src
+            .as_ref()
+            .map(|p| format!("//{p}"))
+            .into_iter()
+            .chain(
+                details
+                    .build_script_sources
+                    .iter()
+                    .map(|p| format!("//{}", paths.to_gn_abs_path(p).unwrap().to_string())),
+            )
+            .collect();
+        detail_template.build_script_inputs = details
+            .build_script_inputs
+            .iter()
+            .map(|p| format!("//{}", paths.to_gn_abs_path(p).unwrap().to_string()))
+            .collect();
+        detail_template.build_script_outputs =
+            if let Some(outs) = per_crate_config.map(|config| &config.build_script_outputs) {
+                outs.iter().map(|path| path.display().to_string()).collect()
+            } else {
+                vec![]
+            };
+    }
+
+    let mut rules: Vec<Rule> = Vec::new();
+
+    // Generate rules for each binary the package provides.
+    for bin_target in &dep.bin_targets {
+        let bin_root_from_src = paths.to_gn_abs_path(&bin_target.root).unwrap();
+
+        let mut bin_detail = detail_template.clone();
+        bin_detail.crate_type = "bin".to_string();
+        bin_detail.crate_root = format!("//{bin_root_from_src}");
+        bin_detail.sources = details
+            .sources
+            .iter()
+            .map(|p| format!("//{}", paths.to_gn_abs_path(p).unwrap().to_string()))
+            .collect();
+        bin_detail.inputs = details
+            .inputs
+            .iter()
+            .map(|p| format!("//{}", paths.to_gn_abs_path(p).unwrap().to_string()))
+            .collect();
+        // Bins are not part of a build script, so they don't need build-script
+        // deps, only normal deps.
+        bin_detail.features = requested_features_for_normal.clone();
+
+        if dep.lib_target.is_some() {
+            bin_detail.dep_on_lib = true;
+            if bin_detail.deps.is_empty() {
+                bin_detail.deps.push(DepGroup { cond: None, packages: Vec::new() });
+            }
+        }
+
+        rules.push(Rule {
+            name: NormalizedName::from_crate_name(&bin_target.name).to_string(),
+            gn_visibility: GnVisibility { testonly: false, public: true },
+            detail: RuleDetail::Crate(bin_detail),
+        });
+    }
+
+    // Generate the rule for the main library target, if it exists.
+    if let Some(lib_target) = &dep.lib_target {
+        use deps::DependencyKind::*;
+
+        let lib_root_from_src = paths.to_gn_abs_path(&lib_target.root).unwrap();
+
+        // Generate the rules for each dependency kind. We use a stable
+        // order instead of the hashmap iteration order.
+        for dep_kind in [Normal, Build] {
+            if dep.dependency_kinds.get(&dep_kind).is_none() {
+                continue;
+            }
+
+            let lib_rule_name: String = match &dep_kind {
+                deps::DependencyKind::Normal => match name_lib_style {
+                    NameLibStyle::PackageName => normalized_crate_name.to_string(),
+                    NameLibStyle::LibLiteral => "lib".to_string(),
+                },
+                deps::DependencyKind::Build => "buildrs_support".to_string(),
+                _ => unreachable!(),
+            };
+            let (crate_name, epoch) = match name_lib_style {
+                NameLibStyle::PackageName => (None, None),
+                NameLibStyle::LibLiteral => {
+                    (Some(normalized_crate_name.to_string()), Some(crate_epoch.clone()))
+                }
+            };
+            let crate_type = {
+                // The stdlib is a "dylib" crate but we only want rlibs.
+                let t = lib_target.lib_type.to_string();
+                if t == "dylib" { "rlib".to_string() } else { t }
+            };
+
+            let mut lib_detail = detail_template.clone();
+            lib_detail.crate_name = crate_name;
+            lib_detail.epoch = epoch;
+            lib_detail.crate_type = crate_type;
+            lib_detail.crate_root = format!("//{lib_root_from_src}");
+            lib_detail.sources = details
+                .sources
+                .iter()
+                .map(|p| format!("//{}", paths.to_gn_abs_path(p).unwrap().to_string()))
+                .collect();
+            lib_detail.inputs = details
+                .inputs
+                .iter()
+                .map(|p| format!("//{}", paths.to_gn_abs_path(p).unwrap().to_string()))
+                .collect();
+            lib_detail.features = match &dep_kind {
+                Normal => requested_features_for_normal.clone(),
+                Build => requested_features_for_build.clone(),
+                _ => unreachable!(), // The for loop here is over [Normal, Build].
+            };
+
+            let testonly = group == Some(Group::Test);
+            rules.push(Rule {
+                name: lib_rule_name.clone(),
+                gn_visibility: GnVisibility {
+                    testonly,
+                    public: allow_first_party_usage && !testonly,
+                },
+                detail: RuleDetail::Crate(lib_detail),
+            });
+
+            // A package may be available to first-party tests. In this case limit :lib's
+            // visibility to third-party but provide a testonly alias visible
+            // everywhere. The :lib target must still exist for third-party
+            // transitive deps, which aren't testonly.
+            if dep_kind == Normal && allow_first_party_usage && testonly {
+                rules.push(Rule {
+                    name: "test_support".to_string(),
+                    gn_visibility: GnVisibility { testonly: true, public: true },
+                    detail: RuleDetail::TestonlyAlias(TestonlyAliasDetail {
+                        real_target: lib_rule_name,
+                    }),
+                })
+            }
         }
     }
 
-    // If there are still no deps after `extra_deps`, simply clear the list.
-    if rule.deps.len() == 1 && rule.deps[0].packages.len() == 0 {
-        rule.deps.clear();
-    }
-
-    (
-        normalize_target_name(&dep.package_name),
-        Rule::Concrete {
-            common: RuleCommon { testonly: false, public_visibility: true },
-            details: rule,
-        },
-    )
+    rules
 }
 
 /// Generate the `BuildFile` for `dep`, or return `None` if no rules would be
@@ -277,9 +473,7 @@ fn make_build_file_for_chromium_dep(
         paths.third_party.join(ThirdPartySource::build_path(&crate_id));
     let crate_abs_path = paths.root.join(&crate_path_from_chromium_src);
 
-    let to_gn_path = |abs_path: &Path| {
-        abs_path.strip_prefix(&crate_abs_path).unwrap().to_string_lossy().into_owned()
-    };
+    let to_gn_path = |abs_path: &Path| format!("//{}", paths.to_gn_abs_path(abs_path).unwrap());
 
     let cargo_pkg_description = dep.description.as_ref().map(|s| s.trim_end().to_string());
     let cargo_pkg_authors =
@@ -287,27 +481,27 @@ fn make_build_file_for_chromium_dep(
 
     // Template for all the rules in a build file. Several fields are
     // the same for all of a package's rules.
-    let mut rule_template = RuleConcrete {
+    let mut template = CrateDetail {
         edition: dep.edition.to_string(),
         cargo_pkg_version: dep.version.to_string(),
         cargo_pkg_authors,
         cargo_pkg_name: dep.package_name.clone(),
         cargo_pkg_description,
         build_root: dep.build_script.as_ref().map(|p| to_gn_path(p.as_path())),
+        build_script_sources: dep
+            .build_script
+            .as_ref()
+            .map(|p| to_gn_path(p.as_path()))
+            .into_iter()
+            .collect(),
         build_script_outputs: metadata.build_script_outputs,
         ..Default::default()
     };
 
     // Enumerate the dependencies of each kind for the package.
-    //
-    // TODO(crbug.com/1304772): If this target itself was a ":cargo_tests_support"
-    // then it should only depend on other ":cargo_tests_support" targets. We
-    // should also define a group("cargo_tests_support") that points to ":lib"
-    // if there is no Development library rule definition.
     for (gn_deps, cargo_deps) in [
-        (&mut rule_template.deps, &dep.dependencies),
-        (&mut rule_template.dev_deps, &dep.dev_dependencies),
-        (&mut rule_template.build_deps, &dep.build_dependencies),
+        (&mut template.deps, &dep.dependencies),
+        (&mut template.build_deps, &dep.build_dependencies),
     ] {
         let cargo_deps: Vec<_> = cargo_deps.iter().collect();
 
@@ -320,20 +514,13 @@ fn make_build_file_for_chromium_dep(
             let epoch = Some(Epoch::from_version(&crate_id.version).to_string());
             PackageId { name: normalized_name, epoch }
         });
-
-        // If there are still no deps after `extra_deps`, simply clear the list.
-        if gn_deps.len() == 1 && gn_deps[0].packages.len() == 0 {
-            gn_deps.clear();
-        }
     }
 
-    rule_template.aliased_deps.sort_unstable();
-
-    let mut rules: Vec<(String, Rule)> = Vec::new();
+    let mut rules: Vec<Rule> = Vec::new();
 
     // Generate rules for each binary the package provides.
     for bin_target in &dep.bin_targets {
-        let mut bin_rule = rule_template.clone();
+        let mut bin_rule = template.clone();
         bin_rule.crate_type = "bin".to_string();
         bin_rule.crate_root = to_gn_path(bin_target.root.as_path());
         bin_rule.sources =
@@ -359,26 +546,19 @@ fn make_build_file_for_chromium_dep(
             }
         }
 
-        rules.push((
-            NormalizedName::from_crate_name(&bin_target.name).to_string(),
-            Rule::Concrete {
-                common: RuleCommon { testonly: false, public_visibility: true },
-                details: bin_rule,
-            },
-        ));
+        rules.push(Rule {
+            name: NormalizedName::from_crate_name(&bin_target.name).to_string(),
+            gn_visibility: GnVisibility { testonly: false, public: true },
+            detail: RuleDetail::Crate(bin_rule),
+        });
     }
 
     // Generate the rule for the main library target, if it exists.
-    //
-    // TODO(crbug.com/1304772): We should also define a group("cargo_tests_support")
-    // that points to ":lib" if there is no Development library rule definition
-    // so that other ":cargo_tests_support" rules are simpler and can always
-    // depend on that target name.
     if let Some(lib_target) = &dep.lib_target {
         use deps::DependencyKind::*;
         // Generate the rules for each dependency kind. We use a stable
         // order instead of the hashmap iteration order.
-        for dep_kind in [Normal, Build, Development] {
+        for dep_kind in [Normal, Build] {
             let per_kind_info = match dep.dependency_kinds.get(&dep_kind) {
                 Some(x) => x,
                 None => continue,
@@ -386,13 +566,12 @@ fn make_build_file_for_chromium_dep(
 
             let lib_rule_name = match dep_kind {
                 deps::DependencyKind::Normal => "lib",
-                deps::DependencyKind::Development => "cargo_tests_support",
                 deps::DependencyKind::Build => "buildrs_support",
                 _ => unreachable!(),
             }
             .to_string();
 
-            let mut lib_details = rule_template.clone();
+            let mut lib_details = template.clone();
             lib_details.crate_name = Some(crate_id.normalized_name().to_string());
             lib_details.epoch = Some(Epoch::from_version(&crate_id.version));
             lib_details.crate_type = lib_target.lib_type.to_string();
@@ -406,28 +585,30 @@ fn make_build_file_for_chromium_dep(
             let testonly = dep_kind == deps::DependencyKind::Development;
             let visibility = metadata.visibility;
 
-            let lib_rule = Rule::Concrete {
-                common: RuleCommon {
+            rules.push(Rule {
+                name: lib_rule_name.clone(),
+                gn_visibility: GnVisibility {
                     testonly,
-                    public_visibility: match visibility {
+                    public: match visibility {
                         Visibility::Public => true,
                         Visibility::ThirdParty | Visibility::TestOnlyAndThirdParty => false,
                     },
                 },
-                details: lib_details,
-            };
+                detail: RuleDetail::Crate(lib_details),
+            });
 
-            rules.push((lib_rule_name.clone(), lib_rule));
-
-            // If first-party tests should be able to use the dependency, but it's only
-            // visible to third-party we need to provide a ":test_support"
-            // target for the tests to use.
+            // A package may be available to first-party tests. In this case limit :lib's
+            // visibility to third-party but provide a testonly alias visible
+            // everywhere. The :lib target must still exist for third-party
+            // transitive deps, which aren't testonly.
             if dep_kind == Normal && visibility == Visibility::TestOnlyAndThirdParty {
-                let test_support_rule = Rule::Group {
-                    common: RuleCommon { testonly: true, public_visibility: true },
-                    concrete_target: lib_rule_name,
-                };
-                rules.push(("test_support".to_string(), test_support_rule));
+                rules.push(Rule {
+                    name: "test_support".to_string(),
+                    gn_visibility: GnVisibility { testonly: true, public: true },
+                    detail: RuleDetail::TestonlyAlias(TestonlyAliasDetail {
+                        real_target: lib_rule_name,
+                    }),
+                })
             }
         }
     }
@@ -435,8 +616,11 @@ fn make_build_file_for_chromium_dep(
     if rules.is_empty() { None } else { Some((crate_id, BuildFile { rules })) }
 }
 
-/// Group dependencies by condition, with unconditional deps first. The first
-/// element is always present even if its set is empty.
+/// Group dependencies by condition, with unconditional deps first.
+///
+/// If the returned list is non-empty, it will always have a group without a
+/// condition, even if that group is empty. If there are no dependencies, then
+/// the returned list is empty.
 fn group_deps<F: Fn(&DepOfDep) -> PackageId>(deps: &[&DepOfDep], target_name: F) -> Vec<DepGroup>
 where
     F: Fn(&DepOfDep) -> PackageId,
@@ -451,7 +635,9 @@ where
         groups.entry(cond).or_default().push(target_name(dep));
     }
 
-    groups.entry(None).or_default();
+    if !groups.is_empty() {
+        groups.entry(None).or_default();
+    }
 
     let mut groups: Vec<DepGroup> =
         groups.into_iter().map(|(cond, rules)| DepGroup { cond, packages: rules }).collect();
@@ -461,28 +647,6 @@ where
     }
     groups.sort_unstable_by(|l, r| l.cond.cmp(&r.cond));
     groups
-}
-
-fn normalize_target_name(package_name: &str) -> String {
-    package_name.replace('-', "_")
-}
-
-pub fn escape_for_handlebars(x: &str) -> String {
-    let mut out = String::new();
-    for c in x.chars() {
-        match c {
-            // Note: we don't escape '$' here because we sometimes want to use
-            // $var syntax.
-            c @ ('"' | '\\') => write!(out, "\\{c}").unwrap(),
-            // GN strings can encode literal ASCII with "$0x<hex_code>" syntax,
-            // so we could embed newlines with "$0x0A". However, GN seems to
-            // escape these incorrectly in its Ninja output so we just replace
-            // it with a space.
-            '\n' => out.push(' '),
-            c => out.push(c),
-        }
-    }
-    out
 }
 
 /// Describes a condition for some GN declaration.
@@ -658,13 +822,5 @@ mod tests {
             Condition::from_platform_set(platform_set).unwrap().0,
             "(is_android && target_cpu == \"arm\") || (is_win)"
         );
-    }
-
-    #[test]
-    fn string_excaping() {
-        assert_eq!("foo bar", format!("{}", escape_for_handlebars("foo bar")));
-        assert_eq!("foo bar ", format!("{}", escape_for_handlebars("foo\nbar\n")));
-        assert_eq!(r#"foo \"bar\""#, format!("{}", escape_for_handlebars(r#"foo "bar""#)));
-        assert_eq!("foo 'bar'", format!("{}", escape_for_handlebars("foo 'bar'")));
     }
 }

@@ -123,6 +123,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_tree_as_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/lcp_critical_path_predictor/element_locator.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/history_item.h"
@@ -313,7 +314,7 @@ class TestReadableStreamSource : public UnderlyingSourceBase {
   TestReadableStreamSource(ScriptState* script_state, Type type)
       : UnderlyingSourceBase(script_state), type_(type) {}
 
-  ScriptPromise Start(ScriptState* script_state) override {
+  ScriptPromise Start(ScriptState* script_state, ExceptionState&) override {
     if (generator_) {
       return ScriptPromise::CastUndefined(script_state);
     }
@@ -321,7 +322,7 @@ class TestReadableStreamSource : public UnderlyingSourceBase {
     return resolver_->Promise();
   }
 
-  ScriptPromise pull(ScriptState* script_state) override {
+  ScriptPromise Pull(ScriptState* script_state, ExceptionState&) override {
     if (!generator_) {
       return ScriptPromise::CastUndefined(script_state);
     }
@@ -491,7 +492,8 @@ class TestWritableStreamSink final : public UnderlyingSinkBase {
                       ExceptionState&) override {
     DCHECK(internal_sink_);
     internal_sink_->Append(
-        ToCoreString(chunk.V8Value()
+        ToCoreString(script_state->GetIsolate(),
+                     chunk.V8Value()
                          ->ToString(script_state->GetContext())
                          .ToLocalChecked())
             .Utf8());
@@ -615,6 +617,12 @@ TestWritableStreamSink::Optimizer::PerformInProcessOptimization(
                           context->GetTaskRunner(TaskType::kInternalDefault),
                           std::move(reply)));
   return sink;
+}
+
+void OnLCPPredicted(ScriptPromiseResolver* resolver,
+                    const Element& lcp_element) {
+  const ElementLocator locator = element_locator::OfElement(lcp_element);
+  resolver->Resolve(element_locator::ToStringForTesting(locator));
 }
 
 }  // namespace
@@ -870,7 +878,7 @@ Element* Internals::innerEditorElement(Element* container,
 }
 
 bool Internals::isPreloaded(const String& url) {
-  return isPreloadedBy(url, document_);
+  return isPreloadedBy(url, document_.Get());
 }
 
 bool Internals::isPreloadedBy(const String& url, Document* document) {
@@ -2543,16 +2551,6 @@ unsigned Internals::numberOfScrollableAreas(Document* document) {
   return count;
 }
 
-bool Internals::isPageBoxVisible(Document* document, int page_number) {
-  DCHECK(document);
-  // Named pages aren't supported here, because this function may be called
-  // without laying out first.
-  const ComputedStyle* style =
-      document->StyleForPage(page_number, /* page_name */ AtomicString());
-  return style->Visibility() !=
-         EVisibility::kHidden;  // display property doesn't apply to @page.
-}
-
 String Internals::layerTreeAsText(Document* document,
                                   ExceptionState& exception_state) const {
   return layerTreeAsText(document, 0, exception_state);
@@ -2714,26 +2712,6 @@ String Internals::pageProperty(String property_name,
 
   return PrintContext::PageProperty(GetFrame(), property_name.Utf8().c_str(),
                                     page_number);
-}
-
-String Internals::pageSizeAndMarginsInPixels(
-    unsigned page_number,
-    int width,
-    int height,
-    int margin_top,
-    int margin_right,
-    int margin_bottom,
-    int margin_left,
-    ExceptionState& exception_state) const {
-  if (!GetFrame()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
-                                      "No frame is available.");
-    return String();
-  }
-
-  return PrintContext::PageSizeAndMarginsInPixels(
-      GetFrame(), page_number, width, height, margin_top, margin_right,
-      margin_bottom, margin_left);
 }
 
 float Internals::pageScaleFactor(ExceptionState& exception_state) {
@@ -4044,6 +4022,17 @@ void Internals::setBackForwardCacheRestorationBufferSize(unsigned int maxSize) {
 Vector<String> Internals::getCreatorScripts(HTMLImageElement* img) {
   DCHECK(img);
   return Vector<String>(img->creator_scripts());
+}
+
+ScriptPromise Internals::LCPPrediction(ScriptState* script_state,
+                                       Document* document) {
+  ScriptPromiseResolver* resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  document->AddLCPPredictedCallback(
+      WTF::BindOnce(&OnLCPPredicted, WrapPersistent(resolver)));
+  return promise;
 }
 
 }  // namespace blink

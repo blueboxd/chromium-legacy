@@ -91,6 +91,7 @@ class PageInfoUI {
   // cookies subpage implementation
   struct CookiesNewInfo {
     CookiesNewInfo();
+    CookiesNewInfo(CookiesNewInfo&&);
     ~CookiesNewInfo();
 
     // The number of third-party sites blocked.
@@ -119,6 +120,9 @@ class PageInfoUI {
 
     // The confidence level of site breakage related to third-party cookies.
     CookieControlsBreakageConfidenceLevel confidence;
+
+    // Whether the current profile is "off the record".
+    bool is_otr = false;
   };
 
   // |ChosenObjectInfo| contains information about a single |chooser_object| of

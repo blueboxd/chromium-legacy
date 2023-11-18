@@ -741,6 +741,7 @@ interface CSSImportRule : CSSRule
     getter layerName
     getter media
     getter styleSheet
+    getter supportsText
     method constructor
     setter media
 interface CSSKeyframeRule : CSSRule
@@ -931,7 +932,7 @@ interface CSSScale : CSSTransformComponent
     setter x
     setter y
     setter z
-interface CSSScopeRule : CSSConditionRule
+interface CSSScopeRule : CSSGroupingRule
     attribute @@toStringTag
     getter end
     getter start
@@ -1003,42 +1004,6 @@ interface CSSStyleValue
 interface CSSSupportsRule : CSSConditionRule
     attribute @@toStringTag
     method constructor
-interface CSSToggle
-    attribute @@toStringTag
-    getter cycle
-    getter group
-    getter scope
-    getter states
-    getter value
-    getter valueAsNumber
-    getter valueAsString
-    method constructor
-    setter cycle
-    setter group
-    setter scope
-    setter states
-    setter value
-    setter valueAsNumber
-    setter valueAsString
-interface CSSToggleEvent : Event
-    attribute @@toStringTag
-    getter toggle
-    getter toggleName
-    method constructor
-interface CSSToggleMap
-    attribute @@toStringTag
-    getter size
-    method @@iterator
-    method clear
-    method constructor
-    method delete
-    method entries
-    method forEach
-    method get
-    method has
-    method keys
-    method set
-    method values
 interface CSSTransformComponent
     attribute @@toStringTag
     getter is2D
@@ -1298,6 +1263,7 @@ interface ClipboardEvent : Event
     getter clipboardData
     method constructor
 interface ClipboardItem
+    static method supports
     attribute @@toStringTag
     getter types
     method constructor
@@ -1308,6 +1274,16 @@ interface CloseEvent : Event
     getter reason
     getter wasClean
     method constructor
+interface CloseWatcher : EventTarget
+    attribute @@toStringTag
+    getter oncancel
+    getter onclose
+    method close
+    method constructor
+    method destroy
+    method requestClose
+    setter oncancel
+    setter onclose
 interface Comment : CharacterData
     attribute @@toStringTag
     method constructor
@@ -1945,6 +1921,7 @@ interface Document : Node
     getter onselectionchange
     getter onselectstart
     getter onslotchange
+    getter onsnapchanged
     getter onstalled
     getter onsubmit
     getter onsuspend
@@ -2165,6 +2142,7 @@ interface Document : Node
     setter onselectionchange
     setter onselectstart
     setter onslotchange
+    setter onsnapchanged
     setter onstalled
     setter onsubmit
     setter onsuspend
@@ -2370,7 +2348,6 @@ interface Element : Node
     getter shadowRoot
     getter slot
     getter tagName
-    getter toggles
     method after
     method animate
     method append
@@ -2736,6 +2713,10 @@ interface FencedFrameConfig
     getter width
     method constructor
     method setSharedStorageContext
+interface FetchLaterResult
+    attribute @@toStringTag
+    getter activated
+    method constructor
 interface File : Blob
     attribute @@toStringTag
     getter lastModified
@@ -3155,6 +3136,7 @@ interface GPUSupportedFeatures
 interface GPUSupportedLimits
     attribute @@toStringTag
     getter maxBindGroups
+    getter maxBindGroupsPlusVertexBuffers
     getter maxBindingsPerBindGroup
     getter maxBufferSize
     getter maxColorAttachmentBytesPerSample
@@ -3530,6 +3512,8 @@ interface HTMLButtonElement : HTMLElement
     getter formMethod
     getter formNoValidate
     getter formTarget
+    getter invokeAction
+    getter invokeTargetElement
     getter labels
     getter name
     getter popoverTargetAction
@@ -3549,6 +3533,8 @@ interface HTMLButtonElement : HTMLElement
     setter formMethod
     setter formNoValidate
     setter formTarget
+    setter invokeAction
+    setter invokeTargetElement
     setter name
     setter popoverTargetAction
     setter popoverTargetElement
@@ -3727,6 +3713,7 @@ interface HTMLElement : Element
     getter onselectionchange
     getter onselectstart
     getter onslotchange
+    getter onsnapchanged
     getter onstalled
     getter onsubmit
     getter onsuspend
@@ -3862,6 +3849,7 @@ interface HTMLElement : Element
     setter onselectionchange
     setter onselectstart
     setter onslotchange
+    setter onsnapchanged
     setter onstalled
     setter onsubmit
     setter onsuspend
@@ -4087,6 +4075,7 @@ interface HTMLHtmlElement : HTMLElement
     setter version
 interface HTMLIFrameElement : HTMLElement
     attribute @@toStringTag
+    getter adAuctionHeaders
     getter align
     getter allow
     getter allowFullscreen
@@ -4114,6 +4103,7 @@ interface HTMLIFrameElement : HTMLElement
     getter width
     method constructor
     method getSVGDocument
+    setter adAuctionHeaders
     setter align
     setter allow
     setter allowFullscreen
@@ -4209,6 +4199,8 @@ interface HTMLInputElement : HTMLElement
     getter height
     getter incremental
     getter indeterminate
+    getter invokeAction
+    getter invokeTargetElement
     getter labels
     getter list
     getter max
@@ -4268,6 +4260,8 @@ interface HTMLInputElement : HTMLElement
     setter height
     setter incremental
     setter indeterminate
+    setter invokeAction
+    setter invokeTargetElement
     setter max
     setter maxLength
     setter min
@@ -4634,12 +4628,12 @@ interface HTMLParamElement : HTMLElement
     setter valueType
 interface HTMLPermissionElement : HTMLElement
     attribute @@toStringTag
-    getter ondismissed
-    getter onresolved
+    getter ondismiss
+    getter onresolve
     getter type
     method constructor
-    setter ondismissed
-    setter onresolved
+    setter ondismiss
+    setter onresolve
     setter type
 interface HTMLPictureElement : HTMLElement
     attribute @@toStringTag
@@ -5257,9 +5251,9 @@ interface IIRFilterNode : AudioNode
     method constructor
     method getFrequencyResponse
 interface IdentityCredential : Credential
-    static method logoutRPs
+    static method revoke
     attribute @@toStringTag
-    getter isIdentityCredentialAutoSelected
+    getter isAutoSelected
     getter token
     method constructor
 interface IdentityCredentialError : DOMException
@@ -5438,6 +5432,11 @@ interface IntersectionObserverEntry
     getter rootBounds
     getter target
     getter time
+    method constructor
+interface InvokeEvent : Event
+    attribute @@toStringTag
+    getter action
+    getter invoker
     method constructor
 interface Keyboard
     attribute @@toStringTag
@@ -5626,13 +5625,21 @@ interface MLGraphBuilder
     method constructor
     method conv2d
     method convTranspose2d
+    method cos
     method div
     method elu
+    method erf
+    method exp
+    method expand
     method floor
     method gemm
     method hardSwish
+    method identity
     method input
     method leakyRelu
+    method log
+    method logicalNot
+    method matmul
     method max
     method maxPool2d
     method min
@@ -5641,16 +5648,29 @@ interface MLGraphBuilder
     method pad
     method pow
     method prelu
+    method reciprocal
+    method reduceL1
+    method reduceL2
+    method reduceLogSum
+    method reduceLogSumExp
+    method reduceMax
     method reduceMean
+    method reduceMin
+    method reduceProduct
     method reduceSum
+    method reduceSumSquare
     method relu
     method resample2d
     method reshape
     method sigmoid
+    method sin
     method slice
     method softmax
+    method softsign
     method split
+    method sqrt
     method sub
+    method tan
     method tanh
     method transpose
 interface MLModelLoader
@@ -5660,6 +5680,7 @@ interface MLModelLoader
 interface MLOperand
     attribute @@toStringTag
     method constructor
+    method shape
 interface Magnetometer : Sensor
     attribute @@toStringTag
     getter x
@@ -5756,6 +5777,7 @@ interface MathMLElement : Element
     getter onselectionchange
     getter onselectstart
     getter onslotchange
+    getter onsnapchanged
     getter onstalled
     getter onsubmit
     getter onsuspend
@@ -5867,6 +5889,7 @@ interface MathMLElement : Element
     setter onselectionchange
     setter onselectstart
     setter onslotchange
+    setter onsnapchanged
     setter onstalled
     setter onsubmit
     setter onsuspend
@@ -6177,12 +6200,14 @@ interface MessageEvent : Event
     method initMessageEvent
 interface MessagePort : EventTarget
     attribute @@toStringTag
+    getter onclose
     getter onmessage
     getter onmessageerror
     method close
     method constructor
     method postMessage
     method start
+    setter onclose
     setter onmessage
     setter onmessageerror
 interface MimeType
@@ -6371,6 +6396,7 @@ interface NavigateEvent : Event
     method scroll
 interface Navigation : EventTarget
     attribute @@toStringTag
+    getter activation
     getter canGoBack
     getter canGoForward
     getter currentEntry
@@ -6391,6 +6417,12 @@ interface Navigation : EventTarget
     setter onnavigate
     setter onnavigateerror
     setter onnavigatesuccess
+interface NavigationActivation
+    attribute @@toStringTag
+    getter entry
+    getter from
+    getter navigationType
+    method constructor
 interface NavigationCurrentEntryChangeEvent : Event
     attribute @@toStringTag
     getter from
@@ -6499,7 +6531,6 @@ interface Navigator
     method deprecatedReplaceInURN
     method deprecatedURNToURL
     method getBattery
-    method getEnvironmentIntegrity
     method getGamepads
     method getInstalledRelatedApps
     method getUserMedia
@@ -7807,6 +7838,7 @@ interface Request
     getter referrer
     getter referrerPolicy
     getter signal
+    getter targetAddressSpace
     getter url
     method arrayBuffer
     method blob
@@ -8093,6 +8125,7 @@ interface SVGElement : Element
     getter onselectionchange
     getter onselectstart
     getter onslotchange
+    getter onsnapchanged
     getter onstalled
     getter onsubmit
     getter onsuspend
@@ -8206,6 +8239,7 @@ interface SVGElement : Element
     setter onselectionchange
     setter onselectstart
     setter onslotchange
+    setter onsnapchanged
     setter onstalled
     setter onsubmit
     setter onsuspend
@@ -9278,6 +9312,10 @@ interface SharedWorker : EventTarget
     getter port
     method constructor
     setter onerror
+interface SnapEvent : Event
+    attribute @@toStringTag
+    getter snapTargets
+    method constructor
 interface SoftNavigationEntry : PerformanceEntry
     attribute @@toStringTag
     method constructor
@@ -9460,6 +9498,7 @@ interface SubmitEvent : Event
     method constructor
 interface Subscriber
     attribute @@toStringTag
+    getter active
     getter signal
     method complete
     method constructor
@@ -12562,6 +12601,7 @@ namespace console
     getter onselectionchange
     getter onselectstart
     getter onslotchange
+    getter onsnapchanged
     getter onstalled
     getter onstorage
     getter onsubmit
@@ -12790,6 +12830,7 @@ namespace console
     setter onselectionchange
     setter onselectstart
     setter onslotchange
+    setter onsnapchanged
     setter onstalled
     setter onstorage
     setter onsubmit

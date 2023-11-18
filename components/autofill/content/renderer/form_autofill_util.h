@@ -126,20 +126,13 @@ bool IsDOMPredecessor(const blink::WebNode& x,
 // Gets up to kMaxListSize data list values (with corresponding label) for the
 // given element, each value and label have as far as kMaxDataLength.
 void GetDataListSuggestions(const blink::WebInputElement& element,
-                            std::vector<std::u16string>* values,
-                            std::vector<std::u16string>* labels);
+                            std::vector<SelectOption>* options);
 
-// Extract FormData from the form element and return whether the
-// operation was successful.
-bool ExtractFormData(const blink::WebFormElement& form_element,
-                     const FieldDataManager& field_data_manager,
-                     FormData* data);
-
-// Returns true if at least one element from |control_elements| is visible in
-// |document|.
-bool IsSomeControlElementVisible(
-    const blink::WebDocument& document,
-    const std::set<FieldRendererId>& control_elements);
+// Extract FormData from the form element and return it or std::nullopt
+// depending on whether the operation was successful.
+std::optional<FormData> ExtractFormData(
+    const blink::WebFormElement& form_element,
+    const FieldDataManager& field_data_manager);
 
 // Helper functions to assist in getting the canonical form of the action and
 // origin. The action will properly take into account <BASE>, and both will
@@ -274,7 +267,7 @@ void WebFormControlElementToFormField(
 bool WebFormElementToFormData(
     const blink::WebFormElement& form_element,
     const blink::WebFormControlElement& form_control_element,
-    const FieldDataManager* field_data_manager,
+    const FieldDataManager& field_data_manager,
     DenseSet<ExtractOption> extract_options,
     FormData* form,
     FormFieldData* field);
@@ -315,7 +308,7 @@ bool UnownedFormElementsToFormData(
     const std::vector<blink::WebElement>& iframe_elements,
     const blink::WebFormControlElement* element,
     const blink::WebDocument& document,
-    const FieldDataManager* field_data_manager,
+    const FieldDataManager& field_data_manager,
     DenseSet<ExtractOption> extract_options,
     FormData* form,
     FormFieldData* field);
@@ -327,7 +320,7 @@ bool UnownedFormElementsToFormData(
 // is not found or cannot be serialized.
 bool FindFormAndFieldForFormControlElement(
     const blink::WebFormControlElement& element,
-    const FieldDataManager* field_data_manager,
+    const FieldDataManager& field_data_manager,
     DenseSet<ExtractOption> extract_options,
     FormData* form,
     FormFieldData* field);
@@ -356,11 +349,11 @@ bool FindFormAndFieldForFormControlElement(
 std::optional<FormData> FindFormForContentEditable(
     const blink::WebElement& content_editable);
 
-// Fills or previews the form represented by `form`.
+// Fills or previews the fields represented by `fields`.
 // `initiating_element` is the element that initiated the autofill process.
-// Returns the filled elements.
+// Returns the filled blink elements.
 std::vector<blink::WebFormControlElement> ApplyFormAction(
-    const FormData& form,
+    base::span<const FormFieldData> fields,
     const blink::WebFormControlElement& initiating_element,
     mojom::ActionType action_type,
     mojom::ActionPersistence action_persistence);
@@ -457,7 +450,7 @@ blink::WebFormControlElement FindFormControlByRendererId(
 // expensive, because it retrieves all DOM elements.
 std::vector<blink::WebFormControlElement> FindFormControlsByRendererId(
     const blink::WebDocument& doc,
-    const std::vector<FieldRendererId>& queried_form_controls);
+    base::span<const FieldRendererId> queried_form_controls);
 
 // Returns form control elements by unique renderer id. The result has the same
 // number elements as |queried_form_controls| and the i-th element of the result
@@ -468,7 +461,7 @@ std::vector<blink::WebFormControlElement> FindFormControlsByRendererId(
 std::vector<blink::WebFormControlElement> FindFormControlsByRendererId(
     const blink::WebDocument& doc,
     FormRendererId form_renderer_id,
-    const std::vector<FieldRendererId>& queried_form_controls);
+    base::span<const FieldRendererId> queried_form_controls);
 
 blink::WebElement FindContentEditableByRendererId(
     FieldRendererId field_renderer_id);

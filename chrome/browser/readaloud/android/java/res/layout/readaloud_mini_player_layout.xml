@@ -29,16 +29,17 @@ found in the LICENSE file.
         android:importantForAccessibility="no"/>
 
     <FrameLayout
+        android:id="@+id/backdrop"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@macro/toolbar_background_primary">
+        android:layout_height="wrap_content">
 
         <!-- Middle layout containing everything but the progress bar. -->
         <RelativeLayout
-            android:id="@+id/mini_player_background"
+            android:id="@+id/mini_player_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingHorizontal="16dp">
+            android:paddingHorizontal="16dp"
+            android:alpha="0">
 
             <!-- Buffering/unknown layout. -->
             <LinearLayout
@@ -188,8 +189,9 @@ found in the LICENSE file.
             android:background="?attr/colorSurfaceVariant"
             android:max="1000"
             android:progress="0"
-            android:progressTint="@macro/progress_bar_foreground"
+            android:progressTint="@macro/default_icon_color"
             android:progressTintMode="src_atop"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            android:alpha="0"/>
     </FrameLayout>
 </org.chromium.chrome.browser.readaloud.player.mini.MiniPlayerLayout>

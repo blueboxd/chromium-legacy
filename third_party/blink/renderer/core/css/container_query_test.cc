@@ -1169,7 +1169,7 @@ TEST_F(ContainerQueryTest, CQDependentContentVisibilityHidden) {
   ASSERT_TRUE(locker->GetDisplayLockContext());
   EXPECT_TRUE(locker->GetDisplayLockContext()->IsLocked());
 
-  EXPECT_TRUE(locker->firstChild()->GetComputedStyle())
+  EXPECT_TRUE(locker->firstElementChild()->GetComputedStyle())
       << "The #locker element does not get content-visibility:hidden on the "
          "first pass over its children during the lifecycle update because we "
          "do not have the container laid out at that point. This is not a spec "
@@ -1230,32 +1230,6 @@ TEST_F(ContainerQueryTest, QueryViewportDependency) {
 
   EXPECT_FALSE(target4->ComputedStyleRef().HasStaticViewportUnits());
   EXPECT_TRUE(target4->ComputedStyleRef().HasDynamicViewportUnits());
-}
-
-TEST_F(ContainerQueryTest, NoStyleQueryWhenDisabled) {
-  ScopedCSSStyleQueriesForTest scope(false);
-
-  SetBodyInnerHTML(R"HTML(
-    <style>
-      @container style(--foo: bar) {
-        span { display: block }
-      }
-      @container (width > 0px) and (not style(--no: match)) {
-        span { vertical-align: middle }
-      }
-    </style>
-    <div style="container-type: inline-size; --foo: bar">
-      <span id="span"></span>
-    </div>
-  )HTML");
-
-  UpdateAllLifecyclePhasesForTest();
-  const ComputedStyle& style =
-      GetDocument().getElementById(AtomicString("span"))->ComputedStyleRef();
-  EXPECT_EQ(style.Display(), EDisplay::kInline)
-      << "style() should not match when disabled";
-  EXPECT_EQ(style.VerticalAlign(), EVerticalAlign::kBaseline)
-      << "style() should be unknown when disabled";
 }
 
 TEST_F(ContainerQueryTest, TreeScopedReferenceUserOrigin) {

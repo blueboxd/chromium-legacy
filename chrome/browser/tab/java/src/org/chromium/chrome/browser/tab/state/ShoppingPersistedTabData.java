@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.commerce.PriceUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridgeFactory;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.proto.ShoppingPersistedTabData.ShoppingPersistedTabDataProto;
@@ -124,7 +125,7 @@ public class ShoppingPersistedTabData extends PersistedTabData {
         private static final OptimizationGuideBridgeFactory sOptimizationGuideBridgeFactory;
         static {
             List<HintsProto.OptimizationType> optimizationTypes;
-            if (isPriceTrackingWithOptimizationGuideEnabled()) {
+            if (isPriceTrackingWithOptimizationGuideEnabled(Profile.getLastUsedRegularProfile())) {
                 optimizationTypes =
                         Arrays.asList(HintsProto.OptimizationType.SHOPPING_PAGE_PREDICTOR,
                                 HintsProto.OptimizationType.PRICE_TRACKING);
@@ -182,6 +183,8 @@ public class ShoppingPersistedTabData extends PersistedTabData {
         public String offerId;
         public GURL gurl;
         public boolean isCurrentPriceDropSeen;
+        public String productTitle;
+        public GURL productImageUrl;
 
         PriceDropData() {
             this.priceMicros = NO_PRICE_KNOWN;
@@ -342,39 +345,44 @@ public class ShoppingPersistedTabData extends PersistedTabData {
         // persisted across restarts, the reload of the active Tab results in resetting the price
         // data but at that point, OptimizationGuide is not returning results yet - so we
         // essentially can't persisted any price drops of the active Tab across restarts.
-        mUrlUpdatedObserver = new EmptyTabObserver() {
-            @Override
-            public void onDidStartNavigationInPrimaryMainFrame(
-                    Tab tab, NavigationHandle navigationHandle) {
-                if (navigationHandle.isSameDocument()) {
-                    return;
-                }
-                // User is navigating to a different page - as detected by a change in URL
-                if (!tab.getUrl().equals(navigationHandle.getUrl())) {
-                    resetPriceData();
-                }
-            }
+        mUrlUpdatedObserver =
+                new EmptyTabObserver() {
+                    @Override
+                    public void onDidStartNavigationInPrimaryMainFrame(
+                            Tab tab, NavigationHandle navigationHandle) {
+                        if (navigationHandle.isSameDocument()) {
+                            return;
+                        }
+                        // User is navigating to a different page - as detected by a change in URL
+                        if (!tab.getUrl().equals(navigationHandle.getUrl())) {
+                            resetPriceData();
+                        }
+                    }
 
-            @Override
-            public void onDidFinishNavigationInPrimaryMainFrame(
-                    Tab tab, NavigationHandle navigationHandle) {
-                if (navigationHandle.isSameDocument() || !navigationHandle.hasCommitted()) {
-                    return;
-                }
+                    @Override
+                    public void onDidFinishNavigationInPrimaryMainFrame(
+                            Tab tab, NavigationHandle navigationHandle) {
+                        if (navigationHandle.isSameDocument() || !navigationHandle.hasCommitted()) {
+                            return;
+                        }
 
-                // User navigating to a different page, as detected by a search or typing something
-                // into the address bar.
-                boolean fromAddressBar =
-                        (navigationHandle.pageTransition() & PageTransition.FROM_ADDRESS_BAR) != 0;
-                if (navigationHandle.isValidSearchFormUrl() || fromAddressBar) {
-                    resetPriceData();
-                }
+                        // User navigating to a different page, as detected by a search or typing
+                        // something
+                        // into the address bar.
+                        boolean fromAddressBar =
+                                (navigationHandle.pageTransition()
+                                                & PageTransition.FROM_ADDRESS_BAR)
+                                        != 0;
+                        if (navigationHandle.isValidSearchFormUrl() || fromAddressBar) {
+                            resetPriceData();
+                        }
 
-                if (isPriceTrackingWithOptimizationGuideEnabled()) {
-                    prefetchOnNewNavigation(tab, navigationHandle);
-                }
-            }
-        };
+                        if (isPriceTrackingWithOptimizationGuideEnabled(
+                                Profile.getLastUsedRegularProfile())) {
+                            prefetchOnNewNavigation(tab, navigationHandle);
+                        }
+                    }
+                };
         tab.addObserver(mUrlUpdatedObserver);
     }
 
@@ -628,6 +636,8 @@ public class ShoppingPersistedTabData extends PersistedTabData {
             // Use UnsignedLongs to convert OfferId to avoid overflow.
             setMainOfferId(UnsignedLongs.toString(buyableProduct.getOfferId()));
             setPriceDropGurl(tab.getUrl());
+            setProductTitle(buyableProduct.getTitle());
+            setProductImageUrl(new GURL(buyableProduct.getImageUrl()));
             foundBuyableProduct = FoundBuyableProduct.FOUND_WITH_PRICE_UPDATE;
         }
 
@@ -693,6 +703,28 @@ public class ShoppingPersistedTabData extends PersistedTabData {
     protected void setPriceDropGurl(GURL gurl) {
         mPriceDropData.gurl = gurl;
         save();
+    }
+
+    @VisibleForTesting
+    protected void setProductTitle(String productTitle) {
+        mPriceDropData.productTitle = productTitle;
+        save();
+    }
+
+    @VisibleForTesting
+    protected String getProductTitle() {
+        return mPriceDropData.productTitle;
+    }
+
+    @VisibleForTesting
+    protected void setProductImageUrl(GURL imageUrl) {
+        mPriceDropData.productImageUrl = imageUrl;
+        save();
+    }
+
+    @VisibleForTesting
+    protected GURL getProductImageUrl() {
+        return mPriceDropData.productImageUrl;
     }
 
     @VisibleForTesting
@@ -881,6 +913,14 @@ public class ShoppingPersistedTabData extends PersistedTabData {
             builder.setSerializedGurl(mPriceDropData.gurl.serialize());
         }
 
+        if (mPriceDropData.productTitle != null) {
+            builder.setProductTitle(mPriceDropData.productTitle);
+        }
+
+        if (mPriceDropData.productImageUrl != null) {
+            builder.setProductImageUrl(mPriceDropData.productImageUrl.serialize());
+        }
+
         return () -> {
             return builder.build().toByteString().asReadOnlyByteBuffer();
         };
@@ -907,6 +947,9 @@ public class ShoppingPersistedTabData extends PersistedTabData {
                     GURL.deserialize(shoppingPersistedTabDataProto.getSerializedGurl());
             mPriceDropData.isCurrentPriceDropSeen =
                     shoppingPersistedTabDataProto.getIsCurrentPriceDropSeen();
+            mPriceDropData.productTitle = shoppingPersistedTabDataProto.getProductTitle();
+            mPriceDropData.productImageUrl =
+                    GURL.deserialize(shoppingPersistedTabDataProto.getProductImageUrl());
             return true;
         } catch (InvalidProtocolBufferException e) {
             Log.e(TAG,
@@ -979,7 +1022,7 @@ public class ShoppingPersistedTabData extends PersistedTabData {
     /**
      * @return true is acquiring pricing data using OptimizationGuide is enabled.
      */
-    public static boolean isPriceTrackingWithOptimizationGuideEnabled() {
+    public static boolean isPriceTrackingWithOptimizationGuideEnabled(Profile profile) {
         if (sPriceTrackingWithOptimizationGuideForTesting) {
             return true;
         }
@@ -987,9 +1030,9 @@ public class ShoppingPersistedTabData extends PersistedTabData {
             return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                     ChromeFeatureList.COMMERCE_PRICE_TRACKING,
                     PRICE_TRACKING_WITH_OPTIMIZATION_GUIDE_PARAM,
-                    PriceTrackingFeatures.isPriceTrackingEnabled());
+                    PriceTrackingFeatures.isPriceTrackingEnabled(profile));
         }
-        return PriceTrackingFeatures.isPriceTrackingEnabled();
+        return PriceTrackingFeatures.isPriceTrackingEnabled(profile);
     }
 
     /**
@@ -1079,8 +1122,9 @@ public class ShoppingPersistedTabData extends PersistedTabData {
     /**
      * @return a list of Shopping Hints needed to be registered on deferred startup
      */
-    public static List<HintsProto.OptimizationType> getShoppingHintsToRegisterOnDeferredStartup() {
-        if (ShoppingPersistedTabData.isPriceTrackingWithOptimizationGuideEnabled()) {
+    public static List<HintsProto.OptimizationType> getShoppingHintsToRegisterOnDeferredStartup(
+            Profile profile) {
+        if (ShoppingPersistedTabData.isPriceTrackingWithOptimizationGuideEnabled(profile)) {
             return Arrays.asList(HintsProto.OptimizationType.PRICE_TRACKING);
         }
         return Arrays.asList();

@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/glanceables/tasks/glanceables_tasks_types.h"
+#include "ash/api/tasks/tasks_types.h"
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/memory/scoped_refptr.h"
@@ -81,20 +81,23 @@ constexpr char kDefaultTasksResponseContent[] = R"(
           "id": "asd",
           "title": "Parent task, level 1",
           "status": "needsAction",
-          "due": "2023-04-19T00:00:00.000Z"
+          "due": "2023-04-19T00:00:00.000Z",
+          "updated": "2023-01-30T22:19:22.812Z"
         },
         {
           "id": "qwe",
           "title": "Child task, level 2",
           "parent": "asd",
-          "status": "needsAction"
+          "status": "needsAction",
+          "updated": "2022-12-21T23:38:22.590Z"
         },
         {
           "id": "zxc",
           "title": "Parent task 2, level 1",
           "status": "needsAction",
           "links": [{"type": "email"}],
-          "notes": "Lorem ipsum dolor sit amet"
+          "notes": "Lorem ipsum dolor sit amet",
+          "updated": "2022-12-21T23:38:22.590Z"
         }
       ]
     }
@@ -138,7 +141,7 @@ class TestListModelObserver : public ui::ListModelObserver {
 
 }  // namespace
 
-class GlanceablesTasksClientImplTest : public testing::Test {
+class TasksClientImplTest : public testing::Test {
  public:
   void SetUp() override {
     auto create_request_sender_callback = base::BindLambdaForTesting(
@@ -147,10 +150,10 @@ class GlanceablesTasksClientImplTest : public testing::Test {
           return std::make_unique<google_apis::RequestSender>(
               std::make_unique<google_apis::DummyAuthService>(),
               url_loader_factory_, task_environment_.GetMainThreadTaskRunner(),
-              "test-user-agent", TRAFFIC_ANNOTATION_FOR_TESTS);
+              "test-user-agent", traffic_annotation_tag);
         });
-    client_ = std::make_unique<GlanceablesTasksClientImpl>(
-        create_request_sender_callback);
+    client_ = std::make_unique<TasksClientImpl>(create_request_sender_callback,
+                                                TRAFFIC_ANNOTATION_FOR_TESTS);
 
     test_server_.RegisterRequestHandler(
         base::BindRepeating(&TestRequestHandler::HandleRequest,
@@ -164,7 +167,7 @@ class GlanceablesTasksClientImplTest : public testing::Test {
               test_server_.base_url().spec());
   }
 
-  GlanceablesTasksClientImpl* client() { return client_.get(); }
+  TasksClientImpl* client() { return client_.get(); }
   base::HistogramTester* histogram_tester() { return &histogram_tester_; }
   TestRequestHandler& request_handler() { return request_handler_; }
 
@@ -178,19 +181,19 @@ class GlanceablesTasksClientImplTest : public testing::Test {
           /*is_trusted=*/true);
   std::unique_ptr<GaiaUrlsOverriderForTesting> gaia_urls_overrider_;
   testing::StrictMock<TestRequestHandler> request_handler_;
-  std::unique_ptr<GlanceablesTasksClientImpl> client_;
+  std::unique_ptr<TasksClientImpl> client_;
   base::HistogramTester histogram_tester_;
 };
 
 // ----------------------------------------------------------------------------
 // Get task lists:
 
-TEST_F(GlanceablesTasksClientImplTest, GetTaskLists) {
+TEST_F(TasksClientImplTest, GetTaskLists) {
   EXPECT_CALL(request_handler(), HandleRequest(_))
       .WillOnce(Return(ByMove(TestRequestHandler::CreateSuccessfulResponse(
           kDefaultTaskListsResponseContent))));
 
-  TestFuture<ui::ListModel<GlanceablesTaskList>*> future;
+  TestFuture<const ui::ListModel<api::TaskList>*> future;
   client()->GetTaskLists(future.GetCallback());
   ASSERT_TRUE(future.Wait());
 
@@ -223,12 +226,12 @@ TEST_F(GlanceablesTasksClientImplTest, GetTaskLists) {
       /*expected_bucket_count=*/1);
 }
 
-TEST_F(GlanceablesTasksClientImplTest, GetTaskListsOnSubsequentCalls) {
+TEST_F(TasksClientImplTest, GetTaskListsOnSubsequentCalls) {
   EXPECT_CALL(request_handler(), HandleRequest(_))
       .WillOnce(Return(ByMove(TestRequestHandler::CreateSuccessfulResponse(
           kDefaultTaskListsResponseContent))));
 
-  TestFuture<ui::ListModel<GlanceablesTaskList>*> future;
+  TestFuture<const ui::ListModel<api::TaskList>*> future;
   client()->GetTaskLists(future.GetRepeatingCallback());
   ASSERT_TRUE(future.Wait());
 
@@ -241,15 +244,15 @@ TEST_F(GlanceablesTasksClientImplTest, GetTaskListsOnSubsequentCalls) {
   EXPECT_EQ(future.Take(), task_lists);
 }
 
-TEST_F(GlanceablesTasksClientImplTest, ConcurrentGetTaskListsCalls) {
+TEST_F(TasksClientImplTest, ConcurrentGetTaskListsCalls) {
   EXPECT_CALL(request_handler(), HandleRequest(_))
       .WillOnce(Return(ByMove(TestRequestHandler::CreateSuccessfulResponse(
           kDefaultTaskListsResponseContent))));
 
-  TestFuture<ui::ListModel<GlanceablesTaskList>*> first_future;
+  TestFuture<const ui::ListModel<api::TaskList>*> first_future;
   client()->GetTaskLists(first_future.GetCallback());
 
-  TestFuture<ui::ListModel<GlanceablesTaskList>*> second_future;
+  TestFuture<const ui::ListModel<api::TaskList>*> second_future;
   client()->GetTaskLists(second_future.GetCallback());
 
   ASSERT_TRUE(first_future.Wait());
@@ -270,7 +273,7 @@ TEST_F(GlanceablesTasksClientImplTest, ConcurrentGetTaskListsCalls) {
       /*expected_bucket_count=*/1);
 }
 
-TEST_F(GlanceablesTasksClientImplTest,
+TEST_F(TasksClientImplTest,
        GetTaskListsOnSubsequentCallsAfterClosingGlanceablesBubble) {
   EXPECT_CALL(request_handler(), HandleRequest(_))
       .WillOnce(Return(ByMove(TestRequestHandler::CreateSuccessfulResponse(R"(
@@ -300,7 +303,7 @@ TEST_F(GlanceablesTasksClientImplTest,
             }]
           })"))));
 
-  TestFuture<ui::ListModel<GlanceablesTaskList>*> future;
+  TestFuture<const ui::ListModel<api::TaskList>*> future;
   client()->GetTaskLists(future.GetRepeatingCallback());
   ASSERT_TRUE(future.Wait());
 
@@ -313,7 +316,7 @@ TEST_F(GlanceablesTasksClientImplTest,
 
   // Request to get tasks after glanceables bubble was closed should trigger
   // another fetch.
-  TestFuture<ui::ListModel<GlanceablesTaskList>*> refresh_future;
+  TestFuture<const ui::ListModel<api::TaskList>*> refresh_future;
   client()->GetTaskLists(refresh_future.GetCallback());
   ASSERT_TRUE(refresh_future.Wait());
 
@@ -322,7 +325,7 @@ TEST_F(GlanceablesTasksClientImplTest,
   EXPECT_EQ(refreshed_task_lists->GetItemAt(0)->id, "qwerty");
   EXPECT_EQ(refreshed_task_lists->GetItemAt(1)->id, "zxcvbn");
 
-  TestFuture<ui::ListModel<GlanceablesTaskList>*> repeated_refresh_future;
+  TestFuture<const ui::ListModel<api::TaskList>*> repeated_refresh_future;
   client()->GetTaskLists(repeated_refresh_future.GetCallback());
 
   const auto* const repeated_refreshed_task_lists =
@@ -332,8 +335,7 @@ TEST_F(GlanceablesTasksClientImplTest,
   EXPECT_EQ(repeated_refreshed_task_lists->GetItemAt(1)->id, "zxcvbn");
 }
 
-TEST_F(GlanceablesTasksClientImplTest,
-       GlanceablesBubbleClosedWhileFetchingTaskLists) {
+TEST_F(TasksClientImplTest, GlanceablesBubbleClosedWhileFetchingTaskLists) {
   base::RunLoop first_request_waiter;
   EXPECT_CALL(request_handler(), HandleRequest(_))
       .WillOnce(Invoke([&first_request_waiter](const HttpRequest&) {
@@ -367,7 +369,7 @@ TEST_F(GlanceablesTasksClientImplTest,
             }]
           })"))));
 
-  TestFuture<ui::ListModel<GlanceablesTaskList>*> future;
+  TestFuture<const ui::ListModel<api::TaskList>*> future;
   client()->GetTaskLists(future.GetRepeatingCallback());
 
   // Simulate bubble closure before first request response arives.
@@ -385,7 +387,7 @@ TEST_F(GlanceablesTasksClientImplTest,
 
   // Request to get tasks after glanceables bubble was closed should trigger
   // another fetch.
-  TestFuture<ui::ListModel<GlanceablesTaskList>*> refresh_future;
+  TestFuture<const ui::ListModel<api::TaskList>*> refresh_future;
   client()->GetTaskLists(refresh_future.GetCallback());
   ASSERT_TRUE(refresh_future.Wait());
 
@@ -394,7 +396,7 @@ TEST_F(GlanceablesTasksClientImplTest,
   EXPECT_EQ(refreshed_task_lists->GetItemAt(0)->id, "qwerty");
   EXPECT_EQ(refreshed_task_lists->GetItemAt(1)->id, "zxcvbn");
 
-  TestFuture<ui::ListModel<GlanceablesTaskList>*> repeated_refresh_future;
+  TestFuture<const ui::ListModel<api::TaskList>*> repeated_refresh_future;
   client()->GetTaskLists(repeated_refresh_future.GetCallback());
 
   const auto* const repeated_refreshed_task_lists =
@@ -404,12 +406,11 @@ TEST_F(GlanceablesTasksClientImplTest,
   EXPECT_EQ(repeated_refreshed_task_lists->GetItemAt(1)->id, "zxcvbn");
 }
 
-TEST_F(GlanceablesTasksClientImplTest,
-       GetTaskListsReturnsEmptyVectorOnHttpError) {
+TEST_F(TasksClientImplTest, GetTaskListsReturnsEmptyVectorOnHttpError) {
   EXPECT_CALL(request_handler(), HandleRequest(_))
       .WillOnce(Return(ByMove(TestRequestHandler::CreateFailedResponse())));
 
-  TestFuture<ui::ListModel<GlanceablesTaskList>*> future;
+  TestFuture<const ui::ListModel<api::TaskList>*> future;
   client()->GetTaskLists(future.GetCallback());
   ASSERT_TRUE(future.Wait());
 
@@ -424,7 +425,7 @@ TEST_F(GlanceablesTasksClientImplTest,
       /*expected_bucket_count=*/1);
 }
 
-TEST_F(GlanceablesTasksClientImplTest, GetTaskListsFetchesAllPages) {
+TEST_F(TasksClientImplTest, GetTaskListsFetchesAllPages) {
   EXPECT_CALL(request_handler(),
               HandleRequest(Field(&HttpRequest::relative_url,
                                   Not(HasSubstr("pageToken")))))
@@ -455,7 +456,7 @@ TEST_F(GlanceablesTasksClientImplTest, GetTaskListsFetchesAllPages) {
           }
         )"))));
 
-  TestFuture<ui::ListModel<GlanceablesTaskList>*> future;
+  TestFuture<const ui::ListModel<api::TaskList>*> future;
   client()->GetTaskLists(future.GetCallback());
   ASSERT_TRUE(future.Wait());
 
@@ -475,8 +476,7 @@ TEST_F(GlanceablesTasksClientImplTest, GetTaskListsFetchesAllPages) {
       /*expected_bucket_count=*/1);
 }
 
-TEST_F(GlanceablesTasksClientImplTest,
-       GlanceablesBubbleClosedWhileFetchingTaskListsPage) {
+TEST_F(TasksClientImplTest, GlanceablesBubbleClosedWhileFetchingTaskListsPage) {
   EXPECT_CALL(request_handler(),
               HandleRequest(Field(&HttpRequest::relative_url,
                                   Not(HasSubstr("pageToken")))))
@@ -527,7 +527,7 @@ TEST_F(GlanceablesTasksClientImplTest,
           client()->OnGlanceablesBubbleClosed();
         }
       }));
-  TestFuture<ui::ListModel<GlanceablesTaskList>*> future;
+  TestFuture<const ui::ListModel<api::TaskList>*> future;
   client()->GetTaskLists(future.GetRepeatingCallback());
 
   // Note that injected tasks lists request test callback simulates bubble
@@ -540,11 +540,11 @@ TEST_F(GlanceablesTasksClientImplTest,
   EXPECT_EQ(task_lists->item_count(), 0u);
 
   client()->set_task_lists_request_callback_for_testing(
-      GlanceablesTasksClientImpl::TaskListsRequestCallback());
+      TasksClientImpl::TaskListsRequestCallback());
 
   // Request to get tasks after glanceables bubble was closed should trigger
   // another fetch.
-  TestFuture<ui::ListModel<GlanceablesTaskList>*> refresh_future;
+  TestFuture<const ui::ListModel<api::TaskList>*> refresh_future;
   client()->GetTaskLists(refresh_future.GetCallback());
   ASSERT_TRUE(refresh_future.Wait());
 
@@ -554,7 +554,7 @@ TEST_F(GlanceablesTasksClientImplTest,
   EXPECT_EQ(refreshed_task_lists->GetItemAt(1)->id, "task-list-from-page-2-2");
   EXPECT_EQ(refreshed_task_lists->GetItemAt(2)->id, "task-list-from-page-3-2");
 
-  TestFuture<ui::ListModel<GlanceablesTaskList>*> repeated_refresh_future;
+  TestFuture<const ui::ListModel<api::TaskList>*> repeated_refresh_future;
   client()->GetTaskLists(repeated_refresh_future.GetCallback());
 
   const auto* const repeated_refreshed_task_lists =
@@ -571,12 +571,12 @@ TEST_F(GlanceablesTasksClientImplTest,
 // ----------------------------------------------------------------------------
 // Get tasks:
 
-TEST_F(GlanceablesTasksClientImplTest, GetTasks) {
+TEST_F(TasksClientImplTest, GetTasks) {
   EXPECT_CALL(request_handler(), HandleRequest(_))
       .WillOnce(Return(ByMove(TestRequestHandler::CreateSuccessfulResponse(
           kDefaultTasksResponseContent))));
 
-  TestFuture<ui::ListModel<GlanceablesTask>*> future;
+  TestFuture<const ui::ListModel<api::Task>*> future;
   client()->GetTasks("test-task-list-id", future.GetCallback());
   ASSERT_TRUE(future.Wait());
 
@@ -591,6 +591,8 @@ TEST_F(GlanceablesTasksClientImplTest, GetTasks) {
   EXPECT_TRUE(root_tasks->GetItemAt(0)->has_subtasks);
   EXPECT_FALSE(root_tasks->GetItemAt(0)->has_email_link);
   EXPECT_FALSE(root_tasks->GetItemAt(0)->has_notes);
+  EXPECT_EQ(FormatTimeAsString(root_tasks->GetItemAt(0)->updated),
+            "2023-01-30T22:19:22.812Z");
 
   EXPECT_EQ(root_tasks->GetItemAt(1)->id, "zxc");
   EXPECT_EQ(root_tasks->GetItemAt(1)->title, "Parent task 2, level 1");
@@ -599,6 +601,8 @@ TEST_F(GlanceablesTasksClientImplTest, GetTasks) {
   EXPECT_FALSE(root_tasks->GetItemAt(1)->has_subtasks);
   EXPECT_TRUE(root_tasks->GetItemAt(1)->has_email_link);
   EXPECT_TRUE(root_tasks->GetItemAt(1)->has_notes);
+  EXPECT_EQ(FormatTimeAsString(root_tasks->GetItemAt(1)->updated),
+            "2022-12-21T23:38:22.590Z");
 
   histogram_tester()->ExpectTotalCount(
       "Ash.Glanceables.Api.Tasks.GetTasks.Latency", /*expected_count=*/1);
@@ -619,15 +623,15 @@ TEST_F(GlanceablesTasksClientImplTest, GetTasks) {
       /*expected_bucket_count=*/1);
 }
 
-TEST_F(GlanceablesTasksClientImplTest, ConcurrentGetTasksCalls) {
+TEST_F(TasksClientImplTest, ConcurrentGetTasksCalls) {
   EXPECT_CALL(request_handler(), HandleRequest(_))
       .WillOnce(Return(ByMove(TestRequestHandler::CreateSuccessfulResponse(
           kDefaultTasksResponseContent))));
 
-  TestFuture<ui::ListModel<GlanceablesTask>*> first_future;
+  TestFuture<const ui::ListModel<api::Task>*> first_future;
   client()->GetTasks("test-task-list-id", first_future.GetCallback());
 
-  TestFuture<ui::ListModel<GlanceablesTask>*> second_future;
+  TestFuture<const ui::ListModel<api::Task>*> second_future;
   client()->GetTasks("test-task-list-id", second_future.GetCallback());
 
   ASSERT_TRUE(first_future.Wait());
@@ -660,8 +664,7 @@ TEST_F(GlanceablesTasksClientImplTest, ConcurrentGetTasksCalls) {
       /*expected_bucket_count=*/1);
 }
 
-TEST_F(GlanceablesTasksClientImplTest,
-       ConcurrentGetTasksCallsForDifferentLists) {
+TEST_F(TasksClientImplTest, ConcurrentGetTasksCallsForDifferentLists) {
   EXPECT_CALL(request_handler(),
               HandleRequest(Field(&HttpRequest::relative_url,
                                   HasSubstr("test-task-list-1/tasks?"))))
@@ -695,10 +698,10 @@ TEST_F(GlanceablesTasksClientImplTest,
           }]
       })"))));
 
-  TestFuture<ui::ListModel<GlanceablesTask>*> first_future;
+  TestFuture<const ui::ListModel<api::Task>*> first_future;
   client()->GetTasks("test-task-list-1", first_future.GetCallback());
 
-  TestFuture<ui::ListModel<GlanceablesTask>*> second_future;
+  TestFuture<const ui::ListModel<api::Task>*> second_future;
   client()->GetTasks("test-task-list-2", second_future.GetCallback());
 
   ASSERT_TRUE(first_future.Wait());
@@ -723,12 +726,12 @@ TEST_F(GlanceablesTasksClientImplTest,
       /*expected_bucket_count=*/2);
 }
 
-TEST_F(GlanceablesTasksClientImplTest, GetTasksOnSubsequentCalls) {
+TEST_F(TasksClientImplTest, GetTasksOnSubsequentCalls) {
   EXPECT_CALL(request_handler(), HandleRequest(_))
       .WillOnce(Return(ByMove(TestRequestHandler::CreateSuccessfulResponse(
           kDefaultTasksResponseContent))));
 
-  TestFuture<ui::ListModel<GlanceablesTask>*> future;
+  TestFuture<const ui::ListModel<api::Task>*> future;
   client()->GetTasks("test-task-list-id", future.GetRepeatingCallback());
   ASSERT_TRUE(future.Wait());
 
@@ -741,7 +744,7 @@ TEST_F(GlanceablesTasksClientImplTest, GetTasksOnSubsequentCalls) {
   EXPECT_EQ(future.Take(), root_tasks);
 }
 
-TEST_F(GlanceablesTasksClientImplTest,
+TEST_F(TasksClientImplTest,
        GetTasksOnSubsequentCallsAfterClosingGlanceablesBubble) {
   EXPECT_CALL(request_handler(), HandleRequest(_))
       .WillOnce(Return(ByMove(TestRequestHandler::CreateSuccessfulResponse(R"({
@@ -772,7 +775,7 @@ TEST_F(GlanceablesTasksClientImplTest,
           }]
       })"))));
 
-  TestFuture<ui::ListModel<GlanceablesTask>*> future;
+  TestFuture<const ui::ListModel<api::Task>*> future;
   client()->GetTasks("test-task-list-id", future.GetRepeatingCallback());
   ASSERT_TRUE(future.Wait());
 
@@ -786,7 +789,7 @@ TEST_F(GlanceablesTasksClientImplTest,
   // to fetch fresh list of tasks.
   client()->OnGlanceablesBubbleClosed();
 
-  TestFuture<ui::ListModel<GlanceablesTask>*> refresh_future;
+  TestFuture<const ui::ListModel<api::Task>*> refresh_future;
   client()->GetTasks("test-task-list-id", refresh_future.GetCallback());
   ASSERT_TRUE(refresh_future.Wait());
 
@@ -795,7 +798,7 @@ TEST_F(GlanceablesTasksClientImplTest,
   EXPECT_EQ(refreshed_root_tasks->GetItemAt(0)->id, "asd");
   EXPECT_EQ(refreshed_root_tasks->GetItemAt(1)->id, "zxc");
 
-  TestFuture<ui::ListModel<GlanceablesTask>*> repeated_refresh_future;
+  TestFuture<const ui::ListModel<api::Task>*> repeated_refresh_future;
   client()->GetTasks("test-task-list-id",
                      repeated_refresh_future.GetCallback());
   ASSERT_TRUE(repeated_refresh_future.Wait());
@@ -807,8 +810,7 @@ TEST_F(GlanceablesTasksClientImplTest,
   EXPECT_EQ(repeated_refreshed_root_tasks->GetItemAt(1)->id, "zxc");
 }
 
-TEST_F(GlanceablesTasksClientImplTest,
-       GlanceablesBubbleClosedWhileFetchingTasks) {
+TEST_F(TasksClientImplTest, GlanceablesBubbleClosedWhileFetchingTasks) {
   base::RunLoop first_request_waiter;
   EXPECT_CALL(request_handler(), HandleRequest(_))
       .WillOnce(Invoke([&first_request_waiter](const HttpRequest&) {
@@ -842,7 +844,7 @@ TEST_F(GlanceablesTasksClientImplTest,
           }]
       })"))));
 
-  TestFuture<ui::ListModel<GlanceablesTask>*> future;
+  TestFuture<const ui::ListModel<api::Task>*> future;
   client()->GetTasks("test-task-list-id", future.GetRepeatingCallback());
 
   // Simulate glanceables bubble closure, which should cause the next tasks call
@@ -860,7 +862,7 @@ TEST_F(GlanceablesTasksClientImplTest,
   // by the test server before the first one.
   first_request_waiter.Run();
 
-  TestFuture<ui::ListModel<GlanceablesTask>*> refresh_future;
+  TestFuture<const ui::ListModel<api::Task>*> refresh_future;
   client()->GetTasks("test-task-list-id", refresh_future.GetCallback());
   ASSERT_TRUE(refresh_future.Wait());
 
@@ -869,7 +871,7 @@ TEST_F(GlanceablesTasksClientImplTest,
   EXPECT_EQ(refreshed_root_tasks->GetItemAt(0)->id, "asd");
   EXPECT_EQ(refreshed_root_tasks->GetItemAt(1)->id, "zxc");
 
-  TestFuture<ui::ListModel<GlanceablesTask>*> repeated_refresh_future;
+  TestFuture<const ui::ListModel<api::Task>*> repeated_refresh_future;
   client()->GetTasks("test-task-list-id",
                      repeated_refresh_future.GetCallback());
   ASSERT_TRUE(repeated_refresh_future.Wait());
@@ -881,11 +883,11 @@ TEST_F(GlanceablesTasksClientImplTest,
   EXPECT_EQ(repeated_refreshed_root_tasks->GetItemAt(1)->id, "zxc");
 }
 
-TEST_F(GlanceablesTasksClientImplTest, GetTasksReturnsEmptyVectorOnHttpError) {
+TEST_F(TasksClientImplTest, GetTasksReturnsEmptyVectorOnHttpError) {
   EXPECT_CALL(request_handler(), HandleRequest(_))
       .WillOnce(Return(ByMove(TestRequestHandler::CreateFailedResponse())));
 
-  TestFuture<ui::ListModel<GlanceablesTask>*> future;
+  TestFuture<const ui::ListModel<api::Task>*> future;
   client()->GetTasks("test-task-list-id", future.GetCallback());
   ASSERT_TRUE(future.Wait());
 
@@ -900,7 +902,7 @@ TEST_F(GlanceablesTasksClientImplTest, GetTasksReturnsEmptyVectorOnHttpError) {
       /*expected_bucket_count=*/1);
 }
 
-TEST_F(GlanceablesTasksClientImplTest, GetTasksFetchesAllPages) {
+TEST_F(TasksClientImplTest, GetTasksFetchesAllPages) {
   EXPECT_CALL(request_handler(),
               HandleRequest(Field(&HttpRequest::relative_url,
                                   Not(HasSubstr("pageToken")))))
@@ -936,7 +938,7 @@ TEST_F(GlanceablesTasksClientImplTest, GetTasksFetchesAllPages) {
           }
         )"))));
 
-  TestFuture<ui::ListModel<GlanceablesTask>*> future;
+  TestFuture<const ui::ListModel<api::Task>*> future;
   client()->GetTasks("test-task-list-id", future.GetCallback());
   ASSERT_TRUE(future.Wait());
 
@@ -963,8 +965,7 @@ TEST_F(GlanceablesTasksClientImplTest, GetTasksFetchesAllPages) {
       /*expected_bucket_count=*/1);
 }
 
-TEST_F(GlanceablesTasksClientImplTest,
-       GlanceablesBubbleClosedWhileFetchingTasksPage) {
+TEST_F(TasksClientImplTest, GlanceablesBubbleClosedWhileFetchingTasksPage) {
   EXPECT_CALL(request_handler(),
               HandleRequest(Field(&HttpRequest::relative_url,
                                   Not(HasSubstr("pageToken")))))
@@ -1020,7 +1021,7 @@ TEST_F(GlanceablesTasksClientImplTest,
         }
       }));
 
-  TestFuture<ui::ListModel<GlanceablesTask>*> future;
+  TestFuture<const ui::ListModel<api::Task>*> future;
   client()->GetTasks("test-task-list-id", future.GetCallback());
   ASSERT_TRUE(future.Wait());
 
@@ -1030,9 +1031,9 @@ TEST_F(GlanceablesTasksClientImplTest,
   ASSERT_EQ(root_tasks->item_count(), 0u);
 
   client()->set_tasks_request_callback_for_testing(
-      GlanceablesTasksClientImpl::TasksRequestCallback());
+      TasksClientImpl::TasksRequestCallback());
 
-  TestFuture<ui::ListModel<GlanceablesTask>*> refresh_future;
+  TestFuture<const ui::ListModel<api::Task>*> refresh_future;
   client()->GetTasks("test-task-list-id", refresh_future.GetCallback());
   ASSERT_TRUE(refresh_future.Wait());
 
@@ -1042,7 +1043,7 @@ TEST_F(GlanceablesTasksClientImplTest,
   EXPECT_EQ(refreshed_root_tasks->GetItemAt(1)->id, "task-from-page-2-2");
   EXPECT_EQ(refreshed_root_tasks->GetItemAt(2)->id, "task-from-page-3-2");
 
-  TestFuture<ui::ListModel<GlanceablesTask>*> repeated_refresh_future;
+  TestFuture<const ui::ListModel<api::Task>*> repeated_refresh_future;
   client()->GetTasks("test-task-list-id",
                      repeated_refresh_future.GetCallback());
   ASSERT_TRUE(repeated_refresh_future.Wait());
@@ -1058,7 +1059,7 @@ TEST_F(GlanceablesTasksClientImplTest,
             "task-from-page-3-2");
 }
 
-TEST_F(GlanceablesTasksClientImplTest, GetTasksSortsByPosition) {
+TEST_F(TasksClientImplTest, GetTasksSortsByPosition) {
   EXPECT_CALL(request_handler(), HandleRequest(_))
       .WillOnce(Return(ByMove(TestRequestHandler::CreateSuccessfulResponse(R"(
           {
@@ -1071,7 +1072,7 @@ TEST_F(GlanceablesTasksClientImplTest, GetTasksSortsByPosition) {
           }
         )"))));
 
-  TestFuture<ui::ListModel<GlanceablesTask>*> future;
+  TestFuture<const ui::ListModel<api::Task>*> future;
   client()->GetTasks("test-task-list-id", future.GetCallback());
   ASSERT_TRUE(future.Wait());
 
@@ -1086,7 +1087,7 @@ TEST_F(GlanceablesTasksClientImplTest, GetTasksSortsByPosition) {
 // ----------------------------------------------------------------------------
 // Mark as completed:
 
-TEST_F(GlanceablesTasksClientImplTest, MarkAsCompleted) {
+TEST_F(TasksClientImplTest, MarkAsCompleted) {
   EXPECT_CALL(
       request_handler(),
       HandleRequest(Field(&HttpRequest::method, Eq(HttpMethod::METHOD_GET))))
@@ -1110,10 +1111,17 @@ TEST_F(GlanceablesTasksClientImplTest, MarkAsCompleted) {
       HandleRequest(Field(&HttpRequest::method, Eq(HttpMethod::METHOD_PATCH))))
       .Times(2)
       .WillRepeatedly(Invoke([](const HttpRequest&) {
-        return TestRequestHandler::CreateSuccessfulResponse("");
+        return TestRequestHandler::CreateSuccessfulResponse(R"(
+          {
+            "kind": "tasks#task",
+            "id": "task-id",
+            "title": "Updated title",
+            "status": "completed"
+          }
+        )");
       }));
 
-  TestFuture<ui::ListModel<GlanceablesTask>*> get_tasks_future;
+  TestFuture<const ui::ListModel<api::Task>*> get_tasks_future;
   client()->GetTasks("test-task-list-id", get_tasks_future.GetCallback());
   ASSERT_TRUE(get_tasks_future.Wait());
 
@@ -1140,7 +1148,7 @@ TEST_F(GlanceablesTasksClientImplTest, MarkAsCompleted) {
       /*expected_bucket_count=*/1);
 }
 
-TEST_F(GlanceablesTasksClientImplTest, MarkAsCompletedOnHttpError) {
+TEST_F(TasksClientImplTest, MarkAsCompletedOnHttpError) {
   EXPECT_CALL(
       request_handler(),
       HandleRequest(Field(&HttpRequest::method, Eq(HttpMethod::METHOD_GET))))
@@ -1164,7 +1172,7 @@ TEST_F(GlanceablesTasksClientImplTest, MarkAsCompletedOnHttpError) {
       HandleRequest(Field(&HttpRequest::method, Eq(HttpMethod::METHOD_PATCH))))
       .WillOnce(Return(ByMove(TestRequestHandler::CreateFailedResponse())));
 
-  TestFuture<ui::ListModel<GlanceablesTask>*> get_tasks_future;
+  TestFuture<const ui::ListModel<api::Task>*> get_tasks_future;
   client()->GetTasks("test-task-list-id", get_tasks_future.GetCallback());
   ASSERT_TRUE(get_tasks_future.Wait());
 
@@ -1189,7 +1197,7 @@ TEST_F(GlanceablesTasksClientImplTest, MarkAsCompletedOnHttpError) {
 // ----------------------------------------------------------------------------
 // Add a new task:
 
-TEST_F(GlanceablesTasksClientImplTest, AddsNewTask) {
+TEST_F(TasksClientImplTest, AddsNewTask) {
   EXPECT_CALL(
       request_handler(),
       HandleRequest(Field(&HttpRequest::method, Eq(HttpMethod::METHOD_GET))))
@@ -1216,7 +1224,7 @@ TEST_F(GlanceablesTasksClientImplTest, AddsNewTask) {
           }
         )"))));
 
-  TestFuture<ui::ListModel<GlanceablesTask>*> get_tasks_future;
+  TestFuture<const ui::ListModel<api::Task>*> get_tasks_future;
   client()->GetTasks("test-task-list-id", get_tasks_future.GetCallback());
   ASSERT_TRUE(get_tasks_future.Wait());
 
@@ -1227,51 +1235,74 @@ TEST_F(GlanceablesTasksClientImplTest, AddsNewTask) {
 
   testing::StrictMock<TestListModelObserver> observer;
   tasks->AddObserver(&observer);
+  EXPECT_CALL(observer, ListItemsAdded(/*start=*/0, /*count=*/1));
 
-  base::RunLoop run_loop;
-  EXPECT_CALL(observer, ListItemsAdded(/*start=*/0, /*count=*/1))
-      .WillOnce([&]() {
-        run_loop.Quit();
+  TestFuture<const api::Task*> add_task_future;
+  client()->AddTask("test-task-list-id", "New task",
+                    add_task_future.GetCallback());
 
-        EXPECT_EQ(tasks->item_count(), 2u);
-        EXPECT_EQ(tasks->GetItemAt(0)->id, "new-task-id");
-        EXPECT_EQ(tasks->GetItemAt(0)->title, "New task");
-      });
-  client()->AddTask("test-task-list-id", "New task");
-  run_loop.Run();
+  ASSERT_TRUE(add_task_future.Wait());
+  EXPECT_EQ(add_task_future.Get()->id, "new-task-id");
+  EXPECT_EQ(add_task_future.Get()->title, "New task");
 }
 
 // ----------------------------------------------------------------------------
 // Update a task:
 
-TEST_F(GlanceablesTasksClientImplTest, UpdatesTask) {
+TEST_F(TasksClientImplTest, UpdatesTask) {
+  EXPECT_CALL(
+      request_handler(),
+      HandleRequest(Field(&HttpRequest::method, Eq(HttpMethod::METHOD_GET))))
+      .WillOnce(Return(ByMove(TestRequestHandler::CreateSuccessfulResponse(R"(
+          {
+            "kind": "tasks#tasks",
+            "items": [
+              {
+                "id": "task-id",
+                "title": "Task 1",
+                "status": "needsAction"
+              }
+            ]
+          }
+        )"))));
   EXPECT_CALL(
       request_handler(),
       HandleRequest(Field(&HttpRequest::method, Eq(HttpMethod::METHOD_PATCH))))
       .WillOnce(Return(ByMove(TestRequestHandler::CreateSuccessfulResponse(R"(
           {
-            "kind": "tasks#tasks",
+            "kind": "tasks#task",
             "id": "task-id",
-            "title": "Task 1",
+            "title": "Updated title",
             "status": "needsAction"
           }
         )"))));
 
-  TestFuture<bool> update_task_future;
+  // Get tasks first.
+  TestFuture<const ui::ListModel<api::Task>*> get_tasks_future;
+  client()->GetTasks("task-list-id", get_tasks_future.GetCallback());
+  ASSERT_TRUE(get_tasks_future.Wait());
+  auto* const tasks = get_tasks_future.Get();
+  ASSERT_EQ(tasks->item_count(), 1u);
+  EXPECT_EQ(tasks->GetItemAt(0)->title, "Task 1");
+
+  // Update the task.
+  TestFuture<const api::Task*> update_task_future;
   client()->UpdateTask("task-list-id", "task-id", "Updated title",
                        update_task_future.GetCallback());
-
   ASSERT_TRUE(update_task_future.Wait());
-  EXPECT_TRUE(update_task_future.Get());
+
+  // Make sure `tasks` contains the update.
+  EXPECT_EQ(tasks->GetItemAt(0), update_task_future.Get());
+  EXPECT_EQ(tasks->GetItemAt(0)->title, "Updated title");
 }
 
-TEST_F(GlanceablesTasksClientImplTest, UpdatesTaskOnHttpError) {
+TEST_F(TasksClientImplTest, UpdatesTaskOnHttpError) {
   EXPECT_CALL(
       request_handler(),
       HandleRequest(Field(&HttpRequest::method, Eq(HttpMethod::METHOD_PATCH))))
       .WillOnce(Return(ByMove(TestRequestHandler::CreateFailedResponse())));
 
-  TestFuture<bool> update_task_future;
+  TestFuture<const api::Task*> update_task_future;
   client()->UpdateTask("task-list-id", "task-id", "Updated title",
                        update_task_future.GetCallback());
 

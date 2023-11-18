@@ -334,7 +334,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   std::string GetTitleForMediaControls();
 
   // WebContents ------------------------------------------------------
-  WebContentsDelegate* GetDelegate() override;
+  WebContentsDelegate* GetDelegate() final;
   void SetDelegate(WebContentsDelegate* delegate) override;
   NavigationControllerImpl& GetController() override;
   BrowserContext* GetBrowserContext() override;
@@ -539,7 +539,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool WasEverAudible() override;
   bool IsFullscreen() override;
   bool ShouldShowStaleContentOnEviction() override;
-  void ExitFullscreen(bool will_cause_resize) override;
+  void ExitFullscreen() override;
   [[nodiscard]] base::ScopedClosureRunner ForSecurityDropFullscreen(
       int64_t display_id = display::kInvalidDisplayId) override;
   void ResumeLoadingCreatedWebContents() override;
@@ -568,7 +568,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   service_manager::InterfaceProvider* GetJavaInterfaces() override;
 #endif
   bool HasRecentInteraction() override;
-  void SetIgnoreInputEvents(bool ignore_input_events) override;
+  [[nodiscard]] ScopedIgnoreInputEvents IgnoreInputEvents() override;
   bool HasActiveEffectivelyFullscreenVideo() override;
   void WriteIntoTrace(perfetto::TracedValue context) override;
   const base::Location& GetCreatorLocation() override;
@@ -580,6 +580,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void SetV8CompileHints(base::ReadOnlySharedMemoryRegion data) override;
   void SetTabSwitchStartTime(base::TimeTicks start_time,
                              bool destination_is_loaded) override;
+  void ActivatePreviewPage() override;
 
   // Implementation of PageNavigator.
   WebContents* OpenURL(const OpenURLParams& params) override;
@@ -673,11 +674,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void EnterFullscreenMode(
       RenderFrameHostImpl* requesting_frame,
       const blink::mojom::FullscreenOptions& options) override;
-  void ExitFullscreenMode(bool will_cause_resize) override;
+  void ExitFullscreenMode() override;
   void FullscreenStateChanged(
       RenderFrameHostImpl* rfh,
       bool is_fullscreen,
       blink::mojom::FullscreenOptionsPtr options) override;
+  bool CanUseWindowingControls(RenderFrameHostImpl* requesting_frame) override;
   void Maximize() override;
   void Minimize() override;
   void Restore() override;
@@ -741,6 +743,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                    int context_id) override;
   void OnFrameAudioStateChanged(RenderFrameHostImpl* host,
                                 bool is_audible) override;
+  void OnFrameVisibilityChanged(
+      RenderFrameHostImpl* host,
+      blink::mojom::FrameVisibility visibility) override;
+  void OnFrameIsCapturingVideoStreamChanged(
+      RenderFrameHostImpl* host,
+      bool is_capturing_video_stream) override;
   media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
   GetRecordAggregateWatchTimeCallback(
       const GURL& page_main_frame_last_committed_url) override;
@@ -874,7 +882,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   absl::optional<SkColor> GetBaseBackgroundColor() override;
   std::unique_ptr<PrerenderHandle> StartPrerendering(
       const GURL& prerendering_url,
-      PrerenderTriggerType trigger_type,
+      PreloadingTriggerType trigger_type,
       const std::string& embedder_histogram_suffix,
       ui::PageTransition page_transition,
       PreloadingHoldbackStatus holdback_status_override,
@@ -887,6 +895,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                             WindowOpenDisposition disposition) override;
   void SetOwnerLocationForDebug(
       absl::optional<base::Location> owner_location) override;
+  blink::ColorProviderColorMaps GetColorProviderColorMaps() const override;
+
+  network::mojom::AttributionSupport GetAttributionSupport() override;
+  void UpdateAttributionSupportRenderer() override;
+  static void UpdateAttributionSupportAllRenderers();
 
   // NavigatorDelegate ---------------------------------------------------------
 
@@ -1045,6 +1058,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void NotifyPageBecamePrimary(PageImpl& page) override;
 
   bool IsInPreviewMode() const override;
+  void CancelPreviewByMojoBinderPolicy(
+      const std::string& interface_name) override;
+  void OnCanResizeFromWebAPIChanged() override;
 
   // blink::mojom::ColorChooserFactory ---------------------------------------
   void OnColorChooserFactoryReceiver(
@@ -1291,9 +1307,14 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Notifies observers that this WebContents was activated. This contents'
   // former portal host, |predecessor_web_contents|, has become a portal pending
   // adoption.
-  // |activation_time| is the time the activation happened, in wall time.
+  // `activation_time` is the time the activation happened, in wall time.
   void DidActivatePortal(WebContentsImpl* predecessor_web_contents,
                          base::TimeTicks activation_time);
+
+  // Notifies observers that this WebContents completed preview activation
+  // steps.
+  // `activation_time` is the time the activation happened, in wall time.
+  void DidActivatePreviewedPage(base::TimeTicks activation_time);
 
   void OnServiceWorkerAccessed(RenderFrameHost* render_frame_host,
                                const GURL& scope,
@@ -1354,7 +1375,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   void set_show_popup_menu_callback_for_testing(
       base::OnceCallback<void(const gfx::Rect&)> callback) {
-    show_poup_menu_callback_ = std::move(callback);
+    show_popup_menu_callback_ = std::move(callback);
   }
 
   // Sets the value in tests to ensure expected ordering and correctness.
@@ -1778,9 +1799,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Returns the size that the main frame should be sized to.
   gfx::Size GetSizeForMainFrame();
 
-  // Sets the window's state to the given `ui::WindowShowState` and synchronizes
-  // the visual properties of the `RenderWidgetHost`.
-  void SetWindowShowState(ui::WindowShowState state);
+  // `window.setResizable(bool)` API (part of Additional Windowing Controls)
+  // can block the use of APIs resizing the window, such as `resizeTo` and
+  // `resizeBy`.
+  bool BlockResizeIfNeeded();
 
   // Helper method that's called whenever |preferred_size_| or
   // |preferred_size_for_capture_| changes, to propagate the new value to the
@@ -2076,8 +2098,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // once.
   bool notify_disconnection_;
 
-  // Set to true if we shouldn't send input events.
-  bool ignore_input_events_ = false;
+  // Counts the number of outstanding requests to ignore input events. They will
+  // not be sent when this is greater than zero.
+  int ignore_input_events_count_ = 0;
 
   // Pointer to the JavaScript dialog manager, lazily assigned. Used because the
   // delegate of this WebContentsImpl is nulled before its destructor is called.
@@ -2370,7 +2393,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   viz::FrameSinkId xr_render_target_;
 
-  base::OnceCallback<void(const gfx::Rect&)> show_poup_menu_callback_;
+  base::OnceCallback<void(const gfx::Rect&)> show_popup_menu_callback_;
 
   // Allows the app in the current WebContents to opt-in to exposing
   // information to apps that capture it.

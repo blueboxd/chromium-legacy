@@ -240,8 +240,9 @@ DisplayMac BuildDisplayForScreen(NSScreen* screen) {
       base::apple::ScopedCFTypeRef<CFDataRef> cf_icc_profile(
           CGColorSpaceCopyICCProfile(cg_color_space));
       if (cf_icc_profile) {
-        icc_profile = gfx::ICCProfile::FromData(
-            CFDataGetBytePtr(cf_icc_profile), CFDataGetLength(cf_icc_profile));
+        icc_profile =
+            gfx::ICCProfile::FromData(CFDataGetBytePtr(cf_icc_profile.get()),
+                                      CFDataGetLength(cf_icc_profile.get()));
       }
     }
   }

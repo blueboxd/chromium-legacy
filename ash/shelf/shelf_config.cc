@@ -111,6 +111,10 @@ ShelfConfig::ShelfConfig()
     : shelf_button_icon_size_(44),
       shelf_button_icon_size_median_(40),
       shelf_button_icon_size_dense_(36),
+      shelf_shortcut_icon_size_(30),
+      shelf_shortcut_icon_border_size_(3),
+      shelf_shortcut_host_badge_icon_size_(14),
+      shelf_shortcut_host_badge_border_size_(2),
       shelf_button_size_(56),
       shelf_button_size_median_(52),
       shelf_button_size_dense_(48),
@@ -291,6 +295,22 @@ int ShelfConfig::GetShelfButtonIconSize(HotseatDensity density) const {
   }
 }
 
+int ShelfConfig::GetShelfShortcutIconSize() const {
+  return shelf_shortcut_icon_size_;
+}
+
+int ShelfConfig::GetShelfShortcutIconBorderSize() const {
+  return shelf_shortcut_icon_border_size_;
+}
+
+int ShelfConfig::GetShelfShortcutHostBadgeIconSize() const {
+  return shelf_shortcut_host_badge_icon_size_;
+}
+
+int ShelfConfig::GetShelfShortcutHostBadgeBorderSize() const {
+  return shelf_shortcut_host_badge_border_size_;
+}
+
 int ShelfConfig::GetHotseatSize(HotseatDensity density) const {
   if (!in_tablet_mode_)
     return shelf_size();
@@ -344,8 +364,9 @@ int ShelfConfig::control_border_radius() const {
 }
 
 int ShelfConfig::control_button_edge_spacing(bool is_primary_axis_edge) const {
-  if (is_primary_axis_edge)
-    return in_tablet_mode_ ? 8 : 6;
+  if (is_primary_axis_edge) {
+    return in_tablet_mode_ ? (is_in_app_ ? 0 : 8) : 6;
+  }
 
   return (shelf_size() - control_size()) / 2;
 }

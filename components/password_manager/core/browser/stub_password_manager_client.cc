@@ -61,7 +61,8 @@ void StubPasswordManagerClient::NotifySuccessfulLoginWithExistingPassword(
 void StubPasswordManagerClient::NotifyStorePasswordCalled() {}
 
 void StubPasswordManagerClient::AutomaticPasswordSave(
-    std::unique_ptr<PasswordFormManagerForUI> saved_manager) {}
+    std::unique_ptr<PasswordFormManagerForUI> saved_manager,
+    bool is_update_confirmation) {}
 
 PrefService* StubPasswordManagerClient::GetPrefs() const {
   return nullptr;
@@ -88,11 +89,6 @@ PasswordStoreInterface* StubPasswordManagerClient::GetAccountPasswordStore()
 PasswordReuseManager* StubPasswordManagerClient::GetPasswordReuseManager()
     const {
   return nullptr;
-}
-
-MockPasswordChangeSuccessTracker*
-StubPasswordManagerClient::GetPasswordChangeSuccessTracker() {
-  return &password_change_success_tracker_;
 }
 
 const GURL& StubPasswordManagerClient::GetLastCommittedURL() const {

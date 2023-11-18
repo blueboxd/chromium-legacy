@@ -11,7 +11,6 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 
 namespace password_manager::features {
@@ -26,7 +25,6 @@ BASE_DECLARE_FEATURE(kForceInitialSyncWhenDecryptionFails);
 BASE_DECLARE_FEATURE(kForgotPasswordFormSupport);
 #if BUILDFLAG(IS_IOS)
 BASE_DECLARE_FEATURE(kIOSPasswordUISplit);
-BASE_DECLARE_FEATURE(kIOSPasswordCheckup);
 BASE_DECLARE_FEATURE(kIOSPasswordBottomSheet);
 BASE_DECLARE_FEATURE(kIOSPasswordSettingsBulkUploadLocalPasswords);
 #endif  // IS_IOS
@@ -34,7 +32,6 @@ BASE_DECLARE_FEATURE(kPasswordIssuesInSpecificsMetadata);
 BASE_DECLARE_FEATURE(kSendPasswords);
 BASE_DECLARE_FEATURE(kPasswordChangeWellKnown);
 BASE_DECLARE_FEATURE(kPasswordReuseDetectionEnabled);
-BASE_DECLARE_FEATURE(kPasswordsImportM2);
 BASE_DECLARE_FEATURE(kRecoverFromNeverSaveAndroid);
 
 #if BUILDFLAG(IS_ANDROID)
@@ -44,7 +41,6 @@ BASE_DECLARE_FEATURE(kPasswordGenerationBottomSheet);
 BASE_DECLARE_FEATURE(kPasswordSuggestionBottomSheetV2);
 BASE_DECLARE_FEATURE(kUnifiedPasswordManagerLocalPasswordsMigrationWarning);
 BASE_DECLARE_FEATURE(kUnifiedPasswordManagerSyncUsingAndroidBackendOnly);
-BASE_DECLARE_FEATURE(kPasswordsInCredMan);
 #endif
 
 // All features parameters are in alphabetical order.
@@ -79,9 +75,6 @@ extern const char kTouchToFillPasswordSubmissionWithConservativeHeuristics[];
 #endif  // IS_ANDROID
 
 #if BUILDFLAG(IS_IOS)
-// Returns true if the Password Checkup feature flag is enabled.
-bool IsPasswordCheckupEnabled();
-
 // Helper function returning the status of
 // `kIOSPasswordSettingsBulkUploadLocalPasswords`.
 bool IsBulkUploadLocalPasswordsEnabled();

@@ -94,6 +94,11 @@ BASE_FEATURE(kV8Turbofan, "V8Turbofan", base::FEATURE_ENABLED_BY_DEFAULT);
 // Enables Turbofan's new compiler IR Turboshaft.
 BASE_FEATURE(kV8Turboshaft, "V8Turboshaft", base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enable running instruction selection on Turboshaft IR directly.
+BASE_FEATURE(kV8TurboshaftInstructionSelection,
+             "V8TurboshaftInstructionSelection",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables Maglev compiler. Note that this only sets the V8 flag when
 // manually overridden; otherwise it defers to whatever the V8 default is.
 BASE_FEATURE(kV8Maglev, "V8Maglev", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -185,22 +190,11 @@ BASE_FEATURE(kV8IgnitionElideRedundantTdzChecks,
              "V8IgnitionElideRedundantTdzChecks",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// The currently enabled fallback to the mid-tier register allocator for huge
-// Wasm functions. We want to remove this fallback in the future.
-BASE_FEATURE(kV8MidtierRegallocFallback,
-             "V8MidtierRegallocFallback",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // JavaScript language features.
 
 // Enables the Symbols-as-WeakMap-keys proposal.
 BASE_FEATURE(kJavaScriptSymbolAsWeakMapKey,
              "JavaScriptSymbolAsWeakMapKey",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables the change-Array-by-copy proposal.
-BASE_FEATURE(kJavaScriptChangeArrayByCopy,
-             "JavaScriptChangeArrayByCopy",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the Resizable ArrayBuffer proposal.
@@ -238,6 +232,11 @@ BASE_FEATURE(kJavaScriptPromiseWithResolvers,
              "JavaScriptPromiseWithResolvers",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables the Array.fromAsync proposal.
+BASE_FEATURE(kJavaScriptArrayFromAsync,
+             "JavaScriptArrayFromAsync",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // WebAssembly features.
 
 // Enable support for the WebAssembly tail-call proposal:
@@ -255,4 +254,16 @@ BASE_FEATURE(kWebAssemblyInlining,
 BASE_FEATURE(kWebAssemblyGenericWrapper,
              "WebAssemblyGenericWrapper",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enable support for multiple memories according to the multi-memory proposal:
+// https://github.com/WebAssembly/multi-memory. See
+// https://chromestatus.com/feature/5106389887746048.
+BASE_FEATURE(kWebAssemblyMultipleMemories,
+             "WebAssemblyMultipleMemories",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kWebAssemblyTurboshaft,
+             "WebAssemblyTurboshaft",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 }  // namespace features

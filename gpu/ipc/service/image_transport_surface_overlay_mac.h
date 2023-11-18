@@ -39,8 +39,7 @@ namespace gpu {
 
 class ImageTransportSurfaceOverlayMacEGL : public gl::Presenter {
  public:
-  ImageTransportSurfaceOverlayMacEGL(
-      base::WeakPtr<ImageTransportSurfaceDelegate> delegate);
+  ImageTransportSurfaceOverlayMacEGL();
 
   // Presenter implementation
   bool Resize(const gfx::Size& size,
@@ -77,8 +76,6 @@ class ImageTransportSurfaceOverlayMacEGL : public gl::Presenter {
                        const gfx::PresentationFeedback& feedback);
   void PopulateCALayerParameters();
 
-  base::WeakPtr<ImageTransportSurfaceDelegate> delegate_;
-
   const bool use_remote_layer_api_;
   CAContext* __strong ca_context_;
   std::unique_ptr<ui::CALayerTreeCoordinator> ca_layer_tree_coordinator_;
@@ -96,6 +93,14 @@ class ImageTransportSurfaceOverlayMacEGL : public gl::Presenter {
   int64_t display_id_ = display::kInvalidDisplayId;
   scoped_refptr<ui::DisplayLinkMac> display_link_mac_;
   std::unique_ptr<ui::VSyncCallbackMac> vsync_callback_mac_;
+
+  // This is the number of vsync_callbacks running without populating CaLayer
+  // parameters, used for detecting consecutive frames.
+  int vsync_callback_mac_keep_alive_counter_ = 0;
+
+  // Ensure vsync_callback_mac_ is still alive in the case of frame rate
+  // throttling such as 30 fps video playback.
+  constexpr static int kMaxKeepAliveCounter = 5;
 #endif
 
   SwapCompletionCallback completion_callback_;

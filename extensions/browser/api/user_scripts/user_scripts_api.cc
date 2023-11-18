@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/user_scripts/user_scripts_api.h"
 
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/functional/bind.h"
@@ -15,13 +17,14 @@
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_user_script_loader.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/user_script_manager.h"
 #include "extensions/common/api/extension_types.h"
+#include "extensions/common/api/scripts_internal/script_serialization.h"
 #include "extensions/common/api/user_scripts.h"
 #include "extensions/common/mojom/execution_world.mojom-shared.h"
 #include "extensions/common/user_script.h"
 #include "extensions/common/utils/content_script_utils.h"
-#include "extensions/common/utils/extension_types_utils.h"
 
 namespace extensions {
 
@@ -35,47 +38,59 @@ constexpr char kInvalidSourceError[] =
 constexpr char kMatchesMissingError[] =
     "User script with ID '*' must specify 'matches'.";
 
-mojom::ExecutionWorld ConvertExecutionWorld(
-    api::user_scripts::ExecutionWorld world) {
-  switch (world) {
-    // Execution world defaults to `kUserScript` when it's not provided.
-    case api::user_scripts::EXECUTION_WORLD_NONE:
-    case api::user_scripts::EXECUTION_WORLD_USER_SCRIPT:
-      return mojom::ExecutionWorld::kUserScript;
-    case api::user_scripts::EXECUTION_WORLD_MAIN:
-      return mojom::ExecutionWorld::kMain;
-  }
-}
+api::scripts_internal::SerializedUserScript
+ConvertRegisteredUserScriptToSerializedUserScript(
+    api::user_scripts::RegisteredUserScript user_script) {
+  auto user_script_sources_to_serialized_sources =
+      [](std::vector<api::user_scripts::ScriptSource> sources) {
+        std::vector<api::scripts_internal::ScriptSource> result;
+        result.reserve(sources.size());
+        for (auto& source : sources) {
+          api::scripts_internal::ScriptSource converted_source;
+          converted_source.code = std::move(source.code);
+          converted_source.file = std::move(source.file);
+          result.push_back(std::move(converted_source));
+        }
+        return result;
+      };
 
-api::user_scripts::ExecutionWorld ConvertExecutionWorldForAPI(
-    mojom::ExecutionWorld world) {
-  switch (world) {
-    case mojom::ExecutionWorld::kUserScript:
-      return api::user_scripts::EXECUTION_WORLD_USER_SCRIPT;
-    case mojom::ExecutionWorld::kMain:
-      return api::user_scripts::EXECUTION_WORLD_MAIN;
-    case mojom::ExecutionWorld::kIsolated:
-      NOTREACHED_NORETURN() << "ISOLATED worlds are not supported in this API.";
-  }
+  auto convert_execution_world = [](api::user_scripts::ExecutionWorld world) {
+    switch (world) {
+      // Execution world defaults to `kUserScript` when it's not provided.
+      case api::user_scripts::ExecutionWorld::kNone:
+      case api::user_scripts::ExecutionWorld::kUserScript:
+        return api::extension_types::ExecutionWorld::kUserScript;
+      case api::user_scripts::ExecutionWorld::kMain:
+        return api::extension_types::ExecutionWorld::kMain;
+    }
+  };
+
+  api::scripts_internal::SerializedUserScript serialized_script;
+  serialized_script.source = api::scripts_internal::Source::kDynamicUserScript;
+
+  serialized_script.all_frames = user_script.all_frames;
+  serialized_script.exclude_matches = std::move(user_script.exclude_matches);
+  // Note: IDs have already been prefixed appropriately.
+  serialized_script.id = std::move(user_script.id);
+  serialized_script.include_globs = std::move(user_script.include_globs);
+  serialized_script.exclude_globs = std::move(user_script.exclude_globs);
+  serialized_script.js =
+      user_script_sources_to_serialized_sources(std::move(user_script.js));
+  serialized_script.matches = std::move(*user_script.matches);
+  serialized_script.run_at = std::move(user_script.run_at);
+  serialized_script.world = convert_execution_world(user_script.world);
+
+  return serialized_script;
 }
 
 std::unique_ptr<UserScript> ParseUserScript(
     const Extension& extension,
-    const api::user_scripts::RegisteredUserScript& user_script,
+    api::user_scripts::RegisteredUserScript user_script,
+    bool allowed_in_incognito,
     std::u16string* error) {
-  auto result = std::make_unique<UserScript>();
-  result->set_id(user_script.id);
-  result->set_host_id(
-      mojom::HostID(mojom::HostID::HostType::kExtensions, extension.id()));
-
-  if (user_script.run_at != api::extension_types::RunAt::kNone) {
-    result->set_run_location(ConvertRunLocation(user_script.run_at));
-  }
-
-  if (user_script.all_frames) {
-    result->set_match_all_frames(*user_script.all_frames);
-  }
-
+  // Custom validation unique to user scripts.
+  // `matches` must be specified for newly-registered scripts, despite being
+  // an optional argument.
   if (!user_script.matches) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
         kMatchesMissingError,
@@ -83,22 +98,7 @@ std::unique_ptr<UserScript> ParseUserScript(
     return nullptr;
   }
 
-  const int valid_schemes = UserScript::ValidUserScriptSchemes(
-      scripting::kScriptsCanExecuteEverywhere);
-  if (!script_parsing::ParseMatchPatterns(
-          *user_script.matches,
-          base::OptionalToPtr(user_script.exclude_matches),
-          extension.creation_flags(), scripting::kScriptsCanExecuteEverywhere,
-          valid_schemes, scripting::kAllUrlsIncludesChromeUrls,
-          /*definition_index=*/absl::nullopt, result.get(), error,
-          /*wants_file_access=*/nullptr)) {
-    return nullptr;
-  }
-
-  script_parsing::ParseGlobs(base::OptionalToPtr(user_script.include_globs),
-                             base::OptionalToPtr(user_script.exclude_globs),
-                             result.get());
-
+  // `js` must not be empty.
   if (user_script.js.empty()) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
         kEmptySourceError, UserScript::TrimPrefixFromScriptID(user_script.id));
@@ -112,68 +112,79 @@ std::unique_ptr<UserScript> ParseUserScript(
           UserScript::TrimPrefixFromScriptID(user_script.id));
       return nullptr;
     }
-
-    if (source.code) {
-      // TODO(crbug.com/1385165): Register user scripts when code is given.
-    } else {
-      DCHECK(source.file);
-      GURL url = extension.GetResourceURL(*source.file);
-      ExtensionResource resource = extension.GetResource(*source.file);
-      result->js_scripts().push_back(UserScript::Content::CreateFile(
-          resource.extension_root(), resource.relative_path(), url));
-    }
   }
 
-  result->set_execution_world(ConvertExecutionWorld(user_script.world));
+  // After this, we can just convert to our internal type and rely on our
+  // typical parsing to a `UserScript`.
+  api::scripts_internal::SerializedUserScript serialized_script =
+      ConvertRegisteredUserScriptToSerializedUserScript(std::move(user_script));
 
-  return result;
+  return script_serialization::ParseSerializedUserScript(
+      serialized_script, extension, allowed_in_incognito, error);
 }
 
 // Converts a UserScript object to a api::user_scripts::RegisteredUserScript
 // object, used for getScripts.
 api::user_scripts::RegisteredUserScript CreateRegisteredUserScriptInfo(
     const UserScript& script) {
-  api::user_scripts::RegisteredUserScript script_info;
   CHECK_EQ(UserScript::Source::kDynamicUserScript, script.GetSource());
 
-  script_info.id = script.id();
-  script_info.all_frames = script.match_all_frames();
-  script_info.run_at = ConvertRunLocationForAPI(script.run_location());
+  // To convert a `UserScript`, we first go through our script_internal
+  // serialization; this allows us to do simple conversions and avoid any
+  // complex logic.
+  api::scripts_internal::SerializedUserScript serialized_script =
+      script_serialization::SerializeUserScript(script);
 
-  script_info.matches.emplace();
-  script_info.matches->reserve(script.url_patterns().size());
-  for (const URLPattern& pattern : script.url_patterns()) {
-    script_info.matches->push_back(pattern.GetAsString());
+  auto convert_serialized_script_sources =
+      [](std::vector<api::scripts_internal::ScriptSource> sources) {
+        std::vector<api::user_scripts::ScriptSource> converted;
+        converted.reserve(sources.size());
+        for (auto& source : sources) {
+          api::user_scripts::ScriptSource converted_source;
+          converted_source.code = std::move(source.code);
+          converted_source.file = std::move(source.file);
+          converted.push_back(std::move(converted_source));
+        }
+        return converted;
+      };
+
+  auto convert_execution_world =
+      [](api::extension_types::ExecutionWorld world) {
+        switch (world) {
+          case api::extension_types::ExecutionWorld::kNone:
+            NOTREACHED_NORETURN()
+                << "Execution world should always be present in serialization.";
+          case api::extension_types::ExecutionWorld::kIsolated:
+            NOTREACHED_NORETURN()
+                << "ISOLATED worlds are not supported in this API.";
+          case api::extension_types::ExecutionWorld::kUserScript:
+            return api::user_scripts::ExecutionWorld::kUserScript;
+          case api::extension_types::ExecutionWorld::kMain:
+            return api::user_scripts::ExecutionWorld::kMain;
+        }
+      };
+
+  api::user_scripts::RegisteredUserScript result;
+  result.all_frames = serialized_script.all_frames;
+  result.exclude_matches = std::move(serialized_script.exclude_matches);
+  result.id = std::move(serialized_script.id);
+  result.include_globs = std::move(serialized_script.include_globs);
+  result.exclude_globs = std::move(serialized_script.exclude_globs);
+  if (serialized_script.js) {
+    result.js =
+        convert_serialized_script_sources(std::move(*serialized_script.js));
   }
+  result.matches = std::move(serialized_script.matches);
+  result.run_at = serialized_script.run_at;
+  result.world = convert_execution_world(serialized_script.world);
 
-  if (!script.exclude_url_patterns().is_empty()) {
-    script_info.exclude_matches.emplace();
-    script_info.exclude_matches->reserve(script.exclude_url_patterns().size());
-    for (const URLPattern& pattern : script.exclude_url_patterns()) {
-      script_info.exclude_matches->push_back(pattern.GetAsString());
-    }
-  }
-
-  // File paths may be normalized in the returned object and can differ slightly
-  // compared to what was originally passed into userScripts.register.
-  if (!script.js_scripts().empty()) {
-    script_info.js.reserve(script.js_scripts().size());
-    for (const auto& file : script.js_scripts()) {
-      api::user_scripts::ScriptSource source;
-      source.file = file->relative_path().AsUTF8Unsafe();
-      script_info.js.push_back(std::move(source));
-    }
-  }
-
-  script_info.world = ConvertExecutionWorldForAPI(script.execution_world());
-
-  return script_info;
+  return result;
 }
 
 }  // namespace
 
 ExtensionFunction::ResponseAction UserScriptsRegisterFunction::Run() {
-  absl::optional<api::user_scripts::Register::Params> params(
+  std::optional<api::user_scripts::Register::Params> params(
       api::user_scripts::Register::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   EXTENSION_FUNCTION_VALIDATE(extension());
@@ -199,19 +210,23 @@ ExtensionFunction::ResponseAction UserScriptsRegisterFunction::Run() {
   }
 
   // Parse user scripts.
-  auto parsed_scripts = std::make_unique<UserScriptList>();
-  parsed_scripts->reserve(scripts.size());
+  UserScriptList parsed_scripts;
+  parsed_scripts.reserve(scripts.size());
   std::u16string parse_error;
 
-  for (const auto& script : scripts) {
-    std::unique_ptr<UserScript> user_script =
-        ParseUserScript(*extension(), script, &parse_error);
+  bool allowed_in_incognito = scripting::ScriptsShouldBeAllowedInIncognito(
+      extension()->id(), browser_context());
+
+  for (auto& script : scripts) {
+    std::unique_ptr<UserScript> user_script = ParseUserScript(
+        *extension(), std::move(script), allowed_in_incognito, &parse_error);
     if (!user_script) {
       return RespondNow(Error(base::UTF16ToASCII(parse_error)));
     }
 
-    parsed_scripts->push_back(std::move(user_script));
+    parsed_scripts.push_back(std::move(user_script));
   }
+  scripts.clear();  // The contents of `scripts` have been std::move()d.
 
   // Add new script IDs now in case another call with the same script IDs is
   // made immediately following this one.
@@ -243,7 +258,7 @@ void UserScriptsRegisterFunction::OnUserScriptFilesValidated(
   auto scripts = std::move(result.first);
 
   std::set<std::string> script_ids;
-  for (const auto& script : *scripts) {
+  for (const auto& script : scripts) {
     script_ids.insert(script->id());
   }
   ExtensionUserScriptLoader* loader =
@@ -266,7 +281,7 @@ void UserScriptsRegisterFunction::OnUserScriptFilesValidated(
 }
 
 void UserScriptsRegisterFunction::OnUserScriptsRegistered(
-    const absl::optional<std::string>& error) {
+    const std::optional<std::string>& error) {
   if (error.has_value()) {
     Respond(Error(std::move(*error)));
   } else {
@@ -276,11 +291,11 @@ void UserScriptsRegisterFunction::OnUserScriptsRegistered(
 }
 
 ExtensionFunction::ResponseAction UserScriptsGetScriptsFunction::Run() {
-  absl::optional<api::user_scripts::GetScripts::Params> params =
+  std::optional<api::user_scripts::GetScripts::Params> params =
       api::user_scripts::GetScripts::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  absl::optional<api::user_scripts::UserScriptFilter>& filter = params->filter;
+  std::optional<api::user_scripts::UserScriptFilter>& filter = params->filter;
   std::set<std::string> id_filter;
   if (filter && filter->ids) {
     id_filter.insert(std::make_move_iterator(filter->ids->begin()),
@@ -317,13 +332,13 @@ ExtensionFunction::ResponseAction UserScriptsGetScriptsFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction UserScriptsUnregisterFunction::Run() {
-  absl::optional<api::user_scripts::Unregister::Params> params(
+  std::optional<api::user_scripts::Unregister::Params> params(
       api::user_scripts::Unregister::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   EXTENSION_FUNCTION_VALIDATE(extension());
 
-  absl::optional<api::user_scripts::UserScriptFilter>& filter = params->filter;
-  absl::optional<std::vector<std::string>> ids = absl::nullopt;
+  std::optional<api::user_scripts::UserScriptFilter>& filter = params->filter;
+  std::optional<std::vector<std::string>> ids = std::nullopt;
   if (filter && filter->ids) {
     ids = filter->ids;
   }
@@ -345,7 +360,7 @@ ExtensionFunction::ResponseAction UserScriptsUnregisterFunction::Run() {
 }
 
 void UserScriptsUnregisterFunction::OnUserScriptsUnregistered(
-    const absl::optional<std::string>& error) {
+    const std::optional<std::string>& error) {
   if (error.has_value()) {
     Respond(Error(std::move(*error)));
   } else {
@@ -354,7 +369,7 @@ void UserScriptsUnregisterFunction::OnUserScriptsUnregistered(
 }
 
 ExtensionFunction::ResponseAction UserScriptsUpdateFunction::Run() {
-  absl::optional<api::user_scripts::Update::Params> params(
+  std::optional<api::user_scripts::Update::Params> params(
       api::user_scripts::Update::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   EXTENSION_FUNCTION_VALIDATE(extension());
@@ -379,14 +394,14 @@ ExtensionFunction::ResponseAction UserScriptsUpdateFunction::Run() {
           ->user_script_manager()
           ->GetUserScriptLoaderForExtension(extension()->id());
 
-  std::unique_ptr<UserScriptList> parsed_scripts = scripting::UpdateScripts(
+  UserScriptList parsed_scripts = scripting::UpdateScripts(
       scripts_to_update, UserScript::Source::kDynamicUserScript, *loader,
       base::BindRepeating(&CreateRegisteredUserScriptInfo),
       base::BindRepeating(&UserScriptsUpdateFunction::ApplyUpdate, this),
       &error);
 
   if (!error.empty()) {
-    CHECK(!parsed_scripts);
+    CHECK(parsed_scripts.empty());
     return RespondNow(Error(std::move(error)));
   }
 
@@ -431,12 +446,17 @@ std::unique_ptr<UserScript> UserScriptsUpdateFunction::ApplyUpdate(
     original_script.js = std::move(new_script.js);
   }
 
-  if (new_script.world) {
-    original_script.world = std::move(new_script.world);
+  if (new_script.world != api::user_scripts::ExecutionWorld::kNone) {
+    original_script.world = new_script.world;
   }
 
+  // Note: for the update application, we disregard allowed_in_incognito.
+  // We'll set it on the resulting scripts.
+  constexpr bool kAllowedInIncognito = false;
+
   std::unique_ptr<UserScript> parsed_script =
-      ParseUserScript(*extension(), original_script, parse_error);
+      ParseUserScript(*extension(), std::move(original_script),
+                      kAllowedInIncognito, parse_error);
   return parsed_script;
 }
 
@@ -456,9 +476,13 @@ void UserScriptsUpdateFunction::OnUserScriptFilesValidated(
           ->user_script_manager()
           ->GetUserScriptLoaderForExtension(extension()->id());
 
+  bool allowed_in_incognito = scripting::ScriptsShouldBeAllowedInIncognito(
+      extension()->id(), browser_context());
+
   std::set<std::string> script_ids;
-  for (const auto& script : *scripts) {
+  for (const auto& script : scripts) {
     script_ids.insert(script->id());
+    script->set_incognito_enabled(allowed_in_incognito);
   }
 
   if (error.has_value()) {
@@ -477,13 +501,28 @@ void UserScriptsUpdateFunction::OnUserScriptFilesValidated(
 }
 
 void UserScriptsUpdateFunction::OnUserScriptsUpdated(
-    const absl::optional<std::string>& error) {
+    const std::optional<std::string>& error) {
   if (error.has_value()) {
     Respond(Error(std::move(*error)));
   } else {
     Respond(NoArguments());
   }
   Release();  // Matches the `AddRef()` in `Run()`.
+}
+
+ExtensionFunction::ResponseAction UserScriptsConfigureWorldFunction::Run() {
+  std::optional<api::user_scripts::ConfigureWorld::Params> params(
+      api::user_scripts::ConfigureWorld::Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  EXTENSION_FUNCTION_VALIDATE(extension());
+
+  std::optional<std::string> csp = params->properties.csp;
+  bool enable_messaging = params->properties.messaging.value_or(false);
+
+  util::SetUserScriptWorldInfo(*extension(), browser_context(), csp,
+                               enable_messaging);
+
+  return RespondNow(NoArguments());
 }
 
 }  // namespace extensions

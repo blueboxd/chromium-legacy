@@ -10,7 +10,7 @@ import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
 import {CrosNetworkConfigRemote, InhibitReason, MAX_NUM_CUSTOM_APNS} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
 import {ConnectionStateType, DeviceStateType, NetworkType, OncSource, PortalState} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {FakeNetworkConfig} from 'chrome://test/chromeos/fake_network_config_mojom.js';
+import {FakeNetworkConfig} from 'chrome://webui-test/chromeos/fake_network_config_mojom.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
 /** @implements {InternetDetailDialogBrowserProxy} */
@@ -89,7 +89,8 @@ suite('internet-detail-dialog', () => {
   }
 
   async function setupCellularNetwork(
-      isPrimary, isInhibited, connectedApn, customApnList, errorState) {
+      isPrimary, isInhibited, connectedApn, customApnList, errorState,
+      portalState) {
     await mojoApi_.setNetworkTypeEnabledState(NetworkType.kCellular, true);
 
     const cellularNetwork =
@@ -104,6 +105,7 @@ suite('internet-detail-dialog', () => {
     cellularNetwork.typeProperties.cellular.connectedApn = connectedApn;
     cellularNetwork.typeProperties.cellular.customApnList = customApnList;
     cellularNetwork.errorState = errorState;
+    cellularNetwork.portalState = portalState;
 
     mojoApi_.setManagedPropertiesForTest(cellularNetwork);
     mojoApi_.setDeviceStateForTest({
@@ -309,7 +311,7 @@ suite('internet-detail-dialog', () => {
       await setupCellularNetwork(
           /* isPrimary= */ true, /* isInhibited= */ false,
           /* connectedApn= */ undefined, /* customApnList= */ undefined,
-          errorState);
+          errorState, PortalState.kNoInternet);
 
       await init();
       const legacyApnElement =
@@ -333,6 +335,7 @@ suite('internet-detail-dialog', () => {
         assertTrue(!!getApnList());
         assertTrue(getApnList().shouldOmitLinks);
         assertEquals(errorState, getApnList().errorState);
+        assertEquals(PortalState.kNoInternet, getApnList().portalState);
         const isApnListShowing = () =>
             internetDetailDialog.shadowRoot.querySelector('iron-collapse')
                 .opened;
@@ -348,18 +351,27 @@ suite('internet-detail-dialog', () => {
         internetDetailDialog.onDeviceStateListChanged();
         await flushAsync();
         assertEquals(accessPointName, getApnSectionSublabel());
+        assertFalse(
+            internetDetailDialog.shadowRoot.querySelector('#apnRowSublabel')
+                .hasAttribute('warning'));
         assertFalse(isApnListShowing());
 
-        // Update the APN's name property.
+        // Update the APN's name property and add a restricted connectivity
+        // state.
         const name = 'name';
         await setupCellularNetwork(
             /* isPrimary= */ true, /* isInhibited= */ false,
-            {accessPointName: accessPointName, name: name});
+            {accessPointName: accessPointName, name: name},
+            /* customApnList= */ undefined, /* errorState= */ undefined,
+            PortalState.kNoInternet);
 
         // Force a refresh.
         internetDetailDialog.onDeviceStateListChanged();
         await flushAsync();
         assertEquals(name, getApnSectionSublabel());
+        assertTrue(
+            internetDetailDialog.shadowRoot.querySelector('#apnRowSublabel')
+                .hasAttribute('warning'));
         assertFalse(isApnListShowing());
 
         // Expand the section, the sublabel should no longer show.

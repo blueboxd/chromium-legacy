@@ -13,6 +13,7 @@
 #include <memory>
 #include <vector>
 
+#include <optional>
 #include "base/auto_reset.h"
 #include "base/bits.h"
 #include "base/containers/contains.h"
@@ -38,6 +39,7 @@
 #include "gpu/command_buffer/service/dawn_service_memory_transfer_service.h"
 #include "gpu/command_buffer/service/dawn_service_serializer.h"
 #include "gpu/command_buffer/service/decoder_client.h"
+#include "gpu/command_buffer/service/graphite_utils.h"
 #include "gpu/command_buffer/service/isolation_key_provider.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
@@ -51,10 +53,10 @@
 #include "gpu/config/webgpu_blocklist.h"
 #include "gpu/webgpu/callback.h"
 #include "third_party/abseil-cpp/absl/base/attributes.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
+#include "third_party/skia/include/gpu/graphite/Context.h"
 #include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_surface_egl.h"
 
@@ -127,7 +129,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   void Destroy(bool have_context) override;
   bool MakeCurrent() override {
     if (gl_context_.get()) {
-      gl_context_->MakeCurrent(gl_surface_.get());
+      gl_context_->MakeCurrentDefault();
     }
     return true;
   }
@@ -443,7 +445,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
 
   // Isolation key that is necessary for device requests. Optional to
   // differentiate between an empty isolation key, and an unset one.
-  absl::optional<std::string> isolation_key_;
+  std::optional<std::string> isolation_key_;
 
   std::unique_ptr<dawn::wire::WireServer> wire_server_;
   std::unique_ptr<DawnServiceSerializer> wire_serializer_;
@@ -619,6 +621,8 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
     }
 
     bool ReadPixelsIntoBuffer(void* dst_pointer, uint32_t bytes_per_row) {
+      // TODO(crbug.com/1467566): Support multiplanar format.
+      DCHECK(representation_->format().NumberOfPlanes() == 1);
       DCHECK(dst_pointer);
       std::vector<GrBackendSemaphore> begin_semaphores;
       std::vector<GrBackendSemaphore> end_semaphores;
@@ -648,11 +652,25 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
 
       // Read back the Skia image contents into the staging buffer.
       DCHECK(dst_pointer);
-      if (success && !sk_image->readPixels(shared_context_state_->gr_context(),
-                                           sk_image->imageInfo(), dst_pointer,
-                                           bytes_per_row, 0, 0)) {
-        DLOG(ERROR) << "Failed to read from SkImage";
-        success = false;
+      if (shared_context_state_->gr_context()) {
+        if (success &&
+            !sk_image->readPixels(shared_context_state_->gr_context(),
+                                  sk_image->imageInfo(), dst_pointer,
+                                  bytes_per_row, 0, 0)) {
+          DLOG(ERROR) << "Failed to read from SkImage";
+          success = false;
+        }
+      } else {
+        DCHECK(shared_context_state_->graphite_context());
+        DCHECK(shared_context_state_->gpu_main_graphite_recorder());
+        if (success && !GraphiteReadPixelsSync(
+                           shared_context_state_->graphite_context(),
+                           shared_context_state_->gpu_main_graphite_recorder(),
+                           sk_image.get(), sk_image->imageInfo(), dst_pointer,
+                           bytes_per_row, 0, 0)) {
+          DLOG(ERROR) << "Failed to read from SkImage";
+          success = false;
+        }
       }
 
       // Transition the image back to the desired end state. This is used
@@ -722,6 +740,9 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
     }
 
     bool UploadContentsToSkia() {
+      // TODO(crbug.com/1467566): Support multiplanar format.
+      DCHECK(representation_->format().NumberOfPlanes() == 1);
+
       uint32_t bytes_per_row;
       size_t buffer_size;
       if (!ComputeStagingBufferParams(representation_->format(),
@@ -813,7 +834,14 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
 
       // It's ok to pass in empty GrFlushInfo here since SignalSemaphores()
       // will populate it with semaphores and call GrDirectContext::flush.
-      skgpu::ganesh::Flush(surface);
+      if (shared_context_state_->gr_context()) {
+        skgpu::ganesh::Flush(surface);
+      } else {
+        DCHECK(shared_context_state_->graphite_context());
+        DCHECK(shared_context_state_->gpu_main_graphite_recorder());
+        GraphiteFlushAndSubmit(shared_context_state_->graphite_context(),
+                               shared_context_state_->gpu_main_graphite_recorder());
+      }
       // Transition the image back to the desired end state. This is used for
       // transitioning the image to the external queue for Vulkan/GL interop.
       scoped_write_access->ApplyBackendSurfaceEndState();
@@ -915,7 +943,6 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   bool destroyed_ = false;
 
   scoped_refptr<gl::GLContext> gl_context_;
-  scoped_refptr<gl::GLSurface> gl_surface_;
 
   base::WeakPtrFactory<WebGPUDecoderImpl> weak_ptr_factory_{this};
 };
@@ -1062,7 +1089,8 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
       dawn_platform_(new DawnPlatform(
           base::FeatureList::IsEnabled(features::kWebGPUBlobCache)
               ? std::move(dawn_caching_interface)
-              : nullptr)),
+              : nullptr,
+          /*uma_prefix=*/"GPU.WebGPU.")),
       dawn_instance_(
           DawnInstance::Create(dawn_platform_.get(), gpu_preferences)),
       memory_transfer_service_(new DawnServiceMemoryTransferService(this)),
@@ -1158,39 +1186,38 @@ ContextResult WebGPUDecoderImpl::Initialize(
   // but it prevents rendering artifacts in Chrome. This workaround should
   // be revisited once EGL context creation is reworked. See crbug.com/1465911
   if (use_webgpu_adapter_ == WebGPUAdapterName::kOpenGLES) {
-    gl_surface_ = new gl::SurfacelessEGL(gl::GLSurfaceEGL::GetGLDisplayEGL(),
-                                         gfx::Size(1, 1));
+    scoped_refptr<gl::GLSurface> gl_surface(new gl::SurfacelessEGL(
+        gl::GLSurfaceEGL::GetGLDisplayEGL(), gfx::Size(1, 1)));
     gl::GLContextAttribs attribs;
     attribs.client_major_es_version = 3;
     attribs.client_minor_es_version = 1;
     gl_context_ = new gl::GLContextEGL(nullptr);
-    gl_context_->Initialize(gl_surface_.get(), attribs);
-    gl_context_->MakeCurrent(gl_surface_.get());
+    gl_context_->Initialize(gl_surface.get(), attribs);
+    DCHECK(gl_context_->default_surface());
+    gl_context_->MakeCurrentDefault();
   }
   return ContextResult::kSuccess;
 }
 
 bool WebGPUDecoderImpl::IsFeatureExposed(wgpu::FeatureName feature) const {
   switch (feature) {
-    case wgpu::FeatureName::TimestampQuery:
-    case wgpu::FeatureName::ChromiumExperimentalTimestampQueryInsidePasses:
-    case wgpu::FeatureName::ChromiumExperimentalPipelineStatisticsQuery:
     case wgpu::FeatureName::ChromiumExperimentalDp4a:
-    case wgpu::FeatureName::ChromiumExperimentalReadWriteStorageTexture:
+    case wgpu::FeatureName::ChromiumExperimentalTimestampQueryInsidePasses:
     case wgpu::FeatureName::ChromiumExperimentalSubgroups:
     case wgpu::FeatureName::ChromiumExperimentalSubgroupUniformControlFlow:
-    case wgpu::FeatureName::ShaderF16:
       return allow_unsafe_apis_;
-    case wgpu::FeatureName::DawnMultiPlanarFormats:
-    case wgpu::FeatureName::Depth32FloatStencil8:
     case wgpu::FeatureName::DepthClipControl:
-    case wgpu::FeatureName::Float32Filterable:
+    case wgpu::FeatureName::Depth32FloatStencil8:
+    case wgpu::FeatureName::TimestampQuery:
     case wgpu::FeatureName::TextureCompressionBC:
     case wgpu::FeatureName::TextureCompressionETC2:
     case wgpu::FeatureName::TextureCompressionASTC:
     case wgpu::FeatureName::IndirectFirstInstance:
+    case wgpu::FeatureName::ShaderF16:
     case wgpu::FeatureName::RG11B10UfloatRenderable:
-    case wgpu::FeatureName::BGRA8UnormStorage: {
+    case wgpu::FeatureName::BGRA8UnormStorage:
+    case wgpu::FeatureName::Float32Filterable:
+    case wgpu::FeatureName::DawnMultiPlanarFormats: {
       if (runtime_unsafe_features_.empty()) {
         // Likely case when no features are blocked.
         return true;
@@ -1363,6 +1390,8 @@ void WebGPUDecoderImpl::RequestDeviceImpl(
   // --enable-webgpu-developer-features is used.
   if (!enable_webgpu_developer_features_) {
     require_device_enabled_toggles.push_back("timestamp_quantization");
+  } else {
+    require_device_disabled_toggles.push_back("timestamp_quantization");
   }
   // Disable the blob cache if we don't have an isolation key.
   if (isolation_key_->empty()) {
@@ -2129,7 +2158,7 @@ error::Error WebGPUDecoderImpl::HandleSetWebGPUExecutionContextToken(
   blink::WebGPUExecutionContextToken::Tag type{c.type};
   uint64_t high = uint64_t(c.high_high) << 32 | uint64_t(c.high_low);
   uint64_t low = uint64_t(c.low_high) << 32 | uint64_t(c.low_low);
-  absl::optional<base::UnguessableToken> unguessable_token =
+  std::optional<base::UnguessableToken> unguessable_token =
       base::UnguessableToken::Deserialize(high, low);
   if (!unguessable_token.has_value()) {
     return error::kInvalidArguments;

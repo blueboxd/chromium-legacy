@@ -44,6 +44,8 @@ const AccessPoint kAccessPointsThatSupportUserAction[] = {
     AccessPoint::ACCESS_POINT_CREATOR_FEED_FOLLOW,
     AccessPoint::ACCESS_POINT_READING_LIST,
     AccessPoint::ACCESS_POINT_SET_UP_LIST,
+    AccessPoint::ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE,
+    AccessPoint::ACCESS_POINT_TAB_ORGANIZATION,
 };
 
 const AccessPoint kAccessPointsThatSupportImpression[] = {
@@ -71,6 +73,7 @@ const AccessPoint kAccessPointsThatSupportImpression[] = {
     AccessPoint::ACCESS_POINT_CREATOR_FEED_FOLLOW,
     AccessPoint::ACCESS_POINT_READING_LIST,
     AccessPoint::ACCESS_POINT_SET_UP_LIST,
+    AccessPoint::ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE,
 };
 
 class SigninMetricsTest : public ::testing::Test {
@@ -175,6 +178,12 @@ class SigninMetricsTest : public ::testing::Test {
         return "PasswordMigrationWarning";
       case AccessPoint::ACCESS_POINT_SAVE_TO_PHOTOS_IOS:
         return "SaveToPhotos";
+      case AccessPoint::ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE:
+        return "ChromeSigninInterceptBubble";
+      case AccessPoint::ACCESS_POINT_RESTORE_PRIMARY_ACCOUNT_ON_PROFILE_LOAD:
+        return "RestorePrimaryAccountinfoOnProfileLoad";
+      case AccessPoint::ACCESS_POINT_TAB_ORGANIZATION:
+        return "TabOrganization";
       case AccessPoint::ACCESS_POINT_MAX:
         NOTREACHED();
         return "";

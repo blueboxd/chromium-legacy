@@ -317,7 +317,7 @@ TEST_F(HlsManifestDemuxerEngineTest, TestAsyncSeek) {
   auto rendition = std::make_unique<StrictMock<MockHlsRendition>>();
   EXPECT_CALL(*rendition, GetDuration()).WillOnce(Return(base::Seconds(30)));
   auto* rendition_ptr = rendition.get();
-  engine_->AddRenditionForTesting(std::move(rendition));
+  engine_->AddRenditionForTesting("primary", std::move(rendition));
   // Set up rendition state and run, expecting no other callbacks.
   task_environment_.RunUntilIdle();
 
@@ -350,7 +350,7 @@ TEST_F(HlsManifestDemuxerEngineTest, TestMultiRenditionCheckState) {
 
   auto* rend1 = rendition1.get();
   auto* rend2 = rendition2.get();
-  engine_->AddRenditionForTesting(std::move(rendition1));
+  engine_->AddRenditionForTesting("primary", std::move(rendition1));
 
   // While there is only one rendition, the response from |OnTimeUpdate| is
   // whatever that rendition wants.
@@ -370,7 +370,7 @@ TEST_F(HlsManifestDemuxerEngineTest, TestMultiRenditionCheckState) {
   // After adding the second rendition, the response from OnTimeUpdate is now
   // the lesser of (rend1.response - (calc time of rend2)) and
   // (rend2.response)
-  engine_->AddRenditionForTesting(std::move(rendition2));
+  engine_->AddRenditionForTesting("audio-override", std::move(rendition2));
 
   // Both renditions request time, so pick the lesser.
   EXPECT_CALL(*rend1, CheckState(_, _, _))
@@ -401,6 +401,29 @@ TEST_F(HlsManifestDemuxerEngineTest, TestMultiRenditionCheckState) {
       base::Seconds(0), 0.0, base::BindOnce([](base::TimeDelta r) {
         EXPECT_THAT(r, CloseTo(base::Seconds(7), base::Milliseconds(1)));
       }));
+}
+
+TEST_F(HlsManifestDemuxerEngineTest, SeekAfterErrorFails) {
+  BindUrlToDataSource<StringHlsDataSourceStreamFactory>(
+      "http://media.example.com/manifest.m3u8", kInvalidMediaPlaylist);
+  EXPECT_CALL(*mock_mdeh_,
+              OnError(HasStatusCode(DEMUXER_ERROR_COULD_NOT_PARSE)));
+  EXPECT_CALL(*this, MockInitComplete(_)).Times(0);
+  InitializeEngine();
+  task_environment_.RunUntilIdle();
+
+  // When one of the renditions surfaces an error, ManifestDemuxer will request
+  // that the engine stop. Mimic that here.
+  engine_->Stop();
+  task_environment_.RunUntilIdle();
+
+  // Now if we try to seek, the response should be an instant aborted error.
+  engine_->Seek(base::Seconds(10),
+                base::BindOnce([](ManifestDemuxer::SeekResponse resp) {
+                  ASSERT_FALSE(resp.has_value());
+                  ASSERT_EQ(std::move(resp).error(), PIPELINE_ERROR_ABORT);
+                }));
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(HlsManifestDemuxerEngineTest, TestEndOfStreamAfterAllFetched) {

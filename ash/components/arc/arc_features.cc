@@ -47,6 +47,9 @@ BASE_FEATURE(kEnableArcIdleManager,
 const base::FeatureParam<bool> kEnableArcIdleManagerIgnoreBatteryForPLT{
     &kEnableArcIdleManager, "ignore_battery_for_test", false};
 
+const base::FeatureParam<int> kEnableArcIdleManagerDelayMs{
+    &kEnableArcIdleManager, "delay_ms", 0};
+
 // Controls whether files shared to ARC Nearby Share are shared through the
 // FuseBox filesystem, instead of the default method (through a temporary path
 // managed by file manager).
@@ -135,12 +138,6 @@ BASE_FEATURE(kFilePickerExperimentFeature,
              "ArcFilePickerExperiment",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Controls whether ARCVM can request resourced make more resources available
-// for a currently-active ARCVM game.
-BASE_FEATURE(kGameModeFeature,
-             "ArcGameModeFeature",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Controls whether the guest zram is enabled. This is only for ARCVM.
 BASE_FEATURE(kGuestZram, "ArcGuestZram", base::FEATURE_DISABLED_BY_DEFAULT);
 
@@ -215,6 +212,12 @@ BASE_FEATURE(kOutOfProcessVideoDecoding,
              "OutOfProcessVideoDecoding",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// When enabled, Android per-app-language settings will be surfaced in ChromeOS
+// Settings page.
+BASE_FEATURE(kPerAppLanguage,
+             "PerAppLanguage",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls ARC picture-in-picture feature. If this is enabled, then Android
 // will control which apps can enter PIP. If this is disabled, then ARC PIP
 // will be disabled.
@@ -257,11 +260,9 @@ BASE_FEATURE(kSaveRawFilesOnTracing,
 
 // When enabled, CertStoreService will talk to KeyMint instead of Keymaster on
 // ARC-T.
-// When you change the default, you also need to change whether Keymaster
-// or KeyMint is started in ARC. Otherwise, it will not work properly.
 BASE_FEATURE(kSwitchToKeyMintOnT,
              "ArcSwitchToKeyMintOnT",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // On boards that blocks KeyMint at launch, enable this feature to force enable
 // KeyMint.
@@ -280,12 +281,6 @@ BASE_FEATURE(kSyncInstallPriority,
 BASE_FEATURE(kTouchscreenEmulation,
              "ArcTouchscreenEmulation",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// When enabled, compatibility logic for trackpad scrolling is enabled on
-// specific apps.
-BASE_FEATURE(kTrackpadScrollTouchscreenEmulation,
-             "ArcTrackpadScrollTouchscreenEmulation",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether ARC should be enabled on unaffiliated devices on client side
 BASE_FEATURE(kUnaffiliatedDeviceArcRestriction,
@@ -414,5 +409,5 @@ const base::FeatureParam<std::string> kPriorityAppLmkDelayList{
 // top Android apps from being killed that result in bad user experience.
 BASE_FEATURE(kLmkPerceptibleMinStateUpdate,
              "ArcLmkPerceptibleMinStateUpdate",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 }  // namespace arc

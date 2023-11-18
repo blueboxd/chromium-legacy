@@ -75,6 +75,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/crx_file/id_util.h"
 #include "components/favicon_base/favicon_url_parser.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/supervised_user/core/common/buildflags.h"
 #include "content/public/browser/browser_thread.h"
@@ -103,6 +104,7 @@
 #include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/browser/updater/manifest_fetch_data.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/features/feature_developer_mode_only.h"
@@ -129,8 +131,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "components/supervised_user/core/browser/supervised_user_service.h"
+#include "components/supervised_user/core/browser/supervised_user_preferences.h"
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 using content::BrowserContext;
@@ -157,6 +158,8 @@ const char* const kObsoleteComponentExtensionIds[] = {
     "jcgeabjmjgoblfofpppfkcoakmfobdko",  // Video Player
 };
 
+const char kBlockLoadCommandline[] = "command_line";
+
 // ExtensionUnpublishedAvailability policy default value.
 constexpr int kAllowUnpublishedExtensions = 0;
 
@@ -174,6 +177,18 @@ bool SkipDeleteExtensionDir(const Extension& extension,
       profile_path.AppendASCII(extensions::kUnpackedInstallDirectoryName);
   return is_unpacked_location &&
          extension_dir_not_direct_subdir_of_unpacked_extensions_install_dir;
+}
+
+bool ShouldBlockCommandLineExtension(Profile& profile) {
+  const base::Value::List& list =
+      profile.GetPrefs()->GetList(pref_names::kExtensionInstallTypeBlocklist);
+  for (const auto& val : list) {
+    if (val.is_string() && val.GetString() == kBlockLoadCommandline) {
+      return true;
+    }
+  }
+
+  return false;
 }
 }  // namespace
 
@@ -538,6 +553,11 @@ void ExtensionService::Init() {
     if (safe_browsing::IsEnhancedProtectionEnabled(*profile_->GetPrefs())) {
       VLOG(1) << "--load-extension is not allowed for users opted into "
               << "Enhanced Safe Browsing, ignoring.";
+    } else if (ShouldBlockCommandLineExtension(*profile_)) {
+      VLOG(1)
+          << "--load-extension is not allowed for users that have the policy "
+          << "have the policy ExtensionInstallTypeBlocklist::command_line, "
+          << "ignoring.";
     } else {
       LoadExtensionsFromCommandLineFlag(switches::kLoadExtension);
     }
@@ -1297,12 +1317,10 @@ void ExtensionService::CheckManagementPolicy() {
 
     // If this profile is not supervised, then remove any supervised user
     // related disable reasons.
-    bool is_supervised;
+    bool is_supervised = false;
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-    is_supervised = SupervisedUserServiceFactory::GetForProfile(profile())
-                        ->IsSubjectToParentalControls();
-#else
-    is_supervised = false;
+    is_supervised =
+        profile() && supervised_user::IsChildAccount(*profile()->GetPrefs());
 #endif
     if (!is_supervised) {
       disable_reasons &= (~disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED);

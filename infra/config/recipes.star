@@ -189,6 +189,10 @@ build_recipe(
 )
 
 build_recipe(
+    name = "recipe:chromium/mega_cq_launcher",
+)
+
+build_recipe(
     name = "recipe:chromium_clang_coverage_tot",
 )
 
@@ -246,10 +250,6 @@ build_recipe(
 build_recipe(
     name = "recipe:gofindit/chromium/test_single_revision",
     bootstrappable = POLYMORPHIC,
-)
-
-build_recipe(
-    name = "recipe:perf/crossbench",
 )
 
 build_recipe(

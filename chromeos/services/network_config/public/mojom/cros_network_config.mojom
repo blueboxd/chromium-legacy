@@ -340,6 +340,10 @@ struct DeviceStateProperties {
   // to start with. Displayed along with IMEI/EID to help user
   // unlock carrier locked device.
   string? serial;
+  // Indicates if the device is carrier locked.
+  // Reported only for cellular devices. Defaults to false
+  // for other device types.
+  bool is_carrier_locked = false;
 };
 
 const int32 kNoLimit = 0;
@@ -1321,7 +1325,8 @@ interface CrosNetworkConfig {
   // Creates a new APN for the cellular network with ID |network_guid|, and
   // appends it to |custom_apn_list|. Should only be called when the APN
   // Revamp feature flag is enabled.
-  CreateCustomApn(string network_guid, ApnProperties apn);
+  CreateCustomApn(string network_guid, ApnProperties apn) =>
+    (bool success);
 
   // Removes the APN with ID |apn_id| from |custom_apn_list| for the cellular
   // network with ID |network_guid|. Should only be called when the APN

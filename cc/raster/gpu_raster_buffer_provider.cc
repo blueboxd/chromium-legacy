@@ -29,6 +29,7 @@
 #include "components/viz/common/features.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/client_shared_image.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
@@ -49,8 +50,9 @@ class GpuRasterBufferProvider::GpuRasterBacking
     : public ResourcePool::GpuBacking {
  public:
   ~GpuRasterBacking() override {
-    if (mailbox.IsZero())
+    if (mailbox.IsZero()) {
       return;
+    }
     auto* sii = worker_context_provider->SharedImageInterface();
     if (returned_sync_token.HasData())
       sii->DestroySharedImage(returned_sync_token, mailbox);
@@ -63,8 +65,9 @@ class GpuRasterBufferProvider::GpuRasterBacking
       const base::trace_event::MemoryAllocatorDumpGuid& buffer_dump_guid,
       uint64_t tracing_process_id,
       int importance) const override {
-    if (mailbox.IsZero())
+    if (mailbox.IsZero()) {
       return;
+    }
 
     auto tracing_guid = gpu::GetSharedImageGUIDForTracing(mailbox);
     pmd->CreateSharedGlobalAllocatorDump(tracing_guid);
@@ -159,7 +162,7 @@ GpuRasterBufferProvider::GpuRasterBufferProvider(
 
 #if BUILDFLAG(IS_ANDROID)
   {
-    absl::optional<viz::RasterContextProvider::ScopedRasterContextLock> lock;
+    std::optional<viz::RasterContextProvider::ScopedRasterContextLock> lock;
     lock.emplace(worker_context_provider);
     auto is_using_vulkan =
         worker_context_provider->ContextCapabilities().using_vulkan_context;
@@ -346,7 +349,7 @@ void GpuRasterBufferProvider::RasterBufferImpl::PlaybackOnWorkerThreadInternal(
   }
 
   {
-    absl::optional<base::ElapsedTimer> timer;
+    std::optional<base::ElapsedTimer> timer;
     if (measure_raster_metric)
       timer.emplace();
     RasterizeSource(raster_source, raster_full_rect, playback_rect, transform,
@@ -380,10 +383,12 @@ void GpuRasterBufferProvider::RasterBufferImpl::RasterizeSource(
     } else if (client_->is_using_raw_draw_) {
       flags |= gpu::SHARED_IMAGE_USAGE_RAW_DRAW;
     }
-    backing_->mailbox = sii->CreateSharedImage(
+    auto client_shared_image = sii->CreateSharedImage(
         shared_image_format_, resource_size_, color_space_,
         kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, flags, "GpuRasterTile",
         gpu::kNullSurfaceHandle);
+    CHECK(client_shared_image);
+    backing_->mailbox = client_shared_image->mailbox();
     mailbox_needs_clear = true;
     ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
   } else {

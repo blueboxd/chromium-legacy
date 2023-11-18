@@ -84,7 +84,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.PriorityQueue;
+import java.util.SortedSet;
 
 /**
  * Implementation of the interface {@link SelectionPopupController}.
@@ -730,28 +730,22 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     private MVCListAdapter.ModelList getDropdownItems() {
         MVCListAdapter.ModelList items = new MVCListAdapter.ModelList();
         if (mDropdownMenuDelegate != null) {
-            PriorityQueue<SelectionMenuGroup> allItemGroups;
+            SortedSet<SelectionMenuGroup> allItemGroups;
             if (hasSelection()) {
                 allItemGroups = getSelectionMenuItems();
             } else {
                 allItemGroups = getNonSelectionMenuItems(this, mNonSelectionAdditionalItemProvider);
             }
 
-            SelectionMenuGroup group = allItemGroups.poll();
-            int i = 0;
-            while (group != null) {
-                if (i > 0) {
-                    // Add a divider above the new group.
-                    items.add(mDropdownMenuDelegate.getDivider());
-                }
-
+            int groupIndex = 0;
+            for (SelectionMenuGroup group : allItemGroups) {
                 // First determine if any item in the group contains an icon. Given
                 // there will always be a small amount of items in the menu it is
                 // okay to run this loop twice. This property will be used later on when
                 // rendering the items to determine title spacing.
                 boolean groupContainsIcon = false;
                 for (SelectionMenuItem item : group.items) {
-                    groupContainsIcon = item.getIcon(mContext) != null;
+                    groupContainsIcon = item.isEnabled && item.getIcon(mContext) != null;
 
                     // Exit early if there is an icon found.
                     if (groupContainsIcon) {
@@ -759,18 +753,38 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
                     }
                 }
 
+                // Add a divider above the new group.
+                final boolean addDivider = groupIndex > 0;
+
+                int itemIndexInGroup = 0;
                 // Populate the items from the group.
                 for (SelectionMenuItem item : group.items) {
+                    if (!item.isEnabled) {
+                        // We will only add items if they are enabled.
+                        continue;
+                    }
+                    if (itemIndexInGroup++ == 0 && addDivider) {
+                        items.add(mDropdownMenuDelegate.getDivider());
+                    }
+
                     CharSequence title = item.getTitle(mContext);
                     CharSequence contentDescription = item.contentDescription;
-                    items.add(mDropdownMenuDelegate.getMenuItem(
-                            title != null ? title.toString() : null,
-                            contentDescription != null ? contentDescription.toString() : null,
-                            group.id, item.id, item.getIcon(mContext), item.isIconTintable,
-                            groupContainsIcon, item.isEnabled, item.clickListener, item.intent));
+                    items.add(
+                            mDropdownMenuDelegate.getMenuItem(
+                                    title != null ? title.toString() : null,
+                                    contentDescription != null
+                                            ? contentDescription.toString()
+                                            : null,
+                                    group.id,
+                                    item.id,
+                                    item.getIcon(mContext),
+                                    item.isIconTintable,
+                                    groupContainsIcon,
+                                    true,
+                                    item.clickListener,
+                                    item.intent));
                 }
-                group = allItemGroups.poll();
-                i++;
+                groupIndex++;
             }
         }
         return items;
@@ -1006,14 +1020,14 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         return true;
     }
 
-    private PriorityQueue<SelectionMenuGroup> getSelectionMenuItems() {
+    private SortedSet<SelectionMenuGroup> getSelectionMenuItems() {
         TextProcessingIntentHandler textProcessingIntentHandler =
                 isSelectActionModeAllowed(MENU_ITEM_PROCESS_TEXT) ? this::processText : null;
         return SelectActionMenuHelper.getSelectionMenuItems(this, mContext, mClassificationResult,
                 isSelectionPassword(), !isFocusedNodeEditable(), textProcessingIntentHandler);
     }
 
-    private static PriorityQueue<SelectionMenuGroup> getNonSelectionMenuItems(
+    private static SortedSet<SelectionMenuGroup> getNonSelectionMenuItems(
             SelectActionMenuDelegate delegate,
             @Nullable AdditionalSelectionMenuItemProvider nonSelectionAdditionalItemProvider) {
         return SelectActionMenuHelper.getNonSelectionMenuItems(
@@ -1022,12 +1036,15 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
     /**
      * Initializes the action menu.
+     *
      * @param customMenuItemClickListeners map to populate any custom click listeners for menu
-     *         items.
+     *     items.
      * @param additionalMenuItemClickListener executes after every menu item is clicked.
      */
-    public static void initializeActionMenu(Context context,
-            PriorityQueue<SelectionMenuGroup> menuGroups, Menu menu,
+    public static void initializeActionMenu(
+            Context context,
+            SortedSet<SelectionMenuGroup> menuGroups,
+            Menu menu,
             Map<MenuItem, View.OnClickListener> customMenuItemClickListeners,
             @Nullable MenuItem.OnMenuItemClickListener additionalMenuItemClickListener) {
         for (SelectionMenuGroup group : menuGroups) {

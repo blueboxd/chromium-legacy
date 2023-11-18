@@ -15,9 +15,9 @@
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
-#import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
+#import "ios/chrome/browser/signin/model/authentication_service.h"
+#import "ios/chrome/browser/signin/model/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/signin/add_account_signin/add_account_signin_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/advanced_settings_signin/advanced_settings_signin_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_promo_signin_coordinator.h"
@@ -240,7 +240,8 @@ using signin_metrics::PromoAction;
 - (void)dealloc {
   // -[SigninCoordinator runCompletionCallbackWithSigninResult:completionInfo:]
   // has to be called by the subclass before the coordinator is deallocated.
-  DCHECK(!self.signinCompletion) << base::SysNSStringToUTF8([self description]);
+  DUMP_WILL_BE_CHECK(!self.signinCompletion)
+      << base::SysNSStringToUTF8([self description]);
 }
 
 - (void)interruptWithAction:(SigninCoordinatorInterrupt)action

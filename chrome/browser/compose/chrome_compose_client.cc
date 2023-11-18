@@ -9,38 +9,59 @@
 #include <utility>
 
 #include "base/functional/bind.h"
+#include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/compose/compose_enabling.h"
+#include "chrome/browser/compose/compose_text_usage_logger.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/compose/type_conversions.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/compose/core/browser/compose_manager_impl.h"
-#include "components/compose/proto/compose_metadata.pb.h"
-#include "components/optimization_guide/core/optimization_guide_decider.h"
-#include "components/optimization_guide/core/optimization_guide_features.h"
-#include "components/optimization_guide/core/optimization_guide_util.h"
+#include "components/compose/core/browser/compose_metrics.h"
+#include "components/optimization_guide/proto/features/compose.pb.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/context_menu_params.h"
+#include "content/public/browser/page.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
 
+namespace {
+
+const char kComposeURL[] = "chrome://compose/";
+
+}  // namespace
+
 ChromeComposeClient::ChromeComposeClient(content::WebContents* web_contents)
-    : content::WebContentsUserData<ChromeComposeClient>(*web_contents),
-      manager_(this) {
+    : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<ChromeComposeClient>(*web_contents),
+      translate_language_provider_(new TranslateLanguageProvider()),
+      compose_enabling_(translate_language_provider_.get()),
+      manager_(this),
+      client_page_receiver_(this) {
   profile_ = Profile::FromBrowserContext(GetWebContents().GetBrowserContext());
   opt_guide_ = OptimizationGuideKeyedServiceFactory::GetForProfile(profile_);
 
   if (GetOptimizationGuide()) {
     std::vector<optimization_guide::proto::OptimizationType> types;
-    if (ComposeEnabling::IsEnabledForProfile(profile_)) {
+    if (compose_enabling_.IsEnabledForProfile(profile_).has_value()) {
       types.push_back(optimization_guide::proto::OptimizationType::COMPOSE);
     }
 
@@ -53,50 +74,192 @@ ChromeComposeClient::ChromeComposeClient(content::WebContents* web_contents)
 ChromeComposeClient::~ChromeComposeClient() = default;
 
 void ChromeComposeClient::BindComposeDialog(
-    mojo::PendingReceiver<compose::mojom::ComposeDialogPageHandler> handler,
+    mojo::PendingReceiver<compose::mojom::ComposeClientPageHandler>
+        client_handler,
+    mojo::PendingReceiver<compose::mojom::ComposeSessionPageHandler> handler,
     mojo::PendingRemote<compose::mojom::ComposeDialog> dialog) {
+  client_page_receiver_.reset();
+  client_page_receiver_.Bind(std::move(client_handler));
+
   url::Origin origin =
       GetWebContents().GetPrimaryMainFrame()->GetLastCommittedOrigin();
-  if (origin == url::Origin::Create(GURL("chrome://compose"))) {
-    debug_session_ =
-        std::make_unique<ComposeSession>(&GetWebContents(), GetModelExecutor());
+  if (origin == url::Origin::Create(GURL(kComposeURL))) {
+    debug_session_ = std::make_unique<ComposeSession>(
+        &GetWebContents(), GetModelExecutor(), GetModelQualityLogsUploader());
+    debug_session_->set_skip_inner_text(true);
     debug_session_->Bind(std::move(handler), std::move(dialog));
     return;
   }
-
-  sessions_.at(last_compose_field_id_)
+  sessions_.at(active_compose_field_id_.value())
       ->Bind(std::move(handler), std::move(dialog));
 }
 
 void ChromeComposeClient::ShowComposeDialog(
-    autofill::AutofillComposeDelegate::UiEntryPoint ui_entry_point,
+    EntryPoint ui_entry_point,
     const autofill::FormFieldData& trigger_field,
     std::optional<autofill::AutofillClient::PopupScreenLocation>
         popup_screen_location,
-    ComposeDialogCallback callback) {
-  SaveFieldAndCreateComposeStateIfEmpty(trigger_field.global_id());
+    ComposeCallback callback) {
+  CreateOrUpdateSession(ui_entry_point, trigger_field, std::move(callback));
   if (!skip_show_dialog_for_test_) {
-    const gfx::RectF element_bounds = trigger_field.bounds;
-    chrome::ShowComposeDialog(GetWebContents(), element_bounds);
+    // The bounds given by autofill are relative to the top level frame. Here we
+    // offset by the WebContents container to make up for that.
+    gfx::RectF bounds_in_screen = trigger_field.bounds;
+    bounds_in_screen.Offset(
+        GetWebContents().GetContainerBounds().OffsetFromOrigin());
+
+    show_dialog_start_ = base::TimeTicks::Now();
+    compose_dialog_controller_ =
+        chrome::ShowComposeDialog(GetWebContents(), bounds_in_screen);
   }
 }
 
-void ChromeComposeClient::SaveFieldAndCreateComposeStateIfEmpty(
-    const autofill::FieldGlobalId& field_id) {
-  last_compose_field_id_ = field_id;
-  auto it = sessions_.find(last_compose_field_id_);
-  if (it != sessions_.end()) {
-    // Already have a session for this field ID.
+bool ChromeComposeClient::HasSession(
+    const autofill::FieldGlobalId& trigger_field_id) {
+  auto it = sessions_.find(trigger_field_id);
+  return it != sessions_.end();
+}
+
+void ChromeComposeClient::ShowUI() {
+  if (compose_dialog_controller_) {
+    compose_dialog_controller_->ShowUI();
+    compose::LogComposeDialogOpenLatency(base::TimeTicks::Now() -
+                                         show_dialog_start_);
+  }
+}
+
+void ChromeComposeClient::CloseUI(compose::mojom::CloseReason reason) {
+  switch (reason) {
+    case compose::mojom::CloseReason::kCloseButton:
+      SetSessionCloseReason(
+          compose::ComposeSessionCloseReason::kCloseButtonPressed);
+      RemoveActiveSession();
+      break;
+    case compose::mojom::CloseReason::kInsertButton:
+      SetSessionCloseReason(
+          compose::ComposeSessionCloseReason::kAcceptedSuggestion);
+      RemoveActiveSession();
+      break;
+  }
+
+  if (compose_dialog_controller_) {
+    compose_dialog_controller_->Close();
+  }
+}
+
+void ChromeComposeClient::CreateOrUpdateSession(
+    EntryPoint ui_entry_point,
+    const autofill::FormFieldData& trigger_field,
+    ComposeCallback callback) {
+  active_compose_field_id_ =
+      std::make_optional<autofill::FieldGlobalId>(trigger_field.global_id());
+  std::string selected_text = base::UTF16ToUTF8(trigger_field.selected_text);
+  ComposeSession* current_session;
+
+  bool should_create_new_session_for_selection =
+      ui_entry_point != EntryPoint::kAutofillPopup && !selected_text.empty();
+  if (!HasSession(active_compose_field_id_.value()) ||
+      should_create_new_session_for_selection) {
+    if (!selected_text.empty()) {
+      SetSessionCloseReason(
+          compose::ComposeSessionCloseReason::kNewSessionWithSelectedText);
+    }
+    auto new_session = std::make_unique<ComposeSession>(
+        &GetWebContents(), GetModelExecutor(), GetModelQualityLogsUploader(),
+        std::move(callback));
+    current_session = new_session.get();
+    // Insert or replace with a new session.
+    sessions_.insert_or_assign(active_compose_field_id_.value(),
+                               std::move(new_session));
+
+    // Only record the selection length for new sessions.
+    auto utf8_chars = base::CountUnicodeCharacters(selected_text);
+    compose::LogComposeDialogSelectionLength(
+        utf8_chars.has_value() ? utf8_chars.value() : 0);
+  } else {
+    auto it = sessions_.find(active_compose_field_id_.value());
+    current_session = it->second.get();
+    current_session->set_compose_callback(std::move(callback));
+  }
+  current_session->InitializeWithText(should_create_new_session_for_selection
+                                          ? std::make_optional(selected_text)
+                                          : std::nullopt);
+}
+
+void ChromeComposeClient::RemoveActiveSession() {
+  if (debug_session_) {
+    debug_session_.reset();
+    return;
+  }
+  auto it = sessions_.find(active_compose_field_id_.value());
+  CHECK(it != sessions_.end())
+      << "Attempted to remove compose session that doesn't exist.";
+  sessions_.erase(active_compose_field_id_.value());
+  active_compose_field_id_.reset();
+}
+
+void ChromeComposeClient::SetSessionCloseReason(
+    compose::ComposeSessionCloseReason close_reason) {
+  if (debug_session_) {
     return;
   }
 
-  sessions_.emplace(
-      last_compose_field_id_,
-      std::make_unique<ComposeSession>(&GetWebContents(), GetModelExecutor()));
+  if (active_compose_field_id_.has_value()) {
+    auto it = sessions_.find(active_compose_field_id_.value());
+    if (it != sessions_.end()) {
+      it->second->SetCloseReason(close_reason);
+    }
+  }
+}
+
+void ChromeComposeClient::RemoveAllSessions() {
+  if (debug_session_) {
+    debug_session_.reset();
+  }
+
+  sessions_.erase(sessions_.begin(), sessions_.end());
+  active_compose_field_id_.reset();
 }
 
 compose::ComposeManager& ChromeComposeClient::GetManager() {
   return manager_;
+}
+
+ComposeEnabling& ChromeComposeClient::GetComposeEnabling() {
+  return compose_enabling_;
+}
+
+bool ChromeComposeClient::ShouldTriggerPopup(
+    const autofill::FormFieldData& form_field_data) {
+  bool saved_state =
+      sessions_.end() != sessions_.find(form_field_data.global_id());
+  translate::TranslateManager* translate_manager =
+      ChromeTranslateClient::GetManagerFromWebContents(&GetWebContents());
+  content::RenderFrameHost* top_level_frame =
+      GetWebContents().GetPrimaryMainFrame();
+
+  GURL url = GetWebContents().GetPrimaryMainFrame()->GetLastCommittedURL();
+
+  return compose_enabling_.ShouldTriggerPopup(
+      form_field_data.autocomplete_attribute, profile_, translate_manager,
+      saved_state, top_level_frame->GetLastCommittedOrigin(),
+      form_field_data.origin, url);
+}
+
+bool ChromeComposeClient::ShouldTriggerContextMenu(
+    content::RenderFrameHost* rfh,
+    content::ContextMenuParams& params) {
+  translate::TranslateManager* translate_manager =
+      ChromeTranslateClient::GetManagerFromWebContents(&GetWebContents());
+  return compose_enabling_.ShouldTriggerContextMenu(profile_, translate_manager,
+                                                    rfh, params);
+}
+
+optimization_guide::ModelQualityLogsUploader*
+ChromeComposeClient::GetModelQualityLogsUploader() {
+  return model_quality_uploader_for_test_.value_or(
+      OptimizationGuideKeyedServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(GetWebContents().GetBrowserContext())));
 }
 
 optimization_guide::OptimizationGuideModelExecutor*
@@ -116,42 +279,24 @@ void ChromeComposeClient::SetModelExecutorForTest(
   model_executor_for_test_ = model_executor;
 }
 
+void ChromeComposeClient::SetModelQualityLogsUploaderForTest(
+    optimization_guide::ModelQualityLogsUploader* model_quality_uploader) {
+  model_quality_uploader_for_test_ = model_quality_uploader;
+}
+
 void ChromeComposeClient::SetSkipShowDialogForTest() {
   skip_show_dialog_for_test_ = true;
 }
 
-void ChromeComposeClient::SetOptimizationGuideForTest(
-    optimization_guide::OptimizationGuideDecider* opt_guide) {
-  opt_guide_ = opt_guide;
+int ChromeComposeClient::GetSessionCountForTest() {
+  return sessions_.size();
 }
 
-compose::ComposeNudgeDecision
-ChromeComposeClient::GetOptimizationGuidanceForUrl(const GURL& url) {
-  if (!GetOptimizationGuide()) {
-    return compose::ComposeNudgeDecision::UNKNOWN;
-  }
+void ChromeComposeClient::PrimaryPageChanged(content::Page& page) {
+  RemoveAllSessions();
 
-  if (!ComposeEnabling::IsEnabledForProfile(profile_)) {
-    return compose::ComposeNudgeDecision::COMPOSE_DISABLED;
-  }
-
-  optimization_guide::OptimizationMetadata metadata;
-
-  auto opt_guide_has_hint = GetOptimizationGuide()->CanApplyOptimization(
-      url, optimization_guide::proto::OptimizationType::COMPOSE, &metadata);
-  if (opt_guide_has_hint !=
-      optimization_guide::OptimizationGuideDecision::kTrue) {
-    return compose::ComposeNudgeDecision::UNKNOWN;
-  }
-
-  absl::optional<compose::ComposeHintMetadata> compose_metadata =
-      optimization_guide::ParsedAnyMetadata<compose::ComposeHintMetadata>(
-          metadata.any_metadata().value());
-  if (!compose_metadata.has_value()) {
-    return compose::ComposeNudgeDecision::UNKNOWN;
-  }
-
-  return compose_metadata->decision();
+  compose::ComposeTextUsageLogger::GetOrCreateForCurrentDocument(
+      &page.GetMainDocument());
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ChromeComposeClient);

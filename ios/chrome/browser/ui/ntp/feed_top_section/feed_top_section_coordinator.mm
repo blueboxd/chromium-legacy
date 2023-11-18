@@ -11,11 +11,11 @@
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
-#import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
-#import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/signin/model/authentication_service.h"
+#import "ios/chrome/browser/signin/model/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service_factory.h"
+#import "ios/chrome/browser/signin/model/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
@@ -46,7 +46,7 @@
 @synthesize viewController = _viewController;
 
 - (void)start {
-  DCHECK(self.ntpDelegate);
+  DCHECK(self.NTPDelegate);
   self.feedTopSectionViewController =
       [[FeedTopSectionViewController alloc] init];
   _viewController = self.feedTopSectionViewController;
@@ -68,7 +68,7 @@
 
   self.isSignInPromoEnabled =
       ShouldShowTopOfFeedSyncPromo() && authenticationService &&
-      [self.ntpDelegate isSignInAllowed] &&
+      [self.NTPDelegate isSignInAllowed] &&
       !authenticationService->HasPrimaryIdentity(signin::ConsentLevel::kSignin);
 
   // If the user is signed out and signin is allowed, then start the top-of-feed
@@ -99,9 +99,9 @@
         self.signinPromoMediator;
   }
 
-  self.feedTopSectionMediator.ntpDelegate = self.ntpDelegate;
+  self.feedTopSectionMediator.NTPDelegate = self.NTPDelegate;
   self.feedTopSectionViewController.delegate = self.feedTopSectionMediator;
-  self.feedTopSectionViewController.ntpDelegate = self.ntpDelegate;
+  self.feedTopSectionViewController.NTPDelegate = self.NTPDelegate;
   [self.feedTopSectionMediator setUp];
 }
 
@@ -122,13 +122,19 @@
       self.isSigninPromoVisibleOnScreen == visible) {
     return;
   }
+  // Early return if the current promo State is SigninPromoViewState::kClosed
+  // since the visibility shouldn't be updated if the Promo has been closed.
+  // TODO(b/1494171): Update visibility methods to properlyhandle close actions.
+  if (self.signinPromoMediator.signinPromoViewState ==
+      SigninPromoViewState::kClosed) {
+    return;
+  }
   if (visible) {
     [self.signinPromoMediator signinPromoViewIsVisible];
-    self.isSigninPromoVisibleOnScreen = visible;
   } else {
     [self.signinPromoMediator signinPromoViewIsHidden];
-    self.isSigninPromoVisibleOnScreen = visible;
   }
+  self.isSigninPromoVisibleOnScreen = visible;
 }
 
 #pragma mark - SigninPresenter

@@ -100,13 +100,6 @@
 
 namespace blink {
 
-struct SameSizeAsBorderValue {
-  StyleColor color_;
-  unsigned bitfield_;
-};
-
-ASSERT_SIZE(BorderValue, SameSizeAsBorderValue);
-
 // Since different compilers/architectures pack ComputedStyle differently,
 // re-create the same structure for an accurate size comparison.
 //
@@ -1218,7 +1211,7 @@ static bool HasPropertyThatCreatesStackingContext(
       case CSSPropertyID::kOffsetPath:
       case CSSPropertyID::kOffsetPosition:
       case CSSPropertyID::kWebkitMask:
-      case CSSPropertyID::kWebkitAlternativeMask:
+      case CSSPropertyID::kAlternativeMask:
       case CSSPropertyID::kWebkitMaskBoxImage:
       case CSSPropertyID::kClipPath:
       case CSSPropertyID::kWebkitBoxReflect:
@@ -1987,7 +1980,6 @@ FontHeight ComputedStyle::GetFontHeight(FontBaseline baseline) const {
   if (const SimpleFontData* font_data = GetFont().PrimaryFont()) {
     return font_data->GetFontMetrics().GetFontHeight(baseline);
   }
-  NOTREACHED();
   return FontHeight();
 }
 
@@ -2503,14 +2495,14 @@ const AtomicString& ComputedStyle::ListStyleStringValue() const {
   return ListStyleType()->GetStringValue();
 }
 
-bool ComputedStyle::MarkerShouldBeInside(const Node& parent_node) const {
+bool ComputedStyle::MarkerShouldBeInside(const Element& parent) const {
   // https://w3c.github.io/csswg-drafts/css-lists/#list-style-position-outside
   // > If the list item is an inline box: this value is equivalent to inside.
   if (Display() == EDisplay::kInlineListItem) {
     return true;
   }
   return ListStylePosition() == EListStylePosition::kInside ||
-         (IsA<HTMLLIElement>(parent_node) && !IsInsideListElement());
+         (IsA<HTMLLIElement>(parent) && !IsInsideListElement());
 }
 
 absl::optional<blink::Color> ComputedStyle::AccentColorResolved() const {
@@ -2622,6 +2614,20 @@ bool ComputedStyle::CalculateIsStackingContextWithoutContainment() const {
 bool ComputedStyle::IsRenderedInTopLayer(const Element& element) const {
   return (element.IsInTopLayer() && Overlay() == EOverlay::kAuto) ||
          StyleType() == kPseudoIdBackdrop;
+}
+
+bool ComputedStyle::ApplyControlFixedSize(const Node* node) const {
+  if (FieldSizing() == EFieldSizing::kFixed) {
+    return true;
+  }
+  if (!node) {
+    return false;
+  }
+  const auto* control = DynamicTo<HTMLFormControlElement>(node);
+  if (!control) {
+    control = DynamicTo<HTMLFormControlElement>(node->OwnerShadowHost());
+  }
+  return control && control->GetAutofillState() != WebAutofillState::kNotFilled;
 }
 
 ComputedStyleBuilder::ComputedStyleBuilder(const ComputedStyle& style)
@@ -2799,6 +2805,12 @@ void ComputedStyleBuilder::SetUsedColorScheme(
       (force_dark && !prefers_dark);
 
   SetColorSchemeForced(forced_scheme);
+
+  if (RuntimeEnabledFeatures::UsedColorSchemeRootScrollbarsEnabled()) {
+    const bool is_normal =
+        flags == static_cast<ColorSchemeFlags>(ColorSchemeFlag::kNormal);
+    SetColorSchemeFlagsIsNormal(is_normal);
+  }
 }
 
 CSSVariableData* ComputedStyleBuilder::GetVariableData(

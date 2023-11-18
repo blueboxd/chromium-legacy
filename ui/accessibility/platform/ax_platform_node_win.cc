@@ -660,7 +660,9 @@ void AXPlatformNodeWin::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
     }
   }
 
-  if (event_type == ax::mojom::Event::kValueChanged) {
+  if (event_type == ax::mojom::Event::kValueChanged ||
+      event_type == ax::mojom::Event::kLiveRegionCreated ||
+      event_type == ax::mojom::Event::kLiveRegionChanged) {
     // For the IAccessibleText interface to work on non-web content nodes, we
     // need to update the nodes' hypertext
     // when the value changes. Otherwise, for web and PDF content, this is
@@ -882,9 +884,12 @@ AXPlatformNodeWin::UIARoleProperties AXPlatformNodeWin::GetUIARoleProperties() {
               L"complementary"};
 
     case ax::mojom::Role::kContentDeletion:
+      return {UIALocalizationStrategy::kSupply, UIA_GroupControlTypeId,
+              L"deletion"};
+
     case ax::mojom::Role::kContentInsertion:
       return {UIALocalizationStrategy::kSupply, UIA_GroupControlTypeId,
-              L"group"};
+              L"insertion"};
 
     case ax::mojom::Role::kContentInfo:
     case ax::mojom::Role::kFooter:
@@ -5277,7 +5282,7 @@ HRESULT AXPlatformNodeWin::GetPropertyValueImpl(PROPERTYID property_id,
     case UIA_DescribedByPropertyId:
       result->vt = VT_ARRAY | VT_UNKNOWN;
       result->parray = CreateUIAElementsArrayForRelation(
-          ax::mojom::IntListAttribute::kDescribedbyIds);
+          ax::mojom::IntListAttribute::kDetailsIds);
       break;
 
     case UIA_FlowsFromPropertyId:

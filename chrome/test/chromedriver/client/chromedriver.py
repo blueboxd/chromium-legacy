@@ -50,36 +50,9 @@ def _ExceptionForLegacyResponse(response):
   return exception_class_map.get(status, ChromeDriverException)(msg)
 
 def _ExceptionForStandardResponse(response):
-  exception_map = {
-    'invalid session id' : InvalidSessionId,
-    'no such element': NoSuchElement,
-    'no such frame': NoSuchFrame,
-    'unknown command': UnknownCommand,
-    'stale element reference': StaleElementReference,
-    'element not interactable': ElementNotVisible,
-    'invalid element state': InvalidElementState,
-    'unknown error': UnknownError,
-    'javascript error': JavaScriptError,
-    'invalid selector': XPathLookupError,
-    'timeout': Timeout,
-    'no such window': NoSuchWindow,
-    'invalid cookie domain': InvalidCookieDomain,
-    'unexpected alert open': UnexpectedAlertOpen,
-    'no such alert': NoSuchAlert,
-    'script timeout': ScriptTimeout,
-    'invalid selector': InvalidSelector,
-    'session not created': SessionNotCreated,
-    'no such cookie': NoSuchCookie,
-    'invalid argument': InvalidArgument,
-    'element not interactable': ElementNotInteractable,
-    'unsupported operation': UnsupportedOperation,
-    'no such shadow root': NoSuchShadowRoot,
-    'detached shadow root': DetachedShadowRoot,
-  }
-
   error = response['value']['error']
   msg = response['value']['message']
-  return exception_map.get(error, ChromeDriverException)(msg)
+  return EXCEPTION_MAP.get(error, ChromeDriverException)(msg)
 
 class ChromeDriver(object):
   """Starts and controls a single Chrome instance on this machine."""
@@ -133,7 +106,7 @@ class ChromeDriver(object):
       send_w3c_capability=True, send_w3c_request=True,
       page_load_strategy=None, unexpected_alert_behaviour=None,
       devtools_events_to_log=None, accept_insecure_certs=None,
-      timeouts=None, test_name=None, web_socket_url=None):
+      timeouts=None, test_name=None, web_socket_url=None, browser_name=None):
     self._executor = command_executor.CommandExecutor(server_url)
     self._server_url = server_url
     self.w3c_compliant = False
@@ -156,28 +129,28 @@ class ChromeDriver(object):
     elif chrome_binary:
       options['binary'] = chrome_binary
 
+    if chrome_switches is None:
+      chrome_switches = []
+
     if sys.platform.startswith('linux') and android_package is None:
-      if chrome_switches is None:
-        chrome_switches = []
       # Workaround for crbug.com/611886.
       chrome_switches.append('no-sandbox')
       # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1695
       chrome_switches.append('disable-gpu')
 
-    if chrome_switches is None:
-      chrome_switches = []
     chrome_switches.append('force-color-profile=srgb')
 
     # Resampling can change the distance of a synthetic scroll.
     chrome_switches.append('disable-features=ResamplingScrollEvents')
 
-    if chrome_switches:
-      assert type(chrome_switches) is list
-      options['args'] = chrome_switches
+    assert type(chrome_switches) is list
+    options['args'] = chrome_switches
 
-      # TODO(crbug.com/1011000): Work around a bug with headless on Mac.
-      if util.GetPlatformName() == 'mac' and '--headless' in chrome_switches:
-        options['excludeSwitches'] = ['--enable-logging']
+    # TODO(crbug.com/1011000): Work around a bug with headless on Mac.
+    if (util.GetPlatformName() == 'mac' and
+        browser_name == 'chrome-headless-shell' and
+        debugger_address is None):
+      options['excludeSwitches'] = ['--enable-logging']
 
     if mobile_emulation:
       assert type(mobile_emulation) is dict
@@ -252,6 +225,9 @@ class ChromeDriver(object):
 
     if web_socket_url is not None:
       params['webSocketUrl'] = web_socket_url
+
+    if browser_name is not None:
+      params['browserName'] = browser_name
 
     if send_w3c_request:
       params = {'capabilities': {'alwaysMatch': params}}
@@ -772,9 +748,9 @@ class ChromeDriver(object):
     params = {'accountIndex': index}
     return self.ExecuteCommand(Command.SELECT_ACCOUNT, params)
 
-  def ConfirmIdpLogin(self, vendorId):
-    params = {'vendorId': vendorId}
-    return self.ExecuteCommand(Command.CONFIRM_IDP_LOGIN, params)
+  def ClickFedCmDialogButton(self, vendorId, dialogButton):
+    params = {'vendorId': vendorId, 'dialogButton': dialogButton}
+    return self.ExecuteCommand(Command.CLICK_FEDCM_DIALOG_BUTTON, params)
 
   def GetAccounts(self):
     return self.ExecuteCommand(Command.GET_ACCOUNTS, {})

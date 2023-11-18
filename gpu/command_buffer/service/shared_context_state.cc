@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/shared_context_state.h"
 
+#include "base/immediate_crash.h"
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
@@ -101,6 +102,17 @@ void SharedContextState::compileError(const char* shader, const char* errors) {
                << "------------------------\n"
                << shader << "\nErrors:\n"
                << errors;
+
+    static crash_reporter::CrashKeyString<2048> error_key("skia-compile-error");
+    error_key.Set(errors);
+    // https://crbug.com/1442633 Sometimes we would fail to compile a cached
+    // GLSL shader because of GL driver change. Increase shader cache shm
+    // count and crash the GPU process so that the browser process would clear
+    // the cache.
+    GpuProcessShmCount::ScopedIncrement increment(
+        use_shader_cache_shm_count_.get());
+
+    base::ImmediateCrash();
   }
 }
 
@@ -305,6 +317,7 @@ bool SharedContextState::InitializeGanesh(
     gl::ProgressReporter* progress_reporter) {
   progress_reporter_ = progress_reporter;
   gr_shader_cache_ = cache;
+  use_shader_cache_shm_count_ = use_shader_cache_shm_count;
 
   size_t max_resource_cache_bytes;
   size_t glyph_cache_max_texture_bytes;
@@ -690,7 +703,7 @@ bool SharedContextState::OnMemoryDump(
       base::trace_event::MemoryDumpLevelOfDetail::kBackground) {
     raster::DumpBackgroundGrMemoryStatistics(gr_context_, pmd);
   } else {
-    raster::DumpGrMemoryStatistics(gr_context_, pmd, absl::nullopt);
+    raster::DumpGrMemoryStatistics(gr_context_, pmd, std::nullopt);
   }
 
   return true;
@@ -730,7 +743,7 @@ void SharedContextState::PurgeMemory(
       // With critical pressure, purge as much as possible.
       sk_surface_cache_.Clear();
       {
-        absl::optional<raster::GrShaderCache::ScopedCacheUse> cache_use;
+        std::optional<raster::GrShaderCache::ScopedCacheUse> cache_use;
         // ScopedCacheUse is to avoid the empty/invalid client id DCHECKS caused
         // while accessing GrShaderCache. Note that since the actual client_id
         // here does not matter, we are using gpu::kDisplayCompositorClientId.
@@ -791,7 +804,7 @@ void SharedContextState::StoreVkPipelineCacheIfNeeded() {
 }
 
 void SharedContextState::UseShaderCache(
-    absl::optional<gpu::raster::GrShaderCache::ScopedCacheUse>& cache_use,
+    std::optional<gpu::raster::GrShaderCache::ScopedCacheUse>& cache_use,
     int32_t client_id) const {
   if (gr_shader_cache_) {
     cache_use.emplace(gr_shader_cache_, client_id);
@@ -889,7 +902,7 @@ QueryManager* SharedContextState::GetQueryManager() {
   return nullptr;
 }
 
-absl::optional<error::ContextLostReason> SharedContextState::GetResetStatus(
+std::optional<error::ContextLostReason> SharedContextState::GetResetStatus(
     bool needs_gl) {
   DCHECK(!context_lost());
 
@@ -915,11 +928,11 @@ absl::optional<error::ContextLostReason> SharedContextState::GetResetStatus(
 
   // Not using GL.
   if (!GrContextIsGL() && !needs_gl)
-    return absl::nullopt;
+    return std::nullopt;
 
   // GL is not initialized.
   if (!context_state_)
-    return absl::nullopt;
+    return std::nullopt;
 
   GLenum error;
   while ((error = context_state_->api()->glGetErrorFn()) != GL_NO_ERROR) {
@@ -936,13 +949,13 @@ absl::optional<error::ContextLostReason> SharedContextState::GetResetStatus(
   base::Time now = base::Time::Now();
   if (!disable_check_reset_status_throttling_for_test_ &&
       now < last_gl_check_graphics_reset_status_ + kMinCheckDelay) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   last_gl_check_graphics_reset_status_ = now;
 
   GLenum driver_status = context()->CheckStickyGraphicsResetStatus();
   if (driver_status == GL_NO_ERROR)
-    return absl::nullopt;
+    return std::nullopt;
   LOG(ERROR) << "SharedContextState context lost via ARB/EXT_robustness. Reset "
                 "status = "
              << gles2::GLES2Util::GetStringEnum(driver_status);
@@ -958,7 +971,7 @@ absl::optional<error::ContextLostReason> SharedContextState::GetResetStatus(
       NOTREACHED();
       break;
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 bool SharedContextState::CheckResetStatus(bool need_gl) {
@@ -1016,8 +1029,10 @@ Microsoft::WRL::ComPtr<ID3D11Device> SharedContextState::GetD3D11Device()
     case GrContextType::kGL:
     case GrContextType::kVulkan:
       return gl::QueryD3D11DeviceObjectFromANGLE();
+#if BUILDFLAG(SKIA_USE_DAWN)
     case GrContextType::kGraphiteDawn:
       return dawn_context_provider_->GetD3D11Device();
+#endif
     default:
       NOTREACHED();
       return nullptr;

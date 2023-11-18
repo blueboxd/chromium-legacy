@@ -13,11 +13,6 @@ size_t GetSize(const Container& c) {
   return c.size();
 }
 
-template <typename T>
-size_t GetSize(const std::forward_list<T>& l) {
-  return std::distance(l.begin(), l.end());
-}
-
 template <typename Container>
 void RunEraseTest() {
   const std::pair<Container, Container> test_data[] = {
@@ -116,19 +111,9 @@ TEST(Erase, String16) {
   }
 }
 
-TEST(Erase, Deque) {
-  RunEraseTest<std::deque<int>>();
-  RunEraseIfTest<std::deque<std::pair<int, int>>>();
-}
-
 TEST(Erase, Vector) {
   RunEraseTest<std::vector<int>>();
   RunEraseIfTest<std::vector<std::pair<int, int>>>();
-}
-
-TEST(Erase, ForwardList) {
-  RunEraseTest<std::forward_list<int>>();
-  RunEraseIfTest<std::forward_list<std::pair<int, int>>>();
 }
 
 TEST(Erase, List) {
@@ -154,24 +139,6 @@ TEST(Erase, Set) {
 TEST(Erase, Multiset) {
   RunEraseIfTest<std::multiset<std::pair<int, int>>>();
   RunEraseIfTest<std::multiset<std::pair<int, int>, std::greater<>>>();
-}
-
-TEST(Erase, UnorderedMap) {
-  RunEraseIfTest<std::unordered_map<int, int>>();
-  RunEraseIfTest<std::unordered_map<int, int, CustomIntHash>>();
-}
-
-TEST(Erase, UnorderedMultimap) {
-  RunEraseIfTest<std::unordered_multimap<int, int>>();
-  RunEraseIfTest<std::unordered_multimap<int, int, CustomIntHash>>();
-}
-
-TEST(Erase, UnorderedSet) {
-  RunEraseIfTest<std::unordered_set<std::pair<int, int>, HashByFirst>>();
-}
-
-TEST(Erase, UnorderedMultiset) {
-  RunEraseIfTest<std::unordered_multiset<std::pair<int, int>, HashByFirst>>();
 }
 
 }  // namespace

@@ -2,26 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ComposeDialogCallbackRouter, ComposeDialogPageHandlerFactory, ComposeDialogPageHandlerInterface, ComposeDialogPageHandlerRemote, StyleModifiers} from './compose.mojom-webui.js';
+import {CloseReason, ComposeClientPageHandlerRemote, ComposeDialogCallbackRouter, ComposeSessionPageHandlerFactory, ComposeSessionPageHandlerRemote, ComposeState, OpenMetadata, StyleModifiers, UserFeedback} from './compose.mojom-webui.js';
 
 /** @interface */
 export interface ComposeApiProxy {
-  compose(style: StyleModifiers, input: string): void;
+  acceptComposeResult(): Promise<boolean>;
+  closeUi(reason: CloseReason): void;
+  compose(style: StyleModifiers, input: string, rewrite: boolean): void;
   getRouter(): ComposeDialogCallbackRouter;
+  openBugReportingLink(): void;
+  openComposeSettings(): void;
+  setUserFeedback(reason: UserFeedback): void;
+  requestInitialState(): Promise<OpenMetadata>;
+  saveWebuiState(state: string): void;
+  showUi(): void;
+  undo(): Promise<(ComposeState | null)>;
 }
 
 export class ComposeApiProxyImpl implements ComposeApiProxy {
   static instance: ComposeApiProxy|null = null;
 
-  handler: ComposeDialogPageHandlerInterface =
-      new ComposeDialogPageHandlerRemote();
-  composeDialogPageHandler = new ComposeDialogPageHandlerRemote();
+  composeSessionPageHandler = new ComposeSessionPageHandlerRemote();
+  composeClientPageHandler = new ComposeClientPageHandlerRemote();
   router = new ComposeDialogCallbackRouter();
 
   constructor() {
-    const factoryRemote = ComposeDialogPageHandlerFactory.getRemote();
-    factoryRemote.createComposeDialogPageHandler(
-        this.composeDialogPageHandler.$.bindNewPipeAndPassReceiver(),
+    const factoryRemote = ComposeSessionPageHandlerFactory.getRemote();
+    factoryRemote.createComposeSessionPageHandler(
+        this.composeClientPageHandler.$.bindNewPipeAndPassReceiver(),
+        this.composeSessionPageHandler.$.bindNewPipeAndPassReceiver(),
         this.router.$.bindNewPipeAndPassRemote());
   }
 
@@ -34,13 +43,50 @@ export class ComposeApiProxyImpl implements ComposeApiProxy {
     ComposeApiProxyImpl.instance = newInstance;
   }
 
-  /** @override */
-  compose(style: StyleModifiers, input: string): void {
-    this.composeDialogPageHandler.compose(style, input);
+  acceptComposeResult(): Promise<boolean> {
+    return this.composeSessionPageHandler.acceptComposeResult().then(
+        res => res.success);
   }
 
-  /** @override */
+  closeUi(reason: CloseReason): void {
+    this.composeClientPageHandler.closeUI(reason);
+  }
+
+  compose(style: StyleModifiers, input: string, rewrite: boolean): void {
+    this.composeSessionPageHandler.compose(style, input, rewrite);
+  }
+
   getRouter() {
     return this.router;
+  }
+
+  openBugReportingLink() {
+    this.composeSessionPageHandler.openBugReportingLink();
+  }
+
+  openComposeSettings() {
+    this.composeSessionPageHandler.openComposeSettings();
+  }
+
+  requestInitialState(): Promise<OpenMetadata> {
+    return this.composeSessionPageHandler.requestInitialState().then(
+        res => res.initialState);
+  }
+
+  saveWebuiState(state: string): void {
+    this.composeSessionPageHandler.saveWebUIState(state);
+  }
+
+  showUi() {
+    this.composeClientPageHandler.showUI();
+  }
+
+  setUserFeedback(reason: UserFeedback) {
+    this.composeSessionPageHandler.setUserFeedback(reason);
+  }
+
+  undo(): Promise<(ComposeState | null)> {
+    return this.composeSessionPageHandler.undo().then(
+        composeState => composeState.lastState);
   }
 }

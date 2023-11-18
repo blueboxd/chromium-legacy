@@ -24,6 +24,10 @@ export class TestTabSearchApiProxy extends TestBrowserProxy implements
       'switchToTab',
       'saveRecentlyClosedExpandedPref',
       'setTabIndex',
+      'startTabGroupTutorial',
+      'triggerSync',
+      'triggerSignIn',
+      'openSyncSettings',
       'showUi',
     ]);
 
@@ -78,6 +82,22 @@ export class TestTabSearchApiProxy extends TestBrowserProxy implements
 
   setTabIndex(index: number) {
     this.methodCalled('setTabIndex', [index]);
+  }
+
+  startTabGroupTutorial() {
+    this.methodCalled('startTabGroupTutorial');
+  }
+
+  triggerSync() {
+    this.methodCalled('triggerSync');
+  }
+
+  triggerSignIn() {
+    this.methodCalled('triggerSignIn');
+  }
+
+  openSyncSettings() {
+    this.methodCalled('openSyncSettings');
   }
 
   showUi() {

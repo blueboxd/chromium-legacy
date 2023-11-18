@@ -300,24 +300,15 @@ Style notes:
         <ph name="battery">$2<ex>Battery is full.</ex></ph>
         <ph name="channel">$3<ex>Stable Channel</ex></ph>
         <ph name="network">$4<ex>Connected to Wifi.</ex></ph>,
-        <ph name="privacy">$5<ex>Camera in use</ex></ph>,
-        <ph name="managed">$6<ex>This account is managed by Family Link</ex></ph>
-        <ph name="notification">$7<ex>1 notification</ex></ph>,
-        <ph name="ime">$8<ex>Using US keyboard</ex></ph>
-        <ph name="locale">$9<ex>Using English</ex></ph>
+        <ph name="managed">$5<ex>This account is managed by Family Link</ex></ph>
+        <ph name="ime">$6<ex>Using US keyboard</ex></ph>
+        <ph name="locale">$7<ex>Using English</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_ACCESSIBLE_DESCRIPTION" is_accessibility_with_no_ui="true" desc="The accessible description of hotspot and network in the status tray and the information on it.">
         <ph name="hotspot">$1<ex>Hotspot on, no devices connected</ex></ph>,
         <ph name="network">$2<ex>Connected to Google-A, Median signal</ex></ph>
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_PRIVACY_ACCESSIBLE_DESCRIPTION" is_accessibility_with_no_ui="true" desc="The accessible description of privacy in the status tray and the information on it.">
-        <ph name="mic">$1<ex>A virtual machine is using your microphone</ex></ph>,
-        <ph name="camera">$2<ex>A virtual machine is using your camera</ex></ph>
-      </message>
       <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the quick settings bubble and the information in it.">
-        Quick Settings, Press search + left to access the notification center.
-      </message>
-      <message name="IDS_ASH_REVAMPED_QUICK_SETTINGS_BUBBLE_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the revamped quick settings bubble and the information in it.">
         Quick Settings
       </message>
       <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_A11Y_SETTINGS_ACCESSIBLE_DESCRIPTION" desc="The accessible description for accessibility settings accessed through the accessibility feature pod.">
@@ -461,6 +452,9 @@ Style notes:
       <message name="IDS_ASH_STATUS_TRAY_NEARBY_SHARE_TILE_LABEL" desc="The shorter label used for the feature tile in the status tray to toggle Nearby Share high visibility mode, which makes the device visible to all nearby devices for file sharing.">
         Nearby Share
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NEARBY_SHARE_TILE_LABEL_PH" desc="Feature name placeholder: The shorter label used for the feature tile in the status tray to toggle Nearby Share high visibility mode, which makes the device visible to all nearby devices for file sharing.">
+        <ph name="FEATURE_NAME">$1<ex>Nearby Share</ex></ph>
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_NEARBY_SHARE_OFF_STATE" desc="Sub-label for the Nearby Share system tray button." meaning="Nearby Share high visibility mode is currently inactive. [CHAR_LIMIT=14]">
         Off
       </message>
@@ -479,11 +473,11 @@ Style notes:
       <message name="IDS_ASH_STATUS_TRAY_NEARBY_SHARE_REMAINING_SECONDS" desc="A short string showing the nearest number of whole seconds until Nearby Share high visibility turns off. To be used with IDS_ASH_STATUS_TRAY_NEARBY_SHARE_ON_STATE. [CHAR_LIMIT=7]">
         <ph name="SECONDS">$1<ex>40</ex></ph> sec
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_NEARBY_SHARE_SETTINGS_TOOLTIP" desc="Tooltip text for the status tray button that shows settings for the Nearby Share feature.">
-        Show Nearby Share settings
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_NEARBY_SHARE_TOGGLE_TOOLTIP" desc="Tooltip text used for the Nearby Share status tray button, which toggles Nearby Share high visibility mode on/off.">
         Toggle Nearby Share high visibility
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NEARBY_SHARE_TOGGLE_TOOLTIP_PH" desc="Feature name placeholder: Tooltip text used for the Nearby Share status tray button, which toggles Nearby Share high visibility mode on/off.">
+        Toggle <ph name="FEATURE_NAME">$1<ex>Nearby Share</ex></ph> high visibility
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_BUTTON_LABEL" desc="The shorter label used for the button in the status tray to toggle the Night Light feature (which controls the color temperature of the screen) on or off. [CHAR_LIMIT=14]">
         Night Light
@@ -794,6 +788,15 @@ Style notes:
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIMER_DECREMENT_BUTTON" translateable="false" desc="The accessible name for the button that the user can press to decrease focus session duration.">
         Decrease focus session duration
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_SUBHEADER" translateable="false" desc="The text used for the subheader of the task section of the focus mode detailed view.">
+        Task to focus on
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_TEXTFIELD_PLACEHOLDER" translateable="false" desc="The text used for the placeholder for the textfield in the task section of the focus mode detailed view.">
+        What would you like to focus on
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_RADIO_BUTTON" translateable="false" desc="The text used for the radio button accessible name for a saved task view.">
+        Complete task
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_DO_NOT_DISTURB" translateable="false" desc="The label text shown on the left side of do not disturb button in Focus mode settings panel.">
         Do not disturb while in Focus
       </message>
@@ -804,13 +807,16 @@ Style notes:
         Focusing
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_TIME_SUBLABEL" translateable="false" desc="The text used for the sublabel of the toggle row in the focus mode detailed view.">
-        <ph name="TIME_REMAINING_EXPRESSION">$1<ex>30 min</ex></ph> ⋅ Until <ph name="END_TIME_EXPRESSION">$2<ex>1:00 PM</ex></ph>
+        Until <ph name="END_TIME_EXPRESSION">$1<ex>1:00 PM</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_START_BUTTON" translateable="false" desc="The text used for the label of the toggle button in the focus mode toggle row in the focus mode detailed view when focus mode is not active.">
         Start
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_END_BUTTON" translateable="false" desc="The text used for the label of the toggle button in the focus mode toggle row in the focus mode detailed view when focus mode is active.">
-        End
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_END_BUTTON" translateable="false" desc="The text used for the label of the toggle button in the focus mode detailed view and countdown view for when focus mode is active.">
+        End Focus
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_FIRST_TIME_SUBLABEL" translateable="false" desc="The text used for the sublabel of the detailed view toggle row for when a user has never used focus mode before.">
+        Set a timer and task to focus
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_UPDATE" desc="The label used in the tray popup to notify that the user should restart to get system updates.">
@@ -1000,12 +1006,6 @@ Style notes:
       </message>
       <message name="IDS_ASH_STATUS_AREA_TOAST_KBL_ON" desc="The text in the toast that shows up when the keyboard backlight is toggled on using a physical key or shortcut.">
         Keyboard backlight is on
-      </message>
-      <message name="IDS_ASH_STATUS_AREA_TOAST_MIC_OFF" desc="The text in the toast that shows up when the mic is muted using a physical key or shortcut.">
-        Device microphone access is off
-      </message>
-      <message name="IDS_ASH_STATUS_AREA_TOAST_MIC_ON" desc="The text in the toast that shows up when the mic is unmuted using a physical key or shortcut.">
-        Device microphone access is on
       </message>
       <message name="IDS_ASH_STATUS_TRAY_VOLUME" desc="The accessible text for the toggle volume muted button in the tray.">
         Toggle Volume. <ph name="STATE_TEXT">$1<ex>Volume is muted</ex></ph>
@@ -1368,7 +1368,7 @@ Style notes:
         Go to a text field to use Dictation
       </message>
       <message name="IDS_ASH_ACCESSIBILITY_NUDGE_DICTATION_MIC_MUTED" desc="Displayed in a nudge when Dictation cannot start because the active microphone is muted.">
-        Can't start dictation because the microphone is muted
+        Can't start dictation. Your mic is off.
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD" desc="The label used in the accessibility menu of the system tray to toggle on/off the onscreen keyboard.">
@@ -1400,9 +1400,6 @@ Style notes:
       </message>
       <message name="IDS_ASH_STATUS_TRAY_HELP" desc="The accessible text for the help button.">
         Help
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DATE" desc="The date displayed on ash system bubble, Depending on launguage, please choose the best separator(eg ',') between abbreviated weekday and date">
-        <ph name="short_weekday">$1<ex>Fri</ex></ph>, <ph name="date">$2<ex>Aug 31, 2012</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DATE_TIME" desc="The time displayed on ash system tray, Depending on launguage, please choose the best separator(eg ',') between abbreviated date and time">
         <ph name="date">$1<ex>Aug 31</ex></ph>, <ph name="time">$2<ex>03:00</ex></ph>
@@ -1694,11 +1691,11 @@ Style notes:
       <message name="IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_CONFIRMATION_BUTTON" desc="The button text for the nudge that is shown after a user has opted in or out of the speak-on-mute detection feature.">
         Settings
       </message>
-      <message name="IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_FIRST_BUTTON" desc="The cancel button text for the nudge shown so users can opt-in or out of the speak-on-mute detection feature.">
-        No thanks
-      </message>
-      <message name="IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_SECOND_BUTTON" desc="The confirmation button text for the nudge shown so users can opt-in or out of the speak-on-mute detection feature.">
+      <message name="IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_PRIMARY_BUTTON" desc="The confirmation button text for the nudge shown so users can opt-in or out of the speak-on-mute detection feature.">
         Turn on
+      </message>
+      <message name="IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_SECONDARY_BUTTON" desc="The cancel button text for the nudge shown so users can opt-in or out of the speak-on-mute detection feature.">
+        No thanks
       </message>
       <message name="IDS_ASH_VIDEO_CONFERENCE_CAMERA_NAME" desc="Text display for the camera.">
         camera
@@ -2273,23 +2270,14 @@ Style notes:
       <message name="IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_IMAGES" desc="Category title for the list of image results shown in launcher search relevant to the query in the search box.">
         Images
       </message>
-      <message name="IDS_ASH_SEARCH_RESULT_IMAGE_FILE_SIZE" desc="The title for the file size of the image file search result, where the information is listed beside the launcher image result.">
-        Size
-      </message>
-      <message name="IDS_ASH_SEARCH_RESULT_IMAGE_DATE_MODIFIED" desc="The title for the last modified date of the image file search result, where the information is listed beside the launcher image result.">
-        Date modified
+      <message name="IDS_ASH_SEARCH_RESULT_IMAGE_LAST_MODIFIED_STRING" desc="The last modified date and time of the image file displayed in launcher search results. This string will be used along with the formatted date and time variable.">
+        Modified <ph name="date_and_time">$1<ex>Today 4:00 PM</ex></ph>
       </message>
       <message name="IDS_ASH_SEARCH_RESULT_IMAGE_LAST_MODIFIED_DATE_AND_TIME" desc="The last modified date and time of the image file displayed in launcher search results. Depending on launguage, please choose the best separator(eg ',') between abbreviated date and time">
         <ph name="date">$1<ex>May 23, 2023</ex></ph>, <ph name="time">$2<ex>11:28 AM</ex></ph>
       </message>
       <message name="IDS_ASH_SEARCH_RESULT_IMAGE_LAST_MODIFIED_RELATIVE_DATE_AND_TIME" desc="The last modified date and time of the image file displayed in launcher search results, where the relative date (today, yesterday) is used and the date string is already translated. Depending on launguage, please choose the best separator(eg ',') between abbreviated date and time">
         <ph name="relative_date">$1<ex>Today</ex></ph> <ph name="time">$2<ex>4:00 PM</ex></ph>
-      </message>
-      <message name="IDS_ASH_SEARCH_RESULT_IMAGE_FILE_TYPE" desc="The title for the file type of the image file search result, where the information is listed beside the launcher image result.">
-        Type
-      </message>
-      <message name="IDS_ASH_SEARCH_RESULT_IMAGE_FILE_LOCATION" desc="The title for the file location of the image file search result, where the information is listed beside the launcher image result.">
-        Location
       </message>
       <message name="IDS_ASH_SEARCH_BOX_FILTER_BUTTON_TOOLTIP" desc="The tooltip text of the filter button in the search box, which is used to open a menu to filter the search results by their categories.">
         Toggle search result categories
@@ -2502,12 +2490,6 @@ Style notes:
       </message>
       <message name="IDS_ASH_DESKS_TEMPLATES_MANAGEMENT_STATUS_DESCRIPTION" desc="The text of the description under template item if the desks templates is shared by the administrator.">
         Shared by your administrator
-      </message>
-      <message name="IDS_ASH_DESKS_TEMPLATES_LIBRARY_TEMPLATES_GRID_LABEL" desc="The label visible above template items in the saved desk library.">
-        Templates
-      </message>
-      <message name="IDS_ASH_DESKS_TEMPLATES_LIBRARY_SAVE_AND_RECALL_GRID_LABEL" desc="The label visible above the save and recall items in the saved desk library.">
-        Saved for later
       </message>
       <message name="IDS_ASH_DESKS_TEMPLATES_LIBRARY_NO_TEMPLATES_OR_DESKS_LABEL" desc="The text that shows in the saved desk library when there are no saved desks or templates.">
         No saved desks or templates
@@ -2813,9 +2795,6 @@ Some features are limited to increase battery life.
       <message name="IDS_ASH_QUICK_SETTINGS_ADD_ESIM" desc="The label used in the network detailed page for the Add eSIM network entry">
         Add eSIM
       </message>
-      <message name="IDS_ASH_QUICK_SETTINGS_NETWORK_DISABLED" desc="Network disabled label in the quick settings bubble network subpage." meaning="Network is disabled.">
-        Off
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_OPEN" desc="Accessibility label used for a network in quick settings network list that opens network settings page.">
         Open settings for <ph name="NETWORK_NAME">$1<ex>Ethernet</ex></ph>
       </message>
@@ -2970,16 +2949,16 @@ Some features are limited to increase battery life.
         Show hotspot details. Hotspot is off.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_HOTSPOT_FEATURE_TILE_TOOLTIP_STATUS_OFF" desc="The tooltip for the hotspot feature tile of quick settings when hotspot is off and is allowed to turn on.">
-        Toggle Hotspot. Hotspot is off.
+        Toggle hotspot. Hotspot is off.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_HOTSPOT_FEATURE_TILE_TOOLTIP_STATUS_ON_NO_DEVICE_CONNECTED" desc="The tooltip for the hotspot feature tile of quick settings when hotspot is on and no device connected.">
-        Toggle Hotspot. Hotspot is on, no device connected.
+        Toggle hotspot. Hotspot is on, no device connected.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_HOTSPOT_FEATURE_TILE_TOOLTIP_STATUS_ON_ONE_DEVICE_CONNECTED" desc="The tooltip for the hotspot feature tile of quick settings when hotspot is on and one device connected.">
-        Toggle Hotspot. Hotspot is on, 1 device connected.
+        Toggle hotspot. Hotspot is on, 1 device connected.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_HOTSPOT_FEATURE_TILE_TOOLTIP_STATUS_ON_MULTIPLE_DEVICES_CONNECTED" desc="The tooltip for the hotspot feature tile of quick settings when hotspot is on and multiple devices connected.">
-        Toggle Hotspot. Hotspot is on, <ph name="DEVICECOUNT">$1</ph> devices connected.
+        Toggle hotspot. Hotspot is on, <ph name="DEVICECOUNT">$1</ph> devices connected.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_HOTSPOT_FEATURE_TILE_TOOLTIP_NO_MOBILE_DATA" desc="The tooltip for the hotspot feature tile of quick settings when hotspot is off and not allowed to turn on due to no mobile data connection.">
         Show hotspot details. Connect to mobile network to use hotspot.
@@ -3054,10 +3033,10 @@ Some features are limited to increase battery life.
         Turn on WiFi instead
       </message>
       <message name="IDS_ASH_HOTSPOT_WIFI_TURNED_ON_MESSAGE" desc="Message displayed in the system notification shown when hotspot is disabled due to WiFi being turned on.">
-        Hotspot has been turned off to use WiFi. To use Hotspot, turn WiFi off.
+        Hotspot has been turned off to use WiFi. To use hotspot, turn WiFi off.
       </message>
       <message name="IDS_ASH_HOTSPOT_ADMIN_RESTRICTED_MESSAGE" desc="Message displayed in the system notification shown when the hotspot is turned off by the administrator.">
-        Your administrator has turned Hotspot off.
+        Your administrator has turned hotspot off.
       </message>
       <message name="IDS_ASH_HOTSPOT_AUTO_DISABLED_MESSAGE" desc="Message displayed in the system notification shown when the hotspot is turned off due to inactivity.">
         Due to inactivity, hotspot has been turned off.
@@ -4184,8 +4163,8 @@ Some features are limited to increase battery life.
       <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_FAST_FORWARD_MEDIA" desc="Label for accelerator action - Fast forward media.">
         Fast forward media
       </message>
-      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_SYSTEM_TRAY_BUBBLE" desc="Label for accelerator action - Open Quick Settings by selecting the time.">
-        Open Quick Settings by selecting the time
+      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_SYSTEM_TRAY_BUBBLE" desc="Label for accelerator action - Open Quick Settings.">
+        Open Quick Settings
       </message>
       <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_MESSAGE_CENTER_BUBBLE" desc="Label for accelerator action - Open notifications.">
         Open notifications
@@ -4804,6 +4783,15 @@ Some features are limited to increase battery life.
       <message name="IDS_ASH_LOGIN_PIN_REQUEST_NEXT_NUMBER_PROMPT" desc="Accessible prompt read when next access code input field has been focused. Asks user to enter next piece of the access code.">
         Next number
       </message>
+      <message name="IDS_ASH_LOGIN_LOCAL_AUTHENTICATION_REQUEST_TITLE" desc="Title of the local authentication input dialog that allows the user to login during the reauthenticate session.">
+        Finish verifying your identity
+      </message>
+      <message name="IDS_ASH_LOGIN_LOCAL_AUTHENTICATION_REQUEST_DESCRIPTION" desc="Description shown on the local authentication input dialog. Explains local authentication credentials should be used to unlock the device.">
+        Enter device password for <ph name="EMAIL">$1<ex>john.doe@example.com</ex></ph>
+      </message>
+      <message name="IDS_ASH_LOGIN_LOCAL_AUTHENTICATION_CLOSE_DIALOG_BUTTON" desc="The close button of the local authentication input dialog.">
+        Close dialog
+      </message>
       <message name="IDS_ASH_LOGIN_SECURITY_TOKEN_REQUEST_DIALOG_TITLE" desc="Title of the PIN dialog to unlock the device with a smart card.">
         Smart card PIN
       </message>
@@ -4852,16 +4840,22 @@ Some features are limited to increase battery life.
         Settings
       </message>
       <message name="IDS_FAST_PAIR_DOWNLOAD_NOTIFICATION_APP_TITLE" desc="Notification title shown to direct users to download companion app on Fast Pair device">
-        Install the app for <ph name="NAME">$1<ex>JBLTools</ex></ph> from Google Play to see all available features
+        <ph name="NAME">$1<ex>Pixel Buds</ex></ph> connected
+      </message>
+      <message name="IDS_FAST_PAIR_DOWNLOAD_NOTIFICATION_APP_MESSAGE" desc="Notification message shown to direct users to download companion app on Fast Pair device">
+        Customize this device in app
       </message>
       <message name="IDS_FAST_PAIR_DOWNLOAD_APP_BUTTON" desc="Button title shown to direct users to app store to download companion app on Fast Pair device">
-        Install
+        Install app
       </message>
       <message name="IDS_FAST_PAIR_SETUP_APP_NOTIFICATION_TITLE" desc="Notification title shown to direct users to setup their Fast Pair device with the companion app">
-        Open <ph name="NAME">$1<ex>JBLTools</ex></ph> to set up and customize your device
+        <ph name="NAME">$1<ex>Pixel Buds</ex></ph> connected
+      </message>
+      <message name="IDS_FAST_PAIR_SETUP_APP_NOTIFICATION_MESSAGE" desc="Notification message shown to direct users to setup their Fast Pair device with the companion app">
+        Customize this device in app
       </message>
       <message name="IDS_FAST_PAIR_SETUP_APP_BUTTON" desc="Button title shown to direct users to setup their Fast Pair device with the companion app">
-        Open
+        Open app
       </message>
       <message name="IDS_FAST_PAIR_CONNECT_BUTTON" desc="Message on button to tell users to connect bluetooth device with Fast Pair.">
         Connect
@@ -5072,15 +5066,6 @@ Some features are limited to increase battery life.
       <message name="IDS_ASH_MESSAGE_CENTER_FOOTER_LOCKSCREEN" desc="The label in the footer of the message center on lock screen">
         Unlock device to view your notifications
       </message>
-      <message name="IDS_ASH_MESSAGE_CENTER_LOCKSCREEN_UNIFIED" desc="The label in the message center area on lock screen.">
-        Notifications are hidden.
-      </message>
-      <message name="IDS_ASH_MESSAGE_CENTER_LOCKSCREEN_CHANGE" desc="The label in the button in the message center area on lock screen. This button is to open the setting of the lock scren notification.">
-        Change
-      </message>
-      <message name="IDS_ASH_MESSAGE_CENTER_LOCKSCREEN_CHANGE_TOOLTIP" desc="The tooltip text for Change button to open the setting of lock screen notification.">
-        Change the lock-screen notification settings
-      </message>
       <message name="IDS_ASH_MESSAGE_CENTER_NO_MESSAGES" desc="The message displayed in the message center when there are no notifications.">
         All done
       </message>
@@ -5103,6 +5088,9 @@ Some features are limited to increase battery life.
       </if>
       <message name="IDS_ASH_MESSAGE_CENTER_ACCELERATOR_NO_NOTIFICATIONS" desc="The toast message displayed when Alt+Shift+N is pressed but there are no notifications.">
         No notifications
+      </message>
+      <message name="IDS_ASH_MESSAGE_CENTER_SILENT_NOTIFICATION_ANNOUNCEMENT" desc="Accessibility announcement informing the user of an incoming silent notification.">
+        New notification, <ph name="NOTIFICATION_COUNT">$1<ex>7</ex></ph> total
       </message>
 
       <!-- Notification -->
@@ -5143,6 +5131,11 @@ Some features are limited to increase battery life.
         Undo
       </message>
 
+      <!-- Nudges -->
+      <message name="IDS_ASH_SYSTEM_NUDGE_CLOSE_BUTTON_TOOLTIP" desc="The close button tooltip for system nudges.">
+        Close nudge
+      </message>
+
       <message name="IDS_ASH_DIALOG_DONT_SHOW_AGAIN" desc="Label for checkbox dismissing show of a dialog.">
         Don't show again
       </message>
@@ -5171,10 +5164,6 @@ Some features are limited to increase battery life.
       <!-- Calendar  -->
       <message name="IDS_ASH_CALENDAR_BUBBLE_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the calendar bubble and the information in it.">
         Calendar, <ph name="current_month_year">$1<ex>Wednesday, August 17, 2022</ex></ph>
-      </message>
-
-      <message name="IDS_ASH_CALENDAR_ENTRY_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the calendar entry button.">
-       <ph name="current_time">$1<ex>Tuesday, August 31, 2021 at 11:25:12 AM</ex></ph>, Press enter key to open Calendar view
       </message>
 
       <message name="IDS_ASH_CALENDAR_TITLE" desc="The label used as the title of the unified system tray calendar view.">
@@ -5257,19 +5246,12 @@ Some features are limited to increase battery life.
         Event <ph name="event_position">$1<ex>1</ex></ph> of <ph name="event_total_count">$2<ex>2</ex></ph>
       </message>
 
-      <message name="IDS_ASH_CALENDAR_EVENT_ENTRY_ACCESSIBLE_DESCRIPTION_JELLY" desc="The accessible label of a calendar event list item jelly entry.">
+      <message name="IDS_ASH_CALENDAR_EVENT_ENTRY_ACCESSIBLE_DESCRIPTION" desc="The accessible label of a calendar event list item entry.">
         <ph name="event_position">$1<ex>Event 1 of 2</ex></ph>
         <ph name="event_summary">$2<ex>Lunch break</ex></ph>,
         <ph name="start_time">$3<ex>12 PM</ex></ph> to
         <ph name="end_time">$4<ex>1 PM</ex></ph>,
         <ph name="time_zone">$5<ex>Pacific time</ex></ph>. Select for more details in Google Calendar.
-      </message>
-
-      <message name="IDS_ASH_CALENDAR_EVENT_ENTRY_ACCESSIBLE_DESCRIPTION" desc="The accessible label of a calendar event entry.">
-        <ph name="start_time">$1<ex>12 PM</ex></ph> to
-        <ph name="end_time">$2<ex>1 PM</ex></ph>,
-        <ph name="time_zone">$3<ex>Pacific time</ex></ph>,
-        <ph name="event_summary">$4<ex>Lunch break</ex></ph>. Select for more details in Google Calendar.
       </message>
 
       <message name="IDS_ASH_CALENDAR_EVENT_ENTRY_TOOL_TIP" desc="The tool tip label of a calendar event entry.">
@@ -5553,17 +5535,6 @@ Here are some things you can try to get started.
         Your system administrator is monitoring your screens
       </message>
 
-      <!-- For CameraMicTrayItemView -->
-      <message name="IDS_ASH_CAMERA_MIC_VM_USING_CAMERA" desc="Tooltip message shown at the systray camera indicator when a VM is using the camera">
-        An application is using your camera
-      </message>
-      <message name="IDS_ASH_CAMERA_MIC_VM_USING_CAMERA_AND_MIC" desc="Tooltip message shown at the systray camera indicator when a VM is using both the camera and mic">
-        An application is using your camera and microphone
-      </message>
-      <message name="IDS_ASH_CAMERA_MIC_VM_USING_MIC" desc="Tooltip message shown at the systray microphone indicator when a VM is using the microphone">
-        An application is using your microphone
-      </message>
-
       <!-- For privacy indicators notification -->
       <message name="IDS_PRIVACY_NOTIFICATION_TITLE_CAMERA_AND_MIC" desc="Title for a notification shown when an app is using the camera and the microphone.">
         Camera and microphone in use
@@ -5697,9 +5668,6 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_ASH_MESSAGE_CENTER_UNLOCK_TO_PERFORM_ACTION_WITH_USER_ID" desc="The short message to encourage user to unlock the device so that ChromeOS can perform the notification action selected by user after unlocking.">
         Unlock device as <ph name="login_id">$1<ex>example@gmail.com</ex></ph> to perform the notification action
-      </message>
-      <message name="IDS_ASH_MESSAGE_CENTER_UNLOCK_TO_CHANGE_SETTING" desc="The short message to encourage user to unlock the device to change the lock screen notification setting, so that ChromeOS can show the setting window after unlocking.">
-        To see notifications on your lock screen, unlock to change the setting
       </message>
 
       <!-- Media Notification -->
@@ -6155,6 +6123,9 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_ASH_GAME_CAPTURE_START_RECORDING_BUTTON" desc="The label of the start recording button inside the game capture bar.">
         Start recording
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_EDUCATION_NUDGE_LABEL" desc="The label of the Screen Capture Education shortcut nudge (Arm 1) for using the screenshot accelerator.">
+        To take a screenshot, press
       </message>
 
       <!-- Snap Group -->
@@ -7067,6 +7038,9 @@ New install
       <message name="IDS_GLANCEABLES_CLASSROOM_FETCH_ERROR" desc="A glanceables classroom bubble displays a notification with an error message when an error occurs while fetching data. This is the text that describes the error to the user and appears on the notification.">
         Can't show items. Try reopening this panel.
       </message>
+      <message name="IDS_GLANCEABLES_OVERVIEW_REMOVE_CHIP" desc="The text shown on the removing glanceable chip panel in Overview">
+        Remove this suggestion
+      </message>
 
       <!-- Do Not Disturb notification -->
       <message name="IDS_ASH_DO_NOT_DISTURB_NOTIFICATION_TITLE" desc="Label used for the notification that shows up when the 'Do Not Disturb' feature is enabled.">
@@ -7219,9 +7193,19 @@ To shut down the device, press and hold the power button on the device again.
         Keys, buttons, and more
       </message>
 
+      <!-- TODO(b/286930911): Translate strings for input device settings notifications. -->
       <!-- Input device settings notifications -->
       <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_ALT_RIGHT_CLICK" desc="The message shown to notify a user that the shortcut used to simulate a right-click using touchpad and keyboard has changed.">
         The right-click shortcut is updated to <ph name="LAUNCHER_KEY_NAME">$1<ex>launcher</ex></ph> key + click from alt + click
+      </message>
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_PERIPHERAL_CUSTOMIZATION_TITLE" translateable="false" desc="Notification title to tell users that the peripheral is customizable.">
+        Customize your <ph name="PERIPHERAL_NAME">$1<ex>MX Anywhere</ex></ph>
+      </message>
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_MOUSE_CUSTOMIZATION" translateable="false" desc="The message shown to notify a user that the mouse is customizable in settings.">
+        <ph name="PERIPHERAL_NAME">$1<ex>MX Anywhere</ex></ph> is connected and ready to use. You can customize your mouse in Settings.
+      </message>
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_GRAPHICS_TABLET_CUSTOMIZATION" translateable="false" desc="The message shown to notify a user that the graphics tablet is customizable in settings.">
+        <ph name="PERIPHERAL_NAME">$1<ex>MX Anywhere</ex></ph> is connected and ready to use. You can customize your graphics tablet in Settings.
       </message>
       <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_LAUNCHER_RIGHT_CLICK" desc="The message shown to notify a user that the shortcut used to simulate a right-click using touchpad and keyboard has changed.">
         The right-click shortcut is updated to alt + click from <ph name="LAUNCHER_KEY_NAME">$1<ex>launcher</ex></ph> key + click
@@ -7304,6 +7288,24 @@ To shut down the device, press and hold the power button on the device again.
       </message>
       <message name="IDS_ASH_DEVICE_SETTINGS_LEARN_MORE_BUTTON" desc="Button shown for device settings notifications which opens an article with helpful information related to the notification.">
         Learn more
+      </message>
+        <message name="IDS_SETTINGS_CUSTOMIZATION_MIDDLE_BUTTON_DEFAULT_NAME" desc="The name of the middle mouse button on a mouse">
+    Middle Button
+  </message>
+  <message name="IDS_SETTINGS_CUSTOMIZATION_OTHER_BUTTON_DEFAULT_NAME" desc="The default name to give additional buttons on a mouse or graphics tablet">
+    Other Button <ph name="BUTTON_NUMBER">$1<ex>1</ex></ph>
+  </message>
+
+
+      <!-- Compat Mode Resize States-->
+      <message name="IDS_ARC_COMPAT_MODE_RESIZE_TOGGLE_MENU_PHONE" desc="Item in a list of possible sizes for the app. Makes the app in a portrait, phone size.">
+        Phone
+      </message>
+      <message name="IDS_ARC_COMPAT_MODE_RESIZE_TOGGLE_MENU_TABLET" desc="Item in a list of possible sizes for the app. Makes the app bigger and wider in a tablet size.">
+        Tablet
+      </message>
+      <message name="IDS_ARC_COMPAT_MODE_RESIZE_TOGGLE_MENU_RESIZABLE" desc="Item in a list of possible sizes for the app. Makes the app resizable.">
+        Resizable
       </message>
      </messages>
     </release>

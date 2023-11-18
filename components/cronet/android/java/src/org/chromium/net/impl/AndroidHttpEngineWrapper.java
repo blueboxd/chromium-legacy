@@ -4,6 +4,7 @@
 
 package org.chromium.net.impl;
 
+import android.net.Network;
 import android.net.http.HttpEngine;
 
 import androidx.annotation.RequiresApi;
@@ -11,6 +12,7 @@ import androidx.annotation.RequiresApi;
 import org.chromium.net.ExperimentalCronetEngine;
 
 import java.io.IOException;
+import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandlerFactory;
@@ -51,9 +53,35 @@ class AndroidHttpEngineWrapper extends ExperimentalCronetEngine {
     }
 
     @Override
+    public void bindToNetwork(long networkHandle) {
+        // Network#fromNetworkHandle throws IAE if networkHandle does not translate to a valid
+        // Network. Though, this can only happen if we're given a fake networkHandle (in which case
+        // we will throw, which is fine).
+        Network network =
+                networkHandle == UNBIND_NETWORK_HANDLE
+                        ? null
+                        : Network.fromNetworkHandle(networkHandle);
+        mBackend.bindToNetwork(network);
+    }
+
+    @Override
     public URLConnection openConnection(URL url) throws IOException {
         return CronetExceptionTranslationUtils.executeTranslatingCronetExceptions(
                 () -> mBackend.openConnection(url), IOException.class);
+    }
+
+    @Override
+    public URLConnection openConnection(URL url, Proxy proxy) throws IOException {
+        // HttpEngine doesn't expose an openConnection(URL, Proxy) method. To maintain compatibility
+        // copy-paste CronetUrlRequestContext's logic here.
+        if (proxy.type() != Proxy.Type.DIRECT) {
+            throw new UnsupportedOperationException();
+        }
+        String protocol = url.getProtocol();
+        if ("http".equals(protocol) || "https".equals(protocol)) {
+            return openConnection(url);
+        }
+        throw new UnsupportedOperationException("Unexpected protocol:" + protocol);
     }
 
     @Override

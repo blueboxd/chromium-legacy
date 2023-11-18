@@ -25,7 +25,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "chrome/browser/password_manager/android/password_manager_eviction_util.h"
 #include "chrome/browser/password_manager/android/password_manager_lifecycle_helper_impl.h"
+#include "chrome/browser/password_manager/android/password_store_android_backend_api_error_codes.h"
 #include "chrome/browser/password_manager/android/password_store_android_backend_bridge_helper.h"
 #include "chrome/browser/password_manager/android/password_store_operation_target.h"
 #include "chrome/browser/password_manager/android/password_sync_controller_delegate_android.h"
@@ -33,18 +35,16 @@
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/password_manager/core/browser/affiliation/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
-#include "components/password_manager/core/browser/android_backend_error.h"
+#include "components/password_manager/core/browser/affiliation/affiliations_prefetcher.h"
 #include "components/password_manager/core/browser/features/password_features.h"
-#include "components/password_manager/core/browser/get_logins_with_affiliations_request_handler.h"
 #include "components/password_manager/core/browser/password_form.h"
-#include "components/password_manager/core/browser/password_manager_eviction_util.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
-#include "components/password_manager/core/browser/password_store_android_backend_api_error_codes.h"
-#include "components/password_manager/core/browser/password_store_backend.h"
-#include "components/password_manager/core/browser/password_store_backend_metrics_recorder.h"
-#include "components/password_manager/core/browser/password_store_util.h"
+#include "components/password_manager/core/browser/password_store/android_backend_error.h"
+#include "components/password_manager/core/browser/password_store/get_logins_with_affiliations_request_handler.h"
+#include "components/password_manager/core/browser/password_store/password_store_backend_metrics_recorder.h"
+#include "components/password_manager/core/browser/password_store/password_store_util.h"
+#include "components/password_manager/core/browser/password_store/psl_matching_helper.h"
 #include "components/password_manager/core/browser/password_sync_util.h"
-#include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/model/proxy_model_type_controller_delegate.h"
@@ -76,17 +76,6 @@ using sync_util::GetSyncingAccount;
 
 using JobId = PasswordStoreAndroidBackendReceiverBridge::JobId;
 using SuccessStatus = PasswordStoreBackendMetricsRecorder::SuccessStatus;
-
-std::vector<std::unique_ptr<PasswordForm>> WrapPasswordsIntoPointers(
-    std::vector<PasswordForm> passwords) {
-  std::vector<std::unique_ptr<PasswordForm>> password_ptrs;
-  password_ptrs.reserve(passwords.size());
-  for (auto& password : passwords) {
-    password_ptrs.push_back(
-        std::make_unique<PasswordForm>(std::move(password)));
-  }
-  return password_ptrs;
-}
 
 std::string FormToSignonRealmQuery(const PasswordFormDigest& form,
                                    bool include_psl) {
@@ -158,20 +147,12 @@ void ValidateSignonRealm(const PasswordFormDigest& form_digest_to_match,
     std::move(callback).Run(std::move(logins_or_error));
     return;
   }
-  LoginsResult retrieved_logins =
-      std::move(absl::get<LoginsResult>(logins_or_error));
-  LoginsResult matching_logins;
-  for (auto it = retrieved_logins.begin(); it != retrieved_logins.end();) {
-    if (MatchesIncludedPSLAndFederation(*it->get(), form_digest_to_match,
-                                        include_psl)) {
-      matching_logins.push_back(std::move(*it));
-      // std::vector::erase returns the iterator for the next element.
-      it = retrieved_logins.erase(it);
-    } else {
-      it++;
-    }
-  }
-  std::move(callback).Run(std::move(matching_logins));
+  base::EraseIf(absl::get<LoginsResult>(logins_or_error),
+                [&form_digest_to_match, include_psl](const auto& form) {
+                  return !MatchesIncludedPSLAndFederation(
+                      form, form_digest_to_match, include_psl);
+                });
+  std::move(callback).Run(std::move(logins_or_error));
 }
 
 void ProcessGroupedLoginsAndReply(const PasswordFormDigest& form_digest,
@@ -182,22 +163,22 @@ void ProcessGroupedLoginsAndReply(const PasswordFormDigest& form_digest,
     return;
   }
   for (auto& form : absl::get<LoginsResult>(logins_or_error)) {
-    switch (GetMatchResult(*form, form_digest)) {
+    switch (GetMatchResult(form, form_digest)) {
       case MatchResult::NO_MATCH:
         // If it's not PSL nor exact match it has to be affiliated or grouped.
-        CHECK(form->match_type.has_value());
+        CHECK(form.match_type.has_value());
         break;
       case MatchResult::EXACT_MATCH:
       case MatchResult::FEDERATED_MATCH:
         // Rewrite match type completely for exact matches so it won't be
         // confused as other types.
-        form->match_type = PasswordForm::MatchType::kExact;
+        form.match_type = PasswordForm::MatchType::kExact;
         break;
       case MatchResult::PSL_MATCH:
       case MatchResult::FEDERATED_PSL_MATCH:
         // PSL match is only possible if form was marked as grouped match.
-        CHECK(form->match_type.has_value());
-        form->match_type |= PasswordForm::MatchType::kPSL;
+        CHECK(form.match_type.has_value());
+        form.match_type |= PasswordForm::MatchType::kPSL;
         break;
     }
   }
@@ -207,10 +188,10 @@ void ProcessGroupedLoginsAndReply(const PasswordFormDigest& form_digest,
   // Remove grouped only matches if filling across groups is disabled.
   if (!base::FeatureList::IsEnabled(
           password_manager::features::kFillingAcrossGroupedSites)) {
-    base::EraseIf(
-        absl::get<LoginsResult>(logins_or_error), [](const auto& form) {
-          return form->match_type == PasswordForm::MatchType::kGrouped;
-        });
+    base::EraseIf(absl::get<LoginsResult>(logins_or_error),
+                  [](const auto& form) {
+                    return form.match_type == PasswordForm::MatchType::kGrouped;
+                  });
   }
 
   std::move(callback).Run(std::move(logins_or_error));
@@ -331,6 +312,7 @@ bool IsRetriableOperation(PasswordStoreOperation operation) {
     case PasswordStoreOperation::kRemoveLoginsCreatedBetweenAsync:
     case PasswordStoreOperation::kDisableAutoSignInForOriginsAsync:
     case PasswordStoreOperation::kGetGroupedMatchingLoginsAsync:
+    case PasswordStoreOperation::kGetAllLoginsWithBrandingInfoAsync:
       return false;
   }
   NOTREACHED() << "Operation code not handled";
@@ -363,6 +345,8 @@ std::string GetOperationName(PasswordStoreOperation operation) {
       return "DisableAutoSignInForOriginsAsync";
     case PasswordStoreOperation::kGetGroupedMatchingLoginsAsync:
       return "GetGroupedMatchingLoginsAsync";
+    case PasswordStoreOperation::kGetAllLoginsWithBrandingInfoAsync:
+      return "GetAllLoginsWithBrandingInfoAsync";
   }
   NOTREACHED() << "Operation code not handled";
   return "";
@@ -547,9 +531,12 @@ PasswordStoreAndroidBackend::JobReturnHandler::GetOperation() {
   return operation_;
 }
 
-PasswordStoreAndroidBackend::PasswordStoreAndroidBackend(PrefService* prefs)
+PasswordStoreAndroidBackend::PasswordStoreAndroidBackend(
+    PrefService* prefs,
+    AffiliationsPrefetcher* affiliations_prefetcher)
     : lifecycle_helper_(std::make_unique<PasswordManagerLifecycleHelperImpl>()),
-      bridge_helper_(PasswordStoreAndroidBackendBridgeHelper::Create()) {
+      bridge_helper_(PasswordStoreAndroidBackendBridgeHelper::Create()),
+      affiliations_prefetcher_(affiliations_prefetcher) {
   DCHECK(bridge_helper_);
   prefs_ = prefs;
   DCHECK(prefs_);
@@ -567,10 +554,12 @@ PasswordStoreAndroidBackend::PasswordStoreAndroidBackend(
     std::unique_ptr<PasswordManagerLifecycleHelper> lifecycle_helper,
     std::unique_ptr<PasswordSyncControllerDelegateAndroid>
         sync_controller_delegate,
-    PrefService* prefs)
+    PrefService* prefs,
+    AffiliationsPrefetcher* affiliations_prefetcher)
     : lifecycle_helper_(std::move(lifecycle_helper)),
       bridge_helper_(std::move(bridge_helper)),
-      sync_controller_delegate_(std::move(sync_controller_delegate)) {
+      sync_controller_delegate_(std::move(sync_controller_delegate)),
+      affiliations_prefetcher_(affiliations_prefetcher) {
   DCHECK(bridge_helper_);
   prefs_ = prefs;
   DCHECK(prefs_);
@@ -584,6 +573,12 @@ void PasswordStoreAndroidBackend::InitBackend(
     RemoteChangesReceived remote_form_changes_received,
     base::RepeatingClosure sync_enabled_or_disabled_cb,
     base::OnceCallback<void(bool)> completion) {
+  // The android backend doesn't currently support notifying the store of
+  // sync changes. This currently only wired via the built-in backend being
+  // notified by the `PasswordSyncBridge` and generally
+  // applies to the account store. Support needs to be specifically implemented
+  // if desired. See crbug.com/1004777.
+  CHECK(!sync_enabled_or_disabled_cb);
   affiliated_match_helper_ = affiliated_match_helper;
   main_task_runner_ = base::SequencedTaskRunner::GetCurrentDefault();
   stored_passwords_changed_ = std::move(remote_form_changes_received);
@@ -613,8 +608,15 @@ void PasswordStoreAndroidBackend::GetAllLoginsAsync(
 
 void PasswordStoreAndroidBackend::GetAllLoginsWithAffiliationAndBrandingAsync(
     LoginsOrErrorReply callback) {
-  // TODO(crbug.com/1480412): Invoke new API to get all passwords with branding
-  // info instead of calling affiliation service.
+  if (bridge_helper_->CanUseGetAllLoginsWithBrandingInfoAPI()) {
+    JobId job_id = bridge_helper_->GetAllLoginsWithBrandingInfo(
+        GetAccount(GetSyncingAccount(sync_service_)));
+    QueueNewJob(job_id, std::move(callback),
+                MetricInfix("GetAllLoginsWithBrandingInfoAsync"),
+                PasswordStoreOperation::kGetAllLoginsWithBrandingInfoAsync,
+                /*delay=*/base::Seconds(0));
+    return;
+  }
   auto affiliation_injection = base::BindOnce(
       &PasswordStoreAndroidBackend::InjectAffiliationAndBrandingInformation,
       weak_ptr_factory_.GetWeakPtr(), std::move(callback));
@@ -734,10 +736,10 @@ void PasswordStoreAndroidBackend::FilterAndRemoveLogins(
 
   LoginsResult logins = std::move(absl::get<LoginsResult>(result));
   std::vector<PasswordForm> logins_to_remove;
-  for (const auto& login : logins) {
-    if (login->date_created >= delete_begin &&
-        login->date_created < delete_end && url_filter.Run(login->url)) {
-      logins_to_remove.push_back(std::move(*login));
+  for (auto& login : logins) {
+    if (login.date_created >= delete_begin && login.date_created < delete_end &&
+        url_filter.Run(login.url)) {
+      logins_to_remove.push_back(std::move(login));
     }
   }
 
@@ -856,6 +858,15 @@ void PasswordStoreAndroidBackend::OnSyncServiceInitialized(
   }
   sync_service_ = sync_service;
   sync_controller_delegate_->OnSyncServiceInitialized(sync_service);
+
+  // Stop fetching affiliations if AndroidBackend can be used and branding info
+  // can be obtained directly from the GMS Core backend.
+  if (!prefs_->GetBoolean(
+          prefs::kUnenrolledFromGoogleMobileServicesDueToErrors) &&
+      sync_util::IsSyncFeatureEnabledIncludingPasswords(sync_service_) &&
+      bridge_helper_->CanUseGetAllLoginsWithBrandingInfoAPI()) {
+    affiliations_prefetcher_->DisablePrefetching();
+  }
 }
 
 void PasswordStoreAndroidBackend::GetAutofillableLoginsAsyncInternal(
@@ -913,9 +924,8 @@ void PasswordStoreAndroidBackend::OnCompleteWithLogins(
   reply->RecordMetrics(/*error=*/absl::nullopt);
   DCHECK(reply->Holds<LoginsOrErrorReply>());
   main_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(*reply).Get<LoginsOrErrorReply>(),
-                     WrapPasswordsIntoPointers(std::move(passwords))));
+      FROM_HERE, base::BindOnce(std::move(*reply).Get<LoginsOrErrorReply>(),
+                                std::move(passwords)));
 }
 
 void PasswordStoreAndroidBackend::OnLoginsChanged(JobId job_id,
@@ -994,6 +1004,7 @@ void PasswordStoreAndroidBackend::OnError(JobId job_id,
         case PasswordStoreOperation::kRemoveLoginsCreatedBetweenAsync:
         case PasswordStoreOperation::kDisableAutoSignInForOriginsAsync:
         case PasswordStoreOperation::kGetGroupedMatchingLoginsAsync:
+        case PasswordStoreOperation::kGetAllLoginsWithBrandingInfoAsync:
           NOTREACHED();
           return;
       }
@@ -1084,10 +1095,10 @@ void PasswordStoreAndroidBackend::FilterAndDisableAutoSignIn(
 
   LoginsResult logins = std::move(absl::get<LoginsResult>(result));
   std::vector<PasswordForm> logins_to_update;
-  for (std::unique_ptr<PasswordForm>& login : logins) {
+  for (auto& login : logins) {
     // Update login if it matches |origin_filer| and has autosignin enabled.
-    if (origin_filter.Run(login->url) && !login->skip_zero_click) {
-      logins_to_update.push_back(std::move(*login));
+    if (origin_filter.Run(login.url) && !login.skip_zero_click) {
+      logins_to_update.push_back(std::move(login));
       logins_to_update.back().skip_zero_click = true;
     }
   }

@@ -5,7 +5,7 @@
 import 'chrome://resources/cr_elements/cr_tab_box/cr_tab_box.js';
 
 import {assert} from 'chrome://resources/js/assert.js';
-import {$, getRequiredElement} from 'chrome://resources/js/util_ts.js';
+import {$, getRequiredElement} from 'chrome://resources/js/util.js';
 import {Time} from 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-webui.js';
 
 import {DownloadedModelInfo, PageHandlerFactory} from './optimization_guide_internals.mojom-webui.js';
@@ -90,6 +90,9 @@ function getLogSource(logSource: number) {
   }
   if (logSource == 5) {
     return 'TEXT_CLASSIFIER';
+  }
+  if (logSource == 6) {
+    return 'MODEL_EXECUTION';
   }
   return logSource.toString();
 }

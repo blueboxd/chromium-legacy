@@ -22,10 +22,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
-namespace base {
-class OneShotTimer;
-}  // namespace base
-
 namespace network::mojom {
 class NetworkContext;
 class URLLoaderFactory;
@@ -102,21 +98,18 @@ class CONTENT_EXPORT PrefetchService {
   using OnPrefetchToServeReady =
       base::OnceCallback<void(PrefetchContainer::Reader prefetch_to_serve)>;
   void GetPrefetchToServe(const PrefetchContainer::Key& key,
+                          base::WeakPtr<PrefetchServingPageMetricsContainer>
+                              serving_page_metrics_container,
                           PrefetchMatchResolver& prefetch_match_resolver);
 
   // Copies any cookies in the isolated network context associated with
   // |prefetch_container| to the default network context.
   virtual void CopyIsolatedCookies(const PrefetchContainer::Reader& reader);
 
-  // Removes the prefetch with the given |prefetch_container_key| from
-  // |all_prefetches_|.
-  void RemovePrefetch(const PrefetchContainer::Key& prefetch_container_key);
+  void AddPrefetchContainer(
+      std::unique_ptr<PrefetchContainer> prefetch_container);
 
-  // Destroys the prefetch with the given |prefetch_container_key|. Called
-  // to remove a prefetch when making room for a new prefetch, and sets the
-  // status to |PrefetchStatus::kPrefetchEvicted| before destruction to record
-  // this.
-  void EvictPrefetch(const PrefetchContainer::Key& prefetch_container_key);
+  void ResetPrefetch(base::WeakPtr<PrefetchContainer> prefetch_container);
 
   // Called by PrefetchDocumentManager when it finishes processing the latest
   // update of speculation candidates.
@@ -149,15 +142,21 @@ class CONTENT_EXPORT PrefetchService {
     on_prefetch_response_completed_for_testing_ = std::move(callback);
   }
 
+  base::WeakPtr<PrefetchContainer> MatchUrl(
+      const PrefetchContainer::Key& key) const;
+  std::vector<std::pair<GURL, base::WeakPtr<PrefetchContainer>>>
+  GetAllForUrlWithoutRefAndQueryForTesting(
+      const PrefetchContainer::Key& key) const;
+
+  base::WeakPtr<PrefetchService> GetWeakPtr();
+
  private:
   // Checks whether the given |prefetch_container| is eligible for prefetch.
   // Once the eligibility is determined then |result_callback| will be called
-  // with result and an optional status stating why the prefetch is not
-  // eligible.
+  // with result (`PreloadingEligibility::kEligible` when eligible).
   using OnEligibilityResultCallback =
       base::OnceCallback<void(base::WeakPtr<PrefetchContainer>,
-                              bool eligible,
-                              absl::optional<PrefetchStatus> status)>;
+                              PreloadingEligibility eligibility)>;
   void CheckEligibilityOfPrefetch(
       const GURL& url,
       base::WeakPtr<PrefetchContainer> prefetch_container,
@@ -206,8 +205,7 @@ class CONTENT_EXPORT PrefetchService {
   // not eligible, then we consider making it a decoy request.
   void OnGotEligibilityResult(
       base::WeakPtr<PrefetchContainer> prefetch_container,
-      bool eligible,
-      absl::optional<PrefetchStatus> status);
+      PreloadingEligibility eligibility);
 
   // Called once the eligibility of a redirect for a |prefetch_container| is
   // determined. If its eligible, then the prefetch will continue, otherwise it
@@ -216,8 +214,7 @@ class CONTENT_EXPORT PrefetchService {
       const net::RedirectInfo& redirect_info,
       network::mojom::URLResponseHeadPtr redirect_head,
       base::WeakPtr<PrefetchContainer> prefetch_container,
-      bool eligible,
-      absl::optional<PrefetchStatus> status);
+      PreloadingEligibility eligibility);
 
   // Starts the network requests for as many prefetches in |prefetch_queue_| as
   // possible.
@@ -231,15 +228,11 @@ class CONTENT_EXPORT PrefetchService {
   std::tuple<base::WeakPtr<PrefetchContainer>, base::WeakPtr<PrefetchContainer>>
   PopNextPrefetchContainer();
 
-  // Once the network request for a prefetch starts, ownership is transferred
-  // from the referring |PrefetchDocumentManager| to |this|. After
-  // |PrefetchContainerLifetimeInPrefetchService| amount of time, the prefetch
-  // is deleted. Note that if |PrefetchContainerLifetimeInPrefetchService| is 0
-  // or less, then it is kept forever.
-  void TakeOwnershipOfPrefetch(
-      base::WeakPtr<PrefetchContainer> prefetch_container);
+  // After |PrefetchContainerLifetimeInPrefetchService| amount of time, the
+  // prefetch is deleted. Note that if
+  // |PrefetchContainerLifetimeInPrefetchService| is 0 or less, then it is kept
+  // forever.
   void OnPrefetchTimeout(base::WeakPtr<PrefetchContainer> prefetch);
-  void ResetPrefetch(base::WeakPtr<PrefetchContainer> prefetch_container);
 
   // Starts the given |prefetch_container|. If |prefetch_to_evict| is specified,
   // it is evicted immediately before starting |prefetch_container|.
@@ -263,9 +256,9 @@ class CONTENT_EXPORT PrefetchService {
 
   // Called when the response for |prefetch_container| has started. Based on
   // |head|, returns a status to inform the |PrefetchStreamingURLLoader| whether
-  // the prefetch is servable. If servable, then |kHeadReceivedWaitingOnBody|
-  // will be returned, otherwise a valid failure status is returned.
-  PrefetchStreamingURLLoaderStatus OnPrefetchResponseStarted(
+  // the prefetch is servable. If servable, then `absl::nullopt` will be
+  // returned, otherwise a failure status is returned.
+  absl::optional<PrefetchErrorOnResponseReceived> OnPrefetchResponseStarted(
       base::WeakPtr<PrefetchContainer> prefetch_container,
       network::mojom::URLResponseHead* head);
 
@@ -327,7 +320,9 @@ class CONTENT_EXPORT PrefetchService {
   // Helper function for |GetPrefetchToServe| which identifies the
   // |prefetch_container|'s that could potentially be served.
   std::vector<PrefetchContainer*> FindPrefetchContainerToServe(
-      const PrefetchContainer::Key& key);
+      const PrefetchContainer::Key& key,
+      base::WeakPtr<PrefetchServingPageMetricsContainer>
+          serving_page_metrics_container);
 
   // Helper function for |GetPrefetchToServe| which handles a
   // |prefetch_container| that could potentially be served to the navigation.
@@ -336,7 +331,7 @@ class CONTENT_EXPORT PrefetchService {
       PrefetchContainer& prefetch_container,
       PrefetchMatchResolver& prefetch_match_resolver);
 
-  // Checks if there is a prefetch in |all_prefetches_| with the same URL as
+  // Checks if there is a prefetch in |owned_prefetches_| with the same URL as
   // |prefetch_container| but from a different referring RenderFrameHost.
   // Records the result to a UMA histogram.
   void RecordExistingPrefetchWithMatchingURL(
@@ -357,10 +352,6 @@ class CONTENT_EXPORT PrefetchService {
   // The origin prober class which manages all logic for origin probing.
   std::unique_ptr<PrefetchOriginProber> origin_prober_;
 
-  // All prefetches associated with |this| regardless of ownership.
-  std::map<PrefetchContainer::Key, base::WeakPtr<PrefetchContainer>>
-      all_prefetches_;
-
   // A FIFO queue of prefetches that have been confirmed to be eligible but have
   // not started yet.
   std::vector<base::WeakPtr<PrefetchContainer>> prefetch_queue_;
@@ -370,13 +361,8 @@ class CONTENT_EXPORT PrefetchService {
 
   // Prefetches owned by |this|. Once the network request for a prefetch is
   // started, |this| takes ownership of the prefetch so the response can be used
-  // on future page loads. A timer of
-  // |PrefetchContainerLifetimeInPrefetchService| is set that deletes the
-  // prefetch. If |PrefetchContainerLifetimeInPrefetchService| zero or less,
-  // then, the prefetch is kept forever.
-  std::map<PrefetchContainer::Key,
-           std::pair<std::unique_ptr<PrefetchContainer>,
-                     std::unique_ptr<base::OneShotTimer>>>
+  // on future page loads.
+  std::map<PrefetchContainer::Key, std::unique_ptr<PrefetchContainer>>
       owned_prefetches_;
 
 // Protects against Prefetch() being called recursively.

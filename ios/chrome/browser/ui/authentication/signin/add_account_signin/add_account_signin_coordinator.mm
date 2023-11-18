@@ -15,13 +15,14 @@
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
-#import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
-#import "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/chrome/browser/signin/system_identity_interaction_manager.h"
-#import "ios/chrome/browser/signin/system_identity_manager.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/signin/model/authentication_service.h"
+#import "ios/chrome/browser/signin/model/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service_factory.h"
+#import "ios/chrome/browser/signin/model/identity_manager_factory.h"
+#import "ios/chrome/browser/signin/model/system_identity_interaction_manager.h"
+#import "ios/chrome/browser/signin/model/system_identity_manager.h"
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 #import "ios/chrome/browser/ui/authentication/history_sync/history_sync_popup_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/add_account_signin/add_account_signin_manager.h"
@@ -40,8 +41,8 @@ using signin_metrics::PromoAction;
 // Coordinator to handle additional steps after the identity is added, i.e.
 // after `addAccountSigninManager` does its job.
 @property(nonatomic, strong) SigninCoordinator* postSigninManagerCoordinator;
-// Coordinator for history sync opt-in, if kReplaceSyncPromosWithSignInPromos is
-// enabled.
+// Coordinator for history sync opt-in, if kReplaceSyncPromosWithSignInPromos
+// and kHistoryOptInForRestoreShortyAndReSignin are enabled.
 @property(nonatomic, strong)
     HistorySyncPopupCoordinator* historySyncPopupCoordinator;
 // Manager that handles sign-in add account UI.
@@ -310,9 +311,12 @@ using signin_metrics::PromoAction;
   [self.postSigninManagerCoordinator stop];
   self.postSigninManagerCoordinator = nil;
 
+  const bool history_opt_in_flags_enabled =
+      base::FeatureList::IsEnabled(
+          syncer::kReplaceSyncPromosWithSignInPromos) &&
+      base::FeatureList::IsEnabled(kHistoryOptInForRestoreShortyAndReSignin);
   if (result != SigninCoordinatorResultSuccess ||
-      !base::FeatureList::IsEnabled(
-          syncer::kReplaceSyncPromosWithSignInPromos)) {
+      !history_opt_in_flags_enabled) {
     [self addAccountDoneWithSigninResult:result identity:info.identity];
     return;
   }

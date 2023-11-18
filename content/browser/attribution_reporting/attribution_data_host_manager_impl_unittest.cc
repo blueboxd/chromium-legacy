@@ -1393,7 +1393,7 @@ TEST_F(AttributionDataHostManagerImplTest,
   // Wait for parsing to finish.
   task_environment_.FastForwardBy(base::TimeDelta());
 
-  histograms.ExpectUniqueSample("Conversions.SourceRegistrationError5",
+  histograms.ExpectUniqueSample("Conversions.SourceRegistrationError7",
                                 SourceRegistrationError::kInvalidJson, 1);
 }
 
@@ -2426,8 +2426,6 @@ TEST_F(AttributionDataHostManagerImplTest, OsTriggerAvailable) {
 
 TEST_F(AttributionDataHostManagerImplTest, WebDisabled_SourceNotRegistered) {
   MockAttributionReportingContentBrowserClient browser_client;
-  EXPECT_CALL(browser_client, IsWebAttributionReportingAllowed())
-      .WillRepeatedly(testing::Return(false));
   ScopedContentBrowserClientSetting setting(&browser_client);
 
   const GURL reporter_url("https://report.test");
@@ -2439,6 +2437,24 @@ TEST_F(AttributionDataHostManagerImplTest, WebDisabled_SourceNotRegistered) {
         scoped_api_state_setting(state);
 
     EXPECT_CALL(mock_manager_, HandleSource).Times(0);
+
+    if (state ==
+        ContentBrowserClient::AttributionReportingOsApiState::kDisabled) {
+      EXPECT_CALL(
+          browser_client,
+          GetAttributionSupport(
+              ContentBrowserClient::AttributionReportingOsApiState::kDisabled,
+              testing::_))
+          .WillOnce(testing::Return(network::mojom::AttributionSupport::kNone));
+    } else if (state ==
+               ContentBrowserClient::AttributionReportingOsApiState::kEnabled) {
+      EXPECT_CALL(
+          browser_client,
+          GetAttributionSupport(
+              ContentBrowserClient::AttributionReportingOsApiState::kEnabled,
+              testing::_))
+          .WillOnce(testing::Return(network::mojom::AttributionSupport::kOs));
+    }
 
     const blink::AttributionSrcToken attribution_src_token;
     data_host_manager_.NotifyNavigationRegistrationStarted(

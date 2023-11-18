@@ -137,6 +137,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "services/viz/public/cpp/gpu/gpu.h"
+#include "skia/ext/font_utils.h"
 #include "skia/ext/skia_memory_dump_provider.h"
 #include "third_party/abseil-cpp/absl/base/attributes.h"
 #include "third_party/blink/public/common/features.h"
@@ -315,8 +316,7 @@ scoped_refptr<viz::ContextProviderCommandBuffer> CreateOffscreenContext(
       gpu::kNullSurfaceHandle,
       GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext/" +
            viz::command_buffer_metrics::ContextTypeToString(type)),
-      automatic_flushes, support_locking, support_grcontext, limits, attributes,
-      type);
+      automatic_flushes, support_locking, limits, attributes, type);
 }
 
 // Hook that allows single-sample metric code from //components/metrics to
@@ -674,7 +674,7 @@ void RenderThreadImpl::Init() {
   AddObserver(variations_observer_.get());
 
   base::ThreadPool::PostTask(FROM_HERE,
-                             base::BindOnce([] { SkFontMgr::RefDefault(); }));
+                             base::BindOnce([] { skia::DefaultFontMgr(); }));
 
   bool should_actively_sample_fonts =
       command_line.HasSwitch(kFirstRendererProcess) &&
@@ -779,7 +779,6 @@ void RenderThreadImpl::AttachTaskRunnerToRoute(
 void RenderThreadImpl::RemoveRoute(int32_t routing_id) {
   ChildThreadImpl::GetRouter()->RemoveRoute(routing_id);
   GetChannel()->RemoveListenerTaskRunner(routing_id);
-  pending_frames_.erase(routing_id);
 }
 
 mojom::RendererHost* RenderThreadImpl::GetRendererHost() {
@@ -788,12 +787,6 @@ mojom::RendererHost* RenderThreadImpl::GetRendererHost() {
     GetChannel()->GetRemoteAssociatedInterface(&renderer_host_);
   }
   return renderer_host_.get();
-}
-
-int RenderThreadImpl::GenerateRoutingID() {
-  int32_t routing_id = MSG_ROUTING_NONE;
-  render_message_filter()->GenerateRoutingID(&routing_id);
-  return routing_id;
 }
 
 bool RenderThreadImpl::GenerateFrameRoutingID(
@@ -884,7 +877,6 @@ void RenderThreadImpl::InitializeRenderer(
     const std::string& user_agent,
     const blink::UserAgentMetadata& user_agent_metadata,
     const std::vector<std::string>& cors_exempt_header_list,
-    network::mojom::AttributionSupport attribution_support,
     blink::mojom::OriginTrialsSettingsPtr origin_trials_settings) {
   DCHECK(user_agent_.IsNull());
 
@@ -892,7 +884,6 @@ void RenderThreadImpl::InitializeRenderer(
   GetContentClient()->renderer()->DidSetUserAgent(user_agent);
   user_agent_metadata_ = user_agent_metadata;
   cors_exempt_header_list_ = cors_exempt_header_list;
-  attribution_support_ = attribution_support;
 
   blink::WebVector<blink::WebString> web_cors_exempt_header_list(
       cors_exempt_header_list.size());
@@ -1801,16 +1792,6 @@ void RenderThreadImpl::SetRenderingColorSpace(
 gfx::ColorSpace RenderThreadImpl::GetRenderingColorSpace() {
   DCHECK(IsMainThread());
   return rendering_color_space_;
-}
-
-network::mojom::AttributionSupport
-RenderThreadImpl::GetAttributionReportingSupport() {
-  return attribution_support_;
-}
-
-void RenderThreadImpl::SetAttributionReportingSupport(
-    network::mojom::AttributionSupport attribution_support) {
-  attribution_support_ = attribution_support;
 }
 
 std::unique_ptr<CodecFactory> RenderThreadImpl::CreateMediaCodecFactory(

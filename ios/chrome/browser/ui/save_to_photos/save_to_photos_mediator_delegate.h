@@ -22,6 +22,10 @@
             (AccountPickerConfiguration*)configuration
                           selectedIdentity:(id<SystemIdentity>)selectedIdentity;
 - (void)hideAccountPicker;
+// Start/stop the validation spinner in the account picker. It is used to
+// indicate ongoing progress of the image upload.
+- (void)startValidationSpinnerForAccountPicker;
+- (void)stopValidationSpinnerForAccountPicker;
 
 // Show and hide an alert with "Try Again" and "Cancel" options.
 - (void)showTryAgainOrCancelAlertWithTitle:(NSString*)title
@@ -33,7 +37,8 @@
 - (void)hideTryAgainOrCancelAlert;
 
 // Show and hide StoreKit.
-- (void)showStoreKitWithProductIdentifier:(NSString*)productIdentifer;
+- (void)showStoreKitWithProductIdentifier:(NSString*)productIdentifer
+                            campaignToken:(NSString*)campaignToken;
 - (void)hideStoreKit;
 
 // Show a snackbar with the given `message`, a button with label `buttonText`.

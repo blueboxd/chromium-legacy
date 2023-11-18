@@ -9,8 +9,6 @@
 
 #include <jni.h>
 
-#include <string>
-
 #include "base/android/jni_weak_ref.h"
 #include "base/containers/span.h"
 #include "base/memory/raw_ref.h"
@@ -28,12 +26,12 @@ class AutofillProviderAndroidBridgeImpl : public AutofillProviderAndroidBridge {
   void AttachToJavaAutofillProvider(
       JNIEnv* env,
       const base::android::JavaRef<jobject>& jcaller) override;
+  void SendPrefillRequest(FormDataAndroid& form) override;
   void StartAutofillSession(FormDataAndroid& form,
                             const FieldInfo& field,
                             bool has_server_predictions) override;
   void OnServerPredictionQueryDone(bool success) override;
-  void ShowDatalistPopup(base::span<const std::u16string> values,
-                         base::span<const std::u16string> labels,
+  void ShowDatalistPopup(base::span<const SelectOption> options,
                          bool is_rtl) override;
   void HideDatalistPopup() override;
   void OnFocusChanged(const absl::optional<FieldInfo>& field) override;

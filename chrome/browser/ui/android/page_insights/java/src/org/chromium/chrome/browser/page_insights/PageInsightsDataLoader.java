@@ -13,6 +13,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridgeFactory;
+import org.chromium.chrome.browser.page_insights.proto.PageInsights;
 import org.chromium.chrome.browser.page_insights.proto.PageInsights.PageInsightsMetadata;
 import org.chromium.components.optimization_guide.OptimizationGuideDecision;
 import org.chromium.components.optimization_guide.proto.CommonTypesProto.RequestContext;
@@ -27,10 +28,12 @@ class PageInsightsDataLoader {
     private static final int LRU_CACHE_SIZE = 10;
     private LruCache<GURL, PageInsightsMetadata> mCache =
             new LruCache<GURL, PageInsightsMetadata>(LRU_CACHE_SIZE);
+    private boolean mIsDestroyed;
 
     PageInsightsDataLoader() {}
 
-    void loadInsightsData(GURL url, Callback<PageInsightsMetadata> callback) {
+    void loadInsightsData(
+            GURL url, boolean shouldAttachGaiaToRequest, Callback<PageInsightsMetadata> callback) {
         if (url == null) {
             Log.e(TAG, "Error fetching Page Insights data: Url cannot be null.");
             return;
@@ -44,8 +47,11 @@ class PageInsightsDataLoader {
                 .canApplyOptimizationOnDemand(
                         List.of(url),
                         List.of(PAGE_INSIGHTS),
-                        RequestContext.CONTEXT_PAGE_INSIGHTS_HUB,
+                        shouldAttachGaiaToRequest
+                                ? RequestContext.CONTEXT_PAGE_INSIGHTS_HUB
+                                : RequestContext.CONTEXT_NON_PERSONALIZED_PAGE_INSIGHTS_HUB,
                         (gurl, optimizationType, decision, metadata) -> {
+                            if (mIsDestroyed) return;
                             try {
                                 if (decision != OptimizationGuideDecision.TRUE) {
                                     return;
@@ -71,6 +77,10 @@ class PageInsightsDataLoader {
 
     void clearCacheForTesting() {
         mCache = new LruCache<GURL, PageInsightsMetadata>(LRU_CACHE_SIZE);
+    }
+
+    void destroy() {
+        mIsDestroyed = true;
     }
 
     // Lazy initialization of OptimizationGuideBridgeFactory

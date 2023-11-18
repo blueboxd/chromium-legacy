@@ -34,8 +34,9 @@
 #include "chrome/browser/sharing/sharing_message_bridge_factory.h"
 #include "chrome/browser/sharing/sharing_message_model_type_controller.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/sync/bookmark_sync_service_factory.h"
+#include "chrome/browser/sync/account_bookmark_sync_service_factory.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
+#include "chrome/browser/sync/local_or_syncable_bookmark_sync_service_factory.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
@@ -57,7 +58,7 @@
 #include "components/desks_storage/core/desk_sync_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/metrics/demographics/user_demographics.h"
-#include "components/password_manager/core/browser/password_store_interface.h"
+#include "components/password_manager/core/browser/password_store/password_store_interface.h"
 #include "components/password_manager/core/browser/sharing/password_receiver_service.h"
 #include "components/password_manager/core/browser/sharing/password_sender_service.h"
 #include "components/prefs/pref_service.h"
@@ -245,14 +246,14 @@ ChromeSyncClient::ChromeSyncClient(Profile* profile)
       SupervisedUserSettingsServiceFactory::GetForKey(
           profile_->GetProfileKey());
 #endif
-  // TODO(https://crbug.com/1404250): Pass AccountBookmarkSyncServiceFactory
-  //                                  when it is available.
+
   component_factory_ = std::make_unique<SyncApiComponentFactoryImpl>(
       this, chrome::GetChannel(), content::GetUIThreadTaskRunner({}),
       web_data_service_thread_, profile_web_data_service_,
       account_web_data_service_, profile_password_store_,
       account_password_store_,
-      BookmarkSyncServiceFactory::GetForProfile(profile_), nullptr,
+      LocalOrSyncableBookmarkSyncServiceFactory::GetForProfile(profile_),
+      AccountBookmarkSyncServiceFactory::GetForProfile(profile_),
       PowerBookmarkServiceFactory::GetForBrowserContext(profile_),
       supervised_user_settings_service);
 }
@@ -546,7 +547,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
 
 trusted_vault::TrustedVaultClient* ChromeSyncClient::GetTrustedVaultClient() {
   return TrustedVaultServiceFactory::GetForProfile(profile_)
-      ->GetTrustedVaultClient();
+      ->GetTrustedVaultClient(trusted_vault::SecurityDomainId::kChromeSync);
 }
 
 syncer::SyncInvalidationsService*
@@ -695,13 +696,17 @@ ChromeSyncClient::GetSyncApiComponentFactory() {
   return component_factory_.get();
 }
 
-syncer::SyncTypePreferenceProvider* ChromeSyncClient::GetPreferenceProvider() {
+bool ChromeSyncClient::IsCustomPassphraseAllowed() {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  return SupervisedUserSettingsServiceFactory::GetForKey(
-      profile_->GetProfileKey());
-#else
-  return nullptr;
-#endif
+  supervised_user::SupervisedUserSettingsService*
+      supervised_user_settings_service =
+          SupervisedUserSettingsServiceFactory::GetForKey(
+              profile_->GetProfileKey());
+  if (supervised_user_settings_service) {
+    return supervised_user_settings_service->IsCustomPassphraseAllowed();
+  }
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  return true;
 }
 
 void ChromeSyncClient::OnLocalSyncTransportDataCleared() {

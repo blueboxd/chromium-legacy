@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/api/messaging/message_service.h"
-
+#include <optional>
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/types/optional_util.h"
@@ -12,14 +11,14 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/messaging/channel_endpoint.h"
+#include "extensions/browser/api/messaging/extension_message_port.h"
 #include "extensions/browser/api/messaging/message_service.h"
 #include "extensions/browser/bad_message.h"
-#include "extensions/browser/content_script_tracker.h"
 #include "extensions/browser/extension_util.h"
+#include "extensions/browser/script_injection_tracker.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/trace_util.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using content::BrowserThread;
 using content::RenderProcessHost;
@@ -72,9 +71,11 @@ bool IsValidMessagingSource(RenderProcessHost& process,
         return false;
       }
       bool is_content_script_expected =
-          ContentScriptTracker::DidProcessRunContentScriptFromExtension(
+          ScriptInjectionTracker::DidProcessRunContentScriptFromExtension(
               process, *source_endpoint.extension_id);
       if (!is_content_script_expected) {
+        debug::ScopedScriptInjectionTrackerFailureCrashKeys tracker_keys(
+            *process.GetBrowserContext(), source_endpoint.extension_id.value());
         bad_message::ReceivedBadMessage(
             &process, bad_message::EMF_INVALID_EXTENSION_ID_FOR_CONTENT_SCRIPT);
         return false;
@@ -89,7 +90,7 @@ bool IsValidMessagingSource(RenderProcessHost& process,
         return false;
       }
       bool is_user_script_expected =
-          ContentScriptTracker::DidProcessRunUserScriptFromExtension(
+          ScriptInjectionTracker::DidProcessRunUserScriptFromExtension(
               process, *source_endpoint.extension_id);
       if (!is_user_script_expected) {
         bad_message::ReceivedBadMessage(
@@ -322,11 +323,11 @@ class ScopedExternalConnectionInfoCrashKeys {
 // messages sent from the given renderer `process`.  If the validation fails, or
 // the sender is not associated with an extension, then `nullopt` is returned.
 // The sender should ignore the IPC when `nullopt` is returned.
-absl::optional<ExtensionId> ValidateSourceContextAndExtractExtensionId(
+std::optional<ExtensionId> ValidateSourceContextAndExtractExtensionId(
     content::RenderProcessHost& process,
     const PortContext& source_context) {
   if (!IsValidSourceContext(process, source_context)) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   if (source_context.is_for_service_worker()) {
@@ -339,7 +340,7 @@ absl::optional<ExtensionId> ValidateSourceContextAndExtractExtensionId(
     if (!frame) {
       // Not calling ReceivedBadMessage because it is possible that the frame
       // got deleted before the IPC arrived.
-      return absl::nullopt;
+      return std::nullopt;
     }
 
     // These extension IPCs are on the same pipe as DidCommit() (and thus can't
@@ -359,7 +360,7 @@ absl::optional<ExtensionId> ValidateSourceContextAndExtractExtensionId(
           origin.GetDebugString(false /* include_nonce */));
       bad_message::ReceivedBadMessage(
           &process, bad_message::EMF_NON_EXTENSION_SENDER_FRAME);
-      return absl::nullopt;
+      return std::nullopt;
     }
 
     return scheme_host_port.host();
@@ -368,16 +369,20 @@ absl::optional<ExtensionId> ValidateSourceContextAndExtractExtensionId(
   DCHECK(source_context.is_for_native_host());
   bad_message::ReceivedBadMessage(
       &process, bad_message::EMF_NON_EXTENSION_SENDER_NATIVE_HOST);
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 }  // namespace
 
-void MessageService::OpenChannelToExtension(const ChannelEndpoint& source,
-                                            const PortId& source_port_id,
-                                            const ExternalConnectionInfo& info,
-                                            mojom::ChannelType channel_type,
-                                            const std::string& channel_name) {
+void MessageService::OpenChannelToExtension(
+    const ChannelEndpoint& source,
+    const PortId& source_port_id,
+    const ExternalConnectionInfo& info,
+    mojom::ChannelType channel_type,
+    const std::string& channel_name,
+    mojo::PendingAssociatedRemote<extensions::mojom::MessagePort> port,
+    mojo::PendingAssociatedReceiver<extensions::mojom::MessagePortHost>
+        port_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto* process =
       content::RenderProcessHost::FromID(source.render_process_id());
@@ -396,15 +401,25 @@ void MessageService::OpenChannelToExtension(const ChannelEndpoint& source,
     return;
   }
 
+  std::unique_ptr<MessagePort> opener_port =
+      ExtensionMessagePort::CreateForEndpoint(
+          weak_factory_.GetWeakPtr(), source_port_id,
+          info.source_endpoint.extension_id ? *info.source_endpoint.extension_id
+                                            : ExtensionId(),
+          source, std::move(port), std::move(port_host));
+
   OpenChannelToExtension(source, source_port_id, info.source_endpoint,
-                         nullptr /* opener_port */, info.target_id,
+                         std::move(opener_port), info.target_id,
                          info.source_url, channel_type, channel_name);
 }
 
 void MessageService::OpenChannelToNativeApp(
     const ChannelEndpoint& source,
     const PortId& source_port_id,
-    const std::string& native_app_name) {
+    const std::string& native_app_name,
+    mojo::PendingAssociatedRemote<extensions::mojom::MessagePort> port,
+    mojo::PendingAssociatedReceiver<extensions::mojom::MessagePortHost>
+        port_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto* process =
       content::RenderProcessHost::FromID(source.render_process_id());
@@ -419,23 +434,28 @@ void MessageService::OpenChannelToNativeApp(
     return;
   }
 
-  OpenChannelToNativeAppImpl(source, source_port_id, native_app_name);
+  OpenChannelToNativeAppImpl(source, source_port_id, native_app_name,
+                             std::move(port), std::move(port_host));
 }
 
-void MessageService::OpenChannelToTab(const ChannelEndpoint& source,
-                                      const PortId& source_port_id,
-                                      int tab_id,
-                                      int frame_id,
-                                      const std::string& document_id,
-                                      mojom::ChannelType channel_type,
-                                      const std::string& channel_name) {
+void MessageService::OpenChannelToTab(
+    const ChannelEndpoint& source,
+    const PortId& source_port_id,
+    int tab_id,
+    int frame_id,
+    const std::string& document_id,
+    mojom::ChannelType channel_type,
+    const std::string& channel_name,
+    mojo::PendingAssociatedRemote<extensions::mojom::MessagePort> port,
+    mojo::PendingAssociatedReceiver<extensions::mojom::MessagePortHost>
+        port_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto* process =
       content::RenderProcessHost::FromID(source.render_process_id());
   if (!process) {
     return;
   }
-  absl::optional<ExtensionId> extension_id =
+  std::optional<ExtensionId> extension_id =
       ValidateSourceContextAndExtractExtensionId(*process,
                                                  source.port_context());
   if (!extension_id) {
@@ -445,7 +465,8 @@ void MessageService::OpenChannelToTab(const ChannelEndpoint& source,
   }
 
   OpenChannelToTabImpl(source, source_port_id, tab_id, frame_id, document_id,
-                       *extension_id, channel_type, channel_name);
+                       *extension_id, channel_type, channel_name,
+                       std::move(port), std::move(port_host));
 }
 
 void MessageService::OpenPort(RenderProcessHost* process,

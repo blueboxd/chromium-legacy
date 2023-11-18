@@ -15,11 +15,11 @@
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
-#import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
-#import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/signin/model/authentication_service.h"
+#import "ios/chrome/browser/signin/model/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service_factory.h"
+#import "ios/chrome/browser/signin/model/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/sync/model/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
@@ -501,7 +501,10 @@ using signin_metrics::PromoAction;
     // animation. The interruption has to be processed when the view controller
     // will be fully presented.
     // See crbug.com/1126170
-    DCHECK(!self.interruptCallback);
+    // TODO(crbug.com/1493398): Convert to CHECK.
+    DUMP_WILL_BE_CHECK(!self.interruptCallback)
+        << "Action: " << static_cast<int>(action) << ", "
+        << base::SysNSStringToUTF8([self description]);
     __weak __typeof(self) weakSelf = self;
     self.interruptCallback = ^() {
       [weakSelf interruptUserSigninUIWithAction:action

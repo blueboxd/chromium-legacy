@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_base_view.h"
+#include "chrome/browser/ui/views/autofill/popup/popup_row_factory_utils.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_row_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_separator_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_view_utils.h"
@@ -190,6 +191,17 @@ bool PopupViewViews::Show(
     SetSelectedCell(CellIndex{0u, PopupRowView::CellType::kContent},
                     PopupCellSelectionSource::kNonUserInput);
   }
+
+  // Check for the special "warning bubble" mode: single warning suggestion
+  // which content should be just announced to the user. Triggering
+  // Event::kAlert on such a row makes screen readers read its content out.
+  // TODO(crbug.com/1480487): Consider supporting "warning mode" explicitly.
+  if (rows_.size() == 1 &&
+      absl::holds_alternative<PopupWarningView*>(rows_[0])) {
+    absl::get<PopupWarningView*>(rows_[0])->NotifyAccessibilityEvent(
+        ax::mojom::Event::kAlert, true);
+  }
+
   return true;
 }
 
@@ -394,7 +406,7 @@ bool PopupViewViews::SelectNextHorizontalCell() {
   if (selected_cell && HasPopupRowViewAt(selected_cell->first)) {
     PopupRowView& row = GetPopupRowViewAt(selected_cell->first);
     if (selected_cell->second == PopupRowView::CellType::kContent &&
-        row.GetControlView()) {
+        row.GetExpandChildSuggestionsView()) {
       SetSelectedCell(
           CellIndex{selected_cell->first, PopupRowView::CellType::kControl},
           PopupCellSelectionSource::kKeyboard);
@@ -635,8 +647,10 @@ void PopupViewViews::CreateChildViews() {
         // The default section contains all selectable rows and includes
         // autocomplete, address, credit cards and passwords.
         default:
-          PopupRowView* row_view = body_container->AddChildView(
-              PopupRowView::Create(*this, current_line_number));
+          PopupRowView* row_view =
+              body_container->AddChildView(CreatePopupRowView(
+                  controller(), /*a11y_selection_delegate=*/*this,
+                  /*selection_delegate=*/*this, current_line_number));
           rows_.push_back(row_view);
 
           const std::string& feature_for_iph =
@@ -701,8 +715,9 @@ void PopupViewViews::CreateChildViews() {
       rows_.push_back(footer_container_->AddChildView(
           std::make_unique<PopupSeparatorView>()));
     } else {
-      rows_.push_back(footer_container_->AddChildView(
-          PopupRowView::Create(*this, current_line_number)));
+      rows_.push_back(footer_container_->AddChildView(CreatePopupRowView(
+          controller(), /*a11y_selection_delegate=*/*this,
+          /*selection_delegate=*/*this, current_line_number)));
     }
   }
 }
@@ -892,7 +907,7 @@ void PopupViewViews::SetCellWithOpenSubPopup(
   if (open_sub_popup_cell_ && HasPopupRowViewAt(open_sub_popup_cell_->first)) {
     controller_->HideSubPopup();
     GetPopupRowViewAt(open_sub_popup_cell_->first)
-        .SetCellPermanentlyHighlighted(open_sub_popup_cell_->second, false);
+        .SetChildSuggestionsDisplayed(false);
     open_sub_popup_cell_ = absl::nullopt;
   }
 
@@ -909,7 +924,7 @@ void PopupViewViews::SetCellWithOpenSubPopup(
             row.GetControlCellBounds(), suggestion.children,
             AutoselectFirstSuggestion(selection_source ==
                                       PopupCellSelectionSource::kKeyboard))) {
-      row.SetCellPermanentlyHighlighted(cell_index->second, true);
+      row.SetChildSuggestionsDisplayed(true);
       open_sub_popup_cell_ = cell_index;
       if (selection_source == PopupCellSelectionSource::kKeyboard) {
         row.SetSelectedCell(absl::nullopt);

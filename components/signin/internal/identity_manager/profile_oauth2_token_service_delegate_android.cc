@@ -253,8 +253,24 @@ void ProfileOAuth2TokenServiceDelegateAndroid::
           ? ConvertUTF8ToJavaString(env, primary_account_id->ToString())
           : nullptr;
   signin::
-      Java_ProfileOAuth2TokenServiceDelegate_seedAndReloadAccountsWithPrimaryAccount(
+      Java_ProfileOAuth2TokenServiceDelegate_legacySeedAndReloadAccountsWithPrimaryAccount(
           env, java_ref_, j_account_id);
+}
+
+void ProfileOAuth2TokenServiceDelegateAndroid::
+    SeedAccountsThenReloadAllAccountsWithPrimaryAccount(
+        const std::vector<CoreAccountInfo>& core_account_infos,
+        const absl::optional<CoreAccountId>& primary_account_id) {
+  account_tracker_service_->SeedAccountsInfo(core_account_infos,
+                                             primary_account_id);
+  std::vector<CoreAccountId> account_ids;
+  for (const CoreAccountInfo& account_info : core_account_infos) {
+    CoreAccountId id(account_info.account_id);
+    if (!id.empty()) {
+      account_ids.push_back(std::move(id));
+    }
+  }
+  UpdateAccountList(primary_account_id, GetValidAccounts(), account_ids);
 }
 
 void ProfileOAuth2TokenServiceDelegateAndroid::
@@ -467,11 +483,8 @@ void JNI_ProfileOAuth2TokenServiceDelegate_OnOAuth2TokenFetched(
                       CREDENTIALS_REJECTED_BY_SERVER);
   }
 
-  const base::Time expiration_time =
-      expiration_time_secs == 0
-          ? base::Time()
-          : base::Time::FromJavaTime(expiration_time_secs * 1000);
-
-  std::move(*heap_callback).Run(err, token, expiration_time);
+  std::move(*heap_callback)
+      .Run(err, token,
+           base::Time::FromSecondsSinceUnixEpoch(expiration_time_secs));
 }
 }  // namespace signin

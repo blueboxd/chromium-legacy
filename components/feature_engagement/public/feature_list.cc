@@ -26,6 +26,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHAutoDarkOptOutFeature,
     &kIPHAutoDarkUserEducationMessageFeature,
     &kIPHAutoDarkUserEducationMessageOptInFeature,
+    &kIPHCCTMinimized,
     &kIPHDataSaverDetailFeature,
     &kIPHDataSaverMilestonePromoFeature,
     &kIPHDataSaverPreviewFeature,
@@ -142,6 +143,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHiOSPromoPostRestoreDefaultBrowserFeature,
     &kIPHiOSPromoPasswordManagerWidgetFeature,
     &kIPHiOSChoiceScreenFeature,
+    &kIPHiOSParcelTrackingFeature,
 #endif  // BUILDFLAG(IS_IOS)
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
@@ -152,9 +154,12 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHDesktopTabGroupsNewGroupFeature,
     &kIPHDesktopCustomizeChromeFeature,
     &kIPHDesktopCustomizeChromeRefreshFeature,
+    &kIPHDesktopNewTabPageModulesCustomizeFeature,
     &kIPHDownloadToolbarButtonFeature,
+#if BUILDFLAG(ENABLE_EXTENSIONS)
     &kIPHExtensionsMenuFeature,
     &kIPHExtensionsRequestAccessButtonFeature,
+#endif
     &kIPHFocusHelpBubbleScreenReaderPromoFeature,
     &kIPHGMCCastStartStopFeature,
     &kIPHGMCLocalMediaCastingFeature,
@@ -166,6 +171,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHPasswordsManagementBubbleDuringSigninFeature,
     &kIPHPasswordsWebAppProfileSwitchFeature,
     &kIPHPasswordManagerShortcutFeature,
+    &kIPHPasswordSharingFeature,
     &kIPHPowerBookmarksSidePanelFeature,
     &kIPHPriceInsightsPageActionIconLabelFeature,
     &kIPHPriceTrackingChipFeature,
@@ -176,6 +182,8 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHReadingListInSidePanelFeature,
     &kIPHReadingModeSidePanelFeature,
     &kIPHShoppingCollectionFeature,
+    &kIPHSidePanelGenericMenuFeature,
+    &kIPHSidePanelGenericPinnableFeature,
     &kIPHSideSearchAutoTriggeringFeature,
     &kIPHSideSearchFeature,
     &kIPHSideSearchPageActionLabelFeature,

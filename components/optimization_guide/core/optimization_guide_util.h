@@ -14,6 +14,7 @@
 #include "components/optimization_guide/core/optimization_guide_permissions_util.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
 #include "components/optimization_guide/proto/common_types.pb.h"
+#include "components/optimization_guide/proto/model_execution.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -38,6 +39,11 @@ struct ResourceRequest;
 namespace optimization_guide {
 
 enum class OptimizationGuideDecision;
+
+// Returns the equivalent string name for a `feature`. The returned string can
+// be used to index persistent data (e.g., prefs, histograms etc.).
+std::string_view GetStringNameForModelExecutionFeature(
+    proto::ModelExecutionFeature feature);
 
 // Returns false if the host is an IP address, localhosts, or an invalid
 // host that is not supported by the remote optimization guide.
@@ -90,6 +96,11 @@ void LogFeatureFlagsInfo(OptimizationGuideLogger* optimization_guide_logger,
 void PopulateAuthorizationRequestHeader(
     network::ResourceRequest* resource_request,
     std::string_view access_token);
+
+// Populates the api key header for the `resource_request` in the right
+// format with the `api_key`.
+void PopulateApiKeyRequestHeader(network::ResourceRequest* resource_request,
+                                 std::string_view api_key);
 
 }  // namespace optimization_guide
 

@@ -225,13 +225,6 @@ class PLATFORM_EXPORT ResourceResponse final {
     was_fetched_via_service_worker_ = value;
   }
 
-  base::TimeTicks ArrivalTimeAtRenderer() const {
-    return arrival_time_at_renderer_;
-  }
-  void SetArrivalTimeAtRenderer(base::TimeTicks value) {
-    arrival_time_at_renderer_ = value;
-  }
-
   network::mojom::FetchResponseSource GetServiceWorkerResponseSource() const {
     return service_worker_response_source_;
   }
@@ -460,6 +453,21 @@ class PLATFORM_EXPORT ResourceResponse final {
     request_include_credentials_ = request_include_credentials;
   }
 
+  bool ShouldUseSourceHashForJSCodeCache() const {
+    return should_use_source_hash_for_js_code_cache_;
+  }
+  void SetShouldUseSourceHashForJSCodeCache(
+      bool should_use_source_hash_for_js_code_cache) {
+    if (should_use_source_hash_for_js_code_cache) {
+      // This flag should only be set for http(s) resources, because others
+      // would end up blocked in the browser process anyway (see
+      // code_cache_host_impl.cc).
+      CHECK(CurrentRequestUrl().ProtocolIsInHTTPFamily());
+    }
+    should_use_source_hash_for_js_code_cache_ =
+        should_use_source_hash_for_js_code_cache;
+  }
+
  private:
   void UpdateHeaderParsedState(const AtomicString& name);
 
@@ -565,6 +573,12 @@ class PLATFORM_EXPORT ResourceResponse final {
   // See: https://fetch.spec.whatwg.org/#concept-http-network-fetch
   bool request_include_credentials_ : 1;
 
+  // If this response contains JavaScript, then downstream components may cache
+  // the parsed bytecode, but must use a source hash comparison rather than the
+  // response time when determining whether the current version of the script
+  // matches the cached bytecode.
+  bool should_use_source_hash_for_js_code_cache_ : 1;
+
   // Pre-computed padding.  This should only be non-zero if |response_type| is
   // set to kOpaque.  In addition, it is only set if the response was provided
   // by a service worker FetchEvent handler.
@@ -643,9 +657,6 @@ class PLATFORM_EXPORT ResourceResponse final {
   // Sizes of the response body in bytes after any content-encoding is
   // removed.
   int64_t decoded_body_length_ = 0;
-
-  // Represents when the response arrives at the renderer.
-  base::TimeTicks arrival_time_at_renderer_;
 
   // This is propagated from the browser process's PrefetchURLLoader on
   // cross-origin prefetch responses. It is used to pass the token along to

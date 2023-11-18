@@ -19,6 +19,8 @@
 #include "chrome/browser/commerce/shopping_service_factory.h"
 #include "chrome/browser/companion/core/features.h"
 #include "chrome/browser/download/bubble/download_bubble_prefs.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/performance_manager/public/user_tuning/user_performance_tuning_manager.h"
 #include "chrome/browser/performance_manager/public/user_tuning/user_tuning_utils.h"
 #include "chrome/browser/preloading/preloading_features.h"
@@ -41,6 +43,7 @@
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/plural_string_handler.h"
+#include "chrome/browser/ui/webui/search_engine_choice/icon_utils.h"
 #include "chrome/browser/ui/webui/settings/about_handler.h"
 #include "chrome/browser/ui/webui/settings/accessibility_main_handler.h"
 #include "chrome/browser/ui/webui/settings/appearance_handler.h"
@@ -95,7 +98,9 @@
 #include "components/privacy_sandbox/tracking_protection_settings.h"
 #include "components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_utils.h"
 #include "components/safe_browsing/core/common/features.h"
+#include "components/search_engines/search_engine_choice_utils.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/sync/base/features.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
@@ -313,6 +318,16 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
         ->FetchPriceEmailPref();
   }
 
+  const bool is_search_engine_choice_settings_ui =
+      base::FeatureList::IsEnabled(switches::kSearchEngineChoiceSettingsUi) &&
+      search_engines::IsChoiceScreenFlagEnabled(
+          search_engines::ChoicePromo::kAny);
+  html_source->AddBoolean("searchEngineChoiceSettingsUi",
+                          is_search_engine_choice_settings_ui);
+  if (is_search_engine_choice_settings_ui) {
+    AddGeneratedIconResources(html_source, /*directory=*/"images/");
+  }
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   html_source->AddBoolean(
       "userCannotManuallyEnterPassword",
@@ -430,6 +445,12 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   plural_string_handler->AddLocalizedString(
       "safetyCheckUnusedSitePermissionsToastBulkLabel",
       IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_TOAST_BULK_LABEL);
+  plural_string_handler->AddLocalizedString(
+      "safetyHubNotificationPermissionsPrimaryLabel",
+      IDS_SETTINGS_SAFETY_HUB_NOTIFICATION_PERMISSIONS_PRIMARY_LABEL);
+  plural_string_handler->AddLocalizedString(
+      "safetyHubNotificationPermissionsSecondaryLabel",
+      IDS_SETTINGS_SAFETY_HUB_NOTIFICATION_PERMISSIONS_SECONDARY_LABEL);
   web_ui->AddMessageHandler(std::move(plural_string_handler));
 
   // Add the metrics handler to write uma stats.
@@ -486,9 +507,11 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       base::FeatureList::IsEnabled(
           content_settings::features::kSafetyCheckUnusedSitePermissions));
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   html_source->AddBoolean(
       "safetyCheckExtensionsReviewEnabled",
       base::FeatureList::IsEnabled(features::kSafetyCheckExtensions));
+#endif
 
   html_source->AddBoolean("enableSafetyHub",
                           base::FeatureList::IsEnabled(features::kSafetyHub));
@@ -534,6 +557,40 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "autoPictureInPictureEnabled",
       base::FeatureList::IsEnabled(
           blink::features::kMediaSessionEnterPictureInPicture));
+
+  // AI
+  optimization_guide::proto::ModelExecutionFeature
+      optimization_guide_features[3] = {
+          optimization_guide::proto::ModelExecutionFeature::
+              MODEL_EXECUTION_FEATURE_COMPOSE,
+          optimization_guide::proto::ModelExecutionFeature::
+              MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION,
+          optimization_guide::proto::ModelExecutionFeature::
+              MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH,
+      };
+
+  auto* optimization_guide_service =
+      OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
+  bool optimization_guide_feature_visible[4] = {false, false, false, false};
+
+  for (size_t i = 0; i < 3; i++) {
+    const bool& visible = optimization_guide_service->IsSettingVisible(
+        optimization_guide_features[i]);
+    optimization_guide_feature_visible[i + 1] = visible;
+
+    // The main toggle is visible only if at least one of the sub toggles is
+    // visible.
+    optimization_guide_feature_visible[0] |= visible;
+  }
+
+  html_source->AddBoolean("showAdvancedFeaturesMainControl",
+                          optimization_guide_feature_visible[0]);
+  html_source->AddBoolean("showComposeControl",
+                          optimization_guide_feature_visible[1]);
+  html_source->AddBoolean("showTabOrganizationControl",
+                          optimization_guide_feature_visible[2]);
+  html_source->AddBoolean("showWallpaperSearchControl",
+                          optimization_guide_feature_visible[3]);
 
   TryShowHatsSurveyWithTimeout();
 }

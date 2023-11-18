@@ -85,6 +85,10 @@ class PLATFORM_EXPORT HanKerning {
     // https://learn.microsoft.com/en-us/typography/opentype/spec/features_ae#tag-chws
     bool has_contextual_spacing = false;
 
+    // True if quote characters are fullwdith. In a common convention, they are
+    // proportional (Latin) in Japanese, but fullwidth in Chinese.
+    bool is_quote_fullwidth = false;
+
     // `CharType` for "fullwidth dot punctuation."
     // https://drafts.csswg.org/css-text-4/#text-spacing-classes
     CharType type_for_dot = CharType::kOther;
@@ -96,10 +100,10 @@ class PLATFORM_EXPORT HanKerning {
     CharType type_for_semicolon = CharType::kOther;
   };
 
-  // Check if the `CharType` of a character is `kOpen` without knowing the font.
-  // `CharType` depends on fonts, but only between `kClose` and `kMiddle`.
-  // `kOpen` can be determined without `FontData`.
-  static bool IsOpen(UChar ch);
+  // Check if the `CharType` of a character may be `kOpen` without knowing the
+  // font. `CharType` depends on fonts, so it may not be `kOpen` even when this
+  // function returns `true`.
+  static bool MaybeOpen(UChar ch);
 
  private:
   static CharType GetCharType(UChar ch, const FontData& font_data);

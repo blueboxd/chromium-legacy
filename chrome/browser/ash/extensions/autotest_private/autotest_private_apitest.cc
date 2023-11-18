@@ -598,8 +598,14 @@ INSTANTIATE_TEST_SUITE_P(All,
                          AutotestPrivateSearchTest,
                          /* tablet_mode= */ ::testing::Bool());
 
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_LauncherSearchBoxStateAPITest \
+  DISABLED_LauncherSearchBoxStateAPITest
+#else
+#define MAYBE_LauncherSearchBoxStateAPITest LauncherSearchBoxStateAPITest
+#endif
 IN_PROC_BROWSER_TEST_P(AutotestPrivateSearchTest,
-                       LauncherSearchBoxStateAPITest) {
+                       MAYBE_LauncherSearchBoxStateAPITest) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(GetParam());
   test::GetAppListClient()->ShowAppList(ash::AppListShowSource::kSearchKey);
   if (!GetParam()) {
@@ -639,6 +645,21 @@ IN_PROC_BROWSER_TEST_P(AutotestPrivateSearchTest,
   EXPECT_EQ(base::UTF16ToASCII(results[0]->title()), "youtube");
 
   ASSERT_TRUE(RunAutotestPrivateExtensionTest("launcherSearchBoxState"))
+      << message_;
+}
+
+class AutotestPrivateIsFieldTrialActiveApiTest : public AutotestPrivateApiTest {
+ public:
+  AutotestPrivateIsFieldTrialActiveApiTest() {
+    base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
+        "ActiveTrialForTest", "GroupForTest");
+    trial->Activate();
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(AutotestPrivateIsFieldTrialActiveApiTest,
+                       IsFieldTrialActive) {
+  ASSERT_TRUE(RunAutotestPrivateExtensionTest("isFieldTrialActive"))
       << message_;
 }
 

@@ -35,6 +35,12 @@
 //media/test/data/aac-44100-packet-1
 //media/test/data/aac-44100-packet-2
 //media/test/data/aac-44100-packet-3
+//media/test/data/ac4-ajoc.ac4
+//media/test/data/ac4-channel-based-coding.ac4
+//media/test/data/ac4-ims.ac4
+//media/test/data/ac4-only-ajoc-frag.mp4
+//media/test/data/ac4-only-channel-based-coding-frag.mp4
+//media/test/data/ac4-only-ims-frag.mp4
 //media/test/data/audio-start-time-only.webm
 //media/test/data/av1-I-frame-1280x720
 //media/test/data/av1-I-frame-320x240
@@ -372,6 +378,12 @@
 //media/test/data/h264-320x180-frame-1
 //media/test/data/h264-320x180-frame-2
 //media/test/data/h264-320x180-frame-3
+//media/test/data/hls/README
+//media/test/data/hls/multi-bitrate-multivariant-bear/out_0.m3u8
+//media/test/data/hls/multi-bitrate-multivariant-bear/out_00.ts
+//media/test/data/hls/multi-bitrate-multivariant-bear/out_1.m3u8
+//media/test/data/hls/multi-bitrate-multivariant-bear/out_10.ts
+//media/test/data/hls/multi-bitrate-multivariant-bear/playlist.m3u8
 //media/test/data/icy_sfx.mp3
 //media/test/data/id3_png_test.mp3
 //media/test/data/id3_test.mp3

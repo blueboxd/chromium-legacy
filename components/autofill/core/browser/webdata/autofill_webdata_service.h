@@ -29,7 +29,7 @@ class SequencedTaskRunner;
 
 namespace autofill {
 
-class AutofillEntry;
+class AutocompleteEntry;
 class AutofillWebDataBackend;
 class AutofillWebDataBackendImpl;
 class AutofillWebDataServiceObserverOnDBSequence;
@@ -84,13 +84,11 @@ class AutofillWebDataService : public WebDataServiceBase {
   void RemoveAutofillProfile(const std::string& guid,
                              AutofillProfile::Source profile_source);
 
-  // Initiates the request for local/server Autofill profiles.  The method
+  // Initiates the request for Autofill profiles. The method
   // OnWebDataServiceRequestDone of |consumer| gets called when the request is
-  // finished, with the profiles included in the argument |result|.  The
+  // finished, with the profiles included in the argument |result|.
   WebDataServiceBase::Handle GetAutofillProfiles(
       AutofillProfile::Source profile_source,
-      WebDataServiceConsumer* consumer);
-  WebDataServiceBase::Handle GetServerProfiles(
       WebDataServiceConsumer* consumer);
 
   // Schedules a task to count the number of unique autofill values contained
@@ -101,13 +99,12 @@ class AutofillWebDataService : public WebDataServiceBase {
       const base::Time& end,
       WebDataServiceConsumer* consumer);
 
-  // Schedules a task to update autofill entries in the web database.
-  void UpdateAutofillEntries(
-      const std::vector<AutofillEntry>& autofill_entries);
+  // Schedules a task to update autocomplete entries in the web database.
+  void UpdateAutocompleteEntries(
+      const std::vector<AutocompleteEntry>& autocomplete_entries);
 
   void SetAutofillProfileChangedCallback(
-      base::RepeatingCallback<void(const AutofillProfileDeepChange&)>
-          change_cb);
+      base::RepeatingCallback<void(const AutofillProfileChange&)> change_cb);
 
   // Schedules a task to add a local IBAN to the web database.
   void AddLocalIban(const Iban& iban);
@@ -148,6 +145,9 @@ class AutofillWebDataService : public WebDataServiceBase {
   void UpdateServerCvc(int64_t instrument_id, const std::u16string& cvc);
   void RemoveServerCvc(int64_t instrument_id);
   void ClearServerCvcs();
+
+  // Method to clear all the local CVCs from the web database.
+  void ClearLocalCvcs();
 
   // Initiates the request for local/server credit cards.  The method
   // OnWebDataServiceRequestDone of |consumer| gets called when the request is
@@ -196,9 +196,6 @@ class AutofillWebDataService : public WebDataServiceBase {
 
   // Updates the metadata for a server card (masked or not).
   void UpdateServerCardMetadata(const CreditCard& credit_card);
-
-  // Updates the metadata for a server address.
-  void UpdateServerAddressMetadata(const AutofillProfile& profile);
 
   // Removes Autofill records from the database.
   void RemoveAutofillDataModifiedBetween(const base::Time& delete_begin,

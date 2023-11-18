@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <limits>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <type_traits>
@@ -43,7 +44,8 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/private_aggregation/aggregatable_report.mojom.h"
 #include "third_party/boringssl/src/include/openssl/hpke.h"
-#include "third_party/distributed_point_functions/code/dpf/distributed_point_function.h"
+#include "third_party/distributed_point_functions/dpf/distributed_point_function.pb.h"
+#include "third_party/distributed_point_functions/shim/distributed_point_function_shim.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -51,8 +53,6 @@ namespace content {
 
 namespace {
 
-using DistributedPointFunction =
-    distributed_point_functions::DistributedPointFunction;
 using DpfKey = distributed_point_functions::DpfKey;
 using DpfParameters = distributed_point_functions::DpfParameters;
 
@@ -112,31 +112,22 @@ std::vector<DpfKey> GenerateDpfKeys(
             blink::mojom::AggregationServiceMode::kExperimentalPoplar);
   DCHECK_EQ(contents.contributions.size(), 1u);
 
-  // absl::StatusOr is not allowed in the codebase, but this minimal usage is
-  // necessary to interact with //third_party/distributed_point_functions/.
-  absl::StatusOr<std::unique_ptr<DistributedPointFunction>> status_or_dpf =
-      DistributedPointFunction::CreateIncremental(ConstructDpfParameters());
-  if (!status_or_dpf.ok()) {
-    return {};
-  }
-  std::unique_ptr<DistributedPointFunction> dpf =
-      std::move(status_or_dpf).value();
-
-  // We want the same beta, no matter which prefix length is used.
-  absl::StatusOr<std::pair<DpfKey, DpfKey>> status_or_dpf_keys =
-      dpf->GenerateKeysIncremental(
+  std::optional<std::pair<DpfKey, DpfKey>> maybe_dpf_keys =
+      distributed_point_functions::GenerateKeysIncremental(
+          ConstructDpfParameters(),
           /*alpha=*/contents.contributions[0].bucket,
-          /*beta=*/std::vector<absl::uint128>(
-              AggregatableReport::kBucketDomainBitLength,
-              contents.contributions[0].value));
-  if (!status_or_dpf_keys.ok()) {
+          // We want the same beta, no matter which prefix length is used.
+          /*beta=*/
+          std::vector<absl::uint128>(AggregatableReport::kBucketDomainBitLength,
+                                     contents.contributions[0].value));
+
+  if (!maybe_dpf_keys.has_value()) {
     return {};
   }
 
   std::vector<DpfKey> dpf_keys;
-  dpf_keys.push_back(std::move(status_or_dpf_keys->first));
-  dpf_keys.push_back(std::move(status_or_dpf_keys->second));
-
+  dpf_keys.push_back(std::move(maybe_dpf_keys->first));
+  dpf_keys.push_back(std::move(maybe_dpf_keys->second));
   return dpf_keys;
 }
 
@@ -335,6 +326,12 @@ ConvertPayloadContentsFromProto(
       return absl::nullopt;
   }
 
+  absl::optional<url::Origin> aggregation_coordinator_origin;
+  if (proto.has_aggregation_coordinator_origin()) {
+    aggregation_coordinator_origin =
+        url::Origin::Create(GURL(proto.aggregation_coordinator_origin()));
+  }
+
   int max_contributions_allowed = proto.max_contributions_allowed();
   if (max_contributions_allowed < 0) {
     return absl::nullopt;
@@ -346,8 +343,7 @@ ConvertPayloadContentsFromProto(
   // Report storage doesn't support multiple aggregation coordinators.
   return AggregationServicePayloadContents(
       operation, std::move(contributions), aggregation_mode,
-      /*aggregation_coordinator_origin=*/absl::nullopt,
-      max_contributions_allowed);
+      std::move(aggregation_coordinator_origin), max_contributions_allowed);
 }
 
 absl::optional<AggregatableReportSharedInfo> ConvertSharedInfoFromProto(
@@ -442,11 +438,15 @@ void ConvertPayloadContentsToProto(
       break;
   }
 
+  if (base::FeatureList::IsEnabled(
+          aggregation_service::kAggregationServiceMultipleCloudProviders) &&
+      payload_contents.aggregation_coordinator_origin.has_value()) {
+    out->set_aggregation_coordinator_origin(
+        payload_contents.aggregation_coordinator_origin->Serialize());
+  }
+
   out->set_max_contributions_allowed(
       payload_contents.max_contributions_allowed);
-
-  // Report storage doesn't support multiple aggregation coordinators.
-  CHECK(!payload_contents.aggregation_coordinator_origin.has_value());
 }
 
 void ConvertSharedInfoToProto(const AggregatableReportSharedInfo& shared_info,
@@ -582,8 +582,9 @@ std::string AggregatableReportSharedInfo::SerializeAsJson() const {
   DCHECK(!scheduled_report_time.is_null());
   DCHECK(!scheduled_report_time.is_inf());
   value.Set("scheduled_report_time",
-            base::NumberToString(scheduled_report_time.ToJavaTime() /
-                                 base::Time::kMillisecondsPerSecond));
+            base::NumberToString(
+                scheduled_report_time.InMillisecondsSinceUnixEpoch() /
+                base::Time::kMillisecondsPerSecond));
 
   value.Set("version", api_version);
 

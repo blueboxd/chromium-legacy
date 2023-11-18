@@ -33,6 +33,8 @@
 #include "components/prefs/pref_service.h"
 #include "media/base/media_switches.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/manager/display_manager.h"
@@ -50,10 +52,11 @@ namespace ash {
 namespace {
 
 constexpr int kNoMediaTextFontSizeIncrease = 2;
+constexpr int kNoMediaTextFontSize = 14;
 constexpr int kTitleFontSizeIncrease = 4;
-constexpr int kTitleViewHeight = 56;
+constexpr int kTitleViewHeight = 60;
 
-constexpr auto kTitleViewInsets = gfx::Insets::TLBR(0, 16, 0, 16);
+constexpr gfx::Insets kTitleViewInsets = gfx::Insets::VH(16, 16);
 
 // Minimum screen diagonal (in inches) for pinning global media controls
 // on shelf by default.
@@ -87,11 +90,12 @@ enum PinState {
 
 // View that contains global media controls' title.
 class GlobalMediaControlsTitleView : public views::View {
+  METADATA_HEADER(GlobalMediaControlsTitleView, views::View)
+
  public:
   GlobalMediaControlsTitleView() {
     auto* box_layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kHorizontal, kTitleViewInsets));
-    box_layout->set_minimum_cross_axis_size(kTitleViewHeight);
     box_layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kCenter);
 
@@ -105,12 +109,13 @@ class GlobalMediaControlsTitleView : public views::View {
       title_label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
       TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosTitle1,
                                             *title_label_);
-
+      SetPreferredSize(gfx::Size(kWideTrayMenuWidth, kTitleViewHeight));
     } else {
       title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       title_label_->SetFontList(views::Label::GetDefaultFontList().Derive(
           kTitleFontSizeIncrease, gfx::Font::NORMAL,
           gfx::Font::Weight::MEDIUM));
+      SetPreferredSize(gfx::Size(kTrayMenuWidth, kTitleViewHeight));
     }
 
     // Media tray should always be pinned to shelf when we are opening the
@@ -144,6 +149,9 @@ class GlobalMediaControlsTitleView : public views::View {
   raw_ptr<views::ImageButton, ExperimentalAsh> pin_button_ = nullptr;
   raw_ptr<views::Label, ExperimentalAsh> title_label_ = nullptr;
 };
+
+BEGIN_METADATA(GlobalMediaControlsTitleView)
+END_METADATA
 
 }  // namespace
 
@@ -193,8 +201,8 @@ MediaTray::PinButton::PinButton()
           /*has_border=*/false) {
   SetIconSize(kTrayTopShortcutButtonIconSize);
   SetToggledVectorIcon(kPinnedIcon);
-  SetIconColorId(cros_tokens::kCrosSysOnSurface);
-  SetBackgroundToggledColorId(cros_tokens::kCrosSysSystemPrimaryContainer);
+  SetIconColor(cros_tokens::kCrosSysOnSurface);
+  SetBackgroundToggledColor(cros_tokens::kCrosSysSystemPrimaryContainer);
   SetToggled(MediaTray::IsPinnedToShelf());
 }
 
@@ -209,6 +217,9 @@ void MediaTray::PinButton::ButtonPressed() {
           ? IDS_ASH_GLOBAL_MEDIA_CONTROLS_PINNED_BUTTON_TOOLTIP_TEXT
           : IDS_ASH_GLOBAL_MEDIA_CONTROLS_UNPINNED_BUTTON_TOOLTIP_TEXT));
 }
+
+BEGIN_METADATA(MediaTray, PinButton, IconButton)
+END_METADATA
 
 MediaTray::MediaTray(Shelf* shelf)
     : TrayBackgroundView(shelf, TrayBackgroundViewCatalogName::kMediaPlayer) {
@@ -229,8 +240,8 @@ MediaTray::MediaTray(Shelf* shelf)
 }
 
 MediaTray::~MediaTray() {
-  if (bubble_) {
-    bubble_->GetBubbleView()->ResetDelegate();
+  if (GetBubbleView()) {
+    GetBubbleView()->ResetDelegate();
   }
 
   if (MediaNotificationProvider::Get()) {
@@ -245,11 +256,11 @@ void MediaTray::OnNotificationListChanged() {
 }
 
 void MediaTray::OnNotificationListViewSizeChanged() {
-  if (!bubble_) {
+  if (!GetBubbleView()) {
     return;
   }
 
-  bubble_->GetBubbleView()->UpdateBubble();
+  GetBubbleView()->UpdateBubble();
 }
 
 std::u16string MediaTray::GetAccessibleNameForTray() {
@@ -284,17 +295,26 @@ void MediaTray::ShowBubble() {
 }
 
 void MediaTray::CloseBubble() {
+  if (!bubble_) {
+    CHECK(!is_active());
+    CHECK(!pin_button_);
+    CHECK(!content_view_);
+    CHECK(!empty_state_view_);
+    return;
+  }
   if (MediaNotificationProvider::Get()) {
     MediaNotificationProvider::Get()->OnBubbleClosing();
   }
   SetIsActive(false);
+  pin_button_ = nullptr;
+  content_view_ = nullptr;
   empty_state_view_ = nullptr;
   bubble_.reset();
   shelf()->UpdateAutoHideState();
 }
 
 void MediaTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
-  if (bubble_ && bubble_->bubble_view() == bubble_view) {
+  if (GetBubbleView() && GetBubbleView() == bubble_view) {
     CloseBubble();
   }
 }
@@ -346,12 +366,14 @@ void MediaTray::UpdateDisplayState() {
       MediaNotificationProvider::Get()->HasActiveNotifications() ||
       MediaNotificationProvider::Get()->HasFrozenNotifications();
 
-  if (bubble_ && !has_session) {
-    ShowEmptyState();
-  }
-
-  if (bubble_ && has_session && empty_state_view_) {
-    empty_state_view_->SetVisible(false);
+  // Verify the bubble view still exists before referencing `empty_state_view_`.
+  if (GetBubbleView()) {
+    if (has_session && empty_state_view_) {
+      empty_state_view_->SetVisible(false);
+    }
+    if (!has_session) {
+      ShowEmptyState();
+    }
   }
 
   bool should_show = has_session &&
@@ -378,6 +400,7 @@ void MediaTray::ShowBubbleWithItem(const std::string& item_id) {
       MediaNotificationProvider::Get()->GetMediaNotificationListView(
           kMenuSeparatorWidth, /*should_clip_height=*/true, item_id));
   if (base::FeatureList::IsEnabled(media::kGlobalMediaControlsCrOSUpdatedUI)) {
+    bubble_view->SetPreferredWidth(kWideTrayMenuWidth);
     content_view_->SetBorder(views::CreateEmptyBorder(
         gfx::Insets::TLBR(0, 0, kMediaNotificationListViewBottomPadding, 0)));
   }
@@ -421,7 +444,9 @@ void MediaTray::OnGlobalMediaControlsPinPrefChanged() {
 }
 
 void MediaTray::ShowEmptyState() {
-  DCHECK(content_view_);
+  CHECK(content_view_);
+  CHECK(GetBubbleView());
+
   if (empty_state_view_) {
     empty_state_view_->SetVisible(true);
     return;
@@ -443,24 +468,33 @@ void MediaTray::ShowEmptyState() {
       AshColorProvider::ContentLayerType::kTextColorSecondary));
   no_media_label->SetText(
       l10n_util::GetStringUTF16(IDS_ASH_GLOBAL_MEDIA_CONTROLS_NO_MEDIA_TEXT));
-  no_media_label->SetFontList(
-      views::Label::GetDefaultFontList().DeriveWithSizeDelta(
-          kNoMediaTextFontSizeIncrease));
+  if (base::FeatureList::IsEnabled(media::kGlobalMediaControlsCrOSUpdatedUI)) {
+    no_media_label->SetFontList(
+        gfx::FontList({"Google Sans", "Roboto"}, gfx::Font::NORMAL,
+                      kNoMediaTextFontSize, gfx::Font::Weight::NORMAL));
+  } else {
+    no_media_label->SetFontList(
+        views::Label::GetDefaultFontList().DeriveWithSizeDelta(
+            kNoMediaTextFontSizeIncrease));
+  }
   empty_state_view->AddChildView(std::move(no_media_label));
 
   empty_state_view->SetPaintToLayer();
   empty_state_view->layer()->SetFillsBoundsOpaquely(false);
   empty_state_view_ =
-      bubble_->GetBubbleView()->AddChildView(std::move(empty_state_view));
+      GetBubbleView()->AddChildView(std::move(empty_state_view));
 }
 
 void MediaTray::AnchorUpdated() {
-  if (!bubble_) {
+  if (!GetBubbleView()) {
     return;
   }
 
-  bubble_->GetBubbleView()->SetAnchorRect(
+  GetBubbleView()->SetAnchorRect(
       shelf()->GetStatusAreaWidget()->GetMediaTrayAnchorRect());
 }
+
+BEGIN_METADATA(MediaTray)
+END_METADATA
 
 }  // namespace ash

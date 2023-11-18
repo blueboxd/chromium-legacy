@@ -216,11 +216,23 @@ void BrowserServiceLacros::REMOVED_16(
 void BrowserServiceLacros::NewWindow(bool incognito,
                                      bool should_trigger_session_restore,
                                      int64_t target_display_id,
+                                     absl::optional<uint64_t> profile_id,
                                      NewWindowCallback callback) {
   if (g_browser_process->IsShuttingDown()) {
     std::move(callback).Run(crosapi::mojom::CreationResult::kBrowserShutdown);
     return;
   }
+
+  if (profile_id.has_value()) {
+    LoadProfileWithId(
+        base::BindOnce(&BrowserServiceLacros::NewWindowWithProfile,
+                       weak_ptr_factory_.GetWeakPtr(), incognito,
+                       should_trigger_session_restore, target_display_id,
+                       std::move(callback)),
+        /*can_trigger_fre=*/true, profile_id.value());
+    return;
+  }
+
   if (ShowProfilePickerIfNeeded(incognito)) {
     std::move(callback).Run(
         crosapi::mojom::CreationResult::kBrowserWindowUnavailable);
@@ -314,6 +326,7 @@ void BrowserServiceLacros::NewTab(NewTabCallback callback) {
 }
 
 void BrowserServiceLacros::Launch(int64_t target_display_id,
+                                  absl::optional<uint64_t> profile_id,
                                   LaunchCallback callback) {
   if (g_browser_process->IsShuttingDown()) {
     std::move(callback).Run(crosapi::mojom::CreationResult::kBrowserShutdown);
@@ -423,6 +436,11 @@ void BrowserServiceLacros::OpenForFullRestore(bool skip_crash_restore) {
       base::BindOnce(&BrowserServiceLacros::OpenForFullRestoreWithProfile,
                      weak_ptr_factory_.GetWeakPtr(), skip_crash_restore),
       /*can_trigger_fre=*/true);
+}
+
+void BrowserServiceLacros::OpenProfileManager() {
+  ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
+      ProfilePicker::EntryPoint::kProfileMenuManageProfiles));
 }
 
 void BrowserServiceLacros::OnSystemInformationReady(

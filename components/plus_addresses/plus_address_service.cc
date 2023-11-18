@@ -58,12 +58,31 @@ PlusAddressService::PlusAddressService(
   }
 }
 
-bool PlusAddressService::SupportsPlusAddresses(url::Origin origin) {
+bool PlusAddressService::SupportsPlusAddresses(url::Origin origin,
+                                               bool is_off_the_record) {
   // TODO(b/295187452): Also check `origin` here.
-  return is_enabled();
+  // First, check prerequisites (the feature enabled, etc.)
+  if (!is_enabled()) {
+    return false;
+  }
+  // We've met the prerequisites. If this isn't an OTR session, plus_addresses
+  // are supported.
+  if (!is_off_the_record) {
+    return true;
+  }
+  // Prerequisites are met, but it's an off-the-record session. If there's an
+  // existing plus_address, it's supported, otherwise it is not.
+  return GetPlusAddress(origin).has_value();
 }
 
 absl::optional<std::string> PlusAddressService::GetPlusAddress(
+    url::Origin origin) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  absl::optional<PlusProfile> profile = GetPlusProfile(origin);
+  return profile ? absl::make_optional(profile->plus_address) : absl::nullopt;
+}
+
+absl::optional<PlusProfile> PlusAddressService::GetPlusProfile(
     url::Origin origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::string etld_plus_one = GetEtldPlusOne(origin);
@@ -71,7 +90,12 @@ absl::optional<std::string> PlusAddressService::GetPlusAddress(
   if (it == plus_address_by_site_.end()) {
     return absl::nullopt;
   }
-  return absl::optional<std::string>(it->second);
+  // Assume that 'is_confirmed` = TRUE since this service only has a saved plus
+  // address if it was successfully confirmed via the dialog or retrieved via
+  // polling (which only returns confirmed plus addresses).
+  return PlusProfile({.facet = etld_plus_one,
+                      .plus_address = it->second,
+                      .is_confirmed = true});
 }
 
 void PlusAddressService::SavePlusAddress(url::Origin origin,
@@ -100,7 +124,7 @@ void PlusAddressService::OfferPlusAddressCreation(
     return;
   }
   plus_address_client_.CreatePlusAddress(
-      GetEtldPlusOne(origin),
+      origin,
       // On receiving the PlusAddress...
       base::BindOnce(
           // ... first send it back to Autofill
@@ -115,6 +139,63 @@ void PlusAddressService::OfferPlusAddressCreation(
               // base::Unretained is safe here since PlusAddressService owns
               // the PlusAddressClient and they will have the same lifetime.
               base::Unretained(this), origin)));
+}
+
+void PlusAddressService::ReservePlusAddress(
+    const url::Origin& origin,
+    PlusAddressRequestCallback on_completed) {
+  if (!is_enabled()) {
+    return;
+  }
+  plus_address_client_.ReservePlusAddress(
+      origin,
+      // Thin wrapper around on_completed to save the PlusAddress in the
+      // success case.
+      base::BindOnce(
+          [](PlusAddressService* service, const url::Origin& origin,
+             PlusAddressRequestCallback callback,
+             const PlusProfileOrError& maybe_profile) {
+            if (maybe_profile.has_value() && maybe_profile->is_confirmed) {
+              service->SavePlusAddress(origin, maybe_profile->plus_address);
+            }
+            // Run callback last in case it's dependent on above changes.
+            std::move(callback).Run(maybe_profile);
+          },
+          // base::Unretained is safe here since PlusAddressService owns
+          // the PlusAddressClient and they will have the same lifetime.
+          base::Unretained(this), origin, std::move(on_completed)));
+}
+
+void PlusAddressService::ConfirmPlusAddress(
+    const url::Origin& origin,
+    const std::string& plus_address,
+    PlusAddressRequestCallback on_completed) {
+  if (!is_enabled()) {
+    return;
+  }
+  // Check the local mapping before attempting to confirm plus_address.
+  if (absl::optional<PlusProfile> stored_plus_profile = GetPlusProfile(origin);
+      stored_plus_profile) {
+    std::move(on_completed).Run(stored_plus_profile.value());
+    return;
+  }
+  plus_address_client_.ConfirmPlusAddress(
+      origin, plus_address,
+      // Thin wrapper around on_completed to save the PlusAddress in the
+      // success case.
+      base::BindOnce(
+          [](PlusAddressService* service, const url::Origin& origin,
+             PlusAddressRequestCallback callback,
+             const PlusProfileOrError& maybe_profile) {
+            if (maybe_profile.has_value()) {
+              service->SavePlusAddress(origin, maybe_profile->plus_address);
+            }
+            // Run callback last in case it's dependent on above changes.
+            std::move(callback).Run(maybe_profile);
+          },
+          // base::Unretained is safe here since PlusAddressService owns
+          // the PlusAddressClient and they will have the same lifetime.
+          base::Unretained(this), origin, std::move(on_completed)));
 }
 
 std::u16string PlusAddressService::GetCreateSuggestionLabel() {
@@ -138,6 +219,7 @@ absl::optional<std::string> PlusAddressService::GetPrimaryEmail() {
 
 bool PlusAddressService::is_enabled() const {
   return base::FeatureList::IsEnabled(plus_addresses::kFeature) &&
+         (kEnterprisePlusAddressServerUrl.Get() != "") &&
          identity_manager_ != nullptr &&
          // Note that having a primary account implies that account's email will
          // be populated.

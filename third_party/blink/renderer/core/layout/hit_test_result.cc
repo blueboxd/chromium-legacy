@@ -58,6 +58,8 @@
 
 namespace blink {
 
+using mojom::blink::FormControlType;
+
 HitTestResult::HitTestResult()
     : hit_test_request_(HitTestRequest::kReadOnly | HitTestRequest::kActive),
       cacheable_(true),
@@ -246,9 +248,7 @@ void HitTestResult::SetToShadowHostIfInUAShadowRoot() {
 }
 
 CompositorElementId HitTestResult::GetScrollableContainer() const {
-  DCHECK(InnerNode());
-  // TODO(1303411): Some users encounter InnerNode() == null here, but we don't
-  // know why. Return an invalid element ID in this case, which we check for in
+  // If no node was found, return an invalid element ID, which we check for in
   // InputHandlerProxy::ContinueScrollBeginAfterMainThreadHitTest.
   if (!InnerNode())
     return CompositorElementId();
@@ -418,12 +418,13 @@ KURL HitTestResult::AbsoluteImageURL(const Node* node) {
   auto* html_input_element = DynamicTo<HTMLInputElement>(node);
   if (IsA<HTMLImageElement>(*node) ||
       (html_input_element &&
-       html_input_element->type() == input_type_names::kImage))
+       html_input_element->FormControlType() == FormControlType::kInputImage)) {
     url_string = To<Element>(*node).ImageSourceURL();
-  else if ((node->GetLayoutObject() && node->GetLayoutObject()->IsImage()) &&
-           (IsA<HTMLEmbedElement>(*node) || IsA<HTMLObjectElement>(*node) ||
-            IsA<SVGImageElement>(*node)))
+  } else if ((node->GetLayoutObject() && node->GetLayoutObject()->IsImage()) &&
+             (IsA<HTMLEmbedElement>(*node) || IsA<HTMLObjectElement>(*node) ||
+              IsA<SVGImageElement>(*node))) {
     url_string = To<Element>(*node).ImageSourceURL();
+  }
   if (url_string.empty())
     return KURL();
 

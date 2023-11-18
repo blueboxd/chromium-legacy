@@ -68,13 +68,6 @@ preprocess_if_expr("preprocess_static") {
   }
 
   in_files = static_js_files + unittest_files
-
-  deps = [
-    "//ui/file_manager/file_manager/background/js:js_modules",
-    "//ui/file_manager/file_manager/common/js:js_modules",
-    "//ui/file_manager/file_manager/foreground/elements:web_components",
-    "//ui/file_manager/file_manager/foreground/js:deferred_elements",
-  ]
 }
 
 if (enable_webui_inline_sourcemaps) {
@@ -106,8 +99,6 @@ preprocess_if_expr("preprocess_static_image_loader") {
   }
 
   in_files = image_loader_static_js_files
-
-  deps = [ "//ui/file_manager/image_loader:js_modules" ]
 }
 
 if (enable_webui_inline_sourcemaps) {
@@ -140,9 +131,7 @@ preprocess_if_expr("preprocess_generated") {
   deps = [
     ":html_wrapper_files",
     "//ui/file_manager/base/gn:file_types_data_gen_js",
-    "//ui/file_manager/file_manager/foreground/elements:elements",
     "//ui/file_manager/file_manager/foreground/elements:polymer_elements",
-    "//ui/file_manager/file_manager/foreground/elements:web_components",
   ]
 }
 
@@ -206,12 +195,7 @@ ts_library("build_ts") {
 
   manifest_excludes = [ "file_manager/externs/file_manager_private.js" ]
 
-  definitions = [
-    "//tools/typescript/definitions/chrome_event.d.ts",
-    "//tools/typescript/definitions/metrics_private.d.ts",
-    "//tools/typescript/definitions/runtime.d.ts",
-    "//tools/typescript/definitions/tabs.d.ts",
-  ]
+  definitions = other_dts_files
   foreach(_file, generate_definitions_js_files) {
     definitions +=
         [ "$target_gen_dir/" + string_replace(_file, ".js", ".d.ts") ]
@@ -264,7 +248,7 @@ ts_library("test_build_ts") {
                     target_gen_dir),
   ]
 
-  definitions = []
+  definitions = other_dts_files
   foreach(_file, generate_definitions_js_files) {
     definitions +=
         [ "$target_gen_dir/" + string_replace(_file, ".js", ".d.ts") ]
@@ -286,12 +270,17 @@ ts_library("test_build_ts") {
     ":copy_definitions_to_preprocess",
     ":copy_fmp_test",
     ":generate_definitions",
-    ":preprocess_static",
   ]
   if (enable_webui_inline_sourcemaps) {
-    extra_deps += [ ":create_source_maps_copy_ts" ]
+    extra_deps += [
+      ":create_source_maps_copy_ts",
+      ":create_source_maps_static",
+    ]
   } else {
-    extra_deps += [ ":copy_ts" ]
+    extra_deps += [
+      ":copy_ts",
+      ":preprocess_static",
+    ]
   }
 }
 
@@ -432,7 +421,6 @@ generate_grd("build_grd") {
     deps += [
       ":for_image_loader",
       "//ui/file_manager/file_manager/background/js:build",
-      "//ui/file_manager/file_manager/foreground/elements:elements",
       "//ui/file_manager/file_manager/foreground/js:build",
       "//ui/file_manager/file_manager/foreground/js:build_worker",
     ]

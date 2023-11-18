@@ -6,8 +6,10 @@
 #define SERVICES_NETWORK_MASKED_DOMAIN_LIST_NETWORK_SERVICE_PROXY_ALLOW_LIST_H_
 
 #include "components/privacy_sandbox/masked_domain_list/masked_domain_list.pb.h"
+#include "net/base/network_anonymization_key.h"
 #include "services/network/masked_domain_list/url_matcher_with_bypass.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/network_service.mojom-forward.h"
 
 namespace network {
 
@@ -17,7 +19,8 @@ namespace network {
 // Proxy and determines if pairs of request and top_frame URLs are eligible.
 class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyAllowList {
  public:
-  NetworkServiceProxyAllowList();
+  explicit NetworkServiceProxyAllowList(
+      network::mojom::IpProtectionProxyBypassPolicy);
   ~NetworkServiceProxyAllowList();
   NetworkServiceProxyAllowList(const NetworkServiceProxyAllowList&);
 
@@ -40,10 +43,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyAllowList {
   // match on them. If false, `Matches` will always return false.
   bool IsPopulated();
 
-  // Determines if the pair of URLs are eligible for the proxy by determining
-  // if the request is an eligible domain and if the top frame domain is
-  // considered a first or third party.
-  bool Matches(const GURL& request_url, const GURL& top_frame_url);
+  // Determines if the request is eligible for the proxy by determining if the
+  // request_url is for an eligible domain and if the NAK supports eligibility.
+  // If the top_frame_origin of the NAK does not have the same owner as the
+  // request_url and the request_url is in the allow list, the request is
+  // eligible for the proxy.
+  bool Matches(const GURL& request_url,
+               const net::NetworkAnonymizationKey& network_anonymization_key);
 
   // Use the Masked Domain List to generate the allow list and the 1P bypass
   // rules.
@@ -52,6 +58,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyAllowList {
  private:
   void AddDomainWithBypass(const std::string& domain,
                            net::SchemeHostPortMatcher bypass_matcher);
+
+  // Policy that determines which domains are bypassed from IP Protection.
+  network::mojom::IpProtectionProxyBypassPolicy proxy_bypass_policy_;
 
   // Contains match rules from the Masked Domain List.
   UrlMatcherWithBypass url_matcher_with_bypass_;

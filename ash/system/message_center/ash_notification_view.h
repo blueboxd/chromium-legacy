@@ -11,6 +11,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/views/notification_input_container.h"
@@ -44,9 +45,9 @@ class ASH_EXPORT AshNotificationView
     : public message_center::NotificationViewBase,
       public message_center::MessageCenterObserver,
       public views::WidgetObserver {
- public:
-  static const char kViewClassName[];
+  METADATA_HEADER(AshNotificationView, message_center::NotificationViewBase)
 
+ public:
   // TODO(crbug/1241983): Add metadata and builder support to this view.
   explicit AshNotificationView(const message_center::Notification& notification,
                                bool shown_in_popup);
@@ -98,7 +99,6 @@ class ASH_EXPORT AshNotificationView
       const std::vector<const message_center::Notification*>& notifications)
       override;
   void RemoveGroupNotification(const std::string& notification_id) override;
-  const char* GetClassName() const override;
   // Called after `PreferredSizeChanged()`, so the current state is the target
   // state.
   base::TimeDelta GetBoundsAnimationDuration(
@@ -141,6 +141,8 @@ class ASH_EXPORT AshNotificationView
   void ToggleInlineSettings(const ui::Event& event) override;
   void ToggleSnoozeSettings(const ui::Event& event) override;
   void OnInlineReplyUpdated() override;
+  views::View* FindGroupNotificationView(
+      const std::string& notification_id) override;
 
   void set_is_animating(bool is_animating) { is_animating_ = is_animating; }
   bool is_animating() { return is_animating_; }
@@ -154,9 +156,13 @@ class ASH_EXPORT AshNotificationView
     return control_buttons_view_;
   }
 
+  views::Label* GetTitleRowLabelForTest();
+
   // View containing all grouped notifications, propagates size changes
   // to the parent notification view.
   class GroupedNotificationsContainer : public views::BoxLayoutView {
+    METADATA_HEADER(GroupedNotificationsContainer, views::BoxLayoutView)
+
    public:
     GroupedNotificationsContainer() = default;
     GroupedNotificationsContainer(const GroupedNotificationsContainer&) =
@@ -179,6 +185,7 @@ class ASH_EXPORT AshNotificationView
 
  private:
   friend class AshNotificationViewTestBase;
+  friend class MessageCenterMetricsUtilsTest;
   friend class NotificationGroupingControllerTest;
 
   // Customized title row for this notification view with added timestamp in
@@ -229,10 +236,6 @@ class ASH_EXPORT AshNotificationView
     base::OneShotTimer timestamp_update_timer_;
     absl::optional<base::Time> timestamp_;
   };
-
-  // message_center::MessageView:
-  views::View* FindGroupNotificationView(
-      const std::string& notification_id) override;
 
   // message_center::MessageCenterObserver:
   void OnNotificationRemoved(const std::string& notification_id,
@@ -352,8 +355,8 @@ class ASH_EXPORT AshNotificationView
   // shown in a collapsed grouped notification.
   int total_grouped_notifications_ = 0;
 
-  // Cached background color to avoid unnecessary update.
-  SkColor background_color_ = SK_ColorTRANSPARENT;
+  // Cached background color id to avoid unnecessary update.
+  ui::ColorId background_color_id_ = 0;
 
   // Used to prevent setting bounds in `AshNotificationView` while running
   // animations to resize this view.

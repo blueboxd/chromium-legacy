@@ -9,7 +9,6 @@
 #include "ash/public/cpp/login_screen_client.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
-#include "components/password_manager/core/browser/hash_password_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace ash {
@@ -87,6 +86,10 @@ class MockLoginScreenClient : public LoginScreenClient {
   MOCK_METHOD(void,
               ShowGaiaSignin,
               (const AccountId& prefilled_account),
+              (override));
+  MOCK_METHOD(void,
+              StartUserRecovery,
+              (const AccountId& account_to_recover),
               (override));
   MOCK_METHOD(void, ShowOsInstallScreen, (), (override));
   MOCK_METHOD(void, OnRemoveUserWarningShown, (), (override));

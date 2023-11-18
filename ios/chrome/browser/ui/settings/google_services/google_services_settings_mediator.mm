@@ -12,7 +12,7 @@
 #import "components/password_manager/core/common/password_manager_pref_names.h"
 #import "components/prefs/pref_service.h"
 #import "components/signin/public/base/signin_pref_names.h"
-#import "components/supervised_user/core/common/supervised_user_utils.h"
+#import "components/supervised_user/core/browser/supervised_user_preferences.h"
 #import "components/sync/service/sync_service.h"
 #import "components/unified_consent/pref_names.h"
 #import "ios/chrome/browser/parcel_tracking/parcel_tracking_util.h"
@@ -23,13 +23,13 @@
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/model/utils/observable_boolean.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
-#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_detail_text_item.h"
+#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_info_button_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_switch_item.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
-#import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/signin/system_identity.h"
+#import "ios/chrome/browser/signin/model/authentication_service.h"
+#import "ios/chrome/browser/signin/model/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/model/system_identity.h"
 #import "ios/chrome/browser/ui/authentication/authentication_constants.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
 #import "ios/chrome/browser/ui/settings/cells/account_sign_in_item.h"
@@ -84,7 +84,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Returns true when sign-in can be enabled/disabled by the user from the
 // google service settings.
 bool IsSigninControllableByUser(const PrefService* prefService) {
-  if (supervised_user::IsSubjectToParentalControls(prefService)) {
+  if (prefService &&
+      supervised_user::IsSubjectToParentalControls(*prefService)) {
     return false;
   }
   BrowserSigninMode policy_mode = static_cast<BrowserSigninMode>(
@@ -446,15 +447,36 @@ bool GetStatusForSigninPolicy() {
     TableViewModel* model = self.consumer.tableViewModel;
     [model addSectionWithIdentifier:ParcelTrackingSectionIdentifier];
 
-    TableViewDetailTextItem* parcelTrackingItem =
-        [[TableViewDetailTextItem alloc] initWithType:ParcelTrackingItemType];
+    TableViewDetailIconItem* parcelTrackingItem =
+        [[TableViewDetailIconItem alloc] initWithType:ParcelTrackingItemType];
     parcelTrackingItem.text = l10n_util::GetNSString(
         IDS_IOS_CONTENT_SUGGESTIONS_PARCEL_TRACKING_MODULE_TITLE);
     parcelTrackingItem.accessoryType =
         UITableViewCellAccessoryDisclosureIndicator;
-    parcelTrackingItem.accessibilityTraits = UIAccessibilityTraitButton;
+    parcelTrackingItem.accessibilityTraits |= UIAccessibilityTraitButton;
     [model addItem:parcelTrackingItem
         toSectionWithIdentifier:ParcelTrackingSectionIdentifier];
+
+    IOSParcelTrackingOptInStatus optInStatus =
+        static_cast<IOSParcelTrackingOptInStatus>(
+            self.userPrefService->GetInteger(
+                prefs::kIosParcelTrackingOptInStatus));
+    NSString* currentOptInStatusString = nil;
+    switch (optInStatus) {
+      case IOSParcelTrackingOptInStatus::kAlwaysTrack:
+        currentOptInStatusString = l10n_util::GetNSString(
+            IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTO_TRACK_PACKAGES_ALL);
+        break;
+      case IOSParcelTrackingOptInStatus::kAskToTrack:
+        currentOptInStatusString = l10n_util::GetNSString(
+            IDS_IOS_PARCEL_TRACKING_OPT_IN_TERTIARY_ACTION);
+        break;
+      case IOSParcelTrackingOptInStatus::kNeverTrack:
+        currentOptInStatusString = l10n_util::GetNSString(
+            IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTO_TRACK_PACKAGES_NEVER);
+        break;
+    }
+    parcelTrackingItem.detailText = currentOptInStatusString;
   }
 }
 
@@ -463,7 +485,8 @@ bool GetStatusForSigninPolicy() {
 }
 
 - (BOOL)isViewControllerSubjectToParentalControls {
-  return supervised_user::IsSubjectToParentalControls(self.userPrefService);
+  return self.userPrefService &&
+         supervised_user::IsSubjectToParentalControls(*self.userPrefService);
 }
 
 - (void)googleServicesSettingsViewControllerDidSelectItemAtIndexPath:

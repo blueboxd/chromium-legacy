@@ -15,16 +15,16 @@ class ElementOptions(Dict[str, Any]):
             self["scrollIntoView"] = scroll_into_view
 
 
-class ViewportOptions(Dict[str, Any]):
+class BoxOptions(Dict[str, Any]):
     def __init__(self, x: float, y: float, width: float, height: float):
-        self["type"] = "viewport"
+        self["type"] = "box"
         self["x"] = x
         self["y"] = y
         self["width"] = width
         self["height"] = height
 
 
-ClipOptions = Union[ElementOptions, ViewportOptions]
+ClipOptions = Union[ElementOptions, BoxOptions]
 
 
 class BrowsingContext(BidiModule):
@@ -178,5 +178,18 @@ class BrowsingContext(BidiModule):
         return result["data"]
 
     @command
-    def set_viewport(self, context: str, viewport: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
-        return {"context": context, "viewport": viewport}
+    def set_viewport(self,
+                     context: str,
+                     viewport: Optional[Mapping[str, Any]] = None,
+                     device_pixel_ratio: Optional[float] = None) -> Mapping[str, Any]:
+        params: MutableMapping[str, Any] = {
+            "context": context,
+        }
+
+        if viewport is not None:
+            params["viewport"] = viewport
+
+        if device_pixel_ratio is not None:
+            params["devicePixelRatio"] = device_pixel_ratio
+
+        return params

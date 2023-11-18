@@ -21,6 +21,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
+#include "base/types/cxx23_to_underlying.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_util.h"
@@ -445,6 +446,8 @@ void CloudOpenTask::OpenOrMoveFiles() {
   OfficeFilesSourceVolume source_volume;
   if (UrlIsOnODFS(profile_, file_urls_.front())) {
     source_volume = OfficeFilesSourceVolume::kMicrosoftOneDrive;
+  } else if (UrlIsOnAndroidOneDrive(profile_, file_urls_.front())) {
+    source_volume = OfficeFilesSourceVolume::kAndroidOneDriveDocumentsProvider;
   } else {
     auto* volume_manager = file_manager::VolumeManager::Get(profile_);
     base::WeakPtr<file_manager::Volume> source =
@@ -465,14 +468,15 @@ void CloudOpenTask::OpenOrMoveFiles() {
         OfficeFilesTransferRequired::kNotRequired);
     OpenAlreadyHostedDriveUrls();
   } else if (cloud_provider_ == CloudProvider::kOneDrive &&
-             UrlIsOnODFS(profile_, file_urls_.front())) {
+             source_volume == OfficeFilesSourceVolume::kMicrosoftOneDrive) {
     // The files are on OneDrive already, selected from ODFS.
     transfer_required_ = OfficeFilesTransferRequired::kNotRequired;
     cloud_open_metrics_->LogTransferRequired(
         OfficeFilesTransferRequired::kNotRequired);
     OpenODFSUrls(OfficeTaskResult::kOpened);
   } else if (cloud_provider_ == CloudProvider::kOneDrive &&
-             UrlIsOnAndroidOneDrive(profile_, file_urls_.front())) {
+             source_volume ==
+                 OfficeFilesSourceVolume::kAndroidOneDriveDocumentsProvider) {
     // The files are on OneDrive already, selected from Android OneDrive.
     transfer_required_ = OfficeFilesTransferRequired::kNotRequired;
     cloud_open_metrics_->LogTransferRequired(
@@ -1042,6 +1046,7 @@ void CloudOpenTask::OnDialogComplete(const std::string& user_response) {
   // (and for StartUpload?).
   if (user_response == kUserActionConfirmOrUploadToGoogleDrive) {
     cloud_provider_ = CloudProvider::kGoogleDrive;
+    cloud_open_metrics_->set_cloud_provider(cloud_provider_);
 
     // Because we treat Docs/Sheets/Slides as three separate apps, only set
     // the default handler for the types that we are dealing with.
@@ -1071,7 +1076,6 @@ void CloudOpenTask::OnDialogComplete(const std::string& user_response) {
     // Office/OneDrive.
     OpenOrMoveFiles();
   } else if (user_response == kUserActionUploadToGoogleDrive) {
-    cloud_provider_ = CloudProvider::kGoogleDrive;
     fm_tasks::SetOfficeMoveConfirmationShownForDrive(profile_, true);
     SourceType source_type = GetSourceType(profile_, file_urls_[0]);
     switch (source_type) {
@@ -1107,8 +1111,10 @@ void CloudOpenTask::OnDialogComplete(const std::string& user_response) {
     UMA_HISTOGRAM_ENUMERATION(kFileHandlerSelectionMetricName,
                               OfficeSetupFileHandler::kMicrosoft365);
     cloud_provider_ = CloudProvider::kOneDrive;
+    cloud_open_metrics_->set_cloud_provider(cloud_provider_);
     InitAndShowDialog(mojom::DialogPage::kOneDriveSetup);
   } else if (user_response == kUserActionCancel) {
+    cloud_open_metrics_->LogTaskResult(OfficeTaskResult::kCancelledAtSetup);
     // Do nothing.
   } else if (user_response == kUserActionCancelGoogleDrive) {
     cloud_open_metrics_->LogTaskResult(
@@ -1117,6 +1123,7 @@ void CloudOpenTask::OnDialogComplete(const std::string& user_response) {
     cloud_open_metrics_->LogTaskResult(
         OfficeTaskResult::kCancelledAtConfirmation);
   } else {
+    cloud_open_metrics_->LogTaskResult(OfficeTaskResult::kLocalFileTask);
     LaunchLocalFileTask(user_response);
   }
 }
@@ -1158,7 +1165,8 @@ void CloudOpenTask::LocalTaskExecuted(
   if (!error_message.empty()) {
     LOG(ERROR) << "Execution of local file task with app id " << task.app_id
                << " to open office files. Led to error message: "
-               << error_message << " and result: " << result;
+               << error_message
+               << " and result: " << base::to_underlying(result);
     return;
   }
 

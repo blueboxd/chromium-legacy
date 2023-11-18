@@ -6,17 +6,16 @@ import {isRTL} from 'chrome://resources/ash/common/util.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 
 import {maybeShowTooltip} from '../common/js/dom_utils.js';
-import {isEntryInsideComputers, isEntryInsideDrive, isEntryInsideMyDrive, isGrandRootEntryInDrives, isMyFilesEntry, isTrashEntry, isVolumeEntry} from '../common/js/entry_utils.js';
+import {isEntryInsideDrive, isGrandRootEntryInDrives, isMyFilesEntry, isOneDrive, isOneDriveId, isTrashEntry, isVolumeEntry, shouldSupportDriveSpecificIcons} from '../common/js/entry_utils.js';
 import {EntryList, FakeEntryImpl, VolumeEntry} from '../common/js/files_app_entry_types.js';
 import {vmTypeToIconName} from '../common/js/icon_util.js';
 import {recordEnum, recordUserAction} from '../common/js/metrics.js';
-import {str, strf, util} from '../common/js/util.js';
+import {str, strf} from '../common/js/translations.js';
 import {VolumeManagerCommon} from '../common/js/volume_manager_types.js';
 import {AndroidApp, FileData, FileKey, NavigationKey, NavigationRoot, NavigationType, PropStatus, State} from '../externs/ts/state.js';
 import {VolumeManager} from '../externs/volume_manager.js';
 import {constants} from '../foreground/js/constants.js';
 import {DirectoryModel} from '../foreground/js/directory_model.js';
-import {MetadataModel} from '../foreground/js/metadata/metadata_model.js';
 import {Command} from '../foreground/js/ui/command.js';
 import {contextMenuHandler} from '../foreground/js/ui/context_menu_handler.js';
 import {Menu} from '../foreground/js/ui/menu.js';
@@ -32,11 +31,6 @@ import {type TreeItemCollapsedEvent, type TreeItemExpandedEvent, XfTreeItem} fro
  * @fileoverview The Directory Tree aka Navigation Tree.
  * @suppress {checkTypes} TS already checks this file.
  */
-
-const DRIVE_ENTRY_METADATA_PROPERTY_NAMES = [
-  ...constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES,
-  ...constants.DLP_METADATA_PREFETCH_PROPERTY_NAMES,
-];
 
 const NAVIGATION_TYPES_WITHOUT_CHILDREN = new Set([
   NavigationType.ANDROID_APPS,
@@ -135,8 +129,7 @@ export class DirectoryTreeContainer {
 
   constructor(
       container: HTMLElement, private directoryModel_: DirectoryModel,
-      private volumeManager_: VolumeManager,
-      private metadataModel_: MetadataModel) {
+      private volumeManager_: VolumeManager) {
     this.tree.id = 'directory-tree';
     container.appendChild(this.tree);
 
@@ -164,7 +157,7 @@ export class DirectoryTreeContainer {
     this.store_.subscribe(this);
   }
 
-  onStateChanged(state: State) {
+  async onStateChanged(state: State) {
     if (this.shouldRefreshNavigationRoots_(state)) {
       this.store_.dispatch(refreshNavigationRoots());
       // Skip this render, and the refreshNavigationRoots() action will trigger
@@ -186,6 +179,9 @@ export class DirectoryTreeContainer {
         if (this.shouldFocusOnNextSelectedItem_) {
           this.shouldFocusOnNextSelectedItem_ = false;
           this.tree.focusedItem = element;
+          // Wait for the selected change finishes (e.g. expand all its parents)
+          // before we can focus on the element below.
+          await element.updateComplete;
           element.focus();
         }
       }
@@ -203,7 +199,7 @@ export class DirectoryTreeContainer {
     // FileData/AndroidAppData changes in the store, re-render the corresponding
     // navigation item.
     for (const [key, {fileData, androidAppData}] of this.navigationRootMap_) {
-      const newAndroidAppData = androidApps[key];
+      const newAndroidAppData = androidApps[key]!;
       const navigationRoot = this.navigationRoots_.find(
           navigationRoot => navigationRoot.key === key)!;
       if (navigationRoot.type === NavigationType.ANDROID_APPS) {
@@ -265,11 +261,17 @@ export class DirectoryTreeContainer {
       }
       const isAndroidApp = navigationRoot.type === NavigationType.ANDROID_APPS;
       const fileData = getFileData(state, navigationRoot.key);
-      const androidAppData = androidApps[navigationRoot.key];
+      const androidAppData = androidApps[navigationRoot.key]!;
       // The states here might be lost after `insertBefore`, we need to store
       // it here and restore it later if needed.
       const isFocused = document.activeElement === navigationRootItem;
       const isRenaming = navigationRootItem.renaming;
+      if (fileData && isVolumeEntry(fileData.entry)) {
+        const isOneDriveRoot = isOneDrive(fileData.entry.volumeInfo);
+        if (isOneDriveRoot) {
+          navigationRootItem.toggleAttribute('one-drive', true);
+        }
+      }
 
       this.renderItem_(
           navigationRoot.key, isAndroidApp ? androidAppData : fileData,
@@ -377,14 +379,10 @@ export class DirectoryTreeContainer {
       this.setupEjectButton_(element, fileData.label);
     }
 
-    // Fetch metadata if the entry supports Drive specific share icon.
-    if (this.shouldSupportDriveSpecificIcons_(fileData)) {
-      this.metadataModel_.get(
-          [fileData.entry as Entry], DRIVE_ENTRY_METADATA_PROPERTY_NAMES);
-    }
-
-    if (!navigationRoot?.type ||
-        !NAVIGATION_TYPES_WITHOUT_CHILDREN.has(navigationRoot.type)) {
+    if (!(navigationRoot?.type &&
+          NAVIGATION_TYPES_WITHOUT_CHILDREN.has(navigationRoot.type)) &&
+        // For disabled tree root, we don't render any children inside.
+        !fileData.disabled) {
       // Handle navigation item's children.
       const newChildren = fileData.children || [];
       // Remove non-exist navigation items.
@@ -465,8 +463,8 @@ export class DirectoryTreeContainer {
       }
     }
 
-    const isOdfs = util.isOneDriveId(
-        getVolume(this.store_.getState(), fileData)?.providerId);
+    const isOdfs =
+        isOneDriveId(getVolume(this.store_.getState(), fileData)?.providerId);
     if (isOdfs && fileData?.disabled) {
       // The entries under ODFS are not disabled recursively. Collapse ODFS when
       // it is disabled.
@@ -495,7 +493,7 @@ export class DirectoryTreeContainer {
       element.icon = fileData.icon;
     }
     // For drive item, update icon based on the metadata.
-    if (this.shouldSupportDriveSpecificIcons_(fileData) && fileData.metadata) {
+    if (shouldSupportDriveSpecificIcons(fileData) && fileData.metadata) {
       const {shared, isMachineRoot, isExternalMedia} = fileData.metadata;
       if (shared) {
         element.icon = constants.ICON_TYPES.SHARED_FOLDER;
@@ -542,6 +540,15 @@ export class DirectoryTreeContainer {
       ejectButton.className = 'root-eject align-right-icon';
       ejectButton.slot = 'trailingIcon';
       ejectButton.tabIndex = 0;
+      // These events propagation needs to be stopped otherwise ripple will show
+      // on the tree item when the button is pressed.
+      // Note: 'up/down' are events from <paper-ripple> component.
+      const suppressedEvents = ['mouseup', 'mousedown', 'up', 'down'];
+      suppressedEvents.forEach(event => {
+        ejectButton.addEventListener(event, event => {
+          event.stopPropagation();
+        });
+      });
       ejectButton.addEventListener('click', (event) => {
         event.stopPropagation();
         const command = document.querySelector('command#unmount') as Command;
@@ -590,6 +597,7 @@ export class DirectoryTreeContainer {
     if (!fileData) {
       return;
     }
+    // Set context menu for the item.
     this.setContextMenu_(element, fileData, navigationRoot);
     // Expand MyFiles by default.
     const entry = fileData.entry;
@@ -693,21 +701,6 @@ export class DirectoryTreeContainer {
             childKey, /* shouldDeleteElement= */ false, /* isRoot= */ false);
       }
     }
-  }
-
-  /**
-   * Returns true if fileData's entry supports the "shared" feature, as in,
-   * displays a shared icon. It's only supported inside "My Drive" or
-   * "Computers", even Shared Drive does not support it, the "My Drive" and
-   * "Computers" itself don't support it either, only their children.
-   *
-   * Note: if the return value is true, fileData's entry is guaranteed to be
-   * native Entry type.
-   */
-  private shouldSupportDriveSpecificIcons_(fileData: FileData): boolean {
-    return (isEntryInsideMyDrive(fileData) && !isVolumeEntry(fileData.entry)) ||
-        (isEntryInsideComputers(fileData) &&
-         !isGrandRootEntryInDrives(fileData.entry));
   }
 
   /**
@@ -945,12 +938,14 @@ export class DirectoryTreeContainer {
         const navigationRootData = this.navigationRoots_.find(
             navigationRoot => navigationRoot.key === fileData.entry.toURL());
         if (navigationRootData?.type === NavigationType.DRIVE) {
-          // If Drive fake root is selected and we expand it and go to the My
-          // Drive (1st child) directly.
-          if (!element.expanded) {
+          if (fileData.children.length === 0) {
+            // Drive volume is not mounted, we can only change directory to the
+            // fake drive root.
+            this.store_.dispatch(changeDirectory({toKey: entry.toURL()}));
+          } else {
+            // If Drive fake root is selected and it has Drive volume inside, we
+            // expand it and go to the My Drive (1st child) directly.
             element.expanded = true;
-          }
-          if (fileData.children && fileData.children.length > 0) {
             this.store_.dispatch(
                 changeDirectory({toKey: fileData.children[0]!}));
           }
@@ -990,14 +985,6 @@ export class DirectoryTreeContainer {
 
       this.store_.dispatch(changeDirectory({toKey: entry.toURL()}));
     }
-  }
-
-  /**
-   * When drop target changes, this will be called with the drop target
-   * element.
-   */
-  doDropTargetAction(element: XfTreeItem) {
-    element.expanded = true;
   }
 
   private maybeShowToolTip_(event: MouseEvent) {

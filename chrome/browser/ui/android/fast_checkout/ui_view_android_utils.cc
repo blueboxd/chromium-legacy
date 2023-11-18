@@ -48,7 +48,7 @@ base::android::ScopedJavaLocalRef<jobject> CreateFastCheckoutAutofillProfile(
   const autofill::AutofillCountry country(country_code, locale);
   return Java_FastCheckoutAutofillProfile_Constructor(
       env, ConvertUTF8ToJavaString(env, profile.guid()),
-      profile.record_type() == autofill::AutofillProfile::LOCAL_PROFILE,
+      /*isLocal=*/true,
       ConvertUTF16ToJavaString(
           env, profile.GetInfo(autofill::NAME_HONORIFIC_PREFIX, locale)),
       ConvertUTF16ToJavaString(env,
@@ -99,8 +99,7 @@ base::android::ScopedJavaLocalRef<jobject> CreateFastCheckoutCreditCard(
           env, credit_card.GetRawInfo(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR)),
       ConvertUTF8ToJavaString(env,
                               payment_request_data.basic_card_issuer_network),
-      ConvertUTF8ToJavaString(
-          env, credit_card.CardIconStringForAutofillSuggestion()),
+      static_cast<jint>(credit_card.CardIconForAutofillSuggestion()),
       ConvertUTF8ToJavaString(env, credit_card.billing_address_id()),
       ConvertUTF8ToJavaString(env, credit_card.server_id()),
       credit_card.instrument_id(),

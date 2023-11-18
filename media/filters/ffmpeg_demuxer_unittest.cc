@@ -363,7 +363,8 @@ class FFmpegDemuxerTest : public testing::Test {
     CHECK(!data_source_);
 
     base::FilePath file_path;
-    EXPECT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &file_path));
+    EXPECT_TRUE(
+        base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &file_path));
 
     file_path = file_path.Append(FILE_PATH_LITERAL("media"))
                     .Append(FILE_PATH_LITERAL("test"))
@@ -589,7 +590,7 @@ TEST_F(FFmpegDemuxerTest, Seeking_PreferredStreamSelection) {
   // Test the start time is the first timestamp of the video and audio stream.
   CreateDemuxer("nonzero-start-time.webm");
   InitializeDemuxerWithTimelineOffset(
-      base::Time::FromJsTime(kTimelineOffsetMs));
+      base::Time::FromMillisecondsSinceUnixEpoch(kTimelineOffsetMs));
 
   FFmpegDemuxerStream* video =
       static_cast<FFmpegDemuxerStream*>(GetStream(DemuxerStream::VIDEO));
@@ -635,7 +636,7 @@ TEST_F(FFmpegDemuxerTest, Read_VideoPositiveStartTime) {
   // Test the start time is the first timestamp of the video and audio stream.
   CreateDemuxer("nonzero-start-time.webm");
   InitializeDemuxerWithTimelineOffset(
-      base::Time::FromJsTime(kTimelineOffsetMs));
+      base::Time::FromMillisecondsSinceUnixEpoch(kTimelineOffsetMs));
 
   // Attempt a read from the video stream and run the message loop until done.
   DemuxerStream* video = GetStream(DemuxerStream::VIDEO);
@@ -654,7 +655,8 @@ TEST_F(FFmpegDemuxerTest, Read_VideoPositiveStartTime) {
     EXPECT_EQ(audio_start_time, demuxer_->start_time());
 
     // Verify that the timeline offset has not been adjusted by the start time.
-    EXPECT_EQ(kTimelineOffsetMs, demuxer_->GetTimelineOffset().ToJavaTime());
+    EXPECT_EQ(kTimelineOffsetMs,
+              demuxer_->GetTimelineOffset().InMillisecondsSinceUnixEpoch());
 
     // Seek back to the beginning and repeat the test.
     WaitableMessageLoopEvent event;

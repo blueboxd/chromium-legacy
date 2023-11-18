@@ -10,11 +10,11 @@
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/style/typography.h"
 #include "ash/system/tray/tray_constants.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/animation/ink_drop.h"
@@ -25,6 +25,7 @@
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/layout/layout_types.h"
@@ -40,7 +41,7 @@ namespace {
 
 // Tile constants
 constexpr int kIconSize = 20;
-constexpr int kButtonRadius = 16;
+constexpr int kDefaultCornerRadius = 16;
 constexpr float kFocusRingPadding = 3.0f;
 
 // Primary tile constants
@@ -48,8 +49,10 @@ constexpr gfx::Size kDefaultSize(180, kFeatureTileHeight);
 constexpr gfx::Size kIconButtonSize(36, 52);
 constexpr int kIconButtonCornerRadius = 12;
 constexpr gfx::Insets kIconButtonMargins = gfx::Insets::VH(6, 6);
-constexpr gfx::Size kTitlesContainerSize(98, kFeatureTileHeight);
 constexpr gfx::Insets kDrillInArrowMargins = gfx::Insets::TLBR(0, 4, 0, 10);
+constexpr gfx::Insets kTitleContainerWithoutDiveInButtonMargins =
+    gfx::Insets::TLBR(0, 0, 0, 10);
+constexpr gfx::Insets kTitleContainerWithDiveInButtonMargins = gfx::Insets();
 
 // Compact tile constants
 constexpr int kCompactWidth = 86;
@@ -82,7 +85,10 @@ std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight(
 FeatureTile::FeatureTile(base::RepeatingCallback<void()> callback,
                          bool is_togglable,
                          TileType type)
-    : Button(callback), is_togglable_(is_togglable), type_(type) {
+    : Button(callback),
+      corner_radius_(kDefaultCornerRadius),
+      is_togglable_(is_togglable),
+      type_(type) {
   // Set up ink drop on click. The corner radius must match the button
   // background corner radius, see UpdateColors().
   // TODO(jamescook): Consider adding support for highlight-path-based
@@ -90,7 +96,7 @@ FeatureTile::FeatureTile(base::RepeatingCallback<void()> callback,
   // something like CreateThemedHighlightPathBackground() to
   // ui/views/background.h.
   views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
-                                                kButtonRadius);
+                                                corner_radius_);
   auto* ink_drop = views::InkDrop::Get(this);
   ink_drop->SetMode(InkDropHost::InkDropMode::ON);
   ink_drop->GetInkDrop()->SetShowHighlightOnHover(false);
@@ -121,22 +127,16 @@ FeatureTile::~FeatureTile() {
 void FeatureTile::CreateChildViews() {
   const bool is_compact = type_ == TileType::kCompact;
 
-  auto* layout_manager = SetLayoutManager(std::make_unique<FlexLayout>());
-  layout_manager->SetOrientation(is_compact
-                                     ? views::LayoutOrientation::kVertical
-                                     : views::LayoutOrientation::kHorizontal);
+  auto* layout_manager = SetLayoutManager(std::make_unique<views::BoxLayout>());
+  layout_manager->SetOrientation(
+      is_compact ? views::BoxLayout::Orientation::kVertical
+                 : views::BoxLayout::Orientation::kHorizontal);
 
   ink_drop_container_ =
       AddChildView(std::make_unique<views::InkDropContainerView>());
-  layout_manager->SetChildViewIgnoredByLayout(ink_drop_container_, true);
 
   auto* focus_ring = views::FocusRing::Get(this);
   focus_ring->SetColorId(cros_tokens::kCrosSysFocusRing);
-  // Since the focus ring doesn't set a LayoutManager it won't get drawn unless
-  // excluded by the tile's LayoutManager.
-  // TODO(crbug/1385946): Modify LayoutManagerBase and FocusRing to always
-  // exclude focus ring from the layout.
-  layout_manager->SetChildViewIgnoredByLayout(focus_ring, true);
 
   SetPreferredSize(is_compact ? kCompactSize : kDefaultSize);
 
@@ -152,23 +152,23 @@ void FeatureTile::CreateChildViews() {
   icon_button_->SetEnabled(false);
   icon_button_->SetCanProcessEventsWithinSubtree(false);
 
-  auto* title_container = AddChildView(std::make_unique<FlexLayoutView>());
-  title_container->SetCanProcessEventsWithinSubtree(false);
-  title_container->SetOrientation(views::LayoutOrientation::kVertical);
-  title_container->SetMainAxisAlignment(views::LayoutAlignment::kCenter);
-  title_container->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
+  title_container_ = AddChildView(std::make_unique<FlexLayoutView>());
+  title_container_->SetCanProcessEventsWithinSubtree(false);
+  title_container_->SetOrientation(views::LayoutOrientation::kVertical);
+  title_container_->SetMainAxisAlignment(views::LayoutAlignment::kCenter);
+  title_container_->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
 
-  label_ = title_container->AddChildView(std::make_unique<views::Label>());
+  label_ = title_container_->AddChildView(std::make_unique<views::Label>());
   label_->SetAutoColorReadabilityEnabled(false);
 
-  sub_label_ = title_container->AddChildView(std::make_unique<views::Label>());
+  sub_label_ = title_container_->AddChildView(std::make_unique<views::Label>());
   sub_label_->SetHorizontalAlignment(is_compact ? gfx::ALIGN_CENTER
                                                 : gfx::ALIGN_LEFT);
   sub_label_->SetAutoColorReadabilityEnabled(false);
 
   if (is_compact) {
-    title_container->SetProperty(views::kMarginsKey,
-                                 kCompactTitlesContainerMargins);
+    title_container_->SetProperty(views::kMarginsKey,
+                                  kCompactTitlesContainerMargins);
     label_->SetVerticalAlignment(gfx::ALIGN_MIDDLE);
     label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
@@ -184,7 +184,10 @@ void FeatureTile::CreateChildViews() {
     sub_label_->SetLineHeight(kCompactTitleLineHeight);
     sub_label_->SetVisible(false);
   } else {
-    title_container->SetPreferredSize(kTitlesContainerSize);
+    // `title_container_` will take all the remaining space of the tile.
+    layout_manager->SetFlexForView(title_container_, 1);
+    title_container_->SetProperty(views::kMarginsKey,
+                                  kTitleContainerWithoutDiveInButtonMargins);
     label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosButton2,
                                           *label_);
@@ -221,6 +224,8 @@ void FeatureTile::SetIconClickCallback(
 void FeatureTile::CreateDecorativeDrillInArrow() {
   CHECK_EQ(type_, TileType::kPrimary);
 
+  title_container_->SetProperty(views::kMarginsKey,
+                                kTitleContainerWithDiveInButtonMargins);
   drill_in_arrow_ = AddChildView(std::make_unique<views::ImageView>());
   // The icon is set in UpdateDrillArrowColor().
   drill_in_arrow_->SetPreferredSize(gfx::Size(kIconSize, kIconSize));
@@ -256,7 +261,7 @@ void FeatureTile::UpdateColors() {
   }
 
   SetBackground(views::CreateThemedRoundedRectBackground(background_color,
-                                                         kButtonRadius));
+                                                         corner_radius_));
   auto* ink_drop = views::InkDrop::Get(this);
   ink_drop->SetBaseColorId(toggled_
                                ? cros_tokens::kCrosSysRipplePrimary
@@ -322,6 +327,13 @@ void FeatureTile::SetBackgroundToggledColorId(
   }
 }
 
+void FeatureTile::SetButtonCornerRadius(const int radius) {
+  corner_radius_ = radius;
+  views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
+                                                corner_radius_);
+  UpdateColors();
+}
+
 void FeatureTile::SetForegroundColorId(ui::ColorId foreground_color_id) {
   if (foreground_color_ == foreground_color_id) {
     return;
@@ -359,7 +371,7 @@ void FeatureTile::SetLabel(const std::u16string& label) {
 }
 
 int FeatureTile::GetSubLabelMaxWidth() const {
-  return kTitlesContainerSize.width();
+  return title_container_->size().width();
 }
 
 void FeatureTile::SetSubLabel(const std::u16string& sub_label) {

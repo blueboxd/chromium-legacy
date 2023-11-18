@@ -35,7 +35,8 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
                              AutofillSuggestionTriggerSource trigger_source,
                              bool is_all_server_suggestions) override;
   bool HasActiveScreenReader() const override;
-  void OnAutofillAvailabilityEvent(const mojom::AutofillState state) override;
+  void OnAutofillAvailabilityEvent(
+      mojom::AutofillSuggestionAvailability suggestion_availability) override;
 
   // Functions unique to TestAutofillExternalDelegate.
 
@@ -45,6 +46,9 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
                         size_t expected_num_suggestions,
                         const Suggestion expected_suggestions[]);
 
+  // Check that the autofill suggestions were not sent at all.
+  void CheckSuggestionsNotReturned(FieldGlobalId field_id);
+
   // Check that the autofill suggestions were sent, and that they match a page
   // but contain no results.
   void CheckNoSuggestions(FieldGlobalId field_id);
@@ -53,6 +57,8 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
   // and contain a specific number of suggestions.
   void CheckSuggestionCount(FieldGlobalId field_id,
                             size_t expected_num_suggestions);
+
+  const std::vector<Suggestion>& suggestions() const;
 
   bool on_query_seen() const;
 

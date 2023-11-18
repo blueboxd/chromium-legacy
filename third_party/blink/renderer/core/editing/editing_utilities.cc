@@ -83,6 +83,8 @@
 
 namespace blink {
 
+using mojom::blink::FormControlType;
+
 namespace {
 
 std::ostream& operator<<(std::ostream& os, PositionMoveType type) {
@@ -1442,10 +1444,12 @@ bool IsRenderedAsNonInlineTableImageOrHR(const Node* node) {
   if (!node)
     return false;
   LayoutObject* layout_object = node->GetLayoutObject();
+  bool is_hr = RuntimeEnabledFeatures::RubyInlinifyEnabled()
+                   ? (layout_object->IsHR() && !layout_object->IsInline())
+                   : layout_object->IsHR();
   return layout_object &&
          ((layout_object->IsTable() && !layout_object->IsInline()) ||
-          (layout_object->IsImage() && !layout_object->IsInline()) ||
-          layout_object->IsHR());
+          (layout_object->IsImage() && !layout_object->IsInline()) || is_hr);
 }
 
 bool IsNonTableCellHTMLBlockElement(const Node* node) {
@@ -1475,8 +1479,8 @@ bool IsBlockFlowElement(const Node& node) {
 bool IsInPasswordField(const Position& position) {
   TextControlElement* text_control = EnclosingTextControl(position);
   auto* html_input_element = DynamicTo<HTMLInputElement>(text_control);
-  return html_input_element &&
-         html_input_element->type() == input_type_names::kPassword;
+  return html_input_element && html_input_element->FormControlType() ==
+                                   FormControlType::kInputPassword;
 }
 
 // If current position is at grapheme boundary, return 0; otherwise, return the

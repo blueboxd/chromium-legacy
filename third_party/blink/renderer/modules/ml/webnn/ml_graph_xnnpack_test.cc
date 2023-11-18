@@ -46,11 +46,11 @@ TEST_P(MLGraphXnnpackTest, SharedXnnpackContextTest) {
     EXPECT_NE(graph, nullptr);
   }
   {
-    // Test building MLGraphXnnpack with devicePreference = "cpu". The promise
+    // Test building MLGraphXnnpack with deviceType = "cpu". The promise
     // should be resoveld with an MLGraphXnnpack object. The XNNPACK library
     // should be initialized successfully.
     auto* context_options = MLContextOptions::Create();
-    context_options->setDevicePreference(V8MLDevicePreference::Enum::kCpu);
+    context_options->setDeviceType(V8MLDeviceType::Enum::kCpu);
     auto* builder = CreateMLGraphBuilder(
         scope.GetExecutionContext(), scope.GetScriptState(),
         scope.GetExceptionState(), context_options);
@@ -332,7 +332,7 @@ TEST_P(MLGraphXnnpackTest, PowTest) {
   auto* input0 =
       BuildInput(builder, "input0", {1, 2, 2, 1},
                  V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
-  auto* input1 = BuildConstant(builder, {1}, V8MLOperandType::Enum::kFloat32,
+  auto* input1 = BuildConstant(builder, {}, V8MLOperandType::Enum::kFloat32,
                                Vector<float>({3.0}), scope.GetExceptionState());
   auto* output = BuildElementWiseBinary(
       scope, builder, ElementWiseBinaryKind::kPow, input0, input1);
@@ -1136,6 +1136,47 @@ TEST_P(MLGraphXnnpackTest, TanhTest) {
   }
 }
 
+TEST_P(MLGraphXnnpackTest, PreluTest) {
+  V8TestingScope scope;
+  {
+    // Test throwing exception when slope is not a constant.
+    auto* builder =
+        CreateMLGraphBuilder(scope.GetExecutionContext(),
+                             scope.GetScriptState(), scope.GetExceptionState());
+    auto* input_operand =
+        BuildInput(builder, "input", {2, 2}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
+    auto* slope_operand =
+        BuildInput(builder, "slope", {2}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
+    auto* output_operand =
+        builder->prelu(input_operand, slope_operand, scope.GetExceptionState());
+    auto [graph, exception] =
+        BuildGraph(scope, builder, {{"output", output_operand}});
+    ASSERT_EQ(graph, nullptr);
+    EXPECT_EQ(exception->message(),
+              "Slope should be defined as a constant operand.");
+  }
+  {
+    // Test throwing exception when slope is a scalar.
+    auto* builder =
+        CreateMLGraphBuilder(scope.GetExecutionContext(),
+                             scope.GetScriptState(), scope.GetExceptionState());
+    auto* input_operand =
+        BuildInput(builder, "input", {2, 2}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
+    auto* slope_operand =
+        BuildConstant(builder, {}, V8MLOperandType::Enum::kFloat32,
+                      Vector<float>({0.1}), scope.GetExceptionState());
+    auto* output_operand =
+        builder->prelu(input_operand, slope_operand, scope.GetExceptionState());
+    auto [graph, exception] =
+        BuildGraph(scope, builder, {{"output", output_operand}});
+    ASSERT_EQ(graph, nullptr);
+    EXPECT_EQ(exception->message(), "Slope should not be a scalar.");
+  }
+}
+
 // ThreadPoolTester checks the compute results of an MLGraphXnnpack which
 // creates a pthreadpool to schedule `num_threads` parallel work items with
 // `base::ThreadPool` for XNNPACK operator execution.
@@ -1187,12 +1228,14 @@ TEST_P(MLGraphXnnpackTest, ThreadPoolTest) {
   { ThreadPoolTester{.num_threads = 4}.Test(*this, scope); }
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    MLGraphXnnpackTest,
-    testing::Combine(::testing::Values(BackendType::kXnnpack),
-                     ::testing::Values(ExecutionMode::kAsync,
-                                       ExecutionMode::kSync)),
-    TestVarietyToString);
+const TestVariety kXnnpackGraphTestVariety[] = {
+    {BackendType::kXnnpack, ExecutionMode::kAsync},
+    {BackendType::kXnnpack, ExecutionMode::kSync},
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         MLGraphXnnpackTest,
+                         testing::ValuesIn(kXnnpackGraphTestVariety),
+                         TestVarietyToString);
 
 }  // namespace blink

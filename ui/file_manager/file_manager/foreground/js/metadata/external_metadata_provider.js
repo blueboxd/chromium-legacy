@@ -4,6 +4,8 @@
 
 import {assert} from 'chrome://resources/ash/common/assert.js';
 
+import {unwrapEntry} from '../../../common/js/entry_utils.js';
+
 import {MetadataItem} from './metadata_item.js';
 import {MetadataProvider} from './metadata_provider.js';
 import {MetadataRequest} from './metadata_request.js';
@@ -29,7 +31,7 @@ export class ExternalMetadataProvider extends MetadataProvider {
       // @ts-ignore: error TS7006: Parameter 'request' implicitly has an 'any'
       // type.
       const entries = requests.map(request => {
-        return request.entry;
+        return unwrapEntry(request.entry);
       });
       /** @type {Record<string, boolean>} */
       const nameMap = {};
@@ -40,8 +42,11 @@ export class ExternalMetadataProvider extends MetadataProvider {
           nameMap[requests[i].names[j]] = true;
         }
       }
+      const properties =
+          /** @type {Array<chrome.fileManagerPrivate.EntryPropertyName>} */ (
+              Object.keys(nameMap));
       chrome.fileManagerPrivate.getEntryProperties(
-          entries, Object.keys(nameMap), results => {
+          entries, properties, results => {
             if (!chrome.runtime.lastError) {
               fulfill(this.convertResults_(requests, nameMap, assert(results)));
             } else {

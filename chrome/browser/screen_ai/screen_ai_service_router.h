@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/services/screen_ai/public/mojom/screen_ai_factory.mojom.h"
 #include "components/services/screen_ai/public/mojom/screen_ai_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -38,6 +39,8 @@ class ScreenAIServiceRouter : public KeyedService {
   void InitializeMainContentExtractionIfNeeded();
 
  private:
+  void InitializeOCR(mojo::PendingReceiver<mojom::OCRService> receiver,
+                     std::unique_ptr<ComponentFiles> model_files);
   void InitializeMainContentExtraction(
       mojo::PendingReceiver<mojom::MainContentExtractionService> receiver,
       std::unique_ptr<ComponentFiles> model_files);

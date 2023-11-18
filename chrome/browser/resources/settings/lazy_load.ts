@@ -88,7 +88,11 @@ export {FontsBrowserProxy, FontsBrowserProxyImpl, FontsData} from '/shared/setti
 export {ControlledButtonElement} from '/shared/settings/controls/controlled_button.js';
 export {SettingsRadioGroupElement} from '/shared/settings/controls/settings_radio_group.js';
 export {SettingsSliderElement} from '/shared/settings/controls/settings_slider.js';
-export {SettingsSecureDnsElement} from '/shared/settings/privacy_page/secure_dns.js';
+export {SettingsToggleButtonElement} from '/shared/settings/controls/settings_toggle_button.js';
+export {SecureDnsResolverType, SettingsSecureDnsElement} from '/shared/settings/privacy_page/secure_dns.js';
+// <if expr="chromeos_ash">
+export {SettingsSecureDnsDialogElement} from '/shared/settings/privacy_page/secure_dns_dialog.js';
+// </if>
 export {SecureDnsInputElement} from '/shared/settings/privacy_page/secure_dns_input.js';
 export {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
 export {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
@@ -101,6 +105,8 @@ export {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_
 export {IronCollapseElement} from 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 export {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 export {PaperTooltipElement} from 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
+export {AccessibilityBrowserProxy, AccessibilityBrowserProxyImpl} from './a11y_page/a11y_browser_proxy.js';
+export {SettingsA11yPageElement} from './a11y_page/a11y_page.js';
 // <if expr="not is_chromeos">
 export {SettingsLiveCaptionElement} from './a11y_page/live_caption_section.js';
 export {SettingsLiveTranslateElement} from './a11y_page/live_translate_section.js';
@@ -123,7 +129,7 @@ export {PaymentsManagerImpl, PaymentsManagerProxy} from './autofill_page/payment
 export {SettingsPaymentsSectionElement} from './autofill_page/payments_section.js';
 export {SettingsVirtualCardUnenrollDialogElement} from './autofill_page/virtual_card_unenroll_dialog.js';
 export {ClearBrowsingDataBrowserProxy, ClearBrowsingDataBrowserProxyImpl, ClearBrowsingDataResult, UpdateSyncStateEvent} from './clear_browsing_data_dialog/clear_browsing_data_browser_proxy.js';
-export {SettingsClearBrowsingDataDialogElement} from './clear_browsing_data_dialog/clear_browsing_data_dialog.js';
+export {SettingsClearBrowsingDataDialogElement, TimePeriodExperiment} from './clear_browsing_data_dialog/clear_browsing_data_dialog.js';
 export {SettingsHistoryDeletionDialogElement} from './clear_browsing_data_dialog/history_deletion_dialog.js';
 export {SettingsPasswordsDeletionDialogElement} from './clear_browsing_data_dialog/passwords_deletion_dialog.js';
 export {SettingsCheckboxElement} from './controls/settings_checkbox.js';

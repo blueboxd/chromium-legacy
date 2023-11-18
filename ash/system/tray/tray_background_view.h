@@ -55,6 +55,21 @@ class ASH_EXPORT TrayBackgroundView : public views::Button,
     virtual void OnVisiblePreferredChanged(bool visible_preferred) = 0;
   };
 
+  // Records TrayBackgroundView.Pressed metrics for all types of trays. All
+  // nested buttons inside `TrayBackgroundView` should use this delegate if they
+  // want to record the TrayBackgroundView.Pressed metric.
+  class TrayButtonControllerDelegate
+      : public Button::DefaultButtonControllerDelegate {
+   public:
+    TrayButtonControllerDelegate(views::Button* button,
+                                 TrayBackgroundViewCatalogName catalog_name);
+    void NotifyClick(const ui::Event& event) override;
+
+   private:
+    // The catalog name, used to record metrics on feature integrations.
+    TrayBackgroundViewCatalogName catalog_name_;
+  };
+
   enum RoundedCornerBehavior {
     kNotRounded,
     kStartRounded,
@@ -81,7 +96,6 @@ class ASH_EXPORT TrayBackgroundView : public views::Button,
 
   // views::Button:
   void OnThemeChanged() override;
-  void NotifyClick(const ui::Event& event) override;
 
   // VirtualKeyboardModel::Observer:
   void OnVirtualKeyboardVisibilityChanged() override;
@@ -135,13 +149,6 @@ class ASH_EXPORT TrayBackgroundView : public views::Button,
   // view may be using. Note that the locale is not expected to change after the
   // user logs in.
   virtual void HandleLocaleChange() = 0;
-
-  // Updates this bubble about visibility change of *ANY* tray bubble
-  // including itself.
-  // `bubble_widget` is the bubble with visibility change. Please note that it
-  // can be the current bubble as well.
-  virtual void OnAnyBubbleVisibilityChanged(views::Widget* bubble_widget,
-                                            bool visible);
 
   // Hides the bubble associated with |bubble_view|. Called when the widget
   // is closed.
@@ -276,7 +283,7 @@ class ASH_EXPORT TrayBackgroundView : public views::Button,
  private:
   class TrayWidgetObserver;
   class TrayBackgroundViewSessionChangeHandler;
-  friend class StatusAreaWidgetQSRevampTest;
+  friend class StatusAreaWidgetTest;
 
   void StartVisibilityAnimation(bool visible);
 

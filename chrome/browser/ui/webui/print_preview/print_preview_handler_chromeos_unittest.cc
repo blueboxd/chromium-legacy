@@ -299,6 +299,12 @@ class PrintPreviewHandlerChromeOSTest : public testing::Test {
         ConvertToLocalDestinationInfo(printer_ids));
   }
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  int LocalPrinterVersion() {
+    return handler_->GetLocalPrinterVersionForTesting();
+  }
+#endif
+
  private:
   content::BrowserTaskEnvironment task_environment_;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -471,6 +477,14 @@ TEST_F(PrintPreviewHandlerChromeOSTest, HandleGetCanShowManagePrinters) {
 
 // Verify 'observeLocalPrinters' can be called.
 TEST_F(PrintPreviewHandlerChromeOSTest, HandleObserveLocalPrinters) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (int{crosapi::mojom::LocalPrinter::MethodMinVersions::
+              kAddLocalPrintersObserverMinVersion} > LocalPrinterVersion()) {
+    LOG(ERROR) << "Local printer version incompatible";
+    return;
+  }
+#endif
+
   const std::vector<std::string> printers{"Printer1", "Printer2", "Printer3"};
   SetLocalPrinters(printers);
 
@@ -496,9 +510,7 @@ TEST_F(PrintPreviewHandlerChromeOSTest, FireLocalPrintersUpdated) {
 
   const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
   AssertWebUIEventFired(data, "local-printers-updated");
-  EXPECT_EQ(static_cast<int>(mojom::PrinterType::kLocal),
-            data.arg2()->GetInt());
-  EXPECT_EQ(printers.size(), data.arg3()->GetList().size());
+  EXPECT_EQ(printers.size(), data.arg2()->GetList().size());
 }
 
 }  // namespace printing

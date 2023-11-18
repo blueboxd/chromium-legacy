@@ -5,8 +5,9 @@ import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 
 import {CurrentAttribution, CurrentWallpaper, GooglePhotosAlbum, GooglePhotosEnablementState, GooglePhotosPhoto, WallpaperCollection, WallpaperImage} from '../../personalization_app.mojom-webui.js';
+import {SeaPenThumbnail} from '../../sea_pen.mojom-webui.js';
 
-import {DefaultImageSymbol, DisplayableImage, kDefaultImageSymbol, WallpaperSearchThumbnail} from './constants.js';
+import {DefaultImageSymbol, DisplayableImage, kDefaultImageSymbol, SeaPenWallpaper} from './constants.js';
 
 /**
  * Stores collections and images from backdrop server.
@@ -87,8 +88,9 @@ export interface LoadingState {
 
 export interface SeaPenState {
   query: string|null;
-  thumbnails: WallpaperSearchThumbnail[]|null;
+  thumbnails: SeaPenThumbnail[]|null;
   thumbnailsLoading: boolean;
+  recentWallpapers: SeaPenWallpaper[]|null;
 }
 
 /**
@@ -125,6 +127,7 @@ export interface WallpaperState {
   pendingSelected: DisplayableImage|null;
   dailyRefresh: DailyRefreshState|null;
   fullscreen: boolean;
+  shouldShowTimeOfDayWallpaperDialog: boolean;
   googlePhotos: GooglePhotosState;
   seaPen: SeaPenState;
 }
@@ -156,6 +159,7 @@ export function emptyState(): WallpaperState {
     pendingSelected: null,
     dailyRefresh: null,
     fullscreen: false,
+    shouldShowTimeOfDayWallpaperDialog: false,
     googlePhotos: {
       enabled: undefined,
       albums: undefined,
@@ -169,6 +173,7 @@ export function emptyState(): WallpaperState {
       query: null,
       thumbnails: null,
       thumbnailsLoading: false,
+      recentWallpapers: null,
     },
   };
 }

@@ -115,11 +115,6 @@ inline constexpr char kAudioMute[] = "settings.audio.mute";
 // it, therefore when the policy is lifted the original mute state is restored.
 inline constexpr char kAudioOutputAllowed[] = "hardware.audio_output_enabled";
 
-// A double pref storing the user-requested volume. This setting is here only
-// for migration purposes now. It is being replaced by the
-// |kAudioDevicesVolumePercent| setting.
-inline constexpr char kAudioVolumePercent[] = "settings.audio.volume_percent";
-
 // A dictionary pref that maps stable device id string to |AudioDeviceState|.
 // Different state values indicate whether or not a device has been selected
 // as the active one for audio I/O, or it's a new plugged device.
@@ -138,7 +133,8 @@ inline constexpr char kAudioOutputDevicesUserPriority[] =
     "settings.audio.output_user_priority";
 
 // A dictionary pref that maps device id string to the timestamp of the last
-// time the audio device was connected, in `base::Time::ToDoubleT()`'s format.
+// time the audio device was connected, in
+// `base::Time::InSecondsFSinceUnixEpoch()`'s format.
 inline constexpr char kAudioDevicesLastSeen[] = "settings.audio.last_seen";
 
 // A string pref storing an identifier that is getting sent with parental
@@ -626,8 +622,8 @@ inline constexpr char kAccessibilitySelectToSpeakVoiceSwitching[] =
 inline constexpr char kAccessibilitySelectToSpeakWordHighlight[] =
     "settings.a11y.select_to_speak_word_highlight";
 
-inline constexpr char kAccessibilityFaceTrackingEnabled[] =
-    "settings.a11y.face_tracking.enabled";
+inline constexpr char kAccessibilityFaceGazeEnabled[] =
+    "settings.a11y.face_gaze.enabled";
 
 // A boolean pref which determines whether the accessibility menu shows
 // regardless of the state of a11y features.
@@ -656,6 +652,12 @@ inline constexpr char kDesksNamesList[] = "ash.desks.desks_names_list";
 // for the primary user on first sign-in. The guids are stored as lowercase
 // strings.
 inline constexpr char kDesksGuidsList[] = "ash.desks.desks_guids_list";
+// A list containing the lacros profile ID associations for desks in the same
+// order of the desks in the overview desks bar. This is used so that desk <->
+// profile associations can be restored. The profile IDs are logically unsigned
+// integers, but stored as strings since they can (and will) be 64-bits large.
+inline constexpr char kDesksLacrosProfileIdList[] =
+    "ash.desks.desks_lacros_profile_id_list";
 // This list stores the metrics of virtual desks. Like |kDesksNamesList|, this
 // list stores entries in the same order of the desks in the overview desks bar.
 // Values are stored as dictionaries.
@@ -877,14 +879,6 @@ inline constexpr char kNightLightCustomStartTime[] =
     "ash.night_light.custom_start_time";
 inline constexpr char kNightLightCustomEndTime[] =
     "ash.night_light.custom_end_time";
-
-// Double prefs storing the most recent valid geoposition, which is only used
-// when the device lacks connectivity and we're unable to retrieve a valid
-// geoposition to calculate the sunset / sunrise times.
-inline constexpr char kNightLightCachedLatitude[] =
-    "ash.night_light.cached_latitude";
-inline constexpr char kNightLightCachedLongitude[] =
-    "ash.night_light.cached_longitude";
 
 // A boolean pref storing whether the AutoNightLight notification has ever been
 // dismissed by the user, which we use to stop showing it again.
@@ -1129,6 +1123,15 @@ inline constexpr char kWallpaperDailyRefreshFirstCheckTime[] =
 inline constexpr char kWallpaperDailyRefreshSecondCheckTime[] =
     "ash.wallpaper_daily_refresh.second_check_time";
 
+// Prefs required by `ScheduledFeature` for the time of day wallpaper to follow
+// a sunset-to-sunrise schedule. Nothing in the system ultimately uses them.
+// TODO(b/309020921): Remove these once ScheduledFeature doesn't require prefs
+// to operate.
+inline constexpr char kWallpaperTimeOfDayStatus[] =
+    "ash.wallpaper_time_of_day.status";
+inline constexpr char kWallpaperTimeOfDayScheduleType[] =
+    "ash.wallpaper_time_of_day.schedule_type";
+
 // Boolean pref indicating whether a user has enabled the bluetooth adapter.
 inline constexpr char kUserBluetoothAdapterEnabled[] =
     "ash.user.bluetooth.adapter_enabled";
@@ -1136,9 +1139,6 @@ inline constexpr char kUserBluetoothAdapterEnabled[] =
 // Boolean pref indicating system-wide setting for bluetooth adapter power.
 inline constexpr char kSystemBluetoothAdapterEnabled[] =
     "ash.system.bluetooth.adapter_enabled";
-
-// Boolean pref to persist the expanded state of the system tray across reboots.
-inline constexpr char kSystemTrayExpanded[] = "ash.system_tray.expanded";
 
 // A boolean pref indicating whether the camera is allowed to be used.
 inline constexpr char kUserCameraAllowed[] = "ash.user.camera_allowed";
@@ -1165,11 +1165,12 @@ inline constexpr char kShouldShowSpeakOnMuteOptInNudge[] =
 inline constexpr char kSpeakOnMuteOptInNudgeShownCount[] =
     "ash.user.speak_on_mute_opt_in_nudge_shown_count";
 
-// A boolean pref indicating whether the geolocation is allowed for the user.
-inline constexpr char kUserGeolocationAllowed[] =
-    "ash.user.geolocation_allowed";
+// An enum pref, indicating whether the geolocation is allowed inside user
+// session. Values are from `ash::GeolocationAccessLevel`.
+inline constexpr char kUserGeolocationAccessLevel[] =
+    "ash.user.geolocation_access_level";
 // An enum pref indicating whether the geolocation is allowed outside user
-// session. Values are from PrivacyHubController::AccessLevel.
+// session. Values are from `ash::GeolocationAccessLevel`.
 inline constexpr char kDeviceGeolocationAllowed[] =
     "ash.device.geolocation_allowed";
 
@@ -1597,6 +1598,10 @@ inline constexpr char kBackgroundBlur[] = "ash.camera.background_blur";
 // An boolean pref that indicates whether background replacement is applied.
 inline constexpr char kBackgroundReplace[] = "ash.camera.background_replace";
 
+// An string pref that indicates the image path of the camera background.
+inline constexpr char kBackgroundImagePath[] =
+    "ash.camera.background_image_path";
+
 // An boolean pref that indicates whether portrait relighting is applied.
 inline constexpr char kPortraitRelighting[] = "ash.camera.portrait_relighting";
 
@@ -1860,6 +1865,13 @@ inline constexpr char kDemoModeStoreId[] = "demo_mode.store_id";
 // A string pref holding the value of the default locale for demo sessions.
 inline constexpr char kDemoModeDefaultLocale[] = "demo_mode.default_locale";
 
+// A string pref holding the version of the installed demo mode app.
+inline constexpr char kDemoModeAppVersion[] = "demo_mode.app_version";
+
+// A string pref holding the version of the installed demo mode resources.
+inline constexpr char kDemoModeResourcesVersion[] =
+    "demo_mode.resources_version";
+
 // A dictionary pref containing the set of touchpad settings for the user. This
 // is synced for all user devices.
 inline constexpr char kTouchpadInternalSettings[] =
@@ -1903,6 +1915,25 @@ inline constexpr char kTouchpadDefaultSettings[] =
 // DeviceExtendedFkeysMofidier.
 inline constexpr char kExtendedFkeysModifier[] =
     "ash.settings.extended_fkeys_modifier";
+
+// An integer pref that counts the number of times we have shown a form of
+// screen capture education (a nudge or tutorial).
+inline constexpr char kCaptureModeEducationShownCount[] =
+    "ash.capture_mode.capture_mode_education_shown_count";
+
+// A time pref that tracks the most recent instance when we have shown a form of
+// screen capture education (a nudge or tutorial).
+inline constexpr char kCaptureModeEducationLastShown[] =
+    "ash.capture_mode.capture_mode_education_last_shown";
+
+//-----------------------------------------------------------------------------
+// Language related Prefs
+//-----------------------------------------------------------------------------
+
+// A string pref (comma-separated list) that corresponds to the set of enabled
+// 1P input method engine IDs.
+inline constexpr char kLanguagePreloadEngines[] =
+    "settings.language.preload_engines";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

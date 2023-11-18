@@ -289,8 +289,10 @@ class BLINK_PLATFORM_EXPORT WebURLResponse {
   void SetRequestIncludeCredentials(bool);
   bool RequestIncludeCredentials() const;
 
+  void SetShouldUseSourceHashForJSCodeCache(bool);
+  bool ShouldUseSourceHashForJSCodeCache() const;
+
   void SetWasFetchedViaCache(bool);
-  void SetArrivalTimeAtRenderer(base::TimeTicks arrival);
 
 #if INSIDE_BLINK
  protected:

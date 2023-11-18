@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/autofill/bottom_sheet/payments_suggestion_bottom_sheet_view_controller.h"
 
 #import "base/metrics/histogram_functions.h"
+#import "base/strings/sys_string_conversions.h"
 #import "build/branding_buildflags.h"
 #import "components/autofill/core/browser/data_model/credit_card.h"
 #import "components/grit/components_scaled_resources.h"
@@ -18,6 +19,7 @@
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
+#import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "url/gurl.h"
@@ -82,7 +84,7 @@ NSString* const kCustomDetentIdentifier = @"customDetent";
 @property(nonatomic, assign) BOOL expandSizeTooLarge;
 
 // Keep track of the minimized state height.
-@property(nonatomic, assign) absl::optional<CGFloat> minimizedStateHeight;
+@property(nonatomic, assign) std::optional<CGFloat> minimizedStateHeight;
 
 @end
 
@@ -107,7 +109,16 @@ NSString* const kCustomDetentIdentifier = @"customDetent";
   // minimized bottom sheet.
   _tableViewIsMinimized = _creditCardData.count > 2;
 
+  self.view.accessibilityViewIsModal = YES;
   self.image = [self titleImage];
+  self.imageViewAccessibilityLabel = [NSString
+      stringWithFormat:@"%@. %@",
+                       l10n_util::GetNSString(
+                           self.showGooglePayLogo
+                               ? IDS_IOS_AUTOFILL_WALLET_SERVER_NAME
+                               : IDS_IOS_PRODUCT_NAME),
+                       l10n_util::GetNSString(
+                           IDS_IOS_PAYMENT_BOTTOM_SHEET_SELECT_PAYMENT_METHOD)];
   self.customSpacingBeforeImageIfNoNavigationBar = kSpacingBeforeImage;
   self.customSpacingAfterImage = kSpacingAfterImage;
   self.subtitleTextStyle = UIFontTextStyleFootnote;
@@ -135,6 +146,12 @@ NSString* const kCustomDetentIdentifier = @"customDetent";
   [self selectFirstRow];
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
+  UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification,
+                                  self.imageViewAccessibilityLabel);
+}
+
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
 
@@ -146,7 +163,7 @@ NSString* const kCustomDetentIdentifier = @"customDetent";
 
   if (self.traitCollection.preferredContentSizeCategory !=
       previousTraitCollection.preferredContentSizeCategory) {
-    self.minimizedStateHeight = absl::nullopt;
+    self.minimizedStateHeight = std::nullopt;
     [self updateHeight];
   }
 }
@@ -160,6 +177,7 @@ NSString* const kCustomDetentIdentifier = @"customDetent";
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
+  [super viewDidDisappear:animated];
   if (self.disableBottomSheetOnExit) {
     [self.delegate disableBottomSheet];
   }
@@ -322,7 +340,11 @@ NSString* const kCustomDetentIdentifier = @"customDetent";
 
 // Returns an accessible card name at a given row in the table view.
 - (NSString*)accessibleCardNameAtRow:(NSInteger)row {
-  return [_creditCardData[row] accessibleCardName];
+  return l10n_util::GetNSStringF(
+      IDS_IOS_AUTOFILL_ACCNAME_SUGGESTION,
+      base::SysNSStringToUTF16([_creditCardData[row] accessibleCardName]), u"",
+      base::NumberToString16(row + 1),
+      base::NumberToString16(_creditCardData.count));
 }
 
 // Creates the payments bottom sheet's table view.
@@ -528,6 +550,7 @@ NSString* const kCustomDetentIdentifier = @"customDetent";
   cell.customAccessibilityLabel = [self accessibleCardNameAtRow:indexPath.row];
 
   cell.textLabel.text = [self suggestionAtRow:indexPath.row];
+  cell.accessibilityIdentifier = cell.textLabel.text;
   [cell setDetailText:[self descriptionAtRow:indexPath.row]];
   [cell setIconImage:[self iconAtRow:indexPath.row]
             tintColor:nil

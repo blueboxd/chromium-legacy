@@ -5,17 +5,18 @@
 #include "ash/system/unified/glanceable_tray_bubble_view.h"
 
 #include <algorithm>
+#include <memory>
 
+#include "ash/api/tasks/tasks_client.h"
+#include "ash/api/tasks/tasks_types.h"
 #include "ash/constants/ash_features.h"
 #include "ash/glanceables/classroom/glanceables_classroom_client.h"
 #include "ash/glanceables/glanceables_controller.h"
-#include "ash/glanceables/tasks/glanceables_tasks_client.h"
-#include "ash/glanceables/tasks/glanceables_tasks_types.h"
+#include "ash/glanceables/tasks/glanceables_tasks_view.h"
 #include "ash/public/cpp/session/user_info.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/time/calendar_view.h"
-#include "ash/system/tray/detailed_view_delegate.h"
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
@@ -23,6 +24,7 @@
 #include "ash/system/unified/classroom_bubble_teacher_view.h"
 #include "ash/system/unified/tasks_bubble_view.h"
 #include "base/check.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -33,6 +35,8 @@
 #include "ui/views/focus/focus_manager.h"
 
 namespace ash {
+
+using BoundsType = CalendarView::CalendarSlidingSurfaceBoundsType;
 
 namespace {
 
@@ -140,10 +144,7 @@ class ContainerView : public views::FlexLayoutView,
 GlanceableTrayBubbleView::GlanceableTrayBubbleView(
     const InitParams& init_params,
     Shelf* shelf)
-    : TrayBubbleView(init_params),
-      shelf_(shelf),
-      detailed_view_delegate_(
-          std::make_unique<DetailedViewDelegate>(/*tray_controller=*/nullptr)) {
+    : TrayBubbleView(init_params), shelf_(shelf) {
   Shell::Get()->glanceables_controller()->RecordGlanceablesBubbleShowTime(
       base::TimeTicks::Now());
 }
@@ -179,7 +180,10 @@ void GlanceableTrayBubbleView::InitializeContents() {
                 bubble->calendar_view_->event_list_view()) {
               return;
             }
-            bubble->calendar_view_->SetCalendarSlidingSurfaceBounds(false);
+            bubble->calendar_view_->SetCalendarSlidingSurfaceBounds(
+                bubble->calendar_view_->up_next_view()
+                    ? BoundsType::UP_NEXT_VIEW_BOUNDS
+                    : BoundsType::CALENDAR_BOTTOM_BOUNDS);
           },
           base::Unretained(this)));
 
@@ -202,11 +206,10 @@ void GlanceableTrayBubbleView::InitializeContents() {
   scroll_view_->SetContents(std::move(child_glanceable_container));
 
   if (!calendar_view_) {
-    calendar_view_ =
-        scroll_view_->contents()->AddChildView(std::make_unique<CalendarView>(
-            detailed_view_delegate_.get(), /*for_glanceables_container=*/true));
+    calendar_view_ = scroll_view_->contents()->AddChildView(
+        std::make_unique<CalendarView>(/*for_glanceables_container=*/true));
     // TODO(b:277268122): Update with glanceable spec.
-    calendar_view_->SetPreferredSize(gfx::Size(kRevampedTrayMenuWidth, 400));
+    calendar_view_->SetPreferredSize(gfx::Size(kWideTrayMenuWidth, 400));
   }
 
   auto* const tasks_client =
@@ -294,8 +297,8 @@ void GlanceableTrayBubbleView::AddClassroomBubbleViewIfNeeded(
       std::find(scroll_contents->children().begin(),
                 scroll_contents->children().end(), calendar_view_) -
       scroll_contents->children().begin();
-  *view = scroll_contents->AddChildViewAt(
-      std::make_unique<T>(detailed_view_delegate_.get()), calendar_view_index);
+  *view = scroll_contents->AddChildViewAt(std::make_unique<T>(),
+                                          calendar_view_index);
 
   views::View* const default_focused_child =
       scroll_contents->GetChildrenFocusList().front();
@@ -308,16 +311,21 @@ void GlanceableTrayBubbleView::AddClassroomBubbleViewIfNeeded(
 }
 
 void GlanceableTrayBubbleView::AddTaskBubbleViewIfNeeded(
-    ui::ListModel<GlanceablesTaskList>* task_lists) {
+    const ui::ListModel<api::TaskList>* task_lists) {
   if (task_lists->item_count() == 0) {
     return;
   }
   // Add tasks bubble before everything.
   auto* const scroll_contents = scroll_view_->contents();
-  tasks_bubble_view_ = scroll_contents->AddChildViewAt(
-      std::make_unique<TasksBubbleView>(detailed_view_delegate_.get(),
-                                        task_lists),
-      0);
+
+  std::unique_ptr<GlanceablesTasksViewBase> view;
+  if (base::FeatureList::IsEnabled(
+          features::kGlanceablesTimeManagementStableLaunch)) {
+    view = std::make_unique<GlanceablesTasksView>(task_lists);
+  } else {
+    view = std::make_unique<TasksBubbleView>(task_lists);
+  }
+  tasks_bubble_view_ = scroll_contents->AddChildViewAt(std::move(view), 0);
 
   views::View* const default_focused_child =
       scroll_contents->GetChildrenFocusList().front();
@@ -337,7 +345,9 @@ void GlanceableTrayBubbleView::OnGlanceablesContainerPreferredSizeChanged() {
 
 void GlanceableTrayBubbleView::OnGlanceablesContainerHeightChanged(
     int height_delta) {
-  if (!initialized_ || !IsDrawn() || !GetWidget() || GetWidget()->IsClosed()) {
+  if (!initialized_ || !IsDrawn() || !GetWidget() || GetWidget()->IsClosed() ||
+      base::FeatureList::IsEnabled(
+          features::kGlanceablesTimeManagementStableLaunch)) {
     return;
   }
 

@@ -33,6 +33,15 @@ const char kDynamicSchedulerPercentile[] = "percentile";
 
 namespace features {
 
+BASE_FEATURE(kUseDrmBlackFullscreenOptimization,
+             "UseDrmBlackFullscreenOptimization",
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
+
 BASE_FEATURE(kUseMultipleOverlays,
              "UseMultipleOverlays",
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -181,7 +190,7 @@ BASE_FEATURE(kAllowBypassRenderPassQuads,
 
 BASE_FEATURE(kAllowUndamagedNonrootRenderPassToSkip,
              "AllowUndamagedNonrootRenderPassToSkip",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Allow SurfaceAggregator to merge render passes when they contain quads that
 // require overlay (e.g. protected video). See usage in |EmitSurfaceContent|.
@@ -249,7 +258,12 @@ BASE_FEATURE(kEvictSubtree, "EvictSubtree", base::FEATURE_ENABLED_BY_DEFAULT);
 // OnBeginFrame we will send the Ack immediately, rather than batching it.
 BASE_FEATURE(kOnBeginFrameAcks,
              "OnBeginFrameAcks",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 
 // if enabled, Any CompositorFrameSink of type video that defines a preferred
 // framerate that is below the display framerate will throttle OnBeginFrame
@@ -273,13 +287,6 @@ const base::FeatureParam<base::TimeDelta> kADPFBoostTimeout{
     &kEnableADPFScrollBoost, "adpf_boost_mode_timeout",
     base::Milliseconds(200)};
 
-// If enabled, Chrome uses ADPF(Android Dynamic Performance Framework) to
-// request more CPU resources in the middle of a frame production if the frame
-// is taking longer than expected.
-BASE_FEATURE(kEnableADPFMidFrameBoost,
-             "EnableADPFMidFrameBoost",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Allows delegating transforms over Wayland when it is also supported by Ash.
 BASE_FEATURE(kDelegateTransforms,
              "DelegateTransforms",
@@ -289,11 +296,6 @@ BASE_FEATURE(kDelegateTransforms,
              base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 );
-
-// The deadline for requesting a boost in the middle of a frame production is
-// this multiplier * ADPF target_duration.
-const base::FeatureParam<double> kADPFMidFrameBoostDurationMultiplier{
-    &kEnableADPFMidFrameBoost, "adpf_mid_frame_boost_multiplier", 1.0};
 
 // If enabled, Chrome includes the Renderer Main thread(s) into the
 // ADPF(Android Dynamic Performance Framework) hint session.

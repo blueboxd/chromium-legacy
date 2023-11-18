@@ -8,7 +8,7 @@
 #import "base/feature_list.h"
 #import "components/sync/base/features.h"
 #import "ios/chrome/browser/discover_feed/feed_constants.h"
-#import "ios/chrome/browser/ntp/home/features.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
@@ -84,7 +84,6 @@ NSArray<NSLayoutConstraint*>* SameConstraintsWithInsets(
   [super viewDidLoad];
   self.view.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:self.contentStack];
-  [self applyStackViewConstraints];
 }
 
 #pragma mark - FeedTopSectionConsumer
@@ -99,7 +98,7 @@ NSArray<NSLayoutConstraint*>* SameConstraintsWithInsets(
 
   // TODO(b/287118358): Cleanup IsMagicStackEnabled() code from the sync promo
   // after experiment.
-  if (IsMagicStackEnabled()) {
+  if (IsMagicStackEnabled() && !IsFeedContainmentEnabled()) {
     self.promoViewContainer.backgroundColor =
         [UIColor colorNamed:kBackgroundColor];
   }
@@ -129,31 +128,44 @@ NSArray<NSLayoutConstraint*>* SameConstraintsWithInsets(
 
 // Returns insets to add a margin around the stackview if there are items
 // to display in the stackview. Otherwise returns NSDirectionalEdgeInsetsZero.
-- (NSDirectionalEdgeInsets)stackViewInsets {
+// `visible` indicates whether or not the Feed Top Section is visible.
+- (NSDirectionalEdgeInsets)stackViewInsetsForTopSectionVisible:(BOOL)visible {
+  if (!visible) {
+    return NSDirectionalEdgeInsetsZero;
+  }
+  if (IsFeedContainmentEnabled()) {
+    return NSDirectionalEdgeInsetsMake(
+        kContentStackVerticalPadding, kContentStackVerticalPadding,
+        kContentStackVerticalPadding, kContentStackVerticalPadding);
+  } else {
     return NSDirectionalEdgeInsetsMake(
         kContentStackVerticalPadding, kContentStackHorizontalPadding,
         kContentStackVerticalPadding, kContentStackHorizontalPadding);
+  }
 }
 
-// Applies constraints to the stack view.
-- (void)applyStackViewConstraints {
+// Applies constraints to the stack view for a specific visibility. `visible`
+// indicates whether or not the Feed Top Section is visible.
+- (void)applyStackViewConstraintsForTopSectionVisible:(BOOL)visible {
   if (self.contentStackConstraints) {
     [NSLayoutConstraint deactivateConstraints:self.contentStackConstraints];
   }
-
+  self.contentStack.hidden = !visible;
+  self.view.hidden = !visible;
   self.contentStackConstraints = SameConstraintsWithInsets(
-      self.contentStack, self.view, [self stackViewInsets]);
+      self.contentStack, self.view,
+      [self stackViewInsetsForTopSectionVisible:visible]);
   [NSLayoutConstraint activateConstraints:self.contentStackConstraints];
 }
 
 - (void)showSigninPromo {
   // Check if the promoViewContainer does not exist. Might not exist if the
-  // promo has been "hidden", which will remove the container.
+  // promo has been "hidden", which involves removing the container.
   if (!self.promoViewContainer && !self.promoView) {
     [self createPromoViewContainer];
   }
-  [self applyStackViewConstraints];
-  [self.ntpDelegate updateFeedLayout];
+  [self applyStackViewConstraintsForTopSectionVisible:YES];
+  [self.NTPDelegate updateFeedLayout];
 }
 
 - (void)hideSigninPromo {
@@ -163,8 +175,8 @@ NSArray<NSLayoutConstraint*>* SameConstraintsWithInsets(
   [self.promoViewContainer removeFromSuperview];
   self.promoViewContainer = nil;
   self.promoView = nil;
-  [self applyStackViewConstraints];
-  [self.ntpDelegate updateFeedLayout];
+  [self applyStackViewConstraintsForTopSectionVisible:NO];
+  [self.NTPDelegate updateFeedLayout];
 }
 
 // Configures and creates a signin promo view.

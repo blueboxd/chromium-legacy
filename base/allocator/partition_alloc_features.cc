@@ -110,6 +110,14 @@ MIRACLE_PARAMETER_FOR_INT(
 BASE_FEATURE(kPartitionAllocLargeEmptySlotSpanRing,
              "PartitionAllocLargeEmptySlotSpanRing",
              FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kPartitionAllocSchedulerLoopQuarantine,
+             "PartitionAllocSchedulerLoopQuarantine",
+             FEATURE_DISABLED_BY_DEFAULT);
+// Scheduler Loop Quarantine's capacity in bytes.
+const base::FeatureParam<int> kPartitionAllocSchedulerLoopQuarantineCapacity{
+    &kPartitionAllocSchedulerLoopQuarantine,
+    "PartitionAllocSchedulerLoopQuarantineCapacity", 0};
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
 BASE_FEATURE(kPartitionAllocBackupRefPtr,
@@ -414,6 +422,24 @@ MIRACLE_PARAMETER_FOR_INT(
     kEnableConfigurableThreadCacheMinCachedMemoryForPurging,
     "ThreadCacheMinCachedMemoryForPurgingBytes",
     partition_alloc::kMinCachedMemoryForPurgingBytes)
+
+// An apparent quarantine leak in the buffer partition unacceptably
+// bloats memory when MiraclePtr is enabled in the renderer process.
+// We believe we have found and patched the leak, but out of an
+// abundance of caution, we provide this toggle that allows us to
+// wholly disable MiraclePtr in the buffer partition, if necessary.
+//
+// TODO(crbug.com/1444624): this is unneeded once
+// MiraclePtr-for-Renderer launches.
+BASE_FEATURE(kPartitionAllocDisableBRPInBufferPartition,
+             "PartitionAllocDisableBRPInBufferPartition",
+             FEATURE_DISABLED_BY_DEFAULT);
+
+#if BUILDFLAG(USE_FREELIST_POOL_OFFSETS)
+BASE_FEATURE(kUsePoolOffsetFreelists,
+             "PartitionAllocUsePoolOffsetFreelists",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 }  // namespace features
 }  // namespace base

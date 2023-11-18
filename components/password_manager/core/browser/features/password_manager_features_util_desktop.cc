@@ -146,15 +146,7 @@ bool IsOptedInForAccountStorage(const PrefService* pref_service,
                                 const syncer::SyncService* sync_service) {
   DCHECK(pref_service);
 
-  // If the account storage can't be enabled (e.g. because the feature flag was
-  // turned off), then don't consider the user opted in, even if the pref is
-  // set.
-  // Note: IsUserEligibleForAccountStorage() is not appropriate here, because
-  // a) Sync-the-feature users are not considered eligible, but might have
-  //    opted in before turning on Sync, and
-  // b) eligibility requires IsEngineInitialized() (i.e. will be false for a
-  //    few seconds after browser startup).
-  if (!internal::CanAccountStorageBeEnabled(sync_service)) {
+  if (!internal::IsUserEligibleForAccountStorage(sync_service)) {
     return false;
   }
 
@@ -184,6 +176,8 @@ bool ShouldShowAccountStorageReSignin(const PrefService* pref_service,
   DCHECK(pref_service);
 
   // Checks that the sync_service is not null and the feature is enabled.
+  // IsUserEligibleForAccountStorage() doesn't fit because it's false for
+  // signed-out users.
   if (!internal::CanAccountStorageBeEnabled(sync_service)) {
     return false;  // Opt-in wouldn't work here, so don't show the re-signin.
   }
@@ -301,12 +295,6 @@ void OptOutOfAccountStorageAndClearSettings(
     return;
   }
 
-  OptOutOfAccountStorageAndClearSettingsForAccount(pref_service, gaia_id);
-}
-
-void OptOutOfAccountStorageAndClearSettingsForAccount(
-    PrefService* pref_service,
-    const std::string& gaia_id) {
   ScopedAccountStorageSettingsUpdate(pref_service,
                                      GaiaIdHash::FromGaiaId(gaia_id))
       .ClearAllSettings();
@@ -365,11 +353,6 @@ void KeepAccountStorageSettingsOnlyForUsers(
   for (const std::string& key_to_remove : keys_to_remove) {
     update->Remove(key_to_remove);
   }
-}
-
-void ClearAccountStorageSettingsForAllUsers(PrefService* pref_service) {
-  DCHECK(pref_service);
-  pref_service->ClearPref(prefs::kAccountStoragePerAccountSettings);
 }
 
 void RecordMoveOfferedToNonOptedInUser(

@@ -9,6 +9,7 @@
 #include <windows.h>
 #include <wrl/client.h>
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -48,7 +49,6 @@
 #include "chrome/updater/win/setup/setup_util.h"
 #include "chrome/updater/win/ui/l10n_util.h"
 #include "chrome/updater/win/ui/resources/updater_installer_strings.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
@@ -59,8 +59,8 @@ HRESULT OpenCallerProcessHandle(DWORD proc_id,
 }
 
 // Extracts a string from a VARIANT if the VARIANT is VT_BSTR or VT_BSTR |
-// VT_BYREF. Returns absl::nullopt if the VARIANT is not a BSTR.
-absl::optional<std::wstring> StringFromVariant(const VARIANT& source) {
+// VT_BYREF. Returns std::nullopt if the VARIANT is not a BSTR.
+std::optional<std::wstring> StringFromVariant(const VARIANT& source) {
   if (V_VT(&source) == VT_BSTR) {
     return V_BSTR(&source);
   }
@@ -441,7 +441,7 @@ class AppWebImpl : public IDispatchImpl<IAppWeb> {
     // Holds the result of the IPC to retrieve the current version.
     struct CurrentVersionResult
         : public base::RefCountedThreadSafe<CurrentVersionResult> {
-      absl::optional<base::Version> current_version;
+      std::optional<base::Version> current_version;
       base::WaitableEvent completion_event;
 
      private:
@@ -515,8 +515,8 @@ class AppWebImpl : public IDispatchImpl<IAppWeb> {
     LONG install_progress_percentage = -1;
     LONG error_code = 0;
     LONG extra_code1 = 0;
-    std::wstring completion_message;
-    LONG installer_result_code = 0;
+    std::wstring installer_text;
+    std::wstring installer_cmd_line;
 
     if (state_update_) {
       // `state_value` is set to the state of update as seen by the on-demand
@@ -563,22 +563,10 @@ class AppWebImpl : public IDispatchImpl<IAppWeb> {
       total_bytes_to_download = state_update_->total_bytes;
       install_progress_percentage = state_update_->install_progress;
 
-      if (state_update_->state ==
-          UpdateService::UpdateState::State::kUpdateError) {
-        error_code = state_update_->error_code;
-        extra_code1 = state_update_->extra_code1;
-
-        if (state_update_->error_code == kErrorApplicationInstallerFailed) {
-          // In the error case, if an installer error occurred, it remaps the
-          // installer error to the legacy installer error value, for backward
-          // compatibility.
-          error_code = GOOPDATEINSTALL_E_INSTALLER_FAILED;
-          completion_message =
-              GetLocalizedString(IDS_INSTALL_UPDATER_FAILED_BASE, language_);
-          installer_result_code = state_update_->extra_code1;
-        }
-      }
-
+      error_code = state_update_->error_code;
+      extra_code1 = state_update_->extra_code1;
+      installer_text = base::UTF8ToWide(state_update_->installer_text);
+      installer_cmd_line = base::UTF8ToWide(state_update_->installer_cmd_line);
     } else if (result_) {
       CHECK_NE(result_.value(), UpdateService::Result::kSuccess);
       state_value = STATE_ERROR;
@@ -593,9 +581,10 @@ class AppWebImpl : public IDispatchImpl<IAppWeb> {
         /*next_retry_time=*/-1, install_progress_percentage,
         /*install_time_remaining_ms=*/-1,
         /*is_canceled=*/VARIANT_FALSE, error_code, extra_code1,
-        completion_message, installer_result_code,
-        /*installer_result_extra_code1=*/-1,
-        /*post_install_launch_command_line=*/L"",
+        /*completion_message=*/installer_text,
+        /*installer_result_code=*/error_code,
+        /*installer_result_extra_code1=*/extra_code1,
+        /*post_install_launch_command_line=*/installer_cmd_line,
         /*post_install_url=*/L"",
         /*post_install_action=*/0);
   }
@@ -646,8 +635,8 @@ class AppWebImpl : public IDispatchImpl<IAppWeb> {
   // Access to `state_update_` and `result_` must be serialized by using the
   // lock.
   mutable base::Lock lock_;
-  absl::optional<UpdateService::UpdateState> state_update_;
-  absl::optional<UpdateService::Result> result_;
+  std::optional<UpdateService::UpdateState> state_update_;
+  std::optional<UpdateService::Result> result_;
 };
 
 // This class implements the legacy Omaha3 IAppBundleWeb interface as expected
@@ -919,7 +908,7 @@ STDMETHODIMP LegacyAppCommandWebImpl::execute(VARIANT substitution1,
        {substitution1, substitution2, substitution3, substitution4,
         substitution5, substitution6, substitution7, substitution8,
         substitution9}) {
-    const absl::optional<std::wstring> substitution_string =
+    const std::optional<std::wstring> substitution_string =
         StringFromVariant(substitution);
     if (!substitution_string) {
       break;
@@ -1101,7 +1090,7 @@ namespace {
 // Holds the result of the IPC to retrieve `last checked time`.
 struct LastCheckedTimeResult
     : public base::RefCountedThreadSafe<LastCheckedTimeResult> {
-  absl::optional<DATE> last_checked_time;
+  std::optional<DATE> last_checked_time;
   base::WaitableEvent completion_event;
 
  private:
@@ -1140,7 +1129,7 @@ class PolicyStatusResult
   }
 
   ValueGetter value_getter;
-  absl::optional<PolicyStatus<T>> value;
+  std::optional<PolicyStatus<T>> value;
   base::WaitableEvent completion_event;
 };
 
@@ -1389,7 +1378,7 @@ template <typename T>
       value.effective_policy()
           ? GetStringFromValue(value.effective_policy()->policy)
           : "",
-      value.conflict_policy() != absl::nullopt,
+      value.conflict_policy() != std::nullopt,
       value.conflict_policy() ? value.conflict_policy()->source : "",
       value.conflict_policy()
           ? GetStringFromValue(value.conflict_policy()->policy)

@@ -74,11 +74,7 @@ TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
 
   host()->SetView(this);
 
-  if (host()->delegate() && host()->delegate()->GetInputEventRouter() &&
-      GetFrameSinkId().is_valid()) {
-    host()->delegate()->GetInputEventRouter()->AddFrameSinkIdOwner(
-        GetFrameSinkId(), this);
-  }
+  SetIsFrameSinkIdOwner(true);
 
 #if defined(USE_AURA)
   window_ = std::make_unique<aura::Window>(
@@ -420,6 +416,10 @@ bool TestRenderViewHost::CreateRenderView(
   } else {
     proxy_host =
         RenderFrameProxyHost::FromID(GetProcess()->GetID(), proxy_route_id);
+  }
+
+  if (!GetWidget()->view_is_frame_sink_id_owner()) {
+    main_frame->NotifyWillCreateRenderWidgetOnCommit();
   }
 
   DCHECK_EQ(!!main_frame, is_active());

@@ -1340,6 +1340,9 @@ base::Value::Dict SerializeSafeBrowsingClientProperties(
     case ClientSafeBrowsingReportRequest::ANDROID_SAFEBROWSING_REAL_TIME:
       url_api_type = "ANDROID_SAFEBROWSING_REAL_TIME";
       break;
+    case ClientSafeBrowsingReportRequest::ANDROID_SAFEBROWSING:
+      url_api_type = "ANDROID_SAFEBROWSING";
+      break;
     case ClientSafeBrowsingReportRequest::PVER3_NATIVE:
     case ClientSafeBrowsingReportRequest::FLYWHEEL:
       NOTREACHED();
@@ -1520,6 +1523,14 @@ base::Value::Dict SerializeDownloadWarningAction(
       break;
     case ClientSafeBrowsingReportRequest::DownloadWarningAction::OPEN_SUBPAGE:
       action = "OPEN_SUBPAGE";
+      break;
+    case ClientSafeBrowsingReportRequest::DownloadWarningAction::
+        PROCEED_DEEP_SCAN:
+      action = "PROCEED_DEEP_SCAN";
+      break;
+    case ClientSafeBrowsingReportRequest::DownloadWarningAction::
+        OPEN_LEARN_MORE_LINK:
+      action = "OPEN_LEARN_MORE_LINK";
       break;
   }
   action_dict.Set("action", action);
@@ -1723,6 +1734,9 @@ std::string SerializeHitReport(const HitReport& hit_report) {
     case ThreatSource::ANDROID_SAFEBROWSING_REAL_TIME:
       threat_source = "ANDROID_SAFEBROWSING_REAL_TIME";
       break;
+    case ThreatSource::ANDROID_SAFEBROWSING:
+      threat_source = "ANDROID_SAFEBROWSING";
+      break;
     case ThreatSource::UNKNOWN:
       threat_source = "UNKNOWN";
       break;
@@ -1760,8 +1774,8 @@ base::Value SerializeReuseLookup(
     case PasswordReuseLookup::UNSPECIFIED:
       lookup_result = "UNSPECIFIED";
       break;
-    case PasswordReuseLookup::WHITELIST_HIT:
-      lookup_result = "WHITELIST_HIT";
+    case PasswordReuseLookup::ALLOWLIST_HIT:
+      lookup_result = "ALLOWLIST_HIT";
       break;
     case PasswordReuseLookup::CACHE_HIT:
       lookup_result = "CACHE_HIT";
@@ -1775,8 +1789,8 @@ base::Value SerializeReuseLookup(
     case PasswordReuseLookup::URL_UNSUPPORTED:
       lookup_result = "URL_UNSUPPORTED";
       break;
-    case PasswordReuseLookup::ENTERPRISE_WHITELIST_HIT:
-      lookup_result = "ENTERPRISE_WHITELIST_HIT";
+    case PasswordReuseLookup::ENTERPRISE_ALLOWLIST_HIT:
+      lookup_result = "ENTERPRISE_ALLOWLIST_HIT";
       break;
     case PasswordReuseLookup::TURNED_OFF_BY_POLICY:
       lookup_result = "TURNED_OFF_BY_POLICY";
@@ -1809,7 +1823,7 @@ base::Value::Dict SerializePGEvent(const sync_pb::UserEventSpecifics& event) {
 
   base::Time timestamp = base::Time::FromDeltaSinceWindowsEpoch(
       base::Microseconds(event.event_time_usec()));
-  result.Set("time", timestamp.ToJsTime());
+  result.Set("time", timestamp.InMillisecondsFSinceUnixEpoch());
 
   base::Value::Dict event_dict;
 
@@ -2493,7 +2507,7 @@ std::string SerializeHPRTLookupResponse(
 base::Value::Dict SerializeLogMessage(const base::Time& timestamp,
                                       const std::string& message) {
   base::Value::Dict result;
-  result.Set("time", timestamp.ToJsTime());
+  result.Set("time", timestamp.InMillisecondsFSinceUnixEpoch());
   result.Set("message", message);
   return result;
 }
@@ -2702,7 +2716,8 @@ base::Value::Dict SerializeDeepScanDebugData(const std::string& token,
   value.Set("token", token);
 
   if (!data.request_time.is_null()) {
-    value.Set("request_time", data.request_time.ToJsTime());
+    value.Set("request_time",
+              data.request_time.InMillisecondsFSinceUnixEpoch());
   }
 
   if (data.request.has_value()) {
@@ -2713,7 +2728,8 @@ base::Value::Dict SerializeDeepScanDebugData(const std::string& token,
   }
 
   if (!data.response_time.is_null()) {
-    value.Set("response_time", data.response_time.ToJsTime());
+    value.Set("response_time",
+              data.response_time.InMillisecondsFSinceUnixEpoch());
   }
 
   if (!data.response_status.empty()) {
@@ -2824,7 +2840,7 @@ void SafeBrowsingUIHandler::OnGetCookie(
   double time = 0.0;
   if (!cookies.empty()) {
     cookie = cookies[0].Value();
-    time = cookies[0].CreationDate().ToJsTime();
+    time = cookies[0].CreationDate().InMillisecondsFSinceUnixEpoch();
   }
 
   base::Value::List response;
@@ -2920,6 +2936,9 @@ std::string SerializeDownloadUrlChecked(const std::vector<GURL>& urls,
       break;
     case DownloadCheckResult::ASYNC_SCANNING:
       url_and_result.Set("result", "ASYNC_SCANNING");
+      break;
+    case DownloadCheckResult::ASYNC_LOCAL_PASSWORD_SCANNING:
+      url_and_result.Set("result", "ASYNC_LOCAL_PASSWORD_SCANNING");
       break;
     case DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED:
       url_and_result.Set("result", "BLOCKED_PASSWORD_PROTECTED");

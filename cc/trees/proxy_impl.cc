@@ -53,12 +53,14 @@ constexpr auto kSmoothnessTakesPriorityExpirationDelay =
 class ScopedCommitCompletionEvent {
  public:
   ScopedCommitCompletionEvent(
+      int source_frame_number,
       CompletionEvent* event,
       base::TimeTicks start_time,
       base::SingleThreadTaskRunner* main_thread_task_runner,
       bool notify_main,
       base::WeakPtr<ProxyMain> proxy_main_weak_ptr)
-      : event_(event),
+      : source_frame_number_(source_frame_number),
+        event_(event),
         commit_timestamps_({start_time, base::TimeTicks()}),
         main_thread_task_runner_(main_thread_task_runner),
         notify_main_(notify_main),
@@ -68,8 +70,9 @@ class ScopedCommitCompletionEvent {
     event_.ExtractAsDangling()->Signal();
     if (notify_main_) {
       main_thread_task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(&ProxyMain::DidCompleteCommit,
-                                    proxy_main_weak_ptr_, commit_timestamps_));
+          FROM_HERE,
+          base::BindOnce(&ProxyMain::DidCompleteCommit, proxy_main_weak_ptr_,
+                         source_frame_number_, commit_timestamps_));
     }
   }
   ScopedCommitCompletionEvent& operator=(const ScopedCommitCompletionEvent&) =
@@ -80,6 +83,7 @@ class ScopedCommitCompletionEvent {
   }
 
  private:
+  const int source_frame_number_;
   raw_ptr<CompletionEvent> event_;
   CommitTimestamps commit_timestamps_;
   raw_ptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
@@ -368,13 +372,14 @@ void ProxyImpl::NotifyReadyToCommitOnImpl(
   scheduler_->NotifyBeginMainFrameStarted(main_thread_start_time);
 
   auto& begin_main_frame_metrics = commit_state->begin_main_frame_metrics;
-
   host_impl_->ReadyToCommit(commit_args, scroll_and_viewport_changes_synced,
                             begin_main_frame_metrics.get(), commit_timeout);
 
+  int source_frame_number = commit_state->source_frame_number;
   data_for_commit_ = std::make_unique<DataForCommit>(
       std::make_unique<ScopedCommitCompletionEvent>(
-          completion_event, start_time, MainThreadTaskRunner(),
+          source_frame_number, completion_event, start_time,
+          MainThreadTaskRunner(),
           /*notify_main*/ !commit_timestamps, proxy_main_weak_ptr_),
       std::move(commit_state), unsafe_state, commit_timestamps);
 
@@ -519,17 +524,13 @@ void ProxyImpl::RenewTreePriority() {
   // - When the active scroll gesture requires main-thread repainting for the
   //   scroll offset change to be visible.
   if (host_impl_->active_tree()->GetDeviceViewport().size().IsEmpty() ||
-      host_impl_->EvictedUIResourcesExist()) {
+      host_impl_->EvictedUIResourcesExist() ||
+      (host_impl_->IsCurrentScrollMainRepainted() &&
+       base::FeatureList::IsEnabled(
+           features::kMainRepaintScrollPrefersNewContent))) {
     // Once we enter NEW_CONTENTS_TAKES_PRIORITY mode, visible tiles on active
     // tree might be freed. We need to set RequiresHighResToDraw to ensure that
     // high res tiles will be required to activate pending tree.
-    //
-    // TODO(crbug.com/1477299): It would be better to use this path during
-    // main-repainted scrolls (host_impl_->IsCurrentScrollMainRepainted()), but
-    // the RequiresHighResToDraw mode has a page-freezing bug triggered by
-    // animating scaled directly-composited images. To address the urgent
-    // regression, we have restored the pre-crbug.com/1418368 behavior, which
-    // makes main-repainted scrolls use SAME_PRIORITY_FOR_BOTH_TREES.
     host_impl_->SetRequiresHighResToDraw();
     tree_priority = NEW_CONTENT_TAKES_PRIORITY;
   }
@@ -654,13 +655,14 @@ void ProxyImpl::NotifyThroughputTrackerResults(CustomTrackerResults results) {
 }
 
 void ProxyImpl::DidObserveFirstScrollDelay(
+    int source_frame_number,
     base::TimeDelta first_scroll_delay,
     base::TimeTicks first_scroll_timestamp) {
   DCHECK(IsImplThread());
   MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&ProxyMain::DidObserveFirstScrollDelay,
-                                proxy_main_weak_ptr_, first_scroll_delay,
-                                first_scroll_timestamp));
+                                proxy_main_weak_ptr_, source_frame_number,
+                                first_scroll_delay, first_scroll_timestamp));
 }
 
 bool ProxyImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
@@ -890,7 +892,7 @@ DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
   }
 
   if (draw_frame) {
-    if (absl::optional<LayerTreeHostImpl::SubmitInfo> submit_info =
+    if (std::optional<LayerTreeHostImpl::SubmitInfo> submit_info =
             host_impl_->DrawLayers(&frame)) {
       DCHECK_NE(frame.frame_token, 0u);
       // Drawing implies we submitted a frame to the LayerTreeFrameSink.

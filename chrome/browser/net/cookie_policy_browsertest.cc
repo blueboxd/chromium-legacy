@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/path_service.h"
@@ -72,11 +73,20 @@ class CookiePolicyBrowserTest : public InProcessBrowserTest {
 
  protected:
   CookiePolicyBrowserTest()
-      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+
+  virtual std::vector<base::test::FeatureRef> EnabledFeatures() {
+    return {blink::features::kWebSQLAccess};
+  }
+
+  virtual std::vector<base::test::FeatureRef> DisabledFeatures() { return {}; }
+
+  void SetUp() override {
     // WebSQL is disabled by default as of M119 (crbug/695592).
     // Enable feature in tests during deprecation trial and enterprise
     // policy support.
-    feature_list_.InitAndEnableFeature(blink::features::kWebSQLAccess);
+    feature_list_.InitWithFeatures(EnabledFeatures(), DisabledFeatures());
+    InProcessBrowserTest::SetUp();
   }
 
   void SetUpOnMainThread() override {
@@ -161,8 +171,16 @@ class CookiePolicyBrowserTest : public InProcessBrowserTest {
   base::test::ScopedFeatureList feature_list_;
 };
 
+// For test cases that only cover pre-3PCD logic.
+class CookiePolicyPre3pcdBrowserTest : public CookiePolicyBrowserTest {
+ protected:
+  std::vector<base::test::FeatureRef> DisabledFeatures() override {
+    return {content_settings::features::kTrackingProtection3pcd};
+  }
+};
+
 // Visits a page that sets a first-party cookie.
-IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest, AllowFirstPartyCookies) {
+IN_PROC_BROWSER_TEST_F(CookiePolicyPre3pcdBrowserTest, AllowFirstPartyCookies) {
   SetBlockThirdPartyCookies(false);
 
   GURL url(https_server_.GetURL(kHostA, "/set-cookie?cookie1"));
@@ -199,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest,
 }
 
 // Third-Party Frame Tests
-IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest,
+IN_PROC_BROWSER_TEST_F(CookiePolicyPre3pcdBrowserTest,
                        ThirdPartyCookiesIFrameAllowSetting) {
   SetBlockThirdPartyCookies(false);
 
@@ -266,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest,
   EXPECT_EQ(content::GetCookies(browser()->profile(), GetURL(kHostB)), "");
 }
 
-IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest,
+IN_PROC_BROWSER_TEST_F(CookiePolicyPre3pcdBrowserTest,
                        ThirdPartyCookiesIFrameAllowReading) {
   SetBlockThirdPartyCookies(false);
 
@@ -568,7 +586,8 @@ class CookiePolicyStorageBrowserTest
     switch (ContextType()) {
       case ContextType::kFrame:
         storage::test::ExpectStorageForFrame(frame, expected_storage);
-        EXPECT_EQ(expected_cookie, content::EvalJs(frame, "hasCookie()"));
+        EXPECT_EQ(expected_cookie && !Is3pcd(),
+                  content::EvalJs(frame, "hasCookie()"));
         return;
       case ContextType::kWorker:
         storage::test::ExpectStorageForWorker(frame, expected_storage);
@@ -579,12 +598,17 @@ class CookiePolicyStorageBrowserTest
   void SetStorage(content::RenderFrameHost* frame) {
     switch (ContextType()) {
       case ContextType::kFrame:
-        storage::test::SetStorageForFrame(frame, /*include_cookies=*/true);
+        storage::test::SetStorageForFrame(frame, /*include_cookies=*/!Is3pcd());
         return;
       case ContextType::kWorker:
         storage::test::SetStorageForWorker(frame);
         return;
     }
+  }
+
+  bool Is3pcd() {
+    return base::FeatureList::IsEnabled(
+        content_settings::features::kTrackingProtection3pcd);
   }
 
   ContextType ContextType() const { return GetParam(); }
@@ -697,13 +721,6 @@ class ThirdPartyPartitionedStorageAccessibilityTest
     : public CookiePolicyBrowserTest,
       public testing::WithParamInterface<std::tuple<ContextType, bool>> {
  public:
-  ThirdPartyPartitionedStorageAccessibilityTest() {
-    feature_list_.InitWithFeatureStates(
-        {{net::features::kThirdPartyStoragePartitioning,
-          StoragePartitioningEnabled()},
-         {net::features::kThirdPartyPartitionedStorageAllowedByDefault, true}});
-  }
-
   void ExpectStorage(content::RenderFrameHost* frame, bool expected_storage) {
     switch (ContextType()) {
       case ContextType::kFrame:
@@ -729,6 +746,14 @@ class ThirdPartyPartitionedStorageAccessibilityTest
   bool StoragePartitioningEnabled() const { return std::get<1>(GetParam()); }
 
  protected:
+  std::vector<base::test::FeatureRef> DisabledFeatures() override {
+    if (StoragePartitioningEnabled()) {
+      return {};
+    }
+    return {net::features::kThirdPartyStoragePartitioning,
+            content_settings::features::kTrackingProtection3pcd};
+  }
+
   ContextType ContextType() const { return std::get<0>(GetParam()); }
 
  private:
@@ -838,14 +863,11 @@ IN_PROC_BROWSER_TEST_P(
 
 class ThirdPartyPartitionedStorageAccessibilityCanBeDisabledTest
     : public ThirdPartyPartitionedStorageAccessibilityTest {
- public:
-  ThirdPartyPartitionedStorageAccessibilityCanBeDisabledTest() {
-    feature_list_.InitAndDisableFeature(
-        net::features::kThirdPartyPartitionedStorageAllowedByDefault);
+ protected:
+  std::vector<base::test::FeatureRef> DisabledFeatures() override {
+    return {net::features::kThirdPartyPartitionedStorageAllowedByDefault,
+            content_settings::features::kTrackingProtection3pcd};
   }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 // Tests that even if partitioned third-party storage would otherwise be
@@ -933,15 +955,11 @@ IN_PROC_BROWSER_TEST_P(CookiePolicyStorageBrowserTest,
 class ThirdPartyCookiePhaseoutPolicyStorageBrowserTest
     : public CookiePolicyBrowserTest {
  protected:
-  ThirdPartyCookiePhaseoutPolicyStorageBrowserTest() {
-    feature_list_.InitWithFeatures(
-        {net::features::kForceThirdPartyCookieBlocking,
-         net::features::kThirdPartyStoragePartitioning},
-        {});
+  std::vector<base::test::FeatureRef> EnabledFeatures() override {
+    return {blink::features::kWebSQLAccess,
+            net::features::kForceThirdPartyCookieBlocking,
+            net::features::kThirdPartyStoragePartitioning};
   }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(ThirdPartyCookiePhaseoutPolicyStorageBrowserTest,

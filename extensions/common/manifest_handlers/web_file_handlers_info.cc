@@ -132,8 +132,13 @@ std::unique_ptr<WebFileHandlers> ParseFromList(const Extension& extension,
     }
 
     // Make the temporary `accept` permanent by assigning to `file_handler`.
-    api::file_handlers::FileHandler::Accept::Populate(
-        accept, web_file_handler.file_handler.accept, *error);
+    if (auto result =
+            api::file_handlers::FileHandler::Accept::FromValue(accept);
+        result.has_value()) {
+      web_file_handler.file_handler.accept = std::move(result).value();
+    } else {
+      *error = result.error();
+    }
 
     // `icon` is an optional array of dictionaries.
     if (manifest_file_handler.icons.has_value()) {
@@ -269,23 +274,13 @@ bool WebFileHandlersParser::Validate(
 
 // static
 bool WebFileHandlers::SupportsWebFileHandlers(const Extension& extension) {
-  // MV3+ is required.
-  if (extension.manifest_version() < 3) {
+  // An MV3+ extension is required.
+  if (extension.manifest_version() < 3 || !extension.is_extension()) {
     return false;
   }
 
-  // Use of the extension feature is supported.
-  if (base::FeatureList::IsEnabled(
-          extensions_features::kExtensionWebFileHandlers)) {
-    return true;
-  }
-
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-  return false;
-#else
-  // An extension in the allowlist running on Ash is supported.
-  return IsInAllowlist(extension);
-#endif
+  return base::FeatureList::IsEnabled(
+      extensions_features::kExtensionWebFileHandlers);
 }
 
 // static

@@ -432,7 +432,8 @@ class PepperMediaStreamVideoTrackHost::VideoSource final
   void StartSourceImpl(
       blink::VideoCaptureDeliverFrameCB frame_callback,
       blink::EncodedVideoFrameCB encoded_frame_callback,
-      blink::VideoCaptureCropVersionCB crop_version_callback,
+      blink::VideoCaptureSubCaptureTargetVersionCB
+          sub_capture_target_version_callback,
       blink::VideoCaptureNotifyFrameDroppedCB frame_dropped_callback) final {
     if (host_) {
       host_->frame_deliverer_ =
@@ -528,8 +529,7 @@ int32_t PepperMediaStreamVideoTrackHost::OnHostMsgConfigure(
 }
 
 void PepperMediaStreamVideoTrackHost::InitBlinkTrack() {
-  std::string source_id;
-  base::Base64Encode(base::RandBytesAsString(64), &source_id);
+  std::string source_id = base::Base64Encode(base::RandBytesAsVector(64));
   blink::WebMediaStreamSource webkit_source;
   auto source = std::make_unique<VideoSource>(weak_factory_.GetWeakPtr());
   blink::MediaStreamVideoSource* const source_ptr = source.get();

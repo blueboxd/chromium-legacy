@@ -6,6 +6,7 @@
 #define ASH_WM_SPLITVIEW_SPLIT_VIEW_DIVIDER_H_
 
 #include "ash/ash_export.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_multi_source_observation.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -54,6 +55,10 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
   views::Widget* divider_widget() { return divider_widget_; }
 
   bool is_resizing_with_divider() const { return is_resizing_with_divider_; }
+
+  const aura::Window::Windows& observed_windows() const {
+    return observed_windows_;
+  }
 
   // Used by SplitViewController to immediately stop resizing in case of
   // external events (split view ending, tablet mode ending, etc.).
@@ -105,16 +110,13 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
   void OnWindowStackingChanged(aura::Window* window) override;
   void OnWindowAddedToRootWindow(aura::Window* window) override;
 
-  // ::wm::TransientWindowObserver:
+  // wm::TransientWindowObserver:
   void OnTransientChildAdded(aura::Window* window,
                              aura::Window* transient) override;
   void OnTransientChildRemoved(aura::Window* window,
                                aura::Window* transient) override;
 
   SplitViewDividerView* divider_view_for_testing() { return divider_view_; }
-  const aura::Window::Windows& observed_windows_for_testing() const {
-    return observed_windows_;
-  }
 
  private:
   friend class SplitViewController;

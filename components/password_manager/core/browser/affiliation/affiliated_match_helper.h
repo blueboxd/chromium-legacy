@@ -15,8 +15,7 @@
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_form_digest.h"
-#include "components/password_manager/core/browser/password_store_consumer.h"
-#include "components/password_manager/core/browser/password_store_interface.h"
+#include "components/password_manager/core/browser/password_store/password_store_consumer.h"
 
 namespace password_manager {
 
@@ -38,11 +37,6 @@ class AffiliatedMatchHelper {
   using AffiliatedRealmsCallback =
       base::OnceCallback<void(std::vector<std::string> affiliations,
                               std::vector<std::string> groups)>;
-
-  // Callback to return PasswordForms with injected branding information.
-  using PasswordFormsOrErrorCallback = base::OnceCallback<void(
-      absl::variant<std::vector<std::unique_ptr<PasswordForm>>,
-                    PasswordStoreBackendError>)>;
 
   using PSLExtensionCallback =
       base::OnceCallback<void(const base::flat_set<std::string>&)>;
@@ -66,8 +60,8 @@ class AffiliatedMatchHelper {
   // credentials in |forms|, sets |affiliated_web_realm|, |app_display_name| and
   // |app_icon_url| of forms, and invokes |result_callback|.
   virtual void InjectAffiliationAndBrandingInformation(
-      std::vector<std::unique_ptr<PasswordForm>> forms,
-      PasswordFormsOrErrorCallback result_callback);
+      LoginsResult forms,
+      base::OnceCallback<void(LoginsResultOrError)> result_callback);
 
   virtual void GetPSLExtensions(PSLExtensionCallback callback);
 

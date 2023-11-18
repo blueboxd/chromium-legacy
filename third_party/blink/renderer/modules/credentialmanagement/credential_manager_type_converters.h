@@ -24,8 +24,9 @@ class AuthenticationExtensionsPRFValues;
 class AuthenticatorSelectionCriteria;
 class CableAuthenticationData;
 class Credential;
-class IdentityCredentialLogoutRPsRequest;
+class IdentityCredentialRevokeOptions;
 class IdentityProviderConfig;
+class IdentityProviderRequestOptions;
 class IdentityUserInfo;
 class PublicKeyCredentialCreationOptions;
 class PublicKeyCredentialDescriptor;
@@ -138,13 +139,6 @@ struct TypeConverter<blink::mojom::blink::AuthenticatorSelectionCriteriaPtr,
 };
 
 template <>
-struct TypeConverter<blink::mojom::blink::LogoutRpsRequestPtr,
-                     blink::IdentityCredentialLogoutRPsRequest> {
-  static blink::mojom::blink::LogoutRpsRequestPtr Convert(
-      const blink::IdentityCredentialLogoutRPsRequest&);
-};
-
-template <>
 struct TypeConverter<blink::mojom::blink::PublicKeyCredentialUserEntityPtr,
                      blink::PublicKeyCredentialUserEntity> {
   static blink::mojom::blink::PublicKeyCredentialUserEntityPtr Convert(
@@ -217,10 +211,17 @@ struct TypeConverter<blink::mojom::blink::IdentityProviderConfigPtr,
 };
 
 template <>
+struct TypeConverter<blink::mojom::blink::IdentityProviderRequestOptionsPtr,
+                     blink::IdentityProviderRequestOptions> {
+  static blink::mojom::blink::IdentityProviderRequestOptionsPtr Convert(
+      const blink::IdentityProviderRequestOptions&);
+};
+
+template <>
 struct TypeConverter<blink::mojom::blink::IdentityProviderPtr,
-                     blink::IdentityProviderConfig> {
+                     blink::IdentityProviderRequestOptions> {
   static blink::mojom::blink::IdentityProviderPtr Convert(
-      const blink::IdentityProviderConfig&);
+      const blink::IdentityProviderRequestOptions&);
 };
 
 template <>
@@ -265,6 +266,13 @@ struct TypeConverter<Vector<blink::mojom::blink::PRFValuesPtr>,
                      blink::AuthenticationExtensionsPRFInputs> {
   static Vector<StructPtr<blink::mojom::blink::PRFValues>> Convert(
       const blink::AuthenticationExtensionsPRFInputs&);
+};
+
+template <>
+struct TypeConverter<blink::mojom::blink::IdentityCredentialRevokeOptionsPtr,
+                     blink::IdentityCredentialRevokeOptions> {
+  static blink::mojom::blink::IdentityCredentialRevokeOptionsPtr Convert(
+      const blink::IdentityCredentialRevokeOptions&);
 };
 
 }  // namespace mojo

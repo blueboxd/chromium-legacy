@@ -10,7 +10,7 @@
 #include "base/time/default_clock.h"
 #include "content/browser/preloading/prefetch/prefetch_params.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/proxy_server.h"
+#include "net/base/proxy_chain.h"
 #include "net/base/proxy_string_util.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
@@ -32,8 +32,8 @@ PrefetchProxyConfigurator::MaybeCreatePrefetchProxyConfigurator(
 
 PrefetchProxyConfigurator::PrefetchProxyConfigurator(const GURL& proxy_url,
                                                      const std::string api_key)
-    : prefetch_proxy_server_(net::GetSchemeFromUriScheme(proxy_url.scheme()),
-                             net::HostPortPair::FromURL(proxy_url)),
+    : prefetch_proxy_chain_(net::GetSchemeFromUriScheme(proxy_url.scheme()),
+                            net::HostPortPair::FromURL(proxy_url)),
       clock_(base::DefaultClock::GetInstance()) {
   DCHECK(proxy_url.is_valid());
 
@@ -42,7 +42,7 @@ PrefetchProxyConfigurator::PrefetchProxyConfigurator(const GURL& proxy_url,
       "key=" + api_key +
       (server_experiment_group != "" ? ",exp=" + server_experiment_group : "");
 
-  connect_tunnel_headers_.SetHeader(PrefetchProxyHeaderKey(), header_value);
+  connect_tunnel_headers_.SetHeader("chrome-tunnel", header_value);
 }
 
 PrefetchProxyConfigurator::~PrefetchProxyConfigurator() = default;
@@ -81,7 +81,7 @@ PrefetchProxyConfigurator::CreateCustomProxyConfig() const {
 
   // DIRECT is intentionally not added here because we want the proxy to always
   // be used in order to mask the user's IP address during the prerender.
-  config->rules.proxies_for_https.AddProxyServer(prefetch_proxy_server_);
+  config->rules.proxies_for_https.AddProxyChain(prefetch_proxy_chain_);
 
   // This ensures that the user's set proxy is honored, although we also disable
   // the feature is such cases.
@@ -102,9 +102,9 @@ PrefetchProxyConfigurator::NewProxyConnectionObserverRemote() {
   return observer_remote;
 }
 
-void PrefetchProxyConfigurator::OnFallback(const net::ProxyServer& bad_proxy,
+void PrefetchProxyConfigurator::OnFallback(const net::ProxyChain& bad_chain,
                                            int net_error) {
-  if (bad_proxy != prefetch_proxy_server_) {
+  if (bad_chain != prefetch_proxy_chain_) {
     return;
   }
 
@@ -115,11 +115,12 @@ void PrefetchProxyConfigurator::OnFallback(const net::ProxyServer& bad_proxy,
 }
 
 void PrefetchProxyConfigurator::OnTunnelHeadersReceived(
-    const net::ProxyServer& proxy_server,
+    const net::ProxyChain& proxy_chain,
+    uint64_t chain_index,
     const scoped_refptr<net::HttpResponseHeaders>& response_headers) {
   DCHECK(response_headers);
 
-  if (proxy_server != prefetch_proxy_server_) {
+  if (proxy_chain != prefetch_proxy_chain_) {
     return;
   }
 

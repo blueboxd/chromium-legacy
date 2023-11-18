@@ -23,6 +23,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -49,6 +50,8 @@ enum class SmartLockState;
 // receive some events about the results of those mojo
 // authentication attempts (ie, success/failure).
 class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
+  METADATA_HEADER(LoginAuthUserView, NonAccessibleView)
+
  public:
   // Flags which describe the set of currently visible auth methods.
   enum AuthMethods {
@@ -111,7 +114,7 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
     LoginPinView* pin_view() const;
     LoginPinInputView* pin_input_view() const;
     views::Button* pin_password_toggle() const;
-    views::Button* online_sign_in_message() const;
+    views::LabelButton* online_sign_in_message() const;
     views::View* disabled_auth_message() const;
     views::Button* challenge_response_button();
     views::Label* challenge_response_label();

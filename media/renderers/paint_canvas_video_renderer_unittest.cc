@@ -1093,9 +1093,10 @@ class PaintCanvasVideoRendererWithGLTest : public testing::Test {
     destination_gl->BindTexture(target, texture);
 
     renderer_.CopyVideoFrameTexturesToGLTexture(
-        media_context_.get(), destination_gl, frame, target, texture, GL_RGBA,
-        GL_RGBA, GL_UNSIGNED_BYTE, 0, false /* premultiply_alpha */,
-        false /* flip_y */, /*allow_shared_image_for_direct_upload=*/true);
+        media_context_.get(), destination_gl,
+        destination_context_->ContextCapabilities(), frame, target, texture,
+        GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 0, false /* premultiply_alpha */,
+        false /* flip_y */);
 
     gfx::Size expected_size = frame->visible_rect().size();
 
@@ -1252,9 +1253,10 @@ TEST_F(PaintCanvasVideoRendererWithGLTest, CopyVideoFrameYUVDataToGLTexture) {
   destination_gl->BindTexture(target, texture);
 
   renderer_.CopyVideoFrameYUVDataToGLTexture(
-      media_context_.get(), destination_gl, cropped_frame(), target, texture,
-      GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 0, false /* premultiply_alpha */,
-      false /* flip_y */, /*allow_shared_image_for_direct_upload=*/true);
+      media_context_.get(), destination_gl,
+      destination_context_->ContextCapabilities(), cropped_frame(), target,
+      texture, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 0,
+      false /* premultiply_alpha */, false /* flip_y */);
 
   gfx::Size expected_size = cropped_frame()->visible_rect().size();
 
@@ -1284,9 +1286,10 @@ TEST_F(PaintCanvasVideoRendererWithGLTest,
   destination_gl->BindTexture(target, texture);
 
   renderer_.CopyVideoFrameYUVDataToGLTexture(
-      media_context_.get(), destination_gl, cropped_frame(), target, texture,
-      GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 0, false /* premultiply_alpha */,
-      true /* flip_y */, /*allow_shared_image_for_direct_upload=*/true);
+      media_context_.get(), destination_gl,
+      destination_context_->ContextCapabilities(), cropped_frame(), target,
+      texture, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 0,
+      false /* premultiply_alpha */, true /* flip_y */);
 
   gfx::Size expected_size = cropped_frame()->visible_rect().size();
 
@@ -1308,17 +1311,8 @@ TEST_F(PaintCanvasVideoRendererWithGLTest,
 
 // Checks that we correctly copy a RGBA shared image VideoFrame when using
 // CopyVideoFrameYUVDataToGLTexture, including correct cropping.
-#if BUILDFLAG(IS_IOS) && BUILDFLAG(SKIA_USE_METAL)
-// TODO(crbug.com/1476625): R and B channels are currently inverted with
-// SkiaGraphite and metal.
-#define MAYBE_CopyVideoFrameTexturesToGLTextureRGBA \
-  DISABLED_CopyVideoFrameTexturesToGLTextureRGBA
-#else
-#define MAYBE_CopyVideoFrameTexturesToGLTextureRGBA \
-  CopyVideoFrameTexturesToGLTextureRGBA
-#endif  // BUILDFLAG(IS_IOS) && BUILDFLAG(SKIA_USE_METAL)
 TEST_F(PaintCanvasVideoRendererWithGLTest,
-       MAYBE_CopyVideoFrameTexturesToGLTextureRGBA) {
+       CopyVideoFrameTexturesToGLTextureRGBA) {
   base::RunLoop run_loop;
   scoped_refptr<VideoFrame> frame = CreateTestRGBAFrame(run_loop.QuitClosure());
 
@@ -1331,17 +1325,8 @@ TEST_F(PaintCanvasVideoRendererWithGLTest,
 // Checks that we correctly copy a RGBA shared image VideoFrame that needs read
 // lock fences, when using CopyVideoFrameYUVDataToGLTexture, including correct
 // cropping.
-#if BUILDFLAG(IS_IOS) && BUILDFLAG(SKIA_USE_METAL)
-// TODO(crbug.com/1476625): R and B channels are currently inverted with
-// SkiaGraphite and metal.
-#define MAYBE_CopyVideoFrameTexturesToGLTextureRGBA_ReadLockFence \
-  DISABLED_CopyVideoFrameTexturesToGLTextureRGBA_ReadLockFence
-#else
-#define MAYBE_CopyVideoFrameTexturesToGLTextureRGBA_ReadLockFence \
-  CopyVideoFrameTexturesToGLTextureRGBA_ReadLockFence
-#endif  // BUILDFLAG(IS_IOS) && BUILDFLAG(SKIA_USE_METAL)
 TEST_F(PaintCanvasVideoRendererWithGLTest,
-       MAYBE_CopyVideoFrameTexturesToGLTextureRGBA_ReadLockFence) {
+       CopyVideoFrameTexturesToGLTextureRGBA_ReadLockFence) {
   base::RunLoop run_loop;
   scoped_refptr<VideoFrame> frame = CreateTestRGBAFrame(run_loop.QuitClosure());
   frame->metadata().read_lock_fences_enabled = true;

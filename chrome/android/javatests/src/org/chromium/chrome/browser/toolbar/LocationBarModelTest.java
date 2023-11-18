@@ -36,8 +36,8 @@ import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.omnibox.LocationBarDataProvider;
 import org.chromium.chrome.browser.omnibox.NewTabPageDelegate;
-import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
@@ -288,13 +288,11 @@ public class LocationBarModelTest {
                     context,
                     NewTabPageDelegate.EMPTY,
                     DomDistillerTabUtils::getFormattedUrlFromOriginalDistillerUrl,
-                    window -> null,
-                    new LocationBarModel.OfflineStatus() {},
-                    SearchEngineLogoUtils.getInstance());
+                    new LocationBarModel.OfflineStatus() {});
             initializeWithNative();
 
             Tab tab =
-                    new MockTab(0, false) {
+                    new MockTab(0, Profile.getLastUsedRegularProfile()) {
                         @Override
                         public boolean isInitialized() {
                             return true;
@@ -305,7 +303,7 @@ public class LocationBarModelTest {
                             return false;
                         }
                     };
-            setTab(tab, false);
+            setTab(tab, tab.getProfile());
         }
 
         private void setVisibleGurl(GURL gurl) {

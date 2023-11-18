@@ -5,7 +5,7 @@
 import 'chrome://personalization/strings.m.js';
 import 'chrome://webui-test/mojo_webui_test_support.js';
 
-import {emptyState, Paths, PersonalizationRouterElement, WallpaperActionName, WallpaperSubpageTopElement} from 'chrome://personalization/js/personalization_app.js';
+import {emptyState, Paths, PersonalizationRouterElement, SeaPenState, WallpaperActionName, WallpaperSubpageTopElement} from 'chrome://personalization/js/personalization_app.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
@@ -132,6 +132,45 @@ suite('WallpaperSubpageTopElementTest', function() {
         wallpaperSubpageTopElement.shadowRoot!.querySelector(
             'sea-pen-input-query');
     assertTrue(!!seaPenInputQueryElement, 'input query should be displayed.');
+    // Template query should be hidden.
+    const templateQuery = wallpaperSubpageTopElement.shadowRoot!.querySelector(
+        'sea-pen-template-query');
+    assertFalse(!!templateQuery, 'template query should not be displayed.');
+    // Verify that the text input area and search button are displayed.
+    const inputQuery =
+        seaPenInputQueryElement!.shadowRoot!.querySelector('cr-input');
+    assertTrue(!!inputQuery, 'input query should display.');
+    const searchButton = seaPenInputQueryElement!.shadowRoot!.querySelector(
+                             '#searchButton') as HTMLElement;
+    assertTrue(!!searchButton, 'search button should display.');
+  });
+
+  test('shows input element on input query tab', async () => {
+    loadTimeData.overrideValues(
+        {isSeaPenEnabled: true, isSeaPenTextInputEnabled: true});
+    wallpaperSubpageTopElement = initElement(
+        WallpaperSubpageTopElement,
+        {path: Paths.SEA_PEN_COLLECTION, 'templateId': 'query'});
+    await waitAfterNextRender(wallpaperSubpageTopElement);
+
+    // wallpaper selected page isn't displayed.
+    const wallpaperSelected =
+        wallpaperSubpageTopElement!.shadowRoot!.querySelector(
+            'wallpaper-selected');
+    assertFalse(
+        !!wallpaperSelected,
+        'wallpaper selected element should not be displayed.');
+
+    // SeaPen input is displayed.
+    const seaPenInputQueryElement =
+        wallpaperSubpageTopElement.shadowRoot!.querySelector(
+            'sea-pen-input-query');
+    assertTrue(!!seaPenInputQueryElement, 'input query should be displayed.');
+
+    // Template query should be hidden.
+    const templateQuery = wallpaperSubpageTopElement.shadowRoot!.querySelector(
+        'sea-pen-template-query');
+    assertFalse(!!templateQuery, 'template query should not be displayed.');
   });
 
   test('displays input query tab', async () => {
@@ -140,24 +179,14 @@ suite('WallpaperSubpageTopElementTest', function() {
     wallpaperSubpageTopElement = initElement(
         WallpaperSubpageTopElement, {path: Paths.SEA_PEN_COLLECTION});
     await waitAfterNextRender(wallpaperSubpageTopElement);
-
     const seaPenInputQueryElement =
         wallpaperSubpageTopElement.shadowRoot!.querySelector(
             'sea-pen-input-query');
-    assertTrue(!!seaPenInputQueryElement, 'input query should be display.');
-
-    const templateQuery = wallpaperSubpageTopElement.shadowRoot!.querySelector(
-        'sea-pen-template-query');
-    assertFalse(!!templateQuery, 'template query should not be displayed.');
-
-    // Verify that the text input area and search button are displayed.
     const inputQuery =
         seaPenInputQueryElement!.shadowRoot!.querySelector('cr-input');
     assertTrue(!!inputQuery, 'input query should display.');
-
     const searchButton = seaPenInputQueryElement!.shadowRoot!.querySelector(
                              '#searchButton') as HTMLElement;
-    assertTrue(!!searchButton, 'search button should display.');
 
     // Mock singleton |PersonalizationRouter|.
     const router = TestMock.fromClass(PersonalizationRouterElement);
@@ -184,29 +213,31 @@ suite('WallpaperSubpageTopElementTest', function() {
     await personalizationStore.waitForAction(
         WallpaperActionName.SET_IMAGE_THUMBNAILS);
 
-    assertDeepEquals(
+    const expectedState: SeaPenState = {
+      query: 'this is a test query',
+      thumbnailsLoading: false,
+      thumbnails: [
         {
-          query: 'this is a test query',
-          thumbnailsLoading: false,
-          thumbnails: [
-            {
-              id: BigInt(1),
-              url: {url: 'chrome://personalization/images/feel_the_breeze.png'},
-            },
-            {
-              id: BigInt(2),
-              url: {url: 'chrome://personalization/images/float_on_by.png'},
-            },
-            {
-              id: BigInt(3),
-              url: {url: 'chrome://personalization/images/slideshow.png'},
-            },
-            {
-              id: BigInt(4),
-              url: {url: 'chrome://personalization/images/feel_the_breeze.png'},
-            },
-          ],
+          id: 1,
+          image: {url: 'https://sea-pen-images.googleusercontent.com/1'},
         },
+        {
+          id: 2,
+          image: {url: 'https://sea-pen-images.googleusercontent.com/2'},
+        },
+        {
+          id: 3,
+          image: {url: 'https://sea-pen-images.googleusercontent.com/3'},
+        },
+        {
+          id: 4,
+          image: {url: 'https://sea-pen-images.googleusercontent.com/4'},
+        },
+      ],
+      recentWallpapers: null,
+    };
+    assertDeepEquals(
+        expectedState,
         personalizationStore.data.wallpaper.seaPen,
         'expected SeaPen state is set',
     );

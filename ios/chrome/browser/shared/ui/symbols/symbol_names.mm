@@ -140,6 +140,7 @@ NSString* const kSyncErrorSymbol =
     @"exclamationmark.arrow.triangle.2.circlepath";
 NSString* const kMenuSymbol = @"ellipsis";
 NSString* const kSortSymbol = @"arrow.up.arrow.down";
+NSString* const kExpandSymbol = @"arrow.up.left.and.arrow.down.right";
 NSString* const kBackSymbol = @"arrow.backward";
 NSString* const kForwardSymbol = @"arrow.forward";
 NSString* const kPersonFillSymbol = @"person.fill";
@@ -170,6 +171,7 @@ NSString* const kSquareOnSquareDashedSymbol = @"square.on.square.dashed";
 NSString* const kDocPlaintextSymbol = @"doc.plaintext";
 NSString* const kFlagSymbol = @"flag";
 NSString* const kKeyboardSymbol = @"keyboard";
+NSString* const kKeyboardDownSymbol = @"keyboard.chevron.compact.down";
 NSString* const kSpeedometerSymbol = @"speedometer";
 NSString* const kMovePlatterToTopPhoneSymbol =
     @"platter.filled.top.and.arrow.up.iphone";
@@ -189,6 +191,7 @@ NSString* const kButtonProgrammableSymbol = @"button.programmable";
 NSString* const kCircleCircleFillSymbol = @"circle.circle.fill";
 NSString* const kLockSymbol = @"lock";
 NSString* const kRulerSymbol = @"ruler";
+NSString* const kLaptopAndIphoneSymbol = @"laptopcomputer.and.iphone";
 
 // Names of the default symbol being non-monochrome by default. When using them,
 // you probably want to set their color to monochrome.

@@ -690,7 +690,10 @@ cc_test_static_library("test_support") {
 if (is_ios) {
   bundle_data("unit_tests_bundle_data") {
     testonly = true
-    sources = [ "test/data/lottie/animation_with_2_text_nodes.json" ]
+    sources = [
+      "//testing/buildbot/filters/ios.cc_unittests.filter",
+      "test/data/lottie/animation_with_2_text_nodes.json",
+    ]
     outputs = [ "{{bundle_resources_dir}}/" +
                 "{{source_root_relative_dir}}/{{source_file_part}}" ]
   }
@@ -915,6 +918,7 @@ cc_test("cc_unittests") {
     "//media",
     "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
+    "//skia",
     "//skia:buildflags",
     "//skia:skcms",
     "//testing/gmock",
@@ -1012,6 +1016,7 @@ cc_test("cc_perftests") {
     "//mojo/public/cpp/bindings",
     "//services/viz/public/mojom",
     "//skia",
+    "//skia:test_fonts",
     "//testing/gmock",
     "//testing/gtest",
     "//testing/perf",

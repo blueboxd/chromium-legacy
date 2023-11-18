@@ -53,7 +53,6 @@ class AutofillDriverIOS : public AutofillDriver,
   bool IsPrerendering() const override;
   bool HasSharedAutofillPermission() const override;
   bool CanShowAutofillUi() const override;
-  bool RendererIsAvailable() override;
   std::vector<FieldGlobalId> ApplyFormAction(
       mojom::ActionType action_type,
       mojom::ActionPersistence action_persistence,
@@ -62,11 +61,13 @@ class AutofillDriverIOS : public AutofillDriver,
       const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map)
       override;
   void ApplyFieldAction(mojom::ActionPersistence action_persistence,
+                        mojom::TextReplacement text_replacement,
                         const FieldGlobalId& field,
                         const std::u16string& value) override;
-  void ExtractForm(FormGlobalId form,
-                   base::OnceCallback<void(const std::optional<FormData>&)>
-                       response_callback) override;
+  void ExtractForm(
+      FormGlobalId form,
+      base::OnceCallback<void(AutofillDriver*, const std::optional<FormData>&)>
+          response_callback) override;
   void HandleParsedForms(const std::vector<FormData>& forms) override;
   void SendAutofillTypePredictionsToRenderer(
       const std::vector<FormStructure*>& forms) override;
@@ -97,7 +98,7 @@ class AutofillDriverIOS : public AutofillDriver,
 
   void RendererShouldSetSuggestionAvailability(
       const FieldGlobalId& field,
-      const mojom::AutofillState state) override;
+      mojom::AutofillSuggestionAvailability suggestion_availability) override;
   void PopupHidden() override;
   net::IsolationInfo IsolationInfo() override;
 

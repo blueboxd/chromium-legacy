@@ -98,10 +98,8 @@ class CORE_EXPORT NGLayoutInputNode {
   bool IsView() const { return IsBlock() && box_->IsLayoutView(); }
   bool IsDocumentElement() const { return box_->IsDocumentElement(); }
   bool IsFlexItem() const { return IsBlock() && box_->IsFlexItemIncludingNG(); }
-  bool IsFlexibleBox() const {
-    return IsBlock() && box_->IsFlexibleBoxIncludingNG();
-  }
-  bool IsGrid() const { return IsBlock() && box_->IsLayoutNGGrid(); }
+  bool IsFlexibleBox() const { return IsBlock() && box_->IsFlexibleBox(); }
+  bool IsGrid() const { return IsBlock() && box_->IsLayoutGrid(); }
   bool ShouldBeConsideredAsReplaced() const {
     return box_->ShouldBeConsideredAsReplaced();
   }
@@ -287,7 +285,7 @@ class CORE_EXPORT NGLayoutInputNode {
   }
 
   CustomLayoutChild* GetCustomLayoutChild() const {
-    // TODO(ikilpatrick): Support NGInlineNode.
+    // TODO(ikilpatrick): Support InlineNode.
     DCHECK(IsBlock());
     return box_->GetCustomLayoutChild();
   }
@@ -304,7 +302,7 @@ class CORE_EXPORT NGLayoutInputNode {
   explicit operator bool() const { return box_ != nullptr; }
 
   bool operator==(const NGLayoutInputNode& other) const {
-    return box_ == other.box_;
+    return box_ == other.box_ && type_ == other.type_;
   }
 
   bool operator!=(const NGLayoutInputNode& other) const {
@@ -312,7 +310,14 @@ class CORE_EXPORT NGLayoutInputNode {
   }
 
 #if DCHECK_IS_ON()
-  void ShowNodeTree() const;
+  String DumpNodeTree(const NGLayoutInputNode* target = nullptr) const;
+
+  // Dump the node tree for the entire document, and mark `this` with an
+  // asterisk.
+  String DumpNodeTreeFromRoot() const;
+
+  void ShowNodeTree(const NGLayoutInputNode* target = nullptr) const;
+  void ShowNodeTreeFromRoot() const;
 #endif
 
   void Trace(Visitor* visitor) const { visitor->Trace(box_); }

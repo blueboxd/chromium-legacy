@@ -869,6 +869,10 @@ manually and prepended to convey the encryption metadata, notably key id and IV)
 mediafilesegmenter -S -P -k 'key_iv.bin' -t 10 -start-segments-with-iframe -f 'output/' bear-1280x720.ts
 ```
 
+#### HLS - directory
+Samples of assorted playlist types and a README file explaining how each sample
+is generated.
+
 #### bear-1280x720-hls-with-CAT.ts
 Same as bear-1280x720-hls.ts but with an extra TS packet prepended. This is the
 same as the first of the metadata packets in bear-1280x720-hls-sample-aes.ts.
@@ -897,6 +901,12 @@ Additional containers derived from bear.ogv:
 * bear.mpeg   -- created using `avconv -i bear.ogv -f mpeg bear.mpeg`.
 * bear.rm     -- created using `avconv -i bear.ogv -f rm -b 192k bear.rm`.
 * bear.swf    -- created using `avconv -i bear.ogv -f swf -an bear.swf`.
+
+Additional containers created by Dolby:
+
+* ac4-ajoc.ac4                 -- encoded with bitstream version 2, presentation version 1 and prosentation level 3
+* ac4-channel-based-coding.ac4 -- encoded with bitstream version 2, presentation version 1 and prosentation level 1
+* ac4-ims.ac4                  -- encoded with bitstream version 2, presentation version 2 
 
 ## VDA Test Files:
 
@@ -1341,6 +1351,27 @@ EAC3 audio in framented MP4, generated with bento4 by the following command:
 ```
 mp4mux --track bear.eac3 bear-eac3-only.mp4
 mp4fragment bear-eac3-only.mp4 bear-eac3-only-frag.mp4
+```
+
+#### ac4-only-ajoc-frag.mp4
+AC4 A-JOC audio in framented MP4, generated with bento4 by the following command:
+```
+mp4mux --track ac4-ajoc.ac4 ac4-only-ajoc.mp4
+mp4fragment ac4-only-ajoc.mp4 ac4-only-ajoc-frag.mp4
+```
+
+#### ac4-only-channel-based-coding-frag.mp4
+AC4 channel based audio in framented MP4, generated with bento4 by the following command:
+```
+mp4mux --track ac4-channel-based-coding.ac4 ac4-only-channel-based-coding.mp4
+mp4fragment ac4-only-channel-based-coding.mp4 ac4-only-channel-based-coding-frag.mp4
+```
+
+#### ac4-only-ims-frag.mp4
+AC4 immersive stereo(IMS) audio in framented MP4, generated with bento4 by the following command:
+```
+mp4mux --track ac4-ims.ac4 ac4-only-ims.mp4
+mp4fragment ac4-only-ims.mp4 ac4-only-ims-frag.mp4
 ```
 
 ### Mpeg2ts stream with AAC HE audio that uses SBR

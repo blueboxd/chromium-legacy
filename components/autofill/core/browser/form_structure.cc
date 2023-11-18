@@ -10,6 +10,8 @@
 #include <deque>
 #include <map>
 #include <memory>
+#include <optional>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -26,6 +28,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -34,6 +38,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/types/optional_ref.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_field.h"
@@ -49,6 +54,7 @@
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics_utils.h"
+#include "components/autofill/core/browser/metrics/log_event.h"
 #include "components/autofill/core/browser/metrics/precedence_over_autocomplete_metrics.h"
 #include "components/autofill/core/browser/metrics/shadow_prediction_metrics.h"
 #include "components/autofill/core/browser/randomized_encoder.h"
@@ -80,7 +86,6 @@
 namespace autofill {
 
 using mojom::SubmissionIndicatorEvent;
-using FieldSuggestion = AutofillQueryResponse::FormSuggestion::FieldSuggestion;
 
 namespace {
 
@@ -344,6 +349,70 @@ void PopulateRandomizedFieldMetadata(
   }
 }
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+// Applies manual overrides from |parsed_overrides| to |field_types|.
+void InsertParsedOverrides(
+    base::expected<ServerPredictionOverrides, std::string> parsed_overrides,
+    std::map<std::pair<FormSignature, FieldSignature>,
+             std::deque<FieldSuggestion>>& field_types) {
+  if (!parsed_overrides.has_value()) {
+    LOG(ERROR) << parsed_overrides.error();
+    return;
+  }
+  for (auto& [key, value] : parsed_overrides.value()) {
+    field_types.insert_or_assign(
+        key,
+        MergeManualAndServerOverrides(/*manual_overrides=*/std::move(value),
+                                      /*server_overrides=*/field_types[key]));
+  }
+}
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+
+std::string ServerTypesToString(const AutofillField* field) {
+  const std::vector<
+      AutofillQueryResponse::FormSuggestion::FieldSuggestion::FieldPrediction>&
+      server_types = field->server_predictions();
+  std::ostringstream buffer;
+  for (const auto& field_prediction : server_types) {
+    if (buffer.tellp() > 0) {  // Add comma if buffer is not empty.
+      buffer << ", ";
+    }
+    ServerFieldType server_type =
+        ToSafeServerFieldType(field_prediction.type(), NO_SERVER_DATA);
+    buffer << FieldTypeToStringView(server_type);
+  }
+  return "[" + buffer.str() + "]";
+}
+
+// Checks if `field_suggestion` contains any password related type prediction.
+bool HasPasswordManagerPrediction(const FieldSuggestion& field_suggestion) {
+  return base::ranges::any_of(
+      field_suggestion.predictions(), [](const auto& prediction) {
+        auto group_type = GroupTypeOfServerFieldType(
+            ToSafeServerFieldType(prediction.type(), NO_SERVER_DATA));
+        return group_type == FieldTypeGroup::kPasswordField ||
+               group_type == FieldTypeGroup::kUsernameField;
+      });
+}
+
+// Adds password predictions from `merge_from_predictions` to
+// `merge_to_predictions`.
+void MergePasswordManagerPredictions(
+    const FieldSuggestion& merge_from_predictions,
+    FieldSuggestion& merge_to_predictions) {
+  CHECK_NE(&merge_to_predictions, &merge_from_predictions);
+  for (const auto& prediction : merge_from_predictions.predictions()) {
+    FieldTypeGroup group_type = GroupTypeOfServerFieldType(
+        ToSafeServerFieldType(prediction.type(), NO_SERVER_DATA));
+    // Only add predictions relevant for PasswordManager.
+    if (group_type == FieldTypeGroup::kPasswordField ||
+        group_type == FieldTypeGroup::kUsernameField) {
+      auto* new_prediction = merge_to_predictions.add_predictions();
+      new_prediction->CopyFrom(prediction);
+    }
+  }
+}
+
 }  // namespace
 
 FormStructure::FormStructure(const FormData& form)
@@ -469,8 +538,7 @@ std::vector<AutofillUploadContents> FormStructure::EncodeUploadRequest(
     const ServerFieldTypeSet& available_field_types,
     bool form_was_autofilled,
     const base::StringPiece& login_form_signature,
-    bool observed_submission,
-    bool is_raw_metadata_uploading_enabled) const {
+    bool observed_submission) const {
   DCHECK_EQ(FirstNonCapturedType(*this, available_field_types),
             MAX_VALID_FIELD_TYPE);
 
@@ -522,17 +590,6 @@ std::vector<AutofillUploadContents> FormStructure::EncodeUploadRequest(
                                  &upload);
   }
 
-  if (is_raw_metadata_uploading_enabled) {
-    upload.set_action_signature(StrToHash64Bit(target_url_.host_piece()));
-    if (!form_name().empty())
-      upload.set_form_name(base::UTF16ToUTF8(form_name()));
-    for (const ButtonTitleInfo& e : button_titles_) {
-      auto* button_title = upload.add_button_title();
-      button_title->set_title(base::UTF16ToUTF8(e.first));
-      button_title->set_type(static_cast<ButtonTitleType>(e.second));
-    }
-  }
-
   if (!login_form_signature.empty()) {
     uint64_t login_sig;
     if (base::StringToUint64(login_form_signature, &login_sig))
@@ -547,8 +604,7 @@ std::vector<AutofillUploadContents> FormStructure::EncodeUploadRequest(
                                    upload.mutable_randomized_form_metadata());
   }
 
-  EncodeFormFieldsForUpload(is_raw_metadata_uploading_enabled, absl::nullopt,
-                            &upload);
+  EncodeFormFieldsForUpload(/*filter_renderer_form_id=*/absl::nullopt, &upload);
 
   std::vector<AutofillUploadContents> uploads = {std::move(upload)};
 
@@ -572,8 +628,7 @@ std::vector<AutofillUploadContents> FormStructure::EncodeUploadRequest(
     uploads.back().set_form_signature(subform_signature.value());
     uploads.back().set_autofill_used(form_was_autofilled);
     uploads.back().set_data_present(data_present);
-    EncodeFormFieldsForUpload(is_raw_metadata_uploading_enabled, subform_id,
-                              &uploads.back());
+    EncodeFormFieldsForUpload(subform_id, &uploads.back());
   }
 
   return uploads;
@@ -641,6 +696,140 @@ void FormStructure::ParseApiQueryResponse(
 }
 
 // static
+std::map<std::pair<FormSignature, FieldSignature>, std::deque<FieldSuggestion>>
+FormStructure::GetSuggestionsMapFromResponse(
+    const AutofillQueryResponse& response,
+    const std::vector<FormSignature>& queried_form_signatures) {
+  std::map<std::pair<FormSignature, FieldSignature>,
+           std::deque<FieldSuggestion>>
+      fields_suggestions;
+  for (int form_idx = 0;
+       form_idx < std::min(response.form_suggestions_size(),
+                           static_cast<int>(queried_form_signatures.size()));
+       ++form_idx) {
+    FormSignature form_signature = queried_form_signatures[form_idx];
+    for (const auto& field :
+         response.form_suggestions(form_idx).field_suggestions()) {
+      FieldSignature field_signature(field.field_signature());
+      fields_suggestions[{form_signature, field_signature}].push_back(field);
+    }
+  }
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+  if (base::FeatureList::IsEnabled(
+          features::test::kAutofillOverridePredictions)) {
+    InsertParsedOverrides(
+        ParseServerPredictionOverrides(
+            features::test::kAutofillOverridePredictionsSpecification.Get()),
+        fields_suggestions);
+    InsertParsedOverrides(
+        ParseServerPredictionOverrides(
+            features::test::
+                kAutofillOverridePredictionsForAlternativeFormSignaturesSpecification
+                    .Get()),
+        fields_suggestions);
+  }
+#endif
+  return fields_suggestions;
+}
+
+// static
+std::optional<FieldSuggestion> FormStructure::GetFieldSuggestion(
+    const FormStructure& form,
+    const AutofillField& field,
+    std::map<std::pair<FormSignature, FieldSignature>,
+             std::deque<FieldSuggestion>>& fields_suggestions) {
+  // Retrieves the next prediction for |form| and |field| and pops it. Popping
+  // is omitted if no other predictions for |form| and |field| are left, so that
+  // any subsequent fields with the same signature will get the same prediction.
+  std::set<FormSignature> signatures_seen;
+  auto get_suggestion =
+      [&fields_suggestions, &signatures_seen](
+          FormSignature form_signature,
+          FieldSignature field_signature) -> std::optional<FieldSuggestion> {
+    auto it = fields_suggestions.find({form_signature, field_signature});
+    if (it == fields_suggestions.end() ||
+        !signatures_seen.insert(form_signature).second) {
+      return std::nullopt;
+    }
+    CHECK(!it->second.empty());
+    FieldSuggestion current_field = it->second.front();
+    if (it->second.size() > 1) {
+      it->second.pop_front();
+    }
+    return std::move(current_field);
+  };
+  // Precedence rule for prediction sources is the following:
+  // Manual overrides first, then server overrides, then crowdsourcing of any
+  // type. Moreover, Autofill deprioritizes any crowdsourcing that only returned
+  // NO_SERVER_DATA. This is not done for overrides because overriding a field
+  // as not classifiable could be desirable.
+  auto get_suggestion_priority =
+      [](base::optional_ref<const FieldSuggestion> suggestion) {
+        if (!suggestion.has_value() || suggestion->predictions().empty()) {
+          return 0;  // Lowest priority
+        }
+        switch (suggestion->predictions().begin()->source()) {
+          case FieldPrediction::SOURCE_UNSPECIFIED:
+          case FieldPrediction::SOURCE_AUTOFILL_DEFAULT:
+          case FieldPrediction::SOURCE_PASSWORDS_DEFAULT:
+          case FieldPrediction::SOURCE_ALL_APPROVED_EXPERIMENTS:
+          case FieldPrediction::SOURCE_FIELD_RANKS:
+            return base::ranges::all_of(suggestion->predictions(),
+                                        [](const auto& prediction) {
+                                          return prediction.type() ==
+                                                 NO_SERVER_DATA;
+                                        })
+                       ? 1  // Only better than empty predictions.
+                       : 2;
+          case FieldPrediction::SOURCE_OVERRIDE:
+            return 3;
+          case FieldPrediction::SOURCE_MANUAL_OVERRIDE:
+            return 4;
+        }
+      };
+  // Fetch suggestions from form signature, host form signature and alternative
+  // form signature.
+  std::optional<FieldSuggestion> main_frame_field_suggestion =
+      get_suggestion(form.form_signature(), field.GetFieldSignature());
+  std::optional<FieldSuggestion> iframe_field_suggestion =
+      get_suggestion(field.host_form_signature, field.GetFieldSignature());
+  // NOTE: Suggestions from alternative form signatures are always overrides.
+  std::optional<FieldSuggestion> alternative_field_suggestion = get_suggestion(
+      form.alternative_form_signature(), field.GetFieldSignature());
+
+  // Precedence rule for form signatures is the following:
+  // `form_signature` (main frame) then `host_form_signature_` (iframe) and then
+  // alternative_form_signature_.
+  // This order is given by the specificity of the form signature. A
+  // form_signature is very specific. An iframe can be embedded on multiple
+  // sites. An alternative form signature is a fallback and might even match
+  // multiple forms on the same site.
+  // This precedence rule is less important than the source precedence rule,
+  // which means that it is only applicable for suggestions with equal source
+  // priority.
+  base::optional_ref<FieldSuggestion> preferred_field_suggestion =
+      base::ranges::max(
+          std::vector<base::optional_ref<FieldSuggestion>>{
+              main_frame_field_suggestion, iframe_field_suggestion,
+              alternative_field_suggestion},
+          {}, get_suggestion_priority);
+
+  // Add predictions for PasswordManager from `iframe_field_suggestions` if
+  // `field_suggestion` is missing them. This is only relevant for
+  // crowdsourcing which is why we do not apply the same logic for
+  // `alternative_form_signature` suggestions, which are always overrides.
+  if (iframe_field_suggestion &&
+      !HasPasswordManagerPrediction(*preferred_field_suggestion) &&
+      HasPasswordManagerPrediction(*iframe_field_suggestion)) {
+    MergePasswordManagerPredictions(*iframe_field_suggestion,
+                                    *preferred_field_suggestion);
+  }
+  return preferred_field_suggestion.has_value()
+             ? std::optional(std::move(*preferred_field_suggestion))
+             : std::nullopt;
+}
+
+// static
 void FormStructure::ProcessQueryResponse(
     const AutofillQueryResponse& response,
     const std::vector<FormStructure*>& forms,
@@ -653,55 +842,10 @@ void FormStructure::ProcessQueryResponse(
 
   bool heuristics_detected_fillable_field = false;
   bool query_response_overrode_heuristics = false;
-
   std::map<std::pair<FormSignature, FieldSignature>,
            std::deque<FieldSuggestion>>
-      field_types;
-
-  for (int form_idx = 0;
-       form_idx < std::min(response.form_suggestions_size(),
-                           static_cast<int>(queried_form_signatures.size()));
-       ++form_idx) {
-    FormSignature form_sig = queried_form_signatures[form_idx];
-    for (const auto& field :
-         response.form_suggestions(form_idx).field_suggestions()) {
-      FieldSignature field_sig(field.field_signature());
-      field_types[{form_sig, field_sig}].push_back(field);
-    }
-  }
-
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-  if (base::FeatureList::IsEnabled(features::kAutofillOverridePredictions)) {
-    auto parsed_overrides = ParseServerPredictionOverrides(
-        features::kAutofillOverridePredictionsSpecification.Get());
-
-    if (parsed_overrides.has_value()) {
-      for (auto& [key, value] : parsed_overrides.value()) {
-        field_types.insert_or_assign(
-            key,
-            MergeManualAndServerOverrides(std::move(value), field_types[key]));
-      }
-    } else {
-      LOG(ERROR) << parsed_overrides.error();
-    }
-  }
-#endif
-
-  // Retrieves the next prediction for |form| and |field| and pops it. Popping
-  // is omitted if no other predictions for |form| and |field| are left, so that
-  // any subsequent fields with the same signature will get the same prediction.
-  auto GetPrediction =
-      [&field_types](FormSignature form,
-                     FieldSignature field) -> absl::optional<FieldSuggestion> {
-    auto it = field_types.find({form, field});
-    if (it == field_types.end())
-      return absl::nullopt;
-    DCHECK(!it->second.empty());
-    auto current_field = it->second.front();
-    if (it->second.size() > 1)
-      it->second.pop_front();
-    return absl::make_optional(std::move(current_field));
-  };
+      fields_suggestions =
+          GetSuggestionsMapFromResponse(response, queried_form_signatures);
 
   // Copy the field types into the actual form.
   for (FormStructure* form : forms) {
@@ -709,50 +853,26 @@ void FormStructure::ProcessQueryResponse(
     // signature how many fields with the same signature have been observed.
     std::map<FieldSignature, size_t> field_rank_map;
     for (auto& field : form->fields_) {
-      // Get the field prediction for |form|'s signature and the |field|'s
-      // host_form_signature. The precedence rule is the following:
-      // 1) Server overrides on main frame first, then iframe.
-      // 2) Server crowdsourcing on main frame first, then iframe.
-      absl::optional<FieldSuggestion> current_field =
-          GetPrediction(form->form_signature(), field->GetFieldSignature());
-      auto is_override = [](absl::optional<FieldSuggestion> field_suggestion) {
-        return field_suggestion && !field_suggestion->predictions().empty() &&
-               field_suggestion->predictions()[0].override();
-      };
-      if (field->host_form_signature &&
-          field->host_form_signature != form->form_signature() &&
-          !is_override(current_field)) {
-        // Retrieves the alternative prediction even if it is not used so that
-        // the alternative predictions are popped.
-        absl::optional<FieldSuggestion> alternative_field = GetPrediction(
-            field->host_form_signature, field->GetFieldSignature());
-        if (alternative_field &&
-            (!current_field || is_override(alternative_field) ||
-             base::ranges::all_of(current_field->predictions(),
-                                  [](const auto& prediction) {
-                                    return prediction.type() == NO_SERVER_DATA;
-                                  }))) {
-          current_field = *alternative_field;
-        }
-      }
-      if (!current_field)
+      std::optional<FieldSuggestion> field_suggestion =
+          GetFieldSuggestion(*form, *field, fields_suggestions);
+      if (!field_suggestion) {
         continue;
-
+      }
       ServerFieldType heuristic_type = field->heuristic_type();
-      if (heuristic_type != UNKNOWN_TYPE)
+      if (heuristic_type != UNKNOWN_TYPE) {
         heuristics_detected_fillable_field = true;
-
-      field->set_server_predictions({current_field->predictions().begin(),
-                                     current_field->predictions().end()});
+      }
+      field->set_server_predictions({field_suggestion->predictions().begin(),
+                                     field_suggestion->predictions().end()});
       field->set_may_use_prefilled_placeholder(
-          current_field->may_use_prefilled_placeholder());
-
-      if (heuristic_type != field->Type().GetStorableType())
+          field_suggestion->may_use_prefilled_placeholder());
+      if (heuristic_type != field->Type().GetStorableType()) {
         query_response_overrode_heuristics = true;
-
-      if (current_field->has_password_requirements())
-        field->SetPasswordRequirements(current_field->password_requirements());
-
+      }
+      if (field_suggestion->has_password_requirements()) {
+        field->SetPasswordRequirements(
+            field_suggestion->password_requirements());
+      }
       ++field_rank_map[field->GetFieldSignature()];
       // Log the field type predicted from Autofill crowdsourced server.
       field->AppendLogEventIfNotRepeated(ServerPredictionFieldLogEvent{
@@ -834,6 +954,8 @@ std::vector<FormDataPredictions> FormStructure::GetFieldTypePredictions(
     FormDataPredictions form;
     form.data = form_structure->ToFormData();
     form.signature = form_structure->FormSignatureAsStr();
+    form.alternative_signature = base::NumberToString(
+        form_structure->alternative_form_signature().value());
 
     for (const auto& field : form_structure->fields_) {
       FormFieldDataPredictions annotated_field;
@@ -841,9 +963,8 @@ std::vector<FormDataPredictions> FormStructure::GetFieldTypePredictions(
           base::NumberToString(field->host_form_signature.value());
       annotated_field.signature = field->FieldSignatureAsStr();
       annotated_field.heuristic_type =
-          FieldTypeToStringPiece(field->heuristic_type());
-      annotated_field.server_type =
-          FieldTypeToStringPiece(field->server_type());
+          FieldTypeToStringView(field->heuristic_type());
+      annotated_field.server_type = FieldTypeToStringView(field->server_type());
       annotated_field.overall_type = field->Type().ToString();
       annotated_field.parseable_name =
           base::UTF16ToUTF8(field->parseable_name());
@@ -1053,6 +1174,10 @@ void FormStructure::RetrieveFromCache(const FormStructure& cached_form,
         // GeoIP, we want to hold on to these values.
         const bool same_value_as_on_page_load =
             field->value == cached_field->value;
+        if (!cached_field->value.empty() &&
+            !field->IsSelectOrSelectListElement()) {
+          field->set_initial_value_changed(!same_value_as_on_page_load);
+        }
         const bool field_is_neither_state_nor_country =
             field->server_type() != ADDRESS_HOME_COUNTRY &&
             field->server_type() != ADDRESS_HOME_STATE;
@@ -1363,7 +1488,6 @@ void FormStructure::EncodeFormForQuery(
 
 // static
 void FormStructure::EncodeFormFieldsForUpload(
-    bool is_raw_metadata_uploading_enabled,
     absl::optional<FormGlobalId> filter_renderer_form_id,
     AutofillUploadContents* upload) const {
   DCHECK(!IsMalformed());
@@ -1414,6 +1538,11 @@ void FormStructure::EncodeFormFieldsForUpload(
       added_field->set_initial_value_hash(field->initial_value_hash().value());
     }
 
+    if (field->initial_value_changed().has_value()) {
+      added_field->set_initial_value_changed(
+          field->initial_value_changed().value());
+    }
+
     added_field->set_signature(field->GetFieldSignature().value());
 
     if (field->properties_mask)
@@ -1429,22 +1558,15 @@ void FormStructure::EncodeFormFieldsForUpload(
       added_field->set_single_username_vote_type(
           field->single_username_vote_type().value());
     }
-
-    if (is_raw_metadata_uploading_enabled) {
-      added_field->set_type(
-          std::string(FormControlTypeToString(field->form_control_type)));
-
-      if (!field->name.empty())
-        added_field->set_name(base::UTF16ToUTF8(field->name));
-
-      if (!field->id_attribute.empty())
-        added_field->set_id(base::UTF16ToUTF8(field->id_attribute));
-
-      if (!field->autocomplete_attribute.empty())
-        added_field->set_autocomplete(field->autocomplete_attribute);
-
-      if (!field->css_classes.empty())
-        added_field->set_css_classes(base::UTF16ToUTF8(field->css_classes));
+    switch (field->is_most_recent_single_username_candidate()) {
+      case IsMostRecentSingleUsernameCandidate::kNotPartOfUsernameFirstFlow:
+        added_field->clear_is_most_recent_single_username_candidate();
+        break;
+      case IsMostRecentSingleUsernameCandidate::kHasIntermediateValuesInBetween:
+        added_field->set_is_most_recent_single_username_candidate(false);
+        break;
+      case IsMostRecentSingleUsernameCandidate::kMostRecentCandidate:
+        added_field->set_is_most_recent_single_username_candidate(true);
     }
   }
 }
@@ -1870,14 +1992,14 @@ std::ostream& operator<<(std::ostream& buffer, const FormStructure& form) {
     buffer << "\n  Name: " << field->parseable_name();
 
     auto type = field->Type().ToString();
-    auto heuristic_type = FieldTypeToStringPiece(field->heuristic_type());
-    auto server_type = FieldTypeToStringPiece(field->server_type());
+    auto heuristic_type = FieldTypeToStringView(field->heuristic_type());
+    std::string server_type = ServerTypesToString(field);
     const char* is_override =
         field->server_type_prediction_is_override() ? " (manual override)" : "";
     auto html_type_description =
         field->html_type() != HtmlFieldType::kUnspecified
             ? base::StrCat(
-                  {", html: ", FieldTypeToStringPiece(field->html_type())})
+                  {", html: ", FieldTypeToStringView(field->html_type())})
             : "";
     if (field->html_type() == HtmlFieldType::kUnrecognized &&
         !field->server_type_prediction_is_override()) {
@@ -1946,16 +2068,14 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
     buffer << Tr{} << "Placeholder:" << field->placeholder;
 
     auto type = field->Type().ToString();
-    auto heuristic_type =
-        std::string(FieldTypeToStringPiece(field->heuristic_type()));
-    auto server_type =
-        std::string(FieldTypeToStringPiece(field->server_type()));
+    auto heuristic_type = FieldTypeToStringView(field->heuristic_type());
+    std::string server_type = ServerTypesToString(field);
     if (field->server_type_prediction_is_override())
       server_type += " (manual override)";
     auto html_type_description =
         field->html_type() != HtmlFieldType::kUnspecified
             ? base::StrCat(
-                  {", html: ", FieldTypeToStringPiece(field->html_type())})
+                  {", html: ", FieldTypeToStringView(field->html_type())})
             : "";
     if (field->html_type() == HtmlFieldType::kUnrecognized &&
         !field->server_type_prediction_is_override()) {

@@ -56,6 +56,7 @@ import java.io.IOException;
     ChromeFeatureList.START_SURFACE_ANDROID + "<Study",
     ChromeFeatureList.INSTANT_START
 })
+@DisableFeatures({ChromeFeatureList.SHOW_NTP_AT_STARTUP_ANDROID})
 @Restriction({
     Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE,
     UiRestriction.RESTRICTION_TYPE_PHONE
@@ -112,7 +113,7 @@ public class InstantStartNewTabFromLauncherTest {
     }
 
     private void testNewIncognitoTabFromLauncherImpl() throws IOException {
-        StartSurfaceTestUtils.createTabStateFile(new int[] {0});
+        StartSurfaceTestUtils.createTabStatesAndMetadataFile(new int[] {0});
         StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0, mBrowserControlsStateProvider);
         TabAttributeCache.setTitleForTesting(0, "Google");
 
@@ -129,7 +130,7 @@ public class InstantStartNewTabFromLauncherTest {
     }
 
     private void testNewTabFromLauncherWithHomepageDisabledImpl() throws IOException {
-        StartSurfaceTestUtils.createTabStateFile(new int[] {0});
+        StartSurfaceTestUtils.createTabStatesAndMetadataFile(new int[] {0});
         StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0, mBrowserControlsStateProvider);
         TabAttributeCache.setTitleForTesting(0, "Google");
 

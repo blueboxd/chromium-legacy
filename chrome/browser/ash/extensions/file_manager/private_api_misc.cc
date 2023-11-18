@@ -5,7 +5,6 @@
 #include "chrome/browser/ash/extensions/file_manager/private_api_misc.h"
 
 #include <stddef.h>
-#include <stdint.h>
 
 #include <set>
 #include <utility>
@@ -16,20 +15,16 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/new_window_delegate.h"
-#include "ash/public/cpp/style/dark_light_mode_controller.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/webui/settings/public/constants/routes_util.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/thread_pool.h"
 #include "chrome/browser/ash/crostini/crostini_export_import.h"
 #include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/ash/crostini/crostini_package_service.h"
@@ -45,6 +40,7 @@
 #include "chrome/browser/ash/file_system_provider/service.h"
 #include "chrome/browser/ash/fileapi/recent_file.h"
 #include "chrome/browser/ash/fileapi/recent_model.h"
+#include "chrome/browser/ash/fileapi/recent_model_factory.h"
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -52,7 +48,6 @@
 #include "chrome/browser/chromeos/upload_office_to_cloud/upload_office_to_cloud.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/devtools_util.h"
-#include "chrome/browser/file_util_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -66,18 +61,15 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_dialog.h"
+#include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
-#include "chrome/common/extensions/api/manifest_types.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/webui_url_constants.h"
 #include "chromeos/ash/components/drivefs/drivefs_pinning_manager.h"
 #include "chromeos/ash/components/settings/timezone_settings.h"
 #include "components/account_id/account_id.h"
 #include "components/drive/drive_pref_names.h"
-#include "components/drive/event_logger.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "components/zoom/page_zoom.h"
 #include "content/public/browser/network_service_instance.h"
@@ -86,18 +78,21 @@
 #include "extensions/browser/api/file_handlers/mime_util.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "ui/chromeos/styles/cros_styles.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "url/gurl.h"
 
 namespace extensions {
 namespace {
 
-using api::file_manager_private::ProfileInfo;
+namespace fsp = ash::file_system_provider;
+namespace fmp = api::file_manager_private;
+namespace fmpi = api::file_manager_private_internal;
+
+using absl::optional;
+using fmp::ProfileInfo;
 
 // Thresholds for mountCrostini() API.
 constexpr base::TimeDelta kMountCrostiniSlowOperationThreshold =
@@ -153,7 +148,7 @@ std::vector<ProfileInfo> GetLoggedInProfileInfoList() {
 bool ConvertURLsToProvidedInfo(
     const scoped_refptr<storage::FileSystemContext>& file_system_context,
     const std::vector<std::string>& urls,
-    ash::file_system_provider::ProvidedFileSystemInterface** file_system,
+    fsp::ProvidedFileSystemInterface** file_system,
     std::vector<base::FilePath>* paths,
     std::string* error) {
   DCHECK(file_system);
@@ -178,8 +173,7 @@ bool ConvertURLsToProvidedInfo(
           file_system_context->CrackURLInFirstPartyContext(GURL(fsp_url));
     }
 
-    ash::file_system_provider::util::FileSystemURLParser parser(
-        file_system_url);
+    fsp::util::FileSystemURLParser parser(file_system_url);
     if (!parser.Parse()) {
       *error = "Related provided file system not found.";
       return false;
@@ -204,16 +198,16 @@ bool ConvertURLsToProvidedInfo(
 }
 
 bool IsAllowedSource(storage::FileSystemType type,
-                     api::file_manager_private::SourceRestriction restriction) {
+                     fmp::SourceRestriction restriction) {
   switch (restriction) {
-    case api::file_manager_private::SOURCE_RESTRICTION_NONE:
+    case fmp::SourceRestriction::kNone:
       NOTREACHED();
       return false;
 
-    case api::file_manager_private::SOURCE_RESTRICTION_ANY_SOURCE:
+    case fmp::SourceRestriction::kAnySource:
       return true;
 
-    case api::file_manager_private::SOURCE_RESTRICTION_NATIVE_SOURCE:
+    case fmp::SourceRestriction::kNativeSource:
       return type == storage::kFileSystemTypeLocal;
   }
 }
@@ -230,79 +224,82 @@ std::string Redact(const base::FilePath& path) {
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateGetPreferencesFunction::Run() {
-  api::file_manager_private::Preferences result;
+  fmp::Preferences result;
   Profile* const profile = Profile::FromBrowserContext(browser_context());
-  const PrefService* const service = profile->GetPrefs();
-  auto* drive_integration_service =
+  DCHECK(profile);
+  const PrefService* const prefs = profile->GetPrefs();
+  DCHECK(prefs);
+  drive::DriveIntegrationService* const service =
       drive::DriveIntegrationServiceFactory::FindForProfile(profile);
 
   result.drive_enabled = drive::util::IsDriveEnabledForProfile(profile) &&
-                         drive_integration_service &&
-                         !drive_integration_service->mount_failed();
+                         service && !service->mount_failed();
   result.drive_sync_enabled_on_metered_network =
-      !service->GetBoolean(drive::prefs::kDisableDriveOverCellular);
-  if (drive::util::IsDriveFsBulkPinningAvailable(profile)) {
-    result.drive_fs_bulk_pinning_enabled =
-        service->GetBoolean(drive::prefs::kDriveFsBulkPinningEnabled);
-  }
+      !prefs->GetBoolean(drive::prefs::kDisableDriveOverCellular);
+  result.drive_fs_bulk_pinning_available =
+      drive::util::IsDriveFsBulkPinningAvailable(profile);
+  result.drive_fs_bulk_pinning_enabled =
+      prefs->GetBoolean(drive::prefs::kDriveFsBulkPinningEnabled);
   result.search_suggest_enabled =
-      service->GetBoolean(prefs::kSearchSuggestEnabled);
-  result.use24hour_clock = service->GetBoolean(prefs::kUse24HourClock);
+      prefs->GetBoolean(prefs::kSearchSuggestEnabled);
+  result.use24hour_clock = prefs->GetBoolean(prefs::kUse24HourClock);
   result.timezone = base::UTF16ToUTF8(
       ash::system::TimezoneSettings::GetInstance()->GetCurrentTimezoneID());
-  result.arc_enabled = service->GetBoolean(arc::prefs::kArcEnabled);
+  result.arc_enabled = prefs->GetBoolean(arc::prefs::kArcEnabled);
   result.arc_removable_media_access_enabled =
-      service->GetBoolean(arc::prefs::kArcHasAccessToRemovableMedia);
-  result.trash_enabled = service->GetBoolean(ash::prefs::kFilesAppTrashEnabled);
+      prefs->GetBoolean(arc::prefs::kArcHasAccessToRemovableMedia);
+  result.trash_enabled = prefs->GetBoolean(ash::prefs::kFilesAppTrashEnabled);
   std::vector<std::string> folder_shortcuts;
-  const auto& value_list =
-      service->GetList(ash::prefs::kFilesAppFolderShortcuts);
+  const auto& value_list = prefs->GetList(ash::prefs::kFilesAppFolderShortcuts);
   for (const base::Value& value : value_list) {
     folder_shortcuts.push_back(value.is_string() ? value.GetString() : "");
   }
   result.folder_shortcuts = folder_shortcuts;
   result.office_file_moved_one_drive =
-      service->GetTime(prefs::kOfficeFileMovedToOneDrive).ToJsTime();
+      prefs->GetTime(prefs::kOfficeFileMovedToOneDrive)
+          .InMillisecondsFSinceUnixEpoch();
   result.office_file_moved_google_drive =
-      service->GetTime(prefs::kOfficeFileMovedToGoogleDrive).ToJsTime();
+      prefs->GetTime(prefs::kOfficeFileMovedToGoogleDrive)
+          .InMillisecondsFSinceUnixEpoch();
 
   return RespondNow(WithArguments(result.ToValue()));
 }
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateSetPreferencesFunction::Run() {
-  using extensions::api::file_manager_private::SetPreferences::Params;
-  const absl::optional<Params> params = Params::Create(args());
+  using fmp::SetPreferences::Params;
+  const optional<Params> params = Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
+  const fmp::PreferencesChange& change = params->change_info;
   Profile* const profile = Profile::FromBrowserContext(browser_context());
   PrefService* const service = profile->GetPrefs();
 
-  if (params->change_info.drive_sync_enabled_on_metered_network) {
-    const bool drive_sync_enabled_on_metered_network =
-        *params->change_info.drive_sync_enabled_on_metered_network;
+  if (change.drive_sync_enabled_on_metered_network.has_value()) {
     service->SetBoolean(drive::prefs::kDisableDriveOverCellular,
-                        !drive_sync_enabled_on_metered_network);
+                        !change.drive_sync_enabled_on_metered_network.value());
   }
+
   if (drive::util::IsDriveFsBulkPinningAvailable(profile) &&
-      params->change_info.drive_fs_bulk_pinning_enabled) {
+      change.drive_fs_bulk_pinning_enabled.has_value()) {
     service->SetBoolean(drive::prefs::kDriveFsBulkPinningEnabled,
-                        *params->change_info.drive_fs_bulk_pinning_enabled);
+                        change.drive_fs_bulk_pinning_enabled.value());
     drivefs::pinning::RecordBulkPinningEnabledSource(
         drivefs::pinning::BulkPinningEnabledSource::kBanner);
   }
-  if (params->change_info.arc_enabled) {
-    service->SetBoolean(arc::prefs::kArcEnabled,
-                        *params->change_info.arc_enabled);
+
+  if (change.arc_enabled.has_value()) {
+    service->SetBoolean(arc::prefs::kArcEnabled, change.arc_enabled.value());
   }
-  if (params->change_info.arc_removable_media_access_enabled) {
-    service->SetBoolean(
-        arc::prefs::kArcHasAccessToRemovableMedia,
-        *params->change_info.arc_removable_media_access_enabled);
+
+  if (change.arc_removable_media_access_enabled.has_value()) {
+    service->SetBoolean(arc::prefs::kArcHasAccessToRemovableMedia,
+                        change.arc_removable_media_access_enabled.value());
   }
-  if (params->change_info.folder_shortcuts) {
+
+  if (change.folder_shortcuts.has_value()) {
     base::Value::List folder_shortcuts;
-    for (auto& shortcut : *params->change_info.folder_shortcuts) {
+    for (const std::string& shortcut : change.folder_shortcuts.value()) {
       folder_shortcuts.Append(shortcut);
     }
     service->SetList(ash::prefs::kFilesAppFolderShortcuts,
@@ -313,19 +310,19 @@ FileManagerPrivateSetPreferencesFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction FileManagerPrivateZoomFunction::Run() {
-  using extensions::api::file_manager_private::Zoom::Params;
-  const absl::optional<Params> params = Params::Create(args());
+  using fmp::Zoom::Params;
+  const optional<Params> params = Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   content::PageZoom zoom_type;
   switch (params->operation) {
-    case api::file_manager_private::ZOOM_OPERATION_TYPE_IN:
+    case fmp::ZoomOperationType::kIn:
       zoom_type = content::PAGE_ZOOM_IN;
       break;
-    case api::file_manager_private::ZOOM_OPERATION_TYPE_OUT:
+    case fmp::ZoomOperationType::kOut:
       zoom_type = content::PAGE_ZOOM_OUT;
       break;
-    case api::file_manager_private::ZOOM_OPERATION_TYPE_RESET:
+    case fmp::ZoomOperationType::kReset:
       zoom_type = content::PAGE_ZOOM_RESET;
       break;
     default:
@@ -337,7 +334,8 @@ ExtensionFunction::ResponseAction FileManagerPrivateZoomFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction FileManagerPrivateGetProfilesFunction::Run() {
-  const std::vector<ProfileInfo>& profiles = GetLoggedInProfileInfoList();
+  fmp::ProfilesResponse response;
+  response.profiles = GetLoggedInProfileInfoList();
 
   // Obtains the display profile ID.
   AppWindow* const app_window = GetCurrentAppWindow(this);
@@ -350,40 +348,41 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetProfilesFunction::Run() {
                                          app_window->GetNativeWindow())
                                    : EmptyAccountId();
 
-  return RespondNow(
-      ArgumentList(api::file_manager_private::GetProfiles::Results::Create(
-          profiles, current_profile_id.GetUserEmail(),
-          display_profile_id.is_valid() ? display_profile_id.GetUserEmail()
-                                        : current_profile_id.GetUserEmail())));
+  response.current_profile_id = current_profile_id.GetUserEmail();
+  response.displayed_profile_id = display_profile_id.is_valid()
+                                      ? display_profile_id.GetUserEmail()
+                                      : current_profile_id.GetUserEmail();
+
+  return RespondNow(WithArguments(response.ToValue()));
 }
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateOpenInspectorFunction::Run() {
-  using extensions::api::file_manager_private::OpenInspector::Params;
-  const absl::optional<Params> params = Params::Create(args());
+  using fmp::OpenInspector::Params;
+  const optional<Params> params = Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   switch (params->type) {
-    case extensions::api::file_manager_private::INSPECTION_TYPE_NORMAL:
+    case fmp::InspectionType::kNormal:
       // Open inspector for foreground page.
       DevToolsWindow::OpenDevToolsWindow(GetSenderWebContents());
       break;
-    case extensions::api::file_manager_private::INSPECTION_TYPE_CONSOLE:
+    case fmp::InspectionType::kConsole:
       // Open inspector for foreground page and bring focus to the console.
       DevToolsWindow::OpenDevToolsWindow(
           GetSenderWebContents(), DevToolsToggleAction::ShowConsolePanel());
       break;
-    case extensions::api::file_manager_private::INSPECTION_TYPE_ELEMENT:
+    case fmp::InspectionType::kElement:
       // Open inspector for foreground page in inspect element mode.
       DevToolsWindow::OpenDevToolsWindow(GetSenderWebContents(),
                                          DevToolsToggleAction::Inspect());
       break;
-    case extensions::api::file_manager_private::INSPECTION_TYPE_BACKGROUND:
+    case fmp::InspectionType::kBackground:
       // Open inspector for background page if extension pointer is not null.
       // Files app SWA is not an extension and thus has no associated background
       // page.
       if (extension()) {
-        extensions::devtools_util::InspectBackgroundPage(
+        devtools_util::InspectBackgroundPage(
             extension(), Profile::FromBrowserContext(browser_context()));
       } else {
         return RespondNow(
@@ -402,8 +401,8 @@ FileManagerPrivateOpenInspectorFunction::Run() {
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateOpenSettingsSubpageFunction::Run() {
-  using extensions::api::file_manager_private::OpenSettingsSubpage::Params;
-  const absl::optional<Params> params = Params::Create(args());
+  using fmp::OpenSettingsSubpage::Params;
+  const optional<Params> params = Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -424,8 +423,8 @@ FileManagerPrivateInternalGetMimeTypeFunction::
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateInternalGetMimeTypeFunction::Run() {
-  using extensions::api::file_manager_private_internal::GetMimeType::Params;
-  const absl::optional<Params> params = Params::Create(args());
+  using fmpi::GetMimeType::Params;
+  const optional<Params> params = Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // Convert file url to local path.
@@ -455,14 +454,14 @@ FileManagerPrivateGetProvidersFunction::
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateGetProvidersFunction::Run() {
-  using ash::file_system_provider::Capabilities;
-  using ash::file_system_provider::IconSet;
-  using ash::file_system_provider::ProviderId;
-  using ash::file_system_provider::ProviderInterface;
-  using ash::file_system_provider::Service;
+  using fsp::Capabilities;
+  using fsp::IconSet;
+  using fsp::ProviderId;
+  using fsp::ProviderInterface;
+  using fsp::Service;
   const Service* const service = Service::Get(browser_context());
 
-  using api::file_manager_private::Provider;
+  using fmp::Provider;
   std::vector<Provider> result;
   for (const auto& pair : service->GetProviders()) {
     const ProviderInterface* const provider = pair.second.get();
@@ -480,20 +479,19 @@ FileManagerPrivateGetProvidersFunction::Run() {
     result_item.multiple_mounts = capabilities.multiple_mounts;
     switch (capabilities.source) {
       case SOURCE_FILE:
-        result_item.source = api::file_manager_private::PROVIDER_SOURCE_FILE;
+        result_item.source = fmp::ProviderSource::kFile;
         break;
       case SOURCE_DEVICE:
-        result_item.source = api::file_manager_private::PROVIDER_SOURCE_DEVICE;
+        result_item.source = fmp::ProviderSource::kDevice;
         break;
       case SOURCE_NETWORK:
-        result_item.source = api::file_manager_private::PROVIDER_SOURCE_NETWORK;
+        result_item.source = fmp::ProviderSource::kNetwork;
         break;
     }
     result.push_back(std::move(result_item));
   }
 
-  return RespondNow(ArgumentList(
-      api::file_manager_private::GetProviders::Results::Create(result)));
+  return RespondNow(ArgumentList(fmp::GetProviders::Results::Create(result)));
 }
 
 FileManagerPrivateAddProvidedFileSystemFunction::
@@ -501,10 +499,10 @@ FileManagerPrivateAddProvidedFileSystemFunction::
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateAddProvidedFileSystemFunction::Run() {
-  using ash::file_system_provider::ProviderId;
-  using ash::file_system_provider::Service;
-  using extensions::api::file_manager_private::AddProvidedFileSystem::Params;
-  const absl::optional<Params> params = Params::Create(args());
+  using fmp::AddProvidedFileSystem::Params;
+  using fsp::ProviderId;
+  using fsp::Service;
+  const optional<Params> params = Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -544,8 +542,8 @@ FileManagerPrivateConfigureVolumeFunction::
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateConfigureVolumeFunction::Run() {
-  using extensions::api::file_manager_private::ConfigureVolume::Params;
-  const absl::optional<Params> params = Params::Create(args());
+  using fmp::ConfigureVolume::Params;
+  const optional<Params> params = Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   using file_manager::Volume;
@@ -570,11 +568,11 @@ FileManagerPrivateConfigureVolumeFunction::Run() {
 
   switch (volume->type()) {
     case file_manager::VOLUME_TYPE_PROVIDED: {
-      using ash::file_system_provider::Service;
+      using fsp::Service;
       Service* const service = Service::Get(browser_context());
       DCHECK(service);
 
-      using ash::file_system_provider::ProvidedFileSystemInterface;
+      using fsp::ProvidedFileSystemInterface;
       ProvidedFileSystemInterface* const file_system =
           service->GetProvidedFileSystem(volume->provider_id(),
                                          volume->file_system_id());
@@ -662,8 +660,7 @@ FileManagerPrivateInternalImportCrostiniImageFunction::
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateInternalImportCrostiniImageFunction::Run() {
-  using extensions::api::file_manager_private_internal::ImportCrostiniImage::
-      Params;
+  using fmpi::ImportCrostiniImage::Params;
 
   const auto params = Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -692,9 +689,8 @@ FileManagerPrivateInternalImportCrostiniImageFunction::Run() {
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateInternalSharePathsWithCrostiniFunction::Run() {
-  using extensions::api::file_manager_private_internal::SharePathsWithCrostini::
-      Params;
-  const absl::optional<Params> params = Params::Create(args());
+  using fmpi::SharePathsWithCrostini::Params;
+  const optional<Params> params = Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -736,9 +732,8 @@ void FileManagerPrivateInternalSharePathsWithCrostiniFunction::
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateInternalUnsharePathWithCrostiniFunction::Run() {
-  using extensions::api::file_manager_private_internal::
-      UnsharePathWithCrostini::Params;
-  const absl::optional<Params> params = Params::Create(args());
+  using fmpi::UnsharePathWithCrostini::Params;
+  const optional<Params> params = Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -764,9 +759,8 @@ void FileManagerPrivateInternalUnsharePathWithCrostiniFunction::
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
-  using extensions::api::file_manager_private_internal::GetCrostiniSharedPaths::
-      Params;
-  const absl::optional<Params> params = Params::Create(args());
+  using fmpi::GetCrostiniSharedPaths::Params;
+  const optional<Params> params = Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
   // Use OriginalProfile since using crostini in incognito such as saving
   // files into Linux files should still work.
@@ -780,6 +774,8 @@ FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
   auto shared_paths =
       guest_os_share_path->GetPersistedSharedPaths(params->vm_name);
   base::Value::List entries;
+  fmpi::CrostiniSharedPathResponse response;
+  response.first_for_session = first_for_session;
   for (const base::FilePath& path : shared_paths) {
     std::string mount_name;
     std::string file_system_name;
@@ -790,25 +786,25 @@ FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
                  << Redact(path);
       continue;
     }
-    base::Value::Dict entry;
-    entry.Set("fileSystemRoot", storage::GetExternalFileSystemRootURIString(
-                                    source_url(), mount_name));
-    entry.Set("fileSystemName", file_system_name);
-    entry.Set("fileFullPath", full_path);
+
+    auto& entry = response.entries.emplace_back();
+    entry.file_system_root =
+        storage::GetExternalFileSystemRootURIString(source_url(), mount_name);
+    entry.file_system_name = file_system_name;
+    entry.file_full_path = full_path;
     // All shared paths should be directories.  Even if this is not true,
     // it is fine for foreground/js/crostini.js class to think so. We
     // verify that the paths are in fact valid directories before calling
     // seneschal/9p in GuestOsSharePath::CallSeneschalSharePath().
-    entry.Set("fileIsDirectory", true);
-    entries.Append(std::move(entry));
+    entry.file_is_directory = true;
   }
-  return RespondNow(WithArguments(std::move(entries), first_for_session));
+  return RespondNow(WithArguments(response.ToValue()));
 }
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateInternalGetLinuxPackageInfoFunction::Run() {
-  using api::file_manager_private_internal::GetLinuxPackageInfo::Params;
-  const absl::optional<Params> params = Params::Create(args());
+  using fmpi::GetLinuxPackageInfo::Params;
+  const optional<Params> params = Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -828,7 +824,7 @@ FileManagerPrivateInternalGetLinuxPackageInfoFunction::Run() {
 void FileManagerPrivateInternalGetLinuxPackageInfoFunction::
     OnGetLinuxPackageInfo(
         const crostini::LinuxPackageInfo& linux_package_info) {
-  api::file_manager_private::LinuxPackageInfo result;
+  fmp::LinuxPackageInfo result;
   if (!linux_package_info.success) {
     Respond(Error(linux_package_info.failure_reason));
     return;
@@ -839,15 +835,13 @@ void FileManagerPrivateInternalGetLinuxPackageInfoFunction::
   result.summary = linux_package_info.summary;
   result.description = linux_package_info.description;
 
-  Respond(ArgumentList(extensions::api::file_manager_private_internal::
-                           GetLinuxPackageInfo::Results::Create(result)));
+  Respond(ArgumentList(fmpi::GetLinuxPackageInfo::Results::Create(result)));
 }
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateInternalInstallLinuxPackageFunction::Run() {
-  using extensions::api::file_manager_private_internal::InstallLinuxPackage::
-      Params;
-  const absl::optional<Params> params = Params::Create(args());
+  using fmpi::InstallLinuxPackage::Params;
+  const optional<Params> params = Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -868,25 +862,21 @@ FileManagerPrivateInternalInstallLinuxPackageFunction::Run() {
 
 void FileManagerPrivateInternalInstallLinuxPackageFunction::
     OnInstallLinuxPackage(crostini::CrostiniResult result) {
-  extensions::api::file_manager_private::InstallLinuxPackageResponse response;
+  fmp::InstallLinuxPackageStatus response;
   switch (result) {
     case crostini::CrostiniResult::SUCCESS:
-      response = extensions::api::file_manager_private::
-          INSTALL_LINUX_PACKAGE_RESPONSE_STARTED;
+      response = fmp::InstallLinuxPackageStatus::kStarted;
       break;
     case crostini::CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED:
-      response = extensions::api::file_manager_private::
-          INSTALL_LINUX_PACKAGE_RESPONSE_FAILED;
+      response = fmp::InstallLinuxPackageStatus::kFailed;
       break;
     case crostini::CrostiniResult::BLOCKING_OPERATION_ALREADY_ACTIVE:
-      response = extensions::api::file_manager_private::
-          INSTALL_LINUX_PACKAGE_RESPONSE_INSTALL_ALREADY_ACTIVE;
+      response = fmp::InstallLinuxPackageStatus::kInstallAlreadyActive;
       break;
     default:
       NOTREACHED();
   }
-  Respond(ArgumentList(extensions::api::file_manager_private_internal::
-                           InstallLinuxPackage::Results::Create(response)));
+  Respond(ArgumentList(fmpi::InstallLinuxPackage::Results::Create(response)));
 }
 
 FileManagerPrivateInternalGetCustomActionsFunction::
@@ -894,9 +884,8 @@ FileManagerPrivateInternalGetCustomActionsFunction::
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateInternalGetCustomActionsFunction::Run() {
-  using extensions::api::file_manager_private_internal::GetCustomActions::
-      Params;
-  const absl::optional<Params> params = Params::Create(args());
+  using fmpi::GetCustomActions::Params;
+  const optional<Params> params = Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const scoped_refptr<storage::FileSystemContext> file_system_context =
@@ -904,7 +893,7 @@ FileManagerPrivateInternalGetCustomActionsFunction::Run() {
           Profile::FromBrowserContext(browser_context()), render_frame_host());
 
   std::vector<base::FilePath> paths;
-  ash::file_system_provider::ProvidedFileSystemInterface* file_system = nullptr;
+  fsp::ProvidedFileSystemInterface* file_system = nullptr;
   std::string error;
 
   if (!ConvertURLsToProvidedInfo(file_system_context, params->urls,
@@ -922,7 +911,7 @@ FileManagerPrivateInternalGetCustomActionsFunction::Run() {
 }
 
 void FileManagerPrivateInternalGetCustomActionsFunction::OnCompleted(
-    const ash::file_system_provider::Actions& actions,
+    const fsp::Actions& actions,
     base::File::Error result) {
   if (result != base::File::FILE_OK) {
     Respond(Error("Failed to fetch actions."));
@@ -938,9 +927,7 @@ void FileManagerPrivateInternalGetCustomActionsFunction::OnCompleted(
     items.push_back(std::move(item));
   }
 
-  Respond(ArgumentList(
-      api::file_manager_private_internal::GetCustomActions::Results::Create(
-          items)));
+  Respond(ArgumentList(fmpi::GetCustomActions::Results::Create(items)));
 }
 
 FileManagerPrivateInternalExecuteCustomActionFunction::
@@ -948,9 +935,8 @@ FileManagerPrivateInternalExecuteCustomActionFunction::
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateInternalExecuteCustomActionFunction::Run() {
-  using extensions::api::file_manager_private_internal::ExecuteCustomAction::
-      Params;
-  const absl::optional<Params> params = Params::Create(args());
+  using fmpi::ExecuteCustomAction::Params;
+  const optional<Params> params = Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const scoped_refptr<storage::FileSystemContext> file_system_context =
@@ -958,7 +944,7 @@ FileManagerPrivateInternalExecuteCustomActionFunction::Run() {
           Profile::FromBrowserContext(browser_context()), render_frame_host());
 
   std::vector<base::FilePath> paths;
-  ash::file_system_provider::ProvidedFileSystemInterface* file_system = nullptr;
+  fsp::ProvidedFileSystemInterface* file_system = nullptr;
   std::string error;
 
   if (!ConvertURLsToProvidedInfo(file_system_context, params->urls,
@@ -990,8 +976,8 @@ FileManagerPrivateInternalGetRecentFilesFunction::
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateInternalGetRecentFilesFunction::Run() {
-  using extensions::api::file_manager_private_internal::GetRecentFiles::Params;
-  const absl::optional<Params> params = Params::Create(args());
+  using fmpi::GetRecentFiles::Params;
+  const optional<Params> params = Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* const profile = Profile::FromBrowserContext(browser_context());
@@ -999,7 +985,10 @@ FileManagerPrivateInternalGetRecentFilesFunction::Run() {
       file_manager::util::GetFileSystemContextForRenderFrameHost(
           profile, render_frame_host());
 
-  ash::RecentModel* model = ash::RecentModel::GetForProfile(profile);
+  ash::RecentModel* model = ash::RecentModelFactory::GetForProfile(profile);
+  if (!model) {
+    return RespondNow(Error("Failed to get recent model"));
+  }
 
   ash::RecentModel::FileType file_type;
   if (!file_manager::util::ToRecentSourceFileType(params->file_category,
@@ -1015,8 +1004,8 @@ FileManagerPrivateInternalGetRecentFilesFunction::Run() {
     model->SetScanTimeout(base::Milliseconds(3000));
   }
   model->GetRecentFiles(
-      file_system_context.get(), source_url(), file_type,
-      params->invalidate_cache,
+      file_system_context.get(), source_url(), params->query,
+      base::Days(params->cutoff_days), file_type, params->invalidate_cache,
       base::BindOnce(
           &FileManagerPrivateInternalGetRecentFilesFunction::OnGetRecentFiles,
           this, params->restriction));
@@ -1024,7 +1013,7 @@ FileManagerPrivateInternalGetRecentFilesFunction::Run() {
 }
 
 void FileManagerPrivateInternalGetRecentFilesFunction::OnGetRecentFiles(
-    api::file_manager_private::SourceRestriction restriction,
+    fmp::SourceRestriction restriction,
     const std::vector<ash::RecentFile>& files) {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   file_manager::util::FileDefinitionList file_definition_list;
@@ -1091,8 +1080,8 @@ FileManagerPrivateIsTabletModeEnabledFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction FileManagerPrivateOpenURLFunction::Run() {
-  using extensions::api::file_manager_private::OpenURL::Params;
-  const absl::optional<Params> params = Params::Create(args());
+  using fmp::OpenURL::Params;
+  const optional<Params> params = Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
   const GURL url(params->url);
 
@@ -1108,8 +1097,8 @@ ExtensionFunction::ResponseAction FileManagerPrivateOpenURLFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction FileManagerPrivateOpenWindowFunction::Run() {
-  using extensions::api::file_manager_private::OpenWindow::Params;
-  const absl::optional<Params> params = Params::Create(args());
+  using fmp::OpenWindow::Params;
+  const optional<Params> params = Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const GURL destination_folder(params->params.current_directory_url
@@ -1160,14 +1149,13 @@ FileManagerPrivateSendFeedbackFunction::Run() {
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateGetDeviceConnectionStateFunction::Run() {
-  api::file_manager_private::DeviceConnectionState result =
+  fmp::DeviceConnectionState result =
       content::GetNetworkConnectionTracker()->IsOffline()
-          ? api::file_manager_private::DEVICE_CONNECTION_STATE_OFFLINE
-          : api::file_manager_private::DEVICE_CONNECTION_STATE_ONLINE;
+          ? fmp::DeviceConnectionState::kOffline
+          : fmp::DeviceConnectionState::kOnline;
 
-  return RespondNow(ArgumentList(
-      api::file_manager_private::GetDeviceConnectionState::Results::Create(
-          result)));
+  return RespondNow(
+      ArgumentList(fmp::GetDeviceConnectionState::Results::Create(result)));
 }
 
 }  // namespace extensions

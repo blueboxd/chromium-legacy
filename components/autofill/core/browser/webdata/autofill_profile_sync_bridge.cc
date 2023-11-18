@@ -206,7 +206,6 @@ void AutofillProfileSyncBridge::GetAllDataForDebugging(DataCallback callback) {
 void AutofillProfileSyncBridge::ActOnLocalChange(
     const AutofillProfileChange& change) {
   if (!change_processor()->IsTrackingMetadata() ||
-      change.data_model().record_type() != AutofillProfile::LOCAL_PROFILE ||
       change.data_model().source() !=
           AutofillProfile::Source::kLocalOrSyncable) {
     return;
@@ -225,10 +224,6 @@ void AutofillProfileSyncBridge::ActOnLocalChange(
       break;
     case AutofillProfileChange::REMOVE:
       change_processor()->Delete(change.key(), metadata_change_list.get());
-      break;
-    case AutofillProfileChange::EXPIRE:
-      // EXPIRE changes are not being issued for profiles.
-      NOTREACHED();
       break;
   }
 

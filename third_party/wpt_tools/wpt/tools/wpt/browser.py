@@ -38,7 +38,7 @@ FIREFOX_CI_ROOT_URL = 'https://firefox-ci-tc.services.mozilla.com'
 
 
 def _get_fileversion(binary, logger=None):
-    command = "(Get-Item '%s').VersionInfo.FileVersion" % binary.replace("'", "''")
+    command = "(Get-Item -ErrorAction Stop '%s').VersionInfo.FileVersion" % binary.replace("'", "''")
     try:
         return call("powershell.exe", command).strip()
     except (subprocess.CalledProcessError, OSError):
@@ -393,7 +393,7 @@ class Firefox(Browser):
         return "%s/archive/%s.zip/testing/profiles/" % (repo, tag)
 
     def install_prefs(self, binary, dest=None, channel=None):
-        if binary:
+        if binary and not binary.endswith(".apk"):
             version, channel_ = self.get_version_and_channel(binary)
             if channel is not None and channel != channel_:
                 # Beta doesn't always seem to have the b in the version string, so allow the
@@ -411,7 +411,7 @@ class Firefox(Browser):
         if version:
             dest = os.path.join(dest, version)
         have_cache = False
-        if os.path.exists(dest) and len(os.listdir(dest)) > 0:
+        if os.path.exists(dest) and os.path.exists(os.path.join(dest, "profiles.json")):
             if channel != "nightly":
                 have_cache = True
             else:
@@ -427,7 +427,7 @@ class Firefox(Browser):
 
             url = self.get_profile_bundle_url(version, channel)
 
-            self.logger.info("Installing test prefs from %s" % url)
+            self.logger.info(f"Downloading test prefs from {url}")
             try:
                 extract_dir = tempfile.mkdtemp()
                 unzip(get(url).raw, dest=extract_dir)
@@ -438,8 +438,9 @@ class Firefox(Browser):
                     shutil.move(path, dest)
             finally:
                 rmtree(extract_dir)
+            self.logger.info(f"Test prefs downloaded to {dest}")
         else:
-            self.logger.info("Using cached test prefs from %s" % dest)
+            self.logger.info(f"Using cached test prefs from {dest}")
 
         return dest
 
@@ -535,16 +536,17 @@ class FirefoxAndroid(Browser):
     def __init__(self, logger):
         super().__init__(logger)
         self.apk_path = None
+        self._fx_browser = Firefox(self.logger)
 
     def download(self, dest=None, channel=None, rename=None):
         if dest is None:
             dest = os.pwd
 
         resp = get_taskcluster_artifact(
-            "gecko.v2.mozilla-central.latest.mobile.android-x86_64-opt",
-            "public/build/geckoview-androidTest.apk")
+            "gecko.v2.mozilla-central.shippable.latest.mobile.android-x86_64-opt",
+            "public/build/geckoview-test_runner.apk")
 
-        filename = "geckoview-androidTest.apk"
+        filename = "geckoview-test_runner.apk"
         if rename:
             filename = "%s%s" % (rename, get_ext(filename)[1])
         self.apk_path = os.path.join(dest, filename)
@@ -558,17 +560,16 @@ class FirefoxAndroid(Browser):
         return self.download(dest, channel)
 
     def install_prefs(self, binary, dest=None, channel=None):
-        fx_browser = Firefox(self.logger)
-        return fx_browser.install_prefs(binary, dest, channel)
+        return self._fx_browser.install_prefs(binary, dest, channel)
 
     def find_binary(self, venv_path=None, channel=None):
         return self.apk_path
 
     def find_webdriver(self, venv_path=None, channel=None):
-        raise NotImplementedError
+        return self._fx_browser.find_webdriver(venv_path, channel)
 
     def install_webdriver(self, dest=None, channel=None, browser_binary=None):
-        raise NotImplementedError
+        return self._fx_browser.install_webdriver(dest, channel, None)
 
     def version(self, binary=None, webdriver_binary=None):
         return None
@@ -1007,7 +1008,13 @@ class Chrome(ChromeChromiumBase):
         # If no ChromeDriver download URL reference file exists,
         # try to find a download URL based on the build version.
         self.logger.info(f"Searching for ChromeDriver downloads for version {version}.")
-        return self._get_webdriver_url_by_build(formatted_version)
+        download_url = self._get_webdriver_url_by_build(formatted_version)
+        if download_url is None:
+            milestone = version.split('.')[0]
+            self.logger.info(f'No ChromeDriver download found for build {formatted_version}. '
+                             f'Finding latest available download for milestone {milestone}')
+            download_url = self._get_webdriver_url_by_milestone(milestone)
+        return download_url
 
     def _get_old_webdriver_url(self, version):
         """Find a ChromeDriver download URL for Chrome version <= 114
@@ -1059,6 +1066,33 @@ class Chrome(ChromeChromiumBase):
                              f"of platform {self.platform}")
             return None
         return downloads_for_platform[0]["url"]
+
+    def _get_webdriver_url_by_milestone(self, milestone):
+        """Find a ChromeDriver download URL that is the latest available
+        for a Chrome milestone.
+
+        Raises: RequestException if a bad responses is received from
+                Chrome for Testing sources.
+
+        Returns: Download URL string or None if no matching milestone is found.
+        """
+
+        try:
+            # Get a list of builds with download URLs from Chrome for Testing.
+            resp = get(f"{CHROME_FOR_TESTING_ROOT_URL}"
+                       "latest-versions-per-milestone.json")
+        except requests.RequestException as e:
+            raise requests.RequestException(
+                "Chrome for Testing versions not found", e)
+        milestones_json = resp.json()
+        milestones_dict = milestones_json["milestones"]
+        if milestone not in milestones_dict:
+            self.logger.info(f"No latest version found for milestone {milestone}.")
+            return None
+        version_available = self._get_build_version(
+            milestones_dict[milestone]["version"])
+
+        return self._get_webdriver_url_by_build(version_available)
 
     def _get_download_urls_by_version(self, version):
         """Find Chrome for Testing and ChromeDriver download URLs matching a specific version.
@@ -1304,9 +1338,16 @@ class Chrome(ChromeChromiumBase):
 
         # Chrome and ChromeDriver versions should match on the same MAJOR.MINOR.BUILD version.
         if browser_version is not None and browser_version != chromedriver_version:
-            self.logger.warning(
-                f"ChromeDriver {chromedriver_version} does not match Chrome {browser_version}")
-            return False
+            # Consider the same milestone as matching.
+            # Workaround for https://github.com/web-platform-tests/wpt/issues/42545
+            # TODO(DanielRyanSmith): Remove this logic when browser binary is
+            # downloaded from Chrome for Testing in CI runs.
+            browser_milestone = browser_version.split('.')[0]
+            chromedriver_milestone = chromedriver_version.split('.')[0]
+            if browser_milestone != chromedriver_milestone:
+                self.logger.warning(
+                    f"ChromeDriver {chromedriver_version} does not match Chrome {browser_version}")
+                return False
         return True
 
     def version(self, binary=None, webdriver_binary=None):
@@ -1314,7 +1355,6 @@ class Chrome(ChromeChromiumBase):
         if not binary:
             self.logger.warning("No browser binary provided.")
             return None
-
         if uname[0] == "Windows":
             return _get_fileversion(binary, self.logger)
 

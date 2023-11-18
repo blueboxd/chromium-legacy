@@ -669,9 +669,9 @@ class BASE_EXPORT PersistentMemoryAllocator {
   // Implementation of Flush that accepts how much to flush.
   virtual void FlushPartial(size_t length, bool sync);
 
-  // This field is not a raw_ptr<> because a pointer to stale non-PA allocation
-  // could be confused as a pointer to PA memory when that address space is
-  // reused. crbug.com/1173851 crbug.com/1169582
+  // This field is not a raw_ptr<> because it always points to a mmap'd region
+  // of memory outside of the PA heap. Thus, there would be overhead involved
+  // with using a raw_ptr<> but no safety gains.
   RAW_PTR_EXCLUSION volatile char* const
       mem_base_;                   // Memory base. (char so sizeof guaranteed 1)
   const MemoryType mem_type_;      // Type of memory allocation.
@@ -946,7 +946,7 @@ class BASE_EXPORT DelayedPersistentAllocation {
   // The underlying object that does the actual allocation of memory. Its
   // lifetime must exceed that of all DelayedPersistentAllocation objects
   // that use it.
-  const raw_ptr<PersistentMemoryAllocator, LeakedDanglingUntriaged> allocator_;
+  const raw_ptr<PersistentMemoryAllocator> allocator_;
 
   // The desired type and size of the allocated segment plus the offset
   // within it for the defined request.
@@ -958,9 +958,7 @@ class BASE_EXPORT DelayedPersistentAllocation {
   // stored once the allocation is complete. If multiple delayed allocations
   // share the same pointer then an allocation on one will amount to an
   // allocation for all.
-  const raw_ptr<volatile std::atomic<Reference>,
-                LeakedDanglingUntriaged | AllowPtrArithmetic>
-      reference_;
+  const raw_ptr<volatile std::atomic<Reference>, AllowPtrArithmetic> reference_;
 
   // No DISALLOW_COPY_AND_ASSIGN as it's okay to copy/move these objects.
 };

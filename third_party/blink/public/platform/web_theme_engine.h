@@ -166,10 +166,16 @@ class WebThemeEngine {
     bool right_to_left = false;
   };
 
+  enum class SpinArrowsDirection : int {
+    kLeftRight,
+    kUpDown,
+  };
+
   // Extra parameters for PartInnerSpinButton
   struct InnerSpinButtonExtraParams {
     bool spin_up = false;
     bool read_only = false;
+    SpinArrowsDirection spin_arrows_direction = SpinArrowsDirection::kUpDown;
   };
 
   // Extra parameters for PartProgressBar
@@ -255,11 +261,10 @@ class WebThemeEngine {
   struct ScrollbarStyle {
     int thumb_thickness;
     int scrollbar_margin;
-    int thumb_thickness_thin;
-    int scrollbar_margin_thin;
-    SkColor color;
+    SkColor4f color;
     base::TimeDelta fade_out_delay;
     base::TimeDelta fade_out_duration;
+    float idle_thickness_scale;
   };
 
   // Gets the overlay scrollbar style. Not used on Mac.
@@ -316,9 +321,6 @@ class WebThemeEngine {
       const ui::RendererColorMap& forced_colors_map) {
     return false;
   }
-  virtual void AdjustForcedColorsProvider(
-      ui::ColorProviderKey::ForcedColors forced_colors_state,
-      ui::ColorProviderKey::ColorMode color_mode) {}
 };
 
 }  // namespace blink

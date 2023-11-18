@@ -55,7 +55,7 @@ class WebAppInstallInfoFetcher {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     callback_ = std::move(callback);
 
-    if (absl::holds_alternative<DevModeProxy>(location_.get())) {
+    if (absl::holds_alternative<DevModeProxy>(location_)) {
       FailWithError("No Signed Web Bundle Metadata for dev-mode proxy.");
       return;
     }
@@ -89,7 +89,7 @@ class WebAppInstallInfoFetcher {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     CHECK(helper_);
     helper_->CheckTrustAndSignatures(
-        location_.get(), profile_,
+        location_, profile_,
         base::BindOnce(&WebAppInstallInfoFetcher::RunNextStepOnSuccess<void>,
                        weak_factory_.GetWeakPtr(),
                        std::move(next_step_callback)));
@@ -100,7 +100,7 @@ class WebAppInstallInfoFetcher {
     CHECK(web_contents_);
     CHECK(url_loader_);
     helper_->LoadInstallUrl(
-        location_.get(), *web_contents_.get(), *url_loader_.get(),
+        location_, *web_contents_.get(), *url_loader_.get(),
         base::BindOnce(&WebAppInstallInfoFetcher::RunNextStepOnSuccess<void>,
                        weak_factory_.GetWeakPtr(),
                        std::move(next_step_callback)));
@@ -171,7 +171,7 @@ class WebAppInstallInfoFetcher {
   SEQUENCE_CHECKER(sequence_checker_);
 
   raw_ptr<Profile> profile_;
-  raw_ref<const IsolatedWebAppLocation> location_;
+  IsolatedWebAppLocation location_;
   WebAppInstalInfoCallback callback_;
 
   std::unique_ptr<IsolatedWebAppInstallCommandHelper> helper_ = nullptr;
@@ -197,26 +197,44 @@ void SignedWebBundleMetadata::Create(Profile* profile,
 
   fetcher_ref.FetchAndReply(base::BindOnce(
       [](const IsolatedWebAppUrlInfo& url_info,
+         const IsolatedWebAppLocation& location,
          SignedWebBundleMetadataCallback callback,
          base::expected<WebAppInstallInfo, std::string> install_info) {
         std::move(callback).Run(install_info.transform(
-            [&url_info](const WebAppInstallInfo& install_info)
+            [&url_info, &location](const WebAppInstallInfo& install_info)
                 -> SignedWebBundleMetadata {
-              return SignedWebBundleMetadata(install_info, url_info);
+              return SignedWebBundleMetadata(
+                  url_info, location, install_info.title,
+                  install_info.isolated_web_app_version,
+                  install_info.icon_bitmaps);
             }));
       },
-      url_info,
+      url_info, location,
       std::move(callback).Then(base::OnceClosure(
           base::DoNothingWithBoundArgs(std::move(fetcher))))));
 }
 
+// static
+SignedWebBundleMetadata SignedWebBundleMetadata::CreateForTesting(
+    const IsolatedWebAppUrlInfo& url_info,
+    const IsolatedWebAppLocation& location,
+    const std::u16string& app_name,
+    const base::Version& version,
+    const IconBitmaps& icons) {
+  return SignedWebBundleMetadata(url_info, location, app_name, version, icons);
+}
+
 SignedWebBundleMetadata::SignedWebBundleMetadata(
-    const WebAppInstallInfo& install_info,
-    const IsolatedWebAppUrlInfo& url_info)
+    const IsolatedWebAppUrlInfo& url_info,
+    const IsolatedWebAppLocation& location,
+    const std::u16string& app_name,
+    const base::Version& version,
+    const IconBitmaps& icons)
     : url_info_(url_info),
-      app_name_(install_info.title),
-      version_(install_info.isolated_web_app_version),
-      icons_(install_info.icon_bitmaps) {}
+      location_(location),
+      app_name_(app_name),
+      version_(version),
+      icons_(icons) {}
 
 SignedWebBundleMetadata::~SignedWebBundleMetadata() = default;
 
@@ -225,5 +243,11 @@ SignedWebBundleMetadata::SignedWebBundleMetadata(
 
 SignedWebBundleMetadata& SignedWebBundleMetadata::operator=(
     const SignedWebBundleMetadata&) = default;
+
+bool SignedWebBundleMetadata::operator==(
+    const SignedWebBundleMetadata& other) const {
+  return url_info_ == other.url_info_ && app_name_ == other.app_name_ &&
+         version_ == other.version_ && icons_ == other.icons_;
+}
 
 }  // namespace web_app

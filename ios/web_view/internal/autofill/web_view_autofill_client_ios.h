@@ -62,7 +62,7 @@ class WebViewAutofillClientIOS : public AutofillClient {
   syncer::SyncService* GetSyncService() override;
   signin::IdentityManager* GetIdentityManager() override;
   FormDataImporter* GetFormDataImporter() override;
-  payments::PaymentsClient* GetPaymentsClient() override;
+  payments::PaymentsNetworkInterface* GetPaymentsNetworkInterface() override;
   StrikeDatabase* GetStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
@@ -78,16 +78,6 @@ class WebViewAutofillClientIOS : public AutofillClient {
       const CardUnmaskPromptOptions& card_unmask_prompt_options,
       base::WeakPtr<CardUnmaskDelegate> delegate) override;
   void OnUnmaskVerificationResult(PaymentsRpcResult result) override;
-  void ConfirmAccountNameFixFlow(
-      base::OnceCallback<void(const std::u16string&)> callback) override;
-  void ConfirmExpirationDateFixFlow(
-      const CreditCard& card,
-      base::OnceCallback<void(const std::u16string&, const std::u16string&)>
-          callback) override;
-  void ConfirmSaveCreditCardLocally(
-      const CreditCard& card,
-      SaveCreditCardOptions options,
-      LocalSaveCardPromptCallback callback) override;
   void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
       const LegalMessageLines& legal_message_lines,
@@ -118,8 +108,7 @@ class WebViewAutofillClientIOS : public AutofillClient {
       const AutofillClient::PopupOpenArgs& open_args,
       base::WeakPtr<AutofillPopupDelegate> delegate) override;
   void UpdateAutofillPopupDataListValues(
-      const std::vector<std::u16string>& values,
-      const std::vector<std::u16string>& labels) override;
+      base::span<const autofill::SelectOption> datalist) override;
   std::vector<Suggestion> GetPopupSuggestions() const override;
   void PinPopupView() override;
   AutofillClient::PopupOpenArgs GetReopenPopupArgs(
@@ -156,7 +145,8 @@ class WebViewAutofillClientIOS : public AutofillClient {
   web::WebState* web_state_;
   __weak id<CWVAutofillClientIOSBridge> bridge_;
   signin::IdentityManager* identity_manager_;
-  std::unique_ptr<payments::PaymentsClient> payments_client_;
+  std::unique_ptr<payments::PaymentsNetworkInterface>
+      payments_network_interface_;
   std::unique_ptr<CreditCardCvcAuthenticator> cvc_authenticator_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
   StrikeDatabase* strike_database_;

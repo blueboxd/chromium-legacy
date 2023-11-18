@@ -36,6 +36,7 @@
 #include "base/format_macros.h"
 #include "base/memory/raw_ptr.h"
 #include "base/numerics/math_constants.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -55,6 +56,7 @@
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_change_observer.h"
 #include "ui/display/manager/display_layout_store.h"
+#include "ui/display/manager/display_manager_observer.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/manager/test/fake_display_snapshot.h"
 #include "ui/display/manager/test/touch_device_manager_test_api.h"
@@ -84,11 +86,86 @@ std::string ToDisplayName(int64_t id) {
   return base::StringPrintf("Display-%d", static_cast<int>(id));
 }
 
+// Asserts that metrics propagated by DisplayManager and DisplayManagerObserver
+// are consistent.
+class DisplayManagerObserverValidator : public display::DisplayObserver,
+                                        public display::DisplayManagerObserver {
+ public:
+  DisplayManagerObserverValidator() {
+    display_observer_.emplace(this);
+    display_manager_observation_.Observe(Shell::Get()->display_manager());
+  }
+
+  // display::DisplayObserver:
+  void OnDisplayAdded(const display::Display& new_display) override {
+    if (!base::Contains(added_displays_, new_display)) {
+      added_displays_.push_back(new_display);
+    }
+  }
+  void OnDisplayRemoved(const display::Display& old_display) override {
+    if (!base::Contains(added_displays_, old_display)) {
+      removed_displays_.push_back(old_display);
+    }
+  }
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override {
+    if (!base::Contains(changed_displays_, display)) {
+      changed_displays_.push_back(display);
+    }
+    if (!changed_metrics_.try_emplace(display.id(), changed_metrics).second) {
+      changed_metrics_[display.id()] |= changed_metrics;
+    }
+  }
+
+  // display::DisplayManager::Observer:
+  void OnWillProcessDisplayChanges() override {
+    // There should not be multiple OnWillProcessDisplayChanges() calls before
+    // the subsequent call to OnDidProcessDisplayChanges().
+    EXPECT_FALSE(processing_display_changes_);
+    processing_display_changes_ = true;
+  }
+  void OnDidProcessDisplayChanges(
+      const DisplayConfigurationChange& configuration_change) override {
+    EXPECT_TRUE(processing_display_changes_);
+
+    EXPECT_TRUE(base::ranges::is_permutation(
+        added_displays_, configuration_change.added_displays));
+    EXPECT_TRUE(base::ranges::is_permutation(
+        removed_displays_, configuration_change.removed_displays));
+
+    EXPECT_EQ(changed_metrics_.size(),
+              configuration_change.display_metrics_changes.size());
+    for (const auto& change : configuration_change.display_metrics_changes) {
+      EXPECT_TRUE(base::Contains(changed_metrics_, change.display->id()));
+      EXPECT_EQ(changed_metrics_[change.display->id()], change.changed_metrics);
+    }
+
+    processing_display_changes_ = false;
+    added_displays_.clear();
+    removed_displays_.clear();
+    changed_displays_.clear();
+    changed_metrics_.clear();
+  }
+
+ private:
+  bool processing_display_changes_ = false;
+  vector<display::Display> added_displays_;
+  vector<display::Display> removed_displays_;
+  vector<display::Display> changed_displays_;
+  base::flat_map<int64_t, uint32_t> changed_metrics_;
+
+  absl::optional<display::ScopedDisplayObserver> display_observer_;
+  base::ScopedObservation<display::DisplayManager,
+                          display::DisplayManagerObserver>
+      display_manager_observation_{this};
+};
+
 }  // namespace
 
 class DisplayManagerTest : public AshTestBase,
                            public display::DisplayObserver,
-                           public aura::WindowObserver {
+                           public aura::WindowObserver,
+                           public display::DisplayManagerObserver {
  public:
   DisplayManagerTest() = default;
 
@@ -100,10 +177,14 @@ class DisplayManagerTest : public AshTestBase,
   void SetUp() override {
     AshTestBase::SetUp();
     display_observer_.emplace(this);
+    display_manager_observation_.Observe(Shell::Get()->display_manager());
     Shell::GetPrimaryRootWindow()->AddObserver(this);
+    display_manager_observer_validator_.emplace();
   }
   void TearDown() override {
+    display_manager_observer_validator_.reset();
     Shell::GetPrimaryRootWindow()->RemoveObserver(this);
+    display_manager_observation_.Reset();
     display_observer_.reset();
     AshTestBase::TearDown();
   }
@@ -154,9 +235,7 @@ class DisplayManagerTest : public AshTestBase,
     return GetDisplayInfo(display_manager()->GetDisplayForId(id));
   }
 
-  // aura::DisplayObserver overrides:
-  void OnWillProcessDisplayChanges() override { ++will_process_count_; }
-  void OnDidProcessDisplayChanges() override { ++did_process_count_; }
+  // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override {
     changed_.push_back(display);
@@ -168,6 +247,13 @@ class DisplayManagerTest : public AshTestBase,
   }
   void OnDisplayRemoved(const display::Display& old_display) override {
     ++removed_count_;
+  }
+
+  // display::DisplayManager::Observer:
+  void OnWillProcessDisplayChanges() override { ++will_process_count_; }
+  void OnDidProcessDisplayChanges(
+      const DisplayConfigurationChange& configuration_change) override {
+    ++did_process_count_;
   }
 
   // aura::WindowObserver overrides:
@@ -218,7 +304,13 @@ class DisplayManagerTest : public AshTestBase,
   base::flat_map<int64_t, uint32_t> changed_metrics_;
   bool check_root_window_on_destruction_ = true;
 
+  absl::optional<DisplayManagerObserverValidator>
+      display_manager_observer_validator_;
+
   absl::optional<display::ScopedDisplayObserver> display_observer_;
+  base::ScopedObservation<display::DisplayManager,
+                          display::DisplayManagerObserver>
+      display_manager_observation_{this};
 
   // Currently `display::features::kRoundedDisplay` feature is used during the
   // `ash::Shell` shutdown as we call `AshTestBase::TearDown()`, therefore
@@ -337,9 +429,9 @@ TEST_F(DisplayManagerTest, UpdateDisplayTest) {
   const vector<display::ManagedDisplayInfo> empty;
   display_manager()->OnNativeDisplaysChanged(empty);
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
-  // Going to 0 displays doesn't actually change the list and but the detected
-  // is set to false.
-  EXPECT_EQ("1 0 0 0 0", GetCountSummary());
+  // Going to 0 displays doesn't actually change the active display list but the
+  // detected bit for the previously connected displays is propagated as false.
+  EXPECT_EQ("1 0 0 1 1", GetCountSummary());
   EXPECT_FALSE(root_window_destroyed());
   // Display configuration stays the same
   EXPECT_EQ(gfx::Rect(0, 0, 800, 300),
@@ -1404,8 +1496,8 @@ TEST_F(DisplayManagerTest, UpdateDisplayZoomTest) {
                                       modes[1].size());
   display_manager()->UpdateDisplays();
 
-  // Since the display mode was changed, the zoom factor for the display is
-  // reset to the default of 1.
+  // Since the display mode was changed, the zoom factor for the display will
+  // be retrieved from cache. If not available in cache, default to 1.
   EXPECT_EQ(
       display_manager()->GetDisplayForId(info_1.id()).device_scale_factor(),
       1.f);
@@ -1425,7 +1517,7 @@ TEST_F(DisplayManagerTest, UpdateDisplayZoomTest) {
       zoom_factor_2);
 
   // Update the zoom factor for the second display.
-  float zoom_factor_3 = 1.5f;
+  float zoom_factor_3 = 1.25f;
   const display::ManagedDisplayInfo& info_2 = GetDisplayInfoAt(1);
   display_manager()->UpdateZoomFactor(info_2.id(), zoom_factor_3);
   EXPECT_EQ(display_manager()->GetDisplayInfo(info_2.id()).zoom_factor(),
@@ -1450,7 +1542,7 @@ TEST_F(DisplayManagerTest, UpdateDisplayZoomTest) {
 
   EXPECT_EQ(
       display_manager()->GetDisplayForId(info_1.id()).device_scale_factor(),
-      1.f);
+      zoom_factor_3);
   EXPECT_EQ(
       display_manager()->GetDisplayForId(info_2.id()).device_scale_factor(),
       zoom_factor_3 * display_2_dsf);
@@ -1488,7 +1580,7 @@ TEST_F(DisplayManagerTest, ZoomDisplay) {
   display_manager()->UpdateZoomFactor(info_1.id(),
                                       zoom_factors_1[zoom_factor_idx_1]);
 
-  // Make sure the chage was successful.
+  // Make sure the change was successful.
   EXPECT_FLOAT_EQ(display_manager()->GetDisplayInfo(info_1.id()).zoom_factor(),
                   zoom_factors_1[zoom_factor_idx_1]);
 
@@ -1527,7 +1619,7 @@ TEST_F(DisplayManagerTest, ZoomDisplay) {
   display_manager()->UpdateZoomFactor(info_2.id(),
                                       zoom_factors_2[zoom_factor_idx_2]);
 
-  // Make sure the chage was successful.
+  // Make sure the change was successful.
   EXPECT_FLOAT_EQ(display_manager()->GetDisplayInfo(info_2.id()).zoom_factor(),
                   zoom_factors_2[zoom_factor_idx_2]);
 
@@ -1560,6 +1652,76 @@ TEST_F(DisplayManagerTest, ZoomDisplay) {
                   1.f);
   EXPECT_FLOAT_EQ(display_manager()->GetDisplayInfo(info_1.id()).zoom_factor(),
                   1.f);
+}
+
+TEST_F(DisplayManagerTest, ZoomFactorMapTest) {
+  // Initialize a display pair.
+  UpdateDisplay("2560x1440#1920x1080|1280x720");
+  reset();
+
+  ASSERT_EQ(1u, display_manager()->GetNumDisplays());
+
+  const display::ManagedDisplayInfo& info = GetDisplayInfoAt(0);
+  const display::ManagedDisplayInfo::ManagedDisplayModeList& modes =
+      info.display_modes();
+
+  // Set the display mode.
+  display::test::SetDisplayResolution(display_manager(), info.id(),
+                                      modes[0].size());
+  display_manager()->UpdateDisplays();
+
+  // Set the zoom factor.
+  float zoom_factor_1 = 1.2f;
+  display_manager()->UpdateZoomFactor(info.id(), zoom_factor_1);
+
+  // Make sure the change was successful.
+  EXPECT_FLOAT_EQ(display_manager()->GetDisplayInfo(info.id()).zoom_factor(),
+                  zoom_factor_1);
+
+  // Make sure zoom factor is stored in cache.
+  display::DisplaySizeToZoomFactorMap zoom_factor_map =
+      display_manager()->GetDisplayInfo(info.id()).zoom_factor_map();
+  const auto iter1 = zoom_factor_map.find(modes[0].size().ToString());
+  EXPECT_NE(iter1, zoom_factor_map.end());
+  EXPECT_EQ(iter1->second, zoom_factor_1);
+
+  // Set to a different display mode.
+  display::test::SetDisplayResolution(display_manager(), info.id(),
+                                      modes[1].size());
+  display_manager()->UpdateDisplays();
+
+  // If not available in cache, default zoom factor is 1.
+  EXPECT_FLOAT_EQ(display_manager()->GetDisplayInfo(info.id()).zoom_factor(),
+                  1.f);
+
+  // Set the zoom factor.
+  float zoom_factor_2 = 1.5f;
+  display_manager()->UpdateZoomFactor(info.id(), zoom_factor_2);
+
+  // Make sure the change was successful.
+  EXPECT_FLOAT_EQ(display_manager()->GetDisplayInfo(info.id()).zoom_factor(),
+                  zoom_factor_2);
+
+  // Make sure zoom factor is stored in cache.
+  zoom_factor_map =
+      display_manager()->GetDisplayInfo(info.id()).zoom_factor_map();
+  const auto iter2 = zoom_factor_map.find(modes[1].size().ToString());
+  EXPECT_NE(iter2, zoom_factor_map.end());
+  EXPECT_EQ(iter2->second, zoom_factor_2);
+
+  // Set back to previous display mode.
+  display::test::SetDisplayResolution(display_manager(), info.id(),
+                                      modes[0].size());
+  display_manager()->UpdateDisplays();
+
+  // Make sure zoom factor is retrieved from cache.
+  zoom_factor_map =
+      display_manager()->GetDisplayInfo(info.id()).zoom_factor_map();
+  const auto iter3 = zoom_factor_map.find(modes[0].size().ToString());
+  EXPECT_NE(iter3, zoom_factor_map.end());
+
+  EXPECT_FLOAT_EQ(display_manager()->GetDisplayInfo(info.id()).zoom_factor(),
+                  iter3->second);
 }
 
 TEST_F(DisplayManagerTest, TestDeviceScaleOnlyChange) {
@@ -3624,8 +3786,13 @@ TEST_F(DisplayManagerFontTest,
 TEST_F(DisplayManagerTest, CheckInitializationOfRotationProperty) {
   int64_t id = display_manager()->GetDisplayAt(0).id();
   display_manager()->RegisterDisplayProperty(
-      id, display::Display::ROTATE_90, nullptr, gfx::Size(), 1.0f, 1.0f, 60.f,
-      false, display::kVrrNotCapable, absl::nullopt);
+      id, display::Display::ROTATE_90, /*overscan_insets=*/nullptr,
+      /*resolution_in_pixels=*/gfx::Size(),
+      /*device_scale_factor=*/1.0f, /*display_zoom_factor=*/1.0f,
+      /*display_zoom_factor_map=*/{}, /*refresh_rate=*/60.f,
+      /*is_interlaced=*/false,
+      /*variable_refresh_rate_state=*/display::kVrrNotCapable,
+      /*vsync_rate_min=*/absl::nullopt);
 
   const display::ManagedDisplayInfo& info =
       display_manager()->GetDisplayInfo(id);

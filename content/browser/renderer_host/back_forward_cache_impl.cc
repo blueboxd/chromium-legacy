@@ -15,11 +15,11 @@
 #include "base/functional/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "base/trace_event/typed_macros.h"
 #include "base/types/expected.h"
 #include "build/build_config.h"
@@ -93,11 +93,6 @@ static constexpr size_t kDefaultForegroundBackForwardCacheSize = 0;
 // The default time to live in seconds for documents in BackForwardCache.
 // See also crbug.com/1305878.
 static constexpr int kDefaultTimeToLiveInBackForwardCacheInSeconds = 600;
-// For page with "Cache-Control: no-store", it should have a shorter time to
-// live.
-static constexpr int
-    kDefaultTimeForCacheControlNoStorePageToLiveInBackForwardCacheInSeconds =
-        180;
 
 #if BUILDFLAG(IS_ANDROID)
 bool IsProcessBindingEnabled() {
@@ -412,6 +407,17 @@ CacheControlNoStoreExperimentLevel GetCacheControlNoStoreLevel() {
   return cache_control_level.Get();
 }
 
+const char kCacheControlNoStoreTimeToLiveName[] = "ttl";
+
+// This param controls the TTL for pages with "Cache-Control: no-store".
+const base::FeatureParam<base::TimeDelta> cache_control_no_store_ttl{
+    &features::kCacheControlNoStoreEnterBackForwardCache,
+    kCacheControlNoStoreTimeToLiveName, base::Minutes(3)};
+
+base::TimeDelta GetCacheControlNoStoreTTL() {
+  return cache_control_no_store_ttl.Get();
+}
+
 bool IsSameOriginForTreeResult(RenderFrameHostImpl* rfh,
                                const GURL& url,
                                const url::Origin& main_document_origin) {
@@ -619,8 +625,7 @@ base::TimeDelta BackForwardCacheImpl::GetTimeToLiveInBackForwardCache(
   }
 
   if (ccns_context == kInCCNSContext) {
-    return base::Seconds(
-        kDefaultTimeForCacheControlNoStorePageToLiveInBackForwardCacheInSeconds);
+    return GetCacheControlNoStoreTTL();
   } else {
     return base::Seconds(kDefaultTimeToLiveInBackForwardCacheInSeconds);
   }
@@ -834,10 +839,6 @@ void BackForwardCacheImpl::PopulateReasonsForMainDocument(
   // Two pages in the same BrowsingInstance can script each other. When a page
   // can be scripted from outside, it can't enter the BackForwardCache.
   //
-  // If the |rfh| is not an "active" RenderFrameHost anymore, the
-  // "RelatedActiveContentsCount" below is compared against 0, not 1. This is
-  // because |rfh| is not "active" itself.
-  //
   // This check makes sure the old and new document aren't sharing the same
   // BrowsingInstance. Note that the existence of related active contents might
   // change in the future, but we are checking this in
@@ -849,7 +850,32 @@ void BackForwardCacheImpl::PopulateReasonsForMainDocument(
   // BackForwardCache for navigations that result in a browsing context group
   // swap in the same CoopRelatedGroup. The check below should probably be
   // adapted, to allow usage of the BackForwardCache in those cases.
+  //
+  // If the `rfh` is still the "active" RenderFrameHost, then it will be
+  // included in the "related active contents" count, so we expect the count to
+  // be 1 when there's no other related active contents. When `rfh` is no longer
+  // an active RenderFrameHost, it means another RenderFrameHost had taken its
+  // place as the primary main frame. The new RenderFrameHost might reuse the
+  // same BrowsingInstance as `rfh` though, so we should account for that being
+  // included in the related active contents count, to not correctly misclassify
+  // the case as "not BFCached due to related active contents" (which is
+  // reserved for cases where there are active pages in other WebContents in the
+  // same BrowsingInstance).
   unsigned expected_related_active_contents_count = is_active_rfh ? 1 : 0;
+  if (!is_active_rfh) {
+    auto* current_rfh =
+        rfh->frame_tree_node()->render_manager()->current_frame_host();
+    if (current_rfh->GetSiteInstance()->IsRelatedSiteInstance(
+            rfh->GetSiteInstance())) {
+      // A new RenderFrameHost replaced `rfh` as the primary main frame, but
+      // uses the same BrowsingInstance. Currently we cannot BFCache this case
+      // because this means we did not do a proactive BrowsingInstance swap.
+      result.No(BackForwardCacheMetrics::NotRestoredReason::
+                    kBrowsingInstanceNotSwapped);
+      expected_related_active_contents_count++;
+    }
+  }
+
   // We should never have fewer than expected.
   DCHECK_GE(rfh->GetSiteInstance()->GetRelatedActiveContentsCount(),
             expected_related_active_contents_count);
@@ -1204,14 +1230,12 @@ size_t BackForwardCacheImpl::EnforceCacheSizeLimitInternal(
     size_t limit,
     bool foregrounded_only) {
   size_t count = 0;
-  size_t not_received_ack_count = 0;
   for (auto& stored_entry : entries_) {
     if (stored_entry->render_frame_host()->is_evicted_from_back_forward_cache())
       continue;
     if (foregrounded_only && !HasForegroundedProcess(*stored_entry))
       continue;
     if (!AllRenderViewHostsReceivedAckFromRenderer(*stored_entry)) {
-      not_received_ack_count++;
       continue;
     }
     if (++count > limit) {
@@ -1222,10 +1246,6 @@ size_t BackForwardCacheImpl::EnforceCacheSizeLimitInternal(
               : BackForwardCacheMetrics::NotRestoredReason::kCacheLimit);
     }
   }
-  UMA_HISTOGRAM_COUNTS_100(
-      "BackForwardCache.AllSites.HistoryNavigationOutcome."
-      "CountEntriesWithoutRendererAck",
-      not_received_ack_count);
   return count;
 }
 

@@ -24,6 +24,7 @@
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/page/color_provider_color_maps.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/blink.h"
@@ -92,6 +93,8 @@
 #include "third_party/blink/renderer/platform/scheduler/public/agent_group_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/color/color_provider.h"
+#include "ui/color/color_provider_utils.h"
 
 namespace blink {
 
@@ -255,6 +258,30 @@ Page::~Page() {
   DCHECK(!main_frame_);
 }
 
+// Closing a window/FrameTree happens asynchronously. It's important to keep
+// track of the "current" Page because it might change, e.g. if a navigation
+// committed in between the time the task gets posted but before the task runs.
+// This class keeps track of the "current" Page and ensures that the window
+// close happens on the correct Page.
+class Page::CloseTaskHandler : public GarbageCollected<Page::CloseTaskHandler> {
+ public:
+  explicit CloseTaskHandler(WeakMember<Page> page) : page_(page) {}
+  ~CloseTaskHandler() = default;
+
+  void DoDeferredClose() {
+    if (page_) {
+      page_->GetChromeClient().CloseWindow();
+    }
+  }
+
+  void SetPage(Page* page) { page_ = page; }
+
+  void Trace(Visitor* visitor) const { visitor->Trace(page_); }
+
+ private:
+  WeakMember<Page> page_;
+};
+
 void Page::CloseSoon() {
   // Make sure this Page can no longer be found by JS.
   is_closing_ = true;
@@ -263,7 +290,25 @@ void Page::CloseSoon() {
   if (auto* main_local_frame = DynamicTo<LocalFrame>(main_frame_.Get()))
     main_local_frame->Loader().StopAllLoaders(/*abort_client=*/true);
 
-  GetChromeClient().CloseWindowSoon();
+  // If the client is a popup, immediately close the window. This preserves the
+  // previous behavior where we do the closing synchronously.
+  if (GetChromeClient().IsPopup()) {
+    GetChromeClient().CloseWindow();
+    return;
+  }
+  // If the client is a WebView, post a task to close the window asynchronously.
+  // This is because we could be called from deep in Javascript.  If we ask the
+  // WebView to close now, the window could be closed before the JS finishes
+  // executing, thanks to nested message loops running and handling the
+  // resulting disconnecting PageBroadcast. So instead, post a message back to
+  // the message loop, which won't run until the JS is complete, and then the
+  // close request can be sent.
+  if (!close_task_handler_) {
+    close_task_handler_ = MakeGarbageCollected<Page::CloseTaskHandler>(this);
+  }
+  GetPageScheduler()->GetAgentGroupScheduler().DefaultTaskRunner()->PostTask(
+      FROM_HERE, WTF::BindOnce(&Page::CloseTaskHandler::DoDeferredClose,
+                               WrapWeakPersistent(close_task_handler_.Get())));
 }
 
 ViewportDescription Page::GetViewportDescription() const {
@@ -339,6 +384,18 @@ void Page::SetMainFrame(Frame* main_frame) {
   page_scheduler_->SetIsMainFrameLocal(main_frame->IsLocalFrame());
 }
 
+void Page::TakeCloseTaskHandler(Page* old_page) {
+  // Setting the CloseTaskHandler using this function should only be done
+  // when transferring the CloseTaskHandler from a previous Page to the new
+  // Page during LocalFrame <-> LocalFrame swap. The new Page should not have
+  // a CloseTaskHandler yet at this point.
+  CHECK(!close_task_handler_);
+  close_task_handler_ = old_page->close_task_handler_;
+  if (close_task_handler_) {
+    close_task_handler_->SetPage(this);
+  }
+}
+
 LocalFrame* Page::DeprecatedLocalMainFrame() const {
   return To<LocalFrame>(main_frame_.Get());
 }
@@ -403,6 +460,37 @@ void Page::ColorSchemeChanged() {
 void Page::ColorProvidersChanged() {
   for (Page* page : AllPages())
     page->InvalidatePaint();
+}
+
+void Page::UpdateColorProviders(
+    const ColorProviderColorMaps& color_provider_colors) {
+  if (color_provider_colors.IsEmpty()) {
+    return;
+  }
+
+  // TODO(samomekarajr): Might want to only create new ColorProviders if the
+  // renderer color maps do not match the existing ColorProviders.
+  light_color_provider_ = std::make_unique<ui::ColorProvider>(
+      ui::CreateColorProviderFromRendererColorMap(
+          color_provider_colors.light_colors_map));
+  dark_color_provider_ = std::make_unique<ui::ColorProvider>(
+      ui::CreateColorProviderFromRendererColorMap(
+          color_provider_colors.dark_colors_map));
+  forced_colors_color_provider_ = std::make_unique<ui::ColorProvider>(
+      ui::CreateColorProviderFromRendererColorMap(
+          color_provider_colors.forced_colors_map));
+}
+
+const ui::ColorProvider* Page::GetColorProviderForPainting(
+    mojom::blink::ColorScheme color_scheme,
+    bool in_forced_colors) const {
+  if (in_forced_colors) {
+    return forced_colors_color_provider_.get();
+  }
+
+  return color_scheme == mojom::blink::ColorScheme::kDark
+             ? dark_color_provider_.get()
+             : light_color_provider_.get();
 }
 
 void Page::InitialStyleChanged() {
@@ -537,6 +625,14 @@ void Page::SetVisibilityState(
     bool is_initial_state) {
   if (lifecycle_state_->visibility == visibility_state)
     return;
+
+  // Are we entering / leaving a state that would map to the "visible" state, in
+  // the `document.visibilityState` sense?
+  const bool was_visible = lifecycle_state_->visibility ==
+                           mojom::blink::PageVisibilityState::kVisible;
+  const bool is_visible =
+      visibility_state == mojom::blink::PageVisibilityState::kVisible;
+
   lifecycle_state_->visibility = visibility_state;
 
   if (is_initial_state)
@@ -548,9 +644,24 @@ void Page::SetVisibilityState(
 
   if (main_frame_) {
     if (lifecycle_state_->visibility ==
-        mojom::blink::PageVisibilityState::kVisible)
+        mojom::blink::PageVisibilityState::kVisible) {
       RestoreSVGImageAnimations();
-    main_frame_->DidChangeVisibilityState();
+    }
+    // If we're eliding visibility transitions between the two `kHidden*`
+    // states, then we never get here unless one state was `kVisible` and the
+    // other was not.  However, if we aren't eliding those transitions, then we
+    // need to do so now; from the Frame's point of view, nothing is changing if
+    // this is a change between the two `kHidden*` states.  Both map to "hidden"
+    // in the sense of `document.visibilityState`, and dispatching an event when
+    // the web-exposed state hasn't changed is confusing.
+    //
+    // This check could be enabled for both cases, and the result in the
+    // "eliding" case shouldn't change.  It's not, just to be safe, since this
+    // is intended as a fall-back to previous behavior.
+    if (!RuntimeEnabledFeatures::DispatchHiddenVisibilityTransitionsEnabled() ||
+        was_visible || is_visible) {
+      main_frame_->DidChangeVisibilityState();
+    }
   }
 }
 
@@ -957,6 +1068,7 @@ void Page::Trace(Visitor* visitor) const {
   visitor->Trace(agent_group_scheduler_);
   visitor->Trace(v8_compile_hints_producer_);
   visitor->Trace(v8_compile_hints_consumer_);
+  visitor->Trace(close_task_handler_);
   Supplementable<Page>::Trace(visitor);
 }
 
@@ -973,6 +1085,11 @@ void Page::WillStopCompositing() {
 }
 
 void Page::WillBeDestroyed() {
+  if (close_task_handler_) {
+    close_task_handler_->SetPage(nullptr);
+    close_task_handler_ = nullptr;
+  }
+
   Frame* main_frame = main_frame_;
 
   // TODO(https://crbug.com/838348): Sadly, there are situations where Blink may
@@ -1196,6 +1313,11 @@ void Page::UpdateBrowsingContextGroup(
       ScopedBrowsingContextGroupPauser::IsActive(*this)) {
     SetPaused(true);
   }
+}
+
+void Page::SetAttributionSupport(
+    network::mojom::AttributionSupport attribution_support) {
+  attribution_support_ = attribution_support;
 }
 
 template class CORE_TEMPLATE_EXPORT Supplement<Page>;

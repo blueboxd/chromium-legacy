@@ -16,13 +16,21 @@
 namespace blink {
 
 Subscriber::Subscriber(base::PassKey<Observable>,
-                       ExecutionContext* execution_context,
+                       ScriptState* script_state,
                        Observer* observer)
-    : ExecutionContextClient(execution_context),
+    : ExecutionContextClient(ExecutionContext::From(script_state)),
       next_(observer->hasNext() ? observer->next() : nullptr),
       complete_(observer->hasComplete() ? observer->complete() : nullptr),
-      error_(observer->hasError() ? observer->error() : nullptr),
-      signal_(observer->hasSignal() ? observer->signal() : nullptr) {}
+      error_(observer->hasError() ? observer->error() : nullptr) {
+  // Initialize `signal_` as a dependent signal on the input Observer's `signal`
+  // member, if it exists. See
+  // https://dom.spec.whatwg.org/#abortsignal-dependent-signals.
+  HeapVector<Member<AbortSignal>> signals;
+  if (observer->hasSignal()) {
+    signals.push_back(observer->signal());
+  }
+  signal_ = MakeGarbageCollected<AbortSignal>(script_state, signals);
+}
 
 void Subscriber::next(ScriptValue value) {
   if (next_) {
@@ -31,16 +39,20 @@ void Subscriber::next(ScriptValue value) {
 }
 
 void Subscriber::complete() {
-  if (complete_) {
-    complete_->InvokeAndReportException(nullptr);
-    CloseSubscription();
+  V8ObserverCompleteCallback* complete = complete_;
+  CloseSubscription();
+
+  if (complete) {
+    complete->InvokeAndReportException(nullptr);
   }
 }
 
-void Subscriber::error(ScriptState* script_state, ScriptValue error) {
-  if (error_) {
-    error_->InvokeAndReportException(nullptr, error);
-    CloseSubscription();
+void Subscriber::error(ScriptState* script_state, ScriptValue error_value) {
+  V8ObserverCallback* error = error_;
+  CloseSubscription();
+
+  if (error) {
+    error->InvokeAndReportException(nullptr, error_value);
   } else {
     // The given observer's `error()` handler can be null here for one of two
     // reasons:
@@ -48,7 +60,7 @@ void Subscriber::error(ScriptState* script_state, ScriptValue error) {
     //      it is optional)
     //   2. The subscription is already closed (in which case
     //      `CloseSubscription()` manually clears `error_`)
-    // In both of these cases, if the observer is still producing errors, we
+    // In both of these cases, if the observable is still producing errors, we
     // must surface them to the global via "report the exception":
     // https://html.spec.whatwg.org/C#report-the-exception.
     //
@@ -61,11 +73,13 @@ void Subscriber::error(ScriptState* script_state, ScriptValue error) {
     }
     ScriptState::Scope scope(script_state);
     V8ScriptRunner::ReportException(script_state->GetIsolate(),
-                                    error.V8Value());
+                                    error_value.V8Value());
   }
 }
 
 void Subscriber::CloseSubscription() {
+  active_ = false;
+
   // Reset all handlers, making it impossible to signal any more values to the
   // subscriber.
   next_ = nullptr;

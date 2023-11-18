@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tabmodel;
 import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 
 import android.app.Activity;
+import android.content.Context;
 
 import androidx.test.filters.MediumTest;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -15,17 +16,27 @@ import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.supplier.OneshotSupplier;
+import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.app.tabmodel.TabWindowManagerSingleton;
 import org.chromium.chrome.browser.app.tabmodel.TabbedModeTabModelOrchestrator;
+import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabState;
@@ -52,25 +63,29 @@ import java.nio.ByteBuffer;
 public class TabbedModeTabPersistencePolicyTest {
     private static final WebContentsState WEB_CONTENTS_STATE =
             new WebContentsState(ByteBuffer.allocateDirect(100));
+
+    @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule();
+
+    @Mock ProfileProvider mProfileProvider;
+    @Mock Profile mProfile;
+    @Mock Profile mIncognitoProfile;
+
     private TestTabModelDirectory mMockDirectory;
     private AdvancedMockContext mAppContext;
-
-    private static final TabModelSelectorFactory sMockTabModelSelectorFactory =
-            new TabModelSelectorFactory() {
-                @Override
-                public TabModelSelector buildSelector(
-                        Activity activity,
-                        TabCreatorManager tabCreatorManager,
-                        NextTabPolicySupplier nextTabPolicySupplier,
-                        int selectorIndex) {
-                    return new MockTabModelSelector(0, 0, null);
-                }
-            };
 
     @Before
     public void setUp() throws Exception {
         TabWindowManagerSingleton.setTabModelSelectorFactoryForTesting(
-                sMockTabModelSelectorFactory);
+                new TabModelSelectorFactory() {
+                    @Override
+                    public TabModelSelector buildSelector(
+                            Context context,
+                            OneshotSupplier<ProfileProvider> profileProviderSupplier,
+                            TabCreatorManager tabCreatorManager,
+                            NextTabPolicySupplier nextTabPolicySupplier) {
+                        return new MockTabModelSelector(mProfile, mIncognitoProfile, 0, 0, null);
+                    }
+                });
         mAppContext =
                 new AdvancedMockContext(
                         InstrumentationRegistry.getInstrumentation()
@@ -84,6 +99,10 @@ public class TabbedModeTabPersistencePolicyTest {
                         "TabbedModeTabPersistencePolicyTest",
                         TabStateDirectory.TABBED_MODE_DIRECTORY);
         TabStateDirectory.setBaseStateDirectoryForTests(mMockDirectory.getBaseDirectory());
+
+        Mockito.when(mProfileProvider.getOriginalProfile()).thenReturn(mProfile);
+        Mockito.when(mIncognitoProfile.isOffTheRecord()).thenReturn(true);
+        PriceTrackingFeatures.setPriceTrackingEnabledForTesting(false);
     }
 
     @After
@@ -106,8 +125,9 @@ public class TabbedModeTabPersistencePolicyTest {
                 new MockTabModel.MockTabModelDelegate() {
                     @Override
                     public MockTab createTab(int id, boolean incognito) {
+                        Profile profile = incognito ? mIncognitoProfile : mProfile;
                         MockTab tab =
-                                new MockTab(id, incognito) {
+                                new MockTab(id, profile) {
                                     @Override
                                     public GURL getUrl() {
                                         return new GURL("https://www.google.com");
@@ -120,17 +140,24 @@ public class TabbedModeTabPersistencePolicyTest {
 
         final MockTabModel normalTabModel =
                 TestThreadUtils.runOnUiThreadBlocking(
-                        () -> new MockTabModel(false, tabModelDelegate));
+                        () -> new MockTabModel(mProfile, tabModelDelegate));
         final MockTabModel incognitoTabModel =
                 TestThreadUtils.runOnUiThreadBlocking(
-                        () -> new MockTabModel(true, tabModelDelegate));
+                        () -> new MockTabModel(mIncognitoProfile, tabModelDelegate));
         TabbedModeTabModelOrchestrator orchestrator =
                 TestThreadUtils.runOnUiThreadBlocking(
                         () -> {
+                            OneshotSupplierImpl<ProfileProvider> profileProviderSupplier =
+                                    new OneshotSupplierImpl<>();
+                            profileProviderSupplier.set(mProfileProvider);
                             TabbedModeTabModelOrchestrator tmpOrchestrator =
                                     new TabbedModeTabModelOrchestrator(false);
                             tmpOrchestrator.createTabModels(
-                                    new ChromeTabbedActivity(), null, null, 0);
+                                    new ChromeTabbedActivity(),
+                                    profileProviderSupplier,
+                                    null,
+                                    null,
+                                    0);
                             TabModelSelector selector = tmpOrchestrator.getTabModelSelector();
                             ((MockTabModelSelector) selector)
                                     .initializeTabModels(normalTabModel, incognitoTabModel);

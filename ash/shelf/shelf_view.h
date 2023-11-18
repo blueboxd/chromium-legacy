@@ -287,6 +287,18 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // Returns the size of a shelf button icon.
   int GetButtonIconSize() const;
 
+  // Returns the size of a shelf button shortcut icon.
+  int GetShortcutIconSize() const;
+
+  // Returns the size of a shelf button shortcut icon border.
+  int GetShelfShortcutIconContainerSize() const;
+
+  // Returns the size of a shelf button shortcut host badge icon.
+  int GetShelfShortcutHostBadgeIconSize() const;
+
+  // Returns the size of a shelf button shortcut host badge icon border.
+  int GetShelfShortcutHostBadgeContainerSize() const;
+
   // Returns the size of the shelf item ripple ring.
   int GetShelfItemRippleSize() const;
 
@@ -364,6 +376,10 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   // Minimum distance before drag starts.
   static const int kMinimumDragDistance;
+
+  // Updates relevant fields of the button and reflects the item status has
+  // changed.
+  void UpdateButton(ShelfAppButton* button, const ShelfItem& item);
 
   // Common setup done for all children views. |layer_type| specifies the type
   // of layer for the |view|. Use ui::LAYER_NOT_DRAWN if the content of the view
@@ -589,6 +605,32 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // `target_bounds_in_screen`.
   void AnimateDragImageLayer(const gfx::Rect& target_bounds_in_screen);
 
+  using PendingPromiseAppsMap = std::map<std::string, ui::ImageModel>;
+
+  // Register the app as a promise app with pending removal. The promise app
+  // item is expected to be imminently replaced by the app item installed from
+  // the promised package.
+  // `promise_icon` - the icon image from the promise app. It will be passed to
+  // the installed app item as a fallback icon, that will be shown while the
+  // actual app icon is loading (to prevent a flash from an empty app icon).
+  void AddPendingPromiseAppRemoval(const std::string& id,
+                                   const ui::ImageModel& promise_icon);
+
+  // Animate the transition of an incoming app if there was previously a promise
+  // app in place.
+  void AnimateTransitionForPromiseApps(views::View* view,
+                                       ui::Layer* promise_app_layer,
+                                       base::OnceClosure callback);
+
+  // Called when the transition animation between apps is done.
+  void FinishAnimationForPromiseApps(const std::string& pending_app_id);
+
+  // Duplicates the layer for the `promise_app_view` and adds it to
+  // `pending_promise_apps_removals_` if an animation would be required for it
+  // on the future.
+  void MaybeDuplicatePromiseAppForRemoval(ShelfAppButton* promise_app_view,
+                                          const ShelfItem& item);
+
   // The model; owned by Launcher.
   const raw_ptr<ShelfModel, ExperimentalAsh> model_;
 
@@ -776,6 +818,10 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // The layer that contains the icon image for the item under the drag cursor.
   // Assigned before the dropping animation is scheduled.
   std::unique_ptr<ui::LayerTreeOwner> drag_image_layer_;
+
+  // Set of promise app items with pending removal. Maps the promise app ID to
+  // the promise app icon image.
+  PendingPromiseAppsMap pending_promise_apps_removals_;
 
   base::WeakPtrFactory<ShelfView> weak_factory_{this};
 };

@@ -34,7 +34,6 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "cc/layers/layer.h"
@@ -177,13 +176,6 @@ enum class ProgressEventTimerState {
   kStalledEventAlreadyScheduled,
   kMaxValue = kStalledEventAlreadyScheduled
 };
-
-// Records the state of the HTMLMediaElement when its "progress event" timer
-// fires.
-// TODO(crbug.com/1143317): Remove once the bug is fixed.
-void RecordProgressEventTimerState(ProgressEventTimerState state) {
-  UMA_HISTOGRAM_ENUMERATION("Media.ProgressEventTimerState", state);
-}
 
 static const base::TimeDelta kStalledNotificationInterval = base::Seconds(3);
 
@@ -352,15 +344,6 @@ String PreloadTypeToString(WebMediaPlayer::Preload preload_type) {
 
   NOTREACHED();
   return String();
-}
-
-void RecordShowControlsUsage(const HTMLMediaElement* element,
-                             MediaControlsShow value) {
-  if (element->IsHTMLVideoElement()) {
-    base::UmaHistogramEnumeration("Media.Controls.Show.Video", value);
-    return;
-  }
-  base::UmaHistogramEnumeration("Media.Controls.Show.Audio", value);
 }
 
 bool IsValidPlaybackRate(double rate) {
@@ -709,27 +692,28 @@ void HTMLMediaElement::ResetMojoState() {
           this, GetExecutionContext());
 }
 
-bool HTMLMediaElement::SupportsFocus() const {
+bool HTMLMediaElement::SupportsFocus(UpdateBehavior update_behavior) const {
   // TODO(https://crbug.com/911882): Depending on result of discussion, remove.
   if (ownerDocument()->IsMediaDocument())
     return false;
 
   // If no controls specified, we should still be able to focus the element if
   // it has tabIndex.
-  return ShouldShowControls() || HTMLElement::SupportsFocus();
+  return ShouldShowControls() || HTMLElement::SupportsFocus(update_behavior);
 }
 
-bool HTMLMediaElement::IsFocusable() const {
+bool HTMLMediaElement::IsFocusable(UpdateBehavior update_behavior) const {
   if (!SupportsFocus()) {
     return false;
   }
-  return !IsFullscreen() || HTMLElement::IsFocusable();
+  return !IsFullscreen() || HTMLElement::IsFocusable(update_behavior);
 }
 
-bool HTMLMediaElement::IsKeyboardFocusable() const {
+bool HTMLMediaElement::IsKeyboardFocusable(
+    UpdateBehavior update_behavior) const {
   // Media elements are keyboard focusable if they are focusable at all,
   // and don't have a negative tabindex set.
-  return IsFocusable() && tabIndex() >= 0;
+  return IsFocusable(update_behavior) && tabIndex() >= 0;
 }
 
 int HTMLMediaElement::DefaultTabIndex() const {
@@ -1463,6 +1447,64 @@ void HTMLMediaElement::LoadResource(const WebMediaPlayerSource& source,
 LocalFrame* HTMLMediaElement::LocalFrameForPlayer() {
   return opener_document_ ? opener_document_->GetFrame()
                           : GetDocument().GetFrame();
+}
+
+bool HTMLMediaElement::HandleInvokeInternal(HTMLElement& invoker,
+                                            AtomicString& action) {
+  if (HTMLElement::HandleInvokeInternal(invoker, action)) {
+    return true;
+  }
+
+  if (!(EqualIgnoringASCIICase(action, keywords::kPlaypause) ||
+        EqualIgnoringASCIICase(action, keywords::kPause) ||
+        EqualIgnoringASCIICase(action, keywords::kPlay) ||
+        EqualIgnoringASCIICase(action, keywords::kMute))) {
+    return false;
+  }
+  Document& document = GetDocument();
+  LocalFrame* frame = document.GetFrame();
+
+  if (EqualIgnoringASCIICase(action, keywords::kPlaypause)) {
+    if (paused_) {
+      if (LocalFrame::HasTransientUserActivation(frame)) {
+        Play();
+        return true;
+      } else {
+        String message = "Media cannot be played without a user gesture.";
+        document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning, message));
+        return false;
+      }
+    } else {
+      pause();
+      return true;
+    }
+  } else if (EqualIgnoringASCIICase(action, keywords::kPause)) {
+    if (!paused_) {
+      pause();
+    }
+    return true;
+  } else if (EqualIgnoringASCIICase(action, keywords::kPlay)) {
+    if (paused_) {
+      if (LocalFrame::HasTransientUserActivation(frame)) {
+        Play();
+      } else {
+        String message = "Media cannot be played without a user gesture.";
+        document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning, message));
+        return false;
+      }
+    }
+    return true;
+  } else {
+    CHECK(EqualIgnoringASCIICase(action, keywords::kMute));
+    // No user activation check as `setMuted` already handles the autoplay
+    // policy check.
+    setMuted(!muted_);
+    return true;
+  }
 }
 
 void HTMLMediaElement::StartPlayerLoad() {
@@ -2243,7 +2285,6 @@ void HTMLMediaElement::ProgressEventTimerFired() {
   }
 
   if (network_state_ != kNetworkLoading) {
-    RecordProgressEventTimerState(ProgressEventTimerState::kNotLoading);
     return;
   }
 
@@ -2252,8 +2293,6 @@ void HTMLMediaElement::ProgressEventTimerFired() {
   // those may let the page know information about the resource that it's
   // not supposed to know.
   if (MediaShouldBeOpaque()) {
-    RecordProgressEventTimerState(
-        ProgressEventTimerState::kMediaShouldBeOpaque);
     return;
   }
 
@@ -2264,17 +2303,10 @@ void HTMLMediaElement::ProgressEventTimerFired() {
     previous_progress_time_ = base::ElapsedTimer();
     sent_stalled_event_ = false;
     UpdateLayoutObject();
-    RecordProgressEventTimerState(ProgressEventTimerState::kProgress);
-  } else if (media_source_attachment_) {
-    RecordProgressEventTimerState(
-        ProgressEventTimerState::kHasMediaSourceAttachment);
-  } else if (previous_progress_time_->Elapsed() <=
-             kStalledNotificationInterval) {
-    RecordProgressEventTimerState(ProgressEventTimerState::kRecentProgress);
-  } else if (sent_stalled_event_) {
-    RecordProgressEventTimerState(
-        ProgressEventTimerState::kStalledEventAlreadyScheduled);
-  } else {
+  } else if (!media_source_attachment_ &&
+             previous_progress_time_->Elapsed() >
+                 kStalledNotificationInterval &&
+             !sent_stalled_event_) {
     // Note the !media_source_attachment_ condition above. The 'stalled' event
     // is not fired when using MSE. MSE's resource is considered 'local' (we
     // don't manage the download - the app does), so the HTML5 spec text around
@@ -2284,7 +2316,6 @@ void HTMLMediaElement::ProgressEventTimerFired() {
     ScheduleEvent(event_type_names::kStalled);
     sent_stalled_event_ = true;
     SetShouldDelayLoadEvent(false);
-    RecordProgressEventTimerState(ProgressEventTimerState::kStalled);
   }
 }
 
@@ -2947,48 +2978,31 @@ void HTMLMediaElement::SetLoop(bool b) {
   SetBooleanAttribute(html_names::kLoopAttr, b);
 }
 
-bool HTMLMediaElement::ShouldShowControls(
-    const RecordMetricsBehavior record_metrics) const {
+bool HTMLMediaElement::ShouldShowControls() const {
+  // If the document is not active, then we should not show controls.
+  if (!GetDocument().IsActive()) {
+    return false;
+  }
+
   Settings* settings = GetDocument().GetSettings();
   if (settings && !settings->GetMediaControlsEnabled()) {
-    if (record_metrics == RecordMetricsBehavior::kDoRecord)
-      RecordShowControlsUsage(this, MediaControlsShow::kDisabledSettings);
     return false;
   }
 
   // If the user has explicitly shown or hidden the controls, then force that
   // choice.
   if (user_wants_controls_visible_.has_value()) {
-    if (record_metrics == RecordMetricsBehavior::kDoRecord) {
-      RecordShowControlsUsage(this,
-                              *user_wants_controls_visible_
-                                  ? MediaControlsShow::kUserExplicitlyEnabled
-                                  : MediaControlsShow::kUserExplicitlyDisabled);
-    }
     return *user_wants_controls_visible_;
   }
 
-  if (FastHasAttribute(html_names::kControlsAttr)) {
-    if (record_metrics == RecordMetricsBehavior::kDoRecord)
-      RecordShowControlsUsage(this, MediaControlsShow::kAttribute);
-    return true;
-  }
-
-  if (IsFullscreen()) {
-    if (record_metrics == RecordMetricsBehavior::kDoRecord)
-      RecordShowControlsUsage(this, MediaControlsShow::kFullscreen);
+  if (FastHasAttribute(html_names::kControlsAttr) || IsFullscreen()) {
     return true;
   }
 
   ExecutionContext* context = GetExecutionContext();
   if (context && !context->CanExecuteScripts(kNotAboutToExecuteScript)) {
-    if (record_metrics == RecordMetricsBehavior::kDoRecord)
-      RecordShowControlsUsage(this, MediaControlsShow::kNoScript);
     return true;
   }
-
-  if (record_metrics == RecordMetricsBehavior::kDoRecord)
-    RecordShowControlsUsage(this, MediaControlsShow::kNotShown);
   return false;
 }
 
@@ -3428,7 +3442,7 @@ KURL HTMLMediaElement::SelectNextSourceChild(
   Node* node;
   HTMLSourceElement* source = nullptr;
   String type;
-  bool looking_for_start_node = next_child_node_to_consider_;
+  bool looking_for_start_node = next_child_node_to_consider_ != nullptr;
   bool can_use_source_element = false;
 
   NodeVector potential_source_nodes;
@@ -3736,8 +3750,10 @@ void HTMLMediaElement::SizeChanged() {
 }
 
 WebTimeRanges HTMLMediaElement::BufferedInternal() const {
-  if (media_source_attachment_)
-    return media_source_attachment_->BufferedInternal(media_source_tracer_);
+  if (media_source_attachment_) {
+    return media_source_attachment_->BufferedInternal(
+        media_source_tracer_.Get());
+  }
 
   if (!web_media_player_)
     return {};
@@ -3766,8 +3782,10 @@ WebTimeRanges HTMLMediaElement::SeekableInternal() const {
   if (!web_media_player_)
     return {};
 
-  if (media_source_attachment_)
-    return media_source_attachment_->SeekableInternal(media_source_tracer_);
+  if (media_source_attachment_) {
+    return media_source_attachment_->SeekableInternal(
+        media_source_tracer_.Get());
+  }
 
   return web_media_player_->Seekable();
 }
@@ -4139,7 +4157,7 @@ SpeechSynthesisBase* HTMLMediaElement::SpeechSynthesis() {
     speech_synthesis_->SetOnSpeakingCompletedCallback(WTF::BindRepeating(
         &HTMLMediaElement::OnSpeakingCompleted, WrapWeakPersistent(this)));
   }
-  return speech_synthesis_;
+  return speech_synthesis_.Get();
 }
 
 void HTMLMediaElement::MediaControlsDidBecomeVisible() {
@@ -4231,7 +4249,7 @@ void HTMLMediaElement::SetShouldDelayLoadEvent(bool should_delay) {
 }
 
 MediaControls* HTMLMediaElement::GetMediaControls() const {
-  return media_controls_;
+  return media_controls_.Get();
 }
 
 void HTMLMediaElement::EnsureMediaControls() {
@@ -4253,7 +4271,7 @@ void HTMLMediaElement::UpdateControlsVisibility() {
   if (!isConnected())
     return;
 
-  bool native_controls = ShouldShowControls(RecordMetricsBehavior::kDoRecord);
+  bool native_controls = ShouldShowControls();
 
   // When LazyInitializeMediaControls is enabled, initialize the controls only
   // if native controls should be used or if using the cast overlay.
@@ -4640,7 +4658,7 @@ void HTMLMediaElement::AudioSourceProviderImpl::Trace(Visitor* visitor) const {
 }
 
 bool HTMLMediaElement::HasNativeControls() {
-  return ShouldShowControls(RecordMetricsBehavior::kDoRecord);
+  return ShouldShowControls();
 }
 
 bool HTMLMediaElement::IsAudioElement() {
@@ -4712,12 +4730,9 @@ void HTMLMediaElement::DidMediaMetadataChange(
     observer->OnMediaMetadataChanged(has_audio, has_video, media_content_type);
   }
 
-  if (video_codec == media::VideoCodec::kUnknown &&
-      audio_codec == media::AudioCodec::kUnknown) {
-    return;
-  }
-  video_codec_ = video_codec;
-  audio_codec_ = audio_codec;
+  video_codec_ = has_video ? absl::make_optional(video_codec) : absl::nullopt;
+  audio_codec_ = has_audio ? absl::make_optional(audio_codec) : absl::nullopt;
+
   is_encrypted_media_ = is_encrypted_media;
   OnRemotePlaybackMetadataChange();
 }
@@ -4881,8 +4896,12 @@ void HTMLMediaElement::OnRemotePlaybackMetadataChange() {
   for (auto& observer : media_player_observer_remote_set_->Value()) {
     observer->OnRemotePlaybackMetadataChange(
         media_session::mojom::blink::RemotePlaybackMetadata::New(
-            WTF::String(media::GetCodecName(video_codec_)),
-            WTF::String(media::GetCodecName(audio_codec_)),
+            WTF::String(media::GetCodecName(video_codec_
+                                                ? video_codec_.value()
+                                                : media::VideoCodec::kUnknown)),
+            WTF::String(media::GetCodecName(audio_codec_
+                                                ? audio_codec_.value()
+                                                : media::AudioCodec::kUnknown)),
             is_remote_playback_disabled_, is_remote_rendering_,
             WTF::String(remote_device_friendly_name_), is_encrypted_media_));
   }

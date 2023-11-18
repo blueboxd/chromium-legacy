@@ -21,7 +21,7 @@
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/manage_passwords_referrer.h"
 #include "components/password_manager/core/browser/password_manager.h"
-#include "components/password_manager/core/browser/password_store_backend_error.h"
+#include "components/password_manager/core/browser/password_store/password_store_backend_error.h"
 #include "components/password_manager/core/browser/webauthn_credentials_delegate.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/safe_browsing/buildflags.h"
@@ -84,7 +84,6 @@ class PasswordFormManagerForUI;
 class PasswordManagerDriver;
 class PasswordManagerMetricsRecorder;
 class HttpAuthManager;
-class PasswordChangeSuccessTracker;
 class PasswordRequirementsService;
 class PasswordReuseManager;
 class PasswordStoreInterface;
@@ -211,7 +210,7 @@ class PasswordManagerClient {
 
   // Instructs the client to show a keyboard replacing surface UI (e.g.
   // TouchToFill).
-  virtual void ShowKeyboardReplacingSurface(
+  virtual bool ShowKeyboardReplacingSurface(
       PasswordManagerDriver* driver,
       const SubmissionReadinessParams& submission_readiness_params,
       bool is_webauthn_form);
@@ -278,7 +277,8 @@ class PasswordManagerClient {
   // Called when a password is saved in an automated fashion. Embedder may
   // inform the user that this save has occurred.
   virtual void AutomaticPasswordSave(
-      std::unique_ptr<PasswordFormManagerForUI> saved_form_manager) = 0;
+      std::unique_ptr<PasswordFormManagerForUI> saved_form_manager,
+      bool is_update_confirmation) = 0;
 
   // Called when a password is autofilled. |best_matches| contains the
   // PasswordForm into which a password was filled: the client may choose to
@@ -333,9 +333,6 @@ class PasswordManagerClient {
 
   // Returns the PasswordReuseManager associated with this instance.
   virtual PasswordReuseManager* GetPasswordReuseManager() const = 0;
-
-  // Returns the PasswordChangeSuccessTracker associated with this instance.
-  virtual PasswordChangeSuccessTracker* GetPasswordChangeSuccessTracker() = 0;
 
   // Reports whether and how passwords are synced in the embedder. The default
   // implementation always returns kNotSyncing.

@@ -210,6 +210,9 @@ class VIEWS_EXPORT ViewAccessibility {
   void OverridePosInSet(int pos_in_set, int set_size);
   void ClearPosInSetOverride();
 
+  // Overrides the `ax::mojom::BoolAttribute::kSelected` attribute.
+  void OverrideIsSelected(bool selected);
+
   // Override the next or previous focused widget. Some assistive technologies,
   // such as screen readers, may utilize this information to transition focus
   // from the beginning or end of one widget to another when navigating by its
@@ -229,7 +232,16 @@ class VIEWS_EXPORT ViewAccessibility {
   virtual gfx::NativeViewAccessible GetNativeObject() const;
 
   // Causes the screen reader to announce |text|. If the current user is not
-  // using a screen reader, has no effect.
+  // using a screen reader, has no effect. AnnouncePolitely() will speak
+  // the given string. AnnounceAlert() may make a stronger attempt to be
+  // noticeable; the screen reader may say something like "Alert: hello"
+  // instead of just "hello", and may interrupt any existing text being spoken.
+  // However, the screen reader may also treat the two calls the same.
+  // AnnounceText() is a deprecated alias for AnnounceAlert().
+  // TODO(crbug.com/1499368) - Migrate all callers of AnnounceText() to
+  // one of the other two methods.
+  virtual void AnnounceAlert(const std::u16string& text);
+  virtual void AnnouncePolitely(const std::u16string& text);
   virtual void AnnounceText(const std::u16string& text);
 
   virtual const ui::AXUniqueId& GetUniqueId() const;

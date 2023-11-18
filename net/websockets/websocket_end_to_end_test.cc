@@ -282,7 +282,7 @@ class TestProxyDelegateWithProxyInfo : public ProxyDelegate {
 
  protected:
   void OnResolveProxy(const GURL& url,
-                      const GURL& top_frame_url,
+                      const NetworkAnonymizationKey& network_anonymization_key,
                       const std::string& method,
                       const ProxyRetryInfoMap& proxy_retry_info,
                       ProxyInfo* result) override {
@@ -342,7 +342,8 @@ class WebSocketEndToEndTest : public TestWithTaskEnvironment {
                                                   context_.get());
     channel_->SendAddChannelRequest(
         GURL(socket_url), sub_protocols_, origin, site_for_cookies,
-        isolation_info, HttpRequestHeaders(), TRAFFIC_ANNOTATION_FOR_TESTS);
+        /*has_storage_access=*/false, isolation_info, HttpRequestHeaders(),
+        TRAFFIC_ANNOTATION_FOR_TESTS);
     event_interface_->WaitForResponse();
     return !event_interface_->failed();
   }

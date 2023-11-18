@@ -324,16 +324,17 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       const blink::mojom::FullscreenOptions& options) {}
 
   // Notification that the frame wants to go out of fullscreen mode.
-  // |will_cause_resize| indicates whether the fullscreen change causes a
-  // view resize. e.g. This will be false when going from tab fullscreen to
-  // browser fullscreen.
-  virtual void ExitFullscreenMode(bool will_cause_resize) {}
+  virtual void ExitFullscreenMode() {}
 
   // Notification that this frame has changed fullscreen state.
   virtual void FullscreenStateChanged(
       RenderFrameHostImpl* rfh,
       bool is_fullscreen,
       blink::mojom::FullscreenOptionsPtr options);
+
+  // Returns whether the RFH can use Additional Windowing Controls (AWC) APIs.
+  // https://github.com/ivansandrk/additional-windowing-controls/blob/main/awc-explainer.md
+  virtual bool CanUseWindowingControls(RenderFrameHostImpl* requesting_frame);
 
   // Request to maximize window.
   virtual void Maximize() {}
@@ -487,6 +488,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual const blink::web_pref::WebPreferences&
   GetOrCreateWebPreferences() = 0;
 
+  // Returns the light, dark and forced color maps for the ColorProvider
+  // associated with this RenderFrameHost's WebContents.
+  virtual blink::ColorProviderColorMaps GetColorProviderColorMaps() const = 0;
+
   // Returns the visibility of the delegate.
   virtual Visibility GetVisibility();
 
@@ -500,6 +505,17 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Notifies observers if the frame has changed audible state.
   virtual void OnFrameAudioStateChanged(RenderFrameHostImpl* host,
                                         bool is_audible) {}
+
+  // Notifies observers that the frame's visibility has changed.
+  virtual void OnFrameVisibilityChanged(
+      RenderFrameHostImpl* host,
+      blink::mojom::FrameVisibility visibility) {}
+
+  // Notifies observers if the frame has started/stopped capturing a video
+  // stream.
+  virtual void OnFrameIsCapturingVideoStreamChanged(
+      RenderFrameHostImpl* host,
+      bool is_capturing_video_stream) {}
 
   // Returns FrameTreeNodes that are logically owned by another frame even
   // though this relationship is not yet reflected in their frame trees. This

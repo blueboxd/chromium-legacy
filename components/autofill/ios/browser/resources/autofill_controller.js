@@ -63,15 +63,6 @@ __gCrWeb.autofill.lastAutoFilledElement = null;
 __gCrWeb.autofill.styleInjected = false;
 
 /**
- * Sets the delay between fields when autofilling forms.
- *
- * @param {number} delay The new delay in milliseconds.
- */
-__gCrWeb.autofill.setDelay = function(delay) {
-  __gCrWeb.autofill.delayBetweenFieldFillingMs = delay;
-};
-
-/**
  * Determines whether the form is interesting enough to send to the browser for
  * further operations.
  *
@@ -170,6 +161,27 @@ __gCrWeb.autofill['fillActiveFormField'] = function(data) {
   }
   __gCrWeb.autofill.lastAutoFilledElement = activeElement;
   return __gCrWeb.autofill.fillFormField(data, activeElement);
+};
+
+/**
+ * Fills data into the form field identified by `data['unique_renderer_id']`.
+ * This is similar to `fillActiveFormField`, but does not require that the
+ * target field be `document.activeElement`.
+ *
+ * @param {AutofillFormFieldData} data The data to fill in.
+ * @return {boolean} Whether the field was filled successfully.
+ */
+__gCrWeb.autofill['fillSpecificFormField'] = function(data) {
+  const fieldID = data['unique_renderer_id'];
+  if (typeof fieldID === 'undefined') {
+    return false;
+  }
+  const field = __gCrWeb.fill.getElementByUniqueID(fieldID);
+  if (!field) {
+    return false;
+  }
+  __gCrWeb.autofill.lastAutoFilledElement = field;
+  return __gCrWeb.autofill.fillFormField(data, field);
 };
 
 // Remove Autofill styling when control element is edited by the user.

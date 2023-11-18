@@ -1549,6 +1549,30 @@ var holdingSpaceTests = [
   },
 ];
 
+var isFieldTrialActiveTests = [
+  function getActiveTrialActiveGroup() {
+    chrome.autotestPrivate.isFieldTrialActive(
+        'ActiveTrialForTest', 'GroupForTest',
+        chrome.test.callbackPass(enabled => {
+          chrome.test.assertTrue(enabled);
+        }));
+  },
+  function getActiveTrialInactiveGroup() {
+    chrome.autotestPrivate.isFieldTrialActive(
+        'ActiveTrialForTest', 'WrongGroupForTest',
+        chrome.test.callbackPass(enabled => {
+          chrome.test.assertFalse(enabled);
+        }));
+  },
+  function getInactiveTrial() {
+    chrome.autotestPrivate.isFieldTrialActive(
+        'InactiveTrialForTest', 'GroupForTest',
+        chrome.test.callbackPass(enabled => {
+          chrome.test.assertFalse(enabled);
+        }));
+  }
+];
+
 // Tests that requires a concrete system web app installation.
 var systemWebAppsTests = [
   function getRegisteredSystemWebApps() {
@@ -1637,6 +1661,7 @@ var systemWebAppsTests = [
       'systemWebApps': systemWebAppsTests,
       'lacrosEnabled': lacrosEnabledTests,
       'launcherSearchBoxState': launcherSearchBoxStateTests,
+      'isFieldTrialActive': isFieldTrialActiveTests,
     };
 
 chrome.test.getConfig(function(config) {

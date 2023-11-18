@@ -30,6 +30,9 @@ class ASH_EXPORT FocusModeController : public SessionObserver {
     // Called every `timer_` tick for updating UI elements during a Focus Mode
     // session.
     virtual void OnTimerTick() {}
+
+    // Notifies clients every time `SetSessionDuration` is called.
+    virtual void OnSessionDurationChanged() {}
   };
 
   FocusModeController();
@@ -51,8 +54,11 @@ class ASH_EXPORT FocusModeController : public SessionObserver {
   void set_turn_on_do_not_disturb(bool turn_on) {
     turn_on_do_not_disturb_ = turn_on;
   }
-  bool previous_do_not_disturb_state() const {
-    return previous_do_not_disturb_state_;
+  const std::u16string& selected_task_title() const {
+    return selected_task_title_;
+  }
+  void set_selected_task_title(const std::u16string& selected_task_title) {
+    selected_task_title_ = selected_task_title;
   }
 
   void AddObserver(Observer* observer);
@@ -68,10 +74,17 @@ class ASH_EXPORT FocusModeController : public SessionObserver {
   void ExtendActiveSessionDuration();
 
   // Sets a specific value for `session_duration_` and updates `end_time_` only
-  // during an active focus session.
+  // during an active focus session. Also notifies observers that session
+  // duration was changed.
   void SetSessionDuration(const base::TimeDelta& new_session_duration);
 
+  // Returns whether the user has ever started a focus session previously.
+  bool HasStartedSessionBefore() const;
+
  private:
+  void SetEnabled(bool enabled);
+
+  // Called every time a second passes on `timer_` while the session is active.
   void OnTimerTick();
 
   // This is called when the active user changes, and is important to update our
@@ -81,6 +94,10 @@ class ASH_EXPORT FocusModeController : public SessionObserver {
   // Saves the current selected settings to user prefs so we can provide the
   // same set-up the next time the user comes back to Focus Mode.
   void SaveSettingsToUserPrefs();
+
+  // Closes any open system tray bubbles. This is done whenever we start a focus
+  // session.
+  void CloseSystemTrayBubble();
 
   // Sets the visibility of the focus tray on the shelf.
   void SetFocusTrayVisibility(bool visible);
@@ -105,9 +122,9 @@ class ASH_EXPORT FocusModeController : public SessionObserver {
   // starts. Depends on previous session data (from user prefs) or user input.
   bool turn_on_do_not_disturb_ = true;
 
-  // When a Focus Mode session starts, the previous DND state is stored so that
-  // it can be restored when the session ends.
-  bool previous_do_not_disturb_state_ = false;
+  // This is the task title which was created by the user or selected from
+  // existing tasks.
+  std::u16string selected_task_title_;
 
   base::ObserverList<Observer> observers_;
 };

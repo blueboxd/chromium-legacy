@@ -6,7 +6,6 @@
 
 #include "ash/constants/app_types.h"
 #include "base/check.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/chromeos_ui_constants.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/frame/caption_buttons/frame_caption_button_container_view.h"
@@ -144,8 +143,7 @@ void DefaultFrameHeader::UpdateFrameColors() {
 void DefaultFrameHeader::DoPaintHeader(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
 
-  if (features::IsJellyrollEnabled() &&
-      ShouldApplyDynamicColor(GetTargetWindow())) {
+  if (ShouldApplyDynamicColor(GetTargetWindow())) {
     flags.setColor(target_widget()->GetColorProvider()->GetColor(
         GetColorIdForCurrentMode()));
   } else {
@@ -198,10 +196,6 @@ aura::Window* DefaultFrameHeader::GetTargetWindow() {
 
 SkColor DefaultFrameHeader::GetCurrentFrameColor() const {
   return mode() == MODE_ACTIVE ? active_frame_color_ : inactive_frame_color_;
-}
-
-SkColor DefaultFrameHeader::GetActiveFrameColorForPaintForTest() {
-  return active_frame_color_;
 }
 
 void DefaultFrameHeader::InitializeFrameColorMetricsHelper() {

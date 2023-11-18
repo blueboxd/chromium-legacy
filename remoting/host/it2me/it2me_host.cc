@@ -33,6 +33,7 @@
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
 #include "remoting/host/it2me/it2me_helpers.h"
 #include "remoting/host/it2me_desktop_environment.h"
+#include "remoting/host/passthrough_register_support_host_request.h"
 #include "remoting/protocol/auth_util.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"
 #include "remoting/protocol/it2me_host_authenticator_factory.h"
@@ -103,6 +104,43 @@ void It2MeHost::set_chrome_os_enterprise_params(
 
 void It2MeHost::set_authorized_helper(const std::string& authorized_helper) {
   authorized_helper_ = authorized_helper;
+}
+
+void It2MeHost::set_reconnect_params(ReconnectParams reconnect_params) {
+#if BUILDFLAG(IS_CHROMEOS_ASH) || !defined(NDEBUG)
+  reconnect_params_.emplace(std::move(reconnect_params));
+#else
+  NOTREACHED() << "It2MeHost::set_reconnect_params is only supported on CrOS";
+#endif
+}
+
+bool It2MeHost::SessionSupportsReconnections() const {
+#if BUILDFLAG(IS_CHROMEOS_ASH) || !defined(NDEBUG)
+  return is_enterprise_session() &&
+         chrome_os_enterprise_params_->allow_reconnections;
+#else
+  return false;
+#endif
+}
+
+absl::optional<ReconnectParams> It2MeHost::CreateReconnectParams() const {
+  absl::optional<ReconnectParams> reconnect_params;
+#if BUILDFLAG(IS_CHROMEOS_ASH) || !defined(NDEBUG)
+  if (!SessionSupportsReconnections()) {
+    return reconnect_params;
+  }
+  // This function is meant to be queried just after the remote client connects,
+  // otherwise the required fields will not be set.
+  CHECK_EQ(state_, It2MeHostState::kConnected);
+
+  reconnect_params.emplace();
+  reconnect_params->support_id = support_id_;
+  reconnect_params->host_secret = host_secret_;
+  reconnect_params->private_key = host_key_pair_->ToString();
+  reconnect_params->ftl_device_id = ftl_device_id_;
+#endif
+
+  return reconnect_params;
 }
 
 void It2MeHost::Connect(
@@ -180,6 +218,7 @@ void It2MeHost::ConnectOnNetworkThread(
     ftl_signaling_connector_ = std::make_unique<FtlSignalingConnector>(
         signal_strategy_.get(), base::DoNothing());
     ftl_signaling_connector_->Start();
+    ftl_device_id_ = connection_context->ftl_device_id;
   }
 
   // Check the host domain policy.
@@ -201,16 +240,35 @@ void It2MeHost::ConnectOnNetworkThread(
     }
   }
 
-  // Generate a key pair for the Host to use.
-  // TODO(wez): Move this to the worker thread.
-  host_key_pair_ = RsaKeyPair::Generate();
+  if (!reconnect_params_.has_value()) {
+    // Generate a key pair for the Host to use.
+    host_key_pair_ = RsaKeyPair::Generate();
 
-  // Request registration of the host for support.
-  register_request_ = std::move(connection_context->register_request);
+    // Generate a new host secret for this instance.
+    host_secret_ = GenerateSupportHostSecret();
+
+    // Register this host instance in the backend service.
+    register_request_ = std::move(connection_context->register_request);
+  } else {
+    // Reconnections are only allowed for Chrome OS enterprise sessions.
+    CHECK(SessionSupportsReconnections());
+
+    // Regenerate the key pair from the private key.
+    host_key_pair_ = RsaKeyPair::FromString(reconnect_params_->private_key);
+
+    // Restore the host_secret from the previous connection.
+    host_secret_ = reconnect_params_->host_secret;
+
+    // Skip the registration service call as the entry will be retrievable by
+    // the `authorized_helper` for ~24 hours when 'allow_reconnections' is set.
+    register_request_ = std::make_unique<PassthroughRegisterSupportHostRequest>(
+        reconnect_params_->support_id);
+  }
   register_request_->StartRequest(
       signal_strategy_.get(), host_key_pair_, authorized_helper_,
       std::move(chrome_os_enterprise_params_),
-      base::BindOnce(&It2MeHost::OnReceivedSupportID, base::Unretained(this)));
+      base::BindOnce(&It2MeHost::OnReceivedSupportID,
+                     weak_factory_.GetWeakPtr()));
 
   HOST_LOG << "NAT traversal enabled: " << nat_traversal_enabled_;
   HOST_LOG << "Relay connections allowed: " << relay_connections_allowed_;
@@ -409,13 +467,13 @@ void It2MeHost::OnPolicyUpdate(base::Value::Dict policies) {
            << enterprise_file_transfer_allowed_;
 #endif
 
-  absl::optional<bool> nat_policy_value =
+  std::optional<bool> nat_policy_value =
       policies.FindBool(policy::key::kRemoteAccessHostFirewallTraversal);
   if (!nat_policy_value.has_value()) {
     HOST_LOG << "Failed to read kRemoteAccessHostFirewallTraversal policy";
     nat_policy_value = nat_traversal_enabled_;
   }
-  absl::optional<bool> relay_policy_value =
+  std::optional<bool> relay_policy_value =
       policies.FindBool(policy::key::kRemoteAccessHostAllowRelayedConnection);
   if (!relay_policy_value.has_value()) {
     HOST_LOG << "Failed to read kRemoteAccessHostAllowRelayedConnection policy";
@@ -449,7 +507,7 @@ void It2MeHost::OnPolicyUpdate(base::Value::Dict policies) {
     UpdateHostUdpPortRangePolicy(*port_range_string);
   }
 
-  absl::optional<int> max_clipboard_size =
+  std::optional<int> max_clipboard_size =
       policies.FindInt(policy::key::kRemoteAccessHostClipboardSizeBytes);
   if (max_clipboard_size.has_value()) {
     if (max_clipboard_size.value() >= 0) {
@@ -605,10 +663,10 @@ void It2MeHost::OnReceivedSupportID(const std::string& support_id,
     return;
   }
 
-  std::string host_secret = GenerateSupportHostSecret();
-  std::string access_code = support_id + host_secret;
+  support_id_ = support_id;
+  std::string access_code = support_id_ + host_secret_;
   std::string access_code_hash =
-      protocol::GetSharedSecretHash(support_id, access_code);
+      protocol::GetSharedSecretHash(support_id_, access_code);
 
   std::string local_certificate = host_key_pair_->GenerateCertificate();
   if (local_certificate.empty()) {
@@ -653,6 +711,7 @@ void It2MeHost::DisconnectOnNetworkThread(protocol::ErrorCode error_code) {
   host_status_logger_ = nullptr;
   log_to_server_ = nullptr;
   ftl_signaling_connector_ = nullptr;
+  reconnect_params_.reset();
 
   if (signal_strategy_) {
     // Delay destruction of the signaling strategy by a few seconds to give it

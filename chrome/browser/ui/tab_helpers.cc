@@ -43,7 +43,6 @@
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_observer.h"
 #include "chrome/browser/metrics/metrics_services_web_contents_observer.h"
-#include "chrome/browser/metrics/oom/out_of_memory_reporter.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_preconnect_client.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
@@ -84,6 +83,7 @@
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
 #include "chrome/browser/tpcd/heuristics/opener_heuristic_tab_helper.h"
+#include "chrome/browser/tpcd/http_error_observer/http_error_tab_helper.h"
 #include "chrome/browser/tpcd/metadata/devtools_observer.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/trusted_vault/trusted_vault_encryption_keys_tab_helper.h"
@@ -162,6 +162,7 @@
 #include "pdf/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
+#include "ui/accessibility/accessibility_features.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "base/functional/bind.h"
@@ -171,7 +172,6 @@
 #include "chrome/browser/android/policy/policy_auditor_bridge.h"
 #include "chrome/browser/banners/android/chrome_app_banner_manager_android.h"
 #include "chrome/browser/content_settings/request_desktop_site_web_contents_observer_android.h"
-#include "chrome/browser/fast_checkout/fast_checkout_features.h"
 #include "chrome/browser/fast_checkout/fast_checkout_tab_helper.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/plugins/plugin_observer_android.h"
@@ -195,6 +195,7 @@
 #include "chrome/browser/ui/side_panel/customize_chrome/customize_chrome_tab_helper.h"
 #include "chrome/browser/ui/side_panel/customize_chrome/customize_chrome_utils.h"
 #include "chrome/browser/ui/side_panel/history_clusters/history_clusters_tab_helper.h"
+#include "chrome/browser/ui/side_panel/read_anything/read_anything_tab_helper.h"
 #include "chrome/browser/ui/sync/browser_synced_tab_delegate.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "components/commerce/content/browser/hint/commerce_hint_tab_helper.h"
@@ -250,6 +251,7 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
+#include "chrome/browser/extensions/navigation_extension_enabler.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/ui/extensions/extension_side_panel_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
@@ -353,7 +355,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     }
   }
   autofill::ChromeAutofillClient::CreateForWebContents(web_contents);
-  if (breadcrumbs::IsEnabled()) {
+  if (breadcrumbs::IsEnabled(g_browser_process->local_state())) {
     BreadcrumbManagerTabHelper::CreateForWebContents(web_contents);
   }
   chrome::ChainedBackNavigationTracker::CreateForWebContents(web_contents);
@@ -443,7 +445,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     }
 #endif  // BUILDFLAG(IS_ANDROID)
   }
-  OutOfMemoryReporter::CreateForWebContents(web_contents);
   chrome::InitializePageLoadMetricsForWebContents(web_contents);
   if (auto* pm_registry =
           performance_manager::PerformanceManagerRegistry::GetInstance()) {
@@ -501,6 +502,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   StorageAccessAPITabHelper::CreateForWebContents(
       web_contents, StorageAccessAPIServiceFactory::GetForBrowserContext(
                         web_contents->GetBrowserContext()));
+  HttpErrorTabHelper::CreateForWebContents(web_contents);
   sync_sessions::SyncSessionsRouterTabHelper::CreateForWebContents(
       web_contents,
       sync_sessions::SyncSessionsWebContentsRouterFactory::GetForProfile(
@@ -528,9 +530,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     webapps::ChromeAppBannerManagerAndroid::CreateForWebContents(web_contents);
   }
   ContextMenuHelper::CreateForWebContents(web_contents);
-  if (base::FeatureList::IsEnabled(features::kFastCheckout)) {
-    FastCheckoutTabHelper::CreateForWebContents(web_contents);
-  }
+  FastCheckoutTabHelper::CreateForWebContents(web_contents);
+
   javascript_dialogs::TabModalDialogManager::CreateForWebContents(
       web_contents,
       std::make_unique<JavaScriptTabModalDialogManagerDelegateAndroid>(
@@ -616,6 +617,9 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   if (companion::IsCompanionFeatureEnabled()) {
     companion::CompanionTabHelper::CreateForWebContents(web_contents);
   }
+  if (features::IsReadAnythingEnabled()) {
+    ReadAnythingTabHelper::CreateForWebContents(web_contents);
+  }
   if (base::FeatureList::IsEnabled(
           companion::features::internal::
               kCompanionEnabledByObservingExpsNavigations)) {
@@ -686,13 +690,15 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     user_notes::UserNotesTabHelper::CreateForWebContents(web_contents);
   }
 
-  // TODO(1360846): Consider using the in-memory cache instead.
-  commerce::ShoppingListUiTabHelper::CreateForWebContents(
-      web_contents,
-      commerce::ShoppingServiceFactory::GetForBrowserContext(profile),
-      BookmarkModelFactory::GetForBrowserContext(profile),
-      ImageFetcherServiceFactory::GetForKey(profile->GetProfileKey())
-          ->GetImageFetcher(image_fetcher::ImageFetcherConfig::kNetworkOnly));
+  if (!profile->IsIncognitoProfile()) {
+    // TODO(1360846): Consider using the in-memory cache instead.
+    commerce::ShoppingListUiTabHelper::CreateForWebContents(
+        web_contents,
+        commerce::ShoppingServiceFactory::GetForBrowserContext(profile),
+        BookmarkModelFactory::GetForBrowserContext(profile),
+        ImageFetcherServiceFactory::GetForKey(profile->GetProfileKey())
+            ->GetImageFetcher(image_fetcher::ImageFetcherConfig::kNetworkOnly));
+  }
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -727,6 +733,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
                           extensions::mojom::ViewType::kTabContents);
 
   extensions::TabHelper::CreateForWebContents(web_contents);
+  extensions::NavigationExtensionEnabler::CreateForWebContents(web_contents);
 
   if (base::FeatureList::IsEnabled(
           extensions_features::kExtensionSidePanelIntegration)) {

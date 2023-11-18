@@ -17,7 +17,7 @@ namespace chromeos::features {
 // Enables triggering app installs from a specific URI.
 BASE_FEATURE(kAppInstallServiceUri,
              "AppInstallServiceUri",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Enables or disables more filtering out of phones from the Bluetooth UI.
@@ -48,15 +48,45 @@ BASE_FEATURE(kBlinkExtensionDiagnostics,
              "BlinkExtensionDiagnostics",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables handling of key press event in background.
+BASE_FEATURE(kCrosAppsBackgroundEventHandling,
+             "CrosAppsBackgroundEventHandling",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables the use of cros-component UI elements. Contact:
 // cros-jellybean-team@google.com.
 BASE_FEATURE(kCrosComponents,
              "CrosComponents",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables the behaviour difference between web apps and browser created
+// shortcut backed by the web app system on Chrome OS.
+BASE_FEATURE(kCrosShortstand,
+             "CrosShortstand",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables the more detailed, OS-level dialog for web app installs.
 BASE_FEATURE(kCrosWebAppInstallDialog,
              "CrosWebAppInstallDialog",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// With this feature enabled, the shortcut app badge is painted in the UI
+// instead of being part of the shortcut app icon.
+BASE_FEATURE(kSeparateWebAppShortcutBadgeIcon,
+             "SeparateWebAppShortcutBadgeIcon",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the new UI for browser created shortcut backed by web app system
+// on Chrome OS.
+BASE_FEATURE(kCrosWebAppShortcutUiUpdate,
+             "CrosWebAppShortcutUiUpdate",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+// Enables denying file access to dlp protected files in MyFiles.
+BASE_FEATURE(kDataControlsFileAccessDefaultDeny,
+             "DataControlsFileAccessDefaultDeny",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the desk profiles feature.
@@ -83,11 +113,6 @@ BASE_FEATURE(kDisableQuickAnswersV2Translation,
              "DisableQuickAnswersV2Translation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enable experimental goldfish web app profile isolation.
-BASE_FEATURE(kExperimentalWebAppProfileIsolation,
-             "ExperimentalWebAppProfileIsolation",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enable experimental goldfish web app isolation.
 BASE_FEATURE(kExperimentalWebAppStoragePartitionIsolation,
              "ExperimentalWebAppStoragePartitionIsolation",
@@ -104,6 +129,13 @@ BASE_FEATURE(kJelly, "Jelly", base::FEATURE_ENABLED_BY_DEFAULT);
 // Enables Jellyroll features. Jellyroll is a feature flag for CrOSNext, which
 // controls all system UI updates and new system components. go/jelly-flags
 BASE_FEATURE(kJellyroll, "Jellyroll", base::FEATURE_ENABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Enables Kiosk Heartbeats to be sent via Encrypted Reporting Pipeline
+BASE_FEATURE(kKioskHeartbeatsViaERP,
+             "KioskHeartbeatsViaERP",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Controls enabling / disabling the orca feature.
 BASE_FEATURE(kOrca, "Orca", base::FEATURE_DISABLED_BY_DEFAULT);
@@ -130,6 +162,12 @@ BASE_FEATURE(kUploadOfficeToCloud,
 // Office files support.
 BASE_FEATURE(kUploadOfficeToCloudForEnterprise,
              "UploadOfficeToCloudForEnterprise",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the Microsoft OneDrive integration workflow for enterprise users to
+// cloud integration support.
+BASE_FEATURE(kMicrosoftOneDriveIntegrationForEnterprise,
+             "MicrosoftOneDriveIntegrationForEnterprise",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRoundedWindows,
@@ -174,6 +212,36 @@ bool IsBlinkExtensionDiagnosticsEnabled() {
 
 bool IsCrosComponentsEnabled() {
   return base::FeatureList::IsEnabled(kCrosComponents) && IsJellyEnabled();
+}
+
+bool IsSeparateWebAppShortcutBadgeIconEnabled() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // TODO(b/304661502): Pass the value to lacros.
+  return false;
+#else
+  return base::FeatureList::IsEnabled(kSeparateWebAppShortcutBadgeIcon);
+#endif
+}
+
+bool IsCrosShortstandEnabled() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  return chromeos::BrowserParamsProxy::Get()->IsCrosShortstandEnabled();
+#else
+  return base::FeatureList::IsEnabled(kCrosShortstand);
+#endif
+}
+
+bool IsCrosWebAppShortcutUiUpdateEnabled() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  return chromeos::BrowserParamsProxy::Get()
+      ->IsCrosWebAppShortcutUiUpdateEnabled();
+#else
+  return base::FeatureList::IsEnabled(kCrosWebAppShortcutUiUpdate);
+#endif
+}
+
+bool IsDataControlsFileAccessDefaultDenyEnabled() {
+  return base::FeatureList::IsEnabled(kDataControlsFileAccessDefaultDeny);
 }
 
 bool IsDeskProfilesEnabled() {
@@ -231,6 +299,11 @@ bool IsUploadOfficeToCloudForEnterpriseEnabled() {
   return base::FeatureList::IsEnabled(kUploadOfficeToCloud) &&
          base::FeatureList::IsEnabled(kUploadOfficeToCloudForEnterprise);
 #endif
+}
+
+bool IsMicrosoftOneDriveIntegrationForEnterpriseEnabled() {
+  return base::FeatureList::IsEnabled(
+      kMicrosoftOneDriveIntegrationForEnterprise);
 }
 
 bool IsRoundedWindowsEnabled() {

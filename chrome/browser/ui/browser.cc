@@ -493,7 +493,7 @@ Browser::Browser(const CreateParams& params)
       user_title_(params.user_title),
       signin_view_controller_(this),
       breadcrumb_manager_browser_agent_(
-          breadcrumbs::IsEnabled()
+          breadcrumbs::IsEnabled(g_browser_process->local_state())
               ? std::make_unique<BreadcrumbManagerBrowserAgent>(this)
               : nullptr)
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -660,6 +660,10 @@ Browser::~Browser() {
 // Getters & Setters
 
 base::WeakPtr<Browser> Browser::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
+base::WeakPtr<const Browser> Browser::AsWeakPtr() const {
   return weak_factory_.GetWeakPtr();
 }
 
@@ -1875,6 +1879,13 @@ bool Browser::ShouldFocusLocationBarByDefault(WebContents* source) {
   return search::NavEntryIsInstantNTP(source, entry);
 }
 
+bool Browser::ShouldFocusPageAfterCrash(WebContents* source) {
+  // Focus only the active page when reloading after a crash, otherwise
+  // return false. This is to ensure background reloads via hovercard
+  // don't end up causing a focus loss which results in its dismissal.
+  return source == tab_strip_model_->GetActiveWebContents();
+}
+
 void Browser::ShowRepostFormWarningDialog(WebContents* source) {
   TabModalConfirmDialog::Create(
       std::make_unique<RepostFormWarningController>(source), source);
@@ -2001,6 +2012,10 @@ void Browser::InitiatePreview(content::WebContents& web_contents,
 #endif
 }
 
+bool Browser::ShouldUseInstancedSystemMediaControls() const {
+  return is_type_app() || is_type_app_popup();
+}
+
 void Browser::DidFinishNavigation(
     content::WebContents* web_contents,
     content::NavigationHandle* navigation_handle) {
@@ -2026,6 +2041,41 @@ void Browser::EnumerateDirectory(
     scoped_refptr<content::FileSelectListener> listener,
     const base::FilePath& path) {
   FileSelectHelper::EnumerateDirectory(web_contents, std::move(listener), path);
+}
+
+bool Browser::CanUseWindowingControls(
+    content::RenderFrameHost* requesting_frame) {
+  if (!web_app::AppBrowserController::IsWebApp(this)) {
+    requesting_frame->AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kWarning,
+        "API called from something else than a web_app.");
+    return false;
+  }
+  return true;
+}
+
+void Browser::OnCanResizeFromWebAPIChanged() {
+  window_->OnCanResizeFromWebAPIChanged();
+}
+
+bool Browser::GetCanResize() {
+  return window_->GetCanResize();
+}
+
+void Browser::MinimizeFromWebAPI() {
+  window_->Minimize();
+}
+
+void Browser::MaximizeFromWebAPI() {
+  window_->Maximize();
+}
+
+void Browser::RestoreFromWebAPI() {
+  window_->Restore();
+}
+
+ui::WindowShowState Browser::GetWindowShowState() const {
+  return window_->GetWindowShowState();
 }
 
 bool Browser::CanEnterFullscreenModeForTab(
@@ -2325,7 +2375,7 @@ void Browser::SetWebContentsBlocked(content::WebContents* web_contents,
     // class-level comments for further details.
     if (!exclusive_access_manager_->fullscreen_controller()
              ->IsFullscreenWithinTab(web_contents)) {
-      web_contents->ExitFullscreen(true);
+      web_contents->ExitFullscreen();
     }
   }
 

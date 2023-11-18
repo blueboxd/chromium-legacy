@@ -129,6 +129,7 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
   // IsPlatformOverlayScrollbar() but we don't bother it because
   // overflow:overlay might be deprecated soon.
   virtual bool IsOverlayScrollbar() const;
+  virtual bool IsFluentOverlayScrollbarMinimalMode() const;
 
   bool ShouldParticipateInHitTesting();
 
@@ -213,6 +214,8 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
   // scrollbar-color CSS property
   absl::optional<blink::Color> ScrollbarThumbColor() const;
   absl::optional<blink::Color> ScrollbarTrackColor() const;
+
+  virtual bool IsOpaque() const;
 
   // The LayoutObject that supplies our style information. If the scrollbar is
   // for a document, this is:

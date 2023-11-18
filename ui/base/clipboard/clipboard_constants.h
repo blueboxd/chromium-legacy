@@ -31,6 +31,7 @@ extern const char kMimeTypeDownloadURL[];
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
 extern const char kMimeTypeMozillaURL[];
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) extern const char kMimeTypeHTML[];
+COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) extern const char kMimeTypeHTMLUtf8[];
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) extern const char kMimeTypeSvg[];
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) extern const char kMimeTypeRTF[];
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) extern const char kMimeTypePNG[];
@@ -90,6 +91,10 @@ extern NSString* const kUTTypeChromiumRendererInitiatedDrag;
 // Data format used to tag the current data as confidential.
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
 extern NSString* const kUTTypeConfidentialData;
+
+// A type used to track the source URL of data put in the clipboard.
+COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
+extern NSString* const kUTTypeChromiumSourceURL;
 
 #endif  // BUILDFLAG(IS_APPLE)
 

@@ -54,14 +54,17 @@
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/permissions_policy/document_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink-forward.h"
+#include "third_party/blink/public/web/web_form_related_change_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
+#include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/media_value_change.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/create_element_flags.h"
 #include "third_party/blink/renderer/core/dom/document_encoding_data.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
+#include "third_party/blink/renderer/core/dom/document_part_root.h"
 #include "third_party/blink/renderer/core/dom/document_timing.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event_path.h"
@@ -121,6 +124,10 @@ enum class CSPDisposition : int32_t;
 }  // namespace mojom
 }  // namespace network
 
+namespace ui {
+class ColorProvider;
+}  // namespace ui
+
 namespace blink {
 
 class AXContext;
@@ -133,7 +140,6 @@ class Attr;
 class BeforeUnloadEventListener;
 class CDATASection;
 class CSSStyleSheet;
-class CSSToggleInference;
 class CanvasFontCache;
 class CheckPseudoHasCacheScope;
 class ChromeClient;
@@ -155,7 +161,6 @@ class DocumentLoader;
 class DocumentMarkerController;
 class DocumentNameCollection;
 class DocumentParser;
-class DocumentPartRoot;
 class DocumentResourceCoordinator;
 class DocumentState;
 class DocumentTimeline;
@@ -233,7 +238,6 @@ class SelectorQueryCache;
 class SerializedScriptValue;
 class Settings;
 class SlotAssignmentEngine;
-class SnapCoordinator;
 class StyleEngine;
 class StylePropertyMapReadOnly;
 class StyleResolver;
@@ -738,10 +742,10 @@ class CORE_EXPORT Document : public ContainerNode,
   // Gets the description for the specified page. This includes preferred page
   // size and margins in pixels, assuming 96 pixels per inch. The size and
   // margins must be initialized to the default values that are used if auto is
-  // specified. Note that, if the |page_index| variant of the function is used,
-  // layout needs to be complete, since page names are determined during layout.
+  // specified. Updates layout as needed to get the description.
   void GetPageDescription(uint32_t page_index, WebPrintPageDescription*);
-  void GetPageDescription(const ComputedStyle&, WebPrintPageDescription*);
+  void GetPageDescriptionNoLifecycleUpdate(const ComputedStyle&,
+                                           WebPrintPageDescription*);
 
   ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
 
@@ -1457,6 +1461,7 @@ class CORE_EXPORT Document : public ContainerNode,
       HeapVector<Member<MediaQueryListListener>>&);
   void EnqueueVisualViewportScrollEvent();
   void EnqueueVisualViewportResizeEvent();
+  void EnqueueSnapChangedEvent(Node* target, HeapVector<Member<Node>>& targets);
 
   void DispatchEventsForPrinting();
 
@@ -1584,20 +1589,6 @@ class CORE_EXPORT Document : public ContainerNode,
   }
   void SetPopoverPointerdownTarget(const HTMLElement*);
 
-  HeapHashSet<WeakMember<Element>>& ElementsWithCSSToggles() {
-    return elements_with_css_toggles_;
-  }
-  // Add an element to the set of elements that, because of CSS toggle
-  // creation, need style recalc done later.
-  void AddToRecalcStyleForToggle(Element* element);
-  // Call SetNeedsStyleRecalc for elements from AddToRecalcStyleForToggle;
-  // return whether any calls were made.
-  bool SetNeedsStyleRecalcForToggles();
-  CSSToggleInference* GetCSSToggleInference() {
-    return css_toggle_inference_.Get();
-  }
-  CSSToggleInference& EnsureCSSToggleInference();
-
   // https://crbug.com/1453291
   // The DOM Parts API:
   // https://github.com/WICG/webcomponents/blob/gh-pages/proposals/DOM-Parts.md.
@@ -1611,7 +1602,11 @@ class CORE_EXPORT Document : public ContainerNode,
   Document& EnsureTemplateDocument();
   Document* TemplateDocumentHost() { return template_document_host_.Get(); }
 
-  void DidAddOrRemoveFormRelatedElement(Element*);
+  // Signals the ChromeClient that a (Form|Listed)Element changed dynamically,
+  // passing the changed element as well as the type of the change.
+  // TODO(crbug.com/1483242): Fire the signal for elements that become hidden.
+  void DidChangeFormRelatedElementDynamically(HTMLElement*,
+                                              WebFormRelatedChangeType);
 
   void AddConsoleMessage(ConsoleMessage* message,
                          bool discard_duplicates = false) const;
@@ -1679,9 +1674,6 @@ class CORE_EXPORT Document : public ContainerNode,
     node_count_--;
   }
 #endif  // DCHECK_IS_ON()
-
-  SnapCoordinator& GetSnapCoordinator();
-  void PerformScrollSnappingTasks();
 
   void SetContainsShadowRoot() { may_contain_shadow_roots_ = true; }
 
@@ -1862,6 +1854,9 @@ class CORE_EXPORT Document : public ContainerNode,
   bool InForcedColorsMode() const;
   bool InDarkMode();
 
+  const ui::ColorProvider* GetColorProviderForPainting(
+      mojom::blink::ColorScheme color_scheme) const;
+
   // Capture the toggle event during parsing either by HTML parser or XML
   // parser.
   void SetToggleDuringParsing(bool toggle_during_parsing) {
@@ -1940,6 +1935,10 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void AddPostPrerenderingActivationStep(base::OnceClosure callback);
 
+  using LCPCallback = base::OnceCallback<void(const Element&)>;
+  void AddLCPPredictedCallback(LCPCallback callback);
+  void RunLCPPredictedCallbacks(const Element& lcp_element);
+
   class CORE_EXPORT PaintPreviewScope {
     STACK_ALLOCATED();
 
@@ -1988,6 +1987,15 @@ class CORE_EXPORT Document : public ContainerNode,
     return ignore_destructive_write_module_script_count_;
   }
 
+  void IncrementDataListCount() { ++data_list_count_; }
+  void DecrementDataListCount() {
+    DCHECK_GT(data_list_count_, 0u);
+    --data_list_count_;
+  }
+  // Returns true if the Document has at least one data-list associated with
+  // it.
+  bool HasAtLeastOneDataList() const { return data_list_count_; }
+
   void ResetAgent(Agent& agent);
 
   bool SupportsLegacyDOMMutations();
@@ -1997,6 +2005,20 @@ class CORE_EXPORT Document : public ContainerNode,
   // https://github.com/whatwg/html/pull/9538
   static Document* parseHTMLUnsafe(ExecutionContext* context,
                                    const String& html);
+
+  // Delays execution of pending async scripts until a milestone is reached.
+  // Used in conjunction with kDelayAsyncScriptExecution experiment.
+  void DelayAsyncScriptExecution();
+  void ResumeAsyncScriptExecution();
+
+  // This method should only be called when the document is top-level and it is
+  // rendering static media like video or images.
+  void SetOverrideSiteForCookiesForCSPMedia(bool value);
+
+  // Flags to determine if LCPP ElementLocator matched during
+  // HTML preload scanning.
+  void SetLcpElementFoundInHtml(bool found);
+  bool IsLcpElementFoundInHtml();
 
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
@@ -2244,6 +2266,10 @@ class CORE_EXPORT Document : public ContainerNode,
   // The callback list for post-prerendering activation step.
   // https://wicg.github.io/nav-speculation/prerendering.html#document-post-prerendering-activation-steps-list
   Vector<base::OnceClosure> post_prerendering_activation_callbacks_;
+
+  // Callbacks are called when predicted LCP is painted. Never called if
+  // prediction is incorrect.
+  Vector<LCPCallback> lcp_predicted_callbacks_;
 
   bool evaluate_media_queries_on_style_recalc_;
 
@@ -2510,14 +2536,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // A set of all open popovers, of all types.
   HeapHashSet<Member<HTMLElement>> all_open_popovers_;
 
-  // Elements that have CSS Toggles.
-  HeapHashSet<WeakMember<Element>> elements_with_css_toggles_;
-  // Elements that need to be restyled because a toggle was created on them,
-  // or a prior sibling, during the previous restyle.
-  HeapHashSet<Member<Element>> elements_needing_style_recalc_for_toggle_;
-  // The inference engine for CSS toggles.
-  Member<CSSToggleInference> css_toggle_inference_;
-
   Member<DocumentPartRoot> document_part_root_;
 
   int load_event_delay_count_;
@@ -2556,6 +2574,7 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<DocumentTimeline> timeline_;
   Member<PendingAnimations> pending_animations_;
   Member<WorkletAnimationController> worklet_animation_controller_;
+  AnimationClock animation_clock_;
 
   NodeMoveScopeItemSet node_move_scope_items_;
 
@@ -2573,8 +2592,6 @@ class CORE_EXPORT Document : public ContainerNode,
 #if DCHECK_IS_ON()
   int node_count_ = 0;
 #endif
-
-  Member<SnapCoordinator> snap_coordinator_;
 
   Member<PropertyRegistry> property_registry_;
 
@@ -2707,8 +2724,17 @@ class CORE_EXPORT Document : public ContainerNode,
   // http://crbug.com/1079044
   unsigned ignore_destructive_write_module_script_count_ = 0;
 
+  // Number of data-list elements in this document.
+  unsigned data_list_count_ = 0;
+
   // If legacy DOM Mutation event listeners are supported by the embedder.
   absl::optional<bool> legacy_dom_mutations_supported_;
+
+  // For rendering media URLs in a top-level context that use the
+  // Content-Security-Policy header to sandbox their content. This causes
+  // access-controlled media to not load when it is the top-level URL when
+  // third-party cookie blocking is enabled.
+  bool override_site_for_cookies_for_csp_media_ = false;
 
   // If you want to add new data members to blink::Document, please reconsider
   // if the members really should be in blink::Document.  document.h is a very

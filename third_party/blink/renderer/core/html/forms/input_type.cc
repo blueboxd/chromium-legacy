@@ -199,7 +199,7 @@ bool InputType::IsTextField() const {
   return false;
 }
 
-bool InputType::ShouldAutoDirUseValue() const {
+bool InputType::IsAutoDirectionalityFormAssociated() const {
   return false;
 }
 
@@ -277,7 +277,17 @@ bool InputType::IsFormDataAppendable() const {
 }
 
 void InputType::AppendToFormData(FormData& form_data) const {
-  form_data.AppendFromElement(GetElement().GetName(), GetElement().Value());
+  if (!IsSubmitInputType()) {
+    form_data.AppendFromElement(GetElement().GetName(), GetElement().Value());
+  }
+  if (IsAutoDirectionalityFormAssociated()) {
+    const AtomicString& dirname_attr_value =
+        GetElement().FastGetAttribute(html_names::kDirnameAttr);
+    if (!dirname_attr_value.IsNull()) {
+      form_data.AppendFromElement(dirname_attr_value,
+                                  GetElement().DirectionForFormData());
+    }
+  }
 }
 
 String InputType::ResultForDialogSubmit() const {
@@ -770,10 +780,12 @@ bool InputType::CanSetStringValue() const {
   return false;
 }
 
-bool InputType::IsKeyboardFocusable() const {
+bool InputType::IsKeyboardFocusable(
+    Element::UpdateBehavior update_behavior) const {
   // Inputs are always keyboard focusable if they are focusable at all,
   // and don't have a negative tabindex set.
-  return GetElement().IsFocusable() && GetElement().tabIndex() >= 0;
+  return GetElement().IsFocusable(update_behavior) &&
+         GetElement().tabIndex() >= 0;
 }
 
 bool InputType::MayTriggerVirtualKeyboard() const {

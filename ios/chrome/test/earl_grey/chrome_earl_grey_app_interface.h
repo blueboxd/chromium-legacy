@@ -386,6 +386,12 @@
 // Gets the number of entities of the given `type`.
 + (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type;
 
+// Forces every request to fail in a way that simulates a network failure.
++ (void)disconnectFakeSyncServerNetwork;
+
+// Undoes the effects of disconnectFakeSyncServerNetwork.
++ (void)connectFakeSyncServerNetwork;
+
 // Injects a bookmark into the fake sync server with `URL` and `title`.
 + (void)addFakeSyncServerBookmarkWithURL:(NSString*)URL title:(NSString*)title;
 
@@ -537,9 +543,6 @@
 // Returns whether the Web Channels feature is enabled.
 + (BOOL)isWebChannelsEnabled;
 
-// Returns whether UIButtonConfiguration changes are enabled.
-+ (BOOL)isUIButtonConfigurationEnabled;
-
 // Returns whether the bottom omnibox steady state feature is enabled.
 + (BOOL)isBottomOmniboxSteadyStateEnabled;
 
@@ -564,13 +567,13 @@
 #pragma mark - Default Utilities (EG2)
 
 // Stores a value for the provided key in NSUserDefaults.
-+ (void)setUserDefaultObject:(id)value forKey:(NSString*)defaultName;
++ (void)setUserDefaultsObject:(id)value forKey:(NSString*)defaultName;
 
 // Removes the object for the provided `key` in NSUserDefaults.
-+ (void)removeUserDefaultObjectForKey:(NSString*)key;
++ (void)removeUserDefaultsObjectForKey:(NSString*)key;
 
 // Returns the value for provided key from NSUserDefaults.
-+ (id)userDefaultObjectForKey:(NSString*)key;
++ (id)userDefaultsObjectForKey:(NSString*)key;
 
 #pragma mark - Pref Utilities (EG2)
 
@@ -591,6 +594,10 @@
 // Sets the string value for the local state pref with `prefName`. Local State
 // contains the preferences that are shared between all browser states.
 + (void)setStringValue:(NSString*)value forLocalStatePref:(NSString*)prefName;
+
+// Sets the bool value for the local state pref with `prefName`. Local State
+// contains the preferences that are shared between all browser states.
++ (void)setBoolValue:(BOOL)value forLocalStatePref:(NSString*)prefName;
 
 // Gets the value of a user pref in the original browser state. Returns a
 // base::Value encoded as a JSON string. If the pref was not registered,
@@ -683,11 +690,6 @@
 
 // Copies a chrome:// URL that doesn't require internet connection.
 + (void)copyURLToPasteBoard;
-
-// Disables default browser promo. If a test needs to check a message drop down
-// in a second window, this needs to be disabled or the popup will kill the
-// message.
-+ (void)disableDefaultBrowserPromo;
 
 #pragma mark - First Run Utilities
 

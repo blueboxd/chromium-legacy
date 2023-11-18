@@ -109,22 +109,22 @@ public class StatusBarColorControllerTest {
                 ChromeColors.getPrimaryBackgroundColor(activity, true);
 
         sActivityTestRule.loadUrlInNewTab(
-                "about:blank", true /* incognito */, TabLaunchType.FROM_CHROME_UI);
+                "about:blank", /* incognito= */ true, TabLaunchType.FROM_CHROME_UI);
         TabModelSelector tabModelSelector = activity.getTabModelSelector();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    tabModelSelector.selectModel(true /* incognito */);
+                    tabModelSelector.selectModel(/* incognito= */ true);
                 });
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     activity.getLayoutManager()
-                            .showLayout(LayoutType.TAB_SWITCHER, false /* animate */);
+                            .showLayout(LayoutType.TAB_SWITCHER, /* animate= */ false);
                 });
 
         waitForStatusBarColor(activity, expectedOverviewIncognitoColor);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    tabModelSelector.selectModel(false /* incognito */);
+                    tabModelSelector.selectModel(/* incognito= */ false);
                 });
         ThemeTestUtils.assertStatusBarColor(activity, expectedOverviewStandardColor);
     }
@@ -151,7 +151,7 @@ public class StatusBarColorControllerTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     activity.getLayoutManager()
-                            .showLayout(LayoutType.TAB_SWITCHER, false /* animate */);
+                            .showLayout(LayoutType.TAB_SWITCHER, /* animate= */ false);
                 });
         waitForStatusBarColor(activity, expectedDefaultStandardColor);
     }
@@ -161,7 +161,10 @@ public class StatusBarColorControllerTest {
     @LargeTest
     @Feature({"StatusBar"})
     @EnableFeatures({ChromeFeatureList.START_SURFACE_REFACTOR})
-    @DisableFeatures({ChromeFeatureList.SURFACE_POLISH})
+    @DisableFeatures({
+        ChromeFeatureList.SURFACE_POLISH,
+        ChromeFeatureList.SHOW_NTP_AT_STARTUP_ANDROID
+    })
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE}) // Status bar is always black on tablets
     public void testBrandColorIgnoredInStartSurface() throws Exception {
         ChromeTabbedActivity activity = sActivityTestRule.getActivity();
@@ -170,7 +173,7 @@ public class StatusBarColorControllerTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     activity.getLayoutManager()
-                            .showLayout(LayoutType.START_SURFACE, false /* animate */);
+                            .showLayout(LayoutType.START_SURFACE, /* animate= */ false);
                 });
         StartSurfaceTestUtils.waitForStartSurfaceVisible(activity);
         waitForStatusBarColor(activity, expectedDefaultStandardColor);
@@ -222,6 +225,7 @@ public class StatusBarColorControllerTest {
     @LargeTest
     @Feature({"StatusBar"})
     @EnableFeatures({ChromeFeatureList.START_SURFACE_REFACTOR, ChromeFeatureList.SURFACE_POLISH})
+    @DisableFeatures({ChromeFeatureList.SHOW_NTP_AT_STARTUP_ANDROID})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE}) // Status bar is always black on tablets
     public void testBrandColorNotIgnoredInStartSurfaceWithSurfacePolishEnabled() throws Exception {
         ChromeTabbedActivity activity = sActivityTestRule.getActivity();
@@ -234,7 +238,7 @@ public class StatusBarColorControllerTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     activity.getLayoutManager()
-                            .showLayout(LayoutType.START_SURFACE, false /* animate */);
+                            .showLayout(LayoutType.START_SURFACE, /* animate= */ false);
                 });
         StartSurfaceTestUtils.waitForStartSurfaceVisible(activity);
         waitForStatusBarColor(activity, expectedPolishedStandardColor);
@@ -243,7 +247,7 @@ public class StatusBarColorControllerTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     activity.getLayoutManager()
-                            .showLayout(LayoutType.TAB_SWITCHER, false /* animate */);
+                            .showLayout(LayoutType.TAB_SWITCHER, /* animate= */ false);
                 });
         waitForStatusBarColor(activity, expectedDefaultStandardColor);
     }

@@ -44,11 +44,6 @@ void AddConsoleMessageForSpeculationRuleSetValidation(
   CHECK(!script_element || !resource);
 
   if (speculation_rule_set.HasError()) {
-    if (speculation_rule_set.ShouldReportUMAForError()) {
-      CountSpeculationRulesLoadOutcome(
-          script_element ? SpeculationRulesLoadOutcome::kParseErrorInline
-                         : SpeculationRulesLoadOutcome::kParseErrorFetched);
-    }
     String error_message;
     if (script_element) {
       error_message = "While parsing speculation rules: " +
@@ -129,6 +124,7 @@ void SetParseErrorMessage(String* out_error, String message) {
 SpeculationRule* ParseSpeculationRule(JSONObject* input,
                                       const KURL& base_url,
                                       ExecutionContext* context,
+                                      bool is_browser_injected,
                                       String* out_error,
                                       Vector<String>& out_warnings) {
   // https://wicg.github.io/nav-speculation/speculation-rules.html#parse-a-speculation-rule
@@ -368,7 +364,7 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input,
       return nullptr;
     }
 
-    if (eagerness_str == "eager") {
+    if (eagerness_str == "eager" || eagerness_str == "immediate") {
       eagerness = mojom::blink::SpeculationEagerness::kEager;
     } else if (eagerness_str == "moderate") {
       eagerness = mojom::blink::SpeculationEagerness::kModerate;
@@ -413,17 +409,23 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input,
     }
   }
 
-  const mojom::blink::SpeculationInjectionWorld world =
-      context->GetCurrentWorld()
-          ? context->GetCurrentWorld()->IsMainWorld()
-                ? mojom::blink::SpeculationInjectionWorld::kMain
-                : mojom::blink::SpeculationInjectionWorld::kIsolated
-          : mojom::blink::SpeculationInjectionWorld::kNone;
+  auto injection_type = mojom::blink::SpeculationInjectionType::kNone;
+  if (is_browser_injected) {
+    injection_type =
+        mojom::blink::SpeculationInjectionType::kAutoSpeculationRules;
+  } else if (auto world = context->GetCurrentWorld()) {
+    if (world->IsMainWorld()) {
+      injection_type = mojom::blink::SpeculationInjectionType::kMainWorldScript;
+    } else {
+      injection_type =
+          mojom::blink::SpeculationInjectionType::kIsolatedWorldScript;
+    }
+  }
 
   return MakeGarbageCollected<SpeculationRule>(
       std::move(urls), document_rule_predicate, requires_anonymous_client_ip,
       target_hint, referrer_policy, eagerness, std::move(no_vary_search),
-      world);
+      injection_type);
 }
 
 }  // namespace
@@ -460,6 +462,26 @@ SpeculationRuleSet::Source* SpeculationRuleSet::Source::FromRequest(
                                       request_id);
 }
 
+SpeculationRuleSet::Source* SpeculationRuleSet::Source::FromBrowserInjected(
+    const String& source_text,
+    const KURL& base_url) {
+  return MakeGarbageCollected<Source>(base::PassKey<Source>(), source_text,
+                                      nullptr, absl::nullopt, base_url,
+                                      absl::nullopt);
+}
+
+bool SpeculationRuleSet::Source::IsFromInlineScript() const {
+  return node_id_.has_value();
+}
+
+bool SpeculationRuleSet::Source::IsFromRequest() const {
+  return request_id_.has_value();
+}
+
+bool SpeculationRuleSet::Source::IsFromBrowserInjected() const {
+  return !IsFromInlineScript() && !IsFromRequest();
+}
+
 const String& SpeculationRuleSet::Source::GetSourceText() const {
   return source_text_;
 }
@@ -468,8 +490,12 @@ const absl::optional<DOMNodeId>& SpeculationRuleSet::Source::GetNodeId() const {
   return node_id_;
 }
 
-const absl::optional<KURL>& SpeculationRuleSet::Source::GetSourceURL() const {
-  return base_url_;
+const absl::optional<KURL> SpeculationRuleSet::Source::GetSourceURL() const {
+  if (IsFromRequest()) {
+    CHECK(base_url_.has_value());
+    return base_url_;
+  }
+  return absl::nullopt;
 }
 
 const absl::optional<uint64_t>& SpeculationRuleSet::Source::GetRequestId()
@@ -574,7 +600,8 @@ SpeculationRuleSet* SpeculationRuleSet::Parse(Source* source,
           String error_message;
           Vector<String> warning_messages;
           SpeculationRule* rule = ParseSpeculationRule(
-              input_rule, base_url, context, &error_message, warning_messages);
+              input_rule, base_url, context, source->IsFromBrowserInjected(),
+              &error_message, warning_messages);
 
           // If parse failed for a rule, then ignore it and continue.
           if (!rule) {

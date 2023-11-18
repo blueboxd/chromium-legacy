@@ -43,31 +43,6 @@ using version_info::GetProductNameAndVersionForUserAgent;
 namespace autofill {
 namespace {
 
-// TODO(bondd): PdmChangeWaiter in autofill_uitest_util.cc is a replacement for
-// this class. Remove this class and use helper functions in that file instead.
-class WindowedPersonalDataManagerObserver : public PersonalDataManagerObserver {
- public:
-  explicit WindowedPersonalDataManagerObserver(Profile* profile)
-      : profile_(profile),
-        message_loop_runner_(new content::MessageLoopRunner) {
-    PersonalDataManagerFactory::GetForProfile(profile_)->AddObserver(this);
-  }
-  ~WindowedPersonalDataManagerObserver() override {}
-
-  // Waits for the PersonalDataManager's list of profiles to be updated.
-  void Wait() {
-    message_loop_runner_->Run();
-    PersonalDataManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
-  }
-
-  // PersonalDataManagerObserver:
-  void OnPersonalDataChanged() override { message_loop_runner_->Quit(); }
-
- private:
-  raw_ptr<Profile> profile_;
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-};
-
 class WindowedNetworkObserver {
  public:
   explicit WindowedNetworkObserver(Matcher<std::string> expected_upload_data)
@@ -81,7 +56,7 @@ class WindowedNetworkObserver {
   WindowedNetworkObserver(const WindowedNetworkObserver&) = delete;
   WindowedNetworkObserver& operator=(const WindowedNetworkObserver&) = delete;
 
-  ~WindowedNetworkObserver() {}
+  ~WindowedNetworkObserver() = default;
 
   // Waits for a network request with the |expected_upload_data_|.
   void Wait() {
@@ -146,7 +121,8 @@ class AutofillServerTest : public InProcessBrowserTest {
     scoped_feature_list_.InitWithFeatures(
         // Enabled.
         {features::test::kAutofillAllowNonHttpActivation,
-         features::test::kAutofillServerCommunication},
+         features::test::kAutofillServerCommunication,
+         features::kAutofillEnableSupportForApartmentNumbers},
         // Disabled.
         {});
 
@@ -204,8 +180,7 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
                        QueryAndUploadBothIncludeFieldsWithAutocompleteOff) {
   // Seed some test Autofill profile data, as upload requests are only made when
   // there is local data available to use as a baseline.
-  WindowedPersonalDataManagerObserver personal_data_observer(
-      browser()->profile());
+  PdmChangeWaiter personal_data_observer(browser()->profile());
   PersonalDataManagerFactory::GetForProfile(browser()->profile())
       ->AddProfile(test::GetFullProfile());
   personal_data_observer.Wait();
@@ -292,14 +267,10 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
 
   // Enabling raw form data uploading (e.g., field name) is too complicated in
   // this test. So, don't expect it in the upload.
-  test::FillUploadField(upload->add_field(), 2594484045U, nullptr, nullptr,
-                        nullptr, 2U);
-  test::FillUploadField(upload->add_field(), 2750915947U, nullptr, nullptr,
-                        nullptr, 2U);
-  test::FillUploadField(upload->add_field(), 3494787134U, nullptr, nullptr,
-                        nullptr, 2U);
-  test::FillUploadField(upload->add_field(), 1236501728U, nullptr, nullptr,
-                        nullptr, 2U);
+  test::FillUploadField(upload->add_field(), 2594484045U, 2U);
+  test::FillUploadField(upload->add_field(), 2750915947U, 2U);
+  test::FillUploadField(upload->add_field(), 3494787134U, 2U);
+  test::FillUploadField(upload->add_field(), 1236501728U, 2U);
 
   WindowedNetworkObserver upload_network_observer(EqualsUploadProto(request));
   content::WebContents* web_contents =

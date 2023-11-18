@@ -225,10 +225,6 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     return WriteRTCEncodedVideoFrame(video_frame);
   }
   if (auto* video_frame = dispatcher.ToMostDerived<VideoFrame>()) {
-    if (!RuntimeEnabledFeatures::WebCodecsEnabled(
-            ExecutionContext::From(GetScriptState()))) {
-      return false;
-    }
     if (IsForStorage()) {
       exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
                                         "A VideoFrame cannot be serialized for "
@@ -245,10 +241,6 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     return WriteVideoFrameHandle(std::move(handle));
   }
   if (auto* audio_data = dispatcher.ToMostDerived<AudioData>()) {
-    if (!RuntimeEnabledFeatures::WebCodecsEnabled(
-            ExecutionContext::From(GetScriptState()))) {
-      return false;
-    }
     if (IsForStorage()) {
       exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
                                         "AudioData cannot be serialized for "
@@ -265,10 +257,6 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     return WriteMediaAudioBuffer(std::move(data));
   }
   if (auto* audio_chunk = dispatcher.ToMostDerived<EncodedAudioChunk>()) {
-    if (!RuntimeEnabledFeatures::WebCodecsEnabled(
-            ExecutionContext::From(GetScriptState()))) {
-      return false;
-    }
     if (IsForStorage()) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kDataCloneError,
@@ -278,10 +266,6 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     return WriteDecoderBuffer(audio_chunk->buffer(), /*for_audio=*/true);
   }
   if (auto* video_chunk = dispatcher.ToMostDerived<EncodedVideoChunk>()) {
-    if (!RuntimeEnabledFeatures::WebCodecsEnabled(
-            ExecutionContext::From(GetScriptState()))) {
-      return false;
-    }
     if (IsForStorage()) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kDataCloneError,
@@ -685,7 +669,7 @@ bool V8ScriptValueSerializerForModules::WriteMediaStreamTrack(
       MediaStreamVideoSource* const native_source =
           MediaStreamVideoSource::GetVideoSource(source);
       DCHECK(native_source);
-      WriteUint32(native_source->GetCropVersion());
+      WriteUint32(native_source->GetSubCaptureTargetVersion());
       break;
   }
   // TODO(crbug.com/1288839): Needs to move to FinalizeTransfer?

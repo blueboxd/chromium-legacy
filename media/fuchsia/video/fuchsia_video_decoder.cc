@@ -20,6 +20,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/common/resources/shared_image_format.h"
+#include "gpu/command_buffer/client/client_shared_image.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -120,6 +121,7 @@ class FuchsiaVideoDecoder::OutputMailbox {
                      gpu::SHARED_IMAGE_USAGE_SCANOUT |
                      gpu::SHARED_IMAGE_USAGE_VIDEO_DECODE;
 
+    scoped_refptr<gpu::ClientSharedImage> client_shared_image;
     if (IsMultiPlaneFormatForHardwareVideoEnabled()) {
       auto buffer_format = gmb->GetFormat();
 
@@ -136,18 +138,20 @@ class FuchsiaVideoDecoder::OutputMailbox {
       }
       shared_image_format.SetPrefersExternalSampler();
 
-      mailbox_ =
+      client_shared_image =
           raster_context_provider_->SharedImageInterface()->CreateSharedImage(
               shared_image_format, gmb->GetSize(), color_space,
               kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage,
               "FuchsiaVideoDecoder", gmb->CloneHandle());
     } else {
-      mailbox_ =
+      client_shared_image =
           raster_context_provider_->SharedImageInterface()->CreateSharedImage(
               gmb.get(), nullptr, gfx::BufferPlane::DEFAULT, color_space,
               kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage,
               "FuchsiaVideoDecoder");
     }
+    CHECK(client_shared_image);
+    mailbox_ = client_shared_image->mailbox();
 
     create_sync_token_ = raster_context_provider_->SharedImageInterface()
                              ->GenVerifiedSyncToken();

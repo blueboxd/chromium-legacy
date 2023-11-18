@@ -54,7 +54,8 @@ void Socket::WriteData() {
 
   DCHECK(request.byte_count >= request.bytes_written);
   io_buffer_write_ = base::MakeRefCounted<net::WrappedIOBuffer>(
-      request.io_buffer->data() + request.bytes_written);
+      request.io_buffer->data() + request.bytes_written,
+      request.byte_count - request.bytes_written);
   int result = WriteImpl(
       io_buffer_write_.get(), request.byte_count - request.bytes_written,
       base::BindOnce(&Socket::OnWriteComplete, base::Unretained(this)));
@@ -104,7 +105,7 @@ void Socket::Listen(const std::string& address,
 
 void Socket::Accept(AcceptCompletionCallback callback) {
   std::move(callback).Run(net::ERR_FAILED, mojo::NullRemote() /* socket */,
-                          absl::nullopt, mojo::ScopedDataPipeConsumerHandle(),
+                          std::nullopt, mojo::ScopedDataPipeConsumerHandle(),
                           mojo::ScopedDataPipeProducerHandle());
 }
 

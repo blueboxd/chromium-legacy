@@ -17,6 +17,7 @@
 #include "base/notreached.h"
 #include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
+#include "chrome/browser/ash/app_mode/kiosk_chrome_app_manager.h"
 #include "chrome/browser/ash/attestation/attestation_ca_client.h"
 #include "chrome/browser/ash/language_preferences.h"
 #include "chrome/browser/ash/login/app_mode/kiosk_launch_controller.h"
@@ -29,8 +30,8 @@
 #include "chrome/browser/ash/login/oobe_quick_start/target_device_bootstrap_controller.h"
 #include "chrome/browser/ash/login/screens/encryption_migration_screen.h"
 #include "chrome/browser/ash/login/screens/gaia_screen.h"
+#include "chrome/browser/ash/login/screens/osauth/recovery_eligibility_screen.h"
 #include "chrome/browser/ash/login/screens/pin_setup_screen.h"
-#include "chrome/browser/ash/login/screens/recovery_eligibility_screen.h"
 #include "chrome/browser/ash/login/screens/reset_screen.h"
 #include "chrome/browser/ash/login/screens/saml_confirm_password_screen.h"
 #include "chrome/browser/ash/login/screens/signin_fatal_error_screen.h"
@@ -389,7 +390,7 @@ void LoginDisplayHostCommon::AttemptShowEnableConsumerKioskScreen() {
   policy::BrowserPolicyConnectorAsh* connector =
       g_browser_process->platform_part()->browser_policy_connector_ash();
   if (!connector->IsDeviceEnterpriseManaged() &&
-      KioskAppManager::IsConsumerKioskEnabled()) {
+      KioskChromeAppManager::IsConsumerKioskEnabled()) {
     ShowEnableConsumerKioskScreen();
   }
 }
@@ -585,24 +586,15 @@ void LoginDisplayHostCommon::SetAuthSessionForOnboarding(
       RecoveryEligibilityScreen::ShouldSkipRecoverySetupBecauseOfPolicy()) {
     return;
   }
-  if (ash::features::ShouldUseAuthSessionStorage()) {
-    wizard_context_->extra_factors_token = AuthSessionStorage::Get()->Store(
-        std::make_unique<UserContext>(user_context));
-  } else {
-    wizard_context_->extra_factors_auth_session =
-        std::make_unique<UserContext>(user_context);
-  }
+  wizard_context_->extra_factors_token = AuthSessionStorage::Get()->Store(
+      std::make_unique<UserContext>(user_context));
 }
 
 void LoginDisplayHostCommon::ClearOnboardingAuthSession() {
-  if (ash::features::ShouldUseAuthSessionStorage()) {
-    if (wizard_context_->extra_factors_token.has_value()) {
-      AuthSessionStorage::Get()->Invalidate(
-          wizard_context_->extra_factors_token.value(), base::DoNothing());
-      wizard_context_->extra_factors_token = absl::nullopt;
-    }
-  } else {
-    wizard_context_->extra_factors_auth_session.reset();
+  if (wizard_context_->extra_factors_token.has_value()) {
+    AuthSessionStorage::Get()->Invalidate(
+        wizard_context_->extra_factors_token.value(), base::DoNothing());
+    wizard_context_->extra_factors_token = absl::nullopt;
   }
 }
 

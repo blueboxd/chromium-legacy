@@ -34,15 +34,17 @@ chromium-metrics-reviews@google.com.
   <variant name="WillStartRequest"/>
 </variants>
 
-<variants name="PrerenderTriggerType">
-<!-- Should be kept in sync with variants PagePrerenderTriggerType in
+<variants name="PreloadingTriggerType">
+<!-- Should be kept in sync with variants PagePreloadingTriggerType in
   tools/metrics/histograms/metadata/page/histograms.xml.
 -->
 
   <variant name=".Embedder_BookmarkBar"/>
   <variant name=".Embedder_DefaultSearchEngine"/>
   <variant name=".Embedder_DirectURLInput"/>
+  <variant name=".Embedder_NewTabPage"/>
   <variant name=".SpeculationRule"/>
+  <variant name=".SpeculationRuleFromAutoSpeculationRules"/>
   <variant name=".SpeculationRuleFromIsolatedWorld"/>
 </variants>
 
@@ -73,7 +75,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BackForwardCache.AllSites.HistoryNavigationOutcome"
-    enum="BackForwardCacheHistoryNavigationOutcome" expires_after="2024-03-03">
+    enum="BackForwardCacheHistoryNavigationOutcome" expires_after="2024-05-05">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -104,7 +106,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="BackForwardCache.AllSites.HistoryNavigationOutcome.BrowsingInstanceNotSwappedReason"
     enum="BackForwardCacheBrowsingInstanceNotSwappedReason"
-    expires_after="2024-03-03">
+    expires_after="2024-05-05">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -141,7 +143,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="BackForwardCache.AllSites.HistoryNavigationOutcome.NotRestoredReason"
-    enum="BackForwardCacheNotRestoredReason" expires_after="2024-03-03">
+    enum="BackForwardCacheNotRestoredReason" expires_after="2024-05-05">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -155,23 +157,9 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="BackForwardCache.CountEntriesWithoutRendererAck" units="count"
-    expires_after="2021-10-01">
-  <owner>yuzus@chromium.org</owner>
-  <owner>bfcache-dev@chromium.org</owner>
-  <summary>
-    This metric is emitted when we try to enforce the cache size limit, which is
-    1) when a page enters BackForwardCache and 2) when a page entering
-    BackForwardCache receives an acknowledgement from the renderer.
-
-    This reports the number of the entries that have not received an
-    acknowledgement from the renderer.
-  </summary>
-</histogram>
-
 <histogram name="BackForwardCache.EvictedAfterDocumentRestoredReason"
     enum="BackForwardCacheEvictedAfterDocumentRestoredReason"
-    expires_after="2024-03-03">
+    expires_after="2024-05-05">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -187,7 +175,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BackForwardCache.Eviction.Renderer"
-    enum="BackForwardCacheRendererEvictionReason" expires_after="2024-03-03">
+    enum="BackForwardCacheRendererEvictionReason" expires_after="2024-05-05">
   <owner>rakina@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -208,7 +196,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="BackForwardCache.Experimental.UnexpectedIPCMessagePostedToCachedFrame.MethodHash"
-    enum="MojoInterfaceName" expires_after="2024-03-03">
+    enum="MojoInterfaceName" expires_after="2024-05-05">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -239,7 +227,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BackForwardCache.HistoryNavigationOutcome"
-    enum="BackForwardCacheHistoryNavigationOutcome" expires_after="2024-03-03">
+    enum="BackForwardCacheHistoryNavigationOutcome" expires_after="2024-05-05">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -253,7 +241,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BackForwardCache.HistoryNavigationOutcome.BlocklistedFeature"
-    enum="WebSchedulerTrackedFeature" expires_after="2024-03-03">
+    enum="WebSchedulerTrackedFeature" expires_after="2024-05-05">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -271,7 +259,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="BackForwardCache.HistoryNavigationOutcome.BrowsingInstanceNotSwappedReason"
     enum="BackForwardCacheBrowsingInstanceNotSwappedReason"
-    expires_after="2024-03-03">
+    expires_after="2024-05-05">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -289,7 +277,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="BackForwardCache.HistoryNavigationOutcome.DisabledForRenderFrameHostReason2"
     enum="BackForwardCacheDisabledForRenderFrameHostReason2"
-    expires_after="2024-03-03">
+    expires_after="2024-05-05">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -346,7 +334,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BackForwardCache.HistoryNavigationOutcome.NotRestoredReason"
-    enum="BackForwardCacheNotRestoredReason" expires_after="2024-03-03">
+    enum="BackForwardCacheNotRestoredReason" expires_after="2024-05-05">
   <owner>fergal@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -363,7 +351,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="BackForwardCache.HistoryNavigationOutcome.RelatedActiveContents.Count2"
-    units="count" expires_after="2024-02-25">
+    units="count" expires_after="2024-04-28">
   <owner>rakina@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -376,7 +364,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="BackForwardCache.HistoryNavigationOutcome.RelatedActiveContents.IsPotentiallySyncAccessible2"
-    enum="RelatedActiveContentsSyncAccessInfo" expires_after="2024-02-25">
+    enum="RelatedActiveContentsSyncAccessInfo" expires_after="2024-04-28">
   <owner>rakina@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -434,7 +422,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BackForwardCache.ProcessReuse.{SiteRelation}" units="count"
-    expires_after="2024-01-15">
+    expires_after="2024-04-28">
   <owner>rakina@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -497,6 +485,7 @@ chromium-metrics-reviews@google.com.
     enum="AutomaticBeaconOutcome" expires_after="2024-10-01">
   <owner>lbrady@google.com</owner>
   <owner>shivanisha@chromium.org</owner>
+  <owner>chrome-fenced-frames-core@google.com</owner>
   <summary>
     Record if a 'reserved.top_navigation' automatic beacon was sent out, or the
     reason for not sending the beacon if it was not sent out.
@@ -522,7 +511,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Navigation.BackForward.TimeFromOpenBackNavigationMenuToActivateItem"
-    units="ms" expires_after="2024-02-25">
+    units="ms" expires_after="2024-04-28">
   <owner>leimy@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -536,7 +525,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Navigation.BackForward.TimeFromOpenBackNavigationMenuToCloseMenu"
-    units="ms" expires_after="2024-02-25">
+    units="ms" expires_after="2024-04-28">
   <owner>leimy@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -583,7 +572,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Navigation.DidCommitSameDocumentNavigation.Duration"
-    units="ms" expires_after="2024-02-20">
+    units="ms" expires_after="2024-04-28">
   <owner>peilinwang@google.com</owner>
   <owner>woa-performance-bugs+jank@google.com</owner>
   <summary>
@@ -700,7 +689,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Navigation.EngagementTime.Ratio" units="%"
-    expires_after="2024-02-20">
+    expires_after="2024-04-28">
   <owner>estark@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -709,10 +698,22 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Navigation.FencedFrameAutomaticBeaconEventType"
+    enum="FencedFrameAutomaticBeaconEventType" expires_after="2024-10-01">
+  <owner>lbrady@google.com</owner>
+  <owner>shivanisha@chromium.org</owner>
+  <owner>chrome-fenced-frames-core@google.com</owner>
+  <summary>
+    Recorded what event type is used when automatic beacon data is set using
+    setReportEventDataForAutomaticBeacons().
+  </summary>
+</histogram>
+
 <histogram name="Navigation.FencedFrameTopNavigation"
     enum="FencedFrameNavigationState" expires_after="2024-10-01">
   <owner>lbrady@google.com</owner>
   <owner>shivanisha@chromium.org</owner>
+  <owner>chrome-fenced-frames-core@google.com</owner>
   <summary>
     This records top-level navigations that originated from a fenced frame or
     URN iframe. At navigation start, a 'Begin' is logged. If the navigation
@@ -724,7 +725,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Navigation.GetFrameHostForNavigation.Duration" units="ms"
-    expires_after="2024-02-20">
+    expires_after="2024-04-28">
   <owner>peilinwang@google.com</owner>
   <owner>woa-performance-bugs+jank@google.com</owner>
   <summary>
@@ -784,7 +785,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Navigation.HostnameHasDeviationCharacters" units="count"
-    expires_after="2024-02-11">
+    expires_after="2024-04-28">
   <owner>meacer@chromium.org</owner>
   <owner>chrome-trusty-transport@google.com</owner>
   <summary>
@@ -807,7 +808,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Navigation.IsLockedProcess" enum="NavigationIsLockedProcess"
-    expires_after="2023-11-10">
+    expires_after="2024-11-10">
   <owner>alexmos@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -818,7 +819,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Navigation.IsLockedProcess.HTTPOrHTTPS"
-    enum="NavigationIsLockedProcess" expires_after="2023-11-10">
+    enum="NavigationIsLockedProcess" expires_after="2024-11-10">
   <owner>alexmos@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -918,7 +919,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Navigation.MainFrame.SiteEngagementLevel"
-    enum="SiteEngagementLevel" expires_after="2024-02-25">
+    enum="SiteEngagementLevel" expires_after="2024-04-28">
   <owner>meacer@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -928,7 +929,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Navigation.MainFrame.ThirdPartyCookieBlockingEnabled"
-    enum="ThirdPartyCookieBlockState" expires_after="2024-02-25">
+    enum="ThirdPartyCookieBlockState" expires_after="2024-04-28">
   <owner>dullweber@chromium.org</owner>
   <owner>feuunk@chromium.org</owner>
   <summary>
@@ -1033,22 +1034,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Navigation.NavigationRequestCreation.SpeculativeRFHExisted"
-    enum="SpeculativeRenderFrameHostType" expires_after="2022-06-30">
-  <obsolete>
-    Obsolete after 2022-06-30.
-  </obsolete>
-  <owner>rakina@chromium.org</owner>
-  <owner>dcheng@chromium.org</owner>
-  <summary>
-    Records whether a speculative RenderFrameHost for an older navigation
-    existed when a new NavigationRequest is created, causing the speculative
-    RenderFrameHost to be deleted.
-  </summary>
-</histogram>
-
 <histogram name="Navigation.NavigationStartToBeforeUnloadForLegacy" units="ms"
-    expires_after="2024-02-11">
+    expires_after="2024-04-28">
   <owner>sky@chromium.org</owner>
   <owner>swarm-team@chromium.org</owner>
   <summary>
@@ -1093,7 +1080,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Navigation.OnBeforeUnloadOverheadTime" units="ms"
-    expires_after="2024-03-10">
+    expires_after="2024-05-12">
   <owner>clamy@chromium.org</owner>
   <owner>nasko@chromium.org</owner>
   <summary>
@@ -1105,7 +1092,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Navigation.OnBeforeUnloadTotalTime" units="ms"
-    expires_after="2024-02-11">
+    expires_after="2024-04-28">
   <owner>chikamune@chromium.org</owner>
   <owner>chrome-loading@google.com</owner>
   <summary>
@@ -1173,7 +1160,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Navigation.PendingCommit.Duration.{RegularOrMHTMLType}"
-    units="ms" expires_after="2023-12-31">
+    units="ms" expires_after="2024-04-28">
   <owner>dcheng@chromium.org</owner>
   <owner>rakina@chromium.org</owner>
   <summary>
@@ -1289,8 +1276,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
-    name="Navigation.Prerender.ActivationCommitDeferTime{PrerenderTriggerType}"
-    units="ms" expires_after="2024-02-20">
+    name="Navigation.Prerender.ActivationCommitDeferTime{PreloadingTriggerType}"
+    units="ms" expires_after="2024-04-28">
   <owner>nhiroki@chromium.org</owner>
   <owner>chrome-prerendering@chromium.org</owner>
   <summary>
@@ -1298,12 +1285,12 @@ chromium-metrics-reviews@google.com.
     to commit an ongoing mainframe prerender navigation. Logged every time a
     PrerenderCommitDeferringCondition defers navigation.
 
-    After 2023/05, this metric is used with PrerenderTriggerType key and records
-    even when PrerenderCommitDeferringCondition doesn't delay navigation as zero
-    delay. Previously the metric was only used without the key and recorded only
-    when PrerenderCommitDeferringCondition deferred navigation.
+    After 2023/05, this metric is used with PreloadingTriggerType key and
+    records even when PrerenderCommitDeferringCondition doesn't delay navigation
+    as zero delay. Previously the metric was only used without the key and
+    recorded only when PrerenderCommitDeferringCondition deferred navigation.
   </summary>
-  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+  <token key="PreloadingTriggerType" variants="PreloadingTriggerType"/>
 </histogram>
 
 <histogram name="Navigation.QueueTime.{Method}.{FrameType}" units="ms"
@@ -1385,26 +1372,8 @@ chromium-metrics-reviews@google.com.
   <token key="FrameType" variants="FrameTypes"/>
 </histogram>
 
-<histogram
-    name="Navigation.RendererInitiatedCancellation.DeferStartToCancellationWindowEnd"
-    units="ms" expires_after="2022-10-21">
-  <obsolete>
-    Obsolete after 2022-10-21. All cancellation window ends within 10000ms. See
-    UMA result:
-    https://docs.google.com/document/d/1VNmvEVuaiNH3ypt6YfrYPsJJp8okCTYjooekarOiWN8/edit#heading=h.tlh3g7tofz2
-  </obsolete>
-  <owner>rakina@chromium.org</owner>
-  <owner>dcheng@chromium.org</owner>
-  <summary>
-    Measures the amount of time it takes from
-    RendererCancellationThrottle::WillProcessResponse() to
-    RendererCancellationThrottle::NavigationCancellationWindowEnded. Recorded
-    for each navigation that gets deferred by RendererCancellationThrottle.
-  </summary>
-</histogram>
-
 <histogram name="Navigation.RequiresDedicatedProcess"
-    enum="NavigationRequiresDedicatedProcess" expires_after="2024-02-25">
+    enum="NavigationRequiresDedicatedProcess" expires_after="2024-04-28">
   <owner>alexmos@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -1451,7 +1420,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Navigation.SuddenTerminationDisabler.{Origins}"
-    enum="NavigationSuddenTerminationDisabler" expires_after="2024-02-20">
+    enum="NavigationSuddenTerminationDisabler" expires_after="2024-04-28">
   <owner>fergal@chromium.org</owner>
   <owner>rakina@chromium.org</owner>
   <summary>
@@ -1490,7 +1459,7 @@ chromium-metrics-reviews@google.com.
   <token key="Event" variants="NavigationThrottleEvents"/>
 </histogram>
 
-<histogram name="Navigation.TimeToActivatePrerender{PrerenderTriggerType}"
+<histogram name="Navigation.TimeToActivatePrerender{PreloadingTriggerType}"
     units="ms" expires_after="2024-04-27">
   <owner>nhiroki@chromium.org</owner>
   <owner>sreejakshetty@chromium.org</owner>
@@ -1502,7 +1471,7 @@ chromium-metrics-reviews@google.com.
 
     This metric is logged everytime prerender activation navigation commits.
   </summary>
-  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+  <token key="PreloadingTriggerType" variants="PreloadingTriggerType"/>
 </histogram>
 
 <histogram name="Navigation.TimeToReadyToCommit2" units="ms"
@@ -1531,21 +1500,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Navigation.UndoCommit.IsSpeculativeRenderFrameLive"
-    enum="BooleanPresent" expires_after="2022-06-30">
-  <obsolete>
-    Obsolete after 2022-06-30.
-  </obsolete>
-  <owner>rakina@chromium.org</owner>
-  <owner>dcheng@chromium.org</owner>
-  <summary>
-    Records whether a speculative RenderFrame is live when UndoCommitNavigation
-    is called.
-  </summary>
-</histogram>
-
 <histogram name="Navigation.UserAgentStringType" enum="UserAgentStringType"
-    expires_after="2024-03-10">
+    expires_after="2024-05-12">
   <owner>miketaylr@chromium.org</owner>
   <owner>potassium-katabolism@google.com</owner>
   <summary>
@@ -1610,7 +1566,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="NavigationSuggestion.GetDomainInfoDelayBeforeAllowingNavigation"
-    units="ms" expires_after="2024-02-25">
+    units="ms" expires_after="2024-04-28">
   <owner>meacer@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
@@ -1626,7 +1582,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="NavigationSuggestion.IsLookalikeUrlDelayBeforeAllowingNavigation"
-    units="ms" expires_after="2024-02-25">
+    units="ms" expires_after="2024-04-28">
   <owner>meacer@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
@@ -1642,7 +1598,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="NavigationSuggestion.PerformChecksDelayBeforeAllowingNavigation"
-    units="ms" expires_after="2024-02-25">
+    units="ms" expires_after="2024-04-28">
   <owner>meacer@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
@@ -1669,8 +1625,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
-    name="Prerender.CanceledForInactivePageRestriction.DisallowActivationReason{PrerenderTriggerType}"
-    enum="InactiveFrameDisallowActivationReason" expires_after="2024-01-31">
+    name="Prerender.CanceledForInactivePageRestriction.DisallowActivationReason{PreloadingTriggerType}"
+    enum="InactiveFrameDisallowActivationReason" expires_after="2024-04-28">
   <owner>lingqi@chromium.org</owner>
   <owner>chrome-prerendering@chromium.org</owner>
   <summary>
@@ -1690,12 +1646,12 @@ chromium-metrics-reviews@google.com.
     Warning: this histogram was expired from 2023-03-01 to 2023-03-29; data may
     be missing.
   </summary>
-  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+  <token key="PreloadingTriggerType" variants="PreloadingTriggerType"/>
 </histogram>
 
 <histogram
-    name="Prerender.Experimental.ActivationHeadersMismatch{PrerenderTriggerType}"
-    enum="PrerenderActivationHeaderMismatchType" expires_after="2024-01-31">
+    name="Prerender.Experimental.ActivationHeadersMismatch{PreloadingTriggerType}"
+    enum="PrerenderActivationHeaderMismatchType" expires_after="2024-04-28">
   <owner>lingqi@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
@@ -1717,7 +1673,7 @@ chromium-metrics-reviews@google.com.
     Warning: this histogram was expired from 2023-01-31 to 2023-03-29; data may
     be missing.
   </summary>
-  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+  <token key="PreloadingTriggerType" variants="PreloadingTriggerType"/>
 </histogram>
 
 <histogram name="Prerender.Experimental.ActivationIPCDelay" units="ms"
@@ -1734,8 +1690,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
-    name="Prerender.Experimental.ActivationNavigationParamsMatch{PrerenderTriggerType}"
-    enum="PrerenderActivationNavigationParamsMatch" expires_after="2024-02-20">
+    name="Prerender.Experimental.ActivationNavigationParamsMatch{PreloadingTriggerType}"
+    enum="PrerenderActivationNavigationParamsMatch" expires_after="2024-04-28">
   <owner>nhiroki@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
@@ -1743,12 +1699,12 @@ chromium-metrics-reviews@google.com.
     parameters and the prerender activation navigation parameters. Recorded by
     PrerenderHost in the browser process when comparing these two parameters.
   </summary>
-  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+  <token key="PreloadingTriggerType" variants="PreloadingTriggerType"/>
 </histogram>
 
 <histogram
-    name="Prerender.Experimental.ActivationTransitionMismatch{PrerenderTriggerType}"
-    enum="PrerenderActivationTransitionMismatchType" expires_after="2024-02-20">
+    name="Prerender.Experimental.ActivationTransitionMismatch{PreloadingTriggerType}"
+    enum="PrerenderActivationTransitionMismatchType" expires_after="2024-04-28">
   <owner>nhiroki@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
@@ -1760,7 +1716,7 @@ chromium-metrics-reviews@google.com.
     metric records the transition of the activation navigation in
     RecordPrerenderActivationTransition().
   </summary>
-  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+  <token key="PreloadingTriggerType" variants="PreloadingTriggerType"/>
 </histogram>
 
 <histogram
@@ -1802,7 +1758,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Prerender.Experimental.BookmarkBar.PredictionResult"
-    enum="PrerenderPredictionResult" expires_after="2024-02-04">
+    enum="PrerenderPredictionResult" expires_after="2024-04-28">
   <owner>robertlin@chromium.org</owner>
   <owner>toyoshim@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
@@ -1825,9 +1781,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
-    name="Prerender.Experimental.CrossOriginRedirectionProtocolChange{PrerenderTriggerType}"
+    name="Prerender.Experimental.CrossOriginRedirectionProtocolChange{PreloadingTriggerType}"
     enum="PrerenderCrossOriginRedirectionProtocolChange"
-    expires_after="2023-12-03">
+    expires_after="2024-03-01">
   <owner>lingqi@chromium.org</owner>
   <owner>nhiroki@chromium.org</owner>
   <owner>src/content/browser/preloading/prerender/OWNERS</owner>
@@ -1839,23 +1795,11 @@ chromium-metrics-reviews@google.com.
     Note that for now it is not used for prerendering that are triggered by
     speculation rules.
   </summary>
-  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
-</histogram>
-
-<histogram
-    name="Prerender.Experimental.DefaultSearchEngine.SearchTermExtractorCorrectness"
-    enum="Boolean" expires_after="2023-10-31">
-  <owner>lingqi@chromium.org</owner>
-  <owner>chrome-prerendering@google.com</owner>
-  <summary>
-    Records whether the search terms obtained via the search_terms_args are the
-    same as the search terms extracted from the URLs. This is recorded when
-    PrerenderManager attempts to start a new prerender.
-  </summary>
+  <token key="PreloadingTriggerType" variants="PreloadingTriggerType"/>
 </histogram>
 
 <histogram name="Prerender.Experimental.PredictionStatus.DefaultSearchEngine"
-    enum="PrerenderPredictionStatus" expires_after="2024-02-25">
+    enum="PrerenderPredictionStatus" expires_after="2024-04-28">
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
@@ -1867,7 +1811,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Prerender.Experimental.PredictionStatus.DirectUrlInput"
-    enum="PrerenderPredictionStatus" expires_after="2024-02-25">
+    enum="PrerenderPredictionStatus" expires_after="2024-04-28">
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
@@ -1879,8 +1823,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
-    name="Prerender.Experimental.PrerenderCancelledInterface{PrerenderTriggerType}"
-    enum="PrerenderCancelledInterface" expires_after="2024-02-20">
+    name="Prerender.Experimental.PrerenderCancelledInterface{PreloadingTriggerType}"
+    enum="PrerenderCancelledInterface" expires_after="2024-04-28">
   <owner>nhiroki@chromium.org</owner>
   <owner>toyoshim@chromium.org</owner>
   <owner>lingqi@chromium.org</owner>
@@ -1889,12 +1833,12 @@ chromium-metrics-reviews@google.com.
     MojoBinderPolicyApplier in the browser process once it receives the binding
     request of a kCancel Mojo interface.
   </summary>
-  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+  <token key="PreloadingTriggerType" variants="PreloadingTriggerType"/>
 </histogram>
 
 <histogram
-    name="Prerender.Experimental.PrerenderCancelledUnknownInterface{PrerenderTriggerType}"
-    enum="PrerenderCancelledUnknownInterface" expires_after="2024-02-20">
+    name="Prerender.Experimental.PrerenderCancelledUnknownInterface{PreloadingTriggerType}"
+    enum="PrerenderCancelledUnknownInterface" expires_after="2024-04-28">
   <owner>nhiroki@chromium.org</owner>
   <owner>toyoshim@chromium.org</owner>
   <owner>lingqi@chromium.org</owner>
@@ -1917,12 +1861,12 @@ chromium-metrics-reviews@google.com.
     receives the binding request of a kCancel Mojo interface and cannot find an
     accurate enum type for this interface.
   </summary>
-  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+  <token key="PreloadingTriggerType" variants="PreloadingTriggerType"/>
 </histogram>
 
 <histogram
-    name="Prerender.Experimental.PrerenderCrossOriginRedirectionMismatch{PrerenderTriggerType}"
-    enum="PrerenderCrossOriginRedirectionMismatch" expires_after="2023-12-03">
+    name="Prerender.Experimental.PrerenderCrossOriginRedirectionMismatch{PreloadingTriggerType}"
+    enum="PrerenderCrossOriginRedirectionMismatch" expires_after="2024-03-01">
   <owner>lingqi@chromium.org</owner>
   <owner>nhiroki@chromium.org</owner>
   <owner>src/content/browser/preloading/prerender/OWNERS</owner>
@@ -1938,12 +1882,12 @@ chromium-metrics-reviews@google.com.
     Note that for now it is not used for prerendering that are triggered by
     speculation rules.
   </summary>
-  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+  <token key="PreloadingTriggerType" variants="PreloadingTriggerType"/>
 </histogram>
 
 <histogram
-    name="Prerender.Experimental.PrerenderHostFinalStatus{PrerenderTriggerType}"
-    enum="PrerenderHostFinalStatus" expires_after="2024-02-20">
+    name="Prerender.Experimental.PrerenderHostFinalStatus{PreloadingTriggerType}"
+    enum="PrerenderHostFinalStatus" expires_after="2024-04-28">
   <owner>nhiroki@chromium.org</owner>
   <owner>toyoshim@chromium.org</owner>
   <owner>lingqi@chromium.org</owner>
@@ -1952,12 +1896,12 @@ chromium-metrics-reviews@google.com.
     Final status for a prerendering attempt. Recorded by PrerenderHost or
     PrerenderHostRegistry in the browser process when the attempt finishes.
   </summary>
-  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+  <token key="PreloadingTriggerType" variants="PreloadingTriggerType"/>
 </histogram>
 
 <histogram
-    name="Prerender.Experimental.PrerenderLoadingFailureError{PrerenderTriggerType}"
-    enum="NetErrorCodes" expires_after="2024-02-20">
+    name="Prerender.Experimental.PrerenderLoadingFailureError{PreloadingTriggerType}"
+    enum="NetErrorCodes" expires_after="2024-04-28">
   <owner>lingqi@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
@@ -1966,14 +1910,14 @@ chromium-metrics-reviews@google.com.
 
     This metric is used to monitor whether preload cache intercepting logic
     causes extra page loading errors. Similar to
-    PageLoad.Internal.Prerender2.ActivatedPageLoaderStatus{PrerenderTriggerType},
+    PageLoad.Internal.Prerender2.ActivatedPageLoaderStatus{PreloadingTriggerType},
     but used to track the loading status of not activated prerendered pages.
   </summary>
-  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+  <token key="PreloadingTriggerType" variants="PreloadingTriggerType"/>
 </histogram>
 
 <histogram
-    name="Prerender.Experimental.ReceivedPrerendersPerPrimaryPageChangedCount2{PrerenderTriggerType}{EagernessCategory}"
+    name="Prerender.Experimental.ReceivedPrerendersPerPrimaryPageChangedCount2{PreloadingTriggerType}{EagernessCategory}"
     units="count" expires_after="2024-03-03">
   <owner>taiyo@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
@@ -1983,10 +1927,10 @@ chromium-metrics-reviews@google.com.
     coutend per PrerendererImpl::MaybePrerender and recorded when primary page
     is changed and PrerendererImpl::CancelStartedPrerenders is called.
 
-    Note that this metric only records where PrerenderTriggerType is
+    Note that this metric only records where PreloadingTriggerType is
     SpeculationRule and SpeculationRuleFromIsolatedWorld.
   </summary>
-  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+  <token key="PreloadingTriggerType" variants="PreloadingTriggerType"/>
   <token key="EagernessCategory">
     <variant name=".Conservative"/>
     <variant name=".Eager"/>
@@ -1998,7 +1942,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Prerender.Experimental.Search.FirstCorrectPrerenderHintReceivedToRealSearchNavigationStartedDuration"
-    units="ms" expires_after="2023-10-31">
+    units="ms" expires_after="2024-03-01">
   <owner>lingqi@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
@@ -2072,7 +2016,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Prerender.FinalStatus" enum="PrerenderFinalStatus"
-    expires_after="2024-02-25">
+    expires_after="2024-04-28">
   <owner>ryansturm@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -2143,7 +2087,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Prerender.PrerenderLoadComplete" enum="BooleanSuccess"
-    expires_after="2024-02-26">
+    expires_after="2024-04-28">
   <owner>gambard@chromium.org</owner>
   <owner>justincohen@chromium.org</owner>
   <summary>
@@ -2180,7 +2124,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Prerender.PrerenderTimeSaved" units="ms"
-    expires_after="2024-02-26">
+    expires_after="2024-04-28">
   <owner>gambard@chromium.org</owner>
   <owner>justincohen@chromium.org</owner>
   <summary>

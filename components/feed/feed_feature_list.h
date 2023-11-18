@@ -98,11 +98,6 @@ signin::ConsentLevel GetConsentLevelNeededForPersonalizedFeed();
 // Feature that enables tracking the acknowledgement state for the info cards.
 BASE_DECLARE_FEATURE(kInfoCardAcknowledgementTracking);
 
-// Feature that enables the Crow feature.
-// Owned by the CwF team but located here until it makes sense to create a crow
-// component, since it is being used in the feed component.
-BASE_DECLARE_FEATURE(kShareCrowButton);
-
 // When enabled, schedule a background refresh for a feed sometime after the
 // last user engagement with that feed.
 BASE_DECLARE_FEATURE(kFeedCloseRefresh);
@@ -144,6 +139,9 @@ BASE_DECLARE_FEATURE(kFeedFollowUiUpdate);
 
 // Feature that enables sports card in the feed.
 BASE_DECLARE_FEATURE(kFeedSportsCard);
+
+// Feature that enables refreshing feed when Chrome restarts.
+BASE_DECLARE_FEATURE(kRefreshFeedOnRestart);
 
 }  // namespace feed
 

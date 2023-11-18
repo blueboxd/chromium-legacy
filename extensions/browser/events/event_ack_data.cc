@@ -17,8 +17,6 @@
 #include "content/public/browser/service_worker_external_request_result.h"
 #include "extensions/browser/event_router.h"
 
-constexpr base::TimeDelta kEventAckMetricTimeLimit = base::Minutes(5);
-
 namespace extensions {
 
 EventAckData::EventAckData() = default;
@@ -71,7 +69,7 @@ void EventAckData::EmitLateAckedEventTask(int event_id) {
   // `EventAckData::DecrementInflightEvent()`.
   if (unacked_events_.contains(event_id)) {
     base::UmaHistogramBoolean(
-        "Extensions.Events.DidDispatchToAckSucceed.ExtensionServiceWorker",
+        "Extensions.Events.DidDispatchToAckSucceed.ExtensionServiceWorker2",
         false);
   }
 }
@@ -101,7 +99,7 @@ void EventAckData::EmitDispatchTimeMetrics(EventInfo& event_info) {
                     kEventAckMetricTimeLimit;
     if (!late_ack) {
       base::UmaHistogramBoolean(
-          "Extensions.Events.DidDispatchToAckSucceed.ExtensionServiceWorker",
+          "Extensions.Events.DidDispatchToAckSucceed.ExtensionServiceWorker2",
           true);
     }
   }
@@ -141,9 +139,24 @@ void EventAckData::DecrementInflightEvent(
   if (worker_stopped || !start_ok)
     return;
 
-  if (result != content::ServiceWorkerExternalRequestResult::kOk) {
-    LOG(ERROR) << "FinishExternalRequest failed: " << static_cast<int>(result);
-    std::move(failure_callback).Run();
+  base::UmaHistogramEnumeration(
+      "Extensions.ServiceWorkerBackground.FinishedExternalRequest_Result_"
+      "PostReturn",
+      result);
+
+  switch (result) {
+    case content::ServiceWorkerExternalRequestResult::kOk:
+    // Metrics have shown us that it is possible that a worker may not be found
+    // or not running at this point.
+    case content::ServiceWorkerExternalRequestResult::kWorkerNotFound:
+    case content::ServiceWorkerExternalRequestResult::kWorkerNotRunning:
+      break;
+    case content::ServiceWorkerExternalRequestResult::kBadRequestId:
+    case content::ServiceWorkerExternalRequestResult::kNullContext:
+      LOG(ERROR) << "FinishExternalRequest failed: "
+                 << static_cast<int>(result);
+      std::move(failure_callback).Run();
+      break;
   }
 }
 

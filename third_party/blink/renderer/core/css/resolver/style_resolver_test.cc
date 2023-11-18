@@ -609,7 +609,7 @@ TEST_F(StyleResolverTest, NoFetchForAtPage) {
     </style>
   )HTML");
 
-  GetDocument().GetStyleEngine().UpdateActiveStyle();
+  UpdateAllLifecyclePhasesForTest();
   const ComputedStyle* page_style =
       GetDocument().GetStyleResolver().StyleForPage(0, g_empty_atom);
   ASSERT_TRUE(page_style);
@@ -1277,8 +1277,8 @@ TEST_F(StyleResolverTest, InheritStyleImagesFromDisplayContents) {
   EXPECT_FALSE(style->MaskBoxImageSource()->IsPendingImage())
       << "-webkit-mask-box-image-source";
 
-  ASSERT_TRUE(style->MaskImage());
-  EXPECT_FALSE(style->MaskImage()->IsPendingImage())
+  ASSERT_TRUE(style->MaskLayers().GetImage());
+  EXPECT_FALSE(style->MaskLayers().GetImage()->IsPendingImage())
       << "-webkit-mask-image is fetched";
 }
 
@@ -1935,57 +1935,52 @@ TEST_F(StyleResolverTest, IsInertWithAttributeAndDialog) {
   Node* dialog_text = dialog->firstChild();
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_FALSE(document.GetComputedStyle()->IsInert());
   EXPECT_FALSE(html->GetComputedStyle()->IsInert());
   EXPECT_FALSE(body->GetComputedStyle()->IsInert());
   EXPECT_TRUE(div->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(div_text->GetComputedStyle()->IsInert());
+  EXPECT_TRUE(div_text->GetLayoutObject()->StyleRef().IsInert());
   EXPECT_EQ(dialog->GetComputedStyle(), nullptr);
-  EXPECT_EQ(dialog_text->GetComputedStyle(), nullptr);
+  EXPECT_EQ(dialog_text->GetLayoutObject(), nullptr);
 
   div->SetBooleanAttribute(html_names::kInertAttr, false);
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_FALSE(document.GetComputedStyle()->IsInert());
   EXPECT_FALSE(html->GetComputedStyle()->IsInert());
   EXPECT_FALSE(body->GetComputedStyle()->IsInert());
   EXPECT_FALSE(div->GetComputedStyle()->IsInert());
-  EXPECT_FALSE(div_text->GetComputedStyle()->IsInert());
+  EXPECT_FALSE(div_text->GetLayoutObject()->StyleRef().IsInert());
   EXPECT_EQ(dialog->GetComputedStyle(), nullptr);
-  EXPECT_EQ(dialog_text->GetComputedStyle(), nullptr);
+  EXPECT_EQ(dialog_text->GetLayoutObject(), nullptr);
 
   dialog->showModal(exception_state);
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_FALSE(document.GetComputedStyle()->IsInert());
   EXPECT_TRUE(html->GetComputedStyle()->IsInert());
   EXPECT_TRUE(body->GetComputedStyle()->IsInert());
   EXPECT_TRUE(div->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(div_text->GetComputedStyle()->IsInert());
+  EXPECT_TRUE(div_text->GetLayoutObject()->StyleRef().IsInert());
   EXPECT_FALSE(dialog->GetComputedStyle()->IsInert());
-  EXPECT_FALSE(dialog_text->GetComputedStyle()->IsInert());
+  EXPECT_FALSE(dialog_text->GetLayoutObject()->StyleRef().IsInert());
 
   div->SetBooleanAttribute(html_names::kInertAttr, true);
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_FALSE(document.GetComputedStyle()->IsInert());
   EXPECT_TRUE(html->GetComputedStyle()->IsInert());
   EXPECT_TRUE(body->GetComputedStyle()->IsInert());
   EXPECT_TRUE(div->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(div_text->GetComputedStyle()->IsInert());
+  EXPECT_TRUE(div_text->GetLayoutObject()->StyleRef().IsInert());
   EXPECT_FALSE(dialog->GetComputedStyle()->IsInert());
-  EXPECT_FALSE(dialog_text->GetComputedStyle()->IsInert());
+  EXPECT_FALSE(dialog_text->GetLayoutObject()->StyleRef().IsInert());
 
   dialog->close();
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_FALSE(document.GetComputedStyle()->IsInert());
   EXPECT_FALSE(html->GetComputedStyle()->IsInert());
   EXPECT_FALSE(body->GetComputedStyle()->IsInert());
   EXPECT_TRUE(div->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(div_text->GetComputedStyle()->IsInert());
+  EXPECT_TRUE(div_text->GetLayoutObject()->StyleRef().IsInert());
   EXPECT_EQ(dialog->GetComputedStyle(), nullptr);
-  EXPECT_EQ(dialog_text->GetComputedStyle(), nullptr);
+  EXPECT_EQ(dialog_text->GetLayoutObject(), nullptr);
 }
 
 TEST_F(StyleResolverTest, IsInertWithDialogs) {
@@ -2015,16 +2010,15 @@ TEST_F(StyleResolverTest, IsInertWithDialogs) {
   UpdateAllLifecyclePhasesForTest();
 
   auto ExpectState0 = [&]() {
-    EXPECT_FALSE(document.GetComputedStyle()->IsInert());
     EXPECT_FALSE(html->GetComputedStyle()->IsInert());
     EXPECT_FALSE(body->GetComputedStyle()->IsInert());
     EXPECT_EQ(dialog1->GetComputedStyle(), nullptr);
-    EXPECT_EQ(dialog1_text->GetComputedStyle(), nullptr);
+    EXPECT_EQ(dialog1_text->GetLayoutObject(), nullptr);
     EXPECT_EQ(dialog2->GetComputedStyle(), nullptr);
-    EXPECT_EQ(dialog2_text->GetComputedStyle(), nullptr);
+    EXPECT_EQ(dialog2_text->GetLayoutObject(), nullptr);
     EXPECT_FALSE(div->GetComputedStyle()->IsInert());
     EXPECT_EQ(dialog3->GetComputedStyle(), nullptr);
-    EXPECT_EQ(dialog3_text->GetComputedStyle(), nullptr);
+    EXPECT_EQ(dialog3_text->GetLayoutObject(), nullptr);
   };
   ExpectState0();
 
@@ -2032,16 +2026,15 @@ TEST_F(StyleResolverTest, IsInertWithDialogs) {
   UpdateAllLifecyclePhasesForTest();
 
   auto ExpectState1 = [&]() {
-    EXPECT_FALSE(document.GetComputedStyle()->IsInert());
     EXPECT_TRUE(html->GetComputedStyle()->IsInert());
     EXPECT_TRUE(body->GetComputedStyle()->IsInert());
     EXPECT_FALSE(dialog1->GetComputedStyle()->IsInert());
-    EXPECT_FALSE(dialog1_text->GetComputedStyle()->IsInert());
+    EXPECT_FALSE(dialog1_text->GetLayoutObject()->StyleRef().IsInert());
     EXPECT_EQ(dialog2->GetComputedStyle(), nullptr);
-    EXPECT_EQ(dialog2_text->GetComputedStyle(), nullptr);
+    EXPECT_EQ(dialog2_text->GetLayoutObject(), nullptr);
     EXPECT_TRUE(div->GetComputedStyle()->IsInert());
     EXPECT_EQ(dialog3->GetComputedStyle(), nullptr);
-    EXPECT_EQ(dialog3_text->GetComputedStyle(), nullptr);
+    EXPECT_EQ(dialog3_text->GetLayoutObject(), nullptr);
   };
   ExpectState1();
 
@@ -2049,16 +2042,15 @@ TEST_F(StyleResolverTest, IsInertWithDialogs) {
   UpdateAllLifecyclePhasesForTest();
 
   auto ExpectState2 = [&]() {
-    EXPECT_FALSE(document.GetComputedStyle()->IsInert());
     EXPECT_TRUE(html->GetComputedStyle()->IsInert());
     EXPECT_TRUE(body->GetComputedStyle()->IsInert());
     EXPECT_TRUE(dialog1->GetComputedStyle()->IsInert());
-    EXPECT_TRUE(dialog1_text->GetComputedStyle()->IsInert());
+    EXPECT_TRUE(dialog1_text->GetLayoutObject()->StyleRef().IsInert());
     EXPECT_FALSE(dialog2->GetComputedStyle()->IsInert());
-    EXPECT_FALSE(dialog2_text->GetComputedStyle()->IsInert());
+    EXPECT_FALSE(dialog2_text->GetLayoutObject()->StyleRef().IsInert());
     EXPECT_TRUE(div->GetComputedStyle()->IsInert());
     EXPECT_EQ(dialog3->GetComputedStyle(), nullptr);
-    EXPECT_EQ(dialog3_text->GetComputedStyle(), nullptr);
+    EXPECT_EQ(dialog3_text->GetLayoutObject(), nullptr);
   };
   ExpectState2();
 
@@ -2066,16 +2058,15 @@ TEST_F(StyleResolverTest, IsInertWithDialogs) {
   UpdateAllLifecyclePhasesForTest();
 
   auto ExpectState3 = [&]() {
-    EXPECT_FALSE(document.GetComputedStyle()->IsInert());
     EXPECT_TRUE(html->GetComputedStyle()->IsInert());
     EXPECT_TRUE(body->GetComputedStyle()->IsInert());
     EXPECT_TRUE(dialog1->GetComputedStyle()->IsInert());
-    EXPECT_TRUE(dialog1_text->GetComputedStyle()->IsInert());
+    EXPECT_TRUE(dialog1_text->GetLayoutObject()->StyleRef().IsInert());
     EXPECT_TRUE(dialog2->GetComputedStyle()->IsInert());
-    EXPECT_TRUE(dialog2_text->GetComputedStyle()->IsInert());
+    EXPECT_TRUE(dialog2_text->GetLayoutObject()->StyleRef().IsInert());
     EXPECT_TRUE(div->GetComputedStyle()->IsInert());
     EXPECT_FALSE(dialog3->GetComputedStyle()->IsInert());
-    EXPECT_FALSE(dialog3_text->GetComputedStyle()->IsInert());
+    EXPECT_FALSE(dialog3_text->GetLayoutObject()->StyleRef().IsInert());
   };
   ExpectState3();
 
@@ -2129,56 +2120,52 @@ TEST_F(StyleResolverTest, IsInertWithFullscreen) {
   UpdateAllLifecyclePhasesForTest();
 
   auto ExpectState0 = [&]() {
-    EXPECT_FALSE(document.GetComputedStyle()->IsInert());
     EXPECT_FALSE(html->GetComputedStyle()->IsInert());
     EXPECT_FALSE(body->GetComputedStyle()->IsInert());
     EXPECT_FALSE(div->GetComputedStyle()->IsInert());
-    EXPECT_FALSE(div_text->GetComputedStyle()->IsInert());
+    EXPECT_FALSE(div_text->GetLayoutObject()->StyleRef().IsInert());
     EXPECT_FALSE(span->GetComputedStyle()->IsInert());
-    EXPECT_FALSE(span_text->GetComputedStyle()->IsInert());
+    EXPECT_FALSE(span_text->GetLayoutObject()->StyleRef().IsInert());
     EXPECT_FALSE(p->GetComputedStyle()->IsInert());
-    EXPECT_FALSE(p_text->GetComputedStyle()->IsInert());
+    EXPECT_FALSE(p_text->GetLayoutObject()->StyleRef().IsInert());
   };
   ExpectState0();
 
   EnterFullscreen(document, *div);
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_FALSE(document.GetComputedStyle()->IsInert());
   EXPECT_TRUE(html->GetComputedStyle()->IsInert());
   EXPECT_TRUE(body->GetComputedStyle()->IsInert());
   EXPECT_FALSE(div->GetComputedStyle()->IsInert());
-  EXPECT_FALSE(div_text->GetComputedStyle()->IsInert());
+  EXPECT_FALSE(div_text->GetLayoutObject()->StyleRef().IsInert());
   EXPECT_FALSE(span->GetComputedStyle()->IsInert());
-  EXPECT_FALSE(span_text->GetComputedStyle()->IsInert());
+  EXPECT_FALSE(span_text->GetLayoutObject()->StyleRef().IsInert());
   EXPECT_TRUE(p->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(p_text->GetComputedStyle()->IsInert());
+  EXPECT_TRUE(p_text->GetLayoutObject()->StyleRef().IsInert());
 
   EnterFullscreen(document, *span);
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_FALSE(document.GetComputedStyle()->IsInert());
   EXPECT_TRUE(html->GetComputedStyle()->IsInert());
   EXPECT_TRUE(body->GetComputedStyle()->IsInert());
   EXPECT_TRUE(div->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(div_text->GetComputedStyle()->IsInert());
+  EXPECT_TRUE(div_text->GetLayoutObject()->StyleRef().IsInert());
   EXPECT_FALSE(span->GetComputedStyle()->IsInert());
-  EXPECT_FALSE(span_text->GetComputedStyle()->IsInert());
+  EXPECT_FALSE(span_text->GetLayoutObject()->StyleRef().IsInert());
   EXPECT_TRUE(p->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(p_text->GetComputedStyle()->IsInert());
+  EXPECT_TRUE(p_text->GetLayoutObject()->StyleRef().IsInert());
 
   EnterFullscreen(document, *p);
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_FALSE(document.GetComputedStyle()->IsInert());
   EXPECT_TRUE(html->GetComputedStyle()->IsInert());
   EXPECT_TRUE(body->GetComputedStyle()->IsInert());
   EXPECT_TRUE(div->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(div_text->GetComputedStyle()->IsInert());
+  EXPECT_TRUE(div_text->GetLayoutObject()->StyleRef().IsInert());
   EXPECT_TRUE(span->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(span_text->GetComputedStyle()->IsInert());
+  EXPECT_TRUE(span_text->GetLayoutObject()->StyleRef().IsInert());
   EXPECT_FALSE(p->GetComputedStyle()->IsInert());
-  EXPECT_FALSE(p_text->GetComputedStyle()->IsInert());
+  EXPECT_FALSE(p_text->GetLayoutObject()->StyleRef().IsInert());
 
   ExitFullscreen(document);
   UpdateAllLifecyclePhasesForTest();
@@ -2197,38 +2184,34 @@ TEST_F(StyleResolverTest, IsInertWithFrameAndFullscreen) {
   Node* div_text = div->firstChild();
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_FALSE(document.GetComputedStyle()->IsInert());
   EXPECT_FALSE(html->GetComputedStyle()->IsInert());
   EXPECT_FALSE(body->GetComputedStyle()->IsInert());
   EXPECT_FALSE(div->GetComputedStyle()->IsInert());
-  EXPECT_FALSE(div_text->GetComputedStyle()->IsInert());
+  EXPECT_FALSE(div_text->GetLayoutObject()->StyleRef().IsInert());
 
   EnterFullscreen(document, *div);
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_FALSE(document.GetComputedStyle()->IsInert());
   EXPECT_TRUE(html->GetComputedStyle()->IsInert());
   EXPECT_TRUE(body->GetComputedStyle()->IsInert());
   EXPECT_FALSE(div->GetComputedStyle()->IsInert());
-  EXPECT_FALSE(div_text->GetComputedStyle()->IsInert());
+  EXPECT_FALSE(div_text->GetLayoutObject()->StyleRef().IsInert());
 
   EnterFullscreen(document, *body);
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_FALSE(document.GetComputedStyle()->IsInert());
   EXPECT_TRUE(html->GetComputedStyle()->IsInert());
   EXPECT_FALSE(body->GetComputedStyle()->IsInert());
   EXPECT_FALSE(div->GetComputedStyle()->IsInert());
-  EXPECT_FALSE(div_text->GetComputedStyle()->IsInert());
+  EXPECT_FALSE(div_text->GetLayoutObject()->StyleRef().IsInert());
 
   EnterFullscreen(document, *html);
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_FALSE(document.GetComputedStyle()->IsInert());
   EXPECT_FALSE(html->GetComputedStyle()->IsInert());
   EXPECT_FALSE(body->GetComputedStyle()->IsInert());
   EXPECT_FALSE(div->GetComputedStyle()->IsInert());
-  EXPECT_FALSE(div_text->GetComputedStyle()->IsInert());
+  EXPECT_FALSE(div_text->GetLayoutObject()->StyleRef().IsInert());
   ExitFullscreen(document);
 }
 
@@ -2744,12 +2727,14 @@ TEST_F(StyleResolverTest, LegacyOverlapBorderImageWidth_Last_Style) {
          "border-width";
 }
 
-TEST_F(StyleResolverTest, PositionFallbackStylesBasic) {
+TEST_F(StyleResolverTest, PositionFallbackStylesBasic_Cascade) {
   ScopedCSSAnchorPositioningForTest enabled(true);
+  ScopedCSSAnchorPositioningCascadeFallbackForTest cascade(true);
 
   SetBodyInnerHTML(R"HTML(
     <style>
       @position-fallback --fallback {
+        @try { }
         @try { left: 100px; }
         @try { top: 100px; }
         @try { inset: 50px; }
@@ -2764,59 +2749,51 @@ TEST_F(StyleResolverTest, PositionFallbackStylesBasic) {
 
   UpdateAllLifecyclePhasesForTest();
 
+  ScopedCSSName* fallback_name = MakeGarbageCollected<ScopedCSSName>(
+      AtomicString("--fallback"), &GetDocument());
   Element* target = GetElementById("target");
   const ComputedStyle* base_style = target->GetComputedStyle();
   ASSERT_TRUE(base_style);
   EXPECT_EQ(Length::Auto(), GetTop(*base_style));
   EXPECT_EQ(Length::Auto(), GetLeft(*base_style));
 
-  const ComputedStyle* try1 = target->StyleForPositionFallback(0);
+  GetStyleEngine().UpdateStyleForPositionFallback(*target, fallback_name, 1);
+  const ComputedStyle* try1 = target->GetComputedStyle();
   ASSERT_TRUE(try1);
   EXPECT_EQ(Length::Auto(), GetTop(*try1));
   EXPECT_EQ(Length::Fixed(100), GetLeft(*try1));
 
-  const ComputedStyle* try2 = target->StyleForPositionFallback(1);
+  GetStyleEngine().UpdateStyleForPositionFallback(*target, fallback_name, 2);
+  const ComputedStyle* try2 = target->GetComputedStyle();
   ASSERT_TRUE(try2);
   EXPECT_EQ(Length::Fixed(100), GetTop(*try2));
   EXPECT_EQ(Length::Auto(), GetLeft(*try2));
 
   // Shorthand should also work
-  const ComputedStyle* try3 = target->StyleForPositionFallback(2);
+  GetStyleEngine().UpdateStyleForPositionFallback(*target, fallback_name, 3);
+  const ComputedStyle* try3 = target->GetComputedStyle();
   ASSERT_TRUE(try3);
   EXPECT_EQ(Length::Fixed(50), GetTop(*try3));
   EXPECT_EQ(Length::Fixed(50), GetLeft(*try3));
   EXPECT_EQ(Length::Fixed(50), GetBottom(*try3));
   EXPECT_EQ(Length::Fixed(50), GetRight(*try3));
 
-  // Returns nullptr when index is out of bound.
-  EXPECT_FALSE(target->StyleForPositionFallback(3));
+  // Style without fallback when index is out of bounds.
+  GetStyleEngine().UpdateStyleForPositionFallback(*target, fallback_name, 4);
+  const ComputedStyle* try4 = target->GetComputedStyle();
+  EXPECT_EQ(Length::Auto(), GetTop(*try4));
+  EXPECT_EQ(Length::Auto(), GetLeft(*try4));
 }
 
-TEST_F(StyleResolverTest, PositionFallbackNameInvalid) {
+TEST_F(StyleResolverTest,
+       PositionFallbackStylesResolveLogicalProperties_Cascade) {
   ScopedCSSAnchorPositioningForTest enabled(true);
-
-  SetBodyInnerHTML(R"HTML(
-    <style>
-      #target {
-        position: absolute;
-        position-fallback: --invalid;
-      }
-    </style>
-    <div id="target"></div>
-  )HTML");
-
-  UpdateAllLifecyclePhasesForTest();
-
-  Element* target = GetElementById("target");
-  EXPECT_FALSE(target->StyleForPositionFallback(0));
-}
-
-TEST_F(StyleResolverTest, PositionFallbackStylesResolveLogicalProperties) {
-  ScopedCSSAnchorPositioningForTest enabled(true);
+  ScopedCSSAnchorPositioningCascadeFallbackForTest cascade(true);
 
   SetBodyInnerHTML(R"HTML(
     <style>
       @position-fallback --fallback {
+        @try { }
         @try { inset-inline-start: 100px; }
         @try { inset-block: 100px 90px; }
       }
@@ -2833,6 +2810,8 @@ TEST_F(StyleResolverTest, PositionFallbackStylesResolveLogicalProperties) {
 
   UpdateAllLifecyclePhasesForTest();
 
+  ScopedCSSName* fallback_name = MakeGarbageCollected<ScopedCSSName>(
+      AtomicString("--fallback"), &GetDocument());
   Element* target = GetElementById("target");
   const ComputedStyle* base_style = target->GetComputedStyle();
   ASSERT_TRUE(base_style);
@@ -2842,7 +2821,8 @@ TEST_F(StyleResolverTest, PositionFallbackStylesResolveLogicalProperties) {
   EXPECT_EQ(Length::Fixed(50), GetRight(*base_style));
 
   // 'inset-inline-start' should resolve to 'bottom'
-  const ComputedStyle* try1 = target->StyleForPositionFallback(0);
+  GetStyleEngine().UpdateStyleForPositionFallback(*target, fallback_name, 1);
+  const ComputedStyle* try1 = target->GetComputedStyle();
   ASSERT_TRUE(try1);
   EXPECT_EQ(Length::Fixed(50), GetTop(*try1));
   EXPECT_EQ(Length::Fixed(50), GetLeft(*try1));
@@ -2850,22 +2830,33 @@ TEST_F(StyleResolverTest, PositionFallbackStylesResolveLogicalProperties) {
   EXPECT_EQ(Length::Fixed(50), GetRight(*try1));
 
   // 'inset-block' with two parameters should set 'right' and then 'left'
-  const ComputedStyle* try2 = target->StyleForPositionFallback(1);
+  GetStyleEngine().UpdateStyleForPositionFallback(*target, fallback_name, 2);
+  const ComputedStyle* try2 = target->GetComputedStyle();
   ASSERT_TRUE(try2);
   EXPECT_EQ(Length::Fixed(50), GetTop(*try2));
   EXPECT_EQ(Length::Fixed(90), GetLeft(*try2));
   EXPECT_EQ(Length::Fixed(50), GetBottom(*try2));
   EXPECT_EQ(Length::Fixed(100), GetRight(*try2));
 
-  EXPECT_FALSE(target->StyleForPositionFallback(2));
+  // @try index out of bounds
+  GetStyleEngine().UpdateStyleForPositionFallback(*target, fallback_name, 3);
+  const ComputedStyle* try3 = target->GetComputedStyle();
+  ASSERT_TRUE(try3);
+  EXPECT_EQ(Length::Fixed(50), GetTop(*try3));
+  EXPECT_EQ(Length::Fixed(50), GetLeft(*try3));
+  EXPECT_EQ(Length::Fixed(50), GetBottom(*try3));
+  EXPECT_EQ(Length::Fixed(50), GetRight(*try3));
 }
 
-TEST_F(StyleResolverTest, PositionFallbackStylesResolveRelativeLengthUnits) {
+TEST_F(StyleResolverTest,
+       PositionFallbackStylesResolveRelativeLengthUnits_Cascade) {
   ScopedCSSAnchorPositioningForTest enabled(true);
+  ScopedCSSAnchorPositioningCascadeFallbackForTest cascade(true);
 
   SetBodyInnerHTML(R"HTML(
     <style>
       @position-fallback --fallback {
+        @try { }
         @try { top: 2em; }
       }
       #target {
@@ -2879,25 +2870,28 @@ TEST_F(StyleResolverTest, PositionFallbackStylesResolveRelativeLengthUnits) {
 
   UpdateAllLifecyclePhasesForTest();
 
+  ScopedCSSName* fallback_name = MakeGarbageCollected<ScopedCSSName>(
+      AtomicString("--fallback"), &GetDocument());
   Element* target = GetElementById("target");
   const ComputedStyle* base_style = target->GetComputedStyle();
   ASSERT_TRUE(base_style);
   EXPECT_EQ(Length::Auto(), GetTop(*base_style));
 
   // '2em' should resolve to '40px'
-  const ComputedStyle* try1 = target->StyleForPositionFallback(0);
+  GetStyleEngine().UpdateStyleForPositionFallback(*target, fallback_name, 1);
+  const ComputedStyle* try1 = target->GetComputedStyle();
   ASSERT_TRUE(try1);
   EXPECT_EQ(Length::Fixed(40), GetTop(*try1));
-
-  EXPECT_FALSE(target->StyleForPositionFallback(1));
 }
 
-TEST_F(StyleResolverTest, PositionFallbackStylesInBeforePseudoElement) {
+TEST_F(StyleResolverTest, PositionFallbackStylesInBeforePseudoElement_Cascade) {
   ScopedCSSAnchorPositioningForTest enabled(true);
+  ScopedCSSAnchorPositioningCascadeFallbackForTest cascade(true);
 
   SetBodyInnerHTML(R"HTML(
     <style>
       @position-fallback --fallback {
+        @try { }
         @try { top: 50px; }
       }
       #target::before {
@@ -2912,6 +2906,8 @@ TEST_F(StyleResolverTest, PositionFallbackStylesInBeforePseudoElement) {
 
   UpdateAllLifecyclePhasesForTest();
 
+  ScopedCSSName* fallback_name = MakeGarbageCollected<ScopedCSSName>(
+      AtomicString("--fallback"), &GetDocument());
   Element* target = GetElementById("target");
   Element* before = target->GetPseudoElement(kPseudoIdBefore);
   ASSERT_TRUE(before);
@@ -2921,23 +2917,24 @@ TEST_F(StyleResolverTest, PositionFallbackStylesInBeforePseudoElement) {
   EXPECT_EQ(Length::Auto(), GetTop(*base_style));
 
   // 'position-fallback' applies to ::before pseudo-element.
-  const ComputedStyle* try1 = before->StyleForPositionFallback(0);
+  GetStyleEngine().UpdateStyleForPositionFallback(*before, fallback_name, 1);
+  const ComputedStyle* try1 = before->GetComputedStyle();
   ASSERT_TRUE(try1);
   EXPECT_EQ(Length::Fixed(50), GetTop(*try1));
-
-  EXPECT_FALSE(before->StyleForPositionFallback(1));
 }
 
-TEST_F(StyleResolverTest, PositionFallbackStylesCSSWideKeywords) {
+TEST_F(StyleResolverTest, PositionFallbackStylesCSSWideKeywords_Cascade) {
   ScopedCSSAnchorPositioningForTest enabled(true);
+  ScopedCSSAnchorPositioningCascadeFallbackForTest cascade(true);
 
   SetBodyInnerHTML(R"HTML(
     <style>
       @position-fallback --fallback {
+        @try { }
         @try { top: initial }
         @try { left: inherit }
         @try { right: unset }
-        /* 'revert' and 'revert-layer' are already rejected by parser */
+        /" 'revert' and 'revert-layer' are already rejected by parser */
       }
       #target {
         position: absolute;
@@ -2956,6 +2953,8 @@ TEST_F(StyleResolverTest, PositionFallbackStylesCSSWideKeywords) {
 
   UpdateAllLifecyclePhasesForTest();
 
+  ScopedCSSName* fallback_name = MakeGarbageCollected<ScopedCSSName>(
+      AtomicString("--fallback"), &GetDocument());
   Element* target = GetElementById("target");
   const ComputedStyle* base_style = target->GetComputedStyle();
   ASSERT_TRUE(base_style);
@@ -2964,39 +2963,43 @@ TEST_F(StyleResolverTest, PositionFallbackStylesCSSWideKeywords) {
   EXPECT_EQ(Length::Fixed(50), GetBottom(*base_style));
   EXPECT_EQ(Length::Fixed(50), GetRight(*base_style));
 
-  const ComputedStyle* try1 = target->StyleForPositionFallback(0);
+  GetStyleEngine().UpdateStyleForPositionFallback(*target, fallback_name, 1);
+  const ComputedStyle* try1 = target->GetComputedStyle();
   ASSERT_TRUE(try1);
   EXPECT_EQ(Length::Auto(), GetTop(*try1));
   EXPECT_EQ(Length::Fixed(50), GetLeft(*try1));
   EXPECT_EQ(Length::Fixed(50), GetBottom(*try1));
   EXPECT_EQ(Length::Fixed(50), GetRight(*try1));
 
-  const ComputedStyle* try2 = target->StyleForPositionFallback(1);
+  GetStyleEngine().UpdateStyleForPositionFallback(*target, fallback_name, 2);
+  const ComputedStyle* try2 = target->GetComputedStyle();
   ASSERT_TRUE(try2);
   EXPECT_EQ(Length::Fixed(50), GetTop(*try2));
   EXPECT_EQ(Length::Fixed(100), GetLeft(*try2));
   EXPECT_EQ(Length::Fixed(50), GetBottom(*try2));
   EXPECT_EQ(Length::Fixed(50), GetRight(*try2));
 
-  const ComputedStyle* try3 = target->StyleForPositionFallback(2);
+  GetStyleEngine().UpdateStyleForPositionFallback(*target, fallback_name, 3);
+  const ComputedStyle* try3 = target->GetComputedStyle();
   ASSERT_TRUE(try3);
   EXPECT_EQ(Length::Fixed(50), GetTop(*try3));
   EXPECT_EQ(Length::Fixed(50), GetLeft(*try3));
   EXPECT_EQ(Length::Fixed(50), GetBottom(*try3));
   EXPECT_EQ(Length::Auto(), GetRight(*try3));
-
-  EXPECT_FALSE(target->StyleForPositionFallback(3));
 }
 
-TEST_F(StyleResolverTest, PositionFallbackPropertyValueChange) {
+TEST_F(StyleResolverTest, PositionFallbackPropertyValueChange_Cascade) {
   ScopedCSSAnchorPositioningForTest enabled(true);
+  ScopedCSSAnchorPositioningCascadeFallbackForTest cascade(true);
 
   SetBodyInnerHTML(R"HTML(
     <style>
       @position-fallback --foo {
+        @try { }
         @try { top: 100px }
       }
       @position-fallback --bar {
+        @try { }
         @try { left: 100px }
       }
       #target {
@@ -3009,6 +3012,10 @@ TEST_F(StyleResolverTest, PositionFallbackPropertyValueChange) {
 
   UpdateAllLifecyclePhasesForTest();
 
+  ScopedCSSName* foo_name = MakeGarbageCollected<ScopedCSSName>(
+      AtomicString("--foo"), &GetDocument());
+  ScopedCSSName* bar_name = MakeGarbageCollected<ScopedCSSName>(
+      AtomicString("--bar"), &GetDocument());
   Element* target = GetElementById("target");
 
   {
@@ -3017,12 +3024,11 @@ TEST_F(StyleResolverTest, PositionFallbackPropertyValueChange) {
     EXPECT_EQ(Length::Auto(), GetTop(*base_style));
     EXPECT_EQ(Length::Auto(), GetLeft(*base_style));
 
-    const ComputedStyle* fallback = target->StyleForPositionFallback(0);
+    GetStyleEngine().UpdateStyleForPositionFallback(*target, foo_name, 1);
+    const ComputedStyle* fallback = target->GetComputedStyle();
     ASSERT_TRUE(fallback);
     EXPECT_EQ(Length::Fixed(100), GetTop(*fallback));
     EXPECT_EQ(Length::Auto(), GetLeft(*fallback));
-
-    EXPECT_FALSE(target->StyleForPositionFallback(1));
   }
 
   target->SetInlineStyleProperty(CSSPropertyID::kPositionFallback, "--bar");
@@ -3034,13 +3040,12 @@ TEST_F(StyleResolverTest, PositionFallbackPropertyValueChange) {
     EXPECT_EQ(Length::Auto(), GetTop(*base_style));
     EXPECT_EQ(Length::Auto(), GetLeft(*base_style));
 
-    const ComputedStyle* fallback = target->StyleForPositionFallback(0);
+    GetStyleEngine().UpdateStyleForPositionFallback(*target, bar_name, 1);
+    const ComputedStyle* fallback = target->GetComputedStyle();
     ASSERT_TRUE(fallback);
     ASSERT_TRUE(fallback);
     EXPECT_EQ(Length::Auto(), GetTop(*fallback));
     EXPECT_EQ(Length::Fixed(100), GetLeft(*fallback));
-
-    EXPECT_FALSE(target->StyleForPositionFallback(1));
   }
 }
 
@@ -3377,62 +3382,7 @@ TEST_F(StyleResolverTestCQ, CanAffectAnimationsMPC) {
   EXPECT_FALSE(c->ComputedStyleRef().CanAffectAnimations());
 }
 
-TEST_F(StyleResolverTest, HasAutoAnchorPositioning) {
-  GetDocument().documentElement()->setInnerHTML(R"HTML(
-    <style>
-      #target {
-        position: absolute;
-        position-fallback: --pf;
-        left: anchor(auto);
-      }
-      @position-fallback --pf {
-        @try { width: 100px; }
-        @try { top: anchor(auto); }
-        @try { left: anchor(auto); }
-        @try { left: anchor(auto); top: anchor(auto); }
-      }
-    </style>
-    <div id="target"></div>
-  )HTML");
-
-  UpdateAllLifecyclePhasesForTest();
-
-  Element* target = GetDocument().getElementById(AtomicString("target"));
-
-  const ComputedStyle& base_style = target->ComputedStyleRef();
-  EXPECT_TRUE(base_style.HasAutoAnchorPositioning());
-  EXPECT_FALSE(base_style.HasAutoAnchorPositioningInXAxisFromTryBlock());
-  EXPECT_FALSE(base_style.HasAutoAnchorPositioningInYAxisFromTryBlock());
-
-  // First @try block doesn't have any auto anchor positioning in it.
-  const ComputedStyle& fallback1 = *target->StyleForPositionFallback(0);
-  EXPECT_TRUE(fallback1.HasAutoAnchorPositioning());
-  EXPECT_FALSE(fallback1.HasAutoAnchorPositioningInXAxisFromTryBlock());
-  EXPECT_FALSE(fallback1.HasAutoAnchorPositioningInYAxisFromTryBlock());
-
-  // Second @try block has auto anchor positioning only in y axis.
-  const ComputedStyle& fallback2 = *target->StyleForPositionFallback(1);
-  EXPECT_TRUE(fallback2.HasAutoAnchorPositioning());
-  EXPECT_FALSE(fallback2.HasAutoAnchorPositioningInXAxisFromTryBlock());
-  EXPECT_TRUE(fallback2.HasAutoAnchorPositioningInYAxisFromTryBlock());
-
-  // Third @try block has auto anchor positioning only in x axis, even if the
-  // resolved computed style is equal to the base style.
-  const ComputedStyle& fallback3 = *target->StyleForPositionFallback(2);
-  EXPECT_TRUE(fallback3.HasAutoAnchorPositioning());
-  EXPECT_TRUE(fallback3.HasAutoAnchorPositioningInXAxisFromTryBlock());
-  EXPECT_FALSE(fallback3.HasAutoAnchorPositioningInYAxisFromTryBlock());
-
-  // Fourth @try block has auto anchor positioning in both axes.
-  const ComputedStyle& fallback4 = *target->StyleForPositionFallback(3);
-  EXPECT_TRUE(fallback4.HasAutoAnchorPositioning());
-  EXPECT_TRUE(fallback4.HasAutoAnchorPositioningInXAxisFromTryBlock());
-  EXPECT_TRUE(fallback4.HasAutoAnchorPositioningInYAxisFromTryBlock());
-}
-
 TEST_F(StyleResolverTest, CssRulesForElementExcludeStartingStyle) {
-  ScopedCSSStartingStyleForTest enabled(true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
       @starting-style {
@@ -3460,8 +3410,6 @@ TEST_F(StyleResolverTest, CssRulesForElementExcludeStartingStyle) {
 }
 
 TEST_F(StyleResolverTest, PseudoCSSRulesForElementExcludeStartingStyle) {
-  ScopedCSSStartingStyleForTest enabled(true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
       @starting-style {

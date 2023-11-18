@@ -154,19 +154,20 @@ bool BluetoothAdapterMac::IsPresent() const {
     return false;
   }
 
-  base::mac::ScopedIOObject<io_service_t> service(IOIteratorNext(iterator));
+  base::mac::ScopedIOObject<io_service_t> service(
+      IOIteratorNext(iterator.get()));
   if (!service) {
     return false;
   }
 
   base::apple::ScopedCFTypeRef<CFBooleanRef> connected(
       base::apple::CFCast<CFBooleanRef>(IORegistryEntryCreateCFProperty(
-          service, CFSTR("BluetoothTransportConnected"), kCFAllocatorDefault,
-          0)));
+          service.get(), CFSTR("BluetoothTransportConnected"),
+          kCFAllocatorDefault, 0)));
   if (!connected) {
     return false;
   }
-  return CFBooleanGetValue(connected);
+  return CFBooleanGetValue(connected.get());
 }
 
 BluetoothAdapter::PermissionStatus BluetoothAdapterMac::GetOsPermissionStatus()

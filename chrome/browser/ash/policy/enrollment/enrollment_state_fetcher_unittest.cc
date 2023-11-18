@@ -3,14 +3,16 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/policy/enrollment/enrollment_state_fetcher.h"
-#include <algorithm>
+
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "ash/constants/ash_switches.h"
 #include "base/functional/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/strcat.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
@@ -18,7 +20,7 @@
 #include "base/test/test_future.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/policy/core/device_cloud_policy_manager_ash.h"
-#include "chrome/browser/ash/policy/enrollment/auto_enrollment_client.h"
+#include "chrome/browser/ash/policy/enrollment/auto_enrollment_state.h"
 #include "chrome/browser/ash/policy/enrollment/auto_enrollment_type_checker.h"
 #include "chrome/browser/ash/policy/enrollment/psm/rlwe_test_support.h"
 #include "chrome/browser/ash/policy/server_backed_state/server_backed_device_state.h"
@@ -300,7 +302,7 @@ TEST_F(EnrollmentStateFetcherTest, DisabledOnFlex) {
   histograms.ExpectUniqueSample(kUMAStateDeterminationOnFlex, true, 1);
 }
 
-TEST_F(EnrollmentStateFetcherTest, SystemClockNotSyncronized) {
+TEST_F(EnrollmentStateFetcherTest, SystemClockNotSynchronized) {
   system_clock_.DisableService();
 
   AutoEnrollmentState state = FetchEnrollmentState();
@@ -378,10 +380,11 @@ TEST_F(EnrollmentStateFetcherTest, OwnershipUnknown) {
 
 TEST_F(EnrollmentStateFetcherTest, ProceedWithMissingStateKeys) {
   ExpectOwnershipCheck();
-  EXPECT_CALL(state_key_broker_, RequestStateKeys)
-      .WillRepeatedly(RunOnceCallback<0>(std::vector<std::string>{}));
   ExpectOprfRequest();
   ExpectQueryRequest();
+  EXPECT_CALL(state_key_broker_, RequestStateKeys)
+      .WillRepeatedly(
+          base::test::RunOnceCallbackRepeatedly<0>(std::vector<std::string>{}));
   EXPECT_CALL(job_creation_handler_, OnJobCreation(JobWithStateRequest(
                                          /*state_key=*/std::string(),
                                          kTestSerialNumber, kTestBrandCode)))
@@ -393,7 +396,6 @@ TEST_F(EnrollmentStateFetcherTest, ProceedWithMissingStateKeys) {
 
 TEST_F(EnrollmentStateFetcherTest, EmptyOprfResponse) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   EXPECT_CALL(
       job_creation_handler_,
       OnJobCreation(JobWithPsmRlweRequest(WithOprfRequestFor(&psm_test_case_))))
@@ -406,7 +408,6 @@ TEST_F(EnrollmentStateFetcherTest, EmptyOprfResponse) {
 
 TEST_F(EnrollmentStateFetcherTest, ConnectionErrorOnOprfRequest) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   EXPECT_CALL(
       job_creation_handler_,
       OnJobCreation(JobWithPsmRlweRequest(WithOprfRequestFor(&psm_test_case_))))
@@ -419,7 +420,6 @@ TEST_F(EnrollmentStateFetcherTest, ConnectionErrorOnOprfRequest) {
 
 TEST_F(EnrollmentStateFetcherTest, ServerErrorOnOprfRequest) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   EXPECT_CALL(
       job_creation_handler_,
       OnJobCreation(JobWithPsmRlweRequest(WithOprfRequestFor(&psm_test_case_))))
@@ -433,7 +433,6 @@ TEST_F(EnrollmentStateFetcherTest, ServerErrorOnOprfRequest) {
 
 TEST_F(EnrollmentStateFetcherTest, FailToCreateQueryRequest) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   EXPECT_CALL(job_creation_handler_,
               OnJobCreation(JobWithPsmRlweRequest(WithAnyOprfRequest())))
       .WillOnce(fake_dm_service_->SendJobOKAsync(
@@ -449,7 +448,7 @@ TEST_F(EnrollmentStateFetcherTest, FailToCreateQueryRequest) {
                        use_case,
                        // Using fake ID, cipher key and seed will cause failure
                        // to create query request since it won't match the
-                       // ecrypted ID in OPRF response from the psm_test_case_.
+                       // encrypted ID in OPRF response from the psm_test_case_.
                        {plaintext_id}, "ec_cipher_key",
                        "seed4567890123456789012345678912")
                     .value();
@@ -465,7 +464,6 @@ TEST_F(EnrollmentStateFetcherTest, FailToCreateQueryRequest) {
 
 TEST_F(EnrollmentStateFetcherTest, EmptyQueryResponse) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   EXPECT_CALL(job_creation_handler_, OnJobCreation(JobWithPsmRlweRequest(
                                          WithQueryRequestFor(&psm_test_case_))))
@@ -478,7 +476,6 @@ TEST_F(EnrollmentStateFetcherTest, EmptyQueryResponse) {
 
 TEST_F(EnrollmentStateFetcherTest, ConnectionErrorOnQueryRequest) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   EXPECT_CALL(job_creation_handler_, OnJobCreation(JobWithPsmRlweRequest(
                                          WithQueryRequestFor(&psm_test_case_))))
@@ -491,7 +488,6 @@ TEST_F(EnrollmentStateFetcherTest, ConnectionErrorOnQueryRequest) {
 
 TEST_F(EnrollmentStateFetcherTest, ServerErrorOnQueryRequest) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   EXPECT_CALL(job_creation_handler_, OnJobCreation(JobWithPsmRlweRequest(
                                          WithQueryRequestFor(&psm_test_case_))))
@@ -507,7 +503,6 @@ TEST_F(EnrollmentStateFetcherTest, PsmReportsNoState) {
   base::HistogramTester histograms;
   psm_test_case_ = psm::testing::LoadTestCase(/*is_member=*/false);
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   ExpectQueryRequest();
 
@@ -520,9 +515,9 @@ TEST_F(EnrollmentStateFetcherTest, PsmReportsNoState) {
 
 TEST_F(EnrollmentStateFetcherTest, EmptyEnrollmentStateResponse) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   ExpectQueryRequest();
+  ExpectStateKeysRequest();
   EXPECT_CALL(job_creation_handler_,
               OnJobCreation(JobWithStateRequest(
                   kTestStateKey, kTestSerialNumber, kTestBrandCode)))
@@ -536,9 +531,9 @@ TEST_F(EnrollmentStateFetcherTest, EmptyEnrollmentStateResponse) {
 
 TEST_F(EnrollmentStateFetcherTest, ConnectionErrorOnEnrollmentStateRequest) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   ExpectQueryRequest();
+  ExpectStateKeysRequest();
   EXPECT_CALL(job_creation_handler_,
               OnJobCreation(JobWithStateRequest(
                   kTestStateKey, kTestSerialNumber, kTestBrandCode)))
@@ -551,9 +546,9 @@ TEST_F(EnrollmentStateFetcherTest, ConnectionErrorOnEnrollmentStateRequest) {
 
 TEST_F(EnrollmentStateFetcherTest, ServerErrorOnEnrollmentStateRequest) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   ExpectQueryRequest();
+  ExpectStateKeysRequest();
   EXPECT_CALL(job_creation_handler_,
               OnJobCreation(JobWithStateRequest(
                   kTestStateKey, kTestSerialNumber, kTestBrandCode)))
@@ -567,9 +562,9 @@ TEST_F(EnrollmentStateFetcherTest, ServerErrorOnEnrollmentStateRequest) {
 
 TEST_F(EnrollmentStateFetcherTest, NoEnrollment) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   ExpectQueryRequest();
+  ExpectStateKeysRequest();
   em::DeviceManagementResponse response;
   response.mutable_device_state_retrieval_response();
   EXPECT_CALL(job_creation_handler_,
@@ -588,9 +583,9 @@ TEST_F(EnrollmentStateFetcherTest, NoEnrollment) {
 TEST_F(EnrollmentStateFetcherTest, UmaHistogramsCounts) {
   base::HistogramTester histograms;
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   ExpectQueryRequest();
+  ExpectStateKeysRequest();
   ExpectStateRequest();
 
   FetchEnrollmentState();
@@ -630,9 +625,9 @@ TEST_F(EnrollmentStateFetcherTest, UmaHistogramsCounts) {
 TEST_F(EnrollmentStateFetcherTest, UmaHistogramsTimes) {
   base::HistogramTester histograms;
   ExpectOwnershipCheck(/*time=*/base::Seconds(1));
-  ExpectStateKeysRequest(/*time=*/base::Seconds(2));
-  ExpectOprfRequest(/*time=*/base::Seconds(3));
-  ExpectQueryRequest(/*time=*/base::Seconds(4));
+  ExpectOprfRequest(/*time=*/base::Seconds(2));
+  ExpectQueryRequest(/*time=*/base::Seconds(3));
+  ExpectStateKeysRequest(/*time=*/base::Seconds(4));
   ExpectStateRequest(/*time=*/base::Seconds(5));
 
   FetchEnrollmentState();
@@ -652,20 +647,20 @@ TEST_F(EnrollmentStateFetcherTest, UmaHistogramsTimes) {
   histograms.ExpectUniqueTimeSample(
       base::StrCat({step_d, kUMASuffixOwnershipCheck}), base::Seconds(1), 1);
   histograms.ExpectUniqueTimeSample(
-      base::StrCat({step_d, kUMASuffixStateKeyRetrieval}), base::Seconds(2), 1);
+      base::StrCat({step_d, kUMASuffixOPRFRequest}), base::Seconds(2), 1);
   histograms.ExpectUniqueTimeSample(
-      base::StrCat({step_d, kUMASuffixOPRFRequest}), base::Seconds(3), 1);
+      base::StrCat({step_d, kUMASuffixQueryRequest}), base::Seconds(3), 1);
   histograms.ExpectUniqueTimeSample(
-      base::StrCat({step_d, kUMASuffixQueryRequest}), base::Seconds(4), 1);
+      base::StrCat({step_d, kUMASuffixStateKeyRetrieval}), base::Seconds(4), 1);
   histograms.ExpectUniqueTimeSample(
       base::StrCat({step_d, kUMASuffixStateRequest}), base::Seconds(5), 1);
 }
 
 TEST_F(EnrollmentStateFetcherTest, PackagedLicenseWithoutEnrollment) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   ExpectQueryRequest();
+  ExpectStateKeysRequest();
   em::DeviceManagementResponse response;
   auto* state_response = response.mutable_device_state_retrieval_response()
                              ->mutable_initial_state_response();
@@ -695,9 +690,9 @@ TEST_F(EnrollmentStateFetcherTest, PackagedLicenseWithoutEnrollment) {
 
 TEST_F(EnrollmentStateFetcherTest, InitialEnrollmentEnforced) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   ExpectQueryRequest();
+  ExpectStateKeysRequest();
   em::DeviceManagementResponse response;
   auto* state_response = response.mutable_device_state_retrieval_response()
                              ->mutable_initial_state_response();
@@ -729,9 +724,9 @@ TEST_F(EnrollmentStateFetcherTest, InitialEnrollmentEnforced) {
 
 TEST_F(EnrollmentStateFetcherTest, InitialEnrollmentDisabled) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   ExpectQueryRequest();
+  ExpectStateKeysRequest();
   em::DeviceManagementResponse response;
   auto* state_response = response.mutable_device_state_retrieval_response()
                              ->mutable_initial_state_response();
@@ -759,9 +754,9 @@ TEST_F(EnrollmentStateFetcherTest, InitialEnrollmentDisabled) {
 
 TEST_F(EnrollmentStateFetcherTest, ZTEWithPackagedEnterpriseLicense) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   ExpectQueryRequest();
+  ExpectStateKeysRequest();
   em::DeviceManagementResponse response;
   auto* state_response = response.mutable_device_state_retrieval_response()
                              ->mutable_initial_state_response();
@@ -794,9 +789,9 @@ TEST_F(EnrollmentStateFetcherTest, ZTEWithPackagedEnterpriseLicense) {
 
 TEST_F(EnrollmentStateFetcherTest, ZTEWithEducationLicense) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   ExpectQueryRequest();
+  ExpectStateKeysRequest();
   em::DeviceManagementResponse response;
   auto* state_response = response.mutable_device_state_retrieval_response()
                              ->mutable_initial_state_response();
@@ -826,9 +821,9 @@ TEST_F(EnrollmentStateFetcherTest, ZTEWithEducationLicense) {
 
 TEST_F(EnrollmentStateFetcherTest, ZTEWithTerminalLicense) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   ExpectQueryRequest();
+  ExpectStateKeysRequest();
   em::DeviceManagementResponse response;
   auto* state_response = response.mutable_device_state_retrieval_response()
                              ->mutable_initial_state_response();
@@ -855,9 +850,9 @@ TEST_F(EnrollmentStateFetcherTest, ZTEWithTerminalLicense) {
 
 TEST_F(EnrollmentStateFetcherTest, ZTEWithUnspecifiedUpgrade) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   ExpectQueryRequest();
+  ExpectStateKeysRequest();
   em::DeviceManagementResponse response;
   auto* state_response = response.mutable_device_state_retrieval_response()
                              ->mutable_initial_state_response();
@@ -884,9 +879,9 @@ TEST_F(EnrollmentStateFetcherTest, ZTEWithUnspecifiedUpgrade) {
 
 TEST_F(EnrollmentStateFetcherTest, ZTEWithChromeEnterpriseUpgrade) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   ExpectQueryRequest();
+  ExpectStateKeysRequest();
   em::DeviceManagementResponse response;
   auto* state_response = response.mutable_device_state_retrieval_response()
                              ->mutable_initial_state_response();
@@ -913,9 +908,9 @@ TEST_F(EnrollmentStateFetcherTest, ZTEWithChromeEnterpriseUpgrade) {
 
 TEST_F(EnrollmentStateFetcherTest, ZTEWithKioskAndSignageUpgrade) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   ExpectQueryRequest();
+  ExpectStateKeysRequest();
   em::DeviceManagementResponse response;
   auto* state_response = response.mutable_device_state_retrieval_response()
                              ->mutable_initial_state_response();
@@ -942,9 +937,9 @@ TEST_F(EnrollmentStateFetcherTest, ZTEWithKioskAndSignageUpgrade) {
 
 TEST_F(EnrollmentStateFetcherTest, ReEnrollmentRequested) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   ExpectQueryRequest();
+  ExpectStateKeysRequest();
   em::DeviceManagementResponse response;
   auto* state_response = response.mutable_device_state_retrieval_response();
   state_response->set_restore_mode(
@@ -974,9 +969,9 @@ TEST_F(EnrollmentStateFetcherTest, ReEnrollmentRequested) {
 
 TEST_F(EnrollmentStateFetcherTest, ReEnrollmentEnforced) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   ExpectQueryRequest();
+  ExpectStateKeysRequest();
   em::DeviceManagementResponse response;
   auto* state_response = response.mutable_device_state_retrieval_response();
   state_response->set_restore_mode(
@@ -998,9 +993,9 @@ TEST_F(EnrollmentStateFetcherTest, ReEnrollmentEnforced) {
 
 TEST_F(EnrollmentStateFetcherTest, ReEnrollmentDisabled) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   ExpectQueryRequest();
+  ExpectStateKeysRequest();
   em::DeviceManagementResponse response;
   auto* state_response = response.mutable_device_state_retrieval_response();
   state_response->set_restore_mode(
@@ -1026,9 +1021,9 @@ TEST_F(EnrollmentStateFetcherTest, ReEnrollmentDisabled) {
 
 TEST_F(EnrollmentStateFetcherTest, AutoREWithPerpetualLicense) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   ExpectQueryRequest();
+  ExpectStateKeysRequest();
   em::DeviceManagementResponse response;
   auto* state_response = response.mutable_device_state_retrieval_response();
   state_response->set_restore_mode(
@@ -1055,9 +1050,9 @@ TEST_F(EnrollmentStateFetcherTest, AutoREWithPerpetualLicense) {
 
 TEST_F(EnrollmentStateFetcherTest, AutoREWithUndefinedLicense) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   ExpectQueryRequest();
+  ExpectStateKeysRequest();
   em::DeviceManagementResponse response;
   auto* state_response = response.mutable_device_state_retrieval_response();
   state_response->set_restore_mode(
@@ -1080,9 +1075,9 @@ TEST_F(EnrollmentStateFetcherTest, AutoREWithUndefinedLicense) {
 
 TEST_F(EnrollmentStateFetcherTest, AutoREWithAnnualLicense) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   ExpectQueryRequest();
+  ExpectStateKeysRequest();
   em::DeviceManagementResponse response;
   auto* state_response = response.mutable_device_state_retrieval_response();
   state_response->set_restore_mode(
@@ -1106,9 +1101,9 @@ TEST_F(EnrollmentStateFetcherTest, AutoREWithAnnualLicense) {
 
 TEST_F(EnrollmentStateFetcherTest, AutoREWithKioskLicense) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   ExpectQueryRequest();
+  ExpectStateKeysRequest();
   em::DeviceManagementResponse response;
   auto* state_response = response.mutable_device_state_retrieval_response();
   state_response->set_restore_mode(
@@ -1132,9 +1127,9 @@ TEST_F(EnrollmentStateFetcherTest, AutoREWithKioskLicense) {
 
 TEST_F(EnrollmentStateFetcherTest, AutoREWithPackagedLicense) {
   ExpectOwnershipCheck();
-  ExpectStateKeysRequest();
   ExpectOprfRequest();
   ExpectQueryRequest();
+  ExpectStateKeysRequest();
   em::DeviceManagementResponse response;
   auto* state_response = response.mutable_device_state_retrieval_response();
   state_response->set_restore_mode(

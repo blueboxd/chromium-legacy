@@ -9,11 +9,12 @@
 #include <string>
 
 #include "components/autofill/core/browser/autofill_client.h"
-#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/autofill_error_dialog_context.h"
-#include "components/autofill/core/browser/payments/payments_client.h"
+#include "components/autofill/core/browser/payments/payments_network_interface.h"
 
 namespace autofill {
+
+class CreditCard;
 
 // Authenticates credit card unmasking through risk-based authentication. This
 // authenticator is owned by AutofillClient, and will exist per tab on Chrome.
@@ -21,19 +22,45 @@ class CreditCardRiskBasedAuthenticator {
  public:
   struct RiskBasedAuthenticationResponse {
     RiskBasedAuthenticationResponse();
+    RiskBasedAuthenticationResponse& operator=(
+        const RiskBasedAuthenticationResponse& other);
     ~RiskBasedAuthenticationResponse();
 
-    RiskBasedAuthenticationResponse& with_did_succeed(bool b) {
-      did_succeed = b;
+    // The outcome of the risk-based authentication.
+    enum class Result {
+      // Default value, should never be used.
+      kUnknown = 0,
+      // No further authentication is required. Also known as green path.
+      kNoAuthenticationRequired = 1,
+      // The user needs to complete further authentication to retrieve the card.
+      // Also known as yellow path.
+      kAuthenticationRequired = 2,
+      // The authentication failed. Also known as red path.
+      kError = 3,
+      kMaxValue = kError,
+    };
+
+    RiskBasedAuthenticationResponse& with_result(Result r) {
+      result = r;
       return *this;
     }
     RiskBasedAuthenticationResponse& with_card(CreditCard c) {
-      card = c;
+      card = std::move(c);
+      return *this;
+    }
+    RiskBasedAuthenticationResponse& with_fido_request_options(
+        base::Value::Dict v) {
+      fido_request_options = std::move(v);
+      return *this;
+    }
+    RiskBasedAuthenticationResponse& with_context_token(std::string s) {
+      context_token = std::move(s);
       return *this;
     }
 
-    // Whether the RPC call was successful.
-    bool did_succeed = false;
+    // The `result` will be used to notify requesters of the outcome of the
+    // risk-based authentication.
+    Result result = Result::kUnknown;
     // The `error_dialog_context` will be set if the RPC call fails, and is used
     // to render the error dialog in CreditCardAccessManager.
     AutofillErrorDialogContext error_dialog_context;
@@ -44,8 +71,6 @@ class CreditCardRiskBasedAuthenticator {
     // the card's real pan was not returned from the server side.
     // FIDO request options will be present only when FIDO is available.
     absl::optional<base::Value::Dict> fido_request_options;
-    // Challenge options returned by the server side for further authentication.
-    std::vector<CardUnmaskChallengeOption> card_unmask_challenge_options;
     // Stores the latest version of the context token, passed between Payments
     // calls and unmodified by Chrome.
     std::string context_token;
@@ -56,6 +81,14 @@ class CreditCardRiskBasedAuthenticator {
     virtual ~Requester() = default;
     virtual void OnRiskBasedAuthenticationResponseReceived(
         const RiskBasedAuthenticationResponse& response) = 0;
+    // Callback function invoked when an unmask response for a virtual card has
+    // been received.
+    // TODO(crbug.com/1487282): Merge virtual card authentication response
+    // handling logic with OnRiskBasedAuthenticationResponseReceived().
+    virtual void OnVirtualCardRiskBasedAuthenticationResponseReceived(
+        AutofillClient::PaymentsRpcResult result,
+        payments::PaymentsNetworkInterface::UnmaskResponseDetails&
+            response_details) = 0;
   };
 
   explicit CreditCardRiskBasedAuthenticator(AutofillClient* client);
@@ -76,7 +109,8 @@ class CreditCardRiskBasedAuthenticator {
 
   void OnUnmaskResponseReceivedForTesting(
       AutofillClient::PaymentsRpcResult result,
-      payments::PaymentsClient::UnmaskResponseDetails& response_details) {
+      payments::PaymentsNetworkInterface::UnmaskResponseDetails&
+          response_details) {
     OnUnmaskResponseReceived(result, response_details);
   }
 
@@ -87,7 +121,8 @@ class CreditCardRiskBasedAuthenticator {
   // Callback function invoked when an unmask response has been received.
   void OnUnmaskResponseReceived(
       AutofillClient::PaymentsRpcResult result,
-      payments::PaymentsClient::UnmaskResponseDetails& response_details);
+      payments::PaymentsNetworkInterface::UnmaskResponseDetails&
+          response_details);
 
   // Reset the authenticator to its initial state.
   virtual void Reset();
@@ -103,7 +138,7 @@ class CreditCardRiskBasedAuthenticator {
 
   // This contains the details of the card unmask request to be sent to the
   // server.
-  std::unique_ptr<payments::PaymentsClient::UnmaskRequestDetails>
+  std::unique_ptr<payments::PaymentsNetworkInterface::UnmaskRequestDetails>
       unmask_request_details_;
 
   base::WeakPtrFactory<CreditCardRiskBasedAuthenticator> weak_ptr_factory_{

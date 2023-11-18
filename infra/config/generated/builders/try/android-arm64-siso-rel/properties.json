@@ -1,10 +1,13 @@
 {
   "$build/chromium_orchestrator": {
     "compilator": "android-arm64-siso-rel-compilator",
-    "compilator_watcher_git_revision": "e6d08be3fd589d4f222dae5d18dbc972e6117b23"
+    "compilator_watcher_git_revision": "039b345114555dea8996630f1fc6e08319fa0422"
   },
   "$build/chromium_tests_builder_config": {
     "builder_config": {
+      "additional_exclusions": [
+        "infra/config/generated/builders/try/android-arm64-siso-rel/gn-args.json"
+      ],
       "builder_db": {
         "entries": [
           {
@@ -82,8 +85,7 @@
           "builder": "android-pie-arm64-rel",
           "project": "chromium"
         }
-      ],
-      "is_compile_only": true
+      ]
     }
   },
   "$build/code_coverage": {

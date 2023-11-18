@@ -154,15 +154,14 @@ class AutofillSuggestionGenerator {
   // Checks whether the suggestion accepted by the user, generated from the
   // profile with `backend_id`, would've been hidden prior to landing the
   // feature `kAutofillUseAddressRewriterInProfileSubsetComparison`.
-  // `skip_reasons` denotes for each field if it is relevant for the current
-  // suggestion or not.
+  // `field_types` denotes the types relevant for the current suggestion.
   // TODO(crbug/1439742): Remove when
   // `kAutofillUseAddressRewriterInProfileSubsetComparison` launches.
   bool WasProfileSuggestionPreviouslyHidden(
       const FormStructure& form,
       const AutofillField& field,
       Suggestion::BackendId backend_id,
-      const std::vector<FieldFillingSkipReason>& skip_reasons);
+      const ServerFieldTypeSet& field_types);
 
  protected:
   // Creates a suggestion for the given `credit_card`. `virtual_card_option`
@@ -209,14 +208,14 @@ class AutofillSuggestionGenerator {
       ServerFieldType trigger_field_type);
 
   // Creates nested/child suggestions for `suggestion` with the `profile`
-  // information. Uses `trigger_field_type_group` to define what group filling
+  // information. Uses `trigger_field_type` to define what group filling
   // suggestion to add (name, address or phone). The existence of child
   // suggestions defines whether the autofill popup will have submenus.
   // `last_targeted_fields` specified the last set of fields target by the user.
   // When not present, we default to full form.
   void AddGranularFillingChildSuggestions(
-      FieldTypeGroup trigger_field_type_group,
       absl::optional<ServerFieldTypeSet> last_targeted_fields,
+      ServerFieldType trigger_field_type,
       const AutofillProfile& profile,
       Suggestion& suggestion);
 

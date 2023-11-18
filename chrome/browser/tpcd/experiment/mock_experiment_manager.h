@@ -22,6 +22,8 @@ class MockExperimentManager : public ExperimentManager {
               (bool, EligibilityDecisionCallback),
               (override));
   MOCK_METHOD(absl::optional<bool>, IsClientEligible, (), (const, override));
+  MOCK_METHOD(bool, DidVersionChange, (), (const, override));
+  MOCK_METHOD(void, NotifyProfileTrackingProtectionOnboarded, (), (override));
 };
 
 }  // namespace tpcd::experiment

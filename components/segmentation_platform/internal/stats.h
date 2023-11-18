@@ -71,7 +71,7 @@ void RecordClassificationResultComputed(
 // to when prefs expired and is updated with new result.
 void RecordClassificationResultUpdated(
     const Config& config,
-    const absl::optional<proto::PredictionResult>& old_result,
+    const proto::PredictionResult* old_result,
     const proto::PredictionResult& new_result);
 
 // Database Maintenance metrics.
@@ -306,8 +306,13 @@ enum class TrainingDataCollectionEvent {
   kTrainingDataMissing = 19,
   kOnDecisionTimeTypeMistmatch = 20,
   kDelayTriggerSampled = 21,
-  kMaxValue = kDelayTriggerSampled,
+  kContinousExactPredictionTimeCollectionStart = 22,
+  kContinousExactPredictionTimeCollectionSuccess = 23,
+  kMaxValue = kContinousExactPredictionTimeCollectionSuccess
 };
+
+std::string TrainingDataCollectionEventToErrorMsg(
+    TrainingDataCollectionEvent event);
 
 // Records analytics for training data collection.
 void RecordTrainingDataCollectionEvent(SegmentId segment_id,

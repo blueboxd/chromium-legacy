@@ -93,7 +93,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH) AuthEventsRecorder
 
   // Increment `knowledge_factor_auth_failure_count_` to reflect a failed
   // attempt to authenticate with a knowledge auth factor.
-  void OnKnowledgeFactorAuthFailue();
+  void OnKnowledgeFactorAuthFailure();
 
   // Log the auth failure action and reason.
   void OnAuthFailure(const AuthFailure::FailureReason& failure_reason);
@@ -138,6 +138,9 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH) AuthEventsRecorder
 
   // Report that the user submitted an auth method.
   void OnAuthSubmit();
+
+  // Report that the authentication is completed.
+  void OnAuthComplete(absl::optional<bool> auth_success);
 
   // Report that the user submitted the pin input field.
   void OnPinSubmit();

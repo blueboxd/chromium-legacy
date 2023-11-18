@@ -166,7 +166,7 @@ SessionWindowIOS* FilterInvalidTabs(SessionWindowIOS* session_window) {
   const int sessions_count = static_cast<int>(session_window.sessions.count);
 
   std::vector<int> items_to_drop;
-  NSMutableSet<NSString*>* seen_identifiers = [NSMutableSet set];
+  std::set<web::WebStateID> seen_identifiers;
   // Count the number of dropped tabs because they are duplicates, for
   // reporting.
   int duplicate_count = 0;
@@ -178,11 +178,11 @@ SessionWindowIOS* FilterInvalidTabs(SessionWindowIOS* session_window) {
     } else {
       // Filter out session items that are duplicate (after something went bad
       // somewhere).
-      if ([seen_identifiers containsObject:session.stableIdentifier]) {
+      if (seen_identifiers.contains(session.uniqueIdentifier)) {
         items_to_drop.push_back(index);
         duplicate_count++;
       }
-      [seen_identifiers addObject:session.stableIdentifier];
+      seen_identifiers.insert(session.uniqueIdentifier);
     }
   }
   base::UmaHistogramCounts100("Tabs.DroppedDuplicatesCountOnSessionRestore",
@@ -237,9 +237,15 @@ SessionRestorationBrowserAgent::SessionRestorationBrowserAgent(
 }
 
 SessionRestorationBrowserAgent::~SessionRestorationBrowserAgent() {
-  // Disconnect the session factory object as it's not granteed that it will be
-  // released before it's referenced by the session service.
+  // Disconnect the session factory object as it's not garanteed that it will
+  // be released before it's referenced by the session service.
   [session_window_ios_factory_ disconnect];
+
+  // If the object is destroyed before the Browser, unregister it from the
+  // ObserverList explicitly.
+  if (browser_) {
+    BrowserDestroyed(browser_);
+  }
 }
 
 void SessionRestorationBrowserAgent::SetSessionID(

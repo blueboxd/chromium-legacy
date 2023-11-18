@@ -15,7 +15,6 @@
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/accessibility/read_anything_constants.h"
 #include "chrome/renderer/accessibility/ax_tree_distiller.h"
 #include "components/language/core/common/locale_util.h"
 #include "content/public/renderer/chrome_object_extensions_utils.h"
@@ -40,6 +39,7 @@
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/accessibility/ax_tree_update.h"
+#include "url/url_util.h"
 #include "v8/include/v8-context.h"
 #include "v8/include/v8-microtask-queue.h"
 
@@ -290,7 +290,7 @@ ui::AXTreeUpdate GetSnapshotFromV8SnapshotLite(
 
   v8::Local<v8::Value> v8_nodes;
   v8_snapshot_dict.Get("nodes", &v8_nodes);
-  std::vector<v8::Local<v8::Value>> v8_nodes_vector;
+  v8::LocalVector<v8::Value> v8_nodes_vector(isolate);
   if (!gin::ConvertFromV8(isolate, v8_nodes, &v8_nodes_vector)) {
     return snapshot;
   }
@@ -339,6 +339,24 @@ bool GetSelectable(const GURL& url) {
   return true;
 }
 
+bool GetIsGoogleDocs(const GURL& url) {
+  // A Google Docs URL is in the form of "https://docs.google.com/document*" or
+  // "https://docs.sandbox.google.com/document*".
+  constexpr const char* kDocsURLDomain[] = {"docs.google.com",
+                                            "docs.sandbox.google.com"};
+  if (url.SchemeIsHTTPOrHTTPS()) {
+    for (const std::string& google_docs_url : kDocsURLDomain) {
+      if (url.DomainIs(google_docs_url) && url.has_path() &&
+          url.path().starts_with("/document") &&
+          !url.ExtractFileName().empty()) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 }  // namespace
 
 // static
@@ -378,9 +396,9 @@ ReadAnythingAppController* ReadAnythingAppController::Install(
 
 ReadAnythingAppController::ReadAnythingAppController(
     content::RenderFrame* render_frame)
-    : render_frame_(render_frame) {
+    : frame_token_(render_frame->GetWebFrame()->GetLocalFrameToken()) {
   distiller_ = std::make_unique<AXTreeDistiller>(
-      render_frame_,
+      render_frame,
       base::BindRepeating(&ReadAnythingAppController::OnAXTreeDistilled,
                           weak_ptr_factory_.GetWeakPtr()));
 }
@@ -428,12 +446,13 @@ void ReadAnythingAppController::AccessibilityEventReceived(
 }
 
 void ReadAnythingAppController::ExecuteJavaScript(std::string script) {
-  if (!render_frame_) {
+  content::RenderFrame* render_frame = GetRenderFrame();
+  if (!render_frame) {
     return;
   }
   // TODO(b/1266555): Use v8::Function rather than javascript. If possible,
   // replace this function call with firing an event.
-  render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
+  render_frame->ExecuteJavaScript(base::ASCIIToUTF16(script));
 }
 
 void ReadAnythingAppController::OnActiveAXTreeIDChanged(
@@ -448,6 +467,7 @@ void ReadAnythingAppController::OnActiveAXTreeIDChanged(
   model_.SetActiveUkmSourceId(ukm_source_id);
   model_.SetActiveTreeSelectable(GetSelectable(url));
   model_.SetIsPdf(url);
+  model_.set_is_google_docs(GetIsGoogleDocs(url));
   // Delete all pending updates on the formerly active AXTree.
   // TODO(crbug.com/1266555): If distillation is in progress, cancel the
   // distillation request.
@@ -597,9 +617,10 @@ void ReadAnythingAppController::OnSettingsRestoredFromPrefs(
     double font_size,
     read_anything::mojom::Colors color,
     double speech_rate,
+    base::Value::Dict voices,
     read_anything::mojom::HighlightGranularity granularity) {
   model_.OnSettingsRestoredFromPrefs(line_spacing, letter_spacing, font,
-                                     font_size, color, speech_rate,
+                                     font_size, color, speech_rate, &voices,
                                      granularity);
   ExecuteJavaScript("chrome.readingMode.restoreSettingsFromPrefs();");
 }
@@ -657,6 +678,7 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
       .SetProperty("speechSynthesisLanguageCode",
                    &ReadAnythingAppController::GetLanguageCodeForSpeech)
       .SetMethod("getChildren", &ReadAnythingAppController::GetChildren)
+      .SetMethod("getDataFontCss", &ReadAnythingAppController::GetDataFontCss)
       .SetMethod("getTextDirection",
                  &ReadAnythingAppController::GetTextDirection)
       .SetMethod("getHtmlTag", &ReadAnythingAppController::GetHtmlTag)
@@ -665,6 +687,8 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
       .SetMethod("getUrl", &ReadAnythingAppController::GetUrl)
       .SetMethod("shouldBold", &ReadAnythingAppController::ShouldBold)
       .SetMethod("isOverline", &ReadAnythingAppController::IsOverline)
+      .SetMethod("isLeafNode", &ReadAnythingAppController::IsLeafNode)
+      .SetMethod("isGoogleDocs", &ReadAnythingAppController::IsGoogleDocs)
       .SetMethod("onConnected", &ReadAnythingAppController::OnConnected)
       .SetMethod("onCopy", &ReadAnythingAppController::OnCopy)
       .SetMethod("onFontSizeChanged",
@@ -692,6 +716,8 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
       .SetMethod("onFontChange", &ReadAnythingAppController::OnFontChange)
       .SetMethod("onSpeechRateChange",
                  &ReadAnythingAppController::OnSpeechRateChange)
+      .SetMethod("getStoredVoice", &ReadAnythingAppController::GetStoredVoice)
+      .SetMethod("onVoiceChange", &ReadAnythingAppController::OnVoiceChange)
       .SetMethod("turnedHighlightOn",
                  &ReadAnythingAppController::TurnedHighlightOn)
       .SetMethod("turnedHighlightOff",
@@ -770,6 +796,15 @@ float ReadAnythingAppController::SpeechRate() const {
   return model_.speech_rate();
 }
 
+std::string ReadAnythingAppController::GetStoredVoice(
+    const std::string& lang) const {
+  if (model_.voices().contains(lang)) {
+    return *model_.voices().FindString(lang);
+  }
+
+  return string_constants::kReadAnythingPlaceholderVoiceName;
+}
+
 int ReadAnythingAppController::HighlightGranularity() const {
   return model_.highlight_granularity();
 }
@@ -839,10 +874,27 @@ std::vector<ui::AXNodeID> ReadAnythingAppController::GetChildren(
   return child_ids;
 }
 
+std::string ReadAnythingAppController::GetDataFontCss(
+    ui::AXNodeID ax_node_id) const {
+  ui::AXNode* ax_node = model_.GetAXNode(ax_node_id);
+  DCHECK(ax_node);
+
+  std::string data_font_css;
+  ax_node->GetHtmlAttribute("data-font-css", &data_font_css);
+  return data_font_css;
+}
+
 std::string ReadAnythingAppController::GetHtmlTag(
     ui::AXNodeID ax_node_id) const {
   ui::AXNode* ax_node = model_.GetAXNode(ax_node_id);
   DCHECK(ax_node);
+
+  std::string html_tag =
+      ax_node->GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
+
+  if (model_.is_pdf()) {
+    return GetHtmlTagForPDF(ax_node, html_tag);
+  }
 
   if (ui::IsTextField(ax_node->GetRole())) {
     return "div";
@@ -851,22 +903,86 @@ std::string ReadAnythingAppController::GetHtmlTag(
   // Some divs are marked with role=heading and aria-level=# to indicate
   // the heading level, so use the <h#> tag directly.
   if (ax_node->GetRole() == ax::mojom::Role::kHeading) {
-    std::string aria_level;
-    ax_node->GetHtmlAttribute("aria-level", &aria_level);
+    std::string aria_level = GetAriaLevel(ax_node);
     if (!aria_level.empty()) {
       return "h" + aria_level;
     }
   }
 
-  // Replace embedded objects with div to display PDF content.
-  if (ax_node->GetRole() == ax::mojom::Role::kEmbeddedObject) {
-    return "div";
+  if (html_tag == ui::ToString(ax::mojom::Role::kMark)) {
+    // Replace mark element with bold element for readability.
+    html_tag = "b";
+  } else if (IsGoogleDocs()) {
+    // Change HTML tags for SVG elements to allow Reading Mode to render text
+    // for the Annotated Canvas elements in a Google Doc.
+    if (html_tag == "svg") {
+      html_tag = "div";
+    }
+    if (html_tag == "g" && ax_node->GetRole() == ax::mojom::Role::kParagraph) {
+      html_tag = "p";
+    }
   }
 
-  // Replace mark element with bold element for readability
-  std::string html_tag =
-      ax_node->GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
-  return html_tag == ui::ToString(ax::mojom::Role::kMark) ? "b" : html_tag;
+  return html_tag;
+}
+
+std::string ReadAnythingAppController::GetAriaLevel(ui::AXNode* ax_node) const {
+  std::string aria_level;
+  ax_node->GetHtmlAttribute("aria-level", &aria_level);
+  return aria_level;
+}
+
+std::string ReadAnythingAppController::GetHtmlTagForPDF(
+    ui::AXNode* ax_node,
+    std::string html_tag) const {
+  ax::mojom::Role role = ax_node->GetRole();
+
+  // Some nodes in PDFs don't have an HTML tag so use role instead.
+  switch (role) {
+    case ax::mojom::Role::kEmbeddedObject:
+    case ax::mojom::Role::kRegion:
+    case ax::mojom::Role::kPdfRoot:
+    case ax::mojom::Role::kRootWebArea:
+      return "span";
+    case ax::mojom::Role::kParagraph:
+      return "p";
+    case ax::mojom::Role::kLink:
+      return "a";
+    case ax::mojom::Role::kStaticText:
+      return "";
+    case ax::mojom::Role::kHeading:
+      return GetHeadingHtmlTagForPDF(ax_node, html_tag);
+    default:
+      return html_tag;
+  }
+}
+
+std::string ReadAnythingAppController::GetHeadingHtmlTagForPDF(
+    ui::AXNode* ax_node,
+    std::string html_tag) const {
+  // Sometimes whole paragraphs can be formatted as a heading. If the text is
+  // longer than 2 lines, assume it was meant to be a paragragh,
+  if (ax_node->GetTextContentUTF8().length() > (2 * kMaxLineWidth)) {
+    return "p";
+  }
+
+  // A single block of text could be incorrectly formatted with multiple heading
+  // nodes (one for each line of text) instead of a single paragraph node. This
+  // case should be detected to improve readability. If there are multiple
+  // consecutive nodes with the same heading level, assume that they are all a
+  // part of one paragraph.
+  ui::AXNode* next = ax_node->GetNextUnignoredSibling();
+  ui::AXNode* prev = ax_node->GetPreviousUnignoredSibling();
+
+  if ((next && next->GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag) ==
+                   html_tag) ||
+      (prev && prev->GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag) ==
+                   html_tag)) {
+    return "span";
+  }
+
+  std::string aria_level = GetAriaLevel(ax_node);
+  return !aria_level.empty() ? "h" + aria_level : html_tag;
 }
 
 std::string ReadAnythingAppController::GetLanguage(
@@ -879,10 +995,35 @@ std::string ReadAnythingAppController::GetLanguage(
   return ax_node->GetStringAttribute(ax::mojom::StringAttribute::kLanguage);
 }
 
+std::string ReadAnythingAppController::GetNameAttributeText(
+    ui::AXNode* ax_node) const {
+  DCHECK(ax_node);
+  std::string node_text;
+  if (ax_node->HasStringAttribute(ax::mojom::StringAttribute::kName)) {
+    node_text = ax_node->GetStringAttribute(ax::mojom::StringAttribute::kName);
+  }
+
+  for (auto it = ax_node->UnignoredChildrenBegin();
+       it != ax_node->UnignoredChildrenEnd(); ++it) {
+    if (node_text.empty()) {
+      node_text = GetNameAttributeText(it.get());
+    } else {
+      node_text += " " + GetNameAttributeText(it.get());
+    }
+  }
+  return node_text;
+}
+
 std::string ReadAnythingAppController::GetTextContent(
     ui::AXNodeID ax_node_id) const {
   ui::AXNode* ax_node = model_.GetAXNode(ax_node_id);
   DCHECK(ax_node);
+  if ((ax_node->GetTextContentUTF8()).empty() && IsGoogleDocs()) {
+    // For Google Docs, we distill text from the aria-labels of annotated
+    // canvas's rect elements. Therefore, we need to explicitly read the name
+    // attribute to get the text.
+    return GetNameAttributeText(ax_node);
+  }
   return ax_node->GetTextContentUTF8();
 }
 
@@ -914,7 +1055,18 @@ std::string ReadAnythingAppController::GetTextDirection(
 std::string ReadAnythingAppController::GetUrl(ui::AXNodeID ax_node_id) const {
   ui::AXNode* ax_node = model_.GetAXNode(ax_node_id);
   DCHECK(ax_node);
-  return ax_node->GetStringAttribute(ax::mojom::StringAttribute::kUrl);
+  const char* url =
+      ax_node->GetStringAttribute(ax::mojom::StringAttribute::kUrl).c_str();
+
+  // Prevent XSS from href attribute, which could be set to a script instead of
+  // a valid website.
+  if (url::FindAndCompareScheme(url, static_cast<int>(strlen(url)), "http",
+                                nullptr) ||
+      url::FindAndCompareScheme(url, static_cast<int>(strlen(url)), "https",
+                                nullptr)) {
+    return url;
+  }
+  return "";
 }
 
 bool ReadAnythingAppController::ShouldBold(ui::AXNodeID ax_node_id) const {
@@ -932,6 +1084,12 @@ bool ReadAnythingAppController::IsOverline(ui::AXNodeID ax_node_id) const {
   return ax_node->HasTextStyle(ax::mojom::TextStyle::kOverline);
 }
 
+bool ReadAnythingAppController::IsLeafNode(ui::AXNodeID ax_node_id) const {
+  ui::AXNode* ax_node = model_.GetAXNode(ax_node_id);
+  DCHECK(ax_node);
+  return ax_node->IsLeaf();
+}
+
 bool ReadAnythingAppController::IsSelectable() const {
   return model_.active_tree_selectable();
 }
@@ -942,6 +1100,10 @@ bool ReadAnythingAppController::IsWebUIToolbarEnabled() const {
 
 bool ReadAnythingAppController::IsReadAloudEnabled() const {
   return features::IsReadAnythingReadAloudEnabled();
+}
+
+bool ReadAnythingAppController::IsGoogleDocs() const {
+  return model_.is_docs();
 }
 
 std::vector<std::string> ReadAnythingAppController::GetSupportedFonts() const {
@@ -961,10 +1123,11 @@ void ReadAnythingAppController::OnConnected() {
   page_handler_factory_->CreateUntrustedPageHandler(
       receiver_.BindNewPipeAndPassRemote(),
       page_handler_.BindNewPipeAndPassReceiver());
-  if (!render_frame_) {
+  content::RenderFrame* render_frame = GetRenderFrame();
+  if (!render_frame) {
     return;
   }
-  render_frame_->GetBrowserInterfaceBroker()->GetInterface(
+  render_frame->GetBrowserInterfaceBroker()->GetInterface(
       std::move(page_handler_factory_receiver));
 }
 
@@ -1058,6 +1221,11 @@ void ReadAnythingAppController::OnFontChange(const std::string& font) {
 
 void ReadAnythingAppController::OnSpeechRateChange(double rate) {
   page_handler_->OnSpeechRateChange(rate);
+}
+
+void ReadAnythingAppController::OnVoiceChange(const std::string& voice,
+                                              const std::string& lang) {
+  page_handler_->OnVoiceChange(voice, lang);
 }
 
 void ReadAnythingAppController::TurnedHighlightOn() {
@@ -1221,11 +1389,12 @@ void ReadAnythingAppController::SetDefaultLanguageCode(
 void ReadAnythingAppController::SetContentForTesting(
     v8::Local<v8::Value> v8_snapshot_lite,
     std::vector<ui::AXNodeID> content_node_ids) {
-  if (!render_frame_) {
+  content::RenderFrame* render_frame = GetRenderFrame();
+  if (!render_frame) {
     return;
   }
   v8::Isolate* isolate =
-      render_frame_->GetWebFrame()->GetAgentGroupScheduler()->Isolate();
+      render_frame->GetWebFrame()->GetAgentGroupScheduler()->Isolate();
   ui::AXTreeUpdate snapshot =
       GetSnapshotFromV8SnapshotLite(isolate, v8_snapshot_lite);
   ui::AXEvent selectionEvent;
@@ -1239,4 +1408,12 @@ void ReadAnythingAppController::SetContentForTesting(
   // Trigger a selection event (for testing selections).
   AccessibilityEventReceived(snapshot.tree_data.tree_id, {snapshot},
                              {selectionEvent});
+}
+
+content::RenderFrame* ReadAnythingAppController::GetRenderFrame() {
+  auto* web_frame = blink::WebLocalFrame::FromFrameToken(frame_token_);
+  if (!web_frame) {
+    return nullptr;
+  }
+  return content::RenderFrame::FromWebFrame(web_frame);
 }

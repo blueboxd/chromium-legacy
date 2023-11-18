@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "ash/constants/ash_features.h"
 #include "base/compiler_specific.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
@@ -71,6 +72,12 @@ class DeviceSettingsServiceTest : public DeviceSettingsTestBase {
 
   void SetUp() override {
     DeviceSettingsTestBase::SetUp();
+
+    // Disable owner key migration.
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::kStoreOwnerKeyInPrivateSlot},
+        /*disabled_features=*/{features::kMigrateOwnerKeyToPrivateSlot});
+
     device_policy_->payload()
         .mutable_device_policy_refresh_rate()
         ->set_device_policy_refresh_rate(120);
@@ -86,6 +93,7 @@ class DeviceSettingsServiceTest : public DeviceSettingsTestBase {
               device_settings_service_->device_settings()->SerializeAsString());
   }
 
+  base::test::ScopedFeatureList feature_list_;
   bool operation_completed_;
   bool is_owner_;
   bool is_owner_set_;
@@ -146,6 +154,13 @@ TEST_F(DeviceSettingsServiceTest, LoadSuccess) {
   EXPECT_EQ(DeviceSettingsService::STORE_SUCCESS,
             device_settings_service_->status());
   CheckPolicy();
+}
+
+TEST_F(DeviceSettingsServiceTest, LoadAfterSessionStopping) {
+  SetSessionStopping();
+  device_settings_service_->LoadImmediately();
+  EXPECT_FALSE(device_settings_service_->policy_data());
+  EXPECT_FALSE(device_settings_service_->device_settings());
 }
 
 TEST_F(DeviceSettingsServiceTest, StoreFailure) {

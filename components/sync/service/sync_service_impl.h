@@ -24,6 +24,7 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/configure_reason.h"
+#include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/engine/events/protocol_event_observer.h"
 #include "components/sync/engine/net/http_post_provider_factory.h"
 #include "components/sync/engine/shutdown_reason.h"
@@ -57,6 +58,7 @@ namespace syncer {
 
 class BackendMigrator;
 class SyncAuthManager;
+class SyncFeatureStatusForMigrationsRecorder;
 
 // Look at the SyncService interface for information on how to use this class.
 // You should not need to know about SyncServiceImpl directly.
@@ -65,6 +67,7 @@ class SyncServiceImpl : public SyncService,
                         public SyncPrefObserver,
                         public DataTypeManagerObserver,
                         public SyncServiceCrypto::Delegate,
+                        public SyncUserSettingsImpl::Delegate,
                         public signin::IdentityManager::Observer {
  public:
   // Bundles the arguments for SyncServiceImpl construction. This is a
@@ -90,6 +93,7 @@ class SyncServiceImpl : public SyncService,
         nullptr;
     version_info::Channel channel = version_info::Channel::UNKNOWN;
     std::string debug_identifier;
+    bool sync_poll_immediately_on_every_startup;
   };
 
   explicit SyncServiceImpl(InitParams init_params);
@@ -184,6 +188,11 @@ class SyncServiceImpl : public SyncService,
   absl::optional<PassphraseType> GetPassphraseType() const override;
   void SetEncryptionBootstrapToken(const std::string& bootstrap_token) override;
   std::string GetEncryptionBootstrapToken() const override;
+
+  // SyncUserSettingsImpl::Delegate implementation.
+  bool IsCustomPassphraseAllowed() const override;
+  SyncPrefs::SyncAccountState GetSyncAccountStateForPrefs() const override;
+  CoreAccountInfo GetSyncAccountInfoForPrefs() const override;
 
   // IdentityManager::Observer implementation.
   void OnAccountsInCookieUpdated(
@@ -320,8 +329,6 @@ class SyncServiceImpl : public SyncService,
 
   bool UseTransportOnlyMode() const;
 
-  SyncPrefs::SyncAccountState GetSyncAccountStateForPrefs() const;
-
   // Returns the set of data types that are supported in principle, possibly
   // influenced by command-line options.
   ModelTypeSet GetRegisteredDataTypes() const;
@@ -449,7 +456,7 @@ class SyncServiceImpl : public SyncService,
   // Indicates if this is the first time sync is being configured.
   // This is set to true if last synced time is not set at the time of
   // OnEngineInitialized().
-  bool is_first_time_sync_configure_;
+  bool is_first_time_sync_configure_ = false;
 
   // Number of UIs currently configuring the Sync service. When this number
   // is decremented back to zero, Sync setup is marked no longer in progress.
@@ -458,7 +465,7 @@ class SyncServiceImpl : public SyncService,
   // Set when sync receives STOP_SYNC_FOR_DISABLED_ACCOUNT error from server.
   // Prevents SyncServiceImpl from starting engine till browser restarted
   // or user signed out.
-  bool sync_disabled_by_admin_;
+  bool sync_disabled_by_admin_ = false;
 
   // Information describing an unrecoverable error.
   absl::optional<UnrecoverableErrorReason> unrecoverable_error_reason_ =
@@ -481,7 +488,7 @@ class SyncServiceImpl : public SyncService,
   // This allows us to gracefully handle an ABORTED return code from the
   // DataTypeManager in the event that the server informed us to cease and
   // desist syncing immediately.
-  bool expect_sync_configuration_aborted_;
+  bool expect_sync_configuration_aborted_ = false;
 
   std::unique_ptr<BackendMigrator> migrator_;
 
@@ -503,12 +510,14 @@ class SyncServiceImpl : public SyncService,
   // Used for UMA to determine whether TrustedVaultErrorShownOnStartup
   // histogram needs to recorded. Set to false iff histogram was already
   // recorded or trusted vault passphrase type wasn't used on startup.
-  bool should_record_trusted_vault_error_shown_on_startup_;
+  bool should_record_trusted_vault_error_shown_on_startup_ = true;
+
+  const bool sync_poll_immediately_on_every_startup_;
 
   // Whether we want to receive invalidations for the SESSIONS data type. This
   // is typically false on Android (to save network traffic), but true on all
   // other platforms.
-  bool sessions_invalidations_enabled_;
+  bool sessions_invalidations_enabled_ = !BUILDFLAG(IS_ANDROID);
 
   // Set if/when Initialize() schedules a deferred task to start the engine.
   // Cleared on the first start attempt, regardless of success and who triggered
@@ -517,6 +526,8 @@ class SyncServiceImpl : public SyncService,
 
   // Used to track download status changes during browser startup.
   std::unique_ptr<DownloadStatusRecorder> download_status_recorder_;
+
+  std::unique_ptr<SyncFeatureStatusForMigrationsRecorder> sync_status_recorder_;
 
   base::ScopedObservation<SyncPrefs, SyncPrefObserver> sync_prefs_observation_{
       this};

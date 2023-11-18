@@ -31,7 +31,7 @@
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/password_manager/core/browser/password_form.h"
-#include "components/password_manager/core/browser/password_store_interface.h"
+#include "components/password_manager/core/browser/password_store/password_store_interface.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
@@ -331,13 +331,13 @@ void ProfileWriter::AddKeywords(
   }
 }
 
-void ProfileWriter::AddAutofillFormDataEntries(
-    const std::vector<autofill::AutofillEntry>& autofill_entries) {
+void ProfileWriter::AddAutocompleteFormDataEntries(
+    const std::vector<autofill::AutocompleteEntry>& autocomplete_entries) {
   scoped_refptr<autofill::AutofillWebDataService> web_data_service =
       WebDataServiceFactory::GetAutofillWebDataForProfile(
           profile_, ServiceAccessType::EXPLICIT_ACCESS);
   if (web_data_service.get())
-    web_data_service->UpdateAutofillEntries(autofill_entries);
+    web_data_service->UpdateAutocompleteEntries(autocomplete_entries);
 }
 
 ProfileWriter::~ProfileWriter() {}

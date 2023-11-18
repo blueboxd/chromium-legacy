@@ -29,9 +29,9 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {DataUsage, FastInitiationNotificationState, Visibility} from 'chrome://resources/mojo/chromeos/ash/services/nearby/public/mojom/nearby_share_settings.mojom-webui.js';
 import {flush, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {DeepLinkingMixin} from '../deep_linking_mixin.js';
+import {DeepLinkingMixin} from '../common/deep_linking_mixin.js';
+import {RouteObserverMixin} from '../common/route_observer_mixin.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
-import {RouteObserverMixin} from '../route_observer_mixin.js';
 import {Route, Router, routes} from '../router.js';
 
 import {NearbyAccountManagerBrowserProxyImpl} from './nearby_account_manager_browser_proxy.js';
@@ -408,7 +408,9 @@ export class SettingsNearbyShareSubpageElement extends
 
   private getAccountRowLabel(profileName: string, profileLabel: string):
       string {
-    return this.i18n('nearbyShareAccountRowLabel', profileName, profileLabel);
+    return this.i18n(
+        'nearbyShareAccountRowLabel', this.i18n('nearbyShareFeatureName'),
+        profileName, profileLabel);
   }
 
   private getEnabledToggleClassName_(): string {

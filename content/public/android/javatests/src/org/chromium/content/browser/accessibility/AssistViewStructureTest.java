@@ -17,15 +17,21 @@ import androidx.test.filters.MediumTest;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.DisableFeatures;
+import org.chromium.base.test.util.Features.EnableFeatures;
+import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
+import org.chromium.ui.accessibility.AccessibilityFeatures;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeoutException;
@@ -34,12 +40,12 @@ import java.util.concurrent.TimeoutException;
 @RunWith(BaseJUnit4ClassRunner.class)
 // TODO(mschillaci): Migrate all these tests to the WebContentsAccessibilityTreeTest suite.
 public class AssistViewStructureTest {
+    @Rule public TestRule mProcessor = new Features.InstrumentationProcessor();
+
     @Rule
     public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
 
-    /**
-     * Helper to call onProvideVirtualStructure and block until the results are received.
-     */
+    /** Helper to call onProvideVirtualStructure and block until the results are received. */
     private TestViewStructure getViewStructureFromHtml(String htmlContent, String js)
             throws TimeoutException {
         mActivityTestRule.launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(htmlContent));
@@ -58,33 +64,51 @@ public class AssistViewStructureTest {
                 () -> wcax.onProvideVirtualStructure(testViewStructure, false));
 
         CriteriaHelper.pollUiThread(
-                testViewStructure::isDone, "Timed out waiting for onProvideVirtualStructure");
+                wcax::hasFinishedLatestAccessibilitySnapshotForTesting,
+                "Timed out waiting for onProvideVirtualStructure");
         return testViewStructure;
     }
 
-    /**
-     * Call getViewStructureFromHtml without the js parameter.
-     */
+    /** Call getViewStructureFromHtml without the js parameter. */
     private TestViewStructure getViewStructureFromHtml(String htmlContent) throws TimeoutException {
         return getViewStructureFromHtml(htmlContent, null);
     }
 
     private String getSelectionScript(String node1, int start, String node2, int end) {
-        return "var element1 = document.getElementById('" + node1 + "');"
+        return "var element1 = document.getElementById('"
+                + node1
+                + "');"
                 + "var node1 = element1.childNodes.item(0);"
                 + "var range=document.createRange();"
-                + "range.setStart(node1," + start + ");"
-                + "var element2 = document.getElementById('" + node2 + "');"
+                + "range.setStart(node1,"
+                + start
+                + ");"
+                + "var element2 = document.getElementById('"
+                + node2
+                + "');"
                 + "var node2 = element2.childNodes.item(0);"
-                + "range.setEnd(node2," + end + ");"
+                + "range.setEnd(node2,"
+                + end
+                + ");"
                 + "var selection=window.getSelection();"
                 + "selection.removeAllRanges();"
                 + "selection.addRange(range);";
     }
 
-    /**
-     * Test simple paragraph.
-     */
+    private String addManyNodesScript() {
+        return "var body = document.getElementById('container');\n"
+                + "for (i = 0; i < 600; i++) {\n"
+                + "  var nextContainer = document.createElement('div');\n"
+                + "  for (j = 0; j < 10; j++) {\n"
+                + "    var paragraph = document.createElement('p');\n"
+                + "    paragraph.innerHTML = \"Example Text\";\n"
+                + "    nextContainer.appendChild(paragraph);\n"
+                + "  }\n"
+                + "  body.appendChild(nextContainer);\n"
+                + "}\n";
+    }
+
+    /** Test simple paragraph. */
     @Test
     @MediumTest
     public void testSimpleParagraph() throws Throwable {
@@ -97,17 +121,17 @@ public class AssistViewStructureTest {
                 testViewStructure.toString());
     }
 
-    /**
-     * Test static list.
-     */
+    /** Test static list. */
     @Test
     @MediumTest
     public void testStaticList() throws Throwable {
-        TestViewStructure testViewStructure = getViewStructureFromHtml("<ol>"
-                + "  <li>Kirk</li>"
-                + "  <li>Picard</li>"
-                + "  <li>Janeway</li>"
-                + "</ol>");
+        TestViewStructure testViewStructure =
+                getViewStructureFromHtml(
+                        "<ol>"
+                                + "  <li>Kirk</li>"
+                                + "  <li>Picard</li>"
+                                + "  <li>Janeway</li>"
+                                + "</ol>");
         Assert.assertEquals(
                 "WebView textSize:16.00 style:0 bundle:[display=\"\", htmlTag=\"#document\"]\n"
                     + "++ListView textSize:16.00 style:0 bundle:[display=\"block\","
@@ -133,9 +157,7 @@ public class AssistViewStructureTest {
                 testViewStructure.toString());
     }
 
-    /**
-     * Test that the snapshot contains the url.
-     */
+    /** Test that the snapshot contains the url. */
     @Test
     @MediumTest
     public void testUrl() throws Throwable {
@@ -166,10 +188,12 @@ public class AssistViewStructureTest {
     @Test
     @MediumTest
     public void testAccessibleLabelsAugmentInnerText() throws Throwable {
-        TestViewStructure testViewStructure = getViewStructureFromHtml("<a href='#'>Link</a>"
-                + "<a href='#' aria-label='AriaLabel'>Link</a>"
-                + "<button>Button</button>"
-                + "<button aria-label='AriaLabel'>Button</button>");
+        TestViewStructure testViewStructure =
+                getViewStructureFromHtml(
+                        "<a href='#'>Link</a>"
+                                + "<a href='#' aria-label='AriaLabel'>Link</a>"
+                                + "<button>Button</button>"
+                                + "<button aria-label='AriaLabel'>Button</button>");
         Assert.assertEquals(
                 "WebView textSize:16.00 style:0 bundle:[display=\"\", htmlTag=\"#document\"]\n"
                     + "++View textSize:16.00 style:0 bundle:[display=\"block\", htmlTag=\"body\"]\n"
@@ -194,15 +218,13 @@ public class AssistViewStructureTest {
                 testViewStructure.toString());
     }
 
-    /**
-     * Test that the snapshot contains HTML tag names.
-     */
+    /** Test that the snapshot contains HTML tag names. */
     @Test
     @MediumTest
     public void testHtmlTagNames() throws Throwable {
-        TestViewStructure testViewStructure = getViewStructureFromHtml("<h1>Heading</h1>"
-                + "  <p>Paragraph</p>"
-                + "  <div><input></div>");
+        TestViewStructure testViewStructure =
+                getViewStructureFromHtml(
+                        "<h1>Heading</h1>" + "  <p>Paragraph</p>" + "  <div><input></div>");
         Assert.assertEquals(
                 "WebView textSize:16.00 style:0 bundle:[display=\"\", htmlTag=\"#document\"]\n"
                     + "++View textSize:32.00 style:1 bundle:[display=\"block\", htmlTag=\"h1\"]\n"
@@ -219,9 +241,7 @@ public class AssistViewStructureTest {
                 testViewStructure.toString());
     }
 
-    /**
-     * Test that the snapshot contains HTML attributes.
-     */
+    /** Test that the snapshot contains HTML attributes. */
     @Test
     @MediumTest
     public void testHtmlAttributes() throws Throwable {
@@ -242,21 +262,21 @@ public class AssistViewStructureTest {
         Assert.assertNull(extras.getCharSequence("onclick"));
     }
 
-    /**
-     * Test that the snapshot contains HTML metadata.
-     */
+    /** Test that the snapshot contains HTML metadata. */
     @Test
     @MediumTest
     public void testHtmlMetadata() throws Throwable {
-        TestViewStructure root = getViewStructureFromHtml("<head>"
-                + "  <title>Hello World</title>"
-                + "  <script>console.log(\"Skip me!\");</script>"
-                + "  <meta charset=\"utf-8\">"
-                + "  <link ref=\"canonical\" href=\"https://abc.com\">"
-                + "  <script type=\"application/ld+json\">{}</script>"
-                + "</head>"
-                + "<body>Hello, world</body>")
-                                         .getChild(0);
+        TestViewStructure root =
+                getViewStructureFromHtml(
+                                "<head>"
+                                        + "  <title>Hello World</title>"
+                                        + "  <script>console.log(\"Skip me!\");</script>"
+                                        + "  <meta charset=\"utf-8\">"
+                                        + "  <link ref=\"canonical\" href=\"https://abc.com\">"
+                                        + "  <script type=\"application/ld+json\">{}</script>"
+                                        + "</head>"
+                                        + "<body>Hello, world</body>")
+                        .getChild(0);
         Bundle extras = root.getExtras();
         ArrayList<String> metadata = extras.getStringArrayList("metadata");
         Assert.assertNotNull(metadata);
@@ -268,9 +288,7 @@ public class AssistViewStructureTest {
         Assert.assertEquals("<script type=\"application/ld+json\">{}</script>", metadata.get(3));
     }
 
-    /**
-     * Verifies that AX tree is returned.
-     */
+    /** Verifies that AX tree is returned. */
     @Test
     @MediumTest
     public void testButton() throws Throwable {
@@ -289,9 +307,7 @@ public class AssistViewStructureTest {
         Assert.assertEquals("Click", buttonText.getText());
     }
 
-    /**
-     * Verifies colors are propagated correctly.
-     */
+    /** Verifies colors are propagated correctly. */
     @Test
     @MediumTest
     public void testColors() throws Throwable {
@@ -307,16 +323,15 @@ public class AssistViewStructureTest {
         Assert.assertEquals("color", paraText.getText());
     }
 
-    /**
-     * Verifies font sizes are propagated correctly.
-     */
+    /** Verifies font sizes are propagated correctly. */
     @Test
     @MediumTest
     @DisableIf.Build(supported_abis_includes = "x86", message = "https://crbug.com/1224422")
     public void testFontSize() throws Throwable {
-        final String data = "<html><head><style> "
-                + "    p { font-size:16px; transform: scale(2); }"
-                + "    </style></head><body><p>foo</p></body></html>";
+        final String data =
+                "<html><head><style> "
+                        + "    p { font-size:16px; transform: scale(2); }"
+                        + "    </style></head><body><p>foo</p></body></html>";
         TestViewStructure root = getViewStructureFromHtml(data).getChild(0);
 
         Assert.assertEquals(1, root.getChildCount());
@@ -329,15 +344,14 @@ public class AssistViewStructureTest {
         Assert.assertEquals(16, para.getTextSize(), 0.01);
     }
 
-    /**
-     * Verifies text styles are propagated correctly.
-     */
+    /** Verifies text styles are propagated correctly. */
     @Test
     @MediumTest
     public void testTextStyles() throws Throwable {
-        final String data = "<html><head><style> "
-                + "    body { font: italic bold 12px Courier; }"
-                + "    </style></head><body><p>foo</p></body></html>";
+        final String data =
+                "<html><head><style> "
+                        + "    body { font: italic bold 12px Courier; }"
+                        + "    </style></head><body><p>foo</p></body></html>";
         TestViewStructure root = getViewStructureFromHtml(data).getChild(0);
 
         Assert.assertEquals(1, root.getChildCount());
@@ -353,9 +367,7 @@ public class AssistViewStructureTest {
         Assert.assertEquals("foo", paraText.getText());
     }
 
-    /**
-     * Verifies the strong style is propagated correctly.
-     */
+    /** Verifies the strong style is propagated correctly. */
     @Test
     @MediumTest
     public void testStrongStyle() throws Throwable {
@@ -376,9 +388,7 @@ public class AssistViewStructureTest {
         Assert.assertTrue(0 != (child2childstyle & ViewNode.TEXT_STYLE_BOLD));
     }
 
-    /**
-     * Verifies the italic style is propagated correctly.
-     */
+    /** Verifies the italic style is propagated correctly. */
     @Test
     @MediumTest
     public void testItalicStyle() throws Throwable {
@@ -393,9 +403,7 @@ public class AssistViewStructureTest {
         Assert.assertTrue(0 != (style & ViewNode.TEXT_STYLE_ITALIC));
     }
 
-    /**
-     * Verifies the bold style is propagated correctly.
-     */
+    /** Verifies the bold style is propagated correctly. */
     @Test
     @MediumTest
     public void testBoldStyle() throws Throwable {
@@ -410,9 +418,7 @@ public class AssistViewStructureTest {
         Assert.assertTrue(0 != (style & ViewNode.TEXT_STYLE_BOLD));
     }
 
-    /**
-     * Test selection is propagated when it spans one character.
-     */
+    /** Test selection is propagated when it spans one character. */
     @Test
     @MediumTest
     public void testOneCharacterSelection() throws Throwable {
@@ -429,9 +435,7 @@ public class AssistViewStructureTest {
         Assert.assertEquals(1, grandchild.getTextSelectionEnd());
     }
 
-    /**
-     * Test selection is propagated when it spans one node.
-     */
+    /** Test selection is propagated when it spans one node. */
     @Test
     @MediumTest
     public void testOneNodeSelection() throws Throwable {
@@ -448,14 +452,13 @@ public class AssistViewStructureTest {
         Assert.assertEquals(3, grandchild.getTextSelectionEnd());
     }
 
-    /**
-     * Test selection is propagated when it spans to the beginning of the next node.
-     */
+    /** Test selection is propagated when it spans to the beginning of the next node. */
     @Test
     @MediumTest
     public void testSubsequentNodeSelection() throws Throwable {
-        final String data = "<html><body><b id='node1' role='none'>foo</b>"
-                + "<b id='node2' role='none'>bar</b></body></html>";
+        final String data =
+                "<html><body><b id='node1' role='none'>foo</b>"
+                        + "<b id='node2' role='none'>bar</b></body></html>";
         final String js = getSelectionScript("node1", 1, "node2", 1);
         TestViewStructure root = getViewStructureFromHtml(data, js).getChild(0);
 
@@ -472,14 +475,13 @@ public class AssistViewStructureTest {
         Assert.assertEquals(1, grandchild.getTextSelectionEnd());
     }
 
-    /**
-     * Test selection is propagated across multiple nodes.
-     */
+    /** Test selection is propagated across multiple nodes. */
     @Test
     @MediumTest
     public void testMultiNodeSelection() throws Throwable {
-        final String data = "<html><body><b id='node1' role='none'>foo</b><b>middle</b>"
-                + "<b id='node2' role='none'>bar</b></body></html>";
+        final String data =
+                "<html><body><b id='node1' role='none'>foo</b><b>middle</b>"
+                        + "<b id='node2' role='none'>bar</b></body></html>";
         final String js = getSelectionScript("node1", 1, "node2", 1);
         TestViewStructure root = getViewStructureFromHtml(data, js).getChild(0);
 
@@ -500,17 +502,16 @@ public class AssistViewStructureTest {
         Assert.assertEquals(1, grandchild.getTextSelectionEnd());
     }
 
-    /**
-     * Test selection is propagated from an HTML input element.
-     */
+    /** Test selection is propagated from an HTML input element. */
     @Test
     @MediumTest
     public void testRequestAccessibilitySnapshotInputSelection() throws Throwable {
         final String data = "<html><body><input id='input' value='Hello, world'></body></html>";
-        final String js = "var input = document.getElementById('input');"
-                + "input.select();"
-                + "input.selectionStart = 0;"
-                + "input.selectionEnd = 5;";
+        final String js =
+                "var input = document.getElementById('input');"
+                        + "input.select();"
+                        + "input.selectionStart = 0;"
+                        + "input.selectionEnd = 5;";
 
         TestViewStructure root = getViewStructureFromHtml(data, js).getChild(0);
 
@@ -523,9 +524,7 @@ public class AssistViewStructureTest {
         Assert.assertEquals(5, grandchild.getTextSelectionEnd());
     }
 
-    /**
-     * Test that the value is propagated from an HTML password field.
-     */
+    /** Test that the value is propagated from an HTML password field. */
     @Test
     @MediumTest
     public void testRequestAccessibilitySnapshotPasswordField() throws Throwable {
@@ -540,9 +539,7 @@ public class AssistViewStructureTest {
         Assert.assertEquals("•••", grandchild.getText());
     }
 
-    /**
-     * Test that the snapshot contains Bundle extras for unclipped bounds.
-     */
+    /** Test that the snapshot contains Bundle extras for unclipped bounds. */
     @Test
     @MediumTest
     public void testUnclippedBounds() throws Throwable {
@@ -559,5 +556,54 @@ public class AssistViewStructureTest {
         Assert.assertTrue(unclippedTop > 0);
         Assert.assertTrue(unclippedWidth > 0);
         Assert.assertTrue(unclippedHeight > 0);
+    }
+
+    /** Test that pages with larger than the max node count result in a partial tree. */
+    @Test
+    @MediumTest
+    @DisableFeatures(AccessibilityFeatures.ACCESSIBILITY_SNAPSHOT_STRESS_TESTS)
+    public void testMaxNodesLimit() throws Throwable {
+        var histogramWatcher =
+                HistogramWatcher.newBuilder()
+                        .expectAnyRecordTimes(
+                                "Accessibility.AXTreeSnapshotter.Snapshot.EndToEndRuntime", 0)
+                        .build();
+
+        // There is a max of 5000 nodes, add many nodes with some children. If the tree is flat
+        // then all nodes will end up serialized because the serializer will finish the current
+        // node and its children. The number of nodes returned may be more or less than 5000.
+        TestViewStructure root =
+                getViewStructureFromHtml("<div id='container'></div>", addManyNodesScript())
+                        .getChild(0);
+
+        // Recursively count child nodes. Allow for approximately 5000 nodes.
+        Assert.assertTrue(
+                String.format(
+                        "Too many nodes serialized, found %s", root.getTotalDescendantCount()),
+                5100 > root.getTotalDescendantCount());
+
+        histogramWatcher.assertExpected();
+    }
+
+    /** Test that pages with more than the max node count return a full tree during stress tests. */
+    @Test
+    @MediumTest
+    @EnableFeatures(AccessibilityFeatures.ACCESSIBILITY_SNAPSHOT_STRESS_TESTS)
+    public void testMaxNodesLimit_ignoredDuringStressTests() throws Throwable {
+        var histogramWatcher =
+                HistogramWatcher.newBuilder()
+                        .expectAnyRecordTimes(
+                                "Accessibility.AXTreeSnapshotter.Snapshot.EndToEndRuntime", 1)
+                        .build();
+
+        TestViewStructure root =
+                getViewStructureFromHtml("<div id='container'></div>", addManyNodesScript())
+                        .getChild(0);
+
+        Assert.assertTrue(
+                String.format("Too few nodes serialized, found %s", root.getTotalDescendantCount()),
+                12000 < root.getTotalDescendantCount());
+
+        histogramWatcher.assertExpected();
     }
 }

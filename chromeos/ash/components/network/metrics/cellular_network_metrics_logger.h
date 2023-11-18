@@ -37,11 +37,13 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularNetworkMetricsLogger
     kMatchesLastGoodApn = 0,
     kDoesNotMatchLastGoodApn = 1,
     kMatchesLastConnectedAttachAndDefault = 2,
-    kMatchesLastConnectedAttachHasMatchingDatabaseApn = 3,
-    kMatchesLastConnectedAttachHasNoMatchingDatabaseApn = 4,
+    kMatchesLastConnectedAttachHasMatchingDatabaseApn = 3,    // deprecated
+    kMatchesLastConnectedAttachHasNoMatchingDatabaseApn = 4,  // deprecated
     kMatchesLastConnectedDefaultNoLastConnectedAttach = 5,
     kNoMatchingConnectedApn = 6,
-    kMaxValue = kNoMatchingConnectedApn
+    kMatchesLastConnectedAttachOnlyAndDefaultExists = 7,
+    kMatchesLastConnectedDefaultOnlyAndAttachExists = 8,
+    kMaxValue = kMatchesLastConnectedDefaultOnlyAndAttachExists
   };
 
   // These values are persisted to logs. Entries should not be renumbered and
@@ -247,7 +249,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularNetworkMetricsLogger
   static constexpr char kPolicyAllowTextMessagesSuppressionStateHistogram[] =
       "Network.Ash.Cellular.AllowTextMessages.Policy.SuppressionState";
   static constexpr char kAllowTextMessagesNotificationSuppressionState[] =
-      "Network.Ash.Cellular.AllowTextMessages.NotificationSuppressionState";
+      "Network.Ash.Cellular.AllowTextMessages."
+      "TextMessageNotificationSuppressionState";
 
   CellularNetworkMetricsLogger(
       NetworkStateHandler* network_state_handler,

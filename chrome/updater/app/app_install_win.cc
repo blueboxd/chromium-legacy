@@ -5,6 +5,7 @@
 #include "chrome/updater/app/app_install.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -39,7 +40,9 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "base/win/registry.h"
+#include "chrome/updater/app/app_install_progress.h"
 #include "chrome/updater/app/app_install_win_internal.h"
 #include "chrome/updater/registration_data.h"
 #include "chrome/updater/service_proxy_factory.h"
@@ -49,7 +52,6 @@
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util/util.h"
 #include "chrome/updater/util/win_util.h"
-#include "chrome/updater/win/install_progress_observer.h"
 #include "chrome/updater/win/installer/exit_code.h"
 #include "chrome/updater/win/manifest_util.h"
 #include "chrome/updater/win/ui/resources/resources.grh"
@@ -65,34 +67,34 @@
 #pragma clang diagnostic pop
 
 #include "components/update_client/protocol_parser.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "url/gurl.h"
 
 namespace updater {
 namespace {
 
-class InstallProgressSilentObserver : public InstallProgressObserver {
+class InstallProgressSilentObserver : public AppInstallProgress {
  public:
   explicit InstallProgressSilentObserver(ui::OmahaWndEvents* events_sink);
   ~InstallProgressSilentObserver() override = default;
 
-  // Overrides for InstallProgressObserver.
+  // Overrides for AppInstallProgress.
   void OnCheckingForUpdate() override;
-  void OnUpdateAvailable(const std::u16string& app_id,
+  void OnUpdateAvailable(const std::string& app_id,
                          const std::u16string& app_name,
-                         const std::u16string& version_string) override;
-  void OnWaitingToDownload(const std::u16string& app_id,
+                         const base::Version& version) override;
+  void OnWaitingToDownload(const std::string& app_id,
                            const std::u16string& app_name) override;
-  void OnDownloading(const std::u16string& app_id,
+  void OnDownloading(const std::string& app_id,
                      const std::u16string& app_name,
                      int time_remaining_ms,
                      int pos) override;
-  void OnWaitingRetryDownload(const std::u16string& app_id,
+  void OnWaitingRetryDownload(const std::string& app_id,
                               const std::u16string& app_name,
                               const base::Time& next_retry_time) override;
-  void OnWaitingToInstall(const std::u16string& app_id,
+  void OnWaitingToInstall(const std::string& app_id,
                           const std::u16string& app_name,
                           bool* can_start_install) override;
-  void OnInstalling(const std::u16string& app_id,
+  void OnInstalling(const std::string& app_id,
                     const std::u16string& app_name,
                     int time_remaining_ms,
                     int pos) override;
@@ -117,20 +119,20 @@ void InstallProgressSilentObserver::OnCheckingForUpdate() {
 }
 
 void InstallProgressSilentObserver::OnUpdateAvailable(
-    const std::u16string& app_id,
+    const std::string& app_id,
     const std::u16string& app_name,
-    const std::u16string& version_string) {
+    const base::Version& version) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void InstallProgressSilentObserver::OnWaitingToDownload(
-    const std::u16string& app_id,
+    const std::string& app_id,
     const std::u16string& app_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void InstallProgressSilentObserver::OnDownloading(
-    const std::u16string& app_id,
+    const std::string& app_id,
     const std::u16string& app_name,
     int time_remaining_ms,
     int pos) {
@@ -138,20 +140,20 @@ void InstallProgressSilentObserver::OnDownloading(
 }
 
 void InstallProgressSilentObserver::OnWaitingRetryDownload(
-    const std::u16string& app_id,
+    const std::string& app_id,
     const std::u16string& app_name,
     const base::Time& next_retry_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void InstallProgressSilentObserver::OnWaitingToInstall(
-    const std::u16string& app_id,
+    const std::string& app_id,
     const std::u16string& app_name,
     bool* can_start_install) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void InstallProgressSilentObserver::OnInstalling(const std::u16string& app_id,
+void InstallProgressSilentObserver::OnInstalling(const std::string& app_id,
                                                  const std::u16string& app_name,
                                                  int time_remaining_ms,
                                                  int pos) {
@@ -176,22 +178,20 @@ void InstallProgressSilentObserver::OnComplete(
 //
 // Since the installer code and the UI code execute on different sequences, the
 // installer can't invoke directly functions exposed by the UI.
-class InstallProgressObserverIPC : public InstallProgressObserver {
+class AppInstallProgressIPC : public AppInstallProgress {
  public:
   // Used as an inter-thread communication mechanism between the installer and
   // UI threads.
   static constexpr unsigned int WM_PROGRESS_WINDOW_IPC = WM_APP + 1;
 
-  InstallProgressObserverIPC(InstallProgressObserver* observer,
-                             DWORD observer_thread_id)
+  AppInstallProgressIPC(AppInstallProgress* observer, DWORD observer_thread_id)
       : observer_(observer), observer_thread_id_(observer_thread_id) {
     CHECK(observer);
   }
 
-  InstallProgressObserverIPC(const InstallProgressObserverIPC&) = delete;
-  InstallProgressObserverIPC& operator=(const InstallProgressObserverIPC&) =
-      delete;
-  ~InstallProgressObserverIPC() override = default;
+  AppInstallProgressIPC(const AppInstallProgressIPC&) = delete;
+  AppInstallProgressIPC& operator=(const AppInstallProgressIPC&) = delete;
+  ~AppInstallProgressIPC() override = default;
 
   // Called by the window proc when a specific application message is processed
   // by the progress window. This call always occurs in the context of the
@@ -205,66 +205,66 @@ class InstallProgressObserverIPC : public InstallProgressObserver {
     std::move(*callback_wrapper).Run();
   }
 
-  // Overrides for InstallProgressObserver.
+  // Overrides for AppInstallProgress.
   void OnCheckingForUpdate() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     CHECK(observer_);
-    PostClosure(base::BindOnce(&InstallProgressObserver::OnUpdateAvailable,
-                               base::Unretained(observer_), std::u16string(),
-                               std::u16string(), std::u16string()));
+    PostClosure(base::BindOnce(&AppInstallProgress::OnUpdateAvailable,
+                               base::Unretained(observer_), std::string(),
+                               std::u16string(), base::Version()));
   }
 
-  void OnUpdateAvailable(const std::u16string& app_id,
+  void OnUpdateAvailable(const std::string& app_id,
                          const std::u16string& app_name,
-                         const std::u16string& version_string) override {
+                         const base::Version& version) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     CHECK(observer_);
-    PostClosure(base::BindOnce(&InstallProgressObserver::OnUpdateAvailable,
+    PostClosure(base::BindOnce(&AppInstallProgress::OnUpdateAvailable,
                                base::Unretained(observer_), app_id, app_name,
-                               version_string));
+                               version));
   }
 
-  void OnWaitingToDownload(const std::u16string& app_id,
+  void OnWaitingToDownload(const std::string& app_id,
                            const std::u16string& app_name) override {
     NOTREACHED();
   }
 
-  void OnDownloading(const std::u16string& app_id,
+  void OnDownloading(const std::string& app_id,
                      const std::u16string& app_name,
                      int time_remaining_ms,
                      int pos) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     CHECK(observer_);
-    PostClosure(base::BindOnce(&InstallProgressObserver::OnDownloading,
+    PostClosure(base::BindOnce(&AppInstallProgress::OnDownloading,
                                base::Unretained(observer_), app_id, app_name,
                                time_remaining_ms, pos));
   }
 
-  void OnWaitingRetryDownload(const std::u16string& app_id,
+  void OnWaitingRetryDownload(const std::string& app_id,
                               const std::u16string& app_name,
                               const base::Time& next_retry_time) override {
     NOTREACHED();
   }
 
-  void OnWaitingToInstall(const std::u16string& app_id,
+  void OnWaitingToInstall(const std::string& app_id,
                           const std::u16string& app_name,
                           bool* can_start_install) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     CHECK(observer_);
 
     // TODO(crbug.com/1290331): handle `can_start_install`.
-    PostClosure(base::BindOnce(&InstallProgressObserver::OnWaitingToInstall,
+    PostClosure(base::BindOnce(&AppInstallProgress::OnWaitingToInstall,
                                base::Unretained(observer_), app_id, app_name,
                                nullptr));
   }
 
-  void OnInstalling(const std::u16string& app_id,
+  void OnInstalling(const std::string& app_id,
                     const std::u16string& app_name,
                     int time_remaining_ms,
                     int pos) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     CHECK(observer_);
-    PostClosure(base::BindOnce(&InstallProgressObserver::OnInstalling,
+    PostClosure(base::BindOnce(&AppInstallProgress::OnInstalling,
                                base::Unretained(observer_), app_id, app_name,
                                time_remaining_ms, pos));
   }
@@ -274,7 +274,7 @@ class InstallProgressObserverIPC : public InstallProgressObserver {
   void OnComplete(const ObserverCompletionInfo& observer_info) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     CHECK(observer_);
-    PostClosure(base::BindOnce(&InstallProgressObserver::OnComplete,
+    PostClosure(base::BindOnce(&AppInstallProgress::OnComplete,
                                base::Unretained(observer_), observer_info));
   }
 
@@ -290,7 +290,7 @@ class InstallProgressObserverIPC : public InstallProgressObserver {
   SEQUENCE_CHECKER(sequence_checker_);
 
   // This member is not owned by this class.
-  raw_ptr<InstallProgressObserver> observer_ = nullptr;
+  raw_ptr<AppInstallProgress> observer_ = nullptr;
 
   // The thread id of the thread which creates the `observer_`. The thread
   // must have a message queue to enable this IPC class to post messages to it.
@@ -299,7 +299,7 @@ class InstallProgressObserverIPC : public InstallProgressObserver {
 
 void SetUsageStats(UpdaterScope scope,
                    const std::string& app_id,
-                   absl::optional<bool> usage_stats) {
+                   std::optional<bool> usage_stats) {
   if (!usage_stats) {
     return;
   }
@@ -325,144 +325,10 @@ void SetUsageStats(UpdaterScope scope,
   }
 }
 
-std::wstring GetTextForDownloadError(int error) {
-#define DOWNLOAD_SWITCH_ENTRY(error_code) \
-  case static_cast<int>(error_code):      \
-    return GetLocalizedStringF(IDS_GENERIC_DOWNLOAD_ERROR_BASE, L#error_code)
-
-  switch (error) {
-    DOWNLOAD_SWITCH_ENTRY(update_client::CrxDownloaderError::NO_URL);
-    DOWNLOAD_SWITCH_ENTRY(update_client::CrxDownloaderError::NO_HASH);
-    DOWNLOAD_SWITCH_ENTRY(
-        update_client::CrxDownloaderError::BITS_TOO_MANY_JOBS);
-    DOWNLOAD_SWITCH_ENTRY(update_client::CrxDownloaderError::GENERIC_ERROR);
-
-    case static_cast<int>(update_client::CrxDownloaderError::BAD_HASH):
-      return GetLocalizedString(IDS_DOWNLOAD_HASH_MISMATCH_BASE);
-
-    default:
-      return GetLocalizedStringF(IDS_GENERIC_DOWNLOAD_ERROR_BASE,
-                                 GetTextForSystemError(error));
-  }
-#undef DOWNLOAD_SWITCH_ENTRY
-}
-
-std::wstring GetTextForUnpackError(int error) {
-#define UNPACK_SWITCH_ENTRY(error_code) \
-  case static_cast<int>(error_code):    \
-    return GetLocalizedStringF(IDS_GENERIC_UNPACK_ERROR_BASE, L#error_code)
-#define UNPACK_CACHING_SWITCH_ENTRY(error_code) \
-  case static_cast<int>(error_code):            \
-    return GetLocalizedStringF(IDS_UNPACK_CACHING_ERROR_BASE, L#error_code)
-
-  switch (error) {
-    UNPACK_SWITCH_ENTRY(update_client::UnpackerError::kInvalidParams);
-    UNPACK_SWITCH_ENTRY(update_client::UnpackerError::kInvalidFile);
-    UNPACK_SWITCH_ENTRY(update_client::UnpackerError::kUnzipPathError);
-    UNPACK_SWITCH_ENTRY(update_client::UnpackerError::kUnzipFailed);
-    UNPACK_SWITCH_ENTRY(update_client::UnpackerError::kBadManifest);
-    UNPACK_SWITCH_ENTRY(update_client::UnpackerError::kBadExtension);
-    UNPACK_SWITCH_ENTRY(update_client::UnpackerError::kIoError);
-    UNPACK_SWITCH_ENTRY(
-        update_client::UnpackerError::kDeltaVerificationFailure);
-    UNPACK_SWITCH_ENTRY(update_client::UnpackerError::kDeltaBadCommands);
-    UNPACK_SWITCH_ENTRY(update_client::UnpackerError::kDeltaUnsupportedCommand);
-    UNPACK_SWITCH_ENTRY(update_client::UnpackerError::kDeltaOperationFailure);
-    UNPACK_SWITCH_ENTRY(
-        update_client::UnpackerError::kDeltaPatchProcessFailure);
-    UNPACK_SWITCH_ENTRY(
-        update_client::UnpackerError::kDeltaMissingExistingFile);
-    UNPACK_SWITCH_ENTRY(
-        update_client::UnpackerError::kPuffinMissingPreviousCrx);
-    UNPACK_SWITCH_ENTRY(update_client::UnpackerError::kCrxCacheNotProvided);
-
-    UNPACK_CACHING_SWITCH_ENTRY(
-        update_client::UnpackerError::kFailedToAddToCache);
-    UNPACK_CACHING_SWITCH_ENTRY(
-        update_client::UnpackerError::kFailedToCreateCacheDir);
-
-    default:
-      return GetLocalizedStringF(IDS_GENERIC_UNPACK_ERROR_BASE,
-                                 GetTextForSystemError(error));
-  }
-#undef UNPACK_SWITCH_ENTRY
-#undef UNPACK_CACHING_SWITCH_ENTRY
-}
-
-std::wstring GetTextForServiceError(int error) {
-#define SERVICE_SWITCH_ENTRY(error_code) \
-  case static_cast<int>(error_code):     \
-    return GetLocalizedStringF(IDS_GENERIC_SERVICE_ERROR_BASE, L#error_code)
-
-  switch (error) {
-    SERVICE_SWITCH_ENTRY(update_client::ServiceError::SERVICE_WAIT_FAILED);
-    SERVICE_SWITCH_ENTRY(update_client::ServiceError::UPDATE_DISABLED);
-    SERVICE_SWITCH_ENTRY(update_client::ServiceError::CANCELLED);
-    SERVICE_SWITCH_ENTRY(update_client::ServiceError::CHECK_FOR_UPDATE_ONLY);
-    default:
-      return GetLocalizedStringF(IDS_GENERIC_SERVICE_ERROR_BASE,
-                                 GetTextForSystemError(error));
-  }
-#undef SERVICE_SWITCH_ENTRY
-}
-
-std::wstring GetTextForUpdateCheckError(int error) {
-#define UPDATE_CHECK_SWITCH_ENTRY(error_code)                       \
-  case static_cast<int>(error_code):                                \
-    return GetLocalizedStringF(IDS_GENERIC_UPDATE_CHECK_ERROR_BASE, \
-                               L#error_code)
-
-    switch (error) {
-      UPDATE_CHECK_SWITCH_ENTRY(
-          update_client::ProtocolError::RESPONSE_NOT_TRUSTED);
-      UPDATE_CHECK_SWITCH_ENTRY(
-          update_client::ProtocolError::MISSING_PUBLIC_KEY);
-      UPDATE_CHECK_SWITCH_ENTRY(update_client::ProtocolError::MISSING_URLS);
-      UPDATE_CHECK_SWITCH_ENTRY(update_client::ProtocolError::PARSE_FAILED);
-      UPDATE_CHECK_SWITCH_ENTRY(
-          update_client::ProtocolError::UPDATE_RESPONSE_NOT_FOUND);
-      UPDATE_CHECK_SWITCH_ENTRY(
-          update_client::ProtocolError::URL_FETCHER_FAILED);
-      UPDATE_CHECK_SWITCH_ENTRY(update_client::ProtocolError::INVALID_APPID);
-
-      case static_cast<int>(update_client::ProtocolError::UNKNOWN_APPLICATION):
-        return GetLocalizedString(IDS_UNKNOWN_APPLICATION_BASE);
-
-      case static_cast<int>(
-          update_client::ProtocolError::RESTRICTED_APPLICATION):
-        return GetLocalizedString(IDS_RESTRICTED_RESPONSE_FROM_SERVER_BASE);
-
-      // Http Status Code `401` Unauthorized.
-      case 401:
-        return GetLocalizedString(IDS_ERROR_HTTPSTATUS_UNAUTHORIZED_BASE);
-
-      // Http Status Code `403` Forbidden.
-      case 403:
-        return GetLocalizedString(IDS_ERROR_HTTPSTATUS_FORBIDDEN_BASE);
-
-      // Http Status Code `407` Proxy Authentication Required.
-      case 407:
-        return GetLocalizedString(
-            IDS_ERROR_HTTPSTATUS_PROXY_AUTH_REQUIRED_BASE);
-
-      case HRESULT_FROM_WIN32(ERROR_WINHTTP_NAME_NOT_RESOLVED):
-        return GetLocalizedStringF(IDS_NO_NETWORK_PRESENT_ERROR_BASE,
-                                   GetExecutableRelativePath().value());
-
-      default:
-        return GetLocalizedStringF(
-            IDS_GENERIC_UPDATE_CHECK_ERROR_BASE,
-            error >= 400 && error < 600
-                ? base::ASCIIToWide(base::StringPrintf("HTTP %d", error))
-                : GetTextForSystemError(error));
-    }
-#undef UPDATE_CHECK_SWITCH_ENTRY
-}
-
 // Implements installing a single application by invoking the code in
 // |UpdateService|, listening to |UpdateService| and UI events, and
 // driving the UI code by calling the functions exposed by
-// |InstallProgressObserver|. This class receives state changes for an install
+// |AppInstallProgress|. This class receives state changes for an install
 // and it notifies the UI, which is an observer of this class.
 //
 // The UI code can't run in a thread where the message loop is an instance of
@@ -518,7 +384,7 @@ class AppInstallControllerImpl : public AppInstallController,
   // Overrides for ProgressWndEvents. These functions are called on the UI
   // thread.
   bool DoRestartBrowser(bool restart_all_browsers,
-                        const std::vector<std::u16string>& urls) override;
+                        const std::vector<GURL>& urls) override;
   bool DoReboot() override;
   void DoCancel() override;
 
@@ -569,17 +435,17 @@ class AppInstallControllerImpl : public AppInstallController,
   // The message loop associated with the UI.
   std::unique_ptr<WTL::CMessageLoop> ui_message_loop_;
 
-  std::unique_ptr<InstallProgressObserver> observer_;
+  std::unique_ptr<AppInstallProgress> observer_;
   DWORD ui_thread_id_ = 0u;
 
   // The adapter for the inter-thread calls between the updater main thread
   // and the UI thread.
-  std::unique_ptr<InstallProgressObserverIPC> install_progress_observer_ipc_;
+  std::unique_ptr<AppInstallProgressIPC> install_progress_observer_ipc_;
 
   // Contains the result of installing the application. This is populated
   // by the `StateChangeCallback` or the completion callback, if the
   // former callback was not posted.
-  absl::optional<ObserverCompletionInfo> observer_completion_info_;
+  std::optional<ObserverCompletionInfo> observer_completion_info_;
 
   // Called when InstallApp is done.
   base::OnceCallback<void(int)> callback_;
@@ -625,14 +491,14 @@ void AppInstallControllerImpl::DoInstallApp() {
       FROM_HERE, base::BindOnce(&AppInstallControllerImpl::RunUI, this));
 
   // The UI thread runs the observer.
-  install_progress_observer_ipc_ = std::make_unique<InstallProgressObserverIPC>(
-      observer_.get(), ui_thread_id_);
+  install_progress_observer_ipc_ =
+      std::make_unique<AppInstallProgressIPC>(observer_.get(), ui_thread_id_);
 
   RegistrationRequest request;
   request.app_id = app_id_;
   request.version = base::Version(kNullVersion);
-  absl::optional<tagging::AppArgs> app_args = GetAppArgs(app_id_);
-  absl::optional<tagging::TagArgs> tag_args = GetTagArgs().tag_args;
+  std::optional<tagging::AppArgs> app_args = GetAppArgs(app_id_);
+  std::optional<tagging::TagArgs> tag_args = GetTagArgs().tag_args;
   if (app_args) {
     request.ap = app_args->ap;
   }
@@ -643,7 +509,7 @@ void AppInstallControllerImpl::DoInstallApp() {
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&SetUsageStats, GetUpdaterScope(), app_id_,
-                     tag_args ? tag_args->usage_stats_enable : absl::nullopt),
+                     tag_args ? tag_args->usage_stats_enable : std::nullopt),
       base::BindOnce(
           &UpdateService::Install, update_service_, request,
           GetDecodedInstallDataFromAppArgs(app_id_),
@@ -727,8 +593,8 @@ void AppInstallControllerImpl::DoInstallAppOffline(
       FROM_HERE, base::BindOnce(&AppInstallControllerImpl::RunUI, this));
 
   // The UI thread runs the observer.
-  install_progress_observer_ipc_ = std::make_unique<InstallProgressObserverIPC>(
-      observer_.get(), ui_thread_id_);
+  install_progress_observer_ipc_ =
+      std::make_unique<AppInstallProgressIPC>(observer_.get(), ui_thread_id_);
 
   if (!IsOsSupported(results)) {
     HandleOsNotSupported();
@@ -750,12 +616,12 @@ void AppInstallControllerImpl::DoInstallAppOffline(
     VLOG(1) << "Failed to serialize install settings.";
   }
 
-  absl::optional<tagging::TagArgs> tag_args = GetTagArgs().tag_args;
+  std::optional<tagging::TagArgs> tag_args = GetTagArgs().tag_args;
   RegistrationRequest request;
   request.app_id = app_id_;
   request.version = base::Version(kNullVersion);
 
-  absl::optional<tagging::AppArgs> app_args = GetAppArgs(app_id_);
+  std::optional<tagging::AppArgs> app_args = GetAppArgs(app_id_);
   if (app_args) {
     request.ap = app_args->ap;
   }
@@ -769,7 +635,7 @@ void AppInstallControllerImpl::DoInstallAppOffline(
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&SetUsageStats, GetUpdaterScope(), app_id_,
-                     tag_args ? tag_args->usage_stats_enable : absl::nullopt),
+                     tag_args ? tag_args->usage_stats_enable : std::nullopt),
       base::BindOnce(
           &UpdateService::RegisterApp, update_service_, request,
           base::BindOnce(
@@ -802,7 +668,7 @@ void AppInstallControllerImpl::HandleOsNotSupported() {
   update_state.error_category = UpdateService::ErrorCategory::kInstall;
   observer_completion_info_ = HandleInstallResult(update_state);
   observer_completion_info_->completion_text =
-      GetLocalizedString(IDS_INSTALL_OS_NOT_SUPPORTED_BASE);
+      base::WideToUTF16(GetLocalizedString(IDS_INSTALL_OS_NOT_SUPPORTED_BASE));
   InstallComplete(UpdateService::Result::kInstallFailed);
 }
 
@@ -843,7 +709,6 @@ void AppInstallControllerImpl::StateChange(
 
   CHECK_EQ(app_id_, update_state.app_id);
 
-  const auto app_id = base::ASCIIToUTF16(app_id_);
   switch (update_state.state) {
     case UpdateService::UpdateState::State::kCheckingForUpdates:
       install_progress_observer_ipc_->OnCheckingForUpdate();
@@ -851,24 +716,23 @@ void AppInstallControllerImpl::StateChange(
 
     case UpdateService::UpdateState::State::kUpdateAvailable:
       install_progress_observer_ipc_->OnUpdateAvailable(
-          app_id, app_name_,
-          base::ASCIIToUTF16(update_state.next_version.GetString()));
+          app_id_, app_name_, update_state.next_version);
       break;
 
     case UpdateService::UpdateState::State::kDownloading: {
       const auto pos = GetDownloadProgress(update_state.downloaded_bytes,
                                            update_state.total_bytes);
-      install_progress_observer_ipc_->OnDownloading(app_id, app_name_, -1,
+      install_progress_observer_ipc_->OnDownloading(app_id_, app_name_, -1,
                                                     pos != -1 ? pos : 0);
     } break;
 
     case UpdateService::UpdateState::State::kInstalling: {
       // TODO(crbug.com/1290331): handle the install cancellation.
       bool can_start_install = false;
-      install_progress_observer_ipc_->OnWaitingToInstall(app_id, app_name_,
+      install_progress_observer_ipc_->OnWaitingToInstall(app_id_, app_name_,
                                                          &can_start_install);
       const int pos = update_state.install_progress;
-      install_progress_observer_ipc_->OnInstalling(app_id, app_name_, 0,
+      install_progress_observer_ipc_->OnInstalling(app_id_, app_name_, 0,
                                                    pos != -1 ? pos : 0);
       break;
     }
@@ -988,7 +852,7 @@ BOOL AppInstallControllerImpl::PreTranslateMessage(MSG* msg) {
   } else {
     VLOG(1) << "Can't find a thread id for the message: " << msg->message;
   }
-  if (msg->message == InstallProgressObserverIPC::WM_PROGRESS_WINDOW_IPC) {
+  if (msg->message == AppInstallProgressIPC::WM_PROGRESS_WINDOW_IPC) {
     install_progress_observer_ipc_->Invoke(msg->wParam, msg->lParam);
     return true;
   }
@@ -1006,9 +870,8 @@ bool AppInstallControllerImpl::DoLaunchBrowser(const std::string& url) {
   return SUCCEEDED(RunDeElevated(base::SysUTF8ToWide(url), {}));
 }
 
-bool AppInstallControllerImpl::DoRestartBrowser(
-    bool restart_all_browsers,
-    const std::vector<std::u16string>& urls) {
+bool AppInstallControllerImpl::DoRestartBrowser(bool restart_all_browsers,
+                                                const std::vector<GURL>& urls) {
   CHECK_EQ(GetUIThreadID(), GetCurrentThreadId());
   return false;
 }
@@ -1058,45 +921,20 @@ void AppInstallControllerImpl::DoCancel() {
 
   ObserverCompletionInfo observer_info;
   observer_info.completion_code = completion_code;
-  observer_info.completion_text = completion_text;
-  observer_info.help_url = base::StringPrintf(
+  observer_info.completion_text = base::WideToUTF16(completion_text);
+  observer_info.help_url = GURL(base::StringPrintf(
       "%s?product=%s&error=%d", HELP_CENTER_URL,
       base::EscapeUrlEncodedData(update_state.app_id, false).c_str(),
-      update_state.error_code);
+      update_state.error_code));
 
   AppCompletionInfo app_info;
   if (update_state.state != UpdateService::UpdateState::State::kNoUpdate) {
-    app_info.app_id = base::ASCIIToUTF16(update_state.app_id);
+    app_info.app_id = update_state.app_id;
     app_info.error_code = update_state.error_code;
-    app_info.completion_message = [&]() -> std::u16string {
-      if (!update_state.installer_text.empty()) {
-        return base::UTF8ToUTF16(update_state.installer_text);
-      }
-      if (!app_info.error_code) {
-        return {};
-      }
-      return base::WideToUTF16([&]() -> std::wstring {
-        switch (update_state.error_category) {
-          case UpdateService::ErrorCategory::kInstall:
-            return GetTextForSystemError(app_info.error_code);
-          case UpdateService::ErrorCategory::kDownload:
-            return GetTextForDownloadError(app_info.error_code);
-          case UpdateService::ErrorCategory::kUnpack:
-            return GetTextForUnpackError(app_info.error_code);
-          case UpdateService::ErrorCategory::kService:
-            return GetTextForServiceError(app_info.error_code);
-          case UpdateService::ErrorCategory::kUpdateCheck:
-            return GetTextForUpdateCheckError(app_info.error_code);
-          default:
-            LOG(ERROR) << "Unknown error category: "
-                       << update_state.error_category;
-            return {};
-        }
-      }());
-    }();
+    app_info.completion_message =
+        base::UTF8ToUTF16(update_state.installer_text);
     app_info.extra_code1 = update_state.extra_code1;
-    app_info.post_install_launch_command_line =
-        base::SysUTF8ToWide(update_state.installer_cmd_line);
+    app_info.post_install_launch_command_line = update_state.installer_cmd_line;
     VLOG(1) << app_info.app_id << " installation completed: error category["
             << update_state.error_category << "], error_code["
             << app_info.error_code << "], extra_code1[" << app_info.extra_code1

@@ -49,6 +49,7 @@
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #import "components/autofill/ios/form_util/form_activity_params.h"
 #import "components/autofill/ios/form_util/form_handlers_java_script_feature.h"
+#import "components/autofill/ios/form_util/form_util_java_script_feature.h"
 #import "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
 #import "components/prefs/pref_change_registrar.h"
@@ -72,6 +73,7 @@ using autofill::FieldRendererId;
 using autofill::FormGlobalId;
 using autofill::FormHandlersJavaScriptFeature;
 using autofill::FormRendererId;
+using autofill::FormUtilJavaScriptFeature;
 using autofill::FieldPropertiesFlags::kAutofilledOnUserTrigger;
 using base::NumberToString;
 using base::SysNSStringToUTF16;
@@ -462,7 +464,8 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
   }
 
   if (suggestion.popupItemId == autofill::PopupItemId::kAddressEntry ||
-      suggestion.popupItemId == autofill::PopupItemId::kCreditCardEntry) {
+      suggestion.popupItemId == autofill::PopupItemId::kCreditCardEntry ||
+      suggestion.popupItemId == autofill::PopupItemId::kCreateNewPlusAddress) {
     _pendingAutocompleteFieldID = uniqueFieldID;
     if (_popupDelegate) {
       // TODO(966411): Replace 0 with the index of the selected suggestion.
@@ -473,13 +476,14 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
       if (!suggestion.backendIdentifier.length) {
         autofill_suggestion.payload = autofill::Suggestion::BackendId();
       } else {
-        autofill_suggestion.payload = autofill::Suggestion::BackendId(
-            SysNSStringToUTF8(suggestion.backendIdentifier));
+        autofill_suggestion.payload =
+            autofill::Suggestion::BackendId(autofill::Suggestion::Guid(
+                SysNSStringToUTF8(suggestion.backendIdentifier)));
       }
 
       // On iOS, only a single trigger source exists. See crbug.com/1448447.
       _popupDelegate->DidAcceptSuggestion(
-          autofill_suggestion, 0,
+          autofill_suggestion, {0, 0},
           autofill::AutofillSuggestionTriggerSource::kiOS);
     }
     return;
@@ -500,7 +504,9 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
     return;
   }
 
-  if (suggestion.popupItemId == autofill::PopupItemId::kAutocompleteEntry) {
+  if (suggestion.popupItemId == autofill::PopupItemId::kAutocompleteEntry ||
+      suggestion.popupItemId ==
+          autofill::PopupItemId::kFillExistingPlusAddress) {
     // FormSuggestion is a simple, single value that can be filled out now.
     [self fillField:SysNSStringToUTF8(fieldIdentifier)
         uniqueFieldID:uniqueFieldID
@@ -583,6 +589,39 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
   if (autofillManager)
     autofillManager->OnDidFillAutofillFormData(
         form, autofill::AutofillTickClock::NowTicks());
+}
+
+// Similar to `fillField`, but does not rely on `FillActiveFormField`, opting
+// instead to find and fill a specific field in `frame` with `value`. In other
+// words, `field` need not be `document.activeElement`.
+- (void)fillSpecificFormField:(const autofill::FieldRendererId&)field
+                    withValue:(const std::u16string)value
+                      inFrame:(web::WebFrame*)frame {
+  base::Value::Dict data;
+  data.Set("unique_renderer_id", static_cast<int>(field.value()));
+  data.Set("value", value);
+
+  __weak AutofillAgent* weakSelf = self;
+  SuggestionHandledCompletion suggestionHandledCompletionCopy =
+      [_suggestionHandledCompletion copy];
+  _suggestionHandledCompletion = nil;
+
+  AutofillJavaScriptFeature::GetInstance()->FillSpecificFormField(
+      frame, std::move(data), base::BindOnce(^(BOOL success) {
+        AutofillAgent* strongSelf = weakSelf;
+        if (!strongSelf) {
+          return;
+        }
+        if (success) {
+          [strongSelf updateFieldManagerForSpecificField:field withValue:value];
+        }
+        // Especially in test code, it is possible that the fill was not
+        // initiated by selecting a suggestion. In this case the callback is
+        // nil.
+        if (suggestionHandledCompletionCopy) {
+          suggestionHandledCompletionCopy();
+        }
+      }));
 }
 
 - (void)handleParsedForms:(const std::vector<autofill::FormStructure*>&)forms
@@ -677,7 +716,8 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
                                        scale:icon.scale * ratio
                                  orientation:icon.imageOrientation];
           }
-        } else if (!popup_suggestion.icon.empty()) {
+        } else if (popup_suggestion.icon !=
+                   autofill::Suggestion::Icon::kNoIcon) {
           const int resourceID =
               autofill::CreditCard::IconResourceId(popup_suggestion.icon);
           icon = ui::ResourceBundle::GetSharedInstance()
@@ -714,11 +754,11 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
                 displayDescription:displayDescription
                               icon:icon
                        popupItemId:popup_suggestion.popup_item_id
-                 backendIdentifier:
-                     SysUTF8ToNSString(
-                         popup_suggestion
-                             .GetPayload<autofill::Suggestion::BackendId>()
-                             .value())
+                 backendIdentifier:SysUTF8ToNSString(
+                                       popup_suggestion
+                                           .GetBackendId<
+                                               autofill::Suggestion::Guid>()
+                                           .value())
                     requiresReauth:NO
         acceptanceA11yAnnouncement:acceptanceA11yAnnouncement];
 
@@ -848,7 +888,10 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
   if (driver->is_processed())
     return;
   driver->set_processed(true);
-  AutofillJavaScriptFeature::GetInstance()->AddJSDelayInFrame(frame);
+
+  FormUtilJavaScriptFeature::GetInstance()->SetAutofillAcrossIframes(
+      frame, base::FeatureList::IsEnabled(
+                 autofill::features::kAutofillAcrossIframesIos));
 
   if (frame->IsMainFrame()) {
     _popupDelegate.reset();
@@ -1045,8 +1088,8 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
         if (!strongSelf)
           return;
         if (success) {
-          strongSelf->_fieldDataManager->UpdateFieldDataMap(
-              uniqueFieldID, value, kAutofilledOnUserTrigger);
+          [strongSelf updateFieldManagerForSpecificField:uniqueFieldID
+                                               withValue:value];
         }
         suggestionHandledCompletionCopy();
       }));
@@ -1068,6 +1111,12 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
   ukm::builders::Autofill_FormFillSuccessIOS(source_id)
       .SetFormFillSuccess(!fillingResults.empty())
       .Record(ukm::UkmRecorder::Get());
+}
+
+- (void)updateFieldManagerForSpecificField:(FieldRendererId)uniqueFieldID
+                                 withValue:(const std::u16string&)value {
+  _fieldDataManager->UpdateFieldDataMap(uniqueFieldID, value,
+                                        kAutofilledOnUserTrigger);
 }
 
 // Sends the the |data| to |frame| to actually fill the data.

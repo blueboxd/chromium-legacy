@@ -9,8 +9,8 @@
 #import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
-#import "ios/chrome/browser/signin/fake_system_identity.h"
-#import "ios/chrome/browser/signin/test_constants.h"
+#import "ios/chrome/browser/signin/model/fake_system_identity.h"
+#import "ios/chrome/browser/signin/model/test_constants.h"
 #import "ios/chrome/browser/ui/authentication/history_sync/pref_names.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
@@ -66,7 +66,10 @@ using chrome_test_util::SettingsSignInRowMatcher;
       [self isRunningTest:@selector
             (testHistorySyncSkippedIfDeclinedJustBefore)] ||
       [self isRunningTest:@selector(testHistorySyncSkippedIfDeclinedTwice)] ||
-      [self isRunningTest:@selector(testInterruptWhenHistoryOptInShown)]) {
+      [self isRunningTest:@selector(testInterruptWhenHistoryOptInShown)] ||
+      [self isRunningTest:@selector
+            (testSigninSecondTimeAfterAddingAccountAgain)] ||
+      [self isRunningTest:@selector(testSigninWithNoAccountOnDevice)]) {
     config.features_enabled.push_back(
         syncer::kReplaceSyncPromosWithSignInPromos);
   }
@@ -79,8 +82,212 @@ using chrome_test_util::SettingsSignInRowMatcher;
   [SigninEarlGreyUI verifySigninPromoNotVisible];
 }
 
+// Tests the history sync opt-in after sign-in in settings.
+- (void)testSigninWithHistorySync {
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
+  [ChromeEarlGreyUI openSettingsMenu];
+  // Tap on sign-in cell.
+  [[EarlGrey selectElementWithMatcher:SettingsSignInRowMatcher()]
+      performAction:grey_tap()];
+  // Confirm sign in.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(grey_accessibilityID(
+                                kWebSigninPrimaryButtonAccessibilityIdentifier),
+                            grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+  // Verify that the History Sync Opt-In screen is shown.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::HistoryOptInPromoMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Verify that the footer is shown without the user's email.
+  id<GREYMatcher> footerTextMatcher = grey_allOf(
+      grey_text(
+          l10n_util::GetNSString(IDS_IOS_HISTORY_SYNC_FOOTER_WITHOUT_EMAIL)),
+      grey_sufficientlyVisible(), nil);
+  [[[EarlGrey selectElementWithMatcher:footerTextMatcher]
+         usingSearchAction:chrome_test_util::HistoryOptInScrollDown()
+      onElementWithMatcher:chrome_test_util::HistoryOptInPromoMatcher()]
+      assertWithMatcher:grey_notNil()];
+  // Accept History Sync.
+  [[[EarlGrey selectElementWithMatcher:
+                  chrome_test_util::SigninScreenPromoPrimaryButtonMatcher()]
+         usingSearchAction:chrome_test_util::HistoryOptInScrollDown()
+      onElementWithMatcher:chrome_test_util::HistoryOptInPromoMatcher()]
+      performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
+  // Close settings.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
+      performAction:grey_tap()];
+  // Verify that the history sync is enabled.
+  GREYAssertTrue(
+      [SigninEarlGreyAppInterface
+          isSelectedTypeEnabled:syncer::UserSelectableType::kHistory],
+      @"History sync should be enabled.");
+  GREYAssertTrue([SigninEarlGreyAppInterface
+                     isSelectedTypeEnabled:syncer::UserSelectableType::kTabs],
+                 @"Tabs sync should be enabled.");
+}
+
+// Tests that history sync opt-in is not presented after sign-in a second time.
+- (void)testSigninSecondTimeShouldNotShowHistorySyncOptin {
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
+  [ChromeEarlGreyUI openSettingsMenu];
+  // Tap on sign-in cell.
+  [[EarlGrey selectElementWithMatcher:SettingsSignInRowMatcher()]
+      performAction:grey_tap()];
+  // Confirm sign in.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(grey_accessibilityID(
+                                kWebSigninPrimaryButtonAccessibilityIdentifier),
+                            grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+  // Accept History Sync.
+  [[[EarlGrey selectElementWithMatcher:
+                  chrome_test_util::SigninScreenPromoPrimaryButtonMatcher()]
+         usingSearchAction:chrome_test_util::HistoryOptInScrollDown()
+      onElementWithMatcher:chrome_test_util::HistoryOptInPromoMatcher()]
+      performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
+  // Close settings.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
+      performAction:grey_tap()];
+  [SigninEarlGreyUI
+      signOutWithConfirmationChoice:SignOutConfirmationChoiceNotSyncing];
+  [ChromeEarlGreyUI openSettingsMenu];
+  // Tap on sign-in cell.
+  [[EarlGrey selectElementWithMatcher:SettingsSignInRowMatcher()]
+      performAction:grey_tap()];
+  // Confirm sign in.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(grey_accessibilityID(
+                                kWebSigninPrimaryButtonAccessibilityIdentifier),
+                            grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
+  // History sync opt-in not visibled.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::HistoryOptInPromoMatcher()]
+      assertWithMatcher:grey_nil()];
+  // Close settings.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
+      performAction:grey_tap()];
+  // Verify that the history sync is enabled.
+  GREYAssertTrue(
+      [SigninEarlGreyAppInterface
+          isSelectedTypeEnabled:syncer::UserSelectableType::kHistory],
+      @"History sync should be enabled.");
+  GREYAssertTrue([SigninEarlGreyAppInterface
+                     isSelectedTypeEnabled:syncer::UserSelectableType::kTabs],
+                 @"Tabs sync should be enabled.");
+}
+
+// Tests that history sync opt-in is presented for the following scenario:
+// + Add account
+// + Sign-in and accept history sync
+// + Sign-out
+// + Remove account
+// + Add same account again
+// + Sign-in
+// => Expect history sync opt-in dialog.
+- (void)testSigninSecondTimeAfterAddingAccountAgain {
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
+  [ChromeEarlGreyUI openSettingsMenu];
+  // Tap on sign-in cell.
+  [[EarlGrey selectElementWithMatcher:SettingsSignInRowMatcher()]
+      performAction:grey_tap()];
+  // Confirm sign in.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(grey_accessibilityID(
+                                kWebSigninPrimaryButtonAccessibilityIdentifier),
+                            grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+  // Accept History Sync.
+  [[[EarlGrey selectElementWithMatcher:
+                  chrome_test_util::SigninScreenPromoPrimaryButtonMatcher()]
+         usingSearchAction:chrome_test_util::HistoryOptInScrollDown()
+      onElementWithMatcher:chrome_test_util::HistoryOptInPromoMatcher()]
+      performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
+  // Close settings.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
+      performAction:grey_tap()];
+  [SigninEarlGreyUI
+      signOutWithConfirmationChoice:SignOutConfirmationChoiceNotSyncing];
+  [ChromeEarlGreyUI openSettingsMenu];
+  // Tap on sign-in cell.
+  [[EarlGrey selectElementWithMatcher:SettingsSignInRowMatcher()]
+      performAction:grey_tap()];
+  // Confirm sign in.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(grey_accessibilityID(
+                                kWebSigninPrimaryButtonAccessibilityIdentifier),
+                            grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
+  // History sync opt-in not visibled.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::HistoryOptInPromoMatcher()]
+      assertWithMatcher:grey_nil()];
+  // Close settings.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
+      performAction:grey_tap()];
+  // Verify that the history sync is enabled.
+  GREYAssertTrue(
+      [SigninEarlGreyAppInterface
+          isSelectedTypeEnabled:syncer::UserSelectableType::kHistory],
+      @"History sync should be enabled.");
+  GREYAssertTrue([SigninEarlGreyAppInterface
+                     isSelectedTypeEnabled:syncer::UserSelectableType::kTabs],
+                 @"Tabs sync should be enabled.");
+}
+
+// Tests sign-in and accept history sync opt-in from the settings when having
+// no account on the device.
+- (void)testSigninWithNoAccountOnDevice {
+  [ChromeEarlGreyUI openSettingsMenu];
+  // Tap on sign-in cell.
+  [[EarlGrey selectElementWithMatcher:SettingsSignInRowMatcher()]
+      performAction:grey_tap()];
+  // Set up a fake identity to add and sign-in with.
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGrey addFakeIdentityForSSOAuthAddAccountFlow:fakeIdentity];
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityID(
+                                       kFakeAuthAddAccountButtonIdentifier),
+                                   grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+  // Make sure the fake SSO view controller is fully removed.
+  [ChromeEarlGreyUI waitForAppToIdle];
+  // Accept History Sync.
+  [[[EarlGrey selectElementWithMatcher:
+                  chrome_test_util::SigninScreenPromoPrimaryButtonMatcher()]
+         usingSearchAction:chrome_test_util::HistoryOptInScrollDown()
+      onElementWithMatcher:chrome_test_util::HistoryOptInPromoMatcher()]
+      performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
+  // Close settings.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
+      performAction:grey_tap()];
+  // Verify that the history sync is enabled.
+  GREYAssertTrue(
+      [SigninEarlGreyAppInterface
+          isSelectedTypeEnabled:syncer::UserSelectableType::kHistory],
+      @"History sync should be enabled.");
+  GREYAssertTrue([SigninEarlGreyAppInterface
+                     isSelectedTypeEnabled:syncer::UserSelectableType::kTabs],
+                 @"Tabs sync should be enabled.");
+}
+
 // For a signed out user without device accounts, tests that the sign-in row is
 // shown with the correct strings and opens the dialog to enable sync upon tap.
+// kReplaceSyncPromosWithSignInPromos is disabled. This test can be removed
+// once the kReplaceSyncPromosWithSignInPromos is removed.
+// This test is replace with `testSigninWithNoAccountOnDevice`.
 - (void)testSigninRowOpensSyncDialogIfSignedOutAndNoDeviceAccounts {
   [ChromeEarlGreyUI openSettingsMenu];
 
@@ -307,8 +514,7 @@ using chrome_test_util::SettingsSignInRowMatcher;
       performAction:grey_tap()];
   // Verify that the History Sync Opt-In screen is shown.
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kHistorySyncViewAccessibilityIdentifier)]
+      selectElementWithMatcher:chrome_test_util::HistoryOptInPromoMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Verify that the footer is shown without the user's email.
@@ -327,9 +533,8 @@ using chrome_test_util::SettingsSignInRowMatcher;
          usingSearchAction:chrome_test_util::HistoryOptInScrollDown()
       onElementWithMatcher:chrome_test_util::HistoryOptInPromoMatcher()]
       performAction:grey_tap()];
-  [ChromeEarlGrey
-      waitForUIElementToDisappearWithMatcher:
-          grey_accessibilityID(kHistorySyncViewAccessibilityIdentifier)];
+  [ChromeEarlGrey waitForUIElementToDisappearWithMatcher:
+                      chrome_test_util::HistoryOptInPromoMatcher()];
 
   // Verify that the history sync is disabled.
   GREYAssertFalse(
@@ -360,8 +565,7 @@ using chrome_test_util::SettingsSignInRowMatcher;
       performAction:grey_tap()];
   // Verify that the History Sync Opt-In screen is shown.
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kHistorySyncViewAccessibilityIdentifier)]
+      selectElementWithMatcher:chrome_test_util::HistoryOptInPromoMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Decline History Sync.
@@ -370,9 +574,8 @@ using chrome_test_util::SettingsSignInRowMatcher;
          usingSearchAction:chrome_test_util::HistoryOptInScrollDown()
       onElementWithMatcher:chrome_test_util::HistoryOptInPromoMatcher()]
       performAction:grey_tap()];
-  [ChromeEarlGrey
-      waitForUIElementToDisappearWithMatcher:
-          grey_accessibilityID(kHistorySyncViewAccessibilityIdentifier)];
+  [ChromeEarlGrey waitForUIElementToDisappearWithMatcher:
+                      chrome_test_util::HistoryOptInPromoMatcher()];
 
   // Sign-out then forget fakeIdentity1.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
@@ -396,8 +599,7 @@ using chrome_test_util::SettingsSignInRowMatcher;
 
   // Verify that the History Sync Opt-In screen is not shown.
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kHistorySyncViewAccessibilityIdentifier)]
+      selectElementWithMatcher:chrome_test_util::HistoryOptInPromoMatcher()]
       assertWithMatcher:grey_notVisible()];
 }
 
@@ -425,8 +627,7 @@ using chrome_test_util::SettingsSignInRowMatcher;
       performAction:grey_tap()];
   // Verify that the History Sync Opt-In screen is skipped.
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kHistorySyncViewAccessibilityIdentifier)]
+      selectElementWithMatcher:chrome_test_util::HistoryOptInPromoMatcher()]
       assertWithMatcher:grey_notVisible()];
 
   // Verify that the History Sync is disabled.
@@ -463,8 +664,7 @@ using chrome_test_util::SettingsSignInRowMatcher;
 
   // Verify that the History Sync Opt-In screen is shown.
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kHistorySyncViewAccessibilityIdentifier)]
+      selectElementWithMatcher:chrome_test_util::HistoryOptInPromoMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Open the URL as if it was opened from another app.

@@ -17,7 +17,7 @@ import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
-import {listenOnce} from 'chrome://resources/js/util_ts.js';
+import {listenOnce} from 'chrome://resources/js/util.js';
 
 import {Bookmark} from './bookmark_type.js';
 import {BrowserApi} from './browser_api.js';
@@ -40,7 +40,7 @@ import {NavigatorDelegateImpl, PdfNavigator, WindowOpenDisposition} from './navi
 import {deserializeKeyEvent, LoadState} from './pdf_scripting_api.js';
 import {getTemplate} from './pdf_viewer.html.js';
 import {KeyEventData, PdfViewerBaseElement} from './pdf_viewer_base.js';
-import {DestinationMessageData, DocumentDimensionsMessageData, hasCtrlModifier, shouldIgnoreKeyEvents} from './pdf_viewer_utils.js';
+import {DestinationMessageData, DocumentDimensionsMessageData, hasCtrlModifier, hasCtrlModifierOnly, shouldIgnoreKeyEvents} from './pdf_viewer_utils.js';
 
 interface EmailMessageData {
   type: string;
@@ -313,8 +313,13 @@ export class PdfViewerElement extends PdfViewerBaseElement {
     this.inkController_.init(this.viewport);
     this.tracker.add(
         this.inkController_.getEventTarget(),
-        InkControllerEventType.HAS_UNSAVED_CHANGES,
-        () => chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(true));
+        InkControllerEventType.HAS_UNSAVED_CHANGES, () => {
+          // TODO(crbug.com/1445746): Write an equivalent API call for
+          // chrome.pdfViewerPrivate.
+          if (!this.pdfOopifEnabled) {
+            chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(true);
+          }
+        });
     // </if>
 
     this.fileName_ = getFilenameFromURL(this.originalUrl);
@@ -366,7 +371,9 @@ export class PdfViewerElement extends PdfViewerBaseElement {
 
     switch (e.key) {
       case 'a':
-        if (hasCtrlModifier(e)) {
+        // Take over Ctrl+A (but not other combinations like Ctrl-Shift-A).
+        // Note that on macOS, "Ctrl" is Command.
+        if (hasCtrlModifierOnly(e)) {
           this.pluginController_!.selectAll();
           // Since we do selection ourselves.
           e.preventDefault();
@@ -915,7 +922,11 @@ export class PdfViewerElement extends PdfViewerBaseElement {
             writer.write(blob);
             // Unblock closing the window now that the user has saved
             // successfully.
-            chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(false);
+            // TODO(crbug.com/1445746): Write an equivalent API call for
+            // chrome.pdfViewerPrivate.
+            if (!this.pdfOopifEnabled) {
+              chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(false);
+            }
           });
         });
   }
@@ -1046,7 +1057,11 @@ export class PdfViewerElement extends PdfViewerBaseElement {
             writer.write(blob);
             // Unblock closing the window now that the user has saved
             // successfully.
-            chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(false);
+            // TODO(crbug.com/1445746): Write an equivalent API call for
+            // chrome.pdfViewerPrivate.
+            if (!this.pdfOopifEnabled) {
+              chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(false);
+            }
           });
         });
 

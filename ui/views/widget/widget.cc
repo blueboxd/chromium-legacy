@@ -668,6 +668,10 @@ void Widget::SetSize(const gfx::Size& size) {
     native_widget_->SetSize(size);
 }
 
+gfx::Size Widget::GetSize() const {
+  return GetRestoredBounds().size();
+}
+
 void Widget::CenterWindow(const gfx::Size& size) {
   if (native_widget_)
     native_widget_->CenterWindow(size);
@@ -1674,6 +1678,10 @@ void Widget::OnNativeWidgetWorkspaceChanged() {}
 
 void Widget::OnNativeWidgetWindowShowStateChanged() {
   SaveWindowPlacementIfInitialized();
+
+  for (WidgetObserver& observer : observers_) {
+    observer.OnWidgetShowStateChanged(this);
+  }
 }
 
 void Widget::OnNativeWidgetBeginUserBoundsChange() {
@@ -1780,8 +1788,9 @@ void Widget::OnMouseEvent(ui::MouseEvent* event) {
           // process it.
           (event->flags() &
            (ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON |
-            ui::EF_RIGHT_MOUSE_BUTTON)) != 0)
+            ui::EF_RIGHT_MOUSE_BUTTON)) != 0) {
         event->SetHandled();
+      }
       return;
 
     case ui::ET_MOUSE_MOVED:
@@ -2031,6 +2040,18 @@ const ui::ColorProvider* Widget::GetColorProvider() const {
       GetColorProviderKey());
 }
 
+const ui::RendererColorMap Widget::GetRendererColorMap(
+    ui::ColorProviderKey::ColorMode color_mode,
+    ui::ColorProviderKey::ForcedColors forced_colors) const {
+  auto key = GetColorProviderKey();
+  key.color_mode = color_mode;
+  key.forced_colors = forced_colors;
+  ui::ColorProvider* color_provider =
+      ui::ColorProviderManager::Get().GetColorProviderFor(key);
+  CHECK(color_provider);
+  return ui::CreateRendererColorMap(*color_provider);
+}
+
 ui::ColorProviderKey Widget::GetColorProviderKeyForTesting() const {
   return GetColorProviderKey();
 }
@@ -2246,6 +2267,7 @@ ADD_PROPERTY_METADATA(int, Width)
 ADD_PROPERTY_METADATA(int, Height)
 ADD_PROPERTY_METADATA(bool, Visible)
 ADD_PROPERTY_METADATA(ui::ZOrderLevel, ZOrderLevel)
+ADD_PROPERTY_METADATA(gfx::Size, Size)
 END_METADATA
 
 namespace internal {

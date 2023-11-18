@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <list>
 
+#include "base/feature_list.h"
 #include "components/viz/common/resources/shared_image_format.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/service_utils.h"
@@ -20,6 +21,98 @@
 namespace gpu {
 ///////////////////////////////////////////////////////////////////////////////
 // GLCommonImageBackingFactory
+
+namespace {
+// Kill switch for allowing using core ES3 format types for half float format.
+BASE_FEATURE(kAllowEs3F16CoreTypeForGlSi,
+             "AllowEs3F16CoreTypeForGlSi",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Returns a vector of FormatInfo for multiplanar formats. The returned
+// FormatInfos depend on the plane config and channel format of the multiplanar
+// format passed in.
+std::vector<GLCommonImageBackingFactory::FormatInfo> GetMultiPlaneFormatInfo(
+    const std::map<viz::SharedImageFormat,
+                   GLCommonImageBackingFactory::FormatInfo>& supported_formats,
+    viz::SharedImageFormat format) {
+  auto channel_format = format.channel_format();
+  auto plane_config = format.plane_config();
+  std::vector<viz::SharedImageFormat> plane_formats;
+  switch (channel_format) {
+    // If R_8 and RG_88 are supported then 8 bit YUV formats should also work.
+    case viz::SharedImageFormat::ChannelFormat::k8:
+      switch (plane_config) {
+        case viz::SharedImageFormat::PlaneConfig::kY_UV:
+          plane_formats = {viz::SinglePlaneFormat::kR_8,
+                           viz::SinglePlaneFormat::kRG_88};
+          break;
+        case viz::SharedImageFormat::PlaneConfig::kY_UV_A:
+          plane_formats = {viz::SinglePlaneFormat::kR_8,
+                           viz::SinglePlaneFormat::kRG_88,
+                           viz::SinglePlaneFormat::kR_8};
+          break;
+        case viz::SharedImageFormat::PlaneConfig::kY_U_V:
+        case viz::SharedImageFormat::PlaneConfig::kY_V_U:
+          plane_formats = {viz::SinglePlaneFormat::kR_8,
+                           viz::SinglePlaneFormat::kR_8,
+                           viz::SinglePlaneFormat::kR_8};
+          break;
+      }
+      break;
+
+    // If R_16 and RG_1616 are supported then 10/16 bit YUV formats should also
+    // work.
+    case viz::SharedImageFormat::ChannelFormat::k10:
+    case viz::SharedImageFormat::ChannelFormat::k16:
+      switch (plane_config) {
+        case viz::SharedImageFormat::PlaneConfig::kY_UV:
+          plane_formats = {viz::SinglePlaneFormat::kR_16,
+                           viz::SinglePlaneFormat::kRG_1616};
+          break;
+        case viz::SharedImageFormat::PlaneConfig::kY_UV_A:
+          // Supporting 10/16 bit Y_UV_A plane config is not required as there
+          // is no use-case for it.
+          break;
+        case viz::SharedImageFormat::PlaneConfig::kY_U_V:
+        case viz::SharedImageFormat::PlaneConfig::kY_V_U:
+          plane_formats = {viz::SinglePlaneFormat::kR_16,
+                           viz::SinglePlaneFormat::kR_16,
+                           viz::SinglePlaneFormat::kR_16};
+          break;
+      }
+      break;
+
+    // If LUMINANCE_F16 is supported then 16 float YUV formats should also work.
+    case viz::SharedImageFormat::ChannelFormat::k16F:
+      switch (plane_config) {
+        // UV plane is unsupported with 16F formats.
+        case viz::SharedImageFormat::PlaneConfig::kY_UV:
+        case viz::SharedImageFormat::PlaneConfig::kY_UV_A:
+          break;
+        case viz::SharedImageFormat::PlaneConfig::kY_U_V:
+        case viz::SharedImageFormat::PlaneConfig::kY_V_U:
+          plane_formats = {viz::SinglePlaneFormat::kLUMINANCE_F16,
+                           viz::SinglePlaneFormat::kLUMINANCE_F16,
+                           viz::SinglePlaneFormat::kLUMINANCE_F16};
+          break;
+      }
+      break;
+  }
+
+  std::vector<GLCommonImageBackingFactory::FormatInfo> plane_infos;
+  plane_infos.reserve(plane_formats.size());
+  for (auto plane_format : plane_formats) {
+    auto iter = supported_formats.find(plane_format);
+    if (iter == supported_formats.end()) {
+      return {};
+    }
+    plane_infos.emplace_back(iter->second);
+  }
+
+  return plane_infos;
+}
+
+}  // namespace
 
 GLCommonImageBackingFactory::GLCommonImageBackingFactory(
     uint32_t supported_usages,
@@ -49,25 +142,38 @@ GLCommonImageBackingFactory::GLCommonImageBackingFactory(
     if (format == viz::SinglePlaneFormat::kBGR_565) {
       continue;
     }
-    const GLFormatDesc format_desc = ToGLFormatDesc(
+    const GLFormatDesc format_desc = ToGLFormatDescOverrideHalfFloatType(
         format, /*plane_index=*/0,
-        feature_info->feature_flags().angle_rgbx_internal_format);
+        feature_info->feature_flags().angle_rgbx_internal_format,
+        feature_info->oes_texture_float_available());
     const GLuint image_internal_format = format_desc.image_internal_format;
     const GLenum gl_format = format_desc.data_format;
     CHECK_NE(gl_format, static_cast<GLenum>(GL_ZERO));
     const GLenum gl_type = format_desc.data_type;
+
+    // kRGBA_F16 is a core part of ES3.
+    const bool at_least_es3 =
+        gl::g_current_gl_version->IsAtLeastGLES(3, 0) &&
+        base::FeatureList::IsEnabled(kAllowEs3F16CoreTypeForGlSi);
+    const bool supports_data_type =
+        (gl_type == GL_HALF_FLOAT && at_least_es3) ||
+        validators->pixel_type.IsValid(gl_type);
+    const bool supports_internal_format =
+        (image_internal_format == GL_RGBA16F && at_least_es3) ||
+        validators->texture_internal_format.IsValid(image_internal_format);
+
     const bool uncompressed_format_valid =
-        validators->texture_internal_format.IsValid(image_internal_format) &&
+        supports_internal_format &&
         validators->texture_format.IsValid(gl_format);
     const bool compressed_format_valid =
         validators->compressed_texture_format.IsValid(image_internal_format);
 
     if (!(uncompressed_format_valid || compressed_format_valid) ||
-        !validators->pixel_type.IsValid(gl_type)) {
+        !supports_data_type) {
       continue;
     }
 
-    FormatInfo& info = supported_formats_[format].emplace_back();
+    FormatInfo& info = supported_formats_[format];
     info.is_compressed = compressed_format_valid;
     info.gl_format = gl_format;
     info.gl_type = gl_type;
@@ -102,11 +208,16 @@ GLCommonImageBackingFactory::~GLCommonImageBackingFactory() = default;
 std::vector<GLCommonImageBackingFactory::FormatInfo>
 GLCommonImageBackingFactory::GetFormatInfo(
     viz::SharedImageFormat format) const {
+  if (format.is_multi_plane()) {
+    return GetMultiPlaneFormatInfo(supported_formats_, format);
+  }
+
   auto iter = supported_formats_.find(format);
   if (iter == supported_formats_.end()) {
     return {};
   }
-  return iter->second;
+
+  return {iter->second};
 }
 
 bool GLCommonImageBackingFactory::CanCreateTexture(
@@ -114,8 +225,8 @@ bool GLCommonImageBackingFactory::CanCreateTexture(
     const gfx::Size& size,
     base::span<const uint8_t> pixel_data,
     GLenum target) {
-  auto iter = supported_formats_.find(format);
-  if (iter == supported_formats_.end()) {
+  auto format_infos = GetFormatInfo(format);
+  if (format_infos.empty()) {
     DVLOG(2) << "CreateSharedImage: unsupported format";
     return false;
   }
@@ -129,8 +240,8 @@ bool GLCommonImageBackingFactory::CanCreateTexture(
 
   // If we have initial data to upload, ensure it is sized appropriately.
   if (!pixel_data.empty()) {
-    DCHECK_EQ(iter->second.size(), 1u);
-    const FormatInfo& format_info = iter->second[0];
+    DCHECK_EQ(format_infos.size(), 1u);
+    const FormatInfo& format_info = format_infos[0];
 
     if (format_info.is_compressed) {
       const char* error_message = "unspecified";

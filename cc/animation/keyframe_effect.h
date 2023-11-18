@@ -151,7 +151,10 @@ class CC_ANIMATION_EXPORT KeyframeEffect : public gfx::KeyframeEffect {
       KeyframeEffect* element_keyframe_effect_impl) const;
   void RemoveKeyframeModelsCompletedOnMainThread(
       KeyframeEffect* element_keyframe_effect_impl) const;
-  void PushPropertiesTo(KeyframeEffect* keyframe_effect_impl);
+  // If `replaced_start_time` is provided, it will be set as the start time on
+  // this' keyframe models prior to being pushed.
+  void PushPropertiesTo(KeyframeEffect* keyframe_effect_impl,
+                        std::optional<base::TimeTicks> replaced_start_time);
 
   std::string KeyframeModelsToString() const;
 
@@ -179,7 +182,7 @@ class CC_ANIMATION_EXPORT KeyframeEffect : public gfx::KeyframeEffect {
   void MarkKeyframeModelsForDeletion(base::TimeTicks, AnimationEvents* events);
   void MarkFinishedKeyframeModels(base::TimeTicks monotonic_time);
 
-  absl::optional<gfx::PointF> ScrollOffsetForAnimation() const;
+  std::optional<gfx::PointF> ScrollOffsetForAnimation() const;
   void GenerateEvent(AnimationEvents* events,
                      const KeyframeModel& keyframe_model,
                      AnimationEvent::Type type,
@@ -205,7 +208,7 @@ class CC_ANIMATION_EXPORT KeyframeEffect : public gfx::KeyframeEffect {
 
   bool is_ticking_;
   bool awaiting_deletion_;
-  absl::optional<base::TimeTicks> last_tick_time_;
+  std::optional<base::TimeTicks> last_tick_time_;
 
   bool needs_push_properties_;
 };

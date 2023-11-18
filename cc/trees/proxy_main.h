@@ -64,7 +64,7 @@ class CC_EXPORT ProxyMain : public Proxy {
   void DidCompletePageScaleAnimation();
   void BeginMainFrame(
       std::unique_ptr<BeginMainFrameAndCommitState> begin_main_frame_state);
-  void DidCompleteCommit(CommitTimestamps);
+  void DidCompleteCommit(int source_frame_number, CommitTimestamps);
   void DidPresentCompositorFrame(
       uint32_t frame_token,
       std::vector<PresentationTimeCallbackBuffer::Callback>
@@ -73,7 +73,8 @@ class CC_EXPORT ProxyMain : public Proxy {
           successful_presentation_callbacks,
       const gfx::PresentationFeedback& feedback);
   void NotifyThroughputTrackerResults(CustomTrackerResults results);
-  void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay,
+  void DidObserveFirstScrollDelay(int source_frame_number,
+                                  base::TimeDelta first_scroll_delay,
                                   base::TimeTicks first_scroll_timestamp);
   void NotifyTransitionRequestFinished(uint32_t sequence_id);
 
@@ -171,7 +172,7 @@ class CC_EXPORT ProxyMain : public Proxy {
   // defer_main_frame_update_ will also cause commits to be deferred, regardless
   // of the setting for paint_holding_reason_.
   bool defer_main_frame_update_;
-  absl::optional<PaintHoldingReason> paint_holding_reason_;
+  std::optional<PaintHoldingReason> paint_holding_reason_;
 
   bool pause_rendering_;
   bool block_on_next_commit_ = false;

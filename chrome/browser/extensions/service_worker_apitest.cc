@@ -464,8 +464,15 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, ConsoleError) {
 
 // Tests that an extension can fetch a file scheme URL from the service worker,
 // if it has file access.
+// TODO(crbug.com/1499141): Flaky on mac
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_FetchFileSchemeURLWithFileAccess \
+  DISABLED_FetchFileSchemeURLWithFileAccess
+#else
+#define MAYBE_FetchFileSchemeURLWithFileAccess FetchFileSchemeURLWithFileAccess
+#endif
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
-                       FetchFileSchemeURLWithFileAccess) {
+                       MAYBE_FetchFileSchemeURLWithFileAccess) {
   ASSERT_TRUE(
       RunExtensionTest("service_worker/worker_based_background/"
                        "fetch_file_scheme_url_with_file_access",
@@ -876,7 +883,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   // Add minimal details required to dispatch webNavigation.onCommitted event:
   extensions::api::web_navigation::OnCommitted::Details details;
   details.transition_type =
-      extensions::api::web_navigation::TRANSITION_TYPE_TYPED;
+      extensions::api::web_navigation::TransitionType::kTyped;
   details.frame_type = api::extension_types::FrameType::kOutermostFrame;
   details.document_lifecycle = api::extension_types::DocumentLifecycle::kActive;
 
@@ -2149,8 +2156,17 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsOnUpdatedSplit) {
 // 2) An incognito window was open.
 // 3) Toggle the allow in incognito switch to off
 // Regression test for crbug.com/1394588
+// TODO(crbug.com/1484659): Disabled on ASAN due to leak caused by renderer gin
+// objects which are intended to be leaked.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_DisallowIncognitoWithOnInstalledListener \
+  DISABLED_DisallowIncognitoWithOnInstalledListener
+#else
+#define MAYBE_DisallowIncognitoWithOnInstalledListener \
+  DisallowIncognitoWithOnInstalledListener
+#endif
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
-                       DisallowIncognitoWithOnInstalledListener) {
+                       MAYBE_DisallowIncognitoWithOnInstalledListener) {
   ResultCatcher catcher;
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir scoped_temp_dir;

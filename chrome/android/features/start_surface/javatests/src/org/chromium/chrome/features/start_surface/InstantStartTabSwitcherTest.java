@@ -108,6 +108,7 @@ import java.util.concurrent.atomic.AtomicInteger;
     ChromeFeatureList.INSTANT_START,
     ChromeFeatureList.EMPTY_STATES
 })
+@DisableFeatures({ChromeFeatureList.SHOW_NTP_AT_STARTUP_ANDROID})
 @Restriction({
     Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE,
     UiRestriction.RESTRICTION_TYPE_PHONE
@@ -171,7 +172,7 @@ public class InstantStartTabSwitcherTest {
     @MediumTest
     @CommandLineFlags.Add({INSTANT_START_TEST_BASE_PARAMS + "/show_last_active_tab_only/true"})
     public void startSurfaceMoreTabsButtonTest() throws IOException {
-        StartSurfaceTestUtils.createTabStateFile(new int[] {0});
+        StartSurfaceTestUtils.createTabStatesAndMetadataFile(new int[] {0});
         StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0, mBrowserControlsStateProvider);
         TabAttributeCache.setTitleForTesting(0, "Google");
 
@@ -204,7 +205,7 @@ public class InstantStartTabSwitcherTest {
         INSTANT_START_TEST_BASE_PARAMS + "/show_last_active_tab_only/false"
     })
     public void renderTabSwitcher() throws IOException, InterruptedException {
-        StartSurfaceTestUtils.createTabStateFile(new int[] {0, 1, 2});
+        StartSurfaceTestUtils.createTabStatesAndMetadataFile(new int[] {0, 1, 2});
         StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0, mBrowserControlsStateProvider);
         StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(1, mBrowserControlsStateProvider);
         StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(2, mBrowserControlsStateProvider);
@@ -212,7 +213,7 @@ public class InstantStartTabSwitcherTest {
         TabAttributeCache.setTitleForTesting(1, "漢字");
         TabAttributeCache.setTitleForTesting(2, "اَلْعَرَبِيَّةُ");
 
-        // Must be after StartSurfaceTestUtils.createTabStateFile() to read these files.
+        // Must be after StartSurfaceTestUtils.createTabStatesAndMetadataFile() to read these files.
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
@@ -252,11 +253,11 @@ public class InstantStartTabSwitcherTest {
         TabAttributeCache.setRootIdForTesting(2, 0);
         TabAttributeCache.setRootIdForTesting(3, 3);
         TabAttributeCache.setRootIdForTesting(4, 3);
-        // StartSurfaceTestUtils.createTabStateFile() has to be after setRootIdForTesting() to get
-        // root IDs.
-        StartSurfaceTestUtils.createTabStateFile(new int[] {0, 1, 2, 3, 4});
+        // StartSurfaceTestUtils.createTabStatesAndMetadataFile() has to be after
+        // setRootIdForTesting() to get root IDs.
+        StartSurfaceTestUtils.createTabStatesAndMetadataFile(new int[] {0, 1, 2, 3, 4});
 
-        // Must be after StartSurfaceTestUtils.createTabStateFile() to read these files.
+        // Must be after StartSurfaceTestUtils.createTabStatesAndMetadataFile() to read these files.
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
@@ -314,11 +315,11 @@ public class InstantStartTabSwitcherTest {
         TabAttributeCache.setRootIdForTesting(5, 5);
         TabAttributeCache.setRootIdForTesting(6, 5);
 
-        // StartSurfaceTestUtils.createTabStateFile() has to be after setRootIdForTesting() to get
-        // root IDs.
-        StartSurfaceTestUtils.createTabStateFile(new int[] {0, 1, 2, 3, 4, 5, 6});
+        // StartSurfaceTestUtils.createTabStatesAndMetadataFile() has to be after
+        // setRootIdForTesting() to get root IDs.
+        StartSurfaceTestUtils.createTabStatesAndMetadataFile(new int[] {0, 1, 2, 3, 4, 5, 6});
 
-        // Must be after StartSurfaceTestUtils.createTabStateFile() to read these files.
+        // Must be after StartSurfaceTestUtils.createTabStatesAndMetadataFile() to read these files.
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
@@ -339,7 +340,7 @@ public class InstantStartTabSwitcherTest {
     })
     public void testSingleAsHomepage_CloseTabInCarouselTabSwitcher()
             throws IOException, ExecutionException {
-        StartSurfaceTestUtils.createTabStateFile(new int[] {0});
+        StartSurfaceTestUtils.createTabStatesAndMetadataFile(new int[] {0});
         StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0, mBrowserControlsStateProvider);
         TabAttributeCache.setTitleForTesting(0, "Google");
 
@@ -381,8 +382,11 @@ public class InstantStartTabSwitcherTest {
         INSTANT_START_TEST_BASE_PARAMS,
         FeedPlaceholderLayout.DISABLE_ANIMATION_SWITCH
     })
+    // TODO(https://crbug.com/1500080): Fix this test with "start surface refactor" enabled.
+    @DisableFeatures({ChromeFeatureList.START_SURFACE_REFACTOR})
     public void testScrollToSelectedTab() throws Exception {
-        StartSurfaceTestUtils.createTabStateFile(new int[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, null, 5);
+        StartSurfaceTestUtils.createTabStatesAndMetadataFile(
+                new int[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, null, 5);
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
@@ -486,7 +490,10 @@ public class InstantStartTabSwitcherTest {
         View tabThumbnail = recyclerView.findViewById(org.chromium.chrome.test.R.id.tab_thumbnail);
         assertEquals(
                 tabThumbnail.getMeasuredHeight(),
-                (int) (tabThumbnail.getMeasuredWidth() * 1.0 / TabUtils.THUMBNAIL_ASPECT_RATIO),
+                (int)
+                        (tabThumbnail.getMeasuredWidth()
+                                * 1.0
+                                / TabUtils.PORTRAIT_THUMBNAIL_ASPECT_RATIO),
                 2);
 
         ActivityTestUtils.clearActivityOrientation(cta);
@@ -515,7 +522,7 @@ public class InstantStartTabSwitcherTest {
     }
 
     private void testShowStartWhenHomepageDisabledWithImmediateReturnImpl() throws IOException {
-        StartSurfaceTestUtils.createTabStateFile(new int[] {0});
+        StartSurfaceTestUtils.createTabStatesAndMetadataFile(new int[] {0});
         StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0, mBrowserControlsStateProvider);
         TabAttributeCache.setTitleForTesting(0, "Google");
 
@@ -617,7 +624,7 @@ public class InstantStartTabSwitcherTest {
             throws IOException {
         StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY.setForTesting(
                 isSingleTabSwitcher);
-        StartSurfaceTestUtils.createTabStateFile(
+        StartSurfaceTestUtils.createTabStatesAndMetadataFile(
                 new int[] {0, 1},
                 new String[] {"https://www.google.com/search?q=test", "https://www.google.com"},
                 isSRP ? 0 : 1);

@@ -4,11 +4,15 @@
 
 package org.chromium.chrome.browser.readaloud.player.expanded;
 
+
 import android.content.Context;
 import android.content.res.Resources;
+import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -16,13 +20,15 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.readaloud.player.InteractionHandler;
+import org.chromium.chrome.browser.readaloud.player.PlayerProperties;
 import org.chromium.chrome.browser.readaloud.player.R;
+import org.chromium.chrome.modules.readaloud.PlaybackListener;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.ui.modelutil.PropertyModel;
 
 public class ExpandedPlayerSheetContent implements BottomSheetContent {
     private static final String TAG = "RAPlayerSheet";
-    private static final float DEFAULT_INITIAL_SPEED = 1f;
     // Note: if these times need to change, the "back 10" and "forward 30" icons
     // should also be changed.
     private static final int BACK_SECONDS = 10;
@@ -30,38 +36,75 @@ public class ExpandedPlayerSheetContent implements BottomSheetContent {
 
     private final Context mContext;
     private final BottomSheetController mBottomSheetController;
+    private final PropertyModel mModel;
+    private final SeekBar mSeekBar;
     private View mContentView;
+    // Effectively final and non null, can be null only in tests
+    private OptionsMenuSheetContent mOptionsMenu;
+    private SpeedMenuSheetContent mSpeedMenu;
+    private TextView mSpeedButton;
+    private boolean mHighlightingEnabled;
+    private boolean mHighlightingSupported;
+
+    private LinearLayout mNormalLayout;
+    private LinearLayout mErrorLayout;
 
     public ExpandedPlayerSheetContent(
-            Context context, BottomSheetController bottomSheetController) {
+            Context context, BottomSheetController bottomSheetController, PropertyModel model) {
         this(
                 context,
                 bottomSheetController,
                 LayoutInflater.from(context)
-                        .inflate(R.layout.readaloud_expanded_player_layout, null));
+                        .inflate(R.layout.readaloud_expanded_player_layout, null),
+                model);
+        mOptionsMenu =
+                new OptionsMenuSheetContent(
+                        mContext, /* parent= */ this, mBottomSheetController, mModel);
+        mSpeedMenu =
+                new SpeedMenuSheetContent(
+                        mContext, /* parent= */ this, mBottomSheetController, mModel);
     }
 
-    @SuppressWarnings("SetTextI18n")
     @VisibleForTesting
     ExpandedPlayerSheetContent(
-            Context context, BottomSheetController bottomSheetController, View contentView) {
+            Context context,
+            BottomSheetController bottomSheetController,
+            View contentView,
+            PropertyModel model) {
         mContext = context;
         mBottomSheetController = bottomSheetController;
         mContentView = contentView;
-        ((TextView) mContentView.findViewById(R.id.readaloud_expanded_player_title))
-                .setText("Page title");
-        ((TextView) mContentView.findViewById(R.id.readaloud_expanded_player_publisher))
-                .setText("Site");
+        mModel = model;
         Resources res = mContext.getResources();
+        mSpeedButton = (TextView) mContentView.findViewById(R.id.readaloud_playback_speed);
         mContentView
                 .findViewById(R.id.readaloud_seek_back_button)
                 .setContentDescription(res.getString(R.string.readaloud_replay, BACK_SECONDS));
         mContentView
                 .findViewById(R.id.readaloud_seek_forward_button)
                 .setContentDescription(res.getString(R.string.readaloud_forward, FORWARD_SECONDS));
-        ((TextView) mContentView.findViewById(R.id.readaloud_player_time)).setText("00:00");
-        ((TextView) mContentView.findViewById(R.id.readaloud_player_duration)).setText("00:00");
-        setSpeed(DEFAULT_INITIAL_SPEED);
+        mNormalLayout = (LinearLayout) mContentView.findViewById(R.id.normal_layout);
+        mErrorLayout = (LinearLayout) mContentView.findViewById(R.id.error_layout);
+        mSeekBar = (SeekBar) mContentView.findViewById(R.id.readaloud_expanded_player_seek_bar);
+    }
+
+    public void onPlaybackStateChanged(@PlaybackListener.State int state) {
+        setPlaying(state == PlaybackListener.State.PLAYING);
+        if (state == PlaybackListener.State.ERROR) {
+            showOnly(mErrorLayout);
+        } else {
+            showOnly(mNormalLayout);
+        }
+    }
+
+    // Show `layout` and hide the other layouts.
+    private void showOnly(LinearLayout layout) {
+        setVisibleIfMatch(mNormalLayout, layout);
+        setVisibleIfMatch(mErrorLayout, layout);
+    }
+
+    private static void setVisibleIfMatch(LinearLayout a, LinearLayout b) {
+        a.setVisibility(a == b ? View.VISIBLE : View.GONE);
     }
 
     public void show() {
@@ -81,29 +124,56 @@ public class ExpandedPlayerSheetContent implements BottomSheetContent {
                 .setText(publisher);
     }
 
-    void setCloseButtonHandler(View.OnClickListener onClick) {
-        mContentView
-                .findViewById(R.id.readaloud_expanded_player_close_button)
-                .setOnClickListener(onClick);
+    void setElapsed(Long nanos) {
+        ((TextView) mContentView.findViewById(R.id.readaloud_player_time))
+                .setText(formatTimeNanos(nanos));
+    }
+
+    void setDuration(Long nanos) {
+        ((TextView) mContentView.findViewById(R.id.readaloud_player_duration))
+                .setText(formatTimeNanos(nanos));
+    }
+
+    private static String formatTimeNanos(long nanos) {
+        if (nanos <= 0) {
+            return DateUtils.formatElapsedTime(0);
+        }
+        final long nanosPerSecond = 1_000_000_000L;
+        long seconds = nanos / nanosPerSecond;
+        return DateUtils.formatElapsedTime(seconds);
     }
 
     void setInteractionHandler(InteractionHandler handler) {
-        setOnClickListener(R.id.readaloud_expanded_player_close_button, handler::onCloseClick);
         setOnClickListener(R.id.readaloud_play_pause_button, handler::onPlayPauseClick);
         setOnClickListener(R.id.readaloud_seek_back_button, handler::onSeekBackClick);
         setOnClickListener(R.id.readaloud_seek_forward_button, handler::onSeekForwardClick);
         setOnClickListener(R.id.readaloud_expanded_player_publisher, handler::onPublisherClick);
+        setOnClickListener(R.id.readaloud_playback_speed, this::showSpeedMenu);
+        setOnClickListener(R.id.readaloud_more_button, this::showOptionsMenu);
+
+        SeekBar seekBar =
+                (SeekBar) mContentView.findViewById(R.id.readaloud_expanded_player_seek_bar);
+        seekBar.setOnSeekBarChangeListener(handler.getSeekBarChangeListener());
+        mSpeedMenu.setInteractionHandler(handler);
+        mOptionsMenu.setInteractionHandler(handler);
     }
 
-    @SuppressWarnings({"SetTextI18n", "DefaultLocale"})
     public void setSpeed(float speed) {
-        TextView speedButton = (TextView) mContentView.findViewById(R.id.readaloud_playback_speed);
-        speedButton.setText(String.format("%.1fx", speed));
-        speedButton.setContentDescription(
+        mModel.set(PlayerProperties.SPEED, speed);
+        String speedString = SpeedMenuSheetContent.speedFormatter(speed);
+        mSpeedButton.setText(
+                mContext.getResources().getString(R.string.readaloud_speed, speedString));
+        mSpeedButton.setContentDescription(
                 mContext.getResources()
-                        .getString(
-                                R.string.readaloud_speed_menu_button,
-                                String.format("%.1f", speed)));
+                        .getString(R.string.readaloud_speed_menu_button, speedString));
+    }
+
+    void setHighlightingSupported(boolean supported) {
+        mOptionsMenu.setHighlightingSupported(supported);
+    }
+
+    void setHighlightingEnabled(boolean enabled) {
+        mOptionsMenu.setHighlightingEnabled(enabled);
     }
 
     public void setPlaying(boolean playing) {
@@ -119,6 +189,40 @@ public class ExpandedPlayerSheetContent implements BottomSheetContent {
             playButton.setContentDescription(
                     mContext.getResources().getString(R.string.readaloud_play));
         }
+    }
+
+    /**
+     * @param percentProgress out of 1.0
+     */
+    public void setProgress(float percent) {
+        mSeekBar.setProgress((int) (percent * mSeekBar.getMax()), true);
+    }
+
+    @Nullable
+    OptionsMenuSheetContent getOptionsMenu() {
+        return mOptionsMenu;
+    }
+
+    public void showOptionsMenu() {
+        mBottomSheetController.hideContent(this, /* animate= */ false);
+        mBottomSheetController.requestShowContent(mOptionsMenu, /* animate= */ true);
+    }
+
+    @Nullable
+    VoiceMenuSheetContent getVoiceMenu() {
+        if (mOptionsMenu == null) {
+            return null;
+        }
+        return mOptionsMenu.getVoiceMenu();
+    }
+
+    public void notifySheetClosed() {
+        mOptionsMenu.notifySheetClosed();
+    }
+
+    public void showSpeedMenu() {
+        mBottomSheetController.hideContent(this, /* animate= */ false);
+        mBottomSheetController.requestShowContent(mSpeedMenu, /* animate= */ true);
     }
 
     // BottomSheetContent implementation
@@ -220,5 +324,15 @@ public class ExpandedPlayerSheetContent implements BottomSheetContent {
                         (view) -> {
                             onClick.run();
                         });
+    }
+
+    @VisibleForTesting
+    public void setOptionsMenuSheetContent(OptionsMenuSheetContent optionsMenu) {
+        mOptionsMenu = optionsMenu;
+    }
+
+    @VisibleForTesting
+    public void setSpeedMenuSheetContent(SpeedMenuSheetContent speedMenu) {
+        mSpeedMenu = speedMenu;
     }
 }

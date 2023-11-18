@@ -19,7 +19,7 @@
 #include "media/base/mac/video_frame_mac.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
-#include "media/gpu/mac/video_toolbox_decode_metadata.h"
+#include "media/gpu/mac/video_toolbox_decompression_metadata.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
@@ -156,19 +156,19 @@ void VideoToolboxFrameConverter::Convert(
     return;
   }
 
-  const gfx::Size coded_size(CVPixelBufferGetWidth(image),
-                             CVPixelBufferGetHeight(image));
-  const gfx::Rect visible_rect(CVImageBufferGetCleanRect(image));
+  const gfx::Size coded_size(CVPixelBufferGetWidth(image.get()),
+                             CVPixelBufferGetHeight(image.get()));
+  const gfx::Rect visible_rect(CVImageBufferGetCleanRect(image.get()));
   const gfx::Size natural_size =
       metadata->aspect_ratio.GetNaturalSize(visible_rect);
 
   gfx::GpuMemoryBufferHandle handle;
   handle.id = gfx::GpuMemoryBufferHandle::kInvalidId;
   handle.type = gfx::GpuMemoryBufferType::IO_SURFACE_BUFFER;
-  handle.io_surface.reset(CVPixelBufferGetIOSurface(image),
+  handle.io_surface.reset(CVPixelBufferGetIOSurface(image.get()),
                           base::scoped_policy::RETAIN);
 
-  OSType pixel_format = IOSurfaceGetPixelFormat(handle.io_surface);
+  OSType pixel_format = IOSurfaceGetPixelFormat(handle.io_surface.get());
   absl::optional<viz::SharedImageFormat> format =
       PixelFormatToImageFormat(pixel_format);
   if (!format) {
@@ -194,7 +194,7 @@ void VideoToolboxFrameConverter::Convert(
 
   // Extract IOSurface webgpu compatible attribute before image is moved.
   const bool is_webgpu_compatible =
-      IOSurfaceIsWebGPUCompatible(CVPixelBufferGetIOSurface(image));
+      IOSurfaceIsWebGPUCompatible(CVPixelBufferGetIOSurface(image.get()));
 
   GLenum target = texture_rectangle_ ? GL_TEXTURE_RECTANGLE_ARB : GL_TEXTURE_2D;
 
@@ -234,7 +234,9 @@ void VideoToolboxFrameConverter::Convert(
       IsMultiPlaneFormatForHardwareVideoEnabled()
           ? SharedImageFormatType::kSharedImageFormat
           : SharedImageFormatType::kLegacy);
-  frame->metadata().frame_duration = metadata->duration;
+  if (metadata->duration != kNoTimestamp && !metadata->duration.is_zero()) {
+    frame->metadata().frame_duration = metadata->duration;
+  }
   frame->metadata().allow_overlay = true;
   // Releasing |image| must happen after command buffer commands are complete
   // (not just submitted).

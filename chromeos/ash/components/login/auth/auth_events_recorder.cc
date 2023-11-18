@@ -306,7 +306,7 @@ void AuthEventsRecorder::ResetLoginData() {
   Reset();
 }
 
-void AuthEventsRecorder::OnKnowledgeFactorAuthFailue() {
+void AuthEventsRecorder::OnKnowledgeFactorAuthFailure() {
   knowledge_factor_auth_failure_count_++;
 }
 
@@ -389,6 +389,16 @@ void AuthEventsRecorder::OnRecoveryDone(CryptohomeRecoveryResult result,
 
 void AuthEventsRecorder::OnAuthSubmit() {
   AddAuthEvent("auth_submit");
+}
+
+void AuthEventsRecorder::OnAuthComplete(absl::optional<bool> auth_success) {
+  const std::string auth_complete_str = "auth_complete";
+  if (!auth_success.has_value()) {
+    AddAuthEvent(auth_complete_str);
+    return;
+  }
+  AddAuthEvent(
+      GetCrashKeyStringWithStatus(auth_complete_str, auth_success.value()));
 }
 
 void AuthEventsRecorder::OnPinSubmit() {

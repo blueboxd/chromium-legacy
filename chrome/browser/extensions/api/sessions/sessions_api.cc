@@ -43,6 +43,7 @@
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/error_utils.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace extensions {
 
@@ -171,7 +172,7 @@ api::windows::Window SessionsGetRecentlyClosedFunction::CreateWindowModel(
 
   return CreateWindowModelHelper(
       std::move(tabs), base::NumberToString(window.id.id()),
-      api::windows::WINDOW_TYPE_NORMAL, api::windows::WINDOW_STATE_NORMAL);
+      api::windows::WindowType::kNormal, api::windows::WindowState::kNormal);
 }
 
 api::tab_groups::TabGroup SessionsGetRecentlyClosedFunction::CreateGroupModel(
@@ -303,19 +304,19 @@ SessionsGetDevicesFunction::CreateWindowModel(
   std::string session_id =
       SessionId(session_tag, window.window_id.id()).ToString();
 
-  api::windows::WindowType type = api::windows::WINDOW_TYPE_NONE;
+  api::windows::WindowType type = api::windows::WindowType::kNone;
   switch (window.type) {
     case sessions::SessionWindow::TYPE_NORMAL:
-      type = api::windows::WINDOW_TYPE_NORMAL;
+      type = api::windows::WindowType::kNormal;
       break;
     case sessions::SessionWindow::TYPE_POPUP:
-      type = api::windows::WINDOW_TYPE_POPUP;
+      type = api::windows::WindowType::kPopup;
       break;
     case sessions::SessionWindow::TYPE_APP:
-      type = api::windows::WINDOW_TYPE_APP;
+      type = api::windows::WindowType::kApp;
       break;
     case sessions::SessionWindow::TYPE_DEVTOOLS:
-      type = api::windows::WINDOW_TYPE_DEVTOOLS;
+      type = api::windows::WindowType::kDevtools;
       break;
     case sessions::SessionWindow::TYPE_APP_POPUP:
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -324,19 +325,19 @@ SessionsGetDevicesFunction::CreateWindowModel(
       NOTREACHED();
   }
 
-  api::windows::WindowState state = api::windows::WINDOW_STATE_NONE;
+  api::windows::WindowState state = api::windows::WindowState::kNone;
   switch (window.show_state) {
     case ui::SHOW_STATE_NORMAL:
-      state = api::windows::WINDOW_STATE_NORMAL;
+      state = api::windows::WindowState::kNormal;
       break;
     case ui::SHOW_STATE_MINIMIZED:
-      state = api::windows::WINDOW_STATE_MINIMIZED;
+      state = api::windows::WindowState::kMinimized;
       break;
     case ui::SHOW_STATE_MAXIMIZED:
-      state = api::windows::WINDOW_STATE_MAXIMIZED;
+      state = api::windows::WindowState::kMaximized;
       break;
     case ui::SHOW_STATE_FULLSCREEN:
-      state = api::windows::WINDOW_STATE_FULLSCREEN;
+      state = api::windows::WindowState::kFullscreen;
       break;
     case ui::SHOW_STATE_DEFAULT:
     case ui::SHOW_STATE_INACTIVE:
@@ -453,9 +454,8 @@ SessionsRestoreFunction::GetRestoredWindowResult(int window_id) {
       ExtensionTabUtil::CreateWindowValueForExtension(
           *browser, extension(), ExtensionTabUtil::kPopulateTabs,
           source_context_type());
-  std::unique_ptr<api::windows::Window> window =
-      api::windows::Window::FromValueDeprecated(
-          base::Value(std::move(window_value)));
+  absl::optional<api::windows::Window> window =
+      api::windows::Window::FromValue(window_value);
   DCHECK(window);
   return ArgumentList(Restore::Results::Create(
       CreateSessionModelHelper(base::Time::Now().ToTimeT(), absl::nullopt,
@@ -566,9 +566,11 @@ ExtensionFunction::ResponseValue SessionsRestoreFunction::RestoreForeignSession(
   }
 
   // Restoring a full window.
-  std::vector<const sessions::SessionWindow*> windows;
-  if (!open_tabs->GetForeignSession(session_id.session_tag(), &windows))
+  std::vector<const sessions::SessionWindow*> windows =
+      open_tabs->GetForeignSession(session_id.session_tag());
+  if (windows.empty()) {
     return Error(kInvalidSessionIdError, session_id.ToString());
+  }
 
   std::vector<const sessions::SessionWindow*>::const_iterator window =
       windows.begin();

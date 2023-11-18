@@ -7,12 +7,14 @@
 #ifndef BASE_STRINGS_STRING_UTIL_H_
 #define BASE_STRINGS_STRING_UTIL_H_
 
-#include <stdarg.h>   // va_list
+#include <stdarg.h>  // va_list
 #include <stddef.h>
 #include <stdint.h>
 
 #include <initializer_list>
+#include <memory>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <vector>
 
@@ -20,7 +22,6 @@
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
 #include "base/containers/span.h"
-#include "base/cxx20_to_address.h"
 #include "base/strings/string_piece.h"  // For implicit conversions.
 #include "base/strings/string_util_internal.h"
 #include "build/build_config.h"
@@ -92,11 +93,11 @@ BASE_EXPORT bool IsWprintfFormatPortable(const wchar_t* format);
 template <typename CharT, typename Iter>
 constexpr BasicStringPiece<CharT> MakeBasicStringPiece(Iter begin, Iter end) {
   DCHECK_GE(end - begin, 0);
-  return {base::to_address(begin), static_cast<size_t>(end - begin)};
+  return {std::to_address(begin), static_cast<size_t>(end - begin)};
 }
 
 // Explicit instantiations of MakeBasicStringPiece for the BasicStringPiece
-// aliases defined in base/strings/string_piece_forward.h
+// aliases defined in base/strings/string_piece.h
 template <typename Iter>
 constexpr StringPiece MakeStringPiece(Iter begin, Iter end) {
   return MakeBasicStringPiece<char>(begin, end);
@@ -108,7 +109,7 @@ constexpr StringPiece16 MakeStringPiece16(Iter begin, Iter end) {
 }
 
 template <typename Iter>
-constexpr WStringPiece MakeWStringPiece(Iter begin, Iter end) {
+constexpr std::wstring_view MakeWStringView(Iter begin, Iter end) {
   return MakeBasicStringPiece<wchar_t>(begin, end);
 }
 
@@ -344,8 +345,8 @@ BASE_EXPORT bool IsStringUTF8AllowingNoncharacters(StringPiece str);
 BASE_EXPORT bool IsStringASCII(StringPiece str);
 BASE_EXPORT bool IsStringASCII(StringPiece16 str);
 
-#if defined(WCHAR_T_IS_UTF32)
-BASE_EXPORT bool IsStringASCII(WStringPiece str);
+#if defined(WCHAR_T_IS_32_BIT)
+BASE_EXPORT bool IsStringASCII(std::wstring_view str);
 #endif
 
 // Performs a case-sensitive string compare of the given 16-bit string against

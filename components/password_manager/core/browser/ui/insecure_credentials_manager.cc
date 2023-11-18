@@ -20,13 +20,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
-#include "components/password_manager/core/browser/insecure_credentials_table.h"
 #include "components/password_manager/core/browser/password_form.h"
-#include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #include "components/password_manager/core/browser/ui/credential_utils.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "components/password_manager/core/browser/ui/reuse_check_utility.h"
@@ -50,24 +47,6 @@ base::flat_set<std::u16string> ExtractPasswords(
     const std::vector<CredentialUIEntry>& credentials) {
   return base::MakeFlatSet<std::u16string>(credentials, {},
                                            &CredentialUIEntry::password);
-}
-
-bool IsCheckForReusedPasswordsEnabled() {
-#if BUILDFLAG(IS_IOS)
-  // Weak and reused checks are controlled by the Password Checkup feature.
-  return password_manager::features::IsPasswordCheckupEnabled();
-#else
-  return true;
-#endif
-}
-
-bool IsCheckForWeakPasswordsEnabled() {
-#if BUILDFLAG(IS_IOS)
-  // Weak and reused checks are controlled by the Password Checkup feature.
-  return password_manager::features::IsPasswordCheckupEnabled();
-#else
-  return true;
-#endif
 }
 
 bool ChangesRequireRerunningCheck(const PasswordStoreChangeList& changes) {
@@ -233,20 +212,17 @@ void InsecureCredentialsManager::OnSavedPasswordsChanged(
     const PasswordStoreChangeList& changes) {
   // Disable on Android  to avoid pulling in a big dependency on zxcvbn.
 #if !BUILDFLAG(IS_ANDROID)
-  if (IsCheckForWeakPasswordsEnabled()) {
-    for (const auto& change : changes) {
-      if (change.type() == PasswordStoreChange::ADD ||
-          (change.type() == PasswordStoreChange::UPDATE &&
-           change.password_changed())) {
-        const std::u16string& password = change.form().password_value;
-        if (!weak_passwords_.contains(password) && IsWeak(password)) {
-          weak_passwords_.insert(password);
-        }
+  for (const auto& change : changes) {
+    if (change.type() == PasswordStoreChange::ADD ||
+        (change.type() == PasswordStoreChange::UPDATE &&
+         change.password_changed())) {
+      const std::u16string& password = change.form().password_value;
+      if (!weak_passwords_.contains(password) && IsWeak(password)) {
+        weak_passwords_.insert(password);
       }
     }
   }
-  if (IsCheckForReusedPasswordsEnabled() &&
-      ChangesRequireRerunningCheck(changes)) {
+  if (ChangesRequireRerunningCheck(changes)) {
     // Re-run reused check since user might have changed reused password. Don't
     // notify observers yet, as they'll be notified on OnReuseCheckDone()
     // anyway.

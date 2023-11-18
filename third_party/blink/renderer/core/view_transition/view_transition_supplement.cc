@@ -7,6 +7,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/view_transition/view_transition_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_view_transition_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_view_transition_options.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -82,14 +83,16 @@ ViewTransitionSupplement* ViewTransitionSupplement::From(Document& document) {
 }
 
 // static
-DOMViewTransition* ViewTransitionSupplement::startViewTransition(
+DOMViewTransition* ViewTransitionSupplement::StartViewTransitionInternal(
     ScriptState* script_state,
     Document& document,
     V8ViewTransitionCallback* callback,
+    const absl::optional<Vector<String>>& types,
     ExceptionState& exception_state) {
   DCHECK(script_state);
   DCHECK(ThreadScheduler::Current());
   auto* supplement = From(document);
+
   if (callback) {
     auto* tracker = ThreadScheduler::Current()->GetTaskAttributionTracker();
     // Set the parent task ID if we're not in an extension task (as extensions
@@ -98,19 +101,43 @@ DOMViewTransition* ViewTransitionSupplement::startViewTransition(
       callback->SetParentTask(tracker->RunningTask(script_state));
     }
   }
-  return supplement->StartTransition(document, callback, exception_state);
+  return supplement->StartTransition(document, callback, types,
+                                     exception_state);
+}
+
+DOMViewTransition* ViewTransitionSupplement::startViewTransition(
+    ScriptState* script_state,
+    Document& document,
+    V8ViewTransitionCallback* callback,
+    ExceptionState& exception_state) {
+  return StartViewTransitionInternal(script_state, document, callback,
+                                     absl::nullopt, exception_state);
+}
+
+DOMViewTransition* ViewTransitionSupplement::startViewTransition(
+    ScriptState* script_state,
+    Document& document,
+    ViewTransitionOptions* options,
+    ExceptionState& exception_state) {
+  CHECK(!options || (options->hasUpdate() && options->hasType()));
+  return StartViewTransitionInternal(
+      script_state, document, options ? options->update() : nullptr,
+      options ? options->type() : absl::nullopt, exception_state);
 }
 
 DOMViewTransition* ViewTransitionSupplement::startViewTransition(
     ScriptState* script_state,
     Document& document,
     ExceptionState& exception_state) {
-  return startViewTransition(script_state, document, nullptr, exception_state);
+  return StartViewTransitionInternal(
+      script_state, document, static_cast<V8ViewTransitionCallback*>(nullptr),
+      absl::nullopt, exception_state);
 }
 
 DOMViewTransition* ViewTransitionSupplement::StartTransition(
     Document& document,
     V8ViewTransitionCallback* callback,
+    const absl::optional<Vector<String>>& types,
     ExceptionState& exception_state) {
   // Disallow script initiated transitions during a navigation initiated
   // transition.
@@ -129,7 +156,8 @@ DOMViewTransition* ViewTransitionSupplement::StartTransition(
     return nullptr;
   }
 
-  transition_ = ViewTransition::CreateFromScript(&document, callback, this);
+  transition_ =
+      ViewTransition::CreateFromScript(&document, callback, types, this);
 
   // If there is a transition in a parent frame, give that precedence over a
   // transition in a child frame.
@@ -299,12 +327,12 @@ void ViewTransitionSupplement::WillInsertBody() {
   auto* document = GetSupplementable();
   CHECK(document);
 
-  // Update active styles will compute the @view-transitions
-  // navigation-trigger opt in.
+  // Update active styles will compute the @view-transition
+  // navigation opt in.
   // TODO(https://crbug.com/1463966): This is probably a bit of a heavy hammer.
   // In the long term, we probably don't want to make this decision at
   // WillInsertBody or, if we do, we could look specifically for
-  // @view-transitions rather than all rules.
+  // @view-transition rather than all rules.
   document->GetStyleEngine().UpdateActiveStyle();
 
   // If the opt-in is enabled, then there's nothing to do in this function.

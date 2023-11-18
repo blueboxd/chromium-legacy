@@ -27,7 +27,8 @@ AutoPipSettingOverlayView::AutoPipSettingOverlayView(
     const GURL& origin,
     const gfx::Rect& browser_view_overridden_bounds,
     views::View* anchor_view,
-    views::BubbleBorder::Arrow arrow) {
+    views::BubbleBorder::Arrow arrow)
+    : show_timer_(std::make_unique<base::OneShotTimer>()) {
   CHECK(result_cb);
 
   init_.auto_pip_setting_view_ = std::make_unique<AutoPipSettingView>(
@@ -57,7 +58,17 @@ void AutoPipSettingOverlayView::ShowBubble(gfx::NativeView parent) {
   auto_pip_setting_view_ = init_.auto_pip_setting_view_.get();
   widget_ = views::BubbleDialogDelegate::CreateBubble(
       std::move(init_.auto_pip_setting_view_));
-  widget_->Show();
+
+  // Delay showing the bubble, for both document and video pip, until after the
+  // scrim animation completes.
+  show_timer_->Start(
+      FROM_HERE, base::Milliseconds(kFadeInDurationMs),
+      base::BindOnce(
+          &views::Widget::ShowInactive,
+          // base::Unretained() is safe since the timer is cancelled if the
+          // WidgetObserver notices that the widget is being destroyed.
+          base::Unretained(widget_)));
+
   bubble_size_ = widget_->GetWindowBoundsInScreen().size();
   widget_->AddObserver(this);
 }
@@ -65,6 +76,8 @@ void AutoPipSettingOverlayView::ShowBubble(gfx::NativeView parent) {
 void AutoPipSettingOverlayView::OnHideView() {
   // Hide the semi-opaque background layer.
   SetVisible(false);
+
+  NotifyAutoPipSettingOverlayViewHidden();
 }
 
 gfx::Size AutoPipSettingOverlayView::GetBubbleSize() const {
@@ -85,22 +98,48 @@ bool AutoPipSettingOverlayView::WantsEvent(const gfx::Point& point) {
     return false;
   }
 
+  // If the show timer is running, we do not want the auto pip setting overlay
+  // to consume the event. This is done to allow dragging the video pip window
+  // and prevent interacting with controls while the overlay view is pending to
+  // be shown.
+  if (IsShowTimerRunning()) {
+    return false;
+  }
+
   return auto_pip_setting_view_->WantsEvent(point);
+}
+
+bool AutoPipSettingOverlayView::IsShowTimerRunning() {
+  if (show_timer_ == nullptr) {
+    return false;
+  }
+
+  return show_timer_->IsRunning();
 }
 
 AutoPipSettingOverlayView::~AutoPipSettingOverlayView() {
   if (widget_) {
+    // If we're being deleted and our widget still exists, then ensure that it
+    // closes.
     widget_->RemoveObserver(this);
-    widget_ = nullptr;
+    widget_.ExtractAsDangling()->CloseWithReason(
+        views::Widget::ClosedReason::kUnspecified);
   }
   background_ = nullptr;
   auto_pip_setting_view_ = nullptr;
 }
 
 void AutoPipSettingOverlayView::OnWidgetDestroying(views::Widget*) {
+  show_timer_.reset();
   auto_pip_setting_view_ = nullptr;
   widget_->RemoveObserver(this);
   widget_ = nullptr;
+}
+
+void AutoPipSettingOverlayView::NotifyAutoPipSettingOverlayViewHidden() {
+  for (AutoPipSettingOverlayViewObserver& obs : observers_) {
+    obs.OnAutoPipSettingOverlayViewHidden();
+  }
 }
 
 BEGIN_METADATA(AutoPipSettingOverlayView, views::View)

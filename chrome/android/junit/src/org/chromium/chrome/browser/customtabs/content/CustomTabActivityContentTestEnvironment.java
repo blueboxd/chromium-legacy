@@ -48,7 +48,6 @@ import org.chromium.chrome.browser.customtabs.shadows.ShadowExternalNavigationDe
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
-import org.chromium.chrome.browser.password_manager.PasswordChangeSuccessTrackerBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.AsyncTabCreationParams;
@@ -107,8 +106,7 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
 
     public final CustomTabActivityTabProvider tabProvider = new CustomTabActivityTabProvider();
 
-    @Captor
-    public ArgumentCaptor<Callback<Tab>> activityTabObserverCaptor;
+    @Captor public ArgumentCaptor<Callback<Tab>> activityTabObserverCaptor;
 
     // Captures the WebContents with which tabFromFactory is initialized
     @Captor public ArgumentCaptor<WebContents> webContentsCaptor;
@@ -154,35 +152,44 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
         ShadowExternalNavigationDelegateImpl.setWillChromeHandleIntent(false);
     }
 
-    /**
-     * Set an extra that triggers notifying the PasswordChangeSuccessTracker during initial intent
-     * handling.
-     * @param username The username to set as the extra parameter.
-     */
-    public void setPasswordChangeUsername(String username) {
-        mIntent.putExtra(
-                PasswordChangeSuccessTrackerBridge.EXTRA_MANUAL_CHANGE_USERNAME_KEY, username);
-    }
-
     public CustomTabActivityTabController createTabController() {
-        return new CustomTabActivityTabController(activity, () -> customTabDelegateFactory,
-                connection, intentDataProvider, activityTabProvider, tabObserverRegistrar,
-                () -> compositorViewHolder, lifecycleDispatcher, warmupManager,
-                tabPersistencePolicy, tabFactory, () -> customTabObserver, webContentsFactory,
-                navigationEventObserver, tabProvider, reparentingTaskProvider,
-                () -> customTabIncognitoManager, () -> realAsyncTabParamsManager,
-                () -> activity.getSavedInstanceState(), activity.getWindowAndroid(),
+        return new CustomTabActivityTabController(
+                activity,
+                () -> customTabDelegateFactory,
+                connection,
+                intentDataProvider,
+                activityTabProvider,
+                tabObserverRegistrar,
+                () -> compositorViewHolder,
+                lifecycleDispatcher,
+                warmupManager,
+                tabPersistencePolicy,
+                tabFactory,
+                () -> customTabObserver,
+                webContentsFactory,
+                navigationEventObserver,
+                tabProvider,
+                reparentingTaskProvider,
+                () -> customTabIncognitoManager,
+                () -> realAsyncTabParamsManager,
+                () -> activity.getSavedInstanceState(),
+                activity.getWindowAndroid(),
                 tabModelInitializer);
     }
 
     public CustomTabActivityNavigationController createNavigationController(
             CustomTabActivityTabController tabController) {
         CustomTabActivityNavigationController controller =
-                new CustomTabActivityNavigationController(tabController, tabProvider,
-                        intentDataProvider, connection,
-                        ()
-                                -> customTabObserver,
-                        closeButtonNavigator, browserInitializer, activity, lifecycleDispatcher,
+                new CustomTabActivityNavigationController(
+                        tabController,
+                        tabProvider,
+                        intentDataProvider,
+                        connection,
+                        () -> customTabObserver,
+                        closeButtonNavigator,
+                        browserInitializer,
+                        activity,
+                        lifecycleDispatcher,
                         new DefaultBrowserProviderImpl());
         controller.onToolbarInitialized(toolbarManager);
         return controller;
@@ -190,14 +197,17 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
 
     public CustomTabIntentHandler createIntentHandler(
             CustomTabActivityNavigationController navigationController) {
-        CustomTabIntentHandlingStrategy strategy = new DefaultCustomTabIntentHandlingStrategy(
-                tabProvider, navigationController, navigationEventObserver,
-                () -> customTabObserver) {
-            @Override
-            public GURL getGurlForUrl(String url) {
-                return new GURL(url);
-            }
-        };
+        CustomTabIntentHandlingStrategy strategy =
+                new DefaultCustomTabIntentHandlingStrategy(
+                        tabProvider,
+                        navigationController,
+                        navigationEventObserver,
+                        () -> customTabObserver) {
+                    @Override
+                    public GURL getGurlForUrl(String url) {
+                        return new GURL(url);
+                    }
+                };
         return new CustomTabIntentHandler(
                 tabProvider, intentDataProvider, strategy, (intent) -> false, activity);
     }

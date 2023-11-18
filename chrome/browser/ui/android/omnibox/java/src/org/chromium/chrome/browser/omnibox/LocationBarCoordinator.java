@@ -131,7 +131,6 @@ public class LocationBarCoordinator
      * @param activityLifecycleDispatcher Allows observation of the activity state.
      * @param overrideUrlLoadingDelegate Delegate that allows customization of url loading behavior.
      * @param backKeyBehavior Delegate that allows customization of back key behavior.
-     * @param searchEngineLogoUtils Utils to query the state of the search engine logos feature.
      * @param pageInfoAction Displays page info popup.
      * @param bringTabToFrontCallback Callback to bring the browser foreground and switch to a tab.
      * @param saveOfflineButtonState Whether the 'save offline' button should be enabled.
@@ -162,7 +161,6 @@ public class LocationBarCoordinator
             ActivityLifecycleDispatcher activityLifecycleDispatcher,
             OverrideUrlLoadingDelegate overrideUrlLoadingDelegate,
             BackKeyBehaviorDelegate backKeyBehavior,
-            SearchEngineLogoUtils searchEngineLogoUtils,
             @NonNull PageInfoAction pageInfoAction,
             @NonNull Callback<Tab> bringTabToFrontCallback,
             @NonNull SaveOfflineButtonState saveOfflineButtonState,
@@ -214,7 +212,6 @@ public class LocationBarCoordinator
                         backKeyBehavior,
                         windowAndroid,
                         isTabletWindow() && isTabletLayout(),
-                        searchEngineLogoUtils,
                         LensController.getInstance(),
                         saveOfflineButtonState,
                         omniboxUma,
@@ -263,7 +260,6 @@ public class LocationBarCoordinator
                         mUrlCoordinator,
                         locationBarDataProvider,
                         templateUrlServiceSupplier,
-                        searchEngineLogoUtils,
                         profileObservableSupplier,
                         windowAndroid,
                         pageInfoAction,
@@ -301,8 +297,7 @@ public class LocationBarCoordinator
                 mAutocompleteCoordinator,
                 mUrlCoordinator,
                 mStatusCoordinator,
-                locationBarDataProvider,
-                searchEngineLogoUtils);
+                locationBarDataProvider);
 
         mDropdownStandardBackgroundColor =
                 ChromeColors.getSurfaceColor(
@@ -587,10 +582,19 @@ public class LocationBarCoordinator
     /**
      * Updates progress of current the URL focus change animation.
      *
-     * @param fraction 1.0 is 100% focused, 0 is completely unfocused.
+     * @param ntpSearchBoxScrollFraction The degree to which the omnibox has expanded to full width
+     *     in NTP due to the NTP search box is being scrolled up.
+     * @param startSurfaceScrollFraction The degree to which the omnibox has expanded to full width
+     *     in Start Surface due to the Start Surface search box is being scrolled up.
+     * @param urlFocusChangeFraction The degree to which the omnibox has expanded due to it is
+     *     getting focused.
      */
-    public void setUrlFocusChangeFraction(float fraction) {
-        mLocationBarMediator.setUrlFocusChangeFraction(fraction);
+    public void setUrlFocusChangeFraction(
+            float ntpSearchBoxScrollFraction,
+            float startSurfaceScrollFraction,
+            float urlFocusChangeFraction) {
+        mLocationBarMediator.setUrlFocusChangeFraction(
+                ntpSearchBoxScrollFraction, startSurfaceScrollFraction, urlFocusChangeFraction);
     }
 
     /**
@@ -839,5 +843,18 @@ public class LocationBarCoordinator
      */
     public void setUrlBarTypeface(Typeface typeface) {
         mLocationBarMediator.setUrlBarTypeface(typeface);
+    }
+
+    /**
+     * Updates the value for the end margin of the url action container in the search box.
+     *
+     * @param endMargin The end margin for the url action container in the search box.
+     */
+    public void updateUrlActionContainerEndMargin(int endMargin) {
+        mLocationBarMediator.updateUrlActionContainerEndMargin(endMargin);
+    }
+
+    public int getUrlActionContainerEndMarginForTesting() {
+        return mLocationBarLayout.getUrlActionContainerEndMarginForTesting(); // IN-TEST
     }
 }

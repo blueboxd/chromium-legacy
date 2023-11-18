@@ -26,6 +26,7 @@
 #include "base/strings/escape.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/system/sys_info.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -129,8 +130,8 @@
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/password_generation_util.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "components/compose/buildflags.h"
-#include "components/compose/core/browser/compose_features.h"
 #include "components/custom_handlers/protocol_handler.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/feed/feed_feature_list.h"
@@ -138,6 +139,7 @@
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/language/core/browser/language_model_manager.h"
 #include "components/lens/lens_features.h"
+#include "components/lens/lens_metadata.mojom.h"
 #include "components/lens/lens_metrics.h"
 #include "components/live_caption/caption_util.h"
 #include "components/live_caption/pref_names.h"
@@ -224,13 +226,14 @@
 #include "ui/strings/grit/ui_strings.h"
 #include "url/origin.h"
 
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
+#include "chrome/browser/renderer_context_menu/spelling_options_submenu_observer.h"
+#endif
+
 #if BUILDFLAG(ENABLE_COMPOSE)
 #include "chrome/browser/compose/chrome_compose_client.h"
 #include "components/compose/core/browser/compose_manager.h"
-#endif
-
-#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
-#include "chrome/browser/renderer_context_menu/spelling_options_submenu_observer.h"
+#include "components/compose/core/browser/compose_metrics.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -501,19 +504,23 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHLENS, 131},
        {IDC_CONTENT_CONTEXT_COPYVIDEOFRAME, 132},
        {IDC_CONTENT_CONTEXT_SAVEPLUGINAS, 133},
-       {IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED, 134},
+       {IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_ADDRESS, 134},
        {IDC_CONTENT_CONTEXT_SEARCHWEBFORNEWTAB, 135},
        // Removed: {IDC_CONTENT_CONTEXT_ORCA, 136},
        {IDC_CONTENT_CONTEXT_RUN_LAYOUT_EXTRACTION, 137},
        {IDC_CONTENT_PASTE_FROM_CLIPBOARD, 138},
        {IDC_CONTEXT_COMPOSE, 139},
+       {IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PAYMENTS, 140},
+       {IDC_CONTENT_CONTEXT_SAVEVIDEOFRAMEAS, 141},
+       {IDC_CONTENT_CONTEXT_SEARCHLENSFORVIDEOFRAME, 142},
+       {IDC_CONTENT_CONTEXT_SEARCHWEBFORVIDEOFRAME, 143},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the RenderViewContextMenuItem enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 140}});
+       {0, 144}});
 
   // These UMA values are for the the ContextMenuOptionDesktop enum, used for
   // the ContextMenu.SelectedOptionDesktop histograms.
@@ -693,16 +700,18 @@ void OnBrowserCreated(const GURL& link_url, Browser* browser) {
   Navigate(&nav_params);
 }
 
-bool DoesInputFieldTypeSupportEmoji(
-    blink::mojom::ContextMenuDataInputFieldType text_input_type) {
-  // Disable emoji for input types that definitely do not support emoji.
-  switch (text_input_type) {
-    case blink::mojom::ContextMenuDataInputFieldType::kNumber:
-    case blink::mojom::ContextMenuDataInputFieldType::kTelephone:
-    case blink::mojom::ContextMenuDataInputFieldType::kOther:
-      return false;
-    default:
+bool DoesFormControlTypeSupportEmoji(
+    blink::mojom::FormControlType form_control_type) {
+  switch (form_control_type) {
+    case blink::mojom::FormControlType::kInputEmail:
+    case blink::mojom::FormControlType::kInputPassword:
+    case blink::mojom::FormControlType::kInputSearch:
+    case blink::mojom::FormControlType::kInputText:
+    case blink::mojom::FormControlType::kInputUrl:
+    case blink::mojom::FormControlType::kTextArea:
       return true;
+    default:
+      return false;
   }
 }
 
@@ -805,8 +814,7 @@ RenderViewContextMenu::RenderViewContextMenu(
       autofill_context_menu_manager_(
           autofill::PersonalDataManagerFactory::GetForProfile(GetProfile()),
           this,
-          &menu_model_,
-          GetBrowser()) {
+          &menu_model_) {
   if (!g_custom_id_ranges_initialized) {
     g_custom_id_ranges_initialized = true;
     SetContentCustomCommandIdRange(IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
@@ -1030,11 +1038,12 @@ void RenderViewContextMenu::IssuePreconnectionToUrl(
 
   GURL anonymization_key_gurl(anonymization_key_url);
   net::SchemefulSite anonymization_key_schemeful_site(anonymization_key_gurl);
-  auto network_anonymziation_key = net::NetworkAnonymizationKey::CreateSameSite(
-      anonymization_key_schemeful_site);
+  auto network_anonymization_key =
+      net::NetworkAnonymizationKey::CreateCrossSite(
+          anonymization_key_schemeful_site);
   loading_predictor->PreconnectURLIfAllowed(GURL(preconnect_url),
                                             /*allow_credentials=*/true,
-                                            network_anonymziation_key);
+                                            network_anonymization_key);
 }
 
 bool RenderViewContextMenu::IsInProgressiveWebApp() const {
@@ -1108,10 +1117,7 @@ void RenderViewContextMenu::InitMenu() {
   if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_COPY)) {
     DCHECK(!editable);
     AppendCopyItem();
-
-    if (base::FeatureList::IsEnabled(features::kCopyLinkToText)) {
-      AppendLinkToTextItems();
-    }
+    AppendLinkToTextItems();
   }
 
   if (content_type_->SupportsGroup(
@@ -1148,7 +1154,16 @@ void RenderViewContextMenu::InitMenu() {
           ContextMenuContentType::ITEM_GROUP_PARTIAL_TRANSLATE) &&
       search::DefaultSearchProviderIsGoogle(GetProfile()) &&
       CanTranslate(/*menu_logging=*/false)) {
-    AppendPartialTranslateItem();
+    // If the target language isn't supported in partial translation, fall
+    // back to showing the full page translate menu item. Partial translate
+    // uses a different backend that supports a subset of translation
+    // languages, so the current full page target language may not be
+    // supported.
+    if (CanPartiallyTranslateTargetLanguage()) {
+      AppendPartialTranslateItem();
+    } else {
+      AppendTranslateItem();
+    }
   }
 #endif  // !BUILDFLAG(IS_CHROMEOS)
 
@@ -1310,12 +1325,56 @@ int RenderViewContextMenu::GetRegionSearchIdc() const {
              : IDC_CONTENT_CONTEXT_WEB_REGION_SEARCH;
 }
 
+int RenderViewContextMenu::GetSearchForVideoFrameIdc() const {
+  return search::DefaultSearchProviderIsGoogle(GetProfile())
+             ? IDC_CONTENT_CONTEXT_SEARCHLENSFORVIDEOFRAME
+             : IDC_CONTENT_CONTEXT_SEARCHWEBFORVIDEOFRAME;
+}
+
+const TemplateURL* RenderViewContextMenu::GetImageSearchProvider() const {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (!crosapi::browser_util::IsAshWebBrowserEnabled()) {
+    // If Lacros is the only browser, disable region search in Ash because we
+    // have decided not to support this feature in the system UI so as not to
+    // confuse users by opening an Ash browser window.
+    return nullptr;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  if (!GetBrowser()) {
+    return nullptr;
+  }
+
+  // TODO(b/266624865): Image Search items do not function correctly when
+  // |GetBrowser| returns nullptr, as is the case for a context menu in the
+  // side panel, so for now we do not append image items in that case.
+  // TODO(nguyenbryan): Refactor to use lens_region_search_helper.cc after PDF
+  // support is cleaned up.
+  auto* service = TemplateURLServiceFactory::GetForProfile(GetProfile());
+  if (!service) {
+    return nullptr;
+  }
+
+  const TemplateURL* provider = service->GetDefaultSearchProvider();
+  if (!provider) {
+    return nullptr;
+  }
+
+  if (provider->image_url().empty() ||
+      !provider->image_url_ref().IsValid(service->search_terms_data())) {
+    return nullptr;
+  }
+
+  return provider;
+}
+
 std::u16string RenderViewContextMenu::GetImageSearchProviderName(
     const TemplateURL* provider) const {
   if (search::DefaultSearchProviderIsGoogle(GetProfile())) {
     // The image search branding label should always be 'Google'.
     return provider->short_name();
   }
+
   // image_search_branding_label() returns the provider short name if no
   // image_search_branding_label is set.
   return provider->image_search_branding_label();
@@ -1516,6 +1575,12 @@ std::u16string RenderViewContextMenu::GetTargetLanguageDisplayName(
                               is_full_page_translation);
   return l10n_util::GetDisplayNameForLocale(target, target, true);
 }
+
+#if BUILDFLAG(ENABLE_COMPOSE)
+ChromeComposeClient* RenderViewContextMenu::GetChromeComposeClient() const {
+  return ChromeComposeClient::FromWebContents(source_web_contents_);
+}
+#endif  // BUILDFLAG(ENABLE_COMPOSE)
 
 void RenderViewContextMenu::AppendDeveloperItems() {
   // Do not Show Inspect Element for DevTools unless DevTools runs with the
@@ -1865,27 +1930,12 @@ void RenderViewContextMenu::AppendImageItems() {
 }
 
 void RenderViewContextMenu::AppendSearchWebForImageItems() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (!crosapi::browser_util::IsAshWebBrowserEnabled()) {
-    // If Lacros is the only browser, disable image search in Ash because we
-    // have decided not to support this feature in the system UI so as not to
-    // confuse users by opening an Ash browser window.
-    return;
-  }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-  // TODO(b/266624865): Image Search items do not function correctly when
-  // |GetBrowser| returns nullptr, as is the case for a context menu in the
-  // side panel, so for now we do not append image items in that case.
-  if (!GetBrowser() || !params_.has_image_contents) {
+  if (!params_.has_image_contents) {
     return;
   }
 
-  TemplateURLService* service =
-      TemplateURLServiceFactory::GetForProfile(GetProfile());
-  const TemplateURL* const provider = service->GetDefaultSearchProvider();
-  if (!provider || provider->image_url().empty() ||
-      !provider->image_url_ref().IsValid(service->search_terms_data())) {
+  const auto* provider = GetImageSearchProvider();
+  if (!provider) {
     return;
   }
 
@@ -1898,17 +1948,9 @@ void RenderViewContextMenu::AppendSearchWebForImageItems() {
     menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
   }
 
-  if (search::DefaultSearchProviderIsGoogle(GetProfile())) {
-    if (companion::IsSearchImageInCompanionSidePanelSupported(GetBrowser()) &&
-        companion::GetShouldIssuePreconnectForCompanion()) {
-      IssuePreconnectionToUrl(companion::GetPreconnectKeyForCompanion(),
-                              companion::GetImageUploadURLForCompanion());
-    } else if (base::FeatureList::IsEnabled(lens::features::kLensStandalone) &&
-               lens::features::GetShouldIssuePreconnectForLens()) {
-      IssuePreconnectionToUrl(lens::features::GetPreconnectKeyForLens(),
-                              lens::features::GetHomepageURLForLens());
-    }
-  }
+  MaybePrepareForLensQuery();
+
+  auto* service = TemplateURLServiceFactory::GetForProfile(GetProfile());
 
   if (base::FeatureList::IsEnabled(lens::features::kLensStandalone) &&
       base::FeatureList::IsEnabled(lens::features::kEnableImageTranslate) &&
@@ -1951,12 +1993,34 @@ void RenderViewContextMenu::AppendVideoItems() {
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENAVNEWTAB,
                                   IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB);
+  if (base::FeatureList::IsEnabled(media::kContextMenuSaveVideoFrameAs)) {
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEVIDEOFRAMEAS,
+                                    IDS_CONTENT_CONTEXT_SAVEVIDEOFRAMEAS);
+    menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
+  }
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEAVAS,
                                   IDS_CONTENT_CONTEXT_SAVEVIDEOAS);
   if (base::FeatureList::IsEnabled(media::kContextMenuCopyVideoFrame)) {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYVIDEOFRAME,
                                     IDS_CONTENT_CONTEXT_COPYVIDEOFRAME);
   }
+
+  if (base::FeatureList::IsEnabled(media::kContextMenuSearchForVideoFrame)) {
+    const auto* provider = GetImageSearchProvider();
+    if (!provider) {
+      return;
+    }
+
+    menu_model_.AddItem(
+        GetSearchForVideoFrameIdc(),
+        l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHFORVIDEOFRAME,
+                                   GetImageSearchProviderName(provider)));
+    if (companion::IsNewBadgeEnabledForSearchMenuItem(GetBrowser())) {
+      menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
+    }
+    MaybePrepareForLensQuery();
+  }
+
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYAVLOCATION,
                                   IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION);
   menu_model_.AddCheckItemWithStringId(IDC_CONTENT_CONTEXT_PICTUREINPICTURE,
@@ -2037,11 +2101,7 @@ void RenderViewContextMenu::AppendPageItems() {
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 
   if (CanTranslate(/*menu_logging=*/true)) {
-    menu_model_.AddItem(
-        IDC_CONTENT_CONTEXT_TRANSLATE,
-        l10n_util::GetStringFUTF16(
-            IDS_CONTENT_CONTEXT_TRANSLATE,
-            GetTargetLanguageDisplayName(/*is_full_page_translation=*/true)));
+    AppendTranslateItem();
   }
 }
 
@@ -2107,6 +2167,14 @@ void RenderViewContextMenu::AppendPartialTranslateItem() {
       l10n_util::GetStringFUTF16(
           IDS_CONTENT_CONTEXT_PARTIAL_TRANSLATE,
           GetTargetLanguageDisplayName(/*is_full_page_translation=*/false)));
+}
+
+void RenderViewContextMenu::AppendTranslateItem() {
+  menu_model_.AddItem(
+      IDC_CONTENT_CONTEXT_TRANSLATE,
+      l10n_util::GetStringFUTF16(
+          IDS_CONTENT_CONTEXT_TRANSLATE,
+          GetTargetLanguageDisplayName(/*is_full_page_translation=*/true)));
 }
 
 void RenderViewContextMenu::AppendMediaRouterItem() {
@@ -2242,24 +2310,34 @@ void RenderViewContextMenu::AppendSpellingAndSearchSuggestionItems() {
   }
   bool render_separator = false;
   if (params_.misspelled_word.empty()) {
-    if (DoesInputFieldTypeSupportEmoji(params_.input_field_type) &&
+    if ((!params_.form_control_type ||
+         DoesFormControlTypeSupportEmoji(*params_.form_control_type)) &&
         ui::IsEmojiPanelSupported()) {
       render_separator = true;
       menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_EMOJI,
                                       IDS_CONTENT_CONTEXT_EMOJI);
     }
   }
-  // TODO(b/301371110): Update enabling constraints.
-  if (base::FeatureList::IsEnabled(compose::features::kEnableCompose)) {
-    menu_model_.AddItemWithStringId(IDC_CONTEXT_COMPOSE,
-                                    IDS_COMPOSE_SUGGESTION_MAIN_TEXT);
-    // TODO(b/303646344): Remove new feature tag when no longer new.
-    menu_model_.SetIsNewFeatureAt(
-        menu_model_.GetItemCount() - 1,
-        !content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_LINK));
+#if BUILDFLAG(ENABLE_COMPOSE)
+  RenderFrameHost* render_frame_host = GetRenderFrameHost();
+  if (render_frame_host) {
+    auto* compose_client = GetChromeComposeClient();
+    if (compose_client &&
+        compose_client->ShouldTriggerContextMenu(render_frame_host, params_)) {
+      compose::LogComposeContextMenuCtr(
+          compose::ComposeContextMenuCtrEvent::kMenuItemDisplayed);
+      menu_model_.AddItemWithStringId(IDC_CONTEXT_COMPOSE,
+                                      IDS_COMPOSE_SUGGESTION_MAIN_TEXT);
+      // TODO(b/303646344): Remove new feature tag when no longer new.
+      menu_model_.SetIsNewFeatureAt(
+          menu_model_.GetItemCount() - 1,
+          !content_type_->SupportsGroup(
+              ContextMenuContentType::ITEM_GROUP_LINK));
 
-    render_separator = true;
+      render_separator = true;
+    }
   }
+#endif  // BUILDFLAG(ENABLE_COMPOSE)
   if (render_separator) {
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
@@ -2494,13 +2572,11 @@ void RenderViewContextMenu::AppendRegionSearchItem() {
     resource_id = IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT1;
   }
 
-  TemplateURLService* service =
-      TemplateURLServiceFactory::GetForProfile(GetProfile());
-  const TemplateURL* provider = service->GetDefaultSearchProvider();
   // GetDefaultSearchProvider can return null in unit tests or when the
   // default search provider is disabled by policy. In these cases, we align
   // with the search web for image menu item by not adding the region search
   // menu item.
+  const TemplateURL* provider = GetImageSearchProvider();
   if (provider) {
     menu_model_.AddItem(GetRegionSearchIdc(),
                         l10n_util::GetStringFUTF16(
@@ -2509,18 +2585,7 @@ void RenderViewContextMenu::AppendRegionSearchItem() {
       menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
     }
 
-    if (search::DefaultSearchProviderIsGoogle(GetProfile())) {
-      if (companion::IsSearchImageInCompanionSidePanelSupported(GetBrowser()) &&
-          companion::GetShouldIssuePreconnectForCompanion()) {
-        IssuePreconnectionToUrl(companion::GetPreconnectKeyForCompanion(),
-                                companion::GetImageUploadURLForCompanion());
-      } else if (base::FeatureList::IsEnabled(
-                     lens::features::kLensStandalone) &&
-                 lens::features::GetShouldIssuePreconnectForLens()) {
-        IssuePreconnectionToUrl(lens::features::GetPreconnectKeyForLens(),
-                                lens::features::GetHomepageURLForLens());
-      }
-    }
+    MaybePrepareForLensQuery();
   }
 }
 
@@ -2667,7 +2732,10 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
              (params_.media_flags & ContextMenuData::kMediaCanRotate) != 0;
     }
 
+    case IDC_CONTENT_CONTEXT_SAVEVIDEOFRAMEAS:
     case IDC_CONTENT_CONTEXT_COPYVIDEOFRAME:
+    case IDC_CONTENT_CONTEXT_SEARCHLENSFORVIDEOFRAME:
+    case IDC_CONTENT_CONTEXT_SEARCHWEBFORVIDEOFRAME:
       return (params_.media_flags & ContextMenuData::kMediaEncrypted) == 0 &&
              (params_.media_flags &
               ContextMenuData::kMediaHasReadableVideoFrame) != 0;
@@ -2827,7 +2895,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return !GetProfile()->IsOffTheRecord();
 
     default:
-      NOTREACHED() << "Unhandled id: " << id;
+      DUMP_WILL_BE_NOTREACHED_NORETURN() << "Unhandled id: " << id;
       return false;
   }
 }
@@ -2865,6 +2933,7 @@ bool RenderViewContextMenu::IsCommandIdVisible(int id) const {
 void RenderViewContextMenu::OpenURLWithExtraHeaders(
     const GURL& url,
     const GURL& referring_url,
+    const url::Origin& initiator,
     WindowOpenDisposition disposition,
     ui::PageTransition transition,
     const std::string& extra_headers,
@@ -2875,7 +2944,7 @@ void RenderViewContextMenu::OpenURLWithExtraHeaders(
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   RenderViewContextMenuBase::OpenURLWithExtraHeaders(
-      url, referring_url, disposition, transition, extra_headers,
+      url, referring_url, initiator, disposition, transition, extra_headers,
       started_from_context_menu);
 }
 
@@ -2928,9 +2997,9 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       }
 
       OpenURLParams params = GetOpenURLParamsWithExtraHeaders(
-          params_.link_url, params_.frame_url, new_tab_disposition,
-          ui::PAGE_TRANSITION_LINK, /*extra_headers=*/std::string(),
-          /*started_from_context_menu=*/true);
+          params_.link_url, params_.frame_url, params_.frame_origin,
+          new_tab_disposition, ui::PAGE_TRANSITION_LINK,
+          /*extra_headers=*/std::string(), /*started_from_context_menu=*/true);
 
       if (browser) {
         browser->OpenURL(params);
@@ -2942,11 +3011,11 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
       DCHECK(!IsInProgressiveWebApp());
-      OpenURLWithExtraHeaders(params_.link_url, params_.frame_url,
-                              WindowOpenDisposition::NEW_WINDOW,
-                              ui::PAGE_TRANSITION_LINK,
-                              /*extra_headers=*/std::string(),
-                              /*started_from_context_menu=*/true);
+      OpenURLWithExtraHeaders(
+          params_.link_url, params_.frame_url, params_.frame_origin,
+          WindowOpenDisposition::NEW_WINDOW, ui::PAGE_TRANSITION_LINK,
+          /*extra_headers=*/std::string(),
+          /*started_from_context_menu=*/true);
       break;
 
     case IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
@@ -2954,11 +3023,11 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       // that this won't and shouldn't be sent via the referrer header.
       // Note that PWA app windows are never incognito, we always open an
       // incognito browser tab.
-      OpenURLWithExtraHeaders(params_.link_url, params_.frame_url,
-                              WindowOpenDisposition::OFF_THE_RECORD,
-                              ui::PAGE_TRANSITION_LINK,
-                              /*extra_headers=*/std::string(),
-                              /*started_from_context_menu=*/true);
+      OpenURLWithExtraHeaders(
+          params_.link_url, params_.frame_url, params_.frame_origin,
+          WindowOpenDisposition::OFF_THE_RECORD, ui::PAGE_TRANSITION_LINK,
+          /*extra_headers=*/std::string(),
+          /*started_from_context_menu=*/true);
       base::UmaHistogramEnumeration(kOpenLinkAsProfileHistogram,
                                     OpenLinkAs::kOpenLinkAsIncognitoClicked);
       break;
@@ -2998,8 +3067,17 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       ExecCopyImageAt();
       break;
 
+    case IDC_CONTENT_CONTEXT_SAVEVIDEOFRAMEAS:
+      ExecSaveVideoFrameAs();
+      break;
+
     case IDC_CONTENT_CONTEXT_COPYVIDEOFRAME:
       ExecCopyVideoFrame();
+      break;
+
+    case IDC_CONTENT_CONTEXT_SEARCHLENSFORVIDEOFRAME:
+    case IDC_CONTENT_CONTEXT_SEARCHWEBFORVIDEOFRAME:
+      ExecSearchForVideoFrame();
       break;
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE:
@@ -3035,6 +3113,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB:
       OpenURLWithExtraHeaders(params_.src_url, params_.frame_url,
+                              params_.frame_origin,
                               WindowOpenDisposition::NEW_BACKGROUND_TAB,
                               ui::PAGE_TRANSITION_LINK, std::string(), false);
       break;
@@ -3045,7 +3124,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:
     case IDC_CONTENT_CONTEXT_OPENAVNEWTAB:
-      OpenURL(params_.src_url, params_.frame_url,
+      OpenURL(params_.src_url, params_.frame_url, params_.frame_origin,
               WindowOpenDisposition::NEW_BACKGROUND_TAB,
               ui::PAGE_TRANSITION_LINK);
       break;
@@ -3221,7 +3300,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_GOTOURL: {
       auto disposition = ui::DispositionFromEventFlags(
           event_flags, WindowOpenDisposition::NEW_FOREGROUND_TAB);
-      OpenURL(selection_navigation_url_, GURL(), disposition,
+      OpenURL(selection_navigation_url_, GURL(), {}, disposition,
               ui::PAGE_TRANSITION_LINK);
       break;
     }
@@ -3271,18 +3350,20 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
 #if BUILDFLAG(ENABLE_COMPOSE)
     case IDC_CONTEXT_COMPOSE: {
-      auto* client = ChromeComposeClient::FromWebContents(source_web_contents_);
+      auto* client = GetChromeComposeClient();
       compose::ComposeManager* compose_manager =
           client ? &client->GetManager() : nullptr;
       RenderFrameHost* render_frame_host = GetRenderFrameHost();
       if (compose_manager && render_frame_host) {
-        const autofill::LocalFrameToken frame_token = autofill::LocalFrameToken(
-            render_frame_host->GetFrameToken().value());
-        // TODO(b/305798770): Use appropriate parameters once the Autofill Form
-        // Extraction API is available.
-        compose_manager->OpenComposeFromContextMenu(
-            frame_token, autofill::FieldRendererId(*params_.field_renderer_id),
-            gfx::RectF(params_.x, params_.y, 50, 50));
+        auto* content_autofill_driver =
+            autofill::ContentAutofillDriver::GetForRenderFrameHost(
+                render_frame_host);
+        if (content_autofill_driver) {
+          compose_manager->OpenComposeFromContextMenu(
+              content_autofill_driver,
+              autofill::FormRendererId(params_.form_renderer_id),
+              autofill::FieldRendererId(params_.field_renderer_id));
+        }
       }
       break;
     }
@@ -3495,7 +3576,7 @@ bool RenderViewContextMenu::IsSaveLinkAsEnabled() const {
     // filter requires an async call. This call is made if the user selects
     // "Save link as" and blocks the download.
     if (url_filter->GetFilteringBehaviorForURL(params_.link_url) !=
-        supervised_user::SupervisedUserURLFilter::FilteringBehavior::ALLOW) {
+        supervised_user::FilteringBehavior::kAllow) {
       return false;
     }
   }
@@ -3624,37 +3705,14 @@ bool RenderViewContextMenu::IsQRCodeGeneratorEnabled() const {
 
 bool RenderViewContextMenu::IsRegionSearchEnabled() const {
 #if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (!crosapi::browser_util::IsAshWebBrowserEnabled()) {
-    // If Lacros is the only browser, disable region search in Ash because we
-    // have decided not to support this feature in the system UI so as not to
-    // confuse users by opening an Ash browser window.
-    return false;
-  }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-  // TODO(nguyenbryan): Refactor to use lens_region_search_helper.cc after PDF
-  // support is cleaned up.
-  if (!GetBrowser())
-    return false;
-
-  TemplateURLService* service =
-      TemplateURLServiceFactory::GetForProfile(GetProfile());
-  if (!service)
-    return false;
-
-// Region selection is broken in PWAs on Mac b/250074889
 #if BUILDFLAG(IS_MAC)
+  // Region selection is broken in PWAs on Mac b/250074889
   if (IsInProgressiveWebApp())
     return false;
 #endif  // BUILDFLAG(IS_MAC)
 
-  const TemplateURL* provider = service->GetDefaultSearchProvider();
-  const bool provider_supports_image_search =
-      provider && !provider->image_url().empty() &&
-      provider->image_url_ref().IsValid(service->search_terms_data());
   return base::FeatureList::IsEnabled(lens::features::kLensStandalone) &&
-         provider_supports_image_search &&
+         GetImageSearchProvider() &&
          !params_.frame_url.SchemeIs(content::kChromeUIScheme) &&
          GetPrefs(browser_context_)
              ->GetBoolean(prefs::kLensRegionSearchEnabled);
@@ -3822,7 +3880,8 @@ void RenderViewContextMenu::ExecProtocolHandler(int event_flags,
   WindowOpenDisposition disposition = ui::DispositionFromEventFlags(
       event_flags, WindowOpenDisposition::NEW_FOREGROUND_TAB);
   OpenURL(handlers[handler_index].TranslateUrl(params_.link_url),
-          params_.frame_url, disposition, ui::PAGE_TRANSITION_LINK);
+          params_.frame_url, params_.frame_origin, disposition,
+          ui::PAGE_TRANSITION_LINK);
 }
 
 void RenderViewContextMenu::ExecOpenLinkInProfile(int profile_index) {
@@ -3840,7 +3899,8 @@ void RenderViewContextMenu::ExecOpenInReadAnything() {
   if (!browser) {
     return;
   }
-  ShowReadAnythingSidePanel(browser);
+  ShowReadAnythingSidePanel(browser,
+                            SidePanelOpenTrigger::kReadAnythingContextMenu);
 }
 
 void RenderViewContextMenu::ExecInspectElement() {
@@ -3880,12 +3940,10 @@ void RenderViewContextMenu::CheckSupervisedUserURLFilterAndSaveLinkAs() {
 }
 
 void RenderViewContextMenu::OnSupervisedUserURLFilterChecked(
-    supervised_user::SupervisedUserURLFilter::FilteringBehavior
-        filtering_behavior,
+    supervised_user::FilteringBehavior filtering_behavior,
     supervised_user::FilteringBehaviorReason reason,
     bool uncertain) {
-  if (filtering_behavior ==
-      supervised_user::SupervisedUserURLFilter::FilteringBehavior::ALLOW) {
+  if (filtering_behavior == supervised_user::FilteringBehavior::kAllow) {
     ExecSaveLinkAs();
   }
 }
@@ -4027,10 +4085,6 @@ void RenderViewContextMenu::ExecRegionSearch(
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   Browser* browser = GetBrowser();
   CHECK(browser);
-  if (lens::features::IsLensRegionSearchStaticPageEnabled()) {
-    lens::OpenLensStaticPage(browser);
-    return;
-  }
 
   // We don't use `source_web_contents_` here because it doesn't work with the
   // PDF reader.
@@ -4052,7 +4106,7 @@ void RenderViewContextMenu::ExecRegionSearch(
 
   if (!lens_region_search_controller_) {
     lens_region_search_controller_ =
-        std::make_unique<lens::LensRegionSearchController>(browser);
+        std::make_unique<lens::LensRegionSearchController>();
   }
   const lens::AmbientSearchEntryPoint entry_point =
       is_google_default_search_provider
@@ -4114,27 +4168,44 @@ void RenderViewContextMenu::ExecLoadImage() {
 
 void RenderViewContextMenu::ExecLoop() {
   base::RecordAction(UserMetricsAction("MediaContextMenu_Loop"));
-  MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
-                      blink::mojom::MediaPlayerAction(
-                          blink::mojom::MediaPlayerActionType::kLoop,
-                          !IsCommandIdChecked(IDC_CONTENT_CONTEXT_LOOP)));
+  MediaPlayerAction(blink::mojom::MediaPlayerAction(
+      blink::mojom::MediaPlayerActionType::kLoop,
+      !IsCommandIdChecked(IDC_CONTENT_CONTEXT_LOOP)));
 }
 
 void RenderViewContextMenu::ExecControls() {
   base::RecordAction(UserMetricsAction("MediaContextMenu_Controls"));
-  MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
-                      blink::mojom::MediaPlayerAction(
-                          blink::mojom::MediaPlayerActionType::kControls,
-                          !IsCommandIdChecked(IDC_CONTENT_CONTEXT_CONTROLS)));
+  MediaPlayerAction(blink::mojom::MediaPlayerAction(
+      blink::mojom::MediaPlayerActionType::kControls,
+      !IsCommandIdChecked(IDC_CONTENT_CONTEXT_CONTROLS)));
+}
+
+void RenderViewContextMenu::ExecSaveVideoFrameAs() {
+  base::RecordAction(UserMetricsAction("MediaContextMenu_SaveVideoFrameAs"));
+  MediaPlayerAction(blink::mojom::MediaPlayerAction(
+      blink::mojom::MediaPlayerActionType::kSaveVideoFrameAs,
+      /*enable=*/true));
 }
 
 void RenderViewContextMenu::ExecCopyVideoFrame() {
   base::RecordAction(UserMetricsAction("MediaContextMenu_CopyVideoFrame"));
-  MediaPlayerActionAt(
+  MediaPlayerAction(blink::mojom::MediaPlayerAction(
+      blink::mojom::MediaPlayerActionType::kCopyVideoFrame,
+      /*enable=*/true));
+}
+
+void RenderViewContextMenu::ExecSearchForVideoFrame() {
+  base::RecordAction(UserMetricsAction("MediaContextMenu_SearchForVideoFrame"));
+
+  RenderFrameHost* frame_host = GetRenderFrameHost();
+  if (!frame_host) {
+    return;
+  }
+
+  frame_host->RequestVideoFrameAt(
       gfx::Point(params_.x, params_.y),
-      blink::mojom::MediaPlayerAction(
-          blink::mojom::MediaPlayerActionType::kCopyVideoFrame,
-          !IsCommandIdChecked(IDC_CONTENT_CONTEXT_COPYVIDEOFRAME)));
+      base::BindOnce(&RenderViewContextMenu::SearchForVideoFrame,
+                     weak_pointer_factory_.GetWeakPtr()));
 }
 
 void RenderViewContextMenu::ExecLiveCaption() {
@@ -4248,7 +4319,7 @@ void RenderViewContextMenu::ExecLanguageSettings(int event_flags) {
   WindowOpenDisposition disposition = ui::DispositionFromEventFlags(
       event_flags, WindowOpenDisposition::NEW_FOREGROUND_TAB);
   GURL url = chrome::GetSettingsUrl(chrome::kLanguageOptionsSubPage);
-  OpenURL(url, GURL(), disposition, ui::PAGE_TRANSITION_LINK);
+  OpenURL(url, GURL(), {}, disposition, ui::PAGE_TRANSITION_LINK);
 #endif
 }
 
@@ -4258,7 +4329,7 @@ void RenderViewContextMenu::ExecProtocolHandlerSettings(int event_flags) {
   WindowOpenDisposition disposition = ui::DispositionFromEventFlags(
       event_flags, WindowOpenDisposition::NEW_FOREGROUND_TAB);
   GURL url = chrome::GetSettingsUrl(chrome::kHandlerSettingsSubPage);
-  OpenURL(url, GURL(), disposition, ui::PAGE_TRANSITION_LINK);
+  OpenURL(url, GURL(), {}, disposition, ui::PAGE_TRANSITION_LINK);
 }
 
 void RenderViewContextMenu::ExecPictureInPicture() {
@@ -4273,19 +4344,37 @@ void RenderViewContextMenu::ExecPictureInPicture() {
         UserMetricsAction("MediaContextMenu_EnterPictureInPicture"));
   }
 
-  MediaPlayerActionAt(
-      gfx::Point(params_.x, params_.y),
-      blink::mojom::MediaPlayerAction(
-          blink::mojom::MediaPlayerActionType::kPictureInPicture,
-          !picture_in_picture_active));
+  MediaPlayerAction(blink::mojom::MediaPlayerAction(
+      blink::mojom::MediaPlayerActionType::kPictureInPicture,
+      !picture_in_picture_active));
 }
 
-void RenderViewContextMenu::MediaPlayerActionAt(
-    const gfx::Point& location,
+void RenderViewContextMenu::MediaPlayerAction(
     const blink::mojom::MediaPlayerAction& action) {
-  RenderFrameHost* frame_host = GetRenderFrameHost();
-  if (frame_host)
-    frame_host->ExecuteMediaPlayerActionAtLocation(location, action);
+  if (auto* frame_host = GetRenderFrameHost(); frame_host) {
+    frame_host->ExecuteMediaPlayerActionAtLocation(
+        gfx::Point(params_.x, params_.y), action);
+  }
+}
+
+void RenderViewContextMenu::SearchForVideoFrame(const gfx::ImageSkia& image) {
+  if (image.isNull()) {
+    return;
+  }
+
+  CoreTabHelper* core_tab_helper =
+      CoreTabHelper::FromWebContents(source_web_contents_);
+  if (!core_tab_helper) {
+    return;
+  }
+
+  if (search::DefaultSearchProviderIsGoogle(GetProfile())) {
+    // TODO(crbug.com/1453681): Add an entry point for VideoFrame search.
+    core_tab_helper->SearchWithLens(gfx::Image(image),
+                                    lens::EntryPoint::UNKNOWN);
+  } else {
+    core_tab_helper->SearchByImage(gfx::Image(image));
+  }
 }
 
 void RenderViewContextMenu::PluginActionAt(
@@ -4325,6 +4414,48 @@ bool RenderViewContextMenu::CanTranslate(bool menu_logging) {
   return chrome_translate_client &&
          chrome_translate_client->GetTranslateManager()->CanManuallyTranslate(
              menu_logging);
+}
+
+bool RenderViewContextMenu::CanPartiallyTranslateTargetLanguage() {
+  ChromeTranslateClient* chrome_translate_client =
+      ChromeTranslateClient::FromWebContents(embedder_web_contents_);
+  return chrome_translate_client &&
+         chrome_translate_client->GetTranslateManager()
+             ->CanPartiallyTranslateTargetLanguage();
+}
+
+void RenderViewContextMenu::MaybePrepareForLensQuery() {
+  if (!search::DefaultSearchProviderIsGoogle(GetProfile())) {
+    return;
+  }
+
+  // Chrome Search Companion preparation
+  if (companion::IsSearchImageInCompanionSidePanelSupported(GetBrowser())) {
+    if (companion::GetShouldIssuePreconnectForCompanion()) {
+      IssuePreconnectionToUrl(companion::GetPreconnectKeyForCompanion(),
+                              companion::GetImageUploadURLForCompanion());
+    }
+    if (companion::GetShouldIssueProcessPrewarmingForCompanion() &&
+        !base::SysInfo::IsLowEndDevice()) {
+      content::RenderProcessHost::WarmupSpareRenderProcessHost(
+          browser_context_);
+    }
+    return;
+  }
+
+  // Lens Side Panel preparation
+  if (lens::features::IsLensSidePanelEnabled()) {
+    if (lens::features::GetShouldIssuePreconnectForLens()) {
+      IssuePreconnectionToUrl(lens::features::GetPreconnectKeyForLens(),
+                              lens::features::GetHomepageURLForLens());
+    }
+    if (lens::features::GetShouldIssueProcessPrewarmingForLens() &&
+        !base::SysInfo::IsLowEndDevice()) {
+      content::RenderProcessHost::WarmupSpareRenderProcessHost(
+          browser_context_);
+    }
+    return;
+  }
 }
 
 #if BUILDFLAG(IS_CHROMEOS)

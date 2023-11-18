@@ -92,6 +92,7 @@
 #include <numeric>
 #include <utility>
 
+#include "base/compiler_specific.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/task/single_thread_task_runner.h"
@@ -711,8 +712,11 @@ WebLocalFrame* WebLocalFrame::FromFrameToken(
 }
 
 WebLocalFrame* WebLocalFrame::FrameForCurrentContext() {
-  v8::Local<v8::Context> context =
-      v8::Isolate::GetCurrent()->GetCurrentContext();
+  v8::Isolate* isolate = v8::Isolate::TryGetCurrent();
+  if (UNLIKELY(!isolate)) {
+    return nullptr;
+  }
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
   if (context.IsEmpty())
     return nullptr;
   return FrameForContext(context);
@@ -1513,7 +1517,8 @@ void WebLocalFrameImpl::SelectRange(const gfx::Point& base_in_viewport,
 void WebLocalFrameImpl::SelectRange(
     const WebRange& web_range,
     HandleVisibilityBehavior handle_visibility_behavior,
-    blink::mojom::SelectionMenuBehavior selection_menu_behavior) {
+    blink::mojom::SelectionMenuBehavior selection_menu_behavior,
+    SelectionSetFocusBehavior selection_set_focus_behavior) {
   TRACE_EVENT0("blink", "WebLocalFrameImpl::selectRange");
 
   // TODO(editing-dev): The use of UpdateStyleAndLayout
@@ -1531,6 +1536,8 @@ void WebLocalFrameImpl::SelectRange(
       (handle_visibility_behavior == kPreserveHandleVisibility &&
        selection.IsHandleVisible());
   using blink::mojom::SelectionMenuBehavior;
+  const bool selection_not_set_focus =
+      selection_set_focus_behavior == kSelectionDoNotSetFocus;
   selection.SetSelection(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(range)
@@ -1540,6 +1547,7 @@ void WebLocalFrameImpl::SelectRange(
           .SetShouldShowHandle(show_handles)
           .SetShouldShrinkNextTap(selection_menu_behavior ==
                                   SelectionMenuBehavior::kShow)
+          .SetDoNotSetFocus(selection_not_set_focus)
           .Build());
 
   if (selection_menu_behavior == SelectionMenuBehavior::kShow) {
@@ -1610,6 +1618,11 @@ void WebLocalFrameImpl::MoveCaretSelection(
 
 bool WebLocalFrameImpl::SetEditableSelectionOffsets(int start, int end) {
   TRACE_EVENT0("blink", "WebLocalFrameImpl::setEditableSelectionOffsets");
+  if (EditContext* edit_context =
+          GetFrame()->GetInputMethodController().GetActiveEditContext()) {
+    edit_context->SetSelection(start, end);
+    return true;
+  }
 
   // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
@@ -1748,6 +1761,13 @@ void WebLocalFrameImpl::ExtendSelectionAndReplace(
 
 void WebLocalFrameImpl::DeleteSurroundingText(int before, int after) {
   TRACE_EVENT0("blink", "WebLocalFrameImpl::deleteSurroundingText");
+
+  if (EditContext* edit_context =
+          GetFrame()->GetInputMethodController().GetActiveEditContext()) {
+    edit_context->DeleteSurroundingText(before, after);
+    return;
+  }
+
   if (WebPlugin* plugin = FocusedPluginIfInputMethodSupported()) {
     plugin->DeleteSurroundingText(before, after);
     return;
@@ -2915,7 +2935,7 @@ void WebLocalFrameImpl::CreateFrameWidgetInternal(
 }
 
 WebFrameWidget* WebLocalFrameImpl::FrameWidget() const {
-  return frame_widget_;
+  return frame_widget_.Get();
 }
 
 void WebLocalFrameImpl::CopyImageAtForTesting(
@@ -3149,7 +3169,7 @@ WebDevToolsAgentImpl* WebLocalFrameImpl::DevToolsAgentImpl() {
     return nullptr;
   if (!dev_tools_agent_)
     dev_tools_agent_ = WebDevToolsAgentImpl::CreateForFrame(this);
-  return dev_tools_agent_;
+  return dev_tools_agent_.Get();
 }
 
 void WebLocalFrameImpl::WasHidden() {
@@ -3251,21 +3271,7 @@ void WebLocalFrameImpl::SetLCPPHint(
     return;
   }
 
-  Vector<ElementLocator> lcp_element_locators;
-  lcp_element_locators.reserve(
-      base::checked_cast<wtf_size_t>(hint->lcp_element_locators.size()));
-  for (const std::string& serialized_locator : hint->lcp_element_locators) {
-    lcp_element_locators.push_back(ElementLocator());
-    bool result =
-        lcp_element_locators.back().ParseFromString(serialized_locator);
-    if (!result) {
-      // This can happen when the host LCPP database is corrupted or we
-      // updated the ElementLocator schema in an incompatible way.
-      LOG(INFO) << "Ignoring an invalid lcp_element_locator hint.";
-      lcp_element_locators.pop_back();
-    }
-  }
-  lcpp->set_lcp_element_locators(std::move(lcp_element_locators));
+  lcpp->set_lcp_element_locators(hint->lcp_element_locators);
 
   HashSet<KURL> lcp_influencer_scripts;
   for (auto& url : hint->lcp_influencer_scripts) {

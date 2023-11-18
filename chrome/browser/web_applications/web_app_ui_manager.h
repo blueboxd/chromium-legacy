@@ -47,6 +47,7 @@ using UninstallCompleteCallback =
     base::OnceCallback<void(webapps::UninstallResultCode code)>;
 using WebAppLaunchAcceptanceCallback =
     base::OnceCallback<void(bool allowed, bool remember_user_choice)>;
+using FirstRunServiceCompletedCallback = base::OnceCallback<void(bool success)>;
 
 // Overrides the app identity update dialog's behavior for testing, allowing the
 // test to auto-accept or auto-skip the dialog.
@@ -73,6 +74,11 @@ using LaunchWebAppCallback =
     base::OnceCallback<void(base::WeakPtr<Browser> browser,
                             base::WeakPtr<content::WebContents> web_contents,
                             apps::LaunchContainer container)>;
+using LaunchWebAppDebugValueCallback =
+    base::OnceCallback<void(base::WeakPtr<Browser> browser,
+                            base::WeakPtr<content::WebContents> web_contents,
+                            apps::LaunchContainer container,
+                            base::Value debug_value)>;
 
 enum class LaunchWebAppWindowSetting {
   // The window container and disposition from the launch params are used,
@@ -132,10 +138,11 @@ class WebAppUiManager {
   virtual void AddAppToQuickLaunchBar(const webapps::AppId& app_id) = 0;
   virtual bool IsAppInQuickLaunchBar(const webapps::AppId& app_id) const = 0;
 
-  // Returns whether |web_contents| is in a web app window belonging to
-  // |app_id|, or any web app window if |app_id| is nullptr.
-  virtual bool IsInAppWindow(content::WebContents* web_contents,
-                             const webapps::AppId* app_id = nullptr) const = 0;
+  // Returns whether |web_contents| is in a web app window or popup window
+  // created from a web app window.
+  virtual bool IsInAppWindow(content::WebContents* web_contents) const = 0;
+  virtual const webapps::AppId* GetAppIdForWindow(
+      content::WebContents* web_contents) const = 0;
   virtual void NotifyOnAssociatedAppChanged(
       content::WebContents* web_contents,
       const absl::optional<webapps::AppId>& previous_app_id,
@@ -174,11 +181,20 @@ class WebAppUiManager {
   // windows if configured by the launch handlers, etc. See
   // `web_app::LaunchWebApp` and `WebAppLaunchProcess` for more info.
   // If the app_id is invalid, an empty browser window is opened.
-  virtual base::Value LaunchWebApp(apps::AppLaunchParams params,
-                                   LaunchWebAppWindowSetting launch_setting,
-                                   Profile& profile,
-                                   LaunchWebAppCallback callback,
-                                   AppLock& lock) = 0;
+  // Note: this function should typically be run after the completion of the
+  // `WebAppUiManager::WaitForFirstRunService` function.
+  virtual void LaunchWebApp(apps::AppLaunchParams params,
+                            LaunchWebAppWindowSetting launch_setting,
+                            Profile& profile,
+                            LaunchWebAppDebugValueCallback callback,
+                            AppLock& lock) = 0;
+
+  // This function calls the callback as soon as first run service is completed.
+  // Note: The callback will be called synchronously on platforms that do not
+  // have a first-run service.
+  virtual void WaitForFirstRunService(
+      Profile& profile,
+      FirstRunServiceCompletedCallback callback) = 0;
 
 #if BUILDFLAG(IS_CHROMEOS)
   // Migrates launcher state, such as parent folder id, position in App Launcher

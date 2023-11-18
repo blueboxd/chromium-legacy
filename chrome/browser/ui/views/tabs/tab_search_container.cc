@@ -39,9 +39,14 @@ TabSearchContainer::TabSearchContainer(TabStripController* tab_strip_controller,
                                                     gfx::Insets()),
       this);
 
+  if (features::IsTabOrganization()) {
+    tab_organization_service_ = TabOrganizationServiceFactory::GetForProfile(
+        tab_strip_controller->GetProfile());
+  }
+
   std::unique_ptr<TabSearchButton> tab_search_button =
       std::make_unique<TabSearchButton>(
-          tab_strip_controller, features::IsTabOrganization()
+          tab_strip_controller, tab_organization_service_
                                     ? GetFlatEdge(true, before_tab_strip)
                                     : Edge::kNone);
   tab_search_button->SetProperty(views::kCrossAxisAlignmentKey,
@@ -51,21 +56,19 @@ TabSearchContainer::TabSearchContainer(TabStripController* tab_strip_controller,
     tab_search_button_ = AddChildView(std::move(tab_search_button));
   }
 
-  if (features::IsTabOrganization()) {
-    tab_organization_service_ = TabOrganizationServiceFactory::GetForProfile(
-        tab_strip_controller->GetProfile());
+  if (tab_organization_service_) {
     tab_organization_service_->AddObserver(this);
     // TODO(1469126): Consider hiding the button when the request has started,
     // vs. when the button as clicked.
     tab_organization_button_ =
         AddChildView(std::make_unique<TabOrganizationButton>(
             tab_strip_controller,
-            // Force hide the button when pressed, bypassing locked expansion
-            // mode.
-            base::BindRepeating(&TabSearchContainer::ExecuteHideTabOrganization,
+            base::BindRepeating(&TabSearchContainer::OnOrganizeButtonClicked,
                                 base::Unretained(this)),
-            features::IsTabOrganization() ? GetFlatEdge(false, before_tab_strip)
-                                          : Edge::kNone));
+            base::BindRepeating(&TabSearchContainer::OnOrganizeButtonDismissed,
+                                base::Unretained(this)),
+            tab_organization_service_ ? GetFlatEdge(false, before_tab_strip)
+                                      : Edge::kNone));
     tab_organization_button_->SetProperty(views::kCrossAxisAlignmentKey,
                                           views::LayoutAlignment::kCenter);
     const int space_between_buttons = 4;
@@ -82,11 +85,13 @@ TabSearchContainer::TabSearchContainer(TabStripController* tab_strip_controller,
     tab_search_button_ = AddChildView(std::move(tab_search_button));
   }
 
+  browser_ = tab_strip_controller->GetBrowser();
+
   SetLayoutManager(std::make_unique<views::FlexLayout>());
 }
 
 TabSearchContainer::~TabSearchContainer() {
-  if (features::IsTabOrganization()) {
+  if (tab_organization_service_) {
     tab_organization_service_->RemoveObserver(this);
   }
 }
@@ -112,6 +117,20 @@ void TabSearchContainer::HideTabOrganization() {
 void TabSearchContainer::SetLockedExpansionModeForTesting(
     LockedExpansionMode mode) {
   SetLockedExpansionMode(mode);
+}
+
+void TabSearchContainer::OnOrganizeButtonClicked() {
+  tab_organization_service_->OnActionUIAccepted(browser_);
+
+  // Force hide the button when pressed, bypassing locked expansion mode.
+  ExecuteHideTabOrganization();
+}
+
+void TabSearchContainer::OnOrganizeButtonDismissed() {
+  tab_organization_service_->OnActionUIDismissed(browser_);
+
+  // Force hide the button when pressed, bypassing locked expansion mode.
+  ExecuteHideTabOrganization();
 }
 
 void TabSearchContainer::SetLockedExpansionMode(LockedExpansionMode mode) {
@@ -165,8 +184,6 @@ void TabSearchContainer::OnToggleActionUIState(const Browser* browser,
                                                bool should_show) {
   CHECK(tab_organization_service_);
   if (should_show) {
-    tab_organization_button_->SetSession(
-        tab_organization_service_->GetSessionForBrowser(browser));
     ShowTabOrganization();
   } else {
     HideTabOrganization();

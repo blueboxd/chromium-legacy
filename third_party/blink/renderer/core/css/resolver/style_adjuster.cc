@@ -79,6 +79,8 @@
 
 namespace blink {
 
+using mojom::blink::FormControlType;
+
 namespace {
 
 bool IsOverflowClipOrVisible(EOverflow overflow) {
@@ -117,7 +119,7 @@ bool HostIsInputFile(const Element* element) {
   }
   if (const Element* shadow_host = element->OwnerShadowHost()) {
     if (const auto* input = DynamicTo<HTMLInputElement>(shadow_host)) {
-      return input->type() == input_type_names::kFile;
+      return input->FormControlType() == FormControlType::kInputFile;
     }
   }
   return false;
@@ -163,6 +165,7 @@ static EDisplay EquivalentBlockDisplay(EDisplay display) {
     case EDisplay::kFlex:
     case EDisplay::kGrid:
     case EDisplay::kBlockMath:
+    case EDisplay::kBlockRuby:
     case EDisplay::kListItem:
     case EDisplay::kFlowRoot:
     case EDisplay::kLayoutCustom:
@@ -177,6 +180,8 @@ static EDisplay EquivalentBlockDisplay(EDisplay display) {
       return EDisplay::kGrid;
     case EDisplay::kMath:
       return EDisplay::kBlockMath;
+    case EDisplay::kRuby:
+      return EDisplay::kBlockRuby;
     case EDisplay::kInlineLayoutCustom:
       return EDisplay::kLayoutCustom;
     case EDisplay::kInlineListItem:
@@ -195,7 +200,65 @@ static EDisplay EquivalentBlockDisplay(EDisplay display) {
     case EDisplay::kTableColumn:
     case EDisplay::kTableCell:
     case EDisplay::kTableCaption:
+    case EDisplay::kRubyText:
       return EDisplay::kBlock;
+    case EDisplay::kNone:
+      NOTREACHED();
+      return display;
+  }
+  NOTREACHED();
+  return EDisplay::kBlock;
+}
+
+// https://drafts.csswg.org/css-display/#inlinify
+static EDisplay EquivalentInlineDisplay(EDisplay display) {
+  switch (display) {
+    case EDisplay::kFlowRootListItem:
+      return EDisplay::kInlineFlowRootListItem;
+    case EDisplay::kBlock:
+    case EDisplay::kFlowRoot:
+      return EDisplay::kInlineBlock;
+    case EDisplay::kTable:
+      return EDisplay::kInlineTable;
+    case EDisplay::kWebkitBox:
+      return EDisplay::kWebkitInlineBox;
+    case EDisplay::kFlex:
+      return EDisplay::kInlineFlex;
+    case EDisplay::kGrid:
+      return EDisplay::kInlineGrid;
+    case EDisplay::kBlockMath:
+      return EDisplay::kMath;
+    case EDisplay::kBlockRuby:
+      return EDisplay::kRuby;
+    case EDisplay::kListItem:
+      return EDisplay::kInlineListItem;
+    case EDisplay::kLayoutCustom:
+      return EDisplay::kInlineLayoutCustom;
+
+    case EDisplay::kInlineFlex:
+    case EDisplay::kInlineFlowRootListItem:
+    case EDisplay::kInlineGrid:
+    case EDisplay::kInlineLayoutCustom:
+    case EDisplay::kInlineListItem:
+    case EDisplay::kInlineTable:
+    case EDisplay::kMath:
+    case EDisplay::kRuby:
+    case EDisplay::kWebkitInlineBox:
+
+    case EDisplay::kContents:
+    case EDisplay::kInline:
+    case EDisplay::kInlineBlock:
+    case EDisplay::kTableRowGroup:
+    case EDisplay::kTableHeaderGroup:
+    case EDisplay::kTableFooterGroup:
+    case EDisplay::kTableRow:
+    case EDisplay::kTableColumnGroup:
+    case EDisplay::kTableColumn:
+    case EDisplay::kTableCell:
+    case EDisplay::kTableCaption:
+    case EDisplay::kRubyText:
+      return display;
+
     case EDisplay::kNone:
       NOTREACHED();
       return display;
@@ -229,10 +292,13 @@ static bool IsAtMediaUAShadowBoundary(const Element* element) {
 // to manually stop text-decorations to apply to text inside media controls.
 static bool StopPropagateTextDecorations(const ComputedStyleBuilder& builder,
                                          const Element* element) {
+  const bool is_ruby_text = RuntimeEnabledFeatures::CssDisplayRubyEnabled()
+                                ? (builder.Display() == EDisplay::kRubyText)
+                                : IsA<HTMLRTElement>(element);
   return builder.IsDisplayReplacedType() ||
          IsAtMediaUAShadowBoundary(element) || builder.IsFloating() ||
          builder.HasOutOfFlowPosition() || IsOutermostSVGElement(element) ||
-         IsA<HTMLRTElement>(element);
+         is_ruby_text;
 }
 
 static bool LayoutParentStyleForcesZIndexToCreateStackingContext(
@@ -403,7 +469,8 @@ static void AdjustStyleForHTMLElement(ComputedStyleBuilder& builder,
         element.GetDocument().GetStyleResolver().InitialZoom());
   }
 
-  if (IsA<HTMLRTElement>(element)) {
+  if (IsA<HTMLRTElement>(element) &&
+      !RuntimeEnabledFeatures::CssDisplayRubyEnabled()) {
     // Ruby text does not support float or position. This might change with
     // evolution of the specification.
     builder.SetPosition(EPosition::kStatic);
@@ -530,15 +597,13 @@ void StyleAdjuster::AdjustOverflow(ComputedStyleBuilder& builder,
                       WebFeature::kOverflowClipAlongEitherAxis);
   }
 
-  if (RuntimeEnabledFeatures::OverflowOverlayAliasesAutoEnabled()) {
-    // overlay is a legacy alias of auto.
-    // https://drafts.csswg.org/css-overflow-3/#valdef-overflow-auto
-    if (builder.OverflowY() == EOverflow::kOverlay) {
-      builder.SetOverflowY(EOverflow::kAuto);
-    }
-    if (builder.OverflowX() == EOverflow::kOverlay) {
-      builder.SetOverflowX(EOverflow::kAuto);
-    }
+  // overlay is a legacy alias of auto.
+  // https://drafts.csswg.org/css-overflow-3/#valdef-overflow-auto
+  if (builder.OverflowY() == EOverflow::kOverlay) {
+    builder.SetOverflowY(EOverflow::kAuto);
+  }
+  if (builder.OverflowX() == EOverflow::kOverlay) {
+    builder.SetOverflowX(EOverflow::kAuto);
   }
 }
 
@@ -559,6 +624,16 @@ static void AdjustStyleForDisplay(ComputedStyleBuilder& builder,
         layout_parent_style.IsDisplayMathType()) {
       builder.SetIsInsideDisplayIgnoringFloatingChildren();
     }
+  }
+
+  // We need to avoid to inlinify children of a <fieldset>, which creates a
+  // dedicated LayoutObject and it assumes only block children.
+  if (RuntimeEnabledFeatures::RubyInlinifyEnabled() &&
+      layout_parent_style.InlinifiesChildren() &&
+      !builder.HasOutOfFlowPosition() && !builder.IsFloating() &&
+      !(element && IsA<HTMLFieldSetElement>(element->parentNode()))) {
+    builder.SetIsInInlinifyingDisplay();
+    builder.SetDisplay(EquivalentInlineDisplay(builder.Display()));
   }
 
   if (builder.Display() == EDisplay::kBlock) {
@@ -620,7 +695,7 @@ bool StyleAdjuster::IsPasswordFieldWithUnrevealedPassword(Element* element) {
     return false;
   }
   if (auto* input = DynamicTo<HTMLInputElement>(element)) {
-    return (input->type() == input_type_names::kPassword) &&
+    return input->FormControlType() == FormControlType::kInputPassword &&
            !input->ShouldRevealPassword();
   }
   return false;
@@ -826,12 +901,6 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   if (builder.Display() != EDisplay::kNone) {
     if (svg_element) {
       AdjustStyleForSvgElement(*svg_element, builder);
-    }
-
-    if (!RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled()) {
-      if (element && element->IsInTopLayer()) {
-        builder.SetOverlay(EOverlay::kAuto);
-      }
     }
 
     bool is_document_element =

@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/bank_account.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/data_model/credit_card_test_api.h"
 #include "components/autofill/core/browser/data_model/iban.h"
@@ -96,7 +97,7 @@ void VerifyFormGroupValues(const FormGroup& form_group,
                            bool ignore_status) {
   for (const auto& value : values) {
     SCOPED_TRACE(testing::Message()
-                 << "Expected for type " << FieldTypeToStringPiece(value.type)
+                 << "Expected for type " << FieldTypeToStringView(value.type)
                  << "\n\t" << value.value << " with status "
                  << (ignore_status ? "(ignored)" : "")
                  << value.verification_status << "\nFound:"
@@ -253,46 +254,6 @@ AutofillProfile GetIncompleteProfile2() {
   return profile;
 }
 
-AutofillProfile GetServerProfile() {
-  AutofillProfile profile(AutofillProfile::SERVER_PROFILE, "id1");
-  // Note: server profiles don't have email addresses and only have full names.
-  SetProfileInfo(&profile, "", "", "", "", "Google, Inc.", "123 Fake St.",
-                 "Apt. 42", "Mountain View", "California", "94043", "US",
-                 "1.800.555.1234");
-
-  profile.SetInfo(NAME_FULL, u"John K. Doe", "en");
-  profile.SetRawInfo(ADDRESS_HOME_SORTING_CODE, u"CEDEX");
-  profile.SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY, u"Santa Clara");
-
-  profile.set_language_code("en");
-  profile.set_use_count(7);
-  profile.set_use_date(base::Time::FromTimeT(54321));
-
-  profile.GenerateServerProfileIdentifier();
-
-  return profile;
-}
-
-AutofillProfile GetServerProfile2() {
-  AutofillProfile profile(AutofillProfile::SERVER_PROFILE, "id2");
-  // Note: server profiles don't have email addresses.
-  SetProfileInfo(&profile, "", "", "", "", "Main, Inc.", "4323 Wrong St.",
-                 "Apt. 1032", "Sunnyvale", "California", "10011", "US",
-                 "+1 514-123-1234");
-
-  profile.SetInfo(NAME_FULL, u"Jim S. Bristow", "en");
-  profile.SetRawInfo(ADDRESS_HOME_SORTING_CODE, u"XEDEC");
-  profile.SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY, u"Santa Monica");
-
-  profile.set_language_code("en");
-  profile.set_use_count(14);
-  profile.set_use_date(base::Time::FromTimeT(98765));
-
-  profile.GenerateServerProfileIdentifier();
-
-  return profile;
-}
-
 void SetProfileCategory(
     AutofillProfile& profile,
     autofill_metrics::AutofillProfileSourceCategory category) {
@@ -322,14 +283,14 @@ std::string GetStrippedValue(const char* value) {
   return base::UTF16ToUTF8(stripped_value);
 }
 
-Iban GetIban() {
+Iban GetLocalIban() {
   Iban iban(Iban::Guid(base::Uuid::GenerateRandomV4().AsLowercaseString()));
   iban.set_value(base::UTF8ToUTF16(std::string(kIbanValue)));
   iban.set_nickname(u"Nickname for Iban");
   return iban;
 }
 
-Iban GetIban2() {
+Iban GetLocalIban2() {
   Iban iban(Iban::Guid(base::Uuid::GenerateRandomV4().AsLowercaseString()));
   iban.set_value(base::UTF8ToUTF16(std::string(kIbanValue_1)));
   iban.set_nickname(u"My doctor's IBAN");
@@ -337,7 +298,7 @@ Iban GetIban2() {
 }
 
 Iban GetServerIban() {
-  Iban iban(Iban::InstrumentId("1234567"));
+  Iban iban(Iban::InstrumentId(1234567));
   iban.set_prefix(u"FR76");
   iban.set_suffix(u"0189");
   iban.set_length(27);
@@ -346,7 +307,7 @@ Iban GetServerIban() {
 }
 
 Iban GetServerIban2() {
-  Iban iban(Iban::InstrumentId("1234568"));
+  Iban iban(Iban::InstrumentId(1234568));
   iban.set_prefix(u"BE71");
   iban.set_suffix(u"8676");
   iban.set_length(16);
@@ -355,17 +316,11 @@ Iban GetServerIban2() {
 }
 
 Iban GetServerIban3() {
-  Iban iban(Iban::InstrumentId("1234569"));
+  Iban iban(Iban::InstrumentId(1234569));
   iban.set_prefix(u"DE91");
   iban.set_suffix(u"6789");
   iban.set_length(22);
   iban.set_nickname(u"My IBAN");
-  return iban;
-}
-
-Iban GetIbanWithoutNickname() {
-  Iban iban(Iban::Guid(base::Uuid::GenerateRandomV4().AsLowercaseString()));
-  iban.set_value(base::UTF8ToUTF16(std::string(kIbanValue_2)));
   return iban;
 }
 
@@ -776,6 +731,18 @@ void SetCreditCardInfo(CreditCard* credit_card,
   credit_card->set_billing_address_id(billing_address_id);
 }
 
+CreditCard CreateCreditCardWithInfo(const char* name_on_card,
+                                    const char* card_number,
+                                    const char* expiration_month,
+                                    const char* expiration_year,
+                                    const std::string& billing_address_id,
+                                    const std::u16string& cvc) {
+  CreditCard credit_card;
+  SetCreditCardInfo(&credit_card, name_on_card, card_number, expiration_month,
+                    expiration_year, billing_address_id, cvc);
+  return credit_card;
+}
+
 void DisableSystemServices(PrefService* prefs) {
   // Use a mock Keychain rather than the OS one to store credit card data.
   OSCryptMocker::SetUp();
@@ -839,29 +806,11 @@ void InitializePossibleTypesAndValidities(
   }
 }
 
-void BasicFillUploadField(AutofillUploadContents::Field* field,
-                          unsigned signature,
-                          const char* name,
-                          const char* control_type,
-                          const char* autocomplete) {
-  field->set_signature(signature);
-  if (name)
-    field->set_name(name);
-  if (control_type)
-    field->set_type(control_type);
-  if (autocomplete)
-    field->set_autocomplete(autocomplete);
-}
-
 void FillUploadField(AutofillUploadContents::Field* field,
                      unsigned signature,
-                     const char* name,
-                     const char* control_type,
-                     const char* autocomplete,
                      unsigned autofill_type,
                      unsigned validity_state) {
-  BasicFillUploadField(field, signature, name, control_type, autocomplete);
-
+  field->set_signature(signature);
   field->add_autofill_type(autofill_type);
 
   auto* type_validities = field->add_autofill_type_validities();
@@ -871,12 +820,9 @@ void FillUploadField(AutofillUploadContents::Field* field,
 
 void FillUploadField(AutofillUploadContents::Field* field,
                      unsigned signature,
-                     const char* name,
-                     const char* control_type,
-                     const char* autocomplete,
                      const std::vector<unsigned>& autofill_types,
                      const std::vector<unsigned>& validity_states) {
-  BasicFillUploadField(field, signature, name, control_type, autocomplete);
+  field->set_signature(signature);
 
   for (unsigned i = 0; i < autofill_types.size(); ++i) {
     field->add_autofill_type(autofill_types[i]);
@@ -893,14 +839,11 @@ void FillUploadField(AutofillUploadContents::Field* field,
 
 void FillUploadField(AutofillUploadContents::Field* field,
                      unsigned signature,
-                     const char* name,
-                     const char* control_type,
-                     const char* autocomplete,
                      unsigned autofill_type,
                      const std::vector<unsigned>& validity_states) {
-  BasicFillUploadField(field, signature, name, control_type, autocomplete);
-
+  field->set_signature(signature);
   field->add_autofill_type(autofill_type);
+
   auto* type_validities = field->add_autofill_type_validities();
   type_validities->set_type(autofill_type);
   for (unsigned i = 0; i < validity_states.size(); ++i)
@@ -965,6 +908,20 @@ std::vector<FormSignature> GetEncodedSignatures(
   std::vector<FormSignature> all_signatures;
   for (const FormStructure* form : forms)
     all_signatures.push_back(form->form_signature());
+  return all_signatures;
+}
+
+std::vector<FormSignature> GetEncodedAlternativeSignatures(
+    const FormStructure& form) {
+  return std::vector<FormSignature>{form.alternative_form_signature()};
+}
+
+std::vector<FormSignature> GetEncodedAlternativeSignatures(
+    const std::vector<FormStructure*>& forms) {
+  std::vector<FormSignature> all_signatures;
+  for (const FormStructure* form : forms) {
+    all_signatures.push_back(form->alternative_form_signature());
+  }
   return all_signatures;
 }
 
@@ -1039,6 +996,14 @@ Suggestion CreateAutofillSuggestion(PopupItemId popup_item_id,
   suggestion.main_text.value = main_text_value;
   suggestion.payload = payload;
   return suggestion;
+}
+
+BankAccount CreatePixBankAccount(int64_t instrument_id) {
+  BankAccount bank_account(
+      instrument_id, u"nickname", GURL("http://www.example.com"), u"bank_name",
+      u"account_number", BankAccount::AccountType::kChecking);
+  bank_account.AddPaymentRail(PaymentInstrument::PaymentRail::kPix);
+  return bank_account;
 }
 
 }  // namespace test

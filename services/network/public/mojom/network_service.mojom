@@ -22,6 +22,7 @@ import "services/network/public/mojom/network_change_manager.mojom";
 import "services/network/public/mojom/network_context.mojom";
 import "services/network/public/mojom/ip_address_space.mojom";
 import "services/network/public/mojom/network_interface.mojom";
+import "services/network/public/mojom/proxy_config.mojom";
 import "services/network/public/mojom/network_interface_change_listener.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/network_quality_estimator_manager.mojom";
@@ -131,6 +132,11 @@ struct NetworkServiceParams {
   // A SystemDnsResolver to provide out-of-process system DNS resolution, in
   // case the system DNS resolver cannot always run sandboxed.
   pending_remote<SystemDnsResolver>? system_dns_resolver;
+
+  // The policy used for bypassing requests that are eligible for IP Protection.
+  // Even if a domain is part of the masked domain list, the bypass policy can
+  // be used to bypass certain network requests from IP Protection.
+  IpProtectionProxyBypassPolicy ip_protection_proxy_bypass_policy;
 };
 
 // Configuration settings for SCT Auditing.
@@ -314,11 +320,6 @@ interface NetworkService {
   // Called on state changes of the Android application.
   [EnableIf=is_android]
   OnApplicationStateChange(mojo_base.mojom.ApplicationState state);
-
-  // Sets the given environment variables in the network service's process.
-  // This method won't modify variables that aren't present in the
-  // |environment| array.
-  SetEnvironment(array<EnvironmentVariable> environment);
 
   // Sets Trust Tokens key commitment state. |raw_commitments| is the
   // JSON-encoded string representation of a collection of issuers' key

@@ -15,6 +15,7 @@
 #include "ash/system/input_device_settings/input_device_duplicate_id_finder.h"
 #include "ash/system/input_device_settings/input_device_notifier.h"
 #include "ash/system/input_device_settings/input_device_settings_metrics_manager.h"
+#include "ash/system/input_device_settings/input_device_settings_notification_controller.h"
 #include "ash/system/input_device_settings/input_device_settings_policy_handler.h"
 #include "ash/system/input_device_settings/pref_handlers/graphics_tablet_pref_handler.h"
 #include "ash/system/input_device_settings/pref_handlers/keyboard_pref_handler.h"
@@ -70,15 +71,15 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
       DeviceId id) override;
   const mojom::KeyboardPolicies& GetKeyboardPolicies() override;
   const mojom::MousePolicies& GetMousePolicies() override;
-  void SetKeyboardSettings(DeviceId id,
+  bool SetKeyboardSettings(DeviceId id,
                            mojom::KeyboardSettingsPtr settings) override;
-  void SetTouchpadSettings(DeviceId id,
+  bool SetTouchpadSettings(DeviceId id,
                            mojom::TouchpadSettingsPtr settings) override;
-  void SetMouseSettings(DeviceId id, mojom::MouseSettingsPtr settings) override;
-  void SetPointingStickSettings(
+  bool SetMouseSettings(DeviceId id, mojom::MouseSettingsPtr settings) override;
+  bool SetPointingStickSettings(
       DeviceId id,
       mojom::PointingStickSettingsPtr settings) override;
-  void SetGraphicsTabletSettings(
+  bool SetGraphicsTabletSettings(
       DeviceId id,
       mojom::GraphicsTabletSettingsPtr settings) override;
   void OnLoginScreenFocusedPodChanged(const AccountId& account_id) override;
@@ -242,6 +243,9 @@ class ASH_EXPORT InputDeviceSettingsControllerImpl
   std::unique_ptr<InputDeviceSettingsMetricsManager> metrics_manager_;
 
   std::unique_ptr<InputDeviceDuplicateIdFinder> duplicate_id_finder_;
+
+  std::unique_ptr<InputDeviceSettingsNotificationController>
+      notification_controller_;
 
   raw_ptr<PrefService> active_pref_service_ = nullptr;  // Not owned.
   absl::optional<AccountId> active_account_id_;

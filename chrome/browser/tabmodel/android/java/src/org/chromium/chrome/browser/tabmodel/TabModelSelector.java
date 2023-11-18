@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -46,11 +48,18 @@ public interface TabModelSelector {
      */
     List<TabModel> getModels();
 
-    /**
-     * Get the current tab model.
-     * @return Never returns null.  Returns a stub when real model is uninitialized.
-     */
+    /** Returns the current tab model or a stub when real model is uninitialized. */
+    @NonNull
     TabModel getCurrentModel();
+
+    /**
+     * Gets a supplier for the current tab model.
+     *
+     * @return A supplier for the current tab model. This may hold a null value before the {@link
+     *     TabModelSelector} is initialized.
+     */
+    @NonNull
+    ObservableSupplier<TabModel> getCurrentTabModelSupplier();
 
     /**
      * Convenience function to get the current tab on the current model
@@ -66,6 +75,10 @@ public interface TabModelSelector {
      */
     int getCurrentTabId();
 
+    /** Returns a supplier for the current tab in the current model. */
+    @NonNull
+    ObservableSupplier<Tab> getCurrentTabSupplier();
+
     /**
      * Convenience function to get the {@link TabModel} for a {@link Tab} specified by
      * {@code id}.
@@ -73,11 +86,6 @@ public interface TabModelSelector {
      * @return   The {@link TabModel} that owns the {@link Tab} specified by {@code id}.
      */
     TabModel getModelForTabId(int id);
-
-    /**
-     * @return The index of the current {@link TabModel}.
-     */
-    int getCurrentModelIndex();
 
     /**
      * @return If the incognito {@link TabModel} is current.

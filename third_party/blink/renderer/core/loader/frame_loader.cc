@@ -155,13 +155,22 @@ bool IsBackForwardLoadType(WebFrameLoadType type) {
   return type == WebFrameLoadType::kBackForward;
 }
 
+bool IsBackForwardOrRestore(WebFrameLoadType type) {
+  return type == WebFrameLoadType::kBackForward ||
+         type == WebFrameLoadType::kRestore;
+}
+
+bool IsRestoreLoadType(WebFrameLoadType type) {
+  return type == WebFrameLoadType::kRestore;
+}
+
 bool IsReloadLoadType(WebFrameLoadType type) {
   return type == WebFrameLoadType::kReload ||
          type == WebFrameLoadType::kReloadBypassingCache;
 }
 
 bool FrameLoader::NeedsHistoryItemRestore(WebFrameLoadType type) {
-  return type == WebFrameLoadType::kBackForward || IsReloadLoadType(type);
+  return IsBackForwardOrRestore(type) || IsReloadLoadType(type);
 }
 
 ResourceRequest FrameLoader::ResourceRequestForReload(
@@ -392,7 +401,7 @@ void FrameLoader::DispatchUnloadEventAndFillOldDocumentInfoIfNeeded(
 }
 
 void FrameLoader::DidExplicitOpen() {
-  probe::DidOpenDocument(frame_, GetDocumentLoader());
+  probe::DidOpenDocument(frame_.Get(), GetDocumentLoader());
   if (initial_empty_document_status_ ==
       InitialEmptyDocumentStatus::kInitialOrSynchronousAboutBlank) {
     initial_empty_document_status_ = InitialEmptyDocumentStatus::
@@ -550,6 +559,7 @@ static WebNavigationType DetermineNavigationType(
     bool have_event) {
   bool is_reload = IsReloadLoadType(frame_load_type);
   bool is_back_forward = IsBackForwardLoadType(frame_load_type);
+  bool is_restore = IsRestoreLoadType(frame_load_type);
   if (is_form_submission) {
     if (is_reload)
       return kWebNavigationTypeFormResubmittedReload;
@@ -563,6 +573,9 @@ static WebNavigationType DetermineNavigationType(
     return kWebNavigationTypeReload;
   if (is_back_forward)
     return kWebNavigationTypeBackForward;
+  if (is_restore) {
+    return kWebNavigationTypeRestore;
+  }
   return kWebNavigationTypeOther;
 }
 
@@ -583,6 +596,7 @@ DetermineRequestContextFromNavigationType(
 
     case kWebNavigationTypeBackForward:
     case kWebNavigationTypeReload:
+    case kWebNavigationTypeRestore:
       return mojom::blink::RequestContextType::INTERNAL;
   }
   NOTREACHED();
@@ -601,6 +615,7 @@ DetermineRequestDestinationFromNavigationType(
       return network::mojom::RequestDestination::kDocument;
     case kWebNavigationTypeBackForward:
     case kWebNavigationTypeReload:
+    case kWebNavigationTypeRestore:
       return network::mojom::RequestDestination::kEmpty;
   }
   NOTREACHED();
@@ -609,7 +624,7 @@ DetermineRequestDestinationFromNavigationType(
 
 void FrameLoader::StartNavigation(FrameLoadRequest& request,
                                   WebFrameLoadType frame_load_type) {
-  CHECK(!IsBackForwardLoadType(frame_load_type));
+  CHECK(!IsBackForwardOrRestore(frame_load_type));
   DCHECK(request.GetTriggeringEventInfo() !=
          mojom::blink::TriggeringEventInfo::kUnknown);
   DCHECK(frame_->GetDocument());
@@ -625,7 +640,7 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
                static_cast<int>(frame_load_type));
 
   resource_request.SetHasUserGesture(
-      LocalFrame::HasTransientUserActivation(frame_));
+      LocalFrame::HasTransientUserActivation(frame_.Get()));
 
   if (!AllowRequestForThisFrame(request))
     return;
@@ -815,7 +830,7 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
   }
 
   if (request.ClientRedirectReason() != ClientNavigationReason::kNone) {
-    probe::FrameRequestedNavigation(frame_, frame_, url,
+    probe::FrameRequestedNavigation(frame_.Get(), frame_.Get(), url,
                                     request.ClientRedirectReason(),
                                     request.GetNavigationPolicy());
   }
@@ -1016,8 +1031,8 @@ void FrameLoader::CommitNavigation(
   if (!response.TextEncodingName().empty() ||
       !IsA<LocalFrame>(frame_->Tree().Parent())) {
     DocumentLoader::MaybeStartLoadingBodyInBackground(
-        navigation_params->body_loader.get(), frame_, navigation_params->url,
-        response);
+        navigation_params->body_loader.get(), frame_.Get(),
+        navigation_params->url, response);
   }
 
   // TODO(dgozman): figure out the better place for this check
@@ -1043,18 +1058,18 @@ void FrameLoader::CommitNavigation(
   // when the navigation is going to do a LocalFrame <-> LocalFrame swap, the
   // event should be dispatched on the previous LocalFrame's document, instead
   // of the new provisional LocalFrame's initial empty document.
-  LocalFrame* frame_for_navigate_event = frame_;
+  LocalFrame* frame_for_navigate_event = frame_.Get();
   if (frame_->IsProvisional() && frame_->GetPreviousLocalFrameForLocalSwap()) {
     frame_for_navigate_event = frame_->GetPreviousLocalFrameForLocalSwap();
   }
   auto url_origin = SecurityOrigin::Create(navigation_params->url);
-  if (navigation_params->frame_load_type == WebFrameLoadType::kBackForward &&
+  if (IsBackForwardOrRestore(navigation_params->frame_load_type) &&
       frame_for_navigate_event->DomWindow()
           ->GetSecurityOrigin()
           ->IsSameOriginWith(url_origin.get())) {
     auto* params = MakeGarbageCollected<NavigateEventDispatchParams>(
         navigation_params->url, NavigateEventType::kCrossDocument,
-        WebFrameLoadType::kBackForward);
+        navigation_params->frame_load_type);
     if (navigation_params->is_browser_initiated)
       params->involvement = UserNavigationInvolvement::kBrowserUI;
     params->destination_item = navigation_params->history_item;
@@ -1095,7 +1110,7 @@ void FrameLoader::CommitNavigation(
     // start/commit message pairs.
     if (commit_reason == CommitReason::kRegular) {
       frame_->GetFrameScheduler()->DidStartProvisionalLoad();
-      probe::DidStartProvisionalLoad(frame_);
+      probe::DidStartProvisionalLoad(frame_.Get());
     }
 
     DCHECK(Client()->HasWebView());
@@ -1176,7 +1191,7 @@ void FrameLoader::CommitNavigation(
 
   CommitDocumentLoader(
       new_document_loader,
-      ScopedOldDocumentInfoForCommitCapturer::CurrentInfo()->history_item,
+      ScopedOldDocumentInfoForCommitCapturer::CurrentInfo()->history_item.Get(),
       commit_reason);
 
   RestoreScrollPositionAndViewState();
@@ -1192,7 +1207,7 @@ bool FrameLoader::WillStartNavigation(const WebNavigationInfo& info) {
   client_navigation_ = std::make_unique<ClientNavigationState>();
   client_navigation_->url = info.url_request.Url();
   frame_->GetFrameScheduler()->DidStartProvisionalLoad();
-  probe::DidStartProvisionalLoad(frame_);
+  probe::DidStartProvisionalLoad(frame_.Get());
   virtual_time_pauser_.PauseVirtualTime();
   TakeObjectSnapshot();
   return true;
@@ -1433,8 +1448,7 @@ bool FrameLoader::ShouldPerformFragmentNavigation(bool is_form_submission,
   // explicitly reloading, currently displaying a frameset, or if the URL does
   // not have a fragment.
   return EqualIgnoringASCIICase(http_method, http_names::kGET) &&
-         !IsReloadLoadType(load_type) &&
-         load_type != WebFrameLoadType::kBackForward &&
+         !IsReloadLoadType(load_type) && !IsBackForwardOrRestore(load_type) &&
          url.HasFragmentIdentifier() &&
          // For provisional LocalFrame, there is no real document loaded and
          // the initial empty document should not be considered, so there is
@@ -1460,7 +1474,7 @@ void FrameLoader::ProcessFragment(const KURL& url,
   // restoring the past scroll offset during a history navigation. In these
   // cases we assume the scroll was restored from history (by the page).
   const bool uses_manual_scroll_restoration =
-      frame_load_type == WebFrameLoadType::kBackForward &&
+      IsBackForwardOrRestore(frame_load_type) &&
       GetDocumentLoader()->GetHistoryItem() &&
       GetDocumentLoader()->GetHistoryItem()->ScrollRestorationType() ==
           mojom::blink::ScrollRestorationType::kManual;
@@ -1483,7 +1497,7 @@ void FrameLoader::ProcessFragment(const KURL& url,
   // should still be able to click on a same-document fragment link and have it
   // jump to the anchor).
   const bool is_same_document_non_history_nav =
-      is_same_document_navigation && !IsBackForwardLoadType(frame_load_type);
+      is_same_document_navigation && !IsBackForwardOrRestore(frame_load_type);
 
   const bool block_fragment_scroll =
       blocked_by_policy ||
@@ -1503,7 +1517,7 @@ bool FrameLoader::ShouldClose(bool is_reload) {
 
   HeapVector<Member<LocalFrame>> descendant_frames;
   for (Frame* child = frame_->Tree().FirstChild(); child;
-       child = child->Tree().TraverseNext(frame_)) {
+       child = child->Tree().TraverseNext(frame_.Get())) {
     // FIXME: There is not yet any way to dispatch events to out-of-process
     // frames.
     if (auto* child_local_frame = DynamicTo<LocalFrame>(child))
@@ -1527,8 +1541,9 @@ bool FrameLoader::ShouldClose(bool is_reload) {
 
     // Then deal with descendent frames.
     for (Member<LocalFrame>& descendant_frame : descendant_frames) {
-      if (!descendant_frame->Tree().IsDescendantOf(frame_))
+      if (!descendant_frame->Tree().IsDescendantOf(frame_.Get())) {
         continue;
+      }
 
       // There is some confusion in the spec around what counters should be
       // incremented for a descendant browsing context:
@@ -1554,8 +1569,9 @@ bool FrameLoader::ShouldClose(bool is_reload) {
   // of them so they can advance to the appropriate load state.
   frame_->GetDocument()->BeforeUnloadDoneWillUnload();
   for (Member<LocalFrame>& descendant_frame : descendant_frames) {
-    if (!descendant_frame->Tree().IsDescendantOf(frame_))
+    if (!descendant_frame->Tree().IsDescendantOf(frame_.Get())) {
       continue;
+    }
     descendant_frame->GetDocument()->BeforeUnloadDoneWillUnload();
   }
 
@@ -1623,7 +1639,7 @@ void FrameLoader::ClearClientNavigation() {
   if (!client_navigation_)
     return;
   client_navigation_.reset();
-  probe::DidFailProvisionalLoad(frame_);
+  probe::DidFailProvisionalLoad(frame_.Get());
   virtual_time_pauser_.UnpauseVirtualTime();
 }
 
@@ -1670,7 +1686,7 @@ void FrameLoader::DispatchDidClearDocumentOfWindowObject() {
     // Forcibly instantiate WindowProxy, even if script is disabled.
     window->GetScriptController().WindowProxy(DOMWrapperWorld::MainWorld());
   }
-  probe::DidClearDocumentOfWindowObject(frame_);
+  probe::DidClearDocumentOfWindowObject(frame_.Get());
   if (!window->CanExecuteScripts(kNotAboutToExecuteScript))
     return;
 

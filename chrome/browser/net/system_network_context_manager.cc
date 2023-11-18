@@ -267,7 +267,6 @@ NetworkSandboxState IsNetworkSandboxEnabledInternal() {
   if (g_network_service_will_allow_gssapi_library_load ||
       (local_state && local_state->HasPrefPath(kGssapiDesiredPref) &&
        local_state->GetBoolean(kGssapiDesiredPref))) {
-    g_network_service_will_allow_gssapi_library_load = true;
     return NetworkSandboxState::kDisabledBecauseOfKerberos;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
@@ -893,6 +892,9 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
       cert_verifier_creation_params =
           cert_verifier::mojom::CertVerifierCreationParams::New();
   ConfigureDefaultNetworkContextParams(network_context_params.get());
+  // The system network context doesn't update the CertVerifyProc
+  // InstanceParams while running, so it does not attach a
+  // CertVerifierServiceUpdater.
   network_context_params->cert_verifier_params =
       content::GetCertVerifierParams(std::move(cert_verifier_creation_params));
   network_context_params->acam_preflight_spec_conformant =
@@ -917,20 +919,35 @@ bool SystemNetworkContextManager::IsNetworkSandboxEnabled() {
   base::UmaHistogramEnumeration(
       "Chrome.SystemNetworkContextManager.NetworkSandboxState", state);
 
+  bool enabled = true;
   switch (state) {
     case NetworkSandboxState::kDisabledBecauseOfKerberos:
-      return false;
+      enabled = false;
+      break;
     case NetworkSandboxState::kDisabledByPlatform:
-      return false;
+      enabled = false;
+      break;
     case NetworkSandboxState::kEnabledByPlatform:
-      return true;
+      enabled = true;
+      break;
     case NetworkSandboxState::kDisabledByPolicy:
-      return false;
+      enabled = false;
+      break;
     case NetworkSandboxState::kEnabledByPolicy:
-      return true;
+      enabled = true;
+      break;
     case NetworkSandboxState::kDisabledBecauseOfFailedLaunch:
-      return false;
+      enabled = false;
+      break;
   }
+
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
+  if (!enabled) {
+    g_network_service_will_allow_gssapi_library_load = true;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
+
+  return enabled;
 }
 
 void SystemNetworkContextManager::FlushSSLConfigManagerForTesting() {
@@ -1061,8 +1078,13 @@ void SystemNetworkContextManager::UpdateReferrersEnabled() {
 }
 
 void SystemNetworkContextManager::UpdateIPv6ReachabilityOverrideEnabled() {
-  bool value =
+  bool is_managed = local_state_->IsManagedPreference(
+      prefs::kIPv6ReachabilityOverrideEnabled);
+  bool pref_value =
       local_state_->GetBoolean(prefs::kIPv6ReachabilityOverrideEnabled);
+  bool is_launched = base::FeatureList::IsEnabled(
+      net::features::kEnableIPv6ReachabilityOverride);
+  bool value = is_managed ? pref_value : is_launched;
   content::GetNetworkService()->SetIPv6ReachabilityOverride(value);
 }
 

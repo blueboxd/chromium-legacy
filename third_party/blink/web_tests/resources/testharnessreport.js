@@ -270,22 +270,6 @@
         return matches ? matches[1] : null;
     }
 
-    function shouldUseNewFormat() {
-        if (location.hostname != 'web-platform.test') {
-            return true;
-        }
-        if (location.pathname.startsWith('/wpt_internal/') ||
-            location.pathname.startsWith('/html/') ||
-            location.pathname.startsWith('/css/css-') ||
-            location.pathname.startsWith('/editing/') ||
-            location.pathname.startsWith('/fetch/') ||
-            location.pathname.startsWith('/service-workers/') ||
-            location.pathname.startsWith('/websockets/')) {
-            return true;
-        }
-        return false;
-    }
-
     /** Converts the testharness test status into the corresponding string. */
     function convertResult(resultStatus) {
         let retVal = '';
@@ -309,10 +293,7 @@
                 retVal = 'NOTRUN';
                 break;
         }
-        if (shouldUseNewFormat()) {
-            return '[' + retVal + ']'
-        }
-        return retVal
+        return '[' + retVal + ']';
     }
 
     /**
@@ -362,12 +343,8 @@
         let result = `${convertResult(test.status)} ${sanitize(test.name)}`;
         // include error message when test result is FAIL or PRECONDITION_FAILED
         if (test.message) {
-            if (shouldUseNewFormat()) {
-                if (test.status == 1 || test.status == 4) {
-                    result += '\n  ' + sanitize(test.message).trim();
-                }
-            } else {
-                result += ' ' + sanitize(test.message).trim();
+            if (test.status == 1 || test.status == 4) {
+                result += '\n  ' + sanitize(test.message).trim();
             }
         }
         return result + '\n';
@@ -378,6 +355,8 @@
         if (!text) {
             return '';
         }
+        // Change each '\' to '\\'
+        text = text.replace(/\\/g, '\\\\');
         // Escape null characters, otherwise diff will think the file is binary.
         text = text.replace(/\0/g, '\\0');
         // Escape some special characters to improve readability of the output.

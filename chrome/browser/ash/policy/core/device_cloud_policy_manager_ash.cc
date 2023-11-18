@@ -18,7 +18,6 @@
 #include "base/path_service.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
-#include "chrome/browser/ash/attestation/attestation_policy_observer.h"
 #include "chrome/browser/ash/attestation/enrollment_certificate_uploader_impl.h"
 #include "chrome/browser/ash/attestation/enrollment_id_upload_manager.h"
 #include "chrome/browser/ash/attestation/machine_certificate_uploader_impl.h"
@@ -45,6 +44,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/ash/components/system/statistics_provider.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
@@ -151,6 +151,8 @@ void DeviceCloudPolicyManagerAsh::Shutdown() {
   state_keys_broker_ = nullptr;
   managed_session_service_.reset();
   euicc_status_uploader_.reset();
+  core()->Disconnect();
+  machine_certificate_uploader_.reset();
   external_data_manager_->Disconnect();
   state_keys_update_subscription_ = {};
   CloudPolicyManager::Shutdown();
@@ -237,16 +239,14 @@ void DeviceCloudPolicyManagerAsh::StartConnection(
   euicc_status_uploader_ = std::make_unique<EuiccStatusUploader>(
       client(), g_browser_process->local_state());
 
-  // Don't create a MachineCertificateUploader or start the
-  // AttestationPolicyObserver if machine cert requests are disabled.
+  // Don't create a MachineCertificateUploader if machine cert requests are
+  // disabled.
   if (!(base::CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kDisableMachineCertRequest))) {
     machine_certificate_uploader_ =
         std::make_unique<ash::attestation::MachineCertificateUploaderImpl>(
             client());
-    attestation_policy_observer_ =
-        std::make_unique<ash::attestation::AttestationPolicyObserver>(
-            machine_certificate_uploader_.get());
+    machine_certificate_uploader_->UploadCertificateIfNeeded(base::DoNothing());
   }
 
   // Start remote commands services now that we have setup everything they need.
@@ -265,9 +265,15 @@ void DeviceCloudPolicyManagerAsh::StartConnection(
     CreateStatusUploader(managed_session_service_.get());
     syslog_uploader_ =
         std::make_unique<SystemLogUploader>(nullptr, task_runner_);
-    heartbeat_scheduler_ = std::make_unique<HeartbeatScheduler>(
-        g_browser_process->gcm_driver(), client(), device_store_.get(),
-        install_attributes->GetDeviceId(), task_runner_);
+    if (base::FeatureList::IsEnabled(
+            chromeos::features::kKioskHeartbeatsViaERP)) {
+      // Do nothing as heartbeats go over ERP.
+    } else {
+      // Initialize legacy GCM heartbeat (default behaviour)
+      heartbeat_scheduler_ = std::make_unique<HeartbeatScheduler>(
+          g_browser_process->gcm_driver(), client(), device_store_.get(),
+          install_attributes->GetDeviceId(), task_runner_);
+    }
     metric_reporting_manager_ = reporting::MetricReportingManager::Create(
         managed_session_service_.get());
     os_updates_reporter_ = reporting::OsUpdatesReporter::Create();
@@ -408,4 +414,8 @@ void DeviceCloudPolicyManagerAsh::CreateManagedSessionServiceAndReporters() {
       managed_session_service_.get());
 }
 
+HeartbeatScheduler*
+DeviceCloudPolicyManagerAsh::GetHeartbeatSchedulerForTesting() const {
+  return heartbeat_scheduler_.get();
+}
 }  // namespace policy

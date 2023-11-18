@@ -22,6 +22,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
+#include "content/browser/loader/keep_alive_url_loader_service.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/loader/subresource_proxying_url_loader_service.h"
 #include "content/browser/navigation_subresource_loader_params.h"
@@ -41,7 +42,7 @@
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
-#include "content/public/browser/prerender_trigger_type.h"
+#include "content/public/browser/preloading_trigger_type.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/weak_document_ptr.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -51,7 +52,6 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/isolation_info.h"
-#include "net/base/proxy_server.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/content_security_policy/csp_context.h"
@@ -400,7 +400,6 @@ class CONTENT_EXPORT NavigationRequest
   bool IsSignedExchangeInnerResponse() override;
   bool HasPrefetchedAlternativeSubresourceSignedExchange() override;
   bool WasResponseCached() override;
-  const net::ProxyServer& GetProxyServer() override;
   const std::string& GetHrefTranslate() override;
   const absl::optional<blink::Impression>& GetImpression() override;
   const absl::optional<blink::LocalFrameToken>& GetInitiatorFrameToken()
@@ -429,7 +428,7 @@ class CONTENT_EXPORT NavigationRequest
   bool SetNavigationTimeout(base::TimeDelta timeout) override;
   void SetAllowCookiesFromBrowser(bool allow_cookies_from_browser) override;
   void GetResponseBody(ResponseBodyCallback callback) override;
-  PrerenderTriggerType GetPrerenderTriggerType() override;
+  PreloadingTriggerType GetPrerenderTriggerType() override;
   std::string GetPrerenderEmbedderHistogramSuffix() override;
 #if BUILDFLAG(IS_ANDROID)
   const base::android::JavaRef<jobject>& GetJavaNavigationHandle() override;
@@ -440,6 +439,9 @@ class CONTENT_EXPORT NavigationRequest
       override;
   void SetContentSettings(
       blink::mojom::RendererContentSettingsPtr content_settings) override;
+  blink::mojom::RendererContentSettingsPtr GetContentSettingsForTesting()
+      override;
+  void SetIsAdTagged() override;
   // End of NavigationHandle implementation.
 
   // mojom::NavigationRendererCancellationListener implementation:
@@ -753,10 +755,14 @@ class CONTENT_EXPORT NavigationRequest
 
   // Returns true for navigation responses to be rendered in a renderer process.
   // This excludes:
-  //  - 204/205 navigation responses.
-  //  - downloads.
+  //  - 204/205 navigation responses
+  //  - Most downloads
+  //  (Note: downloads with unsuccessful response codes will render an error
+  //  page, causing this to return true.)
   //
-  // Must not be called before having received the response.
+  // Must not be called before having received the response. After
+  // OnResponseStarted(), this is expected to be equivalent to
+  // HasRenderFrameHost().
   bool response_should_be_rendered() const {
     DCHECK_GE(state_, WILL_PROCESS_RESPONSE);
     return response_should_be_rendered_;
@@ -1095,6 +1101,20 @@ class CONTENT_EXPORT NavigationRequest
     subresource_proxying_url_loader_service_bind_context_ = bind_context;
   }
 
+  void set_keep_alive_url_loader_factory_context(
+      base::WeakPtr<KeepAliveURLLoaderService::FactoryContext>
+          factory_context) {
+    DCHECK(!keep_alive_url_loader_factory_context_);
+    keep_alive_url_loader_factory_context_ = factory_context;
+  }
+
+  void set_fetch_later_loader_factory_context(
+      base::WeakPtr<KeepAliveURLLoaderService::FactoryContext>
+          factory_context) {
+    DCHECK(!fetch_later_loader_factory_context_);
+    fetch_later_loader_factory_context_ = factory_context;
+  }
+
   // Helper for logging crash keys related to a NavigationRequest (e.g.
   // "navigation_request_url", "navigation_request_initiator", and
   // "navigation_request_is_same_document").  The crash keys will be logged if a
@@ -1116,7 +1136,7 @@ class CONTENT_EXPORT NavigationRequest
   };
 
   // Prerender2:
-  void set_prerender_trigger_type(PrerenderTriggerType type) {
+  void set_prerender_trigger_type(PreloadingTriggerType type) {
     DCHECK(!prerender_trigger_type_.has_value());
     prerender_trigger_type_ = type;
   }
@@ -1251,7 +1271,9 @@ class CONTENT_EXPORT NavigationRequest
     return std::move(web_ui_);
   }
 
-  bool shared_storage_writable() const { return shared_storage_writable_; }
+  bool shared_storage_writable_eligible() const {
+    return shared_storage_writable_eligible_;
+  }
 
   enum ErrorPageProcess {
     kNotErrorPage,
@@ -2063,6 +2085,12 @@ class CONTENT_EXPORT NavigationRequest
   NavigationState state_ = NOT_STARTED;
   bool is_navigation_started_ = false;
 
+  // Manages the lifetime of a pre-created ServiceWorkerContainerHost until a
+  // corresponding container is created in the renderer. This must be destroyed
+  // after `loader_` to avoid dangling pointers, since `loader_` can have a
+  // raw_ptr to this object.
+  std::unique_ptr<ServiceWorkerMainResourceHandle> service_worker_handle_;
+
   std::unique_ptr<NavigationURLLoader> loader_;
 
   bool navigation_visible_to_embedder_ = false;
@@ -2086,7 +2114,7 @@ class CONTENT_EXPORT NavigationRequest
 
   // Whether the navigation should be sent to a renderer a process. This is
   // true, except for 204/205 responses and downloads.
-  bool response_should_be_rendered_ = false;
+  bool response_should_be_rendered_ = true;
 
   // Whether devtools overrides were applied on the User-Agent request header.
   bool devtools_user_agent_override_ = false;
@@ -2273,18 +2301,11 @@ class CONTENT_EXPORT NavigationRequest
   // Unlike above, this is informational only; it does not affect the request.
   base::OnceClosure ready_to_commit_callback_for_testing_;
 
-  // Which proxy server was used for this navigation, if any.
-  net::ProxyServer proxy_server_;
-
   // Unique id that identifies the navigation for which this NavigationRequest
   // is created.
   const int64_t navigation_id_ = ++unique_id_counter_;
   // static member for generating the unique id above.
   static int64_t unique_id_counter_;
-
-  // Manages the lifetime of a pre-created ServiceWorkerContainerHost until a
-  // corresponding container is created in the renderer.
-  std::unique_ptr<ServiceWorkerMainResourceHandle> service_worker_handle_;
 
   // Timer for detecting an unexpectedly long time to commit a navigation.
   base::OneShotTimer commit_timeout_timer_;
@@ -2581,9 +2602,9 @@ class CONTENT_EXPORT NavigationRequest
   // Prerender2:
   // The type to trigger prerendering. The value is valid only when Prerender2
   // is enabled.
-  absl::optional<PrerenderTriggerType> prerender_trigger_type_;
+  absl::optional<PreloadingTriggerType> prerender_trigger_type_;
   // The suffix of a prerender embedder. This value is valid only when
-  // PrerenderTriggerType is kEmbedder. Only used for metrics.
+  // PreloadingTriggerType is kEmbedder. Only used for metrics.
   std::string prerender_embedder_histogram_suffix_;
 
   // Prevents the compositor from requesting main frame updates early in
@@ -2601,10 +2622,31 @@ class CONTENT_EXPORT NavigationRequest
   // contain "Observe-Browsing-Topics: ?1", a topic observation will be stored.
   bool topics_eligible_ = false;
 
-  // Whether or not the request is eligible to write to shared storage from
+  // Whether this navigation request is an iframe navigation for which the
+  // adAuctionHeaders attribute is set. Only requests with this attribute may be
+  // eligible for ad auction headerse, but not all requests with this attribute
+  // are eligible. `ad_auction_headers_eligible_`, below, indicates whether or
+  // not this request is eligible.
+  const bool has_ad_auction_headers_attribute_ = false;
+
+  // Whether the ongoing navigation resource request should have its Ad Auction
+  // response headers examined for interception. This is set before the initial
+  // request for iframe navigations that provide the `adAuctionHeaders`
+  // attribute. On redirect or error, this is always set to false. If this is
+  // set to true, the request headers will contain the "Sec-Ad-Auction-Fetch:
+  // ?1" header, and several response headers will be intercepted. See
+  // content/browser/interest_group/ad_auction_headers_util.h for more details.
+  bool ad_auction_headers_eligible_ = false;
+
+  // Whether or not the original request (without considering redirects or
+  // permissions policy) opted-in to write to shared storage from response
+  // headers. See https://github.com/WICG/shared-storage#from-response-headers
+  bool shared_storage_writable_opted_in_ = false;
+
+  // Whether or not the current request is eligible to shared storage from
   // response headers. See
   // https://github.com/WICG/shared-storage#from-response-headers
-  bool shared_storage_writable_ = false;
+  bool shared_storage_writable_eligible_ = false;
 
   // A WeakPtr for the BindContext associated with the browser routing loader
   // factory for the committing document. This will be set in
@@ -2614,6 +2656,20 @@ class CONTENT_EXPORT NavigationRequest
   // with the committed document.
   base::WeakPtr<SubresourceProxyingURLLoaderService::BindContext>
       subresource_proxying_url_loader_service_bind_context_;
+
+  // A WeakPtr for the FactoryContext associated with the browser fetch
+  // keepalive loader factory for the committing document.
+  // This field will be set in `CommitNavigation()`, and can become null if the
+  // corresponding factory is destroyed.
+  // Upon `DidCommitNavigation()`, this field will be notified with the
+  // committed document.
+  base::WeakPtr<KeepAliveURLLoaderService::FactoryContext>
+      keep_alive_url_loader_factory_context_;
+  // A WeakPtr for the FactoryContext associated with the browser fetchlater
+  // loader factory for the committing document.
+  // See also `keep_alive_url_loader_factory_context_` for the timing to update.
+  base::WeakPtr<KeepAliveURLLoaderService::FactoryContext>
+      fetch_later_loader_factory_context_;
 
   scoped_refptr<NavigationOrDocumentHandle> navigation_or_document_handle_;
 
@@ -2746,6 +2802,19 @@ class CONTENT_EXPORT NavigationRequest
 
   EarlyRenderFrameHostSwapType early_render_frame_host_swap_type_ =
       EarlyRenderFrameHostSwapType::kNone;
+
+  // Whether the embedder indicated this navigation is being used for
+  // advertising porpoises.
+  bool is_ad_tagged_ = false;
+
+  // This is the origin to commit value calculated at request time for data: URL
+  // navigations. It is stored so that the opaque origin nonce can be maintained
+  // across a navigation. This value is used when a speculative SiteInstance
+  // is created so the site URL of the navigation can match the initiator
+  // origin. We store the tentative origin to commit value, since we need it
+  // before ready to commit time, which is when the regular origin to commit
+  // value is available.
+  absl::optional<url::Origin> tentative_data_origin_to_commit_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 };

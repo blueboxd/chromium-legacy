@@ -23,10 +23,10 @@
 #import "ios/chrome/browser/shared/public/commands/show_signin_command.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
-#import "ios/chrome/browser/signin/system_identity.h"
+#import "ios/chrome/browser/signin/model/authentication_service.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service_observer_bridge.h"
+#import "ios/chrome/browser/signin/model/system_identity.h"
 #import "ios/chrome/browser/sync/model/sync_observer_bridge.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
@@ -109,6 +109,11 @@ bool IsSupportedAccessPoint(signin_metrics::AccessPoint access_point) {
     case signin_metrics::AccessPoint::
         ACCESS_POINT_PASSWORD_MIGRATION_WARNING_ANDROID:
     case signin_metrics::AccessPoint::ACCESS_POINT_SAVE_TO_PHOTOS_IOS:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_RESTORE_PRIMARY_ACCOUNT_ON_PROFILE_LOAD:
+    case signin_metrics::AccessPoint::ACCESS_POINT_TAB_ORGANIZATION:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       return false;
   }
@@ -186,6 +191,11 @@ void RecordImpressionsTilSigninButtonsHistogramForAccessPoint(
     case signin_metrics::AccessPoint::
         ACCESS_POINT_PASSWORD_MIGRATION_WARNING_ANDROID:
     case signin_metrics::AccessPoint::ACCESS_POINT_SAVE_TO_PHOTOS_IOS:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_RESTORE_PRIMARY_ACCOUNT_ON_PROFILE_LOAD:
+    case signin_metrics::AccessPoint::ACCESS_POINT_TAB_ORGANIZATION:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED() << "Unexpected value for access point "
                    << static_cast<int>(access_point);
@@ -265,6 +275,11 @@ void RecordImpressionsTilDismissHistogramForAccessPoint(
     case signin_metrics::AccessPoint::
         ACCESS_POINT_PASSWORD_MIGRATION_WARNING_ANDROID:
     case signin_metrics::AccessPoint::ACCESS_POINT_SAVE_TO_PHOTOS_IOS:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_RESTORE_PRIMARY_ACCOUNT_ON_PROFILE_LOAD:
+    case signin_metrics::AccessPoint::ACCESS_POINT_TAB_ORGANIZATION:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED() << "Unexpected value for access point "
                    << static_cast<int>(access_point);
@@ -344,6 +359,11 @@ void RecordImpressionsTilXButtonHistogramForAccessPoint(
     case signin_metrics::AccessPoint::
         ACCESS_POINT_PASSWORD_MIGRATION_WARNING_ANDROID:
     case signin_metrics::AccessPoint::ACCESS_POINT_SAVE_TO_PHOTOS_IOS:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_RESTORE_PRIMARY_ACCOUNT_ON_PROFILE_LOAD:
+    case signin_metrics::AccessPoint::ACCESS_POINT_TAB_ORGANIZATION:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED() << "Unexpected value for access point "
                    << static_cast<int>(access_point);
@@ -412,6 +432,11 @@ const char* DisplayedCountPreferenceKey(
     case signin_metrics::AccessPoint::
         ACCESS_POINT_PASSWORD_MIGRATION_WARNING_ANDROID:
     case signin_metrics::AccessPoint::ACCESS_POINT_SAVE_TO_PHOTOS_IOS:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_RESTORE_PRIMARY_ACCOUNT_ON_PROFILE_LOAD:
+    case signin_metrics::AccessPoint::ACCESS_POINT_TAB_ORGANIZATION:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       return nullptr;
   }
@@ -478,6 +503,11 @@ const char* AlreadySeenSigninViewPreferenceKey(
     case signin_metrics::AccessPoint::
         ACCESS_POINT_PASSWORD_MIGRATION_WARNING_ANDROID:
     case signin_metrics::AccessPoint::ACCESS_POINT_SAVE_TO_PHOTOS_IOS:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE:
+    case signin_metrics::AccessPoint::
+        ACCESS_POINT_RESTORE_PRIMARY_ACCOUNT_ON_PROFILE_LOAD:
+    case signin_metrics::AccessPoint::ACCESS_POINT_TAB_ORGANIZATION:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       return nullptr;
   }
@@ -679,7 +709,8 @@ id<SystemIdentity> GetDisplayedIdentity(
     DCHECK(self.displayedIdentity)
         << base::SysNSStringToUTF8([self description]);
     return [[SigninPromoViewConfigurator alloc]
-        initWithSigninPromoViewMode:SigninPromoViewModeSyncWithPrimaryAccount
+        initWithSigninPromoViewMode:
+            SigninPromoViewModeSignedInWithPrimaryAccount
                           userEmail:self.displayedIdentity.userEmail
                       userGivenName:self.displayedIdentity.userGivenName
                           userImage:self.displayedIdentityAvatar
@@ -708,7 +739,7 @@ id<SystemIdentity> GetDisplayedIdentity(
       break;
     case SigninPromoAction::kSigninSheet:
     case SigninPromoAction::kInstantSignin:
-      configurator.primaryButtonTitleNoAccountsModeOverride =
+      configurator.primaryButtonTitleOverride =
           l10n_util::GetNSString(IDS_IOS_CONSISTENCY_PROMO_SIGN_IN);
       break;
   }
@@ -1109,6 +1140,7 @@ id<SystemIdentity> GetDisplayedIdentity(
          self.accessPoint ==
              signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO)
       << base::SysNSStringToUTF8([self description]);
+  base::RecordAction(base::UserMetricsAction("Signin_Promo_Close"));
   self.signinPromoViewState = SigninPromoViewState::kClosed;
   const char* alreadySeenSigninViewPreferenceKey =
       AlreadySeenSigninViewPreferenceKey(self.accessPoint);

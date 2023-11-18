@@ -85,9 +85,7 @@ SyncServiceAndroidBridge::SyncServiceAndroidBridge(
   native_sync_service_->AddObserver(this);
 }
 
-SyncServiceAndroidBridge::~SyncServiceAndroidBridge() {
-  native_sync_service_->RemoveObserver(this);
-}
+SyncServiceAndroidBridge::~SyncServiceAndroidBridge() = default;
 
 ScopedJavaLocalRef<jobject> SyncServiceAndroidBridge::GetJavaObject() {
   return ScopedJavaLocalRef<jobject>(java_ref_);
@@ -97,6 +95,13 @@ void SyncServiceAndroidBridge::OnStateChanged(syncer::SyncService* sync) {
   // Notify the java world that our sync state has changed.
   JNIEnv* env = AttachCurrentThread();
   Java_SyncServiceImpl_syncStateChanged(env, java_ref_);
+}
+
+void SyncServiceAndroidBridge::OnSyncShutdown(syncer::SyncService* sync) {
+  native_sync_service_->RemoveObserver(this);
+  Java_SyncServiceImpl_destroy(AttachCurrentThread(), java_ref_);
+  // Not worth resetting `native_sync_service_`, it owns this object and will
+  // destroy it shortly.
 }
 
 void SyncServiceAndroidBridge::SetSyncRequested(JNIEnv* env) {
@@ -264,7 +269,7 @@ jboolean SyncServiceAndroidBridge::SetDecryptionPassphrase(
 jlong SyncServiceAndroidBridge::GetExplicitPassphraseTime(JNIEnv* env) {
   return native_sync_service_->GetUserSettings()
       ->GetExplicitPassphraseTime()
-      .ToJavaTime();
+      .InMillisecondsSinceUnixEpoch();
 }
 
 void SyncServiceAndroidBridge::GetAllNodes(

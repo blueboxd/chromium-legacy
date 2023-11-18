@@ -274,7 +274,8 @@ enum class ContentSettingsType : int32_t {
   // a specified account. When this is present it allows access to session
   // management capabilities between the sites. This setting is associated
   // with the relying party's origin.
-  FEDERATED_IDENTITY_ACTIVE_SESSION,
+  // Obsolete on Nov 2023.
+  DEPRECATED_FEDERATED_IDENTITY_ACTIVE_SESSION,
 
   // Setting to indicate whether Chrome should automatically apply darkening to
   // web content.
@@ -368,6 +369,10 @@ enum class ContentSettingsType : int32_t {
   // Content Setting for temporary 3PC accesses granted by user behavior
   // heuristics.
   TPCD_HEURISTICS_GRANTS,
+
+  // Whether the FSA Persistent Permissions restore prompt is eligible to be
+  // shown to the user, for a given origin.
+  FILE_SYSTEM_ACCESS_RESTORE_PERMISSION,
 
   NUM_TYPES,
 };

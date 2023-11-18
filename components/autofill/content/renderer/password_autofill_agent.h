@@ -7,11 +7,11 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/types/strong_alias.h"
@@ -119,11 +119,12 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
   ~PasswordAutofillAgent() override;
 
+  // Must be called prior to calling other methods.
+  void Init(AutofillAgent* autofill_agent);
+
   void BindPendingReceiver(
       mojo::PendingAssociatedReceiver<mojom::PasswordAutofillAgent>
           pending_receiver);
-
-  void SetAutofillAgent(AutofillAgent* autofill_agent);
 
   void SetPasswordGenerationAgent(PasswordGenerationAgent* generation_agent);
 
@@ -240,10 +241,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
       blink::WebDocumentLoader* document_loader) override;
   void DidCommitProvisionalLoad(ui::PageTransition transition) override;
   void OnDestruct() override;
-
-  const scoped_refptr<FieldDataManager> GetFieldDataManager() {
-    return field_data_manager_;
-  }
 
   bool IsPrerendering() const;
 
@@ -415,11 +412,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // only one value per |PasswordAutofillAgent| instance.
   void LogPrefilledUsernameFillOutcome(PrefilledUsernameFillOutcome outcome);
 
-  // Helper function called when form submission is successful.
-  void FireSubmissionIfFormDisappear(mojom::SubmissionIndicatorEvent event);
-
-  void OnFrameDetached();
-
   void HidePopup();
 
   // Returns pair(username_element, password_element) based on renderer ids from
@@ -477,6 +469,10 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   void NotifyPasswordManagerAboutClearedForm(
       const blink::WebFormElement& cleared_form);
 
+  FieldDataManager& field_data_manager() const {
+    return autofill_agent_->field_data_manager();
+  }
+
   // The logins we have filled so far with their associated info.
   WebInputToPasswordInfoMap web_input_to_password_info_;
   // A (sort-of) reverse map to |web_input_to_password_info_|.
@@ -485,14 +481,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   WebInputToPasswordInfoMap::iterator last_supplied_password_info_iter_;
 
   bool should_show_popup_without_passwords_ = false;
-
-  // Map WebFormControlElement to the pair of:
-  // 1) The most recent text that user typed or PasswordManager autofilled in
-  // input elements. Used for storing username/password before JavaScript
-  // changes them.
-  // 2) Field properties mask, i.e. whether the field was autofilled, modified
-  // by user, etc. (see FieldPropertiesMask).
-  const scoped_refptr<FieldDataManager> field_data_manager_;
 
   PasswordValueGatekeeper gatekeeper_;
 
@@ -509,19 +497,13 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // True indicates that a request for credentials has been sent to the store.
   bool sent_request_to_store_;
 
-  // True indicates that a form data has been sent to the browser process. Gets
-  // cleared when the form is submitted to indicate that the browser has already
-  // processed the form.
-  // TODO(crbug.com/949519): double check if we need this variable.
-  bool browser_has_form_to_process_ = false;
-
   // True indicates that a safe browsing reputation check has been triggered.
   bool checked_safe_browsing_reputation_;
 
   // Records the username typed before suggestions preview.
   std::u16string username_query_prefix_;
 
-  base::WeakPtr<AutofillAgent> autofill_agent_;
+  raw_ptr<AutofillAgent> autofill_agent_ = nullptr;
 
   raw_ptr<PasswordGenerationAgent, ExperimentalRenderer>
       password_generation_agent_;  // Weak reference.
@@ -543,7 +525,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // Keeps autofilled values for the form elements until a user gesture
   // is observed. At that point, the map is cleared.
   std::map<FieldRendererId, blink::WebString> autofilled_elements_cache_;
-  std::set<FieldRendererId> all_autofilled_elements_;
+  base::flat_set<FieldRendererId> all_autofilled_elements_;
   // Keeps forms structure (amount of elements, element types etc).
   // TODO(crbug/898109): It's too expensive to keep the whole FormData
   // structure. Replace FormData with a smaller structure.

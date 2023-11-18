@@ -57,6 +57,13 @@ class ProfileManagementFlowController {
 
     // Renders a default browser promo.
     kDefaultBrowser,
+
+#if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
+    // Renders the search engine choice screen.
+    kSearchEngineChoice,
+#endif
+
+    kFinishFlow,
   };
 
   // Creates a flow controller that will start showing UI when `Init()`-ed.

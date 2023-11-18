@@ -33,8 +33,9 @@ const char kSigninChromeSyncKeysPlatformSuffix[] = "desktop";
 
 base::FilePath GetTestFilePath(const std::string& relative_path) {
   base::FilePath path;
-  if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &path))
+  if (!base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &path)) {
     return base::FilePath();
+  }
   return path.AppendASCII("google_apis")
       .AppendASCII("test")
       .AppendASCII("data")
@@ -79,6 +80,10 @@ TEST_F(GaiaUrlsTest, InitializeDefault_AllUrls) {
             "https://accounts.google.com/embedded/setup/kidsignin/chromeos");
   EXPECT_EQ(gaia_urls()->embedded_setup_windows_url().spec(),
             "https://accounts.google.com/embedded/setup/windows");
+  EXPECT_EQ(gaia_urls()->embedded_reauth_chromeos_url().spec(),
+            "https://accounts.google.com/embedded/reauth/chromeos");
+  EXPECT_EQ(gaia_urls()->saml_redirect_chromeos_url().spec(),
+            "https://accounts.google.com/samlredirect");
   EXPECT_EQ(gaia_urls()->signin_chrome_sync_dice().spec(),
             "https://accounts.google.com/signin/chrome/sync?ssp=1");
   EXPECT_EQ(gaia_urls()->signin_chrome_sync_keys_retrieval_url().spec(),
@@ -148,6 +153,10 @@ TEST_F(GaiaUrlsTest, InitializeDefault_URLSwitches) {
             "https://test-gaia.com/embedded/setup/kidsignin/chromeos");
   EXPECT_EQ(gaia_urls()->embedded_setup_windows_url().spec(),
             "https://test-gaia.com/embedded/setup/windows");
+  EXPECT_EQ(gaia_urls()->embedded_reauth_chromeos_url().spec(),
+            "https://test-gaia.com/embedded/reauth/chromeos");
+  EXPECT_EQ(gaia_urls()->saml_redirect_chromeos_url().spec(),
+            "https://test-gaia.com/samlredirect");
   EXPECT_EQ(gaia_urls()->signin_chrome_sync_dice().spec(),
             "https://test-gaia.com/signin/chrome/sync?ssp=1");
   EXPECT_EQ(gaia_urls()->signin_chrome_sync_keys_retrieval_url().spec(),
@@ -257,6 +266,10 @@ TEST_F(GaiaUrlsTest, InitializeFromConfig_AllUrls) {
             "https://accounts.example.com/embedded/setup/kidsignin/chromeos");
   EXPECT_EQ(gaia_urls()->embedded_setup_windows_url().spec(),
             "https://accounts.example.com/embedded/setup/windows");
+  EXPECT_EQ(gaia_urls()->embedded_reauth_chromeos_url().spec(),
+            "https://accounts.example.com/embedded/reauth/chromeos");
+  EXPECT_EQ(gaia_urls()->saml_redirect_chromeos_url().spec(),
+            "https://accounts.example.com/samlredirect");
   EXPECT_EQ(gaia_urls()->signin_chrome_sync_dice().spec(),
             "https://accounts.example.com/signin/chrome/sync?ssp=1");
   EXPECT_EQ(gaia_urls()->signin_chrome_sync_keys_retrieval_url().spec(),
@@ -316,6 +329,10 @@ TEST_F(GaiaUrlsTest, InitializeFromConfig_AllBaseUrls) {
             "https://accounts.example.com/embedded/setup/v2/chromeos");
   EXPECT_EQ(gaia_urls()->embedded_setup_windows_url().spec(),
             "https://accounts.example.com/embedded/setup/windows");
+  EXPECT_EQ(gaia_urls()->embedded_reauth_chromeos_url().spec(),
+            "https://accounts.example.com/embedded/reauth/chromeos");
+  EXPECT_EQ(gaia_urls()->saml_redirect_chromeos_url().spec(),
+            "https://accounts.example.com/samlredirect");
   EXPECT_EQ(gaia_urls()->signin_chrome_sync_dice().spec(),
             "https://accounts.example.com/signin/chrome/sync?ssp=1");
   EXPECT_EQ(gaia_urls()->signin_chrome_sync_keys_retrieval_url().spec(),

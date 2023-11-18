@@ -35,8 +35,10 @@ import java.util.concurrent.Executors;
 @DoNotBatch(reason = "crbug/1459563")
 @RunWith(AndroidJUnit4.class)
 @IgnoreFor(
-        implementations = {CronetImplementation.FALLBACK},
-        reason = "The fallback implementation doesn't support QUIC")
+        implementations = {CronetImplementation.FALLBACK, CronetImplementation.AOSP_PLATFORM},
+        reason =
+                "The fallback implementation doesn't support QUIC. "
+                        + "crbug.com/1494870: Enable for AOSP_PLATFORM once fixed")
 public class QuicTest {
     @Rule public final CronetTestRule mTestRule = CronetTestRule.withManualEngineStartup();
 
@@ -57,13 +59,9 @@ public class QuicTest {
                                     QuicTestServer.getServerPort());
 
                             // The pref may not be written if the computed Effective Connection Type
-                            // (ECT) matches
-                            // the default ECT for the current connection type. Force the ECT to
-                            // "Slow-2G". Since
-                            // "Slow-2G" is not the default ECT for any connection type, this
-                            // ensures that the
-                            // pref
-                            // is written to.
+                            // (ECT) matches the default ECT for the current connection type.
+                            // Force the ECT to "Slow-2G". Since "Slow-2G" is not the default ECT
+                            // for any connection type, this ensures that the pref is written to.
                             JSONObject nqeParams =
                                     new JSONObject()
                                             .put("force_effective_connection_type", "Slow-2G");

@@ -10,7 +10,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -262,6 +262,12 @@ class USER_MANAGER_EXPORT KnownUser final {
   void RemovePendingOnboardingScreen(const AccountId& account_id);
 
   std::string GetPendingOnboardingScreen(const AccountId& account_id);
+
+  // Records whether Lacros is enabled for the user.
+  void SetLacrosEnabled(const AccountId& account_id, bool enabled);
+  // Returns true if at least one user has Lacros enabled, false otherwise.
+  // It defaults to false for users for which there's no information.
+  bool GetLacrosEnabledForAnyUser();
 
   bool UserExists(const AccountId& account_id);
 

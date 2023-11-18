@@ -25,11 +25,11 @@
 
 namespace blink {
 
+class FragmentItemsBuilder;
+class InlineBreakToken;
 class LayoutObject;
 class NGColumnSpannerPath;
 class NGEarlyBreak;
-class NGFragmentItemsBuilder;
-class NGInlineBreakToken;
 
 class CORE_EXPORT NGFragmentBuilder {
   STACK_ALLOCATED();
@@ -44,16 +44,16 @@ class CORE_EXPORT NGFragmentBuilder {
     child_break_tokens_.clear();
   }
 
-  using ChildrenVector = NGLogicalLinkVector;
+  using ChildrenVector = LogicalFragmentLinkVector;
   using MulticolCollection =
       HeapHashMap<Member<LayoutBox>,
-                  Member<NGMulticolWithPendingOOFs<LogicalOffset>>>;
+                  Member<MulticolWithPendingOofs<LogicalOffset>>>;
 
   const ComputedStyle& Style() const {
     DCHECK(style_);
     return *style_;
   }
-  void SetStyleVariant(NGStyleVariant style_variant) {
+  void SetStyleVariant(StyleVariant style_variant) {
     style_variant_ = style_variant;
   }
 
@@ -160,12 +160,12 @@ class CORE_EXPORT NGFragmentBuilder {
 
   const ChildrenVector& Children() const { return children_; }
 
-  // True if |this| has |NGFragmentItemsBuilder|; i.e., if |this| is an inline
+  // True if |this| has |FragmentItemsBuilder|; i.e., if |this| is an inline
   // formatting context.
   bool HasItems() const { return items_builder_; }
-  // The |NGFragmentItemsBuilder| for the inline formatting context of this box.
-  NGFragmentItemsBuilder* ItemsBuilder() { return items_builder_; }
-  void SetItemsBuilder(NGFragmentItemsBuilder* builder) {
+  // The |FragmentItemsBuilder| for the inline formatting context of this box.
+  FragmentItemsBuilder* ItemsBuilder() { return items_builder_; }
+  void SetItemsBuilder(FragmentItemsBuilder* builder) {
     items_builder_ = builder;
   }
 
@@ -199,7 +199,7 @@ class CORE_EXPORT NGFragmentBuilder {
   //
   // Part 2: Out-of-flow layout part positions OOF-positioned nodes.
   //
-  // NGOutOfFlowLayoutPart(container_style, builder).Run();
+  // OutOfFlowLayoutPart(container_style, builder).Run();
   //
   // See layout part for builder interaction.
   void AddOutOfFlowChildCandidate(
@@ -208,8 +208,7 @@ class CORE_EXPORT NGFragmentBuilder {
       LogicalStaticPosition::InlineEdge = LogicalStaticPosition::kInlineStart,
       LogicalStaticPosition::BlockEdge = LogicalStaticPosition::kBlockStart);
 
-  void AddOutOfFlowChildCandidate(
-      const NGLogicalOutOfFlowPositionedNode& candidate);
+  void AddOutOfFlowChildCandidate(const LogicalOofPositionedNode& candidate);
 
   // This should only be used for inline-level OOF-positioned nodes.
   // |inline_container_direction| is the current text direction for determining
@@ -220,15 +219,14 @@ class CORE_EXPORT NGFragmentBuilder {
       TextDirection inline_container_direction);
 
   void AddOutOfFlowFragmentainerDescendant(
-      const NGLogicalOOFNodeForFragmentation& descendant);
+      const LogicalOofNodeForFragmentation& descendant);
   void AddOutOfFlowFragmentainerDescendant(
-      const NGLogicalOutOfFlowPositionedNode& descendant);
+      const LogicalOofPositionedNode& descendant);
 
-  void AddOutOfFlowDescendant(
-      const NGLogicalOutOfFlowPositionedNode& descendant);
+  void AddOutOfFlowDescendant(const LogicalOofPositionedNode& descendant);
 
   void SwapOutOfFlowPositionedCandidates(
-      HeapVector<NGLogicalOutOfFlowPositionedNode>* candidates);
+      HeapVector<LogicalOofPositionedNode>* candidates);
 
   // Out-of-flow positioned elements inside a nested fragmentation context
   // are laid out once they've reached the outermost fragmentation context.
@@ -237,14 +235,14 @@ class CORE_EXPORT NGFragmentBuilder {
   // store such inner multicols for later use.
   void AddMulticolWithPendingOOFs(
       const NGBlockNode& multicol,
-      NGMulticolWithPendingOOFs<LogicalOffset>* multicol_info =
-          MakeGarbageCollected<NGMulticolWithPendingOOFs<LogicalOffset>>());
+      MulticolWithPendingOofs<LogicalOffset>* multicol_info =
+          MakeGarbageCollected<MulticolWithPendingOofs<LogicalOffset>>());
 
   void SwapMulticolsWithPendingOOFs(
       MulticolCollection* multicols_with_pending_oofs);
 
   void SwapOutOfFlowFragmentainerDescendants(
-      HeapVector<NGLogicalOOFNodeForFragmentation>* descendants);
+      HeapVector<LogicalOofNodeForFragmentation>* descendants);
 
   // Transfer the candidates from |oof_positioned_candidates_| to
   // |destination_builder|, adding any |additional_offset| to the candidate
@@ -256,7 +254,7 @@ class CORE_EXPORT NGFragmentBuilder {
   void TransferOutOfFlowCandidates(
       NGFragmentBuilder* destination_builder,
       LogicalOffset additional_offset,
-      const NGMulticolWithPendingOOFs<LogicalOffset>* multicol = nullptr);
+      const MulticolWithPendingOofs<LogicalOffset>* multicol = nullptr);
 
   bool HasOutOfFlowPositionedCandidates() const {
     return !oof_positioned_candidates_.empty();
@@ -274,8 +272,7 @@ class CORE_EXPORT NGFragmentBuilder {
     return !multicols_with_pending_oofs_.empty();
   }
 
-  HeapVector<NGLogicalOutOfFlowPositionedNode>*
-  MutableOutOfFlowPositionedCandidates() {
+  HeapVector<LogicalOofPositionedNode>* MutableOutOfFlowPositionedCandidates() {
     return &oof_positioned_candidates_;
   }
 
@@ -325,21 +322,21 @@ class CORE_EXPORT NGFragmentBuilder {
         has_out_of_flow_in_fragmentainer_subtree;
   }
   // Propagate the OOF descendants from a fragment to the builder. Since the OOF
-  // descendants on the fragment are NGPhysicalOutOfFlowPositionedNodes, we
-  // first have to create NGLogicalOutOfFlowPositionedNodes copies before
-  // appending them to our list of descendants.
+  // descendants on the fragment are PhysicalOofPositionedNodes, we first have
+  // to create LogicalOofPositionedNodes copies before appending them to our
+  // list of descendants.
   // In addition, propagate any inner multicols with pending OOF descendants.
   void PropagateOOFPositionedInfo(
       const NGPhysicalFragment& fragment,
       LogicalOffset offset,
       LogicalOffset relative_offset,
       LogicalOffset offset_adjustment = LogicalOffset(),
-      const NGInlineContainer<LogicalOffset>* inline_container = nullptr,
+      const OofInlineContainer<LogicalOffset>* inline_container = nullptr,
       LayoutUnit containing_block_adjustment = LayoutUnit(),
-      const NGContainingBlock<LogicalOffset>* containing_block = nullptr,
-      const NGContainingBlock<LogicalOffset>* fixedpos_containing_block =
+      const OofContainingBlock<LogicalOffset>* containing_block = nullptr,
+      const OofContainingBlock<LogicalOffset>* fixedpos_containing_block =
           nullptr,
-      const NGInlineContainer<LogicalOffset>* fixedpos_inline_container =
+      const OofInlineContainer<LogicalOffset>* fixedpos_inline_container =
           nullptr,
       LogicalOffset additional_fixedpos_offset = LogicalOffset());
   // Same as PropagateOOFPositionedInfo(), but only performs the propagation of
@@ -351,9 +348,9 @@ class CORE_EXPORT NGFragmentBuilder {
       LogicalOffset offset,
       LogicalOffset relative_offset,
       LayoutUnit containing_block_adjustment,
-      const NGContainingBlock<LogicalOffset>* containing_block,
-      const NGContainingBlock<LogicalOffset>* fixedpos_containing_block,
-      HeapVector<NGLogicalOOFNodeForFragmentation>* out_list = nullptr);
+      const OofContainingBlock<LogicalOffset>* containing_block,
+      const OofContainingBlock<LogicalOffset>* fixedpos_containing_block,
+      HeapVector<LogicalOofNodeForFragmentation>* out_list = nullptr);
 
   void SetIsSelfCollapsing() { is_self_collapsing_ = true; }
 
@@ -377,6 +374,9 @@ class CORE_EXPORT NGFragmentBuilder {
   }
   void SetAdjoiningObjectTypes(NGAdjoiningObjectTypes adjoining_object_types) {
     adjoining_object_types_ = adjoining_object_types;
+  }
+  void SetHasAdjoiningObjectDescendants(bool has_adjoining_object_descendants) {
+    has_adjoining_object_descendants_ = has_adjoining_object_descendants;
   }
   NGAdjoiningObjectTypes AdjoiningObjectTypes() const {
     return adjoining_object_types_;
@@ -424,6 +424,17 @@ class CORE_EXPORT NGFragmentBuilder {
   }
   bool ShouldForceSameFragmentationFlow() const {
     return should_force_same_fragmentation_flow_;
+  }
+
+  // True if we need to keep some child content in the current fragmentainer
+  // before breaking (even that overflows the fragmentainer). We'll do this by
+  // refusing last-resort breaks when there's no container separation, and we'll
+  // instead overflow the fragmentainer. See MustStayInCurrentFragmentainer().
+  void SetRequiresContentBeforeBreaking(bool b) {
+    requires_content_before_breaking_ = b;
+  }
+  bool RequiresContentBeforeBreaking() const {
+    return requires_content_before_breaking_;
   }
 
   // Downgrade the break appeal if the specified break appeal is lower than any
@@ -502,7 +513,7 @@ class CORE_EXPORT NGFragmentBuilder {
         space_(space),
         style_(style),
         writing_direction_(writing_direction),
-        style_variant_(NGStyleVariant::kStandard) {
+        style_variant_(StyleVariant::kStandard) {
     DCHECK(style_);
     layout_object_ = node.GetLayoutBox();
   }
@@ -516,7 +527,7 @@ class CORE_EXPORT NGFragmentBuilder {
       const NGLayoutResult&,
       LogicalOffset child_offset,
       LogicalOffset relative_offset,
-      const NGInlineContainer<LogicalOffset>* = nullptr);
+      const OofInlineContainer<LogicalOffset>* = nullptr);
 
   void PropagateFromLayoutResult(const NGLayoutResult&);
   void PropagateScrollStartTarget(const NGPhysicalFragment& child);
@@ -525,7 +536,7 @@ class CORE_EXPORT NGFragmentBuilder {
       const NGPhysicalFragment& child,
       LogicalOffset child_offset,
       LogicalOffset relative_offset,
-      const NGInlineContainer<LogicalOffset>* inline_container = nullptr);
+      const OofInlineContainer<LogicalOffset>* inline_container = nullptr);
 
   void AddChildInternal(const NGPhysicalFragment*, const LogicalOffset&);
 
@@ -534,16 +545,16 @@ class CORE_EXPORT NGFragmentBuilder {
   void AdjustFixedposContainerInfo(
       const NGPhysicalFragment* box_fragment,
       LogicalOffset relative_offset,
-      NGInlineContainer<LogicalOffset>* fixedpos_inline_container,
+      OofInlineContainer<LogicalOffset>* fixedpos_inline_container,
       const NGPhysicalFragment** fixedpos_containing_block_fragment,
-      const NGInlineContainer<LogicalOffset>* current_inline_container =
+      const OofInlineContainer<LogicalOffset>* current_inline_container =
           nullptr) const;
 
   NGLayoutInputNode node_;
   const NGConstraintSpace& space_;
   const ComputedStyle* style_;
   WritingDirectionMode writing_direction_;
-  NGStyleVariant style_variant_;
+  StyleVariant style_variant_;
   NGPhysicalFragment::NGBoxType box_type_ =
       NGPhysicalFragment::NGBoxType::kNormalBox;
   LogicalSize size_;
@@ -568,17 +579,17 @@ class CORE_EXPORT NGFragmentBuilder {
 
   ChildrenVector children_;
 
-  NGFragmentItemsBuilder* items_builder_ = nullptr;
+  FragmentItemsBuilder* items_builder_ = nullptr;
 
   // Only used by the NGBoxFragmentBuilder subclass, but defined here to avoid
   // a virtual function call.
   NGBreakTokenVector child_break_tokens_;
-  const NGInlineBreakToken* last_inline_break_token_ = nullptr;
+  const InlineBreakToken* last_inline_break_token_ = nullptr;
 
-  HeapVector<NGLogicalOutOfFlowPositionedNode> oof_positioned_candidates_;
-  HeapVector<NGLogicalOOFNodeForFragmentation>
+  HeapVector<LogicalOofPositionedNode> oof_positioned_candidates_;
+  HeapVector<LogicalOofNodeForFragmentation>
       oof_positioned_fragmentainer_descendants_;
-  HeapVector<NGLogicalOutOfFlowPositionedNode> oof_positioned_descendants_;
+  HeapVector<LogicalOofPositionedNode> oof_positioned_descendants_;
   MulticolCollection multicols_with_pending_oofs_;
 
   UnpositionedListMarker unpositioned_list_marker_;
@@ -622,6 +633,7 @@ class CORE_EXPORT NGFragmentBuilder {
   bool has_column_spanner_ = false;
   bool is_empty_spanner_parent_ = false;
   bool should_force_same_fragmentation_flow_ = false;
+  bool requires_content_before_breaking_ = false;
   bool should_add_break_tokens_manually_ = false;
   bool has_out_of_flow_fragment_child_ = false;
   bool has_out_of_flow_in_fragmentainer_subtree_ = false;
@@ -631,7 +643,7 @@ class CORE_EXPORT NGFragmentBuilder {
   bool is_may_have_descendant_above_block_start_explicitly_set_ = false;
 #endif
 
-  friend class NGInlineLayoutStateStack;
+  friend class InlineLayoutStateStack;
   friend class NGLayoutResult;
   friend class NGPhysicalFragment;
 };

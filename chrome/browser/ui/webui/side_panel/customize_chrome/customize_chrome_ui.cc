@@ -7,12 +7,15 @@
 #include <string>
 #include <utility>
 
+#include "base/rand_util.h"
+#include "chrome/browser/bad_message.h"
 #include "chrome/browser/cart/cart_handler.h"
 #include "chrome/browser/image_fetcher/image_decoder_impl.h"
 #include "chrome/browser/new_tab_page/modules/new_tab_page_modules.h"
 #include "chrome/browser/new_tab_page/new_tab_page_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/background/ntp_custom_background_service_factory.h"
+#include "chrome/browser/search/background/wallpaper_search/wallpaper_search_background_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/webui/cr_components/customize_color_scheme_mode/customize_color_scheme_mode_handler.h"
 #include "chrome/browser/ui/webui/cr_components/theme_color_picker/theme_color_picker_handler.h"
@@ -20,6 +23,7 @@
 #include "chrome/browser/ui/webui/sanitized_image_source.h"
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome_page_handler.h"
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome_section.h"
+#include "chrome/browser/ui/webui/side_panel/customize_chrome/wallpaper_search/wallpaper_search_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -30,6 +34,7 @@
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/search/ntp_features.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -37,6 +42,16 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/webui/color_change_listener/color_change_handler.h"
+
+namespace {
+
+int64_t RandInt64() {
+  int64_t number;
+  base::RandBytes(&number, sizeof(number));
+  return number;
+}
+
+}  // namespace
 
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(CustomizeChromeUI,
                                       kChangeChromeThemeButtonElementId);
@@ -55,7 +70,10 @@ CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
       web_contents_(web_ui->GetWebContents()),
       module_id_names_(ntp::MakeModuleIdNames(
           NewTabPageUI::IsDriveModuleEnabledForProfile(profile_))),
-      page_factory_receiver_(this) {
+      page_factory_receiver_(this),
+      wallpaper_search_background_manager_(
+          std::make_unique<WallpaperSearchBackgroundManager>(profile_)),
+      id_(RandInt64()) {
   content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
       profile_, chrome::kChromeUICustomizeChromeSidePanelHost);
 
@@ -85,6 +103,7 @@ CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
       {"uploadImage", IDS_NTP_CUSTOM_BG_UPLOAD_AN_IMAGE},
       {"uploadedImage", IDS_NTP_CUSTOMIZE_UPLOADED_IMAGE_LABEL},
       {"yourUploadedImage", IDS_NTP_CUSTOMIZE_YOUR_UPLOADED_IMAGE_LABEL},
+      {"yourSearchedImage", IDS_NTP_CUSTOMIZE_YOUR_SEARCHED_IMAGE_LABEL},
       {"resetToClassicChrome",
        IDS_NTP_CUSTOMIZE_CHROME_RESET_TO_CLASSIC_CHROME_LABEL},
       {"followThemeToggle", IDS_NTP_CUSTOMIZE_CHROME_FOLLOW_THEME_LABEL},
@@ -110,6 +129,24 @@ CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
       {"lightMode", IDS_NTP_CUSTOMIZE_CHROME_COLOR_SCHEME_MODE_LIGHT_LABEL},
       {"darkMode", IDS_NTP_CUSTOMIZE_CHROME_COLOR_SCHEME_MODE_DARK_LABEL},
       {"systemMode", IDS_NTP_CUSTOMIZE_CHROME_COLOR_SCHEME_MODE_SYSTEM_LABEL},
+      // Wallpaper search strings.
+      {"genericErrorDescription",
+       IDS_NTP_WALLPAPER_SEARCH_GENERIC_ERROR_DESCRIPTION},
+      {"genericErrorTitle", IDS_NTP_WALLPAPER_SEARCH_GENERIC_ERROR_TITLE},
+      {"offlineDescription", IDS_NTP_WALLPAPER_SEARCH_OFFLINE_DESCRIPTION},
+      {"offlineTitle", IDS_NTP_WALLPAPER_SEARCH_OFFLINE_TITLE},
+      {"optionalDetailsLabel", IDS_NTP_WALLPAPER_SEARCH_OPTIONAL_DETAILS_LABEL},
+      {"requestThrottledDescription",
+       IDS_NTP_WALLPAPER_SEARCH_REQUEST_THROTTLED_DESCRIPTION},
+      {"requestThrottledTitle",
+       IDS_NTP_WALLPAPER_SEARCH_REQUEST_THROTTLED_TITLE},
+      {"tryAgain", IDS_NTP_WALLPAPER_SEARCH_TRY_AGAIN_CTA},
+      {"wallpaperSearchHeader", IDS_NTP_WALLPAPER_SEARCH_HEADER},
+      {"wallpaperSearchHistoryHeader", IDS_NTP_WALLPAPER_SEARCH_HISTORY_HEADER},
+      {"wallpaperSearchSubmitBtn", IDS_NTP_WALLPAPER_SEARCH_SUBMIT_BTN_TEXT},
+      {"wallpaperSearchSubmitAgainBtn",
+       IDS_NTP_WALLPAPER_SEARCH_SUBMIT_AGAIN_BTN_TEXT},
+      {"experimentalFeatureDisclaimer", IDS_EXPERIMENTAL_FEATURE_DISCLAIMER},
   };
   source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -227,6 +264,16 @@ void CustomizeChromeUI::BindInterface(
       web_ui()->GetWebContents(), std::move(pending_receiver));
 }
 
+void CustomizeChromeUI::BindInterface(
+    mojo::PendingReceiver<
+        side_panel::customize_chrome::mojom::WallpaperSearchHandlerFactory>
+        pending_receiver) {
+  if (wallpaper_search_handler_factory_receiver_.is_bound()) {
+    wallpaper_search_handler_factory_receiver_.reset();
+  }
+  wallpaper_search_handler_factory_receiver_.Bind(std::move(pending_receiver));
+}
+
 void CustomizeChromeUI::CreatePageHandler(
     mojo::PendingRemote<side_panel::mojom::CustomizeChromePage> pending_page,
     mojo::PendingReceiver<side_panel::mojom::CustomizeChromePageHandler>
@@ -235,7 +282,7 @@ void CustomizeChromeUI::CreatePageHandler(
   customize_chrome_page_handler_ = std::make_unique<CustomizeChromePageHandler>(
       std::move(pending_page_handler), std::move(pending_page),
       NtpCustomBackgroundServiceFactory::GetForProfile(profile_), web_contents_,
-      module_id_names_, image_decoder_.get());
+      module_id_names_);
   if (section_.has_value()) {
     customize_chrome_page_handler_->ScrollToSection(*section_);
     section_.reset();
@@ -276,4 +323,18 @@ void CustomizeChromeUI::CreateThemeColorPickerHandler(
       std::move(handler), std::move(client),
       NtpCustomBackgroundServiceFactory::GetForProfile(profile_),
       web_contents_);
+}
+
+void CustomizeChromeUI::CreateWallpaperSearchHandler(
+    mojo::PendingRemote<
+        side_panel::customize_chrome::mojom::WallpaperSearchClient> client,
+    mojo::PendingReceiver<
+        side_panel::customize_chrome::mojom::WallpaperSearchHandler> handler) {
+  if (wallpaper_search_handler_) {
+    mojo::ReportBadMessage("Only allowed to create one Mojo pipe per WebUI.");
+    return;
+  }
+  wallpaper_search_handler_ = std::make_unique<WallpaperSearchHandler>(
+      std::move(handler), std::move(client), profile_, image_decoder_.get(),
+      wallpaper_search_background_manager_.get(), id_);
 }

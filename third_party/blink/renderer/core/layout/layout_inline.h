@@ -153,6 +153,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   gfx::RectF LocalBoundingBoxRectForAccessibility() const final;
 
   PhysicalRect PhysicalLinesBoundingBox() const;
+  PhysicalRect LinesVisualOverflowBoundingBox() const;
   PhysicalRect VisualOverflowRect() const final;
 
   bool HasInlineFragments() const final;
@@ -270,10 +271,6 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   PhysicalRect CulledInlineVisualOverflowBoundingBox() const;
 
-  // For VisualOverflowRect() only, to get bounding box of visual overflow of
-  // line boxes.
-  PhysicalRect LinesVisualOverflowBoundingBox() const;
-
   // PhysicalRectCollector should be like a function:
   // void (const PhysicalRect&).
   template <typename PhysicalRectCollector>
@@ -321,12 +318,6 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
 
-  gfx::Rect BorderBoundingBox() const final {
-    NOT_DESTROYED();
-    gfx::Rect bounding_box = ToEnclosingRect(PhysicalLinesBoundingBox());
-    return gfx::Rect(bounding_box.size());
-  }
-
   void DirtyLinesFromChangedChild(LayoutObject*) final;
 
   // TODO(leviw): This should probably be an int. We don't snap equivalent lines
@@ -353,7 +344,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   LayoutObjectChildList children_;
 
   // The index of the first fragment item associated with this object in
-  // |NGFragmentItems::Items()|. Zero means there are no such item.
+  // |FragmentItems::Items()|. Zero means there are no such item.
   // Valid only when IsInLayoutNGInlineFormattingContext().
   wtf_size_t first_fragment_item_index_ = 0u;
 };

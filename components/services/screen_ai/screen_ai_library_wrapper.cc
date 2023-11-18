@@ -99,12 +99,10 @@ bool ScreenAILibraryWrapper::Load(const base::FilePath& library_path) {
     }
   }
 
-#if !BUILDFLAG(IS_WIN)
-  if (!LoadFunction(init_ocr_, "InitOCR") ||
+  if (!LoadFunction(init_ocr_, "InitOCRUsingCallback") ||
       !LoadFunction(perform_ocr_, "PerformOCR")) {
     return false;
   }
-#endif
 
   // Main Content Extraction functions.
   if (!LoadFunction(init_main_content_extraction_,
@@ -154,9 +152,9 @@ bool ScreenAILibraryWrapper::InitLayoutExtraction() {
 }
 
 NO_SANITIZE("cfi-icall")
-bool ScreenAILibraryWrapper::InitOCR(const base::FilePath& models_folder) {
+bool ScreenAILibraryWrapper::InitOCR() {
   CHECK(init_ocr_);
-  return init_ocr_(models_folder.MaybeAsASCII().c_str());
+  return init_ocr_();
 }
 
 NO_SANITIZE("cfi-icall")

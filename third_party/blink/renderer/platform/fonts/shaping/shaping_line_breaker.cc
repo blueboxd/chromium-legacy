@@ -63,7 +63,7 @@ bool ShouldHyphenate(const String& text,
 
 inline void CheckBreakOffset(unsigned offset, unsigned start, unsigned end) {
   // It is critical to move the offset forward, or NGLineBreaker may keep adding
-  // NGInlineItemResult until all the memory is consumed.
+  // InlineItemResult until all the memory is consumed.
   CHECK_GT(offset, start);
   // The offset must be within the given range, or NGLineBreaker will fail to
   // sync item with offset.
@@ -96,7 +96,9 @@ inline ShapingLineBreaker::EdgeOffset ShapingLineBreaker::FirstSafeOffset(
     return {start};
   }
   if (UNLIKELY(RuntimeEnabledFeatures::CSSTextSpacingTrimEnabled()) &&
-      UNLIKELY(HanKerning::IsOpen(GetText()[start])) &&
+      // TODO(crbug.com/1463891): `MaybeOpen` is likely to hit the performance
+      // for non-CJK documents. We should try harder not to require reshaping.
+      UNLIKELY(HanKerning::MaybeOpen(GetText()[start])) &&
       text_spacing_trim_ == TextSpacingTrim::kSpaceFirst) {
     // `HanKerning` wants to apply kerning to `kOpen` characters at the start of
     // the line. Reshape it to resolve the `SimpleFontData` and apply

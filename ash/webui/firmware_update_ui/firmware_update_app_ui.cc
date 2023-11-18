@@ -40,6 +40,8 @@ void SetUpWebUIDataSource(content::WebUIDataSource* source,
                           IDR_WEBUI_JS_TEST_LOADER_UTIL_JS);
   source->AddBoolean("isJellyEnabledForFirmwareUpdate",
                      ash::features::IsJellyEnabledForFirmwareUpdate());
+  source->AddBoolean("isFirmwareUpdateUIV2Enabled",
+                     ash::features::IsFirmwareUpdateUIV2Enabled());
 }
 
 void AddFirmwareUpdateAppStrings(content::WebUIDataSource* source) {
@@ -67,7 +69,8 @@ void AddFirmwareUpdateAppStrings(content::WebUIDataSource* source) {
       {"restartingTitleText", IDS_FIRMWARE_RESTARTING_TITLE_TEXT},
       {"upToDate", IDS_FIRMWARE_UP_TO_DATE_TEXT},
       {"versionText", IDS_FIRMWARE_VERSION_TEXT},
-      {"proceedConfirmationText", IDS_FIRMWARE_PROCEED_UPDATE_CONFIRMATION}};
+      {"proceedConfirmationText", IDS_FIRMWARE_PROCEED_UPDATE_CONFIRMATION},
+      {"confirmationDisclaimer", IDS_FIRMWARE_CONFIRMATION_DISCLAIMER_TEXT}};
 
   source->AddLocalizedStrings(kLocalizedStrings);
   source->UseStringsJs();
@@ -82,8 +85,7 @@ FirmwareUpdateAppUI::FirmwareUpdateAppUI(content::WebUI* web_ui)
       kChromeUIFirmwareUpdateAppHost);
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
-      "script-src chrome://resources chrome://test chrome://webui-test "
-      "'self';");
+      "script-src chrome://resources chrome://webui-test 'self';");
   ash::EnableTrustedTypesCSP(source);
 
   const auto resources = base::make_span(kAshFirmwareUpdateAppResources,

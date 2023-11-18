@@ -67,7 +67,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowsingTopics.EpochTopicsCalculation.HistoryTopicsCount"
-    units="topics" expires_after="2024-02-11">
+    units="topics" expires_after="2024-04-28">
   <owner>yaoxia@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>
   <summary>
@@ -95,7 +95,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowsingTopics.EpochTopicsCalculation.TimeBetweenCalculations"
-    units="ms" expires_after="2024-02-20">
+    units="ms" expires_after="2024-04-28">
   <owner>abigailkatcoff@chromium.org</owner>
   <owner>yaoxia@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>
@@ -117,6 +117,17 @@ chromium-metrics-reviews@google.com.
     Recorded during each (weekly) topics calculation after the top topics are
     derived. In case of a calculation failure (e.g. permission denied, etc.),
     this metric won't be recorded.
+  </summary>
+</histogram>
+
+<histogram name="BrowsingTopics.InterceptedTopicsFetchRequest.DocumentPresent"
+    enum="BooleanPresent" expires_after="2024-04-29">
+  <owner>yaoxia@chromium.org</owner>
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    Records whether the initiator document is present for a topics fetch()
+    request. Recorded when a topics fetch() request (or the redirect requrest)
+    is intercepted in the browser process.
   </summary>
 </histogram>
 
@@ -155,7 +166,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowsingTopics.Result.FakeTopicCount" units="topics"
-    expires_after="2024-03-01">
+    expires_after="2024-05-05">
   <owner>yaoxia@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>
   <summary>
@@ -165,7 +176,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowsingTopics.Result.FilteredTopicCount" units="topics"
-    expires_after="2024-03-01">
+    expires_after="2024-05-05">
   <owner>yaoxia@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>
   <summary>
@@ -176,7 +187,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowsingTopics.Result.RealTopicCount" units="topics"
-    expires_after="2024-03-01">
+    expires_after="2024-05-05">
   <owner>yaoxia@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>
   <summary>
@@ -186,7 +197,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowsingTopics.Result.Status"
-    enum="BrowsingTopicsApiAccessResult" expires_after="2024-03-01">
+    enum="BrowsingTopicsApiAccessResult" expires_after="2024-05-05">
   <owner>yaoxia@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>
   <summary>

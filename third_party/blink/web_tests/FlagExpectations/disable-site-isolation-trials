@@ -2,9 +2,6 @@
 # tags: [ Release Debug ]
 # results: [ Timeout Crash Pass Failure Slow Skip ]
 
-# No need to run Virtual test suite plz-dedicated-worker here
-virtual/plz-dedicated-worker/* [ Skip ]
-
 # Isolated-sandboxed-iframe require site isolation to be effective.
 virtual/isolate-sandboxed-iframes/* [ Skip ]
 
@@ -152,3 +149,6 @@ crbug.com/1456636 [ Linux ] virtual/view-transition-mpa-serialization/view-trans
 crbug.com/1456636 [ Linux ] virtual/view-transition/view-transition/parent-transition-cancels-child.html [ Failure ]  # Reftest image failure
 
 crbug.com/1487775 virtual/fenced-frame-mparch/wpt_internal/fenced_frame/unfenced-top.https.html [ Failure Timeout ]
+
+# No plans to run wdspec tests for this flag-specific suite.
+external/wpt/webdriver/tests/* [ Skip ]

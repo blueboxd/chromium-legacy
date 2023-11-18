@@ -28,7 +28,7 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_client_helper.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
-#include "components/password_manager/core/browser/password_store_backend_error.h"
+#include "components/password_manager/core/browser/password_store/password_store_backend_error.h"
 #include "components/prefs/pref_member.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/signin/public/base/signin_buildflags.h"
@@ -143,7 +143,7 @@ class ChromePasswordManagerClient
       password_manager::ErrorMessageFlowType flow_type,
       password_manager::PasswordStoreBackendErrorType error_type) override;
 
-  void ShowKeyboardReplacingSurface(
+  bool ShowKeyboardReplacingSurface(
       password_manager::PasswordManagerDriver* driver,
       const password_manager::SubmissionReadinessParams& submission_readiness,
       bool is_webauthn_form) override;
@@ -178,7 +178,8 @@ class ChromePasswordManagerClient
       bool is_blocklisted) override;
   void AutomaticPasswordSave(
       std::unique_ptr<password_manager::PasswordFormManagerForUI>
-          saved_form_manager) override;
+          saved_form_manager,
+      bool is_update_confirmation) override;
   void PasswordWasAutofilled(
       const std::vector<const password_manager::PasswordForm*>& best_matches,
       const url::Origin& origin,
@@ -205,8 +206,6 @@ class ChromePasswordManagerClient
       const override;
   password_manager::PasswordReuseManager* GetPasswordReuseManager()
       const override;
-  password_manager::PasswordChangeSuccessTracker*
-  GetPasswordChangeSuccessTracker() override;
   password_manager::SyncState GetPasswordSyncState() const override;
   bool WasLastNavigationHTTPError() const override;
 

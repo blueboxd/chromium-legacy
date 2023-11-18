@@ -450,8 +450,9 @@ bool SetNonBlocking(int fd) {
     return false;
   if (flags & O_NONBLOCK)
     return true;
-  if (HANDLE_EINTR(fcntl(fd, F_SETFL, flags | O_NONBLOCK)) == -1)
+  if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
     return false;
+  }
   return true;
 }
 
@@ -461,8 +462,23 @@ bool SetCloseOnExec(int fd) {
     return false;
   if (flags & FD_CLOEXEC)
     return true;
-  if (HANDLE_EINTR(fcntl(fd, F_SETFD, flags | FD_CLOEXEC)) == -1)
+  if (fcntl(fd, F_SETFD, flags | FD_CLOEXEC) == -1) {
     return false;
+  }
+  return true;
+}
+
+bool RemoveCloseOnExec(int fd) {
+  const int flags = fcntl(fd, F_GETFD);
+  if (flags == -1) {
+    return false;
+  }
+  if ((flags & FD_CLOEXEC) == 0) {
+    return true;
+  }
+  if (fcntl(fd, F_SETFD, flags & ~FD_CLOEXEC) == -1) {
+    return false;
+  }
   return true;
 }
 

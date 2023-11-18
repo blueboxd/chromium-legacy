@@ -21,12 +21,14 @@ import android.widget.RemoteViews;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.annotation.OptIn;
 import androidx.annotation.VisibleForTesting;
 import androidx.browser.customtabs.CustomTabsCallback;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.browser.customtabs.CustomTabsService;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 import androidx.browser.customtabs.EngagementSignalsCallback;
+import androidx.browser.customtabs.ExperimentalMinimizationCallback;
 import androidx.browser.customtabs.PostMessageServiceConnection;
 
 import org.jni_zero.CalledByNative;
@@ -59,7 +61,6 @@ import org.chromium.chrome.browser.browserservices.PostMessageHandler;
 import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.SessionHandler;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
-import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ActivityLayoutState;
 import org.chromium.chrome.browser.customtabs.ClientManager.CalledWarmup;
 import org.chromium.chrome.browser.customtabs.content.EngagementSignalsHandler;
 import org.chromium.chrome.browser.device.DeviceClassManager;
@@ -67,6 +68,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.MutableFlagWithSafeDefault;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
+import org.chromium.chrome.browser.page_insights.proto.Config.PageInsightsConfig;
 import org.chromium.chrome.browser.page_load_metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.prefetch.settings.PreloadPagesSettingsBridge;
 import org.chromium.chrome.browser.prefetch.settings.PreloadPagesState;
@@ -81,6 +83,7 @@ import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.components.variations.SyntheticTrialAnnotationMode;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.ChildProcessLauncherHelper;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.network.mojom.ReferrerPolicy;
@@ -95,6 +98,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -121,28 +125,6 @@ public class CustomTabsConnection {
     static final String ON_DETACHED_REQUEST_REQUESTED = "onDetachedRequestRequested";
     @VisibleForTesting
     static final String ON_DETACHED_REQUEST_COMPLETED = "onDetachedRequestCompleted";
-
-    // For CustomTabs.SpeculationStatusOnStart, see tools/metrics/enums.xml. Append only.
-    private static final int SPECULATION_STATUS_ON_START_ALLOWED = 0;
-    // What kind of speculation was started, counted in addition to
-    // SPECULATION_STATUS_ALLOWED.
-    private static final int SPECULATION_STATUS_ON_START_PRERENDER = 2;
-    private static final int SPECULATION_STATUS_ON_START_BACKGROUND_TAB = 3;
-    // The following describe reasons why a speculation was not allowed, and are
-    // counted instead of SPECULATION_STATUS_ALLOWED.
-    private static final int SPECULATION_STATUS_ON_START_NOT_ALLOWED_DEVICE_CLASS = 5;
-    private static final int SPECULATION_STATUS_ON_START_NOT_ALLOWED_BLOCK_3RD_PARTY_COOKIES = 6;
-    private static final int SPECULATION_STATUS_ON_START_NOT_ALLOWED_NETWORK_PREDICTION_DISABLED =
-            7;
-    // Obsolete due to no longer running the experiment
-    // "PredictivePrefetchingAllowedOnAllConnectionTypes".
-    // private static final int SPECULATION_STATUS_ON_START_NOT_ALLOWED_NETWORK_METERED = 9;
-    private static final int SPECULATION_STATUS_ON_START_MAX = 10;
-
-    // For CustomTabs.SpeculationStatusOnSwap, see tools/metrics/enums.xml. Append only.
-    private static final int SPECULATION_STATUS_ON_SWAP_BACKGROUND_TAB_TAKEN = 0;
-    private static final int SPECULATION_STATUS_ON_SWAP_BACKGROUND_TAB_NOT_MATCHED = 1;
-    private static final int SPECULATION_STATUS_ON_SWAP_MAX = 4;
 
     // Constants for sending connection characteristics.
     public static final String DATA_REDUCTION_ENABLED = "dataReductionEnabled";
@@ -315,8 +297,8 @@ public class CustomTabsConnection {
         for (String key : bundle.keySet()) {
             Object o = bundle.get(key);
             try {
-                if (o instanceof Bundle) {
-                    json.put(key, bundleToJson((Bundle) o));
+                if (o instanceof Bundle b) {
+                    json.put(key, bundleToJson(b));
                 } else if (o instanceof Integer || o instanceof Long || o instanceof Boolean) {
                     json.put(key, o);
                 } else if (o == null) {
@@ -525,11 +507,18 @@ public class CustomTabsConnection {
         }
 
         if (maySpeculate(session)) {
+            // `IntentHandler.hasAnyIncognitoExtra` check:
             // Hidden tabs are created always with regular profile, so we need to block hidden tab
             // creation in incognito mode not to have inconsistent modes between tab model and
             // hidden tab. (crbug.com/1190971)
-            boolean canUseHiddenTab = mClientManager.getCanUseHiddenTab(session)
-                    && !IntentHandler.hasAnyIncognitoExtra(extras);
+            // The incognito check is already performed in the entrypoint
+            // `mayLaunchUrlInternal`,
+            // but also performed here to be safe against future callers.
+            // Read the discussion at
+            // https://chromium-review.googlesource.com/c/chromium/src/+/5004377/comment/02cf16f4_82578ace/
+            boolean canUseHiddenTab =
+                    mClientManager.getCanUseHiddenTab(session)
+                            && !IntentHandler.hasAnyIncognitoExtra(extras);
             startSpeculation(session, url, canUseHiddenTab, extras, uid);
         }
         preconnectUrls(otherLikelyBundles);
@@ -548,9 +537,8 @@ public class CustomTabsConnection {
         return true;
     }
 
-    @VisibleForTesting
-    public Tab getHiddenTab() {
-        return mHiddenTabHolder != null ? mHiddenTabHolder.getHiddenTab() : null;
+    public Tab getHiddenTabForTesting() {
+        return mHiddenTabHolder != null ? mHiddenTabHolder.getHiddenTabForTesting() : null;
     }
 
     private boolean preconnectUrls(List<Bundle> likelyBundles) {
@@ -1218,16 +1206,58 @@ public class CustomTabsConnection {
         logCallback("onActivityResized()", "(" + height + "x" + width + ")");
     }
 
+    /** Called when a Custom Tab is unminimized. */
+    @OptIn(markerClass = ExperimentalMinimizationCallback.class)
+    public void onUnminimized(@Nullable CustomTabsSessionToken session) {
+        Bundle args = new Bundle();
+
+        CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
+        if (callback == null) return;
+        try {
+            callback.onUnminimized(args);
+        } catch (Exception e) {
+            // Catching all exceptions is really bad, but we need it here,
+            // because Android exposes us to client bugs by throwing a variety
+            // of exceptions. See crbug.com/517023.
+            return;
+        }
+        logCallback("onUnminimized()", args);
+    }
+
+    /** Called when a Custom Tab is minimized. */
+    @OptIn(markerClass = ExperimentalMinimizationCallback.class)
+    public void onMinimized(@Nullable CustomTabsSessionToken session) {
+        Bundle args = new Bundle();
+
+        CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
+        if (callback == null) return;
+        try {
+            callback.onMinimized(args);
+        } catch (Exception e) {
+            // Catching all exceptions is really bad, but we need it here,
+            // because Android exposes us to client bugs by throwing a variety
+            // of exceptions. See crbug.com/517023.
+            return;
+        }
+        logCallback("onMinimized()", args);
+    }
+
     /**
      * Called when the Custom Tab's layout has changed.
+     *
      * @param left The left coordinate of the custom tab window in pixels
      * @param top The top coordinate of the custom tab window in pixels
      * @param right The right coordinate of the custom tab window in pixels
      * @param bottom The bottom coordinate of the custom tab window in pixels
      * @param state The current layout state in which the Custom Tab is displayed.
      */
-    public void onActivityLayout(@Nullable CustomTabsSessionToken session, int left, int top,
-            int right, int bottom, @ActivityLayoutState int state) {
+    public void onActivityLayout(
+            @Nullable CustomTabsSessionToken session,
+            int left,
+            int top,
+            int right,
+            int bottom,
+            @CustomTabsCallback.ActivityLayoutState int state) {
         Bundle args = new Bundle();
         args.putInt(ON_ACTIVITY_LAYOUT_LEFT_EXTRA, left);
         args.putInt(ON_ACTIVITY_LAYOUT_TOP_EXTRA, top);
@@ -1238,23 +1268,45 @@ public class CustomTabsConnection {
         if (safeExtraCallback(session, ON_ACTIVITY_LAYOUT_CALLBACK, args) && mLogRequests) {
             logCallback("extraCallback(" + ON_ACTIVITY_LAYOUT_CALLBACK + ")", args);
         }
+
+        CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
+        if (callback == null) return;
+        try {
+            callback.onActivityLayout(left, top, right, bottom, state, Bundle.EMPTY);
+        } catch (Exception e) {
+            // Catching all exceptions is really bad, but we need it here,
+            // because Android exposes us to client bugs by throwing a variety
+            // of exceptions. See crbug.com/517023.
+            return;
+        }
+    }
+
+    /**
+     * @see {@link notifyNavigationEvent(CustomTabsSessionToken, int, Optional<int>)}
+     */
+    public boolean notifyNavigationEvent(CustomTabsSessionToken session, int navigationEvent) {
+        return notifyNavigationEvent(session, navigationEvent, Optional.empty());
     }
 
     /**
      * Notifies the application of a navigation event.
      *
-     * Delivers the {@link CustomTabsCallback#onNavigationEvent} callback to the application.
+     * <p>Delivers the {@link CustomTabsCallback#onNavigationEvent} callback to the application.
      *
      * @param session The Binder object identifying the session.
      * @param navigationEvent The navigation event code, defined in {@link CustomTabsCallback}
+     * @param errorCode Network error code. Empty if there was no error or the error code is not in
+     *     the list of error codes that should be passed to the embedder.
      * @return true for success.
      */
-    public boolean notifyNavigationEvent(CustomTabsSessionToken session, int navigationEvent) {
+    public boolean notifyNavigationEvent(
+            CustomTabsSessionToken session, int navigationEvent, Optional<Integer> errorCode) {
         CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
         if (callback == null) return false;
         try {
-            callback.onNavigationEvent(
-                    navigationEvent, getExtrasBundleForNavigationEventForSession(session));
+            Bundle extra = getExtrasBundleForNavigationEventForSession(session);
+            if (errorCode.isPresent()) extra.putInt("navigationEventErrorCode", errorCode.get());
+            callback.onNavigationEvent(navigationEvent, extra);
         } catch (Exception e) {
             // Catching all exceptions is really bad, but we need it here,
             // because Android exposes us to client bugs by throwing a variety
@@ -1382,10 +1434,25 @@ public class CustomTabsConnection {
 
     private void notifyWarmupIsDone(int uid) {
         ThreadUtils.assertOnUiThread();
+        final Bundle args = new Bundle(); // Empty one - safe to reuse for all the callbacks.
+
         // Notifies all the sessions, as warmup() is tied to a UID, not a session.
         for (CustomTabsSessionToken session : mClientManager.uidToSessions(uid)) {
+            // TODO(crbug.com/1484676): Remove extra callback after its usage dwindles down.
             safeExtraCallback(session, ON_WARMUP_COMPLETED, null);
+
+            CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
+            if (callback == null) continue;
+            try {
+                callback.onWarmupCompleted(args);
+            } catch (Exception e) {
+                // Catching all exceptions is really bad, but we need it here,
+                // because Android exposes us to client bugs by throwing a variety
+                // of exceptions. See crbug.com/517023.
+                continue;
+            }
         }
+        logCallback("onWarmupCompleted()", bundleToJson(args).toString());
     }
 
     /**
@@ -1613,25 +1680,18 @@ public class CustomTabsConnection {
         }
     }
 
-    @VisibleForTesting
-    int maySpeculateWithResult(CustomTabsSessionToken session) {
+    boolean maySpeculate(CustomTabsSessionToken session) {
         if (!DeviceClassManager.enablePrerendering()) {
-            return SPECULATION_STATUS_ON_START_NOT_ALLOWED_DEVICE_CLASS;
+            return false;
         }
         if (UserPrefs.get(Profile.getLastUsedRegularProfile()).getInteger(COOKIE_CONTROLS_MODE)
                 == CookieControlsMode.BLOCK_THIRD_PARTY) {
-            return SPECULATION_STATUS_ON_START_NOT_ALLOWED_BLOCK_3RD_PARTY_COOKIES;
+            return false;
         }
         if (PreloadPagesSettingsBridge.getState() == PreloadPagesState.NO_PRELOADING) {
-            return SPECULATION_STATUS_ON_START_NOT_ALLOWED_NETWORK_PREDICTION_DISABLED;
+            return false;
         }
-        return SPECULATION_STATUS_ON_START_ALLOWED;
-    }
-
-    boolean maySpeculate(CustomTabsSessionToken session) {
-        int speculationResult = maySpeculateWithResult(session);
-        recordSpeculationStatusOnStart(speculationResult);
-        return speculationResult == SPECULATION_STATUS_ON_START_ALLOWED;
+        return true;
     }
 
     /** Cancels the speculation for a given session, or any session if null. */
@@ -1654,24 +1714,24 @@ public class CustomTabsConnection {
         cancelSpeculation(null);
 
         if (useHiddenTab) {
-            recordSpeculationStatusOnStart(SPECULATION_STATUS_ON_START_BACKGROUND_TAB);
-            launchUrlInHiddenTab(session, url, extras);
+            launchUrlInHiddenTab(session, profile, url, extras);
         } else {
             createSpareWebContents();
         }
         warmupManager.maybePreconnectUrlAndSubResources(profile, url);
     }
 
-    /**
-     * Creates a hidden tab and initiates a navigation.
-     */
+    /** Creates a hidden tab and initiates a navigation. */
     private void launchUrlInHiddenTab(
-            CustomTabsSessionToken session, String url, @Nullable Bundle extras) {
+            CustomTabsSessionToken session, Profile profile, String url, @Nullable Bundle extras) {
         ThreadUtils.assertOnUiThread();
         mHiddenTabHolder.launchUrlInHiddenTab(
-                (Tab tab)
-                        -> setClientDataHeaderForNewTab(session, tab.getWebContents()),
-                session, mClientManager, url, extras);
+                (Tab tab) -> setClientDataHeaderForNewTab(session, tab.getWebContents()),
+                session,
+                profile,
+                mClientManager,
+                url,
+                extras);
     }
 
     @VisibleForTesting
@@ -1701,24 +1761,6 @@ public class CustomTabsConnection {
 
     void setTrustedPublisherUrlPackageForTest(@Nullable String packageName) {
         mTrustedPublisherUrlPackage = packageName;
-    }
-
-    private static void recordSpeculationStatusOnStart(int status) {
-        RecordHistogram.recordEnumeratedHistogram(
-                "CustomTabs.SpeculationStatusOnStart", status, SPECULATION_STATUS_ON_START_MAX);
-    }
-
-    private static void recordSpeculationStatusOnSwap(int status) {
-        RecordHistogram.recordEnumeratedHistogram(
-                "CustomTabs.SpeculationStatusOnSwap", status, SPECULATION_STATUS_ON_SWAP_MAX);
-    }
-
-    static void recordSpeculationStatusSwapTabTaken() {
-        recordSpeculationStatusOnSwap(SPECULATION_STATUS_ON_SWAP_BACKGROUND_TAB_TAKEN);
-    }
-
-    static void recordSpeculationStatusSwapTabNotMatched() {
-        recordSpeculationStatusOnSwap(SPECULATION_STATUS_ON_SWAP_BACKGROUND_TAB_NOT_MATCHED);
     }
 
     public void setEngagementSignalsAvailableSupplier(
@@ -1779,10 +1821,11 @@ public class CustomTabsConnection {
                 || !isEngagementSignalsApiAvailableInternal(sessionToken)) {
             return false;
         }
-
-        mClientManager.setEngagementSignalsCallbackForSession(sessionToken, callback);
         var engagementSignalsHandler =
                 mClientManager.getEngagementSignalsHandlerForSession(sessionToken);
+        if (engagementSignalsHandler == null) return false;
+
+        mClientManager.setEngagementSignalsCallbackForSession(sessionToken, callback);
         PostTask.postTask(TaskTraits.UI_DEFAULT,
                 () -> engagementSignalsHandler.setEngagementSignalsCallback(callback));
         return true;
@@ -1809,11 +1852,33 @@ public class CustomTabsConnection {
     }
 
     /**
+     * Returns how the Page Insights feature should be configured for the given params. Only applies
+     * if {@link #shouldEnablePageInsightsForIntent(BrowserServicesIntentDataProvider)} returns
+     * true.
+     *
+     * @param intentData {@link BrowserServicesIntentDataProvider} built from the Intent that
+     *     launched this CCT.
+     * @param navigationHandle the {@link NavigationHandle} for the current page.
+     * @param profileSupplier supplier of the current {@link Profile}.
+     */
+    public PageInsightsConfig getPageInsightsConfig(
+            BrowserServicesIntentDataProvider intentData,
+            @Nullable NavigationHandle navigationHandle,
+            Supplier<Profile> profileSupplier) {
+        return PageInsightsConfig.newBuilder()
+                .setShouldAutoTrigger(false)
+                .setShouldXsurfaceLog(false)
+                .setShouldAttachGaiaToRequest(false)
+                .build();
+    }
+
+    /**
      * Called when text fragment lookups on the current page has completed.
+     *
      * @param session session object.
      * @param stateKey unique key for the embedder to keep track of the request.
      * @param foundTextFragments text fragments from the initial request that were found on the
-     *         page.
+     *     page.
      */
     @CalledByNative
     private static void notifyClientOfTextFragmentLookupCompletion(

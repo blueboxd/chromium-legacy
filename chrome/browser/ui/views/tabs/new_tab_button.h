@@ -61,10 +61,9 @@ class NewTabButton : public views::ImageButton,
   // Returns the radius to use for the button corners.
   virtual int GetCornerRadius() const;
 
-  // Returns the path for the given |origin| and |scale|.  If |extend_to_top| is
+  // Returns the path for the given |origin|.  If |extend_to_top| is
   // true, the path is extended vertically to y = 0.
   virtual SkPath GetBorderPath(const gfx::Point& origin,
-                               float scale,
                                bool extend_to_top) const;
 
   // views::ImageButton:

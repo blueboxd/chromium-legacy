@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
 #include "chrome/browser/ui/views/theme_copying_widget.h"
@@ -25,14 +26,27 @@ OmniboxPopupPresenter::OmniboxPopupPresenter(LocationBarView* location_bar_view,
       requested_handler_(false) {
   set_owned_by_client();
 
-  // Prepare for instantiation of a `RealboxHandler` that will connect with
-  // this omnibox controller. The URL load will instantiate and bind
-  // the handler asynchronously.
-  OmniboxPopupUI::SetOmniboxController(controller);
-  LoadInitialURL(GURL(chrome::kChromeUIOmniboxPopupURL));
+  // Build URL with SessionID to ensure correct omnibox controller binding
+  // without relying on mutable state subject to timing and destruction issues.
+  // The webui's page handler (RealboxHandler) needs to know what omnibox
+  // controller to use, but the native pointer value can't safely be passed in,
+  // and hacks like getting last active browser or any other shared mutable
+  // state can result in subtle races and even use-after-free bugs. The
+  // window and its omnibox could destruct, or the browser changed, or even
+  // a new omnibox could be constructed to overwrite the shared value, within
+  // the time window of loading the URL in a separate process. Using a unique
+  // session ID avoids these problems and ensures that only the omnibox
+  // controller that owns this popup presenter will be selected.
+  GURL url(base::StringPrintf("%s?session_id=%d",
+                              chrome::kChromeUIOmniboxPopupURL,
+                              location_bar_view->browser()->session_id().id()));
+  LoadInitialURL(url);
+
+  location_bar_view_->AddObserver(this);
 }
 
 OmniboxPopupPresenter::~OmniboxPopupPresenter() {
+  location_bar_view_->RemoveObserver(this);
   ReleaseWidget(false);
 }
 
@@ -60,7 +74,10 @@ void OmniboxPopupPresenter::Show() {
     widget_->SetContentsView(
         std::make_unique<RoundedOmniboxResultsFrame>(this, location_bar_view_));
     widget_->AddObserver(this);
-    FrameSizeChanged(nullptr, gfx::Size(0, 0));
+  }
+  RealboxHandler* handler = GetHandler();
+  if (handler && !handler->HasObserver(this)) {
+    handler->AddObserver(this);
   }
 }
 
@@ -90,38 +107,34 @@ RealboxHandler* OmniboxPopupPresenter::GetHandler() {
   return omnibox_popup_ui->handler();
 }
 
-// TODO(crbug.com/1396174): This should also be called when LocationBarView
-//  size is changed.
-void OmniboxPopupPresenter::FrameSizeChanged(
-    content::RenderFrameHost* render_frame_host,
-    const gfx::Size& frame_size) {
+void OmniboxPopupPresenter::OnWidgetDestroyed(views::Widget* widget) {
+  if (widget == widget_) {
+    widget_ = nullptr;
+  }
+}
+
+void OmniboxPopupPresenter::OnPopupElementSizeChanged(gfx::Size size) {
+  webui_element_size_ = size;
   if (widget_) {
+    // The width is known, and is the basis for consistent web content rendering
+    // so width is specified exactly; then only height adjusts dynamically.
     gfx::Rect widget_bounds = location_bar_view_->GetBoundsInScreen();
     widget_bounds.Inset(
         -RoundedOmniboxResultsFrame::GetLocationBarAlignmentInsets());
 
-    // The width is known, and is the basis for consistent web content rendering
-    // so width is specified exactly; then only height adjusts dynamically.
     // TODO(crbug.com/1396174): Change max height according to max suggestion
     //  count and calculated row height, or use a more general maximum value.
-    const int width = widget_bounds.width();
-    constexpr int kMaxHeight = 480;
-    EnableSizingFromWebContents(gfx::Size(width, 1),
-                                gfx::Size(width, kMaxHeight));
-
+    constexpr int kMaxHeight = 600;
     widget_bounds.set_height(widget_bounds.height() +
-                             std::min(kMaxHeight, frame_size.height()));
+                             std::min(kMaxHeight, size.height()));
     widget_bounds.Inset(-RoundedOmniboxResultsFrame::GetShadowInsets());
     widget_->SetBounds(widget_bounds);
   }
 }
 
-void OmniboxPopupPresenter::OnWidgetDestroyed(views::Widget* widget) {
-  // TODO(crbug.com/1445142): Consider restoring if not closed logically by
-  // omnibox.
-  if (widget == widget_) {
-    widget_ = nullptr;
-  }
+void OmniboxPopupPresenter::OnViewBoundsChanged(View* observed_view) {
+  CHECK(observed_view == location_bar_view_);
+  OnPopupElementSizeChanged(webui_element_size_);
 }
 
 bool OmniboxPopupPresenter::IsHandlerReady() {
@@ -132,6 +145,10 @@ bool OmniboxPopupPresenter::IsHandlerReady() {
 }
 
 void OmniboxPopupPresenter::ReleaseWidget(bool close) {
+  RealboxHandler* handler = GetHandler();
+  if (handler && handler->HasObserver(this)) {
+    handler->RemoveObserver(this);
+  }
   if (widget_) {
     // Avoid possibility of dangling raw_ptr by nulling before cleanup.
     views::Widget* widget = widget_;

@@ -233,6 +233,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   Feature& cursor_highlight() const;
   Feature& dictation() const;
   Feature& color_correction() const;
+  Feature& face_gaze() const;
   Feature& floating_menu() const;
   Feature& focus_highlight() const;
   FeatureWithDialog& fullscreen_magnifier() const;
@@ -530,6 +531,9 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   void AddShowToastCallbackForTesting(
       base::RepeatingCallback<void(AccessibilityToastType)> callback);
 
+  void AddShowConfirmationDialogCallbackForTesting(
+      base::RepeatingCallback<void()> callback);
+
  private:
   // Populate |features_| with the feature of the correct type.
   void CreateAccessibilityFeatures();
@@ -558,6 +562,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   void UpdateLargeCursorFromPref();
   void UpdateLiveCaptionFromPref();
   void UpdateCursorColorFromPrefs();
+  void UpdateFaceGazeFromPrefs();
   void UpdateColorCorrectionFromPrefs();
   void UpdateSwitchAccessKeyCodesFromPref(SwitchAccessCommand command);
   void UpdateSwitchAccessAutoScanEnabledFromPref();
@@ -662,6 +667,9 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
 
   // The current AccessibilityConfirmationDialog, if one exists.
   base::WeakPtr<AccessibilityConfirmationDialog> confirmation_dialog_;
+
+  base::RepeatingCallback<void()>
+      show_confirmation_dialog_callback_for_testing_;
 
   base::WeakPtrFactory<AccessibilityControllerImpl> weak_ptr_factory_{this};
 };

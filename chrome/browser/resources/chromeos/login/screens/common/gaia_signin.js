@@ -105,6 +105,13 @@ const GaiaSigninElementBase = mixinBehaviors(
  */
 GaiaSigninElementBase.$;
 
+/**
+ * Data that is passed to the screen during onBeforeShow.
+ * @typedef {{
+ *   hasUserPods: boolean,
+ * }}
+ */
+let GaiaSigninScreenData;
 
 /**
  * @polymer
@@ -352,11 +359,22 @@ class GaiaSigninElement extends GaiaSigninElementBase {
      * @private
      */
     this.pinDialogResultReported_ = false;
+
+    /**
+     * Gaia path which can serve as a fallback in reloading scenarios. Expected
+     * to correspond to editable Gaia username page.
+     * TODO(b/259181755): this should no longer be needed once we change the
+     * implementation of the "Enter Google Account info" button to fully reload
+     * the flow through cpp code.
+     * @type {string}
+     * @private
+     */
+    this.fallbackGaiaPath_ = '';
   }
 
   get EXTERNAL_API() {
     return [
-      'loadAuthExtension',
+      'loadAuthenticator',
       'doReload',
       'showEnrollmentNudge',
       'showPinDialog',
@@ -589,15 +607,16 @@ class GaiaSigninElement extends GaiaSigninElementBase {
   }
 
   /**
-   * Loads the authentication extension into the iframe.
-   * @param {!Object} data Extension parameters bag.
+   * Loads authenticator.
+   * @param {!Object} data Input for authenticator parameters.
    * @suppress {missingProperties}
    */
-  loadAuthExtension(data) {
+  loadAuthenticator(data) {
     this.authenticator_.setWebviewPartition(data.webviewPartitionName);
 
     this.authCompleted_ = false;
     this.navigationButtonsHidden_ = false;
+    this.fallbackGaiaPath_ = data.fallbackGaiaPath;
 
     // Reset SAML
     this.isSaml_ = false;
@@ -624,7 +643,7 @@ class GaiaSigninElement extends GaiaSigninElementBase {
     this.authenticatorParams_ = params;
 
     this.loadAuthenticator_(params.doSamlRedirect);
-    chrome.send('authExtensionLoaded');
+    chrome.send('authenticatorLoaded');
   }
 
   /**
@@ -866,7 +885,7 @@ class GaiaSigninElement extends GaiaSigninElementBase {
   }
 
   /**
-   * Reloads extension frame.
+   * Reloads authenticator.
    */
   doReload() {
     this.authenticator_.reload();
@@ -1065,6 +1084,11 @@ class GaiaSigninElement extends GaiaSigninElementBase {
     // field of the auth params.
     this.videoEnabled_ = false;
     this.authenticatorParams_.email = '';
+    // Replace Gaia path with a fallback path to land on Gaia username page.
+    assert(
+        this.fallbackGaiaPath_,
+        'fallback Gaia path needed when trying to switch from SAML to Gaia');
+    this.authenticatorParams_.gaiaPath = this.fallbackGaiaPath_;
     this.loadAuthenticator_(false /* doSamlRedirect */);
   }
 

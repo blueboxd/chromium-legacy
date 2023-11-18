@@ -156,15 +156,21 @@ sorted so that the things that make the biggest difference are first.
 #### Use reclient
 
 If you are a Google employee, do not follow the instructions below. See
-[go/chrome-linux-build#using-remote-execution](http://go/chrome-linux-build#using-remote-execution)
+[go/chrome-linux-build#setup-remote-execution](http://go/chrome-linux-build#setup-remote-execution)
 instead.
 
 Google developed the
 [Remote Execution API](https://github.com/bazelbuild/remote-apis)
 client called [reclient](https://github.com/bazelbuild/reclient).
 
-If you would like to use `reclient`, specify your `rbe_instance` in .gclient
-like
+*** note
+**Warning:** Following instruction is not ready to be used yet.
+***
+
+If you would like to use `reclient`, install gcloud via
+https://cloud.google.com/sdk/docs/install, authorize with your account via
+https://cloud.google.com/sdk/docs/authorizing and specify your `rbe_instance`
+in .gclient like
 ```
 solutions = [
   {

@@ -9,14 +9,19 @@ import android.app.Activity;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
+import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.ResettersForTesting;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.TaskTraits;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.LifecycleObserver;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.user_prefs.UserPrefs;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -40,6 +45,7 @@ class SurveyClientImpl implements SurveyClient {
     private final SurveyThrottler mThrottler;
     private final ObservableSupplier<Boolean> mCrashUploadPermissionSupplier;
     private final Map<String, String> mAggregatedSurveyPsd;
+    private final Profile mProfile;
 
     private WeakReference<Activity> mActivityRef;
     private @Nullable ActivityLifecycleDispatcher mLifecycleDispatcher;
@@ -47,14 +53,19 @@ class SurveyClientImpl implements SurveyClient {
     private @Nullable Callback<Boolean> mOnCrashUploadPermissionChangeCallback;
     private boolean mIsDestroyed;
 
-    SurveyClientImpl(SurveyConfig config, SurveyUiDelegate uiDelegate, SurveyController controller,
-            ObservableSupplier<Boolean> crashUploadPermissionSupplier) {
+    SurveyClientImpl(
+            SurveyConfig config,
+            SurveyUiDelegate uiDelegate,
+            SurveyController controller,
+            ObservableSupplier<Boolean> crashUploadPermissionSupplier,
+            Profile profile) {
         mConfig = config;
         mUiDelegate = uiDelegate;
         mController = controller;
         mCrashUploadPermissionSupplier = crashUploadPermissionSupplier;
         mThrottler = new SurveyThrottler(mConfig);
         mAggregatedSurveyPsd = new HashMap<>();
+        mProfile = profile;
     }
 
     @Override
@@ -73,9 +84,7 @@ class SurveyClientImpl implements SurveyClient {
      */
     private void showSurveyImpl(Activity activity, ActivityLifecycleDispatcher lifecycleDispatcher,
             Map<String, String> surveyPsdStringValues, Map<String, Boolean> surveyPsdBitValues) {
-        // Do nothing when request survey while crash uploads are disabled.
-        // Do not include any logging to avoid reveal the fact user has crash upload disabled.
-        if (!isCrashUploadAllowed()) return;
+        if (!configurationAllowsSurveys()) return;
 
         mActivityRef = new WeakReference<>(activity);
         mLifecycleDispatcher = lifecycleDispatcher;
@@ -108,8 +117,8 @@ class SurveyClientImpl implements SurveyClient {
     }
 
     private void showSurveyIfEligible() {
-        if (sForceShowSurveyForTesting != null) {
-            startSurveyDownload(sForceShowSurveyForTesting);
+        if (forceShowSurvey()) {
+            startSurveyDownload(true);
             return;
         }
         AsyncTask<Boolean> throttlerTask = new AsyncTask<>() {
@@ -137,7 +146,7 @@ class SurveyClientImpl implements SurveyClient {
 
     private void onSurveyDownloadSucceeded() {
         Log.d(TAG, "Survey Download succeed.");
-        if (!isCrashUploadAllowed()) return;
+        if (!configurationAllowsSurveys()) return;
 
         // Dismiss the survey prompt if it is expired.
         if (mLifecycleDispatcher != null) {
@@ -176,8 +185,9 @@ class SurveyClientImpl implements SurveyClient {
     private void onSurveyAccepted() {
         Log.d(TAG, "Survey accepted.");
         assert mActivityRef != null;
-        if (sForceShowSurveyForTesting == null
-                && (mActivityRef.get() == null || mActivityRef.get().isFinishing()
+        if (!forceShowSurvey()
+                && (mActivityRef.get() == null
+                        || mActivityRef.get().isFinishing()
                         || mActivityRef.get().isDestroyed())) {
             destroy(false);
             return;
@@ -235,8 +245,22 @@ class SurveyClientImpl implements SurveyClient {
         mController.destroy();
     }
 
-    private boolean isCrashUploadAllowed() {
-        return mCrashUploadPermissionSupplier.hasValue() && mCrashUploadPermissionSupplier.get();
+    /**
+     * When metrics reporting is enabled (i.e. crash upload is allowed), the enterprise policy
+     * `FeedbackSurveysEnabled` which defaults to true decides whether surveys can be shown. When
+     * metrics reporting is disabled, surveys can never be shown.
+     *
+     * @return a boolean indicating whether the user's configuration allows a survey to be shown.
+     */
+    private boolean configurationAllowsSurveys() {
+        if (forceShowSurvey()) return true;
+
+        // Do not include any logging to avoid reveal the fact user has crash upload disabled.
+        boolean isCrashUploadAllowed =
+                mCrashUploadPermissionSupplier.hasValue() && mCrashUploadPermissionSupplier.get();
+        boolean isHatsEnabledByPolicy =
+                UserPrefs.get(mProfile).getBoolean(Pref.FEEDBACK_SURVEYS_ENABLED);
+        return isCrashUploadAllowed && isHatsEnabledByPolicy;
     }
 
     SurveyController getControllerForTesting() {
@@ -245,6 +269,13 @@ class SurveyClientImpl implements SurveyClient {
 
     boolean isDestroyed() {
         return mIsDestroyed;
+    }
+
+    static boolean forceShowSurvey() {
+        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.CHROME_FORCE_ENABLE_SURVEY)) {
+            return true;
+        }
+        return sForceShowSurveyForTesting != null && sForceShowSurveyForTesting;
     }
 
     static void setForceShowSurveyForTesting(Boolean forcedResult) {

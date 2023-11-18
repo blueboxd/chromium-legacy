@@ -4,6 +4,7 @@
 
 #include <cstdlib>
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "base/files/file_path.h"
@@ -20,7 +21,6 @@
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace updater {
@@ -37,7 +37,7 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
   void PrintLog() const override { updater::test::PrintLog(updater_scope_); }
 
   void CopyLog() const override {
-    absl::optional<base::FilePath> path = GetInstallDirectory(updater_scope_);
+    std::optional<base::FilePath> path = GetInstallDirectory(updater_scope_);
     EXPECT_TRUE(path);
     if (path)
       updater::test::CopyLog(*path);
@@ -357,6 +357,12 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
 #if BUILDFLAG(IS_WIN)
   void RunFakeLegacyUpdater() const override {
     updater::test::RunFakeLegacyUpdater(updater_scope_);
+  }
+#endif  // BUILDFLAG(IS_WIN)
+
+#if BUILDFLAG(IS_MAC)
+  void PrivilegedHelperInstall() const override {
+    updater::test::PrivilegedHelperInstall(updater_scope_);
   }
 #endif  // BUILDFLAG(IS_WIN)
 

@@ -12,7 +12,6 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
-#include "base/feature_list.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -193,9 +192,8 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
   // does not match any non-reserved host.
   PrerenderHost* FindNonReservedHostById(int frame_tree_node_id);
 
-  // Returns the reserved host with the given id. Returns nullptr if the id
-  // does not match any reserved host.
-  PrerenderHost* FindReservedHostById(int frame_tree_node_id);
+  // Returns true if this registry reserves a host for activation.
+  bool HasReservedHost() const;
 
   // Returns the ownership of a pre-created WebContentsImpl that contains a
   // prerendered page that corresponds to the given params for a new tab
@@ -209,19 +207,21 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
 
   // Returns the non-reserved host for `prerendering_url`. Returns nullptr if
   // the URL doesn't match any non-reserved host.
+  // Note that the result of this function includes prerender-into-new-tab
+  // triggers.
   PrerenderHost* FindHostByUrlForTesting(const GURL& prerendering_url);
 
   // Cancels all hosts.
   void CancelAllHostsForTesting();
 
   // Gets the trigger type from the reserved PrerenderHost.
-  PrerenderTriggerType GetPrerenderTriggerType(int frame_tree_node_id);
+  PreloadingTriggerType GetPrerenderTriggerType(int frame_tree_node_id);
   // Gets the embedder histogram suffix from the reserved PrerenderHost. Only
   // used for metrics.
   const std::string& GetPrerenderEmbedderHistogramSuffix(
       int frame_tree_node_id);
 
-  // Represents the group of prerender limit calculated by PrerenderTriggerType
+  // Represents the group of prerender limit calculated by PreloadingTriggerType
   // and SpeculationEagerness on GetPrerenderLimitGroup.
   // Currently, this is used when kPrerender2NewLimitAndScheduler is enabled.
   enum class PrerenderLimitGroup {
@@ -278,31 +278,29 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
   int StartPrerendering(int frame_tree_node_id);
 
   // Cancels the existing hosts that were triggered by `trigger_types`.
-  void CancelHostsForTriggers(std::vector<PrerenderTriggerType> trigger_types,
+  void CancelHostsForTriggers(std::vector<PreloadingTriggerType> trigger_types,
                               const PrerenderCancellationReason& reason);
 
-  // Calculates PrerenderLimitGroup by PrerenderTriggerType and
+  // Calculates PrerenderLimitGroup by PreloadingTriggerType and
   // SpeculationEagerness.
   // Currently, this is only used under kPrerender2NewLimitAndScheduler.
   PrerenderLimitGroup GetPrerenderLimitGroup(
-      PrerenderTriggerType trigger_type,
+      PreloadingTriggerType trigger_type,
       absl::optional<blink::mojom::SpeculationEagerness> eagerness);
 
   // Returns the number of hosts that prerender_host_by_frame_tree_node_id_
   // holds by trigger type / limit group.
-  // TODO(crbug.com/1350676): Make this function care about
-  // `prerender_new_tab_handle_by_frame_tree_node_id_` as well.
-  int GetHostCountByTriggerType(PrerenderTriggerType trigger_type);
+  int GetHostCountByTriggerType(PreloadingTriggerType trigger_type);
   int GetHostCountByLimitGroup(PrerenderLimitGroup limit_group);
 
-  // Returns whether a certain type of PrerenderTriggerType is allowed to be
+  // Returns whether a certain type of PreloadingTriggerType is allowed to be
   // added to PrerenderHostRegistry according to the limit of the given
-  // PrerenderTriggerType.
+  // PreloadingTriggerType.
   // If kPrerender2NewLimitAndScheduler is enabled, SpeculationEagerness is
   // additionally considered to apply the new limits and behaviors according to
   // PrerenderLimitGroup.
   bool IsAllowedToStartPrerenderingForTrigger(
-      PrerenderTriggerType trigger_type,
+      PreloadingTriggerType trigger_type,
       absl::optional<blink::mojom::SpeculationEagerness> eagerness);
 
   // Destroys a host when the current memory usage is higher than a certain

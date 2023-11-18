@@ -50,6 +50,8 @@ const char
     kObsoleteGetDisplayMediaSetAutoSelectAllScreensAllowedForUrlsExceptionsPref
         [] = "profile.content_settings.exceptions.get_display_media_set_select_"
              "all_screens";
+constexpr char kObsoleteFederatedIdentityActiveSesssionExceptionsPref[] =
+    "profile.content_settings.exceptions.fedcm_active_session";
 
 }  // namespace
 
@@ -83,6 +85,8 @@ void PrefProvider::RegisterProfilePrefs(
 #endif  // !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
   registry->RegisterListPref(
       kObsoleteGetDisplayMediaSetAutoSelectAllScreensAllowedForUrlsExceptionsPref);
+  registry->RegisterListPref(
+      kObsoleteFederatedIdentityActiveSesssionExceptionsPref);
 }
 
 PrefProvider::PrefProvider(PrefService* prefs,
@@ -241,7 +245,7 @@ bool PrefProvider::UpdateSetting(
     return false;
   }
 
-  auto it = GetRuleIterator(content_type, false);
+  auto it = GetRuleIterator(content_type, off_the_record_);
   if (!it) {
     return false;
   }
@@ -395,6 +399,7 @@ void PrefProvider::DiscardOrMigrateObsoletePreferences() {
 #endif  // !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
   prefs_->ClearPref(
       kObsoleteGetDisplayMediaSetAutoSelectAllScreensAllowedForUrlsExceptionsPref);
+  prefs_->ClearPref(kObsoleteFederatedIdentityActiveSesssionExceptionsPref);
 }
 
 void PrefProvider::SetClockForTesting(base::Clock* clock) {

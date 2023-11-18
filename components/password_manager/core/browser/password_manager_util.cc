@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/common/password_generation_util.h"
@@ -78,23 +79,6 @@ void UpdateMetadataForUsage(PasswordForm* credential) {
   // Remove alternate usernames. At this point we assume that we have found
   // the right username.
   credential->all_alternative_usernames.clear();
-}
-
-void TrimUsernameOnlyCredentials(
-    std::vector<std::unique_ptr<PasswordForm>>* android_credentials) {
-  // Remove username-only credentials which are not federated.
-  base::EraseIf(*android_credentials,
-                [](const std::unique_ptr<PasswordForm>& form) {
-                  return form->scheme == PasswordForm::Scheme::kUsernameOnly &&
-                         form->federation_origin.opaque();
-                });
-
-  // Set "skip_zero_click" on federated credentials.
-  base::ranges::for_each(
-      *android_credentials, [](const std::unique_ptr<PasswordForm>& form) {
-        if (form->scheme == PasswordForm::Scheme::kUsernameOnly)
-          form->skip_zero_click = true;
-      });
 }
 
 bool IsLoggingActive(password_manager::PasswordManagerClient* client) {
@@ -451,7 +435,11 @@ bool IsSingleUsernameType(autofill::ServerFieldType type) {
   return type == autofill::SINGLE_USERNAME ||
          (type == autofill::SINGLE_USERNAME_FORGOT_PASSWORD &&
           base::FeatureList::IsEnabled(
-              password_manager::features::kForgotPasswordFormSupport));
+              password_manager::features::kForgotPasswordFormSupport)) ||
+         (type == autofill::SINGLE_USERNAME_WITH_INTERMEDIATE_VALUES &&
+          base::FeatureList::IsEnabled(
+              password_manager::features::
+                  kUsernameFirstFlowWithIntermediateValuesPredictions));
 }
 
 }  // namespace password_manager_util

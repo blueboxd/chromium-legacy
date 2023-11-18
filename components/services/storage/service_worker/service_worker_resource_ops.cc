@@ -85,7 +85,8 @@ std::unique_ptr<base::Pickle> ConvertToPickle(
 class WrappedPickleIOBuffer : public net::WrappedIOBuffer {
  public:
   explicit WrappedPickleIOBuffer(std::unique_ptr<const base::Pickle> pickle)
-      : net::WrappedIOBuffer(reinterpret_cast<const char*>(pickle->data())),
+      : net::WrappedIOBuffer(reinterpret_cast<const char*>(pickle->data()),
+                             pickle->size()),
         pickle_(std::move(pickle)) {
     DCHECK(pickle_->data());
   }
@@ -317,9 +318,8 @@ class ServiceWorkerResourceReaderImpl::DataReader {
       return;
     }
 
-    uint32_t num_bytes = 0;
     MojoResult rv = network::NetToMojoPendingBuffer::BeginWrite(
-        &producer_handle_, &pending_buffer_, &num_bytes);
+        &producer_handle_, &pending_buffer_);
     switch (rv) {
       case MOJO_RESULT_INVALID_ARGUMENT:
       case MOJO_RESULT_BUSY:
@@ -338,9 +338,10 @@ class ServiceWorkerResourceReaderImpl::DataReader {
         break;
     }
 
+    uint32_t num_bytes = pending_buffer_->size();
     num_bytes = std::min(num_bytes, blink::BlobUtils::GetDataPipeChunkSize());
-    scoped_refptr<network::NetToMojoIOBuffer> buffer =
-        base::MakeRefCounted<network::NetToMojoIOBuffer>(pending_buffer_.get());
+    auto buffer =
+        base::MakeRefCounted<network::NetToMojoIOBuffer>(pending_buffer_);
 
     net::IOBuffer* raw_buffer = buffer.get();
     int read_bytes = owner_->entry_opener_.entry()->Read(
@@ -506,8 +507,8 @@ void ServiceWorkerResourceReaderImpl::ContinueReadResponseHead() {
     return;
   }
 
-  auto buffer =
-      base::MakeRefCounted<net::IOBuffer>(base::checked_cast<size_t>(size));
+  auto buffer = base::MakeRefCounted<net::IOBufferWithSize>(
+      base::checked_cast<size_t>(size));
   int rv = entry_opener_.entry()->Read(
       kResponseInfoIndex, /*offset=*/0, buffer.get(), size,
       base::BindOnce(&ServiceWorkerResourceReaderImpl::DidReadHttpResponseInfo,

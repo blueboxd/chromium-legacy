@@ -222,8 +222,8 @@ LayoutText* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
                first_letter_text_layout_object->IsButton() ||
                IsMenuList(first_letter_text_layout_object)) {
       return nullptr;
-    } else if (first_letter_text_layout_object->IsFlexibleBoxIncludingNG() ||
-               first_letter_text_layout_object->IsLayoutNGGrid()) {
+    } else if (first_letter_text_layout_object->IsFlexibleBox() ||
+               first_letter_text_layout_object->IsLayoutGrid()) {
       first_letter_text_layout_object =
           first_letter_text_layout_object->NextSibling();
     } else if (!first_letter_text_layout_object->IsInline() &&
@@ -452,7 +452,7 @@ void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects(
     // TODO(crbug.com/1393280): Once we can store used font somewhere, we should
     // compute initial-letter font during layout to take proper effective style.
     const ComputedStyle& paragraph_style =
-        paragraph.EffectiveStyle(NGStyleVariant::kFirstLine);
+        paragraph.EffectiveStyle(StyleVariant::kFirstLine);
     const ComputedStyle* initial_letter_text_style =
         GetDocument().GetStyleResolver().StyleForInitialLetterText(
             *letter_style, paragraph_style);

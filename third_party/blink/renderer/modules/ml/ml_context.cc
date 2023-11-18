@@ -16,16 +16,19 @@ namespace blink {
 // static
 MLContext* MLContext::ValidateAndCreateSync(MLContextOptions* options, ML* ml) {
   return MakeGarbageCollected<MLContext>(
-      options->devicePreference(), options->powerPreference(),
-      options->modelFormat(), options->numThreads(), ml);
+      options->devicePreference(), options->deviceType(),
+      options->powerPreference(), options->modelFormat(), options->numThreads(),
+      ml);
 }
 
 MLContext::MLContext(const V8MLDevicePreference device_preference,
+                     const V8MLDeviceType device_type,
                      const V8MLPowerPreference power_preference,
                      const V8MLModelFormat model_format,
                      const unsigned int num_threads,
                      ML* ml)
     : device_preference_(device_preference),
+      device_type_(device_type),
       power_preference_(power_preference),
       model_format_(model_format),
       num_threads_(num_threads),
@@ -35,6 +38,10 @@ MLContext::~MLContext() = default;
 
 V8MLDevicePreference MLContext::GetDevicePreference() const {
   return device_preference_;
+}
+
+V8MLDeviceType MLContext::GetDeviceType() const {
+  return device_type_;
 }
 
 V8MLPowerPreference MLContext::GetPowerPreference() const {
@@ -123,9 +130,10 @@ void MLContext::CreateAsync(ScriptPromiseResolver* resolver,
   CreateAsyncImpl(resolver, options);
 }
 
-MLContext* MLContext::CreateSync(MLContextOptions* options,
+MLContext* MLContext::CreateSync(ScriptState* script_state,
+                                 MLContextOptions* options,
                                  ExceptionState& exception_state) {
-  return CreateSyncImpl(options, exception_state);
+  return CreateSyncImpl(script_state, options, exception_state);
 }
 
 void MLContext::CreateAsyncImpl(ScriptPromiseResolver* resolver,
@@ -135,7 +143,8 @@ void MLContext::CreateAsyncImpl(ScriptPromiseResolver* resolver,
   NOTIMPLEMENTED();
 }
 
-MLContext* MLContext::CreateSyncImpl(MLContextOptions* options,
+MLContext* MLContext::CreateSyncImpl(ScriptState* script_state,
+                                     MLContextOptions* options,
                                      ExceptionState& exception_state) {
   // TODO(crbug.com/1273291): Remove when sync creation gets implemented for
   // all context types.

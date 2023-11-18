@@ -126,7 +126,8 @@ Cookie CreateCookie(const net::CanonicalCookie& canonical_cookie,
 
   cookie.session = !canonical_cookie.IsPersistent();
   if (canonical_cookie.IsPersistent()) {
-    double expiration_date = canonical_cookie.ExpiryDate().ToDoubleT();
+    double expiration_date =
+        canonical_cookie.ExpiryDate().InSecondsFSinceUnixEpoch();
     if (canonical_cookie.ExpiryDate().is_max() ||
         !std::isfinite(expiration_date)) {
       expiration_date = std::numeric_limits<double>::max();
@@ -154,10 +155,9 @@ CookieStore CreateCookieStore(Profile* profile, base::Value::List tab_ids) {
   dict.Set(cookies_api_constants::kIdKey, GetStoreIdFromProfile(profile));
   dict.Set(cookies_api_constants::kTabIdsKey, std::move(tab_ids));
 
-  CookieStore cookie_store;
-  bool rv = CookieStore::Populate(dict, cookie_store);
-  CHECK(rv);
-  return cookie_store;
+  auto cookie_store = CookieStore::FromValue(dict);
+  CHECK(cookie_store);
+  return std::move(cookie_store).value();
 }
 
 void GetCookieListFromManager(

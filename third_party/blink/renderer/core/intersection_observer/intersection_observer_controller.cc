@@ -103,7 +103,9 @@ IntersectionUpdateResult IntersectionObserverController::ComputeIntersections(
     for (auto& observation : observations_to_process) {
       if (metrics_timer)
         metrics_timer->StartInterval(observation->Observer()->GetUkmMetricId());
-      int64_t count = observation->ComputeIntersection(flags, monotonic_time);
+      absl::optional<IntersectionGeometry::RootGeometry> root_geometry;
+      int64_t count = observation->ComputeIntersection(flags, monotonic_time,
+                                                       root_geometry);
       if (observation->Observer()->IsInternal())
         internal_observation_count += count;
       else
@@ -186,6 +188,27 @@ void IntersectionObserverController::RemoveTrackedObservation(
   if (!observer->RootIsImplicit())
     return;
   tracked_implicit_root_observations_.erase(&observation);
+}
+
+bool IntersectionObserverController::InvalidateCachedRectsIfNeeded() {
+  if (!RuntimeEnabledFeatures::IntersectionOptimizationEnabled()) {
+    return false;
+  }
+  bool invalidated_cached_rects = false;
+  for (auto& observer : tracked_explicit_root_observers_) {
+    if (observer->NeedsOcclusionTracking()) {
+      invalidated_cached_rects = true;
+    } else {
+      for (auto& observation : observer->Observations()) {
+        invalidated_cached_rects |=
+            observation->InvalidateCachedRectsIfNeeded();
+      }
+    }
+  }
+  for (auto& observation : tracked_implicit_root_observations_) {
+    invalidated_cached_rects |= observation->InvalidateCachedRectsIfNeeded();
+  }
+  return invalidated_cached_rects;
 }
 
 void IntersectionObserverController::Trace(Visitor* visitor) const {

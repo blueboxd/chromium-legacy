@@ -45,11 +45,14 @@ public class PageInfoCookiesController
     private int mAllowedSites;
     private int mBlockedSites;
     private int mStatus;
+    private int mEnforcement;
     private boolean mIsEnforced;
     private long mExpiration;
     private int mConfidenceLevel;
     private Website mWebsite;
     private boolean mTrackingProtectionUI;
+    private boolean mBlockAll3PC;
+    private boolean mIsIncognito;
 
     public PageInfoCookiesController(PageInfoMainController mainController, PageInfoRowView rowView,
             PageInfoControllerDelegate delegate) {
@@ -57,6 +60,8 @@ public class PageInfoCookiesController
 
         mTrackingProtectionUI =
                 PageInfoFeatures.USER_BYPASS_UI.isEnabled() && delegate.showTrackingProtectionUI();
+        mBlockAll3PC = delegate.allThirdPartyCookiesBlockedTrackingProtection();
+        mIsIncognito = delegate.isIncognito();
 
         mMainController = mainController;
         mRowView = rowView;
@@ -114,13 +119,19 @@ public class PageInfoCookiesController
         params.thirdPartyCookieBlockingEnabled = getDelegate().cookieControlsShown();
         params.onThirdPartyCookieToggleChanged = this::onThirdPartyCookieToggleChanged;
         params.onClearCallback = this::onClearCookiesClicked;
-        params.onCookieSettingsLinkClicked = getDelegate()::showCookieSettings;
+        params.onCookieSettingsLinkClicked =
+                mTrackingProtectionUI
+                        ? getDelegate()::showTrackingProtectionSettings
+                        : getDelegate()::showCookieSettings;
         params.onFeedbackLinkClicked = getDelegate()::showCookieFeedback;
         params.disableCookieDeletion = isDeletionDisabled();
         params.hostName = mMainController.getURL().getHost();
+        params.showTrackingProtectionUI = mTrackingProtectionUI;
+        params.blockAll3PC = mBlockAll3PC;
+        params.isIncognito = mIsIncognito;
         mSubPage.setParams(params);
         if (PageInfoFeatures.USER_BYPASS_UI.isEnabled()) {
-            mSubPage.setCookieStatus(mStatus, mIsEnforced, mExpiration);
+            mSubPage.setCookieStatus(mStatus, mEnforcement, mExpiration);
             mSubPage.setSitesCount(mAllowedSites, mBlockedSites);
         } else {
             mSubPage.setCookieBlockingStatus(mStatus, mIsEnforced);
@@ -213,15 +224,15 @@ public class PageInfoCookiesController
     }
 
     @Override
-    public void onStatusChanged(int status, int enforcement, long expiration) {
+    public void onStatusChanged(int status, int enforcement, int blockingStatus, long expiration) {
         mStatus = status;
-        mIsEnforced = enforcement != CookieControlsEnforcement.NO_ENFORCEMENT;
+        mEnforcement = enforcement;
         mExpiration = expiration;
 
         updateRowViewSubtitle();
 
         if (mSubPage != null) {
-            mSubPage.setCookieStatus(mStatus, mIsEnforced, expiration);
+            mSubPage.setCookieStatus(mStatus, mEnforcement, expiration);
         }
     }
 
@@ -241,7 +252,8 @@ public class PageInfoCookiesController
     }
 
     private boolean isDeletionDisabled() {
-        return WebsitePreferenceBridge.isCookieDeletionDisabled(mMainController.getBrowserContext(), mFullUrl);
+        return WebsitePreferenceBridge.isCookieDeletionDisabled(
+                mMainController.getBrowserContext(), mFullUrl);
     }
 
     private void updateRowViewSubtitle() {
@@ -253,7 +265,9 @@ public class PageInfoCookiesController
         }
         if (mTrackingProtectionUI) {
             mRowView.updateSubtitle(mRowView.getContext().getString(
-                    R.string.page_info_tracking_protection_subtitle_cookies_limited));
+                    mBlockAll3PC
+                    ? R.string.page_info_cookies_subtitle_blocked
+                    : R.string.page_info_tracking_protection_subtitle_cookies_limited));
             return;
         }
         mRowView.updateSubtitle(mRowView.getContext().getString(

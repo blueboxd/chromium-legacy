@@ -110,6 +110,7 @@ class HitTestLatencyRecorder {
 LayoutView::LayoutView(ContainerNode* document)
     : LayoutNGBlockFlow(document),
       frame_view_(To<Document>(document)->View()),
+      layout_counter_count_(0),
       hit_test_count_(0),
       hit_test_cache_hits_(0),
       hit_test_cache_(MakeGarbageCollected<HitTestCache>()),
@@ -531,10 +532,15 @@ PhysicalRect LayoutView::ViewRect() const {
 
       // This adjustment should always be an expansion of the current
       // viewport.
-      DCHECK_GE(transition->GetSnapshotRootSize().width(),
-                frame_view_->Size().width());
-      DCHECK_GE(transition->GetSnapshotRootSize().height(),
-                frame_view_->Size().height());
+
+      // TODO(https://crbug.com/1495157): The snapshot size can be smaller (by
+      // one pixel) than the frame on mobile viewport. Investigate why. Consider
+      // adding `<meta name="viewport" content="width=device-width">` to the
+      // HTML if this occurs.
+      CHECK_GE(transition->GetSnapshotRootSize().width(),
+               frame_view_->Size().width());
+      CHECK_GE(transition->GetSnapshotRootSize().height(),
+               frame_view_->Size().height());
 
       return PhysicalRect(
           PhysicalOffset(transition->GetFrameToSnapshotRootOffset()),
@@ -701,7 +707,7 @@ PhysicalSize LayoutView::PageAreaSize(wtf_size_t page_index,
   const ComputedStyle* page_style =
       GetDocument().StyleForPage(page_index, page_name);
   WebPrintPageDescription description = default_page_description_;
-  GetDocument().GetPageDescription(*page_style, &description);
+  GetDocument().GetPageDescriptionNoLifecycleUpdate(*page_style, &description);
 
   gfx::SizeF page_size(
       std::max(.0f, description.size.width() -
@@ -795,6 +801,14 @@ const LayoutBox& LayoutView::RootBox() const {
   return To<LayoutBox>(*document_element->GetLayoutObject());
 }
 
+void LayoutView::InvalidateSvgRootsWithRelativeLengthDescendents() {
+  if (GetDocument().SvgExtensions() && !ShouldUsePrintingLayout()) {
+    GetDocument()
+        .AccessSVGExtensions()
+        .InvalidateSVGRootsWithRelativeLengthDescendents();
+  }
+}
+
 void LayoutView::UpdateLayout() {
   NOT_DESTROYED();
   if (ShouldUsePrintingLayout()) {
@@ -824,17 +838,9 @@ void LayoutView::UpdateLayout() {
   bool is_resizing_initial_containing_block =
       LogicalWidth() != ViewLogicalWidthForBoxSizing() ||
       LogicalHeight() != ViewLogicalHeightForBoxSizing();
-  bool invalidate_svg_roots =
-      GetDocument().SvgExtensions() && !ShouldUsePrintingLayout() &&
-      (!GetFrameView() || is_resizing_initial_containing_block);
-  if (invalidate_svg_roots) {
-    GetDocument()
-        .AccessSVGExtensions()
-        .InvalidateSVGRootsWithRelativeLengthDescendents();
-  }
-
   DCHECK(!initial_containing_block_resize_handled_list_);
   if (is_resizing_initial_containing_block) {
+    InvalidateSvgRootsWithRelativeLengthDescendents();
     initial_containing_block_resize_handled_list_ =
         MakeGarbageCollected<HeapHashSet<Member<const LayoutObject>>>();
   }
@@ -958,6 +964,10 @@ void LayoutView::StyleDidChange(StyleDifference diff,
                           visual_viewport.UsedColorSchemeScrollbars()) {
       visual_viewport.UsedColorSchemeChanged();
     }
+    if (old_style && old_style->ScrollbarThumbColorResolved() !=
+                         visual_viewport.CSSScrollbarThumbColor()) {
+      visual_viewport.ScrollbarColorChanged();
+    }
   }
 }
 
@@ -1003,7 +1013,7 @@ void LayoutView::UpdateMarkersAndCountersAfterStyleChange(
          "container query style recalcs";
 
   needs_marker_counter_update_ = false;
-  if (!HasLayoutListItems()) {
+  if (!HasLayoutCounters() && !HasLayoutListItems()) {
     return;
   }
 
@@ -1025,6 +1035,8 @@ void LayoutView::UpdateMarkersAndCountersAfterStyleChange(
     } else if (auto* inline_list_item =
                    DynamicTo<LayoutInlineListItem>(layout_object)) {
       inline_list_item->UpdateCounterStyle();
+    } else if (auto* counter = DynamicTo<LayoutCounter>(layout_object)) {
+      counter->UpdateCounter();
     }
   }
 }

@@ -16,6 +16,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_root.h"
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_root_map.h"
@@ -187,6 +188,7 @@ void RecentArcMediaSource::MediaRoot::OnGetRecentDocuments(
   DCHECK_EQ(0, num_inflight_readdirs_);
   DCHECK(document_id_to_file_.empty());
 
+  const std::u16string q16 = base::UTF8ToUTF16(params_->query());
   // Initialize |document_id_to_file_| with recent document IDs returned.
   if (maybe_documents.has_value()) {
     for (const auto& document : maybe_documents.value()) {
@@ -195,6 +197,9 @@ void RecentArcMediaSource::MediaRoot::OnGetRecentDocuments(
       if (document->android_file_system_path.has_value() &&
           IsInsideDownloadsOrMyFiles(
               document->android_file_system_path.value())) {
+        continue;
+      }
+      if (!FileNameMatches(base::UTF8ToUTF16(document->display_name), q16)) {
         continue;
       }
       document_id_to_file_.emplace(document->document_id, absl::nullopt);
@@ -332,8 +337,8 @@ bool RecentArcMediaSource::MediaRoot::MatchesFileType(
   }
 }
 
-RecentArcMediaSource::RecentArcMediaSource(Profile* profile)
-    : profile_(profile) {
+RecentArcMediaSource::RecentArcMediaSource(Profile* profile, size_t max_files)
+    : profile_(profile), max_files_(max_files) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (const char* root_id : kMediaDocumentsProviderRootIds) {
     roots_.emplace_back(std::make_unique<MediaRoot>(root_id, profile_));
@@ -377,7 +382,7 @@ void RecentArcMediaSource::GetRecentFiles(Params params) {
   for (auto& root : roots_) {
     root->GetRecentFiles(
         Params(params_.value().file_system_context(), params_.value().origin(),
-               params_.value().max_files(), params_.value().cutoff_time(),
+               params_.value().query(), params_.value().cutoff_time(),
                params_.value().end_time(), params_.value().file_type(),
                base::BindOnce(&RecentArcMediaSource::OnGetRecentFilesForRoot,
                               weak_ptr_factory_.GetWeakPtr())));
@@ -410,8 +415,13 @@ void RecentArcMediaSource::OnComplete() {
 
   Params params = std::move(params_.value());
   params_.reset();
-  std::vector<RecentFile> files = std::move(files_);
-  files_.clear();
+  std::vector<RecentFile> files;
+  files.swap(files_);
+
+  std::sort(files.begin(), files.end(), RecentFileComparator());
+  if (files.size() > max_files_) {
+    files.resize(max_files_);
+  }
   std::move(params.callback()).Run(std::move(files));
 }
 

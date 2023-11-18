@@ -90,8 +90,8 @@ source_set("common") {
     "vda_video_frame_pool.cc",
     "vda_video_frame_pool.h",
     "video_decoder_pipeline.h",
-    "vulkan_image_processor_backend.cc",
-    "vulkan_image_processor_backend.h",
+    "vulkan_image_processor.cc",
+    "vulkan_image_processor.h",
   ]
 
   # TODO(crbug.com/1012587): Merge :fourcc to :common.
@@ -162,6 +162,7 @@ source_set("video_frame_mapper") {
   ]
 
   deps = [
+    ":common",
     "//base",
     "//media",
     "//media/gpu:command_buffer_helper",
@@ -188,6 +189,7 @@ source_set(
     "fake_chromeos_intel_compressed_gpu_memory_buffer.h",
   ]
   deps = [
+    ":common",
     "//base",
     "//build/config/linux/libdrm",
     "//ui/gfx",
@@ -257,6 +259,7 @@ if (use_v4l2_codec) {
       "//base/test:test_support",
       "//media:test_support",
       "//media/gpu:video_frame_mapper_common",
+      "//media/gpu/test:helpers",
       "//media/gpu/test:video_test_environment",
       "//testing/gtest",
       "//testing/perf",

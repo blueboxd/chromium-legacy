@@ -188,8 +188,8 @@ void AutofillPopupControllerImpl::Show(
 
   trigger_source_ = trigger_source;
   should_ignore_mouse_observed_outside_item_bounds_check_ =
-      trigger_source_ == AutofillSuggestionTriggerSource::
-                             kManualFallbackForAutocompleteUnrecognized;
+      trigger_source_ ==
+      AutofillSuggestionTriggerSource::kManualFallbackAddress;
 
   if (view_) {
     OnSuggestionsChanged();
@@ -252,8 +252,7 @@ bool AutofillPopupControllerImpl::
 }
 
 void AutofillPopupControllerImpl::UpdateDataListValues(
-    const std::vector<std::u16string>& values,
-    const std::vector<std::u16string>& labels) {
+    base::span<const SelectOption> options) {
   // Remove all the old data list values, which should always be at the top of
   // the list if they are present.
   while (!suggestions_.empty() &&
@@ -263,7 +262,7 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
 
   // If there are no new data list values, exit (clearing the separator if there
   // is one).
-  if (values.empty()) {
+  if (options.empty()) {
     if (!suggestions_.empty() &&
         suggestions_[0].popup_item_id == PopupItemId::kSeparator) {
       suggestions_.erase(suggestions_.begin());
@@ -286,11 +285,11 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
   }
 
   // Prepend the parameters to the suggestions we already have.
-  suggestions_.insert(suggestions_.begin(), values.size(), Suggestion());
-  for (size_t i = 0; i < values.size(); i++) {
+  suggestions_.insert(suggestions_.begin(), options.size(), Suggestion());
+  for (size_t i = 0; i < options.size(); i++) {
     suggestions_[i].main_text =
-        Suggestion::Text(values[i], Suggestion::Text::IsPrimary(true));
-    suggestions_[i].labels = {{Suggestion::Text(labels[i])}};
+        Suggestion::Text(options[i].value, Suggestion::Text::IsPrimary(true));
+    suggestions_[i].labels = {{Suggestion::Text(options[i].content)}};
     suggestions_[i].popup_item_id = PopupItemId::kDatalistEntry;
   }
 
@@ -400,8 +399,8 @@ void AutofillPopupControllerImpl::AcceptSuggestion(int index,
   mf_controller->UpdateSourceAvailability(FillingSource::AUTOFILL,
                                           /*has_suggestions=*/false);
   mf_controller->Hide();
-#endif
 
+#endif
   if (suggestion.popup_item_id == PopupItemId::kVirtualCreditCardEntry) {
     std::string event_name =
         suggestion.feature_for_iph ==
@@ -428,7 +427,11 @@ void AutofillPopupControllerImpl::AcceptSuggestion(int index,
     view_->AxAnnounce(*announcement);
   }
 
-  delegate_->DidAcceptSuggestion(suggestion, index, trigger_source_);
+  delegate_->DidAcceptSuggestion(
+      suggestion,
+      AutofillPopupDelegate::SuggestionPosition{
+          .row = index, .sub_popup_level = GetPopupLevel()},
+      trigger_source_);
 #if BUILDFLAG(IS_ANDROID)
   if ((suggestion.popup_item_id == PopupItemId::kPasswordEntry ||
        suggestion.popup_item_id == PopupItemId::kUsernameEntry) &&
@@ -689,6 +692,10 @@ base::WeakPtr<AutofillPopupView>
 AutofillPopupControllerImpl::CreateSubPopupView(
     base::WeakPtr<AutofillPopupController> controller) {
   return view_ ? view_->CreateSubPopupView(controller) : nullptr;
+}
+
+int AutofillPopupControllerImpl::GetPopupLevel() const {
+  return !IsRootPopup() ? parent_controller_->get()->GetPopupLevel() + 1 : 0;
 }
 
 void AutofillPopupControllerImpl::FireControlsChangedEvent(bool is_show) {

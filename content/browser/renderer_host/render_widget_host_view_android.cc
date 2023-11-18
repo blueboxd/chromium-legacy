@@ -216,6 +216,17 @@ bool IsFullscreenSurfaceSyncSupported() {
 
 }  // namespace
 
+// static
+RenderWidgetHostViewAndroid*
+RenderWidgetHostViewAndroid::FromRenderWidgetHostView(
+    RenderWidgetHostView* view) {
+  if (!view || static_cast<RenderWidgetHostViewBase*>(view)
+                   ->IsRenderWidgetHostViewChildFrame()) {
+    return nullptr;
+  }
+  return static_cast<RenderWidgetHostViewAndroid*>(view);
+}
+
 RenderWidgetHostViewAndroid::ScreenStateChangeHandler::ScreenStateChangeHandler(
     RenderWidgetHostViewAndroid* rwhva)
     : rwhva_(rwhva) {}
@@ -632,13 +643,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
         local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
         GetCompositorViewportPixelSize(), host()->delegate()->IsFullscreen(),
         TakeContentToVisibleTimeRequest(host()));
-  }
-
-  // Let the page-level input event router know about our frame sink ID
-  // for surface-based hit testing.
-  if (ShouldRouteEvents()) {
-    host()->delegate()->GetInputEventRouter()->AddFrameSinkIdOwner(
-        GetFrameSinkId(), this);
   }
 
   host()->SetView(this);
@@ -1168,10 +1172,14 @@ bool RenderWidgetHostViewAndroid::IsShowing() {
 }
 
 void RenderWidgetHostViewAndroid::SelectAroundCaretAck(
+    int startOffset,
+    int endOffset,
+    int surroundingTextLength,
     blink::mojom::SelectAroundCaretResultPtr result) {
   if (!selection_popup_controller_)
     return;
-  selection_popup_controller_->OnSelectAroundCaretAck(std::move(result));
+  selection_popup_controller_->OnSelectAroundCaretAck(
+      startOffset, endOffset, surroundingTextLength, std::move(result));
 }
 
 gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() {
@@ -1481,10 +1489,15 @@ void RenderWidgetHostViewAndroid::ResetGestureDetection() {
   }
 }
 
-void RenderWidgetHostViewAndroid::DidNavigateMainFramePreCommit() {
+void RenderWidgetHostViewAndroid::OnOldViewDidNavigatePreCommit() {
+  if (delegated_frame_host_) {
+    delegated_frame_host_->DidNavigateMainFramePreCommit();
+  }
+}
+
+void RenderWidgetHostViewAndroid::OnNewViewDidNavigatePostCommit() {
   // Move to front only if we are the primary page (we don't want to receive
-  // events in the Prerender). GetMainRenderFrameHost() may be null in
-  // tests.
+  // events in the Prerender). GetMainRenderFrameHost() may be null in tests.
   if (view_.parent() &&
       RenderViewHostImpl::From(host())->GetMainRenderFrameHost() &&
       RenderViewHostImpl::From(host())
@@ -1494,8 +1507,6 @@ void RenderWidgetHostViewAndroid::DidNavigateMainFramePreCommit() {
     view_.parent()->MoveToFront(&view_);
   }
   ResetGestureDetection();
-  if (delegated_frame_host_)
-    delegated_frame_host_->DidNavigateMainFramePreCommit();
 }
 
 void RenderWidgetHostViewAndroid::DidEnterBackForwardCache() {
@@ -1589,6 +1600,12 @@ void RenderWidgetHostViewAndroid::UpdateTooltipFromKeyboard(
 
 void RenderWidgetHostViewAndroid::ClearKeyboardTriggeredTooltip() {
   // Tooltips don't make sense on Android.
+}
+
+void RenderWidgetHostViewAndroid::UpdateFrameSinkIdRegistration() {
+  RenderWidgetHostViewBase::UpdateFrameSinkIdRegistration();
+
+  delegated_frame_host_->SetIsFrameSinkIdOwner(is_frame_sink_id_owner());
 }
 
 void RenderWidgetHostViewAndroid::UpdateBackgroundColor() {

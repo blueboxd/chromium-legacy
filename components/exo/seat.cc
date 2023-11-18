@@ -98,6 +98,14 @@ void Seat::RemoveObserver(SeatObserver* observer) {
     observer_list.RemoveObserver(observer);
 }
 
+void Seat::NotifySurfaceCreated(Surface* surface) {
+  for (auto& observer_list : priority_observer_list_) {
+    for (auto& observer : observer_list) {
+      observer.OnSurfaceCreated(surface);
+    }
+  }
+}
+
 void Seat::NotifyPointerCaptureEnabled(Pointer* pointer,
                                        aura::Window* capture_window) {
   for (auto& observer_list : priority_observer_list_) {
@@ -134,6 +142,10 @@ void Seat::StartDrag(DataSource* source,
 void Seat::AbortPendingDragOperation() {
   if (drag_drop_operation_)
     drag_drop_operation_->AbortIfPending();
+}
+
+bool Seat::IsDragDropOperationInProgress() const {
+  return drag_drop_operation_ && drag_drop_operation_->started();
 }
 
 void Seat::SetSelection(DataSource* source) {

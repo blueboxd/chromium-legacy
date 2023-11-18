@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -342,26 +343,17 @@ Display::GetDefaultDisplayColorSpacesRef() {
   // On Android we need to ensure the platform supports a color profile before
   // using it. Using a not supported profile can result in fatal errors in the
   // GPU process.
-  static scoped_refptr<const DisplayColorSpacesRef> default_color_spaces_ref =
-      []() {
+  static const base::NoDestructor<scoped_refptr<const DisplayColorSpacesRef>>
+      default_color_spaces_ref([] {
         auto color_space = gfx::ColorSpace::CreateSRGB();
 #if !BUILDFLAG(IS_ANDROID)
         if (HasForceDisplayColorProfile()) {
           color_space = GetForcedDisplayColorProfile();
         }
 #endif
-        // The default format on Mac is BGRA in screen_mac.cc, so we set it here
-        // too so that it matches with --ensure-forced-color-profile.
-        const gfx::BufferFormat format =
-#if BUILDFLAG(IS_MAC)
-            gfx::BufferFormat::BGRA_8888;
-#else
-            gfx::BufferFormat::RGBA_8888;
-#endif
-        return base::MakeRefCounted<DisplayColorSpacesRef>(
-            gfx::DisplayColorSpaces(color_space, format));
-      }();
-  return default_color_spaces_ref;
+        return new DisplayColorSpacesRef(gfx::DisplayColorSpaces(color_space));
+      }());
+  return *default_color_spaces_ref;
 }
 
 }  // namespace display

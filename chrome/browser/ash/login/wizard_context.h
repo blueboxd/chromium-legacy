@@ -42,6 +42,7 @@ class WizardContext {
     kChildSignup,
     kChildSignin,
     kReauth,
+    kSamlRedirect,
   };
 
   struct GaiaConfig {
@@ -72,9 +73,20 @@ class WizardContext {
     bool recovery_factor_opted_in = false;
   };
 
+  // This enum helps tell which auth setup flow we're currently going through.
+  // This helps screens that modify auth factors such as local password and
+  // pin to easily determine if we're adding a new auth factor as part of
+  // first user setup or updating an existing auth factor, for instance, as
+  // part of recovery flow.
+  enum class AuthChangeFlow { kInitialSetup, kRecovery };
+
   struct KnowledgeFactorSetup {
     // Whether usage of local password is forced.
     bool local_password_forced = false;
+
+    AuthChangeFlow auth_setup_flow = AuthChangeFlow::kInitialSetup;
+
+    AuthFactorsSet modified_factors;
   };
 
   // Configuration for automating OOBE screen actions, e.g. during device
@@ -151,11 +163,6 @@ class WizardContext {
   RecoverySetup recovery_setup;
 
   KnowledgeFactorSetup knowledge_factor_setup;
-
-  // Authorization data that is required by PinSetup screen to add PIN as
-  // another possible auth factor. Can be empty (if PIN is not supported).
-  // In future will be replaced by AuthSession.
-  std::unique_ptr<UserContext> extra_factors_auth_session;
 
   // Same as above, but the actual context is stored in AuthSessionStorage,
   // and the token can be used to retrieve it.

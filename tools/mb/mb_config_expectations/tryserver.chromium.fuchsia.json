@@ -64,6 +64,18 @@
       "use_remoteexec": true
     }
   },
+  "fuchsia-binary-size-siso": {
+    "args_file": "//build/config/fuchsia/size_optimized_cast_receiver_args.gn",
+    "gn_args": {
+      "dcheck_always_on": false,
+      "is_debug": false,
+      "is_official_build": true,
+      "target_cpu": "arm64",
+      "target_os": "fuchsia",
+      "use_dummy_lastchange": true,
+      "use_remoteexec": true
+    }
+  },
   "fuchsia-code-coverage": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -89,6 +101,8 @@
   },
   "fuchsia-deterministic-dbg": {
     "gn_args": {
+      "cast_streaming_enable_remoting": true,
+      "enable_cast_receiver": true,
       "is_component_build": true,
       "is_debug": true,
       "symbol_level": 1,
@@ -98,6 +112,8 @@
   },
   "fuchsia-fyi-arm64-dbg": {
     "gn_args": {
+      "cast_streaming_enable_remoting": true,
+      "enable_cast_receiver": true,
       "is_component_build": true,
       "is_debug": true,
       "symbol_level": 1,
@@ -120,6 +136,8 @@
   },
   "fuchsia-fyi-x64-dbg": {
     "gn_args": {
+      "cast_streaming_enable_remoting": true,
+      "enable_cast_receiver": true,
       "is_component_build": true,
       "is_debug": true,
       "symbol_level": 1,
@@ -129,6 +147,8 @@
   },
   "fuchsia-fyi-x64-dbg-persistent-emulator": {
     "gn_args": {
+      "cast_streaming_enable_remoting": true,
+      "enable_cast_receiver": true,
       "is_component_build": true,
       "is_debug": true,
       "symbol_level": 1,

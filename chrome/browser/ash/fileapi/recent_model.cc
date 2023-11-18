@@ -5,7 +5,6 @@
 #include "chrome/browser/ash/fileapi/recent_model.h"
 
 #include <algorithm>
-#include <iterator>
 #include <string>
 #include <utility>
 
@@ -32,29 +31,31 @@ namespace ash {
 
 namespace {
 
-// Cut-off time. Files older than this are filtered out.
-constexpr base::TimeDelta kCutoffTimeDelta = base::Days(30);
-
 // Recent file cache will be cleared this duration after it is built.
 // Note: Do not make this value large. When cache is used, cut-off criteria is
 // not strictly honored.
 constexpr base::TimeDelta kCacheExpiration = base::Seconds(10);
 
+// The default number of files collected from each recent source.
+constexpr size_t kMaxFiles = 1000u;
+
 std::vector<std::unique_ptr<RecentSource>> CreateDefaultSources(
-    Profile* profile) {
+    Profile* profile,
+    size_t max_files) {
   std::vector<std::unique_ptr<RecentSource>> sources;
-  sources.emplace_back(std::make_unique<RecentArcMediaSource>(profile));
+  sources.emplace_back(
+      std::make_unique<RecentArcMediaSource>(profile, max_files));
   // Crostini.
   sources.emplace_back(std::make_unique<RecentDiskSource>(
       file_manager::util::GetCrostiniMountPointName(profile),
-      true /* ignore_dotfiles */, 4 /* max_depth */,
+      true /* ignore_dotfiles */, 4 /* max_depth */, max_files,
       "FileBrowser.Recent.LoadCrostini"));
   // Downloads / MyFiles.
   sources.emplace_back(std::make_unique<RecentDiskSource>(
       file_manager::util::GetDownloadsMountPointName(profile),
-      true /* ignore_dotfiles */, 0 /* max_depth unlimited */,
+      true /* ignore_dotfiles */, 0 /* max_depth unlimited */, max_files,
       "FileBrowser.Recent.LoadDownloads"));
-  sources.emplace_back(std::make_unique<RecentDriveSource>(profile));
+  sources.emplace_back(std::make_unique<RecentDriveSource>(profile, max_files));
 
   if (base::FeatureList::IsEnabled(ash::features::kFSPsInRecents)) {
     file_manager::VolumeManager* volume_manager =
@@ -73,7 +74,7 @@ std::vector<std::unique_ptr<RecentSource>> CreateDefaultSources(
       }
       sources.emplace_back(std::make_unique<RecentDiskSource>(
           volume->mount_path().BaseName().AsUTF8Unsafe(),
-          /*ignore_dot_files=*/true, /*max_depth=*/0,
+          /*ignore_dot_files=*/true, /*max_depth=*/0, max_files,
           "FileBrowser.Recent.LoadFileSystemProvider"));
     }
   }
@@ -83,24 +84,21 @@ std::vector<std::unique_ptr<RecentSource>> CreateDefaultSources(
 
 }  // namespace
 
-const char RecentModel::kLoadHistogramName[] = "FileBrowser.Recent.LoadTotal";
-
-// static
-RecentModel* RecentModel::GetForProfile(Profile* profile) {
-  return RecentModelFactory::GetForProfile(profile);
-}
-
 // static
 std::unique_ptr<RecentModel> RecentModel::CreateForTest(
-    std::vector<std::unique_ptr<RecentSource>> sources) {
-  return base::WrapUnique(new RecentModel(std::move(sources)));
+    std::vector<std::unique_ptr<RecentSource>> sources,
+    size_t max_files) {
+  return base::WrapUnique(new RecentModel(std::move(sources), max_files));
 }
 
 RecentModel::RecentModel(Profile* profile)
-    : RecentModel(CreateDefaultSources(profile)) {}
+    : RecentModel(CreateDefaultSources(profile, kMaxFiles), kMaxFiles) {}
 
-RecentModel::RecentModel(std::vector<std::unique_ptr<RecentSource>> sources)
-    : sources_(std::move(sources)), current_sequence_id_(0) {
+RecentModel::RecentModel(std::vector<std::unique_ptr<RecentSource>> sources,
+                         size_t max_files)
+    : sources_(std::move(sources)),
+      accumulator_(max_files),
+      current_sequence_id_(0) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -112,11 +110,18 @@ RecentModel::~RecentModel() {
 void RecentModel::GetRecentFiles(
     storage::FileSystemContext* file_system_context,
     const GURL& origin,
+    const std::string& query,
+    const base::TimeDelta& now_delta,
     FileType file_type,
     bool invalidate_cache,
     GetRecentFilesCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  SearchCriteria search_criteria = {
+      .query = query,
+      .now_delta = now_delta,
+      .file_type = file_type,
+  };
   /**
    * Use cache only if:
    *  * cache has value.
@@ -125,7 +130,7 @@ void RecentModel::GetRecentFiles(
    * Otherwise clear cache if it has values.
    */
   if (cached_files_.has_value()) {
-    if (!invalidate_cache && cached_files_type_ == file_type) {
+    if (!invalidate_cache && cached_search_criteria_ == search_criteria) {
       std::move(callback).Run(cached_files_.value());
       return;
     }
@@ -142,22 +147,20 @@ void RecentModel::GetRecentFiles(
 
   // Start building a recent file list.
   DCHECK_EQ(0, num_inflight_sources_);
-  DCHECK(intermediate_files_.empty());
   DCHECK(build_start_time_.is_null());
 
   build_start_time_ = base::TimeTicks::Now();
 
   num_inflight_sources_ = sources_.size();
   if (sources_.empty()) {
-    OnGetRecentFilesCompleted(file_type);
+    OnGetRecentFilesCompleted(search_criteria);
     return;
   }
 
   // cutoff_time is the oldest modified time for a file to be considered recent.
-  base::Time cutoff_time = forced_cutoff_time_.has_value()
-                               ? forced_cutoff_time_.value()
-                               : base::Time::Now() - kCutoffTimeDelta;
+  base::Time cutoff_time = base::Time::Now() - now_delta;
 
+  accumulator_.Clear();
   uint32_t run_on_sequence_id = current_sequence_id_;
   // If there is no scan timeout we set the end_time, i.e., the time by which
   // the scan is supposed to be done, to maximum possible time. In the current
@@ -168,17 +171,16 @@ void RecentModel::GetRecentFiles(
 
   for (const auto& source : sources_) {
     source->GetRecentFiles(RecentSource::Params(
-        file_system_context, origin, max_files_, cutoff_time, end_time,
-        file_type,
+        file_system_context, origin, query, cutoff_time, end_time, file_type,
         base::BindOnce(&RecentModel::OnGetRecentFiles,
                        weak_ptr_factory_.GetWeakPtr(), run_on_sequence_id,
-                       max_files_, cutoff_time, file_type)));
+                       cutoff_time, search_criteria)));
   }
   if (scan_timeout_duration_) {
     deadline_timer_.Start(
         FROM_HERE, base::TimeTicks::Now() + *scan_timeout_duration_,
         base::BindOnce(&RecentModel::OnScanTimeout,
-                       weak_ptr_factory_.GetWeakPtr(), file_type));
+                       weak_ptr_factory_.GetWeakPtr(), search_criteria));
   }
 }
 
@@ -190,10 +192,10 @@ void RecentModel::ClearScanTimeout() {
   scan_timeout_duration_.reset();
 }
 
-void RecentModel::OnScanTimeout(FileType file_type) {
+void RecentModel::OnScanTimeout(const SearchCriteria& search_criteria) {
   if (num_inflight_sources_ > 0) {
     num_inflight_sources_ = 0;
-    OnGetRecentFilesCompleted(file_type);
+    OnGetRecentFilesCompleted(search_criteria);
   }
 }
 
@@ -206,9 +208,8 @@ void RecentModel::Shutdown() {
 }
 
 void RecentModel::OnGetRecentFiles(uint32_t run_on_sequence_id,
-                                   size_t max_files,
                                    const base::Time& cutoff_time,
-                                   FileType file_type,
+                                   const SearchCriteria& search_criteria,
                                    std::vector<RecentFile> files) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -221,21 +222,18 @@ void RecentModel::OnGetRecentFiles(uint32_t run_on_sequence_id,
 
   for (const auto& file : files) {
     if (file.last_modified() >= cutoff_time) {
-      intermediate_files_.emplace(file);
+      accumulator_.Add(file);
     }
-  }
-
-  while (intermediate_files_.size() > max_files) {
-    intermediate_files_.pop();
   }
 
   --num_inflight_sources_;
   if (num_inflight_sources_ == 0) {
-    OnGetRecentFilesCompleted(file_type);
+    OnGetRecentFilesCompleted(search_criteria);
   }
 }
 
-void RecentModel::OnGetRecentFilesCompleted(FileType file_type) {
+void RecentModel::OnGetRecentFilesCompleted(
+    const SearchCriteria& search_criteria) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DCHECK_EQ(0, num_inflight_sources_);
@@ -245,17 +243,10 @@ void RecentModel::OnGetRecentFilesCompleted(FileType file_type) {
   ++current_sequence_id_;
   deadline_timer_.Stop();
 
-  std::vector<RecentFile> files;
-  while (!intermediate_files_.empty()) {
-    files.emplace_back(intermediate_files_.top());
-    intermediate_files_.pop();
-  }
-  std::reverse(files.begin(), files.end());
-  cached_files_ = std::move(files);
-  cached_files_type_ = file_type;
+  cached_files_ = accumulator_.Get();
+  cached_search_criteria_ = search_criteria;
 
   DCHECK(cached_files_.has_value());
-  DCHECK(intermediate_files_.empty());
 
   UMA_HISTOGRAM_TIMES(kLoadHistogramName,
                       base::TimeTicks::Now() - build_start_time_);
@@ -272,27 +263,15 @@ void RecentModel::OnGetRecentFilesCompleted(FileType file_type) {
   DCHECK(pending_callbacks_.empty());
   DCHECK(!callbacks_to_call.empty());
   for (auto& callback : callbacks_to_call) {
-    std::move(callback).Run(cached_files_.value());
+    std::move(callback).Run(accumulator_.Get());
   }
+  accumulator_.Clear();
 }
 
 void RecentModel::ClearCache() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   cached_files_.reset();
-}
-
-void RecentModel::SetMaxFilesForTest(size_t max_files) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  max_files_ = max_files;
-}
-
-void RecentModel::SetForcedCutoffTimeForTest(
-    const base::Time& forced_cutoff_time) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  forced_cutoff_time_ = forced_cutoff_time;
 }
 
 }  // namespace ash

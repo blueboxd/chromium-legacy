@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './os_feedback_shared_css.js';
-import './file_attachment.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
-import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.js';
+import './file_attachment.js';
+import './os_feedback_shared.css.js';
 
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
-import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {FEEDBACK_LEGAL_HELP_URL, FEEDBACK_PRIVACY_POLICY_URL, FEEDBACK_TERMS_OF_SERVICE_URL} from './feedback_constants.js';
 import {FeedbackFlowState} from './feedback_flow.js';
-import {AttachedFile, FeedbackAppPreSubmitAction, FeedbackContext, FeedbackServiceProviderInterface, Report} from './feedback_types.js';
 import {showScrollingEffects} from './feedback_utils.js';
 import {getFeedbackServiceProvider} from './mojo_interface_provider.js';
+import {FeedbackAppPreSubmitAction, FeedbackContext, Report} from './os_feedback_ui.mojom-webui.js';
+import {getTemplate} from './share_data_page.html.js';
 
 /**
  * @fileoverview
@@ -38,7 +39,7 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -79,6 +80,11 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
      * @type {boolean}
      */
     this.shouldShowBluetoothCheckbox;
+
+    /**
+     * @type {boolean}
+     */
+    this.shouldShowWifiDebugLogsCheckbox;
 
     /**
      * @type {boolean}
@@ -129,6 +135,12 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
      * @type {string}
      * @protected
      */
+    this.wifiDebugLogsCheckboxLabel_;
+
+    /**
+     * @type {string}
+     * @protected
+     */
     this.linkCrossDeviceDogfoodFeedbackCheckboxLabel_;
 
     /**
@@ -148,6 +160,7 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
     this.setPerformanceTraceCheckboxLabel_();
     this.setAssistantLogsCheckboxLabelAndAttributes_();
     this.setBluetoothLogsCheckboxLabelAndAttributes_();
+    this.setWifiDebugLogsCheckboxLabelAndAttributes_();
     this.setLinkCrossDeviceDogfoodFeedbackCheckboxLabelAndAttributes_();
     this.setAutofillCheckboxLabelAndAttributes_();
     // Set the aria description works the best for screen reader.
@@ -298,6 +311,26 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
   /** @protected */
   handleCloseBluetoothDialogClicked_() {
     this.getElement_('#bluetoothDialog').close();
+  }
+
+  /**
+   * @param {!Event} e
+   * @protected
+   */
+  handleOpenWifiDebugLogsInfoDialog_(e) {
+    // The default behavior of clicking on an anchor tag
+    // with href="#" is a scroll to the top of the page.
+    // This link opens a dialog, so we want to prevent
+    // this default behavior.
+    e.preventDefault();
+
+    this.getElement_('#wifiDebugLogsDialog').showModal();
+    this.getElement_('#wifiDebugLogsDialogDoneButton').focus();
+  }
+
+  /** @protected */
+  handleCloseWifiDebugLogsDialogClicked_() {
+    this.getElement_('#wifiDebugLogsDialog').close();
   }
 
   /**
@@ -457,6 +490,9 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
       report.feedbackContext.autofillMetadata = '';
     }
 
+    report.sendWifiDebugLogs = this.shouldShowWifiDebugLogsCheckbox &&
+        this.getElement_('#wifiDebugLogsCheckbox').checked;
+
     if (this.getElement_('#performanceTraceCheckbox').checked) {
       report.feedbackContext.traceId = this.feedbackContext.traceId;
     } else {
@@ -503,6 +539,12 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
    */
   isUserLoggedIn_() {
     return this.feedbackContext?.categoryTag !== 'Login';
+  }
+
+  /** @protected */
+  getAttachFilesLabel_() {
+    return this.isUserLoggedIn_() ? this.i18n('attachFilesLabelLoggedIn') :
+                                    this.i18n('attachFilesLabelLoggedOut');
   }
 
   /** @private */
@@ -602,6 +644,19 @@ export class ShareDataPageElement extends ShareDataPageElementBase {
     bluetoothLogsLink.setAttribute('href', '#');
     bluetoothLogsLink.addEventListener(
         'click', (e) => void this.handleOpenBluetoothLogsInfoDialog_(e));
+  }
+
+  /** @private */
+  setWifiDebugLogsCheckboxLabelAndAttributes_() {
+    this.wifiDebugLogsCheckboxLabel_ =
+        this.i18nAdvanced('wifiDebugLogsInfo', {attrs: ['id']});
+
+    const wifiDebugLogsLink =
+        this.shadowRoot.querySelector('#wifiDebugLogsInfoLink');
+    // Setting href causes <a> tag to display as link.
+    wifiDebugLogsLink.setAttribute('href', '#');
+    wifiDebugLogsLink.addEventListener(
+        'click', (e) => void this.handleOpenWifiDebugLogsInfoDialog_(e));
   }
 
   /** @private */

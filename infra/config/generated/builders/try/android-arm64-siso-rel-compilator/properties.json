@@ -1,6 +1,9 @@
 {
   "$build/chromium_tests_builder_config": {
     "builder_config": {
+      "additional_exclusions": [
+        "infra/config/generated/builders/try/android-arm64-siso-rel/gn-args.json"
+      ],
       "builder_db": {
         "entries": [
           {
@@ -78,8 +81,7 @@
           "builder": "android-pie-arm64-rel",
           "project": "chromium"
         }
-      ],
-      "is_compile_only": true
+      ]
     }
   },
   "$build/code_coverage": {

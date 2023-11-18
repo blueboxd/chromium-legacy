@@ -1,10 +1,13 @@
 {
   "$build/chromium_orchestrator": {
     "compilator": "android-x86-rel-compilator",
-    "compilator_watcher_git_revision": "e6d08be3fd589d4f222dae5d18dbc972e6117b23"
+    "compilator_watcher_git_revision": "039b345114555dea8996630f1fc6e08319fa0422"
   },
   "$build/chromium_tests_builder_config": {
     "builder_config": {
+      "additional_exclusions": [
+        "infra/config/generated/builders/try/android-x86-rel/gn-args.json"
+      ],
       "builder_db": {
         "entries": [
           {
@@ -51,6 +54,7 @@
       "unit",
       "overall"
     ],
+    "use_clang_coverage": true,
     "use_java_coverage": true
   },
   "$build/flakiness": {

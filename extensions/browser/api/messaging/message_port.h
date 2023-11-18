@@ -5,14 +5,16 @@
 #ifndef EXTENSIONS_BROWSER_API_MESSAGING_MESSAGE_PORT_H_
 #define EXTENSIONS_BROWSER_API_MESSAGING_MESSAGE_PORT_H_
 
+#include <optional>
 #include <string>
-
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "extensions/browser/activity.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
+#include "extensions/buildflags/buildflags.h"
 #include "extensions/common/api/messaging/port_id.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "extensions/common/mojom/message_port.mojom.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "url/origin.h"
 
 class GURL;
@@ -23,16 +25,16 @@ class RenderFrameHost;
 
 namespace extensions {
 
-namespace mojom {
-enum class ChannelType;
-}
-
 struct Message;
 struct MessagingEndpoint;
 struct PortContext;
 
 // One side of the communication handled by extensions::MessageService.
-class MessagePort {
+class MessagePort
+#if !BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
+    : public mojom::MessagePortHost
+#endif
+{
  public:
   // Delegate handling the channel between the port and its host.
   class ChannelDelegate {
@@ -41,10 +43,19 @@ class MessagePort {
     // the other side.
     virtual void CloseChannel(const PortId& port_id,
                               const std::string& error_message) = 0;
+    // Closes the given port in the given `port_context`. If this was the last
+    // context or if `close_channel` is true, then the other side is closed as
+    // well.
+    virtual void ClosePort(const PortId& port_id,
+                           int process_id,
+                           const PortContext& port_context,
+                           bool close_channel) = 0;
 
     // Enqueues a message on a pending channel, or sends a message to the given
     // port if the channel isn't pending.
     virtual void PostMessage(const PortId& port_id, const Message& message) = 0;
+
+    virtual void NotifyResponsePending(const PortId& port_id) = 0;
   };
 
   explicit MessagePort(base::WeakPtr<ChannelDelegate> channel_delegate,
@@ -52,7 +63,11 @@ class MessagePort {
   MessagePort(const MessagePort&) = delete;
   MessagePort& operator=(const MessagePort&) = delete;
 
+#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
   virtual ~MessagePort();
+#else
+  ~MessagePort() override;
+#endif
 
   // Called right before a channel is created for this MessagePort and |port|.
   // This allows us to ensure that the ports have no RenderFrameHost instances
@@ -75,14 +90,14 @@ class MessagePort {
   virtual void DispatchOnConnect(
       mojom::ChannelType channel_type,
       const std::string& channel_name,
-      absl::optional<base::Value::Dict> source_tab,
+      std::optional<base::Value::Dict> source_tab,
       const ExtensionApiFrameIdMap::FrameData& source_frame,
       int guest_process_id,
       int guest_render_frame_routing_id,
       const MessagingEndpoint& source_endpoint,
       const std::string& target_extension_id,
       const GURL& source_url,
-      absl::optional<url::Origin> source_origin);
+      std::optional<url::Origin> source_origin);
 
   // Notifies the port that the channel has been closed. If |error_message| is
   // non-empty, it indicates an error occurred while opening the connection.
@@ -118,8 +133,22 @@ class MessagePort {
     is_for_onetime_channel_ = is_for_onetime_channel;
   }
 
+#if !BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
+  void AddReceiver(
+      mojo::PendingAssociatedReceiver<mojom::MessagePortHost> receiver,
+      int render_process_id,
+      const PortContext& port_context);
+#endif
+
  protected:
   MessagePort();
+
+#if !BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
+  // mojom::MessagePortHost overrides:
+  void ClosePort(bool close_hannel) override;
+  void PostMessage(Message message) override;
+  void ResponsePending() override;
+#endif
 
   base::WeakPtr<ChannelDelegate> weak_channel_delegate_;
   const PortId port_id_;
@@ -130,6 +159,12 @@ class MessagePort {
 
   // This port was created for one-time messaging channel.
   bool is_for_onetime_channel_ = false;
+
+#if !BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
+  mojo::AssociatedReceiverSet<mojom::MessagePortHost,
+                              std::pair<int, PortContext>>
+      receivers_;
+#endif
 };
 
 }  // namespace extensions

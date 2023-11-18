@@ -64,6 +64,8 @@ static_library("metrics") {
     "//components/optimization_guide/core",
     "//components/optimization_guide/proto:optimization_guide_proto",
     "//components/prefs",
+    "//services/metrics/public/cpp:metrics_cpp",
+    "//services/metrics/public/cpp:ukm_builders",
   ]
 }
 
@@ -197,6 +199,8 @@ static_library("shopping_service") {
     "shopping_power_bookmark_data_provider.h",
     "shopping_service.cc",
     "shopping_service.h",
+    "web_extractor.cc",
+    "web_extractor.h",
     "web_wrapper.cc",
     "web_wrapper.h",
   ]
@@ -230,6 +234,7 @@ static_library("shopping_service") {
     "//components/strings:components_strings_grit",
     "//components/sync/service",
     "//components/unified_consent",
+    "//services/metrics/public/cpp:metrics_cpp",
     "//services/network/public/cpp:cpp",
     "//ui/base",
     "//url:url",
@@ -318,6 +323,8 @@ source_set("shopping_service_unit_tests") {
     "webui:unit_tests",
     "//components/history/core/browser",
     "//components/search",
+    "//components/ukm:test_support",
+    "//services/metrics/public/cpp:ukm_builders",
   ]
 }
 
@@ -420,7 +427,10 @@ source_set("commerce_constants") {
 }
 
 source_set("commerce_types") {
-  sources = [ "commerce_types.h" ]
+  sources = [
+    "commerce_types.cc",
+    "commerce_types.h",
+  ]
 
   deps = [
     ":proto",
@@ -436,6 +446,8 @@ source_set("utils") {
   ]
   deps = [
     ":commerce_constants",
+    ":commerce_types",
+    ":feature_list",
     "//net:net",
   ]
 }

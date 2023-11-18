@@ -8,13 +8,14 @@ load("//lib/builder_config.star", "builder_config")
 load("//lib/builders.star", "cpu", "os", "reclient", "siso", "xcode")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
+load("//lib/gn_args.star", "gn_args")
 
 try_.defaults.set(
     executable = try_.DEFAULT_EXECUTABLE,
     builder_group = "tryserver.chromium.mac",
     pool = try_.DEFAULT_POOL,
     builderless = True,
-    os = os.MAC_ANY,
+    os = os.MAC_DEFAULT,
     ssd = True,
     compilator_reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
@@ -56,8 +57,13 @@ try_.builder(
         "ci/mac-arm64-on-arm64-rel",
     ],
     builderless = False,
-    os = os.MAC_DEFAULT,
     cpu = cpu.ARM64,
+    gn_args = gn_args.config(
+        configs = [
+            "ci/mac-arm64-on-arm64-rel",
+            "release_try_builder",
+        ],
+    ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -79,27 +85,19 @@ try_.builder(
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
-# This trybot mirrors the trybot mac-rel
-try_.builder(
-    name = "mac-inverse-fieldtrials-fyi-rel",
-    mirrors = [
-        "ci/Mac Builder",
-        "ci/Mac13 Tests",
-        "ci/GPU Mac Builder",
-        "ci/Mac Release (Intel)",
-        "ci/Mac Retina Release (AMD)",
-    ],
-    os = os.MAC_DEFAULT,
-)
-
 try_.builder(
     name = "mac-intel-on-arm64-rel",
     mirrors = [
         "ci/mac-intel-on-arm64-rel",
     ],
     builderless = False,
-    os = os.MAC_DEFAULT,
     cpu = cpu.ARM64,
+    gn_args = gn_args.config(
+        configs = [
+            "ci/mac-intel-on-arm64-rel",
+            "release_try_builder",
+        ],
+    ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -109,7 +107,7 @@ try_.builder(
         "ci/mac-arm64-rel",
         "ci/mac-fieldtrial-tester",
     ],
-    os = os.MAC_DEFAULT,
+    gn_args = "ci/mac-arm64-rel",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -146,6 +144,19 @@ try_.orchestrator_builder(
         # go/nplus1shardsproposal
         "chromium.add_one_test_shard": 10,
     },
+    gn_args = gn_args.config(
+        configs = [
+            "gpu_tests",
+            "release_try_builder",
+            "reclient",
+            "no_symbols",
+            "use_clang_coverage",
+            "partial_code_coverage_instrumentation",
+            "enable_dangling_raw_ptr_feature_flag",
+            "enable_backup_ref_ptr_feature_flag",
+            "x64",
+        ],
+    ),
     main_list_view = "try",
     tryjob = try_.job(),
     use_clang_coverage = True,
@@ -157,12 +168,12 @@ try_.orchestrator_builder(
 try_.compilator_builder(
     name = "mac-rel-compilator",
     branch_selector = branches.selector.MAC_BRANCHES,
-    os = os.MAC_DEFAULT,
     # Allow both x64 and arm64 bots.
     cpu = None,
     main_list_view = "try",
 )
 
+# TODO: crbug.com/1502025 - Reduce duplicated configs from the shadow builder.
 try_.orchestrator_builder(
     name = "mac-siso-rel",
     description_html = """\
@@ -180,6 +191,7 @@ This builder should be removed after migrating mac-rel from Ninja to Siso. b/277
         # go/nplus1shardsproposal
         "chromium.add_one_test_shard": 10,
     },
+    gn_args = "try/mac-rel",
     main_list_view = "try",
     tryjob = try_.job(
         experiment_percentage = 10,
@@ -189,7 +201,6 @@ This builder should be removed after migrating mac-rel from Ninja to Siso. b/277
 
 try_.compilator_builder(
     name = "mac-siso-rel-compilator",
-    os = os.MAC_DEFAULT,
     cpu = cpu.ARM64,
     contact_team_email = "chrome-build-team@google.com",
     main_list_view = "try",
@@ -211,6 +222,15 @@ try_.builder(
         "ci/mac11-arm64-rel-tests",
     ],
     builderless = True,
+    gn_args = gn_args.config(
+        configs = [
+            "arm64",
+            "gpu_tests",
+            "release_try_builder",
+            "reclient",
+            "no_symbols",
+        ],
+    ),
 )
 
 try_.builder(
@@ -235,6 +255,15 @@ try_.builder(
         "ci/mac12-arm64-rel-tests",
     ],
     builderless = True,
+    gn_args = gn_args.config(
+        configs = [
+            "arm64",
+            "gpu_tests",
+            "release_try_builder",
+            "reclient",
+            "no_symbols",
+        ],
+    ),
     main_list_view = "try",
 )
 
@@ -246,6 +275,15 @@ try_.orchestrator_builder(
         "ci/mac13-arm64-rel-tests",
     ],
     compilator = "mac13-arm64-rel-compilator",
+    gn_args = gn_args.config(
+        configs = [
+            "arm64",
+            "gpu_tests",
+            "release_try_builder",
+            "reclient",
+            "no_symbols",
+        ],
+    ),
     main_list_view = "try",
     tryjob = try_.job(
         experiment_percentage = 100,
@@ -255,7 +293,6 @@ try_.orchestrator_builder(
 try_.compilator_builder(
     name = "mac13-arm64-rel-compilator",
     branch_selector = branches.selector.MAC_BRANCHES,
-    os = os.MAC_DEFAULT,
     # TODO (crbug.com/1245171): Revert when root issue is fixed
     grace_period = 4 * time.minute,
     main_list_view = "try",
@@ -299,6 +336,13 @@ try_.builder(
         "ci/Mac Builder",
         "ci/Mac10.15 Tests",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "release_try_builder",
+            "reclient",
+            "disable_nacl",
+        ],
+    ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -310,6 +354,12 @@ try_.builder(
         "ci/Mac11 Tests",
     ],
     builderless = False,
+    gn_args = gn_args.config(
+        configs = [
+            "release_try_builder",
+            "reclient",
+        ],
+    ),
 )
 
 try_.builder(
@@ -319,7 +369,12 @@ try_.builder(
         "ci/Mac Builder",
         "ci/Mac12 Tests",
     ],
-    os = os.MAC_DEFAULT,
+    gn_args = gn_args.config(
+        configs = [
+            "release_try_builder",
+            "reclient",
+        ],
+    ),
 )
 
 try_.builder(
@@ -328,6 +383,12 @@ try_.builder(
         "ci/Mac Builder",
         "ci/Mac13 Tests",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "release_try_builder",
+            "reclient",
+        ],
+    ),
 )
 
 try_.builder(
@@ -349,7 +410,12 @@ try_.builder(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
-    os = os.MAC_DEFAULT,
+    gn_args = gn_args.config(
+        configs = [
+            "ci/Mac Builder (dbg)",
+            "use_dummy_lastchange",
+        ],
+    ),
     main_list_view = "try",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(),
@@ -364,6 +430,13 @@ try_.builder(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
+    gn_args = gn_args.config(
+        configs = [
+            "gpu_tests",
+            "release_try_builder",
+            "reclient",
+        ],
+    ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -373,6 +446,7 @@ try_.builder(
         "ci/Mac Builder (dbg)",
         "ci/Mac13 Tests (dbg)",
     ],
+    gn_args = "ci/Mac Builder (dbg)",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -422,6 +496,7 @@ ios_builder(
     mirrors = [
         "ci/ios-blink-dbg-fyi",
     ],
+    builderless = True,
     cpu = cpu.ARM64,
     execution_timeout = 4 * time.hour,
 )
@@ -431,6 +506,7 @@ ios_builder(
     mirrors = [
         "ci/ios-catalyst",
     ],
+    gn_args = "ci/ios-catalyst",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -439,6 +515,7 @@ ios_builder(
     mirrors = [
         "ci/ios-device",
     ],
+    gn_args = "ci/ios-device",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -451,16 +528,7 @@ ios_builder(
 ios_builder(
     name = "ios-m1-simulator",
     mirrors = ["ci/ios-m1-simulator"],
-    os = os.MAC_DEFAULT,
     cpu = cpu.ARM64,
-)
-
-ios_builder(
-    name = "ios-m1-simulator-cronet",
-    mirrors = ["ci/ios-m1-simulator-cronet"],
-    os = os.MAC_DEFAULT,
-    cpu = cpu.ARM64,
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.orchestrator_builder(
@@ -481,6 +549,14 @@ try_.orchestrator_builder(
         # go/nplus1shardsproposal
         "chromium.add_one_test_shard": 10,
     },
+    gn_args = gn_args.config(
+        configs = [
+            "ci/ios-simulator",
+            "use_clang_coverage",
+            "partial_code_coverage_instrumentation",
+            "use_dummy_lastchange",
+        ],
+    ),
     main_list_view = "try",
     tryjob = try_.job(),
     use_clang_coverage = True,
@@ -491,13 +567,13 @@ try_.compilator_builder(
     branch_selector = branches.selector.IOS_BRANCHES,
     # Set builderless to False so that branch builders use builderful bots
     builderless = False,
-    os = os.MAC_DEFAULT,
     cpu = cpu.ARM64,
     ssd = None,
     main_list_view = "try",
     xcode = xcode.x15main,
 )
 
+# TODO: crbug.com/1502025 - Reduce duplicated configs from the shadow builder.
 try_.orchestrator_builder(
     name = "ios-simulator-siso",
     description_html = """\
@@ -526,31 +602,11 @@ This builder should be removed after migrating ios-simulator from Ninja to Siso.
 
 try_.compilator_builder(
     name = "ios-simulator-siso-compilator",
-    os = os.MAC_DEFAULT,
     cpu = cpu.ARM64,
     contact_team_email = "chrome-build-team@google.com",
     main_list_view = "try",
     siso_enabled = True,
     xcode = xcode.x15main,
-)
-
-ios_builder(
-    name = "ios-simulator-cronet",
-    branch_selector = branches.selector.IOS_BRANCHES,
-    mirrors = [
-        "ci/ios-simulator-cronet",
-    ],
-    cpu = cpu.ARM64,
-    main_list_view = "try",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
-    tryjob = try_.job(
-        location_filters = [
-            "components/cronet/.+",
-            "components/grpc_support/.+",
-            "ios/.+",
-            cq.location_filter(exclude = True, path_regexp = "components/cronet/android/.+"),
-        ],
-    ),
 )
 
 ios_builder(
@@ -562,6 +618,14 @@ ios_builder(
     cpu = cpu.ARM64,
     coverage_exclude_sources = "ios_test_files_and_test_utils",
     coverage_test_types = ["overall", "unit"],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/ios-simulator-full-configs",
+            "use_clang_coverage",
+            "partial_code_coverage_instrumentation",
+            "use_dummy_lastchange",
+        ],
+    ),
     main_list_view = "try",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
@@ -570,12 +634,6 @@ ios_builder(
         ],
     ),
     use_clang_coverage = True,
-)
-
-ios_builder(
-    name = "ios-simulator-inverse-fieldtrials-fyi",
-    mirrors = builder_config.copy_from("try/ios-simulator"),
-    cpu = cpu.ARM64,
 )
 
 ios_builder(
@@ -590,6 +648,12 @@ ios_builder(
         "ci/ios-simulator-noncq",
     ],
     cpu = cpu.ARM64,
+    gn_args = gn_args.config(
+        configs = [
+            "ci/ios-simulator-noncq",
+            "use_dummy_lastchange",
+        ],
+    ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
         location_filters = [
@@ -663,7 +727,9 @@ try_.gpu.optional_tests_builder(
                 "mb",
             ],
             build_config = builder_config.build_config.RELEASE,
+            target_arch = builder_config.target_arch.INTEL,
             target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
         ),
         build_gs_bucket = "chromium-gpu-fyi-archive",
     ),

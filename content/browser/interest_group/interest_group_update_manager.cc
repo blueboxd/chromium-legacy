@@ -26,6 +26,9 @@
 #include "base/rand_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/aggregation_service/aggregation_coordinator_utils.h"
+#include "components/aggregation_service/features.h"
+#include "content/browser/interest_group/interest_group_features.h"
 #include "content/browser/interest_group/interest_group_manager_impl.h"
 #include "content/browser/interest_group/interest_group_storage.h"
 #include "content/browser/interest_group/interest_group_update.h"
@@ -42,6 +45,7 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/client_security_state.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/interest_group/ad_display_size_utils.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
@@ -281,6 +285,25 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
   return true;
 }
 
+// Copies the userBiddingSignals JSON "any" field into
+// `interest_group_update` as a string, returns true iff re-serialization
+// succeeded and the copy completed.
+[[nodiscard]] bool TryToCopyUserBiddingSignals(
+    const base::Value::Dict& dict,
+    InterestGroupUpdate& interest_group_update) {
+  const base::Value* maybe_user_bidding_signals =
+      dict.Find("userBiddingSignals");
+  if (!maybe_user_bidding_signals) {
+    return true;
+  }
+  std::string user_bidding_signals;
+  JSONStringValueSerializer serializer(&user_bidding_signals);
+  if (!serializer.Serialize(*maybe_user_bidding_signals)) {
+    return false;
+  }
+  interest_group_update.user_bidding_signals = std::move(user_bidding_signals);
+  return true;
+}
 // Helper for TryToCopyAds() and TryToCopyAdComponents().
 [[nodiscard]] absl::optional<std::vector<blink::InterestGroup::Ad>> ExtractAds(
     const base::Value::List& ads_list,
@@ -474,6 +497,42 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
   return true;
 }
 
+[[nodiscard]] bool TryToCopyPrivateAggregationConfig(
+    const base::Value::Dict& dict,
+    InterestGroupUpdate& interest_group_update) {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kPrivateAggregationApiMultipleCloudProviders) ||
+      !base::FeatureList::IsEnabled(
+          aggregation_service::kAggregationServiceMultipleCloudProviders)) {
+    // Ignore the specified aggregation coordinator unless the feature is
+    // enabled.
+    return true;
+  }
+
+  const base::Value::Dict* maybe_config =
+      dict.FindDict("privateAggregationConfig");
+  if (!maybe_config) {
+    return true;
+  }
+  const std::string* maybe_aggregation_coordinator_origin =
+      maybe_config->FindString("aggregationCoordinatorOrigin");
+  if (!maybe_aggregation_coordinator_origin) {
+    return true;
+  }
+
+  url::Origin aggregation_coordinator_origin =
+      url::Origin::Create(GURL(*maybe_aggregation_coordinator_origin));
+
+  if (!aggregation_service::IsAggregationCoordinatorOriginAllowed(
+          aggregation_coordinator_origin)) {
+    return false;
+  }
+
+  interest_group_update.aggregation_coordinator_origin =
+      std::move(aggregation_coordinator_origin);
+  return true;
+}
+
 absl::optional<InterestGroupUpdate> ParseUpdateJson(
     const blink::InterestGroupKey& group_key,
     const data_decoder::DataDecoder::ValueOrError& result) {
@@ -576,6 +635,12 @@ absl::optional<InterestGroupUpdate> ParseUpdateJson(
   if (!TryToCopyTrustedBiddingSignalsKeys(*dict, interest_group_update)) {
     return absl::nullopt;
   }
+  if (base::FeatureList::IsEnabled(
+          features::kEnableUpdatingUserBiddingSignals)) {
+    if (!TryToCopyUserBiddingSignals(*dict, interest_group_update)) {
+      return absl::nullopt;
+    }
+  }
   if (!TryToCopyAds(*dict, interest_group_update)) {
     return absl::nullopt;
   }
@@ -591,11 +656,8 @@ absl::optional<InterestGroupUpdate> ParseUpdateJson(
   if (!TryToCopyAuctionServerRequestFlags(*dict, interest_group_update)) {
     return absl::nullopt;
   }
-  const std::string* maybe_aggregation_coordinator_origin =
-      dict->FindString("aggregationCoordinatorOrigin");
-  if (maybe_aggregation_coordinator_origin) {
-    interest_group_update.aggregation_coordinator_origin =
-        url::Origin::Create(GURL(*maybe_aggregation_coordinator_origin));
+  if (!TryToCopyPrivateAggregationConfig(*dict, interest_group_update)) {
+    return absl::nullopt;
   }
   return interest_group_update;
 }
@@ -694,6 +756,11 @@ InterestGroupUpdateManager::OwnersToUpdate::GetIsolationInfoByJoiningOrigin(
     CHECK(success);
     return &it->second;
   }
+}
+
+void InterestGroupUpdateManager::OwnersToUpdate::
+    ClearJoiningOriginIsolationInfoMap() {
+  joining_origin_isolation_info_map_.clear();
 }
 
 void InterestGroupUpdateManager::OwnersToUpdate::Clear() {
@@ -795,6 +862,18 @@ void InterestGroupUpdateManager::UpdateInterestGroupByBatch(
                            weak_factory_.GetWeakPtr(), simple_url_loader_it,
                            interest_group_key),
             kMaxUpdateSize);
+  }
+
+  // To avoid the possibility of groups that join during the current update
+  // process being updated in the next batch with the same isolation
+  // information, clear the `joining_origin_isolation_info_map_` when mixed
+  // joining origins are detected in a single update batch.
+  if (base::FeatureList::IsEnabled(features::kGroupNIKByJoiningOrigin)) {
+    if (update_parameters.size() > 1 &&
+        !update_parameters.at(0).joining_origin.IsSameOriginWith(
+            update_parameters.back().joining_origin)) {
+      owners_to_update_.ClearJoiningOriginIsolationInfoMap();
+    }
   }
 }
 

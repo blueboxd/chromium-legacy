@@ -9,10 +9,12 @@ import org.chromium.chrome.browser.commerce.ShoppingFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.MutableFlagWithSafeDefault;
 
-/**
- * Self-documenting feature class for bookmarks.
- */
+/** Self-documenting feature class for bookmarks. */
 public class BookmarkFeatures {
+    private static final MutableFlagWithSafeDefault sEnableBookmarksAccountStorage =
+            new MutableFlagWithSafeDefault(
+                    ChromeFeatureList.ENABLE_BOOKMARK_FOLDERS_FOR_ACCOUNT_STORAGE, false);
+
     private static final MutableFlagWithSafeDefault sAndroidImprovedBookmarksFlag =
             new MutableFlagWithSafeDefault(ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS, false);
 
@@ -35,5 +37,9 @@ public class BookmarkFeatures {
      */
     public static boolean isAndroidImprovedBookmarksEnabled() {
         return sAndroidImprovedBookmarksFlag.isEnabled();
+    }
+
+    public static boolean isBookmarksAccountStorageEnabled() {
+        return sEnableBookmarksAccountStorage.isEnabled();
     }
 }

@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/privacy_sandbox/tpcd_experiment_eligibility.h"
 #include "components/privacy_sandbox/tracking_protection_settings.h"
 #include "components/privacy_sandbox/tracking_protection_settings_observer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -65,6 +66,10 @@ class PrivacySandboxSettingsImpl : public PrivacySandboxSettings,
       const url::Origin& destination_origin,
       const url::Origin& reporting_origin,
       content::RenderFrameHost* console_frame = nullptr) const override;
+  bool IsAttributionReportingTransitionalDebuggingAllowed(
+      const url::Origin& top_frame_origin,
+      const url::Origin& reporting_origin,
+      bool& can_bypass) const override;
   void SetFledgeJoiningAllowed(const std::string& top_frame_etld_plus1,
                                bool allowed) override;
   void ClearFledgeJoiningAllowedSettings(base::Time start_time,
@@ -91,7 +96,9 @@ class PrivacySandboxSettingsImpl : public PrivacySandboxSettings,
   bool IsPrivateAggregationDebugModeAllowed(
       const url::Origin& top_frame_origin,
       const url::Origin& reporting_origin) const override;
-  bool IsCookieDeprecationExperimentCurrentlyEligible() const override;
+  TpcdExperimentEligibility GetCookieDeprecationExperimentCurrentEligibility()
+      const override;
+
   bool IsCookieDeprecationLabelAllowed() const override;
   bool IsCookieDeprecationLabelAllowedForContext(
       const url::Origin& top_frame_origin,
@@ -126,15 +133,6 @@ class PrivacySandboxSettingsImpl : public PrivacySandboxSettings,
                            FledgeJoinSettingTimeRangeDeletion);
   // Called when the Related Website Sets enabled preference is changed.
   void OnRelatedWebsiteSetsEnabledPrefChanged();
-
-  // Determines based on the current features, preferences and provided
-  // |cookie_settings| whether Privacy Sandbox APIs are generally allowable for
-  // |url| on |top_frame_origin|. Individual APIs may perform additional checks
-  // for allowability (such as incognito) on top of this. |cookie_settings| is
-  // provided as a parameter to allow callers to cache it between calls.
-  bool IsPrivacySandboxEnabledForContext(
-      const absl::optional<url::Origin>& top_frame_origin,
-      const GURL& url) const;
 
   void SetTopicsDataAccessibleFromNow() const;
 

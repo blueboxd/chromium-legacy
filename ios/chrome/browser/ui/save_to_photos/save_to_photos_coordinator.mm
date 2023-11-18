@@ -8,7 +8,7 @@
 
 #import "components/signin/public/identity_manager/identity_manager.h"
 #import "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/photos/photos_service_factory.h"
+#import "ios/chrome/browser/photos/model/photos_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/alert/alert_coordinator.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -17,9 +17,9 @@
 #import "ios/chrome/browser/shared/public/commands/save_to_photos_commands.h"
 #import "ios/chrome/browser/shared/public/commands/show_signin_command.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
-#import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service_factory.h"
+#import "ios/chrome/browser/signin/model/identity_manager_factory.h"
 #import "ios/chrome/browser/store_kit/model/store_kit_coordinator.h"
 #import "ios/chrome/browser/store_kit/model/store_kit_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/account_picker/account_picker_coordinator.h"
@@ -120,6 +120,14 @@
   [_accountPickerCoordinator stopAnimated:YES];
 }
 
+- (void)startValidationSpinnerForAccountPicker {
+  [_accountPickerCoordinator startValidationSpinner];
+}
+
+- (void)stopValidationSpinnerForAccountPicker {
+  [_accountPickerCoordinator stopValidationSpinner];
+}
+
 - (void)showTryAgainOrCancelAlertWithTitle:(NSString*)title
                                    message:(NSString*)message
                              tryAgainTitle:(NSString*)tryAgainTitle
@@ -131,8 +139,14 @@
     _alertCoordinator = nil;
   }
 
+  UIViewController* alertBaseViewController =
+      self.baseViewController.presentedViewController;
+  if (!alertBaseViewController) {
+    alertBaseViewController = self.baseViewController;
+  }
+
   _alertCoordinator = [[AlertCoordinator alloc]
-      initWithBaseViewController:self.baseViewController
+      initWithBaseViewController:alertBaseViewController
                          browser:self.browser
                            title:title
                          message:message];
@@ -154,7 +168,8 @@
   _alertCoordinator = nil;
 }
 
-- (void)showStoreKitWithProductIdentifier:(NSString*)productIdentifer {
+- (void)showStoreKitWithProductIdentifier:(NSString*)productIdentifer
+                            campaignToken:(NSString*)campaignToken {
   if (_storeKitCoordinator) {
     [_storeKitCoordinator stop];
     _storeKitCoordinator = nil;
@@ -164,8 +179,10 @@
       initWithBaseViewController:self.baseViewController
                          browser:self.browser];
   _storeKitCoordinator.delegate = self;
-  _storeKitCoordinator.iTunesProductParameters =
-      @{SKStoreProductParameterITunesItemIdentifier : productIdentifer};
+  _storeKitCoordinator.iTunesProductParameters = @{
+    SKStoreProductParameterITunesItemIdentifier : productIdentifer,
+    SKStoreProductParameterCampaignToken : campaignToken
+  };
   [_storeKitCoordinator start];
 }
 

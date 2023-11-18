@@ -74,6 +74,7 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
     private ToolbarViewResourceFrameLayout mToolbarContainer;
 
     private SwipeGestureListener mSwipeGestureListener;
+    private OnDragListener mToolbarContainerDragListener;
 
     /**
      * Constructs a new control container.
@@ -144,6 +145,10 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
     @Override
     public void destroy() {
         ((ToolbarViewResourceAdapter) getToolbarResourceAdapter()).destroy();
+        if (mToolbarContainerDragListener != null) {
+            mToolbarContainer.setOnDragListener(null);
+            mToolbarContainerDragListener = null;
+        }
     }
 
     private Drawable getTempTabStripDrawable(boolean incognito) {
@@ -244,6 +249,16 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
      */
     public void setReadyForBitmapCapture(boolean ready) {
         mToolbarContainer.mReadyForBitmapCapture = ready;
+    }
+
+    /**
+     * Sets drag listener for toolbar container.
+     *
+     * @param toolbarContainerDragListener Listener to set.
+     */
+    public void setToolbarContainerDragListener(OnDragListener toolbarContainerDragListener) {
+        mToolbarContainerDragListener = toolbarContainerDragListener;
+        mToolbarContainer.setOnDragListener(mToolbarContainerDragListener);
     }
 
     /**

@@ -9,16 +9,16 @@
 #include <stdint.h>
 
 #include <array>
+#include <concepts>
 #include <iterator>
 #include <limits>
+#include <memory>
 #include <type_traits>
 #include <utility>
 
 #include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/containers/checked_iterators.h"
-#include "base/containers/contiguous_iterator.h"
-#include "base/cxx20_to_address.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/template_util.h"
 
@@ -81,9 +81,9 @@ using IteratorHasConvertibleReferenceType =
     IsLegalDataConversion<std::remove_reference_t<iter_reference_t<Iter>>, T>;
 
 template <typename Iter, typename T>
-using EnableIfCompatibleContiguousIterator = std::enable_if_t<
-    std::conjunction<IsContiguousIterator<Iter>,
-                     IteratorHasConvertibleReferenceType<Iter, T>>::value>;
+using EnableIfCompatibleContiguousIterator =
+    std::enable_if_t<std::contiguous_iterator<Iter> &&
+                     IteratorHasConvertibleReferenceType<Iter, T>::value>;
 
 template <typename Container, typename T>
 using ContainerHasConvertibleData = IsLegalDataConversion<
@@ -164,8 +164,8 @@ constexpr size_t must_not_be_dynamic_extent() {
 // own the underlying memory, so care must be taken to ensure that a span does
 // not outlive the backing store.
 //
-// span is somewhat analogous to StringPiece, but with arbitrary element types,
-// allowing mutation if T is non-const.
+// span is somewhat analogous to std::string_view, but with arbitrary element
+// types, allowing mutation if T is non-const.
 //
 // span is implicitly convertible from C++ arrays, as well as most [1]
 // container-like types that provide a data() and size() method (such as
@@ -228,6 +228,9 @@ constexpr size_t must_not_be_dynamic_extent() {
 //   sized container (e.g. std::vector) requires an explicit conversion (in the
 //   C++20 draft this is simply UB)
 //
+// Additions beyond the C++20 draft
+// - as_byte_span() function.
+//
 // Furthermore, all constructors and methods are marked noexcept due to the lack
 // of exceptions in Chromium.
 //
@@ -281,7 +284,7 @@ class GSL_POINTER span : public internal::ExtentStorage<Extent> {
         // We can not protect here generally against an invalid iterator/count
         // being passed in, since we have no context to determine if the
         // iterator or count are valid.
-        data_(base::to_address(first)) {
+        data_(std::to_address(first)) {
     CHECK(Extent == dynamic_extent || Extent == count);
   }
 
@@ -488,7 +491,8 @@ span(Container&&) -> span<T, X>;
 
 // [span.objectrep], views of object representation
 template <typename T, size_t X>
-span<const uint8_t, (X == dynamic_extent ? dynamic_extent : sizeof(T) * X)>
+inline span<const uint8_t,
+           (X == dynamic_extent ? dynamic_extent : sizeof(T) * X)>
 as_bytes(span<T, X> s) noexcept {
   return {reinterpret_cast<const uint8_t*>(s.data()), s.size_bytes()};
 }
@@ -496,7 +500,7 @@ as_bytes(span<T, X> s) noexcept {
 template <typename T,
           size_t X,
           typename = std::enable_if_t<!std::is_const_v<T>>>
-span<uint8_t, (X == dynamic_extent ? dynamic_extent : sizeof(T) * X)>
+inline span<uint8_t, (X == dynamic_extent ? dynamic_extent : sizeof(T) * X)>
 as_writable_bytes(span<T, X> s) noexcept {
   return {reinterpret_cast<uint8_t*>(s.data()), s.size_bytes()};
 }
@@ -558,6 +562,16 @@ constexpr auto make_span(Container&& container) noexcept {
   using T =
       std::remove_pointer_t<decltype(std::data(std::declval<Container>()))>;
   return span<T, N>(std::data(container), std::size(container));
+}
+
+// Convenience function for converting an object which is itself convertible
+// to span into a span of bytes (i.e. span of const uint8_t). Typically used
+// to convert std::string or string-objects holding chars, or std::vector
+// or vector-like objects holding other scalar types, prior to passing them
+// into an API that requires byte spans.
+template <typename T>
+inline span<const uint8_t> as_byte_span(const T& arg) {
+  return as_bytes(make_span(arg));
 }
 
 }  // namespace base

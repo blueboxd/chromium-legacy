@@ -135,6 +135,7 @@ class FakeAppInstance : public mojom::AppInstance {
                       GetPackageIconCallback callback) override;
   void RemoveCachedIcon(const std::string& icon_resource_id) override;
   void UninstallPackage(const std::string& package_name) override;
+  void UpdateAppDetails(const std::string& package_name) override;
   void SetTaskActive(int32_t task_id) override;
   void CloseTask(int32_t task_id) override;
   void ShowPackageInfoDeprecated(const std::string& package_name,
@@ -193,7 +194,9 @@ class FakeAppInstance : public mojom::AppInstance {
   void SendPackageUninstalled(const std::string& pacakge_name);
 
   void SendInstallationStarted(const std::string& package_name);
-  void SendInstallationFinished(const std::string& package_name, bool success);
+  void SendInstallationFinished(const std::string& package_name,
+                                bool success,
+                                bool is_launchable_app = true);
   void SendInstallationProgressChanged(const std::string& package_name,
                                        float progress);
   void SendInstallationActiveChanged(const std::string& package_name,

@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/aw_content_browser_client.h"
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <utility>
@@ -78,6 +79,7 @@
 #include "components/safe_browsing/core/common/features.h"
 #include "components/url_matcher/url_matcher.h"
 #include "components/url_matcher/url_util.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_associated_interface.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -160,8 +162,9 @@ class AwContentsMessageFilter
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // mojom::RenderMessageFilter overrides:
-  void SubFrameCreated(int parent_render_frame_id,
-                       int child_render_frame_id) override;
+  void SubFrameCreated(
+      const blink::LocalFrameToken& parent_frame_token,
+      const blink::LocalFrameToken& child_frame_token) override;
 
  private:
   ~AwContentsMessageFilter() override;
@@ -179,11 +182,12 @@ bool AwContentsMessageFilter::OnMessageReceived(const IPC::Message& message) {
   return false;
 }
 
-void AwContentsMessageFilter::SubFrameCreated(int parent_render_frame_id,
-                                              int child_render_frame_id) {
+void AwContentsMessageFilter::SubFrameCreated(
+    const blink::LocalFrameToken& parent_frame_token,
+    const blink::LocalFrameToken& child_frame_token) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  AwContentsIoThreadClient::SubFrameCreated(process_id_, parent_render_frame_id,
-                                            child_render_frame_id);
+  AwContentsIoThreadClient::SubFrameCreated(process_id_, parent_frame_token,
+                                            child_frame_token);
 }
 
 }  // anonymous namespace
@@ -496,12 +500,12 @@ std::string AwContentBrowserClient::GetDefaultDownloadName() {
   return std::string();
 }
 
-absl::optional<base::FilePath>
+std::optional<base::FilePath>
 AwContentBrowserClient::GetLocalTracesDirectory() {
   base::FilePath user_data_dir;
   if (!base::PathService::Get(android_webview::DIR_LOCAL_TRACES,
                               &user_data_dir)) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   DCHECK(!user_data_dir.empty());
   return user_data_dir;
@@ -840,7 +844,7 @@ bool AwContentBrowserClient::HandleExternalProtocol(
     network::mojom::WebSandboxFlags /*sandbox_flags*/,
     ui::PageTransition page_transition,
     bool has_user_gesture,
-    const absl::optional<url::Origin>& initiating_origin,
+    const std::optional<url::Origin>& initiating_origin,
     content::RenderFrameHost* initiator_document,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory) {
   // Sandbox flags
@@ -868,7 +872,7 @@ bool AwContentBrowserClient::HandleExternalProtocol(
     // Manages its own lifetime.
     new android_webview::AwProxyingURLLoaderFactory(
         frame_tree_node_id, std::move(receiver), mojo::NullRemote(),
-        true /* intercept_only */, absl::nullopt /* security_options */,
+        true /* intercept_only */, std::nullopt /* security_options */,
         nullptr /* xrw_allowlist_matcher */, std::move(browser_context_handle));
   } else {
     content::GetIOThreadTaskRunner({})->PostTask(
@@ -882,7 +886,7 @@ bool AwContentBrowserClient::HandleExternalProtocol(
               new android_webview::AwProxyingURLLoaderFactory(
                   frame_tree_node_id, std::move(receiver), mojo::NullRemote(),
                   true /* intercept_only */,
-                  absl::nullopt /* security_options */,
+                  std::nullopt /* security_options */,
                   nullptr /* xrw_allowlist_matcher */,
                   std::move(browser_context_handle));
             },
@@ -895,7 +899,7 @@ bool AwContentBrowserClient::HandleExternalProtocol(
 void AwContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
     int render_process_id,
     int render_frame_id,
-    const absl::optional<url::Origin>& request_initiator_origin,
+    const std::optional<url::Origin>& request_initiator_origin,
     NonNetworkURLLoaderFactoryMap* factories) {
   WebContents* web_contents = content::WebContents::FromRenderFrameHost(
       content::RenderFrameHost::FromID(render_process_id, render_frame_id));
@@ -972,7 +976,7 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
     int render_process_id,
     URLLoaderFactoryType type,
     const url::Origin& request_initiator,
-    absl::optional<int64_t> navigation_id,
+    std::optional<int64_t> navigation_id,
     ukm::SourceIdObj ukm_source_id,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
@@ -1010,7 +1014,7 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
           static_cast<AwBrowserContext*>(browser_context));
   if (frame) {
     auto security_options =
-        absl::make_optional<AwProxyingURLLoaderFactory::SecurityOptions>();
+        std::make_optional<AwProxyingURLLoaderFactory::SecurityOptions>();
     security_options->disable_web_security =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableWebSecurity);
@@ -1054,7 +1058,7 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
             &AwProxyingURLLoaderFactory::CreateProxy,
             content::RenderFrameHost::kNoFrameTreeNodeId,
             std::move(proxied_receiver), std::move(target_factory_remote),
-            absl::nullopt /* security_options */,
+            std::nullopt /* security_options */,
             aw_browser_context->service_worker_xrw_allowlist_matcher(),
             std::move(browser_context_handle)));
   }
@@ -1202,19 +1206,41 @@ AwContentBrowserClient::GetOriginTrialsSettings() {
       ->GetSettings();
 }
 
+network::mojom::AttributionSupport
+AwContentBrowserClient::GetAttributionSupport(
+    AttributionReportingOsApiState state,
+    content::WebContents* web_contents) {
+  AwSettings* aw_settings = AwSettings::FromWebContents(web_contents);
+  if (aw_settings && aw_settings->GetAttributionBehavior() ==
+                         AwSettings::AttributionBehavior::DISABLED) {
+    return network::mojom::AttributionSupport::kNone;
+  }
+
+  // WebView only supports OS-level attribution and not web-attribution.
+  switch (state) {
+    case AttributionReportingOsApiState::kDisabled:
+      return network::mojom::AttributionSupport::kNone;
+    case AttributionReportingOsApiState::kEnabled: {
+      return network::mojom::AttributionSupport::kOs;
+    }
+  }
+}
+
 bool AwContentBrowserClient::IsAttributionReportingOperationAllowed(
     content::BrowserContext* browser_context,
     AttributionReportingOperation operation,
     content::RenderFrameHost* rfh,
     const url::Origin* source_origin,
     const url::Origin* destination_origin,
-    const url::Origin* reporting_origin) {
+    const url::Origin* reporting_origin,
+    bool* can_bypass) {
   // Check if attribution reporting has been disabled.
-  // TODO(crbug.com/1473966) This method should not be called at all if
-  //     the configured behavior is DISABLED.
+  // This method should not be called at all if the configured behavior is
+  // DISABLED.
   WebContents* web_contents = content::WebContents::FromRenderFrameHost(rfh);
+  AwSettings* aw_settings = nullptr;
   if (web_contents) {
-    AwSettings* aw_settings = AwSettings::FromWebContents(web_contents);
+    aw_settings = AwSettings::FromWebContents(web_contents);
     AwSettings::AttributionBehavior attribution_behavior =
         aw_settings->GetAttributionBehavior();
 
@@ -1236,14 +1262,21 @@ bool AwContentBrowserClient::IsAttributionReportingOperationAllowed(
     case AttributionReportingOperation::kSourceVerboseDebugReport:
     case AttributionReportingOperation::kTriggerVerboseDebugReport:
     case AttributionReportingOperation::kReport:
+    case AttributionReportingOperation::kSourceTransitionalDebugReporting:
+    case AttributionReportingOperation::kTriggerTransitionalDebugReporting:
       return false;
+    case AttributionReportingOperation::kOsSourceTransitionalDebugReporting:
+    case AttributionReportingOperation::kOsTriggerTransitionalDebugReporting:
+      if (!AwCookieAccessPolicy::GetInstance()->GetShouldAcceptCookies()) {
+        return false;
+      }
+      if (!aw_settings) {
+        return false;
+      }
+      return aw_settings->GetAllowThirdPartyCookies();
   }
 
   NOTREACHED_NORETURN();
-}
-
-bool AwContentBrowserClient::IsWebAttributionReportingAllowed() {
-  return false;  // WebView does not support web-only attribution.
 }
 
 bool AwContentBrowserClient::ShouldUseOsWebSourceAttributionReporting(
@@ -1260,19 +1293,22 @@ bool AwContentBrowserClient::ShouldUseOsWebSourceAttributionReporting(
 
   WebContents* web_contents = content::WebContents::FromRenderFrameHost(rfh);
   AwSettings* aw_settings = AwSettings::FromWebContents(web_contents);
-  AwSettings::AttributionBehavior attribution_behavior =
-      aw_settings->GetAttributionBehavior();
 
-  switch (attribution_behavior) {
-    case AwSettings::AttributionBehavior::DISABLED:
-      return false;
-    case AwSettings::AttributionBehavior::WEB_SOURCE_AND_WEB_TRIGGER:
-      return true;
-    case AwSettings::AttributionBehavior::APP_SOURCE_AND_WEB_TRIGGER:
-    case AwSettings::AttributionBehavior::APP_SOURCE_AND_APP_TRIGGER:
-      return false;
-    default:
-      break;
+  if (aw_settings) {
+    AwSettings::AttributionBehavior attribution_behavior =
+        aw_settings->GetAttributionBehavior();
+
+    switch (attribution_behavior) {
+      case AwSettings::AttributionBehavior::DISABLED:
+        return false;
+      case AwSettings::AttributionBehavior::WEB_SOURCE_AND_WEB_TRIGGER:
+        return true;
+      case AwSettings::AttributionBehavior::APP_SOURCE_AND_WEB_TRIGGER:
+      case AwSettings::AttributionBehavior::APP_SOURCE_AND_APP_TRIGGER:
+        return false;
+      default:
+        break;
+    }
   }
 
   NOTREACHED_NORETURN();
@@ -1289,22 +1325,30 @@ bool AwContentBrowserClient::ShouldUseOsWebTriggerAttributionReporting(
 
   WebContents* web_contents = content::WebContents::FromRenderFrameHost(rfh);
   AwSettings* aw_settings = AwSettings::FromWebContents(web_contents);
-  AwSettings::AttributionBehavior attribution_behavior =
-      aw_settings->GetAttributionBehavior();
 
-  switch (attribution_behavior) {
-    case AwSettings::AttributionBehavior::DISABLED:
-      return false;
-    case AwSettings::AttributionBehavior::WEB_SOURCE_AND_WEB_TRIGGER:
-    case AwSettings::AttributionBehavior::APP_SOURCE_AND_WEB_TRIGGER:
-      return true;
-    case AwSettings::AttributionBehavior::APP_SOURCE_AND_APP_TRIGGER:
-      return false;
-    default:
-      break;
+  if (aw_settings) {
+    AwSettings::AttributionBehavior attribution_behavior =
+        aw_settings->GetAttributionBehavior();
+
+    switch (attribution_behavior) {
+      case AwSettings::AttributionBehavior::DISABLED:
+        return false;
+      case AwSettings::AttributionBehavior::WEB_SOURCE_AND_WEB_TRIGGER:
+      case AwSettings::AttributionBehavior::APP_SOURCE_AND_WEB_TRIGGER:
+        return true;
+      case AwSettings::AttributionBehavior::APP_SOURCE_AND_APP_TRIGGER:
+        return false;
+      default:
+        break;
+    }
   }
 
   NOTREACHED_NORETURN();
+}
+
+network::mojom::IpProtectionProxyBypassPolicy
+AwContentBrowserClient::GetIpProtectionProxyBypassPolicy() {
+  return network::mojom::IpProtectionProxyBypassPolicy::kNone;
 }
 
 }  // namespace android_webview

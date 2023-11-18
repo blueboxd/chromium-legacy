@@ -23,6 +23,7 @@
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/reporting/metric_reporting_manager_delegate_base.h"
 #include "chrome/browser/chromeos/reporting/user_reporting_settings.h"
+#include "chrome/browser/chromeos/reporting/websites/website_usage_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
 #include "components/reporting/metrics/event_driven_telemetry_collector_pool.h"
@@ -305,8 +306,10 @@ class MetricReportingManager : public policy::ManagedSessionService::Observer,
   std::unique_ptr<MetricReportQueue> telemetry_report_queue_;
   std::unique_ptr<MetricReportQueue> user_telemetry_report_queue_;
   std::unique_ptr<MetricReportQueue> event_report_queue_;
+  std::unique_ptr<MetricReportQueue> immediate_event_report_queue_;
   std::unique_ptr<MetricReportQueue> user_event_report_queue_;
   std::unique_ptr<MetricReportQueue> app_event_report_queue_;
+  std::unique_ptr<MetricReportQueue> website_event_report_queue_;
   std::unique_ptr<MetricReportQueue>
       user_peripheral_events_and_telemetry_report_queue_;
 
@@ -337,6 +340,11 @@ class MetricReportingManager : public policy::ManagedSessionService::Observer,
   // App usage observer used to observe and collect app usage reports from the
   // `AppPlatformMetrics` component.
   std::unique_ptr<AppUsageObserver> app_usage_observer_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+
+  // Website usage observer used to observe and collect website usage reports
+  // from the `WebsiteMetrics` component.
+  std::unique_ptr<WebsiteUsageObserver> website_usage_observer_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
   std::unique_ptr<Delegate> delegate_;

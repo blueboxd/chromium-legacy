@@ -9,6 +9,10 @@
 #include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/no_destructor.h"
+#include "base/version.h"
+#include "chrome/browser/ash/growth/install_web_app_action_performer.h"
+#include "chrome/browser/ash/login/demo_mode/demo_components.h"
 #include "chrome/browser/ash/login/demo_mode/demo_mode_dimensions.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/browser_process.h"
@@ -67,6 +71,30 @@ bool CampaignsManagerClientImpl::IsFeatureAwareDevice() const {
 
 const std::string& CampaignsManagerClientImpl::GetApplicationLocale() const {
   return g_browser_process->GetApplicationLocale();
+}
+
+const base::Version& CampaignsManagerClientImpl::GetDemoModeAppVersion() const {
+  auto* demo_session = ash::DemoSession::Get();
+  CHECK(demo_session);
+
+  const auto& version = demo_session->components()->app_component_version();
+  if (!version.has_value()) {
+    // TODO(b/299305911): Add metrics to track the case that version is not
+    // available and convert to CHECK if we are confident that it will always
+    // available at this point.
+    static const base::NoDestructor<base::Version> empty_version;
+    return *empty_version;
+  }
+
+  return version.value();
+}
+
+growth::ActionMap CampaignsManagerClientImpl::GetCampaignsActions() const {
+  growth::ActionMap action_map;
+  action_map.emplace(
+      make_pair(growth::ActionType::kInstallWebApp,
+                std::make_unique<InstallWebAppActionPerformer>()));
+  return action_map;
 }
 
 void CampaignsManagerClientImpl::OnComponentDownloaded(

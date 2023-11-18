@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.chrome.browser.omnibox.R;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.modelutil.ListObservable;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
@@ -96,6 +97,15 @@ class SuggestionListViewBinder {
                     });
         } else if (SuggestionListProperties.COLOR_SCHEME.equals(propertyKey)) {
             view.dropdown.refreshPopupBackground(model.get(SuggestionListProperties.COLOR_SCHEME));
+        } else if (SuggestionListProperties.DRAW_OVER_ANCHOR == propertyKey) {
+            boolean drawOver = model.get(SuggestionListProperties.DRAW_OVER_ANCHOR);
+            // Note: this assumes the anchor view's z hasn't been modified. If this changes, we'll
+            // need to wire that z value so that we choose the correct one here.
+            view.container.setZ(drawOver ? 1.0f : 0.0f);
+            view.dropdown.setElevation(
+                    view.dropdown
+                            .getResources()
+                            .getDimensionPixelSize(R.dimen.omnibox_suggestion_list_elevation));
         }
     }
 

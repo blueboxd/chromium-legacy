@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.readaloud.player.expanded;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -26,13 +28,16 @@ import org.chromium.chrome.browser.readaloud.player.PlayerCoordinator;
 import org.chromium.chrome.browser.readaloud.player.PlayerProperties;
 import org.chromium.chrome.browser.readaloud.player.VisibilityState;
 import org.chromium.chrome.modules.readaloud.Playback;
+import org.chromium.chrome.modules.readaloud.PlaybackArgs.PlaybackVoice;
 import org.chromium.chrome.modules.readaloud.PlaybackListener;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
 import org.chromium.ui.modelutil.PropertyModel;
 
-/** Unit tests for {@link ExpandedPlayerCoordinator}. */
+import java.util.List;
+
+/** Unit tests for {@link ExpandedPlayerCoordinator} and ExpandedPlayerViewBinder. */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class ExpandedPlayerCoordinatorUnitTest {
@@ -42,6 +47,7 @@ public class ExpandedPlayerCoordinatorUnitTest {
     private PropertyModel mModel;
     @Mock private ExpandedPlayerMediator mMediator;
     @Mock private ExpandedPlayerSheetContent mSheetContent;
+    @Mock private VoiceMenuSheetContent mVoiceMenu;
     private ExpandedPlayerCoordinator mCoordinator;
     @Captor ArgumentCaptor<BottomSheetObserver> mBottomSheetObserverCaptor;
     BottomSheetObserver mBottomSheetObserver;
@@ -98,6 +104,12 @@ public class ExpandedPlayerCoordinatorUnitTest {
     }
 
     @Test
+    public void testOnSheetClosed() {
+        mBottomSheetObserver.onSheetClosed(StateChangeReason.NAVIGATION);
+        verify(mSheetContent).notifySheetClosed();
+    }
+
+    @Test
     public void testBindVisibility() {
         mModel.set(PlayerProperties.EXPANDED_PLAYER_VISIBILITY, VisibilityState.HIDING);
         verify(mSheetContent).hide();
@@ -118,6 +130,26 @@ public class ExpandedPlayerCoordinatorUnitTest {
     }
 
     @Test
+    public void testBindElapsed() {
+        mModel.set(PlayerProperties.ELAPSED_NANOS, 20L);
+        verify(mSheetContent).setElapsed(20L);
+        assertEquals(20L, mModel.get(PlayerProperties.ELAPSED_NANOS));
+    }
+
+    @Test
+    public void testBindDuration() {
+        mModel.set(PlayerProperties.DURATION_NANOS, 30L);
+        verify(mSheetContent).setDuration(30L);
+        assertEquals(30L, mModel.get(PlayerProperties.DURATION_NANOS));
+    }
+
+    @Test
+    public void testBindProgress() {
+        mModel.set(PlayerProperties.PROGRESS, 0.5f);
+        verify(mSheetContent).setProgress(eq(0.5f));
+    }
+
+    @Test
     public void testBindSpeed() {
         mModel.set(PlayerProperties.SPEED, 2f);
         verify(mSheetContent).setSpeed(eq(2f));
@@ -127,8 +159,27 @@ public class ExpandedPlayerCoordinatorUnitTest {
     public void testBindPlaybackState() {
         mCoordinator.show();
         mModel.set(PlayerProperties.PLAYBACK_STATE, PlaybackListener.State.PLAYING);
-        verify(mSheetContent).setPlaying(true);
+        verify(mSheetContent).onPlaybackStateChanged(PlaybackListener.State.PLAYING);
         mModel.set(PlayerProperties.PLAYBACK_STATE, PlaybackListener.State.PAUSED);
-        verify(mSheetContent).setPlaying(false);
+        verify(mSheetContent).onPlaybackStateChanged(PlaybackListener.State.PAUSED);
+    }
+
+    @Test
+    public void testBindVoiceList() {
+        doReturn(mVoiceMenu).when(mSheetContent).getVoiceMenu();
+
+        var voices = List.of(new PlaybackVoice("en", "a", ""));
+        mModel.set(PlayerProperties.VOICES_LIST, voices);
+
+        verify(mVoiceMenu).setVoices(eq(voices));
+    }
+
+    @Test
+    public void testBindVoiceSelection() {
+        doReturn(mVoiceMenu).when(mSheetContent).getVoiceMenu();
+
+        mModel.set(PlayerProperties.SELECTED_VOICE_ID, "asdf");
+
+        verify(mVoiceMenu).setVoiceSelection(eq("asdf"));
     }
 }

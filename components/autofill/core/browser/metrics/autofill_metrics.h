@@ -16,7 +16,7 @@
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_progress_dialog_type.h"
@@ -730,10 +730,11 @@ class AutofillMetrics {
                              const AutofillField& field,
                              const base::TimeTicks& form_parsed_timestamp,
                              bool off_the_record);
-    void LogDidFillSuggestion(absl::variant<AutofillProfile::RecordType,
-                                            CreditCard::RecordType> record_type,
-                              const FormStructure& form,
-                              const AutofillField& field);
+    // For address suggestions, the `record_type` is irrelevant.
+    void LogDidFillSuggestion(
+        const FormStructure& form,
+        const AutofillField& field,
+        std::optional<CreditCard::RecordType> record_type = std::nullopt);
     void LogTextFieldDidChange(const FormStructure& form,
                                const AutofillField& field);
     void LogEditedAutofilledFieldAtSubmission(const FormStructure& form,

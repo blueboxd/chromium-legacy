@@ -18,8 +18,8 @@ TEST(CookieDeletionInfoTest, TimeRangeValues) {
   EXPECT_EQ(base::Time(), range.start());
   EXPECT_EQ(base::Time(), range.end());
 
-  const base::Time kTestStart = base::Time::FromDoubleT(1000);
-  const base::Time kTestEnd = base::Time::FromDoubleT(10000);
+  const base::Time kTestStart = base::Time::FromSecondsSinceUnixEpoch(1000);
+  const base::Time kTestEnd = base::Time::FromSecondsSinceUnixEpoch(10000);
 
   EXPECT_EQ(kTestStart, TimeRange(kTestStart, base::Time()).start());
   EXPECT_EQ(base::Time(), TimeRange(kTestStart, base::Time()).end());
@@ -44,41 +44,56 @@ TEST(CookieDeletionInfoTest, TimeRangeContains) {
 
   // With a start, but no end.
   const double kTestMinEpoch = 1000;
-  range.SetStart(base::Time::FromDoubleT(kTestMinEpoch));
+  range.SetStart(base::Time::FromSecondsSinceUnixEpoch(kTestMinEpoch));
   EXPECT_FALSE(range.Contains(base::Time::Min()));
-  EXPECT_FALSE(range.Contains(base::Time::FromDoubleT(kTestMinEpoch - 1)));
-  EXPECT_TRUE(range.Contains(base::Time::FromDoubleT(kTestMinEpoch)));
-  EXPECT_TRUE(range.Contains(base::Time::FromDoubleT(kTestMinEpoch + 1)));
+  EXPECT_FALSE(
+      range.Contains(base::Time::FromSecondsSinceUnixEpoch(kTestMinEpoch - 1)));
+  EXPECT_TRUE(
+      range.Contains(base::Time::FromSecondsSinceUnixEpoch(kTestMinEpoch)));
+  EXPECT_TRUE(
+      range.Contains(base::Time::FromSecondsSinceUnixEpoch(kTestMinEpoch + 1)));
   EXPECT_TRUE(range.Contains(base::Time::Max()));
 
   // With an end, but no start.
   const double kTestMaxEpoch = 10000000;
   range = TimeRange();
-  range.SetEnd(base::Time::FromDoubleT(kTestMaxEpoch));
+  range.SetEnd(base::Time::FromSecondsSinceUnixEpoch(kTestMaxEpoch));
   EXPECT_TRUE(range.Contains(base::Time::Min()));
-  EXPECT_TRUE(range.Contains(base::Time::FromDoubleT(kTestMaxEpoch - 1)));
-  EXPECT_FALSE(range.Contains(base::Time::FromDoubleT(kTestMaxEpoch)));
-  EXPECT_FALSE(range.Contains(base::Time::FromDoubleT(kTestMaxEpoch + 1)));
+  EXPECT_TRUE(
+      range.Contains(base::Time::FromSecondsSinceUnixEpoch(kTestMaxEpoch - 1)));
+  EXPECT_FALSE(
+      range.Contains(base::Time::FromSecondsSinceUnixEpoch(kTestMaxEpoch)));
+  EXPECT_FALSE(
+      range.Contains(base::Time::FromSecondsSinceUnixEpoch(kTestMaxEpoch + 1)));
   EXPECT_FALSE(range.Contains(base::Time::Max()));
 
   // With both a start and an end.
-  range.SetStart(base::Time::FromDoubleT(kTestMinEpoch));
+  range.SetStart(base::Time::FromSecondsSinceUnixEpoch(kTestMinEpoch));
   EXPECT_FALSE(range.Contains(base::Time::Min()));
-  EXPECT_FALSE(range.Contains(base::Time::FromDoubleT(kTestMinEpoch - 1)));
-  EXPECT_TRUE(range.Contains(base::Time::FromDoubleT(kTestMinEpoch)));
-  EXPECT_TRUE(range.Contains(base::Time::FromDoubleT(kTestMinEpoch + 1)));
-  EXPECT_TRUE(range.Contains(base::Time::FromDoubleT(kTestMaxEpoch - 1)));
-  EXPECT_FALSE(range.Contains(base::Time::FromDoubleT(kTestMaxEpoch)));
-  EXPECT_FALSE(range.Contains(base::Time::FromDoubleT(kTestMaxEpoch + 1)));
+  EXPECT_FALSE(
+      range.Contains(base::Time::FromSecondsSinceUnixEpoch(kTestMinEpoch - 1)));
+  EXPECT_TRUE(
+      range.Contains(base::Time::FromSecondsSinceUnixEpoch(kTestMinEpoch)));
+  EXPECT_TRUE(
+      range.Contains(base::Time::FromSecondsSinceUnixEpoch(kTestMinEpoch + 1)));
+  EXPECT_TRUE(
+      range.Contains(base::Time::FromSecondsSinceUnixEpoch(kTestMaxEpoch - 1)));
+  EXPECT_FALSE(
+      range.Contains(base::Time::FromSecondsSinceUnixEpoch(kTestMaxEpoch)));
+  EXPECT_FALSE(
+      range.Contains(base::Time::FromSecondsSinceUnixEpoch(kTestMaxEpoch + 1)));
   EXPECT_FALSE(range.Contains(base::Time::Max()));
 
   // And where start==end.
-  range = TimeRange(base::Time::FromDoubleT(kTestMinEpoch),
-                    base::Time::FromDoubleT(kTestMinEpoch));
+  range = TimeRange(base::Time::FromSecondsSinceUnixEpoch(kTestMinEpoch),
+                    base::Time::FromSecondsSinceUnixEpoch(kTestMinEpoch));
   EXPECT_FALSE(range.Contains(base::Time::Min()));
-  EXPECT_FALSE(range.Contains(base::Time::FromDoubleT(kTestMinEpoch - 1)));
-  EXPECT_TRUE(range.Contains(base::Time::FromDoubleT(kTestMinEpoch)));
-  EXPECT_FALSE(range.Contains(base::Time::FromDoubleT(kTestMinEpoch + 1)));
+  EXPECT_FALSE(
+      range.Contains(base::Time::FromSecondsSinceUnixEpoch(kTestMinEpoch - 1)));
+  EXPECT_TRUE(
+      range.Contains(base::Time::FromSecondsSinceUnixEpoch(kTestMinEpoch)));
+  EXPECT_FALSE(
+      range.Contains(base::Time::FromSecondsSinceUnixEpoch(kTestMinEpoch + 1)));
 }
 
 TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchSessionControl) {
@@ -91,8 +106,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchSessionControl) {
       /*last_update=*/base::Time::Now(),
       /*secure=*/true,
       /*httponly=*/false, CookieSameSite::NO_RESTRICTION,
-      CookiePriority::COOKIE_PRIORITY_DEFAULT,
-      /*same_party=*/false);
+      CookiePriority::COOKIE_PRIORITY_DEFAULT);
 
   auto session_cookie = CanonicalCookie::CreateUnsafeCookieForTesting(
       "session-cookie", "session-value", "session-domain", "session-path",
@@ -102,8 +116,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchSessionControl) {
       /*last_update=*/base::Time::Now(),
       /*secure=*/true,
       /*httponly=*/false, CookieSameSite::NO_RESTRICTION,
-      CookiePriority::COOKIE_PRIORITY_DEFAULT,
-      /*same_party=*/false);
+      CookiePriority::COOKIE_PRIORITY_DEFAULT);
 
   CookieDeletionInfo delete_info;
   EXPECT_TRUE(delete_info.Matches(
@@ -148,8 +161,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchHost) {
       /*last_update=*/base::Time::Now(),
       /*secure=*/true,
       /*httponly=*/false, CookieSameSite::NO_RESTRICTION,
-      CookiePriority::COOKIE_PRIORITY_DEFAULT,
-      /*same_party=*/false);
+      CookiePriority::COOKIE_PRIORITY_DEFAULT);
 
   auto host_cookie = CanonicalCookie::CreateUnsafeCookieForTesting(
       "host-cookie", "host-cookie-value",
@@ -160,8 +172,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchHost) {
       /*last_update=*/base::Time::Now(),
       /*secure=*/true,
       /*httponly=*/false, CookieSameSite::NO_RESTRICTION,
-      CookiePriority::COOKIE_PRIORITY_DEFAULT,
-      /*same_party=*/false);
+      CookiePriority::COOKIE_PRIORITY_DEFAULT);
 
   EXPECT_TRUE(domain_cookie->IsDomainCookie());
   EXPECT_TRUE(host_cookie->IsHostCookie());
@@ -217,8 +228,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchName) {
       /*last_update=*/base::Time::Now(),
       /*secure=*/true,
       /*httponly=*/false, CookieSameSite::NO_RESTRICTION,
-      CookiePriority::COOKIE_PRIORITY_DEFAULT,
-      /*same_party=*/false);
+      CookiePriority::COOKIE_PRIORITY_DEFAULT);
   auto cookie2 = CanonicalCookie::CreateUnsafeCookieForTesting(
       "cookie2-name", "cookie2-value",
       /*domain=*/".example.com", "/path",
@@ -228,8 +238,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchName) {
       /*last_update=*/base::Time::Now(),
       /*secure=*/true,
       /*httponly=*/false, CookieSameSite::NO_RESTRICTION,
-      CookiePriority::COOKIE_PRIORITY_DEFAULT,
-      /*same_party=*/false);
+      CookiePriority::COOKIE_PRIORITY_DEFAULT);
 
   CookieDeletionInfo delete_info;
   delete_info.name = "cookie1-name";
@@ -253,8 +262,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchValue) {
       /*last_update=*/base::Time::Now(),
       /*secure=*/true,
       /*httponly=*/false, CookieSameSite::NO_RESTRICTION,
-      CookiePriority::COOKIE_PRIORITY_DEFAULT,
-      /*same_party=*/false);
+      CookiePriority::COOKIE_PRIORITY_DEFAULT);
   auto cookie2 = CanonicalCookie::CreateUnsafeCookieForTesting(
       "cookie2-name", "cookie2-value",
       /*domain=*/".example.com", "/path",
@@ -264,8 +272,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchValue) {
       /*last_update=*/base::Time::Now(),
       /*secure=*/true,
       /*httponly=*/false, CookieSameSite::NO_RESTRICTION,
-      CookiePriority::COOKIE_PRIORITY_DEFAULT,
-      /*same_party=*/false);
+      CookiePriority::COOKIE_PRIORITY_DEFAULT);
 
   CookieDeletionInfo delete_info;
   delete_info.value_for_testing = "cookie2-value";
@@ -289,8 +296,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchUrl) {
       /*last_update=*/base::Time::Now(),
       /*secure=*/true,
       /*httponly=*/false, CookieSameSite::NO_RESTRICTION,
-      CookiePriority::COOKIE_PRIORITY_DEFAULT,
-      /*same_party=*/false);
+      CookiePriority::COOKIE_PRIORITY_DEFAULT);
 
   CookieDeletionInfo delete_info;
   delete_info.url = GURL("https://www.example.com/path");
@@ -325,23 +331,25 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoDomainMatchesDomain) {
 
   const double kTestMinEpoch = 1000;
   const double kTestMaxEpoch = 10000000;
-  delete_info.creation_range.SetStart(base::Time::FromDoubleT(kTestMinEpoch));
-  delete_info.creation_range.SetEnd(base::Time::FromDoubleT(kTestMaxEpoch));
+  delete_info.creation_range.SetStart(
+      base::Time::FromSecondsSinceUnixEpoch(kTestMinEpoch));
+  delete_info.creation_range.SetEnd(
+      base::Time::FromSecondsSinceUnixEpoch(kTestMaxEpoch));
 
   auto create_cookie = [kTestMinEpoch](std::string cookie_domain) {
     return *CanonicalCookie::CreateUnsafeCookieForTesting(
         /*name=*/"test-cookie",
         /*value=*/"cookie-value", cookie_domain,
         /*path=*/"cookie/path",
-        /*creation=*/base::Time::FromDoubleT(kTestMinEpoch + 1),
+        /*creation=*/base::Time::FromSecondsSinceUnixEpoch(kTestMinEpoch + 1),
         /*expiration=*/base::Time::Max(),
-        /*last_access=*/base::Time::FromDoubleT(kTestMinEpoch + 1),
+        /*last_access=*/
+        base::Time::FromSecondsSinceUnixEpoch(kTestMinEpoch + 1),
         /*last_update=*/base::Time::Now(),
         /*secure=*/true,
         /*httponly=*/false,
         /*same_site=*/CookieSameSite::NO_RESTRICTION,
-        /*priority=*/CookiePriority::COOKIE_PRIORITY_DEFAULT,
-        /*same_party=*/false);
+        /*priority=*/CookiePriority::COOKIE_PRIORITY_DEFAULT);
   };
 
   // by default empty domain list and default match action will match.
@@ -401,8 +409,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchesDomainList) {
         /*secure=*/false,
         /*httponly=*/false,
         /*same_site=*/CookieSameSite::NO_RESTRICTION,
-        /*priority=*/CookiePriority::COOKIE_PRIORITY_DEFAULT,
-        /*same_party=*/false);
+        /*priority=*/CookiePriority::COOKIE_PRIORITY_DEFAULT);
   };
 
   // With two empty lists (default) should match any domain.

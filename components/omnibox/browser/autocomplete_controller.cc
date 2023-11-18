@@ -11,8 +11,10 @@
 #include <map>
 #include <memory>
 #include <numeric>
+#include <queue>
 #include <set>
 #include <string>
+#include <unordered_set>
 #include <utility>
 
 #include "base/barrier_callback.h"
@@ -58,6 +60,7 @@
 #include "components/omnibox/browser/keyword_provider.h"
 #include "components/omnibox/browser/local_history_zero_suggest_provider.h"
 #include "components/omnibox/browser/most_visited_sites_provider.h"
+#include "components/omnibox/browser/omnibox_feature_configs.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/on_device_head_provider.h"
 #include "components/omnibox/browser/open_tab_provider.h"
@@ -183,6 +186,24 @@ bool ShouldPreserveLastDefaultMatch(bool sync_pass_done,
     return input.text().length() >= 4;
   else
     return true;
+}
+
+// Helper function to retrieve domains that will be used to find a match between
+// historical suggestions and a company entity suggestion. Matches of
+// AutocompleteMatchType::HISTORY_URL type will return the domain of
+// |destination_url| and those of AutocompleteMatchType::SEARCH_SUGGEST_ENTITY
+// will return the domain of |website_uri|. For any other match types,
+// GetDomain() should not be called.
+std::u16string GetDomain(const AutocompleteMatch& match) {
+  DCHECK(match.type == AutocompleteMatchType::HISTORY_URL ||
+         match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY);
+  GURL url = match.type == AutocompleteMatchType::HISTORY_URL
+                 ? match.destination_url
+                 : GURL(match.website_uri);
+  std::u16string url_host;
+  std::u16string url_domain;
+  url_formatter::SplitHost(url, &url_host, &url_domain, nullptr);
+  return url_domain;
 }
 
 }  // namespace
@@ -625,6 +646,14 @@ void AutocompleteController::OnProviderUpdate(
 
   if (updated_matches || done_)
     UpdateResult(false, false, true);
+
+  if (done_) {
+    size_t calculator_count =
+        base::ranges::count_if(published_result_, [](const auto& match) {
+          return match.type == AutocompleteMatchType::CALCULATOR;
+        });
+    UMA_HISTOGRAM_COUNTS_100("Omnibox.NumCalculatorMatches", calculator_count);
+  }
 }
 
 void AutocompleteController::AddProviderAndTriggeringLogs(
@@ -700,8 +729,8 @@ void AutocompleteController::
 
   // Append the ExperimentStatsV2 to the AQS parameter to be logged in
   // searchbox_stats.proto's experiment_stats_v2 field.
+  std::vector<std::string> experiment_stats_v2_strings;
   if (zero_suggest_provider_) {
-    std::vector<std::string> experiment_stats_v2_strings;
     for (const auto& experiment_stat_v2 :
          zero_suggest_provider_->experiment_stats_v2s()) {
       // The string value consists of suggestion type/subtype pairs delimited
@@ -718,11 +747,28 @@ void AutocompleteController::
       reported_experiment_stats_v2->set_type_int(experiment_stat_v2.type_int());
       reported_experiment_stats_v2->set_string_value(value);
     }
-    if (!experiment_stats_v2_strings.empty()) {
-      // 'j' is used as a delimiter between individual experiment stat entries.
-      match->search_terms_args->assisted_query_stats +=
-          "." + base::JoinString(experiment_stats_v2_strings, "j");
-    }
+  }
+#if BUILDFLAG(IS_IOS)
+  // Append the omnibox position when it's set to experiment_stats_v2.
+  if (steady_state_omnibox_position_ !=
+      metrics::OmniboxEventProto::UNKNOWN_POSITION) {
+    const auto omnibox_position_stat = GetOmniboxPositionExperimentStatsV2();
+    auto* reported_experiment_stats_v2 =
+        match->search_terms_args->searchbox_stats.add_experiment_stats_v2();
+    reported_experiment_stats_v2->set_type_int(
+        omnibox_position_stat.type_int());
+    reported_experiment_stats_v2->set_int_value(
+        omnibox_position_stat.int_value());
+    experiment_stats_v2_strings.push_back(
+        base::NumberToString(omnibox_position_stat.type_int()) + "i" +
+        base::NumberToString(omnibox_position_stat.int_value()));
+  }
+#endif
+
+  if (!experiment_stats_v2_strings.empty()) {
+    // 'j' is used as a delimiter between individual experiment stat entries.
+    match->search_terms_args->assisted_query_stats +=
+        "." + base::JoinString(experiment_stats_v2_strings, "j");
   }
 
   SetMatchDestinationURL(match);
@@ -803,7 +849,8 @@ void AutocompleteController::InitializeAsyncProviders(int provider_types) {
   }
   if (provider_types & AutocompleteProvider::TYPE_CALCULATOR &&
       search_provider_ != nullptr) {
-    providers_.push_back(new CalculatorProvider(this, search_provider_));
+    providers_.push_back(
+        new CalculatorProvider(provider_client_.get(), this, search_provider_));
   }
 }
 
@@ -922,6 +969,9 @@ void AutocompleteController::UpdateResult(
           match->type != AutocompleteMatchType::DOCUMENT_SUGGESTION) {
         match->swap_contents_and_description = true;
       }
+
+      if (omnibox_feature_configs::ForceAllowedToBeDefault::Get().enabled)
+        match->SetAllowedToBeDefault(input_);
     }
 
     internal_result_.MergeSuggestionGroupsMap(
@@ -1076,6 +1126,8 @@ void AutocompleteController::SortCullAndAnnotateResult(
   UpdateAssociatedKeywords(&internal_result_);
   UpdateAssistedQueryStats(&internal_result_);
   UpdateTailSuggestPrefix(&internal_result_);
+  MaybeRemoveCompanyEntityImages(&internal_result_);
+  MaybeCleanSuggestionsForKeywordMode(input_.text(), &internal_result_);
 
   if (search_provider_)
     search_provider_->RegisterDisplayedAnswers(internal_result_);
@@ -1166,7 +1218,7 @@ void AutocompleteController::UpdateAssociatedKeywords(
       keyword_provider_->GetKeywordForText(input_.text());
 
   std::set<std::u16string> keywords;
-  for (auto& match : *result) {
+  for (AutocompleteMatch& match : *result) {
     std::u16string keyword(
         match.GetSubstitutingExplicitlyInvokedKeyword(template_url_service_));
     if (!keyword.empty()) {
@@ -1181,6 +1233,18 @@ void AutocompleteController::UpdateAssociatedKeywords(
     // keyword of their own creation.)  So use |exact_keyword| if it's
     // available.
     if (!exact_keyword.empty() && !keywords.count(exact_keyword)) {
+      // Prevent starter-pack keywords from attaching to non-starter-pack
+      // matches. Those will have a dedicated UI with an explicit match
+      // selection to enter keyword mode.
+      if (OmniboxFieldTrial::IsKeywordModeRefreshEnabled() &&
+          match.type != AutocompleteMatchType::STARTER_PACK) {
+        TemplateURL* turl =
+            template_url_service_->GetTemplateURLForKeyword(exact_keyword);
+        if (turl && turl->starter_pack_id() != 0) {
+          continue;
+        }
+      }
+
       keywords.insert(exact_keyword);
       // If the match has an answer, it will look strange to try to display
       // it along with a keyword hint. Prefer the keyword hint, and revert
@@ -1199,15 +1263,30 @@ void AutocompleteController::UpdateAssociatedKeywords(
     // fill_into_edit, which should take inline autocompletions into account.
     keyword = keyword_provider_->GetKeywordForText(match.fill_into_edit);
 
-    // Only add the keyword if the match does not have a duplicate keyword with
-    // a more relevant match.
-    if (!keyword.empty() && !keywords.count(keyword)) {
-      keywords.insert(keyword);
-      match.associated_keyword = std::make_unique<AutocompleteMatch>(
-          keyword_provider_->CreateVerbatimMatch(match.fill_into_edit, keyword,
-                                                 input_));
-    } else {
-      match.associated_keyword.reset();
+    if (!keyword.empty()) {
+      // Prevent starter-pack keywords from attaching to non-starter-pack
+      // matches.
+      if (OmniboxFieldTrial::IsKeywordModeRefreshEnabled() &&
+          match.type != AutocompleteMatchType::STARTER_PACK) {
+        TemplateURL* turl =
+            template_url_service_->GetTemplateURLForKeyword(keyword);
+        if (turl && turl->starter_pack_id() != 0) {
+          continue;
+        }
+      }
+
+      // Only add the keyword if the match does not have a duplicate keyword
+      // with a more relevant match.
+      if (!keywords.count(keyword) ||
+          (OmniboxFieldTrial::IsKeywordModeRefreshEnabled() &&
+           match.type == AutocompleteMatchType::STARTER_PACK)) {
+        keywords.insert(keyword);
+        match.associated_keyword = std::make_unique<AutocompleteMatch>(
+            keyword_provider_->CreateVerbatimMatch(match.fill_into_edit,
+                                                   keyword, input_));
+      } else {
+        match.associated_keyword.reset();
+      }
     }
   }
 }
@@ -1571,6 +1650,30 @@ void AutocompleteController::SetSteadyStateOmniboxPosition(
   steady_state_omnibox_position_ = position;
 }
 
+const omnibox::metrics::ChromeSearchboxStats::ExperimentStatsV2
+AutocompleteController::GetOmniboxPositionExperimentStatsV2() const {
+  // Field number of the omnibox position in
+  // SearchboxStats::ExperimentStatsV2::StatType.
+  constexpr int kOmniboxPositionFieldNumber = 95;
+  // Value of the enum in SearchboxStats::OmniboxPosition.
+  constexpr int kTopOmniboxValue = 1;
+  constexpr int kBottomOmniboxValue = 2;
+
+  omnibox::metrics::ChromeSearchboxStats::ExperimentStatsV2 experiment_stats_v2;
+  experiment_stats_v2.set_type_int(kOmniboxPositionFieldNumber);
+  switch (steady_state_omnibox_position_) {
+    case metrics::OmniboxEventProto::TOP_POSITION:
+      experiment_stats_v2.set_int_value(kTopOmniboxValue);
+      break;
+    case metrics::OmniboxEventProto::BOTTOM_POSITION:
+      experiment_stats_v2.set_int_value(kBottomOmniboxValue);
+      break;
+    default:
+      break;
+  }
+  return experiment_stats_v2;
+}
+
 bool AutocompleteController::ShouldRunProvider(
     AutocompleteProvider* provider) const {
   if (provider->InKeywordMode(input_)) {
@@ -1754,6 +1857,9 @@ void AutocompleteController::OnUrlScoringModelDone(
   std::priority_queue<int> relevance_heap;
   std::priority_queue<std::pair<float, AutocompleteResult::iterator>>
       prediction_and_match_itr_heap;
+  // Likewise, keep the same number of shortcut boosted suggestions but reassign
+  // them to the highest scoring suggestions.
+  size_t boosted_shortcut_count = 0;
   for (auto& [prediction, stripped_destination_url] : results) {
     if (!prediction.has_value()) {
       continue;
@@ -1769,6 +1875,8 @@ void AutocompleteController::OnUrlScoringModelDone(
 
     relevance_heap.emplace(match_itr->relevance);
     prediction_and_match_itr_heap.emplace(prediction.value(), match_itr);
+    if (match_itr->shortcut_boosted)
+      boosted_shortcut_count++;
   }
 
   if (!relevance_heap.empty()) {
@@ -1795,6 +1903,13 @@ void AutocompleteController::OnUrlScoringModelDone(
       match_itr->RecordAdditionalInfo(
           "ml model output", prediction_and_match_itr_heap.top().first);
       match_itr->relevance = relevance_heap.top();
+      if (boosted_shortcut_count) {
+        match_itr->RecordAdditionalInfo("ML shortcut boosted", "true");
+        match_itr->shortcut_boosted = true;
+        boosted_shortcut_count--;
+      } else {
+        match_itr->shortcut_boosted = false;
+      }
     }
     relevance_heap.pop();
     prediction_and_match_itr_heap.pop();
@@ -1812,4 +1927,113 @@ void AutocompleteController::CancelUrlScoringModel() {
   // WeakPtr to prevent its callbacks from being called.
   scoring_model_task_tracker_.TryCancelAll();
   weak_ptr_factory_.InvalidateWeakPtrs();
+}
+
+void AutocompleteController::MaybeRemoveCompanyEntityImages(
+    AutocompleteResult* result) {
+  if (result->size() == 0 ||
+      !base::FeatureList::IsEnabled(omnibox::kCompanyEntityIconAdjustment)) {
+    return;
+  }
+  // Least aggressive and moderate group will only have one iteration as the
+  // first match must be of history type.
+  size_t max_iterations =
+      OmniboxFieldTrial::kCompanyEntityIconAdjustmentGroup.Get() ==
+              omnibox::CompanyEntityIconAdjustmentGroup::kMostAggressive
+          ? result->size()
+          : 1;
+
+  std::unordered_set<std::u16string> history_domains;
+  // Find all history type matches.
+  for (size_t i = 0; i < max_iterations; i++) {
+    if (result->match_at(i)->type == AutocompleteMatchType::HISTORY_URL) {
+      history_domains.insert(GetDomain(*result->match_at(i)));
+    }
+  }
+  if (history_domains.size() == 0) {
+    return;
+  }
+  for (size_t i = 0; i < result->size(); i++) {
+    // Do not attempt to change image to search loupe if not an entity
+    // suggestion.
+    if (result->match_at(i)->type !=
+        AutocompleteMatchType::SEARCH_SUGGEST_ENTITY) {
+      continue;
+    }
+    if (OmniboxFieldTrial::kCompanyEntityIconAdjustmentGroup.Get() ==
+            omnibox::CompanyEntityIconAdjustmentGroup::kLeastAggressive &&
+        i > 1) {
+      break;
+    }
+    // Check that entity domain has a matching history domain.
+    if (history_domains.contains(GetDomain(*result->match_at(i))) &&
+        (!result->match_at(i)->image_url.is_empty() ||
+         !result->match_at(i)->image_dominant_color.empty())) {
+      provider_client_->GetOmniboxTriggeredFeatureService()->FeatureTriggered(
+          metrics::OmniboxEventProto_Feature_COMPANY_ENTITY_ADJUSTMENT);
+      if (!OmniboxFieldTrial::kCompanyEntityIconAdjustmentCounterfactual
+               .Get()) {
+        result->match_at(i)->image_url = GURL();
+        result->match_at(i)->image_dominant_color.clear();
+      }
+    }
+  }
+}
+
+void AutocompleteController::MaybeCleanSuggestionsForKeywordMode(
+    const std::u16string& input,
+    AutocompleteResult* result) {
+  if (OmniboxFieldTrial::IsKeywordModeRefreshEnabled() &&
+      input.starts_with(u'@')) {
+    // When the input is '@' exactly, some special filtering rules are applied.
+    // Note: the rule preserving other matches with `associated_keyword` is
+    // not currently necessary, but is intended to make it easy to coexist
+    // with enterprise configured scopes when that feature is implemented.
+    if (input == u"@") {
+      result->EraseMatchesWhere([](const AutocompleteMatch& match) {
+        return !(match.type == AutocompleteMatchType::STARTER_PACK ||
+                 match.contents == u"@" || match.associated_keyword);
+      });
+      // Simple sort is needed to restore verbatim '@' search as top/default
+      // match because a different default, e.g. "@hill", might have previously
+      // occupied the top spot while '@' was demoted below others.
+      std::sort(result->begin(), result->end(),
+                AutocompleteMatch::MoreRelevant);
+      // Put first defaultable match in top position since relevance
+      // ranking alone doesn't guarantee it.
+      auto default_match = std::find_if(
+          result->begin(), result->end(),
+          [](const auto& m) { return m.allowed_to_be_default_match; });
+      if (default_match != result->begin() && default_match != result->end()) {
+        std::rotate(result->begin(), default_match, default_match + 1);
+      }
+    }
+
+    // Intentionally avoid actions and remove button on first suggestion
+    // which may interfere with keyword mode refresh.
+    if (result->size() > 1 &&
+        result->match_at(1)->type == AutocompleteMatchType::STARTER_PACK) {
+      result->match_at(0)->actions.clear();
+      result->match_at(0)->deletable = false;
+      for (AutocompleteMatch& duplicate :
+           result->match_at(0)->duplicate_matches) {
+        duplicate.deletable = false;
+      }
+    }
+
+    // Clear help text that is repeated across consecutive instant keyword
+    // matches.
+    size_t instant_counter = 0;
+    for (size_t i = 0; i < result->size(); i++) {
+      if (result->match_at(i)->HasInstantKeyword(template_url_service_)) {
+        instant_counter++;
+        if (instant_counter > 1) {
+          result->match_at(i)->contents.clear();
+          result->match_at(i)->contents_class = {{}};
+        }
+      } else {
+        instant_counter = 0;
+      }
+    }
+  }
 }

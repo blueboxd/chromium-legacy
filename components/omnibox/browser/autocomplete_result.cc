@@ -172,18 +172,25 @@ AutocompleteResult::~AutocompleteResult() {
 
 void AutocompleteResult::TransferOldMatches(const AutocompleteInput& input,
                                             AutocompleteResult* old_matches) {
-  // Don't transfer matches from done providers. If the match is still
-  // relevant, it'll already be in `internal_result_`, potentially with updated
-  // fields that shouldn't be deduped with the out-of-date match. Otherwise, the
-  // irrelevant match shouldn't be re-added. Adding outdated matches is
-  // particularly noticeable when the user types the next char before the
-  // copied matches are expired leading to outdated matches surviving multiple
-  // input changes, e.g. 'gooooooooo[oogle.com]'.
-  // Also exclude action matches since matches are annotated and converted
-  // on every pass to keep them associated with the triggering match.
+  // Skip any matches that would have already been added to the new matches if
+  // they're still relevant:
+  // - Don't transfer matches from done providers. If the match is still
+  //   relevant, it'll already be in `internal_result_`, potentially with
+  //   updated fields that shouldn't be deduped with the out-of-date match.
+  //   Otherwise, the irrelevant match shouldn't be re-added. Adding outdated
+  //   matches is particularly noticeable when the user types the next char
+  //   before the copied matches are expired leading to outdated matches
+  //   surviving multiple input changes, e.g. 'gooooooooo[oogle.com]'.
+  // - Don't transfer match types that are guaranteed to be sync as they too
+  //   would have been replaced by the new sync pass. E.g., It doesn't look good
+  //   to show 2 URL-what-you-typed suggestions.
+  // - Don't transfer action matches since matches are annotated and converted
+  //   on every pass to keep them associated with the triggering match.
   base::EraseIf(old_matches->matches_, [](const auto& old_match) {
     return old_match.type == AutocompleteMatchType::PEDAL ||
-           (old_match.provider && old_match.provider->done());
+           (old_match.provider && old_match.provider->done()) ||
+           old_match.type == AutocompleteMatchType::URL_WHAT_YOU_TYPED ||
+           old_match.type == AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
   });
 
   if (old_matches->empty())
@@ -440,13 +447,11 @@ void AutocompleteResult::SortAndCull(
         if (omnibox::IsNTPPage(page_classification)) {
           size_t num_trending_queries =
               OmniboxFieldTrial::kInspireMeAdditionalTrendingQueries.Get();
-          size_t psuggest_count =
+          size_t num_psuggest_queries =
               OmniboxFieldTrial::kInspireMePsuggestQueries.Get();
 
-          size_t total_count = OmniboxFieldTrial::kInspireMeNTPZPSLimit.Get();
-
           sections.push_back(std::make_unique<IOSNTPZpsSection>(
-              num_trending_queries, psuggest_count, total_count,
+              num_trending_queries, num_psuggest_queries,
               suggestion_groups_map_));
         } else if (omnibox::IsSearchResultsPage(page_classification)) {
           sections.push_back(
@@ -1451,15 +1456,15 @@ void AutocompleteResult::GroupSuggestionsBySearchVsURL(iterator begin,
 #if !BUILDFLAG(IS_IOS)
     // Group history cluster suggestions with searches.
     if (m.type == AutocompleteMatchType::HISTORY_CLUSTER)
-      return 1;
+      return 2;
 #endif  // !BUILDFLAG(IS_IOS)
     if (AutocompleteMatch::IsSearchType(m.type))
-      return 1;
-    // Group boosted shortcuts with searches.
+      return 2;
+    // Group boosted shortcuts above searches.
     if (omnibox_feature_configs::ShortcutBoosting::Get().group_with_searches &&
         m.shortcut_boosted) {
       return 1;
     }
-    return 2;
+    return 3;
   });
 }

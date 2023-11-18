@@ -30,8 +30,8 @@
 #include "components/password_manager/core/browser/mock_password_feature_manager.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/password_manager/core/browser/password_store/test_password_store.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
-#include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -61,7 +61,6 @@ constexpr char kTestProxyOrigin[] = "http://proxy.com/";
 constexpr char kTestProxySignonRealm[] = "proxy.com/realm";
 constexpr char kTestURL[] = "https://example.com/login/";
 constexpr char16_t kTestUsername[] = u"Username";
-constexpr char16_t kTestUsername2[] = u"Username2";
 constexpr char16_t kTestPassword[] = u"12345";
 
 class MockPasswordManagerClient
@@ -111,8 +110,8 @@ class MockAutofillClient : public autofill::AutofillClient {
   MOCK_METHOD(syncer::SyncService*, GetSyncService, (), (override));
   MOCK_METHOD(signin::IdentityManager*, GetIdentityManager, (), (override));
   MOCK_METHOD(autofill::FormDataImporter*, GetFormDataImporter, (), (override));
-  MOCK_METHOD(autofill::payments::PaymentsClient*,
-              GetPaymentsClient,
+  MOCK_METHOD(autofill::payments::PaymentsNetworkInterface*,
+              GetPaymentsNetworkInterface,
               (),
               (override));
   MOCK_METHOD(autofill::StrikeDatabase*, GetStrikeDatabase, (), (override));
@@ -140,87 +139,6 @@ class MockAutofillClient : public autofill::AutofillClient {
               (override));
   MOCK_METHOD(translate::TranslateDriver*, GetTranslateDriver, (), (override));
   MOCK_METHOD(void, ShowAutofillSettings, (autofill::PopupType), (override));
-  MOCK_METHOD(void,
-              ShowUnmaskPrompt,
-              (const autofill::CreditCard&,
-               const autofill::CardUnmaskPromptOptions&,
-               base::WeakPtr<autofill::CardUnmaskDelegate>),
-              (override));
-  MOCK_METHOD(void,
-              OnUnmaskVerificationResult,
-              (PaymentsRpcResult),
-              (override));
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-  MOCK_METHOD(void,
-              ShowLocalCardMigrationDialog,
-              (base::OnceClosure),
-              (override));
-  MOCK_METHOD(void,
-              ConfirmMigrateLocalCardToCloud,
-              (const autofill::LegalMessageLines&,
-               const std::string&,
-               const std::vector<autofill::MigratableCreditCard>&,
-               LocalCardMigrationCallback),
-              (override));
-  MOCK_METHOD(void,
-              ShowLocalCardMigrationResults,
-              (const bool,
-               const std::u16string&,
-               const std::vector<autofill::MigratableCreditCard>&,
-               MigrationDeleteCardCallback),
-              (override));
-  MOCK_METHOD(void,
-              ConfirmSaveIbanLocally,
-              (const autofill::Iban&, bool, SaveIbanPromptCallback),
-              (override));
-  MOCK_METHOD(void,
-              ConfirmUploadIbanToCloud,
-              (const autofill::Iban&,
-               const autofill::LegalMessageLines& legal_message_lines,
-               bool,
-               SaveIbanPromptCallback),
-              (override));
-  MOCK_METHOD(void,
-              ShowWebauthnOfferDialog,
-              (WebauthnDialogCallback),
-              (override));
-  MOCK_METHOD(void,
-              ShowWebauthnVerifyPendingDialog,
-              (WebauthnDialogCallback),
-              (override));
-  MOCK_METHOD(void, UpdateWebauthnOfferDialogWithError, (), (override));
-  MOCK_METHOD(bool, CloseWebauthnDialog, (), (override));
-  MOCK_METHOD(void,
-              OfferVirtualCardOptions,
-              (const std::vector<autofill::CreditCard*>&,
-               base::OnceCallback<void(const std::string&)>),
-              (override));
-#else  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-  MOCK_METHOD(void,
-              ConfirmAccountNameFixFlow,
-              (base::OnceCallback<void(const std::u16string&)>),
-              (override));
-  MOCK_METHOD(
-      void,
-      ConfirmExpirationDateFixFlow,
-      (const autofill::CreditCard&,
-       base::OnceCallback<void(const std::u16string&, const std::u16string&)>),
-      (override));
-#endif
-  MOCK_METHOD(void,
-              ConfirmSaveCreditCardLocally,
-              (const autofill::CreditCard&,
-               autofill::AutofillClient::SaveCreditCardOptions,
-               LocalSaveCardPromptCallback),
-              (override));
-  MOCK_METHOD(void,
-              ConfirmSaveCreditCardToCloud,
-              (const autofill::CreditCard&,
-               const autofill::LegalMessageLines&,
-               SaveCreditCardOptions,
-               UploadSaveCardPromptCallback),
-              (override));
-  MOCK_METHOD(void, CreditCardUploadCompleted, (bool), (override));
   MOCK_METHOD(void,
               ConfirmCreditCardFillAssist,
               (const autofill::CreditCard&, base::OnceClosure),
@@ -258,8 +176,7 @@ class MockAutofillClient : public autofill::AutofillClient {
               (override));
   MOCK_METHOD(void,
               UpdateAutofillPopupDataListValues,
-              (const std::vector<std::u16string>&,
-               const std::vector<std::u16string>&),
+              (base::span<const autofill::SelectOption>),
               (override));
   MOCK_METHOD(void, PinPopupView, (), (override));
   MOCK_METHOD(PopupOpenArgs,
@@ -304,10 +221,6 @@ class MockAutofillClient : public autofill::AutofillClient {
   MOCK_METHOD(void,
               LoadRiskData,
               (base::OnceCallback<void(const std::string&)>),
-              (override));
-  MOCK_METHOD(void,
-              OpenPromoCodeOfferDetailsURL,
-              (const GURL& url),
               (override));
   MOCK_METHOD(autofill::FormInteractionsFlowId,
               GetCurrentFormInteractionsFlowId,
@@ -367,6 +280,9 @@ class PasswordManagerUtilTest : public testing::Test {
         password_manager::prefs::kSavePasswordsSuspendedByError, false);
     pref_service_.registry()->RegisterBooleanPref(
         password_manager::prefs::kAutoSignInEnabledGMS, true);
+    pref_service_.registry()->RegisterBooleanPref(
+        password_manager::prefs::kUnenrolledFromGoogleMobileServicesDueToErrors,
+        false);
 #endif
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
     pref_service_.registry()->RegisterBooleanPref(
@@ -395,31 +311,6 @@ class PasswordManagerUtilTest : public testing::Test {
   TestingPrefServiceSimple pref_service_;
   syncer::TestSyncService sync_service_;
 };
-
-TEST(PasswordManagerUtil, TrimUsernameOnlyCredentials) {
-  std::vector<std::unique_ptr<PasswordForm>> forms;
-  std::vector<std::unique_ptr<PasswordForm>> expected_forms;
-  forms.push_back(std::make_unique<PasswordForm>(GetTestAndroidCredential()));
-  expected_forms.push_back(
-      std::make_unique<PasswordForm>(GetTestAndroidCredential()));
-
-  PasswordForm username_only;
-  username_only.scheme = PasswordForm::Scheme::kUsernameOnly;
-  username_only.signon_realm = kTestAndroidRealm;
-  username_only.username_value = kTestUsername2;
-  forms.push_back(std::make_unique<PasswordForm>(username_only));
-
-  username_only.federation_origin =
-      url::Origin::Create(GURL(kTestFederationURL));
-  username_only.skip_zero_click = false;
-  forms.push_back(std::make_unique<PasswordForm>(username_only));
-  username_only.skip_zero_click = true;
-  expected_forms.push_back(std::make_unique<PasswordForm>(username_only));
-
-  TrimUsernameOnlyCredentials(&forms);
-
-  EXPECT_THAT(forms, UnorderedPasswordFormElementsAre(&expected_forms));
-}
 
 TEST(PasswordManagerUtil, GetSignonRealmWithProtocolExcluded) {
   PasswordForm http_form;

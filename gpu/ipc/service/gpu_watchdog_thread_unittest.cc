@@ -137,7 +137,7 @@ void GpuWatchdogTest::SetUp() {
   } else {
     // Check Mac machine model version.
     std::string model_str = base::SysInfo::HardwareModelName();
-    absl::optional<base::SysInfo::HardwareModelNameSplit> split =
+    std::optional<base::SysInfo::HardwareModelNameSplit> split =
         base::SysInfo::SplitHardwareModelNameDoNotUse(model_str);
 
     if (split && split.value().category == "MacBookPro" &&
@@ -177,7 +177,6 @@ void GpuWatchdogTest::SetUp() {
   watchdog_thread_ = gpu::GpuWatchdogThread::Create(
       /*start_backgrounded=*/false,
       /*timeout=*/timeout_,
-      /*init_factor=*/kInitFactor,
       /*restart_factor=*/kRestartFactor,
       /*test_mode=*/true, /*thread_name=*/"GpuWatchdog");
 }
@@ -251,8 +250,7 @@ TEST_F(GpuWatchdogTest, GpuInitializationComplete) {
 
 // GPU Hang In Initialization.
 TEST_F(GpuWatchdogTest, GpuInitializationHang) {
-  auto allowed_time =
-      timeout_ * (kInitFactor + 1) + full_thread_time_on_windows_;
+  auto allowed_time = timeout_ * 2 + full_thread_time_on_windows_;
 
   // GPU init takes longer than timeout.
   SimpleTask(allowed_time, /*extra_time=*/extra_gpu_job_time_);
@@ -265,8 +263,7 @@ TEST_F(GpuWatchdogTest, GpuInitializationHang) {
 
 // GPU Hang In Initialization.
 TEST_F(GpuWatchdogTest, GpuInitializationHangWithReportOnly) {
-  auto allowed_time =
-      timeout_ * (kInitFactor + 1) + full_thread_time_on_windows_;
+  auto allowed_time = timeout_ * 2 + full_thread_time_on_windows_;
 
   watchdog_thread_->EnableReportOnlyMode();
 
@@ -410,8 +407,7 @@ TEST_F(GpuWatchdogTest, GpuInitializationPause) {
   watchdog_thread_->ResumeWatchdog();
 
   // The Gpu init continues for longer than allowed init time.
-  auto allowed_time =
-      timeout_ * (kInitFactor + 1) + full_thread_time_on_windows_;
+  auto allowed_time = timeout_ * 2 + full_thread_time_on_windows_;
 
   SimpleTask(allowed_time, /*extra_time=*/extra_gpu_job_time_);
 

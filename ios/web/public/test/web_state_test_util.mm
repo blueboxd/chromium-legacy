@@ -5,6 +5,7 @@
 #import "ios/web/public/test/web_state_test_util.h"
 
 #import "base/check.h"
+#import "base/functional/callback_helpers.h"
 #import "base/run_loop.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -197,9 +198,9 @@ std::unique_ptr<WebState> CreateUnrealizedWebStateWithItems(
   // TODO(crbug.com/1383087): remove when the feature has launched.
   if (!features::UseSessionSerializationOptimizations()) {
     CRWSessionStorage* session_storage =
-        [[CRWSessionStorage alloc] initWithProto:storage];
-    session_storage.stableIdentifier = [[NSUUID UUID] UUIDString];
-    session_storage.uniqueIdentifier = web::WebStateID::NewUnique();
+        [[CRWSessionStorage alloc] initWithProto:storage
+                                uniqueIdentifier:web::WebStateID::NewUnique()
+                                stableIdentifier:[[NSUUID UUID] UUIDString]];
 
     std::unique_ptr<WebState> web_state = WebState::CreateWithStorageSession(
         WebState::CreateParams(browser_state), session_storage);
@@ -212,13 +213,9 @@ std::unique_ptr<WebState> CreateUnrealizedWebStateWithItems(
 
   std::unique_ptr<WebState> web_state = WebState::CreateWithStorage(
       browser_state, WebStateID::NewUnique(), std::move(metadata),
-      base::BindOnce(
-          [](proto::WebStateStorage storage,
-             proto::WebStateStorage& out_storage) {
-            out_storage = std::move(storage);
-          },
-          std::move(storage)),
-      base::BindOnce([]() -> NSData* { return nil; }));
+      base::ReturnValueOnce(std::move(storage)),
+      base::ReturnValueOnce<NSData*>(nil));
+
   DCHECK(!web_state->IsRealized());
   return web_state;
 }

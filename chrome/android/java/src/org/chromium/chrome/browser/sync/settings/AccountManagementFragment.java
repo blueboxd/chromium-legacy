@@ -139,21 +139,18 @@ public class AccountManagementFragment extends ChromeBaseSettingsFragment
 
         if (getPreferenceScreen() != null) getPreferenceScreen().removeAll();
 
-        String signedInAccountEmail =
-                CoreAccountInfo.getEmailFrom(IdentityServicesProvider.get()
-                                                     .getIdentityManager(getProfile())
-                                                     .getPrimaryAccountInfo(ConsentLevel.SIGNIN));
+        mSignedInCoreAccountInfo =
+                IdentityServicesProvider.get()
+                        .getIdentityManager(getProfile())
+                        .getPrimaryAccountInfo(ConsentLevel.SIGNIN);
         List<CoreAccountInfo> coreAccountInfos = AccountUtils.getCoreAccountInfosIfFulfilledOrEmpty(
                 AccountManagerFacadeProvider.getInstance().getCoreAccountInfos());
-        if (signedInAccountEmail == null || coreAccountInfos.isEmpty()) {
+        if (mSignedInCoreAccountInfo == null || coreAccountInfos.isEmpty()) {
             // The AccountManagementFragment can only be shown when the user is signed in. If the
             // user is signed out, exit the fragment.
             getActivity().finish();
             return;
         }
-        mSignedInCoreAccountInfo =
-                AccountUtils.findCoreAccountInfoByEmail(coreAccountInfos, signedInAccountEmail);
-        assert mSignedInCoreAccountInfo != null;
 
         DisplayableProfileData profileData =
                 mProfileDataCache.getProfileDataOrDefault(mSignedInCoreAccountInfo.getEmail());
@@ -262,7 +259,7 @@ public class AccountManagementFragment extends ChromeBaseSettingsFragment
         accountsCategory.addPreference(
                 createDividerPreference(R.layout.account_divider_preference));
         accountsCategory.addPreference(createManageYourGoogleAccountPreference());
-        accountsCategory.addPreference(createDividerPreference(R.layout.divider_preference));
+        accountsCategory.addPreference(createDividerPreference(R.layout.horizontal_divider));
 
         for (CoreAccountInfo coreAccountInfo : coreAccountInfos) {
             if (!mSignedInCoreAccountInfo.equals(coreAccountInfo)) {

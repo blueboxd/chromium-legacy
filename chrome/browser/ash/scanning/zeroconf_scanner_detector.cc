@@ -15,7 +15,6 @@
 #include "base/logging.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/string_piece_forward.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/ash/scanning/zeroconf_scanner_detector_utils.h"
@@ -70,6 +69,11 @@ class ParsedMetadata {
         model_ = value;
       } else if (key == "ty") {
         ty = value;
+      } else if (key == "UUID" || key == "uuid") {
+        uuid_ = value;
+      } else if (key == "pdl") {
+        pdl_ = base::SplitString(value, ",", base::TRIM_WHITESPACE,
+                                 base::SPLIT_WANT_NONEMPTY);
       }
     }
 
@@ -99,12 +103,16 @@ class ParsedMetadata {
   const absl::optional<std::string>& rs() const { return rs_; }
   const std::string& manufacturer() const { return manufacturer_; }
   const std::string& model() const { return model_; }
+  const std::string& uuid() const { return uuid_; }
+  const std::vector<std::string>& pdl() const { return pdl_; }
 
  private:
   // Used to construct the path for a device name URL.
   absl::optional<std::string> rs_;
   std::string manufacturer_;
   std::string model_;
+  std::string uuid_;
+  std::vector<std::string> pdl_;
 };
 
 // Attempts to create a Scanner using the information in |service_description|
@@ -130,7 +138,8 @@ absl::optional<Scanner> CreateScanner(
 
   return CreateSaneScanner(service_description.instance_name(), service_type,
                            metadata.manufacturer(), metadata.model(),
-                           metadata.rs(), service_description.ip_address,
+                           metadata.uuid(), metadata.rs(), metadata.pdl(),
+                           service_description.ip_address,
                            service_description.address.port());
 }
 

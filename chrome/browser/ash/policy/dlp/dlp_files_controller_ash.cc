@@ -17,6 +17,7 @@
 #include "base/check.h"
 #include "base/check_is_test.h"
 #include "base/containers/contains.h"
+#include "base/containers/fixed_flat_set.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -27,6 +28,7 @@
 #include "base/memory/raw_ref.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_piece.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -43,9 +45,9 @@
 #include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_files_utils.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_policy_constants.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_reporting_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
+#include "chrome/browser/enterprise/data_controls/dlp_reporting_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -68,6 +70,12 @@
 
 namespace policy {
 namespace {
+
+// System application URLs.
+// Please keep them updated with dlp_files_controller_ash_unittest.cc.
+constexpr char kFileManagerUrl[] = "chrome://file-manager/";
+constexpr char kImageLoaderUrl[] =
+    "chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp/";
 
 // Timeout defining when two events having the same properties are considered
 // duplicates.
@@ -344,6 +352,15 @@ file_manager::VolumeManager* GetVolumeManager(
   }
   return volume_manager;
 }
+
+// Returns whether `url` represents the URL of a system application.
+bool IsSystemAppURL(const GURL& url) {
+  static constexpr auto kSystemURLsMap =
+      base::MakeFixedFlatSet<base::StringPiece>(
+          {kFileManagerUrl, kImageLoaderUrl});
+  return kSystemURLsMap.contains(url.spec());
+}
+
 }  // namespace
 
 // static
@@ -712,8 +729,10 @@ void DlpFilesControllerAsh::IsFilesTransferRestricted(
           GURL(file.source_url), GURL(*destination.url()),
           DlpRulesManager::Restriction::kFiles, &source_pattern,
           &destination_pattern.value(), &rule_metadata);
-      MaybeReportEvent(file.inode, file.crtime, file.path, source_pattern,
-                       actual_dst, destination_pattern, rule_metadata, level);
+      if (!IsSystemAppURL(destination.url().value())) {
+        MaybeReportEvent(file.inode, file.crtime, file.path, source_pattern,
+                         actual_dst, destination_pattern, rule_metadata, level);
+      }
     }
 
     switch (level) {
@@ -840,16 +859,17 @@ bool DlpFilesControllerAsh::IsDlpPolicyMatched(const FileDaemonInfo& file) {
       restricted = true;
       break;
     case policy::DlpRulesManager::Level::kWarn:
-      // TODO(b/298950702): Show warning if applicable.
+      // Normally this case should not be hit as it means that a restricted file
+      // was accessed by a flow without requesting access before. We protect
+      // warned files the same way as blocked to not allow unauthorized access.
+      restricted = true;
       break;
     default:
       break;
   }
 
-  MaybeReportEvent(
-      file.inode, file.crtime, file.path, src_pattern,
-      DlpFileDestination(data_controls::Component::kUnknownComponent),
-      absl::nullopt, rule_metadata, level);
+  data_controls::DlpHistogramEnumeration(
+      data_controls::dlp::kFilesUnknownAccessLevel, level);
 
   return restricted;
 }
@@ -939,7 +959,7 @@ DlpFilesControllerAsh::MapFilePathToPolicyComponent(
             extension_misc::kODFSExtensionId);
     auto one_drive_file_systems =
         service->GetProvidedFileSystemInfoList(provider_id);
-    CHECK(one_drive_file_systems.size() == 1);
+    CHECK_EQ(one_drive_file_systems.size(), 1u);
 
     if (one_drive_file_systems[0].mount_path().IsParent(file_path)) {
       return data_controls::Component::kOneDrive;
@@ -1151,7 +1171,7 @@ void DlpFilesControllerAsh::MaybeReportEvent(
     return;
   }
 
-  DlpReportingManager* reporting_manager =
+  data_controls::DlpReportingManager* reporting_manager =
       rules_manager_->GetReportingManager();
   if (!reporting_manager) {
     return;
@@ -1165,12 +1185,12 @@ void DlpFilesControllerAsh::MaybeReportEvent(
     return;
   }
 
-  std::unique_ptr<DlpPolicyEventBuilder> event_builder =
+  std::unique_ptr<data_controls::DlpPolicyEventBuilder> event_builder =
       is_warning_proceeded_event
-          ? DlpPolicyEventBuilder::WarningProceededEvent(
+          ? data_controls::DlpPolicyEventBuilder::WarningProceededEvent(
                 source_pattern, rule_metadata.name, rule_metadata.obfuscated_id,
                 DlpRulesManager::Restriction::kFiles)
-          : DlpPolicyEventBuilder::Event(
+          : data_controls::DlpPolicyEventBuilder::Event(
                 source_pattern, rule_metadata.name, rule_metadata.obfuscated_id,
                 DlpRulesManager::Restriction::kFiles, level.value());
 

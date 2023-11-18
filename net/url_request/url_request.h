@@ -32,7 +32,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/base/network_delegate.h"
-#include "net/base/proxy_server.h"
+#include "net/base/proxy_chain.h"
 #include "net/base/request_priority.h"
 #include "net/base/upload_progress.h"
 #include "net/cookies/canonical_cookie.h"
@@ -739,7 +739,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   // Available when the request headers are sent, which is before the more
   // general response_info() is available.
-  const ProxyServer& proxy_server() const { return proxy_server_; }
+  const ProxyChain& proxy_chain() const { return proxy_chain_; }
 
   // Gets the connection attempts made in the process of servicing this
   // URLRequest. Only guaranteed to be valid if called after the request fails
@@ -806,6 +806,11 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
     upgrade_if_insecure_ = upgrade_if_insecure;
   }
   bool upgrade_if_insecure() const { return upgrade_if_insecure_; }
+
+  // `ad_tagged` should be set to true if the request is thought to be related
+  // to advertising.
+  void set_ad_tagged(bool ad_tagged) { ad_tagged_ = ad_tagged; }
+  bool ad_tagged() const { return ad_tagged_; }
 
   // By default, client certs will be sent (provided via
   // Delegate::OnCertificateRequested) when cookies are disabled
@@ -918,6 +923,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // been called.
   bool CanSetCookie(const net::CanonicalCookie& cookie,
                     CookieOptions* options,
+                    const net::FirstPartySetMetadata& first_party_set_metadata,
                     CookieInclusionStatus* inclusion_status) const;
 
   // Called just before calling a delegate that may block a request. |type|
@@ -956,8 +962,12 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   SiteForCookies site_for_cookies_;
 
   IsolationInfo isolation_info_;
-  // TODO(dylancutler): Have URLRequestHttpJob use this partition key instead of
-  // keeping its own copy.
+  // The cookie partition key for the request. Partitioned cookies should be set
+  // using this key and only partitioned cookies with this partition key should
+  // be sent. The cookie partition key is optional(nullopt) if cookie
+  // partitioning is not enabled, or if the NIK has no top-frame site.
+  //
+  // Unpartitioned cookies are unaffected by this field.
   absl::optional<CookiePartitionKey> cookie_partition_key_ = absl::nullopt;
 
   bool force_ignore_site_for_cookies_ = false;
@@ -1071,8 +1081,8 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // populated during Start(), and the rest are populated in OnResponseReceived.
   LoadTimingInfo load_timing_info_;
 
-  // The proxy server used for this request, if any.
-  ProxyServer proxy_server_;
+  // The proxy chain used for this request, if any.
+  ProxyChain proxy_chain_;
 
   // If not null, the network service will not advertise any stream types
   // (via Accept-Encoding) that are not listed. Also, it will not attempt
@@ -1093,6 +1103,8 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   base::RepeatingCallback<bool()> is_shared_dictionary_read_allowed_callback_;
 
   bool upgrade_if_insecure_ = false;
+
+  bool ad_tagged_ = false;
 
   bool send_client_certs_ = true;
 

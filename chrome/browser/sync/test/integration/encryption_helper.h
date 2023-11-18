@@ -118,7 +118,24 @@ class TrustedVaultKeysChangedStateChecker
 
  private:
   const raw_ptr<syncer::SyncServiceImpl> service_;
-  bool keys_changed_;
+  bool keys_changed_ = false;
+};
+
+// Used to wait until IsTrustedVaultRecoverabilityDegraded() returns the desired
+// value.
+class TrustedVaultRecoverabilityDegradedStateChecker
+    : public SingleClientStatusChangeChecker {
+ public:
+  TrustedVaultRecoverabilityDegradedStateChecker(
+      syncer::SyncServiceImpl* service,
+      bool degraded);
+  ~TrustedVaultRecoverabilityDegradedStateChecker() override = default;
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied(std::ostream* os) override;
+
+ private:
+  const bool degraded_;
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_ENCRYPTION_HELPER_H_

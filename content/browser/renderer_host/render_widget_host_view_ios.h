@@ -22,7 +22,7 @@
 
 namespace ui {
 class DisplayCALayerTree;
-enum class DomCode;
+enum class DomCode : uint32_t;
 }  // namespace ui
 
 namespace content {
@@ -86,6 +86,7 @@ class CONTENT_EXPORT RenderWidgetHostViewIOS
   void ClearFallbackSurfaceForCommitPending() override;
   void ResetFallbackToFirstNavigationSurface() override;
   viz::FrameSinkId GetRootFrameSinkId() override;
+  void UpdateFrameSinkIdRegistration() override;
   const viz::FrameSinkId& GetFrameSinkId() const override;
   const viz::LocalSurfaceId& GetLocalSurfaceId() const override;
   viz::SurfaceId GetCurrentSurfaceId() const override;
@@ -102,6 +103,7 @@ class CONTENT_EXPORT RenderWidgetHostViewIOS
   void SetDisplayFeatureForTesting(
       const DisplayFeature* display_feature) override;
   void UpdateBackgroundColor() override;
+  bool HasFallbackSurface() const override;
   void NotifyHostAndDelegateOnWasShown(
       blink::mojom::RecordContentToVisibleTimeRequestPtr visible_time_request)
       override;
@@ -111,7 +113,8 @@ class CONTENT_EXPORT RenderWidgetHostViewIOS
   void CancelSuccessfulPresentationTimeRequestForHostAndDelegate() override;
   viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;
-  void DidNavigateMainFramePreCommit() override;
+  void OnOldViewDidNavigatePreCommit() override;
+  void OnNewViewDidNavigatePostCommit() override;
   void DidEnterBackForwardCache() override;
   void DidNavigate() override;
   bool RequestRepaintForTesting() override;

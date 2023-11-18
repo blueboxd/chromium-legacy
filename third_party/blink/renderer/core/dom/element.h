@@ -79,7 +79,6 @@ class ContainerQueryEvaluator;
 class CSSPropertyName;
 class CSSPropertyValueSet;
 class CSSStyleDeclaration;
-class CSSToggleMap;
 class CustomElementDefinition;
 class CustomElementRegistry;
 class DOMRect;
@@ -121,6 +120,8 @@ class StylePropertyMap;
 class StylePropertyMapReadOnly;
 class StyleRecalcContext;
 class StyleRequest;
+class StyleScopeData;
+class TextVisitor;
 class V8UnionBooleanOrScrollIntoViewOptions;
 class ComputedStyleBuilder;
 class StyleAdjuster;
@@ -399,8 +400,12 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   gfx::RectF GetBoundingClientRectNoLifecycleUpdate() const;
   DOMRect* getBoundingClientRect();
 
+  // Call the NoLifecycleUpdate variants if you are sure that the lifcycle is
+  // already updated to at least pre-paint clean.
   const AtomicString& computedRole();
+  const AtomicString& ComputedRoleNoLifecycleUpdate();
   String computedName();
+  String ComputedNameNoLifecycleUpdate();
 
   AccessibleNode* ExistingAccessibleNode() const;
   AccessibleNode* accessibleNode();
@@ -571,8 +576,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // attributes in a start tag were added to the element.
   virtual void ParseAttribute(const AttributeModificationParams&);
 
-  void DefaultEventHandler(Event&) override;
-
   virtual bool HasLegalLinkAttribute(const QualifiedName&) const;
 
   // Only called by the parser immediately after element construction.
@@ -598,6 +601,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // NOTE: This shadows Node::GetComputedStyle().
   // The definition is in node_computed_style.h.
   inline const ComputedStyle* GetComputedStyle() const;
+  inline const ComputedStyle& ComputedStyleRef() const;
 
   using Node::DetachLayoutTree;
   void AttachLayoutTree(AttachContext&) override;
@@ -770,7 +774,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   virtual bool IsLiveLink() const { return false; }
   KURL HrefURL() const;
 
-  KURL GetURLAttribute(const QualifiedName&) const;
+  String GetURLAttribute(const QualifiedName&) const;
+  KURL GetURLAttributeAsKURL(const QualifiedName&) const;
 
   KURL GetNonEmptyURLAttribute(const QualifiedName&) const;
 
@@ -797,6 +802,14 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void Focus();
   void Focus(const FocusOptions*);
 
+  virtual void SetFocused(bool received, mojom::blink::FocusType);
+  void SetHasFocusWithinUpToAncestor(bool, Element* ancestor);
+  void FocusStateChanged();
+  void FocusVisibleStateChanged();
+  void FocusWithinStateChanged();
+  void ActiveViewTransitionStateChanged();
+  void SetDragged(bool) override;
+
   void UpdateSelectionOnFocus(SelectionBehaviorOnFocus);
   // This function is called after SetFocused(true) before dispatching 'focus'
   // event, or is called just after a layout after changing <input> type.
@@ -804,23 +817,28 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
                                       const FocusOptions*);
   virtual void blur();
 
+  enum class UpdateBehavior {
+    kStyleAndLayout,
+    kNoneForAccessibility,
+  };
   // IsFocusable is true if the element SupportsFocus(), and is currently
   // focusable (using the mouse). This method can be called when layout is not
   // clean, but the method might trigger a lifecycle update in that case. This
   // method will not trigger a lifecycle update if layout is already clean.
-  virtual bool IsFocusable() const;
+  // If UpdateBehavior::kNoneForAccessibility argument is passed, which should
+  // only be used by a11y code, layout updates will never be performed.
+  virtual bool IsFocusable(
+      UpdateBehavior update_behavior = UpdateBehavior::kStyleAndLayout) const;
 
   // IsKeyboardFocusable is true for the subset of mouse focusable elements (for
   // which IsFocusable() is true) that are in the tab cycle. This method
   // can be called when layout is not clean, but the method might trigger a
   // lifecycle update in that case. This method will not trigger a lifecycle
   // update if layout is already clean.
-  virtual bool IsKeyboardFocusable() const;
-
-  // This checks whether the element is a scrollable container that should be
-  // made keyboard focusable. Note that this is slow, because it must do a tree
-  // walk to look for descendant focusable nodes.
-  bool IsScrollableContainerThatShouldBeKeyboardFocusable() const;
+  // If UpdateBehavior::kNoneForAccessibility argument is passed, which should
+  // only be used by a11y code, layout updates will never be performed.
+  virtual bool IsKeyboardFocusable(
+      UpdateBehavior update_behavior = UpdateBehavior::kStyleAndLayout) const;
 
   bool IsFocusedElementInDocument() const;
   Element* AdjustedFocusedElementInTreeScope() const;
@@ -847,8 +865,12 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   // The implementations of |innerText()| and |GetInnerTextWithoutUpdate()| are
   // found in "element_inner_text.cc".
-  String GetInnerTextWithoutUpdate();  // Avoids layout update.
-  String innerText();
+  // Avoids layout update.
+  String GetInnerTextWithoutUpdate(TextVisitor* visitor = nullptr);
+  // `visitor` is called as each node is considered. Note that this is not
+  // called for nodes that are not considered in generating the text. For
+  // example, all descendants of hidden nodes are not considered.
+  String innerText(TextVisitor* visitor = nullptr);
   String outerText();
 
   Element* insertAdjacentElement(const String& where,
@@ -1133,6 +1155,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   ContainerQueryEvaluator& EnsureContainerQueryEvaluator();
   bool SkippedContainerStyleRecalc() const;
 
+  StyleScopeData& EnsureStyleScopeData();
+  StyleScopeData* GetStyleScopeData() const;
+
   // See PostStyleUpdateScope::PseudoData::AddPendingBackdrop
   void ApplyPendingBackdropPseudoElementUpdate();
 
@@ -1181,6 +1206,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void SetAffectedByLogicalCombinationsInHas();
   bool AffectedByMultipleHas() const;
   void SetAffectedByMultipleHas();
+  bool AncestorsOrSiblingsAffectedByActiveViewTransitionInHas() const;
+  void SetAncestorsOrSiblingsAffectedByActiveViewTransitionInHas();
 
   // This is meant to be used by document's resize observer to notify that the
   // size has changed.
@@ -1216,11 +1243,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   bool IsReplacedElementRespectingCSSOverflow() const;
 
-  CSSToggleMap* toggles() { return &EnsureToggleMap(); }
-
-  CSSToggleMap* GetToggleMap();
-  CSSToggleMap& EnsureToggleMap();
-
   void RemovePopoverData();
   PopoverData* EnsurePopoverData();
   PopoverData* GetPopoverData() const;
@@ -1247,6 +1269,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
     ExcludeSelf,  // ancestors, but not self
   };
   void UpdateAncestorWithDirAuto(UpdateAncestorTraversal traversal);
+  void AdjustDirectionalityIfNeededAfterChildrenChanged(
+      const ChildrenChange& change);
 
  protected:
   bool HasElementData() const { return static_cast<bool>(element_data_); }
@@ -1294,10 +1318,14 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // while not *being focusable*, for example if the element is disconnected
   // from the document. This method can be called when layout is not clean,
   // but in some cases it might run a style/layout lifecycle update on the
-  // document. This method should stay protected - it is only for use by the
-  // Element class hierarchy. Outside callers should use `IsFocusable()` and/or
+  // document.
+  // If UpdateBehavior::kNoneForAccessibility argument is passed, which should
+  // only be used by a11y code, layout updates will never be performed.
+  // This method should stay protected - it is only for use by the Element class
+  // hierarchy. Outside callers should use `IsFocusable()` and/or
   // `IsKeyboardFocusable()`.
-  virtual bool SupportsFocus() const;
+  virtual bool SupportsFocus(
+      UpdateBehavior update_behavior = UpdateBehavior::kStyleAndLayout) const;
 
   bool SupportsSpatialNavigationFocus() const;
 
@@ -1306,16 +1334,15 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // Returns false if the style prevents focus. Returning true doesn't imply
   // focusability, there may be other conditions like SupportsFocus().
   // Subclasses may override this method to affect focusability. This method
-  // must be called on an up-to-date ComputedStyle, so it may use existence of
-  // layoutObject and the LayoutObject::style() to reason about focusability.
+  // might update layout/style, as it may use existence of layoutObject and the
+  // LayoutObject::style() to reason about focusability.
   // However, it must not retrieve layout information like position and size.
   // This method cannot be moved to LayoutObject because some focusable nodes
   // don't have layoutObjects. e.g., HTMLOptionElement.
-  virtual bool IsFocusableStyle() const;
-  // Similar to IsFocusableStyle, except that it will ensure that any deferred
-  // work to create layout objects is completed (e.g. in display-locked trees).
-  bool IsFocusableStyleAfterUpdate() const;
-
+  // If UpdateBehavior::kNoneForAccessibility argument is passed, which should
+  // only be used by a11y code, layout updates will never be performed.
+  virtual bool IsFocusableStyle(
+      UpdateBehavior update_behavior = UpdateBehavior::kStyleAndLayout) const;
   // Is the node descendant of this in something clickable/activatable, such
   // that we shouldn't handle events targeting it?
   bool IsClickableControl(Node*);
@@ -1353,8 +1380,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void LangAttributeChanged();
 
   TextDirection ParentDirectionality() const;
-  void AdjustDirectionalityIfNeededAfterChildrenChanged(
-      const ChildrenChange& change);
   bool RecalcSelfOrAncestorHasDirAuto();
   template <typename Traversal>
   absl::optional<TextDirection> ResolveAutoDirectionality(
@@ -1443,7 +1468,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // reach this element during the subsequent layout to continue doing
   // interleaved style and layout.
   bool SkipStyleRecalcForContainer(const ComputedStyle& style,
-                                   const StyleRecalcChange& child_change);
+                                   const StyleRecalcChange& child_change,
+                                   const StyleRecalcContext&);
 
   void MarkNonSlottedHostChildrenForStyleRecalc();
 
@@ -1459,7 +1485,6 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
       const StyleRecalcChange,
       const StyleRecalcContext&,
       const AtomicString& view_transition_name = g_null_atom);
-
   enum class StyleUpdatePhase {
     kRecalc,
     kRebuildLayoutTree,
@@ -1509,6 +1534,14 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   }
 
   void RecomputeDirectionFromParent();
+
+  // Returns true if the directionality needs to be updated for insert.
+  bool ShouldAdjustDirectionalityForInsert(const ChildrenChange& change) const;
+
+  // Returns true if node is a text node and the direction is not set, or
+  // matches this. Generally only useful from
+  // ShouldAdjustDirectionalityForInsert().
+  bool DoesChildTextNodesDirectionMatchThis(const Node& node) const;
 
   ShadowRoot& CreateAndAttachShadowRoot(ShadowRootType);
 
@@ -1654,6 +1687,21 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   HighlightRecalc CalculateHighlightRecalc(const ComputedStyle* old_style,
                                            const ComputedStyle& new_style,
                                            const ComputedStyle* parent_style);
+
+  // This checks that the feature KeyboardFocusableScrollers is enabled and
+  // element is a scroller. This will call IsScrollableNode, which might update
+  // layout.
+  // If UpdateBehavior::kNoneForAccessibility argument is passed, which should
+  // only be used by a11y code, layout updates will never be performed.
+  bool CanBeKeyboardFocusableScroller(
+      UpdateBehavior update_behavior = UpdateBehavior::kStyleAndLayout) const;
+  // This checks whether the element is a scrollable container that should be
+  // made keyboard focusable. Note that this is slow, because it must do a tree
+  // walk to look for descendant focusable nodes.
+  // If UpdateBehavior::kNoneForAccessibility argument is passed, which should
+  // only be used by a11y code, layout updates will never be performed.
+  bool IsKeyboardFocusableScroller(
+      UpdateBehavior update_behavior = UpdateBehavior::kStyleAndLayout) const;
 
   Member<ElementData> element_data_;
 };

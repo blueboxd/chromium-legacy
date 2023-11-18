@@ -58,7 +58,7 @@ BASE_FEATURE(kSyncChromeOSExplicitPassphraseSharing,
 
 BASE_FEATURE(kSyncChromeOSAppsToggleSharing,
              "SyncChromeOSAppsToggleSharing",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kChromeOSSyncedSessionSharing,
              "ChromeOSSyncedSessionSharing",
@@ -99,8 +99,14 @@ BASE_FEATURE(kEnablePreferencesAccountStorage,
 );
 
 BASE_FEATURE(kSyncPollImmediatelyOnEveryStartup,
-             "SyncPollImmediatelyOnEveryStartup",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             "SyncPollImmediatelyOnEveryStartup2",
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
+    BUILDFLAG(IS_WIN)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 
 BASE_FEATURE(kSyncPollWithoutDelayOnStartup,
              "SyncPollWithoutDelayOnStartup",
@@ -132,6 +138,12 @@ BASE_FEATURE(kEnableBookmarksAccountStorage,
              base::FEATURE_DISABLED_BY_DEFAULT
 #endif  // BUILDFLAG(IS_IOS)
 );
+
+#if !BUILDFLAG(IS_IOS)
+BASE_FEATURE(kEnableBookmarkFoldersForAccountStorage,
+             "EnableBookmarkFoldersForAccountStorage",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // !BUILDFLAG(IS_IOS)
 
 BASE_FEATURE(kReadingListEnableDualReadingListModel,
              "ReadingListEnableDualReadingListModel",
@@ -174,7 +186,7 @@ BASE_FEATURE(kRestoreSyncedPlaceholderTabs,
 
 BASE_FEATURE(kSyncSessionOnVisibilityChanged,
              "SyncSessionOnVisibilityChanged",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSyncDecoupleAddressPaymentSettings,
              "SyncDecoupleAddressPaymentSettings",

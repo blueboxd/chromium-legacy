@@ -30,6 +30,7 @@
 #include "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
+#import "third_party/ocmock/ocmock_extensions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
@@ -178,12 +179,14 @@ class MacNotificationServiceUNTest : public testing::Test {
 
     NSMutableArray* notifications_ns =
         [NSMutableArray arrayWithCapacity:notifications.size()];
-    for (const auto& notification : notifications)
+    for (const auto& notification : notifications) {
       [notifications_ns addObject:notification];
+    }
 
     OCMStub([mock_notification_center_
         getDeliveredNotificationsWithCompletionHandler:
-            ([OCMArg invokeBlockWithArgs:notifications_ns, nil])]);
+            ([OCMArg invokeBlockOnQueue:dispatch_get_main_queue()
+                               withArgs:notifications_ns, nil])]);
 
     return notifications;
   }
@@ -243,7 +246,7 @@ class MacNotificationServiceUNTest : public testing::Test {
         notification_id, mojom::ProfileIdentifier::New(profile_id, incognito));
     auto meta = mojom::NotificationMetadata::New(
         std::move(notification_identifier), /*type=*/0, /*origin_url=*/GURL(),
-        /*creator_pid=*/0);
+        /*user_data_dir=*/"");
     std::vector<mac_notifications::mojom::NotificationActionButtonPtr> buttons;
 
     return mac_notifications::mojom::Notification::New(
@@ -306,7 +309,8 @@ class MacNotificationServiceUNTest : public testing::Test {
   }
 
   base::test::TaskEnvironment task_environment_{
-      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME,
+      base::test::TaskEnvironment::MainThreadType::UI};
   MockNotificationActionHandler mock_handler_;
   mojo::Receiver<mojom::MacNotificationActionHandler> handler_receiver_{
       &mock_handler_};

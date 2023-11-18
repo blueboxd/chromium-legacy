@@ -10,11 +10,12 @@
 #include <string>
 #include <vector>
 
-#include "ash/glanceables/tasks/glanceables_tasks_client.h"
+#include "ash/api/tasks/tasks_client.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/types/expected.h"
 #include "google_apis/tasks/tasks_api_requests.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/base/models/list_model.h"
 
 namespace base {
@@ -29,18 +30,16 @@ class Tasks;
 }  // namespace tasks
 }  // namespace google_apis
 
-namespace net {
-struct NetworkTrafficAnnotationTag;
-}  // namespace net
-
 namespace ash {
 
-struct GlanceablesTask;
-struct GlanceablesTaskList;
+namespace api {
+struct Task;
+struct TaskList;
+}  // namespace api
 
-// Provides implementation for `GlanceablesTasksClient`. Responsible for
+// Provides implementation for `api::TasksClient`. Responsible for
 // communication with Google Tasks API.
-class GlanceablesTasksClientImpl : public GlanceablesTasksClient {
+class TasksClientImpl : public api::TasksClient {
  public:
   // Provides an instance of `google_apis::RequestSender` for the client.
   using CreateRequestSenderCallback =
@@ -48,29 +47,29 @@ class GlanceablesTasksClientImpl : public GlanceablesTasksClient {
           const std::vector<std::string>& scopes,
           const net::NetworkTrafficAnnotationTag& traffic_annotation_tag)>;
 
-  explicit GlanceablesTasksClientImpl(
-      const CreateRequestSenderCallback& create_request_sender_callback);
-  GlanceablesTasksClientImpl(const GlanceablesTasksClientImpl&) = delete;
-  GlanceablesTasksClientImpl& operator=(const GlanceablesTasksClientImpl&) =
-      delete;
-  ~GlanceablesTasksClientImpl() override;
+  TasksClientImpl(
+      const CreateRequestSenderCallback& create_request_sender_callback,
+      net::NetworkTrafficAnnotationTag traffic_annotation_tag);
+  TasksClientImpl(const TasksClientImpl&) = delete;
+  TasksClientImpl& operator=(const TasksClientImpl&) = delete;
+  ~TasksClientImpl() override;
 
-  // GlanceablesTasksClient:
-  void GetTaskLists(
-      GlanceablesTasksClient::GetTaskListsCallback callback) override;
+  // api::TasksClient:
+  void GetTaskLists(api::TasksClient::GetTaskListsCallback callback) override;
   void GetTasks(const std::string& task_list_id,
-                GlanceablesTasksClient::GetTasksCallback callback) override;
+                api::TasksClient::GetTasksCallback callback) override;
   void MarkAsCompleted(const std::string& task_list_id,
                        const std::string& task_id,
                        bool completed) override;
   void AddTask(const std::string& task_list_id,
-               const std::string& title) override;
+               const std::string& title,
+               api::TasksClient::OnTaskSavedCallback callback) override;
   void UpdateTask(const std::string& task_list_id,
                   const std::string& task_id,
                   const std::string& title,
-                  GlanceablesTasksClient::UpdateTaskCallback callback) override;
+                  api::TasksClient::OnTaskSavedCallback callback) override;
   void OnGlanceablesBubbleClosed(
-      GlanceablesTasksClient::OnAllPendingCompletedTasksSavedCallback callback =
+      api::TasksClient::OnAllPendingCompletedTasksSavedCallback callback =
           base::DoNothing()) override;
 
   using TaskListsRequestCallback =
@@ -100,7 +99,7 @@ class GlanceablesTasksClientImpl : public GlanceablesTasksClient {
     FetchStatus status = FetchStatus::kNotFresh;
     // Callbacks to be called when all task lists get fetched using tasks API.
     // Should be non-empty if a task lists fetch is in progress.
-    std::vector<GlanceablesTasksClient::GetTaskListsCallback> callbacks;
+    std::vector<api::TasksClient::GetTaskListsCallback> callbacks;
   };
 
   // A structure that keeps track of fetch status and list of pending callbacks
@@ -114,7 +113,7 @@ class GlanceablesTasksClientImpl : public GlanceablesTasksClient {
     // tasks API.
     // Should be non-empty if a tasks fetch for the target task list is in
     // progress.
-    std::vector<GlanceablesTasksClient::GetTasksCallback> callbacks;
+    std::vector<api::TasksClient::GetTasksCallback> callbacks;
   };
 
   // Fetches one page of task lists data.
@@ -171,22 +170,29 @@ class GlanceablesTasksClientImpl : public GlanceablesTasksClient {
   // Callback for `MarkAsCompleted()` request. Does not removes the task from
   // `tasks_in_task_lists_` as it will be cleared by
   // `OnGlanceablesBubbleClosed`.
-  void OnMarkedAsCompleted(const base::Time& request_start_time,
-                           base::RepeatingClosure on_done,
-                           google_apis::ApiErrorCode status_code);
+  void OnMarkedAsCompleted(
+      const base::Time& request_start_time,
+      base::RepeatingClosure on_done,
+      base::expected<std::unique_ptr<google_apis::tasks::Task>,
+                     google_apis::ApiErrorCode> result);
 
   // Done callback for `AddTask()` request.
   // `task_list_id` - id of the task list used in the request.
+  // `callback`     - done callback passed from `AddTask`.
   // `result`       - newly created task or HTTP error.
   void OnTaskAdded(const std::string& task_list_id,
+                   api::TasksClient::OnTaskSavedCallback callback,
                    base::expected<std::unique_ptr<google_apis::tasks::Task>,
                                   google_apis::ApiErrorCode> result);
 
   // Done callback for `UpdateTask()` request.
   // `task_list_id` - id of the task list used in the request.
-  // `status_code`  - HTTP status code of the operation.
-  void OnTaskUpdated(GlanceablesTasksClient::UpdateTaskCallback callback,
-                     google_apis::ApiErrorCode status_code);
+  // `callback`     - done callback passed from `UpdateTask`.
+  // `result`       - updated task or HTTP error.
+  void OnTaskUpdated(const std::string& task_list_id,
+                     api::TasksClient::OnTaskSavedCallback callback,
+                     base::expected<std::unique_ptr<google_apis::tasks::Task>,
+                                    google_apis::ApiErrorCode> result);
 
   // To be called when requests to get user's task lists complete.
   // It sets the task lists fetch status to `final_fetch_status`, and runs all
@@ -199,7 +205,7 @@ class GlanceablesTasksClientImpl : public GlanceablesTasksClient {
   // (kept in `tasks_fetch_state_` map). The callbacks are run with `tasks`.
   void RunGetTasksCallbacks(const std::string& task_list_id,
                             FetchStatus final_fetch_status,
-                            ui::ListModel<GlanceablesTask>* tasks);
+                            const ui::ListModel<api::Task>* tasks);
 
   // A map of `task_list_id` to a set of `task_id` that are pending to be
   // completed.
@@ -219,10 +225,10 @@ class GlanceablesTasksClientImpl : public GlanceablesTasksClient {
   TaskListsFetchState task_lists_fetch_state_;
 
   // All available task lists.
-  ui::ListModel<GlanceablesTaskList> task_lists_;
+  ui::ListModel<api::TaskList> task_lists_;
 
   // All available tasks grouped by task list id.
-  std::map<std::string, ui::ListModel<GlanceablesTask>> tasks_in_task_lists_;
+  std::map<std::string, ui::ListModel<api::Task>> tasks_in_task_lists_;
 
   // Map that contains fetch states for tasks requests from different task
   // lists. Mapped by the task list id.
@@ -230,14 +236,16 @@ class GlanceablesTasksClientImpl : public GlanceablesTasksClient {
 
   // Stub tasks list model that can be used to return an empty task list to
   // `GetTasks()` requests.
-  ui::ListModel<GlanceablesTask> stub_task_list_;
+  ui::ListModel<api::Task> stub_task_list_;
 
   // Callbacks invoked whenever a tasks API request is made. Used primarily
   // in tests.
   TaskListsRequestCallback task_lists_request_callback_;
   TasksRequestCallback tasks_request_callback_;
 
-  base::WeakPtrFactory<GlanceablesTasksClientImpl> weak_factory_{this};
+  const net::NetworkTrafficAnnotationTag traffic_annotation_tag_;
+
+  base::WeakPtrFactory<TasksClientImpl> weak_factory_{this};
 };
 
 }  // namespace ash

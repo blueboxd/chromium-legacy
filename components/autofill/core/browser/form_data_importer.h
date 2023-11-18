@@ -20,7 +20,6 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/payments/iban_save_manager.h"
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
-#include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -31,6 +30,10 @@ namespace autofill {
 
 class AddressProfileSaveManager;
 class CreditCardSaveManager;
+
+namespace payments {
+class PaymentsNetworkInterface;
+}
 
 // Manages logic for importing address profiles and credit card information from
 // web forms into the user's Autofill profile via the PersonalDataManager.
@@ -52,13 +55,16 @@ class FormDataImporter : public PersonalDataManagerObserver {
     kNewCard,
     // The extracted card is already known to be a virtual card.
     kVirtualCard,
+    // The extracted card is known to be a duplicate local and server card.
+    kDuplicateLocalServerCard,
   };
 
   // The parameters should outlive the FormDataImporter.
-  FormDataImporter(AutofillClient* client,
-                   payments::PaymentsClient* payments_client,
-                   PersonalDataManager* personal_data_manager,
-                   const std::string& app_locale);
+  FormDataImporter(
+      AutofillClient* client,
+      payments::PaymentsNetworkInterface* payments_network_interface,
+      PersonalDataManager* personal_data_manager,
+      const std::string& app_locale);
 
   FormDataImporter(const FormDataImporter&) = delete;
   FormDataImporter& operator=(const FormDataImporter&) = delete;
@@ -244,6 +250,13 @@ class FormDataImporter : public PersonalDataManagerObserver {
   bool LogAddressFormImportRequirementMetric(const AutofillProfile& profile,
                                              LogBuffer* import_log_buffer);
 
+  // Helper method to construct an AutofillProfile out of observed values in the
+  // form. Used during `ExtractAddressProfileFromSection()`.
+  AutofillProfile ConstructProfileFromObservedValues(
+      const base::flat_map<ServerFieldType, std::u16string>& observed_values,
+      LogBuffer* import_log_buffer,
+      autofill::ProfileImportMetadata& import_metadata);
+
   // Helper method for ImportAddressProfiles which only considers the fields
   // for a specified `section`. If no section is passed, the import is
   // performed on the union of all sections.
@@ -342,7 +355,7 @@ class FormDataImporter : public PersonalDataManagerObserver {
   // country or alternatively the app locale.
   // Returns false if the provided `combined_phone` is invalid.
   bool SetPhoneNumber(AutofillProfile& profile,
-                      PhoneNumber::PhoneCombineHelper& combined_phone);
+                      const PhoneNumber::PhoneCombineHelper& combined_phone);
 
   // Clears all setting-inaccessible values from `profile` if
   // `kAutofillRemoveInaccessibleProfileValues` is enabled.
@@ -402,7 +415,6 @@ class FormDataImporter : public PersonalDataManagerObserver {
 
   friend class AutofillMergeTest;
   friend class FormDataImporterTest;
-  friend class FormDataImporterTestBase;
   friend class LocalCardMigrationBrowserTest;
   friend class SaveCardBubbleViewsFullFormBrowserTest;
   friend class SaveCardInfobarEGTestHelper;

@@ -18,6 +18,7 @@
 }
 
 @synthesize externalURLParams = _externalURLParams;
+@synthesize inputURLs = _inputURLs;
 @synthesize postOpeningAction = _postOpeningAction;
 @synthesize applicationMode = _applicationMode;
 // TODO(crbug.com/1021752): Remove this stub.
@@ -121,6 +122,12 @@
       break;
     case OPEN_CLEAR_BROWSING_DATA_DIALOG:
       [description appendString:@", should open Clear Browsing Data dialog"];
+      break;
+    case ADD_BOOKMARKS:
+      [description appendString:@", should add bookmarks"];
+      break;
+    case ADD_READING_LIST_ITEMS:
+      [description appendString:@", should add reading list items"];
       break;
     default:
       break;

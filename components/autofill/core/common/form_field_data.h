@@ -183,8 +183,7 @@ struct FormFieldData {
   // - FormFieldData::options,
   // - FormFieldData::label_source,
   // - FormFieldData::bounds,
-  // - FormFieldData::datalist_values,
-  // - FormFieldData::datalist_labels.
+  // - FormFieldData::datalist_options.
   static bool DeepEqual(const FormFieldData& a, const FormFieldData& b);
 
   FormFieldData();
@@ -244,11 +243,6 @@ struct FormFieldData {
   bool HadFocus() const;
   bool WasPasswordAutofilled() const;
 
-  // Returns the currently selected text. Returns the empty string if
-  // `selection_start` and/or `selection_end` are out of bounds.
-  std::u16string GetSelection() const;
-  std::u16string_view GetSelectionAsStringView() const;
-
   // NOTE: Update `SameFieldAs()` and `FormFieldDataAndroid::SimilarFieldAs()`
   // if needed when adding new a member.
 
@@ -262,15 +256,21 @@ struct FormFieldData {
   std::u16string id_attribute;
   std::u16string name_attribute;
   std::u16string label;
+
+  // The form control element's value or the contenteditable's text content,
+  // depending on the `form_control_type`.
+  // Truncated at `kMaxStringLength`.
+  // TODO(crbug.com/1501362): Extract the value of contenteditables on iOS.
   std::u16string value;
-  // The range within `value` that is selected. `selection_start` points at the
-  // first selected character, `selection_end` points after the last selected
-  // character. That is, if nothing is selected, `selection_start` and
-  // `selection_end` are identical and represent the cursor position.
-  // Use GetSelection() or GetSelectionAsStringView() to safely get the selected
-  // substring of `value`.
-  uint32_t selection_start = 0;
-  uint32_t selection_end = 0;
+
+  // The selected text, or the empty string if no text is selected.
+  // Truncated at `50 * kMaxStringLength`.
+  // This is not necessarily a substring of `value` because both strings are
+  // truncated, and because for rich-text contenteditables the selection and
+  // text content differ in whitespace.
+  // TODO(crbug.com/1501362): Extract on iOS.
+  std::u16string selected_text;
+
   FormControlType form_control_type = FormControlType::kInputText;
   std::string autocomplete_attribute;
   absl::optional<AutocompleteParsingResult> parsed_autocomplete;
@@ -366,13 +366,10 @@ struct FormFieldData {
   // server side or be used for field comparison and isn't in serialize methods.
   gfx::RectF bounds;
 
-  // The datalist is associated with this field, if any. The following two
-  // vectors valid if not empty, will not be synced to the server side or be
-  // used for field comparison and aren't in serialize methods.
-  // The datalist option is intentionally separated from |options| because they
-  // are handled very differently in Autofill.
-  std::vector<std::u16string> datalist_values;
-  std::vector<std::u16string> datalist_labels;
+  // The datalist is associated with this field, if any. Will not be synced to
+  // the server side or be used for field comparison and aren't in serialize
+  // methods.
+  std::vector<SelectOption> datalist_options;
 
   // When sent from browser to renderer, this bit indicates whether a field
   // should be filled even though it is already considered autofilled OR

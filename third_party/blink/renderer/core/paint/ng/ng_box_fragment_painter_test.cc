@@ -7,7 +7,7 @@
 #include "components/paint_preview/common/paint_preview_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
+#include "third_party/blink/renderer/core/layout/inline/inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
@@ -27,7 +27,7 @@ void ExtractLinks(const PaintRecord& record, std::vector<GURL>* links) {
       links->push_back(GURL(
           std::string(reinterpret_cast<const char*>(annotate_op.data->data()),
                       annotate_op.data->size())));
-    } else if (op.GetType() == cc::PaintOpType::kDrawrecord) {
+    } else if (op.GetType() == cc::PaintOpType::kDrawRecord) {
       const auto& record_op = static_cast<const cc::DrawRecordOp&>(op);
       ExtractLinks(record_op.record, links);
     }

@@ -5,11 +5,13 @@
 #include "third_party/blink/renderer/platform/widget/widget_base.h"
 
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
@@ -22,6 +24,7 @@
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/direct_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
@@ -348,6 +351,7 @@ void WidgetBase::DisconnectLayerTreeView(WidgetBase* new_widget) {
 }
 
 cc::LayerTreeHost* WidgetBase::LayerTreeHost() const {
+  CHECK(layer_tree_view_);
   return layer_tree_view_->layer_tree_host();
 }
 
@@ -806,12 +810,20 @@ void WidgetBase::FinishRequestNewLayerTreeFrameSink(
   attributes.bind_generates_resource = false;
   attributes.lose_context_when_out_of_memory = true;
   attributes.enable_gles2_interface = true;
+  attributes.enable_grcontext = true;
   attributes.enable_raster_interface = true;
   attributes.enable_oop_rasterization = false;
 
   constexpr bool automatic_flushes = false;
   constexpr bool support_locking = false;
-  constexpr bool support_grcontext = true;
+  // VideoResourceUpdater is the only usage of gles2 interface from this
+  // RasterContextProvider. Thus, if we use RasterInterface in
+  // VideoResourceUpdater, enabling gles2 interface is no longer needed.
+  if (base::FeatureList::IsEnabled(
+          media::kRasterInterfaceInVideoResourceUpdater)) {
+    attributes.enable_gles2_interface = false;
+    attributes.enable_grcontext = false;
+  }
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager =
       Platform::Current()->GetGpuMemoryBufferManager();
 
@@ -819,7 +831,7 @@ void WidgetBase::FinishRequestNewLayerTreeFrameSink(
       base::MakeRefCounted<viz::ContextProviderCommandBuffer>(
           gpu_channel_host, kGpuStreamIdDefault, kGpuStreamPriorityDefault,
           gpu::kNullSurfaceHandle, GURL(url), automatic_flushes,
-          support_locking, support_grcontext, limits, attributes,
+          support_locking, limits, attributes,
           viz::command_buffer_metrics::ContextType::RENDER_COMPOSITOR);
 
 #if BUILDFLAG(IS_ANDROID)
@@ -1158,6 +1170,25 @@ void WidgetBase::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     params->value = new_info.value;
     params->selection =
         gfx::Range(new_info.selection_start, new_info.selection_end);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    {
+      // It is expected that the selection range is always bounded by
+      // the text content, but according to the logs in browser process
+      // sometimes it is not.
+      // LOG and dump stack traces in renderers temporarily for further
+      // investigation.
+      // TODO(crbug.com/1457178): Remove the strace when the root cause if
+      // identified and fixed.
+      gfx::Range text_range(0, params->value.length());
+      if (!params->selection.IsBoundedBy(text_range)) {
+        LOG(ERROR) << "selection range is not bounded by the text: "
+                   << "selection=" << params->selection.ToString()
+                   << "text=" << text_range.ToString();
+        base::debug::DumpWithoutCrashing();
+      }
+    }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
     if (new_info.composition_start != -1) {
       params->composition =
           gfx::Range(new_info.composition_start, new_info.composition_end);

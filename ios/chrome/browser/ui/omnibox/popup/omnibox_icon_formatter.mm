@@ -13,13 +13,11 @@
 
 namespace {
 
-OmniboxSuggestionIconType IconTypeFromMatchAndAnswerType(
-    AutocompleteMatchType::Type type,
-    absl::optional<int> answerType) {
+OmniboxSuggestionIconType IconTypeFromMatch(const AutocompleteMatch& match) {
   // Some suggestions have custom icons. Others fallback to the icon from the
   // overall match type.
-  if (answerType) {
-    switch (answerType.value()) {
+  if (match.answer.has_value()) {
+    switch (match.answer.value().type()) {
       case SuggestionAnswer::ANSWER_TYPE_DICTIONARY:
         return OmniboxSuggestionIconType::kDictionary;
       case SuggestionAnswer::ANSWER_TYPE_FINANCE:
@@ -45,7 +43,12 @@ OmniboxSuggestionIconType IconTypeFromMatchAndAnswerType(
         break;
     }
   }
-  return GetOmniboxSuggestionIconTypeForAutocompleteMatchType(type);
+
+  if (match.IsTrendSuggestion()) {
+    return OmniboxSuggestionIconType::kSearchTrend;
+  }
+
+  return GetOmniboxSuggestionIconTypeForAutocompleteMatchType(match.type);
 }
 
 }  // namespace
@@ -71,10 +74,8 @@ OmniboxSuggestionIconType IconTypeFromMatchAndAnswerType(
     imageURL = GURL();
   }
 
-  auto answerType =
-      isAnswer ? absl::make_optional<int>(match.answer->type()) : absl::nullopt;
-  OmniboxSuggestionIconType suggestionIconType =
-      IconTypeFromMatchAndAnswerType(match.type, answerType);
+  OmniboxSuggestionIconType suggestionIconType = IconTypeFromMatch(match);
+
   return [self initWithIconType:iconType
              suggestionIconType:suggestionIconType
                        isAnswer:isAnswer

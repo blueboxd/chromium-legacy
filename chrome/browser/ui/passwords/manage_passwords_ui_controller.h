@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/common/buildflags.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
-#include "components/password_manager/core/browser/password_store_interface.h"
+#include "components/password_manager/core/browser/password_store/password_store_interface.h"
 #include "components/password_manager/core/browser/ui/post_save_compromised_helper.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -95,8 +95,8 @@ class ManagePasswordsUIController
       const url::Origin& origin) override;
   void OnPromptEnableAutoSignin() override;
   void OnAutomaticPasswordSave(
-      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager)
-      override;
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_manager,
+      bool is_update_confirmation) override;
   void OnPasswordAutofilled(
       const std::vector<const password_manager::PasswordForm*>& password_forms,
       const url::Origin& origin,
@@ -186,6 +186,7 @@ class ManagePasswordsUIController
   void AuthenticateUserForAccountStoreOptInAfterSavingLocallyAndMovePassword()
       override;
   void MaybeShowIOSPasswordPromo() override;
+  void RelaunchChrome() override;
   // Skips user os level authentication during the life time of the returned
   // object. To be used in tests of flows that require user authentication.
   [[nodiscard]] std::unique_ptr<base::AutoReset<bool>>

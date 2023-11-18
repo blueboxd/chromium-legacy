@@ -17,7 +17,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
@@ -317,6 +317,14 @@ void ShortcutsBackend::AddOrUpdateShortcut(const std::u16string& text,
   // there's no reason to add empty-text shortcuts if they won't be used.
   if (text_trimmed.empty())
     return;
+
+  // On mobile on focus, zero suggest navigations have a non-empty `text` (it
+  // contains the current page URL). Ignore these navigations as shortcut
+  // suggestions are not provided in zero suggest.
+  if (match.provider &&
+      match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST) {
+    return;
+  }
 
   const std::u16string text_trimmed_lowercase(
       base::i18n::ToLower(text_trimmed));

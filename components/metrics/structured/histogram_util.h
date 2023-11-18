@@ -4,6 +4,9 @@
 
 #ifndef COMPONENTS_METRICS_STRUCTURED_HISTOGRAM_UTIL_H_
 #define COMPONENTS_METRICS_STRUCTURED_HISTOGRAM_UTIL_H_
+
+#include <string_view>
+
 #include "components/prefs/persistent_pref_store.h"
 
 namespace metrics::structured {
@@ -66,9 +69,6 @@ void LogKeyValidation(KeyValidationState state);
 // ProvideCurrentSessionData.
 void LogNumEventsInUpload(int num_events);
 
-// Logs that an event was recorded using the mojo API.
-void LogIsEventRecordedUsingMojo(bool used_mojo_api);
-
 // Logs the number of events that were recorded before device and user
 // cryptographic keys have been loaded to hash events. These events will be kept
 // in memory.
@@ -91,6 +91,14 @@ void LogExternalMetricsScanInUpload(int num_scans);
 
 // Logs the number of external metrics that were dropped.
 void LogDroppedExternalMetrics(int num_dropped);
+
+// Logs the number of external metrics that were dropped per-project.
+void LogDroppedProjectExternalMetrics(std::string_view project_name,
+                                      int num_dropped);
+
+// Logs the number of external metrics produced per-project.
+void LogProducedProjectExternalMetrics(std::string_view project_name,
+                                       int num_produced);
 
 }  // namespace metrics::structured
 

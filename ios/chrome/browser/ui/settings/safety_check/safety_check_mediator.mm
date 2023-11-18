@@ -16,7 +16,6 @@
 #import "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #import "components/password_manager/core/browser/password_sync_util.h"
 #import "components/password_manager/core/browser/ui/password_check_referrer.h"
-#import "components/password_manager/core/common/password_manager_features.h"
 #import "components/prefs/pref_service.h"
 #import "components/safe_browsing/core/common/features.h"
 #import "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -24,7 +23,7 @@
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
 #import "components/version_info/version_info.h"
-#import "ios/chrome/browser/omaha/omaha_service.h"
+#import "ios/chrome/browser/omaha/model/omaha_service.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_password_check_manager.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_password_check_manager_factory.h"
 #import "ios/chrome/browser/passwords/model/password_check_observer_bridge.h"
@@ -40,7 +39,7 @@
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
+#import "ios/chrome/browser/signin/model/authentication_service.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_item.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_constants.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_consumer.h"
@@ -66,7 +65,6 @@
 
 using l10n_util::GetNSString;
 using password_manager::WarningType;
-using password_manager::features::IsPasswordCheckupEnabled;
 
 namespace {
 
@@ -117,12 +115,11 @@ bool IsPasswordCheckItemTappable(
     PasswordCheckRowStates password_check_row_state) {
   switch (password_check_row_state) {
     case PasswordCheckRowStateUnmutedCompromisedPasswords:
-      return true;
     case PasswordCheckRowStateReusedPasswords:
     case PasswordCheckRowStateWeakPasswords:
     case PasswordCheckRowStateDismissedWarnings:
     case PasswordCheckRowStateSafe:
-      return IsPasswordCheckupEnabled();
+      return true;
     case PasswordCheckRowStateDefault:
     case PasswordCheckRowStateRunning:
     case PasswordCheckRowStateDisabled:
@@ -407,13 +404,7 @@ void ResetSettingsCheckItem(SettingsCheckItem* item) {
               kSafetyCheckInteractions,
               SafetyCheckInteractions::kPasswordsManage);
 
-          if (IsPasswordCheckupEnabled()) {
-            [self.handler showPasswordCheckupPage];
-          } else {
-            password_manager::LogPasswordCheckReferrer(
-                password_manager::PasswordCheckReferrer::kSafetyCheck);
-            [self.handler showPasswordIssuesPage];
-          }
+          [self.handler showPasswordCheckupPage];
           break;
       }
       break;
@@ -541,41 +532,22 @@ void ResetSettingsCheckItem(SettingsCheckItem* item) {
     case PasswordCheckState::kSignedOut:
       base::UmaHistogramEnumeration(kSafetyCheckMetricsPasswords,
                                     safety_check::PasswordsStatus::kSignedOut);
-      if (!IsPasswordCheckupEnabled() && !noInsecurePasswords) {
-        return PasswordCheckRowStateUnmutedCompromisedPasswords;
-      }
       return PasswordCheckRowStateError;
     case PasswordCheckState::kOffline:
       base::UmaHistogramEnumeration(kSafetyCheckMetricsPasswords,
                                     safety_check::PasswordsStatus::kOffline);
-      if (!IsPasswordCheckupEnabled() && !noInsecurePasswords) {
-        return PasswordCheckRowStateUnmutedCompromisedPasswords;
-      }
       return PasswordCheckRowStateError;
     case PasswordCheckState::kQuotaLimit:
       base::UmaHistogramEnumeration(kSafetyCheckMetricsPasswords,
                                     safety_check::PasswordsStatus::kQuotaLimit);
-      if (!IsPasswordCheckupEnabled() && !noInsecurePasswords) {
-        return PasswordCheckRowStateUnmutedCompromisedPasswords;
-      }
       return PasswordCheckRowStateError;
     case PasswordCheckState::kOther:
       base::UmaHistogramEnumeration(kSafetyCheckMetricsPasswords,
                                     safety_check::PasswordsStatus::kError);
-      if (!IsPasswordCheckupEnabled() && !noInsecurePasswords) {
-        return PasswordCheckRowStateUnmutedCompromisedPasswords;
-      }
       return PasswordCheckRowStateError;
     case PasswordCheckState::kCanceled:
     case PasswordCheckState::kIdle: {
-      if (!IsPasswordCheckupEnabled() && !noInsecurePasswords) {
-        if (wasRunning) {
-          base::UmaHistogramEnumeration(
-              kSafetyCheckMetricsPasswords,
-              safety_check::PasswordsStatus::kCompromisedExist);
-        }
-        return PasswordCheckRowStateUnmutedCompromisedPasswords;
-      } else if (self.currentPasswordCheckState == PasswordCheckState::kIdle) {
+      if (self.currentPasswordCheckState == PasswordCheckState::kIdle) {
         // Safe state is only possible after the state transitioned from
         // kRunning to kIdle.
         if (wasRunning) {
@@ -584,8 +556,7 @@ void ResetSettingsCheckItem(SettingsCheckItem* item) {
                                           safety_check::PasswordsStatus::kSafe);
             return PasswordCheckRowStateSafe;
           }
-          // Reaching this point means that the kIOSPasswordCheckup feature is
-          // enabled and that there are insecure passwords.
+          // Reaching this point means that there are insecure passwords.
           return [self passwordCheckRowStateFromHighestPriorityWarningType:
                            insecureCredentials];
         }
@@ -665,51 +636,32 @@ void ResetSettingsCheckItem(SettingsCheckItem* item) {
   switch (self.currentPasswordCheckState) {
     case PasswordCheckState::kRunning:
     case PasswordCheckState::kNoPasswords:
-      message = IsPasswordCheckupEnabled()
-                    ? l10n_util::GetNSString(
-                          IDS_IOS_PASSWORD_CHECKUP_ERROR_NO_PASSWORDS)
-                    : l10n_util::GetNSString(
-                          IDS_IOS_PASSWORD_CHECK_ERROR_NO_PASSWORDS);
+      message =
+          l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECKUP_ERROR_NO_PASSWORDS);
       break;
     case PasswordCheckState::kCanceled:
     case PasswordCheckState::kIdle:
       return nil;
     case PasswordCheckState::kSignedOut:
       message =
-          IsPasswordCheckupEnabled()
-              ? l10n_util::GetNSString(
-                    IDS_IOS_PASSWORD_CHECKUP_ERROR_SIGNED_OUT)
-              : l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECK_ERROR_SIGNED_OUT);
+          l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECKUP_ERROR_SIGNED_OUT);
       break;
     case PasswordCheckState::kOffline:
-      message =
-          IsPasswordCheckupEnabled()
-              ? l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECKUP_ERROR_OFFLINE)
-              : l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECK_ERROR_OFFLINE);
+      message = l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECKUP_ERROR_OFFLINE);
       break;
     case PasswordCheckState::kQuotaLimit:
       if ([self canUseAccountPasswordCheckup]) {
-        message =
-            IsPasswordCheckupEnabled()
-                ? l10n_util::GetNSString(
-                      IDS_IOS_PASSWORD_CHECKUP_ERROR_QUOTA_LIMIT_VISIT_GOOGLE)
-                : l10n_util::GetNSString(
-                      IDS_IOS_PASSWORD_CHECK_ERROR_QUOTA_LIMIT_VISIT_GOOGLE);
+        message = l10n_util::GetNSString(
+            IDS_IOS_PASSWORD_CHECKUP_ERROR_QUOTA_LIMIT_VISIT_GOOGLE);
         linkURL = password_manager::GetPasswordCheckupURL(
             password_manager::PasswordCheckupReferrer::kPasswordCheck);
       } else {
-        message = IsPasswordCheckupEnabled()
-                      ? l10n_util::GetNSString(
-                            IDS_IOS_PASSWORD_CHECKUP_ERROR_QUOTA_LIMIT)
-                      : l10n_util::GetNSString(
-                            IDS_IOS_PASSWORD_CHECK_ERROR_QUOTA_LIMIT);
+        message =
+            l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECKUP_ERROR_QUOTA_LIMIT);
       }
       break;
     case PasswordCheckState::kOther:
-      message =
-          IsPasswordCheckupEnabled()
-              ? l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECKUP_ERROR_OTHER)
-              : l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECK_ERROR_OTHER);
+      message = l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECKUP_ERROR_OTHER);
       break;
   }
   return [self attributedStringWithText:message link:linkURL];
@@ -894,7 +846,7 @@ void ResetSettingsCheckItem(SettingsCheckItem* item) {
   } else if (self.checkDidRun && !issuesFound) {
     // Clear the timestamp if the last check found no issues.
     [[NSUserDefaults standardUserDefaults]
-        setDouble:base::Time().ToDoubleT()
+        setDouble:base::Time().InSecondsFSinceUnixEpoch()
            forKey:kTimestampOfLastIssueFoundKey];
     self.checkDidRun = NO;
 
@@ -950,8 +902,8 @@ void ResetSettingsCheckItem(SettingsCheckItem* item) {
 // jittery, delay the reconfigure call, using `newRowState`.
 - (void)possiblyDelayReconfigureUpdateCheckItemWithState:
     (UpdateCheckRowStates)newRowState {
-  double secondsSinceStart =
-      base::Time::Now().ToDoubleT() - self.checkStartTime.ToDoubleT();
+  double secondsSinceStart = base::Time::Now().InSecondsFSinceUnixEpoch() -
+                             self.checkStartTime.InSecondsFSinceUnixEpoch();
   double minDelay = kUpdateRowMinDelay;
   if (secondsSinceStart < minDelay) {
     // Want to show the loading wheel for minimum time.
@@ -1165,10 +1117,8 @@ void ResetSettingsCheckItem(SettingsCheckItem* item) {
       break;
     }
     case PasswordCheckRowStateRunning: {
-      if (IsPasswordCheckupEnabled()) {
-        self.passwordCheckItem.detailText =
-            GetNSString(IDS_IOS_SAFETY_CHECK_PASSWORD_CHECKUP_ONGOING);
-      }
+      self.passwordCheckItem.detailText =
+          GetNSString(IDS_IOS_SAFETY_CHECK_PASSWORD_CHECKUP_ONGOING);
       self.passwordCheckItem.indicatorHidden = NO;
       break;
     }
@@ -1181,17 +1131,12 @@ void ResetSettingsCheckItem(SettingsCheckItem* item) {
       break;
     }
     case PasswordCheckRowStateUnmutedCompromisedPasswords: {
-      NSInteger compromisedPasswordCount =
-          IsPasswordCheckupEnabled()
-              ? GetPasswordCountForWarningType(
-                    WarningType::kCompromisedPasswordsWarning,
-                    self.passwordCheckManager->GetInsecureCredentials())
-              : self.passwordCheckManager->GetInsecureCredentials().size();
+      NSInteger compromisedPasswordCount = GetPasswordCountForWarningType(
+          WarningType::kCompromisedPasswordsWarning,
+          self.passwordCheckManager->GetInsecureCredentials());
       self.passwordCheckItem.detailText =
           base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
-              IsPasswordCheckupEnabled()
-                  ? IDS_IOS_PASSWORD_CHECKUP_COMPROMISED_COUNT
-                  : IDS_IOS_CHECK_PASSWORDS_COMPROMISED_COUNT,
+              IDS_IOS_PASSWORD_CHECKUP_COMPROMISED_COUNT,
               compromisedPasswordCount));
       self.passwordCheckItem.warningState = WarningState::kSevereWarning;
       break;
@@ -1319,7 +1264,7 @@ void ResetSettingsCheckItem(SettingsCheckItem* item) {
 // Updates the timestamp of when safety check last found an issue.
 - (void)updateTimestampOfLastCheck {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  [defaults setDouble:base::Time::Now().ToDoubleT()
+  [defaults setDouble:base::Time::Now().InSecondsFSinceUnixEpoch()
                forKey:kTimestampOfLastIssueFoundKey];
 }
 
@@ -1349,7 +1294,7 @@ void ResetSettingsCheckItem(SettingsCheckItem* item) {
 // Formats the last safety check issues found timestamp for display.
 - (NSString*)formatElapsedTimeSinceLastCheck {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  base::Time lastCompletedCheck = base::Time::FromDoubleT(
+  base::Time lastCompletedCheck = base::Time::FromSecondsSinceUnixEpoch(
       [defaults doubleForKey:kTimestampOfLastIssueFoundKey]);
 
   base::TimeDelta elapsedTime = base::Time::Now() - lastCompletedCheck;

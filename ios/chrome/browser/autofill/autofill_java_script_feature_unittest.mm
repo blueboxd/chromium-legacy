@@ -14,7 +14,7 @@
 #import "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/ios/form_util/form_util_java_script_feature.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/web/chrome_web_client.h"
+#import "ios/chrome/browser/web/model/chrome_web_client.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/test/fakes/fake_web_client.h"
 #import "ios/web/public/test/js_test_util.h"
@@ -405,6 +405,35 @@ TEST_F(AutofillJavaScriptFeatureTest, FillActiveFormField) {
                                  base::BindOnce(^(BOOL result) {
                                    success = result;
                                  }));
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForActionTimeout, ^bool() {
+        return success;
+      }));
+  NSString* element_value_javascript =
+      [NSString stringWithFormat:@"%@.value", get_element_javascript];
+  EXPECT_NSEQ(@"newemail@com", ExecuteJavaScript(element_value_javascript));
+}
+
+// Tests filling of a specific field, which differs from `FillActiveFormField`
+// because it does not require that the field have focus.
+TEST_F(AutofillJavaScriptFeatureTest, FillSpecificFormField) {
+  LoadHtml(@"<html><body><form name='testform' method='post'>"
+            "<input type='email' id='email' name='email'/>"
+            "</form></body></html>");
+  RunFormsSearch();
+
+  NSString* get_element_javascript = @"document.getElementsByName('email')[0]";
+  base::Value::Dict data;
+  data.Set("name", "email");
+  data.Set("identifier", "email");
+  data.Set("unique_renderer_id", 2);
+  data.Set("value", "newemail@com");
+  __block BOOL success = NO;
+
+  feature()->FillSpecificFormField(main_web_frame(), std::move(data),
+                                   base::BindOnce(^(BOOL result) {
+                                     success = result;
+                                   }));
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForActionTimeout, ^bool() {
         return success;

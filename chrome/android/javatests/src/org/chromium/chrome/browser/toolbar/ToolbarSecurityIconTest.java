@@ -36,7 +36,6 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.ChromeAutocompleteSchemeClassifier;
 import org.chromium.chrome.browser.omnibox.ChromeAutocompleteSchemeClassifierJni;
 import org.chromium.chrome.browser.omnibox.NewTabPageDelegate;
-import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TrustedCdn;
@@ -85,8 +84,6 @@ public final class ToolbarSecurityIconTest {
 
     @Mock private LocationBarModel.Natives mLocationBarModelJni;
 
-    @Mock private SearchEngineLogoUtils mSearchEngineLogoUtils;
-
     @Mock private ChromeAutocompleteSchemeClassifier.Natives mChromeAutocompleteSchemeClassifierJni;
 
     @Mock private Profile mMockProfile;
@@ -127,9 +124,7 @@ public final class ToolbarSecurityIconTest {
                                 context,
                                 NewTabPageDelegate.EMPTY,
                                 (url) -> url.getSpec(),
-                                (window) -> null,
-                                ToolbarUnitTestUtils.OFFLINE_STATUS,
-                                mSearchEngineLogoUtils));
+                                ToolbarUnitTestUtils.OFFLINE_STATUS));
         Profile.setLastUsedProfileForTesting(mMockProfile);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
@@ -222,7 +217,7 @@ public final class ToolbarSecurityIconTest {
         }
 
         assertEquals(
-                0,
+                R.drawable.omnibox_info,
                 mLocationBarModel.getSecurityIconResource(
                         ConnectionSecurityLevel.NONE,
                         IS_SMALL_DEVICE,
@@ -326,9 +321,9 @@ public final class ToolbarSecurityIconTest {
         assertEquals(
                 R.color.default_red,
                 mLocationBarModel.getSecurityIconColorWithSecurityLevel(
-                        /*connectionSecurityLevel*/ ConnectionSecurityLevel.DANGEROUS,
-                        /*brandedColorScheme*/ BrandedColorScheme.APP_DEFAULT,
-                        /*isIncognito*/ false));
+                        /* connectionSecurityLevel= */ ConnectionSecurityLevel.DANGEROUS,
+                        /* brandedColorScheme= */ BrandedColorScheme.APP_DEFAULT,
+                        /* isIncognito= */ false));
     }
 
     @Test
@@ -338,9 +333,9 @@ public final class ToolbarSecurityIconTest {
         assertEquals(
                 R.color.baseline_error_80,
                 mLocationBarModel.getSecurityIconColorWithSecurityLevel(
-                        /*connectionSecurityLevel*/ ConnectionSecurityLevel.DANGEROUS,
-                        /*brandedColorScheme*/ BrandedColorScheme.APP_DEFAULT,
-                        /*isIncognito*/ true));
+                        /* connectionSecurityLevel= */ ConnectionSecurityLevel.DANGEROUS,
+                        /* brandedColorScheme= */ BrandedColorScheme.APP_DEFAULT,
+                        /* isIncognito= */ true));
     }
 
     @Test
@@ -358,7 +353,7 @@ public final class ToolbarSecurityIconTest {
                         mLocationBarModel.getSecurityIconColorWithSecurityLevel(
                                 connectionSecurityLevel,
                                 brandedColorScheme,
-                                /*isIncognito*/ false));
+                                /* isIncognito= */ false));
             }
         }
     }
@@ -377,14 +372,14 @@ public final class ToolbarSecurityIconTest {
                     defaultColorResLight,
                     mLocationBarModel.getSecurityIconColorWithSecurityLevel(
                             connectionSecurityLevel,
-                            /*brandedColorScheme*/ BrandedColorScheme.LIGHT_BRANDED_THEME,
-                            /*isIncognito*/ false));
+                            /* brandedColorScheme= */ BrandedColorScheme.LIGHT_BRANDED_THEME,
+                            /* isIncognito= */ false));
             assertEquals(
                     defaultColorResDark,
                     mLocationBarModel.getSecurityIconColorWithSecurityLevel(
                             connectionSecurityLevel,
-                            /*brandedColorScheme*/ BrandedColorScheme.DARK_BRANDED_THEME,
-                            /*isIncognito*/ false));
+                            /* brandedColorScheme= */ BrandedColorScheme.DARK_BRANDED_THEME,
+                            /* isIncognito= */ false));
         }
     }
 }

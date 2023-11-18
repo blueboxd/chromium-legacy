@@ -128,10 +128,6 @@ void ImageInputType::SrcAttributeChanged() {
   if (!GetElement().GetExecutionContext()) {
     return;
   }
-  if (!GetElement().GetLayoutObject() &&
-      !RuntimeEnabledFeatures::LoadInputImageWithoutObjectEnabled()) {
-    return;
-  }
   GetElement().EnsureImageLoader().UpdateFromElement(
       ImageLoader::kUpdateIgnorePreviousError);
 }
@@ -161,6 +157,10 @@ bool ImageInputType::CanBeSuccessfulSubmitButton() {
 }
 
 bool ImageInputType::IsEnumeratable() {
+  return false;
+}
+
+bool ImageInputType::IsAutoDirectionalityFormAssociated() const {
   return false;
 }
 

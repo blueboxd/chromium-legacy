@@ -13,67 +13,53 @@ namespace net {
 
 // TODO(eroman): IOBuffer is being converted to require buffer sizes and offsets
 // be specified as "size_t" rather than "int" (crbug.com/488553). To facilitate
-// this move (since LOTS of code needs to be updated), both "size_t" and "int
-// are being accepted. When using "size_t" this function ensures that it can be
-// safely converted to an "int" without truncation.
+// this move (since LOTS of code needs to be updated), this function ensures
+// that sizes can be safely converted to an "int" without truncation. The
+// assert ensures calling this with an "int" argument is also safe.
 void IOBuffer::AssertValidBufferSize(size_t size) {
+  static_assert(sizeof(size_t) >= sizeof(int));
   base::CheckedNumeric<int>(size).ValueOrDie();
 }
 
-void IOBuffer::AssertValidBufferSize(int size) {
-  CHECK_GE(size, 0);
+IOBuffer::IOBuffer() = default;
+
+IOBuffer::IOBuffer(char* data, size_t size) : data_(data), size_(size) {
+  AssertValidBufferSize(size);
 }
 
-IOBuffer::IOBuffer() : data_(nullptr) {}
+IOBuffer::~IOBuffer() = default;
 
-IOBuffer::IOBuffer(size_t buffer_size) {
+IOBufferWithSize::IOBufferWithSize() = default;
+
+IOBufferWithSize::IOBufferWithSize(size_t buffer_size) {
   AssertValidBufferSize(buffer_size);
-  data_ = new char[buffer_size];
-#if BUILDFLAG(IS_IOS)
-  // TODO(crbug.com/1335423): Investigating crashes on iOS.
-  CHECK(data_);
-#endif  // BUILDFLAG(IS_IOS)
+  if (buffer_size) {
+    size_ = buffer_size;
+    data_ = new char[buffer_size];
+  }
 }
 
-IOBuffer::IOBuffer(char* data)
-    : data_(data) {
-}
-
-IOBuffer::~IOBuffer() {
+IOBufferWithSize::~IOBufferWithSize() {
   data_.ClearAndDeleteArray();
 }
 
-IOBufferWithSize::IOBufferWithSize(size_t size) : IOBuffer(size), size_(size) {
-  // Note: Size check is done in superclass' constructor.
-}
-
-IOBufferWithSize::IOBufferWithSize(char* data, size_t size)
-    : IOBuffer(data), size_(size) {
-  AssertValidBufferSize(size);
-}
-
-IOBufferWithSize::~IOBufferWithSize() = default;
-
 StringIOBuffer::StringIOBuffer(std::string s) : string_data_(std::move(s)) {
+  // Can't pass `s.data()` directly to IOBuffer constructor since moving
+  // from `s` may invalidate it. This is especially true for libc++ short
+  // string optimization where the data may be held in the string variable
+  // itself, instead of in a movable backing store.
   AssertValidBufferSize(string_data_.size());
   data_ = string_data_.data();
+  size_ = string_data_.size();
 }
 
 StringIOBuffer::~StringIOBuffer() {
-  // We haven't allocated the buffer, so remove it before the base class
-  // destructor tries to delete[] it.
+  // Clear pointer before this destructor makes it dangle.
   data_ = nullptr;
 }
 
-DrainableIOBuffer::DrainableIOBuffer(scoped_refptr<IOBuffer> base, int size)
-    : IOBuffer(base->data()), base_(std::move(base)), size_(size) {
-  AssertValidBufferSize(size);
-}
-
 DrainableIOBuffer::DrainableIOBuffer(scoped_refptr<IOBuffer> base, size_t size)
-    : IOBuffer(base->data()), base_(std::move(base)), size_(size) {
-  AssertValidBufferSize(size);
-}
+    : IOBuffer(base->data(), size), base_(std::move(base)) {}
 
 void DrainableIOBuffer::DidConsume(int bytes) {
   SetOffset(used_ + bytes);
@@ -96,7 +82,8 @@ void DrainableIOBuffer::SetOffset(int bytes) {
 }
 
 DrainableIOBuffer::~DrainableIOBuffer() {
-  // The buffer is owned by the |base_| instance.
+  // Clear ptr before this destructor destroys the |base_| instance,
+  // making it dangle.
   data_ = nullptr;
 }
 
@@ -106,6 +93,8 @@ void GrowableIOBuffer::SetCapacity(int capacity) {
   CHECK_GE(capacity, 0);
   // this will get reset in `set_offset`.
   data_ = nullptr;
+  size_ = 0;
+
   // realloc will crash if it fails.
   real_data_.reset(static_cast<char*>(realloc(real_data_.release(), capacity)));
 
@@ -121,6 +110,7 @@ void GrowableIOBuffer::set_offset(int offset) {
   CHECK_LE(offset, capacity_);
   offset_ = offset;
   data_ = real_data_.get() + offset;
+  size_ = capacity_ - offset;
 }
 
 int GrowableIOBuffer::RemainingCapacity() {
@@ -135,23 +125,21 @@ GrowableIOBuffer::~GrowableIOBuffer() {
   data_ = nullptr;
 }
 
-PickledIOBuffer::PickledIOBuffer() : IOBuffer() {
-}
+PickledIOBuffer::PickledIOBuffer() = default;
 
 void PickledIOBuffer::Done() {
   data_ = const_cast<char*>(pickle_.data_as_char());
+  size_ = pickle_.size();
 }
 
 PickledIOBuffer::~PickledIOBuffer() {
+  // Avoid dangling ptr when this destructor destroys the pickle.
   data_ = nullptr;
 }
 
-WrappedIOBuffer::WrappedIOBuffer(const char* data)
-    : IOBuffer(const_cast<char*>(data)) {
-}
+WrappedIOBuffer::WrappedIOBuffer(const char* data, size_t size)
+    : IOBuffer(const_cast<char*>(data), size) {}
 
-WrappedIOBuffer::~WrappedIOBuffer() {
-  data_ = nullptr;
-}
+WrappedIOBuffer::~WrappedIOBuffer() = default;
 
 }  // namespace net

@@ -141,31 +141,46 @@ class AddressField : public FormField {
 
   ParseNameLabelResult ParseNameAndLabelForLandmark(
       AutofillScanner* scanner,
+      const GeoIpCountryCode& client_country,
       const LanguageCode& page_language,
       PatternSource pattern_source);
 
   ParseNameLabelResult ParseNameAndLabelForBetweenStreets(
       AutofillScanner* scanner,
+      const GeoIpCountryCode& client_country,
+      const LanguageCode& page_language,
+      PatternSource pattern_source);
+
+  // Run matches on the name and label for a field and sets
+  // `between_streets_line_1_` and `between_streets_line_2_` respectively if a
+  // match is found.
+  ParseNameLabelResult ParseNameAndLabelForBetweenStreetsLines12(
+      AutofillScanner* scanner,
+      const GeoIpCountryCode& client_country,
       const LanguageCode& page_language,
       PatternSource pattern_source);
 
   ParseNameLabelResult ParseNameAndLabelForAdminLevel2(
       AutofillScanner* scanner,
+      const GeoIpCountryCode& client_country,
       const LanguageCode& page_language,
       PatternSource pattern_source);
 
   ParseNameLabelResult ParseNameAndLabelForBetweenStreetsOrLandmark(
       AutofillScanner* scanner,
+      const GeoIpCountryCode& client_country,
       const LanguageCode& page_language,
       PatternSource pattern_source);
 
   ParseNameLabelResult ParseNameAndLabelForOverflowAndLandmark(
       AutofillScanner* scanner,
+      const GeoIpCountryCode& client_country,
       const LanguageCode& page_language,
       PatternSource pattern_source);
 
   ParseNameLabelResult ParseNameAndLabelForOverflow(
       AutofillScanner* scanner,
+      const GeoIpCountryCode& client_country,
       const LanguageCode& page_language,
       PatternSource pattern_source);
 
@@ -173,6 +188,10 @@ class AddressField : public FormField {
       AutofillScanner* scanner,
       const LanguageCode& page_language,
       PatternSource pattern_source);
+
+  // Return true if the form being parsed shows an indication of being a
+  // structured address form.
+  bool PossiblyAStructuredAddressForm() const;
 
   raw_ptr<LogManager> log_manager_;
 
@@ -194,6 +213,8 @@ class AddressField : public FormField {
   raw_ptr<AutofillField> country_ = nullptr;
   raw_ptr<AutofillField> landmark_ = nullptr;
   raw_ptr<AutofillField> between_streets_ = nullptr;
+  raw_ptr<AutofillField> between_streets_line_1_ = nullptr;
+  raw_ptr<AutofillField> between_streets_line_2_ = nullptr;
   raw_ptr<AutofillField> admin_level2_ = nullptr;
   raw_ptr<AutofillField> between_streets_or_landmark_ = nullptr;
   raw_ptr<AutofillField> overflow_and_landmark_ = nullptr;

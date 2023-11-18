@@ -144,9 +144,10 @@ void VideoCaptureDeviceProxyLacros::Resume() {
     device_->Resume();
 }
 
-void VideoCaptureDeviceProxyLacros::Crop(
-    const base::Token& crop_id,
-    uint32_t crop_version,
+void VideoCaptureDeviceProxyLacros::ApplySubCaptureTarget(
+    media::mojom::SubCaptureTargetType type,
+    const base::Token& target,
+    uint32_t sub_capture_target_version,
     base::OnceCallback<void(media::mojom::ApplySubCaptureTargetResult)>
         callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

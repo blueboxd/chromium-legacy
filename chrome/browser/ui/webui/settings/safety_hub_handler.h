@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_SAFETY_HUB_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_SAFETY_HUB_HANDLER_H_
 
+#include <set>
+
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/clock.h"
@@ -32,6 +34,15 @@ enum class SafeBrowsingState {
 
 class SafetyHubHandler : public settings::SettingsPageUIHandler {
  public:
+  enum class SafetyHubModule {
+    kExtensions,
+    kNotifications,
+    kPasswords,
+    kSafeBrowsing,
+    kUnusedSitePermissions,
+    kVersion
+  };
+
   explicit SafetyHubHandler(Profile* profile);
 
   ~SafetyHubHandler() override;
@@ -137,14 +148,29 @@ class SafetyHubHandler : public settings::SettingsPageUIHandler {
   void HandleUndoIgnoreOriginsForNotificationPermissionReview(
       const base::Value::List& args);
 
+  // Handles dismissing the active menu notification for Safety Hub.
+  void HandleDismissActiveMenuNotification(const base::Value::List& args);
+
+  // Handles dismissing the menu notifications for the password module.
+  void HandleDismissPasswordMenuNotification(const base::Value::List& args);
+
   // Returns the data for Safe Browsing card.
   void HandleGetSafeBrowsingCardData(const base::Value::List& args);
+
+  // Fetches data for the Safe Browsing card to return data to the UI.
+  base::Value::Dict GetSafeBrowsingCardData();
 
   // Returns the data for the password card.
   void HandleGetPasswordCardData(const base::Value::List& args);
 
+  // Fetches data for the password card to return data to the UI.
+  base::Value::Dict GetPasswordCardData();
+
   // Returns the data for the version card.
   void HandleGetVersionCardData(const base::Value::List& args);
+
+  // Fetches data for the version card to return data to the UI.
+  base::Value::Dict GetVersionCardData();
 
   // Returns true if Safety Hub has recommendations.
   void HandleGetSafetyHubHasRecommendations(const base::Value::List& args);
@@ -154,6 +180,12 @@ class SafetyHubHandler : public settings::SettingsPageUIHandler {
 
   // Sends the list of notification permissions to review to the WebUI.
   void SendNotificationPermissionReviewList();
+
+  // Returns the number of extensions that should be reviewed by the user.
+  int GetNumberOfExtensionsThatNeedReview();
+
+  // Returns the set of Safety Hub modules which require the user's attention.
+  std::set<SafetyHubModule> GetSafetyHubModulesWithRecommendations();
 
   const raw_ptr<Profile, DanglingUntriaged> profile_;
 

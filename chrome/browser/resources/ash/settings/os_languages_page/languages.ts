@@ -43,8 +43,8 @@ const kLanguageCodeToTranslateCode = {
 // Translate still uses the old versions. TODO(michaelpg): Chrome does too.
 // Follow up with Translate owners to understand the right thing to do.
 const kTranslateLanguageSynonyms = {
-  'he': 'iw',
-  'jv': 'jw',
+  he: 'iw',
+  jv: 'jw',
 } as const;
 
 // The fake language name used for ARC IMEs. The value must be in sync with the
@@ -253,6 +253,12 @@ export class SettingsLanguagesElement extends SettingsLanguagesElementBase
   private boundOnLanguagePackStatusChanged_: OmitThisParameter<
       SettingsLanguagesElement['onLanguagePackStatusChanged_']>|null = null;
 
+  // loadTimeData flags.
+  // We do not expect this to change over the lifetime of this element, so this
+  // is not included in `properties()` above.
+  private languagePacksInSettingsEnabled_ =
+      loadTimeData.getBoolean('languagePacksInSettingsEnabled');
+
   override connectedCallback(): void {
     super.connectedCallback();
 
@@ -328,12 +334,11 @@ export class SettingsLanguagesElement extends SettingsLanguagesElementBase
       this.languageSettingsPrivate_.getSpellcheckDictionaryStatuses().then(
           this.boundOnSpellcheckDictionariesChanged_);
 
-      if (loadTimeData.getBoolean('languagePacksInSettingsEnabled')) {
-        // Poll language packs once to get the initial state of language pack
-        // statuses.
+      if (this.languagePacksInSettingsEnabled_) {
+        // Get the initial state of language pack statuses.
         // Do so in the next microtask to prevent `connectedCallback()` from
         // failing and stalling tests.
-        Promise.resolve().then(() => this.pollLanguagePacks_());
+        Promise.resolve().then(() => this.fetchMissingLanguagePackStatuses_());
         this.boundOnLanguagePackStatusChanged_ =
             this.onLanguagePackStatusChanged_.bind(this);
         this.inputMethodPrivate_.onLanguagePackStatusChanged.addListener(
@@ -1216,6 +1221,9 @@ export class SettingsLanguagesElement extends SettingsLanguagesElementBase
           enabledInputMethodSet.has(inputMethod));
     }
     this.set('languages.inputMethods.enabled', enabledInputMethods);
+    if (this.languagePacksInSettingsEnabled_) {
+      this.fetchMissingLanguagePackStatuses_();
+    }
   }
 
   addInputMethod(id: string): void {
@@ -1324,20 +1332,27 @@ export class SettingsLanguagesElement extends SettingsLanguagesElementBase
   }
 
   /**
-   * Manually poll language packs for the status of enabled input methods.
-   * Required to get the initial language pack status of input methods - further
-   * updates will be done via a listener to changes.
+   * Fetch the language pack status of enabled input methods which we do not
+   * have a status for.
    */
-  private pollLanguagePacks_(): void {
+  private fetchMissingLanguagePackStatuses_(): void {
     if (!this.languages) {
       return;
     }
     // Safety: `LanguagesModel.inputMethods` is always defined on CrOS.
     for (const inputMethod of this.languages.inputMethods!.enabled) {
-      void this.inputMethodPrivate_.getLanguagePackStatus(inputMethod.id)
-          .then((status) => {
-            this.setLanguagePackStatus_(inputMethod.id, status);
-          });
+      if (this.languages.inputMethods!.imeLanguagePackStatus[inputMethod.id] ===
+          undefined) {
+        // Explicitly set this input method status to unknown to prevent future
+        // calls of this method from fetching this again.
+        this.languages.inputMethods!.imeLanguagePackStatus[inputMethod.id] =
+            chrome.inputMethodPrivate.LanguagePackStatus.UNKNOWN;
+
+        void this.inputMethodPrivate_.getLanguagePackStatus(inputMethod.id)
+            .then((status) => {
+              this.setLanguagePackStatus_(inputMethod.id, status);
+            });
+      }
     }
   }
 

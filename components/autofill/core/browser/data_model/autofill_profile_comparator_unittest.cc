@@ -61,6 +61,7 @@ using autofill::EmailInfo;
 using autofill::NameInfo;
 using autofill::PhoneNumber;
 using autofill::ServerFieldType;
+using autofill::i18n_model_definition::kLegacyHierarchyCountryCode;
 
 namespace {
 
@@ -281,7 +282,7 @@ class AutofillProfileComparatorTest : public testing::Test {
                                const AutofillProfile& b,
                                const Address& expected,
                                bool check_structured_address_tokens = false) {
-    Address actual;
+    Address actual(kLegacyHierarchyCountryCode);
     ASSERT_TRUE(comparator_.MergeAddresses(a, b, actual));
 
     EXPECT_EQ(expected.GetInfo(AutofillType(ADDRESS_HOME_LINE1), kLocale),
@@ -397,7 +398,9 @@ TEST_F(AutofillProfileComparatorTest, Compare) {
 
   // Checks that characters such as 'œ' respect the status quo established by
   // NormalizeForComparison.
-  EXPECT_FALSE(comparator_.Compare(u"œil", u"oeil"));
+  EXPECT_TRUE(comparator_.Compare(u"œil", u"oeil"));
+  EXPECT_TRUE(comparator_.Compare(
+      u"Straße", u"Strasse", AutofillProfileComparator::DISCARD_WHITESPACE));
 
   // Checks that a substring of the string is not considered equal.
   EXPECT_FALSE(comparator_.Compare(u"A", u"Anna"));
@@ -450,6 +453,8 @@ TEST_F(AutofillProfileComparatorTest, NormalizeForComparison) {
   EXPECT_EQ(u"timothe noel etienne perier",
             AutofillProfileComparator::NormalizeForComparison(
                 u"Timothé-Noël Étienne Périer"));
+  EXPECT_EQ(u"strasse",
+            AutofillProfileComparator::NormalizeForComparison(u"Straße"));
   // NOP.
   EXPECT_EQ(std::u16string(), AutofillProfileComparator::NormalizeForComparison(
                                   std::u16string()));
@@ -1030,7 +1035,7 @@ TEST_F(AutofillProfileComparatorTest, MergeAddresses) {
   AutofillProfile p2 = CreateProfileWithAddress(
       "1 Some Street #3", "", "Carver City", "ca", "90210-1234", "us");
 
-  Address expected;
+  Address expected(kLegacyHierarchyCountryCode);
   expected.SetRawInfo(ADDRESS_HOME_LINE1, u"1 Some Street");
   expected.SetRawInfo(ADDRESS_HOME_LINE2, u"Unit 3");
   expected.SetRawInfo(ADDRESS_HOME_CITY, u"Carver City");
@@ -1061,7 +1066,7 @@ TEST_F(AutofillProfileComparatorTest, MergeAddressesMostUniqueTokens) {
   p2.SetRawInfo(autofill::ADDRESS_HOME_HOUSE_NUMBER, u"HouseNumber2");
   p2.SetRawInfo(autofill::ADDRESS_HOME_SUBPREMISE, u"Subpremise2");
 
-  Address expected;
+  Address expected(kLegacyHierarchyCountryCode);
   expected.SetRawInfo(ADDRESS_HOME_LINE1, u"1 Some Other Street");
   expected.SetRawInfo(ADDRESS_HOME_LINE2, u"Unit 3");
   expected.SetRawInfo(ADDRESS_HOME_CITY, u"Carver City");
@@ -1088,7 +1093,7 @@ TEST_F(AutofillProfileComparatorTest, MergeAddressesWithStructure) {
   p2.SetRawInfo(autofill::ADDRESS_HOME_HOUSE_NUMBER, u"HouseNumber2");
   p2.SetRawInfo(autofill::ADDRESS_HOME_SUBPREMISE, u"Subpremise2");
 
-  Address expected;
+  Address expected(kLegacyHierarchyCountryCode);
   expected.SetRawInfo(ADDRESS_HOME_LINE1, u"6543 CH BACON");
   expected.SetRawInfo(ADDRESS_HOME_LINE2, u"APP 3");
   expected.SetRawInfo(ADDRESS_HOME_CITY, u"Montreal");
@@ -1116,13 +1121,46 @@ TEST_F(AutofillProfileComparatorTest, MergeAddressesWithRewrite) {
 
   p2.set_use_date(p1.use_date() + base::Minutes(1));
 
-  Address expected;
+  Address expected(kLegacyHierarchyCountryCode);
   expected.SetRawInfo(ADDRESS_HOME_LINE1, u"6543 CH BACON");
   expected.SetRawInfo(ADDRESS_HOME_LINE2, u"APP 3");
   expected.SetRawInfo(ADDRESS_HOME_CITY, u"Montreal");
   expected.SetRawInfo(ADDRESS_HOME_STATE, u"QC");
   expected.SetRawInfo(ADDRESS_HOME_ZIP, u"hhh 999");
   expected.SetRawInfo(ADDRESS_HOME_COUNTRY, u"CA");
+
+  MergeAddressesAndExpect(p1, p2, expected);
+  MergeAddressesAndExpect(p2, p1, expected);
+}
+
+// The intention of this test is to verify that "Straße" and "Str."" ar
+// considered equivalent, which requires a normalization of ß to ss followed by
+// a rewrite of "strasse" to "str".
+TEST_F(AutofillProfileComparatorTest, MergeAddressesWithRewriteDE) {
+  AutofillProfile p1 = CreateProfileWithAddress("Erika-Mann-Straße 33", "APP 3",
+                                                "München", "", "80636", "DE");
+
+  p1.SetRawInfo(autofill::ADDRESS_HOME_STREET_NAME, u"Erika-Mann-Straße");
+  p1.SetRawInfo(autofill::ADDRESS_HOME_HOUSE_NUMBER, u"33");
+  p1.SetRawInfo(autofill::ADDRESS_HOME_SUBPREMISE, u"APP 3");
+
+  AutofillProfile p2 = CreateProfileWithAddress("Erika-Mann-Str. 33", "",
+                                                "Munchen", "", "80636", "DE");
+  p2.SetRawInfo(autofill::ADDRESS_HOME_STREET_NAME, u"Erika-Mann-Str");
+  p2.SetRawInfo(autofill::ADDRESS_HOME_HOUSE_NUMBER, u"33");
+
+  p2.set_use_date(p1.use_date() + base::Minutes(1));
+
+  Address expected(kLegacyHierarchyCountryCode);
+  // The longer string wins.
+  expected.SetRawInfo(ADDRESS_HOME_LINE1, u"Erika-Mann-Straße 33");
+  // Extra information.
+  expected.SetRawInfo(ADDRESS_HOME_LINE2, u"APP 3");
+  // The most recent string wins.
+  expected.SetRawInfo(ADDRESS_HOME_CITY, u"Munchen");
+  expected.SetRawInfo(ADDRESS_HOME_STATE, u"");
+  expected.SetRawInfo(ADDRESS_HOME_ZIP, u"80636");
+  expected.SetRawInfo(ADDRESS_HOME_COUNTRY, u"DE");
 
   MergeAddressesAndExpect(p1, p2, expected);
   MergeAddressesAndExpect(p2, p1, expected);
@@ -1140,7 +1178,7 @@ TEST_F(AutofillProfileComparatorTest,
   p2.SetRawInfo(ADDRESS_HOME_SORTING_CODE, u"64205 Biarritz");
   p2.set_use_date(p1.use_date() + base::Minutes(1));
 
-  Address expected;
+  Address expected(kLegacyHierarchyCountryCode);
   expected.SetRawInfo(ADDRESS_HOME_LINE1, u"6543 CH BACON");
   expected.SetRawInfo(ADDRESS_HOME_LINE2, u"APP 3");
   expected.SetRawInfo(ADDRESS_HOME_CITY, u"Montreal");
@@ -1178,7 +1216,7 @@ TEST_F(AutofillProfileComparatorTest, MergeLandmarkAndBetweenStreetsAndAdmin2) {
   profile2.SetRawInfo(ADDRESS_HOME_BETWEEN_STREETS, u"Between streets example");
   profile2.SetRawInfo(ADDRESS_HOME_ADMIN_LEVEL2, u"Admin level 2 example");
 
-  Address expected;
+  Address expected(kLegacyHierarchyCountryCode);
   expected.SetRawInfo(ADDRESS_HOME_LANDMARK, u"Landmark example");
   expected.SetRawInfo(ADDRESS_HOME_BETWEEN_STREETS, u"Between streets example");
   expected.SetRawInfo(ADDRESS_HOME_ADMIN_LEVEL2, u"Admin level 2 example");
@@ -1443,7 +1481,7 @@ TEST_F(AutofillProfileComparatorTest, MergeProfilesBasedOnState) {
   AutofillProfile p2 =
       CreateProfileWithAddress("", "", "", "Bayern - BY - Bavaria", "", "DE");
 
-  Address expected;
+  Address expected(kLegacyHierarchyCountryCode);
   expected.SetRawInfo(ADDRESS_HOME_COUNTRY, u"DE");
   expected.SetRawInfo(ADDRESS_HOME_STATE, u"Bayern");
   MergeAddressesAndExpect(empty, p1, expected);

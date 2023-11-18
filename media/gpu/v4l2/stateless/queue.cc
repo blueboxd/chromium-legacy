@@ -29,6 +29,71 @@ BaseQueue::BaseQueue(scoped_refptr<StatelessDevice> device,
 
 BaseQueue::~BaseQueue() {
   DVLOGF(4);
+
+  StopStreaming();
+
+  if (!buffers_.empty()) {
+    DeallocateBuffers();
+  }
+}
+
+bool BaseQueue::AllocateBuffers(uint32_t num_planes) {
+  DVLOGF(4);
+  CHECK(device_);
+  CHECK(num_planes);
+
+  uint32_t num_buffers_requested = BufferMinimumCount();
+
+  const auto count = device_->RequestBuffers(buffer_type_, memory_type_,
+                                             num_buffers_requested);
+  if (!count) {
+    return false;
+  }
+
+  DVLOGF(2) << num_buffers_requested << " buffers request " << *count
+            << " buffers allocated for " << Description() << " queue.";
+  buffers_.reserve(*count);
+
+  for (uint32_t index = 0; index < *count; ++index) {
+    auto buffer =
+        device_->QueryBuffer(buffer_type_, memory_type_, index, num_planes);
+    if (!buffer) {
+      DVLOGF(1) << "Failed to query buffer " << index << " of " << *count
+                << ".";
+      buffers_ = std::vector<Buffer>();
+      return false;
+    }
+
+    if (BufferType::kCompressedData == buffer_type_ &&
+        MemoryType::kMemoryMapped == memory_type_) {
+      device_->MmapBuffer(*buffer);
+    }
+    buffers_.push_back(std::move(*buffer));
+    free_buffer_indices_.insert(index);
+  }
+
+  return true;
+}
+
+bool BaseQueue::DeallocateBuffers() {
+  buffers_.clear();
+
+  const auto count = device_->RequestBuffers(buffer_type_, memory_type_, 0);
+  if (!count) {
+    return false;
+  }
+
+  return true;
+}
+
+bool BaseQueue::StartStreaming() {
+  CHECK(device_);
+  return device_->StreamOn(buffer_type_);
+}
+
+bool BaseQueue::StopStreaming() {
+  CHECK(device_);
+  return device_->StreamOff(buffer_type_);
 }
 
 // static
@@ -64,8 +129,98 @@ bool InputQueue::SetupFormat(const gfx::Size resolution) {
     return false;
   }
 
-  num_planes_ = kNumberInputPlanes;
   return true;
+}
+
+bool InputQueue::PrepareBuffers() {
+  DVLOGF(4);
+  return AllocateBuffers(kNumberInputPlanes);
+}
+
+std::string InputQueue::Description() {
+  return "input";
+}
+
+uint32_t InputQueue::BufferMinimumCount() {
+  // TODO: This number has been cargo culting around for a while. One buffer
+  // could be enough as there is buffering elsewhere in the system. This
+  // number should be revisited after end to end playback is completed and
+  // performance tuning is done.
+  return 8;
+}
+
+std::unique_ptr<OutputQueue> OutputQueue::Create(
+    scoped_refptr<StatelessDevice> device) {
+  std::unique_ptr<OutputQueue> queue = std::make_unique<OutputQueue>(device);
+
+  if (!queue->NegotiateFormat()) {
+    return nullptr;
+  }
+
+  return queue;
+}
+
+OutputQueue::OutputQueue(scoped_refptr<StatelessDevice> device)
+    : BaseQueue(device, BufferType::kRawFrames, MemoryType::kMemoryMapped),
+      buffer_format_(BufferFormat(Fourcc(Fourcc::UNDEFINED),
+                                  gfx::Size(0, 0),
+                                  BufferType::kRawFrames)) {}
+
+bool OutputQueue::NegotiateFormat() {
+  DVLOGF(4);
+  CHECK(device_);
+
+  // should also have associated number of planes, or are they all 2?
+  constexpr Fourcc kPreferredFormats[] = {
+      Fourcc(Fourcc::NV12), Fourcc(Fourcc::MM21), Fourcc(Fourcc::MT2T)};
+
+  const auto initial_format = device_->GetOutputFormat();
+  if (!initial_format) {
+    return false;
+  }
+
+  if (!base::Contains(kPreferredFormats, initial_format->fourcc)) {
+    for (const auto& preferred_fourcc : kPreferredFormats) {
+      BufferFormat try_format = *initial_format;
+      try_format.fourcc = preferred_fourcc;
+      if (device_->TryOutputFormat(try_format)) {
+        auto chosen_format = device_->SetOutputFormat(try_format);
+        if (chosen_format) {
+          DVLOGF(2) << "Preferred format " << chosen_format->fourcc.ToString()
+                    << " choosen for output queue through negotiation. "
+                    << "Initial format was "
+                    << initial_format->fourcc.ToString() << ".";
+          buffer_format_ = *chosen_format;
+          return true;
+        } else {
+          return false;
+        }
+      }
+    }
+  } else {
+    DVLOGF(2) << "Initial format " << initial_format->fourcc.ToString()
+              << " choosen for output queue.";
+    auto chosen_format = device_->SetOutputFormat(*initial_format);
+    if (chosen_format) {
+      buffer_format_ = *chosen_format;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool OutputQueue::PrepareBuffers() {
+  DVLOGF(4);
+  return AllocateBuffers(buffer_format_.NumPlanes());
+}
+
+std::string OutputQueue::Description() {
+  return "output";
+}
+
+uint32_t OutputQueue::BufferMinimumCount() {
+  return 4;
 }
 
 }  // namespace media

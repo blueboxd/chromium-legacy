@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
@@ -48,6 +49,8 @@
 #include "v8/include/v8-inspector.h"
 
 namespace blink {
+
+using mojom::blink::FormControlType;
 using protocol::Maybe;
 
 namespace {
@@ -99,7 +102,7 @@ std::unique_ptr<protocol::DOMSnapshot::RareBooleanData> BooleanData() {
 }
 
 String GetOriginUrl(const Node* node) {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::Isolate* isolate = node->GetDocument().GetAgent().isolate();
   ThreadDebugger* debugger = ThreadDebugger::From(isolate);
   if (!isolate || !isolate->InContext() || !debugger)
     return String();
@@ -552,8 +555,9 @@ void InspectorDOMSnapshotAgent::VisitNode(Node* node,
 
     if (auto* input_element = DynamicTo<HTMLInputElement>(*element)) {
       SetRare(nodes->getInputValue(nullptr), index, input_element->Value());
-      if ((input_element->type() == input_type_names::kRadio) ||
-          (input_element->type() == input_type_names::kCheckbox)) {
+      if ((input_element->FormControlType() == FormControlType::kInputRadio) ||
+          (input_element->FormControlType() ==
+           FormControlType::kInputCheckbox)) {
         if (input_element->Checked()) {
           SetRare(nodes->getInputChecked(nullptr), index);
         }

@@ -30,7 +30,7 @@ bool WaitableEventWatcher::StartWatching(
     scoped_refptr<SequencedTaskRunner> task_runner) {
   DCHECK(task_runner->RunsTasksInCurrentSequence());
   DCHECK(!storage_->dispatch_source ||
-         dispatch_source_testcancel(storage_->dispatch_source));
+         dispatch_source_testcancel(storage_->dispatch_source.get()));
 
   // Keep a reference to the receive right, so that if the event is deleted
   // out from under the watcher, a signal can still be observed.
@@ -104,7 +104,7 @@ void WaitableEventWatcher::StopWatching() {
   callback_.Reset();
   receive_right_ = nullptr;
   if (storage_->dispatch_source) {
-    dispatch_source_cancel(storage_->dispatch_source);
+    dispatch_source_cancel(storage_->dispatch_source.get());
     storage_->dispatch_source.reset();
   }
 }

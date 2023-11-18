@@ -152,7 +152,7 @@ void WebRequestAPI::Proxy::HandleAuthRequest(
     AuthRequestCallback callback) {
   // Default implementation cancels the request.
   base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), absl::nullopt,
+      FROM_HERE, base::BindOnce(std::move(callback), std::nullopt,
                                 false /* should_cancel */));
 }
 
@@ -226,7 +226,7 @@ void WebRequestAPI::ProxySet::MaybeProxyAuthRequest(
     // Run the |callback| which will display a dialog for the user to enter
     // their auth credentials.
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), absl::nullopt,
+        FROM_HERE, base::BindOnce(std::move(callback), std::nullopt,
                                   false /* should_cancel */));
     return;
   }
@@ -364,7 +364,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
     content::RenderFrameHost* frame,
     int render_process_id,
     URLLoaderFactoryType type,
-    absl::optional<int64_t> navigation_id,
+    std::optional<int64_t> navigation_id,
     ukm::SourceIdObj ukm_source_id,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
@@ -488,7 +488,7 @@ void WebRequestAPI::ProxyWebSocket(
     content::ContentBrowserClient::WebSocketFactory factory,
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
-    const absl::optional<std::string>& user_agent,
+    const std::optional<std::string>& user_agent,
     mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
         handshake_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -500,13 +500,10 @@ void WebRequestAPI::ProxyWebSocket(
       WebRequestEventRouter::Get(browser_context)
           ->HasAnyExtraHeadersListener(browser_context);
 
-  const ukm::SourceIdObj& ukm_source_id =
-      ukm::SourceIdObj::FromInt64(frame->GetPageUkmSourceId());
-
   WebRequestProxyingWebSocket::StartProxying(
       std::move(factory), url, site_for_cookies, user_agent,
       std::move(handshake_client), has_extra_headers,
-      frame->GetProcess()->GetID(), frame->GetRoutingID(), ukm_source_id,
+      frame->GetProcess()->GetID(), frame->GetRoutingID(),
       &request_id_generator_, frame->GetLastCommittedOrigin(),
       frame->GetProcess()->GetBrowserContext(), proxies_.get());
 }
@@ -521,7 +518,7 @@ void WebRequestAPI::ProxyWebTransport(
     content::ContentBrowserClient::WillCreateWebTransportCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!MayHaveProxies()) {
-    std::move(callback).Run(std::move(handshake_client), absl::nullopt);
+    std::move(callback).Run(std::move(handshake_client), std::nullopt);
     return;
   }
   DCHECK(proxies_);

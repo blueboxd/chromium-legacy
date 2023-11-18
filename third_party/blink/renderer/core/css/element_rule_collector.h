@@ -170,10 +170,20 @@ class CORE_EXPORT ElementRuleCollector {
   bool CheckIfAnyRuleMatches(const MatchRequest&);
   bool CheckIfAnyShadowHostRuleMatches(const MatchRequest&);
 
+  // True if an entire StyleScope can be rejected, i.e. all style rules
+  // within the StyleScope are guaranteed to not match due to the given
+  // StyleScope not being in scope [1].
+  //
+  // Return 'false' when we don't know if a StyleScope is in scope or not.
+  //
+  // [1] https://drafts.csswg.org/css-cascade-6/#in-scope
+  bool CanRejectScope(const StyleScope&);
+
   void AddElementStyleProperties(const CSSPropertyValueSet*,
                                  CascadeOrigin,
                                  bool is_cacheable = true,
                                  bool is_inline_style = false);
+  void AddTryStyleProperties(const CSSPropertyValueSet*);
   void BeginAddingAuthorRulesForTreeScope(const TreeScope& tree_scope) {
     current_matching_tree_scope_ = &tree_scope;
     result_.BeginAddingAuthorRulesForTreeScope(tree_scope);
@@ -185,6 +195,13 @@ class CORE_EXPORT ElementRuleCollector {
   // Return the pseudo id if the style request is for rules associated with a
   // pseudo element, or kPseudoNone if not.
   PseudoId GetPseudoId() const { return pseudo_style_request_.pseudo_id; }
+
+  const ScopedCSSName* PositionFallback() const {
+    return style_recalc_context_.position_fallback;
+  }
+  unsigned PositionFallbackIndex() const {
+    return style_recalc_context_.position_fallback_index;
+  }
 
   void AddMatchedRulesToTracker(StyleRuleUsageTracker*) const;
 

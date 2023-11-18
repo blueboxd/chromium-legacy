@@ -29,6 +29,7 @@
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_font_palette_values_rule.h"
 #include "third_party/blink/renderer/core/css/css_property_source_data.h"
 #include "third_party/blink/renderer/core/css/css_scope_rule.h"
 #include "third_party/blink/renderer/core/css/css_style_declaration.h"
@@ -147,6 +148,7 @@ class InspectorStyleSheet : public InspectorStyleSheetBase {
 
   String FinalURL();
   bool SetText(const String&, ExceptionState&) override;
+  void CSSOMStyleSheetTextReplaced(const String&);
   bool GetText(String* result) override;
   void MarkForSync() { marked_for_sync_ = true; }
   void SyncTextIfNeeded();
@@ -206,6 +208,8 @@ class InspectorStyleSheet : public InspectorStyleSheetBase {
   std::unique_ptr<protocol::CSS::RuleUsage> BuildObjectForRuleUsage(CSSRule*,
                                                                     bool);
   std::unique_ptr<protocol::CSS::CSSTryRule> BuildObjectForTryRule(CSSTryRule*);
+  std::unique_ptr<protocol::CSS::CSSFontPaletteValuesRule>
+  BuildObjectForFontPaletteValuesRule(CSSFontPaletteValuesRule*);
   std::unique_ptr<protocol::CSS::CSSPropertyRule> BuildObjectForPropertyRule(
       CSSPropertyRule*);
   std::unique_ptr<protocol::CSS::CSSKeyframeRule> BuildObjectForKeyframeRule(

@@ -44,6 +44,12 @@ class CONTENT_EXPORT PrefetchDocumentManager
   const PrefetchDocumentManager operator=(const PrefetchDocumentManager&) =
       delete;
 
+  // Returns the `PrefetchDocumentManager` associated with a Document if already
+  // exists, or `nullptr` otherwise.
+  static PrefetchDocumentManager* FromDocumentToken(
+      int process_id,
+      const blink::DocumentToken& document_token);
+
   // WebContentsObserver.
   void DidStartNavigation(NavigationHandle* navigation_handle) override;
 
@@ -66,13 +72,7 @@ class CONTENT_EXPORT PrefetchDocumentManager
       const PrefetchType& prefetch_type,
       const blink::mojom::Referrer& referrer,
       const network::mojom::NoVarySearchPtr& no_vary_search_expected,
-      blink::mojom::SpeculationInjectionWorld world,
       base::WeakPtr<SpeculationHostDevToolsObserver> devtools_observer);
-
-  // Releases ownership of the |PrefetchContainer| associated with |url|. The
-  // prefetch is removed from |owned_prefetches_|, but a pointer to it remains
-  // in |all_prefetches_|.
-  std::unique_ptr<PrefetchContainer> ReleasePrefetchContainer(const GURL& url);
 
   // Checking the canary cache can be a slow and blocking operation (see
   // crbug.com/1266018), so we only do this for the first non-decoy prefetch we
@@ -96,9 +96,6 @@ class CONTENT_EXPORT PrefetchDocumentManager
   // page load is completed.
   void OnEligibilityCheckComplete(bool is_eligible);
 
-  // Called when the head is available in the prefetched response.
-  void OnPrefetchedHeadReceived(const GURL& url);
-
   // Updates metrics when the response for a prefetch requested by this page
   // load is received.
   void OnPrefetchSuccessful(PrefetchContainer* prefetch);
@@ -106,10 +103,8 @@ class CONTENT_EXPORT PrefetchDocumentManager
   // Whether the prefetch attempt for target |url| failed or discarded
   bool IsPrefetchAttemptFailedOrDiscarded(const GURL& url);
 
-  base::WeakPtr<PrefetchContainer> MatchUrl(const GURL& url) const;
-  std::vector<std::pair<GURL, base::WeakPtr<PrefetchContainer>>>
-  GetAllForUrlWithoutRefAndQueryForTesting(const GURL& url) const;
   void EnableNoVarySearchSupport();
+  bool NoVarySearchSupportEnabled() const;
 
   // Returns a tuple: (can_prefetch_now, prefetch_to_evict). 'can_prefetch_now'
   // is true if we can prefetch |next_prefetch| based on the state of the
@@ -128,10 +123,6 @@ class CONTENT_EXPORT PrefetchDocumentManager
   // Called when a PrefetchContainer started by |this| is being destroyed.
   void PrefetchWillBeDestroyed(PrefetchContainer* prefetch);
 
-  // Destroys |prefetch|. |prefetch| could either be owned by |this| or by
-  // PrefetchService.
-  void EvictPrefetch(base::WeakPtr<PrefetchContainer> prefetch);
-
   base::WeakPtr<PrefetchDocumentManager> GetWeakPtr() {
     return weak_method_factory_.GetWeakPtr();
   }
@@ -148,14 +139,8 @@ class CONTENT_EXPORT PrefetchDocumentManager
   blink::DocumentToken document_token_;
 
   // This map holds references to all |PrefetchContainer| associated with
-  // |this|, regardless of ownership.
+  // |this|.
   std::map<GURL, base::WeakPtr<PrefetchContainer>> all_prefetches_;
-
-  // This map holds all |PrefetchContainer| currently owned by |this|. |this|
-  // owns all |PrefetchContainer| from when they are created in |PrefetchUrl|
-  // until |PrefetchService| starts the network request for the prefetch, at
-  // which point |PrefetchService| takes ownership.
-  std::map<GURL, std::unique_ptr<PrefetchContainer>> owned_prefetches_;
 
   // Stores whether or not canary checks have been started for this page.
   bool have_canary_checks_started_{false};

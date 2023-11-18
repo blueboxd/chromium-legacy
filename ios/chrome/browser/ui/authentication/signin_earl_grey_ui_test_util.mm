@@ -7,7 +7,7 @@
 #import "base/apple/foundation_util.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_navigation_controller_constants.h"
-#import "ios/chrome/browser/signin/fake_system_identity.h"
+#import "ios/chrome/browser/signin/model/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
@@ -227,8 +227,8 @@ void CloseSigninManagedAccountDialogIfAny(FakeSystemIdentity* fakeIdentity) {
   // If the history type isn't enabled yet, the history opt-in dialog should
   // show up now. Tap the "Yes, I'm In" button.
   if (![ChromeEarlGrey isSyncHistoryDataTypeSelected]) {
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                            HistoryOptInPrimaryButtonMatcher()]
+    [[EarlGrey selectElementWithMatcher:
+                   chrome_test_util::SigninScreenPromoPrimaryButtonMatcher()]
         performAction:grey_tap()];
   }
 }
@@ -272,7 +272,7 @@ void CloseSigninManagedAccountDialogIfAny(FakeSystemIdentity* fakeIdentity) {
 
   switch (mode) {
     case SigninPromoViewModeNoAccounts:
-    case SigninPromoViewModeSyncWithPrimaryAccount:
+    case SigninPromoViewModeSignedInWithPrimaryAccount:
       [[EarlGrey
           selectElementWithMatcher:grey_allOf(SecondarySignInButton(),
                                               grey_sufficientlyVisible(), nil)]

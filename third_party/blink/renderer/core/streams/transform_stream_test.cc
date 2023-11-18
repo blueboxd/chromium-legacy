@@ -91,7 +91,7 @@ class TestTransformer : public TransformStreamTransformer {
                           TransformStreamDefaultController* controller,
                           ExceptionState& exception_state) override {
     TransformVoid(chunk, controller, exception_state);
-    return ScriptPromise::CastUndefined(script_state_);
+    return ScriptPromise::CastUndefined(script_state_.Get());
   }
 
   virtual void FlushVoid(TransformStreamDefaultController*, ExceptionState&) {}
@@ -99,7 +99,7 @@ class TestTransformer : public TransformStreamTransformer {
   ScriptPromise Flush(TransformStreamDefaultController* controller,
                       ExceptionState& exception_state) override {
     FlushVoid(controller, exception_state);
-    return ScriptPromise::CastUndefined(script_state_);
+    return ScriptPromise::CastUndefined(script_state_.Get());
   }
 
   ScriptState* GetScriptState() override { return script_state_.Get(); }
@@ -230,7 +230,8 @@ bool IsIteratorForStringMatching(ScriptState* script_state,
   }
   if (done)
     return false;
-  return ToCoreStringWithUndefinedOrNullCheck(chunk) == expected;
+  return ToCoreStringWithUndefinedOrNullCheck(script_state->GetIsolate(),
+                                              chunk) == expected;
 }
 
 bool IsTypeError(ScriptState* script_state,
@@ -250,7 +251,8 @@ bool IsTypeError(ScriptState* script_state,
                ->Get(script_state->GetContext(),
                      V8AtomicString(script_state->GetIsolate(), key))
                .ToLocal(&actual) &&
-           ToCoreStringWithUndefinedOrNullCheck(actual) == value;
+           ToCoreStringWithUndefinedOrNullCheck(script_state->GetIsolate(),
+                                                actual) == value;
   };
 
   return Has("name", "TypeError") && Has("message", message);

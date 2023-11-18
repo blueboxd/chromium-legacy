@@ -275,11 +275,14 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @Feature({"RenderTest"})
     @UseMethodParameter(RefactorTestParams.class)
     @EnableFeatures({
-        ChromeFeatureList.THUMBNAIL_CACHE_REFACTOR,
         ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study"
     })
     @DisableAnimationsTestRule.EnsureAnimationsOn
     @CommandLineFlags.Add({BASE_PARAMS})
+    @DisableIf.Build(
+            message = "crbug.com/1473722",
+            supported_abis_includes = "x86",
+            sdk_is_less_than = VERSION_CODES.P)
     public void testRenderGrid_3WebTabs_ThumbnailCacheRefactor(
             boolean isStartSurfaceRefactorEnabled) throws IOException {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -414,7 +417,6 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @MediumTest
     @Feature({"RenderTest"})
     @UseMethodParameter(RefactorTestParams.class)
-    @EnableFeatures(ChromeFeatureList.THUMBNAIL_CACHE_REFACTOR)
     @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     @CommandLineFlags.Add({BASE_PARAMS})
     @DisableIf.Build(
@@ -1345,39 +1347,6 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @MediumTest
     @UseMethodParameter(RefactorTestParams.class)
     @EnableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study"})
-    @DisableFeatures({ChromeFeatureList.THUMBNAIL_CACHE_REFACTOR})
-    @CommandLineFlags.Add({BASE_PARAMS})
-    public void testThumbnailFetchingResult_changingAspectRatio(
-            boolean isStartSurfaceRefactorEnabled) throws Exception {
-        // May be called when setting both grid card size and thumbnail fetcher.
-        var histograms =
-                HistogramWatcher.newBuilder()
-                        .expectIntRecord(
-                                TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
-                                TabContentManager.ThumbnailFetchingResult
-                                        .GOT_DIFFERENT_ASPECT_RATIO_JPEG)
-                        .allowExtraRecords(TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT)
-                        .build();
-
-        prepareTabs(1, 0, "about:blank");
-        // Simulate Jpeg has cached with default aspect ratio.
-        simulateJpegHasCachedWithAspectRatio(0.7);
-        enterTabSwitcher(mActivityTestRule.getActivity());
-        // There might be an additional one from capturing thumbnail for the live layer.
-        CriteriaHelper.pollUiThread(
-                () -> Criteria.checkThat(mAllBitmaps.size(), Matchers.greaterThanOrEqualTo(1)));
-
-        histograms.assertExpected();
-        onViewWaiting(tabSwitcherViewMatcher())
-                .check(
-                        ThumbnailAspectRatioAssertion.havingAspectRatio(
-                                TabUtils.THUMBNAIL_ASPECT_RATIO));
-    }
-
-    @Test
-    @MediumTest
-    @UseMethodParameter(RefactorTestParams.class)
-    @EnableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study"})
     @CommandLineFlags.Add({BASE_PARAMS})
     @DisabledTest(message = "https://crbug.com/1297930")
     public void testRecycling_defaultAspectRatio(boolean isStartSurfaceRefactorEnabled) {
@@ -1402,7 +1371,6 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @MediumTest
     @UseMethodParameter(RefactorTestParams.class)
     @EnableFeatures({
-        ChromeFeatureList.THUMBNAIL_CACHE_REFACTOR,
         ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study"
     })
     @CommandLineFlags.Add({BASE_PARAMS})

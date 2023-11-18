@@ -10,8 +10,10 @@
 #import "ios/chrome/browser/autocomplete/model/shortcuts_backend_factory.h"
 #import "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #import "ios/chrome/browser/bookmarks/model/account_bookmark_model_factory.h"
+#import "ios/chrome/browser/bookmarks/model/account_bookmark_sync_service_factory.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_undo_service_factory.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
+#import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_sync_service_factory.h"
 #import "ios/chrome/browser/bookmarks/model/managed_bookmark_service_factory.h"
 #import "ios/chrome/browser/bring_android_tabs/model/bring_android_tabs_to_ios_service_factory.h"
 #import "ios/chrome/browser/browsing_data/model/browsing_data_remover_factory.h"
@@ -20,18 +22,19 @@
 #import "ios/chrome/browser/content_settings/model/cookie_settings_factory.h"
 #import "ios/chrome/browser/crash_report/model/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #import "ios/chrome/browser/credential_provider/model/credential_provider_buildflags.h"
-#import "ios/chrome/browser/device_sharing/device_sharing_manager_factory.h"
+#import "ios/chrome/browser/device_sharing/model/device_sharing_manager_factory.h"
 #import "ios/chrome/browser/discover_feed/discover_feed_service_factory.h"
-#import "ios/chrome/browser/dom_distiller/dom_distiller_service_factory.h"
-#import "ios/chrome/browser/download/background_service/background_download_service_factory.h"
-#import "ios/chrome/browser/download/browser_download_service_factory.h"
+#import "ios/chrome/browser/dom_distiller/model/dom_distiller_service_factory.h"
+#import "ios/chrome/browser/download/model/background_service/background_download_service_factory.h"
+#import "ios/chrome/browser/download/model/browser_download_service_factory.h"
+#import "ios/chrome/browser/enterprise/model/idle/idle_service_factory.h"
 #import "ios/chrome/browser/favicon/favicon_service_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_cache_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
 #import "ios/chrome/browser/follow/follow_service_factory.h"
-#import "ios/chrome/browser/gcm/ios_chrome_gcm_profile_service_factory.h"
+#import "ios/chrome/browser/gcm/model/ios_chrome_gcm_profile_service_factory.h"
 #import "ios/chrome/browser/google/google_logo_service_factory.h"
 #import "ios/chrome/browser/history/domain_diversity_reporter_factory.h"
 #import "ios/chrome/browser/history/history_service_factory.h"
@@ -41,20 +44,20 @@
 #import "ios/chrome/browser/language/model/accept_languages_service_factory.h"
 #import "ios/chrome/browser/language/model/language_model_manager_factory.h"
 #import "ios/chrome/browser/language/model/url_language_histogram_factory.h"
-#import "ios/chrome/browser/mailto_handler/mailto_handler_service_factory.h"
+#import "ios/chrome/browser/mailto_handler/model/mailto_handler_service_factory.h"
 #import "ios/chrome/browser/metrics/google_groups_updater_service_factory.h"
 #import "ios/chrome/browser/metrics/ios_profile_session_durations_service_factory.h"
-#import "ios/chrome/browser/optimization_guide/optimization_guide_service_factory.h"
+#import "ios/chrome/browser/optimization_guide/model/optimization_guide_service_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_account_password_store_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_password_check_manager_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
-#import "ios/chrome/browser/photos/photos_service_factory.h"
+#import "ios/chrome/browser/photos/model/photos_service_factory.h"
 #import "ios/chrome/browser/plus_addresses/model/plus_address_service_factory.h"
 #import "ios/chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #import "ios/chrome/browser/policy_url_blocking/model/policy_url_blocking_service.h"
 #import "ios/chrome/browser/promos_manager/promos_manager_event_exporter_factory.h"
 #import "ios/chrome/browser/promos_manager/promos_manager_factory.h"
-#import "ios/chrome/browser/push_notification/push_notification_browser_state_service_factory.h"
+#import "ios/chrome/browser/push_notification/model/push_notification_browser_state_service_factory.h"
 #import "ios/chrome/browser/reading_list/model/reading_list_model_factory.h"
 #import "ios/chrome/browser/safe_browsing/model/chrome_password_protection_service_factory.h"
 #import "ios/chrome/browser/safe_browsing/model/real_time_url_lookup_service_factory.h"
@@ -63,19 +66,19 @@
 #import "ios/chrome/browser/safe_browsing/model/verdict_cache_manager_factory.h"
 #import "ios/chrome/browser/safety_check/model/ios_chrome_safety_check_manager_factory.h"
 #import "ios/chrome/browser/screen_time/model/screen_time_buildflags.h"
-#import "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
 #import "ios/chrome/browser/segmentation_platform/segmentation_platform_service_factory.h"
 #import "ios/chrome/browser/sessions/session_restoration_service_factory.h"
-#import "ios/chrome/browser/signin/about_signin_internals_factory.h"
-#import "ios/chrome/browser/signin/account_consistency_service_factory.h"
-#import "ios/chrome/browser/signin/account_reconcilor_factory.h"
-#import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
-#import "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/chrome/browser/signin/signin_browser_state_info_updater_factory.h"
-#import "ios/chrome/browser/signin/signin_client_factory.h"
-#import "ios/chrome/browser/signin/signin_error_controller_factory.h"
-#import "ios/chrome/browser/signin/trusted_vault_client_backend_factory.h"
+#import "ios/chrome/browser/signin/model/about_signin_internals_factory.h"
+#import "ios/chrome/browser/signin/model/account_consistency_service_factory.h"
+#import "ios/chrome/browser/signin/model/account_reconcilor_factory.h"
+#import "ios/chrome/browser/signin/model/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/model/chrome_account_manager_service_factory.h"
+#import "ios/chrome/browser/signin/model/identity_manager_factory.h"
+#import "ios/chrome/browser/signin/model/signin_browser_state_info_updater_factory.h"
+#import "ios/chrome/browser/signin/model/signin_client_factory.h"
+#import "ios/chrome/browser/signin/model/signin_error_controller_factory.h"
+#import "ios/chrome/browser/signin/model/trusted_vault_client_backend_factory.h"
 #import "ios/chrome/browser/supervised_user/model/child_account_service_factory.h"
 #import "ios/chrome/browser/supervised_user/model/kids_chrome_management_client_factory.h"
 #import "ios/chrome/browser/supervised_user/model/list_family_members_service_factory.h"
@@ -116,8 +119,10 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   autofill::PersonalDataManagerFactory::GetInstance();
   commerce::ShoppingServiceFactory::GetInstance();
   dom_distiller::DomDistillerServiceFactory::GetInstance();
+  enterprise_idle::IdleServiceFactory::GetInstance();
   feature_engagement::TrackerFactory::GetInstance();
   ios::AboutSigninInternalsFactory::GetInstance();
+  ios::AccountBookmarkSyncServiceFactory::GetInstance();
   ios::AccountConsistencyServiceFactory::GetInstance();
   ios::AccountReconcilorFactory::GetInstance();
   ios::AutocompleteClassifierFactory::GetInstance();
@@ -127,6 +132,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ios::CookieSettingsFactory::GetInstance();
   ios::FaviconServiceFactory::GetInstance();
   ios::HistoryServiceFactory::GetInstance();
+  ios::LocalOrSyncableBookmarkSyncServiceFactory::GetInstance();
   ios::InMemoryURLIndexFactory::GetInstance();
   ios::ShortcutsBackendFactory::GetInstance();
   ios::SigninErrorControllerFactory::GetInstance();

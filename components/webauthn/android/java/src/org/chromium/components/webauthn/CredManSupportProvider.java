@@ -13,7 +13,7 @@ import org.chromium.device.DeviceFeatureList;
 import org.chromium.device.DeviceFeatureMap;
 
 public class CredManSupportProvider {
-    private static final int GMSCORE_MIN_VERSION_CREDMAN = 234100000;
+    private static final int GMSCORE_MIN_VERSION_CREDMAN = 234600000;
 
     private static @CredManSupport int sCredManSupport;
 

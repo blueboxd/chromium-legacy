@@ -10,10 +10,14 @@
 #include <utility>
 
 #include "base/check.h"
+#include "base/check_op.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
+#include "base/location.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/sequence_checker.h"
@@ -24,6 +28,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
+#include "base/types/expected.h"
 #include "components/reporting/client/report_queue_configuration.h"
 #include "components/reporting/proto/synced/metric_data.pb.h"
 #include "components/reporting/proto/synced/record.pb.h"
@@ -76,16 +81,16 @@ void AddRecordToStorage(scoped_refptr<StorageModuleInterface> storage,
                         StorageModuleInterface::EnqueueCallback callback) {
   // Generate record data.
   const auto record_result = std::move(record_producer).Run();
-  if (!record_result.ok()) {
-    std::move(callback).Run(record_result.status());
+  if (!record_result.has_value()) {
+    std::move(callback).Run(record_result.error());
     return;
   }
 
-  CHECK(RecordMayGoToDestination(record_result.ValueOrDie(), destination));
+  CHECK(RecordMayGoToDestination(record_result.value(), destination));
 
   // Augment data.
   Record record;
-  *record.mutable_data() = std::move(record_result.ValueOrDie());
+  *record.mutable_data() = std::move(record_result.value());
   record.set_destination(destination);
   if (reserved_space > 0L) {
     record.set_reserved_space(reserved_space);
@@ -118,7 +123,8 @@ void AddRecordToStorage(scoped_refptr<StorageModuleInterface> storage,
 
   // Calculate timestamp in microseconds - to match Spanner expectations.
   const int64_t time_since_epoch_us =
-      base::Time::Now().ToJavaTime() * base::Time::kMicrosecondsPerMillisecond;
+      base::Time::Now().InMillisecondsSinceUnixEpoch() *
+      base::Time::kMicrosecondsPerMillisecond;
   if (time_since_epoch_us > kTime2122) {
     // Unusual timestamp. Reject the record even though the record is good
     // otherwise, because we can't obtain a reasonable timestamp. We have this
@@ -184,7 +190,9 @@ void ReportQueueImpl::Create(
 ReportQueueImpl::ReportQueueImpl(
     std::unique_ptr<ReportQueueConfiguration> config,
     scoped_refptr<StorageModuleInterface> storage)
-    : config_(std::move(config)), storage_(storage) {}
+    : config_(std::move(config)), storage_(storage) {
+  CHECK(config_);
+}
 
 ReportQueueImpl::~ReportQueueImpl() = default;
 
@@ -224,6 +232,10 @@ ReportQueueImpl::PrepareToAttachActualQueue() const {
   return base::DoNothing();
 }
 
+Destination ReportQueueImpl::GetDestination() const {
+  return config_->destination();
+}
+
 // Implementation of SpeculativeReportQueueImpl::PendingRecordProducer
 
 SpeculativeReportQueueImpl::PendingRecordProducer::PendingRecordProducer(
@@ -254,18 +266,21 @@ SpeculativeReportQueueImpl::PendingRecordProducer::operator=(
 
 // static
 std::unique_ptr<SpeculativeReportQueueImpl, base::OnTaskRunnerDeleter>
-SpeculativeReportQueueImpl::Create() {
+SpeculativeReportQueueImpl::Create(
+    const SpeculativeConfigSettings& config_settings) {
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner =
       base::ThreadPool::CreateSequencedTaskRunner(
           {base::TaskPriority::BEST_EFFORT, base::MayBlock()});
   return std::unique_ptr<SpeculativeReportQueueImpl, base::OnTaskRunnerDeleter>(
-      new SpeculativeReportQueueImpl(sequenced_task_runner),
+      new SpeculativeReportQueueImpl(config_settings, sequenced_task_runner),
       base::OnTaskRunnerDeleter(sequenced_task_runner));
 }
 
 SpeculativeReportQueueImpl::SpeculativeReportQueueImpl(
+    const SpeculativeConfigSettings& config_settings,
     scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner)
-    : sequenced_task_runner_(sequenced_task_runner) {
+    : sequenced_task_runner_(sequenced_task_runner),
+      config_settings_(config_settings) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -388,6 +403,10 @@ SpeculativeReportQueueImpl::PrepareToAttachActualQueue() const {
                      weak_ptr_factory_.GetMutableWeakPtr()));
 }
 
+Destination SpeculativeReportQueueImpl::GetDestination() const {
+  return config_settings_.destination;
+}
+
 void SpeculativeReportQueueImpl::AttachActualQueue(
     StatusOr<std::unique_ptr<ReportQueue>> status_or_actual_queue) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -395,14 +414,16 @@ void SpeculativeReportQueueImpl::AttachActualQueue(
     // Already attached, do nothing.
     return;
   }
-  if (!status_or_actual_queue.ok()) {
+  if (!status_or_actual_queue.has_value()) {
     // Failed to create actual queue.
     // Flush all pending records with this status.
-    PurgePendingProducers(status_or_actual_queue.status());
+    PurgePendingProducers(status_or_actual_queue.error());
     return;
   }
   // Actual report queue succeeded, store it (never to change later).
-  actual_report_queue_ = std::move(status_or_actual_queue.ValueOrDie());
+  CHECK_EQ(config_settings_.destination,
+           status_or_actual_queue.value()->GetDestination());
+  actual_report_queue_ = std::move(status_or_actual_queue.value());
   EnqueuePendingRecordProducers();
 }
 

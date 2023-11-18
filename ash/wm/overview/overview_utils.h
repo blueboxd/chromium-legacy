@@ -35,10 +35,6 @@ ASH_EXPORT OverviewSession* GetOverviewSession();
 // Returns true if `window` can cover available workspace.
 bool CanCoverAvailableWorkspace(aura::Window* window);
 
-// Returns false if any window with `root_window` covers the entire workspace,
-// true otherwise.
-bool ShouldAnimateWallpaper(aura::Window* root_window);
-
 // Fades `widget` to opacity one with the enter overview settings.
 // Have OverviewController observe this animation as a enter animation if
 // `observe` is true.
@@ -56,10 +52,10 @@ void FadeOutWidgetFromOverview(std::unique_ptr<views::Widget> widget,
 // Takes ownership of `widget`, closes and destroys it without any animations.
 void ImmediatelyCloseWidgetOnExit(std::unique_ptr<views::Widget> widget);
 
-// Returns the original bounds of `window` outside of overview. The bounds are a
-// union of all regular (normal and panel) windows in the window's transient
-// hierarchy.
-gfx::RectF GetTargetBoundsInScreen(aura::Window* window);
+// Returns the original bounds for the given `window` outside of overview. The
+// bounds are a union of all regular (normal and transient) windows in the
+// window's transient hierarchy.
+gfx::RectF GetUnionScreenBoundsForWindow(aura::Window* window);
 
 // Applies the `transform` to `window` and all of its transient children. Note
 // `transform` is the transform that is applied to `window` and needs to be
@@ -88,7 +84,7 @@ gfx::Rect GetGridBoundsInScreen(
 // in splitview, or if we aren't showing a splitview preview.
 absl::optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio();
 
-// Check if kNewOverviewLayout is enabled for tablet mode.
+// Check if the grid layout in tablet mode should be used.
 bool ShouldUseTabletModeGridLayout();
 
 // Returns a Rect by rounding the values of the given RectF in a way that
@@ -96,6 +92,12 @@ bool ShouldUseTabletModeGridLayout();
 ASH_EXPORT gfx::Rect ToStableSizeRoundedRect(const gfx::RectF& rect);
 
 void MoveFocusToView(OverviewFocusableView* target_view);
+
+// For all `windows`, change their visibility by changing the window opacity,
+// animating where necessary.
+void SetWindowsVisibleDuringItemDragging(const aura::Window::Windows& windows,
+                                         bool visible,
+                                         bool animate);
 
 }  // namespace ash
 

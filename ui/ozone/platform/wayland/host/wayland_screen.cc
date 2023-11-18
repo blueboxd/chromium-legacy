@@ -14,6 +14,7 @@
 #include "build/chromeos_buildflags.h"
 #include "components/device_event_log/device_event_log.h"
 #include "ui/base/linux/linux_desktop.h"
+#include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/display/display.h"
 #include "ui/display/display_finder.h"
 #include "ui/display/display_list.h"
@@ -34,6 +35,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/host/wayland_zcr_color_management_output.h"
+#include "ui/ozone/platform/wayland/host/wayland_zcr_color_manager.h"
 #include "ui/ozone/platform/wayland/host/zwp_idle_inhibit_manager.h"
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -99,7 +101,10 @@ WaylandScreen::WaylandScreen(WaylandConnection* connection)
       // Enable that back when the issue is resolved.
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
-    if (format == gfx::BufferFormat::RGBA_1010102)
+    if (format == gfx::BufferFormat::RGBA_F16)
+      image_format_hdr_ = format;
+
+    if (!image_format_hdr_ && format == gfx::BufferFormat::RGBA_1010102)
       image_format_hdr_ = format;
 
     if (!image_format_alpha_ && format == gfx::BufferFormat::BGRA_8888)
@@ -233,11 +238,10 @@ void WaylandScreen::AddOrUpdateDisplay(const WaylandOutput::Metrics& metrics) {
       connection_->wayland_output_manager()->GetOutput(metrics.output_id);
   auto* color_management_output =
       wayland_output ? wayland_output->color_management_output() : nullptr;
-  // (b/298432994): Temporarily disable HDR content until we are able to handle
-  // RGBA_F16 buffers. Currently F16 images break pages and apps and make them
-  // blank.
-  bool enable_hdr = false;
-  if (enable_hdr && color_management_output &&
+  auto srgb_hdr_supported =
+      connection_->zcr_color_manager()->GetVersion() >=
+      ZCR_COLOR_MANAGER_V1_EOTF_NAMES_SRGB_HDR_SINCE_VERSION;
+  if (srgb_hdr_supported && color_management_output &&
       color_management_output->gfx_color_space() &&
       color_management_output->gfx_color_space()->IsHDR()) {
     // Only use display color space to determine if HDR is supported.
@@ -549,6 +553,10 @@ base::Value::List WaylandScreen::GetGpuExtraInfo(
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 void WaylandScreen::OnTabletStateChanged(display::TabletState tablet_state) {
   tablet_state_ = tablet_state;
+
+  ui::TouchUiController::Get()->OnTabletModeToggled(
+      tablet_state == display::TabletState::kInTabletMode ||
+      tablet_state == display::TabletState::kEnteringTabletMode);
 
   auto* observer_list = display_list_.observers();
   for (auto& observer : *observer_list)

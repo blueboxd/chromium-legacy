@@ -8,11 +8,12 @@
 #include <memory>
 #include <string>
 
+#include <optional>
 #include "base/functional/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 #include "remoting/base/buildflags.h"
 #include "remoting/base/protobuf_http_client.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "remoting/proto/empty.pb.h"
 
 #if BUILDFLAG(REMOTING_INTERNAL)
 #include "remoting/internal/proto/helpers.h"
@@ -38,6 +39,9 @@ class CorpServiceClient {
   using ProvisionCorpMachineCallback = base::OnceCallback<void(
       const ProtobufHttpStatus&,
       std::unique_ptr<internal::RemoteAccessHostV1Proto>)>;
+  using ReportProvisioningErrorCallback =
+      base::OnceCallback<void(const ProtobufHttpStatus&,
+                              std::unique_ptr<Empty>)>;
 
   explicit CorpServiceClient(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
@@ -49,8 +53,12 @@ class CorpServiceClient {
   void ProvisionCorpMachine(const std::string& owner_email,
                             const std::string& fqdn,
                             const std::string& public_key,
-                            absl::optional<std::string> existing_host_id,
+                            std::optional<std::string> existing_host_id,
                             ProvisionCorpMachineCallback callback);
+
+  void ReportProvisioningError(const std::string& host_id,
+                               const std::string& error_message,
+                               ReportProvisioningErrorCallback callback);
 
   void CancelPendingRequests();
 

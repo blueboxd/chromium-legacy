@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "ui/accessibility/ax_error_types.h"
 
 namespace gfx {
 class Point;
@@ -46,6 +47,7 @@ struct AXTreeUpdate;
 
 namespace blink {
 
+class AbstractInlineTextBox;
 class AriaNotificationOptions;
 class AXObject;
 class AccessibleNode;
@@ -55,7 +57,6 @@ class HTMLTableElement;
 class HTMLFrameOwnerElement;
 class HTMLSelectElement;
 class LocalFrameView;
-class NGAbstractInlineTextBox;
 struct PhysicalRect;
 
 class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
@@ -106,7 +107,7 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   virtual void Remove(Node*) = 0;
   virtual void RemoveSubtreeWhenSafe(Node*, bool remove_root = true) = 0;
   virtual void RemovePopup(Document*) = 0;
-  virtual void Remove(NGAbstractInlineTextBox*) = 0;
+  virtual void Remove(AbstractInlineTextBox*) = 0;
 
   virtual const Element* RootAXEditableElement(const Node*) = 0;
 
@@ -206,6 +207,8 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
 
   virtual AXObject* ObjectFromAXID(AXID) const = 0;
 
+  virtual AXObject* Root() = 0;
+
   virtual AXID GenerateAXID() const = 0;
 
   virtual void AddAriaNotification(Node*,
@@ -227,9 +230,11 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   virtual AXObject* GetPluginRoot() = 0;
 
   // Serialize entire tree, returning true if successful.
-  virtual bool SerializeEntireTree(size_t max_node_count,
-                                   base::TimeDelta timeout,
-                                   ui::AXTreeUpdate*) = 0;
+  virtual bool SerializeEntireTree(
+      size_t max_node_count,
+      base::TimeDelta timeout,
+      ui::AXTreeUpdate*,
+      std::set<ui::AXSerializationErrorFlag>* out_error = nullptr) = 0;
 
   // Recompute the entire tree and reserialize it.
   // This method is useful when something that potentially affects most of the

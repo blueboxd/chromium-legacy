@@ -11,7 +11,6 @@
 #import "base/metrics/field_trial_params.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
-#import "ios/chrome/browser/ntp/home/features.h"
 #import "ios/chrome/browser/shared/public/commands/omnibox_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/dynamic_type_util.h"
@@ -87,6 +86,11 @@
 }
 
 - (void)updateBackgroundColor {
+  if (base::FeatureList::IsEnabled(kDynamicThemeColor) ||
+      base::FeatureList::IsEnabled(kDynamicBackgroundColor)) {
+    [super updateBackgroundColor];
+    return;
+  }
   UIColor* backgroundColor =
       self.buttonFactory.toolbarConfiguration.backgroundColor;
   if (base::FeatureList::IsEnabled(kThemeColorInTopToolbar) &&

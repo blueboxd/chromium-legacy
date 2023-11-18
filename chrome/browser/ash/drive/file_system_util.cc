@@ -17,6 +17,7 @@
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
+#include "base/system/sys_info.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -104,6 +105,13 @@ bool IsDriveAvailableForProfile(const Profile* const profile) {
     return false;
   }
 
+  // Disable Drive if the flag has been passed and it is a test image.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kDisableDriveFsForTesting)) {
+    base::SysInfo::CrashIfChromeOSNonTestImage();
+    return false;
+  }
+
   return true;
 }
 
@@ -134,9 +142,6 @@ bool IsDriveFsBulkPinningAvailable(const Profile* const profile) {
   }
 
   // For Googlers, the bulk-pinning feature is available on any kind of device.
-  // This allows Googlers to easily test ("dogfood") the bulk-pinning feature.
-  //
-  // TODO(b/296316774) Revisit this decision for Googlers.
   if (UserManager::IsInitialized()) {
     if (const User* const user = UserManager::Get()->GetActiveUser();
         user && gaia::IsGoogleInternalAccountEmail(

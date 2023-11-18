@@ -28,6 +28,10 @@
     padding-top: 16px;
   }
 
+  #emptyStateContainer {
+    padding-block-start: 8px;
+  }
+
   #pendingAccelerator {
     padding-top: 8px;
   }
@@ -53,7 +57,7 @@
     border-radius: 16px;
     display: flex;
     flex-direction: column;
-    min-height: 296px;
+    min-height: 280px;
     justify-content: space-between;
     margin-left: 32px;
     margin-right: 32px;
@@ -61,12 +65,26 @@
   }
 
   #dialogTitle {
-    --cr-dialog-title-slot-padding-bottom: 32px;
+    --cr-dialog-title-slot-padding-bottom: 16px;
     --cr-dialog-title-slot-padding-end: 32px;
     --cr-dialog-title-slot-padding-start: 32px;
     --cr-dialog-title-slot-padding-top: 32px;
+  }
+
+  #shortcutEditTitle {
     color: var(--cros-text-color-primary);
     font: var(--cros-display-7-font);
+    padding-block-end: 8px;
+  }
+
+  #shortcutDescription, #noShortcutAssigned {
+    font: var(--cros-body-2-font);
+    color: var(--cros-text-color-secondary);
+  }
+
+  #noShortcutAssigned {
+    padding-block: 16px;
+    padding-inline-start: 8px;
   }
 
   [slot='button-container'] {
@@ -82,7 +100,12 @@
 
 <cr-dialog id="editDialog" on-close="onDialogClose">
   <div id="dialogTitle" slot="title">
-    [[description]]
+    <div id="shortcutEditTitle">
+      [[i18n('editShortcut')]]
+    </div>
+    <div id="shortcutDescription">
+      [[description]]
+    </div>
   </div>
   <div slot="body">
     <div id="acceleratorViewList">
@@ -91,7 +114,8 @@
         <accelerator-edit-view class="acceleratorItem"
             accelerator-info=[[item]]
             action="[[action]]"
-            source="[[source]]">
+            source="[[source]]"
+            on-edit-action-completed="onEditActionCompleted">
         </accelerator-edit-view>
       </template>
       <template id="newAccelerator" is="dom-if"
@@ -100,8 +124,18 @@
         <accelerator-edit-view id="pendingAccelerator"
             view-state="{{pendingNewAcceleratorState}}"
             action="[[action]]"
-            source="[[source]]">
+            source="[[source]]"
+            on-edit-action-completed="onEditActionCompleted">
         </accelerator-edit-view>
+      </template>
+      <template id="emptyState" is="dom-if"
+          if="[[isEmptyState(pendingNewAcceleratorState, acceleratorInfos)]]"
+          restamp>
+        <div id="emptyStateContainer">
+          <div id="noShortcutAssigned">
+            [[i18n('noShortcutAssigned')]]
+          </div>
+        </div>
       </template>
     </div>
     <div id="addAcceleratorContainer"

@@ -48,13 +48,13 @@
 #import "ios/chrome/browser/component_updater/model/ios_component_updater_configurator.h"
 #import "ios/chrome/browser/crash_report/model/breadcrumbs/application_breadcrumbs_logger.h"
 #import "ios/chrome/browser/default_browser/model/utils.h"
-#import "ios/chrome/browser/gcm/ios_chrome_gcm_profile_service_factory.h"
+#import "ios/chrome/browser/gcm/model/ios_chrome_gcm_profile_service_factory.h"
 #import "ios/chrome/browser/history/history_service_factory.h"
 #import "ios/chrome/browser/metrics/ios_chrome_metrics_services_manager_client.h"
 #import "ios/chrome/browser/policy/browser_policy_connector_ios.h"
 #import "ios/chrome/browser/policy/configuration_policy_handler_list_factory.h"
 #import "ios/chrome/browser/prefs/model/ios_chrome_pref_service_factory.h"
-#import "ios/chrome/browser/push_notification/push_notification_service.h"
+#import "ios/chrome/browser/push_notification/model/push_notification_service.h"
 #import "ios/chrome/browser/segmentation_platform/otr_web_state_observer.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -162,7 +162,7 @@ void ApplicationContextImpl::PreMainMessageLoopRun() {
                                    GetSharedURLLoaderFactory());
   }
 
-  if (breadcrumbs::IsEnabled()) {
+  if (breadcrumbs::MaybeEnableBasedOnChannel(GetLocalState(), ::GetChannel())) {
     // Start crash reporter listening for breadcrumb events. Collected
     // breadcrumbs will be attached to crash reports.
     breadcrumbs::CrashReporterBreadcrumbObserver::GetInstance();
@@ -570,9 +570,9 @@ void ApplicationContextImpl::CreateLocalState() {
 
   sessions::SessionIdGenerator::GetInstance()->Init(local_state_.get());
 
-  net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(
+  net::ClientSocketPoolManager::set_max_sockets_per_proxy_chain(
       net::HttpNetworkSession::NORMAL_SOCKET_POOL,
-      std::max(std::min<int>(net::kDefaultMaxSocketsPerProxyServer, 99),
+      std::max(std::min<int>(net::kDefaultMaxSocketsPerProxyChain, 99),
                net::ClientSocketPoolManager::max_sockets_per_group(
                    net::HttpNetworkSession::NORMAL_SOCKET_POOL)));
 

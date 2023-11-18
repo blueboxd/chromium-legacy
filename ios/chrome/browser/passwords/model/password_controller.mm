@@ -9,6 +9,7 @@
 #import <algorithm>
 #import <map>
 #import <memory>
+#import <optional>
 #import <string>
 #import <utility>
 #import <vector>
@@ -70,8 +71,8 @@
 #import "ios/chrome/browser/shared/public/commands/password_protection_commands.h"
 #import "ios/chrome/browser/shared/public/commands/password_suggestion_commands.h"
 #import "ios/chrome/browser/shared/public/commands/passwords_account_storage_notice_commands.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
-#import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/model/authentication_service.h"
+#import "ios/chrome/browser/signin/model/authentication_service_factory.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -80,7 +81,6 @@
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/web_state.h"
 #import "services/network/public/cpp/shared_url_loader_factory.h"
-#import "third_party/abseil-cpp/absl/types/optional.h"
 #import "ui/base/device_form_factor.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "url/gurl.h"
@@ -97,7 +97,6 @@ using l10n_util::GetNSString;
 using l10n_util::GetNSStringF;
 using password_manager::AccountSelectFillData;
 using password_manager::FillData;
-using password_manager::GetPageURLAndCheckTrustLevel;
 using password_manager::PasswordForm;
 using password_manager::PasswordFormManagerForUI;
 using password_manager::PasswordGenerationFrameHelper;
@@ -446,7 +445,7 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
   PrefService* prefs = self.browserState->GetPrefs();
   syncer::SyncService* syncService =
       SyncServiceFactory::GetForBrowserState(self.browserState);
-  const absl::optional<std::string> accountToStorePassword =
+  const std::optional<std::string> accountToStorePassword =
       password_manager::sync_util::GetAccountForSaving(prefs, syncService);
   const password_manager::features_util::PasswordAccountStorageUserState
       accountStorageUserState = password_manager::features_util::

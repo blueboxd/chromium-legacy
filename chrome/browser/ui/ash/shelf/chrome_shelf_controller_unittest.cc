@@ -57,6 +57,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "base/values.h"
@@ -69,6 +70,7 @@
 #include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/apps/app_service/policy_util.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app.h"
+#include "chrome/browser/apps/app_service/promise_apps/promise_app_metrics.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_registry_cache.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_service.h"
 #include "chrome/browser/ash/app_list/app_list_syncable_service.h"
@@ -138,16 +140,17 @@
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/branded_strings.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/test_browser_window_aura.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/standalone_browser/feature_refs.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/account_id/account_id.h"
 #include "components/app_constants/constants.h"
 #include "components/exo/shell_surface_util.h"
@@ -194,6 +197,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
@@ -1944,7 +1948,8 @@ TEST_F(ChromeShelfControllerTest, PreinstalledApps) {
 
 TEST_F(ChromeShelfControllerLacrosTest, LacrosPinnedByDefault) {
   InitShelfController();
-  EXPECT_EQ("Chrome", GetPinnedAppStatus());
+  std::string lacros_app_name = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
+  EXPECT_EQ(lacros_app_name, GetPinnedAppStatus());
 }
 
 // Checks that AppService instance is updated appropriately for one Chrome app
@@ -5501,8 +5506,21 @@ TEST_F(ChromeShelfControllerTest, InternalAppPinUnpin) {
   EXPECT_FALSE(shelf_controller_->IsAppPinned(app_id));
 }
 
+class ChromeShelfControllerWithInternalAppTest
+    : public ChromeShelfControllerTest {
+ public:
+  ChromeShelfControllerWithInternalAppTest() {
+    feature_list_.InitAndDisableFeature(
+        ash::features::kOnlyShowNewShortcutsApp);
+  }
+  ~ChromeShelfControllerWithInternalAppTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Test that internal app can be added and removed on shelf.
-TEST_F(ChromeShelfControllerTest, InternalAppWindowRecreation) {
+TEST_F(ChromeShelfControllerWithInternalAppTest, InternalAppWindowRecreation) {
   InitShelfController();
 
   // Only test the first internal app. The others should be the same.
@@ -5533,7 +5551,8 @@ TEST_F(ChromeShelfControllerTest, InternalAppWindowRecreation) {
 
 // Test that internal app can be added and removed by SetProperty of
 // ash::kShelfIDKey.
-TEST_F(ChromeShelfControllerTest, InternalAppWindowPropertyChanged) {
+TEST_F(ChromeShelfControllerWithInternalAppTest,
+       InternalAppWindowPropertyChanged) {
   InitShelfController();
 
   // Only test the first internal app. The others should be the same.
@@ -6241,6 +6260,7 @@ TEST_F(ChromeShelfControllerPromiseAppsTest, PromiseAppUpdatesShelfItem) {
   apps::PromiseAppPtr promise_app =
       std::make_unique<apps::PromiseApp>(package_id);
   promise_app->status = apps::PromiseStatus::kPending;
+  promise_app->name = "App Name";
   promise_app->should_show = true;
   cache()->OnPromiseApp(std::move(promise_app));
 
@@ -6254,6 +6274,9 @@ TEST_F(ChromeShelfControllerPromiseAppsTest, PromiseAppUpdatesShelfItem) {
   const ash::ShelfItem* item = shelf_controller_->GetItem(id);
   EXPECT_EQ(item->title, ShelfControllerHelper::GetLabelForPromiseStatus(
                              apps::PromiseStatus::kPending));
+  EXPECT_EQ(item->accessible_name,
+            ShelfControllerHelper::GetAccessibleLabelForPromiseStatus(
+                "App Name", apps::PromiseStatus::kPending));
   EXPECT_EQ(item->progress, 0);
   EXPECT_EQ(item->app_status, ash::AppStatus::kPending);
 
@@ -6266,6 +6289,9 @@ TEST_F(ChromeShelfControllerPromiseAppsTest, PromiseAppUpdatesShelfItem) {
   // Verify that the shelf item has updated details.
   EXPECT_EQ(item->title, ShelfControllerHelper::GetLabelForPromiseStatus(
                              apps::PromiseStatus::kInstalling));
+  EXPECT_EQ(item->accessible_name,
+            ShelfControllerHelper::GetAccessibleLabelForPromiseStatus(
+                "App Name", apps::PromiseStatus::kInstalling));
   EXPECT_EQ(item->progress, 0.3f);
   EXPECT_EQ(item->app_status, ash::AppStatus::kInstalling);
 }
@@ -6353,7 +6379,7 @@ TEST_F(ChromeShelfControllerPromiseAppsTest,
   const ash::ShelfItem* item = shelf_controller_->GetItem(id);
   SkBitmap result_bitmap = *item->image.bitmap();
   SkBitmap expected_bitmap =
-      ApplyEffectsToBitmap(base_bitmap, apps::IconEffects::kCrOsStandardMask);
+      ApplyEffectsToBitmap(base_bitmap, apps::IconEffects::kCrOsStandardIcon);
   EXPECT_TRUE(gfx::BitmapsAreEqual(result_bitmap, expected_bitmap));
 }
 
@@ -6547,6 +6573,7 @@ TEST_F(ChromeShelfControllerPromiseAppsTest, SyncDataCreatesCorrectShelfItem) {
   ASSERT_TRUE(promise_item);
   EXPECT_TRUE(promise_item->is_promise_app);
   EXPECT_EQ(promise_item->progress, 0.3f);
+  EXPECT_EQ(promise_item->package_id, package_id.ToString());
 
   // Add an app in ArcAppListPrefs, which will register an app in App Service.
   // We need to add an app into ArcAppListPrefs (and not just the
@@ -6567,12 +6594,36 @@ TEST_F(ChromeShelfControllerPromiseAppsTest, SyncDataCreatesCorrectShelfItem) {
   ASSERT_TRUE(app_item);
   EXPECT_FALSE(app_item->is_promise_app);
   EXPECT_EQ(app_item->progress, -1);
+  EXPECT_EQ(app_item->package_id, package_id.ToString());
+}
+
+TEST_F(ChromeShelfControllerPromiseAppsTest, ShelfItemCreationUpdatesMetrics) {
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectBucketCount(
+      apps::kPromiseAppLifecycleEventHistogram,
+      apps::PromiseAppLifecycleEvent::kCreatedInShelf, 0);
+
+  const apps::PackageId package_id =
+      apps::PackageId(apps::AppType::kArc, "com.example.test");
+  apps::PromiseAppPtr promise_app =
+      std::make_unique<apps::PromiseApp>(package_id);
+  promise_app->should_show = true;
+  cache()->OnPromiseApp(std::move(promise_app));
+
+  InitShelfController();
+  PinAppWithIDToShelf(package_id.ToString());
+
+  EXPECT_TRUE(model_->IsAppPinned(package_id.ToString()));
+  histogram_tester.ExpectBucketCount(
+      apps::kPromiseAppLifecycleEventHistogram,
+      apps::PromiseAppLifecycleEvent::kCreatedInShelf, 1);
 }
 
 class ChromeShelfControllerShortcutTest : public ChromeShelfControllerTest {
  public:
   ChromeShelfControllerShortcutTest() {
-    feature_list_.InitAndEnableFeature(features::kCrosWebAppShortcutUiUpdate);
+    feature_list_.InitAndEnableFeature(
+        chromeos::features::kCrosWebAppShortcutUiUpdate);
   }
   ~ChromeShelfControllerShortcutTest() override = default;
 
@@ -6640,7 +6691,8 @@ TEST_F(ChromeShelfControllerShortcutTest, LoadIcon) {
   apps::ShortcutPtr shortcut =
       std::make_unique<apps::Shortcut>("app_id", "local_id");
   apps::ShortcutId shortcut_id = shortcut->shortcut_id;
-  shortcut->icon_key = apps::IconKey(100, 0, 0);
+  shortcut->icon_key = apps::IconKey();
+  shortcut->icon_key->update_version = false;
 
   apps::StubIconLoader shortcut_stub_icon_loader;
   apps::StubIconLoader app_stub_icon_loader;
@@ -6648,8 +6700,8 @@ TEST_F(ChromeShelfControllerShortcutTest, LoadIcon) {
       ->OverrideShortcutInnerIconLoaderForTesting(&shortcut_stub_icon_loader);
   apps::AppServiceProxyFactory::GetForProfile(profile())
       ->OverrideInnerIconLoaderForTesting(&app_stub_icon_loader);
-  shortcut_stub_icon_loader.timelines_by_app_id_[shortcut_id.value()] = 1;
-  app_stub_icon_loader.timelines_by_app_id_["app_id"] = 1;
+  shortcut_stub_icon_loader.update_version_by_app_id_[shortcut_id.value()] = 1;
+  app_stub_icon_loader.update_version_by_app_id_["app_id"] = 1;
   EXPECT_EQ(0, shortcut_stub_icon_loader.NumLoadIconFromIconKeyCalls());
   EXPECT_EQ(0, app_stub_icon_loader.NumLoadIconFromIconKeyCalls());
 
@@ -6677,7 +6729,9 @@ TEST_F(ChromeShelfControllerShortcutTest, LoadIcon) {
   // Verify icon update loads icon again.
   apps::ShortcutPtr delta =
       std::make_unique<apps::Shortcut>("app_id", "local_id");
-  delta->icon_key = apps::IconKey(101, 1, 1);
+  delta->icon_key = apps::IconKey(apps::IconKey::kInvalidResourceId,
+                                  apps::IconEffects::kCrOsStandardIcon);
+  delta->icon_key->update_version = true;
   cache()->UpdateShortcut(std::move(delta));
 
   EXPECT_EQ(2, shortcut_stub_icon_loader.NumLoadIconFromIconKeyCalls());
@@ -6732,7 +6786,8 @@ TEST_F(ChromeShelfControllerShortcutTest, LoadIcon) {
   cache()->RemoveShortcut(shortcut_id);
   apps::ShortcutPtr same_shortcut =
       std::make_unique<apps::Shortcut>("app_id", "local_id");
-  same_shortcut->icon_key = apps::IconKey(100, 0, 0);
+  same_shortcut->icon_key = apps::IconKey();
+  same_shortcut->icon_key->update_version = false;
   cache()->UpdateShortcut(std::move(same_shortcut));
   // In this case icon loaded on shortcut creation.
   EXPECT_EQ(4, shortcut_stub_icon_loader.NumLoadIconFromIconKeyCalls());

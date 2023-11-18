@@ -47,6 +47,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/crosapi/cpp/crosapi_constants.h"  // nogncheck
 #include "chromeos/lacros/lacros_paths.h"
+#include "chromeos/startup/startup.h"  // nogncheck
 #endif
 
 namespace {
@@ -186,6 +187,12 @@ bool PathProvider(int key, base::FilePath* result) {
   base::FilePath cur;
   switch (key) {
     case chrome::DIR_USER_DATA:
+#if BUILDFLAG(IS_CHROMEOS_LACROS) && DCHECK_IS_ON()
+      // Check that the user data directory is not accessed before
+      // initialization when prelaunching at login screen.
+      DCHECK(chromeos::lacros_paths::IsInitializedUserDataDir() ||
+             !chromeos::IsLaunchedWithPostLoginParams());
+#endif
       if (!GetDefaultUserDataDirectory(&cur)) {
         return false;
       }
@@ -583,7 +590,8 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
 #endif
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(ENABLE_EXTENSIONS) && \
+    (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC))
     case chrome::DIR_NATIVE_MESSAGING:
 #if BUILDFLAG(IS_MAC)
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)

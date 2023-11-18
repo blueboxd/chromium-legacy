@@ -463,14 +463,15 @@ class MenuController::MenuScrollTask {
     SubmenuView* const new_menu = part.submenu;
     CHECK(new_menu);
     const bool new_is_up = part.type == MenuPartType::kScrollUp;
-    if (std::exchange(submenu_, new_menu) == new_menu &&
-        std::exchange(is_scrolling_up_, new_is_up) == new_is_up) {
+    if (new_menu == submenu_ && is_scrolling_up_ == new_is_up) {
       return;
     }
 
     start_scroll_time_ = base::Time::Now();
+    submenu_ = new_menu;
     pixels_per_second_ = submenu_->GetPreferredItemHeight() * 20;
     start_y_ = submenu_->GetVisibleBounds().y();
+    is_scrolling_up_ = new_is_up;
     if (!scrolling_timer_.IsRunning()) {
       scrolling_timer_.Start(FROM_HERE, base::Hertz(60), this,
                              &MenuScrollTask::Run);
@@ -1512,10 +1513,11 @@ void MenuController::SetSelection(MenuItemView* menu_item,
   if (pending_item_changed)
     StopShowTimer();
 
-  if (selection_types & SELECTION_UPDATE_IMMEDIATELY)
+  if (selection_types & SELECTION_UPDATE_IMMEDIATELY) {
     CommitPendingSelection();
-  else if (pending_item_changed)
+  } else if (pending_item_changed) {
     StartShowTimer();
+  }
 
   // Notify an accessibility focus event on all menu items except for the root.
   if (menu_item && pending_item_changed &&
@@ -1535,7 +1537,7 @@ void MenuController::SetSelection(MenuItemView* menu_item,
         menu_item->GetParentMenuItem()->GetSubmenu()) {
       menu_item->GetParentMenuItem()->GetSubmenu()->NotifyAccessibilityEvent(
           ax::mojom::Event::kSelectedChildrenChanged,
-          true /* send_native_event */);
+          /*send_native_event=*/true);
     }
   }
 }

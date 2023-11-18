@@ -67,6 +67,7 @@ ManifestDemuxer::~ManifestDemuxer() {
   DCHECK(media_task_runner_->RunsTasksInCurrentSequence());
   impl_->Stop();
   impl_.reset();
+  streams_.clear();
   chunk_demuxer_.reset();
 }
 
@@ -395,6 +396,7 @@ bool ManifestDemuxer::AppendAndParseData(base::StringPiece role,
 void ManifestDemuxer::OnError(PipelineStatus error) {
   DCHECK(media_task_runner_->RunsTasksInCurrentSequence());
   cancelable_next_event_.Cancel();
+  weak_factory_.InvalidateWeakPtrs();
 
   if (pending_init_) {
     std::move(pending_init_).Run(std::move(error).AddHere());

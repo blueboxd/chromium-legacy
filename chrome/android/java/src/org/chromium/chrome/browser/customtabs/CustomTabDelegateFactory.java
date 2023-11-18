@@ -17,6 +17,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.browser.trusted.TrustedWebActivityDisplayMode.ImmersiveMode;
 
+import dagger.Lazy;
+
 import org.chromium.base.supplier.Supplier;
 import org.chromium.blink.mojom.DisplayMode;
 import org.chromium.cc.input.BrowserControlsState;
@@ -64,8 +66,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import dagger.Lazy;
 
 /**
  * A {@link TabDelegateFactory} class to be used in all {@link Tab} owned
@@ -201,11 +201,10 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
 
         @Override
         protected boolean isInstalledWebappDelegateGeolocation() {
-            if ((mActivity instanceof CustomTabActivity)
-                    && ((CustomTabActivity) mActivity).isInTwaMode()) {
+            if ((mActivity instanceof CustomTabActivity cctActivity) && cctActivity.isInTwaMode()) {
                 // Whether the corresponding TWA client app enrolled in location delegation.
                 return InstalledWebappPermissionManager.hasAndroidLocationPermission(
-                               ((CustomTabActivity) mActivity).getTwaPackage())
+                                cctActivity.getTwaPackage())
                         != null;
             }
             return false;
@@ -329,7 +328,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
      * Creates a basic/empty {@link TabDelegateFactory} for use when creating a hidden tab. It will
      * be replaced when the hidden Tab becomes shown.
      */
-    static CustomTabDelegateFactory createEmpty() {
+    public static CustomTabDelegateFactory createEmpty() {
         return new CustomTabDelegateFactory(null, false, false, null, DisplayMode.BROWSER, false,
                 null, null, null, null,
                 ()
@@ -387,7 +386,6 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
     @VisibleForTesting
     TabContextMenuItemDelegate createTabContextMenuItemDelegate(Tab tab) {
         TabModelSelector tabModelSelector = mTabModelSelectorSupplier.get();
-        final boolean isIncognito = tab.isIncognito();
         return new TabContextMenuItemDelegate(tab, tabModelSelector,
                 EphemeralTabCoordinator.isSupported() ? mEphemeralTabCoordinator::get : ()
                         -> null,

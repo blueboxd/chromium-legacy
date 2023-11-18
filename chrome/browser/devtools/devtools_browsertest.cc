@@ -87,6 +87,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
@@ -486,13 +487,13 @@ class DevToolsBeforeUnloadTest : public DevToolsTest {
   }
 
   void OpenDevToolsPopupWindow(DevToolsWindow* devtools_window) {
-    content::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP,
-        content::NotificationService::AllSources());
     ASSERT_TRUE(content::ExecJs(
         DevToolsWindowTesting::Get(devtools_window)->main_web_contents(),
         "window.open(\"\", \"\", \"location=0\");"));
-    observer.Wait();
+    Browser* popup_browser = BrowserList::GetInstance()->GetLastActive();
+    WebContents* popup_contents =
+        popup_browser->tab_strip_model()->GetActiveWebContents();
+    content::WaitForLoadStop(popup_contents);
   }
 
   void CloseDevToolsPopupWindow(DevToolsWindow* devtools_window) {
@@ -781,7 +782,14 @@ class DevToolsServiceWorkerExtensionTest : public InProcessBrowserTest {
   extensions::ExtensionRegistry* extension_registry_ = nullptr;
 };
 
-IN_PROC_BROWSER_TEST_F(DevToolsServiceWorkerExtensionTest, AttachOnReload) {
+// TODO(crbug/1503023): Fix the memory leak and enable the test.
+#if defined(LEAK_SANITIZER) && BUILDFLAG(IS_LINUX)
+#define MAYBE_AttachOnReload DISABLED_AttachOnReload
+#else
+#define MAYBE_AttachOnReload AttachOnReload
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsServiceWorkerExtensionTest,
+                       MAYBE_AttachOnReload) {
   base::FilePath extension_path =
       base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
           .AppendASCII("devtools")
@@ -1902,9 +1910,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest, CanInspectExtensionOffscreenDoc) {
           get_info_function.get(),
           content::JsReplace(R"([$1])", extension->id()), browser()->profile());
   ASSERT_TRUE(result);
-  std::unique_ptr<extensions::api::developer_private::ExtensionInfo> info =
-      extensions::api::developer_private::ExtensionInfo::FromValueDeprecated(
-          *result);
+  auto info =
+      extensions::api::developer_private::ExtensionInfo::FromValue(*result);
   ASSERT_TRUE(info);
 
   // The only inspectable view should be the offscreen document. Validate the
@@ -1912,7 +1919,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest, CanInspectExtensionOffscreenDoc) {
   ASSERT_EQ(1u, info->views.size());
   const extensions::api::developer_private::ExtensionView& view =
       info->views[0];
-  EXPECT_EQ(extensions::api::developer_private::VIEW_TYPE_OFFSCREEN_DOCUMENT,
+  EXPECT_EQ(extensions::api::developer_private::ViewType::kOffscreenDocument,
             view.type);
   content::WebContents* offscreen_contents =
       offscreen_document->host_contents();
@@ -2374,8 +2381,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsReattachAfterCrashTest,
   RunTestWithPanel("timeline");
 }
 
+// TODO(crbug.com/1496262): Gardener 2023-10-26: Flaky on bots.
 IN_PROC_BROWSER_TEST_F(DevToolsReattachAfterCrashTest,
-                       TestReattachAfterCrashOnNetwork) {
+                       DISABLED_TestReattachAfterCrashOnNetwork) {
   RunTestWithPanel("network");
 }
 
@@ -3039,6 +3047,27 @@ IN_PROC_BROWSER_TEST_F(DevToolsTabTargetTest, InspectElement) {
   DevToolsWindowTesting::CloseDevToolsWindowSync(window);
 }
 
+IN_PROC_BROWSER_TEST_F(DevToolsTabTargetTest, UKMTest) {
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+  GURL url(
+      embedded_test_server()->GetURL("a.com", "/devtools/oopif_frame.html"));
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  tab->GetController().LoadURL(url, content::Referrer(),
+                               ui::PAGE_TRANSITION_LINK, std::string());
+  EXPECT_TRUE(content::WaitForLoadStop(tab));
+
+  std::vector<RenderFrameHost*> frames =
+      CollectAllRenderFrameHosts(GetInspectedTab());
+  RenderFrameHost* frame_host = frames[0];
+  DevToolsWindow::InspectElement(frame_host, 100, 100);
+
+  // Make sure we are recording the UKM when DevTools are opened.
+  auto ukm_entries = test_ukm_recorder.GetEntriesByName("DevTools.Opened");
+  EXPECT_EQ(1u, ukm_entries.size());
+  test_ukm_recorder.ExpectEntrySourceHasUrl(ukm_entries[0], url);
+}
+
 IN_PROC_BROWSER_TEST_F(DevToolsTest, ExistsForWebContentsAfterClosing) {
   EXPECT_FALSE(content::DevToolsAgentHost::HasFor(GetInspectedTab()));
 
@@ -3301,8 +3330,16 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest,
   CloseDevToolsWindow();
 }
 
+// TODO(crbug.com/1494777): Test is flaky on Linux.
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_ExtensionWebSocketOfflineNetworkConditions \
+  DISABLED_ExtensionWebSocketOfflineNetworkConditions
+#else
+#define MAYBE_ExtensionWebSocketOfflineNetworkConditions \
+  ExtensionWebSocketOfflineNetworkConditions
+#endif
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
-                       ExtensionWebSocketOfflineNetworkConditions) {
+                       MAYBE_ExtensionWebSocketOfflineNetworkConditions) {
   net::SpawnedTestServer websocket_server(
       net::SpawnedTestServer::TYPE_WS,
       base::FilePath(FILE_PATH_LITERAL("net/data/websocket")));

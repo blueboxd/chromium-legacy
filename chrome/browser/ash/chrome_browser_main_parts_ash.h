@@ -94,7 +94,11 @@ class SystemTokenCertDBInitializer;
 class VideoConferenceAppServiceClient;
 class VideoConferenceAshFeatureClient;
 class WebKioskAppManager;
-class KioskAppManager;
+class KioskChromeAppManager;
+
+namespace carrier_lock {
+class CarrierLockManager;
+}
 
 namespace cros_healthd::internal {
 class DataCollector;
@@ -106,10 +110,6 @@ class ReportController;
 
 namespace internal {
 class DBusServices;
-}
-
-namespace input_method {
-class EditorMediator;
 }
 
 namespace mojo_service_manager {
@@ -202,6 +202,8 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
 
   std::unique_ptr<EventRewriterDelegateImpl> event_rewriter_delegate_;
 
+  std::unique_ptr<carrier_lock::CarrierLockManager> carrier_lock_manager_;
+
   // Handles event dispatch to the accessibility component extensions.
   std::unique_ptr<AccessibilityEventRewriterDelegateImpl>
       accessibility_event_rewriter_delegate_;
@@ -221,7 +223,7 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<LowDiskNotification> low_disk_notification_;
   std::unique_ptr<ArcKioskAppManager> arc_kiosk_app_manager_;
   std::unique_ptr<WebKioskAppManager> web_kiosk_app_manager_;
-  std::unique_ptr<KioskAppManager> kiosk_app_manager_;
+  std::unique_ptr<KioskChromeAppManager> kiosk_chrome_app_manager_;
   std::unique_ptr<KioskController> kiosk_controller_;
   std::unique_ptr<MultiCaptureNotifications> multi_capture_notifications_;
 
@@ -315,8 +317,6 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
       video_conference_manager_client_;
 
   std::unique_ptr<MisconfiguredUserCleaner> misconfigured_user_cleaner_;
-
-  std::unique_ptr<input_method::EditorMediator> editor_mediator_;
 
   base::WeakPtrFactory<ChromeBrowserMainPartsAsh> weak_ptr_factory_{this};
 };

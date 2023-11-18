@@ -12,7 +12,7 @@
 #include "base/json/values_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -27,6 +27,7 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
+#include "chromeos/components/mgs/managed_guest_session_utils.h"
 #include "components/app_constants/constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -262,6 +263,12 @@ void RecordAppLaunchPerAppTypeV2(apps::AppTypeNameV2 app_type_name_v2) {
                                 app_type_name_v2);
 }
 
+base::TimeDelta GetDurationAndResetStartTime(base::TimeTicks& start_time) {
+  base::TimeDelta duration = base::TimeTicks::Now() - start_time;
+  start_time = base::TimeTicks::Now();
+  return duration;
+}
+
 }  // namespace
 
 namespace apps {
@@ -445,6 +452,10 @@ AppPlatformMetrics::AppPlatformMetrics(
     : profile_(profile), app_registry_cache_(app_registry_cache) {
   app_registry_cache_observer_.Observe(&app_registry_cache);
   instance_registry_observation_.Observe(&instance_registry);
+  if (chromeos::IsManagedGuestSession()) {
+    CHECK(ukm::UkmRecorder::Get());
+    ukm_recorder_observer_.Observe(ukm::UkmRecorder::Get());
+  }
   user_type_by_device_type_ = GetUserTypeByDeviceTypeMetrics();
   InitRunningDuration();
   LoadAppsUsageTimeUkmFromPref();
@@ -452,13 +463,8 @@ AppPlatformMetrics::AppPlatformMetrics(
 }
 
 AppPlatformMetrics::~AppPlatformMetrics() {
-  for (auto it : running_start_time_) {
-    running_duration_[it.second.app_type_name] +=
-        base::TimeTicks::Now() - it.second.start_time;
-  }
-
+  UpdateMetricsBeforeShutdown();
   OnTenMinutes();
-  RecordAppsUsageTime();
 
   // Notify registered observers.
   for (auto& observer : observers_) {
@@ -765,7 +771,8 @@ void AppPlatformMetrics::RecordAppLaunchUkm(AppType app_type,
     observer.OnAppLaunched(app_id, app_type, launch_source);
   }
 
-  if (app_type == AppType::kUnknown || !ShouldRecordUkm(profile_)) {
+  if (app_type == AppType::kUnknown || !ShouldRecordUkm(profile_) ||
+      !ShouldRecordUkmForAppId(app_id, app_registry_cache_.get())) {
     return;
   }
 
@@ -794,6 +801,9 @@ void AppPlatformMetrics::RecordAppUninstallUkm(
   // and restrictions with something appropriate before using this data.
   for (auto& observer : observers_) {
     observer.OnAppUninstalled(app_id, app_type, uninstall_source);
+  }
+  if (!ShouldRecordUkmForAppId(app_id, app_registry_cache_.get())) {
+    return;
   }
 
   AppTypeName app_type_name = GetAppTypeName(
@@ -852,7 +862,8 @@ void AppPlatformMetrics::OnAppUpdate(const apps::AppUpdate& update) {
                             install_time);
   }
 
-  if (!ShouldRecordUkm(profile_)) {
+  if (!ShouldRecordUkm(profile_) ||
+      !ShouldRecordUkmForAppId(update.AppId(), app_registry_cache_.get())) {
     return;
   }
 
@@ -937,6 +948,12 @@ void AppPlatformMetrics::OnInstanceUpdate(const apps::InstanceUpdate& update) {
 void AppPlatformMetrics::OnInstanceRegistryWillBeDestroyed(
     apps::InstanceRegistry* cache) {
   instance_registry_observation_.Reset();
+}
+
+void AppPlatformMetrics::OnStartingShutdown() {
+  CHECK(chromeos::IsManagedGuestSession());
+  UpdateMetricsBeforeShutdown();
+  RecordAppsUsageTimeUkm();
 }
 
 void AppPlatformMetrics::GetBrowserInstanceInfo(
@@ -1094,7 +1111,9 @@ void AppPlatformMetrics::ClearRunningDuration() {
 
 void AppPlatformMetrics::ReadInstalledApps() {
   app_registry_cache_->ForEachApp([this](const apps::AppUpdate& update) {
-    RecordAppsInstallUkm(update, InstallTime::kInit);
+    if (ShouldRecordUkmForAppId(update.AppId(), app_registry_cache_.get())) {
+      RecordAppsInstallUkm(update, InstallTime::kInit);
+    }
   });
 }
 
@@ -1147,8 +1166,7 @@ void AppPlatformMetrics::RecordAppsCount(AppType app_type) {
 void AppPlatformMetrics::RecordAppsRunningDuration() {
   for (auto& it : running_start_time_) {
     running_duration_[it.second.app_type_name] +=
-        base::TimeTicks::Now() - it.second.start_time;
-    it.second.start_time = base::TimeTicks::Now();
+        GetDurationAndResetStartTime(it.second.start_time);
   }
 
   base::TimeDelta total_running_duration;
@@ -1179,14 +1197,13 @@ void AppPlatformMetrics::RecordAppsRunningDuration() {
 void AppPlatformMetrics::RecordAppsUsageTime() {
   for (auto& it : start_time_per_five_minutes_) {
     base::TimeDelta running_time =
-        base::TimeTicks::Now() - it.second.start_time;
+        GetDurationAndResetStartTime(it.second.start_time);
     app_type_running_time_per_five_minutes_[it.second.app_type_name] +=
         running_time;
     app_type_v2_running_time_per_five_minutes_[it.second.app_type_name_v2] +=
         running_time;
     UpdateUsageTime(it.first, it.second.app_id, it.second.app_type_name,
                     running_time);
-    it.second.start_time = base::TimeTicks::Now();
   }
 
   for (auto it : app_type_running_time_per_five_minutes_) {
@@ -1220,22 +1237,26 @@ void AppPlatformMetrics::RecordAppsUsageTimeUkm() {
     ukm::SourceId source_id = it.second.source_id;
     DCHECK_NE(source_id, ukm::kInvalidSourceId);
     if (!it.second.running_time.is_zero()) {
-      auto new_source_id = GetSourceId(profile_, it.second.app_id);
-      if (new_source_id != ukm::kInvalidSourceId) {
-        ukm::builders::ChromeOSApp_UsageTime builder(new_source_id);
-        builder.SetAppType((int)it.second.app_type_name)
+      if (ShouldRecordUkmForAppId(it.second.app_id,
+                                  app_registry_cache_.get())) {
+        auto new_source_id = GetSourceId(profile_, it.second.app_id);
+        if (new_source_id != ukm::kInvalidSourceId) {
+          ukm::builders::ChromeOSApp_UsageTime builder(new_source_id);
+          builder.SetAppType((int)it.second.app_type_name)
+              .SetDuration(it.second.running_time.InMilliseconds())
+              .SetUserDeviceMatrix(user_type_by_device_type_)
+              .Record(ukm::UkmRecorder::Get());
+          RemoveSourceId(new_source_id);
+        }
+
+        // Preserve a copy of UsageTime UKM to investigate the null app id
+        // issue.
+        ukm::builders::ChromeOSApp_UsageTimeReusedSourceId builder(source_id);
+        builder.SetAppType((int)app_type_name)
             .SetDuration(it.second.running_time.InMilliseconds())
             .SetUserDeviceMatrix(user_type_by_device_type_)
             .Record(ukm::UkmRecorder::Get());
-        RemoveSourceId(new_source_id);
       }
-
-      // Preserve a copy of UsageTime UKM to investigate the null app id issue.
-      ukm::builders::ChromeOSApp_UsageTimeReusedSourceId builder(source_id);
-      builder.SetAppType((int)app_type_name)
-          .SetDuration(it.second.running_time.InMilliseconds())
-          .SetUserDeviceMatrix(user_type_by_device_type_)
-          .Record(ukm::UkmRecorder::Get());
 
       // Also reset time in the pref store now that we have reported this data.
       ClearAppsUsageTimeForInstance(it.first.ToString());
@@ -1356,29 +1377,31 @@ void AppPlatformMetrics::RecordAppsUsageTimeUkmFromPref() {
   }
 
   for (auto& it : usage_times_from_pref_) {
-    auto source_id = GetSourceId(profile_, it->app_id);
-    if (source_id != ukm::kInvalidSourceId) {
-      ukm::builders::ChromeOSApp_UsageTime builder(source_id);
-      builder.SetAppType((int)it->app_type_name)
-          .SetDuration(it->running_time.InMilliseconds())
-          .SetUserDeviceMatrix(user_type_by_device_type_)
-          .Record(ukm::UkmRecorder::Get());
-      RemoveSourceId(source_id);
-    }
+    if (ShouldRecordUkmForAppId(it->app_id, app_registry_cache_.get())) {
+      auto source_id = GetSourceId(profile_, it->app_id);
+      if (source_id != ukm::kInvalidSourceId) {
+        ukm::builders::ChromeOSApp_UsageTime builder(source_id);
+        builder.SetAppType((int)it->app_type_name)
+            .SetDuration(it->running_time.InMilliseconds())
+            .SetUserDeviceMatrix(user_type_by_device_type_)
+            .Record(ukm::UkmRecorder::Get());
+        RemoveSourceId(source_id);
+      }
 
-    // All windows read from the user pref have been closed before login, so
-    // create a new source id here, since we don't have previous source ids for
-    // them. This UKM record should not have the null app id issue. Still
-    // preserve a copy of UsageTime UKM to investigate the null app id issue for
-    // consistency.
-    source_id = GetSourceId(profile_, it->app_id);
-    if (source_id != ukm::kInvalidSourceId) {
-      ukm::builders::ChromeOSApp_UsageTimeReusedSourceId builder(source_id);
-      builder.SetAppType((int)it->app_type_name)
-          .SetDuration(it->running_time.InMilliseconds())
-          .SetUserDeviceMatrix(user_type_by_device_type_)
-          .Record(ukm::UkmRecorder::Get());
-      RemoveSourceId(source_id);
+      // All windows read from the user pref have been closed before login, so
+      // create a new source id here, since we don't have previous source ids
+      // for them. This UKM record should not have the null app id issue. Still
+      // preserve a copy of UsageTime UKM to investigate the null app id issue
+      // for consistency.
+      source_id = GetSourceId(profile_, it->app_id);
+      if (source_id != ukm::kInvalidSourceId) {
+        ukm::builders::ChromeOSApp_UsageTimeReusedSourceId builder(source_id);
+        builder.SetAppType((int)it->app_type_name)
+            .SetDuration(it->running_time.InMilliseconds())
+            .SetUserDeviceMatrix(user_type_by_device_type_)
+            .Record(ukm::UkmRecorder::Get());
+        RemoveSourceId(source_id);
+      }
     }
 
     // Clear app UKM usage from the pref store now that we have reported this
@@ -1416,6 +1439,15 @@ void AppPlatformMetrics::ClearAppsUsageTimeForInstance(
   if (instance_dict) {
     instance_dict->Set(kUsageTimeDurationKey, base::Int64ToValue(0));
   }
+}
+
+void AppPlatformMetrics::UpdateMetricsBeforeShutdown() {
+  for (auto& it : running_start_time_) {
+    running_duration_[it.second.app_type_name] +=
+        GetDurationAndResetStartTime(it.second.start_time);
+  }
+
+  RecordAppsUsageTime();
 }
 
 }  // namespace apps

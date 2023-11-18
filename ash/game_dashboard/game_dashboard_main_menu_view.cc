@@ -14,6 +14,7 @@
 #include "ash/game_dashboard/game_dashboard_utils.h"
 #include "ash/game_dashboard/game_dashboard_widget.h"
 #include "ash/public/cpp/app_types_util.h"
+#include "ash/public/cpp/arc_compat_mode_util.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -29,10 +30,15 @@
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/feature_tile.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_type.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
+#include "ui/views/animation/animation_builder.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/highlight_path_generator.h"
@@ -57,6 +63,13 @@ constexpr int kCenterPadding = 8;
 constexpr int kMainMenuFixedWidth = 416;
 // Background radius.
 constexpr float kBackgroundRadius = 12;
+// Corner radius for the detail row container.
+constexpr int kDetailRowCornerRadius = 16;
+
+// For setup button pulse animation.
+constexpr int kSetupPulseExtraHalfSize = 32;
+constexpr int kSetupPulseTimes = 3;
+constexpr base::TimeDelta kSetupPulseDuration = base::Seconds(2);
 
 // Creates an individual Game Dashboard Tile.
 std::unique_ptr<FeatureTile> CreateFeatureTile(
@@ -76,6 +89,11 @@ std::unique_ptr<FeatureTile> CreateFeatureTile(
   if (sub_label.has_value()) {
     tile->SetSubLabel(sub_label.value());
     tile->SetSubLabelVisibility(true);
+  }
+  if (type == FeatureTile::TileType::kPrimary) {
+    // Remove any corner radius because it's set on the container for any
+    // primary `FeatureTile` objects.
+    tile->SetButtonCornerRadius(0);
   }
   return tile;
 }
@@ -104,7 +122,11 @@ std::unique_ptr<FeaturePodIconButton> CreateIconButton(
 // | |icon|  |title|       |tail_view||
 // |         |sub-title|              |
 // +----------------------------------+
+// TODO(b/308762948): Update name and params now that only Game Controls uses
+// this logic.
 class GameDashboardMainMenuView::FeatureDetailsRow : public views::Button {
+  METADATA_HEADER(FeatureDetailsRow, views::Button)
+
  public:
   FeatureDetailsRow(base::RepeatingCallback<void()> callback,
                     RoundedContainer::Behavior corner_behavior,
@@ -221,6 +243,9 @@ class GameDashboardMainMenuView::FeatureDetailsRow : public views::Button {
   raw_ptr<views::Label> sub_title_ = nullptr;
   raw_ptr<views::View> tail_container_ = nullptr;
 };
+
+BEGIN_METADATA(GameDashboardMainMenuView, FeatureDetailsRow, views::Button)
+END_METADATA
 
 // -----------------------------------------------------------------------------
 // GameDashboardMainMenuView:
@@ -466,6 +491,14 @@ void GameDashboardMainMenuView::AddFeatureDetailsRows() {
           views::BoxLayout::Orientation::kVertical,
           /*inside_border_insets=*/gfx::Insets(),
           /*between_child_spacing=*/2));
+
+  // Set the container's corner radius.
+  feature_details_container->SetPaintToLayer();
+  auto* container_layer = feature_details_container->layer();
+  container_layer->SetFillsBoundsOpaquely(false);
+  container_layer->SetRoundedCornerRadius(
+      gfx::RoundedCornersF(kDetailRowCornerRadius));
+
   MaybeAddGameControlsDetailsRow(feature_details_container);
   MaybeAddScreenSizeSettingsRow(feature_details_container);
 }
@@ -509,7 +542,7 @@ void GameDashboardMainMenuView::MaybeAddGameControlsDetailsRow(
           base::BindRepeating(
               &GameDashboardMainMenuView::OnGameControlsDetailsPressed,
               base::Unretained(this)),
-          RoundedContainer::Behavior::kTopRounded,
+          RoundedContainer::Behavior::kNotRounded,
           /*default_drill_in_arrow=*/false,
           /*icon=*/kGdGameControlsIcon, /*title=*/
           l10n_util::GetStringUTF16(
@@ -569,22 +602,25 @@ void GameDashboardMainMenuView::MaybeAddGameControlsDetailsRow(
 
 void GameDashboardMainMenuView::MaybeAddScreenSizeSettingsRow(
     views::View* container) {
-  if (IsArcWindow(context_->game_window())) {
-    auto* details = container->AddChildView(std::make_unique<FeatureDetailsRow>(
-        base::BindRepeating(
-            &GameDashboardMainMenuView::OnScreenSizeSettingsButtonPressed,
-            base::Unretained(this)),
-        RoundedContainer::Behavior::kBottomRounded,
-        /*default_drill_in_arrow=*/true,
-        /*icon=*/kGdScreenSizeSettingsIcon, /*title=*/
-        l10n_util::GetStringUTF16(
-            IDS_ASH_GAME_DASHBOARD_SCREEN_SIZE_SETTINGS_TITLE)));
-
-    details->SetID(VIEW_ID_GD_SCREEN_SIZE_TILE);
-    // TODO(b/286455407): Update with final localized string.
-    // TODO(b/286917169): Dynamically updating the sub-title.
-    details->SetSubtitle(u"Landscape");
+  aura::Window* game_window = context_->game_window();
+  if (!IsArcWindow(game_window)) {
+    return;
   }
+
+  const auto resize_mode = compat_mode_util::PredictCurrentMode(game_window);
+  auto* screen_size_row = container->AddChildView(CreateFeatureTile(
+      base::BindRepeating(
+          &GameDashboardMainMenuView::OnScreenSizeSettingsButtonPressed,
+          base::Unretained(this)),
+      /*is_togglable=*/false, FeatureTile::TileType::kPrimary,
+      VIEW_ID_GD_SCREEN_SIZE_TILE,
+      /*icon=*/compat_mode_util::GetIcon(resize_mode),
+      l10n_util::GetStringUTF16(
+          IDS_ASH_GAME_DASHBOARD_SCREEN_SIZE_SETTINGS_TITLE),
+      /*sub_label=*/compat_mode_util::GetText(resize_mode)));
+  // TODO(b/303351905): Investigate why drill in arrow isn't placed in correct
+  // location.
+  screen_size_row->CreateDecorativeDrillInArrow();
 }
 
 void GameDashboardMainMenuView::AddUtilityClusterRow() {
@@ -640,6 +676,10 @@ void GameDashboardMainMenuView::VisibilityChanged(views::View* starting_from,
       kArcGameControlsFlagsKey,
       game_dashboard_utils::UpdateFlag(*flags, ArcGameControlsFlag::kMenu,
                                        /*enable_flag=*/is_visible));
+
+  if (is_visible) {
+    MaybePerformPulseAnimation(/*pulse_count=*/0);
+  }
 }
 
 void GameDashboardMainMenuView::UpdateRecordGameTile(
@@ -664,6 +704,63 @@ void GameDashboardMainMenuView::UpdateRecordGameTile(
   }
   record_game_tile_->SetSubLabelVisibility(is_recording_game_window);
   record_game_tile_->SetToggled(is_recording_game_window);
+}
+
+void GameDashboardMainMenuView::MaybePerformPulseAnimation(int pulse_count) {
+  if (!game_controls_setup_button_) {
+    return;
+  }
+
+  // Destroy the pulse layer if it pulses after `kSetupPulseTimes` times.
+  if (pulse_count >= kSetupPulseTimes) {
+    gc_setup_button_pulse_layer_.reset();
+    return;
+  }
+
+  auto* widget = GetWidget();
+  DCHECK(widget);
+
+  // Initiate pulse layer if it starts to pulse for the first time.
+  if (pulse_count == 0) {
+    gc_setup_button_pulse_layer_ =
+        std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR);
+    widget->GetLayer()->Add(gc_setup_button_pulse_layer_.get());
+    gc_setup_button_pulse_layer_->SetColor(widget->GetColorProvider()->GetColor(
+        cros_tokens::kCrosSysHighlightText));
+  }
+
+  DCHECK(gc_setup_button_pulse_layer_);
+
+  // Initial setup button bounds in its widget coordinate.
+  const auto setup_bounds = game_controls_setup_button_->ConvertRectToWidget(
+      game_controls_setup_button_->bounds());
+
+  // Set initial properties.
+  const float initial_corner_radius = setup_bounds.height() / 2.0f;
+  gc_setup_button_pulse_layer_->SetBounds(setup_bounds);
+  gc_setup_button_pulse_layer_->SetOpacity(1.0f);
+  gc_setup_button_pulse_layer_->SetRoundedCornerRadius(
+      gfx::RoundedCornersF(initial_corner_radius));
+
+  // Animate to target bounds, opacity and rounded corner radius.
+  auto target_bounds = setup_bounds;
+  target_bounds.Outset(kSetupPulseExtraHalfSize);
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .OnEnded(
+          base::BindOnce(&GameDashboardMainMenuView::MaybePerformPulseAnimation,
+                         base::Unretained(this), pulse_count + 1))
+      .Once()
+      .SetDuration(kSetupPulseDuration)
+      .SetBounds(gc_setup_button_pulse_layer_.get(), target_bounds,
+                 gfx::Tween::ACCEL_0_40_DECEL_100)
+      .SetOpacity(gc_setup_button_pulse_layer_.get(), 0.0f,
+                  gfx::Tween::ACCEL_0_80_DECEL_80)
+      .SetRoundedCorners(gc_setup_button_pulse_layer_.get(),
+                         gfx::RoundedCornersF(initial_corner_radius +
+                                              kSetupPulseExtraHalfSize),
+                         gfx::Tween::ACCEL_0_40_DECEL_100);
 }
 
 BEGIN_METADATA(GameDashboardMainMenuView, views::BubbleDialogDelegateView)

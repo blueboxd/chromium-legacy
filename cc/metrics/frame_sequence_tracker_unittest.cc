@@ -8,11 +8,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "cc/metrics/compositor_frame_reporting_controller.h"
 #include "cc/metrics/frame_sequence_tracker_collection.h"
+#include "cc/metrics/frame_sorter.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,7 +48,9 @@ class FrameSequenceTrackerTest : public testing::Test {
                 /*should_report_ukm=*/false,
                 /*layer_tree_host_id=*/1)),
         collection_(/*is_single_threaded=*/false,
-                    compositor_frame_reporting_controller_.get()) {
+                    compositor_frame_reporting_controller_.get()),
+        sorter_(base::BindRepeating(&FrameSequenceTrackerTest::OnFrameResult,
+                                    base::Unretained(this))) {
     tracker_ = collection_.StartScrollSequence(
         FrameSequenceTrackerType::kTouchScroll,
         FrameInfo::SmoothEffectDrivingThread::kCompositor);
@@ -297,11 +301,18 @@ class FrameSequenceTrackerTest : public testing::Test {
     return tracker_->termination_status_;
   }
 
+  // FrameSorter callback.
+  void OnFrameResult(const viz::BeginFrameArgs& args,
+                     const FrameInfo& frame_info) {
+    collection_.AddSortedFrame(args, frame_info);
+  }
+
  protected:
   std::unique_ptr<CompositorFrameReportingController>
       compositor_frame_reporting_controller_;
   FrameSequenceTrackerCollection collection_;
   raw_ptr<FrameSequenceTracker, DanglingUntriaged> tracker_;
+  FrameSorter sorter_;
 };
 
 // Tests that the tracker works correctly when the source-id for the
@@ -347,82 +358,6 @@ TEST_F(FrameSequenceTrackerTest, TestNotifyFramePresented) {
   // StopSequence should have destroyed all trackers because there is no frame
   // awaiting presentation.
   EXPECT_EQ(NumberOfRemovalTrackers(), 0u);
-}
-
-TEST_F(FrameSequenceTrackerTest, TestJankWithZeroIntervalInFeedback) {
-  // Test if jank can be correctly counted if presentation feedback reports
-  // zero frame interval.
-  const uint64_t source = 1;
-  uint64_t sequence = 1;
-  uint64_t frame_token = sequence;
-  const char* histogram_name =
-      "Graphics.Smoothness.Jank.Compositor.TouchScroll";
-  const base::TimeDelta zero_interval = base::Milliseconds(0);
-  base::HistogramTester histogram_tester;
-
-  CreateNewTracker();
-  base::TimeTicks args_timestamp = base::TimeTicks::Now();
-  auto args = CreateBeginFrameArgs(source, sequence, args_timestamp);
-
-  // Frame 1
-  collection_.NotifyBeginImplFrame(args);
-  collection_.NotifySubmitFrame(sequence, false, viz::BeginFrameAck(args, true),
-                                args);
-  collection_.NotifyFrameEnd(args, args);
-
-  collection_.NotifyFramePresented(
-      frame_token,
-      /*feedback=*/{args_timestamp, zero_interval, 0});
-
-  // Frame 2
-  ++sequence;
-  ++frame_token;
-  args_timestamp += base::Milliseconds(16.67);
-  args = CreateBeginFrameArgs(source, sequence, args_timestamp);
-  collection_.NotifyBeginImplFrame(args);
-  collection_.NotifySubmitFrame(sequence, false, viz::BeginFrameAck(args, true),
-                                args);
-  collection_.NotifyFrameEnd(args, args);
-  collection_.NotifyFramePresented(
-      frame_token,
-      /*feedback=*/{args_timestamp, zero_interval, 0});
-
-  // Frame 3: There is one jank (frame interval incremented from 16.67ms
-  // to 30.0ms)
-  ++sequence;
-  ++frame_token;
-  args_timestamp += base::Milliseconds(30.0);
-  args = CreateBeginFrameArgs(source, sequence, args_timestamp);
-  collection_.NotifyBeginImplFrame(args);
-  collection_.NotifySubmitFrame(sequence, false, viz::BeginFrameAck(args, true),
-                                args);
-  collection_.NotifyFrameEnd(args, args);
-  collection_.NotifyFramePresented(
-      frame_token,
-      /*feedback=*/{args_timestamp, zero_interval, 0});
-
-  // Frame 4: There is no jank since the increment from 30ms to  31ms is too
-  // small. This tests if |NotifyFramePresented| can correctly handle the
-  // situation when the frame interval reported in presentation feedback is 0.
-  ++sequence;
-  ++frame_token;
-  args_timestamp += base::Milliseconds(31.0);
-  args = CreateBeginFrameArgs(source, sequence, args_timestamp);
-  collection_.NotifyBeginImplFrame(args);
-  collection_.NotifySubmitFrame(sequence, false, viz::BeginFrameAck(args, true),
-                                args);
-  collection_.NotifyFrameEnd(args, args);
-  collection_.NotifyFramePresented(
-      frame_token,
-      /*feedback=*/{args_timestamp, zero_interval, 0});
-  ImplThroughput().frames_expected = 100u;
-  ReportMetrics();
-  histogram_tester.ExpectTotalCount(
-      "Graphics.Smoothness.Jank.Compositor.TouchScroll", 1u);
-
-  // There should be only one jank for frame 3.
-  EXPECT_THAT(histogram_tester.GetAllSamples(histogram_name),
-              testing::ElementsAre(base::Bucket(1, 1)));
 }
 
 TEST_F(FrameSequenceTrackerTest, ReportMetricsAtFixedInterval) {
@@ -1025,6 +960,61 @@ TEST_F(FrameSequenceTrackerTest, CustomTrackers) {
   EXPECT_EQ(0u, results[2].frames_expected);
   EXPECT_EQ(1u, results[3].frames_produced);
   EXPECT_EQ(1u, results[3].frames_expected);
+}
+
+TEST_F(FrameSequenceTrackerTest, CustomTrackerOutOfOrderFramesMissingV3Data) {
+  CustomTrackerResults results;
+  collection_.set_custom_tracker_results_added_callback(
+      base::BindLambdaForTesting([&](const CustomTrackerResults& reported) {
+        for (const auto& pair : reported) {
+          results[pair.first] = pair.second;
+        }
+      }));
+
+  // Start custom tracker 1.
+  collection_.StartCustomSequence(1);
+  EXPECT_EQ(1u, NumberOfCustomTrackers());
+
+  const uint64_t source = 1;
+  uint64_t sequence = 0;
+
+  // Dispatch 2 frames: frame 0 and frame 1.
+  auto frame0_args = CreateBeginFrameArgs(source, ++sequence);
+  DispatchCompleteFrame(frame0_args, kImplDamage | kMainDamage);
+  sorter_.AddNewFrame(frame0_args);
+
+  auto frame1_args = CreateBeginFrameArgs(source, ++sequence);
+  DispatchCompleteFrame(frame1_args, kImplDamage | kMainDamage);
+  sorter_.AddNewFrame(frame1_args);
+
+  // Frame 1 gets its result before frame 0.
+  FrameInfo frame_info;
+  frame_info.final_state = FrameInfo::FrameFinalState::kPresentedAll;
+  frame_info.smooth_thread = FrameInfo::SmoothThread::kSmoothMain;
+  frame_info.scroll_thread = FrameInfo::SmoothEffectDrivingThread::kMain;
+  frame_info.has_missing_content = false;
+  frame_info.sequence_number = frame1_args.frame_id.sequence_number;
+  sorter_.AddFrameResult(frame1_args, frame_info);
+
+  // Stop the tracker.
+  collection_.StopCustomSequence(1);
+
+  // Frame 0 gets its result after tracker is stopped. FrameSorter flushes all
+  // frames and metrics for both frames should be recorded for v3.
+  sorter_.AddFrameResult(frame0_args, frame_info);
+
+  // Frame 2 is dispatched after the tracker is stopped and should be ignored.
+  auto frame2_args = CreateBeginFrameArgs(source, ++sequence);
+  DispatchCompleteFrame(frame2_args, kImplDamage | kMainDamage);
+  sorter_.AddNewFrame(frame2_args);
+  sorter_.AddFrameResult(frame2_args, frame_info);
+
+  // Trigger metrics report.
+  collection_.ClearAll();
+
+  // There is one report for tracker id 1 and 2 expected frames (frame 0 and 1).
+  ASSERT_EQ(1u, results.size());
+  EXPECT_EQ(2u, results[1].frames_expected_v3);
 }
 
 }  // namespace cc

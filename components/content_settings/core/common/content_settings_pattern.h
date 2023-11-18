@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 
 class GURL;
@@ -165,6 +165,10 @@ class ContentSettingsPattern {
 
   // Returns a pattern that matches exactly this URL.
   static ContentSettingsPattern FromURLNoWildcard(const GURL& url);
+
+  // Converts a given url to a ContentSettingsPattern that represents a site,
+  // i.e. with domain, path, and port wildcards.
+  static ContentSettingsPattern FromURLToSchemefulSitePattern(const GURL& url);
 
   // Returns a pattern that matches the given pattern specification.
   // Valid patterns specifications are:

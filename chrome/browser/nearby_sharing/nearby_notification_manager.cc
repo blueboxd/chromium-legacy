@@ -21,6 +21,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -29,6 +30,7 @@
 #include "chrome/browser/nearby_sharing/common/nearby_share_enums.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
+#include "chrome/browser/nearby_sharing/common/nearby_share_resource_getter.h"
 #include "chrome/browser/nearby_sharing/nearby_share_metrics.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service.h"
 #include "chrome/browser/notifications/notification_display_service.h"
@@ -38,7 +40,6 @@
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/cross_device/logging/logging.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -50,6 +51,10 @@
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/strings/grit/ui_strings.h"
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#include "chrome/browser/nearby_sharing/internal/icons/vector_icons.h"
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 namespace {
 
@@ -80,7 +85,10 @@ message_center::Notification CreateNearbyNotification(const std::string& id) {
       /*title=*/std::u16string(),
       /*message=*/std::u16string(),
       /*icon=*/ui::ImageModel(),
-      l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_SOURCE),
+      features::IsNameEnabled()
+          ? NearbyShareResourceGetter::GetInstance()->GetStringWithFeatureName(
+                IDS_NEARBY_NOTIFICATION_SOURCE_PH)
+          : l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_SOURCE),
       /*origin_url=*/GURL(),
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNearbyNotifier,
@@ -88,12 +96,17 @@ message_center::Notification CreateNearbyNotification(const std::string& id) {
       /*optional_fields=*/{},
       /*delegate=*/nullptr);
 
-  if (chromeos::features::IsJellyEnabled()) {
-    notification.set_accent_color_id(cros_tokens::kCrosSysPrimary);
+  notification.set_accent_color_id(cros_tokens::kCrosSysPrimary);
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  if (features::IsNameEnabled()) {
+    notification.set_vector_small_image(kNearbyShareInternalIcon);
   } else {
-    notification.set_accent_color(ash::kSystemNotificationColorNormal);
+    notification.set_vector_small_image(kNearbyShareIcon);
   }
+#else   // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   notification.set_vector_small_image(kNearbyShareIcon);
+#endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
   notification.set_settings_button_handler(
       message_center::SettingsButtonHandler::DELEGATE);
 
@@ -960,8 +973,12 @@ void NearbyNotificationManager::ShowConnectionRequest(
 
   message_center::Notification notification =
       CreateNearbyNotification(kNearbyInProgressNotificationId);
-  notification.set_title(l10n_util::GetStringUTF16(
-      IDS_NEARBY_NOTIFICATION_CONNECTION_REQUEST_TITLE));
+  notification.set_title(
+      features::IsNameEnabled()
+          ? NearbyShareResourceGetter::GetInstance()->GetStringWithFeatureName(
+                IDS_NEARBY_NOTIFICATION_CONNECTION_REQUEST_TITLE_PH)
+          : l10n_util::GetStringUTF16(
+                IDS_NEARBY_NOTIFICATION_CONNECTION_REQUEST_TITLE));
   notification.set_message(
       GetConnectionRequestNotificationMessage(share_target, transfer_metadata));
   notification.set_icon(GetImageFromShareTarget(share_target));
@@ -996,9 +1013,18 @@ void NearbyNotificationManager::ShowNearbyDeviceTryingToShare() {
 
   notification.set_title(
       l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_ONBOARDING_TITLE));
-  notification.set_message(l10n_util::GetStringUTF16(
-      is_onboarding_complete ? IDS_NEARBY_NOTIFICATION_GO_VISIBLE_MESSAGE
-                             : IDS_NEARBY_NOTIFICATION_ONBOARDING_MESSAGE));
+
+  const std::u16string onboarding_message =
+      features::IsNameEnabled()
+          ? NearbyShareResourceGetter::GetInstance()->GetStringWithFeatureName(
+                IDS_NEARBY_NOTIFICATION_ONBOARDING_MESSAGE_PH)
+          : l10n_util::GetStringUTF16(
+                IDS_NEARBY_NOTIFICATION_ONBOARDING_MESSAGE);
+
+  notification.set_message(is_onboarding_complete
+                               ? l10n_util::GetStringUTF16(
+                                     IDS_NEARBY_NOTIFICATION_GO_VISIBLE_MESSAGE)
+                               : onboarding_message);
 
   std::vector<message_center::ButtonInfo> notification_actions;
   notification_actions.emplace_back(l10n_util::GetStringUTF16(

@@ -206,7 +206,6 @@ void AwSettings::UpdateEverythingLocked(JNIEnv* env,
   UpdateWebkitPreferencesLocked(env, obj);
   UpdateUserAgentLocked(env, obj);
   ResetScrollAndScaleState(env, obj);
-  UpdateFormDataPreferencesLocked(env, obj);
   UpdateRendererPreferencesLocked(env, obj);
   UpdateOffscreenPreRasterLocked(env, obj);
   UpdateWillSuppressErrorStateLocked(env, obj);
@@ -324,18 +323,6 @@ void AwSettings::UpdateWillSuppressErrorStateLocked(
   rvhe->SetWillSuppressErrorPage(suppress);
 }
 
-void AwSettings::UpdateFormDataPreferencesLocked(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  if (!web_contents())
-    return;
-  AwContents* contents = AwContents::FromWebContents(web_contents());
-  if (!contents)
-    return;
-
-  contents->SetSaveFormData(Java_AwSettings_getSaveFormDataLocked(env, obj));
-}
-
 void AwSettings::UpdateRendererPreferencesLocked(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
@@ -427,8 +414,20 @@ void AwSettings::UpdateAttributionBehaviorLocked(
     return;
   }
 
+  AttributionBehavior previous = attribution_behavior_;
   attribution_behavior_ = static_cast<AttributionBehavior>(
       Java_AwSettings_getAttributionBehavior(env, obj));
+
+  base::UmaHistogramEnumeration("Conversions.AttributionBehavior",
+                                attribution_behavior_);
+
+  // If attribution was previously disabled or has now been disabled, then
+  // we need to update attribution support values in the renderer.
+  if (previous != attribution_behavior_ &&
+      (previous == AwSettings::AttributionBehavior::DISABLED ||
+       attribution_behavior_ == AwSettings::AttributionBehavior::DISABLED)) {
+    web_contents()->UpdateAttributionSupportRenderer();
+  }
 }
 
 void AwSettings::RenderViewHostChanged(content::RenderViewHost* old_host,

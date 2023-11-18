@@ -8,14 +8,17 @@
 
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/nonembedded/component_updater/aw_component_installer_policy_shim.h"
+#include "android_webview/nonembedded/component_updater/installer_policies/aw_package_names_allowlist_component_installer_policy.h"
 #include "base/barrier_closure.h"
 #include "base/command_line.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/component_updater/component_installer.h"
 #include "components/component_updater/component_updater_service.h"
+#include "components/component_updater/installer_policies/masked_domain_list_component_installer_policy.h"
 #include "components/component_updater/installer_policies/origin_trials_component_installer.h"
 #include "components/component_updater/installer_policies/trust_token_key_commitments_component_installer_policy.h"
 #include "components/update_client/update_client.h"
@@ -61,6 +64,20 @@ void RegisterComponentsForUpdate(
           component_updater::OriginTrialsComponentInstallerPolicy>(),
       register_callback, barrier_closure);
 
+  RegisterComponentInstallerPolicyShim(
+      std::make_unique<
+          component_updater::MaskedDomainListComponentInstallerPolicy>(
+          /*on_list_ready=*/base::BindRepeating(
+              [](base::Version version,
+                 const absl::optional<std::string>& raw_mdl) {
+                if (raw_mdl.has_value()) {
+                  VLOG(1) << "Received Masked Domain List version " << version;
+                } else {
+                  LOG(ERROR) << "Could not read Masked Domain List file";
+                }
+              })),
+      register_callback, barrier_closure);
+
   // TODO(https://crbug.com/1170468): decide if this component is still needed.
   // Note: We're using a command-line switch because finch features isn't
   // supported in nonembedded WebView.
@@ -72,6 +89,9 @@ void RegisterComponentsForUpdate(
                 [](const std::string& raw_commitments) { NOTREACHED(); })),
         register_callback, barrier_closure);
   }
+
+  RegisterWebViewAppsPackageNamesAllowlistComponent(register_callback,
+                                                    barrier_closure);
 }
 
 }  // namespace android_webview

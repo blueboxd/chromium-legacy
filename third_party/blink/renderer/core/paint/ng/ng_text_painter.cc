@@ -10,8 +10,8 @@
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/layout/inline/fragment_item.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_text_decoration_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
@@ -266,7 +266,7 @@ void NGTextPainter::PaintSelectedText(
 
 void NGTextPainter::PaintDecorationsExceptLineThrough(
     const NGTextFragmentPaintInfo& fragment_paint_info,
-    const NGFragmentItem& text_item,
+    const FragmentItem& text_item,
     const PaintInfo& paint_info,
     const ComputedStyle& style,
     const TextPaintStyle& text_style,
@@ -297,7 +297,7 @@ void NGTextPainter::PaintDecorationsExceptLineThrough(
 }
 
 void NGTextPainter::PaintDecorationsOnlyLineThrough(
-    const NGFragmentItem& text_item,
+    const FragmentItem& text_item,
     const PaintInfo& paint_info,
     const ComputedStyle& style,
     const TextPaintStyle& text_style,
@@ -543,7 +543,7 @@ void NGTextPainter::PaintSvgDecorationsOnlyLineThrough(
 NGTextPainter::SvgTextPaintState& NGTextPainter::SetSvgState(
     const LayoutSVGInlineText& svg_inline_text,
     const ComputedStyle& style,
-    NGStyleVariant style_variant,
+    StyleVariant style_variant,
     PaintFlags paint_flags) {
   return svg_text_paint_state_.emplace(svg_inline_text, style, style_variant,
                                        paint_flags);
@@ -564,7 +564,7 @@ NGTextPainter::SvgTextPaintState* NGTextPainter::GetSvgState() {
 NGTextPainter::SvgTextPaintState::SvgTextPaintState(
     const LayoutSVGInlineText& layout_svg_inline_text,
     const ComputedStyle& style,
-    NGStyleVariant style_variant,
+    StyleVariant style_variant,
     PaintFlags paint_flags)
     : layout_svg_inline_text_(layout_svg_inline_text),
       style_(style),
@@ -590,7 +590,7 @@ const LayoutObject& NGTextPainter::SvgTextPaintState::TextDecorationObject()
   // set.
   const LayoutObject* result = InlineText().Parent();
   while (result) {
-    if (style_variant_ == NGStyleVariant::kFirstLine) {
+    if (style_variant_ == StyleVariant::kFirstLine) {
       if (const ComputedStyle* style = result->FirstLineStyle()) {
         if (style->GetTextDecorationLine() != TextDecorationLine::kNone)
           break;

@@ -24,6 +24,9 @@ NSString* const kWebSearchBarEntryPointPath = @"/web-search-box";
 // The path for the search translate box entry point.
 NSString* const kTranslateOneboxEntryPointPath = @"/translate-onebox";
 
+// The path for the web image search bar entry point.
+NSString* const kWebImagesSearchBarEntryPointPath = @"/web-images-search-box";
+
 }  // namespace
 
 LensTabHelper::LensTabHelper(web::WebState* web_state)
@@ -35,7 +38,7 @@ void LensTabHelper::SetLensCommandsHandler(id<LensCommands> commands_handler) {
   commands_handler_ = commands_handler;
 }
 
-absl::optional<LensEntrypoint>
+std::optional<LensEntrypoint>
 LensTabHelper::EntryPointForGoogleChromeActionURLPath(NSString* path) {
   if ([path caseInsensitiveCompare:kWebSearchBarEntryPointPath] ==
       NSOrderedSame) {
@@ -43,8 +46,11 @@ LensTabHelper::EntryPointForGoogleChromeActionURLPath(NSString* path) {
   } else if ([path caseInsensitiveCompare:kTranslateOneboxEntryPointPath] ==
              NSOrderedSame) {
     return LensEntrypoint::TranslateOnebox;
+  } else if ([path caseInsensitiveCompare:kWebImagesSearchBarEntryPointPath] ==
+             NSOrderedSame) {
+    return LensEntrypoint::WebImagesSearchBar;
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 void LensTabHelper::ShouldAllowRequest(
@@ -54,7 +60,7 @@ void LensTabHelper::ShouldAllowRequest(
   if (request_info.target_frame_is_main &&
       [request.URL.scheme isEqualToString:kGoogleChromeActionScheme] &&
       [request.URL.host isEqualToString:kLensHost]) {
-    absl::optional<LensEntrypoint> entry_point =
+    std::optional<LensEntrypoint> entry_point =
         EntryPointForGoogleChromeActionURLPath(request.URL.path);
     if (entry_point) {
       OpenLensInputSelection(entry_point.value());

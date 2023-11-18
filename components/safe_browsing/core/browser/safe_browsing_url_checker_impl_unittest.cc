@@ -207,7 +207,12 @@ class MockUrlCheckerDelegate : public UrlCheckerDelegate {
                     bool));
   MOCK_METHOD2(StartObservingInteractionsForDelayedBlockingPageHelper,
                void(const security_interstitials::UnsafeResource&, bool));
-  MOCK_METHOD5(ShouldSkipRequestCheck, bool(const GURL&, int, int, int, bool));
+  MOCK_METHOD5(ShouldSkipRequestCheck,
+               bool(const GURL&,
+                    int,
+                    int,
+                    base::optional_ref<const base::UnguessableToken>,
+                    bool));
   MOCK_METHOD1(NotifySuspiciousSiteDetected,
                void(const base::RepeatingCallback<content::WebContents*()>&));
   MOCK_METHOD0(GetUIManager, BaseUIManager*());
@@ -393,7 +398,9 @@ class MockRealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
   }
   std::string GetMetricSuffix() const override { return ""; }
   bool ShouldIncludeCredentials() const override { return false; }
-  double GetMinAllowedTimestampForReferrerChains() const override { return 0; }
+  base::Time GetMinAllowedTimestampForReferrerChains() const override {
+    return base::Time();
+  }
 
   base::flat_map<std::string, UrlDetail> url_details_;
   bool is_cached_response_ = false;
@@ -495,9 +502,9 @@ class SafeBrowsingUrlCheckerTest : public PlatformTest {
         net::HttpRequestHeaders(), /*load_flags=*/0,
         optional_args.request_destination,
         /*has_user_gesture=*/false, url_checker_delegate_,
-        mock_web_contents_getter.Get(), UnsafeResource::kNoRenderProcessId,
-        UnsafeResource::kNoRenderFrameId, UnsafeResource::kNoFrameTreeNodeId,
-        url_real_time_lookup_enabled,
+        mock_web_contents_getter.Get(), /*weak_web_state=*/nullptr,
+        UnsafeResource::kNoRenderProcessId, std::nullopt,
+        UnsafeResource::kNoFrameTreeNodeId, url_real_time_lookup_enabled,
         optional_args.can_urt_check_subresource_url, can_check_safe_browsing_db,
         /*can_check_high_confidence_allowlist=*/true,
         /*url_lookup_service_metric_suffix=*/

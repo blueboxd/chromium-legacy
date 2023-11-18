@@ -5,7 +5,8 @@
 import {assert} from 'chrome://resources/ash/common/assert.js';
 
 import {FakeEntryImpl} from '../../common/js/files_app_entry_types.js';
-import {str, util} from '../../common/js/util.js';
+import {isDriveFsBulkPinningEnabled} from '../../common/js/flags.js';
+import {str} from '../../common/js/translations.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {FakeEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 import type {VolumeInfo} from '../../externs/volume_info.js';
@@ -61,7 +62,7 @@ export class VolumeInfoImpl implements VolumeInfo {
    */
   constructor(
       private volumeType_: VolumeManagerCommon.VolumeType,
-      private volumeId_: string, private fileSystem_: FileSystem,
+      private volumeId_: string, private fileSystem_: FileSystem|null,
       // Note: This represents if the mounting of the volume is successfully
       // done or not. (If error is empty string, the mount is successfully
       // done).
@@ -88,7 +89,7 @@ export class VolumeInfoImpl implements VolumeInfo {
     this.fakeEntries_ = {};
 
     if (volumeType_ === VolumeManagerCommon.VolumeType.DRIVE) {
-      if (!util.isDriveFsBulkPinningEnabled()) {
+      if (!isDriveFsBulkPinningEnabled()) {
         this.fakeEntries_[VolumeManagerCommon.RootType.DRIVE_OFFLINE] =
             new FakeEntryImpl(
                 str('DRIVE_OFFLINE_COLLECTION_LABEL'),
@@ -113,7 +114,8 @@ export class VolumeInfoImpl implements VolumeInfo {
   }
 
   get fileSystem(): FileSystem {
-    return this.fileSystem_;
+    // TODO(b/309054429): fileSystem could be null, handle it gracefully.
+    return this.fileSystem_!;
   }
 
   /** Display root path. It is null before finishing to resolve the entry. */
@@ -266,6 +268,10 @@ export class VolumeInfoImpl implements VolumeInfo {
    * The return value will resolve once this operation is complete.
    */
   private resolveSharedDrivesRoot_(): Promise<void> {
+    if (!this.fileSystem_) {
+      return Promise.reject(this.error);
+    }
+
     return VolumeInfoImpl
         .resolveFileSystemUrl_(
             this.fileSystem_.root.toURL() +
@@ -291,6 +297,10 @@ export class VolumeInfoImpl implements VolumeInfo {
    * The return value will resolve once this operation is complete.
    */
   private resolveComputersRoot_(): Promise<void> {
+    if (!this.fileSystem_) {
+      return Promise.reject(this.error);
+    }
+
     return VolumeInfoImpl
         .resolveFileSystemUrl_(
             this.fileSystem_.root.toURL() +

@@ -21,11 +21,11 @@
 #import "base/time/time.h"
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/password_manager/core/browser/affiliation/fake_affiliation_service.h"
-#import "components/password_manager/core/browser/bulk_leak_check_service.h"
-#import "components/password_manager/core/browser/mock_bulk_leak_check_service.h"
+#import "components/password_manager/core/browser/leak_detection/bulk_leak_check_service.h"
+#import "components/password_manager/core/browser/leak_detection/mock_bulk_leak_check_service.h"
 #import "components/password_manager/core/browser/password_form.h"
 #import "components/password_manager/core/browser/password_manager_test_utils.h"
-#import "components/password_manager/core/browser/test_password_store.h"
+#import "components/password_manager/core/browser/password_store/test_password_store.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/password_manager/core/common/password_manager_pref_names.h"
 #import "components/prefs/pref_registry_simple.h"
@@ -55,7 +55,6 @@ constexpr char16_t kWeakPassword[] = u"123456";
 
 using password_manager::BulkLeakCheckServiceInterface;
 using password_manager::CredentialUIEntry;
-using password_manager::InsecureCredential;
 using password_manager::InsecureType;
 using password_manager::IsLeaked;
 using password_manager::LeakCheckCredential;
@@ -339,10 +338,6 @@ TEST_F(IOSChromePasswordCheckManagerTest, NotifyObserversAboutStateChanges) {
 
 // Tests expected delay is being added.
 TEST_F(IOSChromePasswordCheckManagerTest, CheckFinishedWithDelay) {
-  // Enable weak and reuse checks.
-  base::test::ScopedFeatureList feature_list(
-      password_manager::features::kIOSPasswordCheckup);
-
   store().AddLogin(MakeSavedPassword(kExampleCom1, kUsername116));
 
   RunUntilIdle();
@@ -373,10 +368,6 @@ TEST_F(IOSChromePasswordCheckManagerTest, CheckFinishedWithDelay) {
 
 // Verify that GetInsecureCredentials returns weak credentials.
 TEST_F(IOSChromePasswordCheckManagerTest, WeakCredentialsAreReturned) {
-  // Enable weak and reuse checks.
-  base::test::ScopedFeatureList feature_list(
-      password_manager::features::kIOSPasswordCheckup);
-
   PasswordForm weak_form =
       MakeSavedPassword(kExampleCom1, kUsername116, kWeakPassword);
   store().AddLogin(weak_form);
@@ -391,10 +382,6 @@ TEST_F(IOSChromePasswordCheckManagerTest, WeakCredentialsAreReturned) {
 
 // Verify that GetInsecureCredentials returns reused credentials.
 TEST_F(IOSChromePasswordCheckManagerTest, ReusedCredentialsAreReturned) {
-  // Enable weak and reuse checks.
-  base::test::ScopedFeatureList feature_list(
-      password_manager::features::kIOSPasswordCheckup);
-
   PasswordForm form_with_same_password_1 =
       MakeSavedPassword(kExampleCom1, kUsername116, kPassword116);
   store().AddLogin(form_with_same_password_1);

@@ -35,6 +35,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "services/network/public/cpp/client_hints.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -73,6 +74,7 @@ struct PendingPreloadData {
   MetaCHValues meta_ch_values;
   absl::optional<ViewportDescription> viewport;
   bool has_csp_meta_tag = false;
+  bool has_located_potential_lcp_element = false;
   PreloadRequestStream requests;
 };
 
@@ -93,6 +95,10 @@ struct CORE_EXPORT CachedDocumentParameters {
   network::mojom::ReferrerPolicy referrer_policy;
   SubresourceIntegrity::IntegrityFeatures integrity_features;
   LocalFrame::LazyLoadImageSetting lazy_load_image_setting;
+  // Work with the element locators. If the LCP candidate image is found and
+  // that has a lazy loading indicator, ignore it and create preload request.
+  // This will override |lazy_load_image_setting| behavior.
+  features::LcppPreloadLazyLoadImageType preload_lazy_load_image_type;
   HashSet<String> disabled_image_types;
 };
 
@@ -121,6 +127,8 @@ class TokenPreloadScanner {
   void SetPredictedBaseElementURL(const KURL& url) {
     predicted_base_element_url_ = url;
   }
+
+  bool HasLocatedPotentialLcpElement() { return seen_potential_lcp_element_; }
 
  private:
   class StartTagScanner;
@@ -164,6 +172,7 @@ class TokenPreloadScanner {
   bool in_script_web_bundle_;
   bool seen_body_;
   bool seen_img_;
+  bool seen_potential_lcp_element_;
   PictureData picture_data_;
   size_t template_count_;
   std::unique_ptr<CachedDocumentParameters> document_parameters_;

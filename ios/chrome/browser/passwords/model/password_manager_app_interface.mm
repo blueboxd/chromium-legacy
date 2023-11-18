@@ -9,8 +9,8 @@
 #import "base/test/ios/wait_util.h"
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/password_manager/core/browser/password_form.h"
-#import "components/password_manager/core/browser/password_store_consumer.h"
-#import "components/password_manager/core/browser/password_store_interface.h"
+#import "components/password_manager/core/browser/password_store/password_store_consumer.h"
+#import "components/password_manager/core/browser/password_store/password_store_interface.h"
 #import "components/password_manager/core/common/password_manager_pref_names.h"
 #import "components/prefs/pref_service.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
@@ -62,7 +62,8 @@ class PasswordStoreConsumerHelper : public PasswordStoreConsumer {
 
 + (NSError*)storeCredentialWithUsername:(NSString*)username
                                password:(NSString*)password
-                                    URL:(NSURL*)URL {
+                                    URL:(NSURL*)URL
+                                 shared:(BOOL)shared {
   // Obtain a PasswordStore.
   scoped_refptr<password_manager::PasswordStoreInterface> passwordStore =
       IOSChromeProfilePasswordStoreFactory::GetForBrowserState(
@@ -75,16 +76,29 @@ class PasswordStoreConsumerHelper : public PasswordStoreConsumer {
   }
 
   // Store a PasswordForm representing a PasswordCredential.
-  password_manager::PasswordForm passwordCredentialForm;
+  PasswordForm passwordCredentialForm;
   passwordCredentialForm.username_value = base::SysNSStringToUTF16(username);
   passwordCredentialForm.password_value = base::SysNSStringToUTF16(password);
   passwordCredentialForm.url =
       net::GURLWithNSURL(URL).DeprecatedGetOriginAsURL();
   passwordCredentialForm.signon_realm = passwordCredentialForm.url.spec();
-  passwordCredentialForm.scheme = password_manager::PasswordForm::Scheme::kHtml;
+  passwordCredentialForm.scheme = PasswordForm::Scheme::kHtml;
+  if (shared) {
+    passwordCredentialForm.type = PasswordForm::Type::kReceivedViaSharing;
+    passwordCredentialForm.sender_name = u"sender";
+  }
   passwordStore->AddLogin(passwordCredentialForm);
 
   return nil;
+}
+
++ (NSError*)storeCredentialWithUsername:(NSString*)username
+                               password:(NSString*)password
+                                    URL:(NSURL*)URL {
+  return [PasswordManagerAppInterface storeCredentialWithUsername:username
+                                                         password:password
+                                                              URL:URL
+                                                           shared:NO];
 }
 
 + (NSError*)storeCredentialWithUsername:(NSString*)username

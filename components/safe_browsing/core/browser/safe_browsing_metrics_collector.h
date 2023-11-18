@@ -75,8 +75,11 @@ class SafeBrowsingMetricsCollector : public KeyedService {
     // The user bypasses an interstitial that is triggered by the hash-prefix
     // real-time lookup through Android Safe Browsing API.
     ANDROID_SAFEBROWSING_REAL_TIME_INTERSTITIAL_BYPASS = 14,
+    // The user bypasses an interstitial that is triggered by the local Safe
+    // Browsing database through Android Safe Browsing API.
+    ANDROID_SAFEBROWSING_INTERSTITIAL_BYPASS = 15,
 
-    kMaxValue = ANDROID_SAFEBROWSING_REAL_TIME_INTERSTITIAL_BYPASS
+    kMaxValue = ANDROID_SAFEBROWSING_INTERSTITIAL_BYPASS
   };
 
   using EventTypeFilter = base::RepeatingCallback<bool(const EventType&)>;
@@ -163,6 +166,15 @@ class SafeBrowsingMetricsCollector : public KeyedService {
   FRIEND_TEST_ALL_PREFIXES(
       SafeBrowsingMetricsCollectorTest,
       ProtegoRequestLogsWithoutTokenWhenPingBeforeCollectorHasEverRun);
+  FRIEND_TEST_ALL_PREFIXES(
+      SafeBrowsingMetricsCollectorTest,
+      NewProtegoRequestLogsWithTokenWhenWithTokenWasSendWithinLast24HRS);
+  FRIEND_TEST_ALL_PREFIXES(
+      SafeBrowsingMetricsCollectorTest,
+      NewProtegoRequestLogsWithoutTokenWhenWithoutTokenWasSendWithinLast24HRS);
+  FRIEND_TEST_ALL_PREFIXES(
+      SafeBrowsingMetricsCollectorTest,
+      NewProtegoRequestLogsWithTokenWhenNoPingWasSendWithinLast24HRS);
 
   // The type of Protego ping that was sent by an enhanced protection
   // user. These values are persisted to logs. Entries should not be renumbered

@@ -26,6 +26,7 @@
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/media/media_controller_impl.h"
+#include "ash/picker/picker_controller.h"
 #include "ash/public/cpp/app_types_util.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/new_window_delegate.h"
@@ -364,22 +365,6 @@ void ShowToast(const std::string& id,
   ToastData toast(id, catalog_name, text, ToastData::kDefaultToastDuration,
                   /*visible_on_lock_screen=*/true);
   Shell::Get()->toast_manager()->Show(std::move(toast));
-}
-
-void HandleToggleSystemTrayBubbleInternal(bool focus_message_center) {
-  aura::Window* target_root = Shell::GetRootWindowForNewWindows();
-  UnifiedSystemTray* tray = RootWindowController::ForWindow(target_root)
-                                ->GetStatusAreaWidget()
-                                ->unified_system_tray();
-  if (tray->IsBubbleShown()) {
-    tray->CloseBubble();
-  } else {
-    tray->ShowBubble();
-    tray->ActivateBubble();
-
-    if (focus_message_center)
-      tray->FocusMessageCenter(false, true);
-  }
 }
 
 // Enters capture mode image type with |source|.
@@ -1119,7 +1104,11 @@ void ShiftPrimaryDisplay() {
 }
 
 void ShowEmojiPicker() {
-  ui::ShowEmojiPanel();
+  if (auto* picker_controller = Shell::Get()->picker_controller()) {
+    picker_controller->ToggleWidget();
+  } else {
+    ui::ShowEmojiPanel();
+  }
 }
 
 void ShowKeyboardShortcutViewer() {
@@ -1564,10 +1553,6 @@ void ToggleResizeLockMenu() {
 }
 
 void ToggleMessageCenterBubble() {
-  if (!features::IsQsRevampEnabled()) {
-    HandleToggleSystemTrayBubbleInternal(/*focus_message_center=*/true);
-    return;
-  }
   aura::Window* target_root = Shell::GetRootWindowForNewWindows();
   NotificationCenterTray* tray = RootWindowController::ForWindow(target_root)
                                      ->GetStatusAreaWidget()
@@ -1651,7 +1636,16 @@ void ToggleStylusTools() {
 }
 
 void ToggleSystemTrayBubble() {
-  HandleToggleSystemTrayBubbleInternal(false /*focus_message_center*/);
+  aura::Window* target_root = Shell::GetRootWindowForNewWindows();
+  UnifiedSystemTray* tray = RootWindowController::ForWindow(target_root)
+                                ->GetStatusAreaWidget()
+                                ->unified_system_tray();
+  if (tray->IsBubbleShown()) {
+    tray->CloseBubble();
+  } else {
+    tray->ShowBubble();
+    tray->ActivateBubble();
+  }
 }
 
 void ToggleUnifiedDesktop() {
@@ -1686,24 +1680,12 @@ void UnpinWindow() {
 
 void VolumeDown() {
   auto* audio_handler = CrasAudioHandler::Get();
-  if (features::IsQsRevampEnabled()) {
-    // Only plays the audio if unmuted.
-    if (!audio_handler->IsOutputMuted()) {
-      AcceleratorController::PlayVolumeAdjustmentSound();
-    }
-    audio_handler->DecreaseOutputVolumeByOneStep(kStepPercentage);
-    return;
-  }
 
-  if (audio_handler->IsOutputMuted()) {
-    audio_handler->SetOutputVolumePercent(0);
-  } else {
-    if (audio_handler->IsOutputVolumeBelowDefaultMuteLevel())
-      audio_handler->SetOutputMute(true);
-    else
-      AcceleratorController::PlayVolumeAdjustmentSound();
-    audio_handler->DecreaseOutputVolumeByOneStep(kStepPercentage);
+  // Only plays the audio if unmuted.
+  if (!audio_handler->IsOutputMuted()) {
+    AcceleratorController::PlayVolumeAdjustmentSound();
   }
+  audio_handler->DecreaseOutputVolumeByOneStep(kStepPercentage);
 }
 
 void VolumeMute() {
@@ -1722,27 +1704,11 @@ void VolumeMuteToggle() {
 void VolumeUp() {
   auto* audio_handler = CrasAudioHandler::Get();
   bool play_sound = false;
-  if (features::IsQsRevampEnabled()) {
-    if (audio_handler->IsOutputMuted()) {
-      audio_handler->SetOutputMute(false);
-    }
-    play_sound = audio_handler->GetOutputVolumePercent() != 100;
-    audio_handler->IncreaseOutputVolumeByOneStep(kStepPercentage);
-
-    if (play_sound) {
-      AcceleratorController::PlayVolumeAdjustmentSound();
-    }
-    return;
-  }
-
   if (audio_handler->IsOutputMuted()) {
     audio_handler->SetOutputMute(false);
-    audio_handler->AdjustOutputVolumeToAudibleLevel();
-    play_sound = true;
-  } else {
-    play_sound = audio_handler->GetOutputVolumePercent() != 100;
-    audio_handler->IncreaseOutputVolumeByOneStep(kStepPercentage);
   }
+  play_sound = audio_handler->GetOutputVolumePercent() != 100;
+  audio_handler->IncreaseOutputVolumeByOneStep(kStepPercentage);
 
   if (play_sound) {
     AcceleratorController::PlayVolumeAdjustmentSound();

@@ -1025,9 +1025,8 @@ WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
     const WebGestureEvent& event) {
   WebInputEventResult event_result = WebInputEventResult::kNotHandled;
 
-  // Fling events are not sent to the renderer.
-  CHECK(event.GetType() != WebInputEvent::Type::kGestureFlingStart);
-  CHECK(event.GetType() != WebInputEvent::Type::kGestureFlingCancel);
+  // Fling and scroll events are not sent to the renderer main thread.
+  CHECK(!event.IsScrollEvent());
 
   WebViewImpl* web_view = View();
 
@@ -1056,21 +1055,6 @@ WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
         }
       }
       event_result = WebInputEventResult::kHandledSystem;
-      DidHandleGestureEvent(event);
-      return event_result;
-    case WebInputEvent::Type::kGestureScrollBegin:
-    case WebInputEvent::Type::kGestureScrollEnd:
-    case WebInputEvent::Type::kGestureScrollUpdate:
-      // If we are getting any scroll toss close any page popup that is open.
-      web_view->CancelPagePopup();
-
-      // Scrolling-related gesture events invoke EventHandler recursively for
-      // each frame down the chain, doing a single-frame hit-test per frame.
-      // This matches handleWheelEvent.  Perhaps we could simplify things by
-      // rewriting scroll handling to work inner frame out, and then unify with
-      // other gesture events.
-      event_result =
-          frame->GetEventHandler().HandleGestureScrollEvent(scaled_event);
       DidHandleGestureEvent(event);
       return event_result;
     default:
@@ -1307,22 +1291,25 @@ void WebFrameWidgetImpl::SendOverscrollEventFromImplSide(
   }
 }
 
-void WebFrameWidgetImpl::SendScrollEndEventFromImplSide(
+void WebFrameWidgetImpl::SendEndOfScrollEvents(
     bool affects_outer_viewport,
     cc::ElementId scroll_latched_element_id) {
-  if (!RuntimeEnabledFeatures::ScrollEndEventsEnabled())
-    return;
-
   Node* target_node = View()->FindNodeFromScrollableCompositorElementId(
       scroll_latched_element_id);
-  bool target_is_root_scroller = false;
-  if (View()->MainFrameImpl()) {
-    Node* document_node = View()->MainFrameImpl()->GetDocument();
-    if (target_node == document_node) {
-      target_is_root_scroller = true;
-    }
+  if (!target_node) {
+    return;
   }
-  if (target_node) {
+  if (ScrollableArea* scrollable_area =
+          ScrollableArea::GetForScrolling(target_node->GetLayoutBox())) {
+    scrollable_area->UpdateSnappedTargetsAndEnqueueSnapChanged();
+  }
+
+  if (RuntimeEnabledFeatures::ScrollEndEventsEnabled()) {
+    bool target_is_root_scroller = false;
+    if (View()->MainFrameImpl()) {
+      Node* document_node = View()->MainFrameImpl()->GetDocument();
+      target_is_root_scroller = target_node == document_node;
+    }
     // Scrolls consumed entirely by the VisualViewport and not the
     // LayoutViewport should not trigger scrollends on the document. The
     // VisualViewport currently handles scroll but not scrollends. If that
@@ -1336,8 +1323,9 @@ void WebFrameWidgetImpl::SendScrollEndEventFromImplSide(
 
 void WebFrameWidgetImpl::UpdateCompositorScrollState(
     const cc::CompositorCommitData& commit_data) {
+  is_scroll_gesture_active_ = commit_data.is_scroll_active;
   if (WebDevToolsAgentImpl* devtools = LocalRootImpl()->DevToolsAgentImpl())
-    devtools->SetPageIsScrolling(commit_data.is_scroll_active);
+    devtools->SetPageIsScrolling(is_scroll_gesture_active_);
 
   RecordManipulationTypeCounts(commit_data.manipulation_info);
 
@@ -1354,10 +1342,14 @@ void WebFrameWidgetImpl::UpdateCompositorScrollState(
   // dispatch the scroll end to the latter (still-scrolling) element.
   // https://crbug.com/1116780.
   if (commit_data.scroll_end_data.scroll_gesture_did_end) {
-    SendScrollEndEventFromImplSide(
+    SendEndOfScrollEvents(
         commit_data.scroll_end_data.gesture_affects_outer_viewport_scroll,
         commit_data.scroll_latched_element_id);
   }
+}
+
+bool WebFrameWidgetImpl::IsScrollGestureActive() const {
+  return is_scroll_gesture_active_;
 }
 
 WebInputMethodController*
@@ -1885,6 +1877,10 @@ void WebFrameWidgetImpl::SetHaveScrollEventHandlers(bool has_handlers) {
 void WebFrameWidgetImpl::SetEventListenerProperties(
     cc::EventListenerClass listener_class,
     cc::EventListenerProperties listener_properties) {
+  if (widget_base_->WillBeDestroyed()) {
+    return;
+  }
+
   widget_base_->LayerTreeHost()->SetEventListenerProperties(
       listener_class, listener_properties);
 
@@ -2315,6 +2311,9 @@ void WebFrameWidgetImpl::InitializeCompositingInternal(
       previous_widget ? static_cast<WebFrameWidgetImpl*>(previous_widget)
                             ->widget_base_.get()
                       : nullptr);
+
+  probe::DidInitializeFrameWidget(local_root_->GetFrame());
+  local_root_->GetFrame()->NotifyFrameWidgetCreated();
 
   // TODO(bokan): This seems wrong. Page may host multiple FrameWidgets so this
   // will call DidInitializeCompositing once per FrameWidget. It probably makes
@@ -4118,7 +4117,8 @@ void WebFrameWidgetImpl::CollapseSelection() {
 
   focused_frame->SelectRange(blink::WebRange(range.EndOffset(), 0),
                              blink::WebLocalFrame::kHideSelectionHandle,
-                             mojom::blink::SelectionMenuBehavior::kHide);
+                             mojom::blink::SelectionMenuBehavior::kHide,
+                             blink::WebLocalFrame::kSelectionDoNotSetFocus);
 }
 
 void WebFrameWidgetImpl::Replace(const String& word) {
@@ -4178,7 +4178,8 @@ void WebFrameWidgetImpl::AdjustSelectionByCharacterOffset(
   focused_frame->SelectRange(blink::WebRange(range.StartOffset() + start,
                                              range.length() + end - start),
                              blink::WebLocalFrame::kPreserveHandleVisibility,
-                             selection_menu_behavior);
+                             selection_menu_behavior,
+                             blink::WebLocalFrame::kSelectionSetFocus);
 }
 
 void WebFrameWidgetImpl::MoveRangeSelectionExtent(
@@ -4874,6 +4875,10 @@ void WebFrameWidgetImpl::NotifyZoomLevelChanged(LocalFrame* root) {
     if (LocalFrameView* view = document->View())
       view->GetLayoutShiftTracker().NotifyZoomLevelChanged();
   }
+}
+
+bool WebFrameWidgetImpl::WillBeDestroyed() const {
+  return widget_base_->WillBeDestroyed();
 }
 
 }  // namespace blink

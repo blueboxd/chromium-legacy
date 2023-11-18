@@ -205,9 +205,12 @@ public class PasswordManagerHelper {
         Profile profile = Profile.getLastUsedRegularProfile();
         SyncService syncService = SyncServiceFactory.getForProfile(profile);
         PrefService prefService = UserPrefs.get(profile);
-        return syncService != null && hasChosenToSyncPasswords(syncService)
-                && !prefService.getBoolean(
-                        Pref.UNENROLLED_FROM_GOOGLE_MOBILE_SERVICES_DUE_TO_ERRORS)
+        // TODO(crbug.com/1327294): Reevaluate if passing the syncService instead of the boolean is
+        // better.
+        // TODO(crbug.com/1327294): Move the syncService and backend presence checks in the util.
+        boolean isPwdSyncEnabled = hasChosenToSyncPasswords(syncService);
+        return syncService != null
+                && PasswordManagerUtilBridge.canUseUPMBackend(isPwdSyncEnabled, prefService)
                 && PasswordManagerBackendSupportHelper.getInstance().isBackendPresent();
     }
 
@@ -423,15 +426,30 @@ public class PasswordManagerHelper {
         loadingDialogCoordinator.show();
 
         long startTimeMs = SystemClock.elapsedRealtime();
-        credentialManagerLauncher.getAccountCredentialManagerIntent(referrer,
-                CoreAccountInfo.getEmailFrom(syncService.getAccountInfo()),
-                (intent)
-                        -> PasswordManagerHelper.launchCredentialManagerIntent(
-                                intent, startTimeMs, true, loadingDialogCoordinator),
-                (exception) -> {
-                    PasswordManagerHelper.recordFailureMetrics(exception, true);
-                    loadingDialogCoordinator.dismiss();
-                });
+        String account = CoreAccountInfo.getEmailFrom(syncService.getAccountInfo());
+        if (hasChosenToSyncPasswords(syncService)) {
+            assert account != null;
+            credentialManagerLauncher.getAccountCredentialManagerIntent(
+                    referrer,
+                    account,
+                    (intent) ->
+                            PasswordManagerHelper.launchCredentialManagerIntent(
+                                    intent, startTimeMs, true, loadingDialogCoordinator),
+                    (exception) -> {
+                        PasswordManagerHelper.recordFailureMetrics(exception, true);
+                        loadingDialogCoordinator.dismiss();
+                    });
+        } else {
+            credentialManagerLauncher.getLocalCredentialManagerIntent(
+                    referrer,
+                    (intent) ->
+                            PasswordManagerHelper.launchCredentialManagerIntent(
+                                    intent, startTimeMs, false, loadingDialogCoordinator),
+                    (exception) -> {
+                        PasswordManagerHelper.recordFailureMetrics(exception, false);
+                        loadingDialogCoordinator.dismiss();
+                    });
+        }
     }
 
     @VisibleForTesting
@@ -468,8 +486,6 @@ public class PasswordManagerHelper {
     }
 
     private static void recordFailureMetrics(Exception exception, boolean forAccount) {
-        // While support for the local storage API exists in Chrome, it isn't used at this time.
-        assert forAccount : "Local storage for preferences not ready for use";
         final String kGetIntentSuccessHistogram = forAccount ? ACCOUNT_GET_INTENT_SUCCESS_HISTOGRAM
                                                              : LOCAL_GET_INTENT_SUCCESS_HISTOGRAM;
         final String kGetIntentErrorHistogram =
@@ -520,8 +536,6 @@ public class PasswordManagerHelper {
 
     private static void launchCredentialManagerIntent(PendingIntent intent, long startTimeMs,
             boolean forAccount, LoadingModalDialogCoordinator loadingDialogCoordinator) {
-        // While support for the local storage API exists in Chrome, it isn't used at this time.
-        assert forAccount : "Local storage for preferences not ready for use";
         recordSuccessMetrics(SystemClock.elapsedRealtime() - startTimeMs, forAccount);
 
         maybeLaunchIntentWithLoadingDialog(loadingDialogCoordinator, intent,
@@ -530,8 +544,6 @@ public class PasswordManagerHelper {
     }
 
     private static void recordSuccessMetrics(long elapsedTimeMs, boolean forAccount) {
-        // While support for the local storage API exists in Chrome, it isn't used at this time.
-        assert forAccount : "Local storage for preferences not ready for use";
         final String kGetIntentLatencyHistogram = forAccount ? ACCOUNT_GET_INTENT_LATENCY_HISTOGRAM
                                                              : LOCAL_GET_INTENT_LATENCY_HISTOGRAM;
         final String kGetIntentSuccessHistogram = forAccount ? ACCOUNT_GET_INTENT_SUCCESS_HISTOGRAM

@@ -223,7 +223,7 @@ class SharedEventAndSignalValue : public BackpressureMetalSharedEvent {
 
   bool HasCompleted() const override;
 
-  id<MTLSharedEvent> shared_event() const { return shared_event_; }
+  id<MTLSharedEvent> shared_event() const { return shared_event_.get(); }
 
   // This is the value which will be signaled on the associated MTLSharedEvent.
   uint64_t signaled_value() const { return signaled_value_; }
@@ -252,7 +252,7 @@ class GPU_GLES2_EXPORT IOSurfaceImageBacking
       bool framebuffer_attachment_angle,
       bool is_cleared,
       bool retain_gl_texture,
-      absl::optional<gfx::BufferUsage> buffer_usage = absl::nullopt);
+      std::optional<gfx::BufferUsage> buffer_usage = std::nullopt);
   IOSurfaceImageBacking(const IOSurfaceImageBacking& other) = delete;
   IOSurfaceImageBacking& operator=(const IOSurfaceImageBacking& other) = delete;
   ~IOSurfaceImageBacking() override;

@@ -31,7 +31,7 @@
 #include "base/one_shot_event.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -185,7 +185,6 @@ web_app::ExternalInstallOptions CreateInstallOptionsForSystemApp(
   install_options.add_to_search = delegate.ShouldShowInSearch();
   install_options.add_to_management = false;
   install_options.is_disabled = is_disabled;
-  install_options.bypass_service_worker_check = true;
   install_options.force_reinstall = force_update;
   install_options.uninstall_and_replace =
       delegate.GetAppIdsToUninstallAndReplace();

@@ -6,7 +6,6 @@
 
 #include <dawn/dawn_proc.h>
 #include <dawn/dawn_thread_dispatch_proc.h>
-#include <dawn/native/DawnNative.h>
 #include <dawn/webgpu.h>
 
 #include "base/command_line.h"
@@ -97,25 +96,19 @@ void WebGPUTest::Initialize(const Options& options) {
     return;
   }
 
-  // The test will run both service and client in the same process, so we need
-  // to set dawn procs for both.
-  dawnProcSetProcs(&dawnThreadDispatchProcTable);
-
-  {
-    // Use the native procs as default procs for all threads. It will be used
-    // for GPU service side threads.
-    dawnProcSetDefaultThreadProcs(&dawn::native::GetProcs());
-  }
-
   gpu::GpuPreferences gpu_preferences;
   gpu_preferences.enable_webgpu = true;
   gpu_preferences.use_passthrough_cmd_decoder =
       gles2::UsePassthroughCommandDecoder(
           base::CommandLine::ForCurrentProcess());
+  if (options.use_skia_graphite) {
+    gpu_preferences.gr_context_type = gpu::GrContextType::kGraphiteDawn;
+  } else {
 #if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && BUILDFLAG(USE_DAWN)
-  gpu_preferences.use_vulkan = gpu::VulkanImplementationName::kNative;
-  gpu_preferences.gr_context_type = gpu::GrContextType::kVulkan;
+    gpu_preferences.use_vulkan = gpu::VulkanImplementationName::kNative;
+    gpu_preferences.gr_context_type = gpu::GrContextType::kVulkan;
 #endif
+  }
   gpu_preferences.enable_unsafe_webgpu = options.enable_unsafe_webgpu;
   gpu_preferences.texture_target_exception_list =
       gpu::CreateBufferUsageAndFormatExceptionList();

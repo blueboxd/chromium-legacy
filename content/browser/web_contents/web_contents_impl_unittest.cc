@@ -58,6 +58,7 @@
 #include "content/test/navigation_simulator_impl.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
+#include "content/test/test_page_broadcast.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
@@ -323,6 +324,46 @@ class FakeImageDownloader : public blink::mojom::ImageDownloader {
 
   mojo::Receiver<blink::mojom::ImageDownloader> receiver_{this};
   std::map<GURL, FakeResponseData> fake_response_data_per_url_;
+};
+
+class MockPageBroadcast : public TestPageBroadcast {
+ public:
+  using TestPageBroadcast::TestPageBroadcast;
+  MOCK_METHOD(void,
+              UpdateColorProviders,
+              (const blink::ColorProviderColorMaps& color_provider_colors),
+              (override));
+};
+
+class TestColorProviderSource : public ui::ColorProviderSource {
+ public:
+  TestColorProviderSource() { provider_.GenerateColorMap(); }
+
+  const ui::ColorProvider* GetColorProvider() const override {
+    return &provider_;
+  }
+
+  const ui::RendererColorMap GetRendererColorMap(
+      ui::ColorProviderKey::ColorMode color_mode,
+      ui::ColorProviderKey::ForcedColors forced_colors) const override {
+    if (forced_colors == ui::ColorProviderKey::ForcedColors::kActive) {
+      return forced_colors_map;
+    }
+    return color_mode == ui::ColorProviderKey::ColorMode::kLight ? light_colors
+                                                                 : dark_colors;
+  }
+
+  ui::ColorProviderKey GetColorProviderKey() const override { return key_; }
+
+ private:
+  ui::ColorProvider provider_;
+  ui::ColorProviderKey key_;
+  const ui::RendererColorMap light_colors{
+      {color::mojom::RendererColorId::kColorMenuBackground, SK_ColorWHITE}};
+  const ui::RendererColorMap dark_colors{
+      {color::mojom::RendererColorId::kColorMenuBackground, SK_ColorBLACK}};
+  const ui::RendererColorMap forced_colors_map{
+      {color::mojom::RendererColorId::kColorMenuBackground, SK_ColorCYAN}};
 };
 
 }  // namespace
@@ -3097,6 +3138,58 @@ TEST_F(WebContentsImplTest, RequestMediaAccessPermissionNoDelegate) {
             callback_run = true;
           }));
   ASSERT_TRUE(callback_run);
+}
+
+TEST_F(WebContentsImplTest, IgnoreInputEvents) {
+  // By default, input events should not be ignored.
+  EXPECT_FALSE(contents()->ShouldIgnoreInputEvents());
+  absl::optional<WebContents::ScopedIgnoreInputEvents> ignore_1 =
+      contents()->IgnoreInputEvents();
+  EXPECT_TRUE(contents()->ShouldIgnoreInputEvents());
+
+  // A second request to ignore should continue to ignore events.
+  WebContents::ScopedIgnoreInputEvents ignore_2 =
+      contents()->IgnoreInputEvents();
+  EXPECT_TRUE(contents()->ShouldIgnoreInputEvents());
+
+  // Releasing one of them should not change anything.
+  ignore_1.reset();
+  EXPECT_TRUE(contents()->ShouldIgnoreInputEvents());
+
+  // Move construction should not allow input.
+  WebContents::ScopedIgnoreInputEvents ignore_3(std::move(ignore_2));
+  EXPECT_TRUE(contents()->ShouldIgnoreInputEvents());
+
+  {
+    // Cannot create an empty `ScopedIgnoreInputEvents`, so get a new one and
+    // move-assign over it to verify that we end up with one outstanding token.
+    WebContents::ScopedIgnoreInputEvents ignore_4 =
+        contents()->IgnoreInputEvents();
+    ignore_4 = std::move(ignore_3);
+    EXPECT_TRUE(contents()->ShouldIgnoreInputEvents());
+    // `ignore_4` goes out of scope.
+  }
+
+  // Now input should be allowed.
+  EXPECT_FALSE(contents()->ShouldIgnoreInputEvents());
+}
+
+TEST_F(WebContentsImplTest, OnColorProviderChangedTriggersPageBroadcast) {
+  TestColorProviderSource color_provider_source;
+  mojo::AssociatedRemote<blink::mojom::PageBroadcast> broadcast_remote;
+  testing::NiceMock<MockPageBroadcast> mock_page_broadcast(
+      broadcast_remote.BindNewEndpointAndPassDedicatedReceiver());
+  contents()->GetRenderViewHost()->BindPageBroadcast(broadcast_remote.Unbind());
+
+  contents()->SetColorProviderSource(&color_provider_source);
+  const auto color_provider_colors = contents()->GetColorProviderColorMaps();
+  color_provider_source.NotifyColorProviderChanged();
+
+  // The page broadcast should have been called twice. Once when first set and
+  // again when the source notified of a ColorProvider change.
+  EXPECT_CALL(mock_page_broadcast, UpdateColorProviders(color_provider_colors))
+      .Times(2);
+  mock_page_broadcast.FlushForTesting();
 }
 
 }  // namespace content

@@ -47,7 +47,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kArcHostUreadaheadGeneration[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcUseDevCaches[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcErofs[];
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcForceEnableApkCache[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcForcePostBootDexOpt[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcForceShowOptInUi[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcGeneratePlayAutoInstall[];
@@ -73,7 +72,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAshDebugShortcuts[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAshDeveloperShortcuts[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAshDisableTouchExplorationMode[];
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAshEnableCursorMotionBlur[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAshEnableMagnifierKeyScroller[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -127,6 +125,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kDisableArcOptInVerification[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDisableDemoMode[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDisableDeviceDisabling[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDisableDriveFsForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kDisableFineGrainedTimeZoneDetection[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDisableGaiaServices[];
@@ -269,6 +268,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kBrowserDataBackwardMigrationForUser[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kBrowserDataBackwardMigrationMode[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kCoralFeatureKey[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kForceBrowserDataBackwardMigration[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -297,6 +297,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kHiddenNetworkMigrationInterval[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kHiddenNetworkMigrationAge[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kPickerFeatureKey[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kPrintingPpdChannel[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kPrintingPpdChannelProduction[];
@@ -328,7 +329,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kSkipForceOnlineSignInForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kSkipReorderNudgeShowThresholdDurationForTest[];
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kSwCursorOnWideDisplays[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kStabilizeTimeDependentViewForTests[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -363,6 +363,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kPreventKioskAutolaunchForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAllowDefaultShelfPinLayoutIgnoringSync[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kForceRefreshRateThrottle[];
 
 ////////////////////////////////////////////////////////////////////////////////
 

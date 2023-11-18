@@ -39,7 +39,6 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/navigation/navigation_params.h"
-#include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
@@ -591,13 +590,6 @@ void TestRenderFrameHost::SimulateCommitProcessed(
       same_document);
 }
 
-WebBluetoothServiceImpl*
-TestRenderFrameHost::CreateWebBluetoothServiceForTesting(
-    mojo::PendingReceiver<blink::mojom::WebBluetoothService> receiver) {
-  RenderFrameHostImpl::CreateWebBluetoothService(std::move(receiver));
-  return RenderFrameHostImpl::GetWebBluetoothServiceForTesting();
-}
-
 #if !BUILDFLAG(IS_ANDROID)
 void TestRenderFrameHost::CreateHidServiceForTesting(
     mojo::PendingReceiver<blink::mojom::HidService> receiver) {
@@ -678,7 +670,8 @@ TestRenderFrameHost::BuildDidCommitParams(bool did_create_new_entry,
 
   // Simulate Blink assigning an item and document sequence number to the
   // navigation.
-  params->item_sequence_number = base::Time::Now().ToDoubleT() * 1000000;
+  params->item_sequence_number =
+      (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
   params->document_sequence_number = params->item_sequence_number + 1;
 
   // When the user hits enter in the Omnibox without changing the URL, Blink

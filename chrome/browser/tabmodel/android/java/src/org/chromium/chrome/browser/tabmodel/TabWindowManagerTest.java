@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Build;
 import android.util.Pair;
 
@@ -15,14 +16,19 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.supplier.OneshotSupplier;
+import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.NextTabPolicy.NextTabPolicySupplier;
@@ -42,24 +48,31 @@ import java.util.List;
 public class TabWindowManagerTest {
     private TabWindowManager mSubject;
     private AsyncTabParamsManager mAsyncTabParamsManager;
+    @Mock private ProfileProvider mProfileProvider;
     @Mock private TabCreatorManager mTabCreatorManager;
+    @Mock private Profile mProfile;
+    @Mock private Profile mIncognitoProfile;
     private NextTabPolicySupplier mNextTabPolicySupplier = () -> NextTabPolicy.HIERARCHICAL;
-
-    private static final TabModelSelectorFactory sMockTabModelSelectorFactory =
-            new TabModelSelectorFactory() {
-                @Override
-                public TabModelSelector buildSelector(
-                        Activity activity,
-                        TabCreatorManager tabCreatorManager,
-                        NextTabPolicySupplier nextTabPolicySupplier,
-                        int selectorIndex) {
-                    return new MockTabModelSelector(0, 0, null);
-                }
-            };
+    private OneshotSupplierImpl<ProfileProvider> mProfileProviderSupplier =
+            new OneshotSupplierImpl<>();
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        Mockito.when(mIncognitoProfile.isOffTheRecord()).thenReturn(true);
+        mProfileProviderSupplier.set(mProfileProvider);
+
+        TabModelSelectorFactory mockTabModelSelectorFactory =
+                new TabModelSelectorFactory() {
+                    @Override
+                    public TabModelSelector buildSelector(
+                            Context context,
+                            OneshotSupplier<ProfileProvider> profileProviderSupplier,
+                            TabCreatorManager tabCreatorManager,
+                            NextTabPolicySupplier nextTabPolicySupplier) {
+                        return new MockTabModelSelector(mProfile, mIncognitoProfile, 0, 0, null);
+                    }
+                };
         ThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mAsyncTabParamsManager =
@@ -70,7 +83,7 @@ public class TabWindowManagerTest {
                                     : TabWindowManager.MAX_SELECTORS_LEGACY);
                     mSubject =
                             TabWindowManagerFactory.createInstance(
-                                    sMockTabModelSelectorFactory,
+                                    mockTabModelSelectorFactory,
                                     mAsyncTabParamsManager,
                                     maxInstances);
                 });
@@ -94,7 +107,12 @@ public class TabWindowManagerTest {
         ActivityController<Activity> activityController0 = createActivity();
         Activity activity0 = activityController0.get();
         Pair<Integer, TabModelSelector> assignment0 =
-                mSubject.requestSelector(activity0, mTabCreatorManager, mNextTabPolicySupplier, 0);
+                mSubject.requestSelector(
+                        activity0,
+                        mProfileProviderSupplier,
+                        mTabCreatorManager,
+                        mNextTabPolicySupplier,
+                        0);
 
         Assert.assertEquals(0, assignment0.first.intValue());
         TabModelSelector selector0 = assignment0.second;
@@ -116,9 +134,19 @@ public class TabWindowManagerTest {
         ActivityController<Activity> activityController1 = createActivity();
         Activity activity1 = activityController1.get();
         Pair<Integer, TabModelSelector> assignment0 =
-                mSubject.requestSelector(activity0, mTabCreatorManager, mNextTabPolicySupplier, 0);
+                mSubject.requestSelector(
+                        activity0,
+                        mProfileProviderSupplier,
+                        mTabCreatorManager,
+                        mNextTabPolicySupplier,
+                        0);
         Pair<Integer, TabModelSelector> assignment1 =
-                mSubject.requestSelector(activity1, mTabCreatorManager, mNextTabPolicySupplier, 1);
+                mSubject.requestSelector(
+                        activity1,
+                        mProfileProviderSupplier,
+                        mTabCreatorManager,
+                        mNextTabPolicySupplier,
+                        1);
 
         Assert.assertEquals(0, assignment0.first.intValue());
         Assert.assertEquals(1, assignment1.first.intValue());
@@ -146,7 +174,11 @@ public class TabWindowManagerTest {
             Assert.assertNotNull(
                     "Could not build selector",
                     mSubject.requestSelector(
-                            c.get(), mTabCreatorManager, mNextTabPolicySupplier, 0));
+                            c.get(),
+                            mProfileProviderSupplier,
+                            mTabCreatorManager,
+                            mNextTabPolicySupplier,
+                            0));
         }
 
         ActivityController<Activity> activityController = createActivity();
@@ -154,7 +186,11 @@ public class TabWindowManagerTest {
         Assert.assertNull(
                 "Built selectors past the max number supported",
                 mSubject.requestSelector(
-                        activityController.get(), mTabCreatorManager, mNextTabPolicySupplier, 0));
+                        activityController.get(),
+                        mProfileProviderSupplier,
+                        mTabCreatorManager,
+                        mNextTabPolicySupplier,
+                        0));
 
         for (ActivityController<Activity> c : activityControllerList) {
             destroyActivity(c);
@@ -176,10 +212,20 @@ public class TabWindowManagerTest {
         ActivityController<Activity> activityController1 = createActivity();
         Activity activity1 = activityController1.get();
         Pair<Integer, TabModelSelector> assignment0 =
-                mSubject.requestSelector(activity0, mTabCreatorManager, mNextTabPolicySupplier, 0);
+                mSubject.requestSelector(
+                        activity0,
+                        mProfileProviderSupplier,
+                        mTabCreatorManager,
+                        mNextTabPolicySupplier,
+                        0);
         // Request 0 again, but should get 1 instead.
         Pair<Integer, TabModelSelector> assignment1 =
-                mSubject.requestSelector(activity1, mTabCreatorManager, mNextTabPolicySupplier, 0);
+                mSubject.requestSelector(
+                        activity1,
+                        mProfileProviderSupplier,
+                        mTabCreatorManager,
+                        mNextTabPolicySupplier,
+                        0);
 
         Assert.assertEquals(0, assignment0.first.intValue());
         Assert.assertEquals(1, assignment1.first.intValue());
@@ -207,10 +253,20 @@ public class TabWindowManagerTest {
         ActivityController<Activity> activityController1 = createActivity();
         Activity activity1 = activityController1.get();
         Pair<Integer, TabModelSelector> assignment0 =
-                mSubject.requestSelector(activity0, mTabCreatorManager, mNextTabPolicySupplier, 2);
+                mSubject.requestSelector(
+                        activity0,
+                        mProfileProviderSupplier,
+                        mTabCreatorManager,
+                        mNextTabPolicySupplier,
+                        2);
         // Request 2 again, but should get 0 instead.
         Pair<Integer, TabModelSelector> assignment1 =
-                mSubject.requestSelector(activity1, mTabCreatorManager, mNextTabPolicySupplier, 2);
+                mSubject.requestSelector(
+                        activity1,
+                        mProfileProviderSupplier,
+                        mTabCreatorManager,
+                        mNextTabPolicySupplier,
+                        2);
 
         Assert.assertEquals(2, assignment0.first.intValue());
         Assert.assertEquals(0, assignment1.first.intValue());
@@ -234,7 +290,12 @@ public class TabWindowManagerTest {
         ActivityController<Activity> activityController0 = createActivity();
         Activity activity0 = activityController0.get();
         Pair<Integer, TabModelSelector> assignment0 =
-                mSubject.requestSelector(activity0, mTabCreatorManager, mNextTabPolicySupplier, 0);
+                mSubject.requestSelector(
+                        activity0,
+                        mProfileProviderSupplier,
+                        mTabCreatorManager,
+                        mNextTabPolicySupplier,
+                        0);
 
         Assert.assertEquals(0, assignment0.first.intValue());
         Assert.assertNotNull("Was not able to build the TabModelSelector", assignment0.second);
@@ -259,7 +320,12 @@ public class TabWindowManagerTest {
         ActivityController<Activity> activityController0 = createActivity();
         Activity activity0 = activityController0.get();
         Pair<Integer, TabModelSelector> assignment0 =
-                mSubject.requestSelector(activity0, mTabCreatorManager, mNextTabPolicySupplier, 0);
+                mSubject.requestSelector(
+                        activity0,
+                        mProfileProviderSupplier,
+                        mTabCreatorManager,
+                        mNextTabPolicySupplier,
+                        0);
 
         Assert.assertEquals(0, assignment0.first.intValue());
         Assert.assertNotNull("Was not able to build the TabModelSelector", assignment0.second);
@@ -275,7 +341,12 @@ public class TabWindowManagerTest {
         ActivityController<Activity> activityController1 = createActivity();
         Activity activity1 = activityController1.get();
         Pair<Integer, TabModelSelector> assignment1 =
-                mSubject.requestSelector(activity1, mTabCreatorManager, mNextTabPolicySupplier, 0);
+                mSubject.requestSelector(
+                        activity1,
+                        mProfileProviderSupplier,
+                        mTabCreatorManager,
+                        mNextTabPolicySupplier,
+                        0);
 
         Assert.assertEquals(0, assignment1.first.intValue());
         Assert.assertNotNull("Was not able to build the TabModelSelector", assignment1.second);
@@ -300,9 +371,19 @@ public class TabWindowManagerTest {
         ActivityController<Activity> activityController1 = createActivity();
         Activity activity1 = activityController1.get();
         Pair<Integer, TabModelSelector> assignment0 =
-                mSubject.requestSelector(activity0, mTabCreatorManager, mNextTabPolicySupplier, 0);
+                mSubject.requestSelector(
+                        activity0,
+                        mProfileProviderSupplier,
+                        mTabCreatorManager,
+                        mNextTabPolicySupplier,
+                        0);
         Pair<Integer, TabModelSelector> assignment1 =
-                mSubject.requestSelector(activity1, mTabCreatorManager, mNextTabPolicySupplier, 1);
+                mSubject.requestSelector(
+                        activity1,
+                        mProfileProviderSupplier,
+                        mTabCreatorManager,
+                        mNextTabPolicySupplier,
+                        1);
 
         Assert.assertEquals(0, assignment0.first.intValue());
         Assert.assertEquals(1, assignment1.first.intValue());
@@ -321,7 +402,12 @@ public class TabWindowManagerTest {
         ActivityController<Activity> activityController2 = createActivity();
         Activity activity2 = activityController2.get();
         Pair<Integer, TabModelSelector> assignment2 =
-                mSubject.requestSelector(activity2, mTabCreatorManager, mNextTabPolicySupplier, 1);
+                mSubject.requestSelector(
+                        activity2,
+                        mProfileProviderSupplier,
+                        mTabCreatorManager,
+                        mNextTabPolicySupplier,
+                        1);
 
         Assert.assertEquals(1, assignment2.first.intValue());
         Assert.assertNotNull("Was not able to build the TabModelSelector", assignment2.second);
@@ -342,9 +428,19 @@ public class TabWindowManagerTest {
         ActivityController<Activity> activityController1 = createActivity();
         Activity activity1 = activityController1.get();
         Pair<Integer, TabModelSelector> assignment0 =
-                mSubject.requestSelector(activity0, mTabCreatorManager, mNextTabPolicySupplier, 0);
+                mSubject.requestSelector(
+                        activity0,
+                        mProfileProviderSupplier,
+                        mTabCreatorManager,
+                        mNextTabPolicySupplier,
+                        0);
         Pair<Integer, TabModelSelector> assignment1 =
-                mSubject.requestSelector(activity1, mTabCreatorManager, mNextTabPolicySupplier, 1);
+                mSubject.requestSelector(
+                        activity1,
+                        mProfileProviderSupplier,
+                        mTabCreatorManager,
+                        mNextTabPolicySupplier,
+                        1);
         MockTabModelSelector selector0 = (MockTabModelSelector) assignment0.second;
         MockTabModelSelector selector1 = (MockTabModelSelector) assignment1.second;
         Tab tab1 = selector0.addMockTab();
@@ -358,7 +454,7 @@ public class TabWindowManagerTest {
         mAsyncTabParamsManager.getAsyncTabParams().clear();
         final int asyncTabId = 123;
         final TabReparentingParams dummyParams =
-                new TabReparentingParams(new MockTab(0, false), null);
+                new TabReparentingParams(new MockTab(0, mProfile), null);
         Assert.assertNull(mSubject.getTabById(asyncTabId));
         mAsyncTabParamsManager.add(asyncTabId, dummyParams);
         try {
@@ -381,9 +477,19 @@ public class TabWindowManagerTest {
         ActivityController<Activity> activityController1 = createActivity();
         Activity activity1 = activityController1.get();
         Pair<Integer, TabModelSelector> assignment0 =
-                mSubject.requestSelector(activity0, mTabCreatorManager, mNextTabPolicySupplier, 0);
+                mSubject.requestSelector(
+                        activity0,
+                        mProfileProviderSupplier,
+                        mTabCreatorManager,
+                        mNextTabPolicySupplier,
+                        0);
         Pair<Integer, TabModelSelector> assignment1 =
-                mSubject.requestSelector(activity1, mTabCreatorManager, mNextTabPolicySupplier, 1);
+                mSubject.requestSelector(
+                        activity1,
+                        mProfileProviderSupplier,
+                        mTabCreatorManager,
+                        mNextTabPolicySupplier,
+                        1);
         MockTabModelSelector selector0 = (MockTabModelSelector) assignment0.second;
         MockTabModelSelector selector1 = (MockTabModelSelector) assignment1.second;
         Tab tab1 = selector0.addMockTab();
@@ -397,7 +503,7 @@ public class TabWindowManagerTest {
         mAsyncTabParamsManager.getAsyncTabParams().clear();
         final int asyncTabId = 123;
         final TabReparentingParams dummyParams =
-                new TabReparentingParams(new MockTab(0, false), null);
+                new TabReparentingParams(new MockTab(0, mProfile), null);
         Assert.assertNull(mSubject.getTabById(asyncTabId));
         mAsyncTabParamsManager.add(asyncTabId, dummyParams);
         try {
@@ -420,9 +526,19 @@ public class TabWindowManagerTest {
         ActivityController<Activity> activityController1 = createActivity();
         Activity activity1 = activityController1.get();
         Pair<Integer, TabModelSelector> assignment0 =
-                mSubject.requestSelector(activity0, mTabCreatorManager, mNextTabPolicySupplier, 0);
+                mSubject.requestSelector(
+                        activity0,
+                        mProfileProviderSupplier,
+                        mTabCreatorManager,
+                        mNextTabPolicySupplier,
+                        0);
         Pair<Integer, TabModelSelector> assignment1 =
-                mSubject.requestSelector(activity1, mTabCreatorManager, mNextTabPolicySupplier, 1);
+                mSubject.requestSelector(
+                        activity1,
+                        mProfileProviderSupplier,
+                        mTabCreatorManager,
+                        mNextTabPolicySupplier,
+                        1);
         MockTabModelSelector selector0 = (MockTabModelSelector) assignment0.second;
         MockTabModelSelector selector1 = (MockTabModelSelector) assignment1.second;
         Tab tab1 = selector0.addMockTab();

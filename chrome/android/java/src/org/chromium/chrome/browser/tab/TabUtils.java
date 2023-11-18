@@ -20,22 +20,20 @@ import android.widget.ImageView.ScaleType;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.jni_zero.CalledByNative;
 
 import org.chromium.base.BuildInfo;
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.automotive.AutomotiveUtils;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiThemeProvider;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroidManager;
 import org.chromium.ui.display.DisplayUtil;
@@ -48,7 +46,8 @@ import java.lang.annotation.RetentionPolicy;
  * Collection of utility methods that operates on Tab.
  */
 public class TabUtils {
-    public static final float THUMBNAIL_ASPECT_RATIO = 0.85f;
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public static final float PORTRAIT_THUMBNAIL_ASPECT_RATIO = 0.85f;
 
     /**
      * Define the callers of NavigationControllerImpl#setUseDesktopUserAgent.
@@ -136,22 +135,6 @@ public class TabUtils {
     }
 
     /**
-     * @param tab {@link Tab} instance being checked.
-     * @return Whether the tab is detached from any Activity and its {@link WindowAndroid}.
-     * Certain functionalities will not work until it is attached to an activity
-     * with {@link ReparentingTask#finish}.
-     */
-    public static boolean isDetached(Tab tab) {
-        if (tab.getWebContents() == null) return true;
-        // Should get WindowAndroid from WebContents since the one from |getWindowAndroid()|
-        // is always non-null even when the tab is in detached state. See the comment in |detach()|.
-        WindowAndroid window = tab.getWebContents().getTopLevelNativeWindow();
-        if (window == null) return true;
-        Activity activity = ContextUtils.activityFromContext(window.getContext().get());
-        return !(activity instanceof ChromeActivity);
-    }
-
-    /**
      * Call when tab need to switch user agent between desktop and mobile.
      * @param tab The tab to be switched the user agent.
      * @param switchToDesktop Whether switching the user agent to desktop.
@@ -167,8 +150,7 @@ public class TabUtils {
         if (forcedByUser) {
             @TabUserAgent
             int tabUserAgent = switchToDesktop ? TabUserAgent.DESKTOP : TabUserAgent.MOBILE;
-            if (isDesktopSiteGlobalEnabled(Profile.fromWebContents(tab.getWebContents()))
-                    == switchToDesktop) {
+            if (isDesktopSiteGlobalEnabled(tab.getProfile()) == switchToDesktop) {
                 tabUserAgent = TabUserAgent.DEFAULT;
             }
             tab.setUserAgent(tabUserAgent);
@@ -283,21 +265,24 @@ public class TabUtils {
      */
     public static float getTabThumbnailAspectRatio(
             Context context, BrowserControlsStateProvider browserControlsStateProvider) {
-        if ((DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
-                    || BuildInfo.getInstance().isAutomotive
-                    || ChromeFeatureList.sGridTabSwitcherLandscapeAspectRatioPhones.isEnabled())
-                && context.getResources().getConfiguration().orientation
-                        == Configuration.ORIENTATION_LANDSCAPE) {
+        if (context.getResources().getConfiguration().orientation
+                == Configuration.ORIENTATION_LANDSCAPE) {
             assert browserControlsStateProvider != null;
-            int toolbarHeightDp = (browserControlsStateProvider == null)
-                    ? 0
-                    : Math.round((float) browserControlsStateProvider.getTopControlsHeight()
-                            / context.getResources().getDisplayMetrics().density);
+            int browserControlsHeightDp =
+                    (browserControlsStateProvider == null)
+                            ? 0
+                            : Math.round(
+                                    (float) browserControlsStateProvider.getTopControlsHeight()
+                                            / context.getResources().getDisplayMetrics().density);
+            int automotiveToolbarHeightDp = AutomotiveUtils.getAutomotiveToolbarHeightDp(context);
+            // This should match the aspect ratio of a Tab's content area.
             return (context.getResources().getConfiguration().screenWidthDp * 1.f)
                     / (context.getResources().getConfiguration().screenHeightDp * 1.f
-                            - toolbarHeightDp);
+                            - browserControlsHeightDp
+                            - automotiveToolbarHeightDp);
         }
-        return THUMBNAIL_ASPECT_RATIO;
+        // This is an experimentally determined value.
+        return PORTRAIT_THUMBNAIL_ASPECT_RATIO;
     }
 
     /**
@@ -337,11 +322,10 @@ public class TabUtils {
      */
     public static void setBitmapAndUpdateImageMatrix(
             ImageView view, Bitmap bitmap, Size destinationSize) {
-        view.setImageBitmap(bitmap);
         if (BuildInfo.getInstance().isAutomotive) {
-            bitmap.setDensity(
-                    (int) (bitmap.getDensity() * DisplayUtil.getUiScalingFactorForAutomotive()));
+            bitmap.setDensity(DisplayUtil.getUiDensityForAutomotive(bitmap.getDensity()));
         }
+        view.setImageBitmap(bitmap);
         int newWidth = destinationSize == null ? 0 : destinationSize.getWidth();
         int newHeight = destinationSize == null ? 0 : destinationSize.getHeight();
         if (newWidth <= 0 || newHeight <= 0

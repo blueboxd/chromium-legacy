@@ -17,7 +17,6 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/ash/app_mode/certificate_manager_dialog.h"
-#include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/login/auth/chrome_login_performer.h"
 #include "chrome/browser/ash/login/chrome_restart_request.h"
 #include "chrome/browser/ash/login/ui/captive_portal_window_proxy.h"
@@ -33,6 +32,7 @@
 #include "chrome/browser/ui/webui/ash/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/ash/login/offline_login_screen_handler.h"
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/ash/components/network/network_connection_handler.h"
@@ -127,9 +127,17 @@ void ErrorScreen::AllowOfflineLoginPerUser(bool allowed) {
 }
 
 void ErrorScreen::FixCaptivePortal() {
+  const std::string network_path = network_state_informer_->network_path();
+  const std::string network_name =
+      NetworkStateInformer::GetNetworkName(network_path);
+  const auto state = network_state_informer_->state();
+  if (network_name.empty() || state != NetworkStateInformer::CAPTIVE_PORTAL) {
+    LOG(ERROR) << __func__ << " without network in a portalled state.";
+    return;
+  }
   MaybeInitCaptivePortalWindowProxy(
       LoginDisplayHost::default_host()->GetOobeWebContents());
-  captive_portal_window_proxy_->ShowIfRedirected();
+  captive_portal_window_proxy_->ShowIfRedirected(network_name);
 }
 
 NetworkError::UIState ErrorScreen::GetUIState() const {
@@ -178,10 +186,19 @@ void ErrorScreen::SetHideCallback(base::OnceClosure on_hide) {
 }
 
 void ErrorScreen::ShowCaptivePortal() {
+  const std::string network_path = network_state_informer_->network_path();
+  const std::string network_name =
+      NetworkStateInformer::GetNetworkName(network_path);
+  const auto state = network_state_informer_->state();
+  if (network_name.empty() || state != NetworkStateInformer::CAPTIVE_PORTAL) {
+    LOG(ERROR) << __func__ << " without network in a portalled state.";
+    return;
+  }
+
   // This call is an explicit user action
   // i.e. clicking on link so force dialog show.
   FixCaptivePortal();
-  captive_portal_window_proxy_->Show();
+  captive_portal_window_proxy_->Show(network_name);
 }
 
 void ErrorScreen::ShowConnectingIndicator(bool show) {
@@ -232,7 +249,7 @@ void ErrorScreen::ShowNetworkErrorMessage(NetworkStateInformer::State state,
     }
     SetErrorState(NetworkError::ERROR_STATE_PORTAL, network_name);
   } else if (is_loading_timeout) {
-    SetErrorState(NetworkError::ERROR_STATE_AUTH_EXT_TIMEOUT, network_name);
+    SetErrorState(NetworkError::ERROR_STATE_LOADING_TIMEOUT, network_name);
   } else {
     SetErrorState(NetworkError::ERROR_STATE_OFFLINE, std::string());
   }
@@ -242,7 +259,7 @@ void ErrorScreen::ShowNetworkErrorMessage(NetworkStateInformer::State state,
   AllowGuestSignin(guest_signin_allowed);
   ShowOfflineLoginOption(
       g_offline_login_allowed_ && g_offline_login_per_user_allowed_ &&
-      GetErrorState() != NetworkError::ERROR_STATE_AUTH_EXT_TIMEOUT);
+      GetErrorState() != NetworkError::ERROR_STATE_LOADING_TIMEOUT);
 
   // No need to show the screen again if it is already shown.
   if (is_hidden()) {

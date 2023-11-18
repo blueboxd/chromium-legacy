@@ -5,11 +5,14 @@
 /**
  * @fileoverview Classes that handle the ChromeVox range.
  */
+import {AutomationPredicate} from '../../common/automation_predicate.js';
 import {AutomationUtil} from '../../common/automation_util.js';
 import {constants} from '../../common/constants.js';
+import {Cursor} from '../../common/cursors/cursor.js';
 import {CursorRange} from '../../common/cursors/range.js';
 import {BridgeConstants} from '../common/bridge_constants.js';
 import {BridgeHelper} from '../common/bridge_helper.js';
+import {EarconId} from '../common/earcon_id.js';
 import {TtsSpeechProperties} from '../common/tts_types.js';
 
 import {ChromeVox} from './chromevox.js';
@@ -38,15 +41,7 @@ export class ChromeVoxRangeObserver {
   onCurrentRangeChanged(range, opt_fromEditing = undefined) {}
 }
 
-/**
- * A class that handles tracking and changes to the ChromeVox range.
- *
- * ================ THIS CLASS IS MID-MIGRATION ================
- *
- * The logic relating to the ChromeVox range is being moved here from
- * ChromeVoxState in small chunks. During this transition, the logic will be
- * split between those two locations.
- */
+/** Handles tracking of and changes to the ChromeVox range. */
 export class ChromeVoxRange {
   /** @private */
   constructor() {
@@ -76,19 +71,9 @@ export class ChromeVoxRange {
     return null;
   }
 
-  /** @return {?CursorRange} */
-  static get pageSel() {
-    return ChromeVoxRange.instance.pageSel_;
-  }
-
   /** @param {?CursorRange} newPageSel */
   static set pageSel(newPageSel) {
     ChromeVoxRange.instance.pageSel_ = newPageSel;
-  }
-
-  /** @return {?CursorRange} */
-  static get previous() {
-    return ChromeVoxRange.instance.previous_;
   }
 
   /**
@@ -119,12 +104,25 @@ export class ChromeVoxRange {
     ChromeVoxRange.instance.navigateTo_(...arguments);
   }
 
+  /** Restores the last valid ChromeVox range. */
+  static restoreLastValidRangeIfNeeded() {
+    ChromeVoxRange.instance.restoreLastValidRangeIfNeeded_();
+  }
+
   /**
    * @param {?CursorRange} newRange The new range.
    * @param {boolean=} opt_fromEditing
    */
   static set(newRange, opt_fromEditing) {
     ChromeVoxRange.instance.set_(...arguments);
+  }
+
+  /**
+   * @return {boolean} true if the selection is toggled on, false if it is
+   * toggled off.
+   */
+  static toggleSelection() {
+    return ChromeVoxRange.instance.toggleSelection_();
   }
 
   // ================= Observer Functions =================
@@ -186,6 +184,7 @@ export class ChromeVoxRange {
    * @param {TtsSpeechProperties=} opt_speechProps Speech properties.
    * @param {boolean=} opt_skipSettingSelection If true, does not set
    *     the selection, otherwise it does by default.
+   * @private
    */
   navigateTo_(range, opt_focus, opt_speechProps, opt_skipSettingSelection) {
     opt_focus = opt_focus ?? true;
@@ -201,7 +200,7 @@ export class ChromeVoxRange {
     }
 
     if (opt_focus) {
-      ChromeVoxState.instance.setFocusToRange(range, prevRange);
+      this.setFocusToRange_(range, prevRange);
     }
 
     ChromeVoxRange.set(range);
@@ -287,6 +286,19 @@ export class ChromeVoxRange {
     }
   }
 
+  /** @private */
+  restoreLastValidRangeIfNeeded_() {
+    // Never restore range when TalkBack is enabled as commands such as
+    // Search+Left, go directly to TalkBack.
+    if (ChromeVoxState.instance.talkBackEnabled) {
+      return;
+    }
+
+    if (!this.current_?.isValid()) {
+      this.current_ = this.previous_;
+    }
+  }
+
   /**
    * @param {?CursorRange} newRange
    * @param {boolean=} opt_fromEditing
@@ -329,6 +341,111 @@ export class ChromeVoxRange {
     let url = root.docUrl;
     url = url.substring(0, url.indexOf('#')) || url;
     ChromeVoxState.position[url] = position;
+  }
+
+  /**
+   * @param {!CursorRange} range
+   * @param {CursorRange} prevRange
+   * @private
+   */
+  setFocusToRange_(range, prevRange) {
+    const start = range.start.node;
+    const end = range.end.node;
+
+    // First, see if we've crossed a root. Remove once webview handles focus
+    // correctly.
+    if (prevRange && prevRange.start.node && start) {
+      const entered =
+          AutomationUtil.getUniqueAncestors(prevRange.start.node, start);
+      const isPluginOrIframe =
+          AutomationPredicate.roles([RoleType.PLUGIN_OBJECT, RoleType.IFRAME]);
+
+      entered.filter(isPluginOrIframe).forEach(container => {
+        if (!container.state[StateType.FOCUSED]) {
+          container.focus();
+        }
+      });
+    }
+
+    if (start.state[StateType.FOCUSED] || end.state[StateType.FOCUSED]) {
+      return;
+    }
+
+    const isFocusableLinkOrControl = node => node.state[StateType.FOCUSABLE] &&
+        AutomationPredicate.linkOrControl(node);
+
+    // Next, try to focus the start or end node.
+    if (!AutomationPredicate.structuralContainer(start) &&
+        start.state[StateType.FOCUSABLE]) {
+      if (!start.state[StateType.FOCUSED]) {
+        start.focus();
+      }
+      return;
+    } else if (
+        !AutomationPredicate.structuralContainer(end) &&
+        end.state[StateType.FOCUSABLE]) {
+      if (!end.state[StateType.FOCUSED]) {
+        end.focus();
+      }
+      return;
+    }
+
+    // If a common ancestor of |start| and |end| is a link, focus that.
+    let ancestor = AutomationUtil.getLeastCommonAncestor(start, end);
+    while (ancestor && ancestor.root === start.root) {
+      if (isFocusableLinkOrControl(ancestor)) {
+        if (!ancestor.state[StateType.FOCUSED]) {
+          ancestor.focus();
+        }
+        return;
+      }
+      ancestor = ancestor.parent;
+    }
+
+    // If nothing is focusable, set the sequential focus navigation starting
+    // point, which ensures that the next time you press Tab, you'll reach
+    // the next or previous focusable node from |start|.
+    if (!start.state[StateType.OFFSCREEN]) {
+      start.setSequentialFocusNavigationStartingPoint();
+    }
+  }
+
+  /**
+   * @return {boolean} true if the selection is toggled on, false if it is
+   * toggled off.
+   * @private
+   */
+  toggleSelection_() {
+    if (!this.pageSel_) {
+      ChromeVox.earcons.playEarcon(EarconId.SELECTION);
+      this.pageSel_ = ChromeVoxRange.current;
+      DesktopAutomationInterface.instance.ignoreDocumentSelectionFromAction(
+          true);
+      return true;
+    } else {
+      const root = this.current_.start.node.root;
+      if (root && root.selectionStartObject && root.selectionEndObject &&
+          !isNaN(Number(root.selectionStartOffset)) &&
+          !isNaN(Number(root.selectionEndOffset))) {
+        ChromeVox.earcons.playEarcon(EarconId.SELECTION_REVERSE);
+        const sel = new CursorRange(
+            new Cursor(
+                root.selectionStartObject,
+                /** @type {number} */ (root.selectionStartOffset)),
+            new Cursor(
+                root.selectionEndObject,
+                /** @type {number} */ (root.selectionEndOffset)));
+        const o =
+            new Output()
+                .format('@end_selection')
+                .withSpeechAndBraille(sel, sel, OutputCustomEvent.NAVIGATE)
+                .go();
+        DesktopAutomationInterface.instance.ignoreDocumentSelectionFromAction(
+            false);
+      }
+      this.pageSel_ = null;
+      return false;
+    }
   }
 }
 

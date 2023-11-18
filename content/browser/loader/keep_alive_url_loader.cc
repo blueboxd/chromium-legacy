@@ -13,10 +13,14 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/typed_macros.h"
+#include "content/browser/renderer_host/mixed_content_checker.h"
 #include "content/browser/renderer_host/policy_container_host.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/url_loader_throttles.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
@@ -76,7 +80,8 @@ enum class FetchLaterBrowserMetricType {
   kStartedAfterInitiatorDisconnected = 1,
   kStartedByInitiator = 2,
   kCancelledAfterTimeLimit = 3,
-  kMaxValue = kCancelledAfterTimeLimit,
+  kStartedWhenShutdown = 4,
+  kMaxValue = kStartedWhenShutdown,
 };
 
 void LogFetchLaterMetric(const FetchLaterBrowserMetricType& type) {
@@ -141,10 +146,12 @@ bool IsRedirectAllowedByCSP(
 
   // When reaching here, renderer should have be gone, or at least
   // `KeepAliveURLLoader::forwarding_client_` is disconnected.
-  return KeepAliveURLLoaderCSPContext().IsAllowedByCsp(
-      policies, directive, url, url_before_redirects, has_followed_redirect,
-      /*is_response_check=*/false, empty_source_location, disposition,
-      /*is_form_submission=*/false);
+  return KeepAliveURLLoaderCSPContext()
+      .IsAllowedByCsp(
+          policies, directive, url, url_before_redirects, has_followed_redirect,
+          /*is_response_check=*/false, empty_source_location, disposition,
+          /*is_form_submission=*/false)
+      .IsAllowed();
 }
 
 }  // namespace
@@ -334,6 +341,7 @@ KeepAliveURLLoader::KeepAliveURLLoader(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
     scoped_refptr<PolicyContainerHost> policy_container_host,
+    WeakDocumentPtr weak_document_ptr,
     BrowserContext* browser_context,
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
     base::PassKey<KeepAliveURLLoaderService>)
@@ -345,6 +353,7 @@ KeepAliveURLLoader::KeepAliveURLLoader(
       network_loader_factory_(std::move(network_loader_factory)),
       stored_url_load_(std::make_unique<StoredURLLoad>()),
       policy_container_host_(std::move(policy_container_host)),
+      weak_document_ptr_(std::move(weak_document_ptr)),
       browser_context_(browser_context),
       initial_url_(resource_request.url),
       last_url_(resource_request.url) {
@@ -379,6 +388,8 @@ void KeepAliveURLLoader::Start() {
     base::UmaHistogramBoolean("FetchLater.Browser.Total.Started", true);
   }
   base::UmaHistogramBoolean("FetchKeepAlive.Browser.Total.Started", true);
+
+  GetContentClient()->browser()->OnKeepaliveRequestStarted(browser_context_);
 
   // Asks the network service to create a URL loader with passed in params.
   network_loader_factory_->CreateLoaderAndStart(
@@ -428,6 +439,9 @@ KeepAliveURLLoader::~KeepAliveURLLoader() {
   TRACE_EVENT_NESTABLE_ASYNC_END0("loading", "KeepAliveURLLoader", request_id_);
 
   disconnected_loader_timer_.Stop();
+  if (IsStarted()) {
+    GetContentClient()->browser()->OnKeepaliveRequestFinished();
+  }
 }
 
 void KeepAliveURLLoader::set_on_delete_callback(
@@ -842,17 +856,24 @@ net::Error KeepAliveURLLoader::WillFollowRedirect(
 
   if (resource_request_.redirect_mode !=
       network::mojom::RedirectMode::kManual) {
-    // Checks if redirecting to `url` is allowed by ContentSecurityPolicy from
-    // the request initiator document.
+    // Checks if redirecting to `redirect_info.new_url` is allowed by
+    // ContentSecurityPolicy from the request initiator document.
     if (!IsRedirectAllowedByCSP(
             policy_container_host_->policies().content_security_policies,
             redirect_info.new_url, initial_url_, last_url_ != initial_url_)) {
       return net::ERR_BLOCKED_BY_CSP;
     }
 
-    // TODO(crbug.com/1356128): Refactor logic from
-    // `blink::MixedContentChecker::ShouldBlockFetch()` to support checking
-    // without a frame.
+    // Checks if redirecting to `redirect_info.new_url` is allowed by
+    // MixedContent checker.
+    // TODO(crbug.com/1500989): Figure out how to check without a frame.
+    if (auto* rfh = weak_document_ptr_.AsRenderFrameHostIfValid();
+        rfh &&
+        MixedContentChecker::ShouldBlockFetchKeepAlive(
+            static_cast<RenderFrameHostImpl*>(rfh), redirect_info.new_url,
+            /*for_redirect=*/true)) {
+      return net::ERR_FAILED;
+    }
   }
 
   return net::OK;
@@ -938,6 +959,17 @@ void KeepAliveURLLoader::OnDisconnectedLoaderTimerFired() {
   LogFetchKeepAliveMetric(
       FetchKeepAliveBrowserMetricType::kCancelledAfterTimeLimit);
   DeleteSelf();
+}
+
+void KeepAliveURLLoader::Shutdown() {
+  if (!IsStarted()) {
+    CHECK(IsFetchLater());
+    LogFetchLaterMetric(FetchLaterBrowserMetricType::kStartedWhenShutdown);
+    // At this point, browser is shutting down, and renderer termination has not
+    // reached browser. It is the last chance to start loading the request from
+    // here.
+    Start();
+  }
 }
 
 bool KeepAliveURLLoader::IsFetchLater() const {

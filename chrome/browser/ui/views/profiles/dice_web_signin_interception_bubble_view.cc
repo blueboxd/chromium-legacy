@@ -11,9 +11,12 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/time/time.h"
 #include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/web_signin_interceptor.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/signin/dice_web_signin_interceptor_delegate.h"
@@ -39,11 +42,56 @@ namespace {
 // SetHeightAndShowWidget().
 constexpr int kInterceptionBubbleBaseHeight = 500;
 constexpr int kInterceptionBubbleWidth = 290;
+constexpr int kInterceptionChromeSigninBubbleWidth = 320;
 
-views::View* GetBubbleAnchorView(const Browser& browser) {
+AvatarToolbarButton* GetAvatarToolbarButton(const Browser& browser) {
   return BrowserView::GetBrowserViewForBrowser(&browser)
       ->toolbar_button_provider()
       ->GetAvatarToolbarButton();
+}
+
+GURL GetURLForInterceptionType(
+    WebSigninInterceptor::SigninInterceptionType interception_type) {
+  return interception_type ==
+                 WebSigninInterceptor::SigninInterceptionType::kChromeSignin
+             ? GURL(chrome::kChromeUIDiceWebSigninInterceptChromeSigninURL)
+             : GURL(chrome::kChromeUIDiceWebSigninInterceptURL);
+}
+
+int GetBubbleFixedWidthForInterceptionType(
+    WebSigninInterceptor::SigninInterceptionType interception_type) {
+  return interception_type ==
+                 WebSigninInterceptor::SigninInterceptionType::kChromeSignin
+             ? kInterceptionChromeSigninBubbleWidth
+             : kInterceptionBubbleWidth;
+}
+
+void RecordMetricsChromeSigninInterceptStarted() {
+  auto access_point =
+      signin_metrics::AccessPoint::ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE;
+  RecordSigninImpressionUserActionForAccessPoint(access_point);
+  signin_metrics::LogSignInOffered(access_point);
+}
+
+void RecordChromeSigninInterceptResult(base::TimeTicks start_time,
+                                       bool accepted) {
+  CHECK_NE(start_time, base::TimeTicks());
+  constexpr std::string_view kBaseResponseTimeHistogram =
+      "Signin.Intercept.ChromeSignin.ResponseTime";
+
+  std::string_view reaction = accepted ? "Accepted" : "Declined";
+  std::string reaction_time_histogram_name =
+      base::StrCat({kBaseResponseTimeHistogram, reaction});
+
+  base::UmaHistogramMediumTimes(reaction_time_histogram_name,
+                                base::TimeTicks::Now() - start_time);
+
+  // Only record user action on successful signin inputs.
+  if (accepted) {
+    RecordSigninUserActionForAccessPoint(
+        signin_metrics::AccessPoint::
+            ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE);
+  }
 }
 
 }  // namespace
@@ -77,15 +125,24 @@ DiceWebSigninInterceptionBubbleView::CreateBubble(
   // and the final height of the bubble is sent from
   // DiceWebSigninInterceptHandler.
   views::BubbleDialogDelegateView::CreateBubble(std::move(interception_bubble));
+  // If the chrome signin intercept bubble is shown, display a text next to the
+  // avatar icon.
+  if (bubble_parameters.interception_type ==
+      WebSigninInterceptor::SigninInterceptionType::kChromeSignin) {
+    GetAvatarToolbarButton(*browser)->ShowSignInText();
+  }
+
   return handle;
 }
 
 DiceWebSigninInterceptionBubbleView::ScopedHandle::~ScopedHandle() {
-  if (!bubble_)
+  if (!bubble_) {
     return;  // The bubble was already closed, do nothing.
+  }
   views::Widget* widget = bubble_->GetWidget();
-  if (!widget)
+  if (!widget) {
     return;
+  }
   widget->CloseWithReason(
       bubble_->GetAccepted() ? views::Widget::ClosedReason::kAcceptButtonClicked
                              : views::Widget::ClosedReason::kUnspecified);
@@ -146,16 +203,12 @@ DiceWebSigninInterceptionBubbleView::DiceWebSigninInterceptionBubbleView(
   // Create the web view in the native bubble.
   std::unique_ptr<views::WebView> web_view =
       std::make_unique<views::WebView>(browser->profile());
-  GURL intercept_url =
-      bubble_parameters_.interception_type ==
-              WebSigninInterceptor::SigninInterceptionType::kChromeSignin
-          ? GURL(chrome::kChromeUIDiceWebSigninInterceptChromeSigninURL)
-          : GURL(chrome::kChromeUIDiceWebSigninInterceptURL);
-  web_view->LoadInitialURL(intercept_url);
-
+  web_view->LoadInitialURL(
+      GetURLForInterceptionType(bubble_parameters.interception_type));
   web_view->GetWebContents()->SetDelegate(this);
-  web_view->SetPreferredSize(
-      gfx::Size(kInterceptionBubbleWidth, kInterceptionBubbleBaseHeight));
+  web_view->SetPreferredSize(gfx::Size(GetBubbleFixedWidthForInterceptionType(
+                                           bubble_parameters.interception_type),
+                                       kInterceptionBubbleBaseHeight));
   DiceWebSigninInterceptUI* web_ui = web_view->GetWebContents()
                                          ->GetWebUI()
                                          ->GetController()
@@ -179,9 +232,18 @@ DiceWebSigninInterceptionBubbleView::DiceWebSigninInterceptionBubbleView(
 }
 
 void DiceWebSigninInterceptionBubbleView::SetHeightAndShowWidget(int height) {
-  web_view_->SetPreferredSize(gfx::Size(kInterceptionBubbleWidth, height));
+  web_view_->SetPreferredSize(
+      gfx::Size(GetBubbleFixedWidthForInterceptionType(
+                    bubble_parameters_.interception_type),
+                height));
   GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
   GetWidget()->Show();
+
+  if (bubble_parameters_.interception_type ==
+      WebSigninInterceptor::SigninInterceptionType::kChromeSignin) {
+    chrome_signin_bubble_shown_time_ = base::TimeTicks::Now();
+    RecordMetricsChromeSigninInterceptStarted();
+  }
 }
 
 std::unique_ptr<ScopedWebSigninInterceptionBubbleHandle>
@@ -201,12 +263,19 @@ void DiceWebSigninInterceptionBubbleView::OnWebUIUserChoice(
       result = SigninInterceptionResult::kDeclined;
       accepted_ = false;
       break;
-    case SigninInterceptionUserChoice::kGuest:
-      result = SigninInterceptionResult::kAcceptedWithGuest;
-      accepted_ = true;
+  }
+
+  if (bubble_parameters_.interception_type ==
+      WebSigninInterceptor::SigninInterceptionType::kChromeSignin) {
+    RecordChromeSigninInterceptResult(chrome_signin_bubble_shown_time_,
+                                      accepted_);
   }
 
   RecordInterceptionResult(bubble_parameters_, profile_, result);
+  if (bubble_parameters_.interception_type ==
+      WebSigninInterceptor::SigninInterceptionType::kChromeSignin) {
+    GetAvatarToolbarButton(*browser_)->HideSignInText();
+  }
   std::move(callback_).Run(result);
   if (!accepted_) {
     // Only close the dialog when the user declined. If the user accepted the
@@ -228,7 +297,7 @@ bool DiceWebSigninInterceptorDelegate::IsSigninInterceptionSupportedInternal(
     const Browser& browser) {
   // Some browsers, such as web apps, don't have an avatar toolbar button to
   // anchor the bubble.
-  return GetBubbleAnchorView(browser) != nullptr;
+  return GetAvatarToolbarButton(browser) != nullptr;
 }
 
 std::unique_ptr<ScopedWebSigninInterceptionBubbleHandle>
@@ -238,7 +307,7 @@ DiceWebSigninInterceptorDelegate::ShowSigninInterceptionBubbleInternal(
     base::OnceCallback<void(SigninInterceptionResult)> callback) {
   DCHECK(browser);
 
-  views::View* anchor_view = GetBubbleAnchorView(*browser);
+  views::View* anchor_view = GetAvatarToolbarButton(*browser);
   DCHECK(anchor_view);
   return DiceWebSigninInterceptionBubbleView::CreateBubble(
       browser, anchor_view, bubble_parameters, std::move(callback));

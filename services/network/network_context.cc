@@ -608,6 +608,12 @@ NetworkContext::NetworkContext(
 
   socket_factory_ = std::make_unique<SocketFactory>(
       url_request_context_->net_log(), url_request_context_);
+#if BUILDFLAG(IS_WIN)
+  if (params_->socket_brokers) {
+    socket_factory_->BindSocketBroker(
+        std::move(params_->socket_brokers->server));
+  }
+#endif
   resource_scheduler_ = std::make_unique<ResourceScheduler>();
 
   if (base::FeatureList::IsEnabled(features::kNetworkServiceMemoryCache))
@@ -1471,25 +1477,6 @@ void NetworkContext::SetEnableReferrers(bool enable_referrers) {
   network_delegate_->set_enable_referrers(enable_referrers);
 }
 
-#if BUILDFLAG(IS_CHROMEOS)
-void NetworkContext::UpdateAdditionalCertificates(
-    mojom::AdditionalCertificatesPtr additional_certificates) {
-  if (!cert_verifier_with_trust_anchors_) {
-    CHECK(g_cert_verifier_for_testing);
-    return;
-  }
-  if (!additional_certificates) {
-    cert_verifier_with_trust_anchors_->SetAdditionalCerts(
-        net::CertificateList(), net::CertificateList());
-    return;
-  }
-
-  cert_verifier_with_trust_anchors_->SetAdditionalCerts(
-      additional_certificates->trust_anchors,
-      additional_certificates->all_certificates);
-}
-#endif  // BUILDFLAG(IS_CHROMEOS)
-
 #if BUILDFLAG(IS_CT_SUPPORTED)
 void NetworkContext::SetCTPolicy(mojom::CTPolicyPtr ct_policy) {
   if (!require_ct_delegate_)
@@ -1728,6 +1715,7 @@ void NetworkContext::CreateWebSocket(
     const GURL& url,
     const std::vector<std::string>& requested_protocols,
     const net::SiteForCookies& site_for_cookies,
+    bool has_storage_access,
     const net::IsolationInfo& isolation_info,
     std::vector<mojom::HttpHeaderPtr> additional_headers,
     int32_t process_id,
@@ -1747,8 +1735,9 @@ void NetworkContext::CreateWebSocket(
   DCHECK_GE(process_id, 0);
 
   websocket_factory_->CreateWebSocket(
-      url, requested_protocols, site_for_cookies, isolation_info,
-      std::move(additional_headers), process_id, origin, options,
+      url, requested_protocols, site_for_cookies, has_storage_access,
+      isolation_info, std::move(additional_headers), process_id, origin,
+      options,
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
       std::move(handshake_client), std::move(url_loader_network_observer),
       std::move(auth_handler), std::move(header_client), throttling_profile_id);
@@ -1931,13 +1920,15 @@ void NetworkContext::GetHSTSState(const std::string& domain,
         result.Set("static_sts_include_subdomains",
                    static_sts_state.include_subdomains);
         result.Set("static_sts_observed",
-                   static_sts_state.last_observed.ToDoubleT());
-        result.Set("static_sts_expiry", static_sts_state.expiry.ToDoubleT());
+                   static_sts_state.last_observed.InSecondsFSinceUnixEpoch());
+        result.Set("static_sts_expiry",
+                   static_sts_state.expiry.InSecondsFSinceUnixEpoch());
         result.Set("static_pkp_include_subdomains",
                    static_pkp_state.include_subdomains);
         result.Set("static_pkp_observed",
-                   static_pkp_state.last_observed.ToDoubleT());
-        result.Set("static_pkp_expiry", static_pkp_state.expiry.ToDoubleT());
+                   static_pkp_state.last_observed.InSecondsFSinceUnixEpoch());
+        result.Set("static_pkp_expiry",
+                   static_pkp_state.expiry.InSecondsFSinceUnixEpoch());
         result.Set("static_spki_hashes",
                    HashesToBase64String(static_pkp_state.spki_hashes));
         result.Set("static_sts_domain", static_sts_state.domain);
@@ -1957,8 +1948,9 @@ void NetworkContext::GetHSTSState(const std::string& domain,
         result.Set("dynamic_sts_include_subdomains",
                    dynamic_sts_state.include_subdomains);
         result.Set("dynamic_sts_observed",
-                   dynamic_sts_state.last_observed.ToDoubleT());
-        result.Set("dynamic_sts_expiry", dynamic_sts_state.expiry.ToDoubleT());
+                   dynamic_sts_state.last_observed.InSecondsFSinceUnixEpoch());
+        result.Set("dynamic_sts_expiry",
+                   dynamic_sts_state.expiry.InSecondsFSinceUnixEpoch());
         result.Set("dynamic_sts_domain", dynamic_sts_state.domain);
       }
 
@@ -1966,8 +1958,9 @@ void NetworkContext::GetHSTSState(const std::string& domain,
         result.Set("dynamic_pkp_include_subdomains",
                    dynamic_pkp_state.include_subdomains);
         result.Set("dynamic_pkp_observed",
-                   dynamic_pkp_state.last_observed.ToDoubleT());
-        result.Set("dynamic_pkp_expiry", dynamic_pkp_state.expiry.ToDoubleT());
+                   dynamic_pkp_state.last_observed.InSecondsFSinceUnixEpoch());
+        result.Set("dynamic_pkp_expiry",
+                   dynamic_pkp_state.expiry.InSecondsFSinceUnixEpoch());
         result.Set("dynamic_spki_hashes",
                    HashesToBase64String(dynamic_pkp_state.spki_hashes));
         result.Set("dynamic_pkp_domain", dynamic_pkp_state.domain);
@@ -2063,8 +2056,7 @@ void NetworkContext::VerifyIpProtectionConfigGetterForTesting(
                   weak_ptr->proxy_delegate_->GetIpProtectionConfigCache();
               ipp_config_cache->InvalidateTryAgainAfterTime();
               while (ipp_config_cache->AreAuthTokensAvailable()) {
-                ipp_config_cache->GetAuthToken(
-                    network::mojom::IpProtectionProxyLayer::kProxyA);
+                ipp_config_cache->GetAuthToken(0);  // kProxyA.
               }
               // Call `PostTask()` instead of invoking the Verify method again
               // directly so that if `DisableCacheManagementForTesting()` needed
@@ -2109,8 +2101,7 @@ void NetworkContext::OnIpProtectionConfigAvailableForTesting(
                   network::mojom::IpProtectionProxyLayer::kProxyA));
 
   absl::optional<network::mojom::BlindSignedAuthTokenPtr> result =
-      ipp_config_cache->GetAuthToken(
-          network::mojom::IpProtectionProxyLayer::kProxyA);
+      ipp_config_cache->GetAuthToken(0);  // kProxyA.
   if (result.has_value()) {
     std::move(callback).Run(std::move(result).value(), absl::nullopt);
     return;
@@ -2454,11 +2445,12 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
             std::move(cert_verifier)));
 
 #if BUILDFLAG(IS_CHROMEOS)
+    // TODO(https://crbug.com/1477317): The TrustAnchorUsed callback should
+    // work on all platforms. (Also consider whether this wrapper is the best
+    // way to handle this or if it should be refactored.)
     cert_verifier_with_trust_anchors_ =
         new CertVerifierWithTrustAnchors(base::BindRepeating(
             &NetworkContext::TrustAnchorUsed, base::Unretained(this)));
-    UpdateAdditionalCertificates(
-        std::move(params_->initial_additional_certificates));
     cert_verifier_with_trust_anchors_->InitializeOnIOThread(
         std::move(cert_verifier));
     cert_verifier = base::WrapUnique(cert_verifier_with_trust_anchors_.get());
@@ -2768,10 +2760,10 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
       command_line->GetSwitchValueASCII(switches::kHostResolverRules));
 
 #if BUILDFLAG(IS_WIN)
-  if (params_->socket_broker) {
+  if (params_->socket_brokers) {
     builder.set_client_socket_factory(
         std::make_unique<BrokeredClientSocketFactory>(
-            std::move(params_->socket_broker)));
+            std::move(params_->socket_brokers->client)));
   }
 #endif
 

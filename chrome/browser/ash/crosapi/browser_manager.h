@@ -248,6 +248,9 @@ class BrowserManager : public session_manager::SessionManagerObserver,
       const std::string& app_name,
       int32_t restore_window_id);
 
+  // Opens the profile manager window in lacros-chrome.
+  void OpenProfileManager();
+
   // Ensures Lacros launches.
   // Returns true if Lacros could be launched, resumed, or is already in the
   // process of launching. Returns false if Lacros could not be launched.
@@ -418,8 +421,9 @@ class BrowserManager : public session_manager::SessionManagerObserver,
     // Lacros-chrome is loaded and ready for launching.
     STOPPED,
 
-    // Lacros-chrome is creating a new log file to log to.
-    CREATING_LOG_FILE,
+    // Params for the lacros-chrome are parepared on a background thread, and
+    // the device owner set up is being waited.
+    PREPARING_FOR_LAUNCH,
 
     // Lacros-chrome has been pre-launched at login screen, and it's waiting to
     // be unblocked post-login.
@@ -453,6 +457,9 @@ class BrowserManager : public session_manager::SessionManagerObserver,
 
   // Called when lacros-chrome is terminated and successfully wait(2)ed.
   void OnLacrosChromeTerminated();
+
+  // Called as soon as the login prompt is visible.
+  void OnLoginPromptVisible();
 
   // ID for the current Crosapi connection.
   // Available only when lacros-chrome is running.
@@ -610,14 +617,11 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // Reload and possibly relaunch Lacros.
   void HandleReload();
 
-  // Called as soon as the login prompt is visible.
-  void OnLoginPromptVisible();
-
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;
 
-  // Pre-launch Lacros at login screen.
-  void PrelaunchAtLoginScreen();
+  // Pre-launch Lacros at login screen. (Can be overridden by tests).
+  virtual void PrelaunchAtLoginScreen();
 
   // Resume Lacros startup process after login.
   void ResumeLaunch();

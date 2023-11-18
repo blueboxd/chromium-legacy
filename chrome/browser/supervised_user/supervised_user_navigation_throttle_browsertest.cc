@@ -38,6 +38,7 @@
 #include "components/supervised_user/core/browser/supervised_user_url_filter.h"
 #include "components/supervised_user/core/common/features.h"
 #include "components/supervised_user/core/common/supervised_user_constants.h"
+#include "components/supervised_user/core/common/supervised_user_utils.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -298,6 +299,20 @@ class SupervisedUserNavigationThrottleTest
   }
 };
 
+class SupervisedUserNavigationThrottleWithPrerenderingTest
+    : public SupervisedUserNavigationThrottleTest,
+      public testing::WithParamInterface<std::string> {
+ protected:
+  std::string GetTargetHint() { return GetParam(); }
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         SupervisedUserNavigationThrottleWithPrerenderingTest,
+                         testing::Values("_self", "_blank"),
+                         [](const testing::TestParamInfo<std::string>& info) {
+                           return info.param;
+                         });
+
 // Tests that prerendering fails in supervised user mode.
 #if BUILDFLAG(IS_CHROMEOS)
 // TODO(crbug.com/1259146): Flaky on ChromeOS.
@@ -305,7 +320,7 @@ class SupervisedUserNavigationThrottleTest
 #else
 #define MAYBE_DisallowPrerendering DisallowPrerendering
 #endif
-IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
+IN_PROC_BROWSER_TEST_P(SupervisedUserNavigationThrottleWithPrerenderingTest,
                        MAYBE_DisallowPrerendering) {
   const GURL initial_url = embedded_test_server()->GetURL("/simple.html");
   const GURL allowed_url =
@@ -315,16 +330,21 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
 
   // If throttled, the prerendered navigation should not have started and we
   // should not be requesting corresponding resources.
-  content::TestNavigationObserver observer(
-      web_contents(), content::MessageLoopRunner::QuitMode::IMMEDIATE,
-      /*ignore_uncommitted_navigations*/ false);
-  prerender_helper().AddPrerenderAsync(allowed_url);
-  observer.WaitForNavigationFinished();
-  EXPECT_FALSE(observer.last_navigation_succeeded());
-  EXPECT_EQ(allowed_url, observer.last_navigation_url());
+  content::test::PrerenderHostCreationWaiter host_creation_waiter;
+  prerender_helper().AddPrerendersAsync(
+      {allowed_url}, /*eagerness=*/std::nullopt, GetTargetHint());
+  int host_id = host_creation_waiter.Wait();
+  auto* prerender_web_contents =
+      content::WebContents::FromFrameTreeNodeId(host_id);
+  content::test::PrerenderHostObserver host_observer(*prerender_web_contents,
+                                                     host_id);
+  host_observer.WaitForDestroyed();
   EXPECT_EQ(0, prerender_helper().GetRequestCount(allowed_url));
 
   // Regular navigation should proceed, however.
+  content::TestNavigationObserver observer(
+      web_contents(), content::MessageLoopRunner::QuitMode::IMMEDIATE,
+      /*ignore_uncommitted_navigations*/ false);
   prerender_helper().NavigatePrimaryPage(allowed_url);
   observer.WaitForNavigationFinished();
   EXPECT_TRUE(observer.last_navigation_succeeded());
@@ -343,7 +363,8 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
               profile->GetProfileKey());
   supervised_user_settings_service->SetLocalSetting(
       supervised_user::kContentPackDefaultFilteringBehavior,
-      base::Value(supervised_user::SupervisedUserURLFilter::BLOCK));
+      base::Value(
+          static_cast<int>(supervised_user::FilteringBehavior::kBlock)));
 
   std::unique_ptr<WebContents> web_contents(
       WebContents::Create(WebContents::CreateParams(profile)));
@@ -875,7 +896,7 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserIframeFilterTest,
 
   // Set the default behavior to block.
   filter->SetDefaultFilteringBehavior(
-      supervised_user::SupervisedUserURLFilter::BLOCK);
+      supervised_user::FilteringBehavior::kBlock);
 
   // The async checker will make rpc calls to check if the url should be
   // blocked or not. This may cause flakiness.

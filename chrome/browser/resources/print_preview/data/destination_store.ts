@@ -20,6 +20,7 @@ import {DestinationMatch} from './destination_match.js';
 import {ExtensionDestinationInfo, LocalDestinationInfo, parseDestination} from './local_parsers.js';
 // <if expr="is_chromeos">
 import {parseExtensionDestination} from './local_parsers.js';
+import {getStatusReasonFromPrinterStatus, PrinterStatusReason} from './printer_status_cros.js';
 // </if>
 
 /**
@@ -154,6 +155,8 @@ export enum DestinationStoreEventType {
       '.SELECTED_DESTINATION_CAPABILITIES_READY',
   // <if expr="is_chromeos">
   DESTINATION_EULA_READY = 'DestinationStore.DESTINATION_EULA_READY',
+  DESTINATION_PRINTER_STATUS_UPDATE =
+      'DestinationStore.DESTINATION_PRINTER_STATUS_UPDATE',
   // </if>
 }
 
@@ -234,11 +237,7 @@ export class DestinationStore extends EventTarget {
    */
   constructor(
       addListenerCallback:
-          (eventName: string,
-           listener:
-               (t: PrinterType,
-                p: LocalDestinationInfo[]|
-                ExtensionDestinationInfo[]) => void) => void) {
+          (eventName: string, listener: (p1: any, p2?: any) => void) => void) {
     super();
 
     this.destinationSearchStatus_ = new Map([
@@ -262,9 +261,8 @@ export class DestinationStore extends EventTarget {
     if (loadTimeData.getBoolean('isLocalPrinterObservingEnabled')) {
       addListenerCallback(
           'local-printers-updated',
-          (type: PrinterType,
-           printers: LocalDestinationInfo[]|ExtensionDestinationInfo[]) =>
-              this.onLocalPrintersUpdated_(type, printers));
+          (printers: LocalDestinationInfo[]) =>
+              this.onLocalPrintersUpdated_(printers));
     }
     // </if>
   }
@@ -595,12 +593,26 @@ export class DestinationStore extends EventTarget {
   }
 
   /**
-   * @param Destination to select.
+   * @param destination Destination to select.
+   * @param refreshDestination Set to true to allow the currently selected
+   *          destination to be re-selected.
    */
-  selectDestination(destination: Destination) {
+  selectDestination(
+      destination: Destination, refreshDestination: boolean = false) {
+    // <if expr="not is_chromeos">
+    assert(!refreshDestination, 'refreshDestination for CrOS only');
     if (destination === this.selectedDestination_) {
       return;
     }
+    // </if>
+    // <if expr="is_chromeos">
+    // Do not re-select the same destination unless explicitly requesting it to
+    // refetch the capabilities and reload the preview.
+    if (destination === this.selectedDestination_ && !refreshDestination) {
+      return;
+    }
+    // </if>
+
     if (destination === null) {
       this.selectedDestination_ = null;
       this.dispatchEvent(
@@ -974,7 +986,7 @@ export class DestinationStore extends EventTarget {
 
     this.nativeLayerCros_.observeLocalPrinters().then(
         (printers: LocalDestinationInfo[]) =>
-            this.onLocalPrintersUpdated_(PrinterType.LOCAL_PRINTER, printers));
+            this.onLocalPrintersUpdated_(printers));
   }
 
   /**
@@ -982,16 +994,55 @@ export class DestinationStore extends EventTarget {
    * @param printerType The type of printer(s) added.
    * @param printers Information about the printers that have been retrieved.
    */
-  private onLocalPrintersUpdated_(
-      printerType: PrinterType,
-      printers: LocalDestinationInfo[]|ExtensionDestinationInfo[]) {
+  private onLocalPrintersUpdated_(printers: LocalDestinationInfo[]) {
     if (!printers) {
       return;
     }
 
+    // The logic in insertDestinations_() ensures only new destinations are
+    // added to the store.
     this.insertDestinations_(printers.map(
-        (printer: LocalDestinationInfo|ExtensionDestinationInfo) =>
-            parseDestination(printerType, printer)));
+        printer => parseDestination(PrinterType.LOCAL_PRINTER, printer)));
+
+    // Parse the printer status from the LocalDestinationInfo object.
+    for (const printer of printers) {
+      this.parsePrinterStatus(printer);
+    }
+  }
+
+  // Updates the printer status for an existing destination then fires an event
+  // for updating printer status icons and text.
+  private parsePrinterStatus(destinationInfo: LocalDestinationInfo): void {
+    const printerStatus = destinationInfo.printerStatus;
+    if (!printerStatus || !printerStatus.printerId) {
+      return;
+    }
+
+    const destinationKey = createDestinationKey(
+        destinationInfo.deviceName, DestinationOrigin.CROS);
+    const existingDestination = this.destinationMap_.get(destinationKey);
+    if (existingDestination === undefined) {
+      return;
+    }
+
+    // `nowOnline` captures the event where a previously offline printer
+    // becomes reachable. This will be used to trigger the destination to
+    // reload its preview.
+    const previousStatusReason = existingDestination.printerStatusReason;
+    const nextStatusReason = getStatusReasonFromPrinterStatus(printerStatus);
+    const nowOnline =
+        previousStatusReason === PrinterStatusReason.PRINTER_UNREACHABLE &&
+        (nextStatusReason !== PrinterStatusReason.PRINTER_UNREACHABLE &&
+         nextStatusReason !== PrinterStatusReason.UNKNOWN_REASON);
+
+    existingDestination.printerStatusReason = nextStatusReason;
+    this.dispatchEvent(new CustomEvent(
+        DestinationStoreEventType.DESTINATION_PRINTER_STATUS_UPDATE, {
+          detail: {
+            destinationKey: destinationKey,
+            nowOnline: nowOnline,
+          },
+        }));
   }
   // </if>
 }

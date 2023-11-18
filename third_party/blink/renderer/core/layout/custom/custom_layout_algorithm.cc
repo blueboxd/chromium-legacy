@@ -22,8 +22,8 @@
 namespace blink {
 
 CustomLayoutAlgorithm::CustomLayoutAlgorithm(
-    const NGLayoutAlgorithmParams& params)
-    : NGLayoutAlgorithm(params), params_(params) {
+    const LayoutAlgorithmParams& params)
+    : LayoutAlgorithm(params), params_(params) {
   DCHECK(params.space.IsNewFormattingContext());
 }
 
@@ -182,7 +182,7 @@ const NGLayoutResult* CustomLayoutAlgorithm::Layout() {
   container_builder_.SetIntrinsicBlockSize(auto_block_size);
   container_builder_.SetFragmentsTotalBlockSize(block_size);
 
-  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
+  OutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
 
   return container_builder_.ToBoxFragment();
 }
@@ -203,11 +203,11 @@ void CustomLayoutAlgorithm::AddAnyOutOfFlowPositionedChildren(
 
 MinMaxSizesResult CustomLayoutAlgorithm::FallbackMinMaxSizes(
     const MinMaxSizesFloatInput& input) const {
-  return NGBlockLayoutAlgorithm(params_).ComputeMinMaxSizes(input);
+  return BlockLayoutAlgorithm(params_).ComputeMinMaxSizes(input);
 }
 
 const NGLayoutResult* CustomLayoutAlgorithm::FallbackLayout() {
-  return NGBlockLayoutAlgorithm(params_).Layout();
+  return BlockLayoutAlgorithm(params_).Layout();
 }
 
 }  // namespace blink

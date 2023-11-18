@@ -188,7 +188,7 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromSimpleValue(
     return IDBKey::CreateNumber(value.As<v8::Number>()->Value());
 
   if (value->IsString())
-    return IDBKey::CreateString(ToCoreString(value.As<v8::String>()));
+    return IDBKey::CreateString(ToCoreString(isolate, value.As<v8::String>()));
 
   if (value->IsDate() && !std::isnan(value.As<v8::Date>()->ValueOf()))
     return IDBKey::CreateDate(value.As<v8::Date>()->ValueOf());
@@ -265,7 +265,7 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
   Vector<std::unique_ptr<Record>> stack;
 
   // Tracks seen arrays, to detect circular references and abort (per spec).
-  Vector<v8::Local<v8::Array>> seen;
+  v8::LocalVector<v8::Array> seen(isolate);
 
   // Initial state.
   {
@@ -329,7 +329,8 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
     } else {
       // A sub-array; push onto the stack and start processing it.
       v8::Local<v8::Array> array = item.As<v8::Array>();
-      if (seen.Contains(array) || stack.size() >= IndexedDBKey::kMaximumDepth ||
+      if (std::find(seen.begin(), seen.end(), array) != seen.end() ||
+          stack.size() >= IndexedDBKey::kMaximumDepth ||
           array->Length() > IndexedDBKey::kMaximumArraySize) {
         return IDBKey::CreateInvalid();
       }
@@ -798,9 +799,10 @@ SQLValue NativeValueTraits<SQLValue>::NativeValue(
     return SQLValue();
   if (value->IsNumber())
     return SQLValue(value.As<v8::Number>()->Value());
-  V8StringResource<> string_value(value);
-  if (!string_value.Prepare(isolate, exception_state))
+  V8StringResource<> string_value(isolate, value);
+  if (!string_value.Prepare(exception_state)) {
     return SQLValue();
+  }
   return SQLValue(string_value);
 }
 

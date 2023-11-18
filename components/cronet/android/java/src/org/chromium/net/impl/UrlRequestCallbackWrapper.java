@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 @RequiresApi(api = 34)
 @SuppressWarnings("Override")
@@ -18,6 +19,7 @@ class UrlRequestCallbackWrapper implements android.net.http.UrlRequest.Callback 
     private final org.chromium.net.UrlRequest.Callback mBackend;
 
     public UrlRequestCallbackWrapper(org.chromium.net.UrlRequest.Callback backend) {
+        Objects.requireNonNull(backend, "Callback is required.");
         this.mBackend = backend;
     }
 
@@ -29,45 +31,55 @@ class UrlRequestCallbackWrapper implements android.net.http.UrlRequest.Callback 
     @Override
     public void onRedirectReceived(android.net.http.UrlRequest request,
             android.net.http.UrlResponseInfo info, String newLocationUrl) throws Exception {
-        CronetExceptionTranslationUtils.executeTranslatingCronetExceptions(() -> {
-            AndroidUrlResponseInfoWrapper specializedResponseInfo =
-                    new AndroidUrlResponseInfoWrapper(info);
-            AndroidUrlRequestWrapper specializedRequest = new AndroidUrlRequestWrapper(request);
-            mBackend.onRedirectReceived(
-                    specializedRequest, specializedResponseInfo, newLocationUrl);
-            return null;
-        }, Exception.class);
+        CronetExceptionTranslationUtils.executeTranslatingCronetExceptions(
+                () -> {
+                    AndroidUrlResponseInfoWrapper specializedResponseInfo =
+                            AndroidUrlResponseInfoWrapper.createForUrlRequest(info);
+                    AndroidUrlRequestWrapper specializedRequest =
+                            new AndroidUrlRequestWrapper(request);
+                    mBackend.onRedirectReceived(
+                            specializedRequest, specializedResponseInfo, newLocationUrl);
+                    return null;
+                },
+                Exception.class);
     }
 
     @Override
     public void onResponseStarted(android.net.http.UrlRequest request,
             android.net.http.UrlResponseInfo info) throws Exception {
-        CronetExceptionTranslationUtils.executeTranslatingCronetExceptions(() -> {
-            AndroidUrlResponseInfoWrapper specializedResponseInfo =
-                    new AndroidUrlResponseInfoWrapper(info);
-            AndroidUrlRequestWrapper specializedRequest = new AndroidUrlRequestWrapper(request);
-            mBackend.onResponseStarted(specializedRequest, specializedResponseInfo);
-            return null;
-        }, Exception.class);
+        CronetExceptionTranslationUtils.executeTranslatingCronetExceptions(
+                () -> {
+                    AndroidUrlResponseInfoWrapper specializedResponseInfo =
+                            AndroidUrlResponseInfoWrapper.createForUrlRequest(info);
+                    AndroidUrlRequestWrapper specializedRequest =
+                            new AndroidUrlRequestWrapper(request);
+                    mBackend.onResponseStarted(specializedRequest, specializedResponseInfo);
+                    return null;
+                },
+                Exception.class);
     }
 
     @Override
     public void onReadCompleted(android.net.http.UrlRequest request,
             android.net.http.UrlResponseInfo info, ByteBuffer byteBuffer) throws Exception {
-        CronetExceptionTranslationUtils.executeTranslatingCronetExceptions(() -> {
-            AndroidUrlResponseInfoWrapper specializedResponseInfo =
-                    new AndroidUrlResponseInfoWrapper(info);
-            AndroidUrlRequestWrapper specializedRequest = new AndroidUrlRequestWrapper(request);
-            mBackend.onReadCompleted(specializedRequest, specializedResponseInfo, byteBuffer);
-            return null;
-        }, Exception.class);
+        CronetExceptionTranslationUtils.executeTranslatingCronetExceptions(
+                () -> {
+                    AndroidUrlResponseInfoWrapper specializedResponseInfo =
+                            AndroidUrlResponseInfoWrapper.createForUrlRequest(info);
+                    AndroidUrlRequestWrapper specializedRequest =
+                            new AndroidUrlRequestWrapper(request);
+                    mBackend.onReadCompleted(
+                            specializedRequest, specializedResponseInfo, byteBuffer);
+                    return null;
+                },
+                Exception.class);
     }
 
     @Override
     public void onSucceeded(
             android.net.http.UrlRequest request, android.net.http.UrlResponseInfo info) {
         AndroidUrlResponseInfoWrapper specializedResponseInfo =
-                new AndroidUrlResponseInfoWrapper(info);
+                AndroidUrlResponseInfoWrapper.createForUrlRequest(info);
         AndroidUrlRequestWrapper specializedRequest = new AndroidUrlRequestWrapper(request);
         mBackend.onSucceeded(specializedRequest, specializedResponseInfo);
     }
@@ -76,7 +88,7 @@ class UrlRequestCallbackWrapper implements android.net.http.UrlRequest.Callback 
     public void onFailed(android.net.http.UrlRequest request, android.net.http.UrlResponseInfo info,
             HttpException error) {
         AndroidUrlResponseInfoWrapper specializedResponseInfo =
-                new AndroidUrlResponseInfoWrapper(info);
+                AndroidUrlResponseInfoWrapper.createForUrlRequest(info);
         AndroidUrlRequestWrapper specializedRequest = new AndroidUrlRequestWrapper(request);
         mBackend.onFailed(specializedRequest, specializedResponseInfo,
                 CronetExceptionTranslationUtils.translateCheckedAndroidCronetException(error));
@@ -86,7 +98,7 @@ class UrlRequestCallbackWrapper implements android.net.http.UrlRequest.Callback 
     public void onCanceled(@NonNull android.net.http.UrlRequest request,
             @Nullable android.net.http.UrlResponseInfo info) {
         AndroidUrlResponseInfoWrapper specializedResponseInfo =
-                new AndroidUrlResponseInfoWrapper(info);
+                AndroidUrlResponseInfoWrapper.createForUrlRequest(info);
         AndroidUrlRequestWrapper specializedRequest = new AndroidUrlRequestWrapper(request);
         mBackend.onCanceled(specializedRequest, specializedResponseInfo);
     }

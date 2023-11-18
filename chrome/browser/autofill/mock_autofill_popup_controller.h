@@ -24,9 +24,7 @@
 
 namespace autofill {
 
-class MockAutofillPopupController
-    : public AutofillPopupController,
-      public base::SupportsWeakPtr<MockAutofillPopupController> {
+class MockAutofillPopupController : public AutofillPopupController {
  public:
   MockAutofillPopupController();
   ~MockAutofillPopupController() override;
@@ -111,7 +109,8 @@ class MockAutofillPopupController
       // Accessibility requires all focusable AutofillPopupItemView to have
       // ui::AXNodeData with non-empty names. We specify dummy values and labels
       // to satisfy this.
-      suggestions_.emplace_back("dummy_value", "dummy_label", "", id);
+      suggestions_.emplace_back("dummy_value", "dummy_label",
+                                Suggestion::Icon::kNoIcon, id);
     }
   }
 

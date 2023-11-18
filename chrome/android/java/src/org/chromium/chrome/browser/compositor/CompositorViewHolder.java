@@ -580,13 +580,8 @@ public class CompositorViewHolder extends FrameLayout
     // state changes while fullscreened and is used to simulate a view resize. This is only needed
     // if the page has opted in to keyboard resizes.
     private void handleWindowInsetChanged() {
-        // TODO(bokan): Call tryUpdateControlsAndWebContentsSizing in OVERLAYS_CONTENT only to
-        // ensure dispatch of the keyboard geometrychange event. The WebContents doesn't actually
-        // change size in OVERLAYS_CONTENT so we should factor the event dispatch code out of
-        // updateWebContentsSize and then replace this call.
-        if (mVirtualKeyboardMode == VirtualKeyboardMode.RESIZES_CONTENT
-                || mVirtualKeyboardMode == VirtualKeyboardMode.OVERLAYS_CONTENT) {
-            // Notify the WebContents that its size may have changed.
+        if (mApplicationBottomInsetSupplier != null
+                && mApplicationBottomInsetSupplier.insetsAffectWebContentsSize()) {
             tryUpdateControlsAndWebContentsSizing();
         }
 
@@ -1772,7 +1767,7 @@ public class CompositorViewHolder extends FrameLayout
         protected int getVirtualViewAt(float x, float y) {
             if (mVirtualViews == null) return INVALID_ID;
             for (int i = 0; i < mVirtualViews.size(); i++) {
-                if (mVirtualViews.get(i).checkClicked(x / mDpToPx, y / mDpToPx)) {
+                if (mVirtualViews.get(i).checkClickedOrHovered(x / mDpToPx, y / mDpToPx)) {
                     return i;
                 }
             }

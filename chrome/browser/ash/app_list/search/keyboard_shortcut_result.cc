@@ -23,7 +23,7 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -540,6 +540,17 @@ void KeyboardShortcutResult::PopulateTextVectorWithTwoShortcuts(
   }
 }
 
+void KeyboardShortcutResult::PopulateTextVectorForNoShortcut(
+    TextVector* text_vector,
+    std::vector<std::u16string>& accessible_strings) {
+  std::vector<ash::mojom::TextAcceleratorPartPtr> text_parts;
+  text_parts.push_back(ash::mojom::TextAcceleratorPart::New(
+      l10n_util::GetStringUTF16(
+          IDS_SHORTCUT_CUSTOMIZATION_NO_SHORTCUT_ASSIGNED),
+      ash::mojom::TextAcceleratorPartType::kPlainText));
+  PopulateTextVectorWithTextParts(text_vector, accessible_strings, text_parts);
+}
+
 KeyboardShortcutResult::KeyboardShortcutResult(Profile* profile,
                                                const KeyboardShortcutData& data,
                                                double relevance)
@@ -691,7 +702,8 @@ KeyboardShortcutResult::KeyboardShortcutResult(
 
   switch (search_result->accelerator_infos.size()) {
     case 0:
-      // Mo match found.
+      // No shortcut assigned case:
+      PopulateTextVectorForNoShortcut(&text_vector, accessible_strings);
       break;
     case 1:
       // Only one shortcut for the accelerator.

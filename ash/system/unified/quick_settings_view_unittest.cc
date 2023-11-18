@@ -4,18 +4,16 @@
 
 #include "ash/system/unified/quick_settings_view.h"
 
-#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/test/test_cast_config_controller.h"
 #include "ash/shell.h"
+#include "ash/style/pagination_view.h"
 #include "ash/system/unified/feature_tile.h"
 #include "ash/system/unified/feature_tiles_container_view.h"
-#include "ash/system/unified/page_indicator_view.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -30,7 +28,6 @@ class QuickSettingsViewTest : public AshTestBase {
   ~QuickSettingsViewTest() override = default;
 
   void SetUp() override {
-    feature_list_.InitAndEnableFeature(features::kQsRevamp);
     AshTestBase::SetUp();
     cast_config_ = std::make_unique<TestCastConfigController>();
   }
@@ -47,11 +44,11 @@ class QuickSettingsViewTest : public AshTestBase {
         ->feature_tiles_container();
   }
 
-  PageIndicatorView* GetPageIndicatorView() {
+  PaginationView* GetPaginationView() {
     return GetPrimaryUnifiedSystemTray()
         ->bubble()
         ->quick_settings_view()
-        ->page_indicator_view_for_test();
+        ->pagination_view_for_test();
   }
 
   PaginationModel* pagination_model() {
@@ -70,7 +67,6 @@ class QuickSettingsViewTest : public AshTestBase {
   // This is required to make the cast tile visible in the
   // `CastAndAutoRotateCompactTiles` unit test. Cast features will not be used.
   std::unique_ptr<TestCastConfigController> cast_config_;
-  base::test::ScopedFeatureList feature_list_;
 };
 
 // Tests that the cast and auto-rotate tiles are presented in their compact
@@ -139,11 +135,11 @@ TEST_F(QuickSettingsViewTest, PageIndicatorVisibility) {
 
   // Page indicator is not visible with one page.
   pagination_model()->SetTotalPages(1);
-  EXPECT_FALSE(GetPageIndicatorView()->GetVisible());
+  EXPECT_FALSE(GetPaginationView()->GetVisible());
 
   // Page indicator is visible with two or more pages.
   pagination_model()->SetTotalPages(2);
-  EXPECT_TRUE(GetPageIndicatorView()->GetVisible());
+  EXPECT_TRUE(GetPaginationView()->GetVisible());
 
   tray->CloseBubble();
 }

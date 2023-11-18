@@ -26,7 +26,6 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
-#include "chrome/browser/apps/intent_helper/intent_picker_helpers.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
@@ -924,26 +923,27 @@ void CloseWindow(Browser* browser) {
   browser->window()->Close();
 }
 
-void NewTab(Browser* browser) {
+content::WebContents& NewTab(Browser* browser) {
   base::RecordAction(UserMetricsAction("NewTab"));
   // TODO(asvitkine): This is invoked programmatically from several places.
   // Audit the code and change it so that the histogram only gets collected for
   // user-initiated commands.
   UMA_HISTOGRAM_ENUMERATION("Tab.NewTab", NewTabTypes::NEW_TAB_COMMAND,
                             NewTabTypes::NEW_TAB_ENUM_COUNT);
-
   if (browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP)) {
-    AddTabAt(browser, GURL(), -1, true);
-  } else {
-    ScopedTabbedBrowserDisplayer displayer(browser->profile());
-    Browser* b = displayer.browser();
-    AddTabAt(b, GURL(), -1, true);
-    b->window()->Show();
-    // The call to AddBlankTabAt above did not set the focus to the tab as its
-    // window was not active, so we have to do it explicitly.
-    // See http://crbug.com/6380.
-    b->tab_strip_model()->GetActiveWebContents()->RestoreFocus();
+    return *AddAndReturnTabAt(browser, GURL(), -1, true);
   }
+
+  ScopedTabbedBrowserDisplayer displayer(browser->profile());
+  Browser* b = displayer.browser();
+  auto* contents = AddAndReturnTabAt(b, GURL(), -1, true);
+  b->window()->Show();
+  // The call to AddBlankTabAt above did not set the focus to the tab as its
+  // window was not active, so we have to do it explicitly.
+  // See http://crbug.com/6380.
+  b->tab_strip_model()->GetActiveWebContents()->RestoreFocus();
+
+  return *contents;
 }
 
 void NewTabToRight(Browser* browser) {
@@ -1515,14 +1515,7 @@ void ShowVirtualCardEnrollBubble(Browser* browser) {
 void StartTabOrganizationRequest(Browser* browser) {
   TabOrganizationService* service =
       TabOrganizationServiceFactory::GetForProfile(browser->profile());
-  TabOrganizationSession* session = service->GetSessionForBrowser(browser);
-  if (session == nullptr) {
-    session = service->CreateSessionForBrowser(browser);
-  }
-  if (session->request()->state() ==
-      TabOrganizationRequest::State::NOT_STARTED) {
-    session->StartRequest();
-  }
+  service->StartRequest(browser);
 }
 
 void ShowTranslateBubble(Browser* browser) {
@@ -1980,8 +1973,7 @@ void SetAndroidOsForTabletSite(content::WebContents* current_tab) {
     ua_override.ua_metadata_override = embedder_support::GetUserAgentMetadata(
         g_browser_process->local_state());
     ua_override.ua_metadata_override->mobile = true;
-    ua_override.ua_metadata_override->form_factor =
-        embedder_support::kMobileFormFactor;
+    ua_override.ua_metadata_override->form_factor = {blink::kTabletFormFactor};
     ua_override.ua_metadata_override->platform =
         kChPlatformOverrideForTabletSite;
     ua_override.ua_metadata_override->platform_version = std::string();
@@ -2215,7 +2207,7 @@ void ExecLensRegionSearch(Browser* browser) {
     auto lens_region_search_controller_data =
         std::make_unique<lens::LensRegionSearchControllerData>();
     lens_region_search_controller_data->lens_region_search_controller =
-        std::make_unique<lens::LensRegionSearchController>(browser);
+        std::make_unique<lens::LensRegionSearchController>();
     lens_region_search_controller_data->lens_region_search_controller->Start(
         contents, lens::features::IsLensFullscreenSearchEnabled(),
         is_google_dsp, entry_point);

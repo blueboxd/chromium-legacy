@@ -27,11 +27,11 @@ const char kUploadCardRequestFormatWithoutCvc[] =
 }  // namespace
 
 UploadCardRequest::UploadCardRequest(
-    const PaymentsClient::UploadRequestDetails& request_details,
+    const PaymentsNetworkInterface::UploadRequestDetails& request_details,
     const bool full_sync_enabled,
-    base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
-                            const PaymentsClient::UploadCardResponseDetails&)>
-        callback)
+    base::OnceCallback<void(
+        AutofillClient::PaymentsRpcResult,
+        const PaymentsNetworkInterface::UploadCardResponseDetails&)> callback)
     : request_details_(request_details),
       full_sync_enabled_(full_sync_enabled),
       callback_(std::move(callback)) {}
@@ -57,7 +57,7 @@ std::string UploadCardRequest::GetRequestContent() {
   const std::string& app_locale = request_details_.app_locale;
   base::Value::Dict context;
   context.Set("language_code", app_locale);
-  context.Set("billable_service", kUploadCardBillableServiceNumber);
+  context.Set("billable_service", kUploadPaymentMethodBillableServiceNumber);
   if (request_details_.billing_customer_number != 0) {
     context.Set("customer_context",
                 BuildCustomerContextDictionary(
@@ -155,7 +155,7 @@ void UploadCardRequest::ParseResponse(const base::Value::Dict& response) {
       const auto* virtual_card_enrollment_data =
           virtual_card_metadata->FindDict("virtual_card_enrollment_data");
       if (virtual_card_enrollment_data) {
-        PaymentsClient::GetDetailsForEnrollmentResponseDetails
+        PaymentsNetworkInterface::GetDetailsForEnrollmentResponseDetails
             get_details_for_enrollment_response_details;
         const base::Value::Dict* google_legal_message =
             virtual_card_enrollment_data->FindDict("google_legal_message");

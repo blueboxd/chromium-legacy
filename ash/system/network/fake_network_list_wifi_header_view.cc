@@ -6,6 +6,7 @@
 
 #include "ash/system/network/network_list_network_header_view.h"
 #include "ash/system/network/network_list_wifi_header_view.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 
 namespace ash {
 
@@ -23,11 +24,7 @@ void FakeNetworkListWifiHeaderView::SetToggleState(bool enabled,
   set_toggle_state_count_++;
 }
 
-void FakeNetworkListWifiHeaderView::SetJoinWifiButtonState(bool enabled,
-                                                           bool visible) {
-  is_join_wifi_enabled_ = enabled;
-  is_join_wifi_visible_ = visible;
-  set_join_wifi_button_state_count_++;
-}
+BEGIN_METADATA(FakeNetworkListWifiHeaderView)
+END_METADATA
 
 }  // namespace ash

@@ -57,7 +57,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.v
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabStripFaviconCount;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.waitForThumbnailsToFetch;
-import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.createTabStateFile;
+import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.createTabStatesAndMetadataFile;
 import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile;
 import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
@@ -1218,7 +1218,6 @@ public class TabGridDialogTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    @EnableFeatures({ChromeFeatureList.GRID_TAB_SWITCHER_LANDSCAPE_ASPECT_RATIO_PHONES})
     @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
     public void testRenderDialog_3Tabs_Landscape_NewAspectRatio(boolean nightModeEnabled)
             throws Exception {
@@ -1239,31 +1238,6 @@ public class TabGridDialogTest {
         waitForThumbnailsToFetch(
                 (RecyclerView) dialogView.findViewById(R.id.tab_list_recycler_view));
         mRenderTestRule.render(dialogView, "3_tabs_landscape_new_aspect_ratio");
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"RenderTest"})
-    @DisableFeatures(ChromeFeatureList.GRID_TAB_SWITCHER_LANDSCAPE_ASPECT_RATIO_PHONES)
-    @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
-    public void testRenderDialog_3Tabs_Landscape(boolean nightModeEnabled) throws Exception {
-        final ChromeTabbedActivity cta = sActivityTestRule.getActivity();
-        prepareTabsWithThumbnail(sActivityTestRule, 3, 0, "about:blank");
-        enterTabSwitcher(cta);
-        verifyTabSwitcherCardCount(cta, 3);
-        waitForThumbnailsToFetch((RecyclerView) cta.findViewById(R.id.tab_list_recycler_view));
-        verifyAllTabsHaveThumbnail(cta.getCurrentTabModel());
-
-        // Rotate to landscape mode and create a tab group.
-        ActivityTestUtils.rotateActivityToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
-        mergeAllNormalTabsToAGroup(cta);
-        verifyTabSwitcherCardCount(cta, 1);
-        openDialogFromTabSwitcherAndVerify(cta, 3, null);
-
-        View dialogView = cta.findViewById(R.id.dialog_parent_view);
-        waitForThumbnailsToFetch(
-                (RecyclerView) dialogView.findViewById(R.id.tab_list_recycler_view));
-        mRenderTestRule.render(dialogView, "3_tabs_landscape_old_aspect_ratio");
     }
 
     @Test
@@ -1532,7 +1506,7 @@ public class TabGridDialogTest {
         createThumbnailBitmapAndWriteToFile(1, mBrowserControlsStateProvider);
         TabAttributeCache.setRootIdForTesting(0, 0);
         TabAttributeCache.setRootIdForTesting(1, 0);
-        createTabStateFile(new int[] {0, 1});
+        createTabStatesAndMetadataFile(new int[] {0, 1});
 
         // Restart Chrome and make sure tab strip is showing.
         sActivityTestRule.startMainActivityFromLauncher();

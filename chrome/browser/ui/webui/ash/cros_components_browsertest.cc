@@ -147,6 +147,11 @@ static constexpr const ComponentTestData kComponentsTestData[] = {
         .gtest_name = "CrosButton",
     },
     {
+        .script_src = "chrome://resources/cros_components/card/card.js",
+        .component_name = "cros-card",
+        .gtest_name = "CrosCard",
+    },
+    {
         .script_src = "chrome://resources/cros_components/checkbox/checkbox.js",
         .component_name = "cros-checkbox",
         .gtest_name = "CrosCheckbox",
@@ -162,14 +167,37 @@ static constexpr const ComponentTestData kComponentsTestData[] = {
         .gtest_name = "CrosSwitch",
     },
     {
+        .script_src = "chrome://resources/cros_components/sidenav/sidenav.js",
+        .component_name = "cros-sidenav",
+        .gtest_name = "CrosSidenav",
+    },
+    {
         .script_src = "chrome://resources/cros_components/slider/slider.js",
         .component_name = "cros-slider",
         .gtest_name = "CrosSlider",
     },
     {
+        .script_src =
+            "chrome://resources/cros_components/tab_slider/tab-slider.js",
+        .component_name = "cros-tab-slider",
+        .gtest_name = "CrosTabSlider",
+    },
+    {
+        .script_src =
+            "chrome://resources/cros_components/tab_slider/tab-slider-item.js",
+        .component_name = "cros-tab-slider-item",
+        .gtest_name = "CrosTabSliderItem",
+    },
+    {
         .script_src = "chrome://resources/cros_components/tag/tag.js",
         .component_name = "cros-tag",
         .gtest_name = "CrosTag",
+    },
+    {
+        .script_src =
+            "chrome://resources/cros_components/textfield/textfield.js",
+        .component_name = "cros-textfield",
+        .gtest_name = "CrosTextfield",
     },
 };
 

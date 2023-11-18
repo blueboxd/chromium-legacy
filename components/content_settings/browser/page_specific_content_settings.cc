@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/functional/overloaded.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/observer_list.h"
@@ -55,6 +56,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "third_party/blink/public/mojom/navigation/renderer_content_settings.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -397,8 +399,10 @@ void WebContentsHandler::ReadyToCommitNavigation(
   const GURL& primary_url =
       navigation_handle->GetParentFrameOrOuterDocument()
           ? navigation_handle->GetParentFrameOrOuterDocument()
+                ->GetOutermostMainFrame()
                 ->GetLastCommittedURL()
           : navigation_handle->GetURL();
+
   rules.FilterRulesByOutermostMainFrameURL(primary_url);
 
   mojo::AssociatedRemote<content_settings::mojom::ContentSettingsAgent> agent;
@@ -408,6 +412,35 @@ void WebContentsHandler::ReadyToCommitNavigation(
   // in the renderer, and b) they could leak the embedder origin to embedded
   // pages like fenced frames.
   agent->SendRendererContentSettingRules(std::move(rules));
+
+  const GURL& secondary_url = navigation_handle->GetURL();
+
+  auto content_settings = blink::mojom::RendererContentSettings::New();
+  content_settings->allow_script =
+      map_->GetContentSetting(primary_url, secondary_url,
+                              ContentSettingsType::JAVASCRIPT) ==
+      CONTENT_SETTING_ALLOW;
+  content_settings->allow_popup =
+      map_->GetContentSetting(primary_url, secondary_url,
+                              ContentSettingsType::POPUPS) ==
+      CONTENT_SETTING_ALLOW;
+#if BUILDFLAG(IS_ANDROID)
+  content_settings->allow_auto_dark =
+      map_->GetContentSetting(primary_url, secondary_url,
+                              ContentSettingsType::AUTO_DARK_WEB_CONTENT) ==
+      CONTENT_SETTING_ALLOW;
+#else
+  content_settings->allow_image =
+      map_->GetContentSetting(primary_url, secondary_url,
+                              ContentSettingsType::IMAGES) ==
+      CONTENT_SETTING_ALLOW;
+  content_settings->allow_mixed_content =
+      map_->GetContentSetting(primary_url, secondary_url,
+                              ContentSettingsType::MIXEDSCRIPT) ==
+      CONTENT_SETTING_ALLOW;
+#endif
+
+  navigation_handle->SetContentSettings(std::move(content_settings));
 }
 
 void WebContentsHandler::DidFinishNavigation(
@@ -635,16 +668,25 @@ PageSpecificContentSettings::GetDelegateForWebContents(
 // static
 void PageSpecificContentSettings::StorageAccessed(
     StorageType storage_type,
-    int render_process_id,
-    int render_frame_id,
+    absl::variant<content::GlobalRenderFrameHostToken,
+                  content::GlobalRenderFrameHostId> frame_id,
     const blink::StorageKey& storage_key,
     bool blocked_by_policy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  content::RenderFrameHost* rfh =
-      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+  content::RenderFrameHost* rfh = absl::visit(
+      base::Overloaded{
+          [](const content::GlobalRenderFrameHostToken& frame_token) {
+            return content::RenderFrameHost::FromFrameToken(frame_token);
+          },
+          [](const content::GlobalRenderFrameHostId& id) {
+            return content::RenderFrameHost::FromID(id);
+          },
+      },
+      frame_id);
+
   if (DelayUntilCommitIfNecessary(
           rfh, &PageSpecificContentSettings::StorageAccessed, storage_type,
-          render_process_id, render_frame_id, storage_key, blocked_by_policy)) {
+          frame_id, storage_key, blocked_by_policy)) {
     return;
   }
   PageSpecificContentSettings* settings = GetForFrame(rfh);
@@ -703,14 +745,14 @@ void PageSpecificContentSettings::BrowsingDataAccessed(
 }
 
 // static
-void PageSpecificContentSettings::ContentBlocked(int render_process_id,
-                                                 int render_frame_id,
-                                                 ContentSettingsType type) {
+void PageSpecificContentSettings::ContentBlocked(
+    const content::GlobalRenderFrameHostToken& frame_token,
+    ContentSettingsType type) {
   content::RenderFrameHost* rfh =
-      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+      content::RenderFrameHost::FromFrameToken(frame_token);
   if (DelayUntilCommitIfNecessary(rfh,
                                   &PageSpecificContentSettings::ContentBlocked,
-                                  render_process_id, render_frame_id, type)) {
+                                  frame_token, type)) {
     return;
   }
   PageSpecificContentSettings* settings = GetForFrame(rfh);

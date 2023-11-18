@@ -79,7 +79,7 @@ enum class NotificationCatalogName {
   kBluetoothPairingRequest = 64,
   // [Deprecated] kBluetoothPairedDevice = 65,
   kCellularSetup = 66,
-  kScreenSecurity = 67,
+  // [Deprecated] kScreenSecurity = 67,
   kWifiToggle = 68,
   kUSBPeripheralInvalidDpCable = 69,
   kUSBPeripheralInvalidUSB4ValidTBTCable = 70,
@@ -189,22 +189,25 @@ enum class NotificationCatalogName {
   kUpdateNotification = 174,
   kSubAppsUninstall = 175,
   kNetworkCarrierUnlock = 176,
-  kMaxValue = kNetworkCarrierUnlock
+  kCoralFeature = 177,
+  kInputDeviceSettings = 178,
+  kMaxValue = kInputDeviceSettings
 };
 
 // A living catalog that registers system nudges.
 // Current values should not be renumbered or removed. Please keep in sync with
-// "NudgeCatalogName" in tools/metrics/histograms/enums.xml.
+// "NudgeCatalogName" in tools/metrics/histograms/metadata/ash/enums.xml.
 // To deprecate comment out the entry.
-// Please call `SystemNudgeController::RecordNudgeAction` when the nudge's
+// Please call `SystemNudgeController::MaybeRecordNudgeAction()` (old nudges) or
+// `AnchoredNudgeManager::Get()->MaybeRecordNudgeAction()` when the nudge's
 // suggested action is performed by the user, if applicable.
 enum class NudgeCatalogName {
   kTestCatalogName = 0,
   kDictation = 1,
   // [Deprecated] kMultipaste = 2,
-  kDarkLightMode = 3,
+  // [Deprecated] kDarkLightMode = 3,
   kAutozoom = 4,
-  kAdaptiveCharging = 5,
+  // [Deprecated] kAdaptiveCharging = 5,
   kPhoneHub = 6,
   kClipboardHistoryZeroState = 7,
   kClipboardHistoryOnboarding = 8,
@@ -221,7 +224,8 @@ enum class NudgeCatalogName {
   kVideoConferenceTrayCameraMicrophoneUseWhileDisabled = 19,
   kMultitaskMenuClamshell = 20,
   kMultitaskMenuTablet = 21,
-  kMaxValue = kMultitaskMenuTablet
+  kCaptureModeEducationShortcutNudge = 22,
+  kMaxValue = kCaptureModeEducationShortcutNudge
 };
 
 // A living catalog that registers toasts.

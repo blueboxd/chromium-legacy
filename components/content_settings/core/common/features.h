@@ -12,12 +12,6 @@
 
 namespace content_settings {
 
-#if BUILDFLAG(IS_IOS)
-// Feature to enable a better cookie controls ui.
-COMPONENT_EXPORT(CONTENT_SETTINGS_FEATURES)
-BASE_DECLARE_FEATURE(kImprovedCookieControls);
-#endif
-
 #if BUILDFLAG(IS_ANDROID)
 // Enables auto dark feature in theme settings.
 COMPONENT_EXPORT(CONTENT_SETTINGS_FEATURES)
@@ -106,6 +100,9 @@ BASE_DECLARE_FEATURE(kImprovedSemanticsActivityIndicators);
 // Feature to enable redesigned tracking protection UX + prefs for 3PCD.
 COMPONENT_EXPORT(CONTENT_SETTINGS_FEATURES)
 BASE_DECLARE_FEATURE(kTrackingProtection3pcd);
+
+COMPONENT_EXPORT(CONTENT_SETTINGS_FEATURES)
+extern const char kTpcdReadHeuristicsGrantsName[];
 
 // Enables writing and reading temporary storage access grants from 3PCD
 // heuristics.

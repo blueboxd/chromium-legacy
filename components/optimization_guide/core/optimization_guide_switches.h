@@ -35,6 +35,7 @@ extern const char kDisableFetchingHintsAtNavigationStartForTesting[];
 extern const char kDisableCheckingUserPermissionsForTesting[];
 extern const char kDisableModelDownloadVerificationForTesting[];
 extern const char kModelOverride[];
+extern const char kOnDeviceModelExecutionOverride[];
 extern const char kDebugLoggingEnabled[];
 extern const char kModelValidate[];
 extern const char kPageContentAnnotationsLoggingEnabled[];
@@ -44,6 +45,11 @@ extern const char kPageContentAnnotationsValidationPageEntities[];
 extern const char kPageContentAnnotationsValidationContentVisibility[];
 extern const char kPageContentAnnotationsValidationTextEmbedding[];
 extern const char kPageContentAnnotationsValidationWriteToFile[];
+extern const char kModelQualityServiceURL[];
+extern const char kModelQualityServiceAPIKey[];
+
+// The API key for the ModelQualityLoggingService.
+std::string GetModelQualityServiceAPIKey();
 
 // Returns whether the hint component should be processed.
 // Available hint components are only processed if a proto override isn't being
@@ -94,6 +100,9 @@ bool ShouldValidateModel();
 
 // Returns the model override command line switch.
 absl::optional<std::string> GetModelOverride();
+
+// Returns the on-device model execution override command line switch.
+absl::optional<std::string> GetOnDeviceModelExecutionOverride();
 
 // Returns true if debug logs are enabled for the optimization guide.
 bool IsDebugLogsEnabled();

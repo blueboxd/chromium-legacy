@@ -29,7 +29,9 @@
 #include "ash/test/ash_test_base.h"
 #include "base/files/file.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/vector_icons/vector_icons.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,8 +43,8 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/layout/box_layout_view.h"
 #include "ui/views/layout/flex_layout_view.h"
-#include "ui/views/layout/table_layout_view.h"
 #include "ui/views/test/ax_event_counter.h"
 #include "ui/views/view_utils.h"
 
@@ -63,10 +65,9 @@ ash::FileMetadata MetadataLoaderForTest() {
   EXPECT_TRUE(base::Time::FromString("23 Dec 2021 09:01:00", &last_modified));
 
   metadata.file_info.last_modified = last_modified;
-  metadata.file_info.size = 20 * 1024.0;  // 20.0 KB
-  metadata.mime_type = "image/jpeg";
   metadata.file_path = base::FilePath("full file path");
-  metadata.virtual_path = base::FilePath("virtual file path");
+  metadata.file_name = base::FilePath("file name");
+  metadata.displayable_folder_path = base::FilePath("displayable folder");
   return metadata;
 }
 
@@ -406,12 +407,11 @@ TEST_P(SearchResultImageViewTest, OneResultShowsImageInfo) {
   // the narrowed space \x202F is used in formatting the time of the day.
   const std::vector<views::Label*>& content_labels =
       image_list_view->metadata_content_labels_for_test();
-  EXPECT_EQ(content_labels[0]->GetText(), u"20.0 KB");
-  EXPECT_EQ(content_labels[1]->GetText(),
-            u"Dec 23, 2021, 9:01\x202F"
+  EXPECT_EQ(content_labels[0]->GetText(), u"file name");
+  EXPECT_EQ(content_labels[1]->GetText(), u"displayable folder");
+  EXPECT_EQ(content_labels[2]->GetText(),
+            u"Modified Dec 23, 2021, 9:01\x202F"
             u"AM");
-  EXPECT_EQ(content_labels[2]->GetText(), u"image/jpeg");
-  EXPECT_EQ(content_labels[3]->GetText(), u"virtual file path");
   client->set_search_callback(TestAppListClient::SearchCallback());
 }
 
@@ -625,6 +625,7 @@ TEST_P(SearchResultImageViewTest, AcceptingPrivacyNoticeRemovesIt) {
 }
 
 TEST_P(SearchResultImageViewTest, SearchCategoryMenuItemToggleTest) {
+  base::HistogramTester histogram_tester;
   GetAppListTestHelper()->ShowAppList();
   auto* app_list_client = GetAppListTestHelper()->app_list_client();
 
@@ -638,8 +639,15 @@ TEST_P(SearchResultImageViewTest, SearchCategoryMenuItemToggleTest) {
   GetSearchBoxView()->GetWidget()->LayoutRootViewIfNecessary();
   views::ImageButton* filter_button = GetSearchBoxView()->filter_button();
   EXPECT_TRUE(filter_button->GetVisible());
+  histogram_tester.ExpectBucketCount(kSearchCategoryFilterMenuOpened,
+                                     /*sample=*/1, /*expected_count=*/0);
   LeftClickOn(filter_button);
   EXPECT_TRUE(GetSearchBoxView()->IsFilterMenuOpen());
+  // Verify that the filter open count metric is recorded.
+  histogram_tester.ExpectBucketCount(kSearchCategoryFilterMenuOpened,
+                                     /*sample=*/1, /*expected_count=*/1);
+  histogram_tester.ExpectTotalCount(kSearchCategoryFilterMenuOpened,
+                                    /*expected_count=*/1);
 
   // Set up the search callback to notify that the search is triggered.
   bool is_search_triggered = false;
@@ -685,6 +693,41 @@ TEST_P(SearchResultImageViewTest, SearchCategoryMenuItemToggleTest) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetSearchBoxView()->IsFilterMenuOpen());
   EXPECT_TRUE(is_search_triggered);
+
+  auto histogram_name = [](std::string category) {
+    return base::StrCat({kSearchCategoriesEnableStateHeader, category});
+  };
+
+  // Verify the states of each category is recorded. Apps and Web categories are
+  // toggled to be disabled and Files stays enabled. Other categories are not
+  // available.
+  histogram_tester.ExpectBucketCount(histogram_name("Apps"),
+                                     SearchCategoryEnableState::kDisabled, 1);
+  histogram_tester.ExpectBucketCount(histogram_name("Files"),
+                                     SearchCategoryEnableState::kEnabled, 1);
+  histogram_tester.ExpectBucketCount(histogram_name("Web"),
+                                     SearchCategoryEnableState::kDisabled, 1);
+  histogram_tester.ExpectBucketCount(histogram_name("AppShortcuts"),
+                                     SearchCategoryEnableState::kNotAvailable,
+                                     1);
+  histogram_tester.ExpectBucketCount(
+      histogram_name("Games"), SearchCategoryEnableState::kNotAvailable, 1);
+  histogram_tester.ExpectBucketCount(
+      histogram_name("Helps"), SearchCategoryEnableState::kNotAvailable, 1);
+  histogram_tester.ExpectBucketCount(
+      histogram_name("Images"), SearchCategoryEnableState::kNotAvailable, 1);
+  histogram_tester.ExpectBucketCount(
+      histogram_name("PlayStore"), SearchCategoryEnableState::kNotAvailable, 1);
+
+  histogram_tester.ExpectTotalCount(histogram_name("Apps"), 1);
+  histogram_tester.ExpectTotalCount(histogram_name("AppShortcuts"), 1);
+  histogram_tester.ExpectTotalCount(histogram_name("Files"), 1);
+  histogram_tester.ExpectTotalCount(histogram_name("Games"), 1);
+  histogram_tester.ExpectTotalCount(histogram_name("Helps"), 1);
+  histogram_tester.ExpectTotalCount(histogram_name("Images"), 1);
+  histogram_tester.ExpectTotalCount(histogram_name("PlayStore"), 1);
+  histogram_tester.ExpectTotalCount(histogram_name("Web"), 1);
+  histogram_tester.ExpectTotalCount(kSearchCategoryFilterMenuOpened, 1);
 
   // Reset the search callback.
   app_list_client->set_search_callback(TestAppListClient::SearchCallback());

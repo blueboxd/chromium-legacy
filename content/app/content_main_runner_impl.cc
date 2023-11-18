@@ -124,7 +124,6 @@
 #include <cstring>
 
 #include "base/trace_event/trace_event_etw_export_win.h"
-#include "base/win/dark_mode_support.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/display/win/dpi.h"
 #elif BUILDFLAG(IS_MAC)
@@ -890,11 +889,6 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
     if (base::StringToDouble(scale_factor_string, &scale_factor))
       display::win::SetDefaultDeviceScaleFactor(scale_factor);
   }
-
-  // Make sure the 'uxtheme.dll' is pinned and that the process enabled to
-  // support the OS dark mode only for the browser process.
-  if (process_type.empty())
-    base::win::AllowDarkModeForApp(true);
 #endif
 
   RegisterContentSchemes(delegate_->ShouldLockSchemeRegistry());
@@ -929,7 +923,9 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
     tracing::EnableStartupTracingIfNeeded();
 
 #if BUILDFLAG(IS_WIN)
+#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   base::trace_event::TraceEventETWExport::EnableETWExport();
+#endif
 #endif  // BUILDFLAG(IS_WIN)
 
   // Android tracing started at the beginning of the method.

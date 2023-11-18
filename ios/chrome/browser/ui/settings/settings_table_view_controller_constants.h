@@ -177,6 +177,10 @@ extern NSString* const kSettingsIncognitoInterstitialDisabledId;
 // The accessibility identifier of the Notifications setting.
 extern NSString* const kSettingsNotificationsId;
 
+// The accessibility identifier of the wait button that is used on top of the
+// setting tables view to prevent user interactions.
+extern NSString* const kSettingsWaitButtonId;
+
 // The accessibility identifier of the tabs cell.
 extern NSString* const kSettingsTabsCellId;
 
@@ -185,5 +189,11 @@ extern NSString* const kSettingsMoveInactiveTabsCellId;
 
 // The accessibility identifier of the tab pickup settings cell.
 extern NSString* const kSettingsTabPickupCellId;
+
+// The accessibility identifier of the Privacy Guide settings cell.
+extern NSString* const kSettingsPrivacyGuideCellId;
+
+// The accessibility identifier of the Detect Units cell.
+extern NSString* const kSettingsDetectUnitsCellId;
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SETTINGS_TABLE_VIEW_CONTROLLER_CONSTANTS_H_

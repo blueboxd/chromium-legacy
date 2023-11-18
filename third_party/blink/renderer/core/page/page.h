@@ -28,6 +28,7 @@
 #include "base/check_op.h"
 #include "base/dcheck_is_on.h"
 #include "base/types/pass_key.h"
+#include "services/network/public/mojom/attribution.mojom-shared.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/fenced_frame/redacted_fenced_frame_config.h"
@@ -35,6 +36,7 @@
 #include "third_party/blink/public/common/page/browsing_context_group_info.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/color_scheme.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/text_autosizer_page_info.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/page.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
@@ -64,12 +66,17 @@
 
 namespace cc {
 class AnimationHost;
-}
+}  // namespace cc
+
+namespace ui {
+class ColorProvider;
+}  // namespace ui
 
 namespace blink {
 class AutoscrollController;
 class BrowserControls;
 class ChromeClient;
+struct ColorProviderColorMaps;
 class ConsoleMessageStorage;
 class ContextMenuController;
 class Document;
@@ -154,6 +161,12 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   static void PlatformColorsChanged();
   static void ColorSchemeChanged();
   static void ColorProvidersChanged();
+
+  void UpdateColorProviders(
+      const ColorProviderColorMaps& color_provider_colors);
+  const ui::ColorProvider* GetColorProviderForPainting(
+      mojom::blink::ColorScheme color_scheme,
+      bool in_forced_colors) const;
 
   void InitialStyleChanged();
   void UpdateAcceleratedCompositingSettings();
@@ -449,8 +462,25 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   // place.
   void UpdateBrowsingContextGroup(const blink::BrowsingContextGroupInfo&);
 
+  // Attribution Reporting API ------------------------------------
+  // Sets whether web or OS-level Attribution Reporting is supported
+  void SetAttributionSupport(
+      network::mojom::AttributionSupport attribution_support);
+
+  // Returns whether web or OS-level Attribution Reporting is supported. See
+  // https://github.com/WICG/attribution-reporting-api/blob/main/app_to_web.md.
+  network::mojom::AttributionSupport GetAttributionSupport() {
+    return attribution_support_;
+  }
+
+  // Called on a new Page, passing an old Page as the parameter, when doing a
+  // LocalFrame <-> LocalFrame swap when committing a navigation, to ensure that
+  // the close task will still be processed after the swap.
+  void TakeCloseTaskHandler(Page* old_page);
+
  private:
   friend class ScopedPagePauser;
+  class CloseTaskHandler;
 
   void InitGroup();
 
@@ -554,6 +584,12 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
 
   int subframe_count_;
 
+  // The light, dark and forced_colors mode ColorProviders corresponding to the
+  // top-level web container this Page is associated with.
+  std::unique_ptr<ui::ColorProvider> light_color_provider_;
+  std::unique_ptr<ui::ColorProvider> dark_color_provider_;
+  std::unique_ptr<ui::ColorProvider> forced_colors_color_provider_;
+
   HeapHashSet<WeakMember<PluginsChangedObserver>> plugins_changed_observers_;
 
   // A circular, double-linked list of pages that are related to the current
@@ -610,6 +646,11 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
 
   // The information determining the browsing context group this page lives in.
   BrowsingContextGroupInfo browsing_context_group_info_;
+
+  network::mojom::AttributionSupport attribution_support_ =
+      network::mojom::AttributionSupport::kWeb;
+
+  Member<CloseTaskHandler> close_task_handler_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Page>;

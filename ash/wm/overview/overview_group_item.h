@@ -49,13 +49,13 @@ class OverviewGroupItem : public OverviewItemBase,
                  OverviewAnimationType animation_type) override;
   gfx::Transform ComputeTargetTransform(
       const gfx::RectF& target_bounds) override;
-  gfx::RectF GetTargetBoundsInScreen() const override;
+  gfx::RectF GetWindowsUnionScreenBounds() const override;
   gfx::RectF GetTargetBoundsWithInsets() const override;
   gfx::RectF GetTransformedBounds() const override;
   float GetItemScale(int height) override;
   void ScaleUpSelectedItem(OverviewAnimationType animation_type) override;
   void EnsureVisible() override;
-  OverviewFocusableView* GetFocusableView() const override;
+  std::vector<OverviewFocusableView*> GetFocusableViews() const override;
   views::View* GetBackDropView() const override;
   void UpdateRoundedCornersAndShadow() override;
   void SetOpacity(float opacity) override;
@@ -89,11 +89,20 @@ class OverviewGroupItem : public OverviewItemBase,
   void OnOverviewItemWindowDestroying(OverviewItem* overview_item,
                                       bool reposition) override;
 
+  const std::vector<std::unique_ptr<OverviewItem>>& overview_items_for_testing()
+      const {
+    return overview_items_;
+  }
+
  protected:
   // OverviewItemBase:
-  void CreateItemWidget() override;
+  void HandleDragEvent(const gfx::PointF& location_in_screen) override;
 
  private:
+  // Creates `item_widget_` with `OverviewGroupContainerView` as its contents
+  // view.
+  void CreateItemWidget();
+
   // A list of `OverviewItem`s hosted and owned by `this`.
   std::vector<std::unique_ptr<OverviewItem>> overview_items_;
 

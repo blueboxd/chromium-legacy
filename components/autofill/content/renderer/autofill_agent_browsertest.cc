@@ -175,20 +175,18 @@ class AutofillAgentTest : public content::RenderViewTest {
         base::BindRepeating(&MockAutofillDriver::BindPendingReceiver,
                             base::Unretained(&autofill_driver_)));
 
-    password_autofill_agent_ = std::make_unique<TestPasswordAutofillAgent>(
+    auto password_autofill_agent = std::make_unique<TestPasswordAutofillAgent>(
         GetMainRenderFrame(), &associated_interfaces_);
-    password_generation_ = std::make_unique<PasswordGenerationAgent>(
-        GetMainRenderFrame(), password_autofill_agent_.get(),
+    auto password_generation = std::make_unique<PasswordGenerationAgent>(
+        GetMainRenderFrame(), password_autofill_agent.get(),
         &associated_interfaces_);
     autofill_agent_ = std::make_unique<AutofillAgent>(
-        GetMainRenderFrame(), password_autofill_agent_.get(),
-        password_generation_.get(), &associated_interfaces_);
+        GetMainRenderFrame(), std::move(password_autofill_agent),
+        std::move(password_generation), &associated_interfaces_);
   }
 
   void TearDown() override {
     autofill_agent_.reset();
-    password_generation_.reset();
-    password_autofill_agent_.reset();
     RenderViewTest::TearDown();
   }
 
@@ -205,8 +203,6 @@ class AutofillAgentTest : public content::RenderViewTest {
 
  private:
   blink::AssociatedInterfaceRegistry associated_interfaces_;
-  std::unique_ptr<PasswordAutofillAgent> password_autofill_agent_;
-  std::unique_ptr<PasswordGenerationAgent> password_generation_;
 };
 
 class AutofillAgentTestWithFeatures : public AutofillAgentTest {
@@ -215,7 +211,7 @@ class AutofillAgentTestWithFeatures : public AutofillAgentTest {
     scoped_features_.InitWithFeatures(
         /*enabled_features=*/
         {blink::features::kAutofillUseDomNodeIdForRendererId,
-         blink::features::kAutofillDetectRemovedFormControls,
+         features::kAutofillDetectRemovedFormControls,
          features::kAutofillContentEditables},
         /*disabled_features=*/{});
   }
@@ -238,7 +234,7 @@ TEST_F(AutofillAgentTestWithFeatures, FormsSeen_NoEmpty) {
 
 TEST_F(AutofillAgentTestWithFeatures, FormsSeen_NewFormUnowned) {
   EXPECT_CALL(autofill_driver_,
-              FormsSeen(HasSingleElementWhich(HasFormId(0), HasNumFields(1),
+              FormsSeen(HasSingleElementWhich(HasFormId(0u), HasNumFields(1),
                                               HasNumChildFrames(0)),
                         SizeIs(0)));
   LoadHTML(R"(<body> <input> </body>)");
@@ -471,7 +467,8 @@ TEST_F(AutofillAgentTest, UndoAutofillSetsLastQueriedElement) {
   EXPECT_EQ(1U, forms.size());
   FormData form;
   EXPECT_TRUE(form_util::WebFormElementToFormData(
-      forms[0], blink::WebFormControlElement(), nullptr,
+      forms[0], blink::WebFormControlElement(),
+      *base::MakeRefCounted<FieldDataManager>(),
       {form_util::ExtractOption::kValue}, &form, nullptr));
 
   ASSERT_TRUE(autofill_agent_->focused_element().IsNull());

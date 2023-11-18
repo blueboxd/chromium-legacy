@@ -143,7 +143,7 @@ v8::MaybeLocal<v8::Value> CallMethodOnFrame(LocalFrame* local_frame,
   v8::Local<v8::Context> context = MainWorldScriptContext(local_frame);
 
   v8::Context::Scope context_scope(context);
-  WTF::Vector<v8::Local<v8::Value>> args;
+  v8::LocalVector<v8::Value> args(context->GetIsolate());
   for (const auto& argument : arguments) {
     args.push_back(converter->ToV8Value(argument, context));
   }
@@ -696,6 +696,14 @@ void LocalFrameMojoHandler::MediaPlayerActionAt(
                                            action->enable);
 }
 
+void LocalFrameMojoHandler::RequestVideoFrameAt(
+    const gfx::Point& window_point,
+    RequestVideoFrameAtCallback callback) {
+  gfx::Point viewport_position =
+      frame_->GetWidgetForLocalRoot()->DIPsToRoundedBlinkSpace(window_point);
+  frame_->RequestVideoFrameAt(viewport_position, std::move(callback));
+}
+
 void LocalFrameMojoHandler::AdvanceFocusInFrame(
     mojom::blink::FocusType focus_type,
     const absl::optional<RemoteFrameToken>& source_frame_token) {
@@ -1130,8 +1138,10 @@ void LocalFrameMojoHandler::GetOpenGraphMetadata(
 }
 
 void LocalFrameMojoHandler::SetNavigationApiHistoryEntriesForRestore(
-    mojom::blink::NavigationApiHistoryEntryArraysPtr entry_arrays) {
-  frame_->DomWindow()->navigation()->SetEntriesForRestore(entry_arrays);
+    mojom::blink::NavigationApiHistoryEntryArraysPtr entry_arrays,
+    mojom::blink::NavigationApiEntryRestoreReason restore_reason) {
+  frame_->DomWindow()->navigation()->SetEntriesForRestore(entry_arrays,
+                                                          restore_reason);
 }
 
 void LocalFrameMojoHandler::NotifyNavigationApiOfDisposedEntries(

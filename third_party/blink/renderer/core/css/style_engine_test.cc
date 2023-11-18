@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/style_engine.h"
 
+#include <algorithm>
 #include <limits>
 #include <memory>
 
@@ -36,6 +37,7 @@
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_stats.h"
+#include "third_party/blink/renderer/core/css/style_scope_frame.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
@@ -89,12 +91,7 @@ class StyleEngineTest : public PageTestBase {
     return !GetStyleEngine().ShouldUpdateDocumentStyleSheetCollection();
   }
 
-  enum RuleSetInvalidation {
-    kRuleSetInvalidationsScheduled,
-    kRuleSetInvalidationFullRecalc
-  };
-  RuleSetInvalidation ScheduleInvalidationsForRules(TreeScope&,
-                                                    const String& css_text);
+  void ApplyRuleSetInvalidation(TreeScope&, const String& css_text);
 
   // A wrapper to add a reason for UpdateAllLifecyclePhases
   void UpdateAllLifecyclePhases() {
@@ -158,8 +155,7 @@ class StyleEngineTest : public PageTestBase {
 
 class StyleEngineContainerQueryTest : public StyleEngineTest {};
 
-StyleEngineTest::RuleSetInvalidation
-StyleEngineTest::ScheduleInvalidationsForRules(TreeScope& tree_scope,
+void StyleEngineTest::ApplyRuleSetInvalidation(TreeScope& tree_scope,
                                                const String& css_text) {
   auto* sheet = MakeGarbageCollected<StyleSheetContents>(
       MakeGarbageCollected<CSSParserContext>(
@@ -169,15 +165,16 @@ StyleEngineTest::ScheduleInvalidationsForRules(TreeScope& tree_scope,
   RuleSet& rule_set =
       sheet->EnsureRuleSet(MediaQueryEvaluator(GetDocument().GetFrame()));
   rule_set.CompactRulesIfNeeded();
-  if (rule_set.NeedsFullRecalcForRuleSetInvalidation()) {
-    return kRuleSetInvalidationFullRecalc;
-  }
   rule_sets.insert(&rule_set);
   SelectorFilter selector_filter;
   selector_filter.PushAllParentsOf(tree_scope);
-  GetStyleEngine().ApplyRuleSetInvalidation(tree_scope, tree_scope.RootNode(),
-                                            selector_filter, rule_sets);
-  return kRuleSetInvalidationsScheduled;
+  StyleScopeFrame style_scope_frame(
+      IsA<ShadowRoot>(tree_scope)
+          ? To<ShadowRoot>(tree_scope).host()
+          : *tree_scope.GetDocument().documentElement());
+  GetStyleEngine().ApplyRuleSetInvalidationForTreeScope(
+      tree_scope, tree_scope.RootNode(), selector_filter, style_scope_frame,
+      rule_sets);
 }
 
 TEST_F(StyleEngineTest, DocumentDirtyAfterInject) {
@@ -866,30 +863,25 @@ TEST_F(StyleEngineTest, RuleSetInvalidationTypeSelectors) {
   UpdateAllLifecyclePhases();
 
   unsigned before_count = GetStyleEngine().StyleForElementCount();
-  EXPECT_EQ(kRuleSetInvalidationsScheduled,
-            ScheduleInvalidationsForRules(GetDocument(),
-                                          "span { background: green}"));
+  ApplyRuleSetInvalidation(GetDocument(), "span { background: green}");
   UpdateAllLifecyclePhases();
   unsigned after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(1u, after_count - before_count);
 
   before_count = after_count;
-  EXPECT_EQ(kRuleSetInvalidationsScheduled,
-            ScheduleInvalidationsForRules(GetDocument(),
-                                          "body div { background: green}"));
+  ApplyRuleSetInvalidation(GetDocument(), "body div { background: green}");
   UpdateAllLifecyclePhases();
   after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(2u, after_count - before_count);
 
-  EXPECT_EQ(kRuleSetInvalidationFullRecalc,
-            ScheduleInvalidationsForRules(GetDocument(),
-                                          "div * { background: green}"));
+  before_count = after_count;
+  ApplyRuleSetInvalidation(GetDocument(), "div * { background: green}");
   UpdateAllLifecyclePhases();
+  after_count = GetStyleEngine().StyleForElementCount();
+  EXPECT_EQ(2u, after_count - before_count);
 
   before_count = GetStyleEngine().StyleForElementCount();
-  EXPECT_EQ(kRuleSetInvalidationsScheduled,
-            ScheduleInvalidationsForRules(GetDocument(),
-                                          "#i b { background: green}"));
+  ApplyRuleSetInvalidation(GetDocument(), "#i b { background: green}");
   UpdateAllLifecyclePhases();
   after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(1u, after_count - before_count);
@@ -905,9 +897,8 @@ TEST_F(StyleEngineTest, RuleSetInvalidationCustomPseudo) {
   UpdateAllLifecyclePhases();
 
   unsigned before_count = GetStyleEngine().StyleForElementCount();
-  EXPECT_EQ(ScheduleInvalidationsForRules(
-                GetDocument(), "::-webkit-progress-bar { background: green }"),
-            kRuleSetInvalidationsScheduled);
+  ApplyRuleSetInvalidation(GetDocument(),
+                           "::-webkit-progress-bar { background: green }");
   UpdateAllLifecyclePhases();
   unsigned after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(1u, after_count - before_count);
@@ -926,30 +917,35 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHost) {
   UpdateAllLifecyclePhases();
 
   unsigned before_count = GetStyleEngine().StyleForElementCount();
-  EXPECT_EQ(ScheduleInvalidationsForRules(
-                shadow_root, ":host(#nohost), #nohost { background: green}"),
-            kRuleSetInvalidationsScheduled);
+  ApplyRuleSetInvalidation(shadow_root,
+                           ":host(#nohost), #nohost { background: green}");
   UpdateAllLifecyclePhases();
   unsigned after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(0u, after_count - before_count);
 
   before_count = after_count;
-  EXPECT_EQ(ScheduleInvalidationsForRules(shadow_root,
-                                          ":host(#host) { background: green}"),
-            kRuleSetInvalidationsScheduled);
+  ApplyRuleSetInvalidation(shadow_root, ":host(#host) { background: green}");
   UpdateAllLifecyclePhases();
   after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(1u, after_count - before_count);
-  EXPECT_EQ(ScheduleInvalidationsForRules(shadow_root,
-                                          ":host(div) { background: green}"),
-            kRuleSetInvalidationsScheduled);
 
-  EXPECT_EQ(ScheduleInvalidationsForRules(shadow_root,
-                                          ":host(*) { background: green}"),
-            kRuleSetInvalidationFullRecalc);
-  EXPECT_EQ(ScheduleInvalidationsForRules(
-                shadow_root, ":host(*) :hover { background: green}"),
-            kRuleSetInvalidationFullRecalc);
+  before_count = after_count;
+  ApplyRuleSetInvalidation(shadow_root, ":host(div) { background: green}");
+  UpdateAllLifecyclePhases();
+  after_count = GetStyleEngine().StyleForElementCount();
+  EXPECT_EQ(1u, after_count - before_count);
+
+  before_count = after_count;
+  ApplyRuleSetInvalidation(shadow_root, ":host(*) { background: green}");
+  UpdateAllLifecyclePhases();
+  after_count = GetStyleEngine().StyleForElementCount();
+  EXPECT_EQ(1u, after_count - before_count);
+
+  before_count = after_count;
+  ApplyRuleSetInvalidation(shadow_root, ":host(*) :hover { background: green}");
+  UpdateAllLifecyclePhases();
+  after_count = GetStyleEngine().StyleForElementCount();
+  EXPECT_EQ(3u, after_count - before_count);
 }
 
 TEST_F(StyleEngineTest, RuleSetInvalidationSlotted) {
@@ -972,16 +968,16 @@ TEST_F(StyleEngineTest, RuleSetInvalidationSlotted) {
   UpdateAllLifecyclePhases();
 
   unsigned before_count = GetStyleEngine().StyleForElementCount();
-  EXPECT_EQ(ScheduleInvalidationsForRules(
-                shadow_root, "::slotted(.s1) { background: green}"),
-            kRuleSetInvalidationsScheduled);
+  ApplyRuleSetInvalidation(shadow_root, "::slotted(.s1) { background: green}");
   UpdateAllLifecyclePhases();
   unsigned after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(4u, after_count - before_count);
 
-  EXPECT_EQ(ScheduleInvalidationsForRules(shadow_root,
-                                          "::slotted(*) { background: green}"),
-            kRuleSetInvalidationFullRecalc);
+  before_count = GetStyleEngine().StyleForElementCount();
+  ApplyRuleSetInvalidation(shadow_root, "::slotted(*) { background: green}");
+  UpdateAllLifecyclePhases();
+  after_count = GetStyleEngine().StyleForElementCount();
+  EXPECT_EQ(4u, after_count - before_count);
 }
 
 TEST_F(StyleEngineTest, RuleSetInvalidationHostContext) {
@@ -997,27 +993,32 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHostContext) {
   UpdateAllLifecyclePhases();
 
   unsigned before_count = GetStyleEngine().StyleForElementCount();
-  EXPECT_EQ(ScheduleInvalidationsForRules(
-                shadow_root, ":host-context(.nomatch) .a { background: green}"),
-            kRuleSetInvalidationsScheduled);
+  ApplyRuleSetInvalidation(shadow_root,
+                           ":host-context(.nomatch) .a { background: green}");
   UpdateAllLifecyclePhases();
   unsigned after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(0u, after_count - before_count);
 
   before_count = after_count;
-  EXPECT_EQ(ScheduleInvalidationsForRules(
-                shadow_root, ":host-context(.match) .a { background: green}"),
-            kRuleSetInvalidationsScheduled);
+  ApplyRuleSetInvalidation(shadow_root,
+                           ":host-context(.match) .a { background: green}");
   UpdateAllLifecyclePhases();
   after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(1u, after_count - before_count);
 
-  EXPECT_EQ(ScheduleInvalidationsForRules(
-                shadow_root, ":host-context(:hover) { background: green}"),
-            kRuleSetInvalidationFullRecalc);
-  EXPECT_EQ(ScheduleInvalidationsForRules(
-                shadow_root, ":host-context(#host) { background: green}"),
-            kRuleSetInvalidationFullRecalc);
+  before_count = after_count;
+  ApplyRuleSetInvalidation(shadow_root,
+                           ":host-context(:hover) { background: green}");
+  UpdateAllLifecyclePhases();
+  after_count = GetStyleEngine().StyleForElementCount();
+  EXPECT_EQ(1u, after_count - before_count);
+
+  before_count = after_count;
+  ApplyRuleSetInvalidation(shadow_root,
+                           ":host-context(#host) { background: green}");
+  UpdateAllLifecyclePhases();
+  after_count = GetStyleEngine().StyleForElementCount();
+  EXPECT_EQ(1u, after_count - before_count);
 }
 
 TEST_F(StyleEngineTest, HasViewportDependentMediaQueries) {
@@ -1166,7 +1167,7 @@ TEST_F(StyleEngineTest, VisitedExplicitInheritanceMatchedPropertiesCache) {
   const ComputedStyle* style = span->GetComputedStyle();
   EXPECT_FALSE(style->ChildHasExplicitInheritance());
 
-  style = span->firstChild()->GetComputedStyle();
+  style = span->firstElementChild()->GetComputedStyle();
 
   ComputedStyleBuilder builder(*style);
   EXPECT_TRUE(MatchedPropertiesCache::IsStyleCacheable(builder));
@@ -2778,7 +2779,7 @@ TEST_F(StyleEngineTest, EnsuredComputedStyleRecalc) {
 
   Element* computed = GetDocument().getElementById(AtomicString("computed"));
   Element* span_outer = GetDocument().getElementById(AtomicString("span"));
-  Node* span_inner = span_outer->firstChild();
+  Element* span_inner = span_outer->firstElementChild();
 
   // Initially all null in display:none subtree.
   EXPECT_FALSE(computed->GetComputedStyle());
@@ -2849,9 +2850,11 @@ TEST_F(StyleEngineTest, EnsureCustomComputedStyle) {
   // IsEnsuredInDisplayNone==true
   for (Node* node = progress; node;
        node = FlatTreeTraversal::Next(*node, progress)) {
-    ASSERT_TRUE(!node->GetComputedStyle() ||
-                !node->ComputedStyleRef().IsEnsuredInDisplayNone() ||
-                !node->GetLayoutObject());
+    if (auto* element = DynamicTo<Element>(node)) {
+      ASSERT_TRUE(!element->GetComputedStyle() ||
+                  !element->ComputedStyleRef().IsEnsuredInDisplayNone() ||
+                  !element->GetLayoutObject());
+    }
   }
 }
 
@@ -3298,8 +3301,8 @@ TEST_F(StyleEngineTest, ForceReattachRecalcRootAttachShadow) {
   EXPECT_FALSE(reattach->NeedsStyleRecalc());
   EXPECT_EQ(reattach, GetStyleRecalcRoot());
 
-  // Attaching the shadow root will call RemovedFromFlatTree() on the span child
-  // of the host. The style recalc root should still be #reattach.
+  // Attaching the shadow root will call FlatTreePositionChanged() on the span
+  // child of the host. The style recalc root should still be #reattach.
   host->AttachShadowRootInternal(ShadowRootType::kOpen);
   EXPECT_EQ(reattach, GetStyleRecalcRoot());
 }
@@ -4974,6 +4977,74 @@ TEST_F(StyleEngineTest, NestingUseCount) {
     <style>
       body {
         & .foo { color: fuchsia; }
+      }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kCSSNesting));
+}
+
+TEST_F(StyleEngineTest, NestingUseCountUnsupportedDeclaration) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      body { unsupported: 100px; }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kCSSNesting));
+}
+
+TEST_F(StyleEngineTest, NestingUseCountSupportedDeclaration) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      body { width: 100px; }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kCSSNesting));
+}
+
+TEST_F(StyleEngineTest, NestingUseCountDimensionToken) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      body { 500px: 300px; }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kCSSNesting));
+}
+
+TEST_F(StyleEngineTest, NestingUseCountInvalidSelector) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      body { & !!! { color: fuchsia; } }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kCSSNesting));
+}
+
+TEST_F(StyleEngineTest, NestingUseCountUnknownAtRule) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      body {
+        @unsupported {
+          color: fuchsia;
+        }
+      }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kCSSNesting));
+}
+
+TEST_F(StyleEngineTest, NestingUseCountAtRule) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      body {
+        @media {
+          color: fuchsia;
+        }
       }
     </style>
   )HTML");
@@ -6784,6 +6855,224 @@ TEST_F(StyleEngineTest, UseCountCSSAnchorPositioning) {
   ClearUseCounter(WebFeature::kCSSAnchorPositioning);
   SetBodyInnerHTML("<style>@position-fallback --pf {}</style>");
   EXPECT_TRUE(IsUseCounted(WebFeature::kCSSAnchorPositioning));
+}
+
+TEST_F(StyleEngineTest, UseCountCSSDeclarationAfterNestedRule) {
+  //
+  // The use-counter should not trigger for the following cases:
+  //
+
+  ClearUseCounter(WebFeature::kCSSDeclarationAfterNestedRule);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    </style>
+  )HTML");
+  EXPECT_FALSE(IsUseCounted(WebFeature::kCSSDeclarationAfterNestedRule));
+
+  ClearUseCounter(WebFeature::kCSSDeclarationAfterNestedRule);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        color: green;
+      }
+    </style>
+  )HTML");
+  EXPECT_FALSE(IsUseCounted(WebFeature::kCSSDeclarationAfterNestedRule));
+
+  ClearUseCounter(WebFeature::kCSSDeclarationAfterNestedRule);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        color: green;
+        & {
+          top: 10px;
+        }
+      }
+    </style>
+  )HTML");
+  EXPECT_FALSE(IsUseCounted(WebFeature::kCSSDeclarationAfterNestedRule));
+
+  // Relative selector.
+  ClearUseCounter(WebFeature::kCSSDeclarationAfterNestedRule);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        color: green;
+        > .a {
+          top: 10px;
+        }
+      }
+    </style>
+  )HTML");
+  EXPECT_FALSE(IsUseCounted(WebFeature::kCSSDeclarationAfterNestedRule));
+
+  // Relaxed nesting.
+  ClearUseCounter(WebFeature::kCSSDeclarationAfterNestedRule);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        color: green;
+        div {
+          top: 10px;
+        }
+      }
+    </style>
+  )HTML");
+  EXPECT_FALSE(IsUseCounted(WebFeature::kCSSDeclarationAfterNestedRule));
+
+  // Nested group rule.
+  ClearUseCounter(WebFeature::kCSSDeclarationAfterNestedRule);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        color: green;
+        @media (width) {
+          top: 10px;
+        }
+      }
+    </style>
+  )HTML");
+  EXPECT_FALSE(IsUseCounted(WebFeature::kCSSDeclarationAfterNestedRule));
+
+  // Deep nesting.
+  ClearUseCounter(WebFeature::kCSSDeclarationAfterNestedRule);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        color: green;
+        .a {
+          .b {
+            left: 10px;
+          }
+        }
+      }
+    </style>
+  )HTML");
+  EXPECT_FALSE(IsUseCounted(WebFeature::kCSSDeclarationAfterNestedRule));
+
+  //
+  // The use-counter should trigger for the following cases:
+  //
+
+  ClearUseCounter(WebFeature::kCSSDeclarationAfterNestedRule);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        color: green;
+        & {
+          top: 10px;
+        }
+        background-color: red;
+      }
+    </style>
+  )HTML");
+  EXPECT_TRUE(IsUseCounted(WebFeature::kCSSDeclarationAfterNestedRule));
+
+  // Relative selector.
+  ClearUseCounter(WebFeature::kCSSDeclarationAfterNestedRule);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        color: green;
+        > .a {
+          top: 10px;
+        }
+        background-color: red;
+      }
+    </style>
+  )HTML");
+  EXPECT_TRUE(IsUseCounted(WebFeature::kCSSDeclarationAfterNestedRule));
+
+  // Nested group rule.
+  ClearUseCounter(WebFeature::kCSSDeclarationAfterNestedRule);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        color: green;
+        @media (width) {
+          top: 10px;
+        }
+        background-color: red;
+      }
+    </style>
+  )HTML");
+  EXPECT_TRUE(IsUseCounted(WebFeature::kCSSDeclarationAfterNestedRule));
+
+  // Relaxed nesting.
+  ClearUseCounter(WebFeature::kCSSDeclarationAfterNestedRule);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        color: green;
+        span {
+          top: 10px;
+        }
+        background-color: red;
+      }
+    </style>
+  )HTML");
+  EXPECT_TRUE(IsUseCounted(WebFeature::kCSSDeclarationAfterNestedRule));
+
+  // Deep nesting.
+  ClearUseCounter(WebFeature::kCSSDeclarationAfterNestedRule);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        color: green;
+        .a {
+          .b {
+            left: 10px;
+          }
+          top: 10px;
+        }
+      }
+    </style>
+  )HTML");
+  EXPECT_TRUE(IsUseCounted(WebFeature::kCSSDeclarationAfterNestedRule));
+}
+
+TEST_F(StyleEngineTest, EnsureAppRegionTriggersRelayout) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <head>
+    <style>
+      .drag {
+        app-region: drag
+      }
+      .no-drag {
+        app-region: no-drag
+      }
+    </style>
+    </head>
+    <body>
+       <div id="drag-region"></div>
+    </body>
+  )HTML");
+
+  Element* drag_element =
+      GetDocument().getElementById(AtomicString("drag-region"));
+
+  auto regions = GetDocument().AnnotatedRegions();
+  auto* it =
+      std::find_if(regions.begin(), regions.end(),
+                   [](blink::AnnotatedRegionValue s) { return s.draggable; });
+  EXPECT_EQ(it, regions.end()) << "There should be no drag regions";
+
+  drag_element->classList().Add(AtomicString("drag"));
+  UpdateAllLifecyclePhases();
+
+  regions = GetDocument().AnnotatedRegions();
+  it = std::find_if(regions.begin(), regions.end(),
+                    [](blink::AnnotatedRegionValue s) { return s.draggable; });
+  EXPECT_NE(it, regions.end()) << "There should be one drag region";
+
+  drag_element->classList().Add(AtomicString("no-drag"));
+  UpdateAllLifecyclePhases();
+
+  regions = GetDocument().AnnotatedRegions();
+  it = std::find_if(regions.begin(), regions.end(),
+                    [](blink::AnnotatedRegionValue s) { return s.draggable; });
+
+  EXPECT_EQ(it, regions.end()) << "There should be no drag regions";
 }
 
 }  // namespace blink

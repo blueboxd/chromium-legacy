@@ -24,8 +24,14 @@ class CORE_EXPORT ScrollbarThemeFluent : public ScrollbarThemeAura {
   ~ScrollbarThemeFluent() override = default;
 
   int ScrollbarThickness(float scale_from_dip,
-                         EScrollbarWidth scrollbar_width) override;
+                         EScrollbarWidth scrollbar_width) const override;
   bool UsesOverlayScrollbars() const override;
+  bool UsesFluentOverlayScrollbars() const override;
+  // When scrollbars are main threaded the thumb size returned by ThumbRect()
+  // is the expanded thumb size. This function shrinks the thumb and displaces
+  // it to be near the correct Edge of the scrollable area.
+  gfx::Rect ShrinkMainThreadedMinimalModeThumbRect(Scrollbar&, gfx::Rect& rect)
+      const override;
 
  protected:
   ScrollbarThemeFluent();
@@ -45,15 +51,16 @@ class CORE_EXPORT ScrollbarThemeFluent : public ScrollbarThemeAura {
 
  private:
   friend class ScrollbarThemeFluentMock;
-  int ThumbThickness(const float scale_from_dip) const;
 
+  int ThumbThickness(float scale_from_dip,
+                     EScrollbarWidth scrollbar_width) const;
   // Overlay scrollbar tracks have a invisible length-wise inset to give them a
   // floating appearance.
   gfx::Rect InsetButtonRect(const Scrollbar& scrollbar,
                             gfx::Rect rect,
-                            ScrollbarPart part);
-  gfx::Rect InsetTrackRect(const Scrollbar& scrollbar, gfx::Rect rect);
-  int ScrollbarTrackInsetPx(float scale);
+                            ScrollbarPart part) const;
+  gfx::Rect InsetTrackRect(const Scrollbar& scrollbar, gfx::Rect rect) const;
+  int ScrollbarTrackInsetPx(float scale) const;
 
   // Button's height for vertical and width for the horizontal scrollbar.
   int scrollbar_button_length_;

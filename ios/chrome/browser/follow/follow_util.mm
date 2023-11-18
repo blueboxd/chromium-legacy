@@ -7,11 +7,13 @@
 #import <UIKit/UIKit.h>
 
 #import "components/prefs/pref_service.h"
-#import "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/ntp/new_tab_page_util.h"
+#import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
-#import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/signin/model/authentication_service.h"
+#import "ios/chrome/browser/signin/model/authentication_service_factory.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
 #import "url/gurl.h"
@@ -38,6 +40,12 @@ FollowActionState GetFollowActionState(web::WebState* webState) {
 
   ChromeBrowserState* browserState =
       ChromeBrowserState::FromBrowserState(webState->GetBrowserState());
+
+  // Don't show follow option when feed is hidden due to DSE choice.
+  if (ShouldHideFeedWithSearchChoice(
+          ios::TemplateURLServiceFactory::GetForBrowserState(browserState))) {
+    return FollowActionStateHidden;
+  }
 
   // Don't show follow option when following feed is disabled by enterprise
   // policy.

@@ -201,20 +201,14 @@ void HTMLDialogElement::ScheduleCloseEvent() {
 }
 
 void HTMLDialogElement::show(ExceptionState& exception_state) {
-  if (RuntimeEnabledFeatures::PopoverDialogDontThrowEnabled()) {
-    if (FastHasAttribute(html_names::kOpenAttr)) {
-      if (is_modal_) {
-        exception_state.ThrowDOMException(
-            DOMExceptionCode::kInvalidStateError,
-            "The dialog is already open as a modal dialog, and therefore "
-            "cannot be opened as a non-modal dialog.");
-      }
-      return;
+  if (FastHasAttribute(html_names::kOpenAttr)) {
+    if (is_modal_) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kInvalidStateError,
+          "The dialog is already open as a modal dialog, and therefore "
+          "cannot be opened as a non-modal dialog.");
     }
-  } else {
-    if (FastHasAttribute(html_names::kOpenAttr)) {
-      return;
-    }
+    return;
   }
 
   SetBooleanAttribute(html_names::kOpenAttr, true);
@@ -235,6 +229,16 @@ void HTMLDialogElement::show(ExceptionState& exception_state) {
   } else {
     SetFocusForDialogLegacy(this);
   }
+}
+
+bool HTMLDialogElement::IsFocusable(UpdateBehavior update_behavior) const {
+  // TODO(crbug.com/1499838) HTMLDialogElement should only need to override
+  // SupportsFocus() to be always-true, and should not need to override
+  // IsFocusable() at all. Dialog focus behavior is to focus the dialog itself
+  // if there are no focusable descendants, which means they support focus.
+  // However, making SupportsFocus always true makes dialogs always keyboard
+  // focusable, and that breaks things.
+  return isConnected() && IsFocusableStyle(update_behavior);
 }
 
 class DialogCloseWatcherEventListener : public NativeEventListener {
@@ -261,24 +265,14 @@ class DialogCloseWatcherEventListener : public NativeEventListener {
 };
 
 void HTMLDialogElement::showModal(ExceptionState& exception_state) {
-  if (RuntimeEnabledFeatures::PopoverDialogDontThrowEnabled()) {
-    if (FastHasAttribute(html_names::kOpenAttr)) {
-      if (!is_modal_) {
-        exception_state.ThrowDOMException(
-            DOMExceptionCode::kInvalidStateError,
-            "The dialog is already open as a non-modal dialog, and therefore "
-            "cannot be opened as a modal dialog.");
-      }
-      return;
-    }
-  } else {
-    if (FastHasAttribute(html_names::kOpenAttr)) {
-      return exception_state.ThrowDOMException(
+  if (FastHasAttribute(html_names::kOpenAttr)) {
+    if (!is_modal_) {
+      exception_state.ThrowDOMException(
           DOMExceptionCode::kInvalidStateError,
-          "The element already has an 'open' "
-          "attribute, and therefore cannot be "
-          "opened modally.");
+          "The dialog is already open as a non-modal dialog, and therefore "
+          "cannot be opened as a modal dialog.");
     }
+    return;
   }
   if (!isConnected()) {
     return exception_state.ThrowDOMException(
@@ -311,7 +305,7 @@ void HTMLDialogElement::showModal(ExceptionState& exception_state) {
   document.UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
 
   if (LocalDOMWindow* window = GetDocument().domWindow()) {
-    close_watcher_ = CloseWatcher::Create(window, this);
+    close_watcher_ = CloseWatcher::Create(*window);
     if (close_watcher_) {
       auto* event_listener =
           MakeGarbageCollected<DialogCloseWatcherEventListener>(this);

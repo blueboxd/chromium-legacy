@@ -28,6 +28,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
+#include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_form_control_element.h"
 #include "third_party/blink/public/web/web_form_element.h"
 #include "third_party/blink/public/web/web_input_element.h"
@@ -82,10 +83,11 @@ class AutofillAgent : public content::RenderFrameObserver,
   // PasswordAutofillAgent is guaranteed to outlive AutofillAgent.
   // PasswordGenerationAgent and AutofillAssistantAgent may be nullptr. If they
   // are not, then they are also guaranteed to outlive AutofillAgent.
-  AutofillAgent(content::RenderFrame* render_frame,
-                PasswordAutofillAgent* password_autofill_agent,
-                PasswordGenerationAgent* password_generation_agent,
-                blink::AssociatedInterfaceRegistry* registry);
+  AutofillAgent(
+      content::RenderFrame* render_frame,
+      std::unique_ptr<PasswordAutofillAgent> password_autofill_agent,
+      std::unique_ptr<PasswordGenerationAgent> password_generation_agent,
+      blink::AssociatedInterfaceRegistry* registry);
 
   AutofillAgent(const AutofillAgent&) = delete;
   AutofillAgent& operator=(const AutofillAgent&) = delete;
@@ -109,6 +111,7 @@ class AutofillAgent : public content::RenderFrameObserver,
                        mojom::ActionPersistence action_persistence,
                        const FormData& form) override;
   void ApplyFieldAction(mojom::ActionPersistence action_persistence,
+                        mojom::TextReplacement text_replacement,
                         FieldRendererId field_id,
                         const std::u16string& value) override;
   void ExtractForm(FormRendererId form,
@@ -125,8 +128,9 @@ class AutofillAgent : public content::RenderFrameObserver,
   void TriggerSuggestions(
       FieldRendererId field_id,
       AutofillSuggestionTriggerSource trigger_source) override;
-  void SetSuggestionAvailability(FieldRendererId field_id,
-                                 const mojom::AutofillState state) override;
+  void SetSuggestionAvailability(
+      FieldRendererId field_id,
+      mojom::AutofillSuggestionAvailability suggestion_availability) override;
   void AcceptDataListSuggestion(FieldRendererId field_id,
                                 const std::u16string& suggested_value) override;
   void PreviewPasswordSuggestion(const std::u16string& username,
@@ -176,9 +180,19 @@ class AutofillAgent : public content::RenderFrameObserver,
     return last_queried_element_;
   }
 
+  FieldDataManager& field_data_manager() const {
+    return *field_data_manager_.get();
+  }
+
  protected:
   // blink::WebAutofillClient:
-  void DidAddOrRemoveFormRelatedElementsDynamically() override;
+
+  // Signals from blink that a form related element changed dynamically,
+  // passing the changed element as well as the type of the change.
+  // TODO(crbug.com/1483242): Fire the signal for elements that become hidden.
+  void DidChangeFormRelatedElementDynamically(
+      const blink::WebElement&,
+      blink::WebFormRelatedChangeType) override;
 
  private:
   class DeferringAutofillDriver;
@@ -280,16 +294,15 @@ class AutofillAgent : public content::RenderFrameObserver,
       const blink::WebElement& node);
 
   // Helper method which collects unowned elements (i.e., those not inside a
-  // form tag) and writes them into |output|. Returns true if the process is
-  // successful, and all conditions for firing events are true.
-  bool CollectFormlessElements(
-      FormData* output,
+  // form tag) and writes them into the returned form. Returns std::nullopt if
+  // the process is unsuccessful.
+  std::optional<FormData> CollectFormlessElements(
       DenseSet<form_util::ExtractOption> extract_options = {
           form_util::ExtractOption::kValue,
           form_util::ExtractOption::kOptions}) const;
   FRIEND_TEST_ALL_PREFIXES(FormAutocompleteTest, CollectFormlessElements);
 
-  void OnTextFieldDidChange(const blink::WebInputElement& element);
+  void OnTextFieldDidChange(const blink::WebFormControlElement& element);
   void DidChangeScrollOffsetImpl(const blink::WebFormControlElement& element);
 
   // Shows the autofill suggestions for |element|. This call is asynchronous
@@ -309,7 +322,7 @@ class AutofillAgent : public content::RenderFrameObserver,
                                   const std::u16string& suggested_value);
 
   // Set `element` to display the given `value`.
-  void DoFillFieldWithValue(const std::u16string& value,
+  void DoFillFieldWithValue(std::u16string_view value,
                             blink::WebFormControlElement& element,
                             blink::WebAutofillState autofill_state);
 
@@ -332,8 +345,9 @@ class AutofillAgent : public content::RenderFrameObserver,
   void HidePopup();
 
   // Attempt to get submitted FormData from last_interacted_form_ or
-  // provisionally_saved_form_, return true if |form| is set.
-  absl::optional<FormData> GetSubmittedForm() const;
+  // provisionally_saved_form_, return the form in question if found, and
+  // std::nullopt otherwise.
+  std::optional<FormData> GetSubmittedForm() const;
 
   // Pushes the value of GetSubmittedForm() to the AutofillDriver.
   void SendPotentiallySubmittedFormToBrowser();
@@ -366,10 +380,8 @@ class AutofillAgent : public content::RenderFrameObserver,
   // reset when the AutofillAgent is pending deletion.
   std::unique_ptr<FormCache> form_cache_;
 
-  raw_ptr<PasswordAutofillAgent, DanglingUntriaged>
-      password_autofill_agent_;  // Weak reference.
-  raw_ptr<PasswordGenerationAgent, DanglingUntriaged>
-      password_generation_agent_;  // Weak reference.
+  std::unique_ptr<PasswordAutofillAgent> password_autofill_agent_;
+  std::unique_ptr<PasswordGenerationAgent> password_generation_agent_;
 
   // The element corresponding to the last request sent for form field Autofill.
   blink::WebFormControlElement last_queried_element_;
@@ -395,7 +407,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   // The form the user interacted with last. It is used if last_interacted_form_
   // or a formless form can't be converted to FormData at the time of form
   // submission (e.g. because they have been removed from the DOM).
-  absl::optional<FormData> provisionally_saved_form_;
+  std::optional<FormData> provisionally_saved_form_;
 
   // Keeps track of the forms for which form submitted event has been sent to
   // AutofillDriver. We use it to avoid fire duplicated submission event when
@@ -461,7 +473,12 @@ class AutofillAgent : public content::RenderFrameObserver,
   // titles for unowned forms).
   bool is_heavy_form_data_scraping_enabled_ = false;
 
-  const scoped_refptr<FieldDataManager> field_data_manager_;
+  // Map WebFormControlElement to the pair of:
+  // 1) The most recent text that user typed or autofilled in input elements.
+  // Used for storing username/password before JavaScript changes them.
+  // 2) Field properties mask, i.e. whether the field was autofilled, modified
+  // by user, etc. (see FieldPropertiesMask).
+  scoped_refptr<FieldDataManager> field_data_manager_;
 
   // This notifier is used to avoid sending redundant messages to the password
   // manager driver mojo interface.

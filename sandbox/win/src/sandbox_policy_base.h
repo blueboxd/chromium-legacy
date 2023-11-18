@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include <optional>
 #include "base/compiler_specific.h"
 #include "base/containers/span.h"
 #include "base/dcheck_is_on.h"
@@ -30,7 +31,6 @@
 #include "sandbox/win/src/policy_engine_opcodes.h"
 #include "sandbox/win/src/policy_engine_params.h"
 #include "sandbox/win/src/sandbox_policy.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace sandbox {
 
@@ -61,9 +61,10 @@ class ConfigBase final : public TargetConfig {
   ResultCode SetJobLevel(JobLevel job_level, uint32_t ui_exceptions) override;
   JobLevel GetJobLevel() const override;
   void SetJobMemoryLimit(size_t memory_limit) override;
-  ResultCode AddRule(SubSystem subsystem,
-                     Semantics semantics,
-                     const wchar_t* pattern) override;
+  ResultCode AllowFileAccess(FileSemantics semantics,
+                             const wchar_t* pattern) override;
+  ResultCode AllowExtraDlls(const wchar_t* pattern) override;
+  ResultCode SetFakeGdiInit() override;
   void AddDllToUnload(const wchar_t* dll_name) override;
   ResultCode SetIntegrityLevel(IntegrityLevel integrity_level) override;
   IntegrityLevel GetIntegrityLevel() const override;
@@ -101,6 +102,10 @@ class ConfigBase final : public TargetConfig {
   // Use in DCHECK only - returns `true` in non-DCHECK builds.
   bool IsOnCreatingThread() const;
 
+  // Lazily populates the policy_ and policy_maker_ members for internal rules.
+  // Can only be called before the object is fully configured.
+  LowLevelPolicy* PolicyMaker();
+
 #if DCHECK_IS_ON()
   // Used to sequence-check in DCHECK builds.
   uint32_t creating_thread_id_;
@@ -109,13 +114,9 @@ class ConfigBase final : public TargetConfig {
   // Once true the configuration is frozen and can be applied to later policies.
   bool configured_ = false;
 
-  ResultCode AddRuleInternal(SubSystem subsystem,
-                             Semantics semantics,
-                             const wchar_t* pattern);
-
   // Should only be called once the object is configured.
   PolicyGlobal* policy();
-  absl::optional<base::span<const uint8_t>> policy_span();
+  std::optional<base::span<const uint8_t>> policy_span();
   std::vector<std::wstring>& blocklisted_dlls();
   AppContainerBase* app_container();
   IntegrityLevel integrity_level() { return integrity_level_; }
@@ -194,8 +195,8 @@ class PolicyBase final : public TargetPolicy {
 
   // Creates the two tokens with the levels specified in a previous call to
   // SetTokenLevel().
-  ResultCode MakeTokens(absl::optional<base::win::AccessToken>& initial,
-                        absl::optional<base::win::AccessToken>& lockdown);
+  ResultCode MakeTokens(std::optional<base::win::AccessToken>& initial,
+                        std::optional<base::win::AccessToken>& lockdown);
 
   // Applies the sandbox to |target| and takes ownership. Internally a
   // call to TargetProcess::Init() is issued.
@@ -237,7 +238,7 @@ class PolicyBase final : public TargetPolicy {
   // time.
 
   // Returns nullopt if no data has been set, or a view into the data.
-  absl::optional<base::span<const uint8_t>> delegate_data_span();
+  std::optional<base::span<const uint8_t>> delegate_data_span();
 
   // The user-defined global policy settings.
   HANDLE stdout_handle_;

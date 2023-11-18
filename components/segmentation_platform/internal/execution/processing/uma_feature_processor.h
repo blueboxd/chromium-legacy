@@ -35,17 +35,15 @@ class UmaFeatureProcessor : public QueryProcessor {
 
   ~UmaFeatureProcessor() override;
 
-  using FeatureListQueryProcessorCallback =
-      base::OnceCallback<void(std::unique_ptr<FeatureProcessorState>)>;
-
   // QueryProcessor implementation.
-  void Process(std::unique_ptr<FeatureProcessorState> feature_processor_state,
+  void Process(FeatureProcessorState& feature_processor_state,
                QueryProcessorCallback callback) override;
 
  private:
   // Function for processing the next UMAFeature type of input for ML model.
-  void ProcessOnGotAllSamples(base::Time end_time,
-                              std::vector<SignalDatabase::DbEntry> samples);
+  void ProcessOnGotAllSamples(
+      FeatureProcessorState& feature_processor_state,
+      const std::vector<SignalDatabase::DbEntry>& samples);
 
   void GetStartAndEndTime(size_t bucket_count,
                           base::Time& start_time,
@@ -76,11 +74,6 @@ class UmaFeatureProcessor : public QueryProcessor {
   const base::TimeDelta bucket_duration_;
   const proto::SegmentId segment_id_;
   const bool is_output_;
-
-  // Temporary storage of the processing state object.
-  // TODO(haileywang): Remove dependency to the state object once error check is
-  // no longer part of the state.
-  std::unique_ptr<FeatureProcessorState> feature_processor_state_;
 
   // Callback for sending the resulting indexed tensors to the feature list
   // processor.

@@ -14,7 +14,7 @@
 #import "components/password_manager/core/browser/password_form.h"
 #import "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #import "components/password_manager/core/browser/password_manager.h"
-#import "components/password_manager/core/browser/test_password_store.h"
+#import "components/password_manager/core/browser/password_store/test_password_store.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/password_manager/core/common/password_manager_pref_names.h"
 #import "components/prefs/pref_registry_simple.h"
@@ -56,8 +56,7 @@ class WebViewPasswordManagerClientTest : public PlatformTest {
         /*identity_manager=*/nullptr,
         std::make_unique<autofill::StubLogManager>(), profile_store_.get(),
         account_store_.get(), /*reuse_manager=*/nullptr,
-        /*requirements_service=*/nullptr,
-        /*password_change_success_tracker=*/nullptr);
+        /*requirements_service=*/nullptr);
   }
 
   ~WebViewPasswordManagerClientTest() override {

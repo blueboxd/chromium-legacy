@@ -2,18 +2,17 @@
   :host {
     /* The tap target extends slightly above each visible menu item. */
     --tap-target-padding: 3px;
-    /* Width of the keyboard focus border. */
-    --focus-border-width: 2px;
 
     align-items: center;
     background: transparent;
     /* Always apply border so item doesn't shift when focused. */
     border-color: transparent;
     border-style: solid;
-    border-width: var(--focus-border-width);
+    border-width: var(--settings-menu-item-border-width);
     color: var(--cros-text-color-primary);
     display: flex;
     flex-direction: row;
+    font: var(--cros-button-1-font);
     text-decoration: none;
   }
 
@@ -32,45 +31,31 @@
     box-sizing: border-box;
     height: 60px;
     /* Consider border width for padding */
-    padding-inline-start: calc(12px - var(--focus-border-width));
-    padding-inline-end: calc(12px - var(--focus-border-width));
+    padding-inline-start: calc(12px - var(--settings-menu-item-border-width));
+    padding-inline-end: calc(12px - var(--settings-menu-item-border-width));
   }
 
-  /* Font */
-  :host-context(body:not(.jelly-enabled)):host {
-    font-weight: 500;
+  /* Label & sublabel styles */
+  #labelWrapper {
+    /* Expand to fill remaining space */
+    flex-grow: 1;
+    max-width: 200px;
   }
 
-  :host-context(body.jelly-enabled):host {
-    font: var(--cros-button-1-font);
+  #label,
+  #sublabel {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  /* Hover state */
-  :host-context(body:not(.jelly-enabled)):host(:not(.iron-selected):hover) {
-    background-color: var(--cros-ripple-color) !important;
+  #sublabel {
+    color: var(--cros-sys-on_surface_variant);
+    font: var(--cros-body-2-font);
   }
 
-  :host-context(body.jelly-enabled):host(:not(.iron-selected):hover) {
-    background-color: var(--cros-sys-hover_on_subtle) !important;
-  }
-
-  /* Focused state */
-  :host-context(.focus-outline-visible):host(:focus) {
-    border-color: var(--cros-focus-ring-color);
-  }
-
-  /* Selected state */
-  :host-context(body:not(.jelly-enabled)):host(.iron-selected) {
-    background-color: var(--cros-highlight-color) !important;
-    color: var(--cros-text-color-selection);
-  }
-
-  :host-context(body.jelly-enabled):host(.iron-selected) {
-    background-color: var(--cros-sys-primary) !important;
-    color: var(--cros-sys-on_primary);
-  }
-
-  /* Icon styles */
+  /* Default icon styles */
   iron-icon {
     pointer-events: none;
   }
@@ -83,23 +68,24 @@
     margin-inline-end: 12px;
   }
 
-  :host-context(body:not(.jelly-enabled)):host(.iron-selected) > iron-icon {
-    fill: var(--cros-icon-color-selection);
+  /* Hover state */
+  :host(:not(.iron-selected):hover) {
+    background-color: var(--cros-sys-hover_on_subtle) !important;
   }
 
-  :host-context(body.jelly-enabled):host(.iron-selected) > iron-icon {
+  /* Focused state */
+  :host-context(.focus-outline-visible):host(:focus) {
+    border-color: var(--cros-focus-ring-color);
+  }
+
+  /* Selected state */
+  :host(.iron-selected) {
+    background-color: var(--cros-sys-primary) !important;
+    color: var(--cros-sys-on_primary);
+  }
+
+  :host(.iron-selected) > iron-icon {
     fill: var(--cros-sys-on_primary);
-  }
-
-  /* Label & sublabel styles */
-  #labelWrapper {
-    /* Expand to fill remaining space */
-    flex-grow: 1;
-  }
-
-  #sublabel {
-    color: var(--cros-sys-on_surface_variant);
-    font: var(--cros-body-2-font);
   }
 
   :host(.iron-selected) #sublabel {
@@ -109,6 +95,6 @@
 
 <iron-icon icon="[[icon]]" hidden="[[!icon]]"></iron-icon>
 <div id="labelWrapper">
-  <slot></slot>
+  <slot id="label"></slot>
   <div id="sublabel">[[sublabel]]</div>
 </div>

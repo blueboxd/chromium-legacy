@@ -1045,6 +1045,53 @@ TEST_F(ArcSessionManagerTest, RegularToChildTransition) {
   arc_session_manager()->Shutdown();
 }
 
+TEST_F(ArcSessionManagerTest, SetArcSignedIn) {
+  PrefService* const prefs = profile()->GetPrefs();
+  ASSERT_TRUE(prefs);
+  prefs->SetBoolean(prefs::kArcTermsAccepted, true);
+  prefs->SetBoolean(prefs::kArcSignedIn, true);
+
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+
+  // By default ARC is not enabled.
+  EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
+
+  // When signed-in, enabling ARC results in the ACTIVE state.
+  arc_session_manager()->RequestEnable();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kArcSignedIn));
+  EXPECT_TRUE(
+      arc_session_manager()->GetArcSessionRunnerForTesting()->arc_signed_in());
+
+  // Correctly stop service.
+  arc_session_manager()->Shutdown();
+}
+
+TEST_F(ArcSessionManagerTest, ClearArcSignedIn) {
+  // Start ARC.
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+  arc_session_manager()->RequestEnable();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(ArcSessionManager::State::CHECKING_REQUIREMENTS,
+            arc_session_manager()->state());
+
+  // Disable ARC.
+  arc_session_manager()->RequestDisable();
+
+  PrefService* const prefs = profile()->GetPrefs();
+  ASSERT_TRUE(prefs);
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
+  EXPECT_FALSE(
+      arc_session_manager()->GetArcSessionRunnerForTesting()->arc_signed_in());
+
+  // Correctly stop service.
+  arc_session_manager()->Shutdown();
+}
+
 TEST_F(ArcSessionManagerTest, ClearArcTransitionOnShutdown) {
   profile()->GetPrefs()->SetInteger(
       prefs::kArcManagementTransition,
@@ -1313,68 +1360,6 @@ TEST_F(ArcSessionManagerTest, RequestDisableWithArcDataRemoval) {
 
   // Correctly stop service.
   arc_session_manager()->Shutdown();
-}
-
-// Tests that |vm_info| is initialized with absl::nullopt.
-TEST_F(ArcSessionManagerTest, GetVmInfo_InitialValue) {
-  const auto& vm_info = arc_session_manager()->GetVmInfo();
-  EXPECT_EQ(absl::nullopt, vm_info);
-}
-
-// Tests that |vm_info| is updated with that from VmStartedSignal.
-TEST_F(ArcSessionManagerTest, GetVmInfo_WithVmStarted) {
-  // Profile needs to be set in order to register ArcMountProvider.
-  arc_session_manager()->SetProfile(profile());
-  arc_session_manager()->Initialize();
-
-  vm_tools::concierge::VmStartedSignal vm_signal;
-  vm_signal.set_name(kArcVmName);
-  vm_signal.mutable_vm_info()->set_seneschal_server_handle(1000UL);
-  arc_session_manager()->OnVmStarted(vm_signal);
-
-  const auto& vm_info = arc_session_manager()->GetVmInfo();
-  ASSERT_NE(absl::nullopt, vm_info);
-  EXPECT_EQ(1000UL, vm_info->seneschal_server_handle());
-}
-
-// Tests that |vm_info| remains as absl::nullopt after VM stops.
-TEST_F(ArcSessionManagerTest, GetVmInfo_WithVmStopped) {
-  vm_tools::concierge::VmStoppedSignal vm_signal;
-  vm_signal.set_name(kArcVmName);
-  arc_session_manager()->OnVmStopped(vm_signal);
-
-  const auto& vm_info = arc_session_manager()->GetVmInfo();
-  EXPECT_EQ(absl::nullopt, vm_info);
-}
-
-// Tests that |vm_info| is reset to absl::nullopt after VM starts and stops.
-TEST_F(ArcSessionManagerTest, GetVmInfo_WithVmStarted_ThenStopped) {
-  // Profile needs to be set in order to register ArcMountProvider.
-  arc_session_manager()->SetProfile(profile());
-  arc_session_manager()->Initialize();
-
-  vm_tools::concierge::VmStartedSignal start_signal;
-  start_signal.set_name(kArcVmName);
-  start_signal.mutable_vm_info()->set_seneschal_server_handle(1000UL);
-  arc_session_manager()->OnVmStarted(start_signal);
-
-  vm_tools::concierge::VmStoppedSignal stop_signal;
-  stop_signal.set_name(kArcVmName);
-  arc_session_manager()->OnVmStopped(stop_signal);
-
-  const auto& vm_info = arc_session_manager()->GetVmInfo();
-  EXPECT_EQ(absl::nullopt, vm_info);
-}
-
-// Tests that |vm_info| is not updated with non-ARCVM VmStartedSignal.
-TEST_F(ArcSessionManagerTest, GetVmInfo_WithNonVmStarted) {
-  vm_tools::concierge::VmStartedSignal non_vm_signal;
-  non_vm_signal.set_name("non-ARCVM");
-  non_vm_signal.mutable_vm_info()->set_seneschal_server_handle(1000UL);
-  arc_session_manager()->OnVmStarted(non_vm_signal);
-
-  const auto& vm_info = arc_session_manager()->GetVmInfo();
-  EXPECT_EQ(absl::nullopt, vm_info);
 }
 
 class ArcSessionManagerArcAlwaysStartTest : public ArcSessionManagerTest {

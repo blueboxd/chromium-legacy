@@ -34,10 +34,12 @@ namespace ash {
 
 namespace {
 
-using ::base::EqualsProto;
+using ::base::test::EqualsProto;
 using local_discovery::ServiceDescription;
 using ::testing::ElementsAreArray;
 using ::testing::UnorderedElementsAreArray;
+using LocalScannerFilter = LorgnetteScannerManager::LocalScannerFilter;
+using SecureScannerFilter = LorgnetteScannerManager::SecureScannerFilter;
 
 // Test device names for different types of lorgnette scanners.
 constexpr char kLorgnetteNetworkIpDeviceName[] = "test:MX3100_192.168.0.3";
@@ -82,15 +84,17 @@ lorgnette::ListScannersResponse CreateListScannersResponse(
     const std::string& model = "MX3100") {
   lorgnette::ScannerInfo scanner = CreateLorgnetteScanner(name, model);
   lorgnette::ListScannersResponse response;
+  response.set_result(lorgnette::OPERATION_RESULT_SUCCESS);
   *response.add_scanners() = std::move(scanner);
   return response;
 }
 
 // Returns a zeroconf Scanner with the device name marked as |usable|.
-Scanner CreateZeroconfScanner(bool usable = true) {
-  return CreateSaneScanner(
-             "Test MX3100", ZeroconfScannerDetector::kEsclsServiceType, "Test",
-             "MX3100", /*rs=*/"", net::IPAddress(192, 168, 0, 3), 5, usable)
+Scanner CreateZeroconfScanner(bool usable = true, const std::string uuid = "") {
+  return CreateSaneScanner("Test MX3100",
+                           ZeroconfScannerDetector::kEsclsServiceType, "Test",
+                           "MX3100", uuid, /*rs=*/"", /*pdl=*/{},
+                           net::IPAddress(192, 168, 0, 3), 5, usable)
       .value();
 }
 
@@ -99,7 +103,7 @@ Scanner CreateZeroconfScanner(bool usable = true) {
 Scanner CreateNonEsclEpsonZeroconfScanner(bool usable = true) {
   return CreateSaneScanner("EPSON TEST",
                            ZeroconfScannerDetector::kGenericScannerServiceType,
-                           "EPSON", "TEST", /*rs=*/"",
+                           "EPSON", "TEST", /*uuid=*/"", /*rs=*/"", /*pdl=*/{},
                            net::IPAddress(192, 168, 0, 3), 5, usable)
       .value();
 }
@@ -107,9 +111,10 @@ Scanner CreateNonEsclEpsonZeroconfScanner(bool usable = true) {
 // Returns a zeroconf Scanner with an Epson name but ESCLs Service marked as
 // |usable|.
 Scanner CreateEsclEpsonZeroconfScanner(bool usable = true) {
-  return CreateSaneScanner(
-             "EPSON TEST", ZeroconfScannerDetector::kEsclsServiceType, "EPSON",
-             "TEST", /*rs=*/"", net::IPAddress(192, 168, 0, 3), 5, usable)
+  return CreateSaneScanner("EPSON TEST",
+                           ZeroconfScannerDetector::kEsclsServiceType, "EPSON",
+                           "TEST", /*uuid=*/"", /*rs=*/"", /*pdl=*/{},
+                           net::IPAddress(192, 168, 0, 3), 5, usable)
       .value();
 }
 
@@ -117,10 +122,10 @@ Scanner CreateEsclEpsonZeroconfScanner(bool usable = true) {
 // |usable|.
 Scanner CreateScannerCustomName(const std::string& scanner_name,
                                 bool usable = true) {
-  return CreateSaneScanner(scanner_name,
-                           ZeroconfScannerDetector::kEsclsServiceType,
-                           "Manufacturer", "Model", /*rs=*/"",
-                           net::IPAddress(192, 168, 0, 3), 5, usable)
+  return CreateSaneScanner(
+             scanner_name, ZeroconfScannerDetector::kEsclsServiceType,
+             "Manufacturer", "Model", /*uuid=*/"", /*rs=*/"",
+             /*pdl=*/{}, net::IPAddress(192, 168, 0, 3), 5, usable)
       .value();
 }
 
@@ -213,8 +218,10 @@ class LorgnetteScannerManagerTest : public testing::Test {
 
   // Calls LorgnetteScannerManager::GetScannerInfoList() and binds a callback to
   // process the result.
-  void GetScannerInfoList() {
+  void GetScannerInfoList(LocalScannerFilter local_only,
+                          SecureScannerFilter secure_only) {
     lorgnette_scanner_manager_->GetScannerInfoList(
+        "client-id", local_only, secure_only,
         base::BindOnce(&LorgnetteScannerManagerTest::GetScannerInfoListCallback,
                        base::Unretained(this)));
   }
@@ -244,6 +251,24 @@ class LorgnetteScannerManagerTest : public testing::Test {
     lorgnette_scanner_manager_->CloseScanner(
         lorgnette::CloseScannerRequest(),
         base::BindOnce(&LorgnetteScannerManagerTest::CloseScannerCallback,
+                       base::Unretained(this)));
+  }
+
+  // Calls LorgnetteScannerManager::SetOptions() and binds a callback to
+  // process the result.
+  void SetOptions() {
+    lorgnette_scanner_manager_->SetOptions(
+        lorgnette::SetOptionsRequest(),
+        base::BindOnce(&LorgnetteScannerManagerTest::SetOptionsCallback,
+                       base::Unretained(this)));
+  }
+
+  // Calls LorgnetteScannerManager::GetCurrentConfig() and binds a callback to
+  // process the result.
+  void GetCurrentConfig() {
+    lorgnette_scanner_manager_->GetCurrentConfig(
+        lorgnette::GetCurrentConfigRequest(),
+        base::BindOnce(&LorgnetteScannerManagerTest::GetCurrentConfigCallback,
                        base::Unretained(this)));
   }
 
@@ -336,6 +361,15 @@ class LorgnetteScannerManagerTest : public testing::Test {
     return close_scanner_response_;
   }
 
+  absl::optional<lorgnette::SetOptionsResponse> set_options_response() const {
+    return set_options_response_;
+  }
+
+  absl::optional<lorgnette::GetCurrentConfigResponse>
+  get_current_config_response() const {
+    return get_current_config_response_;
+  }
+
   absl::optional<lorgnette::StartPreparedScanResponse>
   start_prepared_scan_response() const {
     return start_prepared_scan_response_;
@@ -385,6 +419,18 @@ class LorgnetteScannerManagerTest : public testing::Test {
   void CloseScannerCallback(
       const absl::optional<lorgnette::CloseScannerResponse>& response) {
     close_scanner_response_ = response;
+    run_loop_->Quit();
+  }
+
+  void SetOptionsCallback(
+      const absl::optional<lorgnette::SetOptionsResponse>& response) {
+    set_options_response_ = response;
+    run_loop_->Quit();
+  }
+
+  void GetCurrentConfigCallback(
+      const absl::optional<lorgnette::GetCurrentConfigResponse>& response) {
+    get_current_config_response_ = response;
     run_loop_->Quit();
   }
 
@@ -439,6 +485,9 @@ class LorgnetteScannerManagerTest : public testing::Test {
   absl::optional<lorgnette::ScannerCapabilities> scanner_capabilities_;
   absl::optional<lorgnette::OpenScannerResponse> open_scanner_response_;
   absl::optional<lorgnette::CloseScannerResponse> close_scanner_response_;
+  absl::optional<lorgnette::SetOptionsResponse> set_options_response_;
+  absl::optional<lorgnette::GetCurrentConfigResponse>
+      get_current_config_response_;
   absl::optional<lorgnette::StartPreparedScanResponse>
       start_prepared_scan_response_;
   absl::optional<lorgnette::ReadScanDataResponse> read_scan_data_response_;
@@ -507,7 +556,7 @@ TEST_F(LorgnetteScannerManagerTest, EsclEpsonZeroconfScanner) {
 TEST_F(LorgnetteScannerManagerTest, NonEsclNonEpsonZeroconfScanner) {
   absl::optional<Scanner> scanner = CreateSaneScanner(
       "Test MX3100", ZeroconfScannerDetector::kGenericScannerServiceType,
-      /*manufacturer=*/"", /*model=*/"", /*rs=*/"",
+      /*manufacturer=*/"", /*model=*/"", /*uuid=*/"", /*rs=*/"", /*pdl=*/{},
       net::IPAddress(192, 168, 0, 3), 5, true);
   EXPECT_FALSE(scanner.has_value());
 }
@@ -654,7 +703,8 @@ TEST_F(LorgnetteScannerManagerTest, RemoveScanner) {
 
 // Test GetScannerInfoList when absl::nullopt response is returned.
 TEST_F(LorgnetteScannerManagerTest, GetScannerInfoListNull) {
-  GetScannerInfoList();
+  GetScannerInfoList(LocalScannerFilter::kIncludeNetworkScanners,
+                     SecureScannerFilter::kIncludeUnsecureScanners);
   WaitForResult();
   ASSERT_TRUE(list_scanners_response());
   EXPECT_EQ(list_scanners_response().value().scanners_size(), 0);
@@ -665,7 +715,8 @@ TEST_F(LorgnetteScannerManagerTest, GetScannerInfoListEmpty) {
   GetLorgnetteManagerClient()->SetListScannersResponse(
       lorgnette::ListScannersResponse());
 
-  GetScannerInfoList();
+  GetScannerInfoList(LocalScannerFilter::kIncludeNetworkScanners,
+                     SecureScannerFilter::kIncludeUnsecureScanners);
   WaitForResult();
   ASSERT_TRUE(list_scanners_response());
   EXPECT_EQ(list_scanners_response().value().scanners_size(), 0);
@@ -676,9 +727,12 @@ TEST_F(LorgnetteScannerManagerTest, GetScannerInfoListLorgnette) {
   lorgnette::ListScannersResponse response =
       CreateListScannersResponse(kLorgnetteNetworkIpDeviceName);
   GetLorgnetteManagerClient()->SetListScannersResponse(response);
-  GetScannerInfoList();
+  GetScannerInfoList(LocalScannerFilter::kIncludeNetworkScanners,
+                     SecureScannerFilter::kIncludeUnsecureScanners);
   WaitForResult();
   ASSERT_TRUE(list_scanners_response());
+  EXPECT_EQ(list_scanners_response()->result(),
+            lorgnette::OPERATION_RESULT_SUCCESS);
   ASSERT_EQ(list_scanners_response().value().scanners_size(), 1);
   EXPECT_FALSE(
       list_scanners_response().value().scanners(0).device_uuid().empty());
@@ -694,7 +748,8 @@ TEST_F(LorgnetteScannerManagerTest, GetScannerInfoListZeroconf) {
   auto expected_scanner = CreateZeroconfScanner();
   fake_zeroconf_scanner_detector()->AddDetections({expected_scanner});
   CompleteTasks();
-  GetScannerInfoList();
+  GetScannerInfoList(LocalScannerFilter::kIncludeNetworkScanners,
+                     SecureScannerFilter::kIncludeUnsecureScanners);
   WaitForResult();
   ASSERT_TRUE(list_scanners_response());
   ASSERT_EQ(list_scanners_response().value().scanners_size(), 1);
@@ -710,7 +765,8 @@ TEST_F(LorgnetteScannerManagerTest, GetScannerInfoListZeroconfUnusable) {
   auto scanner = CreateZeroconfScanner(false);
   fake_zeroconf_scanner_detector()->AddDetections({scanner});
   CompleteTasks();
-  GetScannerInfoList();
+  GetScannerInfoList(LocalScannerFilter::kIncludeNetworkScanners,
+                     SecureScannerFilter::kIncludeUnsecureScanners);
   WaitForResult();
   ASSERT_TRUE(list_scanners_response());
   EXPECT_EQ(list_scanners_response().value().scanners_size(), 0);
@@ -718,7 +774,7 @@ TEST_F(LorgnetteScannerManagerTest, GetScannerInfoListZeroconfUnusable) {
 
 // Test that multiple zeroconf scanners have the same UUID.
 TEST_F(LorgnetteScannerManagerTest, GetScannerInfoListZeroconfSameUuid) {
-  auto scanner = CreateZeroconfScanner();
+  auto scanner = CreateZeroconfScanner(true, "12345-67890");
   ASSERT_EQ(scanner.device_names.size(), 1u);
   // Adding a second device name to the same Scanner should cause both
   // ScannerInfo objects to have the same UUID.
@@ -726,7 +782,8 @@ TEST_F(LorgnetteScannerManagerTest, GetScannerInfoListZeroconfSameUuid) {
       ScannerDeviceName("airscan:escl:Test MX3100:http://192.168.0.3:5/"));
   fake_zeroconf_scanner_detector()->AddDetections({scanner});
   CompleteTasks();
-  GetScannerInfoList();
+  GetScannerInfoList(LocalScannerFilter::kIncludeNetworkScanners,
+                     SecureScannerFilter::kIncludeUnsecureScanners);
   WaitForResult();
   ASSERT_TRUE(list_scanners_response());
   ASSERT_EQ(list_scanners_response().value().scanners_size(), 2);
@@ -737,6 +794,37 @@ TEST_F(LorgnetteScannerManagerTest, GetScannerInfoListZeroconfSameUuid) {
               UnorderedElementsAreArray(
                   {"airscan:escl:Test MX3100:https://192.168.0.3:5/",
                    "airscan:escl:Test MX3100:http://192.168.0.3:5/"}));
+  EXPECT_EQ(list_scanners_response().value().scanners(0).device_uuid(),
+            "12345-67890");
+  EXPECT_EQ(list_scanners_response().value().scanners(1).device_uuid(),
+            "12345-67890");
+}
+
+// Test that multiple zeroconf scanners have the same UUID even when the
+// zeroconf detection does not populate a UUID.
+TEST_F(LorgnetteScannerManagerTest, GetScannerInfoListZeroconfAbsentUuid) {
+  auto scanner = CreateZeroconfScanner();
+  ASSERT_EQ(scanner.device_names.size(), 1u);
+  // Adding a second device name to the same Scanner should cause both
+  // ScannerInfo objects to have the same UUID.
+  scanner.device_names.begin()->second.insert(
+      ScannerDeviceName("airscan:escl:Test MX3100:http://192.168.0.3:5/"));
+  fake_zeroconf_scanner_detector()->AddDetections({scanner});
+  CompleteTasks();
+  GetScannerInfoList(LocalScannerFilter::kIncludeNetworkScanners,
+                     SecureScannerFilter::kIncludeUnsecureScanners);
+  WaitForResult();
+  ASSERT_TRUE(list_scanners_response());
+  ASSERT_EQ(list_scanners_response().value().scanners_size(), 2);
+  std::vector<std::string> actual_device_names = {
+      list_scanners_response().value().scanners(0).name(),
+      list_scanners_response().value().scanners(1).name()};
+  EXPECT_THAT(actual_device_names,
+              UnorderedElementsAreArray(
+                  {"airscan:escl:Test MX3100:https://192.168.0.3:5/",
+                   "airscan:escl:Test MX3100:http://192.168.0.3:5/"}));
+  // When a UUID is not detected in the zeroconf detector these two objects
+  // should still have the same UUID.
   EXPECT_EQ(list_scanners_response().value().scanners(0).device_uuid(),
             list_scanners_response().value().scanners(1).device_uuid());
 }
@@ -752,9 +840,12 @@ TEST_F(LorgnetteScannerManagerTest,
   fake_zeroconf_scanner_detector()->AddDetections({CreateZeroconfScanner()});
 
   CompleteTasks();
-  GetScannerInfoList();
+  GetScannerInfoList(LocalScannerFilter::kIncludeNetworkScanners,
+                     SecureScannerFilter::kIncludeUnsecureScanners);
   WaitForResult();
   ASSERT_TRUE(list_scanners_response());
+  EXPECT_EQ(list_scanners_response()->result(),
+            lorgnette::OPERATION_RESULT_SUCCESS);
   ASSERT_EQ(list_scanners_response().value().scanners_size(), 2);
   EXPECT_FALSE(
       list_scanners_response().value().scanners(0).device_uuid().empty());
@@ -762,6 +853,81 @@ TEST_F(LorgnetteScannerManagerTest,
       list_scanners_response().value().scanners(1).device_uuid().empty());
   EXPECT_NE(list_scanners_response().value().scanners(0).device_uuid(),
             list_scanners_response().value().scanners(1).device_uuid());
+}
+
+// Test scanners are filtered correctly.
+TEST_F(LorgnetteScannerManagerTest, GetScannerInfoListLocalOnlyFilter) {
+  lorgnette::ListScannersResponse response;
+  lorgnette::ScannerInfo info = CreateLorgnetteScanner(kLorgnetteUsbDeviceName);
+  info.set_connection_type(lorgnette::CONNECTION_USB);
+  info.set_secure(false);
+  *response.add_scanners() = std::move(info);
+  response.set_result(lorgnette::OPERATION_RESULT_SUCCESS);
+
+  // This scanner should get filtered out because it's a network scanner.
+  GetLorgnetteManagerClient()->SetListScannersResponse(response);
+  fake_zeroconf_scanner_detector()->AddDetections({CreateZeroconfScanner()});
+
+  CompleteTasks();
+  GetScannerInfoList(LocalScannerFilter::kLocalScannersOnly,
+                     SecureScannerFilter::kIncludeUnsecureScanners);
+  WaitForResult();
+  ASSERT_TRUE(list_scanners_response());
+  EXPECT_EQ(list_scanners_response()->result(),
+            lorgnette::OPERATION_RESULT_SUCCESS);
+  ASSERT_EQ(list_scanners_response().value().scanners_size(), 1);
+  EXPECT_EQ(list_scanners_response().value().scanners(0).name(),
+            kLorgnetteUsbDeviceName);
+}
+
+// Test that scanners are filtered correctly.
+TEST_F(LorgnetteScannerManagerTest, GetScannerInfoListSecureOnlyFilter) {
+  // This scanner should get filtered out because it's not secure.
+  lorgnette::ListScannersResponse response;
+  lorgnette::ScannerInfo info = CreateLorgnetteScanner(kLorgnetteUsbDeviceName);
+  info.set_connection_type(lorgnette::CONNECTION_USB);
+  info.set_secure(false);
+  *response.add_scanners() = std::move(info);
+  response.set_result(lorgnette::OPERATION_RESULT_SUCCESS);
+
+  GetLorgnetteManagerClient()->SetListScannersResponse(response);
+  fake_zeroconf_scanner_detector()->AddDetections({CreateZeroconfScanner()});
+
+  CompleteTasks();
+  GetScannerInfoList(LocalScannerFilter::kIncludeNetworkScanners,
+                     SecureScannerFilter::kSecureScannersOnly);
+  WaitForResult();
+  ASSERT_TRUE(list_scanners_response());
+  EXPECT_EQ(list_scanners_response()->result(),
+            lorgnette::OPERATION_RESULT_SUCCESS);
+  ASSERT_EQ(list_scanners_response().value().scanners_size(), 1);
+  EXPECT_EQ(list_scanners_response().value().scanners(0).name(),
+            "airscan:escl:Test MX3100:https://192.168.0.3:5/");
+}
+
+// Test that scanners are filtered correctly.
+TEST_F(LorgnetteScannerManagerTest,
+       GetScannerInfoListLocalAndSecureOnlyFilter) {
+  // This scanner should get filtered out because it's not secure.
+  lorgnette::ListScannersResponse response;
+  lorgnette::ScannerInfo info = CreateLorgnetteScanner(kLorgnetteUsbDeviceName);
+  info.set_connection_type(lorgnette::CONNECTION_USB);
+  info.set_secure(false);
+  *response.add_scanners() = std::move(info);
+  response.set_result(lorgnette::OPERATION_RESULT_SUCCESS);
+
+  // This scanner should get filtered out because it's a network scanner.
+  GetLorgnetteManagerClient()->SetListScannersResponse(response);
+  fake_zeroconf_scanner_detector()->AddDetections({CreateZeroconfScanner()});
+
+  CompleteTasks();
+  GetScannerInfoList(LocalScannerFilter::kLocalScannersOnly,
+                     SecureScannerFilter::kSecureScannersOnly);
+  WaitForResult();
+  ASSERT_TRUE(list_scanners_response());
+  EXPECT_EQ(list_scanners_response()->result(),
+            lorgnette::OPERATION_RESULT_SUCCESS);
+  ASSERT_EQ(list_scanners_response().value().scanners_size(), 0);
 }
 
 // Test that getting capabilities fails when GetScannerNames() has never been
@@ -868,6 +1034,37 @@ TEST_F(LorgnetteScannerManagerTest, CloseScanner) {
   WaitForResult();
   ASSERT_TRUE(close_scanner_response());
   EXPECT_THAT(response, EqualsProto(close_scanner_response().value()));
+}
+
+// Test setting the options for a scanner.
+TEST_F(LorgnetteScannerManagerTest, SetOptions) {
+  constexpr std::string kScannerToken = "scanner-token";
+
+  lorgnette::SetOptionsResponse response;
+  response.mutable_scanner()->set_token(kScannerToken);
+  response.mutable_config()->mutable_scanner()->set_token(kScannerToken);
+
+  GetLorgnetteManagerClient()->SetSetOptionsResponse(response);
+  SetOptions();
+  WaitForResult();
+  ASSERT_TRUE(set_options_response());
+  EXPECT_THAT(response, EqualsProto(set_options_response().value()));
+}
+
+// Test getting the config for a scanner.
+TEST_F(LorgnetteScannerManagerTest, GetCurrentConfig) {
+  constexpr std::string kScannerToken = "scanner-token";
+
+  lorgnette::GetCurrentConfigResponse response;
+  response.mutable_scanner()->set_token(kScannerToken);
+  response.set_result(lorgnette::OPERATION_RESULT_SUCCESS);
+  response.mutable_config()->mutable_scanner()->set_token(kScannerToken);
+
+  GetLorgnetteManagerClient()->SetGetCurrentConfigResponse(response);
+  GetCurrentConfig();
+  WaitForResult();
+  ASSERT_TRUE(get_current_config_response());
+  EXPECT_THAT(response, EqualsProto(get_current_config_response().value()));
 }
 
 // Test starting a prepared scan.

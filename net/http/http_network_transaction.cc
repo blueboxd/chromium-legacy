@@ -30,6 +30,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
+#include "net/base/proxy_chain.h"
 #include "net/base/proxy_server.h"
 #include "net/base/transport_info.h"
 #include "net/base/upload_data_stream.h"
@@ -231,11 +232,6 @@ int HttpNetworkTransaction::Start(const HttpRequestInfo* request_info,
 #endif  // BUILDFLAG(ENABLE_REPORTING)
   start_timeticks_ = base::TimeTicks::Now();
 
-  if (request_->load_flags & LOAD_DISABLE_CERT_NETWORK_FETCHES) {
-    server_ssl_config_.disable_cert_verification_network_fetches = true;
-    proxy_ssl_config_.disable_cert_verification_network_fetches = true;
-  }
-
   if (request_->idempotency == IDEMPOTENT ||
       (request_->idempotency == DEFAULT_IDEMPOTENCY &&
        HttpUtil::IsMethodSafe(request_info->method))) {
@@ -384,7 +380,7 @@ void HttpNetworkTransaction::PrepareForAuthRestart(HttpAuth::Target target) {
     // it first.
     if (!stream_->IsResponseBodyComplete()) {
       next_state_ = STATE_DRAIN_BODY_FOR_AUTH_RESTART;
-      read_buf_ = base::MakeRefCounted<IOBuffer>(
+      read_buf_ = base::MakeRefCounted<IOBufferWithSize>(
           kDrainBodyBufferSize);  // A bit bucket.
       read_buf_len_ = kDrainBodyBufferSize;
       return;
@@ -900,12 +896,12 @@ int HttpNetworkTransaction::DoCreateStream() {
   if (ForWebSocketHandshake()) {
     stream_request_ =
         session_->http_stream_factory()->RequestWebSocketHandshakeStream(
-            *request_, priority_, server_ssl_config_, proxy_ssl_config_, this,
+            *request_, priority_, server_ssl_config_, this,
             websocket_handshake_stream_base_create_helper_,
             enable_ip_based_pooling_, enable_alternative_services_, net_log_);
   } else {
     stream_request_ = session_->http_stream_factory()->RequestStream(
-        *request_, priority_, server_ssl_config_, proxy_ssl_config_, this,
+        *request_, priority_, server_ssl_config_, this,
         enable_ip_based_pooling_, enable_alternative_services_, net_log_);
   }
   DCHECK(stream_request_.get());
@@ -1379,9 +1375,7 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
 
 int HttpNetworkTransaction::DoReadBody() {
   DCHECK(read_buf_.get());
-  // TODO(https://crbug.com/1335423): Change to DCHECK_GT() or remove after bug
-  // is fixed.
-  CHECK_GT(read_buf_len_, 0);
+  DCHECK_GT(read_buf_len_, 0);
   DCHECK(stream_ != nullptr);
 
   next_state_ = STATE_READ_BODY_COMPLETE;
@@ -1646,9 +1640,17 @@ int HttpNetworkTransaction::HandleSSLClientAuthError(int error) {
   //
   // See https://crbug.com/828965.
   bool is_server = !UsingHttpProxyWithoutTunnel();
-  HostPortPair host_port_pair =
-      is_server ? HostPortPair::FromURL(request_->url)
-                : proxy_info_.proxy_server().host_port_pair();
+  HostPortPair host_port_pair;
+  // TODO(https://crbug.com/1491092): Remove check and return error when
+  // multi-proxy chain.
+  if (is_server) {
+    host_port_pair = HostPortPair::FromURL(request_->url);
+  } else {
+    CHECK(proxy_info_.proxy_chain().is_single_proxy());
+    host_port_pair = proxy_info_.proxy_chain()
+                         .GetProxyServer(/*chain_index=*/0)
+                         .host_port_pair();
+  }
 
   if (error == ERR_SSL_PROTOCOL_ERROR || IsClientCertificateError(error)) {
     DCHECK((is_server && IsSecureRequest()) ||
@@ -1901,6 +1903,8 @@ bool HttpNetworkTransaction::CheckMaxRestarts() {
 
 void HttpNetworkTransaction::ResetConnectionAndRequestForResend(
     RetryReason retry_reason) {
+  // TODO:(crbug.com/1495705): Remove this CHECK after fixing the bug.
+  CHECK(request_);
   base::UmaHistogramEnumeration(
       IsGoogleHostWithAlpnH3(url_.host())
           ? "Net.NetworkTransactionH3SupportedGoogleHost.RetryReason"
@@ -1976,16 +1980,20 @@ bool HttpNetworkTransaction::HaveAuth(HttpAuth::Target target) const {
 GURL HttpNetworkTransaction::AuthURL(HttpAuth::Target target) const {
   switch (target) {
     case HttpAuth::AUTH_PROXY: {
-      if (!proxy_info_.proxy_server().is_valid() ||
-          proxy_info_.proxy_server().is_direct()) {
-        return GURL();  // There is no proxy server.
+      // TODO(https://crbug.com/1491092): Update to handle multi-proxy chain.
+      if (!proxy_info_.proxy_chain().IsValid() ||
+          proxy_info_.proxy_chain().is_direct() ||
+          !proxy_info_.proxy_chain().is_single_proxy()) {
+        return GURL();  // There is no proxy chain.
       }
       // TODO(https://crbug.com/1103768): Mapping proxy addresses to
       // URLs is a lossy conversion, shouldn't do this.
       const char* scheme =
           proxy_info_.is_secure_http_like() ? "https://" : "http://";
-      return GURL(scheme +
-                  proxy_info_.proxy_server().host_port_pair().ToString());
+      return GURL(scheme + proxy_info_.proxy_chain()
+                               .GetProxyServer(/*chain_index=*/0)
+                               .host_port_pair()
+                               .ToString());
     }
     case HttpAuth::AUTH_SERVER:
       if (ForWebSocketHandshake()) {
@@ -2104,11 +2112,11 @@ void HttpNetworkTransaction::SetProxyInfoInResponse(
   response_info->was_fetched_via_proxy = !proxy_info.is_direct();
   response_info->was_ip_protected = proxy_info.is_for_ip_protection();
   if (response_info->was_fetched_via_proxy && !proxy_info.is_empty()) {
-    response_info->proxy_server = proxy_info.proxy_server();
+    response_info->proxy_chain = proxy_info.proxy_chain();
   } else if (!response_info->was_fetched_via_proxy && proxy_info.is_direct()) {
-    response_info->proxy_server = ProxyServer::Direct();
+    response_info->proxy_chain = ProxyChain::Direct();
   } else {
-    response_info->proxy_server = ProxyServer();
+    response_info->proxy_chain = ProxyChain();
   }
 }
 

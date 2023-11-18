@@ -22,7 +22,7 @@
 #import "components/sync_device_info/device_info.h"
 #import "components/sync_sessions/session_sync_service.h"
 #import "ios/chrome/browser/bring_android_tabs/model/metrics.h"
-#import "ios/chrome/browser/first_run/first_run.h"
+#import "ios/chrome/browser/first_run/model/first_run.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
@@ -57,7 +57,7 @@ bool UserEligibleForAndroidSwitcherPrompt() {
                    experimental_flags::AlwaysDisplayFirstRun();
   if (!first_run) {
     // Check the time of first run.
-    absl::optional<base::File::Info> info = FirstRun::GetSentinelInfo();
+    std::optional<base::File::Info> info = FirstRun::GetSentinelInfo();
     if (info.has_value()) {
       base::Time first_run_time = info.value().creation_time;
       bool first_run_over_7_days_ago =

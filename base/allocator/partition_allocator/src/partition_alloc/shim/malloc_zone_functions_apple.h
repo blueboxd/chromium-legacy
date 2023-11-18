@@ -5,12 +5,15 @@
 #ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_SHIM_MALLOC_ZONE_FUNCTIONS_APPLE_H_
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_SHIM_MALLOC_ZONE_FUNCTIONS_APPLE_H_
 
+#include "partition_alloc/partition_alloc_buildflags.h"
+
+#if BUILDFLAG(USE_ALLOCATOR_SHIM)
 #include <malloc/malloc.h>
 #include <stddef.h>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/component_export.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/immediate_crash.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/third_party/apple_apsl/malloc.h"
+#include "partition_alloc/partition_alloc_base/component_export.h"
+#include "partition_alloc/partition_alloc_base/immediate_crash.h"
+#include "partition_alloc/third_party/apple_apsl/malloc.h"
 
 namespace allocator_shim {
 
@@ -57,11 +60,11 @@ struct MallocZoneFunctions {
   const ChromeMallocZone* context;
 };
 
-PA_COMPONENT_EXPORT(PARTITION_ALLOC)
+PA_COMPONENT_EXPORT(ALLOCATOR_SHIM)
 void StoreZoneFunctions(const ChromeMallocZone* zone,
                         MallocZoneFunctions* functions);
 static constexpr int kMaxZoneCount = 30;
-PA_COMPONENT_EXPORT(PARTITION_ALLOC)
+PA_COMPONENT_EXPORT(ALLOCATOR_SHIM)
 extern MallocZoneFunctions g_malloc_zones[kMaxZoneCount];
 
 // The array g_malloc_zones stores all information about malloc zones before
@@ -86,16 +89,16 @@ extern MallocZoneFunctions g_malloc_zones[kMaxZoneCount];
 // default allocator is stored as the first MallocZoneFunctions.
 //
 // Returns whether the zone was successfully stored.
-PA_COMPONENT_EXPORT(PARTITION_ALLOC)
+PA_COMPONENT_EXPORT(ALLOCATOR_SHIM)
 bool StoreMallocZone(ChromeMallocZone* zone);
-PA_COMPONENT_EXPORT(PARTITION_ALLOC)
+PA_COMPONENT_EXPORT(ALLOCATOR_SHIM)
 bool IsMallocZoneAlreadyStored(ChromeMallocZone* zone);
-PA_COMPONENT_EXPORT(PARTITION_ALLOC)
+PA_COMPONENT_EXPORT(ALLOCATOR_SHIM)
 bool DoesMallocZoneNeedReplacing(ChromeMallocZone* zone,
                                  const MallocZoneFunctions* functions);
 
-PA_COMPONENT_EXPORT(PARTITION_ALLOC) int GetMallocZoneCountForTesting();
-PA_COMPONENT_EXPORT(PARTITION_ALLOC) void ClearAllMallocZonesForTesting();
+PA_COMPONENT_EXPORT(ALLOCATOR_SHIM) int GetMallocZoneCountForTesting();
+PA_COMPONENT_EXPORT(ALLOCATOR_SHIM) void ClearAllMallocZonesForTesting();
 
 inline MallocZoneFunctions& GetFunctionsForZone(void* zone) {
   for (unsigned int i = 0; i < kMaxZoneCount; ++i) {
@@ -107,5 +110,7 @@ inline MallocZoneFunctions& GetFunctionsForZone(void* zone) {
 }
 
 }  // namespace allocator_shim
+
+#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_SHIM_MALLOC_ZONE_FUNCTIONS_APPLE_H_

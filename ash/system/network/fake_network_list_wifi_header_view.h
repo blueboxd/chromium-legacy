@@ -6,16 +6,17 @@
 #define ASH_SYSTEM_NETWORK_FAKE_NETWORK_LIST_WIFI_HEADER_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "ash/style/icon_button.h"
 #include "ash/system/network/network_list_network_header_view.h"
 #include "ash/system/network/network_list_wifi_header_view.h"
-#include "ash/system/tray/tri_view.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 
 namespace ash {
 
 // Fake implementation of NetworkListWifiHeaderView
 class ASH_EXPORT FakeNetworkListWifiHeaderView
     : public NetworkListWifiHeaderView {
+  METADATA_HEADER(FakeNetworkListWifiHeaderView, NetworkListWifiHeaderView)
+
  public:
   explicit FakeNetworkListWifiHeaderView(
       NetworkListNetworkHeaderView::Delegate* delegate);
@@ -30,28 +31,13 @@ class ASH_EXPORT FakeNetworkListWifiHeaderView
 
   size_t set_toggle_state_count() { return set_toggle_state_count_; }
 
-  bool is_join_wifi_enabled() { return is_join_wifi_enabled_; }
-
-  bool is_join_wifi_visible() { return is_join_wifi_visible_; }
-
-  size_t set_join_wifi_button_state_count() {
-    return set_join_wifi_button_state_count_;
-  }
-
  private:
   // NetworkListNetworkHeaderView:
   void SetToggleState(bool enabled, bool visible, bool animate_toggle) override;
 
-  // NetworkListWifiHeaderView:
-  void SetJoinWifiButtonState(bool enabled, bool visible) override;
-
   bool is_toggle_enabled_;
   bool is_toggle_on_;
   size_t set_toggle_state_count_;
-
-  bool is_join_wifi_enabled_;
-  bool is_join_wifi_visible_;
-  size_t set_join_wifi_button_state_count_;
 };
 
 }  // namespace ash

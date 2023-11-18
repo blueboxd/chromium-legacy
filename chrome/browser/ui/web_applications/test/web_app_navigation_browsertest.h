@@ -54,18 +54,20 @@ class WebAppNavigationBrowserTest : public WebAppControllerBrowserTest {
  protected:
   // Creates an <a> element, sets its href and target to |link_url| and |target|
   // respectively, adds it to the DOM, and clicks on it with |modifiers|.
-  // Returns once |target_url| has loaded. |modifiers| should be based on
-  // blink::WebInputEvent::Modifiers.
+  // |modifiers| should be based on blink::WebInputEvent::Modifiers.
   static void ClickLink(
       content::WebContents* web_contents,
       const GURL& link_url,
-      const GURL& target_url,
       LinkTarget target = LinkTarget::SELF,
       const std::string& rel = "",
       int modifiers = blink::WebInputEvent::Modifiers::kNoModifiers,
       blink::WebMouseEvent::Button button =
           blink::WebMouseEvent::Button::kLeft);
 
+  // Creates an <a> element, sets its href and target to |link_url| and |target|
+  // respectively, adds it to the DOM, and clicks on it with |modifiers|.
+  // Returns once |target_url| has loaded. |modifiers| should be based on
+  // blink::WebInputEvent::Modifiers.
   static void ClickLinkWithModifiersAndWaitForURL(
       content::WebContents* web_contents,
       const GURL& link_url,
@@ -114,18 +116,11 @@ class WebAppNavigationBrowserTest : public WebAppControllerBrowserTest {
   // Navigates the active tab in |browser| to the launching page.
   void NavigateToLaunchingPage(Browser* browser);
 
-  // Checks that no new windows are opened after running |action| and that the
-  // existing |browser| window is still the active one and navigated to
-  // |target_url|. Returns true if there were no errors.
-  bool TestActionDoesNotOpenAppWindow(Browser* browser,
-                                      const GURL& target_url,
-                                      base::OnceClosure action);
-
-  // Checks that no new windows are opened after running |action| and that the
-  // main browser window is still the active one and navigated to |target_url|.
-  // Returns true if there were no errors.
-  bool TestTabActionDoesNotOpenAppWindow(const GURL& target_url,
-                                         base::OnceClosure action);
+  // Checks that no new windows are opened after clicking on a link to the given
+  // `target_url` in the current active web contents of the `browser`.
+  bool ExpectLinkClickNotCapturedIntoAppBrowser(Browser* browser,
+                                                const GURL& target_url,
+                                                const std::string& rel = "");
 
   net::EmbeddedTestServer& https_server() { return https_server_; }
 

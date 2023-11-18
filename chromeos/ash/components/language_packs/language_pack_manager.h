@@ -16,7 +16,9 @@
 #include "base/strings/strcat.h"
 #include "chromeos/ash/components/dbus/dlcservice/dlcservice_client.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "ui/base/ime/ash/input_method_manager.h"
+#include "ui/base/ime/ash/input_method_util.h"
+
+class PrefService;
 
 namespace ash::language_packs {
 
@@ -187,15 +189,15 @@ class LanguagePackManager : public DlcserviceClient::Observer {
   // Returns true if the given Language Pack exists and can be installed on
   // this device.
   // TODO(claudiomagni): Check per board.
-  bool IsPackAvailable(const std::string& feature_id,
-                       const std::string& locale);
+  static bool IsPackAvailable(const std::string& feature_id,
+                              const std::string& locale);
 
   // Installs the Language Pack.
   // It takes a callback that will be triggered once the operation is done.
   // A state is passed to the callback.
-  void InstallPack(const std::string& feature_id,
-                   const std::string& locale,
-                   OnInstallCompleteCallback callback);
+  static void InstallPack(const std::string& feature_id,
+                          const std::string& locale,
+                          OnInstallCompleteCallback callback);
 
   // Checks the state of a Language Pack.
   // It takes a callback that will be triggered once the operation is done.
@@ -203,9 +205,9 @@ class LanguagePackManager : public DlcserviceClient::Observer {
   // If the state marks the Language Pack as ready, then there's no need to
   // call Install(), otherwise the client should call Install() and not call
   // this method a second time.
-  void GetPackState(const std::string& feature_id,
-                    const std::string& locale,
-                    GetPackStateCallback callback);
+  static void GetPackState(const std::string& feature_id,
+                           const std::string& locale,
+                           GetPackStateCallback callback);
 
   // Features should call this method to indicate that they do not intend to
   // use the Pack again, until they will call |InstallPack()|.
@@ -213,26 +215,19 @@ class LanguagePackManager : public DlcserviceClient::Observer {
   // when that will happen.
   // TODO(claudiomagni): Allow callers to force immediate removal. Useful to
   //                     clear space on disk for another language.
-  void RemovePack(const std::string& feature_id,
-                  const std::string& locale,
-                  OnUninstallCompleteCallback callback);
+  static void RemovePack(const std::string& feature_id,
+                         const std::string& locale,
+                         OnUninstallCompleteCallback callback);
 
   // Explicitly installs the base pack for |feature_id|.
-  void InstallBasePack(const std::string& feature_id,
-                       OnInstallBasePackCompleteCallback callback);
+  static void InstallBasePack(const std::string& feature_id,
+                              OnInstallBasePackCompleteCallback callback);
 
   // Installs relevant language packs during OOBE.
   // This method should only be called during OOBE and will do nothing if called
   // outside it.
-  void UpdatePacksForOobe(const std::string& locale,
-                          OnUpdatePacksForOobeCallback callback);
-
-  // Update all packs related to input methods to match current state.
-  // This method is called internally each time we detect a change to the list
-  // of input methods in the current session.
-  void UpdatePacksForInputMethods(
-      base::span<const std::string> current_hwr_locales,
-      input_method::InputMethodManager* input_method_manager);
+  static void UpdatePacksForOobe(const std::string& locale,
+                                 OnUpdatePacksForOobeCallback callback);
 
   // Adds an observer to the observer list.
   void AddObserver(Observer* observer);
@@ -253,6 +248,11 @@ class LanguagePackManager : public DlcserviceClient::Observer {
   // This class should be accessed only via GetInstance();
   LanguagePackManager();
   ~LanguagePackManager() override;
+
+  // Retrieves the list of installed DLCs and updates Packs accordingly.
+  // This function should be called when LPM initializes and then each time
+  // Prefs change.
+  static void CheckAndUpdateDlcsForInputMethods(PrefService* prefs);
 
   // DlcserviceClient::Observer overrides.
   void OnDlcStateChanged(const dlcservice::DlcState& dlc_state) override;

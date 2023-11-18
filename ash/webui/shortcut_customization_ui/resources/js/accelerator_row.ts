@@ -9,6 +9,7 @@ import '../css/shortcut_customization_shared.css.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
+import {strictQuery} from 'chrome://resources/ash/common/typescript_utils/strict_query.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -75,11 +76,6 @@ export class AcceleratorRowElement extends AcceleratorRowElementBase {
         value: 0,
         observer: AcceleratorRowElement.prototype.onSourceChanged,
       },
-
-      selected: {
-        type: Boolean,
-        reflectToAttribute: true,
-      },
     };
   }
 
@@ -88,7 +84,6 @@ export class AcceleratorRowElement extends AcceleratorRowElementBase {
   layoutStyle: LayoutStyle;
   action: number;
   source: AcceleratorSource;
-  selected: boolean;
   private isLocked: boolean;
   private shortcutInterfaceProvider: ShortcutProviderInterface =
       getShortcutProvider();
@@ -162,12 +157,8 @@ export class AcceleratorRowElement extends AcceleratorRowElementBase {
     return !isCustomizationAllowed() ? -1 : 0;
   }
 
-  protected onRowFocused(): void {
-    this.selected = true;
-  }
-
-  protected onRowBlur(): void {
-    this.selected = false;
+  protected onFocusOrMouseEnter(): void {
+    strictQuery('#container', this.shadowRoot, HTMLTableRowElement).focus();
   }
 
   private getAriaLabel(): string {

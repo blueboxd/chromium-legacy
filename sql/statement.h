@@ -15,7 +15,7 @@
 #include "base/dcheck_is_on.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "sql/database.h"
@@ -155,8 +155,8 @@ class COMPONENT_EXPORT(SQL) Statement {
   // * BindInt64(col, val.ToDeltaSinceWindowsEpoch().InMicroseconds())
   //
   // Features that serialize base::Time in other ways, such as ToTimeT() or
-  // ToJavaTime(), will require a database migration to be converted to this
-  // (recommended) serialization method.
+  // InMillisecondsSinceUnixEpoch(), will require a database migration to be
+  // converted to this (recommended) serialization method.
   //
   // TODO(crbug.com/1195962): Migrate all time serialization to this method, and
   //                          then remove the migration details above.

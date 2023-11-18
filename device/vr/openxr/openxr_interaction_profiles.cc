@@ -5,6 +5,7 @@
 #include "device/vr/openxr/openxr_interaction_profiles.h"
 
 #include "base/no_destructor.h"
+#include "device/vr/openxr/openxr_interaction_profile_paths.h"
 
 namespace device {
 OpenXrSystemInputProfiles::OpenXrSystemInputProfiles(
@@ -154,7 +155,8 @@ GetOpenXrControllerInteractionProfiles() {
           // Samsung Odyssey
           {OpenXrInteractionProfileType::kSamsungOdyssey,
            kSamsungOdysseyInteractionProfilePath,
-           /*required_extension=*/kExtSamsungOdysseyControllerExtensionName,
+           /*required_extension=*/
+           XR_EXT_SAMSUNG_ODYSSEY_CONTROLLER_EXTENSION_NAME,
            GamepadMapping::kXrStandard,
            /*common_button_maps=*/
            {
@@ -333,7 +335,8 @@ GetOpenXrControllerInteractionProfiles() {
           // HP Reverb G2
           {OpenXrInteractionProfileType::kHPReverbG2,
            kHPReverbG2InteractionProfilePath,
-           /*required_extension=*/kExtHPMixedRealityControllerExtensionName,
+           /*required_extension=*/
+           XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME,
            GamepadMapping::kXrStandard,
            /*common_button_maps=*/
            {
@@ -383,7 +386,7 @@ GetOpenXrControllerInteractionProfiles() {
           // Microsoft Hands Profile
           {OpenXrInteractionProfileType::kHandSelectGrasp,
            kHandSelectGraspInteractionProfilePath,
-           /*required_extension=*/kMSFTHandInteractionExtensionName,
+           /*required_extension=*/XR_MSFT_HAND_INTERACTION_EXTENSION_NAME,
            GamepadMapping::kXrStandard,
            /*common_button_maps=*/
            {

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/scoped_observation.h"
+#include "components/services/app_service/public/cpp/icon_effects.h"
 #include "components/services/app_service/public/cpp/shortcut/shortcut.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -80,7 +81,8 @@ TEST_F(ShortcutRegistryCacheTest, AddShortcut) {
   ShortcutId shortcut_id = shortcut->shortcut_id;
   shortcut->name = "name";
   shortcut->shortcut_source = ShortcutSource::kUser;
-  shortcut->icon_key = IconKey(100, 0, 0);
+  shortcut->icon_key = IconKey();
+  shortcut->icon_key->update_version = false;
 
   EXPECT_FALSE(cache().HasShortcut(shortcut_id));
   cache().UpdateShortcut(std::move(shortcut));
@@ -94,7 +96,9 @@ TEST_F(ShortcutRegistryCacheTest, AddShortcut) {
   EXPECT_EQ(stored_shortcut->shortcut_source, ShortcutSource::kUser);
   EXPECT_EQ(stored_shortcut->host_app_id, host_app_id);
   EXPECT_EQ(stored_shortcut->local_id, local_id);
-  EXPECT_EQ(stored_shortcut->icon_key, IconKey(100, 0, 0));
+  IconKey icon_key;
+  icon_key.update_version = IconKey::kInitVersion;
+  EXPECT_EQ(stored_shortcut->icon_key, icon_key);
 
   EXPECT_EQ(cache().GetAllShortcuts().size(), 1u);
 }
@@ -106,7 +110,8 @@ TEST_F(ShortcutRegistryCacheTest, UpdateShortcut) {
   ShortcutId shortcut_id = shortcut->shortcut_id;
   shortcut->name = "name";
   shortcut->shortcut_source = ShortcutSource::kUser;
-  shortcut->icon_key = IconKey(100, 0, 0);
+  shortcut->icon_key = IconKey();
+  shortcut->icon_key->update_version = false;
 
   EXPECT_FALSE(cache().HasShortcut(shortcut_id));
   cache().UpdateShortcut(std::move(shortcut));
@@ -117,7 +122,9 @@ TEST_F(ShortcutRegistryCacheTest, UpdateShortcut) {
   auto shortcut_delta = std::make_unique<Shortcut>(host_app_id, local_id);
   shortcut_delta->name = "new name";
   shortcut_delta->shortcut_source = ShortcutSource::kDeveloper;
-  shortcut_delta->icon_key = IconKey(101, 1, 1);
+  shortcut_delta->icon_key =
+      IconKey(IconKey::kInvalidResourceId, IconEffects::kCrOsStandardIcon);
+  shortcut_delta->icon_key->update_version = true;
 
   cache().UpdateShortcut(std::move(shortcut_delta));
 
@@ -131,7 +138,9 @@ TEST_F(ShortcutRegistryCacheTest, UpdateShortcut) {
   EXPECT_EQ(stored_shortcut->shortcut_source, ShortcutSource::kDeveloper);
   EXPECT_EQ(stored_shortcut->host_app_id, host_app_id);
   EXPECT_EQ(stored_shortcut->local_id, local_id);
-  EXPECT_EQ(stored_shortcut->icon_key, IconKey(101, 1, 1));
+  IconKey icon_key(IconKey::kInvalidResourceId, IconEffects::kCrOsStandardIcon);
+  icon_key.update_version = IconKey::kInitVersion + 1;
+  EXPECT_EQ(stored_shortcut->icon_key, icon_key);
 }
 
 TEST_F(ShortcutRegistryCacheTest, RemoveShortcut) {
@@ -141,7 +150,8 @@ TEST_F(ShortcutRegistryCacheTest, RemoveShortcut) {
   ShortcutId shortcut_id = shortcut->shortcut_id;
   shortcut->name = "name";
   shortcut->shortcut_source = ShortcutSource::kUser;
-  shortcut->icon_key = IconKey(100, 0, 0);
+  shortcut->icon_key = IconKey();
+  shortcut->icon_key->update_version = false;
 
   cache().UpdateShortcut(std::move(shortcut));
   ASSERT_TRUE(cache().HasShortcut(shortcut_id));
@@ -160,7 +170,8 @@ TEST_F(ShortcutRegistryCacheTest, Observer) {
   ShortcutId shortcut_id = shortcut->shortcut_id;
   shortcut->name = "name";
   shortcut->shortcut_source = ShortcutSource::kUser;
-  shortcut->icon_key = IconKey(100, 0, 0);
+  shortcut->icon_key = IconKey();
+  shortcut->icon_key->update_version = false;
   ExpectShortcutUpdate(
       std::make_unique<ShortcutUpdate>(nullptr, shortcut.get()));
   ASSERT_NO_FATAL_FAILURE(cache().UpdateShortcut(std::move(shortcut)));
@@ -169,7 +180,8 @@ TEST_F(ShortcutRegistryCacheTest, Observer) {
   auto shortcut_delta = std::make_unique<Shortcut>(host_app_id, local_id);
   shortcut_delta->name = "new name";
   shortcut_delta->shortcut_source = ShortcutSource::kDeveloper;
-  shortcut_delta->icon_key = IconKey(101, 1, 1);
+  shortcut_delta->icon_key = IconKey(/*resource_id=*/1, /*icon_effects=*/1);
+  shortcut_delta->icon_key->update_version = false;
   std::unique_ptr<Shortcut> current_state =
       cache().GetShortcut(shortcut_id)->Clone();
   ExpectShortcutUpdate(std::make_unique<ShortcutUpdate>(current_state.get(),

@@ -9,11 +9,15 @@
 #include "components/permissions/features.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/base/interaction/element_identifier.h"
 #include "ui/base/l10n/l10n_util.h"
+
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(EmbeddedPermissionPromptAskView,
+                                      kAllowId);
 
 EmbeddedPermissionPromptAskView::EmbeddedPermissionPromptAskView(
     Browser* browser,
-    base::WeakPtr<permissions::PermissionPrompt::Delegate> delegate)
+    base::WeakPtr<EmbeddedPermissionPromptViewDelegate> delegate)
     : EmbeddedPermissionPromptBaseView(browser, delegate) {}
 
 EmbeddedPermissionPromptAskView::~EmbeddedPermissionPromptAskView() = default;
@@ -33,9 +37,9 @@ void EmbeddedPermissionPromptAskView::RunButtonCallback(int button_id) {
 
   if (delegate()) {
     if (button == ButtonType::kAllowThisTime) {
-      delegate()->AcceptThisTime();
+      delegate()->AllowThisTime();
     } else if (button == ButtonType::kAllow) {
-      delegate()->Accept();
+      delegate()->Allow();
     }
   }
 }
@@ -60,7 +64,7 @@ EmbeddedPermissionPromptAskView::GetButtonsConfiguration() const {
         ButtonType::kAllowThisTime, ui::ButtonStyle::kTonal);
   }
   buttons.emplace_back(l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW),
-                       ButtonType::kAllow, ui::ButtonStyle::kTonal);
+                       ButtonType::kAllow, ui::ButtonStyle::kTonal, kAllowId);
   return buttons;
 }
 

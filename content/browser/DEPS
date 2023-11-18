@@ -12,7 +12,10 @@ include_rules = [
   "+components/download/public/common",
   "+components/file_access",
   "+components/filename_generation",
-  "+components/permissions/features.h",
+  "+components/grit",
+  # TODO(crbug.com/1501507): Remove illegal dependency of content/browser/ to
+  # components/permissions/features.h
+  "!components/permissions/features.h",
   "+components/power_monitor",
   "+components/services/font",
   "+components/services/filesystem",

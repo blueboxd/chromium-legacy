@@ -9,13 +9,13 @@
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_utils.h"
 #include "third_party/blink/renderer/core/layout/geometry/box_strut.h"
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
+#include "third_party/blink/renderer/core/layout/inline/inline_cursor.h"
+#include "third_party/blink/renderer/core/layout/inline/inline_node.h"
+#include "third_party/blink/renderer/core/layout/inline/physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/inline/ruby_utils.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_text_combine.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_ruby_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_overflow_calculator.h"
@@ -136,7 +136,7 @@ class FragmentTreeDumper {
 
       bool has_fragment_items = false;
       if (flags_ & NGPhysicalFragment::DumpItems) {
-        if (const NGFragmentItems* fragment_items = box->Items()) {
+        if (const FragmentItems* fragment_items = box->Items()) {
           InlineCursor cursor(*box, *fragment_items);
           Append(&cursor, indent + 2);
           has_fragment_items = true;
@@ -158,7 +158,7 @@ class FragmentTreeDumper {
       return;
     }
 
-    if (const auto* line_box = DynamicTo<NGPhysicalLineBoxFragment>(fragment)) {
+    if (const auto* line_box = DynamicTo<PhysicalLineBoxFragment>(fragment)) {
       if (flags_ & NGPhysicalFragment::DumpType) {
         builder_->Append("LineBox");
         has_content = true;
@@ -339,7 +339,7 @@ NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
       may_have_descendant_above_block_start_(
           builder->may_have_descendant_above_block_start_),
       is_fieldset_container_(false),
-      is_table_ng_part_(false),
+      is_table_part_(false),
       is_painted_atomically_(false),
       has_collapsed_borders_(builder->has_collapsed_borders_),
       has_first_baseline_(false),
@@ -363,7 +363,7 @@ NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
                         !builder->AnchorQuery() &&
                         !has_fragmented_out_of_flow_data_
                     ? nullptr
-                    : OutOfFlowDataFromBuilder(builder)) {
+                    : OofDataFromBuilder(builder)) {
   CHECK(builder->layout_object_);
 
   // A line with a float / block in a parallel flow should not have an outgoing
@@ -379,36 +379,36 @@ NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
   children_valid_ = true;
 }
 
-NGPhysicalFragment::OutOfFlowData* NGPhysicalFragment::OutOfFlowDataFromBuilder(
+NGPhysicalFragment::OofData* NGPhysicalFragment::OofDataFromBuilder(
     NGFragmentBuilder* builder) {
-  OutOfFlowData* oof_data = nullptr;
+  OofData* oof_data = nullptr;
   if (has_fragmented_out_of_flow_data_)
-    oof_data = FragmentedOutOfFlowDataFromBuilder(builder);
+    oof_data = FragmentedOofDataFromBuilder(builder);
 
   const WritingModeConverter converter(
       {builder->Style().GetWritingMode(), builder->Direction()}, Size());
 
   if (!builder->oof_positioned_descendants_.empty()) {
     if (!oof_data)
-      oof_data = MakeGarbageCollected<OutOfFlowData>();
+      oof_data = MakeGarbageCollected<OofData>();
     oof_data->oof_positioned_descendants.reserve(
         builder->oof_positioned_descendants_.size());
     for (const auto& descendant : builder->oof_positioned_descendants_) {
-      NGInlineContainer<PhysicalOffset> inline_container(
+      OofInlineContainer<PhysicalOffset> inline_container(
           descendant.inline_container.container,
           converter.ToPhysical(descendant.inline_container.relative_offset,
                                PhysicalSize()));
       oof_data->oof_positioned_descendants.emplace_back(
           descendant.Node(),
           descendant.static_position.ConvertToPhysical(converter),
-          inline_container);
+          descendant.requires_content_before_breaking, inline_container);
     }
   }
 
   if (const NGLogicalAnchorQuery* anchor_query = builder->AnchorQuery()) {
     DCHECK(RuntimeEnabledFeatures::CSSAnchorPositioningEnabled());
     if (!oof_data)
-      oof_data = MakeGarbageCollected<OutOfFlowData>();
+      oof_data = MakeGarbageCollected<OofData>();
     oof_data->anchor_query.SetFromLogical(*anchor_query, converter);
   }
 
@@ -441,7 +441,7 @@ NGPhysicalFragment::NGPhysicalFragment(const NGPhysicalFragment& other)
       may_have_descendant_above_block_start_(
           other.may_have_descendant_above_block_start_),
       is_fieldset_container_(other.is_fieldset_container_),
-      is_table_ng_part_(other.is_table_ng_part_),
+      is_table_part_(other.is_table_part_),
       is_painted_atomically_(other.is_painted_atomically_),
       has_collapsed_borders_(other.has_collapsed_borders_),
       has_first_baseline_(other.has_first_baseline_),
@@ -455,7 +455,7 @@ NGPhysicalFragment::NGPhysicalFragment(const NGPhysicalFragment& other)
       base_direction_(other.base_direction_),
       propagated_data_(other.propagated_data_),
       break_token_(other.break_token_),
-      oof_data_(other.oof_data_ ? other.CloneOutOfFlowData() : nullptr) {
+      oof_data_(other.oof_data_ ? other.CloneOofData() : nullptr) {
   CHECK(layout_object_);
   DCHECK(other.children_valid_);
   DCHECK(children_valid_);
@@ -471,7 +471,7 @@ void NGPhysicalFragment::Dispose() {
       static_cast<NGPhysicalBoxFragment*>(this)->Dispose();
       break;
     case kFragmentLineBox:
-      static_cast<NGPhysicalLineBoxFragment*>(this)->Dispose();
+      static_cast<PhysicalLineBoxFragment*>(this)->Dispose();
       break;
   }
 }
@@ -489,41 +489,39 @@ bool NGPhysicalFragment::IsTextControlPlaceholder() const {
          blink::IsTextControlPlaceholder(layout_object_->GetNode());
 }
 
-base::span<NGPhysicalOutOfFlowPositionedNode>
+base::span<PhysicalOofPositionedNode>
 NGPhysicalFragment::OutOfFlowPositionedDescendants() const {
   if (!HasOutOfFlowPositionedDescendants())
-    return base::span<NGPhysicalOutOfFlowPositionedNode>();
+    return base::span<PhysicalOofPositionedNode>();
   return {oof_data_->oof_positioned_descendants.data(),
           oof_data_->oof_positioned_descendants.size()};
 }
 
-NGFragmentedOutOfFlowData* NGPhysicalFragment::FragmentedOutOfFlowData() const {
+FragmentedOofData* NGPhysicalFragment::GetFragmentedOofData() const {
   if (!has_fragmented_out_of_flow_data_)
     return nullptr;
-  auto* oof_data =
-      reinterpret_cast<NGFragmentedOutOfFlowData*>(oof_data_.Get());
+  auto* oof_data = reinterpret_cast<FragmentedOofData*>(oof_data_.Get());
   DCHECK(!oof_data->multicols_with_pending_oofs.empty() ||
          !oof_data->oof_positioned_fragmentainer_descendants.empty());
   return oof_data;
 }
 
 bool NGPhysicalFragment::HasNestedMulticolsWithOOFs() const {
-  const NGFragmentedOutOfFlowData* oof_data = FragmentedOutOfFlowData();
+  const auto* oof_data = GetFragmentedOofData();
   return oof_data && !oof_data->multicols_with_pending_oofs.empty();
 }
 
 bool NGPhysicalFragment::NeedsOOFPositionedInfoPropagation() const {
   // If we have |oof_data_|, it should mean at least one of OOF propagation data
   // exists.
-  DCHECK_EQ(
-      !!oof_data_,
-      HasOutOfFlowPositionedDescendants() || HasAnchorQuery() ||
-          (FragmentedOutOfFlowData() &&
-           FragmentedOutOfFlowData()->NeedsOOFPositionedInfoPropagation()));
+  DCHECK_EQ(!!oof_data_,
+            HasOutOfFlowPositionedDescendants() || HasAnchorQuery() ||
+                (GetFragmentedOofData() &&
+                 GetFragmentedOofData()->NeedsOOFPositionedInfoPropagation()));
   return !!oof_data_;
 }
 
-void NGPhysicalFragment::ClearOutOfFlowData() {
+void NGPhysicalFragment::ClearOofData() {
   if (!oof_data_)
     return;
   if (HasAnchorQuery())
@@ -532,14 +530,12 @@ void NGPhysicalFragment::ClearOutOfFlowData() {
     oof_data_ = nullptr;
 }
 
-NGPhysicalFragment::OutOfFlowData* NGPhysicalFragment::CloneOutOfFlowData()
-    const {
+NGPhysicalFragment::OofData* NGPhysicalFragment::CloneOofData() const {
   DCHECK(oof_data_);
   if (!has_fragmented_out_of_flow_data_)
-    return MakeGarbageCollected<OutOfFlowData>(*oof_data_);
-  DCHECK(FragmentedOutOfFlowData());
-  return MakeGarbageCollected<NGFragmentedOutOfFlowData>(
-      *FragmentedOutOfFlowData());
+    return MakeGarbageCollected<OofData>(*oof_data_);
+  DCHECK(GetFragmentedOofData());
+  return MakeGarbageCollected<FragmentedOofData>(*GetFragmentedOofData());
 }
 
 bool NGPhysicalFragment::IsMonolithic() const {
@@ -734,7 +730,7 @@ void NGPhysicalFragment::Trace(Visitor* visitor) const {
           visitor);
       break;
     case kFragmentLineBox:
-      static_cast<const NGPhysicalLineBoxFragment*>(this)->TraceAfterDispatch(
+      static_cast<const PhysicalLineBoxFragment*>(this)->TraceAfterDispatch(
           visitor);
       break;
   }
@@ -749,10 +745,10 @@ void NGPhysicalFragment::TraceAfterDispatch(Visitor* visitor) const {
 
 // TODO(dlibby): remove `Children` and `PostLayoutChildren` and move the
 // casting and/or branching to the callers.
-base::span<const NGLink> NGPhysicalFragment::Children() const {
+base::span<const PhysicalFragmentLink> NGPhysicalFragment::Children() const {
   if (Type() == kFragmentBox)
     return static_cast<const NGPhysicalBoxFragment*>(this)->Children();
-  return base::make_span(static_cast<NGLink*>(nullptr), 0u);
+  return base::make_span(static_cast<PhysicalFragmentLink*>(nullptr), 0u);
 }
 
 NGPhysicalFragment::PostLayoutChildLinkList
@@ -768,8 +764,8 @@ void NGPhysicalFragment::SetChildrenInvalid() const {
   if (!children_valid_)
     return;
 
-  for (const NGLink& child : Children()) {
-    const_cast<NGLink&>(child).fragment = nullptr;
+  for (const PhysicalFragmentLink& child : Children()) {
+    const_cast<PhysicalFragmentLink&>(child).fragment = nullptr;
   }
   children_valid_ = false;
 }
@@ -782,15 +778,15 @@ void NGPhysicalFragment::AddOutlineRectsForNormalChildren(
     const LayoutBoxModelObject* containing_block) const {
   if (const auto* box = DynamicTo<NGPhysicalBoxFragment>(this)) {
     DCHECK_EQ(box->PostLayout(), box);
-    if (const NGFragmentItems* items = box->Items()) {
+    if (const FragmentItems* items = box->Items()) {
       InlineCursor cursor(*box, *items);
       AddOutlineRectsForCursor(collector, additional_offset, outline_type,
                                containing_block, &cursor);
-      // Don't add |Children()|. If |this| has |NGFragmentItems|, children are
+      // Don't add |Children()|. If |this| has |FragmentItems|, children are
       // either line box, which we already handled in items, or OOF, which we
       // should ignore.
-      DCHECK(
-          base::ranges::all_of(PostLayoutChildren(), [](const NGLink& child) {
+      DCHECK(base::ranges::all_of(
+          PostLayoutChildren(), [](const PhysicalFragmentLink& child) {
             return child->IsLineBox() || child->IsOutOfFlowPositioned();
           }));
       return;
@@ -817,20 +813,20 @@ void NGPhysicalFragment::AddOutlineRectsForCursor(
       DynamicTo<LayoutTextCombine>(containing_block);
   while (*cursor) {
     DCHECK(cursor->Current().Item());
-    const NGFragmentItem& item = *cursor->Current().Item();
+    const FragmentItem& item = *cursor->Current().Item();
     if (UNLIKELY(item.IsLayoutObjectDestroyedOrMoved())) {
       cursor->MoveToNext();
       continue;
     }
     switch (item.Type()) {
-      case NGFragmentItem::kLine: {
+      case FragmentItem::kLine: {
         AddOutlineRectsForDescendant(
             {item.LineBoxFragment(), item.OffsetInContainerFragment()},
             collector, additional_offset, outline_type, containing_block);
         break;
       }
-      case NGFragmentItem::kGeneratedText:
-      case NGFragmentItem::kText: {
+      case FragmentItem::kGeneratedText:
+      case FragmentItem::kText: {
         if (!ShouldIncludeBlockVisualOverflow(outline_type)) {
           break;
         }
@@ -841,7 +837,7 @@ void NGPhysicalFragment::AddOutlineRectsForCursor(
         collector.AddRect(rect);
         break;
       }
-      case NGFragmentItem::kSvgText: {
+      case FragmentItem::kSvgText: {
         auto rect = PhysicalRect::EnclosingRect(
             cursor->Current().ObjectBoundingBox(*cursor));
         DCHECK(!text_combine);
@@ -849,7 +845,7 @@ void NGPhysicalFragment::AddOutlineRectsForCursor(
         collector.AddRect(rect);
         break;
       }
-      case NGFragmentItem::kBox: {
+      case FragmentItem::kBox: {
         if (const NGPhysicalBoxFragment* child_box =
                 item.PostLayoutBoxFragment()) {
           DCHECK(!child_box->IsOutOfFlowPositioned());
@@ -863,7 +859,7 @@ void NGPhysicalFragment::AddOutlineRectsForCursor(
         }
         break;
       }
-      case NGFragmentItem::kInvalid:
+      case FragmentItem::kInvalid:
         NOTREACHED_NORETURN();
     }
     cursor->MoveToNext();
@@ -873,7 +869,7 @@ void NGPhysicalFragment::AddOutlineRectsForCursor(
 void NGPhysicalFragment::AddScrollableOverflowForInlineChild(
     const NGPhysicalBoxFragment& container,
     const ComputedStyle& container_style,
-    const NGFragmentItem& line,
+    const FragmentItem& line,
     bool has_hanging,
     const InlineCursor& cursor,
     TextHeightType height_type,
@@ -884,7 +880,7 @@ void NGPhysicalFragment::AddScrollableOverflowForInlineChild(
           cursor.Current().Item()->LineBoxFragment() == this));
   const WritingMode container_writing_mode = container_style.GetWritingMode();
   for (InlineCursor descendants = cursor.CursorForDescendants(); descendants;) {
-    const NGFragmentItem* item = descendants.CurrentItem();
+    const FragmentItem* item = descendants.CurrentItem();
     DCHECK(item);
     if (UNLIKELY(item->IsLayoutObjectDestroyedOrMoved())) {
       NOTREACHED();
@@ -937,7 +933,7 @@ void NGPhysicalFragment::AddScrollableOverflowForInlineChild(
 
     // Add all children of a culled inline box; i.e., an inline box without
     // margin/border/padding etc.
-    DCHECK_EQ(item->Type(), NGFragmentItem::kBox);
+    DCHECK_EQ(item->Type(), FragmentItem::kBox);
     descendants.MoveToNext();
   }
 }
@@ -965,7 +961,7 @@ void NGPhysicalFragment::AdjustScrollableOverflowForHanging(
 // additional_offset must be offset from the containing_block because
 // LocalToAncestorRect returns rects wrt containing_block.
 void NGPhysicalFragment::AddOutlineRectsForDescendant(
-    const NGLink& descendant,
+    const PhysicalFragmentLink& descendant,
     OutlineRectCollector& collector,
     const PhysicalOffset& additional_offset,
     NGOutlineType outline_type,
@@ -1018,7 +1014,7 @@ void NGPhysicalFragment::AddOutlineRectsForDescendant(
   }
 
   if (const auto* descendant_line_box =
-          DynamicTo<NGPhysicalLineBoxFragment>(descendant.get())) {
+          DynamicTo<PhysicalLineBoxFragment>(descendant.get())) {
     descendant_line_box->AddOutlineRectsForNormalChildren(
         collector, additional_offset + descendant.Offset(), outline_type,
         containing_block);
@@ -1071,7 +1067,7 @@ bool NGPhysicalFragment::DependsOnPercentageBlockSize(
   return false;
 }
 
-void NGPhysicalFragment::OutOfFlowData::Trace(Visitor* visitor) const {
+void NGPhysicalFragment::OofData::Trace(Visitor* visitor) const {
   visitor->Trace(oof_positioned_descendants);
   visitor->Trace(anchor_query);
 }

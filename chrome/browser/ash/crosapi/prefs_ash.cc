@@ -25,6 +25,7 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "components/search_engines/default_search_manager.h"
 #include "components/user_manager/user_manager.h"
 
 namespace crosapi {
@@ -39,8 +40,8 @@ base::StringPiece GetProfilePrefNameForPref(mojom::PrefPath path) {
            ash::prefs::kAccessibilitySpokenFeedbackEnabled},
           {mojom::PrefPath::kAccessibilityPdfOcrAlwaysActive,
            ::prefs::kAccessibilityPdfOcrAlwaysActive},
-          {mojom::PrefPath::kGeolocationAllowed,
-           ash::prefs::kUserGeolocationAllowed},
+          {mojom::PrefPath::kUserGeolocationAccessLevel,
+           ash::prefs::kUserGeolocationAccessLevel},
           {mojom::PrefPath::kQuickAnswersEnabled,
            quick_answers::prefs::kQuickAnswersEnabled},
           {mojom::PrefPath::kQuickAnswersConsentStatus,
@@ -68,6 +69,8 @@ base::StringPiece GetProfilePrefNameForPref(mojom::PrefPath path) {
            media_router::prefs::kAccessCodeCastDevices},
           {mojom::PrefPath::kAccessCodeCastDeviceAdditionTime,
            media_router::prefs::kAccessCodeCastDeviceAdditionTime},
+          {mojom::PrefPath::kDefaultSearchProviderDataPrefName,
+           DefaultSearchManager::kDefaultSearchProviderDataPrefName},
       });
   auto* pref_name = kProfilePrefPathToName.find(path);
   DCHECK(pref_name != kProfilePrefPathToName.end());
@@ -274,7 +277,7 @@ absl::optional<PrefsAsh::State> PrefsAsh::GetState(mojom::PrefPath path) {
                    AshPrefSource::kNormal,
                    metrics::prefs::kMetricsReportingEnabled};
     case mojom::PrefPath::kAccessibilitySpokenFeedbackEnabled:
-    case mojom::PrefPath::kGeolocationAllowed:
+    case mojom::PrefPath::kUserGeolocationAccessLevel:
     case mojom::PrefPath::kQuickAnswersEnabled:
     case mojom::PrefPath::kQuickAnswersConsentStatus:
     case mojom::PrefPath::kQuickAnswersDefinitionEnabled:
@@ -288,7 +291,8 @@ absl::optional<PrefsAsh::State> PrefsAsh::GetState(mojom::PrefPath path) {
     case mojom::PrefPath::kMultitaskMenuNudgeClamshellShownCount:
     case mojom::PrefPath::kMultitaskMenuNudgeClamshellLastShown:
     case mojom::PrefPath::kAccessCodeCastDevices:
-    case mojom::PrefPath::kAccessCodeCastDeviceAdditionTime: {
+    case mojom::PrefPath::kAccessCodeCastDeviceAdditionTime:
+    case mojom::PrefPath::kDefaultSearchProviderDataPrefName: {
       if (!profile_prefs_registrar_) {
         LOG(WARNING) << "Primary profile is not yet initialized";
         return absl::nullopt;

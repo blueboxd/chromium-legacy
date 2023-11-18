@@ -274,7 +274,8 @@ struct ContentSettingsImageDetails {
 
 const ContentSettingsImageDetails kImageDetails[] = {
     {ContentSettingsType::COOKIES, vector_icons::kCookieIcon,
-     IDS_BLOCKED_COOKIES_MESSAGE, 0, IDS_ACCESSED_COOKIES_MESSAGE},
+     IDS_BLOCKED_ON_DEVICE_SITE_DATA_MESSAGE, 0,
+     IDS_ACCESSED_ON_DEVICE_SITE_DATA_MESSAGE},
     {ContentSettingsType::IMAGES, vector_icons::kPhotoIcon,
      IDS_BLOCKED_IMAGES_MESSAGE, 0, 0},
     {ContentSettingsType::JAVASCRIPT, vector_icons::kCodeIcon,
@@ -299,8 +300,8 @@ void GetIconChromeRefresh(ContentSettingsType type,
                           raw_ptr<const gfx::VectorIcon>* icon) {
   switch (type) {
     case ContentSettingsType::COOKIES:
-      *icon = blocked ? &vector_icons::kCookieOffChromeRefreshIcon
-                      : &vector_icons::kCookieChromeRefreshIcon;
+      *icon = blocked ? &vector_icons::kDatabaseOffIcon
+                      : &vector_icons::kDatabaseIcon;
       return;
     case ContentSettingsType::IMAGES:
       *icon = blocked ? &vector_icons::kPhotoOffChromeRefreshIcon
@@ -390,7 +391,7 @@ void GetIconFromType(ContentSettingsType type,
   *badge = (blocked ? &vector_icons::kBlockedBadgeIcon : &gfx::kNoneIcon);
   switch (type) {
     case ContentSettingsType::COOKIES:
-      *icon = &vector_icons::kCookieIcon;
+      *icon = &vector_icons::kDatabaseIcon;
       return;
     case ContentSettingsType::IMAGES:
       *icon = &vector_icons::kPhotoIcon;

@@ -78,6 +78,17 @@ extern const char kCurrentMigrationVersionToGoogleMobileServices[];
 // last time migrated, in microseconds since Windows epoch.
 extern const char kTimeOfLastMigrationAttempt[];
 
+// Boolean value indicating whether the client is ready to use UPM for local
+// passwords and settings and split password stores for syncing users.
+// The preconditions for the pref to be set to true:
+// - M2: For users syncing passwords, the profile store contents have been
+// moved to the account store. For the users who are not syncing passwords, the
+// login database is empty and prefs are default.
+// - M3: For the users who are not syncing passwords, the passwords have been
+// successfully copied to GMS Core. The settings will be migrated as well, but
+// their migration doesn't impact this pref.
+extern const char kPasswordsUseUPMLocalAndSeparateStores[];
+
 // Boolean value that indicated the need of data migration between the two
 // backends due to sync settings change.
 extern const char kRequiresMigrationAfterSyncStatusChange[];
@@ -217,15 +228,6 @@ extern const char kPasswordsPrefWithNewLabelUsed[];
 extern const char kProfileStoreDateLastUsedForFilling[];
 extern const char kAccountStoreDateLastUsedForFilling[];
 
-// A list of ongoing PasswordChangeSuccessTracker flows that is persisted in
-// case Chrome is temporarily shut down while, e.g., a user retrieves a
-// password reset email.
-extern const char kPasswordChangeSuccessTrackerFlows[];
-
-// Integer indicating the format version of the list saved under
-// |kPasswordChangeSuccessTrackerFlows|.
-extern const char kPasswordChangeSuccessTrackerVersion[];
-
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 // Integer indicating how many times user saw biometric authentication before
 // filling promo.
@@ -260,6 +262,11 @@ extern const char kPasswordManagerPromoCardsList[];
 // Boolean pref indicating whether password sharing is enabled. Enables both
 // sending and receiving passwords.
 extern const char kPasswordSharingEnabled[];
+
+#if BUILDFLAG(IS_MAC)
+// Integer pref indicating how many times relaunch Chrome bubble was dismissed.
+extern const char kRelaunchChromeBubbleDismissedCounter[];
+#endif
 
 }  // namespace password_manager::prefs
 

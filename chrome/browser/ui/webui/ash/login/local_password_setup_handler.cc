@@ -16,8 +16,11 @@ LocalPasswordSetupHandler::LocalPasswordSetupHandler()
 
 LocalPasswordSetupHandler::~LocalPasswordSetupHandler() = default;
 
-void LocalPasswordSetupHandler::Show(bool can_go_back) {
-  ShowInWebUI(base::Value::Dict().Set("showBackButton", can_go_back));
+void LocalPasswordSetupHandler::Show(bool can_go_back, bool is_recovery_flow) {
+  base::Value::Dict dict;
+  dict.Set("showBackButton", can_go_back);
+  dict.Set("isRecoveryFlow", is_recovery_flow);
+  ShowInWebUI(std::move(dict));
 }
 
 void LocalPasswordSetupHandler::DeclareLocalizedValues(
@@ -26,15 +29,15 @@ void LocalPasswordSetupHandler::DeclareLocalizedValues(
 
   builder->AddF("localPasswordSetupTitle", IDS_LOGIN_LOCAL_PASSWORD_SETUP_TITLE,
                 device_name);
-  builder->AddF("localPasswordSetupDoneSubtitle",
-                IDS_LOGIN_LOCAL_PASSWORD_SETUP_DONE_SUBTITLE, device_name);
-  builder->Add("localPasswordSetupDoneTitle",
-               IDS_LOGIN_LOCAL_PASSWORD_SETUP_DONE_TITLE);
+  builder->AddF("localPasswordResetTitle", IDS_LOGIN_LOCAL_PASSWORD_RESET_TITLE,
+                device_name);
   builder->Add("passwordInputPlaceholderText",
                IDS_LOGIN_MANUAL_PASSWORD_INPUT_LABEL);
   builder->Add("confirmPasswordInputPlaceholderText",
                IDS_LOGIN_CONFIRM_PASSWORD_LABEL);
   builder->Add("passwordMismatchError", IDS_LOGIN_MANUAL_PASSWORD_MISMATCH);
+  builder->Add("showPassword", IDS_AUTH_SETUP_SHOW_PASSWORD);
+  builder->Add("hidePassword", IDS_AUTH_SETUP_HIDE_PASSWORD);
   builder->Add("setLocalPasswordPlaceholder",
                IDS_AUTH_SETUP_SET_LOCAL_PASSWORD_PLACEHOLDER);
   builder->Add("setLocalPasswordConfirmPlaceholder",
@@ -43,10 +46,6 @@ void LocalPasswordSetupHandler::DeclareLocalizedValues(
                IDS_AUTH_SETUP_SET_LOCAL_PASSWORD_MIN_CHARS_HINT);
   builder->Add("setLocalPasswordNoMatchError",
                IDS_AUTH_SETUP_SET_LOCAL_PASSWORD_NO_MATCH_ERROR);
-}
-
-void LocalPasswordSetupHandler::ShowLocalPasswordSetupSuccess() {
-  CallExternalAPI("showLocalPasswordSetupSuccess");
 }
 
 void LocalPasswordSetupHandler::ShowLocalPasswordSetupFailure() {

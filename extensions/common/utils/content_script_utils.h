@@ -10,6 +10,7 @@
 #include "base/auto_reset.h"
 #include "base/functional/callback.h"
 #include "extensions/common/api/content_scripts.h"
+#include "extensions/common/api/scripts_internal.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/script_constants.h"
@@ -39,14 +40,6 @@ ScopedMaxScriptLengthOverride CreateScopedMaxScriptLengthForTesting(size_t max);
 ScopedMaxScriptLengthOverride
 CreateScopedMaxScriptsLengthPerExtensionForTesting(size_t max);
 
-// Converts api::content_scripts::RunAt to mojom::RunLocation.
-mojom::RunLocation ConvertManifestRunLocation(
-    api::content_scripts::RunAt run_at);
-
-// Converts mojom::RunLocation to api::content_scripts::RunAt.
-api::content_scripts::RunAt ConvertRunLocationToManifestType(
-    mojom::RunLocation run_at);
-
 // Parses and validates `matches` and `exclude_matches`, and updates these
 // fields for `result`. If `wants_file_access` is not null, then it will be set
 // to signal to the caller that the extension is requesting file access based
@@ -56,9 +49,8 @@ bool ParseMatchPatterns(const std::vector<std::string>& matches,
                         const std::vector<std::string>* exclude_matches,
                         int creation_flags,
                         bool can_execute_script_everywhere,
-                        int valid_schemes,
                         bool all_urls_includes_chrome_urls,
-                        absl::optional<int> definition_index,
+                        std::optional<int> definition_index,
                         UserScript* result,
                         std::u16string* error,
                         bool* wants_file_access);
@@ -66,12 +58,13 @@ bool ParseMatchPatterns(const std::vector<std::string>& matches,
 // Parses the `js` and `css` fields, and updates `result` with the specified
 // file paths. Returns false and populates `error` if both `js` and `css` are
 // empty. `definition_index` must be only provided for static scripts.
-bool ParseFileSources(const Extension* extension,
-                      const std::vector<std::string>* js,
-                      const std::vector<std::string>* css,
-                      absl::optional<int> definition_index,
-                      UserScript* result,
-                      std::u16string* error);
+bool ParseFileSources(
+    const Extension* extension,
+    const std::vector<api::scripts_internal::ScriptSource>* js,
+    const std::vector<api::scripts_internal::ScriptSource>* css,
+    std::optional<int> definition_index,
+    UserScript* result,
+    std::u16string* error);
 
 // Parses `include_globs` and `exclude_globs` and updates these fields for
 // `result`. Done for Greasemonkey compatibility.

@@ -121,6 +121,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // internal::NativeWidgetPrivate:
   void InitNativeWidget(Widget::InitParams params) override;
   void OnWidgetInitDone() override;
+  void ReparentNativeViewImpl(gfx::NativeView new_parent) override;
   std::unique_ptr<NonClientFrameView> CreateNonClientFrameView() override;
   bool ShouldUseNativeFrame() const override;
   bool ShouldWindowContentsBeTransparent() const override;
@@ -361,6 +362,12 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   // See DesktopWindowTreeHost::ShouldUseDesktopNativeCursorManager().
   bool use_desktop_native_cursor_manager_ = false;
+
+#if BUILDFLAG(IS_WIN)
+  // Used to track and discard duplicate events; Windows appears to
+  // generate them in some circumstances after a key press.
+  gfx::Point last_mouse_loc_;
+#endif
 
   // The following factory is used to provide references to the
   // DesktopNativeWidgetAura instance and used for calls to close to run drop

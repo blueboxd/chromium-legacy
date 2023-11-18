@@ -206,6 +206,8 @@ export interface OsSettingsRoutes extends MinimumRoutes {
   POWER: Route;
   PRIVACY: Route;
   PRIVACY_HUB: Route;
+  PRIVACY_HUB_CAMERA: Route;
+  PRIVACY_HUB_GEOLOCATION: Route;
   PRIVACY_HUB_MICROPHONE: Route;
   SEARCH: Route;
   SEARCH_SUBPAGE: Route;
@@ -485,6 +487,12 @@ export function createRoutes(): OsSettingsRoutes {
   r.PRIVACY_HUB_MICROPHONE = createSubpage(
       r.OS_PRIVACY, routesMojom.PRIVACY_HUB_MICROPHONE_SUBPAGE_PATH,
       Subpage.kPrivacyHubMicrophone);
+  r.PRIVACY_HUB_GEOLOCATION = createSubpage(
+      r.OS_PRIVACY, routesMojom.PRIVACY_HUB_GEOLOCATION_SUBPAGE_PATH,
+      Subpage.kPrivacyHubGeolocation);
+  r.PRIVACY_HUB_CAMERA = createSubpage(
+      r.OS_PRIVACY, routesMojom.PRIVACY_HUB_CAMERA_SUBPAGE_PATH,
+      Subpage.kPrivacyHubCamera);
 
   // About section.
   r.ABOUT = createSection(

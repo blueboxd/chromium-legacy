@@ -607,6 +607,14 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
       return nullptr;
     return d->ContextGL();
   }
+  const gpu::Capabilities& ContextGLCapabilities() const {
+    // This should only be called in contexts where ContextGL() is guaranteed
+    // to exist.
+    CHECK(ContextGL());
+    // Note: DrawingBuffer::ContextGL() comes from
+    // DrawingBuffer::ContextProvider::ContextGL().
+    return GetDrawingBuffer()->ContextProvider()->GetCapabilities();
+  }
   gpu::SharedImageInterface* SharedImageInterface() const {
     DrawingBuffer* d = GetDrawingBuffer();
     if (!d)
@@ -722,6 +730,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   friend class WebGLMultiDraw;
   friend class WebGLMultiDrawCommon;
   friend class WebGLMultiDrawInstancedBaseVertexBaseInstance;
+  friend class WebGLPolygonMode;
   friend class WebGLShaderPixelLocalStorage;
 
   WebGLRenderingContextBase(CanvasRenderingContextHost*,
@@ -787,7 +796,14 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                                      drawing_buffer_.get());
     OnBeforeDrawCall(draw_type);
     draw_func();
-    RecordUKMCanvasDrawnToAtFirstDrawCall();
+    if (!has_been_drawn_to_) {
+      // At first draw call, record
+      // Canvas/OffscreenCanvas.RenderingContextDrawnTo and what the ANGLE
+      // implementation is.
+      has_been_drawn_to_ = true;
+      RecordUKMCanvasDrawnToRenderingAPI();
+      RecordANGLEImplementation();
+    }
   }
 
   virtual void DestroyContext();
@@ -1936,9 +1952,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                         DOMArrayBufferView* pixels,
                         int64_t offset);
 
-  // Record Canvas/OffscreenCanvas.RenderingContextDrawnTo at the first draw
-  // call.
-  void RecordUKMCanvasDrawnToAtFirstDrawCall();
+  void RecordANGLEImplementation();
 
  private:
   WebGLRenderingContextBase(CanvasRenderingContextHost*,

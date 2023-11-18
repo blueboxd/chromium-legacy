@@ -110,6 +110,8 @@
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
+#include "ui/color/color_provider_manager.h"
+#include "ui/color/color_provider_utils.h"
 #include "ui/display/screen.h"
 #include "url/gurl.h"
 
@@ -3434,10 +3436,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, TitleUpdateOnRestore) {
               ui::PAGE_TRANSITION_RELOAD, false, std::string(),
               controller.GetBrowserContext(),
               nullptr /* blob_url_loader_factory */));
-  std::unique_ptr<NavigationEntryRestoreContextImpl> context =
-      std::make_unique<NavigationEntryRestoreContextImpl>();
+  NavigationEntryRestoreContextImpl context;
   restored_entry->SetPageState(
-      controller.GetLastCommittedEntry()->GetPageState(), context.get());
+      controller.GetLastCommittedEntry()->GetPageState(), &context);
   restored_entry->SetTitle(controller.GetLastCommittedEntry()->GetTitle());
 
   // Create a new tab.
@@ -5963,7 +5964,7 @@ class MediaWatchTimeChangedDelegate : public WebContentsDelegate {
 IN_PROC_BROWSER_TEST_F(WebContentsFencedFrameBrowserTest,
                        MediaWatchTimeCallback) {
   using UkmEntry = ukm::builders::Media_WebMediaPlayerState;
-  ukm::TestAutoSetUkmRecorder test_recorder_;
+  ukm::TestAutoSetUkmRecorder test_recorder;
 
   MediaWatchTimeChangedDelegate delegate(web_contents());
   net::test_server::EmbeddedTestServerHandle test_server_handle;
@@ -5995,18 +5996,20 @@ IN_PROC_BROWSER_TEST_F(WebContentsFencedFrameBrowserTest,
   // Check if the URL is from the top level frame.
   DCHECK_EQ(top_url, delegate.watch_time().url);
 
+  base::RunLoop run_loop;
+  test_recorder.SetOnAddEntryCallback(UkmEntry::kEntryName,
+                                      run_loop.QuitClosure());
   // Leave the current page to check the UKM records.
-  RenderFrameDeletedObserver delete_observer(fenced_frame);
   fenced_frame_test_helper().NavigateFrameInFencedFrameTree(
       fenced_frame,
       embedded_test_server()->GetURL("a.com", "/fenced_frames/title1.html"));
   ASSERT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
-  delete_observer.WaitUntilDeleted();
+  run_loop.Run();
 
-  const auto& entries = test_recorder_.GetEntriesByName(UkmEntry::kEntryName);
+  const auto& entries = test_recorder.GetEntriesByName(UkmEntry::kEntryName);
   EXPECT_EQ(1u, entries.size());
   for (const auto* entry : entries)
-    test_recorder_.ExpectEntryMetric(entry, UkmEntry::kIsTopFrameName, false);
+    test_recorder.ExpectEntryMetric(entry, UkmEntry::kIsTopFrameName, false);
 }
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(USE_STARSCAN)
@@ -6162,6 +6165,18 @@ class MockColorProviderSource : public ui::ColorProviderSource {
   const ui::ColorProvider* GetColorProvider() const override {
     return &provider_;
   }
+  const ui::RendererColorMap GetRendererColorMap(
+      ui::ColorProviderKey::ColorMode color_mode,
+      ui::ColorProviderKey::ForcedColors forced_colors) const override {
+    auto key = GetColorProviderKey();
+    key.color_mode = color_mode;
+    key.forced_colors = forced_colors;
+    ui::ColorProvider* color_provider =
+        ui::ColorProviderManager::Get().GetColorProviderFor(key);
+    CHECK(color_provider);
+    return ui::CreateRendererColorMap(*color_provider);
+  }
+
   ui::ColorProviderKey GetColorProviderKey() const override { return key_; }
 
  private:

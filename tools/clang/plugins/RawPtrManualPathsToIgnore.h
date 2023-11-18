@@ -54,7 +54,6 @@ constexpr const char* const kRawPtrManualPathsToIgnore[] = {
 
     // DEPS prohibits includes from base/
     "chrome/install_static",
-    "net/cert/pki",
     "sandbox/mac/",
 
     // Exclude pocdll.dll as it doesn't depend on //base and only used for
@@ -102,9 +101,6 @@ constexpr const char* const kRawPtrManualPathsToIgnore[] = {
     "third_party/blink/public/web/",  // TODO: Consider renaming this directory
                                       // to",
                                       // public/renderer?",
-
-    // Moved from //third_party/blink/renderer/platform/image-decoders/
-    "components/image_decoders/",
 
     // Contains sysroot dirs like debian_bullseye_amd64-sysroot/ that are not
     // part of the repository.

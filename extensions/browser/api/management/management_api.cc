@@ -278,9 +278,11 @@ bool PlatformSupportsApprovalFlowForExtensions() {
 #if BUILDFLAG(IS_CHROMEOS)
   // ChromeOS devices have this feature already shipped.
   return true;
-#else
+#elif BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
   return base::FeatureList::IsEnabled(
       supervised_user::kEnableExtensionsPermissionsForSupervisedUsersOnDesktop);
+#else
+  return false;
 #endif
 }
 }  // namespace
@@ -301,7 +303,7 @@ ExtensionFunction::ResponseAction ManagementGetAllFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction ManagementGetFunction::Run() {
-  absl::optional<management::Get::Params> params =
+  std::optional<management::Get::Params> params =
       management::Get::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
@@ -322,7 +324,7 @@ ExtensionFunction::ResponseAction ManagementGetSelfFunction::Run() {
 
 ExtensionFunction::ResponseAction
 ManagementGetPermissionWarningsByIdFunction::Run() {
-  absl::optional<management::GetPermissionWarningsById::Params> params =
+  std::optional<management::GetPermissionWarningsById::Params> params =
       management::GetPermissionWarningsById::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -339,7 +341,7 @@ ManagementGetPermissionWarningsByIdFunction::Run() {
 
 ExtensionFunction::ResponseAction
 ManagementGetPermissionWarningsByManifestFunction::Run() {
-  absl::optional<management::GetPermissionWarningsByManifest::Params> params =
+  std::optional<management::GetPermissionWarningsByManifest::Params> params =
       management::GetPermissionWarningsByManifest::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -386,7 +388,7 @@ void ManagementGetPermissionWarningsByManifestFunction::OnParse(
 }
 
 ExtensionFunction::ResponseAction ManagementLaunchAppFunction::Run() {
-  absl::optional<management::LaunchApp::Params> params =
+  std::optional<management::LaunchApp::Params> params =
       management::LaunchApp::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -415,7 +417,7 @@ ManagementSetEnabledFunction::ManagementSetEnabledFunction() = default;
 ManagementSetEnabledFunction::~ManagementSetEnabledFunction() = default;
 
 ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
-  absl::optional<management::SetEnabled::Params> params =
+  std::optional<management::SetEnabled::Params> params =
       management::SetEnabled::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
   extension_id_ = params->id;
@@ -718,7 +720,7 @@ ManagementUninstallFunction::~ManagementUninstallFunction() {
 }
 
 ExtensionFunction::ResponseAction ManagementUninstallFunction::Run() {
-  absl::optional<management::Uninstall::Params> params =
+  std::optional<management::Uninstall::Params> params =
       management::Uninstall::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -734,7 +736,7 @@ ManagementUninstallSelfFunction::~ManagementUninstallSelfFunction() {
 }
 
 ExtensionFunction::ResponseAction ManagementUninstallSelfFunction::Run() {
-  absl::optional<management::UninstallSelf::Params> params =
+  std::optional<management::UninstallSelf::Params> params =
       management::UninstallSelf::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
   EXTENSION_FUNCTION_VALIDATE(extension_.get());
@@ -768,7 +770,7 @@ ExtensionFunction::ResponseAction ManagementCreateAppShortcutFunction::Run() {
   if (!user_gesture())
     return RespondNow(Error(keys::kGestureNeededForCreateAppShortcutError));
 
-  absl::optional<management::CreateAppShortcut::Params> params =
+  std::optional<management::CreateAppShortcut::Params> params =
       management::CreateAppShortcut::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
   const Extension* extension =
@@ -819,7 +821,7 @@ ExtensionFunction::ResponseAction ManagementSetLaunchTypeFunction::Run() {
   if (!user_gesture())
     return RespondNow(Error(keys::kGestureNeededForSetLaunchTypeError));
 
-  absl::optional<management::SetLaunchType::Params> params =
+  std::optional<management::SetLaunchType::Params> params =
       management::SetLaunchType::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
   const Extension* extension =
@@ -891,7 +893,7 @@ ExtensionFunction::ResponseAction ManagementGenerateAppForLinkFunction::Run() {
   if (!user_gesture())
     return RespondNow(Error(keys::kGestureNeededForGenerateAppForLinkError));
 
-  absl::optional<management::GenerateAppForLink::Params> params =
+  std::optional<management::GenerateAppForLink::Params> params =
       management::GenerateAppForLink::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 

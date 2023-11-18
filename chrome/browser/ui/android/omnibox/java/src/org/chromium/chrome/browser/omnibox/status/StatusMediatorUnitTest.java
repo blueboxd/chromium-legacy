@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -35,7 +36,6 @@ import org.mockito.junit.MockitoRule;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.Promise;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -43,21 +43,26 @@ import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.merchant_viewer.MerchantTrustSignalsCoordinator;
 import org.chromium.chrome.browser.omnibox.LocationBarDataProvider;
 import org.chromium.chrome.browser.omnibox.NewTabPageDelegate;
-import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
+import org.chromium.chrome.browser.omnibox.SearchEngineUtils;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.status.StatusProperties.StatusIconResource;
 import org.chromium.chrome.browser.omnibox.status.StatusView.IconTransitionType;
 import org.chromium.chrome.browser.omnibox.test.R;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.content_settings.CookieBlocking3pcdStatus;
 import org.chromium.components.content_settings.CookieControlsBreakageConfidenceLevel;
 import org.chromium.components.content_settings.CookieControlsBridge;
 import org.chromium.components.content_settings.CookieControlsBridgeJni;
+import org.chromium.components.content_settings.CookieControlsStatus;
 import org.chromium.components.permissions.PermissionDialogController;
+import org.chromium.components.prefs.PrefService;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.components.user_prefs.UserPrefsJni;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -77,7 +82,7 @@ public final class StatusMediatorUnitTest {
     private @Mock NewTabPageDelegate mNewTabPageDelegate;
     private @Mock LocationBarDataProvider mLocationBarDataProvider;
     private @Mock UrlBarEditingTextStateProvider mUrlBarEditingTextStateProvider;
-    private @Mock SearchEngineLogoUtils mSearchEngineLogoUtils;
+    private @Mock SearchEngineUtils mSearchEngineUtils;
     private @Mock Profile mProfile;
     private @Mock TemplateUrlService mTemplateUrlService;
     private @Mock PermissionDialogController mPermissionDialogController;
@@ -93,6 +98,8 @@ public final class StatusMediatorUnitTest {
 
     private @Mock WebContents mWebContents;
     private @Mock StatusView mStatusView;
+    @Mock UserPrefsJni mMockUserPrefsJni;
+    @Mock private PrefService mPrefs;
 
     Context mContext;
     Resources mResources;
@@ -110,21 +117,22 @@ public final class StatusMediatorUnitTest {
         mResources = mContext.getResources();
         mWindowAndroid = new WindowAndroid(mContext);
 
+        SearchEngineUtils.setInstanceForTesting(mSearchEngineUtils);
+
         mModel = new PropertyModel(StatusProperties.ALL_KEYS);
 
         mJniMocker.mock(CookieControlsBridgeJni.TEST_HOOKS, mCookieControlsBridgeJniMock);
 
         // By default return google g, but this behavior is overridden in some tests.
-        Promise<StatusIconResource> logoPromise =
-                Promise.fulfilled(new StatusIconResource(R.drawable.ic_logo_googleg_20dp, 0));
+        var logo = new StatusIconResource(R.drawable.ic_logo_googleg_20dp, 0);
 
         doReturn(false).when(mLocationBarDataProvider).isInOverviewAndShowingOmnibox();
         doReturn(false).when(mLocationBarDataProvider).isIncognito();
         doReturn(mNewTabPageDelegate).when(mLocationBarDataProvider).getNewTabPageDelegate();
-        doReturn(logoPromise)
-                .when(mSearchEngineLogoUtils)
-                .getSearchEngineLogo(
-                        eq(mResources), eq(BrandedColorScheme.APP_DEFAULT), any(), any());
+        doReturn(logo).when(mSearchEngineUtils).getSearchEngineLogo(BrandedColorScheme.APP_DEFAULT);
+
+        mJniMocker.mock(UserPrefsJni.TEST_HOOKS, mMockUserPrefsJni);
+        doReturn(mPrefs).when(mMockUserPrefsJni).get(mProfile);
 
         setupStatusMediator(/* isTablet= */ false);
     }
@@ -147,7 +155,6 @@ public final class StatusMediatorUnitTest {
                         isTablet,
                         mLocationBarDataProvider,
                         mPermissionDialogController,
-                        mSearchEngineLogoUtils,
                         mTemplateUrlServiceSupplier,
                         () -> mProfile,
                         mPageInfoIPHController,
@@ -378,9 +385,7 @@ public final class StatusMediatorUnitTest {
         mMediator.setUrlFocusChangePercent(0.9f);
         Assert.assertEquals(true, mModel.get(StatusProperties.SHOW_STATUS_ICON));
 
-        verify(mSearchEngineLogoUtils, times(1))
-                .getSearchEngineLogo(
-                        eq(mResources), eq(BrandedColorScheme.APP_DEFAULT), any(), any());
+        verify(mSearchEngineUtils, times(1)).getSearchEngineLogo(BrandedColorScheme.APP_DEFAULT);
 
         mMediator.setUrlFocusChangePercent(0.0f);
         Assert.assertEquals(false, mModel.get(StatusProperties.SHOW_STATUS_ICON));
@@ -477,9 +482,7 @@ public final class StatusMediatorUnitTest {
         mMediator.setUrlHasFocus(true);
 
         mMediator.onTemplateURLServiceChanged();
-        verify(mSearchEngineLogoUtils, times(2))
-                .getSearchEngineLogo(
-                        eq(mResources), eq(BrandedColorScheme.APP_DEFAULT), any(), any());
+        verify(mSearchEngineUtils, times(2)).getSearchEngineLogo(BrandedColorScheme.APP_DEFAULT);
     }
 
     @Test
@@ -593,8 +596,7 @@ public final class StatusMediatorUnitTest {
     @Test
     @SmallTest
     public void testCookieControlsIcon_animateOnPageStoppedLoading() {
-        mMediator.setUrlHasFocus(true);
-        mMediator.setCookieControlsBridge(mCookieControlsBridge);
+        setupCookieControlsTest();
 
         Assert.assertNotEquals(COOKIE_CONTROLS_ICON, getIconIdentifierForTesting());
 
@@ -615,6 +617,101 @@ public final class StatusMediatorUnitTest {
         // explicitly reported.
         mMediator.onPageLoadStopped();
         Assert.assertNotEquals(COOKIE_CONTROLS_ICON, getIconIdentifierForTesting());
+    }
+
+    private void setupCookieControlsTest() {
+        mMediator.setUrlHasFocus(true);
+        mMediator.updateVerboseStatus(ConnectionSecurityLevel.SECURE, false, false);
+        mMediator.setCookieControlsBridge(mCookieControlsBridge);
+        doReturn(2).when(mPrefs).getInteger(Pref.TRACKING_PROTECTION_ONBOARDING_ACK_ACTION);
+    }
+
+    @Test
+    @SmallTest
+    public void iphReminder3pcd_trackingProtectionsEnabled_cookieBlockingEnabled() {
+        setupCookieControlsTest();
+
+        mMediator.onStatusChanged(
+                CookieControlsStatus.ENABLED,
+                /* enforcement= */ 0,
+                CookieBlocking3pcdStatus.LIMITED,
+                /* expiration= */ 0);
+        Assert.assertNotEquals(COOKIE_CONTROLS_ICON, getIconIdentifierForTesting());
+
+        // IPH should be shown
+        mMediator.onPageLoadStopped();
+        verify(mPageInfoIPHController, times(1)).showCookieControlsReminderIPH(anyInt(), anyInt());
+    }
+
+    @Test
+    @SmallTest
+    public void iphReminder3pcd_withNoSecureConnection() {
+        setupCookieControlsTest();
+
+        mMediator.updateVerboseStatus(ConnectionSecurityLevel.NONE, false, false);
+
+        mMediator.onStatusChanged(
+                CookieControlsStatus.ENABLED,
+                /* enforcement= */ 0,
+                CookieBlocking3pcdStatus.LIMITED,
+                /* expiration= */ 0);
+
+        // IPH should NOT be shown
+        mMediator.onPageLoadStopped();
+        verify(mPageInfoIPHController, never()).showCookieControlsReminderIPH(anyInt(), anyInt());
+    }
+
+    @Test
+    @SmallTest
+    public void iphReminder3pcd_onboardingNoticeNotYetAcked() {
+        setupCookieControlsTest();
+
+        // No interaction with the Tracking Protection onboarding Notice yet.
+        doReturn(0).when(mPrefs).getInteger(Pref.TRACKING_PROTECTION_ONBOARDING_ACK_ACTION);
+
+        mMediator.onStatusChanged(
+                CookieControlsStatus.ENABLED,
+                /* enforcement= */ 0,
+                CookieBlocking3pcdStatus.LIMITED,
+                /* expiration= */ 0);
+
+        // IPH should NOT be shown
+        mMediator.onPageLoadStopped();
+        verify(mPageInfoIPHController, never()).showCookieControlsReminderIPH(anyInt(), anyInt());
+    }
+
+    @Test
+    @SmallTest
+    public void iphReminder3pcd_trackingProtectionsEnabled_cookieBlockingDisabled() {
+        setupCookieControlsTest();
+
+        mMediator.onStatusChanged(
+                CookieControlsStatus.DISABLED,
+                /* enforcement= */ 0,
+                CookieBlocking3pcdStatus.LIMITED,
+                /* expiration= */ 0);
+        Assert.assertNotEquals(COOKIE_CONTROLS_ICON, getIconIdentifierForTesting());
+
+        // IPH should NOT be shown
+        mMediator.onPageLoadStopped();
+        verify(mPageInfoIPHController, never()).showCookieControlsReminderIPH(anyInt(), anyInt());
+    }
+
+    @Test
+    @SmallTest
+    public void iphReminder3pcd_trackingProtectionsDisabled_cookieBlockingEnabled() {
+        setupCookieControlsTest();
+
+        mMediator.onStatusChanged(
+                CookieControlsStatus.ENABLED,
+                /* enforcement= */ 0,
+                CookieBlocking3pcdStatus.NOT_IN3PCD,
+                /* expiration= */ 0);
+        Assert.assertNotEquals(COOKIE_CONTROLS_ICON, getIconIdentifierForTesting());
+
+        // IPH should NOT be shown
+        mMediator.onPageLoadStopped();
+        verify(mPageInfoIPHController, never()).showCookieControlsReminderIPH(anyInt(), anyInt());
     }
 
     @Test

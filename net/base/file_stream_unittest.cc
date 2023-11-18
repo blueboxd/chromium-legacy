@@ -780,7 +780,7 @@ TEST_F(FileStreamTest, WriteError) {
   auto stream = std::make_unique<FileStream>(
       std::move(file), base::SingleThreadTaskRunner::GetCurrentDefault());
 
-  scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(1);
+  scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBufferWithSize>(1);
   buf->data()[0] = 0;
 
   TestCompletionCallback callback;
@@ -805,7 +805,7 @@ TEST_F(FileStreamTest, ReadError) {
   auto stream = std::make_unique<FileStream>(
       std::move(file), base::SingleThreadTaskRunner::GetCurrentDefault());
 
-  scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(1);
+  scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBufferWithSize>(1);
   TestCompletionCallback callback;
   int rv = stream->Read(buf.get(), 1, callback.callback());
   if (rv == ERR_IO_PENDING)
@@ -842,7 +842,7 @@ TEST_F(FileStreamTest, AsyncFlagMismatch) {
 // TODO(https://crbug.com/894599): flaky on both android and cronet bots.
 TEST_F(FileStreamTest, DISABLED_ContentUriRead) {
   base::FilePath test_dir;
-  base::PathService::Get(base::DIR_SOURCE_ROOT, &test_dir);
+  base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &test_dir);
   test_dir = test_dir.AppendASCII("net");
   test_dir = test_dir.AppendASCII("data");
   test_dir = test_dir.AppendASCII("file_stream_unittest");

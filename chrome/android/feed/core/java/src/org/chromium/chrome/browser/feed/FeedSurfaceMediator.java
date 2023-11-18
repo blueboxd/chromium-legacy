@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed;
 
-import static org.chromium.components.browser_ui.widget.listmenu.BasicListMenu.buildMenuListItem;
+import static org.chromium.components.browser_ui.widget.BrowserUiListMenuUtils.buildMenuListItem;
 
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +18,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.LayoutManager;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.ObserverList;
@@ -53,8 +54,6 @@ import org.chromium.chrome.browser.xsurface.feed.StreamType;
 import org.chromium.components.browser_ui.widget.displaystyle.DisplayStyleObserver;
 import org.chromium.components.browser_ui.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
-import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
-import org.chromium.components.browser_ui.widget.listmenu.ListMenuItemProperties;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
@@ -64,6 +63,8 @@ import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.listmenu.ListMenu;
+import org.chromium.ui.listmenu.ListMenuItemProperties;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -282,14 +283,15 @@ public class FeedSurfaceMediator
          * visible.
          */
         mTemplateUrlService.addObserver(this);
-        if (mIsNewTabSearchEngineUrlAndroidEnabled) {
-            // It is possible that the default search engine has been changed before any NTP or
-            // Start is showing, update the value of Pref.ENABLE_SNIPPETS_BY_DSE here. The
-            // value should be updated before adding an observer to prevent an extra call of
-            // updateContent().
-            getPrefService().setBoolean(
-                    Pref.ENABLE_SNIPPETS_BY_DSE, mTemplateUrlService.isDefaultSearchEngineGoogle());
-        }
+        // It is possible that the default search engine has been changed before any NTP or
+        // Start is showing, update the value of Pref.ENABLE_SNIPPETS_BY_DSE here. The
+        // value should be updated before adding an observer to prevent an extra call of
+        // updateContent().
+        getPrefService()
+                .setBoolean(
+                        Pref.ENABLE_SNIPPETS_BY_DSE,
+                        !mIsNewTabSearchEngineUrlAndroidEnabled
+                                || mTemplateUrlService.isDefaultSearchEngineGoogle());
 
         if (sTestPrefChangeRegistar != null) {
             mPrefChangeRegistrar = sTestPrefChangeRegistar;
@@ -413,6 +415,9 @@ public class FeedSurfaceMediator
 
     /** Update the content based on supervised user or enterprise policy. */
     void updateContent() {
+        // See https://crbug.com/1498004.
+        if (ApplicationStatus.isEveryActivityDestroyed()) return;
+
         mFeedEnabled = FeedFeatures.isFeedEnabled();
         if (mFeedEnabled && !mTabToStreamMap.isEmpty()) {
             return;
@@ -1012,7 +1017,9 @@ public class FeedSurfaceMediator
     private ModelList buildMenuItems() {
         ModelList itemList = new ModelList();
         int iconId = 0;
-        if (FeedServiceBridge.isSignedIn()) {
+
+        // Do not display Manage menu items for the supervised-user feed.
+        if (FeedServiceBridge.isSignedIn() && !mCoordinator.shouldDisplaySupervisedFeed()) {
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_FEED)) {
                 itemList.add(buildMenuListItem(
                         R.string.ntp_manage_feed, R.id.ntp_feed_header_menu_item_manage, iconId));

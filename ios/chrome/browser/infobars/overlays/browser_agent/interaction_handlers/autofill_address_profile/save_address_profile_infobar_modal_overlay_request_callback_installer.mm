@@ -12,10 +12,10 @@
 #import "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/autofill_address_profile/save_address_profile_infobar_modal_interaction_handler.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_util.h"
-#import "ios/chrome/browser/overlays/public/infobar_modal/save_address_profile_infobar_modal_overlay_request_config.h"
-#import "ios/chrome/browser/overlays/public/infobar_modal/save_address_profile_infobar_modal_overlay_responses.h"
-#import "ios/chrome/browser/overlays/public/overlay_callback_manager.h"
-#import "ios/chrome/browser/overlays/public/overlay_response.h"
+#import "ios/chrome/browser/overlays/model/public/infobar_modal/save_address_profile_infobar_modal_overlay_request_config.h"
+#import "ios/chrome/browser/overlays/model/public/infobar_modal/save_address_profile_infobar_modal_overlay_responses.h"
+#import "ios/chrome/browser/overlays/model/public/overlay_callback_manager.h"
+#import "ios/chrome/browser/overlays/model/public/overlay_response.h"
 
 using autofill_address_profile_infobar_overlays::
     SaveAddressProfileModalRequestConfig;
@@ -48,16 +48,9 @@ void SaveAddressProfileInfobarModalOverlayRequestCallbackInstaller::
     return;
   }
 
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillAccountProfileStorage)) {
-    EditedProfileSaveAction* info =
-        response->GetInfo<EditedProfileSaveAction>();
-    interaction_handler_->SaveEditedProfile(infobar, info->profile_data());
-  } else {
-    LegacyEditedProfileSaveAction* info =
-        response->GetInfo<LegacyEditedProfileSaveAction>();
-    interaction_handler_->SaveEditedProfile(infobar, info->profile_data());
-  }
+  EditedProfileSaveAction* info =
+      response->GetInfo<EditedProfileSaveAction>();
+  interaction_handler_->SaveEditedProfile(infobar, info->profile_data());
 }
 
 void SaveAddressProfileInfobarModalOverlayRequestCallbackInstaller::

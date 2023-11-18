@@ -32,10 +32,30 @@ String MLOperator::OperatorKindToString(MLOperator::OperatorKind kind) {
       return "abs";
     case MLOperator::OperatorKind::kCeil:
       return "ceil";
+    case MLOperator::OperatorKind::kCos:
+      return "cos";
+    case MLOperator::OperatorKind::kExp:
+      return "exp";
     case MLOperator::OperatorKind::kFloor:
       return "floor";
+    case MLOperator::OperatorKind::kLog:
+      return "log";
     case MLOperator::OperatorKind::kNeg:
       return "neg";
+    case MLOperator::OperatorKind::kSin:
+      return "sin";
+    case MLOperator::OperatorKind::kTan:
+      return "tan";
+    case MLOperator::OperatorKind::kErf:
+      return "erf";
+    case MLOperator::OperatorKind::kIdentity:
+      return "identity";
+    case MLOperator::OperatorKind::kLogicalNot:
+      return "logicalNot";
+    case MLOperator::OperatorKind::kReciprocal:
+      return "reciprocal";
+    case MLOperator::OperatorKind::kSqrt:
+      return "sqrt";
     case MLOperator::OperatorKind::kLeakyRelu:
       return "leakyRelu";
     case MLOperator::OperatorKind::kMax:
@@ -44,6 +64,8 @@ String MLOperator::OperatorKindToString(MLOperator::OperatorKind kind) {
       return "min";
     case MLOperator::OperatorKind::kElu:
       return "elu";
+    case MLOperator::OperatorKind::kExpand:
+      return "expand";
     case MLOperator::OperatorKind::kGemm:
       return "gemm";
     case MLOperator::OperatorKind::kHardSwish:
@@ -52,16 +74,34 @@ String MLOperator::OperatorKindToString(MLOperator::OperatorKind kind) {
       return "averagePool2d";
     case MLOperator::OperatorKind::kMaxPool2d:
       return "maxPool2d";
+    case MLOperator::OperatorKind::kMatmul:
+      return "matmul";
     case MLOperator::OperatorKind::kPad:
       return "pad";
     case MLOperator::OperatorKind::kPow:
       return "pow";
     case MLOperator::OperatorKind::kPRelu:
       return "prelu";
+    case MLOperator::OperatorKind::kReduceL1:
+      return "reduceL1";
+    case MLOperator::OperatorKind::kReduceL2:
+      return "reduceL2";
+    case MLOperator::OperatorKind::kReduceLogSum:
+      return "reduceLogSum";
+    case MLOperator::OperatorKind::kReduceLogSumExp:
+      return "reduceLogSumExp";
+    case MLOperator::OperatorKind::kReduceMax:
+      return "reduceMax";
     case MLOperator::OperatorKind::kReduceMean:
       return "reduceMean";
+    case MLOperator::OperatorKind::kReduceMin:
+      return "reduceMin";
+    case MLOperator::OperatorKind::kReduceProduct:
+      return "reduceProduct";
     case MLOperator::OperatorKind::kReduceSum:
       return "reduceSum";
+    case MLOperator::OperatorKind::kReduceSumSquare:
+      return "reduceSumSquare";
     case MLOperator::OperatorKind::kRelu:
       return "relu";
     case MLOperator::OperatorKind::kReshape:
@@ -70,6 +110,8 @@ String MLOperator::OperatorKindToString(MLOperator::OperatorKind kind) {
       return "resample2d";
     case MLOperator::OperatorKind::kSigmoid:
       return "sigmoid";
+    case MLOperator::OperatorKind::kSoftsign:
+      return "softsign";
     case MLOperator::OperatorKind::kSlice:
       return "slice";
     case MLOperator::OperatorKind::kSoftmax:

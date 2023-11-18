@@ -39,12 +39,12 @@ bool IsAllowedLegalNotice(const base::Feature& promo_feature) {
 FeaturePromoSpecification::AcceleratorInfo::AcceleratorInfo() = default;
 FeaturePromoSpecification::AcceleratorInfo::AcceleratorInfo(
     const AcceleratorInfo& other) = default;
-FeaturePromoSpecification::AcceleratorInfo::~AcceleratorInfo() = default;
 FeaturePromoSpecification::AcceleratorInfo::AcceleratorInfo(ValueType value)
     : value_(value) {}
 FeaturePromoSpecification::AcceleratorInfo&
 FeaturePromoSpecification::AcceleratorInfo::operator=(
     const AcceleratorInfo& other) = default;
+FeaturePromoSpecification::AcceleratorInfo::~AcceleratorInfo() = default;
 
 FeaturePromoSpecification::AcceleratorInfo&
 FeaturePromoSpecification::AcceleratorInfo::operator=(ValueType value) {
@@ -80,12 +80,10 @@ FeaturePromoSpecification::DemoPageInfo::DemoPageInfo(
 
 FeaturePromoSpecification::DemoPageInfo::DemoPageInfo(
     const DemoPageInfo& other) = default;
-
-FeaturePromoSpecification::DemoPageInfo::~DemoPageInfo() = default;
-
 FeaturePromoSpecification::DemoPageInfo&
 FeaturePromoSpecification::DemoPageInfo::operator=(const DemoPageInfo& other) =
     default;
+FeaturePromoSpecification::DemoPageInfo::~DemoPageInfo() = default;
 
 // static
 constexpr HelpBubbleArrow FeaturePromoSpecification::kDefaultBubbleArrow;
@@ -93,7 +91,7 @@ constexpr HelpBubbleArrow FeaturePromoSpecification::kDefaultBubbleArrow;
 FeaturePromoSpecification::FeaturePromoSpecification() = default;
 
 FeaturePromoSpecification::FeaturePromoSpecification(
-    FeaturePromoSpecification&& other) = default;
+    FeaturePromoSpecification&& other) noexcept = default;
 
 FeaturePromoSpecification::FeaturePromoSpecification(
     const base::Feature* feature,
@@ -110,10 +108,11 @@ FeaturePromoSpecification::FeaturePromoSpecification(
   DCHECK(bubble_body_string_id_);
 }
 
+FeaturePromoSpecification& FeaturePromoSpecification::operator=(
+    FeaturePromoSpecification&& other) noexcept = default;
+
 FeaturePromoSpecification::~FeaturePromoSpecification() = default;
 
-FeaturePromoSpecification& FeaturePromoSpecification::operator=(
-    FeaturePromoSpecification&& other) = default;
 
 std::u16string FeaturePromoSpecification::FormatString(
     int string_id,
@@ -283,6 +282,12 @@ FeaturePromoSpecification::SetCustomActionDismissText(
     int custom_action_dismiss_string_id) {
   DCHECK(promo_type_ == PromoType::kCustomAction);
   custom_action_dismiss_string_id_ = custom_action_dismiss_string_id;
+  return *this;
+}
+
+FeaturePromoSpecification& FeaturePromoSpecification::SetHighlightedMenuItem(
+    const ui::ElementIdentifier highlighted_menu_identifier) {
+  highlighted_menu_identifier_ = highlighted_menu_identifier;
   return *this;
 }
 

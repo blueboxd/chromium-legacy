@@ -23,7 +23,7 @@
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
-#include "components/password_manager/core/browser/statistics_table.h"
+#include "components/password_manager/core/browser/password_store/interactions_stats.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 
@@ -727,6 +727,7 @@ void PasswordFormMetricsRecorder::RecordPasswordBubbleShown(
     case metrics_util::AUTOMATIC_SHARED_PASSWORDS_NOTIFICATION:
     case metrics_util::AUTOMATIC_ADD_USERNAME_BUBBLE:
     case metrics_util::MANUAL_ADD_USERNAME_BUBBLE:
+    case metrics_util::AUTOMATIC_RELAUNCH_CHROME_BUBBLE:
       // Do nothing.
       return;
 

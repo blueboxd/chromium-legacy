@@ -21,7 +21,7 @@ namespace extensions {
 // Tests that the ExtensionEvents enum in enums.xml exactly matches the
 // C++ enum definition.
 TEST(ExtensionEventHistogramValueTest, CheckEnums) {
-  absl::optional<base::HistogramEnumEntryMap> enums =
+  std::optional<base::HistogramEnumEntryMap> enums =
       base::ReadEnumFromEnumsXml("ExtensionEvents");
   ASSERT_TRUE(enums);
   // The number of enums in the histogram entry should be equal to the number of
@@ -29,7 +29,7 @@ TEST(ExtensionEventHistogramValueTest, CheckEnums) {
   EXPECT_EQ(events::ENUM_BOUNDARY, enums->size());
 
   base::FilePath src_root;
-  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_root));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &src_root));
   base::FilePath event_histogram_value =
       src_root.AppendASCII("extensions")
           .AppendASCII("browser")

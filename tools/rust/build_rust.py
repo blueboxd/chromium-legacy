@@ -92,8 +92,6 @@ EXCLUDED_TESTS_MAC = [
     # https://crbug.com/1479875 This fails on Mac. It relates to the large code
     # model which we don't use, so suppress it for now.
     os.path.join('tests', 'ui', 'thread-local', 'thread-local-issue-37508.rs'),
-    # https://crbug.com/1486137 Fails on Mac. Probably not critical.
-    os.path.join('tests', 'ui', 'abi', 'stack-probes-lto.rs'),
 ]
 
 CLANG_SCRIPTS_DIR = os.path.join(CHROMIUM_DIR, 'tools', 'clang', 'scripts')
@@ -748,6 +746,18 @@ def main():
 
     if not args.skip_checkout:
         CheckoutGitRepo('Rust', RUST_GIT_URL, checkout_revision, RUST_SRC_DIR)
+        # TODO(crbug.com/1493085): remove once
+        # https://github.com/rust-lang/rust/pull/116672 has been merged.
+        RunCommand([
+            'git', '-C', RUST_SRC_DIR, 'remote', 'add', 'github',
+            'https://github.com/rust-lang/rust.git'
+        ],
+                   fail_hard=False)
+        RunCommand([
+            'git', '-C', RUST_SRC_DIR, 'fetch', 'github',
+            '046503e6f4318aaba649e51becc38b1db9c87ee7'
+        ])
+        GitCherryPick(RUST_SRC_DIR, '046503e6f4318aaba649e51becc38b1db9c87ee7')
 
         path = FetchBetaPackage('cargo', checkout_revision)
         if sys.platform == 'win32':

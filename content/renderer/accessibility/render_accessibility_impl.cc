@@ -723,8 +723,6 @@ void RenderAccessibilityImpl::AXReadyCallback() {
   // the document.
   weak_factory_for_serialization_pipeline_.InvalidateWeakPtrs();
 
-  last_serialization_timestamp_ = now;
-
   SendPendingAccessibilityEvents();
 }
 
@@ -1169,9 +1167,12 @@ bool RenderAccessibilityImpl::SerializeUpdatesAndEvents(
 
   if (had_end_of_test_event) {
     ui::AXEvent end_of_test(root.AxID(), ax::mojom::Event::kEndOfTest);
-    if (!WebAXObject::IsDirty(document)) {
+    if (!WebAXObject::IsDirty(document) && GetMainDocument().IsLoaded()) {
       events.emplace_back(end_of_test);
     } else {
+      DLOG(ERROR) << "Had end of test event, but document is still dirty. "
+                     "Serialize post lifecycle: "
+                  << serialize_post_lifecycle_;
       // Document is still dirty, queue up another end of test and process
       // immediately.
       if (!serialize_post_lifecycle_) {
@@ -1425,6 +1426,7 @@ void RenderAccessibilityImpl::OnSerializationReceived() {
   // AXReadyCallback() will be called. ScheduleAXUpdate() will only schedule a
   // visual update if the AXObjectCache is dirty.
   serialization_in_flight_ = false;
+  last_serialization_timestamp_ = base::Time::Now();
   if (immediate_update_required_after_ack_) {
     ScheduleImmediateAXUpdate();
     immediate_update_required_after_ack_ = false;

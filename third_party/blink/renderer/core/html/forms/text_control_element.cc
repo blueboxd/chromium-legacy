@@ -50,16 +50,17 @@
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_inner_elements.h"
 #include "third_party/blink/renderer/core/html/html_br_element.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/inline/fragment_items.h"
+#include "third_party/blink/renderer/core/layout/inline/inline_cursor.h"
+#include "third_party/blink/renderer/core/layout/inline/offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
@@ -72,11 +73,10 @@ namespace blink {
 
 namespace {
 
-Position GetNextSoftBreak(const NGOffsetMapping& mapping,
-                          InlineCursor& cursor) {
+Position GetNextSoftBreak(const OffsetMapping& mapping, InlineCursor& cursor) {
   while (cursor) {
     DCHECK(cursor.Current().IsLineBox()) << cursor;
-    const auto* break_token = cursor.Current().InlineBreakToken();
+    const auto* break_token = cursor.Current().GetInlineBreakToken();
     cursor.MoveToNextLine();
     // We don't need to emit a LF for the last line.
     if (!cursor)
@@ -132,7 +132,9 @@ void TextControlElement::DefaultEventHandler(Event& event) {
   if (event.type() == event_type_names::kWebkitEditableContentChanged &&
       GetLayoutObject() && GetLayoutObject()->IsTextControl()) {
     last_change_was_user_edit_ = !GetDocument().IsRunningExecCommand();
-    user_has_edited_the_field_ |= last_change_was_user_edit_;
+    if (last_change_was_user_edit_) {
+      SetUserHasEditedTheField();
+    }
 
     if (IsFocused()) {
       // Updating the cache in SelectionChanged() isn't enough because
@@ -214,8 +216,15 @@ void TextControlElement::UpdatePlaceholderVisibility() {
   if (placeholder) {
     placeholder->SetInlineStyleProperty(
         CSSPropertyID::kDisplay,
-        IsPlaceholderVisible() || !SuggestedValue().empty() ? CSSValueID::kBlock
-                                                            : CSSValueID::kNone,
+        // The placeholder "element" is used to display both the placeholder
+        // "value" and the suggested value. Which is why even if the placeholder
+        // value is not visible, we still show the placeholder element during a
+        // preview state so that the suggested value becomes visible. This
+        // mechanism will change, since Autofill previews are expected to move
+        // to the browser process (as per crbug.com/1474969).
+        IsPlaceholderVisible() || !SuggestedValue().IsNull()
+            ? CSSValueID::kBlock
+            : CSSValueID::kNone,
         true);
   }
 
@@ -282,11 +291,15 @@ void TextControlElement::SetFocused(bool flag,
 }
 
 void TextControlElement::DispatchFormControlChangeEvent() {
+  if (UserHasEditedTheField()) {
+    // If the user has edited the field, then at this point we should also start
+    // matching :user-valid/:user-invalid.
+    SetUserHasEditedTheFieldAndBlurred();
+  }
   if (!value_before_first_user_edit_.IsNull() &&
       !EqualIgnoringNullity(value_before_first_user_edit_, Value())) {
     ClearValueBeforeFirstUserEdit();
     DispatchChangeEvent();
-    SetInteractedSinceLastFormSubmit(true);
   } else {
     ClearValueBeforeFirstUserEdit();
   }
@@ -920,7 +933,7 @@ String TextControlElement::ValueWithHardLineBreaks() const {
     InlineCursor cursor(*layout_object);
     if (!cursor)
       return Value();
-    const auto* mapping = NGInlineNode::GetOffsetMapping(layout_object);
+    const auto* mapping = InlineNode::GetOffsetMapping(layout_object);
     if (!mapping)
       return Value();
     Position break_position = GetNextSoftBreak(*mapping, cursor);
@@ -1077,7 +1090,7 @@ void TextControlElement::CloneNonAttributePropertiesFrom(
   const TextControlElement& source_element =
       static_cast<const TextControlElement&>(source);
   last_change_was_user_edit_ = source_element.last_change_was_user_edit_;
-  user_has_edited_the_field_ = source_element.user_has_edited_the_field_;
+  interacted_state_ = source_element.interacted_state_;
   HTMLFormControlElement::CloneNonAttributePropertiesFrom(source, data);
 }
 

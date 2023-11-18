@@ -7,14 +7,14 @@
 
 #include <cstdint>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/page_allocator_constants.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/check.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/compiler_specific.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/debug/alias.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/debug/debugging_buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/immediate_crash.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
 #include "build/build_config.h"
+#include "partition_alloc/page_allocator_constants.h"
+#include "partition_alloc/partition_alloc_base/check.h"
+#include "partition_alloc/partition_alloc_base/compiler_specific.h"
+#include "partition_alloc/partition_alloc_base/debug/alias.h"
+#include "partition_alloc/partition_alloc_base/debug/debugging_buildflags.h"
+#include "partition_alloc/partition_alloc_base/immediate_crash.h"
+#include "partition_alloc/partition_alloc_buildflags.h"
 
 // When PartitionAlloc is used as the default allocator, we cannot use the
 // regular (D)CHECK() macros, as they allocate internally. When an assertion is
@@ -160,6 +160,6 @@ struct PA_DEBUGKV_ALIGN DebugKv {
   static_assert(sizeof name <=                                            \
                 ::partition_alloc::internal::kDebugKeyMaxLength + 1);     \
   ::partition_alloc::internal::DebugKv PA_DEBUG_UNIQUE_NAME{name, value}; \
-  ::partition_alloc::internal::base::debug::Alias(&PA_DEBUG_UNIQUE_NAME);
+  ::partition_alloc::internal::base::debug::Alias(&PA_DEBUG_UNIQUE_NAME)
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_CHECK_H_

@@ -10,15 +10,18 @@
 #include "components/autofill/core/browser/data_model/iban.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/metrics/payments/iban_metrics.h"
+#include "components/autofill/core/browser/payments/legal_message_line.h"
+#include "components/autofill/core/browser/payments/payments_network_interface.h"
+#include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/strike_databases/payments/iban_save_strike_database.h"
 #include "components/sync/service/sync_user_settings.h"
 
 namespace autofill {
 
-IbanSaveManager::IbanSaveManager(AutofillClient* client,
-                                 PersonalDataManager* personal_data_manager)
-    : client_(client), personal_data_manager_(personal_data_manager) {}
+IbanSaveManager::IbanSaveManager(PersonalDataManager* personal_data_manager,
+                                 AutofillClient* client)
+    : personal_data_manager_(personal_data_manager), client_(client) {}
 
 IbanSaveManager::~IbanSaveManager() = default;
 
@@ -70,13 +73,65 @@ bool IbanSaveManager::IsIbanUploadEnabled(
   return true;
 }
 
-bool IbanSaveManager::AttemptToOfferIbanLocalSave(
-    const Iban& iban_import_candidate) {
+bool IbanSaveManager::AttemptToOfferSave(const Iban& import_candidate) {
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-  if (!ShouldOfferLocalSave(iban_import_candidate)) {
-    return false;
+  switch (DetermineHowToSaveIban(import_candidate)) {
+    case TypeOfOfferToSave::kDoNotOfferToSave:
+      return false;
+    case TypeOfOfferToSave::kOfferServerSave:
+      return AttemptToOfferUploadSave(import_candidate);
+    case TypeOfOfferToSave::kOfferLocalSave:
+      return AttemptToOfferLocalSave(import_candidate);
   }
-  iban_save_candidate_ = iban_import_candidate;
+#else
+  // IBAN save prompts do not currently exist on mobile.
+  return false;
+#endif
+}
+
+IbanSaveManager::TypeOfOfferToSave IbanSaveManager::DetermineHowToSaveIban(
+    const Iban& import_candidate) const {
+  // Server IBANs are ideal and should not offer to resave to the server or
+  // locally.
+  if (MatchesExistingServerIban(import_candidate)) {
+    return TypeOfOfferToSave::kDoNotOfferToSave;
+  }
+
+  // Trigger server save if available, otherwise local save as long as the IBAN
+  // isn't already saved locally.
+  if (base::FeatureList::IsEnabled(features::kAutofillEnableServerIban) &&
+      IsIbanUploadEnabled(client_->GetSyncService())) {
+    return TypeOfOfferToSave::kOfferServerSave;
+  } else if (!MatchesExistingLocalIban(import_candidate)) {
+    return TypeOfOfferToSave::kOfferLocalSave;
+  }
+  return TypeOfOfferToSave::kDoNotOfferToSave;
+}
+
+bool IbanSaveManager::MatchesExistingLocalIban(
+    const Iban& import_candidate) const {
+  return base::ranges::any_of(
+      personal_data_manager_->GetLocalIbans(), [&](const Iban* iban) {
+        return iban->value() == import_candidate.value();
+      });
+}
+
+bool IbanSaveManager::MatchesExistingServerIban(
+    const Iban& import_candidate) const {
+  return std::ranges::any_of(
+      personal_data_manager_->GetServerIbans(),
+      [&import_candidate](const auto& iban) {
+        return iban->MatchesPrefixSuffixAndLength(import_candidate);
+      });
+}
+
+bool IbanSaveManager::AttemptToOfferLocalSave(const Iban& import_candidate) {
+  iban_save_candidate_ = import_candidate;
+
+  if (observer_for_testing_) {
+    observer_for_testing_->OnOfferLocalSave();
+  }
+
   // If the max strikes limit has been reached, do not show the IBAN save
   // prompt.
   bool show_save_prompt =
@@ -87,47 +142,26 @@ bool IbanSaveManager::AttemptToOfferIbanLocalSave(
         AutofillMetrics::SaveTypeMetric::LOCAL);
   }
 
-  if (observer_for_testing_) {
-    observer_for_testing_->OnOfferLocalSave();
-  }
-
-  // If `show_save_prompt`'s value is false, desktop builds will still offer
-  // save in the omnibox without popping-up the bubble.
   client_->ConfirmSaveIbanLocally(
       iban_save_candidate_, show_save_prompt,
       base::BindOnce(&IbanSaveManager::OnUserDidDecideOnLocalSave,
                      weak_ptr_factory_.GetWeakPtr()));
   return show_save_prompt;
-#else
-  // IBAN save prompts do not currently exist on mobile.
-  return false;
-#endif
 }
 
-bool IbanSaveManager::ShouldOfferLocalSave(
-    const Iban& iban_import_candidate) const {
-  // Only offer to save new IBANs. Users can go to the payment methods settings
-  // page to update existing IBANs if desired.
-  return base::ranges::none_of(
-      personal_data_manager_->GetLocalIbans(), [&](const auto& iban) {
-        return iban->value() == iban_import_candidate.value();
-      });
-}
-
-bool IbanSaveManager::ShouldOfferUploadSave(
-    const Iban& iban_import_candidate) const {
-  if (!base::FeatureList::IsEnabled(features::kAutofillEnableServerIban) ||
-      !IsIbanUploadEnabled(client_->GetSyncService())) {
-    return false;
-  }
-
-  // Offer server save for this IBAN if it doesn't already match an existing
-  // server IBAN.
-  return std::ranges::none_of(
-      personal_data_manager_->GetServerIbans(),
-      [&iban_import_candidate](const auto& iban) {
-        return iban->MatchesPrefixSuffixAndLength(iban_import_candidate);
-      });
+bool IbanSaveManager::AttemptToOfferUploadSave(const Iban& import_candidate) {
+  iban_save_candidate_ = import_candidate;
+  // If the max strikes limit has been reached, do not show the save prompt.
+  bool show_save_prompt =
+      !GetIbanSaveStrikeDatabase()->ShouldBlockFeature(GetPartialIbanHashString(
+          base::UTF16ToUTF8(iban_save_candidate_.value())));
+  client_->GetPaymentsNetworkInterface()->GetIbanUploadDetails(
+      personal_data_manager_->app_locale(),
+      payments::GetBillingCustomerId(personal_data_manager_),
+      payments::kUploadPaymentMethodBillableServiceNumber,
+      base::BindOnce(&IbanSaveManager::OnDidGetUploadDetails,
+                     weak_ptr_factory_.GetWeakPtr()));
+  return show_save_prompt;
 }
 
 IbanSaveStrikeDatabase* IbanSaveManager::GetIbanSaveStrikeDatabase() {
@@ -140,7 +174,7 @@ IbanSaveStrikeDatabase* IbanSaveManager::GetIbanSaveStrikeDatabase() {
 
 void IbanSaveManager::OnUserDidDecideOnLocalSave(
     AutofillClient::SaveIbanOfferUserDecision user_decision,
-    const absl::optional<std::u16string>& nickname) {
+    std::optional<std::u16string> nickname) {
   if (nickname.has_value()) {
     std::u16string trimmed_nickname;
     base::TrimWhitespace(nickname.value(), base::TRIM_ALL, &trimmed_nickname);
@@ -171,6 +205,32 @@ void IbanSaveManager::OnUserDidDecideOnLocalSave(
         observer_for_testing_->OnDeclineSaveIbanComplete();
       }
       break;
+  }
+}
+
+void IbanSaveManager::OnDidGetUploadDetails(
+    AutofillClient::PaymentsRpcResult result,
+    const std::u16string& context_token,
+    std::unique_ptr<base::Value::Dict> legal_message) {
+  if (result == AutofillClient::PaymentsRpcResult::kSuccess) {
+    // Upload should only be offered when legal messages are parsed
+    // successfully.
+    std::unique_ptr<LegalMessageLines> parsed_legal_message_lines =
+        std::make_unique<LegalMessageLines>();
+    if (LegalMessageLine::Parse(*legal_message,
+                                parsed_legal_message_lines.get(),
+                                /*escape_apostrophes=*/true)) {
+      context_token_ = context_token;
+      // TODO(b/296651801): Trigger upload bubble via ChromeAutofillClient and
+      // offer upload by using `context_token_` and
+      // `parsed_legal_message_lines`.
+      return;
+    }
+  }
+
+  // If the upload details request failed, attempt to offer local save.
+  if (!MatchesExistingLocalIban(iban_save_candidate_)) {
+    AttemptToOfferLocalSave(iban_save_candidate_);
   }
 }
 

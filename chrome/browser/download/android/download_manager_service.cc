@@ -80,7 +80,8 @@ ScopedJavaLocalRef<jobject> JNI_DownloadManagerService_CreateJavaDownloadItem(
   DCHECK(!item->IsTransient());
   return Java_DownloadItem_createDownloadItem(
       env, DownloadManagerService::CreateJavaDownloadInfo(env, item),
-      item->GetStartTime().ToJavaTime(), item->GetEndTime().ToJavaTime(),
+      item->GetStartTime().InMillisecondsSinceUnixEpoch(),
+      item->GetEndTime().InMillisecondsSinceUnixEpoch(),
       item->GetFileExternallyRemoved());
 }
 
@@ -171,7 +172,8 @@ ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
       url::GURLAndroid::FromNativeGURL(env, item->GetReferrerUrl()),
       time_remaining_known ? time_delta.InMilliseconds()
                            : kUnknownRemainingTime,
-      item->GetLastAccessTime().ToJavaTime(), item->IsDangerous(),
+      item->GetLastAccessTime().InMillisecondsSinceUnixEpoch(),
+      item->IsDangerous(),
       static_cast<int>(
           OfflineItemUtils::ConvertDownloadInterruptReasonToFailState(
               item->GetLastReason())));
@@ -530,7 +532,6 @@ void DownloadManagerService::ResumeDownloadInternal(
     OnResumptionFailed(download_guid);
     return;
   }
-  DownloadControllerBase::Get()->AboutToResumeDownload(item);
   item->Resume(has_user_gesture);
   if (resume_callback_for_testing_)
     std::move(resume_callback_for_testing_).Run(true);

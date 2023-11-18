@@ -8,8 +8,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/android/plus_addresses/jni_headers/PlusAddressCreationViewBridge_jni.h"
+#include "chrome/browser/ui/android/tab_model/tab_model.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/ui/plus_addresses/plus_address_creation_controller.h"
-#include "chrome/grit/generated_resources.h"
+#include "components/plus_addresses/plus_address_types.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
@@ -21,19 +24,26 @@ PlusAddressCreationViewAndroid::PlusAddressCreationViewAndroid(
     content::WebContents* web_contents)
     : controller_(controller), web_contents_(web_contents) {}
 
-PlusAddressCreationViewAndroid::~PlusAddressCreationViewAndroid() = default;
+PlusAddressCreationViewAndroid::~PlusAddressCreationViewAndroid() {
+  if (java_object_) {
+    Java_PlusAddressCreationViewBridge_destroy(
+        base::android::AttachCurrentThread(), java_object_);
+  }
+}
 
-void PlusAddressCreationViewAndroid::Show(
+void PlusAddressCreationViewAndroid::ShowInit(
     const std::string& primary_email_address) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  java_object_.Reset(Java_PlusAddressCreationViewBridge_create(
-      env, reinterpret_cast<intptr_t>(this)));
+  TabModel* tab_model = TabModelList::GetTabModelForWebContents(web_contents_);
+  if (!tab_model) {
+    // TODO(crbug.com/1467623): Verify expected behavior in this case.
+    return;
+  }
 
-  base::android::ScopedJavaLocalRef<jstring> j_formatted_email =
-      base::android::ConvertUTF8ToJavaString(
-          env, l10n_util::GetStringFUTF8(
-                   IDS_PLUS_ADDRESS_MODAL_REGULAR_ADDRESS_LABEL,
-                   base::UTF8ToUTF16(primary_email_address)));
+  java_object_.Reset(Java_PlusAddressCreationViewBridge_create(
+      env, reinterpret_cast<intptr_t>(this),
+      web_contents_->GetTopLevelNativeWindow()->GetJavaObject(),
+      tab_model->GetJavaObject()));
 
   // TODO(b/303054310): Once project exigencies allow for it, convert all of
   // these back to the android view XML.
@@ -41,10 +51,11 @@ void PlusAddressCreationViewAndroid::Show(
       base::android::ConvertUTF16ToJavaString(
           env, l10n_util::GetStringUTF16(IDS_PLUS_ADDRESS_MODAL_TITLE));
 
-  base::android::ScopedJavaLocalRef<jstring> j_plus_address_label =
-      base::android::ConvertUTF16ToJavaString(
-          env,
-          l10n_util::GetStringUTF16(IDS_PLUS_ADDRESS_MODAL_PLUS_ADDRESS_LABEL));
+  base::android::ScopedJavaLocalRef<jstring> j_formatted_description =
+      base::android::ConvertUTF8ToJavaString(
+          env, l10n_util::GetStringFUTF8(
+                   IDS_PLUS_ADDRESS_MODAL_PLUS_ADDRESS_DESCRIPTION_V2,
+                   base::UTF8ToUTF16(primary_email_address)));
 
   base::android::ScopedJavaLocalRef<jstring>
       j_proposed_plus_address_placeholder =
@@ -52,11 +63,6 @@ void PlusAddressCreationViewAndroid::Show(
               env,
               l10n_util::GetStringUTF16(
                   IDS_PLUS_ADDRESS_MODAL_PROPOSED_PLUS_ADDRESS_PLACEHOLDER));
-
-  base::android::ScopedJavaLocalRef<jstring> j_plus_address_description =
-      base::android::ConvertUTF16ToJavaString(
-          env, l10n_util::GetStringUTF16(
-                   IDS_PLUS_ADDRESS_MODAL_PLUS_ADDRESS_DESCRIPTION));
 
   base::android::ScopedJavaLocalRef<jstring> j_plus_address_modal_ok =
       base::android::ConvertUTF16ToJavaString(
@@ -67,14 +73,12 @@ void PlusAddressCreationViewAndroid::Show(
           env, l10n_util::GetStringUTF16(IDS_PLUS_ADDRESS_MODAL_CANCEL_TEXT));
 
   Java_PlusAddressCreationViewBridge_show(
-      env, java_object_,
-      web_contents_->GetTopLevelNativeWindow()->GetJavaObject(),
-      j_formatted_email, j_title, j_plus_address_label,
-      j_proposed_plus_address_placeholder, j_plus_address_description,
-      j_plus_address_modal_ok, j_plus_address_modal_cancel);
+      env, java_object_, j_title, j_formatted_description,
+      j_proposed_plus_address_placeholder, j_plus_address_modal_ok,
+      j_plus_address_modal_cancel);
 }
 
-void PlusAddressCreationViewAndroid::OnConfirmed(
+void PlusAddressCreationViewAndroid::OnConfirmRequested(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   controller_->OnConfirmed();
@@ -90,5 +94,39 @@ void PlusAddressCreationViewAndroid::PromptDismissed(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   controller_->OnDialogDestroyed();
+}
+
+void PlusAddressCreationViewAndroid::ShowReserveResult(
+    const PlusProfileOrError& maybe_plus_profile) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (maybe_plus_profile.has_value()) {
+    base::android::ScopedJavaLocalRef<jstring> j_proposed_plus_address =
+        base::android::ConvertUTF8ToJavaString(
+            env, maybe_plus_profile->plus_address);
+    Java_PlusAddressCreationViewBridge_updateProposedPlusAddress(
+        env, java_object_, j_proposed_plus_address);
+  } else {
+    base::android::ScopedJavaLocalRef<jstring> j_reserve_error_message =
+        base::android::ConvertUTF8ToJavaString(
+            env,
+            l10n_util::GetStringUTF8(IDS_PLUS_ADDRESS_MODAL_ERROR_MESSAGE));
+    Java_PlusAddressCreationViewBridge_showError(env, java_object_,
+                                                 j_reserve_error_message);
+  }
+}
+
+void PlusAddressCreationViewAndroid::ShowConfirmResult(
+    const PlusProfileOrError& maybe_plus_profile) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (maybe_plus_profile.has_value()) {
+    Java_PlusAddressCreationViewBridge_finishConfirm(env, java_object_);
+  } else {
+    base::android::ScopedJavaLocalRef<jstring> j_confirm_error_message =
+        base::android::ConvertUTF8ToJavaString(
+            env,
+            l10n_util::GetStringUTF8(IDS_PLUS_ADDRESS_MODAL_ERROR_MESSAGE));
+    Java_PlusAddressCreationViewBridge_showError(env, java_object_,
+                                                 j_confirm_error_message);
+  }
 }
 }  // namespace plus_addresses

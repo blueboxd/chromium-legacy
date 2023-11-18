@@ -58,6 +58,8 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
@@ -217,6 +219,8 @@ void AnimateOpacity(T* view, bool towards_visible, bool observe_completion) {
 
 // Consists of challenge-response icon view and a label.
 class LoginAuthUserView::ChallengeResponseView : public views::View {
+  METADATA_HEADER(ChallengeResponseView, views::View)
+
  public:
   enum class State { kInitial, kAuthenticating, kFailure };
 
@@ -342,6 +346,9 @@ class LoginAuthUserView::ChallengeResponseView : public views::View {
   base::OneShotTimer reset_state_timer_;
 };
 
+BEGIN_METADATA(LoginAuthUserView, ChallengeResponseView, views::View)
+END_METADATA
+
 LoginAuthUserView::AuthMethodsMetadata::AuthMethodsMetadata() = default;
 LoginAuthUserView::AuthMethodsMetadata::~AuthMethodsMetadata() = default;
 LoginAuthUserView::AuthMethodsMetadata::AuthMethodsMetadata(
@@ -413,7 +420,7 @@ views::Button* LoginAuthUserView::TestApi::pin_password_toggle() const {
   return view_->pin_password_toggle_;
 }
 
-views::Button* LoginAuthUserView::TestApi::online_sign_in_message() const {
+views::LabelButton* LoginAuthUserView::TestApi::online_sign_in_message() const {
   return view_->online_sign_in_button_;
 }
 
@@ -570,8 +577,6 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
                           base::Unretained(this)),
       button_message);
   online_sign_in_button_ = online_sign_in_button.get();
-  online_sign_in_button_->SetText(
-      l10n_util::GetStringUTF16(IDS_ASH_LOGIN_ONLINE_SIGN_IN_MESSAGE));
 
   auto disabled_auth_message = std::make_unique<DisabledAuthMessageView>();
   disabled_auth_message_ = disabled_auth_message.get();
@@ -1074,6 +1079,7 @@ void LoginAuthUserView::OnAuthSubmit(const std::u16string& password) {
 
 void LoginAuthUserView::OnAuthComplete(bool authenticated_by_pin,
                                        absl::optional<bool> auth_success) {
+  AuthEventsRecorder::Get()->OnAuthComplete(auth_success);
   bool failed = !auth_success.value_or(false);
   LOG(WARNING) << "crbug.com/1339004 : OnAuthComplete " << failed;
 
@@ -1445,5 +1451,8 @@ std::u16string LoginAuthUserView::GetMultiUserSignInDisableAuthMessage() const {
   }
   return l10n_util::GetStringUTF16(message_id);
 }
+
+BEGIN_METADATA(LoginAuthUserView)
+END_METADATA
 
 }  // namespace ash

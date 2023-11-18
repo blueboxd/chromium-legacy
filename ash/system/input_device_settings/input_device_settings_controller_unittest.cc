@@ -431,6 +431,7 @@ class InputDeviceSettingsControllerTest : public NoSessionAshTestBase {
         {features::kPeripheralCustomization,
          features::kInputDeviceSettingsSplit,
          features::kAltClickAndSixPackCustomization,
+         features::kPeripheralNotification,
          ::features::kSupportF11AndF12KeyShortcuts},
         {});
     NoSessionAshTestBase::SetUp();
@@ -789,6 +790,28 @@ TEST_F(InputDeviceSettingsControllerTest, BlockMouseKeyEventRewrite) {
             controller_->GetConnectedMice()[0]->customization_restriction);
 }
 
+TEST_F(InputDeviceSettingsControllerTest,
+       BlockMouseKeyEventRewriteRestartObserving) {
+  fake_device_manager_->AddFakeMouse(kSampleCustomizableMouse);
+  EXPECT_EQ(mojom::CustomizationRestriction::kAllowCustomizations,
+            controller_->GetConnectedMice()[0]->customization_restriction);
+
+  controller_->StartObservingButtons(kSampleCustomizableMouse.id);
+  auto* rewriter = Shell::Get()
+                       ->event_rewriter_controller()
+                       ->peripheral_customization_event_rewriter();
+  EXPECT_EQ(1u, rewriter->mice_to_observe().size());
+  EXPECT_EQ(1u, rewriter->mice_to_observe_key_events().size());
+
+  fake_device_manager_->AddFakeKeyboard(kSampleKeyboardInternal2,
+                                        kKbdTopRowLayout1Tag);
+  EXPECT_EQ(mojom::CustomizationRestriction::kDisableKeyEventRewrites,
+            controller_->GetConnectedMice()[0]->customization_restriction);
+
+  EXPECT_EQ(1u, rewriter->mice_to_observe().size());
+  EXPECT_EQ(0u, rewriter->mice_to_observe_key_events().size());
+}
+
 TEST_F(InputDeviceSettingsControllerTest, KeyboardSettingsAreValid) {
   fake_device_manager_->AddFakeKeyboard(kSampleKeyboardInternal,
                                         kKbdTopRowLayout1Tag);
@@ -866,18 +889,30 @@ TEST_F(InputDeviceSettingsControllerTest, GraphicsTabletSettingsAreValid) {
                                          mojom::GraphicsTabletSettings::New());
   EXPECT_EQ(observer_->num_graphics_tablets_settings_updated(), 2u);
 
-  // Invalid settings with a button remapping name more than 64 characters.
+  // Invalid settings with a button remapping name more than 32 characters.
   settings->pen_button_remappings[0]->name =
-      "This is a really long name which is used to test the name max length";
+      "This is a really long name to test the name max length";
   controller_->SetGraphicsTabletSettings(kSampleGraphicsTablet.id,
                                          settings.Clone());
   EXPECT_EQ(observer_->num_graphics_tablets_settings_updated(), 2u);
 
-  // Valid settings with a button remapping name fewer than 64 characters.
+  // Valid settings with a button remapping name fewer than 32 characters.
   settings->pen_button_remappings[0]->name = "Short valid name";
   controller_->SetGraphicsTabletSettings(kSampleGraphicsTablet.id,
                                          settings.Clone());
   EXPECT_EQ(observer_->num_graphics_tablets_settings_updated(), 3u);
+
+  // Valid settings with a button remapping name with exactly 32 characters.
+  settings->pen_button_remappings[0]->name = std::string(32, 'a');
+  controller_->SetGraphicsTabletSettings(kSampleGraphicsTablet.id,
+                                         settings.Clone());
+  EXPECT_EQ(observer_->num_graphics_tablets_settings_updated(), 4u);
+
+  // Valid settings with a button remapping name with exactly 33 characters.
+  settings->pen_button_remappings[0]->name = std::string(33, 'a');
+  controller_->SetGraphicsTabletSettings(kSampleGraphicsTablet.id,
+                                         settings.Clone());
+  EXPECT_EQ(observer_->num_graphics_tablets_settings_updated(), 4u);
 }
 
 TEST_F(InputDeviceSettingsControllerTest,
@@ -1189,23 +1224,74 @@ TEST_F(InputDeviceSettingsControllerTest, RestoreDefaultKeyboardRemappings) {
 TEST_F(InputDeviceSettingsControllerTest, MouseButtonPressed) {
   ui::DeviceDataManagerTestApi().SetMouseDevices({kSampleMouseUsb});
 
-  mojom::ButtonPtr button =
-      mojom::Button::NewCustomizableButton(mojom::CustomizableButton::kMiddle);
-  controller_->OnMouseButtonPressed(kSampleMouseUsb.id, *button);
+  base::HistogramTester histogram_tester;
+  controller_->OnMouseButtonPressed(kSampleMouseUsb.id,
+                                    *mojom::Button::NewCustomizableButton(
+                                        mojom::CustomizableButton::kMiddle));
   EXPECT_EQ(1u, observer_->num_mouse_settings_updated());
   EXPECT_EQ(1u, observer_->num_mouse_buttons_pressed());
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.Settings.Device.Mouse.ButtonRemapping.Registered."
+      "CustomizableButton",
+      /*expected_count=*/1u);
+
+  controller_->OnMouseButtonPressed(
+      kSampleMouseUsb.id,
+      *mojom::Button::NewCustomizableButton(mojom::CustomizableButton::kSide));
+  EXPECT_EQ(2u, observer_->num_mouse_settings_updated());
+  EXPECT_EQ(2u, observer_->num_mouse_buttons_pressed());
+
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.Settings.Device.Mouse.ButtonRemapping.Registered."
+      "CustomizableButton",
+      /*expected_count=*/2u);
+  controller_->OnMouseButtonPressed(
+      kSampleMouseUsb.id,
+      *mojom::Button::NewCustomizableButton(mojom::CustomizableButton::kExtra));
+  EXPECT_EQ(3u, observer_->num_mouse_settings_updated());
+  EXPECT_EQ(3u, observer_->num_mouse_buttons_pressed());
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.Settings.Device.Mouse.ButtonRemapping.Registered."
+      "CustomizableButton",
+      /*expected_count=*/3u);
 
   auto* settings = controller_->GetMouseSettings(kSampleMouseUsb.id);
   ASSERT_TRUE(settings);
-  ASSERT_EQ(1u, settings->button_remappings.size());
-  EXPECT_EQ(*button, *settings->button_remappings[0]->button);
-  EXPECT_EQ("Button 1", settings->button_remappings[0]->name);
+  ASSERT_EQ(3u, settings->button_remappings.size());
+  EXPECT_EQ(
+      *mojom::Button::NewCustomizableButton(mojom::CustomizableButton::kMiddle),
+      *settings->button_remappings[0]->button);
+  EXPECT_EQ("Middle Button", settings->button_remappings[0]->name);
   EXPECT_EQ(nullptr, settings->button_remappings[0]->remapping_action.get());
+
+  EXPECT_EQ(
+      *mojom::Button::NewCustomizableButton(mojom::CustomizableButton::kSide),
+      *settings->button_remappings[1]->button);
+  EXPECT_EQ("Other Button 1", settings->button_remappings[1]->name);
+  EXPECT_EQ(nullptr, settings->button_remappings[1]->remapping_action.get());
+
+  EXPECT_EQ(
+      *mojom::Button::NewCustomizableButton(mojom::CustomizableButton::kExtra),
+      *settings->button_remappings[2]->button);
+  EXPECT_EQ("Other Button 2", settings->button_remappings[2]->name);
+  EXPECT_EQ(nullptr, settings->button_remappings[2]->remapping_action.get());
+
+  // Press a same button again, the button register metrics should not emit.
+  controller_->OnMouseButtonPressed(kSampleMouseUsb.id,
+                                    *mojom::Button::NewCustomizableButton(
+                                        mojom::CustomizableButton::kMiddle));
+  EXPECT_EQ(3u, observer_->num_mouse_settings_updated());
+  EXPECT_EQ(4u, observer_->num_mouse_buttons_pressed());
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.Settings.Device.Mouse.ButtonRemapping.Registered."
+      "CustomizableButton",
+      /*expected_count=*/3u);
 }
 
 TEST_F(InputDeviceSettingsControllerTest, GraphicsTabletButtonPressed) {
   ui::DeviceDataManagerTestApi().SetGraphicsTabletDevices(
       {kSampleGraphicsTablet});
+  base::HistogramTester histogram_tester;
 
   mojom::ButtonPtr pen_button =
       mojom::Button::NewCustomizableButton(mojom::CustomizableButton::kForward);
@@ -1217,19 +1303,27 @@ TEST_F(InputDeviceSettingsControllerTest, GraphicsTabletButtonPressed) {
   EXPECT_EQ(2u, observer_->num_graphics_tablets_settings_updated());
   EXPECT_EQ(1u, observer_->num_tablet_buttons_pressed());
   EXPECT_EQ(1u, observer_->num_pen_buttons_pressed());
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.Settings.Device.GraphicsTablet.ButtonRemapping.Registered."
+      "Vkey",
+      /*expected_count=*/1u);
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.Settings.Device.GraphicsTabletPen.ButtonRemapping.Registered."
+      "CustomizableButton",
+      /*expected_count=*/1u);
 
   auto* settings =
       controller_->GetGraphicsTabletSettings(kSampleGraphicsTablet.id);
   ASSERT_TRUE(settings);
   ASSERT_EQ(1u, settings->pen_button_remappings.size());
   EXPECT_EQ(*pen_button, *settings->pen_button_remappings[0]->button);
-  EXPECT_EQ("Button 1", settings->pen_button_remappings[0]->name);
+  EXPECT_EQ("Other Button 1", settings->pen_button_remappings[0]->name);
   EXPECT_EQ(nullptr,
             settings->pen_button_remappings[0]->remapping_action.get());
 
   ASSERT_EQ(1u, settings->tablet_button_remappings.size());
   EXPECT_EQ(*tablet_button, *settings->tablet_button_remappings[0]->button);
-  EXPECT_EQ("Button 1", settings->tablet_button_remappings[0]->name);
+  EXPECT_EQ("Other Button 1", settings->tablet_button_remappings[0]->name);
   EXPECT_EQ(nullptr,
             settings->tablet_button_remappings[0]->remapping_action.get());
 }

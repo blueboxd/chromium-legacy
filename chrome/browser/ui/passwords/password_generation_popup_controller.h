@@ -31,15 +31,13 @@ class PasswordGenerationPopupController
   // Called by the view when the edit password row was clicked.
   virtual void EditPasswordClicked() = 0;
 
-  // Called by the view when the edit password row was selected.
-  virtual void EditPasswordSelected() = 0;
+  // Called by the view when the edit password hovered state changes.
+  virtual void EditPasswordHovered(bool hovered) = 0;
 
-// Only on Desktop, the password generation promo contains a link to the Google
-// password manager and an indicator to which Google account passwords are
-// saved. Therefore, the following methods aren't relevant for Android.
+// Only on Desktop, the password generation promo contains an indicator of which
+// Google account passwords are saved to. Therefore, the following method isn't
+// relevant for Android.
 #if !BUILDFLAG(IS_ANDROID)
-  virtual void OnGooglePasswordManagerLinkClicked() = 0;
-
   // Returns the email of current primary account. Returns empty string if no
   // account is signed in.
   virtual std::u16string GetPrimaryAccountEmail() = 0;
@@ -48,6 +46,7 @@ class PasswordGenerationPopupController
   // Accessors
   virtual GenerationUIState state() const = 0;
   virtual bool password_selected() const = 0;
+  virtual bool edit_password_selected() const = 0;
   virtual const std::u16string& password() const = 0;
 
   // Translated strings

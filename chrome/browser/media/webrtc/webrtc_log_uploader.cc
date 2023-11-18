@@ -89,10 +89,22 @@ void ResizeForNextOutput(std::string* compressed_log, z_stream* stream) {
 
 }  // namespace
 
+BASE_FEATURE(kWebRTCLogUploadSuffix,
+             "WebRTCLogUploadSuffix",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 WebRtcLogUploader::UploadDoneData::UploadDoneData() = default;
 WebRtcLogUploader::UploadDoneData::UploadDoneData(
     WebRtcLogUploader::UploadDoneData&& other) = default;
 WebRtcLogUploader::UploadDoneData::~UploadDoneData() = default;
+
+// static
+WebRtcLogUploader* WebRtcLogUploader::GetInstance() {
+  if (!g_browser_process) {
+    return nullptr;
+  }
+  return g_browser_process->webrtc_log_uploader();
+}
 
 WebRtcLogUploader::WebRtcLogUploader()
     : main_task_runner_(base::SequencedTaskRunner::GetCurrentDefault()),
@@ -135,7 +147,8 @@ void WebRtcLogUploader::OnLoggingStopped(
   if (base::PathExists(upload_done_data.paths.directory)) {
     webrtc_logging::DeleteOldWebRtcLogFiles(upload_done_data.paths.directory);
 
-    local_log_id = base::NumberToString(base::Time::Now().ToDoubleT());
+    local_log_id =
+        base::NumberToString(base::Time::Now().InSecondsFSinceUnixEpoch());
     base::FilePath log_file_path =
         upload_done_data.paths.directory.AppendASCII(local_log_id)
             .AddExtension(FILE_PATH_LITERAL(".gz"));
@@ -376,11 +389,18 @@ void WebRtcLogUploader::SetupMultipart(
 #else
 #error Platform not supported.
 #endif
-  net::AddMultipartValueForUpload("prod", product, kWebrtcLogMultipartBoundary,
-                                  "", post_data);
   net::AddMultipartValueForUpload(
-      "ver", base::StrCat({version_info::GetVersionNumber(), "-webrtc"}),
+      "prod",
+      (base::FeatureList::IsEnabled(kWebRTCLogUploadSuffix)
+           ? base::StrCat({product, "_webrtc"})
+           : product),
       kWebrtcLogMultipartBoundary, "", post_data);
+  std::string version(
+      base::FeatureList::IsEnabled(kWebRTCLogUploadSuffix)
+          ? version_info::GetVersionNumber()
+          : base::StrCat({version_info::GetVersionNumber(), "-webrtc"}));
+  net::AddMultipartValueForUpload("ver", version, kWebrtcLogMultipartBoundary,
+                                  "", post_data);
   net::AddMultipartValueForUpload("guid", "0", kWebrtcLogMultipartBoundary, "",
                                   post_data);
   net::AddMultipartValueForUpload("type", "webrtc_log",
@@ -566,8 +586,9 @@ void WebRtcLogUploader::AddLocallyStoredLogInfoToUploadListFile(
 
   // Write the log ID and capture time to the log list file. Leave the upload
   // time and report ID empty.
-  contents += ",," + local_log_id + "," +
-              base::NumberToString(base::Time::Now().ToDoubleT()) + '\n';
+  contents +=
+      ",," + local_log_id + "," +
+      base::NumberToString(base::Time::Now().InSecondsFSinceUnixEpoch()) + '\n';
 
   if (!base::WriteFile(upload_list_path, contents)) {
     DPLOG(WARNING) << "Could not write data to WebRTC log list file.";
@@ -596,7 +617,8 @@ void WebRtcLogUploader::AddUploadedLogInfoToUploadListFile(
   // to find the local log ID, in that case insert the data into the existing
   // line. Otherwise add it in the end.
   base::Time time_now = base::Time::Now();
-  std::string time_now_str = base::NumberToString(time_now.ToDoubleT());
+  std::string time_now_str =
+      base::NumberToString(time_now.InSecondsFSinceUnixEpoch());
   size_t pos = contents.find(",," + local_log_id);
   if (pos != std::string::npos) {
     contents.insert(pos, time_now_str);

@@ -10,6 +10,7 @@ import android.graphics.drawable.BitmapDrawable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.chromium.chrome.browser.omnibox.R;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxImageSupplier;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.carousel.BaseCarouselSuggestionItemViewBuilder;
@@ -28,6 +29,8 @@ import java.util.List;
 public class QueryTilesProcessor extends BaseCarouselSuggestionProcessor {
     private final @NonNull SuggestionHost mSuggestionHost;
     private final @Nullable OmniboxImageSupplier mImageSupplier;
+    private final int mCarouselItemViewWidth;
+    private final int mCarouselItemViewHeight;
 
     /**
      * Constructor.
@@ -43,6 +46,10 @@ public class QueryTilesProcessor extends BaseCarouselSuggestionProcessor {
         super(context);
         mSuggestionHost = host;
         mImageSupplier = imageSupplier;
+        mCarouselItemViewWidth =
+                mContext.getResources().getDimensionPixelSize(R.dimen.query_tile_view_width);
+        mCarouselItemViewHeight =
+                mContext.getResources().getDimensionPixelSize(R.dimen.query_tile_view_height);
     }
 
     @Override
@@ -59,13 +66,21 @@ public class QueryTilesProcessor extends BaseCarouselSuggestionProcessor {
     public PropertyModel createModel() {
         return new PropertyModel.Builder(BaseCarouselSuggestionViewProperties.ALL_KEYS)
                 .with(BaseCarouselSuggestionViewProperties.TILES, new ArrayList<>())
+                .with(
+                        BaseCarouselSuggestionViewProperties.CONTENT_DESCRIPTION,
+                        mContext.getResources()
+                                .getString(R.string.accessibility_omnibox_query_tiles_list))
                 .build();
     }
 
     @Override
-    public int getMinimumCarouselItemViewHeight() {
-        // TODO(crbug/1490333): identify correct height.
-        return 0;
+    public int getCarouselItemViewWidth() {
+        return mCarouselItemViewWidth;
+    }
+
+    @Override
+    public int getCarouselItemViewHeight() {
+        return mCarouselItemViewHeight;
     }
 
     @Override

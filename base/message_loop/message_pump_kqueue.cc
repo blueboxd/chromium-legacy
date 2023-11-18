@@ -301,13 +301,13 @@ bool MessagePumpKqueue::WatchMachReceivePort(
   return true;
 }
 
-TimeTicks MessagePumpKqueue::AjdustDelayedRunTime(TimeTicks earliest_time,
+TimeTicks MessagePumpKqueue::AdjustDelayedRunTime(TimeTicks earliest_time,
                                                   TimeTicks run_time,
                                                   TimeTicks latest_time) {
   if (g_timer_slack.load(std::memory_order_relaxed)) {
     return earliest_time;
   }
-  return MessagePump::AjdustDelayedRunTime(earliest_time, run_time,
+  return MessagePump::AdjustDelayedRunTime(earliest_time, run_time,
                                            latest_time);
 }
 
@@ -505,6 +505,7 @@ bool MessagePumpKqueue::DoInternalWork(Delegate* delegate,
 bool MessagePumpKqueue::ProcessEvents(Delegate* delegate, size_t count) {
   bool did_work = false;
 
+  delegate->BeginNativeWorkBeforeDoWork();
   for (size_t i = 0; i < count; ++i) {
     auto* event = &events_[i];
     if (event->filter == EVFILT_READ || event->filter == EVFILT_WRITE) {

@@ -141,8 +141,8 @@ constexpr auto kTitleRowNoMessageCollapsedPadding =
 
 constexpr auto kHeaderRowExpandedPadding = gfx::Insets::TLBR(6, 0, 8, 0);
 constexpr auto kHeaderRowCollapsedPadding = gfx::Insets::TLBR(0, 0, 8, 0);
-constexpr auto kRightContentCollapsedPadding = gfx::Insets::TLBR(12, 0, 0, 16);
-constexpr auto kRightContentExpandedPadding = gfx::Insets::TLBR(20, 0, 0, 16);
+constexpr auto kRightContentCollapsedPadding = gfx::Insets::TLBR(12, 16, 0, 0);
+constexpr auto kRightContentExpandedPadding = gfx::Insets::TLBR(20, 16, 0, 0);
 constexpr auto kTimeStampInCollapsedStatePadding =
     gfx::Insets::TLBR(0, 0, 0, 16);
 
@@ -345,6 +345,11 @@ void AshNotificationView::GroupedNotificationsContainer::
   parent_notification_view_ = parent_notification_view;
 }
 
+BEGIN_METADATA(AshNotificationView,
+               GroupedNotificationsContainer,
+               views::BoxLayoutView)
+END_METADATA
+
 AshNotificationView::NotificationTitleRow::NotificationTitleRow(
     const std::u16string& title)
     : title_view_(AddChildView(GenerateTitleView(title))),
@@ -485,9 +490,6 @@ void AshNotificationView::NotificationTitleRow::OnThemeChanged() {
   }
 }
 
-// static
-const char AshNotificationView::kViewClassName[] = "AshNotificationView";
-
 AshNotificationView::AshNotificationView(
     const message_center::Notification& notification,
     bool shown_in_popup)
@@ -547,6 +549,8 @@ AshNotificationView::AshNotificationView(
                       views::Builder<views::FlexLayoutView>()
                           .SetOrientation(views::LayoutOrientation::kVertical)
                           .SetCrossAxisAlignment(views::LayoutAlignment::kEnd)
+                          .SetMinimumCrossAxisSize(
+                              kExpandAndControlButtonsContainerMinimumWidth)
                           .AddChild(
                               views::Builder<views::BoxLayoutView>()
                                   .SetMainAxisAlignment(MainAxisAlignment::kEnd)
@@ -1032,9 +1036,11 @@ void AshNotificationView::PopulateGroupNotifications(
   for (auto* notification : notifications) {
     auto notification_view =
         MessageViewFactory::Create(*notification, /*shown_in_popup=*/false);
-    // The child can either be an AshNotificationView or a custom notification
-    // view.
-    if (notification->type() != message_center::NOTIFICATION_TYPE_CUSTOM) {
+    // The child can either be an AshNotificationView or an ARC custom
+    // notification view.
+    // TODO(b/308814203): clean the static_cast checks by replacing
+    // `AshNotificationView*` with a base class.
+    if (message_center_utils::IsAshNotification(notification)) {
       auto* ash_notification_view =
           static_cast<AshNotificationView*>(notification_view.get());
       ash_notification_view->SetGroupedChildExpanded(IsExpanded());
@@ -1142,10 +1148,6 @@ void AshNotificationView::RemoveGroupNotification(
   }
 }
 
-const char* AshNotificationView::GetClassName() const {
-  return kViewClassName;
-}
-
 void AshNotificationView::UpdateViewForExpandedState(bool expanded) {
   // Grouped parent views should always use the expanded paddings, even if they
   // are collapsed.
@@ -1227,16 +1229,9 @@ void AshNotificationView::UpdateViewForExpandedState(bool expanded) {
 
     int notification_count = 0;
     for (auto* child : grouped_notifications_container_->children()) {
-      auto* message_view = static_cast<message_center::MessageView*>(child);
-      std::string notification_id = message_view->notification_id();
-
-      message_center::Notification* notification =
-          message_center::MessageCenter::Get()->FindVisibleNotificationById(
-              notification_id);
-
-      if (notification->type() != message_center::NOTIFICATION_TYPE_CUSTOM ||
-          notification->notifier_id().type !=
-              message_center::NotifierType::ARC_APPLICATION) {
+      // TODO(b/308814203): clean the static_cast checks by replacing
+      // `AshNotificationView*` with a base class.
+      if (message_center_utils::IsAshNotificationView(child)) {
         auto* notification_view = static_cast<AshNotificationView*>(child);
         notification_view->AnimateGroupedChildExpandedCollapse(expanded);
         notification_view->SetGroupedChildExpanded(expanded);
@@ -1580,10 +1575,8 @@ void AshNotificationView::OnThemeChanged() {
        right_content()->height() - icon_view()->GetImageDrawingSize().height() >
            kSmallImageBackgroundThreshold)) {
     icon_view()->set_apply_rounded_corners(false);
-    right_content()->SetBackground(views::CreateRoundedRectBackground(
-        ash::AshColorProvider::Get()->GetControlsLayerColor(
-            ash::AshColorProvider::ControlsLayerType::
-                kControlBackgroundColorInactive),
+    right_content()->SetBackground(views::CreateThemedRoundedRectBackground(
+        kColorAshControlBackgroundColorInactive,
         message_center::kImageCornerRadius));
   }
 }
@@ -1701,6 +1694,10 @@ views::View* AshNotificationView::FindGroupNotificationView(
              : *notification;
 }
 
+views::Label* AshNotificationView::GetTitleRowLabelForTest() {
+  return title_row_->title_view();
+}
+
 void AshNotificationView::OnNotificationRemoved(
     const std::string& notification_id,
     bool by_user) {
@@ -1805,36 +1802,32 @@ void AshNotificationView::UpdateMessageLabelInExpandedState(
 }
 
 void AshNotificationView::UpdateBackground(int top_radius, int bottom_radius) {
-  SkColor background_color = gfx::kPlaceholderColor;
-  // `color_provider` might be nullptr in tests.
-  const auto* color_provider = GetColorProvider();
-  if (shown_in_popup_) {
-    if (color_provider) {
-      background_color = color_provider->GetColor(kColorAshShieldAndBase80);
-    }
-  } else {
-    background_color =
-        chromeos::features::IsJellyEnabled() && color_provider
-            ? color_provider->GetColor(cros_tokens::kCrosSysSystemOnBase)
-            : AshColorProvider::Get()->GetControlsLayerColor(
-                  AshColorProvider::ControlsLayerType::
-                      kControlBackgroundColorInactive);
-  }
+  ui::ColorId background_color_id =
+      shown_in_popup_ ? static_cast<ui::ColorId>(kColorAshShieldAndBase80)
+                      : cros_tokens::kCrosSysSystemOnBase;
 
-  if (background_color == background_color_ && top_radius_ == top_radius &&
-      bottom_radius_ == bottom_radius) {
+  if (background_color_id == background_color_id_ &&
+      top_radius_ == top_radius && bottom_radius_ == bottom_radius) {
     return;
   }
 
-  if (!is_grouped_child_view_) {
-    background_color_ = background_color;
-  }
   top_radius_ = top_radius;
   bottom_radius_ = bottom_radius;
 
-  SetBackground(views::CreateBackgroundFromPainter(
-      std::make_unique<message_center::NotificationBackgroundPainter>(
-          top_radius_, bottom_radius_, background_color_)));
+  if (is_grouped_child_view_) {
+    // Grouped children are always transparent. Handle them separately.
+    SetBackground(views::CreateRoundedRectBackground(
+        SK_ColorTRANSPARENT,
+        gfx::RoundedCornersF(top_radius_, top_radius_, bottom_radius_,
+                             bottom_radius_),
+        /*border_thickness=*/0));
+    return;
+  }
+
+  background_color_id_ = background_color_id;
+  SetBackground(views::CreateThemedRoundedRectBackground(
+      background_color_id_, top_radius_, bottom_radius_,
+      /*border_thickness=*/0));
 }
 
 int AshNotificationView::GetExpandedMessageLabelWidth() {
@@ -2327,5 +2320,8 @@ void AshNotificationView::AttachBinaryImageAsDropData(
     data->SetHtml(*html_snippet, /*base_url=*/GURL());
   }
 }
+
+BEGIN_METADATA(AshNotificationView)
+END_METADATA
 
 }  // namespace ash

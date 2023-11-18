@@ -290,10 +290,12 @@ void FakeAppInstance::SendInstallationStarted(const std::string& package_name) {
 }
 
 void FakeAppInstance::SendInstallationFinished(const std::string& package_name,
-                                               bool success) {
+                                               bool success,
+                                               bool is_launchable_app) {
   mojom::InstallationResult result;
   result.package_name = package_name;
   result.success = success;
+  result.is_launchable_app = is_launchable_app;
   app_host_->OnInstallationFinished(
       mojom::InstallationResultPtr(result.Clone()));
 }
@@ -301,6 +303,8 @@ void FakeAppInstance::SendInstallationFinished(const std::string& package_name,
 void FakeAppInstance::UninstallPackage(const std::string& package_name) {
   app_host_->OnPackageRemoved(package_name);
 }
+
+void FakeAppInstance::UpdateAppDetails(const std::string& package_name) {}
 
 void FakeAppInstance::SetTaskActive(int32_t task_id) {}
 

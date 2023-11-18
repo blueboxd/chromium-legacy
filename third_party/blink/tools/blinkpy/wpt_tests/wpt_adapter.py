@@ -1,7 +1,7 @@
 # Copyright 2023 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Run web platform tests as described in //docs/testing/web_platform_tests_wptrunner.md"""
+"""Run web platform tests as described in //docs/testing/run_web_platform_tests.md"""
 
 import argparse
 import contextlib
@@ -24,9 +24,10 @@ from blinkpy.tool.blink_tool import BlinkTool
 from blinkpy.w3c.local_wpt import LocalWPT
 from blinkpy.w3c.wpt_results_processor import WPTResultsProcessor
 from blinkpy.web_tests.controllers.web_test_finder import WebTestFinder
-from blinkpy.web_tests.port.base import Port
+from blinkpy.web_tests.models.test_expectations import TestExpectations
 from blinkpy.web_tests.port import factory
 from blinkpy.wpt_tests.product import make_product_registry
+from blinkpy.wpt_tests.test_loader import TestLoader, wpt_url_to_blink_test
 
 path_finder.bootstrap_wpt_imports()
 import mozlog
@@ -83,9 +84,12 @@ class GroupingFormatter(mozlog.formatters.GroupingFormatter):
         return super().suite_start(data)
 
     def suite_end(self, data) -> str:
-        # Do not show test failures again in noninteractive mode. They are
-        # already shown during the run.
+        # Do not show test failures or flakes again in noninteractive mode.
+        # They are already shown during the run. We also don't need to
+        # differentiate between the primary expectation and "known
+        # intermittent" statuses.
         self.test_failure_text = ''
+        self.known_intermittent_results.clear()
         return super().suite_end(data)
 
 
@@ -126,6 +130,10 @@ class StructuredLogAdapter(logging.Handler):
 
 
 class WPTAdapter:
+    PORT_NAME_BY_PRODUCT = {
+        'chrome': 'chrome',
+    }
+
     def __init__(self, product, port, options, paths):
         self.product = product
         self.port = port
@@ -136,6 +144,7 @@ class WPTAdapter:
         self.paths = paths
         self.failure_threshold = 0
         self.crash_timeout_threshold = 0
+        self._expectations = TestExpectations(self.port)
 
     @classmethod
     def from_args(cls,
@@ -147,7 +156,13 @@ class WPTAdapter:
         # only run virtual tests for content shell
         cls._ensure_value(options, 'no_virtual_tests',
                           options.product != 'content_shell')
-        port = host.port_factory.get(port_name, options)
+
+        if options.product in cls.PORT_NAME_BY_PRODUCT:
+            port = host.port_factory.get(
+                cls.PORT_NAME_BY_PRODUCT[options.product], options)
+        else:
+            port = host.port_factory.get(port_name, options)
+
         if options.product == 'chrome':
             port.set_option_default('driver_name', port.CHROME_NAME)
         product = make_product(port, options)
@@ -158,10 +173,10 @@ class WPTAdapter:
             self.options.smoke = self.port.default_smoke_test_only()
         if self.options.smoke:
             if not self.paths and not self.options.test_list and self.options.num_retries is None:
-                # Retry failures 3 times if we're running a smoke test without
+                # Retry failures 1 times if we're running a smoke test without
                 # additional tests. SmokeTests is an explicit list of tests, so we
                 # wouldn't retry by default without this special case.
-                self.options.num_retries = 3
+                self.options.num_retries = 1
 
             if not self.options.test_list:
                 self.options.test_list = []
@@ -198,6 +213,7 @@ class WPTAdapter:
             install_webdriver=False,
             channel='nightly',
             affected=None,
+            logcat_dir=None,
         )
 
         # Install customized versions of `mozlog` formatters.
@@ -312,8 +328,8 @@ class WPTAdapter:
             runner_options.timeout_multiplier = self.options.timeout_multiplier
         elif (self.options.enable_sanitizer
               or self.options.configuration == 'Debug'):
-            runner_options.timeout_multiplier = 2
-            logger.info('Defaulting to 2x timeout multiplier because '
+            runner_options.timeout_multiplier = 5
+            logger.info('Defaulting to 5x timeout multiplier because '
                         'the build is debug or sanitized')
 
         if self.using_upstream_wpt:
@@ -371,24 +387,6 @@ class WPTAdapter:
             # https://github.com/web-platform-tests/wpt/blob/9593290a/tools/wptrunner/wptrunner/wptcommandline.py#L190
             runner_options.debugger_args = ' '.join(self.options.wrapper[1:])
 
-    def _prepare_lists(self, test_names):
-        tests_to_skip = set()
-        for test in test_names:
-            if (self.port.virtual_test_skipped_due_to_platform_config(test)
-                    or self.port.skipped_due_to_exclusive_virtual_tests(test)):
-                tests_to_skip.add(test)
-                continue
-
-            if self.options.enable_sanitizer and Port.is_wpt_idlharness_test(
-                    test):
-                tests_to_skip.update({test})
-
-        tests_to_run = [
-            test for test in test_names if test not in tests_to_skip
-        ]
-
-        return tests_to_run, tests_to_skip
-
     def _collect_tests(self):
         finder = WebTestFinder(self.port, self.options)
 
@@ -404,17 +402,23 @@ class WPTAdapter:
 
         if self.options.num_retries is None:
             # If --test-list is passed, or if no test narrowing is specified,
-            # default to 3 retries. Otherwise [e.g. if tests are being passed by
+            # default to 1 retries. Otherwise [e.g. if tests are being passed by
             # name], default to 0 retries.
             if self.options.test_list or len(self.paths) < len(all_test_names):
-                self.options.num_retries = 3
+                self.options.num_retries = 1
             else:
                 self.options.num_retries = 0
 
         # sharding the tests the same way as in RWT
         test_names = finder.split_into_chunks(all_test_names)
-
-        tests_to_run, _ = self._prepare_lists(test_names)
+        # TODO(crbug.com/1426296): Actually log these tests as
+        # `test_{start,end}` in `mozlog` so that they're recorded in the results
+        # JSON (and shown in `results.html`).
+        tests_to_skip = finder.skip_tests(self.paths, test_names,
+                                          self._expectations)
+        tests_to_run = [
+            test for test in test_names if test not in tests_to_skip
+        ]
 
         if not tests_to_run and not self.options.zero_tests_executed_ok:
             logger.error('No tests to run.')
@@ -532,8 +536,9 @@ class WPTAdapter:
             self._create_extra_run_info(self.fs.join(tmp_dir, 'mozinfo.json'),
                                         tests_root)
 
+            TestLoader.install(self.port, self._expectations)
             stack.enter_context(
-                self.process_and_upload_results(runner_options, tmp_dir))
+                self.process_and_upload_results(runner_options))
             self.port.setup_test_run()  # Start Xvfb, if necessary.
             stack.callback(self.port.clean_up_test_run)
             # Changing the CWD is not ideal, but necessary for `wptserve` to
@@ -596,15 +601,15 @@ class WPTAdapter:
             json.dump(run_info, file_handle)
 
     @contextlib.contextmanager
-    def process_and_upload_results(self, runner_options: argparse.Namespace,
-                                   tmp_dir: str):
+    def process_and_upload_results(self, runner_options: argparse.Namespace):
         artifacts_dir = self.port.artifacts_directory()
         processor = WPTResultsProcessor(
             self.fs,
             self.port,
             artifacts_dir=artifacts_dir,
             failure_threshold=self.failure_threshold,
-            crash_timeout_threshold=self.crash_timeout_threshold)
+            crash_timeout_threshold=self.crash_timeout_threshold,
+            reset_results=self.options.reset_results)
         with processor.stream_results() as events:
             runner_options.log.add_handler(events.put)
             yield
@@ -617,67 +622,23 @@ class WPTAdapter:
             self.port.show_results_html_file(
                 self.fs.join(artifacts_dir, 'results.html'))
         if self.options.reset_results:
-            self._reset_results(runner_options, tmp_dir)
+            self._optimize(runner_options)
 
-    def _reset_results(self, runner_options: argparse.Namespace, tmp_dir: str):
-        properties_path = self.fs.join(tmp_dir, 'update_properties.json')
-        with self.fs.open_text_file_for_writing(
-                properties_path) as properties_file:
-            json.dump(self._choose_update_properties(), properties_file)
-
+    def _optimize(self, runner_options: argparse.Namespace):
         blink_tool_path = self.finder.path_from_blink_tools('blink_tool.py')
         command = [
             blink_tool_path,
-            'update-metadata',
-            f'--report={runner_options.log_wptreport[0].name}',
-            f'--update-properties={properties_path}',
-            '--min-samples=1',
-            '--no-trigger-jobs',
+            'optimize-baselines',
             '--no-manifest-update',
         ]
         if self.options.verbose:
             command.append('--verbose')
-        command.extend(f'--exclude={exclude}'
-                       for exclude in runner_options.exclude)
-        command.extend(runner_options.include)
+        command.extend(
+            wpt_url_to_blink_test(f'/{url}') for url in runner_options.include)
         exit_code = BlinkTool(blink_tool_path).main(command)
         if exit_code != exit_codes.OK_EXIT_STATUS:
-            logger.error(
-                f'Failed to update expectations (exit code: {exit_code})')
-
-    def _choose_update_properties(self):
-        # Attempt to emulate the behavior of `run_web_tests.py --reset-results`,
-        # which places new `*-expected.txt` under:
-        #   `web_tests/(flag-specific/*/)?(virtual/*/)?`
-        #
-        # Modeling this behavior with `update-metadata` is complicated because
-        # updating the generic baselines may or may not cause virtual or
-        # flag-specific suites to inherit them, depending on whether or not
-        # those suites have existing baselines themselves.
-        #
-        # Therefore, use the following heuristics:
-        #  1. For the prototypical case where the test behavior is the same
-        #     everywhere, `run_wpt_tests.py --reset-results` with the implied
-        #     `product=content_shell` and `flag_specific=""` should add or
-        #     remove unconditional expectations.
-        #  2. Virtual suites are often designed to induce different behavior
-        #     (through enabling/disabling different features), so always use
-        #     it as an update property. Most tests never run in a virtual
-        #     suite, so (2) should not substantially interfere with (1).
-        #  3. Using a non-default `--product=...` or `--flag-specific=...`
-        #     should only update expectations for that product/flag-specific
-        #     suite, like `run_web_tests.py --reset-results --flag-specific`.
-        #     Product should also be mutually exclusive with the other update
-        #     properties, as (currently) only `content_shell` runs virtual or
-        #     flag-specific suites.
-        primary_properties = []
-        if self.port.driver_name() == self.port.CONTENT_SHELL_NAME:
-            primary_properties.append('virtual_suite')
-            if self.options.flag_specific:
-                primary_properties.append('flag_specific')
-        else:
-            primary_properties.append('product')
-        return {'properties': primary_properties}
+            logger.error('Failed to optimize baselines during results reset '
+                         f'(exit code: {exit_code})')
 
 
 def _load_entry_point():
@@ -728,6 +689,10 @@ def parse_arguments(argv):
     params = vars(parser.parse_args(argv))
     args = params.pop('tests')
     options = optparse.Values(params)
+    # Parameter needed by `WebTestFinder`. TODO(crbug.com/1426296): Port
+    # `--no-expectations` to `run_wpt_tests.py`, and skip reporting results when
+    # the flag is passed.
+    options.no_expectations = False
     # Directly tie Xvfb usage to headless mode. Xvfb can supercede a real X
     # server and therefore should never be started in `--no-headless` mode.
     # Conversely, the default headless mode should always start Xvfb.

@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.accessibility.settings.ChromeAccessibilitySettingsDelegate;
 import org.chromium.chrome.browser.autofill.options.AutofillOptionsCoordinator;
 import org.chromium.chrome.browser.autofill.options.AutofillOptionsFragment;
+import org.chromium.chrome.browser.autofill.settings.AutofillCreditCardEditor;
 import org.chromium.chrome.browser.back_press.BackPressHelper;
 import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.back_press.SecondaryActivityBackPressUma.SecondaryActivity;
@@ -506,8 +507,12 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
                     .setModalDialogManagerSupplier(getModalDialogManagerSupplier());
         }
         if (fragment instanceof BaseSiteSettingsFragment) {
-            ((BaseSiteSettingsFragment) fragment)
-                    .setSiteSettingsDelegate(new ChromeSiteSettingsDelegate(this, mProfile));
+            BaseSiteSettingsFragment baseSiteSettingsFragment =
+                    ((BaseSiteSettingsFragment) fragment);
+            baseSiteSettingsFragment.setSiteSettingsDelegate(
+                    new ChromeSiteSettingsDelegate(this, mProfile));
+            baseSiteSettingsFragment.setCustomTabIntentHelper(
+                    LaunchIntentDispatcher::createCustomTabActivityIntent);
         }
         if (fragment instanceof SafetyCheckSettingsFragment) {
             SafetyCheckCoordinator.create((SafetyCheckSettingsFragment) fragment,
@@ -586,8 +591,15 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
             AutofillOptionsCoordinator.createFor((AutofillOptionsFragment) fragment);
         }
         if (fragment instanceof TrackingProtectionSettings) {
-            ((TrackingProtectionSettings) fragment)
-                    .setTrackingProtectionDelegate(new ChromeTrackingProtectionDelegate(mProfile));
+            TrackingProtectionSettings tpFragment = ((TrackingProtectionSettings) fragment);
+            tpFragment.setTrackingProtectionDelegate(
+                    new ChromeTrackingProtectionDelegate(mProfile));
+            tpFragment.setCustomTabIntentHelper(
+                    LaunchIntentDispatcher::createCustomTabActivityIntent);
+        }
+        if (fragment instanceof AutofillCreditCardEditor) {
+            ((AutofillCreditCardEditor) fragment)
+                    .setModalDialogManagerSupplier(getModalDialogManagerSupplier());
         }
     }
 

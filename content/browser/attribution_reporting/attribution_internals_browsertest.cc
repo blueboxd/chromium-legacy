@@ -113,10 +113,12 @@ class AttributionInternalsWebUiBrowserTest : public ContentBrowserTest {
     auto manager = std::make_unique<MockAttributionManager>();
 
     ON_CALL(*manager, GetActiveSourcesForWebUI)
-        .WillByDefault(RunOnceCallback<0>(std::vector<StoredSource>{}));
+        .WillByDefault(base::test::RunOnceCallbackRepeatedly<0>(
+            std::vector<StoredSource>{}));
 
     ON_CALL(*manager, GetPendingReportsForInternalUse)
-        .WillByDefault(RunOnceCallback<1>(std::vector<AttributionReport>{}));
+        .WillByDefault(base::test::RunOnceCallbackRepeatedly<1>(
+            std::vector<AttributionReport>{}));
 
     static_cast<StoragePartitionImpl*>(shell()
                                            ->web_contents()
@@ -229,7 +231,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   EXPECT_CALL(browser_client,
               IsAttributionReportingOperationAllowed(
                   _, ContentBrowserClient::AttributionReportingOperation::kAny,
-                  _, IsNull(), IsNull(), IsNull()))
+                  _, IsNull(), IsNull(), IsNull(), IsNull()))
       .WillRepeatedly(Return(false));
 
   ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
@@ -303,11 +305,13 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   // with `Number.MAX_SAFE_INTEGER`.
 
   ON_CALL(*manager(), GetActiveSourcesForWebUI)
-      .WillByDefault(RunOnceCallback<0>(std::vector<StoredSource>{
+      .WillByDefault(base::test::RunOnceCallbackRepeatedly<
+                     0>(std::vector<StoredSource>{
           SourceBuilder(now)
               .SetSourceEventId(std::numeric_limits<uint64_t>::max())
               .SetAttributionLogic(StoredSource::AttributionLogic::kNever)
               .SetDebugKey(19)
+              .SetDebugCookieSet(true)
               .SetDestinationSites({
                   net::SchemefulSite::Deserialize("https://a.test"),
                   net::SchemefulSite::Deserialize("https://b.test"),
@@ -381,16 +385,19 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
           table.children[1].children[12]?.innerText === '{\n "a": [\n  "b",\n  "c"\n ]\n}' &&
           table.children[0].children[13]?.innerText === '{}' &&
           table.children[1].children[13]?.innerText === '{\n "a": "0x1"\n}' &&
-          table.children[0].children[14]?.innerText === '0 / 65536' &&
-          table.children[1].children[14]?.innerText === '1300 / 65536' &&
-          table.children[0].children[15]?.innerText === '19' &&
-          table.children[1].children[15]?.innerText === '' &&
-          table.children[0].children[16]?.innerText === '' &&
-          table.children[1].children[16]?.children[0]?.children[0]?.innerText === '13' &&
-          table.children[1].children[16]?.children[0]?.children[1]?.innerText === '17' &&
-          table.children[0].children[17]?.innerText === '' &&
-          table.children[1].children[17]?.children[0]?.children[0]?.innerText === '14' &&
-          table.children[1].children[17]?.children[0]?.children[1]?.innerText === '18' &&
+          table.children[0].children[14]?.innerText === 'modulus' &&
+          table.children[0].children[15]?.innerText === '0 / 65536' &&
+          table.children[1].children[15]?.innerText === '1300 / 65536' &&
+          table.children[0].children[16]?.innerText === '19' &&
+          table.children[1].children[16]?.innerText === '' &&
+          table.children[0].children[17]?.innerText === 'true' &&
+          table.children[1].children[17]?.innerText === 'false' &&
+          table.children[0].children[18]?.innerText === '' &&
+          table.children[1].children[18]?.children[0]?.children[0]?.innerText === '13' &&
+          table.children[1].children[18]?.children[0]?.children[1]?.innerText === '17' &&
+          table.children[0].children[19]?.innerText === '' &&
+          table.children[1].children[19]?.children[0]?.children[0]?.innerText === '14' &&
+          table.children[1].children[19]?.children[0]?.children[1]?.innerText === '18' &&
           table.children[0].children[1]?.innerText === 'Unattributable: noised with no reports' &&
           table.children[1].children[1]?.innerText === 'Attributable' &&
           table.children[2].children[1]?.innerText === 'Attributable: reached event-level attribution limit' &&
@@ -646,16 +653,17 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       SendResult(SendResult::Status::kTransientFailure, net::ERR_TIMED_OUT));
 
   ON_CALL(*manager(), GetPendingReportsForInternalUse)
-      .WillByDefault(RunOnceCallback<1>(std::vector<AttributionReport>{
-          ReportBuilder(
-              AttributionInfoBuilder().Build(),
-              SourceBuilder(now)
-                  .SetSourceType(SourceType::kEvent)
-                  .SetAttributionLogic(StoredSource::AttributionLogic::kFalsely)
-                  .BuildStored())
-              .SetReportTime(now)
-              .SetPriority(13)
-              .Build()}));
+      .WillByDefault(base::test::RunOnceCallbackRepeatedly<1>(
+          std::vector<AttributionReport>{
+              ReportBuilder(AttributionInfoBuilder().Build(),
+                            SourceBuilder(now)
+                                .SetSourceType(SourceType::kEvent)
+                                .SetAttributionLogic(
+                                    StoredSource::AttributionLogic::kFalsely)
+                                .BuildStored())
+                  .SetReportTime(now)
+                  .SetPriority(13)
+                  .Build()}));
   manager()->NotifyTriggerHandled(
       DefaultTrigger(),
       CreateReportResult(
@@ -877,8 +885,9 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   base::Time now = base::Time::Now();
 
   ON_CALL(*manager(), GetActiveSourcesForWebUI)
-      .WillByDefault(RunOnceCallback<0>(std::vector<StoredSource>{
-          SourceBuilder(now).SetSourceEventId(5).BuildStored()}));
+      .WillByDefault(
+          base::test::RunOnceCallbackRepeatedly<0>(std::vector<StoredSource>{
+              SourceBuilder(now).SetSourceEventId(5).BuildStored()}));
 
   manager()->NotifySourceHandled(
       SourceBuilder(now + base::Hours(2)).SetSourceEventId(6).Build(),
@@ -947,8 +956,6 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        WebUISendReports_ReportsRemoved) {
-  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
-
   EXPECT_CALL(*manager(), GetPendingReportsForInternalUse)
       .WillOnce(RunOnceCallback<1>(std::vector<AttributionReport>{
           ReportBuilder(AttributionInfoBuilder().Build(),
@@ -962,6 +969,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
               SendReportsForWebUI(ElementsAre(AttributionReport::Id(5)), _))
       .WillOnce([](const std::vector<AttributionReport::Id>& ids,
                    base::OnceClosure done) { std::move(done).Run(); });
+
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
   static constexpr char kScript[] = R"(
     const table = document.querySelector('#reportTable')
@@ -986,7 +995,6 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
   // Wait for the table to rendered.
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
-  ClickRefreshButton();
   ASSERT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
 
   // Click the send reports button and expect that the report table is emptied.
@@ -997,9 +1005,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   ASSERT_TRUE(ExecJsInWebUI(R"(
     document.querySelector('#reportTable')
      .shadowRoot.querySelector('input[type="checkbox"]').click();
+    document.getElementById('send-reports').click();
   )"));
-  ASSERT_TRUE(
-      ExecJsInWebUI("document.getElementById('send-reports').click();"));
 
   // The real manager would do this itself, but the test manager requires manual
   // triggering.
@@ -1090,16 +1097,17 @@ IN_PROC_BROWSER_TEST_F(
                               SendResult(SendResult::Status::kSent, net::OK,
                                          /*http_response_code=*/200));
   ON_CALL(*manager(), GetPendingReportsForInternalUse)
-      .WillByDefault(RunOnceCallback<1>(std::vector<AttributionReport>{
-          ReportBuilder(AttributionInfoBuilder().Build(),
-                        SourceBuilder(now)
-                            .SetSourceType(SourceType::kEvent)
-                            .BuildStored())
-              .SetReportTime(now)
-              .SetAggregatableHistogramContributions(contributions)
-              .SetAggregationCoordinatorOrigin(
-                  *SuitableOrigin::Deserialize("https://aws.example.test"))
-              .BuildAggregatableAttribution()}));
+      .WillByDefault(base::test::RunOnceCallbackRepeatedly<1>(
+          std::vector<AttributionReport>{
+              ReportBuilder(AttributionInfoBuilder().Build(),
+                            SourceBuilder(now)
+                                .SetSourceType(SourceType::kEvent)
+                                .BuildStored())
+                  .SetReportTime(now)
+                  .SetAggregatableHistogramContributions(contributions)
+                  .SetAggregationCoordinatorOrigin(
+                      *SuitableOrigin::Deserialize("https://aws.example.test"))
+                  .BuildAggregatableAttribution()}));
 
   {
     static constexpr char kScript[] = R"(
@@ -1280,8 +1288,6 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        WebUISendAggregatableReports_ReportsRemoved) {
-  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
-
   EXPECT_CALL(*manager(), GetPendingReportsForInternalUse)
       .WillOnce(RunOnceCallback<1>(std::vector<AttributionReport>{
           ReportBuilder(AttributionInfoBuilder().Build(),
@@ -1296,6 +1302,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
               SendReportsForWebUI(ElementsAre(AttributionReport::Id(5)), _))
       .WillOnce([](const std::vector<AttributionReport::Id>& ids,
                    base::OnceClosure done) { std::move(done).Run(); });
+
+  ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
   static constexpr char kScript[] = R"(
     const table = document.querySelector('#aggregatableReportTable')
@@ -1320,7 +1328,6 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
   // Wait for the table to rendered.
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
-  ClickRefreshButton();
   ASSERT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
 
   // Click the send reports button and expect that the report table is emptied.
@@ -1330,14 +1337,21 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   static constexpr char kObserveEmptyReportsTableScript[] = R"(
     const table = document.querySelector('#aggregatableReportTable')
         .shadowRoot.querySelector('tbody');
-    const obs = new MutationObserver((_, obs) => {
+    const setTitleIfDone = (_, obs) => {
       if (table.children.length === 1 &&
           table.children[0].children[0]?.innerText === 'No sent or pending reports.') {
-        obs.disconnect();
+        if (obs) {
+          obs.disconnect();
+        }
         document.title = $1;
+        return true;
       }
-    });
-    obs.observe(table, {childList: true, subtree: true, characterData: true});
+      return false;
+    };
+    if (!setTitleIfDone()) {
+      const obs = new MutationObserver(setTitleIfDone);
+      obs.observe(table, {childList: true, subtree: true, characterData: true});
+    }
   )";
   ASSERT_TRUE(
       ExecJsInWebUI(JsReplace(kObserveEmptyReportsTableScript, kSentTitle)));
@@ -1372,12 +1386,13 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                                          /*http_response_code=*/200));
 
   ON_CALL(*manager(), GetPendingReportsForInternalUse)
-      .WillByDefault(RunOnceCallback<1>(std::vector<AttributionReport>{
-          ReportBuilder(AttributionInfoBuilder().Build(),
-                        SourceBuilder(now).BuildStored())
-              .SetReportTime(now + base::Hours(1))
-              .SetPriority(2)
-              .Build()}));
+      .WillByDefault(base::test::RunOnceCallbackRepeatedly<1>(
+          std::vector<AttributionReport>{
+              ReportBuilder(AttributionInfoBuilder().Build(),
+                            SourceBuilder(now).BuildStored())
+                  .SetReportTime(now + base::Hours(1))
+                  .SetPriority(2)
+                  .Build()}));
 
   // By default, debug reports are shown.
   {
@@ -1503,7 +1518,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       AttributionDebugReport::Create(
           SourceBuilder().SetDebugReporting(true).Build(),
           /*is_debug_cookie_set=*/true,
-          StoreSourceResult(StorableSource::Result::kInternalError));
+          StoreSourceResult(StoreSourceResult::InternalError()));
   ASSERT_TRUE(report);
 
   static constexpr char kScript[] = R"(

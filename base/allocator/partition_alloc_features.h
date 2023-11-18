@@ -71,6 +71,9 @@ BASE_EXPORT int GetPartitionAllocLargeThreadCacheSizeValue();
 BASE_EXPORT int GetPartitionAllocLargeThreadCacheSizeValueForLowRAMAndroid();
 
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocLargeEmptySlotSpanRing);
+BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocSchedulerLoopQuarantine);
+extern const BASE_EXPORT base::FeatureParam<int>
+    kPartitionAllocSchedulerLoopQuarantineCapacity;
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
 enum class BackupRefPtrEnabledProcesses {
@@ -214,6 +217,15 @@ GetThreadCacheDefaultPurgeInterval();
 BASE_EXPORT BASE_DECLARE_FEATURE(
     kEnableConfigurableThreadCacheMinCachedMemoryForPurging);
 BASE_EXPORT int GetThreadCacheMinCachedMemoryForPurgingBytes();
+
+BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocDisableBRPInBufferPartition);
+
+// This feature is additionally gated behind a buildflag because
+// pool offset freelists cannot be represented when PartitionAlloc uses
+// 32-bit pointers.
+#if BUILDFLAG(USE_FREELIST_POOL_OFFSETS)
+BASE_EXPORT BASE_DECLARE_FEATURE(kUsePoolOffsetFreelists);
+#endif
 
 }  // namespace features
 }  // namespace base

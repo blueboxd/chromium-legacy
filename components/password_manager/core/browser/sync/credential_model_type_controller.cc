@@ -56,7 +56,6 @@ void CredentialModelTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
   DCHECK(CalledOnValidThread());
   sync_service_observation_.Observe(sync_service_);
-  sync_mode_ = configure_context.sync_mode;
   ModelTypeController::LoadModels(configure_context, model_load_callback);
 }
 
@@ -64,14 +63,6 @@ void CredentialModelTypeController::Stop(syncer::SyncStopMetadataFate fate,
                                          StopCallback callback) {
   DCHECK(CalledOnValidThread());
   sync_service_observation_.Reset();
-  // In transport-only mode, our storage is scoped to the Gaia account. That
-  // means it should be cleared if Sync is stopped for any reason (other than
-  // just browser shutdown). E.g. when switching to full-Sync mode, we don't
-  // want to end up with two copies of the passwords (one in the profile DB, one
-  // in the account DB).
-  if (sync_mode_ == syncer::SyncMode::kTransportOnly) {
-    fate = syncer::SyncStopMetadataFate::CLEAR_METADATA;
-  }
   ModelTypeController::Stop(fate, std::move(callback));
 }
 
@@ -142,25 +133,7 @@ void CredentialModelTypeController::OnAccountsInCookieUpdated(
 
 void CredentialModelTypeController::OnAccountsCookieDeletedByUserAction() {
 #if !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
-  features_util::ClearAccountStorageSettingsForAllUsers(pref_service_);
-#endif  // !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
-}
-
-void CredentialModelTypeController::OnPrimaryAccountChanged(
-    const signin::PrimaryAccountChangeEvent& event) {
-#if !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
-  // TODO(crbug.com/1466447): ConsentLevel::kSync is deprecated and should be
-  // removed. See ConsentLevel::kSync documentation for details.
-  if (event.GetEventTypeFor(signin::ConsentLevel::kSync) ==
-      signin::PrimaryAccountChangeEvent::Type::kCleared) {
-    // Note: kCleared event for ConsentLevel::kSync basically means that the
-    // consent for Sync-the-feature was revoked. In this case, also clear any
-    // possible matching opt-in for the account-scoped storage, since it'd
-    // probably be surprising to the user if their account passwords still
-    // remained after disabling Sync.
-    features_util::OptOutOfAccountStorageAndClearSettingsForAccount(
-        pref_service_, event.GetPreviousState().primary_account.gaia);
-  }
+  features_util::KeepAccountStorageSettingsOnlyForUsers(pref_service_, {});
 #endif  // !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
 }
 

@@ -16,12 +16,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_field.h"
-#include "components/autofill/core/browser/field_filler.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
 #include "components/autofill/core/browser/form_parsing/form_field.h"
 #include "components/autofill/core/browser/form_parsing/regex_patterns.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
+#include "components/autofill/core/browser/select_control_util.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_regex_constants.h"
@@ -219,15 +219,18 @@ std::unique_ptr<FormField> CreditCardField::Parse(
     // detection decision, we allow for 4 UNKONWN fields in between.
     // We can't allow for a lot of unknown fields, because the name on address
     // sections may sometimes be mistakenly detected as cardholder name.
-    // Yet, it does happen that a field separates the name from the CC number
-    // (e.g. a tax payer ID). Therefore, we also allow a field between name
-    // and other fields.
-    bool has_name =
-        credit_card_field->cardholder_ || credit_card_field->cardholder_last_;
+    //
+    // While it does happen that a field separates the name from the CC number
+    // (e.g. a tax payer ID), we still don't allow a field between name and
+    // other fields because this generates false classifications for forms for
+    // the structure ([no CC holder name present], CC number, CC exp date, CVC,
+    // billing country, billing name, billing street). We have observed pretty
+    // low n-counts of forms where the former and the latter problem occurred,
+    // though.
     bool has_verification = credit_card_field->verification_;
     bool has_numbers = !credit_card_field->numbers_.empty();
     bool has_expiration = credit_card_field->HasExpiration();
-    if ((has_name || has_verification || has_numbers || has_expiration) &&
+    if ((has_verification || has_numbers || has_expiration) &&
         (!has_verification || !has_numbers || !has_expiration) &&
         nb_unknown_fields < 4) {
       scanner->Advance();
@@ -395,12 +398,12 @@ bool CreditCardField::LikelyCardTypeSelectField(AutofillScanner* scanner) {
 
   // We set |ignore_whitespace| to true on these calls because this is actually
   // a pretty common mistake; e.g., "Master card" instead of "Mastercard".
-  bool isSelect = (FieldFiller::FindShortestSubstringMatchInSelect(
+  bool isSelect = (FindShortestSubstringMatchInSelect(
                        l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_VISA), true,
-                       field) >= 0) ||
-                  (FieldFiller::FindShortestSubstringMatchInSelect(
+                       field->options) >= 0) ||
+                  (FindShortestSubstringMatchInSelect(
                        l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_MASTERCARD),
-                       true, field) >= 0);
+                       true, field->options) >= 0);
   return isSelect;
 }
 

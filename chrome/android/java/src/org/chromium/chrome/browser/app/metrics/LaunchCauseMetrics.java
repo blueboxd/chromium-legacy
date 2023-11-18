@@ -16,6 +16,7 @@ import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.build.annotations.CheckDiscard;
 import org.chromium.chrome.browser.app.ChromeActivity;
@@ -42,6 +43,7 @@ public abstract class LaunchCauseMetrics implements ApplicationStatus.Applicatio
     private PerLaunchState mPerLaunchState = new PerLaunchState();
     private BetweenLaunchState mBetweenLaunchState = new BetweenLaunchState();
     private final Activity mActivity;
+    private long mActivityId;
 
     @SuppressLint("StaticFieldLeak")
     private static Activity sLastResumedActivity;
@@ -65,14 +67,29 @@ public abstract class LaunchCauseMetrics implements ApplicationStatus.Applicatio
     }
 
     // These values are persisted in histograms. Please do not renumber. Append only.
-    @IntDef({LaunchCause.OTHER, LaunchCause.CUSTOM_TAB, LaunchCause.TWA, LaunchCause.RECENTS,
-            LaunchCause.RECENTS_OR_BACK, LaunchCause.FOREGROUND_WHEN_LOCKED,
-            LaunchCause.MAIN_LAUNCHER_ICON, LaunchCause.MAIN_LAUNCHER_ICON_SHORTCUT,
-            LaunchCause.HOME_SCREEN_WIDGET, LaunchCause.OPEN_IN_BROWSER_FROM_MENU,
-            LaunchCause.EXTERNAL_SEARCH_ACTION_INTENT, LaunchCause.NOTIFICATION,
-            LaunchCause.EXTERNAL_VIEW_INTENT, LaunchCause.OTHER_CHROME,
-            LaunchCause.WEBAPK_CHROME_DISTRIBUTOR, LaunchCause.WEBAPK_OTHER_DISTRIBUTOR,
-            LaunchCause.HOME_SCREEN_SHORTCUT, LaunchCause.SHARE_INTENT})
+    // These values are also recorded in chrome_track_event.proto in Startup.LaunchCauseType.
+    // Keep values in sync between the two files.
+    @IntDef({
+        LaunchCause.OTHER,
+        LaunchCause.CUSTOM_TAB,
+        LaunchCause.TWA,
+        LaunchCause.RECENTS,
+        LaunchCause.RECENTS_OR_BACK,
+        LaunchCause.FOREGROUND_WHEN_LOCKED,
+        LaunchCause.MAIN_LAUNCHER_ICON,
+        LaunchCause.MAIN_LAUNCHER_ICON_SHORTCUT,
+        LaunchCause.HOME_SCREEN_WIDGET,
+        LaunchCause.OPEN_IN_BROWSER_FROM_MENU,
+        LaunchCause.EXTERNAL_SEARCH_ACTION_INTENT,
+        LaunchCause.NOTIFICATION,
+        LaunchCause.EXTERNAL_VIEW_INTENT,
+        LaunchCause.OTHER_CHROME,
+        LaunchCause.WEBAPK_CHROME_DISTRIBUTOR,
+        LaunchCause.WEBAPK_OTHER_DISTRIBUTOR,
+        LaunchCause.HOME_SCREEN_SHORTCUT,
+        LaunchCause.SHARE_INTENT,
+        LaunchCause.NFC
+    })
     @Retention(RetentionPolicy.SOURCE)
     public @interface LaunchCause {
         int OTHER = 0;
@@ -93,8 +110,9 @@ public abstract class LaunchCauseMetrics implements ApplicationStatus.Applicatio
         int WEBAPK_OTHER_DISTRIBUTOR = 15;
         int HOME_SCREEN_SHORTCUT = 16;
         int SHARE_INTENT = 17;
+        int NFC = 18;
 
-        int NUM_ENTRIES = 18;
+        int NUM_ENTRIES = 19;
     }
 
     /**
@@ -174,6 +192,10 @@ public abstract class LaunchCauseMetrics implements ApplicationStatus.Applicatio
         return mPerLaunchState.mReceivedIntent;
     }
 
+    public void setActivityId(long activityId) {
+        mActivityId = activityId;
+    }
+
     /**
      * Called after Chrome has launched and all information necessary to compute why Chrome was
      * launched is available.
@@ -197,6 +219,7 @@ public abstract class LaunchCauseMetrics implements ApplicationStatus.Applicatio
 
             RecordHistogram.recordEnumeratedHistogram(
                     LAUNCH_CAUSE_HISTOGRAM, cause, LaunchCause.NUM_ENTRIES);
+            TraceEvent.startupLaunchCause(mActivityId, cause);
         } else if (mPerLaunchState.mOtherChromeActivityLastFocused) {
             // Handle the case where we're intentionally transitioning between two Chrome
             // Activities while Chrome is in the foreground, and want to count that as a Launch.
@@ -206,6 +229,7 @@ public abstract class LaunchCauseMetrics implements ApplicationStatus.Applicatio
                 if (DEBUG) logLaunchCause(cause);
                 RecordHistogram.recordEnumeratedHistogram(
                         LAUNCH_CAUSE_HISTOGRAM, cause, LaunchCause.NUM_ENTRIES);
+                TraceEvent.startupLaunchCause(mActivityId, cause);
             }
         }
         resetPerLaunchState();

@@ -27,9 +27,6 @@
 #include "ash/system/holding_space/holding_space_tray.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
 #include "ash/system/media/media_tray.h"
-#include "ash/system/message_center/unified_message_center_bubble.h"
-#include "ash/system/model/clock_model.h"
-#include "ash/system/model/system_tray_model.h"
 #include "ash/system/notification_center/notification_center_tray.h"
 #include "ash/system/overview/overview_button_tray.h"
 #include "ash/system/palette/palette_tray.h"
@@ -129,14 +126,11 @@ void StatusAreaWidget::Initialize() {
         AddTrayButton(std::make_unique<WmModeButtonTray>(shelf_));
   }
 
-  if (features::IsQsRevampEnabled()) {
     notification_center_tray_ =
         AddTrayButton(std::make_unique<NotificationCenterTray>(shelf_));
     notification_center_tray_->AddObserver(this);
     animation_controller_ = std::make_unique<StatusAreaAnimationController>(
         notification_center_tray());
-  }
-
   auto unified_system_tray = std::make_unique<UnifiedSystemTray>(shelf_);
   unified_system_tray_ = unified_system_tray.get();
   date_tray_ =
@@ -175,11 +169,9 @@ void StatusAreaWidget::Initialize() {
 StatusAreaWidget::~StatusAreaWidget() {
   Shell::Get()->session_controller()->RemoveObserver(this);
 
-  // If QsRevamp flag is enabled, reset `animation_controller_` before
-  // destroying `notification_center_tray_` so that we don't run into a UaF.
-  if (features::IsQsRevampEnabled()) {
-    animation_controller_.reset(nullptr);
-  }
+  // Resets `animation_controller_` before destroying
+  // `notification_center_tray_` so that we don't run into a UaF.
+  animation_controller_.reset(nullptr);
 
   // `TrayBubbleView` might be deleted after `StatusAreaWidget`, so we reset the
   // pointer here to avoid dangling pointer.
@@ -207,10 +199,7 @@ void StatusAreaWidget::UpdateAfterLoginStatusChange(LoginStatus login_status) {
 void StatusAreaWidget::SetSystemTrayVisibility(bool visible) {
   unified_system_tray_->SetVisiblePreferred(visible);
   date_tray_->SetVisiblePreferred(visible);
-
-  if (features::IsQsRevampEnabled()) {
-    notification_center_tray_->OnSystemTrayVisibilityChanged(visible);
-  }
+  notification_center_tray_->OnSystemTrayVisibilityChanged(visible);
 
   if (visible) {
     Show();
@@ -401,14 +390,6 @@ void StatusAreaWidget::HandleLocaleChange() {
     status_area_widget_delegate_->AddChildView(tray_button);
   }
   EnsureTrayOrder();
-}
-
-void StatusAreaWidget::NotifyAnyBubbleVisibilityChanged(
-    views::Widget* bubble_widget,
-    bool visible) {
-  for (auto* tray_button : tray_buttons_) {
-    tray_button->OnAnyBubbleVisibilityChanged(bubble_widget, visible);
-  }
 }
 
 void StatusAreaWidget::CalculateButtonVisibilityForCollapsedState() {
@@ -693,16 +674,6 @@ void StatusAreaWidget::SetOpenShelfPodBubble(
   }
 
   DCHECK(unified_system_tray_);
-  // We will ignore the message center bubble, since this bubble is on top of
-  // the Quick Settings and will be consider a "secondary bubble". As a result,
-  // it should not be set to be `open_shelf_pod_bubble_`. Note that this bubble
-  // will be removed when `kQsRevamp` is enabled.
-  if (unified_system_tray_->message_center_bubble() &&
-      open_shelf_pod_bubble ==
-          unified_system_tray_->message_center_bubble()->GetBubbleView()) {
-    DCHECK(!features::IsQsRevampEnabled());
-    return;
-  }
 
   if (open_shelf_pod_bubble) {
     DCHECK(open_shelf_pod_bubble->GetBubbleType() ==
@@ -814,7 +785,7 @@ StatusAreaWidget::LayoutInputs StatusAreaWidget::GetLayoutInputs() const {
 }
 
 void StatusAreaWidget::UpdateDateTrayRoundedCorners() {
-  if (!features::IsQsRevampEnabled() || !date_tray_) {
+  if (!date_tray_) {
     return;
   }
 

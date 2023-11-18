@@ -28,6 +28,7 @@
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/autocomplete_match_classification.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/keyword_provider.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
@@ -323,8 +324,7 @@ ClassifyTest::ClassifyTest(const std::u16string& text,
 ClassifyTest::~ClassifyTest() = default;
 
 ACMatchClassifications ClassifyTest::RunTest(const std::u16string& find_text) {
-  return AutocompleteProvider::ClassifyAllMatchesInString(
-      find_text, text_, text_is_query_, matches_);
+  return ClassifyAllMatchesInString(find_text, text_, text_is_query_, matches_);
 }
 
 class AutocompleteProviderTest : public testing::Test {
@@ -1615,6 +1615,45 @@ TEST_F(AutocompleteProviderTest, GetDestinationURL_SearchboxStatsOnly) {
     expected.ParseFromString(serialized_proto);
     EXPECT_EQ("2456j1j4", expected.experiment_stats());
   }
+
+#if BUILDFLAG(IS_IOS)
+  {  // Test top omnibox position in experiment stats v2.
+    AutocompleteMatch match_copy = match;
+    controller_->SetSteadyStateOmniboxPosition(
+        metrics::OmniboxEventProto::TOP_POSITION);
+    url = GetDestinationURL(match_copy, base::Milliseconds(2456));
+    EXPECT_EQ("//gs_lcrp=EgZjaHJvbWXSAQgyNDU2ajFqNOIDBBgBIF8&", url.path());
+    // Make sure searchbox_stats is serialized and encoded correctly.
+    std::string serialized_proto;
+    EXPECT_TRUE(base::Base64UrlDecode(
+        "EgZjaHJvbWXSAQgyNDU2ajFqNOIDBBgBIF8",
+        base::Base64UrlDecodePolicy::DISALLOW_PADDING, &serialized_proto));
+    omnibox::metrics::ChromeSearchboxStats expected;
+    expected.ParseFromString(serialized_proto);
+    EXPECT_EQ(1, expected.experiment_stats_v2_size());
+    EXPECT_EQ(95, expected.experiment_stats_v2(0).type_int());
+    EXPECT_EQ(1, expected.experiment_stats_v2(0).int_value());
+  }
+  {  // Test bottom omnibox position in experiment stats v2.
+    AutocompleteMatch match_copy = match;
+    controller_->SetSteadyStateOmniboxPosition(
+        metrics::OmniboxEventProto::BOTTOM_POSITION);
+    url = GetDestinationURL(match_copy, base::Milliseconds(2456));
+    EXPECT_EQ("//gs_lcrp=EgZjaHJvbWXSAQgyNDU2ajFqNOIDBBgCIF8&", url.path());
+    // Make sure searchbox_stats is serialized and encoded correctly.
+    std::string serialized_proto;
+    EXPECT_TRUE(base::Base64UrlDecode(
+        "EgZjaHJvbWXSAQgyNDU2ajFqNOIDBBgCIF8",
+        base::Base64UrlDecodePolicy::DISALLOW_PADDING, &serialized_proto));
+    omnibox::metrics::ChromeSearchboxStats expected;
+    expected.ParseFromString(serialized_proto);
+    EXPECT_EQ(1, expected.experiment_stats_v2_size());
+    EXPECT_EQ(95, expected.experiment_stats_v2(0).type_int());
+    EXPECT_EQ(2, expected.experiment_stats_v2(0).int_value());
+  }
+  controller_->SetSteadyStateOmniboxPosition(
+      metrics::OmniboxEventProto::UNKNOWN_POSITION);
+#endif
 
   // Test experiment stats v2 set.
   omnibox::metrics::ChromeSearchboxStats::ExperimentStatsV2 experiment_stats_v2;

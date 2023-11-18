@@ -439,7 +439,7 @@ DownloadBubbleRowView::DownloadBubbleRowView(
                     l10n_util::GetStringUTF16(IDS_CONFIRM_DOWNLOAD));
   AddMainPageButton(DownloadCommands::DEEP_SCAN,
                     l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_SCAN));
-  AddMainPageButton(DownloadCommands::BYPASS_DEEP_SCANNING,
+  AddMainPageButton(DownloadCommands::BYPASS_DEEP_SCANNING_AND_OPEN,
                     l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_OPEN_NOW));
   AddMainPageButton(DownloadCommands::RESUME,
                     l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_RESUME));
@@ -510,9 +510,9 @@ DownloadBubbleRowView::DownloadBubbleRowView(
                                     gfx::Size(kNumColumns, 1));
   progress_bar_holder_->SetProperty(views::kTableHorizAlignKey,
                                     views::LayoutAlignment::kStretch);
-  progress_bar_ =
-      progress_bar_holder_->AddChildView(std::make_unique<views::ProgressBar>(
-          /*preferred_height=*/kProgressBarHeight));
+  progress_bar_ = progress_bar_holder_->AddChildView(
+      std::make_unique<views::ProgressBar>());
+  progress_bar_->SetPreferredHeight(kProgressBarHeight);
   progress_bar_->SetBorder(views::CreateEmptyBorder(
       gfx::Insets::TLBR(ChromeLayoutProvider::Get()->GetDistanceMetric(
                             views::DISTANCE_RELATED_CONTROL_VERTICAL),
@@ -907,7 +907,7 @@ std::u16string DownloadBubbleRowView::GetAccessibleNameForMainPageButton(
       return l10n_util::GetStringFUTF16(
           IDS_DOWNLOAD_BUBBLE_SCAN_MAIN_BUTTON_ACCESSIBILITY,
           info_->model()->GetFileNameToReportUser().LossyDisplayName());
-    case DownloadCommands::BYPASS_DEEP_SCANNING:
+    case DownloadCommands::BYPASS_DEEP_SCANNING_AND_OPEN:
       return l10n_util::GetStringFUTF16(
           IDS_DOWNLOAD_BUBBLE_OPEN_NOW_MAIN_BUTTON_ACCESSIBILITY,
           info_->model()->GetFileNameToReportUser().LossyDisplayName());

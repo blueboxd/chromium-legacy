@@ -15,8 +15,8 @@
 namespace blink {
 
 class NGBlockBreakToken;
-struct NGLink;
 class NGPhysicalFragment;
+struct PhysicalFragmentLink;
 
 // The "simplified" layout algorithm will run in the following circumstances:
 //  - An OOF-positioned descendant of this node (this node is its containing
@@ -35,15 +35,15 @@ class NGPhysicalFragment;
 //       OOF-positioned candidate.
 //    b. Otherwise perform layout on the inflow child (which may trigger
 //       "simplified" layout on its children).
-//  3. Run the |NGOutOfFlowLayoutPart|.
-class CORE_EXPORT NGSimplifiedLayoutAlgorithm
-    : public NGLayoutAlgorithm<NGBlockNode,
-                               NGBoxFragmentBuilder,
-                               NGBlockBreakToken> {
+//  3. Run the |OutOfFlowLayoutPart|.
+class CORE_EXPORT SimplifiedLayoutAlgorithm
+    : public LayoutAlgorithm<NGBlockNode,
+                             NGBoxFragmentBuilder,
+                             NGBlockBreakToken> {
  public:
-  NGSimplifiedLayoutAlgorithm(const NGLayoutAlgorithmParams&,
-                              const NGLayoutResult&,
-                              bool keep_old_size = false);
+  SimplifiedLayoutAlgorithm(const LayoutAlgorithmParams&,
+                            const NGLayoutResult&,
+                            bool keep_old_size = false);
 
   // Perform a simple copy of all children of the old fragment.
   void CloneOldChildren();
@@ -67,7 +67,7 @@ class CORE_EXPORT NGSimplifiedLayoutAlgorithm
   NOINLINE const NGLayoutResult* LayoutWithItemsBuilder();
 
  private:
-  void AddChildFragment(const NGLink& old_fragment,
+  void AddChildFragment(const PhysicalFragmentLink& old_fragment,
                         const NGPhysicalFragment& new_fragment,
                         const MarginStrut* margin_strut = nullptr,
                         bool is_self_collapsing = false);

@@ -18,7 +18,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/pill_button.h"
-#include "ash/style/system_toast_style.h"
+#include "ash/system/toast/system_toast_view.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
@@ -146,27 +146,22 @@ class ToastOverlay::ToastHoverObserver : public ui::EventObserver {
 ///////////////////////////////////////////////////////////////////////////////
 //  ToastOverlay
 ToastOverlay::ToastOverlay(Delegate* delegate,
-                           const std::u16string& text,
-                           const std::u16string& dismiss_text,
-                           const gfx::VectorIcon& leading_icon,
-                           base::TimeDelta duration,
-                           bool persist_on_hover,
-                           aura::Window* root_window,
-                           base::RepeatingClosure dismiss_callback)
+                           ToastData& toast_data,
+                           aura::Window* root_window)
     : delegate_(delegate),
-      text_(text),
-      dismiss_text_(dismiss_text),
+      text_(toast_data.text),
+      dismiss_text_(toast_data.dismiss_text),
       overlay_widget_(new views::Widget),
-      overlay_view_(new SystemToastStyle(
-          base::BindRepeating(&ToastOverlay::OnButtonClicked,
-                              base::Unretained(this)),
-          text,
-          dismiss_text,
-          leading_icon)),
       display_observer_(std::make_unique<ToastDisplayObserver>(this)),
       root_window_(root_window),
-      dismiss_callback_(std::move(dismiss_callback)),
-      widget_size_(overlay_view_->GetPreferredSize()) {
+      dismiss_callback_(std::move(toast_data.dismiss_callback)) {
+  // TODO(b/303253656): Refactor toast dismiss callback so it does not have to
+  // bounce from the view back to ToastOverlay.
+  // The provided `toast_data`'s callback was stored in `dismiss_callback_`.
+  toast_data.dismiss_callback = base::BindRepeating(
+      &ToastOverlay::OnButtonClicked, base::Unretained(this));
+  overlay_view_ = std::make_unique<SystemToastView>(toast_data);
+
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;
   params.name = "ToastOverlay";
@@ -190,7 +185,8 @@ ToastOverlay::ToastOverlay(Delegate* delegate,
 
   // Only toasts that expire should be able to persist on hover (i.e. toasts
   // with infinite duration persist regardless of hover).
-  if (persist_on_hover && (duration != ToastData::kInfiniteDuration)) {
+  if (toast_data.persist_on_hover &&
+      (toast_data.duration != ToastData::kInfiniteDuration)) {
     hover_observer_ = std::make_unique<ToastHoverObserver>(
         overlay_window, base::BindRepeating(&ToastOverlay::OnHoverStateChanged,
                                             base::Unretained(this)));
@@ -256,8 +252,9 @@ bool ToastOverlay::MaybeToggleA11yHighlightOnDismissButton() {
 }
 
 bool ToastOverlay::MaybeActivateHighlightedDismissButton() {
-  if (!overlay_view_->is_dismiss_button_highlighted())
+  if (!overlay_view_->is_dismiss_button_highlighted()) {
     return false;
+  }
 
   OnButtonClicked();
   return true;
@@ -285,6 +282,7 @@ gfx::Rect ToastOverlay::CalculateOverlayBounds() {
 
   auto* window_controller = RootWindowController::ForWindow(window);
   auto* hotseat_widget = window_controller->shelf()->hotseat_widget();
+  auto widget_size = overlay_view_->GetPreferredSize();
 
   gfx::Rect bounds = GetUserWorkAreaBounds(window);
 
@@ -301,17 +299,17 @@ gfx::Rect ToastOverlay::CalculateOverlayBounds() {
         ((base::i18n::IsRTL() && alignment != ShelfAlignment::kRight) ||
          alignment == ShelfAlignment::kLeft)
             ? bounds.x() + ToastOverlay::kOffset
-            : bounds.right() - widget_size_.width() - ToastOverlay::kOffset;
+            : bounds.right() - widget_size.width() - ToastOverlay::kOffset;
 
-    const int target_y = bounds.bottom() - widget_size_.height() -
+    const int target_y = bounds.bottom() - widget_size.height() -
                          ToastOverlay::kOffset - CalculateSliderBubbleOffset();
 
-    return gfx::Rect(gfx::Point(target_x, target_y), widget_size_);
+    return gfx::Rect(gfx::Point(target_x, target_y), widget_size);
   }
 
   const int target_y =
-      bounds.bottom() - widget_size_.height() - ToastOverlay::kOffset;
-  bounds.ClampToCenteredSize(widget_size_);
+      bounds.bottom() - widget_size.height() - ToastOverlay::kOffset;
+  bounds.ClampToCenteredSize(widget_size);
   bounds.set_y(target_y);
   return bounds;
 }

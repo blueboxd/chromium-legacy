@@ -11,6 +11,14 @@ namespace features {
 
 // Alphabetical:
 
+// Enables package name logging for the most popular WebView embedders that are
+// on a dynamically generated allowlist.
+// The filtering for package names will be done on the server side using this
+// flag
+BASE_FEATURE(kWebViewAppsPackageNamesServerSideAllowlist,
+             "WebViewAppsPackageNamesServerSideAllowlist",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Enable brotli compression support in WebView.
 BASE_FEATURE(kWebViewBrotliSupport,
              "WebViewBrotliSupport",
@@ -23,9 +31,12 @@ BASE_FEATURE(kWebViewCheckReturnResources,
 
 // Whether to destroy the WebView rendering functor when after a WebView window
 // becomes invisible.
+//
+// From a stable experiment in October 2023, this saves tens of MiB of graphics
+// memory at high quantiles, at no performance cost.
 BASE_FEATURE(kWebViewClearFunctorInBackground,
              "WebViewClearFunctorInBackground",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Use the SafeBrowsingApiHandlerBridge which uses the connectionless GMS APIs.
 // This Feature is checked and used in downstream internal code.
@@ -46,7 +57,7 @@ BASE_FEATURE(kWebViewEnumerateDevicesCache,
 
 BASE_FEATURE(kWebViewExitReasonMetric,
              "WebViewExitReasonMetric",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable WebView to automatically darken the page in FORCE_DARK_AUTO mode if
 // the app's theme is dark.
@@ -67,6 +78,12 @@ BASE_FEATURE(kWebViewDisplayCutout,
 // WebView clients.
 BASE_FEATURE(kWebViewEmptyComponentLoaderPolicy,
              "WebViewEmptyComponentLoaderPolicy",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enable the WebView Media Integrity API.
+// This feature requires `kWebViewInjectPlatformJsApis` to be enabled as well.
+BASE_FEATURE(kWebViewMediaIntegrityApi,
+             "WebViewMediaIntegrityApi",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, passive mixed content (Audio/Video/Image subresources loaded
@@ -94,7 +111,7 @@ BASE_FEATURE(kWebViewJavaJsBridgeMojo,
 // out-sampled.
 BASE_FEATURE(kWebViewMetricsFiltering,
              "WebViewMetricsFiltering",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Field trial feature for controlling support of Origin Trials on WebView.
 BASE_FEATURE(kWebViewOriginTrials,
@@ -165,7 +182,8 @@ BASE_FEATURE(kWebViewWideColorGamutSupport,
              "WebViewWideColorGamutSupport",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Control the default behaviour for the XRequestedWith header
+// Control the default behaviour for the XRequestedWith header.
+// TODO(crbug.com/1493963): enable by default after M120 branch point.
 BASE_FEATURE(kWebViewXRequestedWithHeaderControl,
              "WebViewXRequestedWithHeaderControl",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -186,6 +204,11 @@ BASE_FEATURE(kWebViewXRequestedWithHeaderManifestAllowList,
 // This enables image drage out for Webview.
 BASE_FEATURE(kWebViewImageDrag,
              "WebViewImageDrag",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables injection of platform-specific JavaScript APIs.
+BASE_FEATURE(kWebViewInjectPlatformJsApis,
+             "WebViewInjectPlatformJsApis",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // This enables uploading UMA data with a higher frequency.

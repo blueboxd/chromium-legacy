@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_ACCESSIBILITY_READ_ANYTHING_APP_MODEL_H_
 
 #include "base/containers/contains.h"
+#include "base/values.h"
 #include "chrome/common/accessibility/read_anything.mojom.h"
 #include "chrome/common/accessibility/read_anything_constants.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -64,6 +65,7 @@ class ReadAnythingAppModel {
   const SkColor& foreground_color() const { return foreground_color_; }
   const SkColor& background_color() const { return background_color_; }
   float speech_rate() const { return speech_rate_; }
+  const base::Value::Dict& voices() const { return voices_; }
 
   // Selection.
   bool has_selection() const { return has_selection_; }
@@ -122,6 +124,7 @@ class ReadAnythingAppModel {
       double font_size,
       read_anything::mojom::Colors color,
       double speech_rate,
+      base::Value::Dict* voices,
       read_anything::mojom::HighlightGranularity granularity);
   void OnScroll(bool on_selection, bool from_reading_mode) const;
 
@@ -187,6 +190,10 @@ class ReadAnythingAppModel {
   // tree updates are received for the missing tree(s), this function should
   // be ran again to check for the correct structure.
   bool IsPDFFormatted() const;
+
+  // Google Docs need special handling.
+  void set_is_google_docs(bool is_google_docs) { is_docs_ = is_google_docs; }
+  bool is_docs() const { return is_docs_; }
 
  private:
   void EraseTree(ui::AXTreeID tree_id);
@@ -276,6 +283,7 @@ class ReadAnythingAppModel {
   SkColor foreground_color_ = (int)read_anything::mojom::Colors::kDefaultValue;
   int color_theme_ = (int)read_anything::mojom::Colors::kDefaultValue;
   float speech_rate_ = kReadAnythingDefaultSpeechRate;
+  base::Value::Dict voices_ = base::Value::Dict();
   int highlight_granularity_ =
       (int)read_anything::mojom::HighlightGranularity::kDefaultValue;
 
@@ -300,6 +308,10 @@ class ReadAnythingAppModel {
   // webpage. We record the result of the distill() call for this entire
   // webpage, so we only make the call once the webpage finished loading.
   bool page_finished_loading_for_data_collection_ = false;
+
+  // Google Docs are different from regular webpages. We want to distill content
+  // from the annotated canvas elements, not the main tree.
+  bool is_docs_ = false;
 };
 
 #endif  // CHROME_RENDERER_ACCESSIBILITY_READ_ANYTHING_APP_MODEL_H_

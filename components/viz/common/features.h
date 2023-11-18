@@ -22,6 +22,7 @@ namespace features {
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kDelegatedCompositing);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kDelegateTransforms);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kRecordSkPicture);
+VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kUseDrmBlackFullscreenOptimization);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kUseMultipleOverlays);
 VIZ_COMMON_EXPORT extern const char kMaxOverlaysParam[];
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kVideoDetectorIgnoreNonVideos);
@@ -77,7 +78,6 @@ VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kSharedBitmapToSharedImage);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kEnableADPFScrollBoost);
 VIZ_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kADPFBoostTimeout;
-VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kEnableADPFMidFrameBoost);
 VIZ_COMMON_EXPORT extern const base::FeatureParam<double>
     kADPFMidFrameBoostDurationMultiplier;
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kEnableADPFRendererMain);

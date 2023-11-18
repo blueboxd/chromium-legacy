@@ -20,6 +20,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
 
+namespace {
+
+constexpr char kValidURL[] = "http://zombo.com";
+constexpr char kInvalidURL[] = "chrome://page";
+
+}  // anonymous namespace
+
 class TabOrganizationServiceTest : public BrowserWithTestWindowTest {
  public:
   TabOrganizationServiceTest() = default;
@@ -37,12 +44,23 @@ class TabOrganizationServiceTest : public BrowserWithTestWindowTest {
     return browser_ptr;
   }
 
-  content::WebContents* AddTabToBrowser(Browser* browser, int index) {
+  GURL GetUniqueTestURL() {
+    static int offset = 1;
+    GURL url("http://page_" + base::NumberToString(offset));
+    offset++;
+    return url;
+  }
+
+  content::WebContents* AddValidTabToBrowser(Browser* browser, int index) {
     std::unique_ptr<content::WebContents> web_contents =
         content::WebContentsTester::CreateTestWebContents(profile_.get(),
                                                           nullptr);
+    content::WebContentsTester::For(web_contents.get())
+        ->NavigateAndCommit(GURL(kValidURL));
 
     content::WebContents* web_contents_ptr = web_contents.get();
+    content::WebContentsTester::For(web_contents_ptr)
+        ->NavigateAndCommit(GURL(GetUniqueTestURL()));
 
     browser->tab_strip_model()->AddWebContents(
         std::move(web_contents), index,
@@ -106,7 +124,7 @@ TEST_F(TabOrganizationServiceTest, NoIncognito) {
 
 TEST_F(TabOrganizationServiceTest, AddsSessionOnTrigger) {
   Browser* browser = AddBrowser();
-  AddTabToBrowser(browser, 0);
+  AddValidTabToBrowser(browser, 0);
   service()->OnTriggerOccured(browser);
   EXPECT_TRUE(base::Contains(service()->browser_session_map(), browser));
   EXPECT_NE(service()->GetSessionForBrowser(browser), nullptr);
@@ -114,7 +132,7 @@ TEST_F(TabOrganizationServiceTest, AddsSessionOnTrigger) {
 
 TEST_F(TabOrganizationServiceTest, DoesntAddSessionOnTriggerIfExists) {
   Browser* browser = AddBrowser();
-  AddTabToBrowser(browser, 0);
+  AddValidTabToBrowser(browser, 0);
   service()->OnTriggerOccured(browser);
   EXPECT_TRUE(base::Contains(service()->browser_session_map(), browser));
   const TabOrganizationSession* session =
@@ -150,7 +168,7 @@ TEST_F(TabOrganizationServiceTest, SessionFromBrowserPopulatesRequest) {
   Browser* browser1 = AddBrowser();
   service()->OnTriggerOccured(browser1);
   for (int i = 0; i < 4; i++) {
-    AddTabToBrowser(browser1, 0);
+    AddValidTabToBrowser(browser1, 0);
   }
   std::unique_ptr<TabOrganizationSession> session =
       TabOrganizationSession::CreateSessionForBrowser(browser1);
@@ -159,6 +177,56 @@ TEST_F(TabOrganizationServiceTest, SessionFromBrowserPopulatesRequest) {
   session->StartRequest();
   EXPECT_NE(session->request()->response(), nullptr);
   EXPECT_EQ(session->tab_organizations().size(), 1u);
+
+  TabOrganization* organization = session->GetNextTabOrganization();
+  ASSERT_TRUE(organization);
+
+  organization->Accept();
   EXPECT_EQ(browser1->tab_strip_model()->group_model()->ListTabGroups().size(),
             1u);
+}
+
+TEST_F(TabOrganizationServiceTest,
+       TabOrganizationSessionCreateSessionForBrowserNoInvalidTabDatas) {
+  const int valid_tab_count = 2;
+  Browser* browser1 = AddBrowser();
+  for (int i = 0; i < valid_tab_count; i++) {
+    AddValidTabToBrowser(browser1, 0);
+  }
+
+  // Add an invalid tab.
+  content::WebContents* invalid_web_contents = AddValidTabToBrowser(browser1, 0);
+  content::WebContentsTester::For(invalid_web_contents)
+      ->NavigateAndCommit(GURL(kInvalidURL));
+
+  std::unique_ptr<TabOrganizationSession> session =
+      TabOrganizationSession::CreateSessionForBrowser(browser1);
+  EXPECT_EQ(static_cast<int>(session->request()->tab_datas().size()),
+            valid_tab_count);
+
+  session->StartRequest();
+  EXPECT_NE(session->request()->response(), nullptr);
+  EXPECT_EQ(session->tab_organizations().size(), 1u);
+
+  TabOrganization* organization = session->GetNextTabOrganization();
+  EXPECT_TRUE(organization);
+
+  organization->Accept();
+  EXPECT_EQ(browser1->tab_strip_model()->group_model()->ListTabGroups().size(),
+            1u);
+}
+
+TEST_F(TabOrganizationServiceTest,
+       TabOrganizationSessionResetSessionForBrowser) {
+  const int valid_tab_count = 2;
+  Browser* browser1 = AddBrowser();
+  for (int i = 0; i < valid_tab_count; i++) {
+    AddValidTabToBrowser(browser1, 0);
+  }
+
+  TabOrganizationSession::ID session_id_1 =
+      service()->CreateSessionForBrowser(browser1)->session_id();
+  TabOrganizationSession::ID session_id_2 =
+      service()->ResetSessionForBrowser(browser1)->session_id();
+  EXPECT_NE(session_id_1, session_id_2);
 }

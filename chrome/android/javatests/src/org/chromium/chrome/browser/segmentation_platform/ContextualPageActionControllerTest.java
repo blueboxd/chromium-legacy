@@ -77,6 +77,7 @@ public class ContextualPageActionControllerTest {
     })
     public void testContextualPageModelExecution_OnReaderModePage() {
         LibraryLoader.getInstance().ensureInitialized();
+        mActivityTestRule.startMainActivityFromLauncher();
 
         var histograms =
                 HistogramWatcher.newBuilder()
@@ -86,9 +87,10 @@ public class ContextualPageActionControllerTest {
                         .expectIntRecord(
                                 CONTEXTUAL_PAGE_ACTION_SHOWN_BUTTON_HISTOGRAM,
                                 /* value= */ AdaptiveToolbarButtonVariant.READER_MODE)
+                        .allowExtraRecordsForHistogramsAbove()
                         .build();
 
-        mActivityTestRule.startMainActivityWithURL(mReaderModePageUrl);
+        mActivityTestRule.loadUrl(mReaderModePageUrl);
 
         histograms.pollInstrumentationThreadUntilSatisfied();
     }

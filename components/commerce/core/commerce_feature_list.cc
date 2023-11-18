@@ -47,6 +47,7 @@ const CountryLocaleMap& GetAllowedCountryToLocaleMap() {
     map[&kCommercePriceTrackingRegionLaunched] = {{"us", {"en-us"}}};
     map[&kPriceInsightsRegionLaunched] = {{"us", {"en-us"}}};
     map[&kShowDiscountOnNavigationRegionLaunched] = {{"us", {"en-us"}}};
+    map[&kEnableDiscountInfoApiRegionLaunched] = {{"us", {"en-us"}}};
     map[&kShoppingPageTypesRegionLaunched] = {{"us", {"en-us"}}};
     map[&kParcelTrackingRegionLaunched] = {{"us", {"en-us"}}};
 
@@ -194,12 +195,32 @@ BASE_FEATURE(kPriceTrackingIconColors,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Discount on navigation
+BASE_FEATURE(kEnableDiscountInfoApi,
+             "EnableDiscountInfoApi",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
+    BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+BASE_FEATURE(kShowDiscountOnNavigation,
+             "ShowDiscountOnNavigation",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kShowDiscountOnNavigationRegionLaunched,
+             "ShowDiscountOnNavigationRegionLaunched",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kEnableDiscountInfoApiRegionLaunched,
+             "EnableDiscountInfoApiRegionLaunched",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#else
 BASE_FEATURE(kShowDiscountOnNavigation,
              "ShowDiscountOnNavigation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kShowDiscountOnNavigationRegionLaunched,
              "ShowDiscountOnNavigationRegionLaunched",
              base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kEnableDiscountInfoApiRegionLaunched,
+             "EnableDiscountInfoApiRegionLaunched",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
 BASE_FEATURE(kDiscountDialogAutoPopupBehaviorSetting,
              "DiscountDialogAutoPopupBehaviorSetting",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -221,11 +242,11 @@ const base::FeatureParam<bool> kDeleteAllMerchantsOnClearBrowsingHistory{
 
 BASE_FEATURE(kShoppingCollection,
              "ShoppingCollection",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kShoppingList, "ShoppingList", base::FEATURE_DISABLED_BY_DEFAULT);
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
-    BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+    BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_IOS)
 BASE_FEATURE(kShoppingListRegionLaunched,
              "ShoppingListRegionLaunched",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -237,11 +258,11 @@ BASE_FEATURE(kShoppingListRegionLaunched,
 
 BASE_FEATURE(kShoppingListTrackByDefault,
              "ShoppingListTrackByDefault",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kShoppingListWAARestrictionRemoval,
              "ShoppingListWAARestrictionRemoval",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kShoppingPDPMetrics,
              "ShoppingPDPMetrics",
@@ -292,6 +313,14 @@ BASE_FEATURE(kParcelTracking,
 BASE_FEATURE(kParcelTrackingRegionLaunched,
              "ParcelTrackingRegionLaunched",
              base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kParcelTrackingTestData,
+             "ParcelTrackingTestData",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const char kParcelTrackingTestDataParam[] = "ParcelTrackingTestData";
+const char kParcelTrackingTestDataParamDelivered[] = "Delivered";
+const char kParcelTrackingTestDataParamInProgress[] = "InProgress";
+const char kParcelTrackingTestDataParamOutForDelivery[] = "OutForDelivery";
 
 // Params for Discount Consent V2 in the NTP Cart module.
 const char kNtpChromeCartModuleDiscountConsentNtpVariationParam[] =

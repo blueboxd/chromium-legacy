@@ -12,6 +12,7 @@
 #include "chrome/browser/image_fetcher/image_decoder_impl.h"
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome.mojom.h"
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome_section.h"
+#include "chrome/browser/ui/webui/side_panel/customize_chrome/wallpaper_search/wallpaper_search.mojom.h"
 #include "components/user_education/webui/help_bubble_handler.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -34,6 +35,8 @@ class Profile;
 class HelpBubbleHandler;
 class CustomizeColorSchemeModeHandler;
 class ThemeColorPickerHandler;
+class WallpaperSearchBackgroundManager;
+class WallpaperSearchHandler;
 
 namespace ui {
 class ColorChangeHandler;
@@ -46,6 +49,7 @@ class CustomizeChromeUI
       public customize_color_scheme_mode::mojom::
           CustomizeColorSchemeModeHandlerFactory,
       public theme_color_picker::mojom::ThemeColorPickerHandlerFactory,
+      public side_panel::customize_chrome::mojom::WallpaperSearchHandlerFactory,
       public side_panel::mojom::CustomizeChromePageHandlerFactory {
  public:
   explicit CustomizeChromeUI(content::WebUI* web_ui);
@@ -94,6 +98,11 @@ class CustomizeChromeUI
                      theme_color_picker::mojom::ThemeColorPickerHandlerFactory>
                          pending_receiver);
 
+  void BindInterface(
+      mojo::PendingReceiver<
+          side_panel::customize_chrome::mojom::WallpaperSearchHandlerFactory>
+          pending_receiver);
+
  private:
   // side_panel::mojom::CustomizeChromePageHandlerFactory
   void CreatePageHandler(
@@ -123,8 +132,16 @@ class CustomizeChromeUI
       mojo::PendingRemote<theme_color_picker::mojom::ThemeColorPickerClient>
           client) override;
 
+  // side_panel::customize_chrome::mojom::WallpaperSearchHandlerFactory:
+  void CreateWallpaperSearchHandler(
+      mojo::PendingRemote<
+          side_panel::customize_chrome::mojom::WallpaperSearchClient> client,
+      mojo::PendingReceiver<
+          side_panel::customize_chrome::mojom::WallpaperSearchHandler> handler)
+      override;
+
   // image_decoder_ needs to be initialized before
-  // customize_chrome_page_handler_ so that the image decoder will be
+  // wallpaper_search_handler_ so that the image decoder will be
   // deconstructed after the handler. Otherwise, we will get a dangling pointer
   // error from the raw_ptr in the handler not pointing to anything after
   // image_decoder_ object is deleted.
@@ -152,6 +169,13 @@ class CustomizeChromeUI
   std::unique_ptr<ThemeColorPickerHandler> theme_color_picker_handler_;
   mojo::Receiver<theme_color_picker::mojom::ThemeColorPickerHandlerFactory>
       theme_color_picker_handler_factory_receiver_{this};
+  std::unique_ptr<WallpaperSearchBackgroundManager>
+      wallpaper_search_background_manager_;
+  std::unique_ptr<WallpaperSearchHandler> wallpaper_search_handler_;
+  mojo::Receiver<
+      side_panel::customize_chrome::mojom::WallpaperSearchHandlerFactory>
+      wallpaper_search_handler_factory_receiver_{this};
+  const int64_t id_;
 
   base::WeakPtrFactory<CustomizeChromeUI> weak_ptr_factory_{this};
 

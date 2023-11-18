@@ -82,6 +82,7 @@ import java.util.concurrent.ExecutionException;
     ChromeFeatureList.START_SURFACE_ANDROID + "<Study",
     ChromeFeatureList.EMPTY_STATES
 })
+@DisableFeatures({ChromeFeatureList.SHOW_NTP_AT_STARTUP_ANDROID})
 @DoNotBatch(reason = "StartSurface*Test tests startup behaviours and thus can't be batched.")
 @CommandLineFlags.Add({
     ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
@@ -303,13 +304,16 @@ public class StartSurfaceBackButtonTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
-    @CommandLineFlags.Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS})
     public void testOpenRecentTabOnStartAndTapBackButtonReturnToStartSurface()
             throws ExecutionException {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        if (!mImmediateReturn) StartSurfaceTestUtils.pressHomePageButton(cta);
-        StartSurfaceTestUtils.waitForStartSurfaceVisible(
-                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
+        if (!mImmediateReturn) {
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> {
+                        cta.showStartSurfaceForTesting();
+                    });
+        }
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
 
         // Taps on the "Recent tabs" menu item.
@@ -326,8 +330,8 @@ public class StartSurfaceBackButtonTest {
 
         // Tap the back on the "Recent tabs" should take us back to the start surface homepage, and
         // the Tab should be deleted.
-        StartSurfaceTestUtils.waitForStartSurfaceVisible(
-                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
+        onViewWaiting(allOf(withId(R.id.mv_tiles_layout), isDisplayed()));
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
     }
 

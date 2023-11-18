@@ -22,8 +22,6 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.os.Parcelable;
 
-import androidx.core.os.BuildCompat;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,9 +50,7 @@ import org.chromium.url.JUnitTestGURLs;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Unit tests for static functions in {@link ShareHelper}.
- */
+/** Unit tests for static functions in {@link ShareHelper}. */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(shadows = {ShadowPendingIntent.class})
 public class ShareHelperUnitTest {
@@ -76,15 +72,16 @@ public class ShareHelperUnitTest {
     @Before
     public void setup() {
         mActivity = Robolectric.buildActivity(Activity.class).get();
-        mWindow = new ActivityWindowAndroid(
-                mActivity, false, IntentRequestTracker.createFromActivity(mActivity));
+        mWindow =
+                new ActivityWindowAndroid(
+                        mActivity, false, IntentRequestTracker.createFromActivity(mActivity));
         mImageUri = Uri.parse(IMAGE_URI);
     }
 
     @After
     public void tearDown() {
-        ChromeSharedPreferences.getInstance().removeKey(
-                ChromePreferenceKeys.SHARING_LAST_SHARED_COMPONENT_NAME);
+        ChromeSharedPreferences.getInstance()
+                .removeKey(ChromePreferenceKeys.SHARING_LAST_SHARED_COMPONENT_NAME);
         mWindow.destroy();
         mActivity.finish();
     }
@@ -106,9 +103,13 @@ public class ShareHelperUnitTest {
         // Verify sharing intent has the right image.
         Intent sharingIntent = nextIntent.getParcelableExtra(Intent.EXTRA_INTENT);
         assertEquals("Intent is not a SEND intent.", Intent.ACTION_SEND, sharingIntent.getAction());
-        assertEquals("Text URL not set correctly.", JUnitTestGURLs.BLUE_1.getSpec(),
+        assertEquals(
+                "Text URL not set correctly.",
+                JUnitTestGURLs.BLUE_1.getSpec(),
                 sharingIntent.getStringExtra(Intent.EXTRA_TEXT));
-        assertEquals("Image URI not set correctly.", mImageUri,
+        assertEquals(
+                "Image URI not set correctly.",
+                mImageUri,
                 sharingIntent.getParcelableExtra(Intent.EXTRA_STREAM));
         assertNotNull("Shared image does not have preview set.", sharingIntent.getClipData());
 
@@ -133,7 +134,8 @@ public class ShareHelperUnitTest {
         assertNotNull("Shared intent is null.", nextIntent);
         assertEquals(
                 "Next fired intent should be a SEND intent when direct sharing with component.",
-                Intent.ACTION_SEND, nextIntent.getAction());
+                Intent.ACTION_SEND,
+                nextIntent.getAction());
     }
 
     @Test
@@ -152,7 +154,9 @@ public class ShareHelperUnitTest {
         // Verify the intent has the right Url.
         Intent sharingIntent = nextIntent.getParcelableExtra(Intent.EXTRA_INTENT);
         assertEquals("Intent is not a SEND intent.", Intent.ACTION_SEND, sharingIntent.getAction());
-        assertEquals("Text URL not set correctly.", JUnitTestGURLs.EXAMPLE_URL.getSpec(),
+        assertEquals(
+                "Text URL not set correctly.",
+                JUnitTestGURLs.EXAMPLE_URL.getSpec(),
                 sharingIntent.getStringExtra(Intent.EXTRA_TEXT));
 
         // Fire back a chosen intent, the selected target should be recorded.
@@ -171,9 +175,13 @@ public class ShareHelperUnitTest {
         Intent nextIntent = Shadows.shadowOf(mActivity).peekNextStartedActivity();
         assertNotNull("Shared intent is null.", nextIntent);
         assertEquals("Intent is not a SEND intent.", Intent.ACTION_SEND, nextIntent.getAction());
-        assertEquals("Intent component name does not match.", TEST_COMPONENT_NAME_1,
+        assertEquals(
+                "Intent component name does not match.",
+                TEST_COMPONENT_NAME_1,
                 nextIntent.getComponent());
-        assertEquals("Text URL not set correctly.", JUnitTestGURLs.EXAMPLE_URL.getSpec(),
+        assertEquals(
+                "Text URL not set correctly.",
+                JUnitTestGURLs.EXAMPLE_URL.getSpec(),
                 nextIntent.getStringExtra(Intent.EXTRA_TEXT));
 
         assertLastComponentNameRecorded(null);
@@ -192,9 +200,13 @@ public class ShareHelperUnitTest {
         Intent nextIntent = Shadows.shadowOf(mActivity).peekNextStartedActivity();
         assertNotNull("Shared intent is null.", nextIntent);
         assertEquals("Intent is not a SEND intent.", Intent.ACTION_SEND, nextIntent.getAction());
-        assertEquals("Intent component name does not match.", TEST_COMPONENT_NAME_2,
+        assertEquals(
+                "Intent component name does not match.",
+                TEST_COMPONENT_NAME_2,
                 nextIntent.getComponent());
-        assertEquals("Text URL not set correctly.", JUnitTestGURLs.EXAMPLE_URL.getSpec(),
+        assertEquals(
+                "Text URL not set correctly.",
+                JUnitTestGURLs.EXAMPLE_URL.getSpec(),
                 nextIntent.getStringExtra(Intent.EXTRA_TEXT));
 
         assertLastComponentNameRecorded(TEST_COMPONENT_NAME_2);
@@ -208,7 +220,9 @@ public class ShareHelperUnitTest {
         Intent nextIntent = Shadows.shadowOf(mActivity).peekNextStartedActivity();
         assertNotNull("Shared intent is null.", nextIntent);
         assertEquals("Intent is not a SEND intent.", Intent.ACTION_SEND, nextIntent.getAction());
-        assertEquals("Intent component name does not match.", TEST_COMPONENT_NAME_1,
+        assertEquals(
+                "Intent component name does not match.",
+                TEST_COMPONENT_NAME_1,
                 nextIntent.getComponent());
     }
 
@@ -222,12 +236,18 @@ public class ShareHelperUnitTest {
         String packageName = ContextUtils.getApplicationContext().getPackageName();
         Intent untrustedIntent = new Intent();
         untrustedIntent.setPackage(packageName);
-        untrustedIntent.setAction(packageName + "/" + TargetChosenReceiver.class.getName()
-                + mActivity.getTaskId() + "_ACTION");
+        untrustedIntent.setAction(
+                packageName
+                        + "/"
+                        + TargetChosenReceiver.class.getName()
+                        + mActivity.getTaskId()
+                        + "_ACTION");
         untrustedIntent.putExtra(Intent.EXTRA_CHOSEN_COMPONENT, TEST_COMPONENT_NAME_2);
 
-        PendingIntent
-                .getBroadcast(ContextUtils.getApplicationContext(), 0, untrustedIntent,
+        PendingIntent.getBroadcast(
+                        ContextUtils.getApplicationContext(),
+                        0,
+                        untrustedIntent,
                         PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_CANCEL_CURRENT)
                 .send();
         Shadows.shadowOf(Looper.getMainLooper()).idle();
@@ -235,8 +255,10 @@ public class ShareHelperUnitTest {
 
         Intent trustedIntent = new Intent(untrustedIntent);
         IntentUtils.addTrustedIntentExtras(trustedIntent);
-        PendingIntent
-                .getBroadcast(ContextUtils.getApplicationContext(), 1, trustedIntent,
+        PendingIntent.getBroadcast(
+                        ContextUtils.getApplicationContext(),
+                        1,
+                        trustedIntent,
                         PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_CANCEL_CURRENT)
                 .send();
         Shadows.shadowOf(Looper.getMainLooper()).idle();
@@ -244,7 +266,7 @@ public class ShareHelperUnitTest {
     }
 
     @Test
-    @Config(shadows = {ShadowBuildCompatForU.class, ShadowChooserActionHelper.class})
+    @Config(shadows = {ShadowChooserActionHelper.class})
     public void shareWithCustomActions() throws SendIntentException {
         String actionKey = "key";
         CallbackHelper callbackHelper = new CallbackHelper();
@@ -257,7 +279,8 @@ public class ShareHelperUnitTest {
         assertNotNull("Shared intent is null.", nextIntent);
         assertEquals(
                 "Intent is not a chooser intent.", Intent.ACTION_CHOOSER, nextIntent.getAction());
-        assertNotNull("Custom actions are not attached.",
+        assertNotNull(
+                "Custom actions are not attached.",
                 nextIntent.getParcelableArrayExtra("android.intent.extra.CHOOSER_CUSTOM_ACTIONS"));
 
         selectCustomActionFromChooserIntent(nextIntent, actionKey);
@@ -281,17 +304,20 @@ public class ShareHelperUnitTest {
         // Verify the intent has the right preview Uri.
         Intent sharingIntent = nextIntent.getParcelableExtra(Intent.EXTRA_INTENT);
         assertEquals("Intent is not a SEND intent.", Intent.ACTION_SEND, sharingIntent.getAction());
-        assertEquals("Preview image Uri not set correctly.", mImageUri,
+        assertEquals(
+                "Preview image Uri not set correctly.",
+                mImageUri,
                 sharingIntent.getClipData().getItemAt(0).getUri());
     }
 
     @Test
     public void shareMultipleImage() {
-        ShareParams params = new ShareParams.Builder(mWindow, "", "")
-                                     .setFileUris(new ArrayList<>(List.of(mImageUri, mImageUri)))
-                                     .setFileContentType("image/png")
-                                     .setBypassFixingDomDistillerUrl(true)
-                                     .build();
+        ShareParams params =
+                new ShareParams.Builder(mWindow, "", "")
+                        .setFileUris(new ArrayList<>(List.of(mImageUri, mImageUri)))
+                        .setFileContentType("image/png")
+                        .setBypassFixingDomDistillerUrl(true)
+                        .build();
         ShareHelper.shareWithSystemShareSheetUi(params, null, true);
 
         Intent nextIntent = Shadows.shadowOf(mActivity).peekNextStartedActivity();
@@ -301,9 +327,12 @@ public class ShareHelperUnitTest {
 
         // Verify sharing intent has the right image.
         Intent sharingIntent = nextIntent.getParcelableExtra(Intent.EXTRA_INTENT);
-        assertEquals("Intent is not a SEND_MULTIPLE intent.", Intent.ACTION_SEND_MULTIPLE,
+        assertEquals(
+                "Intent is not a SEND_MULTIPLE intent.",
+                Intent.ACTION_SEND_MULTIPLE,
                 sharingIntent.getAction());
-        assertNotNull("Images should be shared as file list.",
+        assertNotNull(
+                "Images should be shared as file list.",
                 sharingIntent.getParcelableArrayListExtra(Intent.EXTRA_STREAM));
     }
 
@@ -312,8 +341,12 @@ public class ShareHelperUnitTest {
         Intent sendBackIntent = new Intent().putExtra(Intent.EXTRA_CHOSEN_COMPONENT, componentName);
         IntentSender sender =
                 chooserIntent.getParcelableExtra(Intent.EXTRA_CHOSEN_COMPONENT_INTENT_SENDER);
-        sender.sendIntent(ContextUtils.getApplicationContext(), Activity.RESULT_OK, sendBackIntent,
-                null, null);
+        sender.sendIntent(
+                ContextUtils.getApplicationContext(),
+                Activity.RESULT_OK,
+                sendBackIntent,
+                null,
+                null);
         Shadows.shadowOf(Looper.getMainLooper()).idle();
     }
 
@@ -323,13 +356,19 @@ public class ShareHelperUnitTest {
                 new Intent().putExtra(ShareHelper.EXTRA_SHARE_CUSTOM_ACTION, action);
         IntentSender sender =
                 chooserIntent.getParcelableExtra(Intent.EXTRA_CHOSEN_COMPONENT_INTENT_SENDER);
-        sender.sendIntent(ContextUtils.getApplicationContext(), Activity.RESULT_OK, sendBackIntent,
-                null, null);
+        sender.sendIntent(
+                ContextUtils.getApplicationContext(),
+                Activity.RESULT_OK,
+                sendBackIntent,
+                null,
+                null);
         Shadows.shadowOf(Looper.getMainLooper()).idle();
     }
 
     private void assertLastComponentNameRecorded(ComponentName name) {
-        assertThat("Last shared component name not match.", ShareHelper.getLastShareComponentName(),
+        assertThat(
+                "Last shared component name not match.",
+                ShareHelper.getLastShareComponentName(),
                 Matchers.is(name));
     }
 
@@ -348,25 +387,17 @@ public class ShareHelperUnitTest {
 
         @Override
         public List<ChromeCustomShareAction> getCustomActions() {
-            return List.of(new ChromeCustomShareAction(mActionKey,
-                    Icon.createWithBitmap(Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)),
-                    "label", mCallbackHelper::notifyCalled));
+            return List.of(
+                    new ChromeCustomShareAction(
+                            mActionKey,
+                            Icon.createWithBitmap(
+                                    Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)),
+                            "label",
+                            mCallbackHelper::notifyCalled));
         }
     }
 
-    // Work around shadow to assume runtime is at least U.
-    // TODO(https://crbug.com/1420388): Switch to @Config(sdk=34) this once API 34 exists.
-    @Implements(BuildCompat.class)
-    static class ShadowBuildCompatForU {
-        @Implementation
-        protected static boolean isAtLeastU() {
-            return true;
-        }
-    }
-
-    /**
-     * Test implementation to build a ChooserAction.
-     */
+    /** Test implementation to build a ChooserAction. */
     @Implements(ShareHelper.ChooserActionHelper.class)
     static class ShadowChooserActionHelper {
         @Implementation

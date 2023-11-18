@@ -14,6 +14,7 @@
 #include "base/strings/string_piece.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -34,10 +35,12 @@
 #include "chrome/grit/downloads_resources_map.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/google/core/common/google_util.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/safe_browsing/core/common/features.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
@@ -50,6 +53,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "url/gurl.h"
 
 using content::BrowserContext;
 using content::DownloadManager;
@@ -97,7 +101,6 @@ content::WebUIDataSource* CreateAndAddDownloadsUIHTMLSource(Profile* profile) {
       {"dangerReview", IDS_REVIEW_DOWNLOAD},
 
       // Deep scanning strings.
-      {"deepScannedSafeDesc", IDS_DEEP_SCANNED_SAFE_DESCRIPTION},
       {"deepScannedFailedDesc", IDS_DEEP_SCANNED_FAILED_DESCRIPTION},
       {"deepScannedOpenedDangerousDesc",
        IDS_DEEP_SCANNED_OPENED_DANGEROUS_DESCRIPTION},
@@ -108,6 +111,15 @@ content::WebUIDataSource* CreateAndAddDownloadsUIHTMLSource(Profile* profile) {
       {"blockedTooLargeDesc", IDS_BLOCKED_TOO_LARGE_DESCRIPTION},
       {"blockedPasswordProtectedDesc",
        IDS_BLOCKED_PASSWORD_PROTECTED_DESCRIPTION},
+      {"asyncScanningDownloadDesc", IDS_BLOCK_REASON_DEEP_SCANNING_UPDATED},
+      {"asyncScanningDownloadDescSecond",
+       IDS_BLOCK_REASON_DEEP_SCANNING_SECOND_UPDATED},
+      {"promptForScanningDesc", IDS_BLOCK_REASON_PROMPT_FOR_SCANNING_UPDATED},
+      {"promptForLocalPasswordScanningDesc",
+       IDS_BLOCK_REASON_PROMPT_FOR_LOCAL_PASSWORD_SCANNING},
+      {"controlDeepScan", IDS_DOWNLOAD_DEEP_SCAN_UPDATED},
+      {"controlBypassDeepScan", IDS_DOWNLOAD_BYPASS_DEEP_SCAN_UPDATED},
+      {"controlLocalPasswordScan", IDS_DOWNLOAD_LOCAL_PASSWORD_SCAN},
 
       // Controls.
       {"controlPause", IDS_DOWNLOAD_LINK_PAUSE},
@@ -135,30 +147,16 @@ content::WebUIDataSource* CreateAndAddDownloadsUIHTMLSource(Profile* profile) {
       {"accessibleLabelInsecure", IDS_DOWNLOAD_INSECURE_ICON_ACCESSIBLE_LABEL},
       {"accessibleLabelUnverified",
        IDS_DOWNLOAD_UNVERIFIED_ICON_ACCESSIBLE_LABEL},
+
+      // Warning bypass dialog.
+      {"warningBypassDialogTitle", IDS_DOWNLOAD_WARNING_BYPASS_DIALOG_TITLE},
+      {"warningBypassDialogDescription",
+       IDS_DOWNLOAD_WARNING_BYPASS_DIALOG_DESCRIPTION},
+      {"warningBypassDialogLearnMoreLink",
+       IDS_DOWNLOAD_WARNING_BYPASS_DIALOG_LEARN_MORE_LINK},
+      {"warningBypassDialogCancel", IDS_CANCEL},
   };
   source->AddLocalizedStrings(kStrings);
-
-  bool update_deep_scanning_ux =
-      base::FeatureList::IsEnabled(safe_browsing::kDeepScanningUpdatedUX);
-  source->AddLocalizedString("asyncScanningDownloadDesc",
-                             update_deep_scanning_ux
-                                 ? IDS_BLOCK_REASON_DEEP_SCANNING_UPDATED
-                                 : IDS_BLOCK_REASON_DEEP_SCANNING);
-  source->AddLocalizedString("asyncScanningDownloadDescSecond",
-                             IDS_BLOCK_REASON_DEEP_SCANNING_SECOND_UPDATED);
-  source->AddLocalizedString("promptForScanningDesc",
-                             update_deep_scanning_ux
-                                 ? IDS_BLOCK_REASON_PROMPT_FOR_SCANNING_UPDATED
-                                 : IDS_BLOCK_REASON_PROMPT_FOR_SCANNING);
-  source->AddLocalizedString("controlDeepScan",
-                             update_deep_scanning_ux
-                                 ? IDS_DOWNLOAD_DEEP_SCAN_UPDATED
-                                 : IDS_DOWNLOAD_DEEP_SCAN);
-  source->AddLocalizedString("controlBypassDeepScan",
-                             update_deep_scanning_ux
-                                 ? IDS_DOWNLOAD_BYPASS_DEEP_SCAN_UPDATED
-                                 : IDS_DOWNLOAD_BYPASS_DEEP_SCAN);
-  source->AddBoolean("updateDeepScanningUX", update_deep_scanning_ux);
 
   // New chrome://downloads icons, colors, strings, etc. to be consistent with
   // download bubble.
@@ -211,17 +209,35 @@ content::WebUIDataSource* CreateAndAddDownloadsUIHTMLSource(Profile* profile) {
 
   source->AddLocalizedString("inIncognito", IDS_DOWNLOAD_IN_INCOGNITO);
 
-  source->AddBoolean(
-      "allowOpenNow",
-      !enterprise_connectors::ConnectorsServiceFactory::GetForBrowserContext(
-           profile)
-           ->DelayUntilVerdict(
-               enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED));
+  // The URL to open when the user clicks on "Learn more" for a blocked
+  // dangerous file.
+  source->AddString("blockedLearnMoreUrl",
+                    google_util::AppendGoogleLocaleParam(
+                        GURL(chrome::kDownloadBlockedLearnMoreURL),
+                        g_browser_process->GetApplicationLocale())
+                        .spec());
 
   return source;
 }
 
 }  // namespace
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// DownloadsUIConfig
+//
+///////////////////////////////////////////////////////////////////////////////
+
+DownloadsUIConfig::DownloadsUIConfig()
+    : WebUIConfig(content::kChromeUIScheme, chrome::kChromeUIDownloadsHost) {}
+
+DownloadsUIConfig::~DownloadsUIConfig() = default;
+
+std::unique_ptr<content::WebUIController>
+DownloadsUIConfig::CreateWebUIController(content::WebUI* web_ui,
+                                         const GURL& url) {
+  return std::make_unique<DownloadsUI>(web_ui);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //

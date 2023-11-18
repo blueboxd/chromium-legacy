@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
@@ -234,7 +235,7 @@ bool ShouldUseIsolatedCodeCache(
       // send cached code to it.
       return false;
     }
-  } else {
+  } else if (!response_head.should_use_source_hash_for_js_code_cache) {
     // If the timestamps don't match or are null, the code cache data may be
     // for a different response. See https://crbug.com/1099587.
     if (code_cache_response_time.is_null() ||
@@ -435,16 +436,24 @@ void ResourceRequestSender::SendSync(
         base::RefCountedData<absl::optional<std::vector<std::string>>>;
     const scoped_refptr<RefCountedOptionalStringVector> removed_headers =
         base::MakeRefCounted<RefCountedOptionalStringVector>();
+    using RefCountedOptionalHttpRequestHeaders =
+        base::RefCountedData<absl::optional<net::HttpRequestHeaders>>;
+    const scoped_refptr<RefCountedOptionalHttpRequestHeaders> modified_headers =
+        base::MakeRefCounted<RefCountedOptionalHttpRequestHeaders>();
     client->OnReceivedRedirect(
         *response->redirect_info, response->head.Clone(),
         /*follow_redirect_callback=*/
         WTF::BindOnce(
             [](scoped_refptr<RefCountedOptionalStringVector>
                    removed_headers_out,
-               std::vector<std::string> removed_headers) {
+               scoped_refptr<RefCountedOptionalHttpRequestHeaders>
+                   modified_headers_out,
+               std::vector<std::string> removed_headers,
+               net::HttpRequestHeaders modified_headers) {
               removed_headers_out->data = std::move(removed_headers);
+              modified_headers_out->data = std::move(modified_headers);
             },
-            removed_headers));
+            removed_headers, modified_headers));
     // `follow_redirect_callback` can't be asynchronously called for synchronous
     // requests because the current thread will be blocked by
     // `redirect_or_response_event.Wait()` call. So we check `HasOneRef()` here
@@ -455,7 +464,8 @@ void ResourceRequestSender::SendSync(
       task_runner->PostTask(
           FROM_HERE, base::BindOnce(&SyncLoadContext::FollowRedirect,
                                     base::Unretained(context_for_redirect),
-                                    std::move(*removed_headers->data)));
+                                    std::move(*removed_headers->data),
+                                    std::move(*modified_headers->data)));
     } else {
       task_runner->PostTask(
           FROM_HERE, base::BindOnce(&SyncLoadContext::CancelRedirect,
@@ -559,6 +569,7 @@ void ResourceRequestSender::Freeze(LoaderFreezeMode mode) {
     return;
   }
   if (mode != LoaderFreezeMode::kNone) {
+    request_info_->ignore_for_histogram = true;
     request_info_->freeze_mode = mode;
     request_info_->url_loader_client->Freeze(mode);
   } else if (request_info_->freeze_mode != LoaderFreezeMode::kNone) {
@@ -631,6 +642,7 @@ void ResourceRequestSender::FollowPendingRedirect(
     // Redirect URL may not be handled by the network service, so force a
     // restart in case another URLLoaderFactory should handle the URL.
     if (request_info->redirect_requires_loader_restart) {
+      request_info->modified_headers.Clear();
       request_info->url_loader->FollowRedirectForcingRestart();
     } else {
       std::vector<std::string> removed_headers(
@@ -638,8 +650,9 @@ void ResourceRequestSender::FollowPendingRedirect(
       base::ranges::transform(request_info_->removed_headers,
                               removed_headers.begin(), &WebString::Ascii);
       request_info->url_loader->FollowRedirect(
-          removed_headers, {} /* modified_headers */,
+          removed_headers, request_info->modified_headers,
           {} /* modified_cors_exempt_headers */);
+      request_info->modified_headers.Clear();
     }
   }
 }
@@ -683,8 +696,9 @@ void ResourceRequestSender::OnUploadProgress(int64_t position, int64_t size) {
 
 void ResourceRequestSender::OnReceivedResponse(
     network::mojom::URLResponseHeadPtr response_head,
-    base::TimeTicks response_arrival,
-    absl::optional<mojo_base::BigBuffer> cached_metadata) {
+    mojo::ScopedDataPipeConsumerHandle body,
+    absl::optional<mojo_base::BigBuffer> cached_metadata,
+    base::TimeTicks response_ipc_arrival_time) {
   if (code_cache_fetcher_ && cached_metadata) {
     code_cache_fetcher_->DidReceiveCachedMetadataFromUrlLoader();
     code_cache_fetcher_.reset();
@@ -692,27 +706,27 @@ void ResourceRequestSender::OnReceivedResponse(
   }
 
   if (ShouldDeferTask()) {
-    pending_tasks_.push_back(
-        WTF::BindOnce(&ResourceRequestSender::OnReceivedResponse,
-                      weak_factory_.GetWeakPtr(), std::move(response_head),
-                      response_arrival, std::move(cached_metadata)));
+    pending_tasks_.push_back(WTF::BindOnce(
+        &ResourceRequestSender::OnReceivedResponse, weak_factory_.GetWeakPtr(),
+        std::move(response_head), std::move(body), std::move(cached_metadata),
+        response_ipc_arrival_time));
     return;
   }
   TRACE_EVENT0("loading", "ResourceRequestSender::OnReceivedResponse");
   if (!request_info_) {
     return;
   }
-  request_info_->local_response_start = base::TimeTicks::Now();
+  request_info_->local_response_start = response_ipc_arrival_time;
   request_info_->remote_request_start =
       response_head->load_timing.request_start;
   // Now that response_start has been set, we can properly set the TimeTicks in
   // the URLResponseHead.
   base::TimeTicks remote_response_start =
       ToLocalURLResponseHead(*request_info_, *response_head);
-  if (!remote_response_start.is_null()) {
-    UMA_HISTOGRAM_TIMES(
-        "Blink.ResourceRequest.ResponseDelay",
-        request_info_->local_response_start - remote_response_start);
+  if (!request_info_->ignore_for_histogram &&
+      !remote_response_start.is_null()) {
+    base::UmaHistogramTimes("Blink.ResourceRequest.ResponseDelay2",
+                            response_ipc_arrival_time - remote_response_start);
   }
   request_info_->load_timing_info = response_head->load_timing;
 
@@ -723,7 +737,7 @@ void ResourceRequestSender::OnReceivedResponse(
   }
 
   request_info_->client->OnReceivedResponse(
-      response_head.Clone(), response_arrival, std::move(cached_metadata));
+      response_head.Clone(), std::move(body), std::move(cached_metadata));
   if (!request_info_) {
     return;
   }
@@ -735,11 +749,11 @@ void ResourceRequestSender::OnReceivedResponse(
 void ResourceRequestSender::OnReceivedRedirect(
     const net::RedirectInfo& redirect_info,
     network::mojom::URLResponseHeadPtr response_head,
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+    base::TimeTicks redirect_ipc_arrival_time) {
   if (ShouldDeferTask()) {
     pending_tasks_.emplace_back(WTF::BindOnce(
         &ResourceRequestSender::OnReceivedRedirect, weak_factory_.GetWeakPtr(),
-        redirect_info, std::move(response_head), std::move(task_runner)));
+        redirect_info, std::move(response_head), redirect_ipc_arrival_time));
     return;
   }
   TRACE_EVENT0("loading", "ResourceRequestSender::OnReceivedRedirect");
@@ -752,7 +766,7 @@ void ResourceRequestSender::OnReceivedRedirect(
     code_cache_fetcher_->SetCurrentUrl(redirect_info.new_url);
   }
 
-  request_info_->local_response_start = base::TimeTicks::Now();
+  request_info_->local_response_start = redirect_ipc_arrival_time;
   request_info_->remote_request_start =
       response_head->load_timing.request_start;
   request_info_->redirect_requires_loader_restart =
@@ -761,16 +775,16 @@ void ResourceRequestSender::OnReceivedRedirect(
 
   base::TimeTicks remote_response_start =
       ToLocalURLResponseHead(*request_info_, *response_head);
-  if (!remote_response_start.is_null()) {
-    UMA_HISTOGRAM_TIMES(
-        "Blink.ResourceRequest.RedirectDelay",
+  if (!request_info_->ignore_for_histogram &&
+      !remote_response_start.is_null()) {
+    UmaHistogramTimes(
+        "Blink.ResourceRequest.RedirectDelay2",
         request_info_->local_response_start - remote_response_start);
   }
 
-  auto callback =
-      WTF::BindOnce(&ResourceRequestSender::OnFollowRedirectCallback,
-                    weak_factory_.GetWeakPtr(), redirect_info,
-                    response_head.Clone(), std::move(task_runner));
+  auto callback = WTF::BindOnce(
+      &ResourceRequestSender::OnFollowRedirectCallback,
+      weak_factory_.GetWeakPtr(), redirect_info, response_head.Clone());
   request_info_->client->OnReceivedRedirect(
       redirect_info, std::move(response_head), std::move(callback));
 }
@@ -778,8 +792,8 @@ void ResourceRequestSender::OnReceivedRedirect(
 void ResourceRequestSender::OnFollowRedirectCallback(
     const net::RedirectInfo& redirect_info,
     network::mojom::URLResponseHeadPtr response_head,
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    std::vector<std::string> removed_headers) {
+    std::vector<std::string> removed_headers,
+    net::HttpRequestHeaders modified_headers) {
   // DeletePendingRequest() may have cleared request_info_.
   if (!request_info_) {
     return;
@@ -795,34 +809,20 @@ void ResourceRequestSender::OnFollowRedirectCallback(
   request_info_->has_pending_redirect = true;
   request_info_->resource_load_info_notifier_wrapper
       ->NotifyResourceRedirectReceived(redirect_info, std::move(response_head));
+  request_info_->modified_headers.MergeFrom(modified_headers);
 
   if (request_info_->freeze_mode == LoaderFreezeMode::kNone) {
     FollowPendingRedirect(request_info_.get());
   }
 }
 
-void ResourceRequestSender::OnStartLoadingResponseBody(
-    mojo::ScopedDataPipeConsumerHandle body) {
-  if (ShouldDeferTask()) {
-    pending_tasks_.emplace_back(
-        WTF::BindOnce(&ResourceRequestSender::OnStartLoadingResponseBody,
-                      weak_factory_.GetWeakPtr(), std::move(body)));
-    return;
-  }
-  TRACE_EVENT0("loading", "ResourceRequestSender::OnStartLoadingResponseBody");
-
-  if (!request_info_) {
-    return;
-  }
-  request_info_->client->OnStartLoadingResponseBody(std::move(body));
-}
-
 void ResourceRequestSender::OnRequestComplete(
-    const network::URLLoaderCompletionStatus& status) {
+    const network::URLLoaderCompletionStatus& status,
+    base::TimeTicks complete_ipc_arrival_time) {
   if (ShouldDeferTask()) {
-    pending_tasks_.emplace_back(
-        WTF::BindOnce(&ResourceRequestSender::OnRequestComplete,
-                      weak_factory_.GetWeakPtr(), status));
+    pending_tasks_.emplace_back(WTF::BindOnce(
+        &ResourceRequestSender::OnRequestComplete, weak_factory_.GetWeakPtr(),
+        status, complete_ipc_arrival_time));
     return;
   }
   TRACE_EVENT0("loading", "ResourceRequestSender::OnRequestComplete");
@@ -847,7 +847,7 @@ void ResourceRequestSender::OnRequestComplete(
     //  - We get an error before OnReceivedRedirect or OnReceivedResponse is
     //    called, or
     //  - Somehow such a timestamp was missing in the LoadTimingInfo.
-    renderer_status.completion_time = base::TimeTicks::Now();
+    renderer_status.completion_time = complete_ipc_arrival_time;
   } else {
     // We have already converted the request start timestamp, let's use that
     // conversion information.
@@ -857,19 +857,21 @@ void ResourceRequestSender::OnRequestComplete(
     renderer_status.completion_time =
         std::min(status.completion_time - request_info_->remote_request_start +
                      request_info_->load_timing_info.request_start,
-                 base::TimeTicks::Now());
+                 complete_ipc_arrival_time);
   }
 
-  const net::LoadTimingInfo& timing_info = request_info_->load_timing_info;
-  if (!timing_info.request_start.is_null()) {
-    UMA_HISTOGRAM_TIMES(
-        "Blink.ResourceRequest.StartDelay",
-        timing_info.request_start - request_info_->local_request_start);
-  }
-  if (!renderer_status.completion_time.is_null()) {
-    UMA_HISTOGRAM_TIMES(
-        "Blink.ResourceRequest.CompletionDelay",
-        base::TimeTicks::Now() - renderer_status.completion_time);
+  if (!request_info_->ignore_for_histogram) {
+    const net::LoadTimingInfo& timing_info = request_info_->load_timing_info;
+    if (!timing_info.request_start.is_null()) {
+      UmaHistogramTimes(
+          "Blink.ResourceRequest.StartDelay2",
+          timing_info.request_start - request_info_->local_request_start);
+    }
+    if (!renderer_status.completion_time.is_null()) {
+      UmaHistogramTimes(
+          "Blink.ResourceRequest.CompletionDelay2",
+          complete_ipc_arrival_time - renderer_status.completion_time);
+    }
   }
   // The request ID will be removed from our pending list in the destructor.
   // Normally, dispatching this message causes the reference-counted request to
@@ -935,7 +937,7 @@ void ResourceRequestSender::DidReceiveCachedCode() {
   MaybeRunPendingTasks();
 }
 
-bool ResourceRequestSender::ShouldDeferTask() {
+bool ResourceRequestSender::ShouldDeferTask() const {
   return (code_cache_fetcher_ && code_cache_fetcher_->is_waiting()) ||
          !pending_tasks_.empty();
 }

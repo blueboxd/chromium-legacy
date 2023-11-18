@@ -24,7 +24,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
-#include "components/permissions/features.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/isolated_origin_util.h"
 #include "content/browser/process_lock.h"
@@ -353,8 +352,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
         can_send_midi_sysex_(false),
         browser_context_(browser_context),
         resource_context_(GetResourceContext(browser_context)) {
-    if (!base::FeatureList::IsEnabled(
-            permissions::features::kBlockMidiByDefault)) {
+    if (!base::FeatureList::IsEnabled(features::kBlockMidiByDefault)) {
       can_send_midi_ = true;
     }
   }
@@ -484,14 +482,21 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     if (CanCommitOrigin(url::Origin::Create(url)))
       return true;
 
+    // TODO(alexmos): This check is moving to CanRequestURL() below, and this
+    // old location is kept for kill switch purposes only. Remove this once
+    // kRequestFileSetCheckedInCanRequestURL is verified not to cause problems.
+    //
     // file:// URLs may sometimes be more granular, e.g. dragging and dropping a
     // file from the local filesystem. The child itself may not have been
     // granted access to the entire file:// scheme, but it should still be
     // allowed to request the dragged and dropped file.
-    if (url.SchemeIs(url::kFileScheme)) {
+    if (!base::FeatureList::IsEnabled(
+            features::kRequestFileSetCheckedInCanRequestURL) &&
+        url.SchemeIs(url::kFileScheme)) {
       base::FilePath path;
-      if (net::FileURLToFilePath(url, &path))
+      if (net::FileURLToFilePath(url, &path)) {
         return base::Contains(request_file_set_, path);
+      }
     }
 
     return false;  // Unmentioned schemes are disallowed.
@@ -507,6 +512,19 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
 
     if (CanRequestOrigin(url::Origin::Create(url)))
       return true;
+
+    // file:// URLs may sometimes be more granular, e.g. dragging and dropping a
+    // file from the local filesystem. The child itself may not have been
+    // granted access to the entire file:// scheme, but it should still be
+    // allowed to request the dragged and dropped file.
+    if (base::FeatureList::IsEnabled(
+            features::kRequestFileSetCheckedInCanRequestURL) &&
+        url.SchemeIs(url::kFileScheme)) {
+      base::FilePath path;
+      if (net::FileURLToFilePath(url, &path)) {
+        return base::Contains(request_file_set_, path);
+      }
+    }
 
     // Otherwise, delegate to CanCommitURL. Unmentioned schemes are disallowed.
     // TODO(dcheng): It would be nice to avoid constructing the origin twice.
@@ -614,8 +632,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
   }
 
   bool CanSendMidi() const {
-    if (base::FeatureList::IsEnabled(
-            permissions::features::kBlockMidiByDefault)) {
+    if (base::FeatureList::IsEnabled(features::kBlockMidiByDefault)) {
       // Ensure the flags are in a consistent state: we can only send SysEx
       // messages if we can also send non-SysEx messages
       CHECK(can_send_midi_ || !can_send_midi_sysex_);
@@ -626,8 +643,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
   }
 
   bool CanSendMidiSysEx() const {
-    if (base::FeatureList::IsEnabled(
-            permissions::features::kBlockMidiByDefault)) {
+    if (base::FeatureList::IsEnabled(features::kBlockMidiByDefault)) {
       // Ensure the flags are in a consistent state: we can only send SysEx
       // messages if we can also send non-SysEx messages
       CHECK(can_send_midi_ || !can_send_midi_sysex_);
@@ -1098,8 +1114,7 @@ void ChildProcessSecurityPolicyImpl::GrantDeleteFromFileSystem(
 }
 
 void ChildProcessSecurityPolicyImpl::GrantSendMidiMessage(int child_id) {
-  if (base::FeatureList::IsEnabled(
-          permissions::features::kBlockMidiByDefault)) {
+  if (base::FeatureList::IsEnabled(features::kBlockMidiByDefault)) {
     base::AutoLock lock(lock_);
 
     auto state = security_state_.find(child_id);

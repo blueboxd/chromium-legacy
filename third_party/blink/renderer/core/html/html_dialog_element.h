@@ -59,9 +59,8 @@ class CORE_EXPORT HTMLDialogElement final : public HTMLElement {
   void CloseWatcherFiredCancel(Event*);
   void CloseWatcherFiredClose();
 
-  bool IsFocusable() const override {
-    return isConnected() && IsFocusableStyleAfterUpdate();
-  }
+  bool IsFocusable(UpdateBehavior update_behavior =
+                       UpdateBehavior::kStyleAndLayout) const override;
 
   // https://html.spec.whatwg.org/C/#the-dialog-element
   // Chooses the focused element when show() or showModal() is invoked.

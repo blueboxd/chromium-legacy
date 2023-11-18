@@ -298,8 +298,8 @@ int ProxyResolvingClientSocket::DoInitConnection() {
   // TODO(mmenke): Investigate that.
   net::SSLConfig ssl_config;
   connect_job_ = connect_job_factory_->CreateConnectJob(
-      use_tls_, net::HostPortPair::FromURL(url_), proxy_info_.proxy_server(),
-      proxy_annotation_tag, &ssl_config, &ssl_config, true /* force_tunnel */,
+      use_tls_, net::HostPortPair::FromURL(url_), proxy_info_.proxy_chain(),
+      proxy_annotation_tag, &ssl_config, &ssl_config, /*force_tunnel=*/true,
       net::PRIVACY_MODE_DISABLED, net::OnHostResolutionCallback(),
       net::MAXIMUM_PRIORITY, net::SocketTag(), network_anonymization_key_,
       net::SecureDnsPolicy::kAllow, common_connect_job_params_, this);
@@ -358,7 +358,7 @@ int ProxyResolvingClientSocket::ReconsiderProxyAfterError(int error) {
   DCHECK_NE(error, net::ERR_IO_PENDING);
 
   // Check if the error was a proxy failure.
-  if (!net::CanFalloverToNextProxy(proxy_info_.proxy_server(), error, &error,
+  if (!net::CanFalloverToNextProxy(proxy_info_.proxy_chain(), error, &error,
                                    proxy_info_.is_for_ip_protection())) {
     return error;
   }

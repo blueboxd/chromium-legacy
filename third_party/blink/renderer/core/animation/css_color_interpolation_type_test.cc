@@ -42,11 +42,11 @@ TEST(CSSColorInterpolationTypeTest, GetRGBA4) {
 TEST(CSSColorInterpolationTypeTest, RGBBounds) {
   Color from_color(0, 0, 0, 0);
   Color to_color(255, 255, 255, 255);
-  std::unique_ptr<InterpolableValue> from =
+  InterpolableValue* from =
       CSSColorInterpolationType::CreateInterpolableColor(from_color);
-  std::unique_ptr<InterpolableValue> to =
+  InterpolableValue* to =
       CSSColorInterpolationType::CreateInterpolableColor(to_color);
-  std::unique_ptr<InterpolableValue> result =
+  InterpolableValue* result =
       CSSColorInterpolationType::CreateInterpolableColor(to_color);
 
   from->Interpolate(*to, 1e30, *result);
@@ -61,9 +61,9 @@ TEST(CSSColorInterpolationTypeTest, RGBToOklab) {
   Color from_color = Color::FromRGBAFloat(1, 1, 1, 1);
   Color to_color =
       Color::FromColorSpace(Color::ColorSpace::kOklab, 0, 0, 0, 0.5);
-  std::unique_ptr<InterpolableColor> from =
+  InterpolableColor* from =
       CSSColorInterpolationType::CreateInterpolableColor(from_color);
-  std::unique_ptr<InterpolableColor> to =
+  InterpolableColor* to =
       CSSColorInterpolationType::CreateInterpolableColor(to_color);
 
   from_color = CSSColorInterpolationType::GetColor(*from);
@@ -83,20 +83,20 @@ TEST(CSSColorInterpolationTypeTest, RGBToOklab) {
 
 TEST(CSSColorInterpolationTypeTest, Oklab) {
   Color from_color =
-      Color::FromColorSpace(Color::ColorSpace::kOklab, 100, 1, 1, 1);
+      Color::FromColorSpace(Color::ColorSpace::kOklab, 1, 1, 1, 1);
   Color to_color =
       Color::FromColorSpace(Color::ColorSpace::kOklab, 0, 0, 0, 0.5);
-  std::unique_ptr<InterpolableValue> from =
+  InterpolableValue* from =
       CSSColorInterpolationType::CreateInterpolableColor(from_color);
-  std::unique_ptr<InterpolableValue> to =
+  InterpolableValue* to =
       CSSColorInterpolationType::CreateInterpolableColor(to_color);
-  std::unique_ptr<InterpolableValue> result =
+  InterpolableValue* result =
       CSSColorInterpolationType::CreateInterpolableColor(to_color);
 
   Color result_color;
   from->Interpolate(*to, 0, *result);
   result_color = CSSColorInterpolationType::GetColor(*result);
-  ASSERT_EQ(100, result_color.Param0());
+  ASSERT_EQ(1, result_color.Param0());
   ASSERT_EQ(1, result_color.Param1());
   ASSERT_EQ(1, result_color.Param2());
   ASSERT_EQ(1, result_color.Alpha());
@@ -106,7 +106,7 @@ TEST(CSSColorInterpolationTypeTest, Oklab) {
   from->Interpolate(*to, 0.5, *result);
   result_color = CSSColorInterpolationType::GetColor(*result);
   // Everything is premultiplied.
-  ASSERT_EQ(50, result_color.Param0() * result_color.Alpha());
+  ASSERT_EQ(0.5, result_color.Param0() * result_color.Alpha());
   ASSERT_EQ(0.5, result_color.Param1() * result_color.Alpha());
   ASSERT_EQ(0.5, result_color.Param2() * result_color.Alpha());
   ASSERT_EQ(0.75, result_color.Alpha());
@@ -116,7 +116,7 @@ TEST(CSSColorInterpolationTypeTest, Oklab) {
   from->Interpolate(*to, 0.75, *result);
   result_color = CSSColorInterpolationType::GetColor(*result);
   // Everything is premultiplied.
-  ASSERT_EQ(25, result_color.Param0() * result_color.Alpha());
+  ASSERT_EQ(0.25, result_color.Param0() * result_color.Alpha());
   ASSERT_EQ(0.25, result_color.Param1() * result_color.Alpha());
   ASSERT_EQ(0.25, result_color.Param2() * result_color.Alpha());
   ASSERT_EQ(0.625, result_color.Alpha());

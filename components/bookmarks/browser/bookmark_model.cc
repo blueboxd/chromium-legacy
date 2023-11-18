@@ -155,6 +155,12 @@ BookmarkModel::~BookmarkModel() {
   // ChromeBookmarkClient indirectly observes the model. The client should thus
   // be reset before the observer list.
   client_.reset();
+
+  // Set raw_ptr values to null to avoid danling pointer detection when UrlIndex
+  // is destroyed.
+  account_bookmark_bar_node_ = nullptr;
+  account_other_node_ = nullptr;
+  account_mobile_node_ = nullptr;
 }
 
 void BookmarkModel::Load(const base::FilePath& profile_path,
@@ -176,6 +182,28 @@ void BookmarkModel::Load(const base::FilePath& profile_path,
 scoped_refptr<ModelLoader> BookmarkModel::model_loader() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return model_loader_;
+}
+
+const BookmarkNode* BookmarkModel::account_bookmark_bar_node() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Must be null if the feature flag isn't enabled.
+  CHECK(!account_bookmark_bar_node_ ||
+        client_->AreFoldersForAccountStorageAllowed());
+  return account_bookmark_bar_node_;
+}
+
+const BookmarkNode* BookmarkModel::account_other_node() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Must be null if the feature flag isn't enabled.
+  CHECK(!account_other_node_ || client_->AreFoldersForAccountStorageAllowed());
+  return account_other_node_;
+}
+
+const BookmarkNode* BookmarkModel::account_mobile_node() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Must be null if the feature flag isn't enabled.
+  CHECK(!account_mobile_node_ || client_->AreFoldersForAccountStorageAllowed());
+  return account_mobile_node_;
 }
 
 void BookmarkModel::AddObserver(BookmarkModelObserver* observer) {
@@ -695,59 +723,6 @@ void BookmarkModel::DeleteNodeMetaInfo(const BookmarkNode* node,
   }
 }
 
-void BookmarkModel::SetNodeUnsyncedMetaInfo(const BookmarkNode* node,
-                                            const std::string& key,
-                                            const std::string& value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  std::string old_value;
-  if (node->GetUnsyncedMetaInfo(key, &old_value) && old_value == value) {
-    return;
-  }
-
-  if (AsMutable(node)->SetUnsyncedMetaInfo(key, value) && store_.get()) {
-    store_->ScheduleSave();
-  }
-}
-
-void BookmarkModel::SetNodeUnsyncedMetaInfoMap(
-    const BookmarkNode* node,
-    const BookmarkNode::MetaInfoMap& meta_info_map) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  const BookmarkNode::MetaInfoMap* old_meta_info_map =
-      node->GetUnsyncedMetaInfoMap();
-  if ((!old_meta_info_map && meta_info_map.empty()) ||
-      (old_meta_info_map && meta_info_map == *old_meta_info_map)) {
-    return;
-  }
-
-  AsMutable(node)->SetUnsyncedMetaInfoMap(meta_info_map);
-  if (store_) {
-    store_->ScheduleSave();
-  }
-}
-
-void BookmarkModel::DeleteUnsyncedNodeMetaInfo(const BookmarkNode* node,
-                                               const std::string& key) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  const BookmarkNode::MetaInfoMap* meta_info_map =
-      node->GetUnsyncedMetaInfoMap();
-  if (!meta_info_map || meta_info_map->find(key) == meta_info_map->end()) {
-    return;
-  }
-
-  if (AsMutable(node)->DeleteUnsyncedMetaInfo(key) && store_.get()) {
-    store_->ScheduleSave();
-  }
-}
-
-void BookmarkModel::AddNonClonedKey(const std::string& key) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  non_cloned_keys_.insert(key);
-}
-
 void BookmarkModel::OnFaviconsChanged(const std::set<GURL>& page_urls,
                                       const GURL& icon_url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1089,6 +1064,33 @@ void BookmarkModel::WipeAccountStorageForRollback(
                      std::move(account_storage_path)));
 }
 
+void BookmarkModel::LoadEmptyForTest() {
+  auto details = std::make_unique<BookmarkLoadDetails>(client_.get());
+  model_loader_ = ModelLoader::CreateForTest(details.get());
+  DoneLoading(std::move(details));
+  CHECK(loaded_);
+}
+
+void BookmarkModel::CreateAccountPermanentFoldersForTest() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(client_->AreFoldersForAccountStorageAllowed());
+
+  // Note that permanent account folders use the same UUIDs as the "regular",
+  // local-or-syncable permanent folders.
+  account_bookmark_bar_node_ = static_cast<BookmarkPermanentNode*>(
+      root_->Add(BookmarkPermanentNode::CreateBookmarkBar(
+          next_node_id_++, client_->IsPermanentNodeVisibleWhenEmpty(
+                               BookmarkNode::BOOKMARK_BAR))));
+  account_other_node_ = static_cast<BookmarkPermanentNode*>(
+      root_->Add(BookmarkPermanentNode::CreateOtherBookmarks(
+          next_node_id_++,
+          client_->IsPermanentNodeVisibleWhenEmpty(BookmarkNode::OTHER_NODE))));
+  account_mobile_node_ = static_cast<BookmarkPermanentNode*>(
+      root_->Add(BookmarkPermanentNode::CreateMobileBookmarks(
+          next_node_id_++,
+          client_->IsPermanentNodeVisibleWhenEmpty(BookmarkNode::MOBILE))));
+}
+
 void BookmarkModel::RestoreRemovedNode(const BookmarkNode* parent,
                                        size_t index,
                                        std::unique_ptr<BookmarkNode> node) {
@@ -1164,6 +1166,8 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
   bookmark_bar_node_ = details->bb_node();
   other_node_ = details->other_folder_node();
   mobile_node_ = details->mobile_folder_node();
+
+  // TODO(crbug.com/1494120): Load nodes for account storage as well.
 
   titled_url_index_->SetNodeSorter(
       std::make_unique<TypedCountSorter>(client_.get()));
@@ -1296,6 +1300,24 @@ int64_t BookmarkModel::generate_next_node_id() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded_);
   return next_node_id_++;
+}
+
+void BookmarkModel::CreateAccountPermanentFolders() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(client_->AreFoldersForAccountStorageAllowed());
+  CHECK(loaded_);
+
+  // TODO(crbug.com/1494120): Implement this method.
+  NOTIMPLEMENTED();
+}
+
+void BookmarkModel::RemoveAccountPermanentFolders() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(client_->AreFoldersForAccountStorageAllowed());
+  CHECK(loaded_);
+
+  // TODO(crbug.com/1494120): Implement this method.
+  NOTIMPLEMENTED();
 }
 
 }  // namespace bookmarks

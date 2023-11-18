@@ -127,6 +127,7 @@ def validateJavaScriptAllowed(source_dir, out_dir, is_ios):
       'chrome/browser/resources/chromeos/accessibility',
       'chrome/test/data/webui',
       'chrome/test/data/webui/chromeos',
+      'chrome/test/data/webui/chromeos/ash_common',
       'chrome/test/data/webui/cr_components/chromeos',
       'chrome/test/data/webui/nearby_share',
       'chrome/test/data/webui/settings/chromeos',

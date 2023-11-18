@@ -8,6 +8,8 @@ load("//lib/builder_config.star", "builder_config")
 load("//lib/builders.star", "os", "reclient", "siso")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
+load("//project.star", "settings")
+load("//lib/gn_args.star", "gn_args")
 
 try_.defaults.set(
     executable = try_.DEFAULT_EXECUTABLE,
@@ -44,6 +46,8 @@ try_.builder(
     mirrors = [
         "ci/win-asan",
     ],
+    cores = 16,
+    ssd = True,
     execution_timeout = 9 * time.hour,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
 )
@@ -64,6 +68,7 @@ try_.builder(
     mirrors = [
         "ci/win-archive-rel",
     ],
+    contact_team_email = "chrome-desktop-engprod@google.com",
 )
 
 try_.builder(
@@ -91,8 +96,18 @@ try_.orchestrator_builder(
     experiments = {
         # go/nplus1shardsproposal
         "chromium.add_one_test_shard": 5,
-        "chromium.pre_retry_shards_without_patch_compile": 100,
+        "chromium.compilator_can_outlive_parent": 100,
     },
+    gn_args = gn_args.config(
+        configs = [
+            "ci/Win x64 Builder",
+            "release_try_builder",
+            "no_resource_allowlisting",
+            "use_clang_coverage",
+            "partial_code_coverage_instrumentation",
+            "enable_dangling_raw_ptr_feature_flag",
+        ],
+    ),
     main_list_view = "try",
     tryjob = try_.job(),
     use_clang_coverage = True,
@@ -104,11 +119,13 @@ try_.orchestrator_builder(
 try_.compilator_builder(
     name = "win-rel-compilator",
     branch_selector = branches.selector.WINDOWS_BRANCHES,
+    cores = 32 if settings.is_main else 16,
     # TODO (crbug.com/1245171): Revert when root issue is fixed
     grace_period = 4 * time.minute,
     main_list_view = "try",
 )
 
+# TODO: crbug.com/1502025 - Reduce duplicated configs from the shadow builder.
 try_.orchestrator_builder(
     name = "win-siso-rel",
     description_html = """\
@@ -133,6 +150,8 @@ This builder should be removed after migrating win-rel from Ninja to Siso. b/277
 
 try_.compilator_builder(
     name = "win-siso-rel-compilator",
+    # TODO(jwata): Change to 32 once bots have landed
+    cores = "16|32",
     # TODO (crbug.com/1245171): Revert when root issue is fixed
     grace_period = 4 * time.minute,
     main_list_view = "try",
@@ -144,6 +163,7 @@ try_.builder(
     mirrors = [
         "ci/win32-archive-rel",
     ],
+    contact_team_email = "chrome-desktop-engprod@google.com",
 )
 
 try_.builder(
@@ -159,6 +179,12 @@ try_.builder(
     builderless = False,
     cores = 16,
     ssd = True,
+    gn_args = gn_args.config(
+        configs = [
+            "ci/Win Builder (dbg)",
+            "use_dummy_lastchange",
+        ],
+    ),
     main_list_view = "try",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     tryjob = try_.job(
@@ -178,6 +204,13 @@ try_.builder(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
+    gn_args = gn_args.config(
+        configs = [
+            "ci/Win Builder",
+            "release_try_builder",
+            "resource_allowlisting",
+        ],
+    ),
 )
 
 try_.builder(
@@ -185,6 +218,12 @@ try_.builder(
     mirrors = [
         "ci/Win x64 Builder",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/Win x64 Builder",
+            "release_try_builder",
+        ],
+    ),
 )
 
 try_.builder(
@@ -208,12 +247,15 @@ try_.builder(
 )
 
 try_.builder(
-    name = "win10_chromium_x64_dbg_ng",
+    name = "win10-dbg",
     mirrors = [
         "ci/Win x64 Builder (dbg)",
         "ci/Win10 Tests x64 (dbg)",
     ],
+    cores = 16,
     os = os.WINDOWS_10,
+    ssd = True,
+    gn_args = "ci/Win x64 Builder (dbg)",
 )
 
 try_.builder(
@@ -241,6 +283,16 @@ try_.builder(
     builderless = True,
     os = os.WINDOWS_10,
     coverage_test_types = ["unit", "overall"],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/Win x64 Builder",
+            "release_try_builder",
+            "no_resource_allowlisting",
+            "use_clang_coverage",
+            "partial_code_coverage_instrumentation",
+            "enable_dangling_raw_ptr_feature_flag",
+        ],
+    ),
     tryjob = try_.job(
         # TODO(https://crbug.com/1441206): Enable after resources verified.
         experiment_percentage = 10,
@@ -250,17 +302,6 @@ try_.builder(
         ],
     ),
     use_clang_coverage = True,
-)
-
-try_.builder(
-    name = "win10_chromium_inverse_fieldtrials_x64_fyi_rel_ng",
-    mirrors = [
-        "ci/Win x64 Builder",
-        "ci/Win10 Tests x64",
-        "ci/GPU Win x64 Builder",
-        "ci/Win10 x64 Release (NVIDIA)",
-    ],
-    os = os.WINDOWS_10,
 )
 
 try_.builder(

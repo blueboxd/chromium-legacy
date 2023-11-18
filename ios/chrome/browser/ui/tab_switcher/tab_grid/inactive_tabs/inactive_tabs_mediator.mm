@@ -11,6 +11,7 @@
 #import "components/prefs/pref_change_registrar.h"
 #import "components/prefs/pref_service.h"
 #import "components/sessions/core/tab_restore_service.h"
+#import "ios/chrome/browser/crash_report/model/crash_keys_helper.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -22,7 +23,7 @@
 #import "ios/chrome/browser/snapshots/model/snapshot_storage.h"
 #import "ios/chrome/browser/snapshots/model/snapshot_storage_observer.h"
 #import "ios/chrome/browser/snapshots/model/snapshot_tab_helper.h"
-#import "ios/chrome/browser/tabs/inactive_tabs/features.h"
+#import "ios/chrome/browser/tabs/model/inactive_tabs/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/inactive_tabs/inactive_tabs_info_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_configuration.h"
@@ -80,6 +81,7 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
                            WebStateList* web_state_list) {
   [consumer populateItems:CreateItemsOrderedByRecency(web_state_list)
            selectedItemID:web::WebStateID()];
+  crash_keys::SetInactiveTabCount(web_state_list->count());
 }
 
 }  // namespace
@@ -346,7 +348,7 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
 
 #pragma mark - GridCommands
 
-- (void)addNewItem {
+- (BOOL)addNewItem {
   NOTREACHED_NORETURN();
 }
 

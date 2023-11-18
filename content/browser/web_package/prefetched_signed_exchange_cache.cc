@@ -524,7 +524,7 @@ class PrefetchedNavigationLoaderInterceptor
         return;
       }
     }
-    NOTREACHED();
+    DUMP_WILL_BE_NOTREACHED_NORETURN();
   }
 
   absl::optional<SubresourceLoaderParams> MaybeCreateSubresourceLoaderParams()
@@ -555,6 +555,7 @@ class PrefetchedNavigationLoaderInterceptor
         request.url, request.trusted_params->isolation_info.site_for_cookies(),
         *request.trusted_params->isolation_info.top_frame_origin(),
         request.has_storage_access, std::move(match_options),
+        request.is_ad_tagged,
         base::BindOnce(&PrefetchedNavigationLoaderInterceptor::OnGetCookies,
                        weak_factory_.GetWeakPtr(), std::move(callback),
                        std::move(fallback_callback)));

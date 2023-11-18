@@ -22,7 +22,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.AsyncTabCreationParams;
-import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
+import org.chromium.chrome.browser.tabmodel.document.ChromeAsyncTabLauncher;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetStrings;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
@@ -60,11 +60,12 @@ public class CreatorActionDelegateImpl implements FeedActionDelegate {
             boolean offTheRecord = (disposition == WindowOpenDisposition.OFF_THE_RECORD);
             if (inGroup) {
                 AsyncTabCreationParams asyncParams = new AsyncTabCreationParams(params);
-                new TabDelegate(offTheRecord)
-                        .createNewTab(asyncParams, TabLaunchType.FROM_LINK, mParentID);
+                new ChromeAsyncTabLauncher(offTheRecord)
+                        .launchNewTab(asyncParams, TabLaunchType.FROM_LINK, mParentID);
 
             } else {
-                new TabDelegate(offTheRecord).createNewTab(params, TabLaunchType.FROM_LINK, null);
+                new ChromeAsyncTabLauncher(offTheRecord)
+                        .launchNewTab(params, TabLaunchType.FROM_LINK, null);
             }
             return;
         } else if (disposition == WindowOpenDisposition.CURRENT_TAB) {
@@ -80,11 +81,17 @@ public class CreatorActionDelegateImpl implements FeedActionDelegate {
         // TODO(crbug/1399617) Eliminate code duplication with
         //     FeedActionDelegateImpl
         BookmarkModel bookmarkModel = BookmarkModel.getForProfile(mProfile);
-        bookmarkModel.finishLoadingBookmarkModel(() -> {
-            assert ThreadUtils.runningOnUiThread();
-            BookmarkUtils.addToReadingList(
-                    new GURL(url), title, mSnackbarManager, bookmarkModel, mActivityContext);
-        });
+        bookmarkModel.finishLoadingBookmarkModel(
+                () -> {
+                    assert ThreadUtils.runningOnUiThread();
+                    BookmarkUtils.addToReadingList(
+                            new GURL(url),
+                            title,
+                            mSnackbarManager,
+                            bookmarkModel,
+                            mActivityContext,
+                            mProfile);
+                });
     }
 
     @Override

@@ -20,10 +20,12 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "components/autofill/ios/browser/autofill_driver_ios_factory.h"
 #import "components/autofill/ios/browser/autofill_java_script_feature.h"
 #import "components/autofill/ios/form_util/form_handlers_java_script_feature.h"
+#import "components/autofill/ios/form_util/form_util_java_script_feature.h"
 #include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #include "components/prefs/pref_service.h"
 #include "ios/web/public/test/fakes/fake_browser_state.h"
@@ -72,7 +74,8 @@ class AutofillAgentTests : public web::WebTest {
 
     OverrideJavaScriptFeatures(
         {autofill::AutofillJavaScriptFeature::GetInstance(),
-         autofill::FormHandlersJavaScriptFeature::GetInstance()});
+         autofill::FormHandlersJavaScriptFeature::GetInstance(),
+         autofill::FormUtilJavaScriptFeature::GetInstance()});
 
     fake_web_state_.SetBrowserState(GetBrowserState());
     fake_web_state_.SetContentIsHTML(true);
@@ -113,13 +116,16 @@ class AutofillAgentTests : public web::WebTest {
     return frame;
   }
 
+  // The prefs_ must outlive the fake_web_state_ and the autofill_agent_,
+  // the latter of which can be de-allocated as part of de-allocating the
+  // fake_web_state_.
+  std::unique_ptr<PrefService> prefs_;
   // The client_ needs to outlive the fake_web_state_, which owns the
   // frames.
   autofill::TestAutofillClient client_;
   web::FakeWebState fake_web_state_;
   web::FakeWebFrame* fake_main_frame_ = nullptr;
   web::FakeWebFramesManager* fake_web_frames_manager_ = nullptr;
-  std::unique_ptr<PrefService> prefs_;
   AutofillAgent* autofill_agent_;
 };
 
@@ -182,6 +188,94 @@ TEST_F(AutofillAgentTests,
             fake_main_frame_->GetLastJavaScriptCall());
 }
 
+// Tests that `fillSpecificFormField` in `autofill_agent_` dispatches the
+// correct javascript call to the autofill controller.
+TEST_F(AutofillAgentTests, FillSpecificFormField) {
+  std::string locale("en");
+  autofill::AutofillDriverIOSFactory::CreateForWebState(&fake_web_state_,
+                                                        &client_, nil, locale);
+
+  autofill::FormFieldData field;
+  field.form_control_type = autofill::FormControlType::kInputText;
+  field.label = u"Card number";
+  field.name = u"number";
+  field.name_attribute = field.name;
+  field.id_attribute = u"number";
+  field.value = u"number_value";
+  field.is_autofilled = true;
+  field.unique_renderer_id = FieldRendererId(2);
+
+  [autofill_agent_
+      fillSpecificFormField:field.unique_renderer_id
+                  withValue:u"mattwashere"
+                    inFrame:fake_web_frames_manager_->GetMainWebFrame()];
+  fake_web_state_.WasShown();
+  EXPECT_EQ(u"__gCrWeb.autofill.fillSpecificFormField({\"unique_renderer_id\":"
+            u"2,\"value\":\"mattwashere\"});",
+            fake_main_frame_->GetLastJavaScriptCall());
+}
+
+// Tests that `ApplyFieldAction` in `AutofillDriverIOS` dispatches the
+// correct javascript call to the autofill controller.
+TEST_F(AutofillAgentTests, DriverFillSpecificFormField) {
+  std::string locale("en");
+  autofill::AutofillDriverIOSFactory::CreateForWebState(
+      &fake_web_state_, &client_, autofill_agent_, locale);
+
+  autofill::FormFieldData field;
+  field.form_control_type = autofill::FormControlType::kInputText;
+  field.label = u"Card number";
+  field.name = u"number";
+  field.name_attribute = field.name;
+  field.id_attribute = u"number";
+  field.value = u"number_value";
+  field.is_autofilled = true;
+  field.unique_renderer_id = FieldRendererId(2);
+
+  autofill::AutofillDriverIOS* main_frame_driver =
+      autofill::AutofillDriverIOS::FromWebStateAndWebFrame(
+          &fake_web_state_, fake_web_frames_manager_->GetMainWebFrame());
+  main_frame_driver->ApplyFieldAction(
+      autofill::mojom::ActionPersistence::kFill,
+      autofill::mojom::TextReplacement::kReplaceAll, field.global_id(),
+      u"mattwashere");
+
+  fake_web_state_.WasShown();
+  EXPECT_EQ(u"__gCrWeb.autofill.fillSpecificFormField({\"unique_renderer_id\":"
+            u"2,\"value\":\"mattwashere\"});",
+            fake_main_frame_->GetLastJavaScriptCall());
+}
+
+// Tests that `ApplyFieldAction` with `ActionPersistence::kPreview`in
+// `AutofillDriverIOS` does not dispatch a JS call.
+TEST_F(AutofillAgentTests, DriverPreviewSpecificFormField) {
+  std::string locale("en");
+  autofill::AutofillDriverIOSFactory::CreateForWebState(
+      &fake_web_state_, &client_, autofill_agent_, locale);
+
+  autofill::FormFieldData field;
+  field.form_control_type = autofill::FormControlType::kInputText;
+  field.label = u"Card number";
+  field.name = u"number";
+  field.name_attribute = field.name;
+  field.id_attribute = u"number";
+  field.value = u"number_value";
+  field.is_autofilled = true;
+  field.unique_renderer_id = FieldRendererId(2);
+
+  autofill::AutofillDriverIOS* main_frame_driver =
+      autofill::AutofillDriverIOS::FromWebStateAndWebFrame(
+          &fake_web_state_, fake_web_frames_manager_->GetMainWebFrame());
+  // Preview is not currently supported; no JS should be run.
+  main_frame_driver->ApplyFieldAction(
+      autofill::mojom::ActionPersistence::kPreview,
+      autofill::mojom::TextReplacement::kReplaceAll, field.global_id(),
+      u"mattwashere");
+
+  fake_web_state_.WasShown();
+  EXPECT_EQ(u"", fake_main_frame_->GetLastJavaScriptCall());
+}
+
 // Tests that when a non user initiated form activity is registered the
 // completion callback passed to the call to check if suggestions are available
 // is invoked with no suggestions.
@@ -227,7 +321,8 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ShowAccountCards) {
   // Make the suggestions available to AutofillAgent.
   std::vector<autofill::Suggestion> autofillSuggestions;
   autofillSuggestions.push_back(
-      autofill::Suggestion("", "", "", PopupItemId::kShowAccountCards));
+      autofill::Suggestion("", "", autofill::Suggestion::Icon::kNoIcon,
+                           PopupItemId::kShowAccountCards));
   [autofill_agent_ showAutofillPopup:autofillSuggestions
                        popupDelegate:mock_delegate.GetWeakPtr()];
 
@@ -276,11 +371,11 @@ TEST_F(AutofillAgentTests,
       .WillOnce(testing::Return(PopupType::kUnspecified));
   // Initialize suggestion.
   std::vector<autofill::Suggestion> autofillSuggestions = {
-      autofill::Suggestion("", "", "visaCC",
+      autofill::Suggestion("", "", autofill::Suggestion::Icon::kCardVisa,
                            autofill::PopupItemId::kCreditCardEntry),
       // This suggestion has a valid credit card icon, but the Suggestion type
       // (kShowAccountCards) is wrong.
-      autofill::Suggestion("", "", "visaCC",
+      autofill::Suggestion("", "", autofill::Suggestion::Icon::kCardVisa,
                            autofill::PopupItemId::kShowAccountCards),
   };
   // Completion handler to retrieve suggestions.
@@ -327,9 +422,9 @@ TEST_F(AutofillAgentTests, showAutofillPopup_EmptyIconInCreditCardSuggestion) {
   EXPECT_CALL(mock_delegate, GetPopupType)
       .WillRepeatedly(testing::Return(PopupType::kCreditCards));
 
-  const std::string emptyIcon = "";
-  std::vector<autofill::Suggestion> autofillSuggestions = {autofill::Suggestion(
-      "", "", emptyIcon, autofill::PopupItemId::kCreditCardEntry)};
+  std::vector<autofill::Suggestion> autofillSuggestions = {
+      autofill::Suggestion("", "", autofill::Suggestion::Icon::kNoIcon,
+                           autofill::PopupItemId::kCreditCardEntry)};
 
   // Completion handler to retrieve suggestions.
   auto completionHandler = ^(NSArray<FormSuggestion*>* suggestions,
@@ -356,9 +451,11 @@ TEST_F(AutofillAgentTests, showAutofillPopup_PlusAddresses) {
   const std::string createSuggestionText = "create";
   const std::string fillExistingSuggestionText = "existing";
   std::vector<autofill::Suggestion> autofillSuggestions = {
-      autofill::Suggestion(createSuggestionText, "", "",
+      autofill::Suggestion(createSuggestionText, "",
+                           autofill::Suggestion::Icon::kNoIcon,
                            autofill::PopupItemId::kCreateNewPlusAddress),
-      autofill::Suggestion(fillExistingSuggestionText, "", "",
+      autofill::Suggestion(fillExistingSuggestionText, "",
+                           autofill::Suggestion::Icon::kNoIcon,
                            autofill::PopupItemId::kFillExistingPlusAddress)};
 
   // Completion handler to retrieve suggestions.
@@ -399,7 +496,8 @@ TEST_F(AutofillAgentTests, showAutofillPopup_PlusAddresses) {
 // icon.
 TEST_F(AutofillAgentTests,
        showAutofillPopup_PreferCustomIconForCreditCardSuggestions) {
-  const std::string suggestion_network_icon = "visaCC";
+  autofill::Suggestion::Icon suggestion_network_icon =
+      autofill::Suggestion::Icon::kCardVisa;
   UIImage* network_icon_image =
       ui::ResourceBundle::GetSharedInstance()
           .GetNativeImageNamed(
@@ -454,11 +552,13 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ClearForm) {
   // Make the suggestions available to AutofillAgent.
   std::vector<autofill::Suggestion> autofillSuggestions;
   autofillSuggestions.push_back(
-      autofill::Suggestion("", "", "", autofill::PopupItemId::kAddressEntry));
+      autofill::Suggestion("", "", autofill::Suggestion::Icon::kNoIcon,
+                           autofill::PopupItemId::kAddressEntry));
   autofillSuggestions.push_back(
-      autofill::Suggestion("", "", "", autofill::PopupItemId::kAddressEntry));
-  autofillSuggestions.push_back(
-      autofill::Suggestion("", "", "", PopupItemId::kClearForm));
+      autofill::Suggestion("", "", autofill::Suggestion::Icon::kNoIcon,
+                           autofill::PopupItemId::kAddressEntry));
+  autofillSuggestions.push_back(autofill::Suggestion(
+      "", "", autofill::Suggestion::Icon::kNoIcon, PopupItemId::kClearForm));
   [autofill_agent_
       showAutofillPopup:autofillSuggestions
           popupDelegate:base::WeakPtr<autofill::AutofillPopupDelegate>()];
@@ -508,12 +608,14 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ClearFormWithGPay) {
 
   // Make the suggestions available to AutofillAgent.
   std::vector<autofill::Suggestion> autofillSuggestions;
-  autofillSuggestions.push_back(autofill::Suggestion(
-      "", "", "", autofill::PopupItemId::kCreditCardEntry));
-  autofillSuggestions.push_back(autofill::Suggestion(
-      "", "", "", autofill::PopupItemId::kCreditCardEntry));
   autofillSuggestions.push_back(
-      autofill::Suggestion("", "", "", PopupItemId::kClearForm));
+      autofill::Suggestion("", "", autofill::Suggestion::Icon::kNoIcon,
+                           autofill::PopupItemId::kCreditCardEntry));
+  autofillSuggestions.push_back(
+      autofill::Suggestion("", "", autofill::Suggestion::Icon::kNoIcon,
+                           autofill::PopupItemId::kCreditCardEntry));
+  autofillSuggestions.push_back(autofill::Suggestion(
+      "", "", autofill::Suggestion::Icon::kNoIcon, PopupItemId::kClearForm));
   [autofill_agent_
       showAutofillPopup:autofillSuggestions
           popupDelegate:base::WeakPtr<autofill::AutofillPopupDelegate>()];

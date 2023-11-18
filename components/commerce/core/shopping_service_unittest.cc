@@ -6,7 +6,6 @@
 #include "base/functional/bind.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/uuid.h"
 #include "base/values.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -361,8 +360,9 @@ TEST_P(ShoppingServiceTest,
       {kShoppingList, kCommerceAllowLocalImages, kCommerceAllowServerImages},
       {});
 
-  std::string json("{\"image\": \"" + std::string(kImageUrl) + "\"}");
-  base::Value js_result(json);
+  auto result = base::Value::Dict();
+  result.Set("image", std::string(kImageUrl));
+  base::Value js_result(std::move(result));
   MockWebWrapper web(GURL(kProductUrl), false, &js_result);
 
   // Assume the page hasn't finished loading.
@@ -412,9 +412,9 @@ TEST_P(ShoppingServiceTest,
   // The page will have finished its initial load prior to DidFinishLoad.
   web.SetIsFirstLoadForNavigationFinished(true);
   DidFinishLoad(&web);
-  // The js should only be able to run now after all loading has completed (for
-  // at least the timeout duration).
-  SimulateProductInfoJsTaskFinished();
+  // The local extraction should only be able to run now after all loading has
+  // completed (for at least the timeout duration).
+  SimulateProductInfoLocalExtractionTaskFinished();
 
   // At this point we should have the image in the cache.
   cached_info =
@@ -434,8 +434,9 @@ TEST_P(ShoppingServiceTest,
   test_features_.InitWithFeatures(
       {kCommerceAllowLocalImages, kCommerceAllowServerImages}, {});
 
-  std::string json("{\"image\": \"" + std::string(kImageUrl) + "\"}");
-  base::Value js_result(json);
+  auto result = base::Value::Dict();
+  result.Set("image", std::string(kImageUrl));
+  base::Value js_result(std::move(result));
   MockWebWrapper web(GURL(kProductUrl), false, &js_result);
 
   // Assume the page has already loaded for the navigation. This is usually the
@@ -452,7 +453,7 @@ TEST_P(ShoppingServiceTest,
 
   DidNavigatePrimaryMainFrame(&web);
   // If the page was already loaded, assume the js has time to run now.
-  SimulateProductInfoJsTaskFinished();
+  SimulateProductInfoLocalExtractionTaskFinished();
 
   // By this point there should be something in the cache.
   ASSERT_EQ(1, GetProductInfoCacheOpenURLCount(GURL(kProductUrl)));
@@ -558,17 +559,18 @@ TEST_P(ShoppingServiceTest, TestGetUpdatedProductInfoForBookmarks) {
   opt_guide_->AddOnDemandShoppingResponse(
       GURL(kProductUrl), OptimizationGuideDecision::kTrue, updated_meta);
 
-  std::vector<base::Uuid> bookmark_uuids;
-  bookmark_uuids.push_back(product1->uuid());
-  int expected_calls = bookmark_uuids.size();
+  std::vector<int64_t> bookmark_ids;
+  bookmark_ids.push_back(product1->id());
+  int expected_calls = bookmark_ids.size();
 
   base::RunLoop run_loop;
 
   auto callback = base::BindRepeating(
       [](bookmarks::BookmarkModel* model, int* call_count,
-         base::RunLoop* run_loop, const base::Uuid& uuid, const GURL& url,
+         base::RunLoop* run_loop, const int64_t id, const GURL& url,
          absl::optional<ProductInfo> info) {
-        const bookmarks::BookmarkNode* node = model->GetNodeByUuid(uuid);
+        const bookmarks::BookmarkNode* node =
+            bookmarks::GetBookmarkNodeByID(model, id);
         EXPECT_EQ(url.spec(), node->url().spec());
 
         (*call_count)--;
@@ -578,8 +580,7 @@ TEST_P(ShoppingServiceTest, TestGetUpdatedProductInfoForBookmarks) {
       },
       model, &expected_calls, &run_loop);
 
-  shopping_service_->GetUpdatedProductInfoForBookmarks(bookmark_uuids,
-                                                       callback);
+  shopping_service_->GetUpdatedProductInfoForBookmarks(bookmark_ids, callback);
   run_loop.Run();
 
   EXPECT_EQ(0, expected_calls);
@@ -704,8 +705,9 @@ TEST_P(ShoppingServiceTest, TestShoppingListEligible_SignIn) {
 }
 
 TEST_P(ShoppingServiceTest, TestShoppingListEligible_WAA) {
-  test_features_.InitWithFeatures({kShoppingList},
-                                  {kShoppingListRegionLaunched});
+  test_features_.InitWithFeatures(
+      {kShoppingList},
+      {kShoppingListRegionLaunched, kShoppingListWAARestrictionRemoval});
 
   TestingPrefServiceSimple prefs;
   RegisterPrefs(prefs.registry());
@@ -1254,7 +1256,7 @@ TEST_P(ShoppingServiceTest,
 }
 
 TEST_P(ShoppingServiceTest, TestIsShoppingPage) {
-  test_features_.InitAndEnableFeature(kShoppingPageTypes);
+  opt_guide_->SetDefaultShoppingPage(false);
   base::RunLoop run_loop[3];
   OptimizationMetadata meta;
   ShoppingPageTypes data;
@@ -1317,7 +1319,8 @@ TEST_P(ShoppingServiceTest, TestIsShoppingPage) {
 }
 
 TEST_P(ShoppingServiceTest, TestDiscountInfoResponse) {
-  test_features_.InitAndEnableFeature(kShowDiscountOnNavigation);
+  test_features_.InitWithFeatures(
+      {kShowDiscountOnNavigation, kEnableDiscountInfoApi}, {});
 
   std::vector<DiscountInfo> infos;
 
@@ -1392,7 +1395,8 @@ TEST_P(ShoppingServiceTest, TestDiscountInfoResponse) {
 }
 
 TEST_P(ShoppingServiceTest, TestDiscountInfoResponse_InfoWithoutId) {
-  test_features_.InitAndEnableFeature(kShowDiscountOnNavigation);
+  test_features_.InitWithFeatures(
+      {kShowDiscountOnNavigation, kEnableDiscountInfoApi}, {});
 
   std::vector<DiscountInfo> infos;
 
@@ -1437,7 +1441,8 @@ TEST_P(ShoppingServiceTest, TestDiscountInfoResponse_InfoWithoutId) {
 }
 
 TEST_P(ShoppingServiceTest, TestDiscountInfoResponse_InfoWithoutTerms) {
-  test_features_.InitAndEnableFeature(kShowDiscountOnNavigation);
+  test_features_.InitWithFeatures(
+      {kShowDiscountOnNavigation, kEnableDiscountInfoApi}, {});
 
   std::vector<DiscountInfo> infos;
 

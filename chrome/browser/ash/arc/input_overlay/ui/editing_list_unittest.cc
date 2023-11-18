@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/style/icon_button.h"
+#include "base/check.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action.h"
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
 #include "chrome/browser/ash/arc/input_overlay/test/overlay_view_test_base.h"
@@ -54,6 +55,14 @@ class EditingListTest : public OverlayViewTestBase {
   void PressAddButton() {
     DCHECK(editing_list_);
     editing_list_->OnAddButtonPressed();
+  }
+
+  // Add a new action in the center of the main window.
+  void AddNewAction() {
+    PressAddButton();
+    auto* target_widget = GetTargetViewWidget();
+    DCHECK(target_widget);
+    LeftClickOn(target_widget->GetContentsView());
   }
 
   void LeftClickAtActionViewListItem(int index) {
@@ -148,12 +157,24 @@ class EditingListTest : public OverlayViewTestBase {
     return controller_->input_mapping_widget_.get();
   }
 
+  views::Widget* GetTargetViewWidget() {
+    return controller_->target_widget_.get();
+  }
+
   bool ButtonOptionsMenuExists() {
     return !!controller_->button_options_widget_;
   }
 
   bool DeleteEditShortcutExists() {
     return !!controller_->delete_edit_shortcut_widget_;
+  }
+
+  bool IsActionHighlightVisible() {
+    if (!controller_->action_highlight_widget_) {
+      return false;
+    }
+    return controller_->action_highlight_widget_->GetContentsView()
+        ->GetVisible();
   }
 
   bool IsButtonOptionsMenuVisible() {
@@ -213,8 +234,13 @@ TEST_F(EditingListTest, TestAddNewAction) {
   EXPECT_EQ(3u, GetActionViewSize());
   EXPECT_EQ(3u, GetTouchInjectorActionSize());
   EXPECT_FALSE(ButtonOptionsMenuExists());
-  // Add a new action by pressing add button.
+  // Press add button and it enters into the button place mode.
   PressAddButton();
+  auto* target_widget = GetTargetViewWidget();
+  EXPECT_TRUE(target_widget);
+  // Click on the `target_widget` and then the new action is added.
+  LeftClickOn(target_widget->GetContentsView());
+  EXPECT_FALSE(GetTargetViewWidget());
   CheckActions(
       touch_injector_, /*expect_size=*/4u, /*expect_types=*/
       {ActionType::TAP, ActionType::TAP, ActionType::MOVE, ActionType::TAP},
@@ -233,7 +259,7 @@ TEST_F(EditingListTest, TestDragAtNewAction) {
   CheckActions(touch_injector_, /*expect_size=*/3u, /*expect_types=*/
                {ActionType::TAP, ActionType::TAP, ActionType::MOVE},
                /*expect_ids=*/{0, 1, 2});
-  PressAddButton();
+  AddNewAction();
   EXPECT_TRUE(IsButtonOptionsMenuVisible());
   auto* action = GetButtonOptionsAction();
   EXPECT_TRUE(action->is_new());
@@ -250,7 +276,7 @@ TEST_F(EditingListTest, TestPressAtActionViewListItem) {
                {ActionType::TAP, ActionType::TAP, ActionType::MOVE},
                /*expect_ids=*/{0, 1, 2});
   // Test action view list press.
-  PressAddButton();
+  AddNewAction();
   EXPECT_TRUE(ButtonOptionsMenuExists());
   auto* action_1 = GetButtonOptionsAction();
   // Scroll back to top to click the first list item.
@@ -267,6 +293,7 @@ TEST_F(EditingListTest, TestHoverAtActionViewListItem) {
                /*expect_ids=*/{0, 1, 2});
   HoverAtActionViewListItem(/*index=*/0);
   EXPECT_TRUE(DeleteEditShortcutExists());
+  EXPECT_TRUE(IsActionHighlightVisible());
   auto* action = GetDeleteEditShortcutAction();
 
   PressEditButton();
@@ -277,6 +304,7 @@ TEST_F(EditingListTest, TestHoverAtActionViewListItem) {
 
   HoverAtActionViewListItem(/*index=*/0);
   EXPECT_TRUE(DeleteEditShortcutExists());
+  EXPECT_TRUE(IsActionHighlightVisible());
   PressDeleteButton();
   EXPECT_FALSE(DeleteEditShortcutExists());
   EXPECT_EQ(2u, GetActionListItemsSize());
@@ -384,7 +412,7 @@ TEST_F(EditingListTest, TestEducationNudge) {
   EXPECT_FALSE(GetEducationNudge(input_mapping));
 
   // Add an action, the previous education nudge for `editing_list` is removed.
-  PressAddButton();
+  AddNewAction();
   EXPECT_FALSE(GetEducationNudge(editing_list));
   // The education nudge for `input_mapping` shows up.
   auto* input_mapping_nudge = GetEducationNudge(input_mapping);
@@ -402,7 +430,7 @@ TEST_F(EditingListTest, TestEducationNudge) {
   EXPECT_FALSE(GetEducationNudge(input_mapping));
 
   // No education nudge after adding another action.
-  PressAddButton();
+  AddNewAction();
   PressDoneButtonOnButtonOptionsMenu();
   EXPECT_FALSE(GetEducationNudge(editing_list));
   EXPECT_FALSE(GetEducationNudge(input_mapping));
@@ -417,16 +445,16 @@ TEST_F(EditingListTest, TestScrollView) {
   EXPECT_LE(list_window->bounds().height(), window_content_height);
   EXPECT_FALSE(GetScrollBarVisible());
   // Add new actions until it shows scroll bar.
-  PressAddButton();
+  AddNewAction();
   EXPECT_GT(list_window->bounds().height(), original_height);
-  PressAddButton();
-  PressAddButton();
+  AddNewAction();
+  AddNewAction();
   EXPECT_TRUE(GetScrollBarVisible());
   EXPECT_EQ(window_content_height, list_window->bounds().height());
-  PressAddButton();
+  AddNewAction();
   EXPECT_TRUE(GetScrollBarVisible());
   EXPECT_EQ(window_content_height, list_window->bounds().height());
-  PressAddButton();
+  AddNewAction();
   EXPECT_TRUE(GetScrollBarVisible());
   EXPECT_EQ(window_content_height, list_window->bounds().height());
 

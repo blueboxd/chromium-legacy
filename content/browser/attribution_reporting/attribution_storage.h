@@ -25,9 +25,8 @@ class AttributionStorageDelegate;
 class AttributionTrigger;
 class CreateReportResult;
 class StorableSource;
+class StoreSourceResult;
 class StoredSource;
-
-struct StoreSourceResult;
 
 // This class provides an interface for persisting attribution data to
 // disk, and performing queries on it. AttributionStorage should initialize
@@ -45,7 +44,11 @@ class AttributionStorage {
   // pair. When a source is stored, all matching sources that have already
   // converted are marked as inactive, and are no longer eligible for reporting.
   // Unconverted matching sources are not modified.
-  virtual StoreSourceResult StoreSource(const StorableSource& source) = 0;
+  //
+  // TODO(linnan): Remove default argument for `debug_cookie_set`.
+  // Alternatively, consider making this a field in `StorableSource`.
+  virtual StoreSourceResult StoreSource(const StorableSource& source,
+                                        bool debug_cookie_set = false) = 0;
 
   // Finds all stored sources matching a given `trigger`, and stores the
   // new associated report. Only active sources will receive new attributions.

@@ -5,6 +5,11 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_AUTOFILL_DRIVER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_AUTOFILL_DRIVER_H_
 
+#include <concepts>
+#include <map>
+#include <string>
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
 #include "base/functional/callback_forward.h"
@@ -32,11 +37,9 @@ namespace autofill {
 //
 // As a rule of thumb, TestContentAutofillDriver is preferable in tests that
 // have a content::WebContents.
-template <typename T>
+template <std::derived_from<AutofillDriver> T>
 class TestAutofillDriverTemplate : public T {
  public:
-  static_assert(std::is_base_of_v<AutofillDriver, T>);
-
   using T::T;
   TestAutofillDriverTemplate(const TestAutofillDriverTemplate&) = delete;
   TestAutofillDriverTemplate& operator=(const TestAutofillDriverTemplate&) =
@@ -61,8 +64,8 @@ class TestAutofillDriverTemplate : public T {
   bool IsPrerendering() const override { return false; }
   bool HasSharedAutofillPermission() const override { return shared_autofill_; }
   bool CanShowAutofillUi() const override { return true; }
-  bool RendererIsAvailable() override { return true; }
   void ApplyFieldAction(mojom::ActionPersistence action_persistence,
+                        mojom::TextReplacement text_replacement,
                         const FieldGlobalId& field,
                         const std::u16string& value) override {}
   void HandleParsedForms(const std::vector<FormData>& forms) override {}
@@ -78,7 +81,7 @@ class TestAutofillDriverTemplate : public T {
       AutofillSuggestionTriggerSource trigger_source) override {}
   void RendererShouldSetSuggestionAvailability(
       const FieldGlobalId& field,
-      const mojom::AutofillState state) override {}
+      mojom::AutofillSuggestionAvailability suggestion_availability) override {}
   void PopupHidden() override {}
   net::IsolationInfo IsolationInfo() override { return isolation_info_; }
   void SendFieldsEligibleForManualFillingToRenderer(
@@ -87,9 +90,9 @@ class TestAutofillDriverTemplate : public T {
   void TriggerFormExtractionInAllFrames(
       base::OnceCallback<void(bool)> form_extraction_finished_callback)
       override {}
-  void ExtractForm(FormGlobalId form,
-                   base::OnceCallback<void(const std::optional<FormData>&)>
-                       response_callback) override {}
+  void ExtractForm(
+      FormGlobalId form,
+      AutofillDriver::BrowserFormHandler response_handler) override {}
   void GetFourDigitCombinationsFromDOM(
       base::OnceCallback<void(const std::vector<std::string>&)>
           potential_matches) override {}

@@ -7,6 +7,7 @@
 
 #include "base/strings/string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/safe_url_pattern.h"
 #include "third_party/blink/public/common/service_worker/embedded_worker_status.h"
 #include "third_party/blink/public/common/service_worker/service_worker_router_rule.h"
 #include "third_party/liburlpattern/parse.h"
@@ -50,8 +51,8 @@ TEST(ServiceWorkerRouterEvaluator, EmptyRule) {
   network::ResourceRequest request;
   request.method = "GET";
   request.url = GURL("https://example.com/");
-  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
-  EXPECT_TRUE(sources.empty());
+  const auto eval_result = evaluator.EvaluateWithoutRunningStatus(request);
+  EXPECT_FALSE(eval_result.has_value());
 }
 
 TEST(ServiceWorkerRouterEvaluator, SimpleMatch) {
@@ -59,16 +60,14 @@ TEST(ServiceWorkerRouterEvaluator, SimpleMatch) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
       blink::SafeUrlPattern url_pattern = DefaultURLPattern();
       auto parse_result = liburlpattern::Parse(
           "/test/*",
           [](base::StringPiece input) { return std::string(input); });
       ASSERT_TRUE(parse_result.ok());
       url_pattern.pathname = parse_result.value().PartList();
-      condition.url_pattern = url_pattern;
-      rule.conditions.push_back(condition);
+      rule.condition =
+          blink::ServiceWorkerRouterCondition::WithUrlPattern(url_pattern);
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -87,8 +86,9 @@ TEST(ServiceWorkerRouterEvaluator, SimpleMatch) {
   network::ResourceRequest request;
   request.method = "GET";
   request.url = GURL("https://example.com/test/page.html");
-  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
-  EXPECT_EQ(1U, sources.size());
+  const auto eval_result = evaluator.EvaluateWithoutRunningStatus(request);
+  EXPECT_TRUE(eval_result.has_value());
+  EXPECT_EQ(1U, eval_result->sources.size());
 }
 
 TEST(ServiceWorkerRouterEvaluator, SimpleExactMatch) {
@@ -96,16 +96,14 @@ TEST(ServiceWorkerRouterEvaluator, SimpleExactMatch) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
       blink::SafeUrlPattern url_pattern = DefaultURLPattern();
       auto parse_result = liburlpattern::Parse(
           "/test/page.html",
           [](base::StringPiece input) { return std::string(input); });
       ASSERT_TRUE(parse_result.ok());
       url_pattern.pathname = parse_result.value().PartList();
-      condition.url_pattern = url_pattern;
-      rule.conditions.push_back(condition);
+      rule.condition =
+          blink::ServiceWorkerRouterCondition::WithUrlPattern(url_pattern);
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -124,8 +122,9 @@ TEST(ServiceWorkerRouterEvaluator, SimpleExactMatch) {
   network::ResourceRequest request;
   request.method = "GET";
   request.url = GURL("https://example.com/test/page.html");
-  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
-  EXPECT_EQ(1U, sources.size());
+  const auto eval_result = evaluator.EvaluateWithoutRunningStatus(request);
+  EXPECT_TRUE(eval_result.has_value());
+  EXPECT_EQ(1U, eval_result->sources.size());
 }
 
 TEST(ServiceWorkerRouterEvaluator, NotMatchingCondition) {
@@ -133,16 +132,14 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingCondition) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
       blink::SafeUrlPattern url_pattern = DefaultURLPattern();
       auto parse_result = liburlpattern::Parse(
           "/test/*",
           [](base::StringPiece input) { return std::string(input); });
       ASSERT_TRUE(parse_result.ok());
       url_pattern.pathname = parse_result.value().PartList();
-      condition.url_pattern = url_pattern;
-      rule.conditions.push_back(condition);
+      rule.condition =
+          blink::ServiceWorkerRouterCondition::WithUrlPattern(url_pattern);
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -161,8 +158,8 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingCondition) {
   network::ResourceRequest request;
   request.method = "GET";
   request.url = GURL("https://example.com/notmatched/page.html");
-  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
-  EXPECT_EQ(0U, sources.size());
+  const auto eval_result = evaluator.EvaluateWithoutRunningStatus(request);
+  EXPECT_FALSE(eval_result.has_value());
 }
 
 TEST(ServiceWorkerRouterEvaluator, OneConditionMisMatch) {
@@ -170,28 +167,23 @@ TEST(ServiceWorkerRouterEvaluator, OneConditionMisMatch) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
-      blink::SafeUrlPattern url_pattern = DefaultURLPattern();
-      auto parse_result = liburlpattern::Parse(
-          "/test/*",
-          [](base::StringPiece input) { return std::string(input); });
-      ASSERT_TRUE(parse_result.ok());
-      url_pattern.pathname = parse_result.value().PartList();
-      condition.url_pattern = url_pattern;
-      rule.conditions.push_back(condition);
+      // Match
+      blink::ServiceWorkerRouterRunningStatusCondition running_status;
+      running_status.status = blink::ServiceWorkerRouterRunningStatusCondition::
+          RunningStatusEnum::kRunning;
+      rule.condition = blink::ServiceWorkerRouterCondition::WithRunningStatus(
+          running_status);
     }
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
+      // Not match
       blink::SafeUrlPattern url_pattern = DefaultURLPattern();
       auto parse_result = liburlpattern::Parse(
           "/notmatch/*",
           [](base::StringPiece input) { return std::string(input); });
       ASSERT_TRUE(parse_result.ok());
       url_pattern.pathname = parse_result.value().PartList();
-      condition.url_pattern = url_pattern;
-      rule.conditions.push_back(condition);
+      rule.condition =
+          blink::ServiceWorkerRouterCondition::WithUrlPattern(url_pattern);
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -210,8 +202,9 @@ TEST(ServiceWorkerRouterEvaluator, OneConditionMisMatch) {
   network::ResourceRequest request;
   request.method = "GET";
   request.url = GURL("https://example.com/test/page.html");
-  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
-  EXPECT_EQ(0U, sources.size());
+  const auto eval_result =
+      evaluator.Evaluate(request, blink::EmbeddedWorkerStatus::kRunning);
+  EXPECT_FALSE(eval_result.has_value());
 }
 
 TEST(ServiceWorkerRouterEvaluator, AllConditionMatch) {
@@ -219,27 +212,21 @@ TEST(ServiceWorkerRouterEvaluator, AllConditionMatch) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
       blink::SafeUrlPattern url_pattern = DefaultURLPattern();
       auto parse_result = liburlpattern::Parse(
           "/test/*",
           [](base::StringPiece input) { return std::string(input); });
       ASSERT_TRUE(parse_result.ok());
       url_pattern.pathname = parse_result.value().PartList();
-      condition.url_pattern = url_pattern;
-      rule.conditions.push_back(condition);
+      rule.condition =
+          blink::ServiceWorkerRouterCondition::WithUrlPattern(url_pattern);
     }
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
-      blink::SafeUrlPattern url_pattern = DefaultURLPattern();
-      auto parse_result = liburlpattern::Parse(
-          "*.html", [](base::StringPiece input) { return std::string(input); });
-      ASSERT_TRUE(parse_result.ok());
-      url_pattern.pathname = parse_result.value().PartList();
-      condition.url_pattern = url_pattern;
-      rule.conditions.push_back(condition);
+      blink::ServiceWorkerRouterRunningStatusCondition running_status;
+      running_status.status = blink::ServiceWorkerRouterRunningStatusCondition::
+          RunningStatusEnum::kRunning;
+      rule.condition = blink::ServiceWorkerRouterCondition::WithRunningStatus(
+          running_status);
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -258,8 +245,10 @@ TEST(ServiceWorkerRouterEvaluator, AllConditionMatch) {
   network::ResourceRequest request;
   request.method = "GET";
   request.url = GURL("https://example.com/test/page.html");
-  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
-  EXPECT_EQ(1U, sources.size());
+  const auto eval_result =
+      evaluator.Evaluate(request, blink::EmbeddedWorkerStatus::kRunning);
+  EXPECT_TRUE(eval_result.has_value());
+  EXPECT_EQ(1U, eval_result->sources.size());
 }
 
 TEST(ServiceWorkerRouterEvaluator, ChooseMatchedRoute) {
@@ -267,15 +256,13 @@ TEST(ServiceWorkerRouterEvaluator, ChooseMatchedRoute) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
       blink::SafeUrlPattern url_pattern = DefaultURLPattern();
       auto parse_result = liburlpattern::Parse(
           "*.html", [](base::StringPiece input) { return std::string(input); });
       ASSERT_TRUE(parse_result.ok());
       url_pattern.pathname = parse_result.value().PartList();
-      condition.url_pattern = url_pattern;
-      rule.conditions.push_back(condition);
+      rule.condition =
+          blink::ServiceWorkerRouterCondition::WithUrlPattern(url_pattern);
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -288,15 +275,13 @@ TEST(ServiceWorkerRouterEvaluator, ChooseMatchedRoute) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
       blink::SafeUrlPattern url_pattern = DefaultURLPattern();
       auto parse_result = liburlpattern::Parse(
           "*.css", [](base::StringPiece input) { return std::string(input); });
       ASSERT_TRUE(parse_result.ok());
       url_pattern.pathname = parse_result.value().PartList();
-      condition.url_pattern = url_pattern;
-      rule.conditions.push_back(condition);
+      rule.condition =
+          blink::ServiceWorkerRouterCondition::WithUrlPattern(url_pattern);
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -315,10 +300,12 @@ TEST(ServiceWorkerRouterEvaluator, ChooseMatchedRoute) {
   network::ResourceRequest request;
   request.method = "GET";
   request.url = GURL("https://example.com/top/test.css");
-  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
+  const auto eval_result = evaluator.EvaluateWithoutRunningStatus(request);
   // Four sources rule should match because of *.css URLPattern.
-  ASSERT_EQ(1U, sources.size());
-  EXPECT_EQ(blink::ServiceWorkerRouterSource::Type::kRace, sources[0].type);
+  EXPECT_TRUE(eval_result.has_value());
+  EXPECT_EQ(1U, eval_result->sources.size());
+  EXPECT_EQ(blink::ServiceWorkerRouterSource::Type::kRace,
+            eval_result->sources[0].type);
 }
 
 TEST(ServiceWorkerRouterEvaluator, SimpleHostnameMatch) {
@@ -326,16 +313,14 @@ TEST(ServiceWorkerRouterEvaluator, SimpleHostnameMatch) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
       blink::SafeUrlPattern url_pattern = DefaultURLPattern();
       auto parse_result = liburlpattern::Parse(
           "*.example.com",
           [](base::StringPiece input) { return std::string(input); });
       ASSERT_TRUE(parse_result.ok());
       url_pattern.hostname = parse_result.value().PartList();
-      condition.url_pattern = url_pattern;
-      rule.conditions.push_back(condition);
+      rule.condition =
+          blink::ServiceWorkerRouterCondition::WithUrlPattern(url_pattern);
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -354,8 +339,9 @@ TEST(ServiceWorkerRouterEvaluator, SimpleHostnameMatch) {
   network::ResourceRequest request;
   request.method = "GET";
   request.url = GURL("https://www.example.com/test/page.html");
-  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
-  EXPECT_EQ(1U, sources.size());
+  const auto eval_result = evaluator.EvaluateWithoutRunningStatus(request);
+  EXPECT_TRUE(eval_result.has_value());
+  EXPECT_EQ(1U, eval_result->sources.size());
 }
 
 TEST(ServiceWorkerRouterEvaluator, SimpleExactHostnameMatch) {
@@ -363,16 +349,14 @@ TEST(ServiceWorkerRouterEvaluator, SimpleExactHostnameMatch) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
       blink::SafeUrlPattern url_pattern = DefaultURLPattern();
       auto parse_result = liburlpattern::Parse(
           "www.example.com",
           [](base::StringPiece input) { return std::string(input); });
       ASSERT_TRUE(parse_result.ok());
       url_pattern.hostname = parse_result.value().PartList();
-      condition.url_pattern = url_pattern;
-      rule.conditions.push_back(condition);
+      rule.condition =
+          blink::ServiceWorkerRouterCondition::WithUrlPattern(url_pattern);
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -391,8 +375,9 @@ TEST(ServiceWorkerRouterEvaluator, SimpleExactHostnameMatch) {
   network::ResourceRequest request;
   request.method = "GET";
   request.url = GURL("https://www.example.com/test/page.html");
-  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
-  EXPECT_EQ(1U, sources.size());
+  const auto eval_result = evaluator.EvaluateWithoutRunningStatus(request);
+  EXPECT_TRUE(eval_result.has_value());
+  EXPECT_EQ(1U, eval_result->sources.size());
 }
 
 TEST(ServiceWorkerRouterEvaluator, NotMatchingHostnameCondition) {
@@ -400,16 +385,14 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingHostnameCondition) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
       blink::SafeUrlPattern url_pattern = DefaultURLPattern();
       auto parse_result = liburlpattern::Parse(
           "*.example.com",
           [](base::StringPiece input) { return std::string(input); });
       ASSERT_TRUE(parse_result.ok());
       url_pattern.pathname = parse_result.value().PartList();
-      condition.url_pattern = url_pattern;
-      rule.conditions.push_back(condition);
+      rule.condition =
+          blink::ServiceWorkerRouterCondition::WithUrlPattern(url_pattern);
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -428,8 +411,8 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingHostnameCondition) {
   network::ResourceRequest request;
   request.method = "GET";
   request.url = GURL("https://www.example.org/notmatched/page.html");
-  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
-  EXPECT_EQ(0U, sources.size());
+  const auto eval_result = evaluator.EvaluateWithoutRunningStatus(request);
+  EXPECT_FALSE(eval_result.has_value());
 }
 
 TEST(ServiceWorkerRouterEvaluator, MatchingVariousCondition) {
@@ -437,8 +420,6 @@ TEST(ServiceWorkerRouterEvaluator, MatchingVariousCondition) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
       blink::SafeUrlPattern url_pattern;
       {
         auto parse_result = liburlpattern::Parse(
@@ -495,8 +476,8 @@ TEST(ServiceWorkerRouterEvaluator, MatchingVariousCondition) {
         ASSERT_TRUE(parse_result.ok());
         url_pattern.hash = parse_result.value().PartList();
       }
-      condition.url_pattern = url_pattern;
-      rule.conditions.push_back(condition);
+      rule.condition =
+          blink::ServiceWorkerRouterCondition::WithUrlPattern(url_pattern);
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -517,8 +498,9 @@ TEST(ServiceWorkerRouterEvaluator, MatchingVariousCondition) {
   request.url = GURL(
       "https://username:password@www.example.org:8000/matched/"
       "page.html?query=test#test_hash");
-  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
-  EXPECT_EQ(1U, sources.size());
+  const auto eval_result = evaluator.EvaluateWithoutRunningStatus(request);
+  EXPECT_TRUE(eval_result.has_value());
+  EXPECT_EQ(1U, eval_result->sources.size());
 }
 
 TEST(ServiceWorkerRouterEvaluator, MatchingDefaultURLPattern) {
@@ -526,10 +508,8 @@ TEST(ServiceWorkerRouterEvaluator, MatchingDefaultURLPattern) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
-      condition.url_pattern = DefaultURLPattern();
-      rule.conditions.push_back(condition);
+      rule.condition = blink::ServiceWorkerRouterCondition::WithUrlPattern(
+          DefaultURLPattern());
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -550,8 +530,9 @@ TEST(ServiceWorkerRouterEvaluator, MatchingDefaultURLPattern) {
   request.url = GURL(
       "https://username:password@www.example.org:8000/matched/"
       "page.html?query=test#test_hash");
-  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
-  EXPECT_EQ(1U, sources.size());
+  const auto eval_result = evaluator.EvaluateWithoutRunningStatus(request);
+  EXPECT_TRUE(eval_result.has_value());
+  EXPECT_EQ(1U, eval_result->sources.size());
 }
 
 TEST(ServiceWorkerRouterEvaluator, NotMatchingProtocol) {
@@ -559,8 +540,6 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingProtocol) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
       blink::SafeUrlPattern url_pattern = DefaultURLPattern();
       {
         auto parse_result = liburlpattern::Parse(
@@ -568,8 +547,8 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingProtocol) {
         ASSERT_TRUE(parse_result.ok());
         url_pattern.protocol = parse_result.value().PartList();
       }
-      condition.url_pattern = url_pattern;
-      rule.conditions.push_back(condition);
+      rule.condition =
+          blink::ServiceWorkerRouterCondition::WithUrlPattern(url_pattern);
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -590,8 +569,8 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingProtocol) {
   request.url = GURL(
       "https://username:password@www.example.org:8000/matched/"
       "page.html?query=test#test_hash");
-  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
-  EXPECT_EQ(0U, sources.size());
+  const auto eval_result = evaluator.EvaluateWithoutRunningStatus(request);
+  EXPECT_FALSE(eval_result.has_value());
 }
 
 TEST(ServiceWorkerRouterEvaluator, NotMatchingUsername) {
@@ -599,8 +578,6 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingUsername) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
       blink::SafeUrlPattern url_pattern = DefaultURLPattern();
       {
         auto parse_result = liburlpattern::Parse(
@@ -609,8 +586,8 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingUsername) {
         ASSERT_TRUE(parse_result.ok());
         url_pattern.username = parse_result.value().PartList();
       }
-      condition.url_pattern = url_pattern;
-      rule.conditions.push_back(condition);
+      rule.condition =
+          blink::ServiceWorkerRouterCondition::WithUrlPattern(url_pattern);
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -631,8 +608,8 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingUsername) {
   request.url = GURL(
       "https://username:password@www.example.org:8000/matched/"
       "page.html?query=test#test_hash");
-  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
-  EXPECT_EQ(0U, sources.size());
+  const auto eval_result = evaluator.EvaluateWithoutRunningStatus(request);
+  EXPECT_FALSE(eval_result.has_value());
 }
 
 TEST(ServiceWorkerRouterEvaluator, NotMatchingPassword) {
@@ -640,8 +617,6 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingPassword) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
       blink::SafeUrlPattern url_pattern = DefaultURLPattern();
       {
         auto parse_result = liburlpattern::Parse(
@@ -650,8 +625,8 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingPassword) {
         ASSERT_TRUE(parse_result.ok());
         url_pattern.password = parse_result.value().PartList();
       }
-      condition.url_pattern = url_pattern;
-      rule.conditions.push_back(condition);
+      rule.condition =
+          blink::ServiceWorkerRouterCondition::WithUrlPattern(url_pattern);
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -672,8 +647,8 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingPassword) {
   request.url = GURL(
       "https://username:password@www.example.org:8000/matched/"
       "page.html?query=test#test_hash");
-  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
-  EXPECT_EQ(0U, sources.size());
+  const auto eval_result = evaluator.EvaluateWithoutRunningStatus(request);
+  EXPECT_FALSE(eval_result.has_value());
 }
 
 TEST(ServiceWorkerRouterEvaluator, NotMatchingPort) {
@@ -681,8 +656,6 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingPort) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
       blink::SafeUrlPattern url_pattern = DefaultURLPattern();
       {
         auto parse_result = liburlpattern::Parse(
@@ -690,8 +663,8 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingPort) {
         ASSERT_TRUE(parse_result.ok());
         url_pattern.port = parse_result.value().PartList();
       }
-      condition.url_pattern = url_pattern;
-      rule.conditions.push_back(condition);
+      rule.condition =
+          blink::ServiceWorkerRouterCondition::WithUrlPattern(url_pattern);
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -712,8 +685,8 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingPort) {
   request.url = GURL(
       "https://username:password@www.example.org:8000/matched/"
       "page.html?query=test#test_hash");
-  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
-  EXPECT_EQ(0U, sources.size());
+  const auto eval_result = evaluator.EvaluateWithoutRunningStatus(request);
+  EXPECT_FALSE(eval_result.has_value());
 }
 
 TEST(ServiceWorkerRouterEvaluator, NotMatchingSearch) {
@@ -721,8 +694,6 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingSearch) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
       blink::SafeUrlPattern url_pattern = DefaultURLPattern();
       {
         auto parse_result = liburlpattern::Parse(
@@ -731,8 +702,8 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingSearch) {
         ASSERT_TRUE(parse_result.ok());
         url_pattern.search = parse_result.value().PartList();
       }
-      condition.url_pattern = url_pattern;
-      rule.conditions.push_back(condition);
+      rule.condition =
+          blink::ServiceWorkerRouterCondition::WithUrlPattern(url_pattern);
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -753,8 +724,8 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingSearch) {
   request.url = GURL(
       "https://username:password@www.example.org:8000/matched/"
       "page.html?query=test#test_hash");
-  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
-  EXPECT_EQ(0U, sources.size());
+  const auto eval_result = evaluator.EvaluateWithoutRunningStatus(request);
+  EXPECT_FALSE(eval_result.has_value());
 }
 
 TEST(ServiceWorkerRouterEvaluator, NotMatchingHash) {
@@ -762,8 +733,6 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingHash) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
       blink::SafeUrlPattern url_pattern = DefaultURLPattern();
       {
         auto parse_result = liburlpattern::Parse(
@@ -772,8 +741,8 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingHash) {
         ASSERT_TRUE(parse_result.ok());
         url_pattern.hash = parse_result.value().PartList();
       }
-      condition.url_pattern = url_pattern;
-      rule.conditions.push_back(condition);
+      rule.condition =
+          blink::ServiceWorkerRouterCondition::WithUrlPattern(url_pattern);
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -794,8 +763,8 @@ TEST(ServiceWorkerRouterEvaluator, NotMatchingHash) {
   request.url = GURL(
       "https://username:password@www.example.org:8000/matched/"
       "page.html?query=test#test_hash");
-  const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
-  EXPECT_EQ(0U, sources.size());
+  const auto eval_result = evaluator.EvaluateWithoutRunningStatus(request);
+  EXPECT_FALSE(eval_result.has_value());
 }
 
 TEST(ServiceWorkerRouterEvaluator, EmptyCondition) {
@@ -823,16 +792,14 @@ TEST(ServiceWorkerRouterEvaluator, EmptySource) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
       blink::SafeUrlPattern url_pattern = DefaultURLPattern();
       auto parse_result = liburlpattern::Parse(
           "/test/*",
           [](base::StringPiece input) { return std::string(input); });
       ASSERT_TRUE(parse_result.ok());
       url_pattern.pathname = parse_result.value().PartList();
-      condition.url_pattern = url_pattern;
-      rule.conditions.push_back(condition);
+      rule.condition =
+          blink::ServiceWorkerRouterCondition::WithUrlPattern(url_pattern);
     }
     // No source is set.
     rules.rules.push_back(rule);
@@ -849,16 +816,14 @@ TEST(ServiceWorkerRouterEvaluator, InvalidSource) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
       blink::SafeUrlPattern url_pattern = DefaultURLPattern();
       auto parse_result = liburlpattern::Parse(
           "/test/*",
           [](base::StringPiece input) { return std::string(input); });
       ASSERT_TRUE(parse_result.ok());
       url_pattern.pathname = parse_result.value().PartList();
-      condition.url_pattern = url_pattern;
-      rule.conditions.push_back(condition);
+      rule.condition =
+          blink::ServiceWorkerRouterCondition::WithUrlPattern(url_pattern);
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -883,11 +848,8 @@ TEST(ServiceWorkerRouterEvaluator, RequestMatch) {
         {
           blink::ServiceWorkerRouterRule rule;
           {
-            blink::ServiceWorkerRouterCondition condition;
-            condition.type =
-                blink::ServiceWorkerRouterCondition::Type::kRequest;
-            condition.request = request_condition;
-            rule.conditions.push_back(condition);
+            rule.condition = blink::ServiceWorkerRouterCondition::WithRequest(
+                request_condition);
           }
           {
             blink::ServiceWorkerRouterSource source;
@@ -902,11 +864,13 @@ TEST(ServiceWorkerRouterEvaluator, RequestMatch) {
         ASSERT_EQ(1U, evaluator.rules().rules.size());
         EXPECT_TRUE(evaluator.IsValid());
 
-        const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
+        const auto eval_result =
+            evaluator.EvaluateWithoutRunningStatus(request);
         if (expect_match) {
-          EXPECT_EQ(1U, sources.size());
+          EXPECT_TRUE(eval_result.has_value());
+          EXPECT_EQ(1U, eval_result->sources.size());
         } else {
-          EXPECT_EQ(0U, sources.size());
+          EXPECT_FALSE(eval_result.has_value());
         }
       };
 
@@ -967,11 +931,8 @@ TEST(ServiceWorkerRouterEvaluator, RunningStatusMatch) {
     {
       blink::ServiceWorkerRouterRule rule;
       {
-        blink::ServiceWorkerRouterCondition condition;
-        condition.type =
-            blink::ServiceWorkerRouterCondition::Type::kRunningStatus;
-        condition.running_status = running_status_condition;
-        rule.conditions.push_back(condition);
+        rule.condition = blink::ServiceWorkerRouterCondition::WithRunningStatus(
+            running_status_condition);
       }
       {
         blink::ServiceWorkerRouterSource source;
@@ -991,11 +952,12 @@ TEST(ServiceWorkerRouterEvaluator, RunningStatusMatch) {
     request.method = "GET";
     request.url = GURL("https://example.com/");
 
-    const auto sources = evaluator.Evaluate(request, running_status);
+    const auto eval_result = evaluator.Evaluate(request, running_status);
     if (expect_match) {
-      EXPECT_EQ(1U, sources.size());
+      EXPECT_TRUE(eval_result.has_value());
+      EXPECT_EQ(1U, eval_result->sources.size());
     } else {
-      EXPECT_EQ(0U, sources.size());
+      EXPECT_FALSE(eval_result.has_value());
     }
   };
 
@@ -1042,10 +1004,7 @@ TEST(ServiceWorkerRouterEvaluator, EmptyOrConditionAlwaysUnMatch) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kOr;
-      condition.or_condition.emplace();
-      rule.conditions.push_back(condition);
+      rule.condition = blink::ServiceWorkerRouterCondition::WithOrCondition({});
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -1066,23 +1025,23 @@ TEST(ServiceWorkerRouterEvaluator, EmptyOrConditionAlwaysUnMatch) {
     network::ResourceRequest request;
     request.method = "GET";
     request.url = GURL("https://example.com/");
-    const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
-    EXPECT_EQ(0U, sources.size());
+    const auto eval_result = evaluator.EvaluateWithoutRunningStatus(request);
+    EXPECT_FALSE(eval_result.has_value());
   }
   {
     network::ResourceRequest request;
     request.method = "POST";
     request.url = GURL("https://example.com/");
-    const auto sources = evaluator.EvaluateWithoutRunningStatus(request);
-    EXPECT_EQ(0U, sources.size());
+    const auto eval_result = evaluator.EvaluateWithoutRunningStatus(request);
+    EXPECT_FALSE(eval_result.has_value());
   }
   {
     network::ResourceRequest request;
     request.method = "GET";
     request.url = GURL("https://example.com/");
-    const auto sources =
+    const auto eval_result =
         evaluator.Evaluate(request, blink::EmbeddedWorkerStatus::kRunning);
-    EXPECT_EQ(0U, sources.size());
+    EXPECT_FALSE(eval_result.has_value());
   }
 }
 
@@ -1091,47 +1050,33 @@ TEST(ServiceWorkerRouterEvaluator, OrConditionMatch) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition outer;
-      outer.type = blink::ServiceWorkerRouterCondition::Type::kOr;
-      outer.or_condition.emplace();
+      blink::ServiceWorkerRouterOrCondition outer_or;
       {
-        blink::ServiceWorkerRouterCondition inner;
-        inner.type = blink::ServiceWorkerRouterCondition::Type::kOr;
+        blink::ServiceWorkerRouterOrCondition inner_or;
         {
-          blink::ServiceWorkerRouterCondition condition;
-          condition.type =
-              blink::ServiceWorkerRouterCondition::Type::kRunningStatus;
           blink::ServiceWorkerRouterRunningStatusCondition running_status;
           running_status.status =
               blink::ServiceWorkerRouterRunningStatusCondition::
                   RunningStatusEnum::kRunning;
-          condition.running_status = running_status;
-
-          blink::ServiceWorkerRouterConditionObject inner_object;
-          inner_object.conditions.push_back(std::move(condition));
-
-          inner.or_condition.emplace(std::vector(1, std::move(inner_object)));
+          inner_or.conditions.emplace_back(
+              blink::ServiceWorkerRouterCondition::WithRunningStatus(
+                  running_status));
         }
-        blink::ServiceWorkerRouterConditionObject outer_object{
-            std::vector(1, std::move(inner))};
-        outer.or_condition->objects.push_back(std::move(outer_object));
+        outer_or.conditions.emplace_back(
+            blink::ServiceWorkerRouterCondition::WithOrCondition(inner_or));
       }
       {
-        blink::ServiceWorkerRouterCondition condition;
-        condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
         blink::SafeUrlPattern url_pattern = DefaultURLPattern();
         auto parse_result = liburlpattern::Parse(
             "/test/page.html",
             [](base::StringPiece input) { return std::string(input); });
         ASSERT_TRUE(parse_result.ok());
         url_pattern.pathname = parse_result.value().PartList();
-        condition.url_pattern = url_pattern;
-        blink::ServiceWorkerRouterConditionObject outer_object{
-            std::vector(1, std::move(condition))};
-        outer.or_condition->objects.push_back(std::move(outer_object));
+        outer_or.conditions.emplace_back(
+            blink::ServiceWorkerRouterCondition::WithUrlPattern(url_pattern));
       }
-
-      rule.conditions.push_back(outer);
+      rule.condition =
+          blink::ServiceWorkerRouterCondition::WithOrCondition(outer_or);
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -1152,33 +1097,36 @@ TEST(ServiceWorkerRouterEvaluator, OrConditionMatch) {
     network::ResourceRequest request;
     request.method = "GET";
     request.url = GURL("https://example.com/");
-    const auto sources =
+    const auto eval_result =
         evaluator.Evaluate(request, blink::EmbeddedWorkerStatus::kRunning);
-    EXPECT_EQ(1U, sources.size());
+    EXPECT_TRUE(eval_result.has_value());
+    EXPECT_EQ(1U, eval_result->sources.size());
   }
   {
     network::ResourceRequest request;
     request.method = "GET";
     request.url = GURL("https://example.com/");
-    const auto sources =
+    const auto eval_result =
         evaluator.Evaluate(request, blink::EmbeddedWorkerStatus::kStopped);
-    EXPECT_EQ(0U, sources.size());
+    EXPECT_FALSE(eval_result.has_value());
   }
   {
     network::ResourceRequest request;
     request.method = "GET";
     request.url = GURL("https://www.example.com/test/page.html");
-    const auto sources =
+    const auto eval_result =
         evaluator.Evaluate(request, blink::EmbeddedWorkerStatus::kStopped);
-    EXPECT_EQ(1U, sources.size());
+    EXPECT_TRUE(eval_result.has_value());
+    EXPECT_EQ(1U, eval_result->sources.size());
   }
   {
     network::ResourceRequest request;
     request.method = "GET";
     request.url = GURL("https://www.example.com/test/page.html");
-    const auto sources =
+    const auto eval_result =
         evaluator.Evaluate(request, blink::EmbeddedWorkerStatus::kRunning);
-    EXPECT_EQ(1U, sources.size());
+    EXPECT_TRUE(eval_result.has_value());
+    EXPECT_EQ(1U, eval_result->sources.size());
   }
 }
 
@@ -1195,40 +1143,20 @@ TEST(ServiceWorkerRouterEvaluator, ToValueBasicSimpleRule) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
-      condition.url_pattern = DefaultURLPattern();
-      rule.conditions.push_back(condition);
-    }
-    {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kRequest;
+      blink::SafeUrlPattern url_pattern = DefaultURLPattern();
       blink::ServiceWorkerRouterRequestCondition request;
-      request.method = "GET";
-      request.mode = network::mojom::RequestMode::kCors;
-      request.destination = network::mojom::RequestDestination::kFrame;
-      condition.request = request;
-      rule.conditions.push_back(condition);
-    }
-    {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type =
-          blink::ServiceWorkerRouterCondition::Type::kRunningStatus;
+      {
+        request.method = "GET";
+        request.mode = network::mojom::RequestMode::kCors;
+        request.destination = network::mojom::RequestDestination::kFrame;
+      }
       blink::ServiceWorkerRouterRunningStatusCondition running_status;
-      running_status.status = blink::ServiceWorkerRouterRunningStatusCondition::
-          RunningStatusEnum::kRunning;
-      condition.running_status = running_status;
-      rule.conditions.push_back(condition);
-    }
-    {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type =
-          blink::ServiceWorkerRouterCondition::Type::kRunningStatus;
-      blink::ServiceWorkerRouterRunningStatusCondition running_status;
-      running_status.status = blink::ServiceWorkerRouterRunningStatusCondition::
-          RunningStatusEnum::kNotRunning;
-      condition.running_status = running_status;
-      rule.conditions.push_back(condition);
+      {
+        running_status.status =
+            blink::ServiceWorkerRouterRunningStatusCondition::
+                RunningStatusEnum::kRunning;
+      }
+      rule.condition = {url_pattern, request, running_status, absl::nullopt};
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -1274,45 +1202,29 @@ TEST(ServiceWorkerRouterEvaluator, ToValueBasicSimpleRule) {
     base::Value::Dict rule;
     {
       {
-        base::Value::List conditions;
+        base::Value::Dict condition;
         {
-          base::Value::Dict condition;
-          {
-            base::Value::Dict url_pattern;
-            url_pattern.Set("protocol", "*");
-            url_pattern.Set("username", "*");
-            url_pattern.Set("password", "*");
-            url_pattern.Set("hostname", "*");
-            url_pattern.Set("port", "*");
-            url_pattern.Set("pathname", "*");
-            url_pattern.Set("search", "*");
-            url_pattern.Set("hash", "*");
-            condition.Set("urlPattern", std::move(url_pattern));
-          }
-          conditions.Append(std::move(condition));
+          base::Value::Dict url_pattern;
+          url_pattern.Set("protocol", "*");
+          url_pattern.Set("username", "*");
+          url_pattern.Set("password", "*");
+          url_pattern.Set("hostname", "*");
+          url_pattern.Set("port", "*");
+          url_pattern.Set("pathname", "*");
+          url_pattern.Set("search", "*");
+          url_pattern.Set("hash", "*");
+          condition.Set("urlPattern", std::move(url_pattern));
         }
         {
-          base::Value::Dict condition;
-          {
-            base::Value::Dict request;
-            request.Set("method", "GET");
-            request.Set("mode", "cors");
-            request.Set("destination", "frame");
-            condition.Set("request", base::Value(std::move(request)));
-          }
-          conditions.Append(std::move(condition));
+          base::Value::Dict request;
+          request.Set("method", "GET");
+          request.Set("mode", "cors");
+          request.Set("destination", "frame");
+          condition.Set("request", base::Value(std::move(request)));
         }
-        {
-          base::Value::Dict condition;
-          condition.Set("running_status", "running");
-          conditions.Append(std::move(condition));
-        }
-        {
-          base::Value::Dict condition;
-          condition.Set("running_status", "not-running");
-          conditions.Append(std::move(condition));
-        }
-        rule.Set("condition", std::move(conditions));
+        condition.Set("running_status", "running");
+
+        rule.Set("condition", std::move(condition));
       }
       {
         base::Value::List sources;
@@ -1338,10 +1250,7 @@ TEST(ServiceWorkerRouterEvaluator, ToValueEmptyOrCondition) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kOr;
-      condition.or_condition.emplace();
-      rule.conditions.push_back(condition);
+      rule.condition = blink::ServiceWorkerRouterCondition::WithOrCondition({});
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -1361,13 +1270,10 @@ TEST(ServiceWorkerRouterEvaluator, ToValueEmptyOrCondition) {
     base::Value::Dict rule;
     {
       {
-        base::Value::List conditions;
-        {
-          base::Value::Dict condition;
-          condition.Set("or", base::Value::List());
-          conditions.Append(std::move(condition));
-        }
-        rule.Set("condition", std::move(conditions));
+        base::Value::Dict condition;
+        condition.Set("or", base::Value::List());
+
+        rule.Set("condition", std::move(condition));
       }
       {
         base::Value::List sources;
@@ -1385,32 +1291,20 @@ TEST(ServiceWorkerRouterEvaluator, ToValueNestedOrCondition) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition outer;
-      outer.type = blink::ServiceWorkerRouterCondition::Type::kOr;
+      blink::ServiceWorkerRouterOrCondition inner_or;
       {
-        blink::ServiceWorkerRouterCondition inner;
-        inner.type = blink::ServiceWorkerRouterCondition::Type::kOr;
-        {
-          blink::ServiceWorkerRouterCondition condition;
-          condition.type =
-              blink::ServiceWorkerRouterCondition::Type::kRunningStatus;
-          blink::ServiceWorkerRouterRunningStatusCondition running_status;
-          running_status.status =
-              blink::ServiceWorkerRouterRunningStatusCondition::
-                  RunningStatusEnum::kRunning;
-          condition.running_status = running_status;
-
-          blink::ServiceWorkerRouterConditionObject inner_object;
-          inner_object.conditions.push_back(std::move(condition));
-
-          inner.or_condition.emplace(std::vector(1, std::move(inner_object)));
-        }
-        blink::ServiceWorkerRouterConditionObject outer_object;
-        outer_object.conditions.push_back(std::move(inner));
-
-        outer.or_condition.emplace(std::vector(1, std::move(outer_object)));
+        blink::ServiceWorkerRouterRunningStatusCondition running_status;
+        running_status.status =
+            blink::ServiceWorkerRouterRunningStatusCondition::
+                RunningStatusEnum::kRunning;
+        inner_or.conditions.emplace_back(
+            blink::ServiceWorkerRouterCondition::WithRunningStatus(
+                running_status));
       }
-      rule.conditions.push_back(outer);
+      auto inner =
+          blink::ServiceWorkerRouterCondition::WithOrCondition(inner_or);
+      rule.condition = blink::ServiceWorkerRouterCondition::WithOrCondition(
+          {std::vector(1, std::move(inner))});
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -1429,37 +1323,28 @@ TEST(ServiceWorkerRouterEvaluator, ToValueNestedOrCondition) {
   {
     base::Value::Dict rule;
     {
+      base::Value::Dict outer;
       {
-        base::Value::List conditions;
+        base::Value::List outer_conditions;
         {
-          base::Value::Dict outer;
-          base::Value::List outer_objects;
-          base::Value::List outer_object;
+          base::Value::Dict inner;
+          base::Value::List inner_conditions;
           {
-            base::Value::Dict inner;
-            base::Value::List inner_objects;
-            base::Value::List inner_object;
-            {
-              base::Value::Dict condition;
-              condition.Set("running_status", "running");
-              inner_object.Append(std::move(condition));
-            }
-            inner_objects.Append(std::move(inner_object));
-            inner.Set("or", std::move(inner_objects));
-            outer_object.Append(std::move(inner));
+            base::Value::Dict condition;
+            condition.Set("running_status", "running");
+            inner_conditions.Append(std::move(condition));
           }
-          outer_objects.Append(std::move(outer_object));
-
-          outer.Set("or", std::move(outer_objects));
-          conditions.Append(std::move(outer));
+          inner.Set("or", std::move(inner_conditions));
+          outer_conditions.Append(std::move(inner));
         }
-        rule.Set("condition", std::move(conditions));
+        outer.Set("or", std::move(outer_conditions));
       }
-      {
-        base::Value::List sources;
-        sources.Append("network");
-        rule.Set("source", std::move(sources));
-      }
+      rule.Set("condition", std::move(outer));
+    }
+    {
+      base::Value::List sources;
+      sources.Append("network");
+      rule.Set("source", std::move(sources));
     }
     expected_rules.Append(std::move(rule));
   }
@@ -1471,8 +1356,6 @@ TEST(ServiceWorkerRouterEvaluator, ToValueUrlPatternWithFields) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
       blink::SafeUrlPattern url_pattern;
       {
         auto parse_result = liburlpattern::Parse(
@@ -1529,8 +1412,8 @@ TEST(ServiceWorkerRouterEvaluator, ToValueUrlPatternWithFields) {
         ASSERT_TRUE(parse_result.ok());
         url_pattern.hash = parse_result.value().PartList();
       }
-      condition.url_pattern = url_pattern;
-      rule.conditions.push_back(condition);
+      rule.condition =
+          blink::ServiceWorkerRouterCondition::WithUrlPattern(url_pattern);
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -1549,24 +1432,20 @@ TEST(ServiceWorkerRouterEvaluator, ToValueUrlPatternWithFields) {
   {
     base::Value::Dict rule;
     {
-      base::Value::List conditions;
+      base::Value::Dict condition;
       {
-        base::Value::Dict condition;
-        {
-          base::Value::Dict url_pattern;
-          url_pattern.Set("protocol", "https");
-          url_pattern.Set("username", "user*");
-          url_pattern.Set("password", "pass*");
-          url_pattern.Set("hostname", "*.example.org");
-          url_pattern.Set("port", "80*");
-          url_pattern.Set("pathname", "*.html");
-          url_pattern.Set("search", "query=test");
-          url_pattern.Set("hash", "test_hash");
-          condition.Set("urlPattern", std::move(url_pattern));
-        }
-        conditions.Append(std::move(condition));
+        base::Value::Dict url_pattern;
+        url_pattern.Set("protocol", "https");
+        url_pattern.Set("username", "user*");
+        url_pattern.Set("password", "pass*");
+        url_pattern.Set("hostname", "*.example.org");
+        url_pattern.Set("port", "80*");
+        url_pattern.Set("pathname", "*.html");
+        url_pattern.Set("search", "query=test");
+        url_pattern.Set("hash", "test_hash");
+        condition.Set("urlPattern", std::move(url_pattern));
       }
-      rule.Set("condition", std::move(conditions));
+      rule.Set("condition", std::move(condition));
     }
     {
       base::Value::List sources;
@@ -1583,10 +1462,7 @@ TEST(ServiceWorkerRouterEvaluator, ToValueUrlPatternWithoutFields) {
   {
     blink::ServiceWorkerRouterRule rule;
     {
-      blink::ServiceWorkerRouterCondition condition;
-      condition.type = blink::ServiceWorkerRouterCondition::Type::kUrlPattern;
-      condition.url_pattern.emplace();
-      rule.conditions.push_back(condition);
+      rule.condition = blink::ServiceWorkerRouterCondition::WithUrlPattern({});
     }
     {
       blink::ServiceWorkerRouterSource source;
@@ -1605,24 +1481,20 @@ TEST(ServiceWorkerRouterEvaluator, ToValueUrlPatternWithoutFields) {
   {
     base::Value::Dict rule;
     {
-      base::Value::List conditions;
+      base::Value::Dict condition;
       {
-        base::Value::Dict condition;
-        {
-          base::Value::Dict url_pattern;
-          url_pattern.Set("protocol", "");
-          url_pattern.Set("username", "");
-          url_pattern.Set("password", "");
-          url_pattern.Set("hostname", "");
-          url_pattern.Set("port", "");
-          url_pattern.Set("pathname", "");
-          url_pattern.Set("search", "");
-          url_pattern.Set("hash", "");
-          condition.Set("urlPattern", std::move(url_pattern));
-        }
-        conditions.Append(std::move(condition));
+        base::Value::Dict url_pattern;
+        url_pattern.Set("protocol", "");
+        url_pattern.Set("username", "");
+        url_pattern.Set("password", "");
+        url_pattern.Set("hostname", "");
+        url_pattern.Set("port", "");
+        url_pattern.Set("pathname", "");
+        url_pattern.Set("search", "");
+        url_pattern.Set("hash", "");
+        condition.Set("urlPattern", std::move(url_pattern));
       }
-      rule.Set("condition", std::move(conditions));
+      rule.Set("condition", std::move(condition));
     }
     {
       base::Value::List sources;

@@ -10,17 +10,9 @@
 
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/ui/safety_hub/safety_hub_constants.h"
 #include "chrome/browser/ui/safety_hub/safety_hub_service.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-
-constexpr char kSafetyHubMenuNotificationActiveKey[] = "isCurrentlyActive";
-constexpr char kSafetyHubMenuNotificationImpressionCountKey[] =
-    "impressionCount";
-constexpr char kSafetyHubMenuNotificationFirstImpressionKey[] =
-    "firstImpressionTime";
-constexpr char kSafetyHubMenuNotificationLastImpressionKey[] =
-    "lastImpressionTime";
-constexpr char kSafetyHubMenuNotificationResultKey[] = "result";
 
 constexpr base::TimeDelta kSafetyHubMenuNotificationMinNotificationDuration =
     base::Days(3);
@@ -30,8 +22,10 @@ constexpr int kSafetyHubMenuNotificationMinImpressionCount = 5;
 // Chrome menu.
 class SafetyHubMenuNotification {
  public:
-  SafetyHubMenuNotification();
-  explicit SafetyHubMenuNotification(const base::Value::Dict& dict);
+  SafetyHubMenuNotification() = delete;
+  explicit SafetyHubMenuNotification(safety_hub::SafetyHubModuleType type);
+  explicit SafetyHubMenuNotification(const base::Value::Dict& dict,
+                                     safety_hub::SafetyHubModuleType type);
 
   SafetyHubMenuNotification(const SafetyHubMenuNotification&) = delete;
   SafetyHubMenuNotification& operator=(const SafetyHubMenuNotification&) =
@@ -40,10 +34,6 @@ class SafetyHubMenuNotification {
   ~SafetyHubMenuNotification();
 
   base::Value::Dict ToDictValue() const;
-
-  static std::unique_ptr<SafetyHubMenuNotification> FromDictValue(
-      const base::Value::Dict& dict,
-      SafetyHubService* service);
 
   // Called when the menu notification will be shown. This will make the
   // notification the currently active one.
@@ -54,9 +44,12 @@ class SafetyHubMenuNotification {
   void Dismiss();
 
   // Determines whether the notification should be shown given the maximum
-  // interval at which this type of notification should be shown. This does not
-  // take into account whether the notification is currently active.
-  bool ShouldBeShown(base::TimeDelta interval) const;
+  // interval at which this type of notification should be shown. If the
+  // provided maximum number of all-time impressions is not 0, this will also be
+  // taken into consideration. This method does not take into account whether
+  // the notification is currently active.
+  bool ShouldBeShown(base::TimeDelta interval,
+                     int max_all_time_impressions = 0) const;
 
   // Returns whether the notification is actively being shown.
   bool IsCurrentlyActive() const;
@@ -66,12 +59,22 @@ class SafetyHubMenuNotification {
   // are made. Otherwise, the menu notification will be considered as a new one.
   void UpdateResult(std::unique_ptr<SafetyHubService::Result> result);
 
+  // Sets the time at which a notification can start to be shown.
+  void SetOnlyShowAfter(base::Time time);
+
+  // Resets the all-time counter for the number of notifications that have ever
+  // been shown.
+  void ResetAllTimeNotificationCount();
+
   // Returns the notification string that will be shown in the three-dot menu.
   std::u16string GetNotificationString() const;
 
   // Returns the Command ID of the notification that will be shown in the
   // three-dot menu.
   int GetNotificationCommandId() const;
+
+  // Returns the module type this menu notification is for.
+  safety_hub::SafetyHubModuleType GetModuleType() const;
 
   SafetyHubService::Result* GetResultForTesting() const;
 
@@ -88,6 +91,10 @@ class SafetyHubMenuNotification {
   // Returns whether any notification for the same type of result has been
   // shown.
   bool HasAnyNotificationBeenShown() const;
+  // Returns a result based on the values defined in the provided dictionary.
+  static std::unique_ptr<SafetyHubService::Result> GetResultFromDict(
+      const base::Value::Dict& dict,
+      safety_hub::SafetyHubModuleType type);
 
   // Indicates whether the notification is actively being shown.
   bool is_currently_active_ = false;
@@ -104,6 +111,12 @@ class SafetyHubMenuNotification {
   absl::optional<base::Time> last_impression_time_;
   // The result for which the notification may be shown.
   std::unique_ptr<SafetyHubService::Result> result_ = nullptr;
+  // Menu notifications should only be shown after this time.
+  absl::optional<base::Time> show_only_after_;
+  // The total number of time in total that a notification has been shown.
+  int all_time_notification_count_ = 0;
+  // The type of the module this menu notification is for.
+  safety_hub::SafetyHubModuleType module_type_;
 };
 
 #endif  // CHROME_BROWSER_UI_SAFETY_HUB_MENU_NOTIFICATION_H_

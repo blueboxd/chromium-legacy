@@ -68,17 +68,18 @@ bool IsEventLevelReportingUrlValid(const GURL& url) {
 }
 
 const blink::InterestGroup::Ad& ChosenAd(
-    const StorageInterestGroup& storage_interest_group,
+    const SingleStorageInterestGroup& storage_interest_group,
     const GURL& winning_ad_url) {
   auto chosen_ad = base::ranges::find(
-      *storage_interest_group.interest_group.ads, winning_ad_url,
+      *storage_interest_group->interest_group.ads, winning_ad_url,
       [](const blink::InterestGroup::Ad& ad) { return ad.render_url; });
-  CHECK(chosen_ad != storage_interest_group.interest_group.ads->end());
+  CHECK(chosen_ad != storage_interest_group->interest_group.ads->end());
   return *chosen_ad;
 }
 
-bool IsKAnonForReporting(const StorageInterestGroup& storage_interest_group,
-                         const blink::InterestGroup::Ad& chosen_ad) {
+bool IsKAnonForReporting(
+    const SingleStorageInterestGroup& storage_interest_group,
+    const blink::InterestGroup::Ad& chosen_ad) {
   if (!base::FeatureList::IsEnabled(
           blink::features::kFledgeConsiderKAnonymity) ||
       !base::FeatureList::IsEnabled(
@@ -87,13 +88,13 @@ bool IsKAnonForReporting(const StorageInterestGroup& storage_interest_group,
   }
 
   std::string reporting_key = KAnonKeyForAdNameReporting(
-      storage_interest_group.interest_group, chosen_ad);
+      storage_interest_group->interest_group, chosen_ad);
   auto kanon = base::ranges::find(
-      storage_interest_group.reporting_ads_kanon, reporting_key,
+      storage_interest_group->reporting_ads_kanon, reporting_key,
       [](const StorageInterestGroup::KAnonymityData& data) {
         return data.key;
       });
-  if (kanon == storage_interest_group.reporting_ads_kanon.end() ||
+  if (kanon == storage_interest_group->reporting_ads_kanon.end() ||
       !kanon->is_k_anonymous) {
     return false;
   }
@@ -113,6 +114,30 @@ const base::FeatureParam<int> kFledgeScoreReportingBits{
 const base::FeatureParam<int> kFledgeAdCostReportingBits{
     &kFledgeRounding, "fledge_ad_cost_reporting_bits", 8};
 
+InterestGroupAuctionReporter::PrivateAggregationKey::PrivateAggregationKey(
+    url::Origin reporting_origin,
+    absl::optional<url::Origin> aggregation_coordinator_origin)
+    : reporting_origin(std::move(reporting_origin)),
+      aggregation_coordinator_origin(
+          std::move(aggregation_coordinator_origin)) {}
+
+InterestGroupAuctionReporter::PrivateAggregationKey::PrivateAggregationKey(
+    const PrivateAggregationKey& other) = default;
+
+InterestGroupAuctionReporter::PrivateAggregationKey&
+InterestGroupAuctionReporter::PrivateAggregationKey::operator=(
+    const PrivateAggregationKey& other) = default;
+
+InterestGroupAuctionReporter::PrivateAggregationKey::PrivateAggregationKey(
+    PrivateAggregationKey&& other) = default;
+
+InterestGroupAuctionReporter::PrivateAggregationKey&
+InterestGroupAuctionReporter::PrivateAggregationKey::operator=(
+    PrivateAggregationKey&& other) = default;
+
+InterestGroupAuctionReporter::PrivateAggregationKey::~PrivateAggregationKey() =
+    default;
+
 InterestGroupAuctionReporter::SellerWinningBidInfo::SellerWinningBidInfo() =
     default;
 InterestGroupAuctionReporter::SellerWinningBidInfo::SellerWinningBidInfo(
@@ -123,7 +148,9 @@ InterestGroupAuctionReporter::SellerWinningBidInfo&
 InterestGroupAuctionReporter::SellerWinningBidInfo::operator=(
     SellerWinningBidInfo&&) = default;
 
-InterestGroupAuctionReporter::WinningBidInfo::WinningBidInfo() = default;
+InterestGroupAuctionReporter::WinningBidInfo::WinningBidInfo(
+    const SingleStorageInterestGroup& storage_interest_group)
+    : storage_interest_group(std::move(storage_interest_group)) {}
 InterestGroupAuctionReporter::WinningBidInfo::WinningBidInfo(WinningBidInfo&&) =
     default;
 InterestGroupAuctionReporter::WinningBidInfo::~WinningBidInfo() = default;
@@ -149,7 +176,7 @@ InterestGroupAuctionReporter::InterestGroupAuctionReporter(
     std::vector<GURL> debug_win_report_urls,
     std::vector<GURL> debug_loss_report_urls,
     base::flat_set<std::string> k_anon_keys_to_join,
-    std::map<url::Origin, PrivateAggregationRequests>
+    std::map<PrivateAggregationKey, PrivateAggregationRequests>
         private_aggregation_requests_reserved,
     std::map<std::string, PrivateAggregationRequests>
         private_aggregation_requests_non_reserved)
@@ -186,6 +213,8 @@ InterestGroupAuctionReporter::InterestGroupAuctionReporter(
           private_aggregation_manager_,
           main_frame_origin_,
           winning_bid_info_.storage_interest_group->interest_group.owner,
+          winning_bid_info_.storage_interest_group->interest_group
+              .aggregation_coordinator_origin,
           winning_bid_info_.allowed_reporting_origins)),
       browser_context_(browser_context) {
   DCHECK(interest_group_manager_);
@@ -252,16 +281,17 @@ void InterestGroupAuctionReporter::InitializeFromServerResponse(
 }
 
 base::RepeatingClosure
-InterestGroupAuctionReporter::OnNavigateToWinningAdCallback() {
+InterestGroupAuctionReporter::OnNavigateToWinningAdCallback(
+    int frame_tree_node_id) {
   return base::BindRepeating(
       &InterestGroupAuctionReporter::OnNavigateToWinningAd,
-      weak_ptr_factory_.GetWeakPtr());
+      weak_ptr_factory_.GetWeakPtr(), frame_tree_node_id);
 }
 
 void InterestGroupAuctionReporter::OnFledgePrivateAggregationRequests(
     PrivateAggregationManager* private_aggregation_manager,
     const url::Origin& main_frame_origin,
-    std::map<url::Origin,
+    std::map<PrivateAggregationKey,
              std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>>
         private_aggregation_requests) {
   // Empty vectors should've been filtered out.
@@ -276,10 +306,11 @@ void InterestGroupAuctionReporter::OnFledgePrivateAggregationRequests(
     return;
   }
 
-  for (auto& [origin, requests] : private_aggregation_requests) {
+  for (auto& [agg_key, requests] : private_aggregation_requests) {
     SplitContributionsIntoBatchesThenSendToHost(
         std::move(requests), *private_aggregation_manager,
-        /*reporting_origin=*/origin, main_frame_origin);
+        /*reporting_origin=*/agg_key.reporting_origin,
+        std::move(agg_key.aggregation_coordinator_origin), main_frame_origin);
   }
 }
 
@@ -431,10 +462,10 @@ void InterestGroupAuctionReporter::OnSellerWorkletReceived(
   // Send in buyer_and_seller_reporting_id if it's configured on the winning
   // ad and sufficiently k-anonymous.
   absl::optional<std::string> browser_signal_buyer_and_seller_reporting_id;
-  auto chosen_ad = ChosenAd(*winning_bid_info_.storage_interest_group,
+  auto chosen_ad = ChosenAd(winning_bid_info_.storage_interest_group,
                             winning_bid_info_.render_url);
   if (chosen_ad.buyer_and_seller_reporting_id.has_value() &&
-      IsKAnonForReporting(*winning_bid_info_.storage_interest_group,
+      IsKAnonForReporting(winning_bid_info_.storage_interest_group,
                           chosen_ad)) {
     browser_signal_buyer_and_seller_reporting_id =
         *chosen_ad.buyer_and_seller_reporting_id;
@@ -496,7 +527,6 @@ void InterestGroupAuctionReporter::OnSellerReportResultComplete(
 
   log_private_aggregation_requests_callback_.Run(pa_requests);
 
-  const url::Origin& seller = seller_info->auction_config->seller;
   PrivateAggregationTimings timings;
   timings.script_run_time = reporting_latency;
   for (auction_worklet::mojom::PrivateAggregationRequestPtr& request :
@@ -516,7 +546,10 @@ void InterestGroupAuctionReporter::OnSellerReportResultComplete(
     // seller.
     if (converted_request.has_value() &&
         !converted_request.value().event_type.has_value()) {
-      private_aggregation_requests_reserved_[seller].emplace_back(
+      PrivateAggregationKey agg_key = {
+          seller_info->auction_config->seller,
+          seller_info->auction_config->aggregation_coordinator_origin};
+      private_aggregation_requests_reserved_[std::move(agg_key)].emplace_back(
           std::move(converted_request.value().request));
     }
   }
@@ -650,7 +683,7 @@ void InterestGroupAuctionReporter::OnBidderWorkletReceived(
   auction_worklet::mojom::ReportingIdField reporting_id_field =
       auction_worklet::mojom::ReportingIdField::kInterestGroupName;
 
-  auto chosen_ad = ChosenAd(*winning_bid_info_.storage_interest_group,
+  auto chosen_ad = ChosenAd(winning_bid_info_.storage_interest_group,
                             winning_bid_info_.render_url);
   if (chosen_ad.buyer_and_seller_reporting_id.has_value()) {
     reporting_id_field =
@@ -669,7 +702,7 @@ void InterestGroupAuctionReporter::OnBidderWorkletReceived(
   // An exception to this is contextual bids, which have access to page
   // information anyway.
   if (!winning_bid_info_.provided_as_additional_bid &&
-      !IsKAnonForReporting(*winning_bid_info_.storage_interest_group,
+      !IsKAnonForReporting(winning_bid_info_.storage_interest_group,
                            chosen_ad)) {
     reporting_id = "";
     reporting_id_field =
@@ -794,8 +827,10 @@ void InterestGroupAuctionReporter::OnBidderReportWinComplete(
 
   log_private_aggregation_requests_callback_.Run(pa_requests);
 
-  const url::Origin& bidder =
-      winning_bid_info_.storage_interest_group->interest_group.owner;
+  PrivateAggregationKey agg_key = {
+      winning_bid_info_.storage_interest_group->interest_group.owner,
+      winning_bid_info_.storage_interest_group->interest_group
+          .aggregation_coordinator_origin};
   PrivateAggregationTimings timings;
   timings.script_run_time = reporting_latency;
   for (auction_worklet::mojom::PrivateAggregationRequestPtr& request :
@@ -821,7 +856,7 @@ void InterestGroupAuctionReporter::OnBidderReportWinComplete(
         private_aggregation_requests_non_reserved_[event_type.value()]
             .emplace_back(std::move(converted_request_value.request));
       } else {
-        private_aggregation_requests_reserved_[bidder].emplace_back(
+        private_aggregation_requests_reserved_[agg_key].emplace_back(
             std::move(converted_request_value.request));
       }
     }
@@ -902,7 +937,8 @@ void InterestGroupAuctionReporter::OnReportingComplete(
   MaybeInvokeCallback();
 }
 
-void InterestGroupAuctionReporter::OnNavigateToWinningAd() {
+void InterestGroupAuctionReporter::OnNavigateToWinningAd(
+    int frame_tree_node_id) {
   if (navigated_to_winning_ad_) {
     return;
   }
@@ -916,12 +952,12 @@ void InterestGroupAuctionReporter::OnNavigateToWinningAd() {
   // reports are sent over the network in FIFO order.
   interest_group_manager_->EnqueueReports(
       InterestGroupManagerImpl::ReportType::kDebugWin,
-      std::move(debug_win_report_urls_), frame_origin_, *client_security_state_,
-      url_loader_factory_);
+      std::move(debug_win_report_urls_), frame_tree_node_id, frame_origin_,
+      *client_security_state_, url_loader_factory_);
   debug_win_report_urls_.clear();
   interest_group_manager_->EnqueueReports(
       InterestGroupManagerImpl::ReportType::kDebugLoss,
-      std::move(debug_loss_report_urls_), frame_origin_,
+      std::move(debug_loss_report_urls_), frame_tree_node_id, frame_origin_,
       *client_security_state_, url_loader_factory_);
   debug_loss_report_urls_.clear();
 
@@ -978,10 +1014,11 @@ void InterestGroupAuctionReporter::SendPendingReportsIfNavigated() {
   if (!navigated_to_winning_ad_) {
     return;
   }
+  int frame_tree_node_id = auction_worklet_manager_->GetFrameTreeNodeID();
   interest_group_manager_->EnqueueReports(
       InterestGroupManagerImpl::ReportType::kSendReportTo,
-      std::move(pending_report_urls_), frame_origin_, *client_security_state_,
-      url_loader_factory_);
+      std::move(pending_report_urls_), frame_tree_node_id, frame_origin_,
+      *client_security_state_, url_loader_factory_);
   pending_report_urls_.clear();
 }
 
@@ -1013,7 +1050,8 @@ bool InterestGroupAuctionReporter::CheckReportUrl(const GURL& url) {
            ->browser()
            ->IsPrivacySandboxReportingDestinationAttested(
                browser_context_, url::Origin::Create(url),
-               PrivacySandboxInvokingAPI::kProtectedAudience)) {
+               PrivacySandboxInvokingAPI::kProtectedAudience,
+               /*post_impression_reporting=*/false)) {
     errors_.push_back(base::StringPrintf(
         "The reporting destination %s is not attested for Protected Audience.",
         url.spec().c_str()));

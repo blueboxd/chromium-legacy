@@ -7,10 +7,10 @@
 
 #include <mach/mach.h>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/component_export.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/debug/debugging_buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/logging.h"
 #include "build/build_config.h"
+#include "partition_alloc/partition_alloc_base/component_export.h"
+#include "partition_alloc/partition_alloc_base/debug/debugging_buildflags.h"
+#include "partition_alloc/partition_alloc_base/logging.h"
 
 // Use the PA_MACH_LOG family of macros along with a mach_error_t
 // (kern_return_t) containing a Mach error. The error value will be decoded so
@@ -28,7 +28,7 @@
 
 namespace partition_alloc::internal::logging {
 
-class PA_COMPONENT_EXPORT(PARTITION_ALLOC) MachLogMessage
+class PA_COMPONENT_EXPORT(PARTITION_ALLOC_BASE) MachLogMessage
     : public partition_alloc::internal::logging::LogMessage {
  public:
   MachLogMessage(const char* file_path,

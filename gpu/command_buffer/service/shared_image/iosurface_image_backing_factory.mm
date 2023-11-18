@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/shared_image/iosurface_image_backing_factory.h"
 
+#include <optional>
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_sizes.h"
@@ -18,7 +19,6 @@
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/mac/io_surface.h"
@@ -59,7 +59,7 @@ void SetIOSurfaceColorSpace(IOSurfaceRef io_surface,
   base::apple::ScopedCFTypeRef<CFDataRef> cf_data =
       gfx::DisplayICCProfiles::GetInstance()->GetDataForColorSpace(color_space);
   if (cf_data) {
-    IOSurfaceSetValue(io_surface, CFSTR("IOSurfaceColorSpace"), cf_data);
+    IOSurfaceSetValue(io_surface, CFSTR("IOSurfaceColorSpace"), cf_data.get());
   } else {
     IOSurfaceSetColorSpace(io_surface, color_space);
   }
@@ -413,7 +413,7 @@ IOSurfaceImageBackingFactory::CreateSharedImageGMBs(
     uint32_t io_surface_plane,
     gfx::BufferPlane buffer_plane,
     bool is_plane_format,
-    absl::optional<gfx::BufferUsage> buffer_usage) {
+    std::optional<gfx::BufferUsage> buffer_usage) {
   if (handle.type != gfx::IO_SURFACE_BUFFER || !handle.io_surface) {
     LOG(ERROR) << "Invalid IOSurface GpuMemoryBufferHandle.";
     return nullptr;
@@ -442,7 +442,7 @@ IOSurfaceImageBackingFactory::CreateSharedImageGMBs(
   // this, which, if subsequently used to determine parameters for bounds
   // checking, could result in an out-of-bounds memory access.
   {
-    uint32_t io_surface_format = IOSurfaceGetPixelFormat(io_surface);
+    uint32_t io_surface_format = IOSurfaceGetPixelFormat(io_surface.get());
     const bool override_rgba_to_bgra =
 #if BUILDFLAG(IS_IOS)
         false;
@@ -455,8 +455,8 @@ IOSurfaceImageBackingFactory::CreateSharedImageGMBs(
           << "IOSurface pixel format does not match specified buffer format.";
       return nullptr;
     }
-    gfx::Size io_surface_size(IOSurfaceGetWidth(io_surface),
-                              IOSurfaceGetHeight(io_surface));
+    gfx::Size io_surface_size(IOSurfaceGetWidth(io_surface.get()),
+                              IOSurfaceGetHeight(io_surface.get()));
     if (io_surface_size != size) {
       LOG(ERROR) << "IOSurface size does not match specified size.";
       return nullptr;

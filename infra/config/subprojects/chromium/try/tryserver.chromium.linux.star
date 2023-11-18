@@ -6,6 +6,7 @@
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builders.star", "os", "reclient", "siso")
+load("//lib/gn_args.star", "gn_args")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
 load("//project.star", "settings")
@@ -44,6 +45,9 @@ try_.builder(
 try_.builder(
     name = "leak_detection_linux",
     mirrors = ["ci/Leak Detection Linux"],
+    gn_args = gn_args.config(
+        configs = ["ci/Leak Detection Linux", "release_try_builder"],
+    ),
 )
 
 try_.builder(
@@ -63,6 +67,12 @@ try_.builder(
     mirrors = [
         "ci/Cast Linux ARM64",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/Cast Linux ARM64",
+            "use_dummy_lastchange",
+        ],
+    ),
     main_list_view = "try",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
@@ -77,6 +87,7 @@ try_.builder(
     mirrors = [
         "ci/linux-bfcache-rel",
     ],
+    gn_args = "ci/linux-bfcache-rel",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -146,6 +157,12 @@ try_.builder(
     mirrors = [
         "ci/linux-extended-tracing-rel",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/linux-extended-tracing-rel",
+            "release_try_builder",
+        ],
+    ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -156,6 +173,7 @@ try_.builder(
     ],
     # Focal is needed for better C++20 support. See crbug.com/1284275.
     os = os.LINUX_FOCAL,
+    gn_args = "ci/linux-gcc-rel",
 )
 
 try_.builder(
@@ -171,12 +189,6 @@ try_.builder(
 )
 
 try_.builder(
-    name = "linux-inverse-fieldtrials-fyi-rel",
-    mirrors = builder_config.copy_from("linux-rel"),
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
-)
-
-try_.builder(
     name = "linux-fieldtrial-rel",
     mirrors = ["ci/linux-fieldtrial-rel"],
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
@@ -184,12 +196,6 @@ try_.builder(
 
 try_.builder(
     name = "linux-mbi-mode-per-render-process-host-rel",
-    mirrors = builder_config.copy_from("linux-rel"),
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
-)
-
-try_.builder(
-    name = "linux-mbi-mode-per-site-instance-rel",
     mirrors = builder_config.copy_from("linux-rel"),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
@@ -259,7 +265,18 @@ try_.orchestrator_builder(
     experiments = {
         # go/nplus1shardsproposal
         "chromium.add_one_test_shard": 10,
+        "chromium.skip_successful_tests": 50,
     },
+    gn_args = gn_args.config(
+        configs = [
+            "ci/Linux Builder",
+            "release_try_builder",
+            "use_clang_coverage",
+            "partial_code_coverage_instrumentation",
+            "enable_dangling_raw_ptr_feature_flag",
+            "enable_backup_ref_ptr_feature_flag",
+        ],
+    ),
     main_list_view = "try",
     tryjob = try_.job(),
     use_clang_coverage = True,
@@ -271,9 +288,14 @@ try_.orchestrator_builder(
 try_.compilator_builder(
     name = "linux-rel-compilator",
     branch_selector = branches.selector.LINUX_BRANCHES,
+    experiments = {
+        # crbug/940930
+        "chromium.enable_cleandead": 50,
+    },
     main_list_view = "try",
 )
 
+# TODO: crbug.com/1502025 - Reduce duplicated configs from the shadow builder.
 try_.orchestrator_builder(
     name = "linux-siso-rel",
     description_html = """\
@@ -290,6 +312,7 @@ This builder should be removed after migrating linux-rel from Ninja to Siso. b/2
         # go/nplus1shardsproposal
         "chromium.add_one_test_shard": 10,
     },
+    gn_args = "try/linux-rel",
     main_list_view = "try",
     tryjob = try_.job(
         experiment_percentage = 10,
@@ -322,12 +345,15 @@ try_.orchestrator_builder(
     ],
     compilator = "linux-wayland-rel-compilator",
     coverage_test_types = ["unit", "overall"],
-    experiments = {
-        # go/nplus1shardsproposal
-        "chromium.add_one_test_shard": 10,
-    },
-    main_list_view = "try",
-    tryjob = try_.job(),
+    gn_args = gn_args.config(
+        configs = [
+            "ci/Linux Builder (Wayland)",
+            "release_try_builder",
+            "use_dummy_lastchange",
+            "use_clang_coverage",
+            "partial_code_coverage_instrumentation",
+        ],
+    ),
     use_clang_coverage = True,
 )
 
@@ -335,32 +361,6 @@ try_.compilator_builder(
     name = "linux-wayland-rel-compilator",
     branch_selector = branches.selector.LINUX_BRANCHES,
     ssd = True,
-    main_list_view = "try",
-)
-
-try_.orchestrator_builder(
-    name = "linux-wayland-siso-rel",
-    description_html = """\
-This builder shadows linux-wayland-rel builder to compare between Siso builds and Ninja builds.<br/>
-This builder should be removed after migrating linux-wayland-rel from Ninja to Siso. b/277863839
-""",
-    mirrors = builder_config.copy_from("try/linux-wayland-rel"),
-    try_settings = builder_config.try_settings(
-        is_compile_only = True,
-    ),
-    compilator = "linux-wayland-siso-rel-compilator",
-    coverage_test_types = ["unit", "overall"],
-    main_list_view = "try",
-    tryjob = try_.job(
-        experiment_percentage = 10,
-    ),
-    use_clang_coverage = True,
-)
-
-try_.compilator_builder(
-    name = "linux-wayland-siso-rel-compilator",
-    ssd = True,
-    main_list_view = "try",
     siso_enabled = True,
 )
 
@@ -406,30 +406,18 @@ try_.builder(
 )
 
 try_.builder(
-    name = "linux-wpt-fyi-rel",
-    mirrors = ["ci/linux-wpt-fyi-rel"],
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
-)
-
-try_.builder(
-    name = "linux-wpt-identity-fyi-rel",
-    mirrors = ["ci/linux-wpt-identity-fyi-rel"],
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
-)
-
-try_.builder(
-    name = "linux-wpt-input-fyi-rel",
-    mirrors = ["ci/linux-wpt-input-fyi-rel"],
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
-)
-
-try_.builder(
     name = "linux-x64-castos",
     branch_selector = branches.selector.LINUX_BRANCHES,
     mirrors = [
         "ci/Cast Linux",
     ],
     builderless = not settings.is_main,
+    gn_args = gn_args.config(
+        configs = [
+            "ci/Cast Linux",
+            "release_try_builder",
+        ],
+    ),
     main_list_view = "try",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     tryjob = try_.job(),
@@ -440,6 +428,12 @@ try_.builder(
     mirrors = [
         "ci/Cast Audio Linux",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/Cast Audio Linux",
+            "release_try_builder",
+        ],
+    ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -449,6 +443,12 @@ try_.builder(
     mirrors = [
         "ci/Cast Linux Debug",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/Cast Linux Debug",
+            "use_dummy_lastchange",
+        ],
+    ),
     main_list_view = "try",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
@@ -477,6 +477,7 @@ try_.orchestrator_builder(
     experiments = {
         # go/nplus1shardsproposal
         "chromium.add_one_test_shard": 10,
+        "chromium.compilator_can_outlive_parent": 100,
     },
     main_list_view = "try",
     tryjob = try_.job(),
@@ -491,6 +492,7 @@ try_.compilator_builder(
     main_list_view = "try",
 )
 
+# TODO: crbug.com/1502025 - Reduce duplicated configs from the shadow builder.
 try_.orchestrator_builder(
     name = "linux_chromium_asan_siso_rel_ng",
     description_html = """\
@@ -524,6 +526,7 @@ try_.builder(
         "ci/Linux CFI",
     ],
     cores = 32,
+    ssd = True,
     # TODO(thakis): Remove once https://crbug.com/927738 is resolved.
     execution_timeout = 7 * time.hour,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
@@ -595,9 +598,44 @@ try_.builder(
             path = "linux_debug",
         ),
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "debug_builder",
+            "reclient",
+            "use_dummy_lastchange",
+        ],
+    ),
     main_list_view = "try",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     tryjob = try_.job(),
+)
+
+# TODO: crbug.com/1502025 - Reduce duplicated configs from the shadow builder.
+try_.builder(
+    name = "linux_chromium_compile_siso_dbg_ng",
+    description_html = """\
+This builder shadows linux_chromium_compile_dbg_ng builder to compare between Siso builds and Ninja builds.<br/>
+This builder should be removed after migrating linux_chromium_compile_dbg_ng from Ninja to Siso. b/277863839
+""",
+    mirrors = builder_config.copy_from("try/linux_chromium_compile_dbg_ng"),
+    try_settings = builder_config.try_settings(
+        include_all_triggered_testers = True,
+        is_compile_only = True,
+    ),
+    caches = [
+        swarming.cache(
+            name = "builder",
+            path = "linux_debug",
+        ),
+    ],
+    contact_team_email = "chrome-build-team@google.com",
+    gn_args = "try/linux_chromium_compile_dbg_ng",
+    main_list_view = "try",
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
+    siso_enabled = True,
+    tryjob = try_.job(
+        experiment_percentage = 10,
+    ),
 )
 
 try_.builder(
@@ -625,6 +663,14 @@ try_.builder(
             path = "linux_debug",
         ),
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "gpu_tests",
+            "debug_builder",
+            "reclient",
+            "use_dummy_lastchange",
+        ],
+    ),
     main_list_view = "try",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
@@ -672,6 +718,7 @@ try_.compilator_builder(
     main_list_view = "try",
 )
 
+# TODO: crbug.com/1502025 - Reduce duplicated configs from the shadow builder.
 try_.orchestrator_builder(
     name = "linux_chromium_tsan_siso_rel_ng",
     description_html = """\
@@ -722,6 +769,7 @@ try_.builder(
     executable = "recipe:chromium_toolchain/package_clang",
     builderless = True,
     cores = 32,
+    ssd = True,
     execution_timeout = 5 * time.hour,
     notifies = ["chrome-rust-toolchain"],
 )
@@ -731,6 +779,7 @@ try_.builder(
     executable = "recipe:chromium_toolchain/package_rust",
     builderless = True,
     cores = 32,
+    ssd = True,
     execution_timeout = 5 * time.hour,
     notifies = ["chrome-rust-toolchain"],
 )
@@ -740,15 +789,19 @@ try_.builder(
     mirrors = [
         "ci/linux-v4l2-codec-rel",
     ],
+    gn_args = gn_args.config(
+        configs = [
+            "ci/linux-v4l2-codec-rel",
+            "release_try_builder",
+        ],
+    ),
     main_list_view = "try",
-    # b/291169645: This builder is opt-in for now, but in the future we
-    # want it to be a CQ builder based on the following paths.
-    # tryjob = try_.job(
-    #     location_filters = [
-    #        cq.location_filter(path_regexp = "media/gpu/chromeos/.+"),
-    #         cq.location_filter(path_regexp = "media/gpu/v4l2/.+"),
-    #     ],
-    # ),
+    tryjob = try_.job(
+        location_filters = [
+            cq.location_filter(path_regexp = "media/gpu/chromeos/.+"),
+            cq.location_filter(path_regexp = "media/gpu/v4l2/.+"),
+        ],
+    ),
 )
 
 try_.builder(
@@ -756,6 +809,9 @@ try_.builder(
     mirrors = [
         "ci/Network Service Linux",
     ],
+    gn_args = gn_args.config(
+        configs = ["ci/Network Service Linux", "release_try_builder"],
+    ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -859,7 +915,7 @@ try_.builder(
     mirrors = ["ci/chromeos-js-code-coverage"],
     main_list_view = "try",
     tryjob = try_.job(
-        experiment_percentage = 20,
+        experiment_percentage = 50,
         location_filters = [
             cq.location_filter(path_regexp = r".*\.(js|ts)"),
         ],

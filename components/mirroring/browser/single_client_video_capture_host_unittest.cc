@@ -49,9 +49,10 @@ class MockVideoCaptureDevice final
                                       base::OnceClosure done_cb) override {}
   MOCK_METHOD0(MaybeSuspendDevice, void());
   MOCK_METHOD0(ResumeDevice, void());
-  MOCK_METHOD3(
-      Crop,
+  MOCK_METHOD4(
+      ApplySubCaptureTarget,
       void(
+          media::mojom::SubCaptureTargetType,
           const base::Token&,
           uint32_t,
           base::OnceCallback<void(media::mojom::ApplySubCaptureTargetResult)>));
@@ -162,7 +163,8 @@ class MockVideoCaptureObserver final
   }
   MOCK_METHOD1(OnFrameDropped, void(media::VideoCaptureFrameDropReason reason));
 
-  MOCK_METHOD1(OnNewCropVersion, void(uint32_t crop_version));
+  MOCK_METHOD1(OnNewSubCaptureTargetVersion,
+               void(uint32_t sub_capture_target_version));
 
   MOCK_METHOD1(OnStateChangedCall, void(media::mojom::VideoCaptureState state));
   MOCK_METHOD1(OnVideoCaptureErrorCall, void(media::VideoCaptureError error));

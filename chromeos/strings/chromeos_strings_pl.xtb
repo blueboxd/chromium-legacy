@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
+<translation id="1003363546227723021">Kiedy ekran jest nieaktywny, wyświetlają się zdjęcia, czas, pogoda i wiadomości</translation>
 <translation id="1014750484722996375">Biurka</translation>
 <translation id="1018219910092211213">Nie udało się rozpoznać nazw DNS</translation>
 <translation id="1018656279737460067">Anulowano</translation>
@@ -29,6 +30,7 @@
 <translation id="1175951029573070619">Przeciętna (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Usuń</translation>
 <translation id="1195447618553298278">Nieznany błąd.</translation>
+<translation id="1195784767091936222">Włącz automatyczny tryb ciemny</translation>
 <translation id="1196959502276349371">Wersja <ph name="VERSION" /></translation>
 <translation id="1199355487114804640">Odtwórz/wstrzymaj</translation>
 <translation id="1201402288615127009">Dalej</translation>
@@ -42,6 +44,7 @@
 <translation id="1290331692326790741">słaby sygnał</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1308754910631152188">Aktualizuję (ukończone <ph name="PERCENTAGE_VALUE" />%)</translation>
+<translation id="1309341072016605398"><ph name="MINUTES" /> min</translation>
 <translation id="1310380015393971138">Sieć <ph name="NETWORK_NAME" /> jest niedostępna</translation>
 <translation id="131421566576084655">Data ostatniego resetowania użycia danych jest niedostępna</translation>
 <translation id="1314565355471455267">VPN na Androida</translation>
@@ -75,6 +78,7 @@
 <translation id="1499900233129743732"><ph name="MANAGER" /> zarządza tym użytkownikiem i może zdalnie monitorować jego aktywność oraz zarządzać ustawieniami.</translation>
 <translation id="150962533380566081">Nieprawidłowy PUK.</translation>
 <translation id="1510238584712386396">Menu z aplikacjami</translation>
+<translation id="1515129336378114413">strona główna przeglądarki</translation>
 <translation id="1526389707933164996">Animacja wygaszacza ekranu</translation>
 <translation id="152892567002884378">Zwiększ głośność</translation>
 <translation id="1555130319947370107">Niebieski</translation>
@@ -85,6 +89,7 @@
 <translation id="1572585716423026576">Ustaw jako tapetę</translation>
 <translation id="1578784163189013834">Wybierz tło wygaszacza ekranu</translation>
 <translation id="160633243685262989">Podgląd obrazu</translation>
+<translation id="1611649489706141841">do przodu</translation>
 <translation id="1615335640928990664">Użycie danych od <ph name="FRIENDLY_DATE" /></translation>
 <translation id="1621067168122174824">Przeprowadź test ładowania</translation>
 <translation id="1639239467298939599">Wczytuję</translation>
@@ -131,6 +136,7 @@
 <translation id="1852934301711881861">Zainstaluj ChromeOS Flex</translation>
 <translation id="1856388568474281774">Strzałka w dół</translation>
 <translation id="1858620243986915808">Załącz zrzut ekranu</translation>
+<translation id="1871413952174074704">APN nie może mieć więcej znaków niż <ph name="CHAR_LIMIT" /></translation>
 <translation id="1871569928317311284">Wyłącz ciemny motyw</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="188114911237521550">Wyłącz tryb ciemny</translation>
@@ -144,6 +150,7 @@
 <translation id="1923388006036088459">Kolory uzupełniające</translation>
 <translation id="1947737735496445907">Wydrukowano</translation>
 <translation id="1951012854035635156">Asystent</translation>
+<translation id="1954687945444914660">fotografii</translation>
 <translation id="1962550982027027473">Domyślny punkt APN jest wymagany</translation>
 <translation id="1973886230221301399">ChromeVox</translation>
 <translation id="1977994649430373166">Zdjęcie profilowe Google</translation>
@@ -168,7 +175,9 @@
 <translation id="2152882202543497059">Zdjęcia: <ph name="NUMBER" /></translation>
 <translation id="2157660087437850958">selektor emotikonów</translation>
 <translation id="2157959690810728433">W KOLEJCE</translation>
+<translation id="2158450850127366833">{NUM_ROOL_APPS,plural,offset:2 =1{Administrator skonfigurował automatyczne uruchamianie aplikacji <ph name="APP_NAME_1" /> przy każdym logowaniu.}=2{Administrator skonfigurował automatyczne uruchamianie aplikacji <ph name="APP_NAME_1" /> i <ph name="APP_NAME_2" /> przy każdym logowaniu.}=3{Administrator skonfigurował automatyczne uruchamianie aplikacji <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> i <ph name="APP_NAME_3" /> przy każdym logowaniu.}few{Administrator skonfigurował automatyczne uruchamianie aplikacji <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> i jeszcze # przy każdym logowaniu.}many{Administrator skonfigurował automatyczne uruchamianie aplikacji <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> i jeszcze # przy każdym logowaniu.}other{Administrator skonfigurował automatyczne uruchamianie aplikacji <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> i jeszcze # przy każdym logowaniu.}}</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: spróbuj ponownie</translation>
+<translation id="215916044711630446">Przycisk Dodaj APN jest teraz wyłączony</translation>
 <translation id="2161394479394250669">Anuluj zadanie drukowania</translation>
 <translation id="2161656808144014275">Tekstowe</translation>
 <translation id="2163937499206714165">Włącz tryb ciemny</translation>
@@ -184,6 +193,7 @@
 <translation id="2236746079896696523">Przełączenie podświetlenia klawiatury</translation>
 <translation id="2240366984605217732">Przełącznik układu</translation>
 <translation id="225692081236532131">Stan aktywacji</translation>
+<translation id="2267285889943769271">Dodaj zrzut ekranu</translation>
 <translation id="2271469253353559191">Harmonogram trybu ciemnego</translation>
 <translation id="2276999893457278469">Najlepsze materiały pomocy</translation>
 <translation id="2279051792571591988">Przywróć domyślne</translation>
@@ -269,6 +279,7 @@
 <translation id="3122464029669770682">Procesor</translation>
 <translation id="3124039320086536031">Urządzenie jest połączone.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Usunąć stronę?}=1{Usunąć stronę {PAGE_NUMBER}?}few{Usunąć stronę {PAGE_NUMBER}?}many{Usunąć stronę {PAGE_NUMBER}?}other{Usunąć stronę {PAGE_NUMBER}?}}</translation>
+<translation id="3136905423678675159">Włączyć automatyczny tryb ciemny?</translation>
 <translation id="3146655726035122603">Tylko na urządzeniu <ph name="PRODUCT_NAME" /></translation>
 <translation id="315116470104423982">Mobilna transmisja danych</translation>
 <translation id="3156846309055100599">Skanuję stronę <ph name="PAGE_NUMBER" />…</translation>
@@ -285,6 +296,7 @@
 <translation id="3226405216343213872">Szukam skanerów</translation>
 <translation id="3226657629376379887">Menu działań dotyczących układu</translation>
 <translation id="3246869037381808805">Zadania drukowania starsze niż 1 dzień zostaną usunięte</translation>
+<translation id="324961752321393509">Administrator nie zezwala na zamknięcie tej aplikacji</translation>
 <translation id="3268178239013324452">Niepowodzenie – otwarte drzwiczki drukarki</translation>
 <translation id="3275729367986477355">Awatar</translation>
 <translation id="3283504360622356314">{0,plural, =1{Edytuj plik}few{Edytuj pliki}many{Edytuj pliki}other{Edytuj pliki}}</translation>
@@ -347,6 +359,7 @@
 <translation id="3740976234706877572"><ph name="AVERAGE_SCORE" /> ★ (liczba opinii: <ph name="AGGREGATED_COUNT" />)</translation>
 <translation id="3748026146096797577">Brak połączenia</translation>
 <translation id="3749289110408117711">Nazwa pliku</translation>
+<translation id="3754384069690464321">Aby z tą tapetą wszystko wyglądało jak najlepiej, włącz automatyczny tryb ciemny. W każdej chwili możesz go wyłączyć w aplikacji.</translation>
 <translation id="3771294271822695279">Pliki wideo</translation>
 <translation id="3784455785234192852">Zablokuj</translation>
 <translation id="380097101658023925">elementy sterujące RGB</translation>
@@ -397,6 +410,7 @@
 <translation id="4117637339509843559">Tryb ciemny</translation>
 <translation id="4130035430755296270">Najedź kursorem, aby zobaczyć więcej opcji układu</translation>
 <translation id="4131410914670010031">Czarno-biały</translation>
+<translation id="4143820682073026914">{NUM_ROOL_APPS,plural, =1{Aplikacja <ph name="APP_NAME_1" /> została uruchomiona automatycznie}few{# aplikacje zostały uruchomione automatycznie}many{# aplikacji zostało uruchomionych automatycznie}other{# aplikacji zostało uruchomione automatycznie}}</translation>
 <translation id="4145784616224233563">Zapora sieciowa HTTP</translation>
 <translation id="4147897805161313378">Zdjęcia Google</translation>
 <translation id="4150201353443180367">Wyświetlacz</translation>
@@ -425,6 +439,7 @@
 <translation id="4297501883039923494">Zatrzymano – nieznany błąd</translation>
 <translation id="4300073214558989">Obrazy: <ph name="IMAGE_COUNT" /></translation>
 <translation id="4333390807948134856">Naciśnięto klawisz <ph name="KEY_NAME" /></translation>
+<translation id="4354430579665871434">klawisz</translation>
 <translation id="435692326371619097">Zarządzaj ustawieniami APN sieci. Punkty APN nawiązują połączenie między siecią komórkową a internetem. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="437294888293595148">Zresetuj wszystkie skróty</translation>
 <translation id="4378373042927530923">Nie wykonano</translation>
@@ -442,6 +457,7 @@
 <translation id="445059817448385655">Stare hasło</translation>
 <translation id="4453205916657964690">Maska podsieci</translation>
 <translation id="4454245904991689773">Skanuj do</translation>
+<translation id="4456812688969919973">Przycisk Zapisz APN jest teraz wyłączony</translation>
 <translation id="4469288414739283461">Wygaszacz ekranu Ziemia</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Nie udało się sprawdzić pingiem bramy sieciowej innej niż domyślna</translation>
@@ -524,7 +540,6 @@
 <translation id="4999333166442584738">Ukryj raport</translation>
 <translation id="500920857929044050">Zatrzymaj test</translation>
 <translation id="5017508259293544172">LEAP</translation>
-<translation id="5019310272469539976">Kiedy ekran jest nieaktywny, wyświetlają się zdjęcia, godzina, pogoda i wiadomości.</translation>
 <translation id="5035083460461104704">Kolor motywu</translation>
 <translation id="5038292761217083259">klawiatura wielokolorowa</translation>
 <translation id="5039804452771397117">Zezwalaj</translation>
@@ -578,6 +593,7 @@
 <translation id="5389224261615877010">Tęcza</translation>
 <translation id="5400907029458559844">Urządzenie się łączy.</translation>
 <translation id="5401938042319910061">Uruchom wszystkie testy</translation>
+<translation id="540604120278030498">Nowy Jork</translation>
 <translation id="5423849171846380976">Aktywowano</translation>
 <translation id="5430931332414098647">Instant Tethering</translation>
 <translation id="5431318178759467895">Kolor</translation>
@@ -686,9 +702,11 @@
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">Włącz ciemny motyw</translation>
 <translation id="628726841779494414">Zarządzaj drukarkami w ustawieniach drukarek</translation>
+<translation id="6292095526077353682">Podczas ładowania pokazuj wygaszacz ekranu przez</translation>
 <translation id="629550705077076970">przyciemnianie klawiatury</translation>
 <translation id="6302401976930124515">Test <ph name="TEST_NAME" /> został anulowany</translation>
 <translation id="631063167932043783">Aplikacja Odkrywaj</translation>
+<translation id="6318437367327684789">bez końca</translation>
 <translation id="6319207335391420837">Aktualizacja oprogramowania układowego na urządzeniu <ph name="DEVICE_NAME" /></translation>
 <translation id="6321407676395378991">Włącz wygaszacz ekranu</translation>
 <translation id="6324916366299863871">Edytuj skrót</translation>
@@ -712,6 +730,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Słaba (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Otwórz ustawienia konta</translation>
+<translation id="6462978824459367242">Przycisk Dodaj APN jest teraz włączony</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Przeskanować ponownie stronę?}=1{Przeskanować ponownie stronę {PAGE_NUMBER}?}few{Przeskanować ponownie stronę {PAGE_NUMBER}?}many{Przeskanować ponownie stronę {PAGE_NUMBER}?}other{Przeskanować ponownie stronę {PAGE_NUMBER}?}}</translation>
 <translation id="6472207088655375767">Hasło jednorazowe</translation>
 <translation id="6480327114083866287">Zarządzane przez <ph name="MANAGER" /></translation>
@@ -746,6 +765,7 @@
 <translation id="6659594942844771486">Karta</translation>
 <translation id="6673898378497337661">zwiększ jasność klawiatury</translation>
 <translation id="6692996468359469499">Uzyskiwanie informacji związanych z zaznaczoną treścią</translation>
+<translation id="6694534975463174713">zablokuj</translation>
 <translation id="6704062477274546131">Rozwiązywanie nazw DNS</translation>
 <translation id="6723839937902243910">Zasilanie</translation>
 <translation id="6723847290197874913">Podświetlenie klawiatury</translation>
@@ -782,6 +802,7 @@
 <translation id="7046522406494308071">Zresetować wszystkie skróty do wartości domyślnych?</translation>
 <translation id="7058278511608979688">Zakończ i zapisz</translation>
 <translation id="7059230779847288458">Ładuję (pełne naładowanie za <ph name="TIME_VALUE" />)</translation>
+<translation id="7065364575846974659">Paryż</translation>
 <translation id="7066538517128343186">klucz <ph name="KEY" /></translation>
 <translation id="7068619307603204412">Przygotowanie urządzenia</translation>
 <translation id="708426984172631313">ZATRZYMANO</translation>
@@ -921,6 +942,7 @@
 <translation id="8094062939584182041">Zezwalaj Google na wysyłanie e-maili dotyczących tego problemu</translation>
 <translation id="8104083085214006426">Używasz niezabezpieczonej sieci otwartej</translation>
 <translation id="8111706652656628199">Brak dostępnego skrótu. Naciśnij nowy skrót, używając klawisza shift i 1 dodatkowego klawisza modyfikującego (Ctrl, Alt, klawisza wyszukiwania lub klawisza Menu z aplikacjami).</translation>
+<translation id="8112538018114444149"><ph name="CHIP_CITY" />, park w stylu <ph name="CHIP_STYLE" />.</translation>
 <translation id="811820734797650957">(Android) Brama reaguje na ping</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" />°C</translation>
 <translation id="8132480444149501833">Poproś o liczniki natężenia ruchu</translation>
@@ -936,6 +958,7 @@
 <translation id="8227119283605456246">Załącz plik</translation>
 <translation id="8230672074305416752">Nie udało się sprawdzić pingiem domyślnej bramy sieciowej</translation>
 <translation id="8246209727385807362">Nieznany operator</translation>
+<translation id="8262870577632766028">1 godzina</translation>
 <translation id="827422111966801947">Indygo</translation>
 <translation id="8286154143153872371">Aby wyświetlić tapetę, połącz się z siecią i załaduj ponownie stronę.</translation>
 <translation id="8291967909914612644">Kraj operatora macierzystego</translation>
@@ -1000,6 +1023,7 @@
 <translation id="8747900814994928677">Potwierdź zmianę</translation>
 <translation id="8764414543112028321">WireGuard</translation>
 <translation id="87646919272181953">Album Zdjęcia Google</translation>
+<translation id="8775713578693478175">APN modemu</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8789196995628578448">Skrót jest używany do opcji „<ph name="CONFLICT_ACCEL_NAME" />”. Naciśnij nowy skrót. Aby zastąpić pierwotny skrót, naciśnij ten skrót ponownie.</translation>
 <translation id="879568662008399081">W sieci może znajdować się portal przechwytujący</translation>
@@ -1049,9 +1073,11 @@
 <translation id="902638246363752736">Ustawienia klawiatury</translation>
 <translation id="9028832514430399253">Włącz przełącznik, aby wybrać opcje wygaszacza ekranu</translation>
 <translation id="9039663905644212491">PEAP</translation>
+<translation id="9049868303458988905">Przycisk Zapisz APN jest teraz włączony</translation>
 <translation id="9058932992221914855">IPv6</translation>
 <translation id="9062831201344759865">Długi czas oczekiwania na rozpoznanie nazw DNS</translation>
 <translation id="9065203028668620118">Edytuj</translation>
+<translation id="9068296451330120661">akwareli</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9082718469794970195">Użyj tego filmu</translation>
@@ -1086,4 +1112,5 @@
 <translation id="979450713603643090">Jasnoróżowy</translation>
 <translation id="982713511914535780">Przeprowadź test rozładowywania</translation>
 <translation id="987264212798334818">Ogólne</translation>
+<translation id="995062385528875723">Nie można używać znaków diakrytycznych, alfabetu innego niż łaciński ani symboli</translation>
 </translationbundle>

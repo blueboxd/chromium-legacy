@@ -153,7 +153,7 @@ void DateTimeFieldElement::SetFocused(bool value,
     }
   }
 
-  ContainerNode::SetFocused(value, focus_type);
+  Element::SetFocused(value, focus_type);
 }
 
 void DateTimeFieldElement::FocusOnNextField() {
@@ -222,7 +222,7 @@ void DateTimeFieldElement::SetDisabled() {
                           style_change_extra_data::g_disabled));
 }
 
-bool DateTimeFieldElement::SupportsFocus() const {
+bool DateTimeFieldElement::SupportsFocus(UpdateBehavior) const {
   return !IsDisabled() && !IsFieldOwnerDisabled();
 }
 

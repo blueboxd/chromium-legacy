@@ -49,6 +49,8 @@ RemoteDevice CreateStubHostPhone() {
         SoftwareFeatureState::kEnabled;
     software_features[SoftwareFeature::kInstantTetheringHost] =
         SoftwareFeatureState::kEnabled;
+    software_features[SoftwareFeature::kMessagesForWebHost] =
+        SoftwareFeatureState::kEnabled;
     software_features[SoftwareFeature::kPhoneHubHost] =
         SoftwareFeatureState::kEnabled;
     software_features[SoftwareFeature::kWifiSyncHost] =
@@ -59,8 +61,9 @@ RemoteDevice CreateStubHostPhone() {
         SoftwareFeatureState::kEnabled;
 
     std::vector<BeaconSeed> beacon_seeds = {multidevice::BeaconSeed(
-        kBeaconSeedData, base::Time::FromJavaTime(kBeaconSeedStartTimeMillis),
-        base::Time::FromJavaTime(kBeaconSeedEndTimeMillis))};
+        kBeaconSeedData,
+        base::Time::FromMillisecondsSinceUnixEpoch(kBeaconSeedStartTimeMillis),
+        base::Time::FromMillisecondsSinceUnixEpoch(kBeaconSeedEndTimeMillis))};
 
     return RemoteDevice(kStubDeviceUserId, kStubHostPhoneInstanceId,
                         kStubHostPhoneName, kStubDevicePiiFreeName,
@@ -79,6 +82,8 @@ RemoteDevice CreateStubClientComputer() {
     software_features[SoftwareFeature::kBetterTogetherClient] =
         SoftwareFeatureState::kSupported;
     software_features[SoftwareFeature::kSmartLockClient] =
+        SoftwareFeatureState::kSupported;
+    software_features[SoftwareFeature::kMessagesForWebClient] =
         SoftwareFeatureState::kSupported;
 
     software_features[SoftwareFeature::kInstantTetheringClient] =
@@ -105,8 +110,9 @@ RemoteDevice CreateStubClientComputer() {
             : SoftwareFeatureState::kNotSupported;
 
     std::vector<BeaconSeed> beacon_seeds = {multidevice::BeaconSeed(
-        kBeaconSeedData, base::Time::FromJavaTime(kBeaconSeedStartTimeMillis),
-        base::Time::FromJavaTime(kBeaconSeedEndTimeMillis))};
+        kBeaconSeedData,
+        base::Time::FromMillisecondsSinceUnixEpoch(kBeaconSeedStartTimeMillis),
+        base::Time::FromMillisecondsSinceUnixEpoch(kBeaconSeedEndTimeMillis))};
 
     return RemoteDevice(kStubDeviceUserId, kStubClientComputerInstanceId,
                         kStubClientComputerName, kStubDevicePiiFreeName,

@@ -17,6 +17,7 @@
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
 #include "ash/public/cpp/ambient/proto/photo_cache_entry.pb.h"
 #include "ash/public/cpp/image_downloader.h"
+#include "ash/public/cpp/image_util.h"
 #include "ash/shell.h"
 #include "base/barrier_closure.h"
 #include "base/base64.h"
@@ -241,8 +242,8 @@ void AmbientPhotoController::ReadPhotoFromTopicQueue() {
       base::BindOnce(&AmbientPhotoController::OnAllPhotoRawDataDownloaded,
                      weak_factory_.GetWeakPtr()));
 
-  photo_cache_->DownloadPhoto(
-      topic.url,
+  AmbientPhotoCache::DownloadPhoto(
+      topic.url, *Shell::Get()->ambient_controller()->access_token_controller(),
       base::BindOnce(&AmbientPhotoController::OnPhotoRawDataDownloaded,
                      weak_factory_.GetWeakPtr(),
                      /*is_related_image=*/false, on_done));
@@ -253,8 +254,9 @@ void AmbientPhotoController::ReadPhotoFromTopicQueue() {
     related_photo->set_is_portrait(topic.is_portrait);
     related_photo->set_type(topic.topic_type);
 
-    photo_cache_->DownloadPhoto(
+    AmbientPhotoCache::DownloadPhoto(
         topic.related_image_url,
+        *Shell::Get()->ambient_controller()->access_token_controller(),
         base::BindOnce(&AmbientPhotoController::OnPhotoRawDataDownloaded,
                        weak_factory_.GetWeakPtr(),
                        /*is_related_image=*/true, on_done));
@@ -400,10 +402,11 @@ void AmbientPhotoController::DecodePhotoRawData(bool from_downloading,
                                                 bool is_related_image,
                                                 base::RepeatingClosure on_done,
                                                 const std::string& data) {
-  photo_cache_->DecodePhoto(
-      data, base::BindOnce(&AmbientPhotoController::OnPhotoDecoded,
-                           weak_factory_.GetWeakPtr(), from_downloading,
-                           is_related_image, std::move(on_done)));
+  image_util::DecodeImageData(
+      base::BindOnce(&AmbientPhotoController::OnPhotoDecoded,
+                     weak_factory_.GetWeakPtr(), from_downloading,
+                     is_related_image, std::move(on_done)),
+      image_codec_, data);
 }
 
 void AmbientPhotoController::OnPhotoDecoded(bool from_downloading,

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "net/http/structured_headers.h"
 #include "url/gurl.h"
 
@@ -17,6 +17,9 @@ namespace attribution_reporting {
 struct COMPONENT_EXPORT(ATTRIBUTION_REPORTING) OsRegistrationItem {
   GURL url;
   bool debug_reporting = false;
+
+  friend bool operator==(const OsRegistrationItem&,
+                         const OsRegistrationItem&) = default;
 };
 
 // Parses an Attribution-Reporting-OS-Source or

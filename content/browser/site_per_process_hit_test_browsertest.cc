@@ -4460,7 +4460,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
     set_cursor_interceptor->Wait();
     EXPECT_TRUE(set_cursor_interceptor->cursor().has_value());
     EXPECT_EQ(ui::mojom::CursorType::kPointer,
-              set_cursor_interceptor->cursor());
+              set_cursor_interceptor->cursor()->type());
   }
 }
 
@@ -4528,7 +4528,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   set_cursor_interceptor->Wait();
   EXPECT_TRUE(set_cursor_interceptor->cursor().has_value());
   EXPECT_EQ(ui::mojom::CursorType::kPointer,
-            set_cursor_interceptor->cursor());
+            set_cursor_interceptor->cursor()->type());
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
 
@@ -7384,17 +7384,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestDataGenerationBrowserTest,
 }
 
 #if defined(USE_AURA)
-class SitePerProcessDelegatedInkBrowserTest
-    : public SitePerProcessHitTestBrowserTest {
- public:
-  SitePerProcessDelegatedInkBrowserTest() = default;
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    SitePerProcessHitTestBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "DelegatedInkTrails");
-  }
-};
+using SitePerProcessDelegatedInkBrowserTest = SitePerProcessHitTestBrowserTest;
 
 // Test confirms that a point hitting an OOPIF that is requesting delegated ink
 // trails results in the metadata being correctly sent to the child's

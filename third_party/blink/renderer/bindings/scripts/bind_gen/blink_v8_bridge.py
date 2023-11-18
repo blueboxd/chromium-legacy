@@ -297,8 +297,8 @@ def blink_type_info(idl_type):
                         has_null_value=True,
                         is_traceable=True)
 
-    if real_type.is_void:
-        assert False, "Blink does not support/accept IDL void type."
+    if real_type.is_undefined:
+        assert False, "Blink does not support/accept IDL undefined type."
 
     if real_type.type_definition_object:
         typename = blink_class_name(real_type.type_definition_object)
@@ -461,8 +461,8 @@ def _native_value_tag_impl(idl_type):
     if real_type.is_symbol:
         assert False, "Blink does not support/accept IDL symbol type."
 
-    if real_type.is_void:
-        assert False, "Blink does not support/accept IDL void type."
+    if real_type.is_undefined:
+        assert False, "Blink does not support/accept IDL undefined type."
 
     if real_type.type_definition_object:
         return blink_class_name(real_type.type_definition_object)
@@ -762,8 +762,9 @@ def make_v8_to_blink_value(blink_var_name,
         # A key point of this fast path is that it doesn't require an
         # ExceptionState.
         fast_path_cond = "LIKELY({}->IsString())".format(v8_value_expr)
-        fast_path_body_text = "{}.Init({}.As<v8::String>());".format(
-            blink_var_name, v8_value_expr)
+        fast_path_body_text = _format(
+            "{}.Init(${isolate}, {}.As<v8::String>());", blink_var_name,
+            v8_value_expr)
     elif idl_type.unwrap(typedef=True).is_callback_function:
         # A key point of this fast path is that it doesn't require an
         # ExceptionState.

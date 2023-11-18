@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/check.h"
+#include "base/functional/overloaded.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
@@ -28,6 +29,7 @@
 #include "content/browser/attribution_reporting/store_source_result.h"
 #include "net/base/schemeful_site.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -69,7 +71,8 @@ enum class DebugDataType {
   kOsSourceDelegated = 24,
   kOsTriggerDelegated = 25,
   kTriggerEventReportWindowNotStarted = 26,
-  kMaxValue = kTriggerEventReportWindowNotStarted,
+  kTriggerEventNoMatchingTriggerData = 27,
+  kMaxValue = kTriggerEventNoMatchingTriggerData,
 };
 
 absl::optional<DebugDataType> DataTypeIfCookieSet(DebugDataType data_type,
@@ -77,37 +80,68 @@ absl::optional<DebugDataType> DataTypeIfCookieSet(DebugDataType data_type,
   return is_debug_cookie_set ? absl::make_optional(data_type) : absl::nullopt;
 }
 
-absl::optional<DebugDataType> GetReportDataType(StorableSource::Result result,
-                                                bool is_debug_cookie_set) {
-  switch (result) {
-    case StorableSource::Result::kProhibitedByBrowserPolicy:
-    case StorableSource::Result::kExceedsMaxChannelCapacity:
-      return absl::nullopt;
-    case StorableSource::Result::kSuccess:
-    // `kSourceSuccess` is sent for a few errors as well to mitigate the
-    // security concerns on reporting these errors. Because these errors are
-    // thrown based on information across reporting origins, reporting on them
-    // would violate the same-origin policy.
-    case StorableSource::Result::kExcessiveReportingOrigins:
-    case StorableSource::Result::kDestinationGlobalLimitReached:
-    case StorableSource::Result::kReportingOriginsPerSiteLimitReached:
-      return DataTypeIfCookieSet(DebugDataType::kSourceSuccess,
-                                 is_debug_cookie_set);
-    case StorableSource::Result::kInsufficientUniqueDestinationCapacity:
-      return DebugDataType::kSourceDestinationLimit;
-    case StorableSource::Result::kDestinationReportingLimitReached:
-    case StorableSource::Result::kDestinationBothLimitsReached:
-      return DebugDataType::kSourceDestinationRateLimit;
-    case StorableSource::Result::kSuccessNoised:
-      return DataTypeIfCookieSet(DebugDataType::kSourceNoised,
-                                 is_debug_cookie_set);
-    case StorableSource::Result::kInsufficientSourceCapacity:
-      return DataTypeIfCookieSet(DebugDataType::kSourceStorageLimit,
-                                 is_debug_cookie_set);
-    case StorableSource::Result::kInternalError:
-      return DataTypeIfCookieSet(DebugDataType::kSourceUnknownError,
-                                 is_debug_cookie_set);
-  }
+struct DebugDataTypeAndBody {
+  DebugDataType debug_data_type;
+  int limit;
+
+  explicit DebugDataTypeAndBody(DebugDataType debug_data_type, int limit = -1)
+      : debug_data_type(debug_data_type), limit(limit) {}
+};
+
+absl::optional<DebugDataTypeAndBody> GetReportDataBody(
+    bool is_debug_cookie_set,
+    const StoreSourceResult& result) {
+  return absl::visit(
+      base::Overloaded{
+          [](absl::variant<StoreSourceResult::ProhibitedByBrowserPolicy,
+                           StoreSourceResult::ExceedsMaxChannelCapacity>) {
+            return absl::optional<DebugDataTypeAndBody>();
+          },
+          [&](absl::variant<
+              StoreSourceResult::Success,
+              // `kSourceSuccess` is sent for a few errors as well to mitigate
+              // the security concerns on reporting these errors. Because these
+              // errors are thrown based on information across reporting
+              // origins, reporting on them would violate the same-origin
+              // policy.
+              StoreSourceResult::ExcessiveReportingOrigins,
+              StoreSourceResult::DestinationGlobalLimitReached,
+              StoreSourceResult::ReportingOriginsPerSiteLimitReached>) {
+            return is_debug_cookie_set
+                       ? absl::make_optional<DebugDataTypeAndBody>(
+                             DebugDataType::kSourceSuccess)
+                       : absl::nullopt;
+          },
+          [](StoreSourceResult::InsufficientUniqueDestinationCapacity v) {
+            return absl::make_optional<DebugDataTypeAndBody>(
+                DebugDataType::kSourceDestinationLimit, v.limit);
+          },
+          [](absl::variant<StoreSourceResult::DestinationReportingLimitReached,
+                           StoreSourceResult::DestinationBothLimitsReached> v) {
+            return absl::make_optional<DebugDataTypeAndBody>(
+                DebugDataType::kSourceDestinationRateLimit,
+                absl::visit([](auto v) { return v.limit; }, v));
+          },
+          [&](StoreSourceResult::SuccessNoised) {
+            return is_debug_cookie_set
+                       ? absl::make_optional<DebugDataTypeAndBody>(
+                             DebugDataType::kSourceNoised)
+                       : absl::nullopt;
+          },
+          [&](StoreSourceResult::InsufficientSourceCapacity v) {
+            return is_debug_cookie_set
+                       ? absl::make_optional<DebugDataTypeAndBody>(
+                             DebugDataType::kSourceStorageLimit, v.limit)
+                       : absl::nullopt;
+          },
+          [&](StoreSourceResult::InternalError) {
+            return is_debug_cookie_set
+                       ? absl::make_optional<DebugDataTypeAndBody>(
+                             DebugDataType::kSourceUnknownError)
+                       : absl::nullopt;
+          },
+      },
+      result.result());
 }
 
 absl::optional<DebugDataType> GetReportDataType(EventLevelResult result,
@@ -161,6 +195,10 @@ absl::optional<DebugDataType> GetReportDataType(EventLevelResult result,
     case EventLevelResult::kReportWindowPassed:
       return DataTypeIfCookieSet(DebugDataType::kTriggerEventReportWindowPassed,
                                  is_debug_cookie_set);
+    case EventLevelResult::kNoMatchingTriggerData:
+      return DataTypeIfCookieSet(
+          DebugDataType::kTriggerEventNoMatchingTriggerData,
+          is_debug_cookie_set);
   }
 }
 
@@ -249,6 +287,8 @@ std::string SerializeReportDataType(DebugDataType data_type) {
       return "trigger-event-report-window-not-started";
     case DebugDataType::kTriggerEventReportWindowPassed:
       return "trigger-event-report-window-passed";
+    case DebugDataType::kTriggerEventNoMatchingTriggerData:
+      return "trigger-event-no-matching-trigger-data";
     case DebugDataType::kTriggerAggregateDeduplicated:
       return "trigger-aggregate-deduplicated";
     case DebugDataType::kTriggerAggregateNoContributions:
@@ -282,65 +322,14 @@ void SetSourceData(base::Value::Dict& data_body,
 }
 
 template <typename T>
-void SetLimit(base::Value::Dict& data_body, absl::optional<T> limit) {
-  DCHECK(limit.has_value());
-  data_body.Set("limit", base::NumberToString(*limit));
+void SetLimit(base::Value::Dict& data_body, T limit) {
+  data_body.Set("limit", base::NumberToString(limit));
 }
 
-base::Value::Dict GetReportDataBody(DebugDataType data_type,
-                                    const StorableSource& source,
-                                    const StoreSourceResult& result) {
-  DCHECK(!source.is_within_fenced_frame());
-
-  const attribution_reporting::SourceRegistration& registration =
-      source.registration();
-
-  base::Value::Dict data_body;
-  data_body.Set(kAttributionDestination, registration.destination_set.ToJson());
-  SetSourceData(data_body, registration.source_event_id,
-                source.common_info().source_site(), registration.debug_key);
-
-  switch (data_type) {
-    case DebugDataType::kSourceDestinationLimit:
-      SetLimit(data_body,
-               result.max_destinations_per_source_site_reporting_site);
-      break;
-    case DebugDataType::kSourceStorageLimit:
-      SetLimit(data_body, result.max_sources_per_origin);
-      break;
-    case DebugDataType::kSourceDestinationRateLimit:
-      SetLimit(data_body,
-               result.max_destinations_per_rate_limit_window_reporting_origin);
-      break;
-    case DebugDataType::kSourceNoised:
-    case DebugDataType::kSourceSuccess:
-    case DebugDataType::kSourceUnknownError:
-      break;
-    case DebugDataType::kTriggerNoMatchingSource:
-    case DebugDataType::kTriggerAttributionsPerSourceDestinationLimit:
-    case DebugDataType::kTriggerNoMatchingFilterData:
-    case DebugDataType::kTriggerReportingOriginLimit:
-    case DebugDataType::kTriggerEventDeduplicated:
-    case DebugDataType::kTriggerEventNoMatchingConfigurations:
-    case DebugDataType::kTriggerEventNoise:
-    case DebugDataType::kTriggerEventLowPriority:
-    case DebugDataType::kTriggerEventExcessiveReports:
-    case DebugDataType::kTriggerEventStorageLimit:
-    case DebugDataType::kTriggerEventReportWindowNotStarted:
-    case DebugDataType::kTriggerEventReportWindowPassed:
-    case DebugDataType::kTriggerAggregateDeduplicated:
-    case DebugDataType::kTriggerAggregateNoContributions:
-    case DebugDataType::kTriggerAggregateInsufficientBudget:
-    case DebugDataType::kTriggerAggregateStorageLimit:
-    case DebugDataType::kTriggerAggregateReportWindowPassed:
-    case DebugDataType::kTriggerAggregateExcessiveReports:
-    case DebugDataType::kTriggerUnknownError:
-    case DebugDataType::kOsSourceDelegated:
-    case DebugDataType::kOsTriggerDelegated:
-      NOTREACHED_NORETURN();
-  }
-
-  return data_body;
+template <typename T>
+void SetLimit(base::Value::Dict& data_body, absl::optional<T> limit) {
+  DCHECK(limit.has_value());
+  SetLimit(data_body, *limit);
 }
 
 // `original_report_time` must be non-null when `data_type`'s body will contain
@@ -371,6 +360,7 @@ base::Value::Dict GetReportDataBody(DebugDataType data_type,
     case DebugDataType::kTriggerEventNoise:
     case DebugDataType::kTriggerEventReportWindowNotStarted:
     case DebugDataType::kTriggerEventReportWindowPassed:
+    case DebugDataType::kTriggerEventNoMatchingTriggerData:
     case DebugDataType::kTriggerAggregateDeduplicated:
     case DebugDataType::kTriggerAggregateNoContributions:
     case DebugDataType::kTriggerAggregateReportWindowPassed:
@@ -428,9 +418,9 @@ base::Value::Dict GetReportData(DebugDataType type, base::Value::Dict body) {
 void RecordVerboseDebugReportType(DebugDataType type) {
   static_assert(
       DebugDataType::kMaxValue ==
-          DebugDataType::kTriggerEventReportWindowNotStarted,
-      "Bump version of Conversions.SentVerboseDebugReportType3 histogram.");
-  base::UmaHistogramEnumeration("Conversions.SentVerboseDebugReportType3",
+          DebugDataType::kTriggerEventNoMatchingTriggerData,
+      "Bump version of Conversions.SentVerboseDebugReportType4 histogram.");
+  base::UmaHistogramEnumeration("Conversions.SentVerboseDebugReportType4",
                                 type);
 }
 
@@ -455,17 +445,28 @@ absl::optional<AttributionDebugReport> AttributionDebugReport::Create(
     return absl::nullopt;
   }
 
-  absl::optional<DebugDataType> data_type =
-      GetReportDataType(result.status, is_debug_cookie_set);
-  if (!data_type) {
+  absl::optional<DebugDataTypeAndBody> data =
+      GetReportDataBody(is_debug_cookie_set, result);
+  if (!data) {
     return absl::nullopt;
   }
 
-  RecordVerboseDebugReportType(*data_type);
+  RecordVerboseDebugReportType(data->debug_data_type);
+
+  base::Value::Dict body;
+  if (data->limit >= 0) {
+    SetLimit(body, data->limit);
+  }
+
+  const attribution_reporting::SourceRegistration& registration =
+      source.registration();
+
+  body.Set(kAttributionDestination, registration.destination_set.ToJson());
+  SetSourceData(body, registration.source_event_id,
+                source.common_info().source_site(), registration.debug_key);
 
   base::Value::List report_body;
-  report_body.Append(
-      GetReportData(*data_type, GetReportDataBody(*data_type, source, result)));
+  report_body.Append(GetReportData(data->debug_data_type, std::move(body)));
   return AttributionDebugReport(std::move(report_body),
                                 source.common_info().reporting_origin(),
                                 /*original_report_time=*/base::Time());
@@ -479,6 +480,10 @@ absl::optional<AttributionDebugReport> AttributionDebugReport::Create(
   if (!trigger.registration().debug_reporting ||
       trigger.is_within_fenced_frame()) {
     return absl::nullopt;
+  }
+
+  if (is_debug_cookie_set && result.source()) {
+    is_debug_cookie_set = result.source()->debug_cookie_set();
   }
 
   base::Value::List report_body;

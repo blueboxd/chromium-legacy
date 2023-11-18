@@ -40,7 +40,6 @@
 
 namespace content {
 
-class AdAuctionPageData;
 class InterestGroupManagerImpl;
 struct BiddingAndAuctionServerKey;
 class RenderFrameHost;
@@ -149,8 +148,6 @@ class CONTENT_EXPORT AdAuctionServiceImpl final
                                      interest_group_api_operation,
                                  const url::Origin& origin) const;
 
-  AdAuctionPageData* GetAdAuctionPageData();
-
   // Deletes `auction`.
   void OnAuctionComplete(
       RunAdAuctionCallback callback,
@@ -177,6 +174,7 @@ class CONTENT_EXPORT AdAuctionServiceImpl final
                         BiddingAndAuctionData data);
   void OnGotBiddingAndAuctionServerKey(
       BiddingAndAuctionDataConstructionState state,
+      scoped_refptr<network::WrapperSharedURLLoaderFactory> loader,
       base::expected<BiddingAndAuctionServerKey, std::string> maybe_key);
 
   InterestGroupManagerImpl& GetInterestGroupManager() const;
@@ -185,15 +183,7 @@ class CONTENT_EXPORT AdAuctionServiceImpl final
 
   // Return whether the auction is expected to fail because any of
   // RenderFrameHostImpl, PageImpl and FencedFrameUrlMapping has changed during
-  // the auction. If it is going to fail, set the crash key and dump without
-  // crashing. The crash key is a string that describes:
-  // 1. Whether RenderFrameHostImpl is different between the start of the
-  // auction and the end of the auction.
-  // 2. Same as above for PageImpl.
-  // 3. Same as above for FencedFrameUrlMapping.
-  // 4. The lifecycle state of the main frame. See
-  // `RenderFrameHostImpl::GetLifecycleState()`.
-  // 5. If there is a child frame, the lifecycle state of the child frame.
+  // the auction.
   bool IsAuctionExpectedToFail(
       FencedFrameURLMapping::Id fenced_frame_urls_map_id,
       GlobalRenderFrameHostId render_frame_host_id,

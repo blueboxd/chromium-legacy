@@ -17,6 +17,8 @@
 #include "content/browser/preloading/speculation_host_devtools_observer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/preloading.h"
+#include "content/public/browser/preloading_data.h"
 #include "net/http/http_no_vary_search_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -40,6 +42,7 @@ class PrefetchServingPageMetricsContainer;
 class PrefetchStreamingURLLoader;
 class PreloadingAttempt;
 class ProxyLookupClientImpl;
+class RenderFrameHost;
 
 // Holds the relevant size information of the prefetched response. The struct is
 // installed onto `PrefetchContainer`, and gets passed into
@@ -88,6 +91,8 @@ struct PrefetchResponseSizes {
 // `PrefetchService::MakePrefetchRequest()`.
 class CONTENT_EXPORT PrefetchContainer {
  public:
+  // When `matcher` is null (only in unit tests),
+  // `PreloadingData::GetSameURLMatcher` is used.
   PrefetchContainer(
       const GlobalRenderFrameHostId& referring_render_frame_host_id,
       const blink::DocumentToken& referring_document_token,
@@ -95,17 +100,59 @@ class CONTENT_EXPORT PrefetchContainer {
       const PrefetchType& prefetch_type,
       const blink::mojom::Referrer& referrer,
       absl::optional<net::HttpNoVarySearchData> no_vary_search_expected,
-      blink::mojom::SpeculationInjectionWorld world,
-      base::WeakPtr<PrefetchDocumentManager> prefetch_document_manager);
+      base::WeakPtr<PrefetchDocumentManager> prefetch_document_manager,
+      PreloadingURLMatchCallback matcher = {});
   ~PrefetchContainer();
 
   PrefetchContainer(const PrefetchContainer&) = delete;
   PrefetchContainer& operator=(const PrefetchContainer&) = delete;
 
   // Defines the key to uniquely identify a prefetch.
-  using Key = std::pair<blink::DocumentToken, GURL>;
+  class CONTENT_EXPORT Key {
+   public:
+    Key() = delete;
+    Key(net::NetworkIsolationKey nik, GURL prefetch_url);
+    Key(blink::DocumentToken referring_document_token, GURL prefetch_url);
+    ~Key();
+
+    Key(const Key&);
+
+    bool operator==(const Key& rhs) const = default;
+    bool operator<(const Key& rhs) const {
+      if (referring_document_token_or_nik_ !=
+          rhs.referring_document_token_or_nik_) {
+        return referring_document_token_or_nik_ <
+               rhs.referring_document_token_or_nik_;
+      }
+      return prefetch_url_ < rhs.prefetch_url_;
+    }
+
+    const GURL& prefetch_url() const { return prefetch_url_; }
+
+    Key WithNewUrl(const GURL& new_url) const {
+      return Key(referring_document_token_or_nik_, new_url);
+    }
+
+    bool NonUrlPartIsSame(const Key& other) const {
+      return referring_document_token_or_nik_ ==
+             other.referring_document_token_or_nik_;
+    }
+
+   private:
+    Key(absl::variant<blink::DocumentToken, net::NetworkIsolationKey>
+            referring_document_token_or_nik,
+        GURL prefetch_url);
+
+    friend CONTENT_EXPORT std::ostream& operator<<(std::ostream& ostream,
+                                                   const Key& prefetch_key);
+
+    const absl::variant<blink::DocumentToken, net::NetworkIsolationKey>
+        referring_document_token_or_nik_;
+    const GURL prefetch_url_;
+  };
+
   Key GetPrefetchContainerKey() const {
-    return std::make_pair(referring_document_token_, prefetch_url_);
+    return Key(referring_document_token_, prefetch_url_);
   }
 
   // The ID of the RenderFrameHost that triggered the prefetch.
@@ -170,6 +217,47 @@ class CONTENT_EXPORT PrefetchContainer {
   bool HasPrefetchStatus() const { return prefetch_status_.has_value(); }
   PrefetchStatus GetPrefetchStatus() const;
 
+  // The state enum of the current prefetch, to replace `PrefetchStatus`.
+  // https://crbug.com/1494771
+  // Design doc for PrefetchContainer state transitions:
+  // https://docs.google.com/document/d/1dK4mAVoRrgTVTGdewthI_hA8AHirgXW8k6BmpK9gnBE/edit?usp=sharing
+  enum class LoadState {
+    // --- Phase 1. [Initial state]
+    kNotStarted,
+
+    // --- Phase 2. The eligibility check for the initial request has completed
+    // and `PreloadingAttempt::SetEligibility()` has been called.
+
+    // Found eligible.
+    kEligible,
+
+    // [Final state] Found ineligible. `redirect_chain_[0].eligibility_`
+    // contains the reason for being ineligible.
+    kFailedIneligible,
+
+    // --- Phase 3. PrefetchService::StartSinglePrefetch() has been called and
+    // the holdback check has completed.
+
+    // [Final state] Not heldback.
+    //
+    // On this state, refer to `PrefetchResponseReader`s for detailed
+    // prefetching state and servability.
+    //
+    // Also, refer to `attempt_` for triggering outcome and failure reasons for
+    // metrics.
+    // `PreloadingAttempt::SetFailureReason()` can be only called on this state.
+    // Note that these states of `attempt_` don't directly affect
+    // `PrefetchResponseReader`'s servability.
+    // (e.g. `PrefetchResponseReader::GetServableState()` can be still
+    // `kServable` even if `attempt_` has a failure).
+    kStarted,
+
+    // [Final state] Heldback due to `PreloadingAttempt::ShouldHoldback()`.
+    kFailedHeldback,
+  };
+  void SetLoadState(LoadState prefetch_status);
+  LoadState GetLoadState() const;
+
   // Controls ownership of the |ProxyLookupClientImpl| used during the
   // eligibility check.
   void TakeProxyLookupClient(
@@ -177,8 +265,7 @@ class CONTENT_EXPORT PrefetchContainer {
   std::unique_ptr<ProxyLookupClientImpl> ReleaseProxyLookupClient();
 
   // Whether or not the prefetch was determined to be eligibile.
-  void OnEligibilityCheckComplete(bool is_eligible,
-                                  absl::optional<PrefetchStatus> status);
+  void OnEligibilityCheckComplete(PreloadingEligibility eligibility);
   bool IsInitialPrefetchEligible() const;
 
   // Adds a the new URL to |redirect_chain_|.
@@ -198,8 +285,7 @@ class CONTENT_EXPORT PrefetchContainer {
   void StopAllCookieListeners();
 
   // The network context used to make network requests for the next prefetch.
-  PrefetchNetworkContext* GetOrCreateNetworkContextForCurrentPrefetch(
-      PrefetchService* prefetch_service);
+  PrefetchNetworkContext* GetOrCreateNetworkContextForCurrentPrefetch();
 
   // Closes idle connections for all elements in |network_contexts_|.
   void CloseIdleConnections();
@@ -281,6 +367,9 @@ class CONTENT_EXPORT PrefetchContainer {
   void SetOnReceivedHeadCallback(base::OnceClosure on_received_head_callback);
   base::OnceClosure ReleaseOnReceivedHeadCallback();
 
+  void StartTimeoutTimer(base::TimeDelta timeout,
+                         base::OnceClosure on_timeout_callback);
+
   // Returns the head of the prefetched response. If there is no valid response,
   // then returns null.
   const network::mojom::URLResponseHead* GetHead();
@@ -330,9 +419,13 @@ class CONTENT_EXPORT PrefetchContainer {
   const absl::optional<net::HttpNoVarySearchData>& GetNoVarySearchData() const {
     return no_vary_search_data_;
   }
-  void SetNoVarySearchData(net::HttpNoVarySearchData no_vary_search_data) {
-    no_vary_search_data_ = std::move(no_vary_search_data);
-  }
+  // Sets `no_vary_search_data_` from `GetHead()`. Exposed for tests.
+  void SetNoVarySearchData(RenderFrameHost* rfh);
+
+  // Called when cookies changes are detected via
+  // `HaveDefaultContextCookiesChanged()`, either for `this` or other
+  // `PrefetchContainer`s under the same `PrefetchMatchResolver`.
+  void OnCookiesChanged();
 
   class SinglePrefetch;
 
@@ -490,6 +583,8 @@ class CONTENT_EXPORT PrefetchContainer {
 
   // The No-Vary-Search response data, parsed from the actual response header
   // (`GetHead()`).
+  // Unless this is set, `no_vary_search` helpers don't perform No-Vary-Search
+  // matching for `this`, even if `GetHead()` has No-Vary-Search headers.
   absl::optional<net::HttpNoVarySearchData> no_vary_search_data_;
 
   // The No-Vary-Search hint of the prefetch, which is specified by the
@@ -502,7 +597,11 @@ class CONTENT_EXPORT PrefetchContainer {
   base::WeakPtr<PrefetchDocumentManager> prefetch_document_manager_;
 
   // The current status, if any, of the prefetch.
+  // TODO(crbug.com/1494771): Use `load_state_` instead for non-metrics purpose.
   absl::optional<PrefetchStatus> prefetch_status_;
+
+  // The current status of the prefetch.
+  LoadState load_state_ = LoadState::kNotStarted;
 
   // Looks up the proxy settings in the default network context all URLs in
   // |redirect_chain_|.
@@ -584,6 +683,8 @@ class CONTENT_EXPORT PrefetchContainer {
 
   // Called when `OnReceivedHead()` is called.
   base::OnceClosure on_received_head_callback_;
+
+  std::unique_ptr<base::OneShotTimer> timeout_timer_;
 
   base::WeakPtrFactory<PrefetchContainer> weak_method_factory_{this};
 };

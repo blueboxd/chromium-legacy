@@ -312,11 +312,10 @@ std::string Section::ToString() const {
     // suffix to fields without a `HtmlFieldMode`. Without this, 'autocomplete'
     // attribute values "section--shipping street-address" and "shipping
     // street-address" would have the same prefix.
-    section_name =
-        autocomplete->section +
-        (autocomplete->mode != HtmlFieldMode::kNone
-             ? "-" + std::string(HtmlFieldModeToStringPiece(autocomplete->mode))
-             : kDefaultSection);
+    section_name = autocomplete->section +
+                   (autocomplete->mode != HtmlFieldMode::kNone
+                        ? "-" + HtmlFieldModeToString(autocomplete->mode)
+                        : kDefaultSection);
   } else if (const FieldIdentifier* f =
                  absl::get_if<FieldIdentifier>(&value_)) {
     FieldIdentifier field_identifier = *f;
@@ -393,16 +392,6 @@ bool FormFieldData::HadFocus() const {
 
 bool FormFieldData::WasPasswordAutofilled() const {
   return properties_mask & kAutofilled;
-}
-
-std::u16string FormFieldData::GetSelection() const {
-  return std::u16string(GetSelectionAsStringView());
-}
-
-std::u16string_view FormFieldData::GetSelectionAsStringView() const {
-  size_t offset = std::min(static_cast<size_t>(selection_start), value.size());
-  size_t length = selection_end - selection_start;
-  return std::u16string_view(value).substr(offset, length);
 }
 
 // static

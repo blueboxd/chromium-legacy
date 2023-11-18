@@ -1,6 +1,9 @@
 {
   "$build/chromium_tests_builder_config": {
     "builder_config": {
+      "additional_exclusions": [
+        "infra/config/generated/builders/try/android-12-x64-rel/gn-args.json"
+      ],
       "builder_db": {
         "entries": [
           {
@@ -49,6 +52,7 @@
       "unit",
       "overall"
     ],
+    "use_clang_coverage": true,
     "use_java_coverage": true
   },
   "$build/flakiness": {

@@ -42,6 +42,7 @@
 #include "components/update_client/unzipper.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
+#include "components/update_client/update_client_metrics.h"
 #include "components/update_client/update_engine.h"
 #include "components/update_client/utils.h"
 
@@ -426,6 +427,8 @@ const char* DownloaderToString(CrxDownloader::DownloadMetrics::Downloader d) {
       return "direct";
     case CrxDownloader::DownloadMetrics::kBits:
       return "bits";
+    case CrxDownloader::DownloadMetrics::kBackgroundMac:
+      return "nsurlsession_background";
     default:
       return "unknown";
   }
@@ -844,11 +847,13 @@ void Component::StateChecking::DoHandle() {
   CHECK(component.crx_component());
 
   if (component.error_code_) {
+    metrics::RecordUpdateCheckResult(metrics::UpdateCheckResult::kError);
     TransitionState(std::make_unique<StateUpdateError>(&component));
     return;
   }
 
   if (component.update_context_->is_cancelled) {
+    metrics::RecordUpdateCheckResult(metrics::UpdateCheckResult::kCanceled);
     TransitionState(std::make_unique<StateUpdateError>(&component));
     component.error_category_ = ErrorCategory::kService;
     component.error_code_ = static_cast<int>(ServiceError::CANCELLED);
@@ -856,11 +861,13 @@ void Component::StateChecking::DoHandle() {
   }
 
   if (component.status_ == "ok") {
+    metrics::RecordUpdateCheckResult(metrics::UpdateCheckResult::kHasUpdate);
     TransitionState(std::make_unique<StateCanUpdate>(&component));
     return;
   }
 
   if (component.status_ == "noupdate") {
+    metrics::RecordUpdateCheckResult(metrics::UpdateCheckResult::kNoUpdate);
     if (component.action_run_.empty() ||
         component.update_context_->is_update_check_only) {
       TransitionState(std::make_unique<StateUpToDate>(&component));
@@ -870,6 +877,7 @@ void Component::StateChecking::DoHandle() {
     return;
   }
 
+  metrics::RecordUpdateCheckResult(metrics::UpdateCheckResult::kError);
   TransitionState(std::make_unique<StateUpdateError>(&component));
 }
 
@@ -917,6 +925,7 @@ void Component::StateCanUpdate::DoHandle() {
     component.error_category_ = ErrorCategory::kService;
     component.error_code_ = static_cast<int>(ServiceError::UPDATE_DISABLED);
     component.extra_code1_ = 0;
+    metrics::RecordCanUpdateResult(metrics::CanUpdateResult::kUpdatesDisabled);
     TransitionState(std::make_unique<StateUpdateError>(&component));
     return;
   }
@@ -925,6 +934,7 @@ void Component::StateCanUpdate::DoHandle() {
     TransitionState(std::make_unique<StateUpdateError>(&component));
     component.error_category_ = ErrorCategory::kService;
     component.error_code_ = static_cast<int>(ServiceError::CANCELLED);
+    metrics::RecordCanUpdateResult(metrics::CanUpdateResult::kCanceled);
     return;
   }
 
@@ -935,29 +945,57 @@ void Component::StateCanUpdate::DoHandle() {
     component.extra_code1_ = 0;
     component.AppendEvent(component.MakeEventUpdateComplete());
     EndState();
+    metrics::RecordCanUpdateResult(
+        metrics::CanUpdateResult::kCheckForUpdateOnly);
     return;
   }
 
+  metrics::RecordCanUpdateResult(metrics::CanUpdateResult::kCanUpdate);
+
   // Start computing the cost of the this update from here on.
   component.update_begin_ = base::TimeTicks::Now();
-
+  CHECK(component.update_context_->crx_cache_);
   if (CanTryDiffUpdate()) {
-    TransitionState(std::make_unique<StateDownloadingDiff>(&component));
-  } else {
-    TransitionState(std::make_unique<StateDownloading>(&component));
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(&update_client::CrxCache::Contains,
+                       component.update_context_->crx_cache_.value(),
+                       component.crx_component()->app_id,
+                       component.previous_fp_),
+        base::BindOnce(
+            &Component::StateCanUpdate::CheckIfCacheContainsCrxComplete,
+            base::Unretained(this)));
+    return;
   }
+  TransitionState(std::make_unique<StateDownloading>(&component));
 }
 
 // Returns true if a differential update is available, it has not failed yet,
 // and the configuration allows this update.
 bool Component::StateCanUpdate::CanTryDiffUpdate() const {
-  const auto& component = Component::State::component();
   if (!base::FeatureList::IsEnabled(features::kPuffinPatches)) {
     return false;
   }
+  const auto& component = Component::State::component();
   return HasDiffUpdate(component) && !component.diff_error_code_ &&
          component.update_context_->crx_cache_.has_value() &&
          component.update_context_->config->EnabledDeltas();
+}
+
+void Component::StateCanUpdate::CheckIfCacheContainsCrxComplete(
+    bool crx_is_in_cache) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto& component = State::component();
+  if (crx_is_in_cache) {
+    TransitionState(std::make_unique<StateDownloadingDiff>(&component));
+  } else {
+    // If the configuration allows diff update, but the previous crx
+    // is not cached, report the kPuffinMissingPreviousCrx error.
+    component.diff_error_category_ = ErrorCategory::kUnpack;
+    component.diff_error_code_ =
+        static_cast<int>(UnpackerError::kPuffinMissingPreviousCrx);
+    TransitionState(std::make_unique<StateDownloading>(&component));
+  }
 }
 
 Component::StateUpToDate::StateUpToDate(Component* component)
@@ -1148,7 +1186,8 @@ void Component::StateUpdatingDiff::DoHandle() {
   // the callback on the sequence the installer is running on.
   auto main_task_runner = base::SequencedTaskRunner::GetCurrentDefault();
   if (base::FeatureList::IsEnabled(features::kPuffinPatches) &&
-      update_context.crx_cache_.has_value()) {
+      update_context.crx_cache_.has_value() &&
+      update_context.config->EnabledDeltas()) {
     base::ThreadPool::CreateSequencedTaskRunner(kTaskTraits)
         ->PostTask(
             FROM_HERE,
@@ -1326,6 +1365,7 @@ void Component::StateUpdated::DoHandle() {
   component.AppendEvent(component.MakeEventUpdateComplete());
 
   component.NotifyObservers(Events::COMPONENT_UPDATED);
+  metrics::RecordComponentUpdated();
   EndState();
 }
 

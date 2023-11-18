@@ -19,11 +19,10 @@
 #import "components/feature_engagement/public/tracker.h"
 #import "components/sync/service/sync_service.h"
 #import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
-#import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/settings/model/sync/utils/identity_error_util.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
-#import "ios/chrome/browser/signin/signin_util.h"
+#import "ios/chrome/browser/signin/model/signin_util.h"
 
 #import <UIKit/UIKit.h>
 
@@ -569,8 +568,7 @@ bool ShouldTriggerDefaultBrowserHighlightFeature(
     const base::Feature& feature,
     feature_engagement::Tracker* tracker,
     syncer::SyncService* syncService) {
-  // TODO(crbug.com/1410229) clean-up experiment code when fully launched.
-  if (!IsBlueDotPromoEnabled() || IsChromeLikelyDefaultBrowser() ||
+  if (IsChromeLikelyDefaultBrowser() ||
       (syncService && ShouldIndicateIdentityErrorInOverflowMenu(syncService))) {
     return false;
   }
@@ -594,30 +592,6 @@ bool ShouldTriggerDefaultBrowserHighlightFeature(
   }
 
   return false;
-}
-
-bool AreDefaultBrowserPromosEnabled() {
-  if (base::FeatureList::IsEnabled(kDefaultBrowserBlueDotPromo)) {
-    return kBlueDotPromoUserGroupParam.Get() ==
-           BlueDotPromoUserGroup::kAllDBPromosEnabled;
-  }
-
-  return true;
-}
-
-bool IsBlueDotPromoEnabled() {
-  if (base::FeatureList::IsEnabled(kDefaultBrowserBlueDotPromo)) {
-    return kBlueDotPromoUserGroupParam.Get() ==
-               BlueDotPromoUserGroup::kOnlyBlueDotPromoEnabled ||
-           kBlueDotPromoUserGroupParam.Get() ==
-               BlueDotPromoUserGroup::kAllDBPromosEnabled;
-  }
-
-  return false;
-}
-
-bool IsDefaultBrowserInPromoManagerEnabled() {
-  return base::FeatureList::IsEnabled(kDefaultBrowserRefactoringPromoManager);
 }
 
 bool IsDefaultBrowserVideoPromoEnabled() {
@@ -1042,7 +1016,9 @@ bool IsGeneralPromoEligibleUser(bool is_signed_in) {
 }
 
 bool IsVideoPromoEligibleUser(feature_engagement::Tracker* tracker) {
-  if (!IsDefaultBrowserVideoPromoEnabled()) {
+  BOOL is_db_video_promo_enabled =
+      IsDBVideoPromoHalfscreenEnabled() || IsDBVideoPromoFullscreenEnabled();
+  if (!is_db_video_promo_enabled) {
     return false;
   }
 
@@ -1143,13 +1119,13 @@ void RecordPromoStatsToUMAForActionString(PromoStatistics* promo_stats,
   base::UmaHistogramCounts100(
       base::StrCat({histogram_prefix, ".PromoDisplayCount"}),
       promo_stats.promoDisplayCount);
-  base::UmaHistogramCounts100(
+  base::UmaHistogramCounts1000(
       base::StrCat({histogram_prefix, ".LastPromoInteractionNumDays"}),
       promo_stats.numDaysSinceLastPromo);
-  base::UmaHistogramCounts100(
+  base::UmaHistogramCounts1000(
       base::StrCat({histogram_prefix, ".ChromeColdStartCount"}),
       promo_stats.chromeColdStartCount);
-  base::UmaHistogramCounts100(
+  base::UmaHistogramCounts1000(
       base::StrCat({histogram_prefix, ".ChromeWarmStartCount"}),
       promo_stats.chromeWarmStartCount);
   base::UmaHistogramCounts100(
@@ -1215,7 +1191,7 @@ void RecordPromoStatsToUMAForAppear(PromoStatistics* promo_stats) {
 }
 
 void RecordPromoDisplayStatsToUMA() {
-  base::UmaHistogramCounts100(
+  base::UmaHistogramCounts1000(
       "IOS.DefaultBrowserPromo.DaysSinceLastPromoInteraction",
       NumDaysSincePromoInteraction());
   base::UmaHistogramCounts100(

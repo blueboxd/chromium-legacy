@@ -330,7 +330,7 @@ void SetupSpaceBuilderForFragmentation(const NGConstraintSpace& parent_space,
   // positioned elements during regular layout. OOFs are handled by regular
   // layout during the initial column balacning pass, while it's handled
   // specially during actual layout - at the outermost fragmentation context in
-  // NGOutOfFlowLayoutPart (so this is only an issue when calculating the
+  // OutOfFlowLayoutPart (so this is only an issue when calculating the
   // initial column block-size). So just disallow breaks (we only need to worry
   // about forced breaks, as soft breaks are impossible in the initial column
   // balancing pass). This might result in over-stretched columns in some
@@ -762,6 +762,16 @@ NGBreakStatus FinishFragmentationForFragmentainer(
         consumed_block_size;
     builder->SetConsumedBlockSizeLegacyAdjustment(
         consumed_block_size_legacy_adjustment);
+
+    if (previous_break_token && previous_break_token->MonolithicOverflow()) {
+      // Add pages as long as there's monolithic overflow that requires it.
+      LayoutUnit remaining_overflow =
+          previous_break_token->MonolithicOverflow() -
+          FragmentainerCapacity(space);
+      if (remaining_overflow > LayoutUnit()) {
+        builder->ReserveSpaceForMonolithicOverflow(remaining_overflow);
+      }
+    }
   } else {
     LayoutUnit fragments_total_block_size = builder->FragmentsTotalBlockSize();
     // Just pass the value through. This is a fragmentainer, and fragmentainers
@@ -798,8 +808,8 @@ bool HasBreakOpportunityBeforeNextChild(
   // may be created before and after the block, but for the sake of
   // fragmentation, pretend that they're not there.
   DCHECK(child_fragment.IsLineBox());
-  NGFragment fragment(child_fragment.Style().GetWritingDirection(),
-                      child_fragment);
+  LogicalFragment fragment(child_fragment.Style().GetWritingDirection(),
+                           child_fragment);
   return fragment.BlockSize() != LayoutUnit();
 }
 
@@ -923,8 +933,8 @@ LayoutUnit CalculateSpaceShortage(
     // fragmentainer. If layout aborted, though, we can't calculate anything.
     if (layout_result->Status() != NGLayoutResult::kSuccess)
       return kIndefiniteSize;
-    NGFragment fragment(space.GetWritingDirection(),
-                        layout_result->PhysicalFragment());
+    LogicalFragment fragment(space.GetWritingDirection(),
+                             layout_result->PhysicalFragment());
     space_shortage = fragmentainer_block_offset + fragment.BlockSize() -
                      space.FragmentainerBlockSize();
   } else {
@@ -1041,7 +1051,7 @@ bool MovePastBreakpoint(const NGConstraintSpace& space,
   }
 
   const auto& physical_fragment = layout_result.PhysicalFragment();
-  NGFragment fragment(space.GetWritingDirection(), physical_fragment);
+  LogicalFragment fragment(space.GetWritingDirection(), physical_fragment);
   const auto* break_token =
       DynamicTo<NGBlockBreakToken>(physical_fragment.BreakToken());
 
@@ -1359,6 +1369,12 @@ const NGBlockBreakToken* FindPreviousBreakToken(
   return previous_fragment->BreakToken();
 }
 
+wtf_size_t BoxFragmentIndex(const NGPhysicalBoxFragment& fragment) {
+  DCHECK(!fragment.IsInlineBox());
+  const NGBlockBreakToken* token = FindPreviousBreakToken(fragment);
+  return token ? token->SequenceNumber() + 1 : 0;
+}
+
 wtf_size_t PreviousInnerFragmentainerIndex(
     const NGPhysicalBoxFragment& fragment) {
   // This should be a fragmentation context root, typically a multicol
@@ -1400,35 +1416,48 @@ PhysicalOffset OffsetInStitchedFragments(
   auto writing_direction = fragment.Style().GetWritingDirection();
   LayoutUnit stitched_block_size;
   LayoutUnit fragment_block_offset;
-#if DCHECK_IS_ON()
-  bool found_self = false;
-#endif
-  for (const NGPhysicalBoxFragment& walker :
-       To<LayoutBox>(fragment.GetLayoutObject())->PhysicalFragments()) {
-    if (&walker == &fragment) {
-      fragment_block_offset = stitched_block_size;
-#if DCHECK_IS_ON()
-      found_self = true;
-#endif
+  const LayoutBox* layout_box = To<LayoutBox>(fragment.GetLayoutObject());
+  const auto& first_fragment = *layout_box->GetPhysicalFragment(0);
+  if (first_fragment.BreakToken() &&
+      first_fragment.BreakToken()->IsRepeated()) {
+    // Repeated content isn't stitched.
+    stitched_block_size =
+        LogicalFragment(writing_direction, first_fragment).BlockSize();
+  } else {
+    if (const auto* previous_break_token = FindPreviousBreakToken(fragment)) {
+      fragment_block_offset = previous_break_token->ConsumedBlockSize();
     }
-    stitched_block_size += NGFragment(writing_direction, walker).BlockSize();
+    if (fragment.IsOnlyForNode()) {
+      stitched_block_size =
+          LogicalFragment(writing_direction, fragment).BlockSize();
+    } else {
+      wtf_size_t idx = layout_box->PhysicalFragmentCount();
+      DCHECK_GT(idx, 1u);
+      idx--;
+      // Calculating the stitched size is straight-forward if the node isn't
+      // overflowed: Just add the consumed block-size of the last break token
+      // and the block-size of the last fragment. If it is overflowed, on the
+      // other hand, we need to search backwards until we find the end of the
+      // block-end border edge.
+      while (idx) {
+        const NGPhysicalBoxFragment* walker =
+            layout_box->GetPhysicalFragment(idx);
+        stitched_block_size =
+            LogicalFragment(writing_direction, *walker).BlockSize();
 
-    // Repeated content isn't stitched, so just stop when we have processed one
-    // fragment.
-    if (walker.BreakToken() && walker.BreakToken()->IsRepeated()) {
-#if DCHECK_IS_ON()
-      // We haven't necessarily found |fragment|, but it doesn't matter in this
-      // case. Just silence the DHCECK below.
-      found_self = true;
-#endif
-      break;
+        // Look at the preceding break token.
+        idx--;
+        const NGBlockBreakToken* break_token =
+            layout_box->GetPhysicalFragment(idx)->BreakToken();
+        if (!break_token->IsAtBlockEnd()) {
+          stitched_block_size += break_token->ConsumedBlockSize();
+          break;
+        }
+      }
     }
   }
-#if DCHECK_IS_ON()
-  DCHECK(found_self);
-#endif
   LogicalSize stitched_fragments_logical_size(
-      NGFragment(writing_direction, fragment).InlineSize(),
+      LogicalFragment(writing_direction, fragment).InlineSize(),
       stitched_block_size);
   PhysicalSize stitched_fragments_physical_size(ToPhysicalSize(
       stitched_fragments_logical_size, writing_direction.GetWritingMode()));
@@ -1478,10 +1507,7 @@ bool CanPaintMultipleFragments(const LayoutObject& layout_object) {
   if (!layout_box)
     return true;
 
-  // If the object has been laid out inside the legacy engine, always return
-  // true.
-  if (!layout_box->PhysicalFragmentCount())
-    return true;
+  DCHECK(!layout_box->IsFragmentLessBox());
 
   // If the object isn't monolithic, we're good.
   if (!layout_box->IsMonolithic()) {

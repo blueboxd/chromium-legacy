@@ -186,7 +186,6 @@ class DownloadDeepScanningBrowserTestBase
 
  protected:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(kDeepScanningUpdatedUX);
     test_sb_factory_ = std::make_unique<TestSafeBrowsingServiceFactory>();
     test_sb_factory_->UseV4LocalDatabaseManager();
     SafeBrowsingService::RegisterFactory(test_sb_factory_.get());
@@ -799,6 +798,7 @@ IN_PROC_BROWSER_TEST_P(DownloadDeepScanningBrowserTest, MultipleFCMResponses) {
   enterprise_connectors::test::EventReportValidator validator(client());
   validator.ExpectDangerousDeepScanningResult(
       /*url*/ url.spec(),
+      /*tab_url*/ url.spec(),
       /*source*/ "",
       /*destination*/ "",
       /*filename*/ "zipfile_two_archives.zip",
@@ -895,6 +895,7 @@ IN_PROC_BROWSER_TEST_P(DownloadDeepScanningBrowserTest,
   enterprise_connectors::test::EventReportValidator validator(client());
   validator.ExpectSensitiveDataEventAndDangerousDeepScanningResult(
       /*url*/ url.spec(),
+      /*tab_url*/ url.spec(),
       /*source*/ "",
       /*destination*/ "",
       /*filename*/ "zipfile_two_archives.zip",
@@ -989,6 +990,7 @@ IN_PROC_BROWSER_TEST_P(DownloadRestrictionsDeepScanningBrowserTest,
                                      "application/x-zip-compressed"};
   validator.ExpectDangerousDownloadEvent(
       /*url*/ url.spec(),
+      /*tab_url*/ url.spec(),
       /*filename*/ "zipfile_two_archives.zip",
       // sha256sum chrome/test/data/safe_browsing/download_protection/\
       // zipfile_two_archives.zip |  tr '[:lower:]' '[:upper:]'
@@ -1285,6 +1287,7 @@ IN_PROC_BROWSER_TEST_F(SavePackageDeepScanningBrowserTest, Blocked) {
   std::set<std::string> mimetypes = {"text/plain"};
   validator.ExpectSensitiveDataEvent(
       /*url*/ url.spec(),
+      /*tab_url*/ url.spec(),
       /*source*/ "",
       /*destination*/ "",
       /*filename*/ "text.htm",
@@ -1355,6 +1358,7 @@ IN_PROC_BROWSER_TEST_F(SavePackageDeepScanningBrowserTest, KeepAfterWarning) {
   std::set<std::string> mimetypes = {"text/plain"};
   validator.ExpectSensitiveDataEvent(
       /*url*/ url.spec(),
+      /*tab_url*/ url.spec(),
       /*source*/ "",
       /*destination*/ "",
       /*filename*/ "text.htm",
@@ -1391,6 +1395,7 @@ IN_PROC_BROWSER_TEST_F(SavePackageDeepScanningBrowserTest, KeepAfterWarning) {
   // download and move the file to its final destination.
   validator.ExpectSensitiveDataEvent(
       /*url*/ url.spec(),
+      /*tab_url*/ url.spec(),
       /*source*/ "",
       /*destination*/ "",
       /*filename*/ "text.htm",
@@ -1461,6 +1466,7 @@ IN_PROC_BROWSER_TEST_F(SavePackageDeepScanningBrowserTest,
   std::set<std::string> mimetypes = {"text/plain"};
   validator.ExpectSensitiveDataEvent(
       /*url*/ url.spec(),
+      /*tab_url*/ url.spec(),
       /*source*/ "",
       /*destination*/ "",
       /*filename*/ "text.htm",
@@ -1562,6 +1568,7 @@ IN_PROC_BROWSER_TEST_F(SavePackageDeepScanningBrowserTest, OpenNow) {
   std::set<std::string> mimetypes = {"text/plain"};
   validator.ExpectSensitiveDataEvent(
       /*url*/ url.spec(),
+      /*tab_url*/ url.spec(),
       /*source*/ "",
       /*destination*/ "",
       /*filename*/ "text.htm",

@@ -12,23 +12,24 @@ import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/url.mojom";
 
 // The form control types supported by Autofill: a subset of
-// WebFormControlElement::Type plus kContentEditable.
+// blink::mojom::FormControlType plus kContentEditable.
+// Do not modify the integer values because they are used UKM metrics.
 enum FormControlType {
-  kContentEditable,
-  kInputCheckbox,
-  kInputEmail,
-  kInputMonth,
-  kInputNumber,
-  kInputPassword,
-  kInputRadio,
-  kInputSearch,
-  kInputTelephone,
-  kInputText,
-  kInputUrl,
-  kSelectOne,
-  kSelectMultiple,
-  kSelectList,
-  kTextArea,
+  kContentEditable = 0,
+  kInputCheckbox = 1,
+  kInputEmail = 2,
+  kInputMonth = 3,
+  kInputNumber = 4,
+  kInputPassword = 5,
+  kInputRadio = 6,
+  kInputSearch = 7,
+  kInputTelephone = 8,
+  kInputText = 9,
+  kInputUrl = 10,
+  kSelectOne = 11,
+  kSelectMultiple = 12,
+  kSelectList = 13,
+  kTextArea = 14,
 };
 
 // The list of all HTML autocomplete field mode hints supported by Chrome.
@@ -137,7 +138,7 @@ enum SubmissionIndicatorEvent {
   FRAME_DETACHED = 4,
   // DEPRECATED_MANUAL_SAVE,
   DOM_MUTATION_AFTER_XHR = 6,
-  PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD = 7,
+  // DEPRECATED_PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD,
   // DEPRECATED_FILLED_FORM_ON_START_PROVISIONAL_LOAD,
   // DEPRECATED_FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD,
   PROBABLE_FORM_SUBMISSION = 10,
@@ -348,8 +349,7 @@ struct FormFieldData {
   mojo_base.mojom.String16 id_attribute;
   mojo_base.mojom.String16 name_attribute;
   mojo_base.mojom.String16 value;
-  uint32 selection_start;
-  uint32 selection_end;
+  mojo_base.mojom.String16 selected_text;
   FormControlType form_control_type;
   string autocomplete_attribute;
   AutocompleteParsingResult? parsed_autocomplete;
@@ -381,8 +381,7 @@ struct FormFieldData {
 
   gfx.mojom.RectF bounds;
 
-  array<mojo_base.mojom.String16> datalist_values;
-  array<mojo_base.mojom.String16> datalist_labels;
+  array<SelectOption> datalist_options;
 
   bool force_override;
 };
@@ -432,6 +431,7 @@ struct FormFieldDataPredictions {
 struct FormDataPredictions {
   FormData data;
   string signature;
+  string alternative_signature;
   array<FormFieldDataPredictions> fields;
 };
 
@@ -485,8 +485,8 @@ struct ParsingResult {
   FieldRendererId confirm_password_renderer_id;
 };
 
-// Represents the autofill state.
-enum AutofillState {
+// Represents whether suggestions are available for Autofill/Autocomplete.
+enum AutofillSuggestionAvailability {
   // There are no available suggestions, neither autofill nor autocomplete, for
   // the input.
   kNoSuggestions,
@@ -499,7 +499,7 @@ enum AutofillState {
 };
 
 // Represents whether an autofill action, which is an operation that changes a
-// form, will persist (kFill) or will be cleared later (kPreview)
+// form, will persist (kFill) or will be cleared later (kPreview).
 enum ActionPersistence {
   kFill,     // The action is filled.
   kPreview,  // The action is previewed and will be cleared afterwards.
@@ -509,6 +509,12 @@ enum ActionPersistence {
 enum ActionType {
   kFill,  // Autofill should fill the form.
   kUndo,  // Autofill should undo some previous fill operation on the form.
+};
+
+// Indicates which part of a text field's value Autofill replaces.
+enum TextReplacement {
+  kReplaceAll,        // Replace the field's current value.
+  kReplaceSelection,  // Replace only the currently selected text.
 };
 
 // Describes which action triggered Autofill suggestions. This has implications
@@ -565,9 +571,12 @@ enum AutofillSuggestionTriggerSource {
   // This code currently doesn't distinguish between different suggestion
   // trigger sources. They are all treated as `kiOS`. See crbug.com/1448447.
   kiOS,
-  // Suggestions triggered by selecting the manual fallback entry for
-  // autocomplete=unrecognized fields in the context menu.
-  kManualFallbackForAutocompleteUnrecognized,
+  // Suggestions triggered by selecting the Autofill address manual fallback
+  // entry from the Chrome context menu.
+  kManualFallbackAddress,
+  // Suggestions triggered by selecting the Autofill payment methods manual
+  // fallback entry from the Chrome context menu.
+  kManualFallbackPayments,
   // Suggestions triggered by the user closing a dialog after performing some
   // action.
   kShowPromptAfterDialogClosed,

@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include <optional>
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -50,6 +51,7 @@
 #include "remoting/base/constants.h"
 #include "remoting/base/cpu_utils.h"
 #include "remoting/base/host_settings.h"
+#include "remoting/base/is_google_email.h"
 #include "remoting/base/logging.h"
 #include "remoting/base/oauth_token_getter_impl.h"
 #include "remoting/base/oauth_token_getter_proxy.h"
@@ -108,7 +110,6 @@
 #include "remoting/signaling/ftl_signal_strategy.h"
 #include "remoting/signaling/remoting_log_to_server.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/webrtc/rtc_base/event_tracer.h"
 
 #if BUILDFLAG(IS_POSIX)
@@ -221,10 +222,6 @@ const char kHostOfflineReasonPolicyReadError[] = "POLICY_READ_ERROR";
 const char kHostOfflineReasonPolicyChangeRequiresRestart[] =
     "POLICY_CHANGE_REQUIRES_RESTART";
 const char kHostOfflineReasonZombieStateDetected[] = "ZOMBIE_STATE_DETECTED";
-
-// The default email domain for Googlers. Used to determine whether the host's
-// email address is Google-internal or not.
-constexpr char kGooglerEmailDomain[] = "@google.com";
 
 // File to write webrtc trace events to. If not specified, webrtc trace events
 // will not be enabled.
@@ -422,7 +419,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   base::Value::Dict config_;
   std::string host_owner_;
   bool is_googler_ = false;
-  absl::optional<size_t> max_clipboard_size_;
+  std::optional<size_t> max_clipboard_size_;
 
   std::unique_ptr<PolicyWatcher> policy_watcher_;
   PolicyState policy_state_ = POLICY_INITIALIZING;
@@ -440,7 +437,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   ThirdPartyAuthConfig third_party_auth_config_;
   bool security_key_auth_policy_enabled_ = false;
   bool security_key_extension_supported_ = true;
-  absl::optional<int> max_session_duration_minutes_;
+  std::optional<int> max_session_duration_minutes_;
 
   // Allows us to override field trials which are causing issues for chromoting.
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
@@ -649,7 +646,7 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
 void HostProcess::OnConfigUpdated(const std::string& serialized_config) {
   HOST_LOG << "Parsing new host configuration.";
 
-  absl::optional<base::Value::Dict> config(
+  std::optional<base::Value::Dict> config(
       HostConfigFromJson(serialized_config));
   if (!config.has_value()) {
     LOG(ERROR) << "Invalid configuration.";
@@ -1163,20 +1160,6 @@ bool HostProcess::ApplyConfig(const base::Value::Dict& config) {
     return false;
   }
 
-  const std::string* host_secret_hash =
-      config.FindString(kHostSecretHashConfigPath);
-  if (!host_secret_hash) {
-    LOG(ERROR) << "Host config is missing a required path: `"
-               << kHostSecretHashConfigPath << "`";
-    return false;
-  }
-
-  if (!ParsePinHashFromConfig(*host_secret_hash, host_id_, &pin_hash_)) {
-    LOG(ERROR) << "Host config has an invalid value for path: `"
-               << kHostSecretHashConfigPath << "`";
-    return false;
-  }
-
   // Retrieve the service account used for signaling and backend requests.
   const std::string* service_account_email =
       config.FindString(kServiceAccountConfigPath);
@@ -1207,8 +1190,24 @@ bool HostProcess::ApplyConfig(const base::Value::Dict& config) {
   host_owner_ = *host_owner;
 
   // Check if the host owner's email is Google-internal.
-  is_googler_ = base::EndsWith(host_owner_, kGooglerEmailDomain,
-                               base::CompareCase::INSENSITIVE_ASCII);
+  is_googler_ = IsGoogleEmail(host_owner_);
+
+  const std::string* host_secret_hash =
+      config.FindString(kHostSecretHashConfigPath);
+  if (host_secret_hash) {
+    if (!ParsePinHashFromConfig(*host_secret_hash, host_id_, &pin_hash_)) {
+      LOG(ERROR) << "Host config has an invalid value for path: `"
+                 << kHostSecretHashConfigPath << "`";
+      return false;
+    }
+  } else if (is_googler_) {
+    HOST_LOG << "No value store for: " << kHostSecretHashConfigPath << ". PIN "
+             << "authentication is disabled.";
+  } else {
+    LOG(ERROR) << "Host config is missing a required path: `"
+               << kHostSecretHashConfigPath << "`";
+    return false;
+  }
 
   return true;
 }
@@ -1397,7 +1396,7 @@ bool HostProcess::OnUsernamePolicyUpdate(const base::Value::Dict& policies) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
-  absl::optional<bool> host_username_match_required =
+  std::optional<bool> host_username_match_required =
       policies.FindBool(policy::key::kRemoteAccessHostMatchUsername);
   if (!host_username_match_required.has_value()) {
     return false;
@@ -1413,7 +1412,7 @@ bool HostProcess::OnNatPolicyUpdate(const base::Value::Dict& policies) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  absl::optional<bool> allow_nat_traversal =
+  std::optional<bool> allow_nat_traversal =
       policies.FindBool(policy::key::kRemoteAccessHostFirewallTraversal);
   if (!allow_nat_traversal.has_value()) {
     return false;
@@ -1432,7 +1431,7 @@ bool HostProcess::OnRelayPolicyUpdate(const base::Value::Dict& policies) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  absl::optional<bool> allow_relay =
+  std::optional<bool> allow_relay =
       policies.FindBool(policy::key::kRemoteAccessHostAllowRelayedConnection);
   if (!allow_relay.has_value()) {
     return false;
@@ -1469,7 +1468,7 @@ bool HostProcess::OnCurtainPolicyUpdate(const base::Value::Dict& policies) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  absl::optional<bool> curtain_required =
+  std::optional<bool> curtain_required =
       policies.FindBool(policy::key::kRemoteAccessHostRequireCurtain);
   if (!curtain_required.has_value()) {
     return false;
@@ -1528,7 +1527,7 @@ bool HostProcess::OnHostTokenUrlPolicyUpdate(
 bool HostProcess::OnPairingPolicyUpdate(const base::Value::Dict& policies) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  absl::optional<bool> allow_pairing =
+  std::optional<bool> allow_pairing =
       policies.FindBool(policy::key::kRemoteAccessHostAllowClientPairing);
   if (!allow_pairing.has_value()) {
     return false;
@@ -1546,7 +1545,7 @@ bool HostProcess::OnPairingPolicyUpdate(const base::Value::Dict& policies) {
 bool HostProcess::OnGnubbyAuthPolicyUpdate(const base::Value::Dict& policies) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  absl::optional<bool> security_key_auth_policy_enabled =
+  std::optional<bool> security_key_auth_policy_enabled =
       policies.FindBool(policy::key::kRemoteAccessHostAllowGnubbyAuth);
   if (!security_key_auth_policy_enabled.has_value()) {
     return false;
@@ -1566,7 +1565,7 @@ bool HostProcess::OnFileTransferPolicyUpdate(
     const base::Value::Dict& policies) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  absl::optional<bool> file_transfer_enabled =
+  std::optional<bool> file_transfer_enabled =
       policies.FindBool(policy::key::kRemoteAccessHostAllowFileTransfer);
   if (!file_transfer_enabled.has_value()) {
     return false;
@@ -1589,7 +1588,7 @@ bool HostProcess::OnEnableUserInterfacePolicyUpdate(
     const base::Value::Dict& policies) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  absl::optional<bool> enable_user_interface =
+  std::optional<bool> enable_user_interface =
       policies.FindBool(policy::key::kRemoteAccessHostEnableUserInterface);
   if (!enable_user_interface) {
     return false;
@@ -1612,7 +1611,7 @@ bool HostProcess::OnMaxSessionDurationPolicyUpdate(
     const base::Value::Dict& policies) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  absl::optional<int> value = policies.FindInt(
+  std::optional<int> value = policies.FindInt(
       policy::key::kRemoteAccessHostMaximumSessionDurationMinutes);
   if (!value) {
     return false;
@@ -1635,7 +1634,7 @@ bool HostProcess::OnMaxClipboardSizePolicyUpdate(
     const base::Value::Dict& policies) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  absl::optional<int> max_clipboard_size =
+  std::optional<int> max_clipboard_size =
       policies.FindInt(policy::key::kRemoteAccessHostClipboardSizeBytes);
   if (!max_clipboard_size) {
     return false;
@@ -1659,7 +1658,7 @@ bool HostProcess::OnAllowRemoteAccessConnections(
   // Returns false: never restart the host after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  absl::optional<bool> allow_remote_access_connections = policies.FindBool(
+  std::optional<bool> allow_remote_access_connections = policies.FindBool(
       policy::key::kRemoteAccessHostAllowRemoteAccessConnections);
   if (!allow_remote_access_connections.has_value()) {
     return false;
@@ -1815,7 +1814,7 @@ void HostProcess::StartHost() {
   } else if (desktop_environment_options_.clipboard_size().has_value()) {
     // If we've transitioned from having a policy value to no value then make
     // sure the value stored in desktop_environment_options has been cleared.
-    desktop_environment_options_.set_clipboard_size(absl::optional<size_t>());
+    desktop_environment_options_.set_clipboard_size(std::optional<size_t>());
   }
 
   host_ = std::make_unique<ChromotingHost>(

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <optional>
 #include <set>
 #include <string>
 
@@ -23,7 +24,6 @@
 #include "net/first_party_sets/first_party_set_metadata.h"
 #include "net/first_party_sets/first_party_sets_cache_filter.h"
 #include "net/proxy_resolution/proxy_retry_info.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 
@@ -62,7 +62,7 @@ class NET_EXPORT NetworkDelegate {
                              CompletionOnceCallback callback,
                              GURL* new_url);
   using OnBeforeStartTransactionCallback =
-      base::OnceCallback<void(int, const absl::optional<HttpRequestHeaders>&)>;
+      base::OnceCallback<void(int, const std::optional<HttpRequestHeaders>&)>;
   int NotifyBeforeStartTransaction(URLRequest* request,
                                    const HttpRequestHeaders& headers,
                                    OnBeforeStartTransactionCallback callback);
@@ -72,7 +72,7 @@ class NET_EXPORT NetworkDelegate {
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       const IPEndPoint& remote_endpoint,
-      absl::optional<GURL>* preserve_fragment_on_redirect_url);
+      std::optional<GURL>* preserve_fragment_on_redirect_url);
   void NotifyBeforeRedirect(URLRequest* request,
                             const GURL& new_location);
   void NotifyResponseStarted(URLRequest* request, int net_error);
@@ -87,6 +87,7 @@ class NET_EXPORT NetworkDelegate {
   bool CanSetCookie(const URLRequest& request,
                     const net::CanonicalCookie& cookie,
                     CookieOptions* options,
+                    const net::FirstPartySetMetadata& first_party_set_metadata,
                     CookieInclusionStatus* inclusion_status);
 
   // PrivacySetting is kStateDisallowed iff the given |url| has to be
@@ -212,7 +213,7 @@ class NET_EXPORT NetworkDelegate {
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       const IPEndPoint& remote_endpoint,
-      absl::optional<GURL>* preserve_fragment_on_redirect_url) = 0;
+      std::optional<GURL>* preserve_fragment_on_redirect_url) = 0;
 
   // Called right after a redirect response code was received. |new_location| is
   // only valid for the duration of the call.
@@ -258,10 +259,12 @@ class NET_EXPORT NetworkDelegate {
   // the proper exclusion reasons, if not then proper reasons need to be
   // manually added in the caller. This method will never be invoked when
   // LOAD_DO_NOT_SAVE_COOKIES is specified.
-  virtual bool OnCanSetCookie(const URLRequest& request,
-                              const CanonicalCookie& cookie,
-                              CookieOptions* options,
-                              CookieInclusionStatus* inclusion_status) = 0;
+  virtual bool OnCanSetCookie(
+      const URLRequest& request,
+      const CanonicalCookie& cookie,
+      CookieOptions* options,
+      const net::FirstPartySetMetadata& first_party_set_metadata,
+      CookieInclusionStatus* inclusion_status) = 0;
 
   virtual PrivacySetting OnForcePrivacyMode(
       const URLRequest& request) const = 0;

@@ -157,6 +157,13 @@ source_set("formats") {
     ]
   }
 
+  if (enable_platform_ac4_audio) {
+    sources += [
+      "mp4/ac4.cc",
+      "mp4/ac4.h",
+    ]
+  }
+
   if (proprietary_codecs && enable_mse_mpeg2ts_stream_parser) {
     deps += [ "//ui/gfx/geometry" ]
     sources += [
@@ -215,8 +222,10 @@ source_set("formats") {
     "hls/playlist.h",
     "hls/playlist_common.cc",
     "hls/playlist_common.h",
-    "hls/rendition_selector.cc",
-    "hls/rendition_selector.h",
+    "hls/rendition_manager.cc",
+    "hls/rendition_manager.h",
+    "hls/segment_stream.cc",
+    "hls/segment_stream.h",
     "hls/source_string.cc",
     "hls/source_string.h",
     "hls/tag_name.cc",
@@ -329,6 +338,10 @@ source_set("unit_tests") {
       ]
     }
 
+    if (enable_platform_ac4_audio) {
+      sources += [ "mp4/ac4_unittest.cc" ]
+    }
+
     if (enable_mse_mpeg2ts_stream_parser) {
       sources += [
         "mp2t/es_adapter_video_unittest.cc",
@@ -366,7 +379,8 @@ source_set("unit_tests") {
     "hls/multivariant_playlist_unittest.cc",
     "hls/playlist_test_builder.h",
     "hls/playlist_unittest.cc",
-    "hls/rendition_selector_unittest.cc",
+    "hls/rendition_manager_unittest.cc",
+    "hls/segment_stream_unittest.cc",
     "hls/tags_unittest.cc",
     "hls/test_util.h",
     "hls/types_unittest.cc",

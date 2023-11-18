@@ -6,19 +6,25 @@
 
 #include <memory>
 
+#include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/android_autofill/browser/android_autofill_bridge_factory.h"
 #include "components/android_autofill/browser/android_autofill_features.h"
 #include "components/android_autofill/browser/android_autofill_manager.h"
 #include "components/android_autofill/browser/autofill_provider_android_bridge.h"
 #include "components/android_autofill/browser/form_data_android.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/unique_ids.h"
+#include "components/password_manager/core/browser/form_parsing/form_data_parser.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -27,10 +33,17 @@
 
 namespace autofill {
 
-using base::android::JavaRef;
-using content::BrowserThread;
-using mojom::SubmissionSource;
-using FieldInfo = AutofillProviderAndroidBridge::FieldInfo;
+namespace {
+
+using ::autofill::mojom::SubmissionSource;
+using ::base::android::JavaRef;
+using ::content::BrowserThread;
+using FieldInfo = ::autofill::AutofillProviderAndroidBridge::FieldInfo;
+
+constexpr int kMinimumSdkVersionForPrefillRequests =
+    base::android::SdkVersion::SDK_VERSION_U;
+
+}  // namespace
 
 // static
 void AutofillProviderAndroid::CreateForWebContents(
@@ -120,10 +133,10 @@ void AutofillProviderAndroid::OnAskForValuesToFill(
     StartNewSession(manager, form, field, bounding_box);
   }
 
-  if (field.datalist_values.empty()) {
+  if (field.datalist_options.empty()) {
     return;
   }
-  bridge_->ShowDatalistPopup(field.datalist_values, field.datalist_labels,
+  bridge_->ShowDatalistPopup(field.datalist_options,
                              field.text_direction == base::i18n::RIGHT_TO_LEFT);
 }
 
@@ -131,7 +144,9 @@ void AutofillProviderAndroid::StartNewSession(AndroidAutofillManager* manager,
                                               const FormData& form,
                                               const FormFieldData& field,
                                               const gfx::RectF& bounding_box) {
-  form_ = std::make_unique<FormDataAndroid>(form);
+  // TODO(crbug.com/1502097): Check whether this form has been cached but not
+  // interacted with since the caching and, if so, use its session id.
+  form_ = std::make_unique<FormDataAndroid>(form, GetSessionId());
   FieldInfo field_info;
   if (!form_->GetFieldIndex(field, &field_info.index)) {
     Reset();
@@ -329,6 +344,9 @@ void AutofillProviderAndroid::OnDidFillAutofillFormData(
     base::TimeTicks timestamp) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (manager != manager_.get() || !IsCurrentlyLinkedForm(form)) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "Autofill.WebView.OnDidFillAutofillFormDataEarlyReturnReason",
+        manager == manager_.get());
     return;
   }
   bridge_->OnDidFillAutofillFormData();
@@ -342,28 +360,17 @@ void AutofillProviderAndroid::OnHidePopup(AndroidAutofillManager* manager) {
 }
 
 void AutofillProviderAndroid::OnServerPredictionsAvailable(
-    AndroidAutofillManager* manager_for_debugging,
-    FormGlobalId form) {
+    AndroidAutofillManager& manager,
+    FormGlobalId form_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!form_ || form_->form().global_id() != form) {
+  MaybeSendPrefillRequest(manager, form_id);
+
+  if (!form_ || form_->form().global_id() != form_id) {
     return;
   }
 
-  if (!manager_) {
-    // TODO(crbug.com/1479006): This should never be reachable. Remove once it
-    // is clear how it can happen.
-    SCOPED_CRASH_KEY_STRING32("crbug1479006", "form_ token",
-                              form_->form().global_id().frame_token.ToString());
-    SCOPED_CRASH_KEY_STRING32("crbug1479006", "form token",
-                              form.frame_token.ToString());
-    SCOPED_CRASH_KEY_STRING32(
-        "crbug1479006", "manager token",
-        manager_for_debugging->driver().GetFrameToken().ToString());
-    base::debug::DumpWithoutCrashing();
-    return;
-  }
-
-  const FormStructure* form_structure = manager_->FindCachedFormById(form);
+  CHECK(manager_);
+  const FormStructure* form_structure = manager_->FindCachedFormById(form_id);
   if (!form_structure) {
     return;
   }
@@ -438,6 +445,73 @@ void AutofillProviderAndroid::Reset() {
   bridge_->HideDatalistPopup();
   // TODO(crbug.com/1488233): Also send an unfocus event to make sure that the
   // Autofill session is truly terminated.
+}
+
+SessionId AutofillProviderAndroid::GetSessionId() {
+  last_session_id_ = last_session_id_ == kMaximumSessionId
+                         ? kMinimumSessionId
+                         : SessionId(last_session_id_.value() + 1);
+  return last_session_id_;
+}
+
+bool AutofillProviderAndroid::ArePrefillRequestsSupported() const {
+  return base::android::BuildInfo::GetInstance()->sdk_int() >=
+             kMinimumSdkVersionForPrefillRequests &&
+         base::FeatureList::IsEnabled(
+             features::kAndroidAutofillPrefillRequestsForLoginForms);
+}
+
+void AutofillProviderAndroid::MaybeSendPrefillRequest(
+    const AndroidAutofillManager& manager,
+    FormGlobalId form_id) {
+  if (!ArePrefillRequestsSupported()) {
+    return;
+  }
+
+  // Return if there has already been a cache request or if there is already an
+  // ongoing Autofill session.
+  if (cached_form_ || form_) {
+    return;
+  }
+
+  // Check whether the form is likely to be a login form.
+  const FormStructure* const form_structure =
+      manager.FindCachedFormById(form_id);
+  if (!form_structure) {
+    return;
+  }
+
+  // Transform the predictions data to a format the `FormDataParser` can handle
+  // and parse the form.
+  FormData form_data = form_structure->ToFormData();
+  auto autofill_predictions =
+      base::MakeFlatMap<FieldGlobalId, AutofillType::ServerPrediction>(
+          *form_structure, /*comp=*/{},
+          /*proj=*/[](const std::unique_ptr<AutofillField>& field) {
+            return std::make_pair(field->global_id(),
+                                  AutofillType::ServerPrediction(*field));
+          });
+  password_manager::FormDataParser parser;
+  // The driver id is irrelevant here because it would only be used by password
+  // manager logic that handles the `PasswordForm` returned by the parser.
+  // Therefore we pass a dummy a value.
+  parser.set_predictions(password_manager::ConvertToFormPredictions(
+      /*driver_id=*/0, form_data, autofill_predictions));
+  // On Chrome, the parser can use stored usernames to identify a filled
+  // username field by the value it contains. Since we do not have access to
+  // credentials, we leave it empty.
+  std::unique_ptr<password_manager::PasswordForm> password_form =
+      parser.Parse(form_data, password_manager::FormDataParser::Mode::kFilling,
+                   /*stored_usernames=*/{});
+  // Currently, prefill requests are limited to likely login forms for
+  // simplicity - these are the most common use cases on WebView.
+  if (!password_form || !password_form->IsLikelyLoginForm()) {
+    return;
+  }
+
+  cached_form_ = std::make_unique<FormDataAndroid>(form_data, GetSessionId());
+  cached_form_->UpdateFieldTypes(*form_structure);
+  bridge_->SendPrefillRequest(*cached_form_);
 }
 
 }  // namespace autofill

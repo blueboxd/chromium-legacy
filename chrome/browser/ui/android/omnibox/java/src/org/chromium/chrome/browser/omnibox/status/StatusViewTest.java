@@ -17,7 +17,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doReturn;
 
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 
@@ -33,7 +32,6 @@ import androidx.test.filters.MediumTest;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.Batch;
@@ -41,7 +39,6 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.omnibox.R;
-import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.status.StatusProperties.StatusIconResource;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.widget.ChromeTransitionDrawable;
@@ -60,8 +57,6 @@ import java.util.concurrent.ExecutionException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Batch(Batch.PER_CLASS)
 public class StatusViewTest extends BlankUiTestActivityTestCase {
-    @Mock private SearchEngineLogoUtils mSearchEngineLogoUtils;
-
     private StatusView mStatusView;
     private PropertyModel mStatusModel;
     private PropertyModelChangeProcessor mStatusMCP;
@@ -242,35 +237,6 @@ public class StatusViewTest extends BlankUiTestActivityTestCase {
     @Test
     @MediumTest
     @Feature({"Omnibox"})
-    public void testSearchEngineLogo_noIncognito_statusDimensions() {
-        doReturn(true).when(mSearchEngineLogoUtils).shouldShowSearchEngineLogo(false);
-        runOnUiThreadBlocking(
-                () -> {
-                    mStatusModel.set(
-                            StatusProperties.STATUS_ICON_RESOURCE,
-                            new StatusIconResource(R.drawable.ic_logo_googleg_24dp, 0));
-                    mStatusModel.set(StatusProperties.SHOW_STATUS_ICON, true);
-                });
-        int expectedWidth =
-                getActivity()
-                        .getResources()
-                        .getDimensionPixelSize(R.dimen.location_bar_status_icon_width);
-        onView(withId(R.id.location_bar_status_icon))
-                .check(
-                        (view, e) -> {
-                            assertEquals(expectedWidth, view.getMeasuredWidth());
-                        });
-        int expectedPadding = 0;
-        onView(withId(R.id.location_bar_status))
-                .check(
-                        (view, e) -> {
-                            assertEquals(expectedPadding, view.getPaddingEnd());
-                        });
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"Omnibox"})
     public void testStatusViewAnimationStatusResetOnHide() {
         runOnUiThreadBlocking(
                 () -> {
@@ -292,7 +258,6 @@ public class StatusViewTest extends BlankUiTestActivityTestCase {
                 new StatusIconResource(R.drawable.ic_logo_googleg_24dp, 0);
         runOnUiThreadBlocking(
                 () -> {
-                    doReturn(true).when(mSearchEngineLogoUtils).shouldShowSearchEngineLogo(false);
                     mStatusModel.set(StatusProperties.SHOW_STATUS_ICON, true);
                     mStatusModel.set(StatusProperties.STATUS_ICON_RESOURCE, statusIconResource);
                 });

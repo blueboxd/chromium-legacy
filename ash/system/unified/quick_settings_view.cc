@@ -7,32 +7,33 @@
 #include <numeric>
 
 #include "ash/ash_element_identifiers.h"
+#include "ash/style/pagination_view.h"
 #include "ash/system/media/quick_settings_media_view_container.h"
 #include "ash/system/media/unified_media_controls_container.h"
 #include "ash/system/tray/interacted_by_tap_recorder.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_detailed_view.h"
 #include "ash/system/unified/detailed_view_controller.h"
-#include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/feature_tile.h"
 #include "ash/system/unified/feature_tiles_container_view.h"
-#include "ash/system/unified/page_indicator_view.h"
 #include "ash/system/unified/quick_settings_footer.h"
 #include "ash/system/unified/quick_settings_header.h"
-#include "ash/system/unified/unified_system_info_view.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "media/base/media_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/box_layout_view.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_utils.h"
@@ -41,10 +42,12 @@ namespace ash {
 
 namespace {
 
-constexpr auto kPageIndicatorMargin = gfx::Insets::TLBR(0, 0, 8, 0);
+constexpr auto kPaginationViewMargin = gfx::Insets::TLBR(0, 0, 8, 0);
 constexpr auto kSlidersContainerMargin = gfx::Insets::TLBR(4, 0, 0, 0);
 
 class AccessibilityFocusHelperView : public views::View {
+  METADATA_HEADER(AccessibilityFocusHelperView, views::View)
+
  public:
   explicit AccessibilityFocusHelperView(UnifiedSystemTrayController* controller)
       : controller_(controller) {}
@@ -64,6 +67,9 @@ class AccessibilityFocusHelperView : public views::View {
  private:
   raw_ptr<UnifiedSystemTrayController, ExperimentalAsh> controller_;
 };
+
+BEGIN_METADATA(AccessibilityFocusHelperView)
+END_METADATA
 
 }  // namespace
 
@@ -124,12 +130,20 @@ QuickSettingsView::QuickSettingsView(UnifiedSystemTrayController* controller)
       std::make_unique<QuickSettingsHeader>(controller_));
   feature_tiles_container_ = system_tray_container_->AddChildView(
       std::make_unique<FeatureTilesContainerView>(controller_));
-  page_indicator_view_ =
-      system_tray_container_->AddChildView(std::make_unique<PageIndicatorView>(
-          controller_, /*initially_expanded=*/controller_->model()
-                               ->pagination_model()
-                               ->total_pages() > 1));
-  page_indicator_view_->SetProperty(views::kMarginsKey, kPageIndicatorMargin);
+
+  // Creates a container for `PaginationView`. This is needed to align the view
+  // in the center.
+  auto* pagination_view_container = system_tray_container_->AddChildView(
+      std::make_unique<views::BoxLayoutView>());
+  pagination_view_container->SetOrientation(
+      views::BoxLayout::Orientation::kHorizontal);
+  pagination_view_container->SetMainAxisAlignment(
+      views::BoxLayout::MainAxisAlignment::kCenter);
+  pagination_view_container->SetProperty(views::kMarginsKey,
+                                         kPaginationViewMargin);
+  pagination_view_ =
+      pagination_view_container->AddChildView(std::make_unique<PaginationView>(
+          controller_->model()->pagination_model()));
 
   if (base::FeatureList::IsEnabled(media::kGlobalMediaControlsCrOSUpdatedUI)) {
     media_view_container_ = system_tray_container_->AddChildView(
@@ -272,7 +286,7 @@ int QuickSettingsView::CalculateHeightForFeatureTilesContainer() {
       media_view_container_ ? media_view_container_->GetExpandedHeight() : 0;
 
   return max_height_ - header_->GetPreferredSize().height() -
-         page_indicator_view_->GetPreferredSize().height() -
+         pagination_view_->GetPreferredSize().height() -
          sliders_container_->GetPreferredSize().height() -
          media_controls_container_height - media_view_container_height -
          footer_->GetPreferredSize().height();
@@ -288,13 +302,7 @@ bool QuickSettingsView::IsDetailedViewShown() const {
 
 void QuickSettingsView::TotalPagesChanged(int previous_page_count,
                                           int new_page_count) {
-  page_indicator_view_->SetVisible(new_page_count > 1);
-}
-
-void QuickSettingsView::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_SCROLL_FLING_START) {
-    controller_->Fling(event->details().velocity_y());
-  }
+  pagination_view_->SetVisible(new_page_count > 1);
 }
 
 BEGIN_METADATA(QuickSettingsView, views::View)

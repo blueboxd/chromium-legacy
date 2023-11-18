@@ -61,10 +61,10 @@ const char kErrorRegexTooLarge[] =
 const char kErrorNoHeaderListsSpecified[] =
     "Rule with id * does not specify a value for \"*\" or \"*\" key. At least "
     "one of these keys must be specified with a non-empty list.";
-const char kErrorInvalidHeaderName[] =
+const char kErrorInvalidModifyHeaderName[] =
     "Rule with id * must specify a valid header name to be modified.";
-const char kErrorInvalidHeaderValue[] =
-    "Rule with id * specifies an invalid header value.";
+const char kErrorInvalidModifyHeaderValue[] =
+    "Rule with id * must provide a valid header value to be appended/set.";
 const char kErrorNoHeaderValueSpecified[] =
     "Rule with id * must provide a value for a header to be appended/set.";
 const char kErrorHeaderValuePresent[] =
@@ -79,6 +79,15 @@ const char kErrorTabIdsOnNonSessionRule[] =
     "supported for session-scoped rules.";
 const char kErrorTabIdDuplicated[] =
     "Rule with id * includes and excludes the same tab ID.";
+const char kErrorInvalidMatchingHeaderName[] =
+    "Rule with id * must specify a valid header name for \"*\" key";
+const char kErrorInvalidMatchingHeaderValue[] =
+    "Rule with id * must specify a valid header value for \"*\" key";
+const char kErrorResponseHeaderDuplicated[] =
+    "Rule with id * includes and excludes the same response header.";
+const char kErrorResponseHeaderRuleCannotModifyRequestHeaders[] =
+    "Rule with id * which matches on response headers cannot modify request "
+    "headers.";
 
 const char kErrorListNotPassed[] = "Rules file must contain a list.";
 

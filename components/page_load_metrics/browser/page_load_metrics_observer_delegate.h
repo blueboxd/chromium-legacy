@@ -91,6 +91,10 @@ class PageLoadMetricsObserverDelegate {
   // The time the navigation was initiated.
   virtual base::TimeTicks GetNavigationStart() const = 0;
 
+  // The id of the main navigation associated with this page, which created the
+  // main document. Not updated for same-document navigations.
+  virtual int64_t GetNavigationId() const = 0;
+
   // The duration until the first time that the page was backgrounded since the
   // navigation started. Will be nullopt if the page has never been
   // backgrounded.
@@ -181,14 +185,13 @@ class PageLoadMetricsObserverDelegate {
       BfcacheStrategy bfcache_strategy) const = 0;
   virtual const NormalizedCLSData& GetSoftNavigationIntervalNormalizedCLSData()
       const = 0;
-  // Returns normalized responsiveness metrics data. Currently we normalize
-  // user interaction latencies from all renderer frames in a few different
-  // ways.
-  virtual const NormalizedResponsivenessMetrics&
-  GetNormalizedResponsivenessMetrics() const = 0;
+  // Returns normalized responsiveness metrics data. Normalization explained in
+  // https://web.dev/inp.
+  virtual const ResponsivenessMetricsNormalization&
+  GetResponsivenessMetricsNormalization() const = 0;
 
-  virtual const NormalizedResponsivenessMetrics&
-  GetSoftNavigationIntervalNormalizedResponsivenessMetrics() const = 0;
+  virtual const ResponsivenessMetricsNormalization&
+  GetSoftNavigationIntervalResponsivenessMetricsNormalization() const = 0;
 
   // InputTiming data accumulated across all frames.
   virtual const mojom::InputTiming& GetPageInputTiming() const = 0;

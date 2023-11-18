@@ -57,6 +57,8 @@ class QuickStartController : public OobeUI::Observer,
       WIFI_CREDENTIALS_RECEIVED,
       TRANSFERRING_GAIA_CREDENTIALS,
       SHOWING_FIDO,
+      // Exits the screen.
+      EXIT_SCREEN,
     };
 
     virtual void OnUiUpdateRequested(UiState desired_state) = 0;
@@ -84,8 +86,9 @@ class QuickStartController : public OobeUI::Observer,
   void DetermineEntryPointVisibility(
       EntryPointButtonVisibilityCallback callback);
 
-  // Invoked by the frontend whenever the user cancels the flow.
-  void HandleFlowCancellationRequest();
+  // Invoked by the frontend whenever the user cancels the flow or we encounter
+  // an error.
+  void AbortFlow();
 
   // Whether QuickStart is ongoing and orchestrating the flow.
   bool IsSetupOngoing() {
@@ -104,6 +107,15 @@ class QuickStartController : public OobeUI::Observer,
   std::string GetDiscoverableName() { return discoverable_name_.value(); }
   FidoAssertionInfo GetFidoAssertion() { return fido_.value(); }
   std::string GetWiFiName() { return wifi_name_.value(); }
+
+  // Check if bluetooth is disabled which would require showing the enable
+  // bluetooth dialog to turn on bluetooth before continuing quick start flow.
+  bool ShouldShowBluetoothDialog();
+
+  // Turn on bluetooth for quick start flow to continue
+  void TurnOnBluetooth();
+
+  void set_fake_bluetooth_state_for_testing(bool bluetooth_enabled);
 
   // Exit point to be used when the flow is cancelled.
   EntryPoint GetExitPoint();
@@ -134,6 +146,14 @@ class QuickStartController : public OobeUI::Observer,
   // Invoked whenever OOBE transitions into the QuickStart screen.
   void HandleTransitionToQuickStartScreen();
 
+  // Starts transferring the user account from the phone.
+  void StartAccountTransfer();
+
+  // Steps to take when the connection with the phone is fully established.
+  // Either transfers WiFi credentials if early in the OOBE flow, or starts
+  // to transfer the user's credentials.
+  void OnPhoneConnectionEstablished();
+
   void SavePhoneInstanceID();
 
   // Resets all internal values. Invoked when the flow is interrupted.
@@ -147,8 +167,8 @@ class QuickStartController : public OobeUI::Observer,
   // Source of truth of OOBE's current state via OobeUI::Observer
   absl::optional<OobeScreenId> current_screen_, previous_screen_;
 
-  // Bookkeeping where the quick start flow started.
-  absl::optional<EntryPoint> entry_point_;
+  // Bookkeeping where the quick start flow started and ended.
+  absl::optional<EntryPoint> entry_point_, exit_point_;
 
   // Discoverable name to be used on the UI. e.g.: Chromebook (123)
   absl::optional<std::string> discoverable_name_;
@@ -175,6 +195,9 @@ class QuickStartController : public OobeUI::Observer,
   // QuickStartScreen implements the UiDelegate and registers itself whenever it
   // is shown. UI updates happen over this observation path.
   base::ObserverList<UiDelegate> ui_delegates_;
+
+  // TODO(ayag)(b/309382466): set value by fetching bluetooth state
+  bool is_bluetooth_enabled_ = true;
 
   base::ScopedObservation<OobeUI, OobeUI::Observer> observation_{this};
   base::WeakPtrFactory<QuickStartController> weak_ptr_factory_{this};

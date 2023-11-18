@@ -9,7 +9,6 @@
 #import "base/i18n/rtl.h"
 #import "base/ios/ios_util.h"
 #import "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/ntp/home/features.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/shared/ui/elements/fade_truncating_label.h"
@@ -275,21 +274,13 @@ UIImage* DefaultFaviconImage() {
 
   UIImage* closeButton =
       DefaultSymbolTemplateWithPointSize(kXMarkSymbol, kXmarkSymbolPointSize);
-  if (IsUIButtonConfigurationEnabled()) {
-    UIButtonConfiguration* buttonConfiguration =
-        [UIButtonConfiguration plainButtonConfiguration];
-    buttonConfiguration.contentInsets =
-        NSDirectionalEdgeInsetsMake(kTabCloseTopInset, kTabCloseLeftInset,
-                                    kTabCloseBottomInset, kTabCloseRightInset);
-    buttonConfiguration.image = closeButton;
-    _closeButton.configuration = buttonConfiguration;
-  } else {
-    [_closeButton setImage:closeButton forState:UIControlStateNormal];
-    UIEdgeInsets contentInsets =
-        UIEdgeInsetsMake(kTabCloseTopInset, kTabCloseLeftInset,
-                         kTabCloseBottomInset, kTabCloseRightInset);
-    SetContentEdgeInsets(_closeButton, contentInsets);
-  }
+  UIButtonConfiguration* buttonConfiguration =
+      [UIButtonConfiguration plainButtonConfiguration];
+  buttonConfiguration.contentInsets =
+      NSDirectionalEdgeInsetsMake(kTabCloseTopInset, kTabCloseLeftInset,
+                                  kTabCloseBottomInset, kTabCloseRightInset);
+  buttonConfiguration.image = closeButton;
+  _closeButton.configuration = buttonConfiguration;
 
   [_closeButton setAccessibilityLabel:l10n_util::GetNSString(
                                           IDS_IOS_TOOLS_MENU_CLOSE_TAB)];

@@ -10,6 +10,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
+#include "base/types/optional_ref.h"
 #include "build/build_config.h"
 #include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
@@ -164,7 +165,6 @@ class ContentAutofillDriver : public AutofillDriver,
   bool IsPrerendering() const override;
   bool HasSharedAutofillPermission() const override;
   bool CanShowAutofillUi() const override;
-  bool RendererIsAvailable() override;
   void HandleParsedForms(const std::vector<FormData>& forms) override {}
   void PopupHidden() override;
   net::IsolationInfo IsolationInfo() override;
@@ -236,17 +236,17 @@ class ContentAutofillDriver : public AutofillDriver,
       const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map)
       override;
   void ApplyFieldAction(mojom::ActionPersistence action_persistence,
+                        mojom::TextReplacement text_replacement,
                         const FieldGlobalId& field_id,
                         const std::u16string& value) override;
   void ExtractForm(FormGlobalId form,
-                   base::OnceCallback<void(const std::optional<FormData>&)>
-                       response_callback) override;
+                   BrowserFormHandler final_handler) override;
   void RendererShouldAcceptDataListSuggestion(
       const FieldGlobalId& field_id,
       const std::u16string& value) override;
   void RendererShouldSetSuggestionAvailability(
       const FieldGlobalId& field_id,
-      const mojom::AutofillState state) override;
+      mojom::AutofillSuggestionAvailability suggestion_availability) override;
   void RendererShouldTriggerSuggestions(
       const FieldGlobalId& field_id,
       AutofillSuggestionTriggerSource trigger_source) override;
@@ -313,7 +313,10 @@ class ContentAutofillDriver : public AutofillDriver,
   // received from the renderer.
   void SetFrameAndFormMetaData(FormData& form,
                                FormFieldData* optional_field) const;
+  // Returns a copy of `form` after applying `SetFormAndFormMetaData` to it.
   [[nodiscard]] FormData GetFormWithFrameAndFormMetaData(FormData form) const;
+  [[nodiscard]] std::optional<FormData> GetFormWithFrameAndFormMetaData(
+      base::optional_ref<const FormData> form) const;
 
   // Transform bounding box coordinates to real viewport coordinates. In the
   // case of a page spanning multiple renderer processes, subframe renderers

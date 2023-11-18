@@ -28,6 +28,8 @@ import org.chromium.base.Log;
 import org.chromium.base.ResettersForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.supplier.OneShotCallback;
+import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.UnownedUserDataSupplier;
 import org.chromium.blink.mojom.DisplayMode;
 import org.chromium.chrome.R;
@@ -40,6 +42,7 @@ import org.chromium.chrome.browser.contextmenu.ContextMenuPopulatorFactory;
 import org.chromium.chrome.browser.crash.ChromePureJavaExceptionReporter;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.init.ActivityProfileProvider;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.init.SingleWindowKeyboardVisibilityDelegate;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -47,7 +50,6 @@ import org.chromium.chrome.browser.omnibox.BackKeyBehaviorDelegate;
 import org.chromium.chrome.browser.omnibox.LocationBarCoordinator;
 import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.OverrideUrlLoadingDelegate;
-import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdownScrollListener;
@@ -57,7 +59,9 @@ import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
 import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
+import org.chromium.chrome.browser.profiles.OTRProfileID;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
@@ -73,8 +77,8 @@ import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
-import org.chromium.components.browser_ui.widget.InsetObserverView;
-import org.chromium.components.browser_ui.widget.InsetObserverViewSupplier;
+import org.chromium.components.browser_ui.widget.InsetObserver;
+import org.chromium.components.browser_ui.widget.InsetObserverSupplier;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -162,8 +166,8 @@ public class SearchActivity extends AsyncInitializationActivity
     private SearchBoxDataProvider mSearchBoxDataProvider;
     private Tab mTab;
     private ObservableSupplierImpl<Profile> mProfileSupplier = new ObservableSupplierImpl<>();
-    protected final UnownedUserDataSupplier<InsetObserverView> mInsetObserverViewSupplier =
-            new InsetObserverViewSupplier();
+    protected final UnownedUserDataSupplier<InsetObserver> mInsetObserverViewSupplier =
+            new InsetObserverSupplier();
 
     @Override
     protected boolean isStartedUpCorrectly(Intent intent) {
@@ -207,12 +211,11 @@ public class SearchActivity extends AsyncInitializationActivity
         // Setting fitsSystemWindows to false ensures that the root view doesn't consume the
         // insets.
         rootView.setFitsSystemWindows(false);
-        // Add a custom view right after the root view that stores the insets to access later.
+        // Add an inset observer that stores the insets to access later.
         // WebContents needs the insets to determine the portion of the screen obscured by
         // non-content displaying things such as the OSK.
         mInsetObserverViewSupplier.attach(getWindowAndroid().getUnownedUserDataHost());
-        mInsetObserverViewSupplier.set(InsetObserverView.create(this));
-        rootView.addView(mInsetObserverViewSupplier.get(), 0);
+        mInsetObserverViewSupplier.set(new InsetObserver(rootView));
 
         mContentView = createContentView();
         setContentView(mContentView);
@@ -264,7 +267,6 @@ public class SearchActivity extends AsyncInitializationActivity
                         getLifecycleDispatcher(),
                         overrideUrlLoadingDelegate,
                         /* backKeyBehavior= */ this,
-                        SearchEngineLogoUtils.getInstance(),
                         /* pageInfoAction= */ (tab, pageInfoHighlight) -> {},
                         IntentHandler::bringTabToFront,
                         /* saveOfflineButtonState= */ (tab) -> false,
@@ -332,12 +334,39 @@ public class SearchActivity extends AsyncInitializationActivity
     }
 
     @Override
-    public void finishNativeInitialization() {
-        Profile profile = Profile.getLastUsedRegularProfile();
-        mProfileSupplier.set(profile);
+    protected OneshotSupplier<ProfileProvider> createProfileProvider() {
+        ActivityProfileProvider profileProvider =
+                new ActivityProfileProvider(getLifecycleDispatcher()) {
+                    @Nullable
+                    @Override
+                    protected OTRProfileID createOffTheRecordProfileID() {
+                        throw new IllegalStateException(
+                                "Attempting to access incognito from the search activity");
+                    }
+                };
+        profileProvider.onAvailable((provider) -> {
+            mProfileSupplier.set(profileProvider.get().getOriginalProfile());
+        });
+        return profileProvider;
+    }
 
+    @Override
+    public void finishNativeInitialization() {
         super.finishNativeInitialization();
 
+        if (mProfileSupplier.hasValue()) {
+            finishNativeInitializationWithProfile(mProfileSupplier.get());
+        } else {
+            new OneShotCallback<>(
+                    mProfileSupplier,
+                    (profile) -> {
+                        if (isDestroyed()) return;
+                        finishNativeInitializationWithProfile(profile);
+                    });
+        }
+    }
+
+    private void finishNativeInitializationWithProfile(Profile profile) {
         TabDelegateFactory factory =
                 new TabDelegateFactory() {
                     @Override
@@ -399,7 +428,7 @@ public class SearchActivity extends AsyncInitializationActivity
 
         WebContents webContents = WebContentsFactory.createWebContents(profile, false, false);
         mTab =
-                new TabBuilder()
+                new TabBuilder(profile)
                         .setWindow(getWindowAndroid())
                         .setLaunchType(TabLaunchType.FROM_EXTERNAL_APP)
                         .setWebContents(webContents)

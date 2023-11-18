@@ -9,7 +9,6 @@
 #include "base/functional/callback_helpers.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/apps/intent_helper/intent_picker_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
@@ -88,12 +87,9 @@ bool IntentChipButton::GetChipExpanded() const {
 }
 
 ui::ImageModel IntentChipButton::GetAppIcon() const {
-  if (features::IsChromeRefresh2023()) {
-    // The color and size are configured in OmniboxChipButton.
-    return ui::ImageModel::FromVectorIcon(kInstallDesktopChromeRefreshIcon);
-  }
-  if (auto* tab_helper = GetTabHelper())
+  if (auto* tab_helper = GetTabHelper()) {
     return tab_helper->app_icon();
+  }
   return ui::ImageModel();
 }
 
@@ -125,6 +121,10 @@ ui::ImageModel IntentChipButton::GetIconImageModel() const {
 }
 
 const gfx::VectorIcon& IntentChipButton::GetIcon() const {
+  if (features::IsChromeRefresh2023()) {
+    // The color and size are configured in OmniboxChipButton.
+    return kOpenInNewChromeRefreshIcon;
+  }
   return kOpenInNewIcon;
 }
 

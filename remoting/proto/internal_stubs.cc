@@ -37,8 +37,27 @@ std::unique_ptr<RemoteAccessHostV1Proto> GetMachineProvisioningRequest(
     const std::string& owner_email,
     const std::string& fqdn,
     const std::string& public_key,
-    absl::optional<std::string> existing_host_id) {
+    std::optional<std::string> existing_host_id) {
   return std::make_unique<RemoteAccessHostV1Proto>();
+}
+
+std::string GetReportProvisioningErrorRequestPath() {
+  return "";
+}
+
+std::unique_ptr<ReportProvisioningErrorRequest>
+GetReportProvisioningErrorRequest(const std::string& host_id,
+                                  const std::string& error_message) {
+  return std::make_unique<ReportProvisioningErrorRequest>();
+}
+
+std::string GetSendHeartbeatRequestPath() {
+  return "";
+}
+
+std::unique_ptr<SendHeartbeatRequest> GetSendHeartbeatRequest(
+    const std::string& host_id) {
+  return std::make_unique<SendHeartbeatRequest>();
 }
 
 std::string DoNothingProto::GetTypeName() const {

@@ -769,7 +769,9 @@ void Compositor::DidFailToInitializeLayerTreeFrameSink() {
                      context_creation_weak_ptr_factory_.GetWeakPtr()));
 }
 
-void Compositor::DidCommit(base::TimeTicks, base::TimeTicks) {
+void Compositor::DidCommit(int source_frame_number,
+                           base::TimeTicks,
+                           base::TimeTicks) {
   DCHECK(!IsLocked());
   for (auto& observer : observer_list_)
     observer.OnCompositingDidCommit(this);
@@ -891,14 +893,14 @@ void Compositor::OnResume() {
     obs.ResetIfActive();
 }
 
-#if BUILDFLAG(IS_OZONE)
+#if BUILDFLAG(IS_LINUX)
 #if BUILDFLAG(OZONE_PLATFORM_X11)
 void Compositor::OnCompleteSwapWithNewSize(const gfx::Size& size) {
   for (auto& observer : observer_list_)
     observer.OnCompositingCompleteSwapWithNewSize(this, size);
 }
 #endif  // BUILDFLAG(OZONE_PLATFORM_X11)
-#endif  // BUILFFLAG(IS_OZONE)
+#endif  // BUILDFLAG(IS_LINUX)
 
 void Compositor::SetOutputIsSecure(bool output_is_secure) {
   output_is_secure_ = output_is_secure;

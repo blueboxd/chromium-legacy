@@ -23,6 +23,7 @@
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fido_assertion_info.h"
 #include "chromeos/ash/components/attestation/attestation_flow.h"
 #include "chromeos/ash/components/attestation/mock_attestation_flow.h"
+#include "chromeos/ash/components/attestation/stub_attestation_features.h"
 #include "chromeos/ash/components/dbus/constants/attestation_constants.h"
 #include "chromeos/ash/components/quick_start/types.h"
 #include "components/account_id/account_id.h"
@@ -113,7 +114,7 @@ Wm7DCfrPNGVwFWUQOmsPue9rZBgO
 -----END CERTIFICATE-----
     })";
 
-constexpr char kFidoCredentialId[] = "fake-fido-credential-id";
+constexpr char kFidoCredentialIdBytes[] = "fake-fido-credential-id";
 constexpr char kFakeDeviceId[] = "fake-device-id";
 constexpr char kTargetDeviceType[] = "targetDeviceType";
 constexpr char kTargetDeviceInfoKey[] = "targetDeviceInfo";
@@ -122,8 +123,10 @@ constexpr char kDeviceAttestationCertificateKey[] =
     "deviceAttestationCertificate";
 constexpr char kChromeOS[] = "CHROME_OS";
 
+// Compares the `std::string` `content_binding` proto field to the
+// `Base64String` `expected` value.
 MATCHER_P(ProtoBufContentBindingEq, expected, "") {
-  return arg.content_binding() == expected;
+  return arg.content_binding() == *expected;
 }
 
 MATCHER_P(RefreshTokenAdditionalChallengesOnTargetResponseEq, expected, "") {
@@ -211,7 +214,11 @@ class SecondDeviceAuthBrokerTest : public ::testing::Test {
       : second_device_auth_broker_(kFakeDeviceId,
                                    test_factory_.GetSafeWeakWrapper(),
                                    std::make_unique<MockAttestationFlowFacade>(
-                                       &mock_attestation_flow_)) {}
+                                       &mock_attestation_flow_)) {
+    attestation_features_.Get()->Clear();
+    attestation_features_.Get()->set_is_available(true);
+    MakeECCCertificateKeysAvailable();
+  }
 
   SecondDeviceAuthBrokerTest(const SecondDeviceAuthBrokerTest&) = delete;
   SecondDeviceAuthBrokerTest& operator=(const SecondDeviceAuthBrokerTest&) =
@@ -229,7 +236,7 @@ class SecondDeviceAuthBrokerTest : public ::testing::Test {
   }
 
   base::expected<PEMCertChain, SecondDeviceAuthBroker::AttestationErrorType>
-  FetchAttestationCertificate(const std::string& fido_credential_id) {
+  FetchAttestationCertificate(const Base64String& fido_credential_id) {
     base::test::TestFuture<
         SecondDeviceAuthBroker::AttestationCertificateOrError>
         future;
@@ -283,8 +290,32 @@ class SecondDeviceAuthBrokerTest : public ::testing::Test {
         net::HTTP_BAD_REQUEST);
   }
 
+  void MakeAttestationUnavailable() {
+    attestation_features_.Get()->set_is_available(false);
+  }
+
+  void MakeECCCertificateKeysAvailable() {
+    attestation_features_.Get()->set_is_ecc_supported(true);
+  }
+
+  void MakeECCCertificateKeysUnavailable() {
+    attestation_features_.Get()->set_is_ecc_supported(false);
+  }
+
+  void MakeRSACertificateKeysAvailable() {
+    attestation_features_.Get()->set_is_rsa_supported(true);
+  }
+
+  void MakeRSACertificateKeysUnavailable() {
+    attestation_features_.Get()->set_is_rsa_supported(false);
+  }
+
   attestation::MockAttestationFlow& mock_attestation_flow() {
     return mock_attestation_flow_;
+  }
+
+  Base64String fido_credential_id() {
+    return Base64String(base::Base64Encode(kFidoCredentialIdBytes));
   }
 
   scoped_refptr<network::SharedURLLoaderFactory> GetSharedURLLoaderFactory() {
@@ -301,6 +332,7 @@ class SecondDeviceAuthBrokerTest : public ::testing::Test {
 
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   network::TestURLLoaderFactory test_factory_;
+  attestation::ScopedStubAttestationFeatures attestation_features_;
   StrictMock<attestation::MockAttestationFlow> mock_attestation_flow_;
   SecondDeviceAuthBroker second_device_auth_broker_;
 };
@@ -421,7 +453,7 @@ TEST_F(
           })));
 
   EXPECT_THAT(
-      FetchAttestationCertificate(kFidoCredentialId),
+      FetchAttestationCertificate(fido_credential_id()),
       ErrorIs(
           Eq(SecondDeviceAuthBroker::AttestationErrorType::kTransientError)));
 }
@@ -447,7 +479,17 @@ TEST_F(SecondDeviceAuthBrokerTest,
           })));
 
   EXPECT_THAT(
-      FetchAttestationCertificate(kFidoCredentialId),
+      FetchAttestationCertificate(fido_credential_id()),
+      ErrorIs(
+          Eq(SecondDeviceAuthBroker::AttestationErrorType::kPermanentError)));
+}
+
+TEST_F(SecondDeviceAuthBrokerTest,
+       FetchAttestationCertificateReturnsAnErrorIfAttestationIsUnavailable) {
+  MakeAttestationUnavailable();
+
+  EXPECT_THAT(
+      FetchAttestationCertificate(fido_credential_id()),
       ErrorIs(
           Eq(SecondDeviceAuthBroker::AttestationErrorType::kPermanentError)));
 }
@@ -465,7 +507,7 @@ TEST_F(SecondDeviceAuthBrokerTest,
           /*profile_specific_data=*/
           Optional(
               VariantWith<::attestation::DeviceSetupCertificateRequestMetadata>(
-                  ProtoBufContentBindingEq(kFidoCredentialId))),
+                  ProtoBufContentBindingEq(fido_credential_id()))),
           /*callback*/ _))
       .WillOnce(WithArg<7>(Invoke([this](attestation::AttestationFlow::
                                              CertificateCallback callback)
@@ -475,8 +517,82 @@ TEST_F(SecondDeviceAuthBrokerTest,
             /*pem_certificate_chain=*/*GetCertificate());
       })));
 
-  EXPECT_THAT(FetchAttestationCertificate(kFidoCredentialId),
+  EXPECT_THAT(FetchAttestationCertificate(fido_credential_id()),
               ValueIs(Eq(GetCertificate())));
+}
+
+TEST_F(SecondDeviceAuthBrokerTest,
+       FetchAttestationCertificateReturnsAnECCCertificateIfAvailable) {
+  // Both ECC and RSA certificate keys are available, but ECC will be preferred.
+  MakeECCCertificateKeysAvailable();
+  MakeRSACertificateKeysAvailable();
+
+  EXPECT_CALL(
+      mock_attestation_flow(),
+      GetCertificate(
+          /*certificate_profile=*/attestation::AttestationCertificateProfile::
+              PROFILE_DEVICE_SETUP_CERTIFICATE,
+          /*account_id=*/EmptyAccountId(), /*request_origin=*/"",
+          /*force_new_key=*/_, /*key_crypto_type=*/::attestation::KEY_TYPE_ECC,
+          /*key_name=*/attestation::kDeviceSetupKey,
+          /*profile_specific_data=*/
+          Optional(
+              VariantWith<::attestation::DeviceSetupCertificateRequestMetadata>(
+                  ProtoBufContentBindingEq(fido_credential_id()))),
+          /*callback*/ _))
+      .WillOnce(WithArg<7>(Invoke([this](attestation::AttestationFlow::
+                                             CertificateCallback callback)
+                                      -> void {
+        std::move(callback).Run(
+            /*status=*/ash::attestation::AttestationStatus::ATTESTATION_SUCCESS,
+            /*pem_certificate_chain=*/*GetCertificate());
+      })));
+
+  EXPECT_THAT(FetchAttestationCertificate(fido_credential_id()),
+              ValueIs(Eq(GetCertificate())));
+}
+
+TEST_F(
+    SecondDeviceAuthBrokerTest,
+    FetchAttestationCertificateReturnsAnRSACertificateIfECCKeysAreUnavailable) {
+  MakeRSACertificateKeysAvailable();
+  MakeECCCertificateKeysUnavailable();
+
+  EXPECT_CALL(
+      mock_attestation_flow(),
+      GetCertificate(
+          /*certificate_profile=*/attestation::AttestationCertificateProfile::
+              PROFILE_DEVICE_SETUP_CERTIFICATE,
+          /*account_id=*/EmptyAccountId(), /*request_origin=*/"",
+          /*force_new_key=*/_, /*key_crypto_type=*/::attestation::KEY_TYPE_RSA,
+          /*key_name=*/attestation::kDeviceSetupKey,
+          /*profile_specific_data=*/
+          Optional(
+              VariantWith<::attestation::DeviceSetupCertificateRequestMetadata>(
+                  ProtoBufContentBindingEq(fido_credential_id()))),
+          /*callback*/ _))
+      .WillOnce(WithArg<7>(Invoke([this](attestation::AttestationFlow::
+                                             CertificateCallback callback)
+                                      -> void {
+        std::move(callback).Run(
+            /*status=*/ash::attestation::AttestationStatus::ATTESTATION_SUCCESS,
+            /*pem_certificate_chain=*/*GetCertificate());
+      })));
+
+  EXPECT_THAT(FetchAttestationCertificate(fido_credential_id()),
+              ValueIs(Eq(GetCertificate())));
+}
+
+TEST_F(
+    SecondDeviceAuthBrokerTest,
+    FetchAttestationCertificateReturnsAnErrorIfNoSuitableKeyTypesAreAvailable) {
+  MakeRSACertificateKeysUnavailable();
+  MakeECCCertificateKeysUnavailable();
+
+  EXPECT_THAT(
+      FetchAttestationCertificate(fido_credential_id()),
+      ErrorIs(
+          Eq(SecondDeviceAuthBroker::AttestationErrorType::kPermanentError)));
 }
 
 TEST_F(SecondDeviceAuthBrokerTest,

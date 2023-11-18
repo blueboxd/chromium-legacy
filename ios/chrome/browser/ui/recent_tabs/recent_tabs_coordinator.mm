@@ -10,7 +10,9 @@
 #import "base/metrics/user_metrics_action.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
+#import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser/browser_list_factory.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -19,7 +21,7 @@
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_navigation_controller_constants.h"
-#import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/signin/model/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/model/session_sync_service_factory.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/synced_sessions/model/distant_session.h"
@@ -112,13 +114,18 @@
       SyncServiceFactory::GetForBrowserState(browserState);
   BrowserList* browserList =
       BrowserListFactory::GetForBrowserState(browserState);
+  SceneState* currentSceneState = self.browser->GetSceneState();
+  BOOL isDisabled =
+      IsIncognitoModeForced(self.browser->GetBrowserState()->GetPrefs());
   self.mediator =
       [[RecentTabsMediator alloc] initWithSessionSyncService:syncService
                                              identityManager:identityManager
                                               restoreService:restoreService
                                                faviconLoader:faviconLoader
                                                  syncService:service
-                                                 browserList:browserList];
+                                                 browserList:browserList
+                                                  sceneState:currentSceneState
+                                            disabledByPolicy:isDisabled];
 
   // Set the consumer first before calling [self.mediator initObservers] and
   // then [self.mediator configureConsumer].

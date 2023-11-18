@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include <optional>
 #include "base/allocator/partition_allocator/src/partition_alloc/page_allocator.h"
 #include "base/allocator/partition_allocator/src/partition_alloc/partition_address_space.h"
 #include "base/bits.h"
@@ -39,7 +40,6 @@
 #include "build/build_config.h"
 #include "gin/array_buffer.h"
 #include "gin/gin_features.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "tools/v8_context_snapshot/buildflags.h"
 #include "v8/include/v8-initialization.h"
 #include "v8/include/v8-snapshot.h"
@@ -60,7 +60,7 @@ namespace {
 base::MemoryMappedFile* g_mapped_snapshot = nullptr;
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-absl::optional<gin::V8SnapshotFileType> g_snapshot_file_type;
+std::optional<gin::V8SnapshotFileType> g_snapshot_file_type;
 #endif
 
 bool GenerateEntropy(unsigned char* buffer, size_t amount) {
@@ -301,6 +301,9 @@ void SetFlags(IsolateHolder::ScriptMode mode,
   SetV8FlagsIfOverridden(features::kV8Turbofan, "--turbofan", "--no-turbofan");
   SetV8FlagsIfOverridden(features::kV8Turboshaft, "--turboshaft",
                          "--no-turboshaft");
+  SetV8FlagsIfOverridden(features::kV8TurboshaftInstructionSelection,
+                         "--turboshaft-instruction-selection",
+                         "--no-turboshaft-instruction-selection");
   SetV8FlagsIfOverridden(features::kV8ConcurrentSparkplug,
                          "--concurrent-sparkplug", "--no-concurrent-sparkplug");
   SetV8FlagsIfOverridden(features::kV8SparkplugNeedsShortBuiltinCalls,
@@ -316,9 +319,6 @@ void SetFlags(IsolateHolder::ScriptMode mode,
   SetV8FlagsIfOverridden(features::kV8SingleThreadedGCInBackground,
                          "--single-threaded-gc-in-background",
                          "--no-single-threaded-gc-in-background");
-  SetV8FlagsIfOverridden(features::kV8MidtierRegallocFallback,
-                         "--turbo-use-mid-tier-regalloc-for-huge-functions",
-                         "--no-turbo-use-mid-tier-regalloc-for-huge-functions");
 
   if (base::FeatureList::IsEnabled(features::kV8ConcurrentSparkplug)) {
     if (int max_threads = features::kV8ConcurrentSparkplugMaxThreads.Get()) {
@@ -365,9 +365,6 @@ void SetFlags(IsolateHolder::ScriptMode mode,
   SetV8FlagsIfOverridden(features::kJavaScriptSymbolAsWeakMapKey,
                          "--harmony-symbol-as-weakmap-key",
                          "--no-harmony-symbol-as-weakmap-key");
-  SetV8FlagsIfOverridden(features::kJavaScriptChangeArrayByCopy,
-                         "--harmony-change-array-by-copy",
-                         "--no-harmony-change-array-by-copy");
   if (base::FeatureList::IsEnabled(features::kJavaScriptRabGsab)) {
     SetV8Flags("--harmony-rab-gsab");
   } else {
@@ -388,6 +385,9 @@ void SetFlags(IsolateHolder::ScriptMode mode,
   SetV8FlagsIfOverridden(features::kJavaScriptPromiseWithResolvers,
                          "--js-promise-withresolvers",
                          "--no-js-promise-withresolvers");
+  SetV8FlagsIfOverridden(features::kJavaScriptArrayFromAsync,
+                         "--harmony-array-from-async",
+                         "--no-harmony-array-from-async");
 
   if (IsolateHolder::kStrictMode == mode) {
     SetV8Flags("--use_strict");
@@ -411,6 +411,12 @@ void SetFlags(IsolateHolder::ScriptMode mode,
   SetV8FlagsIfOverridden(features::kWebAssemblyGenericWrapper,
                          "--wasm-to-js-generic-wrapper",
                          "--no-wasm-to-js-generic-wrapper");
+  SetV8FlagsIfOverridden(features::kWebAssemblyMultipleMemories,
+                         "--experimental-wasm-multi-memory",
+                         "--no-experimental-wasm-multi-memory");
+  SetV8FlagsIfOverridden(features::kWebAssemblyTurboshaft, "--turboshaft-wasm",
+                         "--no-turboshaft-wasm");
+
   if (js_command_line_flags.empty())
     return;
 

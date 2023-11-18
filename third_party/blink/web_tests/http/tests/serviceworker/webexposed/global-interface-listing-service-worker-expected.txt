@@ -809,12 +809,14 @@ interface MessageEvent : Event
     method initMessageEvent
 interface MessagePort : EventTarget
     attribute @@toStringTag
+    getter onclose
     getter onmessage
     getter onmessageerror
     method close
     method constructor
     method postMessage
     method start
+    setter onclose
     setter onmessage
     setter onmessageerror
 interface Mojo
@@ -1298,6 +1300,7 @@ interface Request
     getter referrer
     getter referrerPolicy
     getter signal
+    getter targetAddressSpace
     getter url
     method arrayBuffer
     method blob
@@ -1410,6 +1413,7 @@ interface StorageManager : EventTarget
     setter onquotachange
 interface Subscriber
     attribute @@toStringTag
+    getter active
     getter signal
     method complete
     method constructor

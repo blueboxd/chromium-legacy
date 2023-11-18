@@ -112,6 +112,9 @@ source_set("common") {
     "input/actions_parser.cc",
     "input/actions_parser.h",
     "input/event_with_latency_info.h",
+    "input/fling_controller.cc",
+    "input/fling_controller.h",
+    "input/fling_scheduler_base.h",
     "input/gesture_event_stream_validator.cc",
     "input/gesture_event_stream_validator.h",
     "input/input_event_ack_state.cc",
@@ -198,6 +201,7 @@ source_set("common") {
     "//ui/accessibility",
     "//ui/accessibility/mojom",
     "//ui/base/cursor",
+    "//ui/events/gestures/blink",
     "//ui/events/ipc",
   ]
   deps = [
@@ -253,6 +257,7 @@ source_set("common") {
     "//ui/base",
     "//ui/base/cursor/mojom:cursor_type",
     "//ui/base/ime",
+    "//ui/color",
     "//ui/display",
     "//ui/events/blink",
     "//ui/gfx",
@@ -481,6 +486,10 @@ mojom("mojo_bindings") {
 
   if (is_linux || is_chromeos) {
     sources += [ "thread_type_switcher.mojom" ]
+  }
+
+  if (is_android) {
+    sources += [ "gin_java_bridge.mojom" ]
   }
 
   enabled_features = []

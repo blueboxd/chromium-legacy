@@ -9,13 +9,6 @@
 
 namespace content_settings {
 
-// Enables an improved UI for third-party cookie blocking in incognito mode.
-#if BUILDFLAG(IS_IOS)
-BASE_FEATURE(kImprovedCookieControls,
-             "ImprovedCookieControls",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif  // BUILDFLAG(IS_IOS)
-
 // Enables auto dark feature in theme settings.
 #if BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kDarkenWebsitesCheckboxInThemesSetting,
@@ -85,12 +78,14 @@ BASE_FEATURE(kTrackingProtection3pcd,
              "TrackingProtection3pcd",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+const char kTpcdReadHeuristicsGrantsName[] = "TpcdReadHeuristicsGrants";
+
 BASE_FEATURE(kTpcdHeuristicsGrants,
              "TpcdHeuristicsGrants",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 const base::FeatureParam<bool> kTpcdReadHeuristicsGrants{
-    &kTpcdHeuristicsGrants, /*name=*/"TpcdReadHeuristicsGrants", false};
+    &kTpcdHeuristicsGrants, kTpcdReadHeuristicsGrantsName, false};
 
 }  // namespace features
 }  // namespace content_settings

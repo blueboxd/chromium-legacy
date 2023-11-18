@@ -66,6 +66,7 @@
 #include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/browser/url_request_util.h"
 #include "extensions/browser/view_type_utils.h"
+#include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_constants.h"
@@ -175,8 +176,9 @@ bool AllowServiceWorker(const GURL& scope,
 
   // If an extension doesn't have a service worker-based background script, it
   // can register a service worker at any scope.
-  if (!extensions::BackgroundInfo::IsServiceWorkerBased(extension))
+  if (!BackgroundInfo::IsServiceWorkerBased(extension)) {
     return true;
+  }
 
   // If the script_url parameter is an empty string, allow it. The
   // infrastructure will call this function at times when the script url is
@@ -192,7 +194,7 @@ bool AllowServiceWorker(const GURL& scope,
   // If an extension is service-worker based, only the script specified in the
   // manifest can be registered at the root scope.
   const std::string& sw_script =
-      extensions::BackgroundInfo::GetBackgroundServiceWorkerScript(extension);
+      BackgroundInfo::GetBackgroundServiceWorkerScript(extension);
   return script_url == extension->GetResourceURL(sw_script);
 }
 
@@ -285,7 +287,7 @@ GURL ChromeContentBrowserClientExtensionsPart::GetEffectiveURL(
   // hosting a disabled extension URL from incorrectly getting reused after
   // re-enabling the extension, which would lead to renderer kills
   // (https://crbug.com/1197360).
-  if (url.SchemeIs(extensions::kExtensionScheme) &&
+  if (url.SchemeIs(kExtensionScheme) &&
       !registry->enabled_extensions().GetExtensionOrAppByURL(url)) {
     return GURL(chrome::kExtensionInvalidRequestURL);
   }
@@ -441,7 +443,7 @@ bool ChromeContentBrowserClientExtensionsPart::CanCommitURL(
     DCHECK(found_owner);
     return extension->is_platform_app() &&
            extension->permissions_data()->HasAPIPermission(
-               extensions::mojom::APIPermissionID::kWebView) &&
+               mojom::APIPermissionID::kWebView) &&
            extension->id() == owner_extension_id;
   }
 
@@ -692,8 +694,9 @@ void ChromeContentBrowserClientExtensionsPart::OverrideURLLoaderFactoryParams(
 bool ChromeContentBrowserClientExtensionsPart::IsBuiltinComponent(
     content::BrowserContext* browser_context,
     const url::Origin& origin) {
-  if (origin.scheme() != extensions::kExtensionScheme)
+  if (origin.scheme() != kExtensionScheme) {
     return false;
+  }
 
   const auto& extension_id = origin.host();
 
@@ -731,17 +734,19 @@ base::AutoReset<const GURL*> ChromeContentBrowserClientExtensionsPart::
 
 void ChromeContentBrowserClientExtensionsPart::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
-  int id = host->GetID();
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
   if (AreExtensionsDisabledForProfile(profile)) {
     return;
   }
 
+#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
   host->AddFilter(new ChromeExtensionMessageFilter(profile));
+  int id = host->GetID();
   host->AddFilter(new ExtensionMessageFilter(id, profile));
   host->AddFilter(new ExtensionServiceWorkerMessageFilter(
       id, profile, host->GetStoragePartition()->GetServiceWorkerContext()));
   host->AddFilter(new MessagingAPIMessageFilter(id, profile));
+#endif
 }
 
 void ChromeContentBrowserClientExtensionsPart::SiteInstanceGotProcess(

@@ -176,6 +176,13 @@ ServiceWorkerMainResourceLoader::ServiceWorkerMainResourceLoader(
         break;
       case blink::EmbeddedWorkerStatus::kStopped:
         initial_service_worker_status_ = InitialServiceWorkerStatus::kStopped;
+        if (base::WeakPtr<ServiceWorkerContextCore> core =
+                active_worker->context()) {
+          base::UmaHistogramBoolean(
+              "ServiceWorker.LoadTiming.MainFrame.MainResource."
+              "ServiceWorkerIsStopped.WaitingForWarmUp",
+              core->IsWaitingForWarmUp(active_worker->key()));
+        }
         break;
     }
     if (active_worker->IsWarmingUp()) {
@@ -265,14 +272,15 @@ void ServiceWorkerMainResourceLoader::StartRequest(
   // Check if registered static route rules match the request.
   if (active_worker->router_evaluator()) {
     CHECK(active_worker->router_evaluator()->IsValid());
-    auto sources = active_worker->router_evaluator()->Evaluate(
+    auto eval_result = active_worker->router_evaluator()->Evaluate(
         resource_request_, active_worker->running_status());
     // TODO(crbug.com/1371756) In some cases the router is evaluated only in the
     // renderer side. The same mechanism is needed in the subresource loader
     // as well.
     active_worker->CountFeature(
         blink::mojom::WebFeature::kServiceWorkerStaticRouter_Evaluate);
-    if (!sources.empty()) {  // matched the rule.
+    if (eval_result) {  // matched the rule.
+      const auto& sources = eval_result->sources;
       // TODO(crbug.com/1371756): support other sources in the full form.
       // https://github.com/yoshisatoyanagisawa/service-worker-static-routing-api/blob/main/final-form.md
       switch (sources[0].type) {
@@ -326,6 +334,25 @@ void ServiceWorkerMainResourceLoader::StartRequest(
                   &ServiceWorkerMainResourceLoader::DidDispatchFetchEvent,
                   weak_factory_.GetWeakPtr()));
           cache_matcher_->Run();
+          // If the kServiceWorkerStaticRouterStartServiceWorker feature is
+          // enabled, it starts the ServiceWorker manually since we don't
+          // instantiate ServiceWorkerFetchDispatcher, which involves the
+          // ServiceWorker startup.
+          base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+              FROM_HERE,
+              base::BindOnce(
+                  [](scoped_refptr<ServiceWorkerVersion> active_worker) {
+                    if (active_worker->running_status() !=
+                            blink::EmbeddedWorkerStatus::kRunning &&
+                        base::FeatureList::IsEnabled(
+                            features::
+                                kServiceWorkerStaticRouterStartServiceWorker)) {
+                      active_worker->StartWorker(
+                          ServiceWorkerMetrics::EventType::STATIC_ROUTER,
+                          base::DoNothing());
+                    }
+                  },
+                  active_worker));
           return;
       }
     }
@@ -504,7 +531,8 @@ bool ServiceWorkerMainResourceLoader::StartRaceNetworkRequest(
   mojo::PendingRemote<network::mojom::URLLoaderClient> forwarding_client;
   forwarded_race_network_request_url_loader_factory_.emplace(
       forwarding_client.InitWithNewPipeAndPassReceiver(),
-      resource_request_.url);
+      ServiceWorkerFetchDispatcher::CreateNetworkURLLoaderFactory(
+          context, frame_tree_node_id_));
   CHECK(!race_network_request_url_loader_client_);
   race_network_request_url_loader_client_.emplace(
       resource_request_, AsWeakPtr(), std::move(forwarding_client));

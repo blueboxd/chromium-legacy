@@ -27,9 +27,11 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
+#include "chrome/browser/web_applications/mojom/user_display_mode.mojom-shared.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
+#include "chrome/browser/web_applications/proto/web_app_proto_package.pb.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -40,6 +42,7 @@
 #include "chrome/browser/web_applications/web_app_translation_manager.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
+#include "components/webapps/common/web_app_id.h"
 #include "content/public/browser/isolated_web_apps_policy.h"
 #include "content/public/browser/storage_partition_config.h"
 #include "content/public/common/content_features.h"
@@ -537,7 +540,11 @@ bool WebAppRegistrar::IsShortcutApp(const webapps::AppId& app_id) const {
   }
   // TODO(crbug.com/1469482): Record shortcut distinction explicitly instead of
   // using scope.
+#if BUILDFLAG(IS_CHROMEOS)
+  return IsShortcutAppChromeOs(app_id);
+#else
   return !GetAppScopeInternal(app_id).has_value();
+#endif  // BUILDFLAG(IS_CHROMEOS)
 }
 
 bool WebAppRegistrar::IsSystemApp(const webapps::AppId& app_id) const {
@@ -732,6 +739,20 @@ void WebAppRegistrar::Start() {
   base::UmaHistogramCounts1000(
       "WebApp.InstalledCount.ByUserNotLocallyInstalled",
       num_non_locally_installed);
+
+#if BUILDFLAG(IS_MAC)
+  auto multi_profile_app_ids =
+      AppShimRegistry::Get()->GetAppsInstalledInMultipleProfiles();
+  int num_multi_profile_apps = 0;
+  for (const auto& app_id : multi_profile_app_ids) {
+    const WebApp* app = GetAppById(app_id);
+    if (app && app->is_locally_installed() && app->WasInstalledByUser()) {
+      num_multi_profile_apps++;
+    }
+  }
+  base::UmaHistogramCounts1000("WebApp.InstalledCount.ByUserInMultipleProfiles",
+                               num_multi_profile_apps);
+#endif
 }
 
 void WebAppRegistrar::Shutdown() {
@@ -981,14 +1002,73 @@ WebAppRegistrar::SaveAndGetInMemoryControlledFramePartitionConfig(
       profile_, partition_name, true);
 }
 
-bool WebAppRegistrar::CapturesLinksInScope(const webapps::AppId& app_id) const {
+bool WebAppRegistrar::CanCaptureLinksInScope(
+    const webapps::AppId& app_id) const {
+  if (!base::FeatureList::IsEnabled(features::kDesktopPWAsLinkCapturing)) {
+    return false;
+  }
   if (!IsLocallyInstalled(app_id) || IsShortcutApp(app_id)) {
+    return false;
+  }
+  return true;
+}
+
+bool WebAppRegistrar::CapturesLinksInScope(const webapps::AppId& app_id) const {
+  if (!CanCaptureLinksInScope(app_id)) {
     return false;
   }
 
   const WebApp* web_app = GetAppById(app_id);
   CHECK(web_app);
-  return web_app->is_user_selected_app_for_capturing_links();
+  switch (web_app->user_link_capturing_preference()) {
+    case proto::LinkCapturingUserPreference::LINK_CAPTURING_PREFERENCE_DEFAULT:
+      if (!features::kLinksCapturedByDefault.Get()) {
+        return false;
+      }
+      break;
+    case proto::LinkCapturingUserPreference::CAPTURE_SUPPORTED_LINKS:
+      return true;
+    case proto::LinkCapturingUserPreference::DO_NOT_CAPTURE_SUPPORTED_LINKS:
+      return false;
+  }
+
+  // Reaching here means that the default link capturing behavior is 'on' and
+  // the current app is 'default'. To resolve,
+  // - If any other app shares the scope and has link capturing enabled, return
+  //   false.
+  // - If there are more than one apps set to 'default', then return one app
+  //   deterministically (the earliest installed).
+  // Technically, this violates some of the locking practices we have, as this
+  // views all apps instead of the one app. However, given the rarity of hitting
+  // this, and the difficulty of actually hitting an edge case here, this seems
+  // OK.
+  std::vector<std::pair<webapps::AppId, base::Time>> app_and_install_time = {
+      {app_id, web_app->first_install_time()}};
+  for (const webapps::AppId& other_app_id : GetAppIds()) {
+    if (!CanCaptureLinksInScope(other_app_id) || other_app_id == app_id) {
+      continue;
+    }
+    if (!AppScopesMatchForUserLinkCapturing(app_id, other_app_id)) {
+      continue;
+    }
+    const WebApp* other_app = GetAppById(other_app_id);
+    switch (other_app->user_link_capturing_preference()) {
+      case proto::LinkCapturingUserPreference::
+          LINK_CAPTURING_PREFERENCE_DEFAULT:
+        app_and_install_time.emplace_back(other_app_id,
+                                          other_app->first_install_time());
+        break;
+      case proto::LinkCapturingUserPreference::CAPTURE_SUPPORTED_LINKS:
+        return false;
+      case proto::LinkCapturingUserPreference::DO_NOT_CAPTURE_SUPPORTED_LINKS:
+        continue;
+    }
+  }
+
+  // Sort by install time so the first installation wins.
+  std::sort(app_and_install_time.begin(), app_and_install_time.end(),
+            [](auto& left, auto& right) { return left.second < right.second; });
+  return app_and_install_time.front().first == app_id;
 }
 
 absl::optional<webapps::AppId> WebAppRegistrar::FindAppThatCapturesLinksInScope(
@@ -1000,7 +1080,7 @@ absl::optional<webapps::AppId> WebAppRegistrar::FindAppThatCapturesLinksInScope(
   size_t top_score = 0;
   std::vector<webapps::AppId> top_apps;
   for (const webapps::AppId& app_id : GetAppIds()) {
-    if (!IsLocallyInstalled(app_id)) {
+    if (!CanCaptureLinksInScope(app_id)) {
       continue;
     }
     // TODO(dmurph): Switch to GetAppExtendedScopeScore if the
@@ -1054,23 +1134,15 @@ std::vector<webapps::AppId> WebAppRegistrar::GetOverlappingAppsMatchingScope(
   }
 
   for (const auto& id : GetAppIds()) {
-    // Do not include the same id as the input.
     if (id == app_id) {
       continue;
     }
-
-    // Shortcut apps do not have a scope defined.
-    if (IsShortcutApp(id)) {
+    if (!CanCaptureLinksInScope(id)) {
       continue;
     }
-
-    // Filter out apps whose scopes do not match.
     if (!AppScopesMatchForUserLinkCapturing(id, app_id)) {
       continue;
     }
-
-    // If the app does not capture links in scope, do not take it into
-    // account.
     if (!CapturesLinksInScope(id)) {
       continue;
     }
@@ -1094,6 +1166,36 @@ bool WebAppRegistrar::AppScopesMatchForUserLinkCapturing(
   }
 
   return app_scope1 == app_scope2;
+}
+
+base::flat_map<webapps::AppId, std::string>
+WebAppRegistrar::GetAllAppsControllingUrl(const GURL& url) const {
+  base::flat_map<webapps::AppId, std::string> all_controlling_apps;
+  for (const webapps::AppId& app_id : GetAppIds()) {
+    if (!IsLocallyInstalled(app_id)) {
+      continue;
+    }
+
+    if (GetAppUserDisplayMode(app_id) == mojom::UserDisplayMode::kBrowser) {
+      continue;
+    }
+
+    const GURL scope = GetAppScope(app_id);
+    if (base::StartsWith(url.spec(), scope.spec(),
+                         base::CompareCase::SENSITIVE)) {
+      all_controlling_apps.insert_or_assign(app_id, GetAppShortName(app_id));
+    }
+  }
+  return all_controlling_apps;
+}
+
+bool WebAppRegistrar::IsPreferredAppForCapturingUrl(
+    const GURL& url,
+    const webapps::AppId& app_id) {
+  const GURL app_scope = GetAppScope(app_id);
+  return base::StartsWith(url.spec(), app_scope.spec(),
+                          base::CompareCase::SENSITIVE) &&
+         CapturesLinksInScope(app_id);
 }
 
 std::string WebAppRegistrar::GetAppShortName(
@@ -1654,5 +1756,55 @@ std::vector<webapps::AppId> WebAppRegistrar::GetAppIdsForAppSet(
 
   return app_ids;
 }
+
+#if BUILDFLAG(IS_CHROMEOS)
+bool WebAppRegistrar::IsShortcutAppChromeOs(
+    const webapps::AppId& app_id) const {
+  const WebApp* web_app = GetAppById(app_id);
+  if (!web_app) {
+    return false;
+  }
+
+  // See go/shortstand-prd#bookmark=id.mbe9ojau9umf for detail.
+  if (!chromeos::features::IsCrosShortstandEnabled()) {
+    return !GetAppScopeInternal(app_id).has_value();
+  }
+
+  // For policy installed apps/shortcuts, it is a shortcut if admin set to open
+  // in browser or install_as_shortcut is set to true.
+  if (web_app->IsPolicyInstalledApp()) {
+    // TODO(b/304660867): Check the required field for policy installed apps.
+    return !GetAppScopeInternal(app_id).has_value();
+  }
+
+  // System web apps should always be considered as apps.
+  if (web_app->IsSystemApp()) {
+    return false;
+  }
+
+  // For web apps installed from Chrome Browser and play store by the user,
+  // everything is considered as app instead of shortcut.
+  if (web_app->WasInstalledByUser() &&
+      GetAppScopeInternal(app_id).has_value()) {
+    return false;
+  }
+
+  // Any default installed apps are considered as apps not shortcut.
+  if (web_app->GetSources().Has(WebAppManagement::kDefault) ||
+      web_app->GetSources().Has(WebAppManagement::kOem) ||
+      web_app->GetSources().Has(WebAppManagement::kApsDefault)) {
+    return false;
+  }
+
+  // For user created shortcuts via Chrome, we considered whether it is shortcut
+  // based on the display mode setting. If will be considered as shortcut only
+  // when it is set to open in the browser tab.
+  if (web_app->WasInstalledByUser() &&
+      !GetAppScopeInternal(app_id).has_value()) {
+    return web_app->user_display_mode() == mojom::UserDisplayMode::kBrowser;
+  }
+  return false;
+}
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace web_app

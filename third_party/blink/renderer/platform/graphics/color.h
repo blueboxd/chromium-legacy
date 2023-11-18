@@ -191,7 +191,9 @@ class PLATFORM_EXPORT Color {
 
   // Create a color using the rgba() syntax, with float arguments. All
   // parameters will be clamped to the [0, 1] interval.
-  static Color FromRGBAFloat(float r, float g, float b, float a);
+  static constexpr Color FromRGBAFloat(float r, float g, float b, float a) {
+    return Color(SkColor4f{r, g, b, a});
+  }
 
   // Create a color from a generic color space. Parameters that are none should
   // be specified as absl::nullopt. The value for `alpha` will be clamped to the
@@ -259,7 +261,7 @@ class PLATFORM_EXPORT Color {
 
   // TODO(crbug.com/1308932): These three functions are just helpers for
   // while we're converting platform/graphics to float color.
-  static Color FromSkColor4f(SkColor4f fc);
+  static constexpr Color FromSkColor4f(SkColor4f fc) { return Color(fc); }
   static constexpr Color FromSkColor(SkColor color) { return Color(color); }
   static constexpr Color FromRGBA32(RGBA32 color) { return Color(color); }
 
@@ -370,7 +372,8 @@ class PLATFORM_EXPORT Color {
   Color::ColorSpace GetColorInterpolationSpace() const;
 
   ColorSpace GetColorSpace() const { return color_space_; }
-  void ConvertToColorSpace(ColorSpace destination_color_space);
+  void ConvertToColorSpace(ColorSpace destination_color_space,
+                           bool resolve_missing_components = true);
 
   // Colors can parse calc(NaN) and calc(Infinity). At computed value time this
   // function is called which resolves all NaNs to zero and +/-infinities to
@@ -386,6 +389,7 @@ class PLATFORM_EXPORT Color {
   FRIEND_TEST_ALL_PREFIXES(BlinkColor, ConvertToColorSpace);
   FRIEND_TEST_ALL_PREFIXES(BlinkColor, toSkColor4fValidation);
   FRIEND_TEST_ALL_PREFIXES(BlinkColor, ExportAsXYZD50Floats);
+  FRIEND_TEST_ALL_PREFIXES(BlinkColor, ResolveMissingComponents);
 
  private:
   String SerializeLegacyColorAsCSSColor() const;
@@ -419,6 +423,7 @@ class PLATFORM_EXPORT Color {
 
   float PremultiplyColor();
   void UnpremultiplyColor();
+  void ResolveMissingComponents();
 
   // HueInterpolation assumes value1 and value2 are degrees, it will interpolate
   // value1 and value2 as per CSS Color 4 spec.

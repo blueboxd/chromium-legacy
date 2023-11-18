@@ -41,8 +41,9 @@ namespace {
 // Generates a new client id and stores it in prefs.
 uint64_t GenerateAndStoreClientId(PrefService* pref_service) {
   uint64_t client_id = 0;
-  while (!client_id)
+  while (!client_id) {
     client_id = base::RandUint64();
+  }
   pref_service->SetUint64(prefs::kUkmClientId, client_id);
 
   // Also reset the session id counter.
@@ -88,14 +89,35 @@ int32_t LoadAndIncrementSessionId(PrefService* pref_service) {
   return session_id;
 }
 
+metrics::UkmLogSourceType GetLogSourceTypeFromSources(
+    const google::protobuf::RepeatedPtrField<Source>& sources) {
+  bool contains_appkm = false;
+  bool contains_ukm = false;
+  for (Source source : sources) {
+    if (source.type() == SourceType::APP_ID) {
+      contains_appkm = true;
+    } else {
+      contains_ukm = true;
+    }
+  }
+  if (contains_appkm && contains_ukm) {
+    return metrics::UkmLogSourceType::BOTH_UKM_AND_APPKM;
+  } else if (contains_appkm) {
+    return metrics::UkmLogSourceType::APPKM_ONLY;
+  } else {
+    return metrics::UkmLogSourceType::UKM_ONLY;
+  }
+}
+
 // Remove elements satisfying the predicate by moving them to the end of the
 // list then truncate.
 template <typename Predicate, typename ReadElements, typename WriteElements>
 void FilterReportElements(Predicate predicate,
                           const ReadElements& elements,
                           WriteElements* mutable_elements) {
-  if (elements.empty())
+  if (elements.empty()) {
     return;
+  }
 
   int entries_size = elements.size();
   int start = 0;
@@ -134,8 +156,9 @@ void PurgeDataFromUnsentLogStore(metrics::UnsentLogStore* ukm_log_store,
         relevant_source_ids.insert(source.id());
       }
     }
-    if (relevant_source_ids.empty())
+    if (relevant_source_ids.empty()) {
       continue;
+    }
 
     // Remove all relevant sources from the report.
     FilterReportElements(
@@ -155,9 +178,13 @@ void PurgeDataFromUnsentLogStore(metrics::UnsentLogStore* ukm_log_store,
         UkmService::SerializeReportProtoToString(&report);
 
     // Replace the compressed log in the store by its filtered version.
+    metrics::LogMetadata log_metadata;
+    log_metadata.log_source_type =
+        GetLogSourceTypeFromSources(report.sources());
+
     const std::string old_compressed_log_data =
         ukm_log_store->ReplaceLogAtIndex(index, reserialized_log_data,
-                                         metrics::LogMetadata());
+                                         log_metadata);
 
     // Reached here only if some Sources satisfied the condition for purging, so
     // reserialized data should now be different.
@@ -175,8 +202,9 @@ BASE_FEATURE(kReportUserNoisedUserBirthYearAndGender,
 bool UkmService::LogCanBeParsed(const std::string& serialized_data) {
   Report report;
   bool report_parse_successful = report.ParseFromString(serialized_data);
-  if (!report_parse_successful)
+  if (!report_parse_successful) {
     return false;
+  }
   // Make sure the reserialized log from this |report| matches the input
   // |serialized_data|.
   std::string reserialized_from_report;
@@ -233,6 +261,7 @@ UkmService::UkmService(PrefService* pref_service,
 }
 
 UkmService::~UkmService() {
+  UkmRecorder::Get()->NotifyStartShutdown();
   DisableReporting();
   DelegatingUkmRecorder::Get()->RemoveDelegate(this);
 }
@@ -260,14 +289,16 @@ void UkmService::Initialize() {
 void UkmService::EnableReporting() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "UkmService::EnableReporting";
-  if (reporting_service_.reporting_active())
+  if (reporting_service_.reporting_active()) {
     return;
+  }
 
   log_creation_time_ = base::TimeTicks::Now();
   metrics_providers_.OnRecordingEnabled();
 
-  if (!initialize_started_)
+  if (!initialize_started_) {
     Initialize();
+  }
   scheduler_->Start();
   reporting_service_.EnableReporting();
 }
@@ -293,8 +324,9 @@ void UkmService::OnAppEnterForeground() {
 
   // If initialize_started_ is false, UKM has not yet been started, so bail. The
   // scheduler will instead be started via EnableReporting().
-  if (!initialize_started_)
+  if (!initialize_started_) {
     return;
+  }
 
   scheduler_->Start();
 }
@@ -305,8 +337,9 @@ void UkmService::OnAppEnterBackground() {
 
   reporting_service_.SetIsInForegound(false);
 
-  if (!initialize_started_)
+  if (!initialize_started_) {
     return;
+  }
 
   scheduler_->Stop();
 
@@ -319,8 +352,9 @@ void UkmService::OnAppEnterBackground() {
 
 void UkmService::Flush(metrics::MetricsLogsEventManager::CreateReason reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (initialize_complete_)
+  if (initialize_complete_) {
     BuildAndStoreLog(reason);
+  }
   reporting_service_.ukm_log_store()->TrimAndPersistUnsentLogs(
       /*overwrite_in_memory_store=*/true);
 }
@@ -343,8 +377,9 @@ void UkmService::PurgeExtensionsData() {
         // It is possible that only one of multiple URLs does due to redirect,
         // in this case, we should still purge the source.
         for (const auto& url_info : source.urls()) {
-          if (GURL(url_info.url()).SchemeIs(kExtensionScheme))
+          if (GURL(url_info.url()).SchemeIs(kExtensionScheme)) {
             return true;
+          }
         }
         return false;
       });
@@ -365,11 +400,13 @@ void UkmService::PurgeAppsData() {
   // its URL.
   PurgeDataFromUnsentLogStore(
       reporting_service_.ukm_log_store(), [&](const Source& source) {
-        if (GetSourceIdType(source.id()) == SourceIdType::APP_ID)
+        if (GetSourceIdType(source.id()) == SourceIdType::APP_ID) {
           return true;
+        }
         for (const auto& url_info : source.urls()) {
-          if (GURL(url_info.url()).SchemeIs(kAppScheme))
+          if (GURL(url_info.url()).SchemeIs(kAppScheme)) {
             return true;
+          }
         }
         return false;
       });
@@ -472,8 +509,9 @@ void UkmService::FinishedInitTask() {
 void UkmService::RotateLog() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "UkmService::RotateLog";
-  if (!reporting_service_.ukm_log_store()->has_unsent_logs())
+  if (!reporting_service_.ukm_log_store()->has_unsent_logs()) {
     BuildAndStoreLog(metrics::MetricsLogsEventManager::CreateReason::kPeriodic);
+  }
   reporting_service_.Start();
   scheduler_->RotationFinished();
 }
@@ -500,8 +538,9 @@ void UkmService::BuildAndStoreLog(
   // Suppress generating a log if we have no new data to include.
   bool empty = sources().empty() && entries().empty();
   UMA_HISTOGRAM_BOOLEAN("UKM.BuildAndStoreLogIsEmpty", empty);
-  if (empty)
+  if (empty) {
     return;
+  }
 
   Report report;
   report.set_client_id(client_id_);
@@ -511,8 +550,9 @@ void UkmService::BuildAndStoreLog(
   const auto product = static_cast<metrics::ChromeUserMetricsExtension_Product>(
       client_->GetProduct());
   // Only set the product if it differs from the default value.
-  if (product != report.product())
+  if (product != report.product()) {
     report.set_product(product);
+  }
 
   StoreRecordingsInReport(&report);
 
@@ -526,7 +566,10 @@ void UkmService::BuildAndStoreLog(
 
   std::string serialized_log =
       UkmService::SerializeReportProtoToString(&report);
+
   metrics::LogMetadata log_metadata;
+  log_metadata.log_source_type = GetLogSourceTypeFromSources(report.sources());
+
   reporting_service_.ukm_log_store()->StoreLog(serialized_log, log_metadata,
                                                reason);
 }

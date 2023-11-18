@@ -28,7 +28,7 @@ int NetworkDelegateImpl::OnHeadersReceived(
     const HttpResponseHeaders* original_response_headers,
     scoped_refptr<HttpResponseHeaders>* override_response_headers,
     const IPEndPoint& endpoint,
-    absl::optional<GURL>* preserve_fragment_on_redirect_url) {
+    std::optional<GURL>* preserve_fragment_on_redirect_url) {
   return OK;
 }
 
@@ -60,6 +60,7 @@ bool NetworkDelegateImpl::OnCanSetCookie(
     const URLRequest& request,
     const net::CanonicalCookie& cookie,
     CookieOptions* options,
+    const net::FirstPartySetMetadata& first_party_set_metadata,
     CookieInclusionStatus* inclusion_status) {
   return true;
 }

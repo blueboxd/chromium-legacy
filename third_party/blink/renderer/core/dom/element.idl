@@ -22,6 +22,9 @@
 dictionary CheckVisibilityOptions {
   boolean checkOpacity = false;
   boolean checkVisibilityCSS = false;
+  [RuntimeEnabled=CheckVisibilityExtraProperties] boolean contentVisibilityAuto = false;
+  [RuntimeEnabled=CheckVisibilityExtraProperties] boolean opacityProperty = false;
+  [RuntimeEnabled=CheckVisibilityExtraProperties] boolean visibilityProperty = false;
 };
 
 // https://dom.spec.whatwg.org/#interface-element
@@ -114,7 +117,7 @@ dictionary CheckVisibilityOptions {
     [Affects=Nothing, Measure, RuntimeCallStatsCounter=ElementGetBoundingClientRect] DOMRect getBoundingClientRect();
 
     // https://drafts.csswg.org/cssom-view/#dom-element-checkvisibility
-    [RuntimeEnabled=checkVisibility] boolean checkVisibility(optional CheckVisibilityOptions options = {});
+    [MeasureAs=ElementCheckVisibility] boolean checkVisibility(optional CheckVisibilityOptions options = {});
 
     // TODO(sunyunjia): Add default value for scrollIntoView() once
     // crbug.com/734599 is fixed.
@@ -156,11 +159,6 @@ dictionary CheckVisibilityOptions {
 
     // Element Timing
     [CEReactions, Reflect=elementtiming] attribute DOMString elementTiming;
-
-    // CSS Toggles
-    // See https://tabatkins.github.io/css-toggle/#dom and
-    // https://github.com/tabatkins/css-toggle/issues/26
-    [RuntimeEnabled=CSSToggles, SameObject] readonly attribute CSSToggleMap toggles;
 };
 
 Element includes ParentNode;

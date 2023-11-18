@@ -25,12 +25,12 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/webui/ash/settings/os_settings_features_util.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/people/account_manager_ui_handler.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/people/fingerprint_handler.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/people/parental_controls_handler.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/people/quick_unlock_handler.h"
 #include "chrome/browser/ui/webui/ash/settings/search/search_tag_registry.h"
-#include "chrome/browser/ui/webui/settings/ash/os_settings_features_util.h"
 #include "chrome/browser/ui/webui/settings/people_handler.h"
 #include "chrome/browser/ui/webui/settings/profile_info_handler.h"
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
@@ -297,6 +297,8 @@ void AddLockScreenPageStrings(content::WebUIDataSource* html_source,
        IDS_OS_SETTINGS_PEOPLE_SET_LOCAL_PASSWORD_DIALOG_TITLE},
       {"setLocalPasswordDialogInternalError",
        IDS_OS_SETTINGS_PEOPLE_SET_LOCAL_PASSWORD_DIALOG_INTERNAL_ERROR},
+      {"showPassword", IDS_AUTH_SETUP_SHOW_PASSWORD},
+      {"hidePassword", IDS_AUTH_SETUP_HIDE_PASSWORD},
       {"setLocalPasswordPlaceholder",
        IDS_AUTH_SETUP_SET_LOCAL_PASSWORD_PLACEHOLDER},
       {"setLocalPasswordConfirmPlaceholder",

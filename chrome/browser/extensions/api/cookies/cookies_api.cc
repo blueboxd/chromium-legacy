@@ -458,11 +458,12 @@ ExtensionFunction::ResponseAction CookiesSetFunction::Run() {
 
   base::Time expiration_time;
   if (parsed_args_->details.expiration_date) {
-    // Time::FromDoubleT converts double time 0 to empty Time object. So we need
-    // to do special handling here.
-    expiration_time = (*parsed_args_->details.expiration_date == 0) ?
-        base::Time::UnixEpoch() :
-        base::Time::FromDoubleT(*parsed_args_->details.expiration_date);
+    // Time::FromSecondsSinceUnixEpoch converts double time 0 to empty Time
+    // object. So we need to do special handling here.
+    expiration_time = (*parsed_args_->details.expiration_date == 0)
+                          ? base::Time::UnixEpoch()
+                          : base::Time::FromSecondsSinceUnixEpoch(
+                                *parsed_args_->details.expiration_date);
   }
 
   net::CookieSameSite same_site = net::CookieSameSite::UNSPECIFIED;
@@ -485,7 +486,6 @@ ExtensionFunction::ResponseAction CookiesSetFunction::Run() {
       break;
   }
 
-  // TODO(crbug.com/1144181): Add support for SameParty attribute.
   std::unique_ptr<net::CanonicalCookie> cc(
       net::CanonicalCookie::CreateSanitizedCookie(
           url_,                                                  //
@@ -500,7 +500,6 @@ ExtensionFunction::ResponseAction CookiesSetFunction::Run() {
           parsed_args_->details.http_only.value_or(false),       //
           same_site,                                             //
           net::COOKIE_PRIORITY_DEFAULT,                          //
-          /*same_party=*/false,                                  //
           partition_key));
   if (!cc) {
     // Return error through callbacks so that the proper error message

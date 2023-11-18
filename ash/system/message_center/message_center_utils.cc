@@ -14,8 +14,8 @@
 #include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/message_center/notification_grouping_controller.h"
 #include "ash/system/message_center/session_state_notification_blocker.h"
+#include "ash/system/notification_center/notification_center_tray.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/unified/unified_system_tray.h"
 #include "base/hash/sha1.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
@@ -159,8 +159,8 @@ GetActiveNotificationViewControllerForDisplay(int64_t display_id) {
   }
 
   return root_window_controller->GetStatusAreaWidget()
-      ->unified_system_tray()
-      ->GetNotificationGroupingController()
+      ->notification_center_tray()
+      ->notification_grouping_controller()
       ->GetActiveNotificationViewController();
 }
 
@@ -300,6 +300,27 @@ absl::optional<gfx::ImageSkia> ResizeImageIfExceedSizeLimit(
   return gfx::ImageSkiaOperations::CreateResizedImage(
       input_image, skia::ImageOperations::RESIZE_BEST,
       gfx::ToFlooredSize(resized_size));
+}
+
+bool IsAshNotificationView(views::View* sender) {
+  auto* message_view = static_cast<message_center::MessageView*>(sender);
+  std::string notification_id = message_view->notification_id();
+
+  message_center::Notification* notification =
+      message_center::MessageCenter::Get()->FindVisibleNotificationById(
+          notification_id);
+
+  return IsAshNotification(notification);
+}
+
+bool IsAshNotification(const message_center::Notification* notification) {
+  if (!notification ||
+      (notification->type() == message_center::NOTIFICATION_TYPE_CUSTOM &&
+       notification->notifier_id().type ==
+           message_center::NotifierType::ARC_APPLICATION)) {
+    return false;
+  }
+  return true;
 }
 
 }  // namespace ash::message_center_utils

@@ -129,9 +129,15 @@ class ExtensionHost : public DeferredStartRenderHost,
   // Returns true if the ExtensionHost is allowed to be navigated.
   bool ShouldAllowNavigations() const;
 
+  std::size_t GetUnackedMessagesSizeForTesting() const {
+    return unacked_messages_.size();
+  }
+
   // content::WebContentsObserver:
+#if BUILDFLAG(ENABLE_EXTENSIONS_LEGACY_IPC)
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* host) override;
+#endif
   void RenderFrameCreated(content::RenderFrameHost* frame_host) override;
   void RenderFrameHostChanged(content::RenderFrameHost* old_host,
                               content::RenderFrameHost* new_host) override;
@@ -172,6 +178,11 @@ class ExtensionHost : public DeferredStartRenderHost,
                            const Extension* extension,
                            UnloadedExtensionReason reason) override;
 
+  // Notifies observers when an event has been acknowledged from the renderer to
+  // the browser. `event_ran_in_lazy_background_page_context` being set to true
+  // emits histograms for some events that ran in lazy background pages.
+  void OnEventAck(int event_id, bool event_ran_in_lazy_background_page_context);
+
  protected:
   // Called each time this ExtensionHost completes a load finishes loading,
   // before any stop-loading notifications or observer methods are called.
@@ -196,11 +207,15 @@ class ExtensionHost : public DeferredStartRenderHost,
     EventDispatchSource dispatch_source;
   };
 
+  // Emits a stale event ack metric if an event with `event_id` is not present
+  // in `unacked_messages_`. Meaning that the event was not yet acked by the
+  // renderer to the browser.
+  void EmitLateAckedEventTask(int event_id);
+
   // DeferredStartRenderHost:
   void CreateRendererNow() override;
 
   // Message handlers.
-  void OnEventAck(int event_id);
   void OnIncrementLazyKeepaliveCount();
   void OnDecrementLazyKeepaliveCount();
 

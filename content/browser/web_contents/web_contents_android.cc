@@ -501,7 +501,7 @@ bool WebContentsAndroid::IsFullscreenForCurrentTab(JNIEnv* env) {
 }
 
 void WebContentsAndroid::ExitFullscreen(JNIEnv* env) {
-  web_contents_->ExitFullscreen(/*will_cause_resize=*/false);
+  web_contents_->ExitFullscreen();
 }
 
 void WebContentsAndroid::ScrollFocusedEditableNodeIntoView(JNIEnv* env) {
@@ -521,17 +521,24 @@ void WebContentsAndroid::ScrollFocusedEditableNodeIntoView(JNIEnv* env) {
 }
 
 void WebContentsAndroid::SelectAroundCaretAck(
+    int startOffset,
+    int endOffset,
+    int surroundingTextLength,
     blink::mojom::SelectAroundCaretResultPtr result) {
   RenderWidgetHostViewAndroid* rwhva = GetRenderWidgetHostViewAndroid();
   if (rwhva) {
-    rwhva->SelectAroundCaretAck(std::move(result));
+    rwhva->SelectAroundCaretAck(startOffset, endOffset, surroundingTextLength,
+                                std::move(result));
   }
 }
 
 void WebContentsAndroid::SelectAroundCaret(JNIEnv* env,
                                            jint granularity,
                                            jboolean should_show_handle,
-                                           jboolean should_show_context_menu) {
+                                           jboolean should_show_context_menu,
+                                           jint startOffset,
+                                           jint endOffset,
+                                           jint surroundingTextLength) {
   auto* input_handler = web_contents_->GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
@@ -539,7 +546,8 @@ void WebContentsAndroid::SelectAroundCaret(JNIEnv* env,
       static_cast<blink::mojom::SelectionGranularity>(granularity),
       should_show_handle, should_show_context_menu,
       base::BindOnce(&WebContentsAndroid::SelectAroundCaretAck,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr(), startOffset, endOffset,
+                     surroundingTextLength));
 }
 
 void WebContentsAndroid::AdjustSelectionByCharacterOffset(

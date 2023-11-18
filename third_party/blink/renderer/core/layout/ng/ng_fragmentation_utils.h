@@ -7,8 +7,8 @@
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/layout/geometry/box_strut.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
+#include "third_party/blink/renderer/core/layout/inline/inline_break_token.h"
+#include "third_party/blink/renderer/core/layout/inline/inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
@@ -514,6 +514,9 @@ const NGBlockBreakToken* PreviousFragmentainerBreakToken(
 // possible. This function should no longer be necessary once everything has
 // been properly converted to LayoutNG.
 const NGBlockBreakToken* FindPreviousBreakToken(const NGPhysicalBoxFragment&);
+
+// Return the LayoutBox::PhysicalFragments() index for this fragment.
+wtf_size_t BoxFragmentIndex(const NGPhysicalBoxFragment&);
 
 // Return the index of the fragmentainer preceding the first fragmentainer
 // inside this fragment. Used by nested block fragmentation.

@@ -502,8 +502,22 @@ public final class MostVisitedTilesProcessorUnitTest {
 
     @Test
     public void getMinimumCarouselItemViewHeight_forFullTestCoverage() {
+        // TODO(ender): migrate this to measured dimensions when TileViews no longer grow with the
+        // parent.
+        assertEquals(
+                mContext.getResources().getDimensionPixelSize(R.dimen.tile_view_width),
+                mProcessor.getCarouselItemViewWidth());
         assertEquals(
                 mContext.getResources().getDimensionPixelSize(R.dimen.tile_view_min_height),
-                mProcessor.getMinimumCarouselItemViewHeight());
+                mProcessor.getCarouselItemViewHeight());
+    }
+
+    @Test
+    public void createModel_checkContentDescription() {
+        populateTilePropertiesForTiles(0, new SuggestTile("", SEARCH_URL, true));
+
+        assertEquals(
+                mContext.getResources().getString(R.string.accessibility_omnibox_most_visited_list),
+                mPropertyModel.get(BaseCarouselSuggestionViewProperties.CONTENT_DESCRIPTION));
     }
 }

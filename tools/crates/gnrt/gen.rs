@@ -7,7 +7,10 @@ use crate::*;
 use crates::{CrateFiles, Epoch, ThirdPartySource, VendoredCrate};
 use manifest::*;
 
-use crate::util::{check_exit_ok, check_spawn, check_wait_with_output, create_dirs_if_needed};
+use crate::util::{
+    check_exit_ok, check_spawn, check_wait_with_output, create_dirs_if_needed, init_handlebars,
+    run_cargo_metadata,
+};
 
 use std::collections::{HashMap, HashSet};
 use std::fs;
@@ -16,13 +19,12 @@ use std::path::{Path, PathBuf};
 use std::process;
 
 use anyhow::{bail, ensure, format_err, Context, Result};
-use handlebars::handlebars_helper;
 
 pub fn generate(args: &clap::ArgMatches, paths: &paths::ChromiumPaths) -> Result<()> {
     if args.get_one::<String>("for-std").is_some() {
         generate_for_std(args, paths)
     } else {
-        generate_for_third_party(args, paths)
+        generate_for_third_party_ng(args, paths)
     }
 }
 
@@ -35,7 +37,9 @@ fn generate_for_third_party(args: &clap::ArgMatches, paths: &paths::ChromiumPath
     // Used to generate Cargo.toml [patch] sections, and later to check against
     // `cargo metadata`'s dependency resolution to ensure we have all the crates
     // we need. We sort `crates` for a stable ordering of [patch] sections.
-    let source = crates::ThirdPartySource::new(paths.third_party)?;
+    let source = crates::ThirdPartySource::new(
+        &paths.third_party.join("chromium_crates_io").join("vendor"),
+    )?;
 
     let manifest_contents =
         String::from_utf8(fs::read(paths.third_party.join("third_party.toml")).unwrap()).unwrap();
@@ -104,18 +108,11 @@ fn generate_for_third_party(args: &clap::ArgMatches, paths: &paths::ChromiumPath
     )
     .unwrap();
 
-    // Run `cargo metadata` and process the output to get a list of crates we
-    // depend on.
-    let mut command = cargo_metadata::MetadataCommand::new();
-    if let Some(cargo_path) = args.get_one::<String>("cargo-path") {
-        command.cargo_path(cargo_path);
-    }
-    if let Some(rustc_path) = args.get_one::<String>("rustc-path") {
-        command.env("RUSTC", rustc_path);
-    }
-
-    command.current_dir(paths.third_party);
-    let dependencies = deps::collect_dependencies(&command.exec().unwrap(), None, None);
+    let dependencies = deps::collect_dependencies(
+        &run_cargo_metadata(paths.third_party.into(), args, Vec::new(), HashMap::new())?,
+        None,
+        None,
+    );
 
     // Compare cargo's dependency resolution with the crates we have on disk. We
     // want to ensure:
@@ -232,20 +229,6 @@ fn generate_for_third_party(args: &clap::ArgMatches, paths: &paths::ChromiumPath
     Ok(())
 }
 
-fn init_handlebars(template_path: &Path) -> Result<handlebars::Handlebars> {
-    let mut handlebars = handlebars::Handlebars::new();
-
-    // Don't escape output strings; the default is to escape for HTML output. Do
-    // not auto-escape for GN either, so that non-string GN may also be passed.
-    handlebars.register_escape_fn(handlebars::no_escape);
-    handlebars.register_template_file("template", template_path).context("loading gn template")?;
-
-    // Install helper to escape inputs pasted in GN `".."` strings.
-    handlebars_helper!(gn_escape: |x: String| gn::escape_for_handlebars(&x));
-    handlebars.register_helper("gn_escape", Box::new(gn_escape));
-    Ok(handlebars)
-}
-
 fn generate_for_std(args: &clap::ArgMatches, paths: &paths::ChromiumPaths) -> Result<()> {
     // Load config file, which applies rustenv and cfg flags to some std crates.
     let config_file_contents = std::fs::read_to_string(paths.std_config_file).unwrap();
@@ -279,24 +262,6 @@ fn generate_for_std(args: &clap::ArgMatches, paths: &paths::ChromiumPaths) -> Re
     // Convert the `rust_src_root` to a Path hereafter.
     let rust_src_root = paths.root.join(Path::new(&rust_src_root));
 
-    // Run `cargo metadata` from the std package in the Rust source tree (which
-    // is a workspace).
-    let mut command = cargo_metadata::MetadataCommand::new();
-    if let Some(cargo_path) = args.get_one::<String>("cargo-path") {
-        command.cargo_path(cargo_path);
-    }
-    if let Some(rustc_path) = args.get_one::<String>("rustc-path") {
-        command.env("RUSTC", rustc_path);
-    }
-
-    command.current_dir(paths.std_fake_root);
-
-    // The Cargo.toml files in the Rust toolchain may use nightly Cargo
-    // features, but the cargo binary is beta. This env var enables the
-    // beta cargo binary to allow nightly features anyway.
-    // https://github.com/rust-lang/rust/commit/2e52f4deb0544480b6aefe2c0cc1e6f3c893b081
-    command.env("RUSTC_BOOTSTRAP", "1");
-
     // Delete the Cargo.lock if it exists.
     let mut std_fake_root_cargo_lock = paths.std_fake_root.to_path_buf();
     std_fake_root_cargo_lock.push("Cargo.lock");
@@ -308,14 +273,21 @@ fn generate_for_std(args: &clap::ArgMatches, paths: &paths::ChromiumPaths) -> Re
         }
     }
 
+    // The Cargo.toml files in the Rust toolchain may use nightly Cargo
+    // features, but the cargo binary is beta. This env var enables the
+    // beta cargo binary to allow nightly features anyway.
+    // https://github.com/rust-lang/rust/commit/2e52f4deb0544480b6aefe2c0cc1e6f3c893b081
+    let cargo_extra_env: HashMap<std::ffi::OsString, std::ffi::OsString> =
+        [("RUSTC_BOOTSTRAP".into(), "1".into())].into_iter().collect();
+
     // Use offline to constrain dependency resolution to those in the Rust src
     // tree and vendored crates. Ideally, we'd use "--locked" and use the
     // upstream Cargo.lock, but this is not straightforward since the rust-src
     // component is not a full Cargo workspace. Since the vendor dir we package
     // is generated with "--locked", the outcome should be the same.
-    command.other_options(vec!["--offline".to_string()]);
+    let cargo_extra_options = vec!["--offline".to_string()];
 
-    // Compute the set of crates we need to build to build libstd. Note this
+    // Compute the set of crates we need to build libstd. Note this
     // contains a few kinds of entries:
     // * Rust workspace packages (e.g. core, alloc, std, unwind, etc)
     // * Non-workspace packages supplied in Rust source tree (e.g. stdarch)
@@ -325,22 +297,29 @@ fn generate_for_std(args: &clap::ArgMatches, paths: &paths::ChromiumPaths) -> Re
     //   Rust codebase (see
     //   https://github.com/rust-lang/rust/tree/master/library/rustc-std-workspace-core)
     let mut dependencies = deps::collect_dependencies(
-        &command.exec().unwrap(),
+        &run_cargo_metadata(
+            paths.std_fake_root.into(),
+            args,
+            cargo_extra_options,
+            cargo_extra_env,
+        )?,
         Some(vec![config.resolve.root.clone()]),
         None,
     );
 
     // Filter out any crates' dependencies removed by config file.
     for dep in dependencies.iter_mut() {
-        let Some(conf) = config.per_crate_config.get(&dep.package_name) else { continue };
-        if conf.remove_deps.is_empty() {
+        let all: Option<&Vec<String>> = Some(&config.all_config.remove_deps);
+        let per: Option<&Vec<String>> =
+            config.per_crate_config.get(&dep.package_name).map(|config| &config.remove_deps);
+
+        let combined: Vec<&String> = all.into_iter().chain(per).flatten().collect();
+        if combined.is_empty() {
             continue;
         }
 
         for kind in [&mut dep.dependencies, &mut dep.build_dependencies] {
-            kind.retain(|dep_of_dep| {
-                !conf.remove_deps.iter().any(|r| **r == dep_of_dep.package_name)
-            });
+            kind.retain(|dep_of_dep| !combined.iter().any(|r| **r == dep_of_dep.package_name));
         }
     }
 
@@ -418,15 +397,18 @@ fn generate_for_std(args: &clap::ArgMatches, paths: &paths::ChromiumPaths) -> Re
         .iter()
         .filter(|p| p.lib_target.is_some())
         .map(|p| {
-            crates::collect_std_crate_files(p, &config)
+            crates::collect_std_crate_files(p, &config, crates::IncludeCrateTargets::LibOnly)
                 .expect("missing a stdlib input file, did you gclient sync?")
         })
         .collect();
 
-    let build_file =
-        gn::build_file_from_std_deps(dependencies.iter(), paths, &config, |crate_id| {
-            crate_inputs.get(crate_id).unwrap()
-        });
+    let build_file = gn::build_file_from_std_deps(
+        dependencies.iter(),
+        paths,
+        &config,
+        gn::NameLibStyle::PackageName,
+        |crate_id| crate_inputs.get(crate_id).unwrap(),
+    );
 
     if args.get_flag("dump-template-input") {
         return serde_json::to_writer_pretty(
@@ -442,6 +424,148 @@ fn generate_for_std(args: &clap::ArgMatches, paths: &paths::ChromiumPaths) -> Re
     Ok(())
 }
 
+fn generate_for_third_party_ng(
+    args: &clap::ArgMatches,
+    paths: &paths::ChromiumPaths,
+) -> Result<()> {
+    let config_file_contents = std::fs::read_to_string(paths.third_party_config_file).unwrap();
+    let config: config::BuildConfig = toml::de::from_str(&config_file_contents).unwrap();
+
+    let template_path =
+        paths.third_party_config_file.parent().unwrap().join(&config.gn_config.build_file_template);
+    let handlebars = init_handlebars(&template_path)?;
+
+    println!("Generating third-party GN rules from {}", paths.third_party_cargo_root.display());
+
+    let cargo_extra_options = vec![
+        // Use offline to constrain dependency resolution to locally vendored crates.
+        "--offline".to_string(),
+        // Use locked to prevent updating dependencies at the same time as generating
+        // metadata.
+        "--locked".to_string(),
+    ];
+
+    // Compute the set of all third-party crates.
+    let mut dependencies = deps::collect_dependencies(
+        &run_cargo_metadata(
+            paths.third_party_cargo_root.into(),
+            args,
+            cargo_extra_options,
+            HashMap::new(),
+        )?,
+        Some(vec![config.resolve.root.clone()]),
+        None,
+    );
+
+    // Filter out any crates' dependencies removed by config file.
+    for dep in dependencies.iter_mut() {
+        let all: Option<&Vec<String>> = Some(&config.all_config.remove_deps);
+        let per: Option<&Vec<String>> =
+            config.per_crate_config.get(&dep.package_name).map(|config| &config.remove_deps);
+
+        let combined: Vec<&String> = all.into_iter().chain(per).flatten().collect();
+        if combined.is_empty() {
+            continue;
+        }
+
+        for kind in [&mut dep.dependencies, &mut dep.build_dependencies] {
+            kind.retain(|dep_of_dep| !combined.iter().any(|r| **r == dep_of_dep.package_name));
+        }
+    }
+
+    // Remove any excluded dep entries.
+    dependencies
+        .retain(|dep| !config.resolve.remove_crates.iter().any(|r| **r == dep.package_name));
+
+    // Remove dev dependencies since tests aren't run.
+    dependencies.retain(|dep| {
+        dep.dependency_kinds.contains_key(&deps::DependencyKind::Normal)
+        // TODO: Needed?
+            || dep.dependency_kinds.contains_key(&deps::DependencyKind::Build)
+    });
+
+    dependencies.sort_unstable_by(|a, b| {
+        a.package_name.cmp(&b.package_name).then(a.version.cmp(&b.version))
+    });
+
+    let crate_inputs: HashMap<VendoredCrate, CrateFiles> = dependencies
+        .iter()
+        .map(|p| {
+            crates::collect_std_crate_files(p, &config, crates::IncludeCrateTargets::LibAndBin)
+                .expect(&format!(
+                    "missing a crate input file for '{}'. Dependencies are not vendored?",
+                    p.package_name
+                ))
+        })
+        .collect();
+
+    // If there are multiple crates with the same epoch, this is unexpected.
+    // Bail out.
+    {
+        let mut found = HashSet::new();
+        for dep in &dependencies {
+            let epoch = crates::Epoch::from_version(&dep.version);
+            if found.insert((&dep.package_name, epoch)) == false {
+                Err(anyhow!(
+                    "Two '{}' crates found with the same {} epoch",
+                    dep.package_name,
+                    epoch
+                ))?
+            }
+        }
+    }
+
+    // Split up the dependencies by crate and epoch.
+    let all_build_files: HashMap<PathBuf, gn::BuildFile> = {
+        let mut map = HashMap::new();
+        for dep in &dependencies {
+            let build_file = gn::build_file_from_std_deps(
+                std::iter::once(dep),
+                paths,
+                &config,
+                // TODO(danakj): Change to PackageName for consistency?
+                gn::NameLibStyle::LibLiteral,
+                |crate_id| crate_inputs.get(crate_id).unwrap(),
+            );
+            let path = paths
+                .third_party
+                // TODO(danakj): Generate into `safe`, `sandbox`, or `test` directories here.
+                .join(crates::NormalizedName::from_crate_name(&dep.package_name).as_str())
+                .join(crates::Epoch::from_version(&dep.version).to_string());
+            let previous = map.insert(path, build_file);
+            if previous.is_some() {
+                Err(format_err!(
+                    "multiple versions of crate {} with the same epoch",
+                    dep.package_name
+                ))?
+            }
+        }
+        map
+    };
+
+    for (dir, _) in &all_build_files {
+        create_dirs_if_needed(dir).context(format!("dir: {}", dir.display()))?;
+    }
+
+    if args.get_flag("dump-template-input") {
+        for (dir, build_file) in &all_build_files {
+            serde_json::to_writer_pretty(
+                std::fs::File::create(dir.join("gnrt-template-input.json"))
+                    .context("opening dump file")?,
+                &build_file,
+            )
+            .context("dumping gn information")?;
+        }
+        return Ok(());
+    }
+
+    for (dir, build_file) in &all_build_files {
+        let gn_str = handlebars.render("template", &build_file)?;
+        write_build_file(&dir.join("BUILD.gn"), gn_str).unwrap();
+    }
+    Ok(())
+}
+
 fn build_file_path(crate_id: &VendoredCrate, paths: &paths::ChromiumPaths) -> PathBuf {
     let mut path = paths.root.clone();
     path.push(paths.third_party);
@@ -450,10 +574,7 @@ fn build_file_path(crate_id: &VendoredCrate, paths: &paths::ChromiumPaths) -> Pa
     path
 }
 
-fn write_build_file<BuildFile: std::fmt::Display>(
-    path: &Path,
-    build_file: BuildFile,
-) -> Result<()> {
+fn write_build_file(path: &Path, content: String) -> Result<()> {
     let cmd_name = "gn format";
     let output_handle = fs::File::create(path)
         .with_context(|| format!("Could not create GN output file {}", path.to_string_lossy()))?;
@@ -469,7 +590,7 @@ fn write_build_file<BuildFile: std::fmt::Display>(
         cmd_name,
     )?;
 
-    write!(io::BufWriter::new(child.stdin.take().unwrap()), "{}", build_file)
+    write!(io::BufWriter::new(child.stdin.take().unwrap()), "{}", content)
         .context("Failed to write to GN format process")?;
     check_exit_ok(&check_wait_with_output(child, cmd_name)?, cmd_name)
 }

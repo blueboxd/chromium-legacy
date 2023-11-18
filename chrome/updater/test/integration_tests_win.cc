@@ -11,7 +11,9 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base_paths.h"
@@ -81,7 +83,6 @@
 #include "components/crx_file/crx_verifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace updater::test {
@@ -112,13 +113,35 @@ HRESULT CreateLocalServer(GUID clsid,
       .Valid();
 }
 
+[[nodiscard]] bool RegKeyExists64(HKEY root, const std::wstring& path) {
+  return base::win::RegKey(root, path.c_str(),
+                           KEY_WOW64_64KEY | KEY_QUERY_VALUE)
+      .Valid();
+}
+
 [[nodiscard]] bool RegKeyExistsCOM(HKEY root, const std::wstring& path) {
   return base::win::RegKey(root, path.c_str(), KEY_QUERY_VALUE).Valid();
+}
+
+[[nodiscard]] std::wstring ReadRegValue(HKEY root,
+                                        const std::wstring& path,
+                                        const std::wstring& value,
+                                        REGSAM wow64_access) {
+  std::wstring result;
+  base::win::RegKey(root, path.c_str(), wow64_access | KEY_QUERY_VALUE)
+      .ReadValue(value.c_str(), &result);
+  return result;
 }
 
 [[nodiscard]] bool DeleteRegKey(HKEY root, const std::wstring& path) {
   LONG result =
       base::win::RegKey(root, L"", Wow6432(DELETE)).DeleteKey(path.c_str());
+  return result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND;
+}
+
+[[nodiscard]] bool DeleteRegKey64(HKEY root, const std::wstring& path) {
+  LONG result = base::win::RegKey(root, L"", KEY_WOW64_64KEY | DELETE)
+                    .DeleteKey(path.c_str());
   return result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND;
 }
 
@@ -237,6 +260,13 @@ void CheckInstallation(UpdaterScope scope,
                     Wow6432(KEY_READ))
                     .ReadValue(kRegValuePV, &pv));
       EXPECT_STREQ(kUpdaterVersionUtf16, pv.c_str());
+      EXPECT_EQ(
+          ERROR_SUCCESS,
+          base::win::RegKey(
+              root, GetAppClientStateKey(kLegacyGoogleUpdateAppID).c_str(),
+              Wow6432(KEY_READ))
+              .ReadValue(kRegValuePV, &pv));
+      EXPECT_STREQ(kUpdaterVersionUtf16, pv.c_str());
 
       std::wstring uninstall_cmd_line_string;
       EXPECT_EQ(ERROR_SUCCESS,
@@ -297,11 +327,18 @@ void CheckInstallation(UpdaterScope scope,
     }
   }
 
-  for (const IID& iid :
-       JoinVectors(GetSideBySideInterfaces(scope),
-                   is_active_and_sxs ? GetActiveInterfaces(scope)
-                                     : std::vector<IID>())) {
-    EXPECT_EQ(is_installed, RegKeyExistsCOM(root, GetComIidRegistryPath(iid)));
+  for (const auto& [iid, expected_interface_name] : JoinVectors(
+           GetSideBySideInterfaces(scope),
+           is_active_and_sxs ? GetActiveInterfaces(scope)
+                             : std::vector<std::pair<IID, std::wstring>>())) {
+    EXPECT_EQ(is_installed, RegKeyExists(root, GetComIidRegistryPath(iid)));
+    EXPECT_EQ(is_installed, RegKeyExists64(root, GetComIidRegistryPath(iid)));
+    if (is_installed) {
+      for (const auto& key_flag : {KEY_WOW64_32KEY, KEY_WOW64_64KEY}) {
+        EXPECT_EQ(ReadRegValue(root, GetComIidRegistryPath(iid), L"", key_flag),
+                  expected_interface_name);
+      }
+    }
     EXPECT_EQ(is_installed,
               RegKeyExistsCOM(root, GetComTypeLibRegistryPath(iid)));
   }
@@ -360,7 +397,7 @@ void CheckInstallation(UpdaterScope scope,
         });
   }
 
-  const absl::optional<base::FilePath> path =
+  const std::optional<base::FilePath> path =
       GetVersionedInstallDirectory(scope, base::Version(kUpdaterVersion));
   ASSERT_TRUE(path);
   EXPECT_TRUE(WaitFor([&]() { return is_installed == base::PathExists(*path); },
@@ -582,7 +619,7 @@ void RunOfflineInstallWithManifest(UpdaterScope scope,
 
   EXPECT_TRUE(DeleteRegKey(root, app_client_state_key));
 
-  const absl::optional<base::FilePath> updater_exe =
+  const std::optional<base::FilePath> updater_exe =
       GetUpdaterExecutablePath(scope);
   ASSERT_TRUE(updater_exe.has_value());
 
@@ -641,7 +678,7 @@ void RunOfflineInstallWithManifest(UpdaterScope scope,
   base::FilePath manifest_path = offline_dir.Append(manifest_filename);
   int64_t app_installer_size = 0;
   EXPECT_TRUE(base::GetFileSize(app_installer, &app_installer_size));
-  const std::string manifest = base::StringPrintf(
+  const std::string manifest = base::StringPrintfNonConstexpr(
       manifest_format.c_str(), kTestAppID, kTestPV.GetString().c_str(),
       kAppInstallerName, app_installer_size, kAppInstallerName);
   EXPECT_TRUE(base::WriteFile(manifest_path, manifest));
@@ -746,10 +783,25 @@ void Clean(UpdaterScope scope) {
     }
   }
 
-  for (const IID& iid : JoinVectors(GetSideBySideInterfaces(scope),
-                                    GetActiveInterfaces(scope))) {
-    EXPECT_TRUE(DeleteRegKeyCOM(root, GetComIidRegistryPath(iid)));
-    EXPECT_TRUE(DeleteRegKeyCOM(root, GetComTypeLibRegistryPath(iid)));
+  // To avoid `TYPE_E_CANTLOADLIBRARY` errors due to a failed cleanup of a
+  // previous user test run, this code cleans up both system and user
+  // interface/typelib entries when running system tests.
+  for (const UpdaterScope interface_scope : [&]() -> std::vector<UpdaterScope> {
+         if (IsSystemInstall(scope)) {
+           return {scope, UpdaterScope::kUser};
+         } else {
+           return {scope};
+         }
+       }()) {
+    for (const auto& [iid, interface_name] :
+         JoinVectors(GetSideBySideInterfaces(interface_scope),
+                     GetActiveInterfaces(interface_scope))) {
+      const HKEY interface_root = UpdaterScopeToHKeyRoot(interface_scope);
+      EXPECT_TRUE(DeleteRegKey(interface_root, GetComIidRegistryPath(iid)));
+      EXPECT_TRUE(DeleteRegKey64(interface_root, GetComIidRegistryPath(iid)));
+      EXPECT_TRUE(
+          DeleteRegKeyCOM(interface_root, GetComTypeLibRegistryPath(iid)));
+    }
   }
 
   if (!IsSystemInstall(scope)) {
@@ -777,12 +829,12 @@ void Clean(UpdaterScope scope) {
         EXPECT_TRUE(task_scheduler->DeleteTask(task_name));
       });
 
-  const absl::optional<base::FilePath> target_path =
+  const std::optional<base::FilePath> target_path =
       GetGoogleUpdateExePath(scope);
   if (target_path)
     base::DeleteFile(*target_path);
 
-  absl::optional<base::FilePath> path = GetInstallDirectory(scope);
+  std::optional<base::FilePath> path = GetInstallDirectory(scope);
   ASSERT_TRUE(path);
   ASSERT_TRUE(base::DeletePathRecursively(*path)) << *path;
 }
@@ -813,6 +865,26 @@ void ExpectClean(UpdaterScope scope) {
   ExpectCleanProcesses();
   CheckInstallation(scope, CheckInstallationStatus::kCheckIsNotInstalled,
                     CheckInstallationVersions::kCheckActiveAndSxS);
+
+  // Check that the caches have been removed.
+  const std::optional<base::FilePath> path = GetCacheBaseDirectory(scope);
+  ASSERT_TRUE(path);
+  EXPECT_TRUE(WaitFor(
+      [&]() { return !base::PathExists(*path); },
+      [&]() { VLOG(0) << "Still waiting for cache removal: " << *path; }))
+      << base::JoinString(
+             [&path]() {
+               std::vector<base::FilePath::StringType> files;
+               base::FileEnumerator(*path, true,
+                                    base::FileEnumerator::FILES |
+                                        base::FileEnumerator::DIRECTORIES)
+                   .ForEach([&files](const base::FilePath& name) {
+                     files.push_back(name.value());
+                   });
+
+               return files;
+             }(),
+             FILE_PATH_LITERAL(","));
 }
 
 void ExpectCandidateUninstalled(UpdaterScope scope) {
@@ -890,31 +962,31 @@ bool WaitForUpdaterExit(UpdaterScope /*scope*/) {
 // typelib.
 void VerifyInterfacesRegistryEntries(UpdaterScope scope) {
   for (const auto is_internal : {true, false}) {
-    for (const auto& iid : GetInterfaces(is_internal, scope)) {
+    for (const auto& [iid, interface_name] :
+         GetInterfaces(is_internal, scope)) {
       const HKEY root = UpdaterScopeToHKeyRoot(scope);
       const std::wstring iid_reg_path = GetComIidRegistryPath(iid);
       const std::wstring typelib_reg_path = GetComTypeLibRegistryPath(iid);
       const std::wstring iid_string = base::win::WStringFromGUID(iid);
 
-      std::wstring val;
-      {
-        const auto& path = iid_reg_path + L"\\ProxyStubClsid32";
-        EXPECT_EQ(base::win::RegKey(root, path.c_str(), KEY_READ)
-                      .ReadValue(L"", &val),
-                  ERROR_SUCCESS)
-            << ": " << root << ": " << path << ": " << iid_string;
-        EXPECT_EQ(val, L"{00020424-0000-0000-C000-000000000046}");
+      for (const auto& key_flag : {KEY_WOW64_32KEY, KEY_WOW64_64KEY}) {
+        std::wstring val;
+        EXPECT_EQ(ReadRegValue(root, iid_reg_path, L"", key_flag),
+                  interface_name);
+        EXPECT_EQ(ReadRegValue(root, iid_reg_path + L"\\ProxyStubClsid32", L"",
+                               key_flag),
+                  L"{00020424-0000-0000-C000-000000000046}");
+        EXPECT_EQ(
+            ReadRegValue(root, iid_reg_path + L"\\TypeLib", L"", key_flag),
+            iid_string);
+        EXPECT_EQ(ReadRegValue(root, iid_reg_path + L"\\TypeLib", L"Version",
+                               key_flag),
+                  L"1.0");
       }
 
-      {
-        const auto& path = iid_reg_path + L"\\TypeLib";
-        EXPECT_EQ(base::win::RegKey(root, path.c_str(), KEY_READ)
-                      .ReadValue(L"", &val),
-                  ERROR_SUCCESS)
-            << ": " << root << ": " << path << ": " << iid_string;
-        EXPECT_EQ(val, iid_string);
-      }
-
+      EXPECT_EQ(ReadRegValue(root, typelib_reg_path + L"\\1.0", L"", 0),
+                base::StrCat({PRODUCT_FULLNAME_STRING L" TypeLib for ",
+                              interface_name}));
       const std::wstring typelib_reg_path_win32 =
           typelib_reg_path + L"\\1.0\\0\\win32";
       const std::wstring typelib_reg_path_win64 =
@@ -1141,6 +1213,7 @@ HRESULT DoUpdate(UpdaterScope scope,
 
   LONG state_value = 0;
   LONG error_code = 0;
+  std::wstring extra_data;
   while (!done && (timer.Elapsed() < kExpirationTimeout)) {
     Microsoft::WRL::ComPtr<IDispatch> app_dispatch;
     EXPECT_HRESULT_SUCCEEDED(bundle->get_appWeb(0, &app_dispatch));
@@ -1161,9 +1234,9 @@ HRESULT DoUpdate(UpdaterScope scope,
                                : __uuidof(ICurrentStateUser),
         IID_PPV_ARGS_Helper(&state)));
     EXPECT_HRESULT_SUCCEEDED(state->get_stateValue(&state_value));
+    EXPECT_HRESULT_SUCCEEDED(state->get_errorCode(&error_code));
 
     std::wstring state_description;
-    std::wstring extra_data;
     done = state_value == expected_final_state;
     switch (state_value) {
       case STATE_INIT:
@@ -1259,7 +1332,6 @@ HRESULT DoUpdate(UpdaterScope scope,
 
       case STATE_ERROR: {
         state_description = L"Error!";
-        EXPECT_HRESULT_SUCCEEDED(state->get_errorCode(&error_code));
         base::win::ScopedBstr completion_message;
         EXPECT_HRESULT_SUCCEEDED(
             state->get_completionMessage(completion_message.Receive()));
@@ -1283,9 +1355,9 @@ HRESULT DoUpdate(UpdaterScope scope,
 
   EXPECT_TRUE(done)
       << "The test timed out, consider increasing kExpirationTimeout which is: "
-      << kExpirationTimeout;
-  EXPECT_EQ(expected_final_state, state_value);
-  EXPECT_EQ(expected_error_code, error_code);
+      << kExpirationTimeout << ": " << extra_data;
+  EXPECT_EQ(expected_final_state, state_value) << extra_data;
+  EXPECT_EQ(expected_error_code, error_code) << extra_data;
   return S_OK;
 }
 
@@ -1607,7 +1679,7 @@ void RunUninstallCmdLine(UpdaterScope scope) {
 }
 
 void RunHandoff(UpdaterScope scope, const std::string& app_id) {
-  const absl::optional<base::FilePath> installed_executable_path =
+  const std::optional<base::FilePath> installed_executable_path =
       GetUpdaterExecutablePath(scope);
   ASSERT_TRUE(installed_executable_path);
   ASSERT_TRUE(base::PathExists(*installed_executable_path));
@@ -1730,14 +1802,14 @@ void SetupFakeLegacyUpdater(UpdaterScope scope) {
 
   // Set up a mock `GoogleUpdate.exe`, and the following mock directories:
   // `Download`, `Install`, and a versioned `1.2.3.4` directory.
-  const absl::optional<base::FilePath> google_update_exe =
+  const std::optional<base::FilePath> google_update_exe =
       GetGoogleUpdateExePath(scope);
   ASSERT_TRUE(google_update_exe.has_value());
   SetupMockUpdater(google_update_exe.value());
 }
 
 void RunFakeLegacyUpdater(UpdaterScope scope) {
-  const absl::optional<base::FilePath> google_update_exe =
+  const std::optional<base::FilePath> google_update_exe =
       GetGoogleUpdateExePath(scope);
   ASSERT_TRUE(base::PathExists(*google_update_exe));
 
@@ -1873,7 +1945,7 @@ void ExpectLegacyUpdaterMigrated(UpdaterScope scope) {
 
   // Expect only a single file `GoogleUpdate.exe` and nothing else under
   // `\Google\Update`.
-  const absl::optional<base::FilePath> google_update_exe =
+  const std::optional<base::FilePath> google_update_exe =
       GetGoogleUpdateExePath(scope);
   ASSERT_TRUE(google_update_exe.has_value());
   ExpectOnlyMockUpdater(google_update_exe.value());

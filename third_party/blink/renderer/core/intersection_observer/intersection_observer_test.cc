@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 
-#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
@@ -1138,17 +1137,14 @@ TEST_P(IntersectionObserverTest, CachedRectsWithOverflowHidden) {
   EXPECT_FALSE(observation2->CanUseCachedRectsForTesting());
   EXPECT_FALSE(observation3->CanUseCachedRectsForTesting());
 
-  // Scrolling the root should not invalidate.
+  // Scrolling the root the first time creates a scroll translation node which
+  // causes the invalidation.
   root->scrollTo(0, 100);
   target2->parentElement()->scrollTo(0, 100);
   target3->parentElement()->scrollTo(0, 100);
   GetDocument().View()->UpdateLifecycleToPrePaintClean(
       DocumentUpdateReason::kTest);
-  if (RuntimeEnabledFeatures::IntersectionOptimizationEnabled()) {
-    EXPECT_TRUE(observation1->CanUseCachedRectsForTesting());
-  } else {
-    EXPECT_FALSE(observation3->CanUseCachedRectsForTesting());
-  }
+  EXPECT_FALSE(observation1->CanUseCachedRectsForTesting());
   EXPECT_FALSE(observation2->CanUseCachedRectsForTesting());
   EXPECT_FALSE(observation3->CanUseCachedRectsForTesting());
 
@@ -1336,7 +1332,6 @@ TEST_P(IntersectionObserverTest, MinScrollDeltaToUpdateThresholdZero) {
     </div>
   )HTML");
 
-  base::HistogramTester histogram_tester;
   Element* root = GetDocument().getElementById(AtomicString("root"));
   Element* target = GetDocument().getElementById(AtomicString("target"));
   LocalFrameView* frame_view = GetDocument().View();
@@ -1365,45 +1360,23 @@ TEST_P(IntersectionObserverTest, MinScrollDeltaToUpdateThresholdZero) {
             frame_view->MinScrollDeltaToUpdateIntersectionForTesting());
   EXPECT_EQ(LocalFrameView::kNotNeeded,
             frame_view->GetIntersectionObservationStateForTesting());
-  histogram_tester.ExpectTotalCount(
-      "Blink.IntersectionObservation.StateOnScroll", 0);
-  histogram_tester.ExpectUniqueSample(
-      "Blink.IntersectionObservation.MinScrollDeltaToUpdateX", 50, 1);
-  histogram_tester.ExpectUniqueSample(
-      "Blink.IntersectionObservation.MinScrollDeltaToUpdateY", 100, 1);
-  histogram_tester.ExpectUniqueSample(
-      "Blink.IntersectionObservation.FrameMinScrollDeltaToUpdateX", 50, 1);
-  histogram_tester.ExpectUniqueSample(
-      "Blink.IntersectionObservation.FrameMinScrollDeltaToUpdateY", 100, 1);
-  histogram_tester.ExpectUniqueSample(
-      "Blink.IntersectionObservation.UsesCachedRects", false, 1);
 
   root->scrollTo(0, 50);
   EXPECT_EQ(gfx::Vector2dF(50, 100),
             frame_view->MinScrollDeltaToUpdateIntersectionForTesting());
   EXPECT_EQ(LocalFrameView::kFrameViewportIntersectionOnly,
             frame_view->GetIntersectionObservationStateForTesting());
-  histogram_tester.ExpectUniqueSample(
-      "Blink.IntersectionObservation.StateOnScroll", 0, 1);
   Compositor().BeginFrame();
   test::RunPendingTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 1);
   EXPECT_EQ(observer_delegate->EntryCount(), 1);
   EXPECT_FALSE(observer_delegate->LastEntry()->isIntersecting());
-  histogram_tester.ExpectUniqueSample(
-      "Blink.IntersectionObservation.MinScrollDeltaToUpdateX", 50, 1);
-  histogram_tester.ExpectUniqueSample(
-      "Blink.IntersectionObservation.MinScrollDeltaToUpdateY", 100, 1);
-  histogram_tester.ExpectUniqueSample(
-      "Blink.IntersectionObservation.UsesCachedRects", false, 1);
 
   root->scrollTo(0, 100);
   EXPECT_EQ(gfx::Vector2dF(50, 100),
             frame_view->MinScrollDeltaToUpdateIntersectionForTesting());
   EXPECT_EQ(LocalFrameView::kDesired,
             frame_view->GetIntersectionObservationStateForTesting());
-  histogram_tester.ExpectBucketCount(
-      "Blink.IntersectionObservation.StateOnScroll", 1, 1);
   Compositor().BeginFrame();
   test::RunPendingTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 2);
@@ -1413,20 +1386,12 @@ TEST_P(IntersectionObserverTest, MinScrollDeltaToUpdateThresholdZero) {
             frame_view->MinScrollDeltaToUpdateIntersectionForTesting());
   EXPECT_EQ(LocalFrameView::kNotNeeded,
             frame_view->GetIntersectionObservationStateForTesting());
-  histogram_tester.ExpectBucketCount(
-      "Blink.IntersectionObservation.MinScrollDeltaToUpdateX", 50, 2);
-  histogram_tester.ExpectBucketCount(
-      "Blink.IntersectionObservation.MinScrollDeltaToUpdateY", 0, 1);
-  histogram_tester.ExpectBucketCount(
-      "Blink.IntersectionObservation.UsesCachedRects", true, 1);
 
   root->scrollTo(0, 101);
   EXPECT_EQ(gfx::Vector2dF(50, 0),
             frame_view->MinScrollDeltaToUpdateIntersectionForTesting());
   EXPECT_EQ(LocalFrameView::kDesired,
             frame_view->GetIntersectionObservationStateForTesting());
-  histogram_tester.ExpectBucketCount(
-      "Blink.IntersectionObservation.StateOnScroll", 1, 2);
   Compositor().BeginFrame();
   test::RunPendingTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 2);
@@ -1436,20 +1401,12 @@ TEST_P(IntersectionObserverTest, MinScrollDeltaToUpdateThresholdZero) {
             frame_view->MinScrollDeltaToUpdateIntersectionForTesting());
   EXPECT_EQ(LocalFrameView::kNotNeeded,
             frame_view->GetIntersectionObservationStateForTesting());
-  histogram_tester.ExpectBucketCount(
-      "Blink.IntersectionObservation.MinScrollDeltaToUpdateX", 50, 3);
-  histogram_tester.ExpectBucketCount(
-      "Blink.IntersectionObservation.MinScrollDeltaToUpdateY", 1, 1);
-  histogram_tester.ExpectBucketCount(
-      "Blink.IntersectionObservation.UsesCachedRects", true, 2);
 
   root->scrollTo(51, 101);
   EXPECT_EQ(gfx::Vector2dF(50, 1),
             frame_view->MinScrollDeltaToUpdateIntersectionForTesting());
   EXPECT_EQ(LocalFrameView::kDesired,
             frame_view->GetIntersectionObservationStateForTesting());
-  histogram_tester.ExpectBucketCount(
-      "Blink.IntersectionObservation.StateOnScroll", 1, 3);
   Compositor().BeginFrame();
   test::RunPendingTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 3);
@@ -1459,12 +1416,6 @@ TEST_P(IntersectionObserverTest, MinScrollDeltaToUpdateThresholdZero) {
             frame_view->MinScrollDeltaToUpdateIntersectionForTesting());
   EXPECT_EQ(LocalFrameView::kNotNeeded,
             frame_view->GetIntersectionObservationStateForTesting());
-  histogram_tester.ExpectBucketCount(
-      "Blink.IntersectionObservation.MinScrollDeltaToUpdateX", 1, 1);
-  histogram_tester.ExpectBucketCount(
-      "Blink.IntersectionObservation.MinScrollDeltaToUpdateY", 1, 2);
-  histogram_tester.ExpectBucketCount(
-      "Blink.IntersectionObservation.UsesCachedRects", true, 3);
 }
 
 TEST_P(IntersectionObserverTest, MinScrollDeltaToUpdateImplicitRoot) {
@@ -2055,7 +2006,8 @@ TEST_P(IntersectionObserverTest, MinScrollDeltaToUpdateThresholdOneOfRoot) {
 }
 
 TEST_P(IntersectionObserverTest, MinScrollDeltaToUpdateThresholdFilterOnRoot) {
-  if (!RuntimeEnabledFeatures::IntersectionOptimizationEnabled()) {
+  if (!RuntimeEnabledFeatures::IntersectionOptimizationEnabled() ||
+      RuntimeEnabledFeatures::IntersectionObserverIgnoreFiltersEnabled()) {
     return;
   }
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
@@ -2099,7 +2051,8 @@ TEST_P(IntersectionObserverTest, MinScrollDeltaToUpdateThresholdFilterOnRoot) {
 
 TEST_P(IntersectionObserverTest,
        MinScrollDeltaToUpdateThresholdFilterOnTarget) {
-  if (!RuntimeEnabledFeatures::IntersectionOptimizationEnabled()) {
+  if (!RuntimeEnabledFeatures::IntersectionOptimizationEnabled() ||
+      RuntimeEnabledFeatures::IntersectionObserverIgnoreFiltersEnabled()) {
     return;
   }
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
@@ -2143,7 +2096,8 @@ TEST_P(IntersectionObserverTest,
 
 TEST_P(IntersectionObserverTest,
        MinScrollDeltaToUpdateThresholdFilterOnIntermediateContainer) {
-  if (!RuntimeEnabledFeatures::IntersectionOptimizationEnabled()) {
+  if (!RuntimeEnabledFeatures::IntersectionOptimizationEnabled() ||
+      RuntimeEnabledFeatures::IntersectionObserverIgnoreFiltersEnabled()) {
     return;
   }
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
@@ -2188,7 +2142,8 @@ TEST_P(IntersectionObserverTest,
 
 TEST_P(IntersectionObserverTest,
        MinScrollDeltaToUpdateThresholdFilterOnIntermediateNonContainer) {
-  if (!RuntimeEnabledFeatures::IntersectionOptimizationEnabled()) {
+  if (!RuntimeEnabledFeatures::IntersectionOptimizationEnabled() ||
+      RuntimeEnabledFeatures::IntersectionObserverIgnoreFiltersEnabled()) {
     return;
   }
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));

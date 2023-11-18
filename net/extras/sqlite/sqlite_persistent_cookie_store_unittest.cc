@@ -20,6 +20,7 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/sequence_checker.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/sequenced_task_runner.h"
@@ -47,6 +48,7 @@
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -62,17 +64,20 @@ const base::FilePath::CharType kCookieFilename[] = FILE_PATH_LITERAL("Cookies");
 class CookieCryptor : public CookieCryptoDelegate {
  public:
   CookieCryptor();
-  bool ShouldEncrypt() override;
+  void Init(base::OnceClosure callback) override;
   bool EncryptString(const std::string& plaintext,
                      std::string* ciphertext) override;
   bool DecryptString(const std::string& ciphertext,
                      std::string* plaintext) override;
 
-  bool should_encrypt_ = true;
-
  private:
+  void InitComplete();
+  bool init_ GUARDED_BY_CONTEXT(sequence_checker_) = false;
+  bool initing_ GUARDED_BY_CONTEXT(sequence_checker_) = false;
+  base::OnceClosureList callbacks_ GUARDED_BY_CONTEXT(sequence_checker_);
   std::unique_ptr<crypto::SymmetricKey> key_;
   crypto::Encryptor encryptor_;
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 CookieCryptor::CookieCryptor()
@@ -84,10 +89,28 @@ CookieCryptor::CookieCryptor()
           256)) {
   std::string iv("the iv: 16 bytes");
   encryptor_.Init(key_.get(), crypto::Encryptor::CBC, iv);
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
-bool CookieCryptor::ShouldEncrypt() {
-  return should_encrypt_;
+void CookieCryptor::Init(base::OnceClosure callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (init_) {
+    std::move(callback).Run();
+    return;
+  }
+
+  // Callbacks here are owned by test fixtures that outlive the CookieCryptor.
+  callbacks_.AddUnsafe(std::move(callback));
+
+  if (initing_) {
+    return;
+  }
+
+  initing_ = true;
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&CookieCryptor::InitComplete, base::Unretained(this)),
+      base::Milliseconds(100));
 }
 
 bool CookieCryptor::EncryptString(const std::string& plaintext,
@@ -98,6 +121,40 @@ bool CookieCryptor::EncryptString(const std::string& plaintext,
 bool CookieCryptor::DecryptString(const std::string& ciphertext,
                                   std::string* plaintext) {
   return encryptor_.Decrypt(ciphertext, plaintext);
+}
+
+void CookieCryptor::InitComplete() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  init_ = true;
+  callbacks_.Notify();
+}
+
+// Matches the CanonicalCookie's strictly_unique_key and last_access_date
+// against a unique_ptr<CanonicalCookie>.
+MATCHER_P2(MatchesCookieKeyAndLastAccessDate,
+           StrictlyUniqueKey,
+           last_access_date,
+           "") {
+  if (!arg) {
+    return false;
+  }
+  const CanonicalCookie& list_cookie = *arg;
+
+  return testing::ExplainMatchResult(StrictlyUniqueKey,
+                                     list_cookie.StrictlyUniqueKey(),
+                                     result_listener) &&
+         testing::ExplainMatchResult(
+             last_access_date, list_cookie.LastAccessDate(), result_listener);
+}
+
+// Matches every field of a CanonicalCookie against a
+// unique_ptr<CanonicalCookie>.
+MATCHER_P(MatchesEveryCookieField, cookie, "") {
+  if (!arg) {
+    return false;
+  }
+  const CanonicalCookie& list_cookie = *arg;
+  return cookie.HasEquivalentDataMembers(list_cookie);
 }
 
 }  // namespace
@@ -112,31 +169,37 @@ class SQLitePersistentCookieStoreTest : public TestWithTaskEnvironment {
         db_thread_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                          base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
-  void OnLoaded(CanonicalCookieVector cookies) {
-    cookies_.swap(cookies);
-    loaded_event_.Signal();
-  }
+  void SignalLoadedEvent() { loaded_event_.Signal(); }
 
-  void OnKeyLoaded(base::OnceClosure closure, CanonicalCookieVector cookies) {
+  void OnLoaded(base::OnceClosure closure, CanonicalCookieVector cookies) {
     cookies_.swap(cookies);
     std::move(closure).Run();
   }
 
   void Load(CanonicalCookieVector* cookies) {
-    EXPECT_FALSE(loaded_event_.IsSignaled());
-    store_->Load(base::BindOnce(&SQLitePersistentCookieStoreTest::OnLoaded,
-                                base::Unretained(this)),
-                 NetLogWithSource::Make(NetLogSourceType::NONE));
-    loaded_event_.Wait();
-    cookies->swap(cookies_);
+    base::RunLoop run_loop;
+    store_->Load(
+        base::BindLambdaForTesting([&](CanonicalCookieVector obtained_cookies) {
+          cookies->swap(obtained_cookies);
+          run_loop.Quit();
+        }),
+        NetLogWithSource::Make(NetLogSourceType::NONE));
+    run_loop.Run();
+  }
+
+  void LoadAsyncAndSignalEvent() {
+    store_->Load(
+        base::BindOnce(
+            &SQLitePersistentCookieStoreTest::OnLoaded, base::Unretained(this),
+            base::BindOnce(&SQLitePersistentCookieStoreTest::SignalLoadedEvent,
+                           base::Unretained(this))),
+        NetLogWithSource::Make(NetLogSourceType::NONE));
   }
 
   void Flush() {
-    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                              base::WaitableEvent::InitialState::NOT_SIGNALED);
-    store_->Flush(
-        base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&event)));
-    event.Wait();
+    base::RunLoop run_loop;
+    store_->Flush(run_loop.QuitClosure());
+    run_loop.Run();
   }
 
   void DestroyStore() {
@@ -189,7 +252,7 @@ class SQLitePersistentCookieStoreTest : public TestWithTaskEnvironment {
     store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
         name, value, domain, path, creation, creation, base::Time(),
         base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
-        COOKIE_PRIORITY_DEFAULT, false));
+        COOKIE_PRIORITY_DEFAULT));
   }
 
   void AddCookieWithExpiration(const std::string& name,
@@ -201,7 +264,7 @@ class SQLitePersistentCookieStoreTest : public TestWithTaskEnvironment {
     store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
         name, value, domain, path, creation, expiration, base::Time(),
         base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
-        COOKIE_PRIORITY_DEFAULT, false));
+        COOKIE_PRIORITY_DEFAULT));
   }
 
   std::string ReadRawDBContents() {
@@ -382,9 +445,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestSessionCookiesDeletedOnStartup) {
   background_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
                                 base::Unretained(this)));
-  store_->Load(base::BindOnce(&SQLitePersistentCookieStoreTest::OnLoaded,
-                              base::Unretained(this)),
-               NetLogWithSource());
+  LoadAsyncAndSignalEvent();
   t += base::Microseconds(10);
   AddCookieWithExpiration("A", "B", "c.com", "/", t, base::Time());
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -411,18 +472,16 @@ TEST_F(SQLitePersistentCookieStoreTest, TestSessionCookiesDeletedOnStartup) {
   store_ = base::MakeRefCounted<SQLitePersistentCookieStore>(
       temp_dir_.GetPath().Append(kCookieFilename), client_task_runner_,
       background_task_runner_, true, nullptr, false);
-  store_->Load(base::BindOnce(&SQLitePersistentCookieStoreTest::OnLoaded,
-                              base::Unretained(this)),
-               NetLogWithSource());
+  LoadAsyncAndSignalEvent();
   loaded_event_.Wait();
   ASSERT_EQ(4u, cookies_.size());
   cookies_.clear();
 }
 
-// Test that priority load of cookies for a specfic domain key could be
-// completed before the entire store is loaded
+// Test that priority load of cookies for a specific domain key could be
+// completed before the entire store is loaded.
 TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
-  InitializeStore(false, false);
+  InitializeStore(/*crypt=*/true, /*restore_old_session_cookies=*/false);
   base::Time t = base::Time::Now();
   AddCookie("A", "B", "foo.bar", "/", t);
   t += base::Microseconds(10);
@@ -440,8 +499,13 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   // preventing client tasks to run, use
   // base::SingleThreadTaskRunner::GetCurrentDefault() instead of
   // |client_task_runner_| for this test.
-  Create(false /* crypt_cookies */, false /* restore_old_session_cookies */,
-         true /* use_current_thread */, false /* enable_exclusive_access */);
+  auto cookie_crypto_delegate = std::make_unique<CookieCryptor>();
+  store_ = base::MakeRefCounted<SQLitePersistentCookieStore>(
+      temp_dir_.GetPath().Append(kCookieFilename),
+      base::SingleThreadTaskRunner::GetCurrentDefault(),
+      background_task_runner_,
+      /*restore_old_session_cookies=*/false, cookie_crypto_delegate.get(),
+      /*enable_exclusive_access=*/false);
 
   // Posting a blocking task to db_thread_ makes sure that the DB thread waits
   // until both Load and LoadCookiesForKey have been posted to its task queue.
@@ -449,15 +513,23 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
       FROM_HERE, base::BindOnce(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
                                 base::Unretained(this)));
   RecordingNetLogObserver net_log_observer;
-  store_->Load(base::BindOnce(&SQLitePersistentCookieStoreTest::OnLoaded,
-                              base::Unretained(this)),
-               NetLogWithSource::Make(NetLogSourceType::NONE));
+  LoadAsyncAndSignalEvent();
   base::RunLoop run_loop;
   net_log_observer.SetObserverCaptureMode(NetLogCaptureMode::kDefault);
   store_->LoadCookiesForKey(
       "aaa.com",
-      base::BindOnce(&SQLitePersistentCookieStoreTest::OnKeyLoaded,
+      base::BindOnce(&SQLitePersistentCookieStoreTest::OnLoaded,
                      base::Unretained(this), run_loop.QuitClosure()));
+
+  // Complete the initialization of the cookie crypto delegate. This ensures
+  // that any background tasks from the Load or the LoadCookiesForKey are posted
+  // to the background_task_runner_.
+  base::RunLoop cookie_crypto_loop;
+  cookie_crypto_delegate->Init(cookie_crypto_loop.QuitClosure());
+  cookie_crypto_loop.Run();
+
+  // Post a final blocking task to the background_task_runner_ to ensure no
+  // other cookie loads take place during the test.
   background_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SQLitePersistentCookieStoreTest::WaitOnDBEvent,
                                 base::Unretained(this)));
@@ -588,7 +660,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadOldSessionCookies) {
   store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "C", "D", "sessioncookie.com", "/", base::Time::Now(), base::Time(),
       base::Time(), base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
-      COOKIE_PRIORITY_DEFAULT, false));
+      COOKIE_PRIORITY_DEFAULT));
 
   // Force the store to write its data to the disk.
   DestroyStore();
@@ -615,7 +687,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestDontLoadOldSessionCookies) {
   store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "C", "D", "sessioncookie.com", "/", base::Time::Now(), base::Time(),
       base::Time(), base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
-      COOKIE_PRIORITY_DEFAULT, false));
+      COOKIE_PRIORITY_DEFAULT));
 
   // Force the store to write its data to the disk.
   DestroyStore();
@@ -727,13 +799,13 @@ TEST_F(SQLitePersistentCookieStoreTest, PersistIsPersistent) {
   store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
       kSessionName, "val", "sessioncookie.com", "/", base::Time::Now(),
       base::Time(), base::Time(), base::Time(), false, false,
-      CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, false));
+      CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT));
   // Add a persistent cookie.
   store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
       kPersistentName, "val", "sessioncookie.com", "/",
       base::Time::Now() - base::Days(1), base::Time::Now() + base::Days(1),
       base::Time(), base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
-      COOKIE_PRIORITY_DEFAULT, false));
+      COOKIE_PRIORITY_DEFAULT));
 
   // Force the store to write its data to the disk.
   DestroyStore();
@@ -774,21 +846,21 @@ TEST_F(SQLitePersistentCookieStoreTest, PriorityIsPersistent) {
       kLowName, kCookieValue, kDomain, kCookiePath,
       base::Time::Now() - base::Minutes(1), base::Time::Now() + base::Days(1),
       base::Time(), base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
-      COOKIE_PRIORITY_LOW, false));
+      COOKIE_PRIORITY_LOW));
 
   // Add a medium-priority persistent cookie.
   store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
       kMediumName, kCookieValue, kDomain, kCookiePath,
       base::Time::Now() - base::Minutes(2), base::Time::Now() + base::Days(1),
       base::Time(), base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
-      COOKIE_PRIORITY_MEDIUM, false));
+      COOKIE_PRIORITY_MEDIUM));
 
   // Add a high-priority persistent cookie.
   store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
       kHighName, kCookieValue, kDomain, kCookiePath,
       base::Time::Now() - base::Minutes(3), base::Time::Now() + base::Days(1),
       base::Time(), base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
-      COOKIE_PRIORITY_HIGH, false));
+      COOKIE_PRIORITY_HIGH));
 
   // Force the store to write its data to the disk.
   DestroyStore();
@@ -835,21 +907,21 @@ TEST_F(SQLitePersistentCookieStoreTest, SameSiteIsPersistent) {
       kNoneName, kCookieValue, kDomain, kCookiePath,
       base::Time::Now() - base::Minutes(1), base::Time::Now() + base::Days(1),
       base::Time(), base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
-      COOKIE_PRIORITY_DEFAULT, false));
+      COOKIE_PRIORITY_DEFAULT));
 
   // Add a lax-samesite persistent cookie.
   store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
       kLaxName, kCookieValue, kDomain, kCookiePath,
       base::Time::Now() - base::Minutes(2), base::Time::Now() + base::Days(1),
       base::Time(), base::Time(), false, false, CookieSameSite::LAX_MODE,
-      COOKIE_PRIORITY_DEFAULT, false));
+      COOKIE_PRIORITY_DEFAULT));
 
   // Add a strict-samesite persistent cookie.
   store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
       kStrictName, kCookieValue, kDomain, kCookiePath,
       base::Time::Now() - base::Minutes(3), base::Time::Now() + base::Days(1),
       base::Time(), base::Time(), false, false, CookieSameSite::STRICT_MODE,
-      COOKIE_PRIORITY_DEFAULT, false));
+      COOKIE_PRIORITY_DEFAULT));
 
   // Force the store to write its data to the disk.
   DestroyStore();
@@ -891,7 +963,7 @@ TEST_F(SQLitePersistentCookieStoreTest, SameSiteExtendedTreatedAsUnspecified) {
       kExtendedName, kCookieValue, kDomain, kCookiePath,
       base::Time::Now() - base::Minutes(1), base::Time::Now() + base::Days(1),
       base::Time(), base::Time(), false, false, CookieSameSite::STRICT_MODE,
-      COOKIE_PRIORITY_DEFAULT, false));
+      COOKIE_PRIORITY_DEFAULT));
 
   // Force the store to write its data to the disk.
   DestroyStore();
@@ -931,16 +1003,16 @@ TEST_F(SQLitePersistentCookieStoreTest, SamePartyIsPersistent) {
       kNonSamePartyCookieName, kCookieValue, kDomain, kCookiePath,
       base::Time::Now() - base::Minutes(1), base::Time::Now() + base::Days(1),
       base::Time(), base::Time(),
-      /*secure=*/true, false, CookieSameSite::LAX_MODE, COOKIE_PRIORITY_DEFAULT,
-      /*same_party=*/false));
+      /*secure=*/true, false, CookieSameSite::LAX_MODE,
+      COOKIE_PRIORITY_DEFAULT));
 
   // Add a SameParty persistent cookie.
   store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
       kSamePartyCookieName, kCookieValue, kDomain, kCookiePath,
       base::Time::Now() - base::Minutes(1), base::Time::Now() + base::Days(1),
       base::Time(), base::Time(),
-      /*secure=*/true, false, CookieSameSite::LAX_MODE, COOKIE_PRIORITY_DEFAULT,
-      /*same_party=*/true));
+      /*secure=*/true, false, CookieSameSite::LAX_MODE,
+      COOKIE_PRIORITY_DEFAULT));
 
   // Force the store to write its data to the disk.
   DestroyStore();
@@ -961,7 +1033,7 @@ TEST_F(SQLitePersistentCookieStoreTest, SamePartyIsPersistent) {
   EXPECT_FALSE(cookie_map[kNonSamePartyCookieName]->IsSameParty());
 
   ASSERT_EQ(1u, cookie_map.count(kSamePartyCookieName));
-  EXPECT_TRUE(cookie_map[kSamePartyCookieName]->IsSameParty());
+  EXPECT_FALSE(cookie_map[kSamePartyCookieName]->IsSameParty());
 }
 
 TEST_F(SQLitePersistentCookieStoreTest, SourcePortIsPersistent) {
@@ -991,7 +1063,6 @@ TEST_F(SQLitePersistentCookieStoreTest, SourcePortIsPersistent) {
         base::Time(), base::Time(),
         /*secure=*/true, false, CookieSameSite::LAX_MODE,
         COOKIE_PRIORITY_DEFAULT,
-        /*same_party=*/false,
         /*partition_key=*/absl::nullopt,
         CookieSourceScheme::kUnset /* Doesn't matter for this test. */,
         input.port));
@@ -1087,57 +1158,6 @@ TEST_F(SQLitePersistentCookieStoreTest, UpdateToEncryption) {
   EXPECT_EQ(contents.find("something456ABC"), std::string::npos);
 }
 
-TEST_F(SQLitePersistentCookieStoreTest, UpdateFromEncryption) {
-  CanonicalCookieVector cookies;
-
-  // Create unencrypted cookie store and write something to it.
-  InitializeStore(true, false);
-  AddCookie("name", "value123XYZ", "foo.bar", "/", base::Time::Now());
-  DestroyStore();
-
-  // Verify that "value" is not visible in the file.
-  std::string contents = ReadRawDBContents();
-  EXPECT_NE(0U, contents.length());
-  EXPECT_EQ(contents.find("value123XYZ"), std::string::npos);
-
-  // Create encrypted cookie store and ensure old cookie still reads.
-  cookies.clear();
-  EXPECT_EQ(0U, cookies.size());
-  CreateAndLoad(true, false, &cookies);
-  EXPECT_EQ(1U, cookies.size());
-  EXPECT_EQ("name", cookies[0]->Name());
-  EXPECT_EQ("value123XYZ", cookies[0]->Value());
-
-  // Make sure we can update existing cookie and it writes unencrypted.
-  cookie_crypto_delegate_->should_encrypt_ = false;
-  store_->DeleteCookie(*(cookies[0]));
-  AddCookie("name", "plaintext_value123XYZ", "foo.bar", "/", base::Time::Now());
-  AddCookie("other", "something456ABC", "foo.bar", "/",
-            base::Time::Now() + base::Microseconds(10));
-  DestroyStore();
-  cookies.clear();
-  CreateAndLoad(true, false, &cookies);
-  EXPECT_EQ(2U, cookies.size());
-  CanonicalCookie* cookie_name = nullptr;
-  CanonicalCookie* cookie_other = nullptr;
-  if (cookies[0]->Name() == "name") {
-    cookie_name = cookies[0].get();
-    cookie_other = cookies[1].get();
-  } else {
-    cookie_name = cookies[1].get();
-    cookie_other = cookies[0].get();
-  }
-  EXPECT_EQ("plaintext_value123XYZ", cookie_name->Value());
-  EXPECT_EQ("something456ABC", cookie_other->Value());
-  DestroyStore();
-  cookies.clear();
-
-  // Verify that "value" is now visible in the file.
-  contents = ReadRawDBContents();
-  EXPECT_NE(0U, contents.length());
-  EXPECT_NE(contents.find("value123XYZ"), std::string::npos);
-}
-
 bool CompareCookies(const std::unique_ptr<CanonicalCookie>& a,
                     const std::unique_ptr<CanonicalCookie>& b) {
   return a->PartialCompare(*b);
@@ -1219,7 +1239,9 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
   // its PersistentCookieStore on the same thread as its methods are invoked on;
   // so to avoid needing to post every CookieMonster API call, this uses the
   // current thread for SQLitePersistentCookieStore's |client_task_runner|.
-  Create(false, false, true /* use_current_thread */, false);
+  // Note: Cookie encryption is explicitly enabled here to verify threading
+  // model with async initialization functions correctly.
+  Create(/*crypt_cookies=*/true, false, true /* use_current_thread */, false);
 
   // Create a cookie on a scheme that doesn't handle cookies by default,
   // and save it.
@@ -1383,6 +1405,7 @@ TEST_F(SQLitePersistentCookieStoreTest, Coalescing) {
               store_->GetQueueLengthForTesting());
 
     db_thread_event_.Signal();
+    DestroyStore();
   }
 }
 
@@ -1702,27 +1725,27 @@ std::vector<CanonicalCookie> CookiesForMigrationTest() {
   cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "A", "B", "example.com", "/", now, now, now, now, true /* secure */,
       false /* httponly */, CookieSameSite::UNSPECIFIED,
-      COOKIE_PRIORITY_DEFAULT, false /* same_party */));
+      COOKIE_PRIORITY_DEFAULT));
   cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "C", "B", "example.com", "/", now, now, now, now, true /* secure */,
       false /* httponly */, CookieSameSite::UNSPECIFIED,
-      COOKIE_PRIORITY_DEFAULT, true /* same_party */));
+      COOKIE_PRIORITY_DEFAULT));
   cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "A", "B", "example2.com", "/", now, now, now, now, true /* secure */,
       false /* httponly */, CookieSameSite::UNSPECIFIED,
-      COOKIE_PRIORITY_DEFAULT, true /* same_party */));
+      COOKIE_PRIORITY_DEFAULT));
   cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "C", "B", "example2.com", "/", now, now + base::Days(399), now, now,
       false /* secure */, false /* httponly */, CookieSameSite::UNSPECIFIED,
-      COOKIE_PRIORITY_DEFAULT, false /* same_party */));
+      COOKIE_PRIORITY_DEFAULT));
   cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "A", "B", "example.com", "/path", now, now + base::Days(400), now, now,
       false /* secure */, false /* httponly */, CookieSameSite::UNSPECIFIED,
-      COOKIE_PRIORITY_DEFAULT, false /* same_party */));
+      COOKIE_PRIORITY_DEFAULT));
   cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "C", "B", "example.com", "/path", now, now + base::Days(401), now, now,
       false /* secure */, false /* httponly */, CookieSameSite::UNSPECIFIED,
-      COOKIE_PRIORITY_DEFAULT, false /* same_party */));
+      COOKIE_PRIORITY_DEFAULT));
   return cookies;
 }
 
@@ -1846,7 +1869,6 @@ bool AddV18CookiesToDB(sql::Database* db) {
 // Confirm the cookie list passed in has the above cookies in it.
 void ConfirmCookiesAfterMigrationTest(
     std::vector<std::unique_ptr<CanonicalCookie>> read_in_cookies,
-    bool expect_same_party_cookies = false,
     bool expect_last_update_date = false) {
   std::sort(read_in_cookies.begin(), read_in_cookies.end(), &CompareCookies);
   int i = 0;
@@ -1884,7 +1906,7 @@ void ConfirmCookiesAfterMigrationTest(
   EXPECT_EQ("/", read_in_cookies[i]->Path());
   EXPECT_TRUE(read_in_cookies[i]->IsSecure());
   EXPECT_EQ(CookieSourceScheme::kUnset, read_in_cookies[i]->SourceScheme());
-  EXPECT_EQ(expect_same_party_cookies, read_in_cookies[i]->IsSameParty());
+  EXPECT_FALSE(read_in_cookies[i]->IsSameParty());
   EXPECT_EQ(read_in_cookies[i]->LastUpdateDate(),
             expect_last_update_date ? read_in_cookies[i]->CreationDate()
                                     : base::Time());
@@ -1898,7 +1920,7 @@ void ConfirmCookiesAfterMigrationTest(
   EXPECT_EQ("/", read_in_cookies[i]->Path());
   EXPECT_TRUE(read_in_cookies[i]->IsSecure());
   EXPECT_EQ(CookieSourceScheme::kUnset, read_in_cookies[i]->SourceScheme());
-  EXPECT_EQ(expect_same_party_cookies, read_in_cookies[i]->IsSameParty());
+  EXPECT_FALSE(read_in_cookies[i]->IsSameParty());
   EXPECT_EQ(read_in_cookies[i]->LastUpdateDate(),
             expect_last_update_date ? read_in_cookies[i]->CreationDate()
                                     : base::Time());
@@ -1947,8 +1969,7 @@ TEST_F(SQLitePersistentCookieStoreTest, UpgradeToSchemaVersion16) {
 
   std::vector<std::unique_ptr<CanonicalCookie>> read_in_cookies;
   CreateAndLoad(false, false, &read_in_cookies);
-  ConfirmCookiesAfterMigrationTest(std::move(read_in_cookies),
-                                   /*expect_same_party_cookies=*/true);
+  ConfirmCookiesAfterMigrationTest(std::move(read_in_cookies));
 }
 
 TEST_F(SQLitePersistentCookieStoreTest, UpgradeToSchemaVersion17) {
@@ -1961,8 +1982,7 @@ TEST_F(SQLitePersistentCookieStoreTest, UpgradeToSchemaVersion17) {
 
   std::vector<std::unique_ptr<CanonicalCookie>> read_in_cookies;
   CreateAndLoad(false, false, &read_in_cookies);
-  ConfirmCookiesAfterMigrationTest(std::move(read_in_cookies),
-                                   /*expect_same_party_cookies=*/true);
+  ConfirmCookiesAfterMigrationTest(std::move(read_in_cookies));
   ASSERT_GE(GetDBCurrentVersionNumber(&connection), 17);
   connection.Close();
 }
@@ -1979,8 +1999,7 @@ TEST_F(SQLitePersistentCookieStoreTest, UpgradeToSchemaVersion17FromFaultyV16) {
 
   std::vector<std::unique_ptr<CanonicalCookie>> read_in_cookies;
   CreateAndLoad(false, false, &read_in_cookies);
-  ConfirmCookiesAfterMigrationTest(std::move(read_in_cookies),
-                                   /*expect_same_party_cookies=*/true);
+  ConfirmCookiesAfterMigrationTest(std::move(read_in_cookies));
   ASSERT_GE(GetDBCurrentVersionNumber(&connection), 17);
   connection.Close();
 }
@@ -1995,8 +2014,7 @@ TEST_F(SQLitePersistentCookieStoreTest, UpgradeToSchemaVersion18) {
 
   std::vector<std::unique_ptr<CanonicalCookie>> read_in_cookies;
   CreateAndLoad(false, false, &read_in_cookies);
-  ConfirmCookiesAfterMigrationTest(std::move(read_in_cookies),
-                                   /*expect_same_party_cookies=*/true);
+  ConfirmCookiesAfterMigrationTest(std::move(read_in_cookies));
   ASSERT_GE(GetDBCurrentVersionNumber(&connection), 18);
   connection.Close();
 }
@@ -2012,10 +2030,155 @@ TEST_F(SQLitePersistentCookieStoreTest, UpgradeToSchemaVersion19) {
   std::vector<std::unique_ptr<CanonicalCookie>> read_in_cookies;
   CreateAndLoad(false, false, &read_in_cookies);
   ConfirmCookiesAfterMigrationTest(std::move(read_in_cookies),
-                                   /*expect_same_party_cookies=*/true,
                                    /*expect_last_update_date=*/true);
   ASSERT_GE(GetDBCurrentVersionNumber(&connection), 19);
   connection.Close();
+}
+
+TEST_F(SQLitePersistentCookieStoreTest, UpgradeToSchemaVersion20) {
+  // Open db.
+  sql::Database connection;
+  ASSERT_TRUE(connection.Open(temp_dir_.GetPath().Append(kCookieFilename)));
+  // V19's schema is the same as V18, so we can reuse the creation function.
+  ASSERT_TRUE(CreateV18Schema(&connection));
+  ASSERT_EQ(GetDBCurrentVersionNumber(&connection), 18);
+  ASSERT_TRUE(AddV18CookiesToDB(&connection));
+
+  std::vector<std::unique_ptr<CanonicalCookie>> read_in_cookies;
+  CreateAndLoad(/*crypt_cookies=*/false, /*restore_old_session_cookies=*/false,
+                &read_in_cookies);
+  ConfirmCookiesAfterMigrationTest(std::move(read_in_cookies),
+                                   /*expect_last_update_date=*/true);
+  ASSERT_GE(GetDBCurrentVersionNumber(&connection), 20);
+  connection.Close();
+}
+
+class SQLitePersistentCookieStoreTest_OriginBoundCookies
+    : public SQLitePersistentCookieStoreTest {
+ public:
+  // Creates and stores 4 cookies that differ only by scheme and/or port. When
+  // this function returns, the store will be created and all the cookies loaded
+  // into cookies_.
+  void InitializeTest() {
+    InitializeStore(/*crypt=*/false, /*restore_old_session_cookies=*/false);
+
+    basic_cookie_ = CanonicalCookie::Create(
+        basic_url_, "a=b; max-age=100000", /*creation_time=*/base::Time::Now(),
+        /*server_time=*/absl::nullopt, /*cookie_partition_key=*/absl::nullopt);
+
+    http_cookie_ = std::make_unique<CanonicalCookie>(*basic_cookie_);
+    http_cookie_->SetSourceScheme(CookieSourceScheme::kNonSecure);
+
+    port_444_cookie_ = std::make_unique<CanonicalCookie>(*basic_cookie_);
+    port_444_cookie_->SetSourcePort(444);
+
+    http_444_cookie_ = std::make_unique<CanonicalCookie>(*basic_cookie_);
+    http_444_cookie_->SetSourceScheme(CookieSourceScheme::kNonSecure);
+    http_444_cookie_->SetSourcePort(444);
+
+    store_->AddCookie(*basic_cookie_);
+    store_->AddCookie(*http_cookie_);
+    store_->AddCookie(*port_444_cookie_);
+    store_->AddCookie(*http_444_cookie_);
+    // Force the store to write its data to the disk.
+    DestroyStore();
+
+    CreateAndLoad(false, false, &cookies_);
+
+    EXPECT_EQ(cookies_.size(), 4UL);
+  }
+
+  GURL basic_url_ = GURL("https://example.com");
+  std::unique_ptr<net::CanonicalCookie> basic_cookie_;
+  std::unique_ptr<net::CanonicalCookie> http_cookie_;
+  std::unique_ptr<net::CanonicalCookie> port_444_cookie_;
+  std::unique_ptr<net::CanonicalCookie> http_444_cookie_;
+
+  CanonicalCookieVector cookies_;
+};
+
+// Tests that cookies which differ only in their scheme and port are considered
+// distinct.
+TEST_F(SQLitePersistentCookieStoreTest_OriginBoundCookies,
+       UniquenessConstraint) {
+  InitializeTest();
+
+  // Try to add another cookie that is the same as basic_cookie_ except that its
+  // value is different. Value isn't considered as part of the unique constraint
+  // and so this cookie won't be considered unique and should fail to be added.
+  auto basic_cookie2 = CanonicalCookie::Create(
+      basic_url_, "a=b2; max-age=100000",
+      /*creation_time=*/base::Time::Now(),
+      /*server_time=*/absl::nullopt, /*cookie_partition_key=*/absl::nullopt);
+
+  store_->AddCookie(*basic_cookie2);
+
+  // Force the store to write its data to the disk.
+  DestroyStore();
+
+  cookies_.clear();
+  CreateAndLoad(false, false, &cookies_);
+
+  // Confirm that basic_cookie2 failed to be added.
+  EXPECT_THAT(cookies_, testing::UnorderedElementsAre(
+                            MatchesEveryCookieField(*basic_cookie_),
+                            MatchesEveryCookieField(*http_cookie_),
+                            MatchesEveryCookieField(*port_444_cookie_),
+                            MatchesEveryCookieField(*http_444_cookie_)));
+}
+
+// Tests that deleting a cookie correctly takes the scheme and port into
+// account.
+TEST_F(SQLitePersistentCookieStoreTest_OriginBoundCookies, DeleteCookie) {
+  InitializeTest();
+
+  // Try to delete just one of the cookies.
+  store_->DeleteCookie(*http_444_cookie_);
+  DestroyStore();
+  cookies_.clear();
+
+  CreateAndLoad(false, false, &cookies_);
+
+  // Only the single cookie should be deleted.
+  EXPECT_THAT(cookies_, testing::UnorderedElementsAre(
+                            MatchesEveryCookieField(*basic_cookie_),
+                            MatchesEveryCookieField(*http_cookie_),
+                            MatchesEveryCookieField(*port_444_cookie_)));
+}
+
+// Tests that updating a cookie correctly takes the scheme and port into
+// account.
+TEST_F(SQLitePersistentCookieStoreTest_OriginBoundCookies,
+       UpdateCookieAccessTime) {
+  InitializeTest();
+
+  base::Time basic_last_access = basic_cookie_->LastAccessDate();
+  base::Time http_last_access = http_cookie_->LastAccessDate();
+  base::Time port_444_last_access = port_444_cookie_->LastAccessDate();
+  base::Time http_444_last_access = http_444_cookie_->LastAccessDate();
+
+  base::Time new_last_access = http_444_last_access + base::Hours(1);
+  http_444_cookie_->SetLastAccessDate(new_last_access);
+
+  store_->UpdateCookieAccessTime(*http_444_cookie_);
+  DestroyStore();
+  cookies_.clear();
+
+  CreateAndLoad(false, false, &cookies_);
+
+  // All loaded cookies' should have their original LastAccessDate() except for
+  // the one updated to new_last_access.
+  EXPECT_THAT(
+      cookies_,
+      testing::UnorderedElementsAre(
+          MatchesCookieKeyAndLastAccessDate(basic_cookie_->StrictlyUniqueKey(),
+                                            basic_last_access),
+          MatchesCookieKeyAndLastAccessDate(http_cookie_->StrictlyUniqueKey(),
+                                            http_last_access),
+          MatchesCookieKeyAndLastAccessDate(
+              port_444_cookie_->StrictlyUniqueKey(), port_444_last_access),
+          MatchesCookieKeyAndLastAccessDate(
+              http_444_cookie_->StrictlyUniqueKey(), new_last_access)));
 }
 
 class PartitionedCookiesSQLitePersistentCookieStoreTest
@@ -2048,7 +2211,6 @@ TEST_P(PartitionedCookiesSQLitePersistentCookieStoreTest,
       base::Time::Now(), base::Time::Now() + base::Days(1), base::Time::Now(),
       base::Time::Now(), true /* secure */, false /* httponly */,
       CookieSameSite::UNSPECIFIED, COOKIE_PRIORITY_DEFAULT,
-      false /* sameparty */,
       CookiePartitionKey::FromURLForTesting(GURL("https://toplevelsite.com"))));
   Flush();
 

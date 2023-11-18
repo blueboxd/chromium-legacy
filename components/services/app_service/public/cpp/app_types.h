@@ -141,7 +141,14 @@ struct COMPONENT_EXPORT(APP_TYPES) App {
   std::string app_id;
 
   Readiness readiness = Readiness::kUnknown;
+
+  // The full name of the app. Will be used in most UIs.
   absl::optional<std::string> name;
+  // A shortened version of the app name. May omit branding (e.g.
+  // "Google" prefixes) or rely on abbreviations (e.g. "YT Music"). If no
+  // `short_name` is supplied, the `name` will be used instead.
+  // The `short_name` may be used in UIs where space is limited and/or we want
+  // to optimize for scannability.
   absl::optional<std::string> short_name;
 
   // An optional, publisher-specific ID for this app, e.g. for Android apps,
@@ -217,12 +224,26 @@ struct COMPONENT_EXPORT(APP_TYPES) App {
   // Whether the app runs on os login in a new window or not.
   absl::optional<RunOnOsLogin> run_on_os_login;
 
+  // Whether the app can be closed by the user.
+  absl::optional<bool> allow_close;
+
   // Storage space size for app and associated data.
   absl::optional<uint64_t> app_size_in_bytes;
   absl::optional<uint64_t> data_size_in_bytes;
 
+  // App-specified supported locales.
+  std::vector<std::string> supported_locales;
+  // Currently selected locale, empty string means system language is used.
+  // ARC-specific note: Based on Android implementation, `selected_locale`
+  //  is not necessarily part of `supported_locales`.
+  absl::optional<std::string> selected_locale;
+
   // When adding new fields to the App type, the `Clone` function, the
-  // `operator==` function, and the `AppUpdate` class should also be updated.
+  // `operator==` function, and the `AppUpdate` class should also be updated. If
+  // the new fields should be saved, below functions should be updated:
+  // `AppStorage::IsAppChanged`
+  // `AppStorageFileHandler::ConvertAppsToValue`
+  // `AppStorageFileHandler::ConvertValueToApps`
 };
 
 using AppPtr = std::unique_ptr<App>;

@@ -483,7 +483,7 @@ api::tabs::Tab ExtensionTabUtil::CreateTabObject(
   tab_object.discarded =
       tab_lifecycle_unit_external && tab_lifecycle_unit_external->IsDiscarded();
   DCHECK(!tab_object.discarded ||
-         tab_object.status == api::tabs::TAB_STATUS_UNLOADED);
+         tab_object.status == api::tabs::TabStatus::kUnloaded);
   tab_object.auto_discardable =
       !tab_lifecycle_unit_external ||
       tab_lifecycle_unit_external->IsAutoDiscardable();
@@ -594,10 +594,10 @@ api::tabs::MutedInfo ExtensionTabUtil::CreateMutedInfo(
     case TabMutedReason::AUDIO_INDICATOR:
     case TabMutedReason::CONTENT_SETTING:
     case TabMutedReason::CONTENT_SETTING_CHROME:
-      info.reason = api::tabs::MUTED_INFO_REASON_USER;
+      info.reason = api::tabs::MutedInfoReason::kUser;
       break;
     case TabMutedReason::EXTENSION:
-      info.reason = api::tabs::MUTED_INFO_REASON_EXTENSION;
+      info.reason = api::tabs::MutedInfoReason::kExtension;
       info.extension_id =
           LastMuteMetadata::FromWebContents(contents)->extension_id;
       DCHECK(!info.extension_id->empty());
@@ -720,13 +720,12 @@ bool ExtensionTabUtil::GetTabById(int tab_id,
     return false;
   // If `browser_context` is null, then `Profile::FromBrowserContext` below
   // will return nullptr, and the subsequent call to `GetPrimaryOTRProfile`
-  // will crash. For now, we'll add a DUMP_WILL_BE_CHECK to determine cases
-  // where `browser_context` is null, with the intent of determining if that's a
-  // valid use-case we need to handle in the following logic.
-  // TODO(https://crbug.com/1492697) Determine if we need to handle nullptr
-  // `browser_context` here, and if not simplify the expression for
-  // `incognito_profile` below.
-  DUMP_WILL_BE_CHECK(browser_context);
+  // will crash. Since this can happen during shutdown, early-out to avoid
+  // crashing.
+  if (!browser_context) {
+    return false;
+  }
+
   Profile* profile = Profile::FromBrowserContext(browser_context);
   Profile* incognito_profile =
       include_incognito
@@ -1045,14 +1044,14 @@ bool ExtensionTabUtil::BrowserSupportsTabs(Browser* browser) {
 // static
 api::tabs::TabStatus ExtensionTabUtil::GetLoadingStatus(WebContents* contents) {
   if (contents->IsLoading())
-    return api::tabs::TAB_STATUS_LOADING;
+    return api::tabs::TabStatus::kLoading;
 
   // Anything that isn't backed by a process is considered unloaded.
   if (!HasValidMainFrameProcess(contents))
-    return api::tabs::TAB_STATUS_UNLOADED;
+    return api::tabs::TabStatus::kUnloaded;
 
   // Otherwise its considered loaded.
-  return api::tabs::TAB_STATUS_COMPLETE;
+  return api::tabs::TabStatus::kComplete;
 }
 
 void ExtensionTabUtil::ClearBackForwardCache() {

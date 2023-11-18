@@ -23,12 +23,6 @@ COMPONENT_EXPORT(DEVICE_FIDO) BASE_DECLARE_FEATURE(kWebAuthUseNativeWinApi);
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthCableExtensionAnywhere);
 
-#if BUILDFLAG(IS_CHROMEOS)
-// Enable a ChromeOS platform authenticator
-COMPONENT_EXPORT(DEVICE_FIDO)
-BASE_DECLARE_FEATURE(kWebAuthCrosPlatformAuthenticator);
-#endif  // BUILDFLAG(IS_CHROMEOS)
-
 #if BUILDFLAG(IS_ANDROID)
 // Enable UI options to explicitly invoke hybrid CTAP authentication on
 // Android.
@@ -104,10 +98,6 @@ BASE_DECLARE_FEATURE(kWebAuthnICloudKeychainForInactiveWithoutDrive);
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnNewHybridUI);
 
-// Get caBLE pre-linking information from Play Services
-COMPONENT_EXPORT(DEVICE_FIDO)
-BASE_DECLARE_FEATURE(kWebAuthnPrelinkPlayServices);
-
 // Don't show the single-account sheet on macOS if Touch ID is available.
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnSkipSingleAccountMacOS);
@@ -128,11 +118,9 @@ BASE_DECLARE_FEATURE(kWebAuthnCableViaCredMan);
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnLinkingExperimentation);
 
-#if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
 // Enable use of a cloud enclave authenticator service.
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnEnclaveAuthenticator);
-#endif
 
 // Serialize WebAuthn requests to JSON on the desktop. Useful for future
 // projects but only concretely used for better logging at the time of writing.
@@ -187,6 +175,20 @@ BASE_DECLARE_FEATURE(kWebAuthnPRFEvalDuringCreate);
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kChromeOsPasskeys);
 #endif
+
+// A webauthn UI mode that detects screen readers and makes the dialog title
+// focusable.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnScreenReaderMode);
+
+// Update the minimum, maximum, and default timeout values for webauthn requests
+// to be more generous and meet https://www.w3.org/TR/WCAG21/#enough-time.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnAccessibleTimeouts);
+
+// Support cross-domain RP ID assertions.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnRelatedOrigin);
 
 }  // namespace device
 

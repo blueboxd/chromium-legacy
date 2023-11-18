@@ -11,6 +11,7 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_selections.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/profile_waiter.h"
@@ -23,6 +24,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/buildflags/buildflags.h"
+#include "net/base/features.h"
 #include "pdf/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "third_party/blink/public/common/features.h"
@@ -156,9 +158,11 @@ class ProfileKeyedServiceBrowserTest : public InProcessBrowserTest {
   ProfileKeyedServiceBrowserTest() {
     // Force features activation to make sure the test is accurate as possible.
     // Also removes differences between official and non official run of the
-    // tests. If a feature is integrated in the fieldtrial_testing_config.json,
-    // it might not be considered under an official build. Adding it under a
-    // InitWithFeatures to activate it would neglect that difference.
+    // tests.
+    //
+    // If a feature is integrated in the fieldtrial_testing_config.json,
+    // it might not be considered under an official build. Adding it under the
+    // InitWithFeatures below, to activate it, will solve that difference.
 
     // clang-format off
     feature_list_.InitWithFeatures(
@@ -168,7 +172,10 @@ class ProfileKeyedServiceBrowserTest : public InProcessBrowserTest {
           companion::visual_search::features::kVisualSearchSuggestions,
 #endif  // !BUILDFLAG(IS_ANDROID)
           blink::features::kBrowsingTopics,
-          features::kCookieDeprecationFacilitatedTesting,
+          net::features::kTpcdMetadataGrants,
+          net::features::kTpcdSupportSettings,
+          features::kPersistentOriginTrials,
+          features::kSidePanelPinning,
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
           omnibox::kOnDeviceTailModel,
           omnibox::kOnDeviceHeadProviderNonIncognito,
@@ -249,6 +256,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
 #if BUILDFLAG(ENABLE_PDF)
     "PdfViewerPrivateEventRouter",
 #endif  // BUILDFLAG(ENABLE_PDF)
+    "PinnedToolbarActionsModel",
     "PlatformNotificationService",
     "PredictionModelHandlerProvider",
     "PrefWatcher",
@@ -276,6 +284,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "TrackingProtectionSettings",
     "UDPSocketEventDispatcher",
     "UkmBackgroundRecorderService",
+    "UpdaterService",
     "UsbDeviceManager",
     "UsbDeviceResourceManager",
     "sct_reporting::Factory"
@@ -352,7 +361,6 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "BookmarkExpandedStateTracker",
 #endif
     "BookmarkModel",
-    "BookmarkSyncServiceFactory",
     "BookmarkUndoService",
     "BookmarksAPI",
     "BrailleDisplayPrivateAPI",
@@ -371,7 +379,6 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "DeveloperPrivateAPI",
     "DeviceInfoSyncService",
     "DownloadCoreService",
-    "EligibilityServiceFactory",
     "EventRouter",
     "ExtensionActionAPI",
     "ExtensionActionManager",
@@ -422,6 +429,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     "ListFamilyMembersService",
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
+    "LocalOrSyncableBookmarkSyncServiceFactory",
     "LoginUIServiceFactory",
     "MDnsAPI",
     "ManagedBookmarkService",
@@ -452,6 +460,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "PermissionsUpdaterShutdownFactory",
     "PersonalDataManager",
     "PinnedTabService",
+    "PinnedToolbarActionsModel",
     "PlatformNotificationService",
     "PluginManager",
     "PluginPrefs",
@@ -511,18 +520,20 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "TemplateURLServiceFactory",
     "ThemeService",
     "ToolbarActionsModel",
+    "TpcdSupportService",
     "TrackingProtectionSettings",
     "TranslateRanker",
     "TriggeredProfileResetter",
     "TtsAPI",
     "UDPSocketEventDispatcher",
     "UkmBackgroundRecorderService",
+    "UpdaterService",
     "UsbDeviceManager",
     "UsbDeviceResourceManager",
     "UserCloudPolicyInvalidator",
     "UserPolicySigninService",
 #if !BUILDFLAG(IS_ANDROID)
-    "VisualSearchSuggestionsService",
+    "VisualQuerySuggestionsService",
 #endif  // !BUILDFLAG(IS_ANDROID)
     "WarningBadgeService",
     "WarningService",
@@ -563,10 +574,8 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "AutofillInternalsService",
     "CanMakePaymentQuery",
     "LocalPresentationManager",
-    "MediaRouter",
     "OmniboxInputWatcher",
     "OmniboxSuggestionsWatcher",
-    "PasswordChangeSuccessTracker",
     "PasswordManagerInternalsService",
     "PasswordRequirementsServiceFactory",
     "PolicyBlocklist",
@@ -607,10 +616,8 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     // default, however their creation is still possible.
     "AutocompleteControllerEmitter",
     "CanMakePaymentQuery",
-    "MediaRouter",
     "OmniboxInputWatcher",
     "OmniboxSuggestionsWatcher",
-    "PasswordChangeSuccessTracker",
     "PolicyBlocklist",
     "PolicyClipboardRestriction",
     "SafeSearch",

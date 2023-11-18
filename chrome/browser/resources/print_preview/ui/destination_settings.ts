@@ -221,6 +221,10 @@ export class PrintPreviewDestinationSettingsElement extends
         this.destinationStore_,
         DestinationStoreEventType.DESTINATION_EULA_READY,
         this.updateDestinationEulaUrl_.bind(this));
+    this.tracker_.add(
+        this.destinationStore_,
+        DestinationStoreEventType.DESTINATION_PRINTER_STATUS_UPDATE,
+        this.onPrinterStatusUpdate_.bind(this));
     // </if>
   }
 
@@ -500,6 +504,35 @@ export class PrintPreviewDestinationSettingsElement extends
   printerExistsInDisplayedDestinations(): boolean {
     return this.displayedDestinations_.some(
         destination => destination.type !== PrinterType.PDF_PRINTER);
+  }
+
+  // Trigger updates to the printer status icons and text for the selected
+  // destination and corresponding dropdown.
+  private onPrinterStatusUpdate_(
+      e: CustomEvent<{destinationKey: string, nowOnline: boolean}>): void {
+    const destinationKey = e.detail.destinationKey;
+
+    // If `destinationKey` matches the currently selected destination, use
+    // notifyPath to trigger the destination to recalculate its status icon and
+    // error status text.
+    if (this.destination && this.destination.key === destinationKey) {
+      this.notifyPath(`destination.printerStatusReason`);
+
+      // If the selected destination was unreachable and now it's online, force
+      // select it again so the capabilities and preview will now load.
+      if (e.detail.nowOnline) {
+        this.destinationStore_!.selectDestination(
+            this.destination, /*refreshDestination=*/ true);
+      }
+    }
+
+    // If this destination is in the dropdown, notify it to recalculate its
+    // status icon.
+    const index = this.displayedDestinations_.findIndex(
+        destination => destination.key === destinationKey);
+    if (index !== -1) {
+      this.notifyPath(`displayedDestinations_.${index}.printerStatusReason`);
+    }
   }
   // </if>
 }

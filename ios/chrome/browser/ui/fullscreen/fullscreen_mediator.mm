@@ -110,7 +110,10 @@ void FullscreenMediator::FullscreenModelToolbarHeightsUpdated(
 void FullscreenMediator::FullscreenModelProgressUpdated(
     FullscreenModel* model) {
   DCHECK_EQ(model_, model);
-  StopAnimating(true /* update_model */);
+  // Stops the animation only if there is a current animation running.
+  if (animator_ && animator_.state == UIViewAnimatingStateActive) {
+    StopAnimating(true /* update_model */);
+  }
   for (auto& observer : observers_) {
     observer.FullscreenProgressUpdated(controller_, model_->progress());
   }
@@ -121,7 +124,10 @@ void FullscreenMediator::FullscreenModelProgressUpdated(
 void FullscreenMediator::FullscreenModelEnabledStateChanged(
     FullscreenModel* model) {
   DCHECK_EQ(model_, model);
-  StopAnimating(true /* update_model */);
+  // Stops the animation only if there is a current animation running.
+  if (animator_ && animator_.state == UIViewAnimatingStateActive) {
+    StopAnimating(true /* update_model */);
+  }
   for (auto& observer : observers_) {
     observer.FullscreenEnabledStateChanged(controller_, model->enabled());
   }

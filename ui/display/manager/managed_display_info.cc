@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
@@ -411,6 +411,11 @@ Display::Rotation ManagedDisplayInfo::GetRotation(
   if (rotations_.find(source) == rotations_.end())
     return Display::ROTATE_0;
   return rotations_.at(source);
+}
+
+void ManagedDisplayInfo::AddZoomFactorForSize(const std::string& size,
+                                              float zoom_factor) {
+  zoom_factor_map_[size] = zoom_factor;
 }
 
 void ManagedDisplayInfo::Copy(const ManagedDisplayInfo& native_info) {

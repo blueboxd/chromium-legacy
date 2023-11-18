@@ -59,6 +59,10 @@
 #include "components/prefs/pref_registry_simple.h"
 #endif  // BUILDFLAG(IS_WIN)
 
+#if BUILDFLAG(IS_MAC)
+#include "components/os_crypt/sync/os_crypt.h"
+#endif
+
 using autofill::ACCOUNT_CREATION_PASSWORD;
 using autofill::CalculateFormSignature;
 using autofill::FieldDataManager;
@@ -310,6 +314,8 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterIntegerPref(
       prefs::kCurrentMigrationVersionToGoogleMobileServices, 0);
   registry->RegisterDoublePref(prefs::kTimeOfLastMigrationAttempt, 0.0);
+  registry->RegisterBooleanPref(prefs::kPasswordsUseUPMLocalAndSeparateStores,
+                                false);
   registry->RegisterBooleanPref(prefs::kRequiresMigrationAfterSyncStatusChange,
                                 false);
   registry->RegisterBooleanPref(
@@ -334,9 +340,6 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterIntegerPref(
       prefs::kPasswordGenerationBottomSheetDismissCount, 0);
 #endif  // BUILDFLAG(IS_ANDROID)
-  // Preferences for |PasswordChangeSuccessTracker|.
-  registry->RegisterIntegerPref(prefs::kPasswordChangeSuccessTrackerVersion, 0);
-  registry->RegisterListPref(prefs::kPasswordChangeSuccessTrackerFlows);
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
   registry->RegisterIntegerPref(
@@ -355,6 +358,10 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kPasswordManagerPromoCardsList);
 #endif  // BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   registry->RegisterBooleanPref(prefs::kPasswordSharingEnabled, true);
+#if BUILDFLAG(IS_MAC)
+  registry->RegisterIntegerPref(prefs::kRelaunchChromeBubbleDismissedCounter,
+                                0);
+#endif
 }
 
 // static
@@ -552,6 +559,21 @@ void PasswordManager::OnDynamicFormSubmission(
   // is actually null.
   if (!submitted_manager || !submitted_manager->GetSubmittedForm())
     return;
+
+  if (
+#if BUILDFLAG(IS_IOS)
+      // On iOS, drivers are bound to WebFrames, but some pages (e.g. files)
+      // do not lead to creating WebFrame objects, therefore. If the driver is
+      // missing, the current page has no password forms, but we still are
+      // interested in detecting a submission.
+      driver &&
+#endif  // BUILDFLAG(IS_IOS)
+      !driver->IsInPrimaryMainFrame() &&
+      submitted_manager->GetFrameId() != driver->GetFrameId()) {
+    // Frames different from the main frame and the frame of the submitted form
+    // are unlikely relevant to success of submission.
+    return;
+  }
 
   const PasswordForm* submitted_form = submitted_manager->GetSubmittedForm();
 
@@ -870,8 +892,9 @@ void PasswordManager::UpdateStateOnUserInput(
   OnInformAboutUserInput(driver, *manager->observed_form());
 }
 
-void PasswordManager::OnPasswordNoLongerGenerated(
-    PasswordManagerDriver* driver) {
+// TODO(crbug/1399524): Unify this method with the cross-platform
+// PasswordManager::OnPasswordNoLongerGenerated implementation.
+void PasswordManager::OnPasswordNoLongerGenerated() {
   for (std::unique_ptr<PasswordFormManager>& manager : form_managers_)
     manager->PasswordNoLongerGenerated();
 }
@@ -1016,7 +1039,7 @@ void PasswordManager::OnPasswordFormsRendered(
       // On iOS, drivers are bound to WebFrames, but some pages (e.g. files)
       // do not lead to creating WebFrame objects, therefore. If the driver is
       // missing, the current page has no password forms, but we still are
-      // interested in detecting a submisison.
+      // interested in detecting a submission.
       driver &&
 #endif  // BUILDFLAG(IS_IOS)
       !driver->IsInPrimaryMainFrame() &&
@@ -1088,7 +1111,6 @@ void PasswordManager::OnLoginSuccessful() {
   if (!client_->IsSavingAndFillingEnabled(submitted_form->url))
     return;
 
-  client_->GetStoreResultFilter()->ReportFormLoginSuccess(*submitted_manager);
   // Check for leaks only if there are no muted credentials and it is not a
   // single username submission (a leak warning may offer an automated password
   // change, which requires a user to be logged in).
@@ -1161,7 +1183,8 @@ void PasswordManager::OnLoginSuccessful() {
     }
 
     if (submitted_manager->HasGeneratedPassword()) {
-      client_->AutomaticPasswordSave(MoveOwnedSubmittedManager());
+      client_->AutomaticPasswordSave(MoveOwnedSubmittedManager(),
+                                     /*is_update_confirmation=*/false);
     }
   }
   ResetSubmittedManager();

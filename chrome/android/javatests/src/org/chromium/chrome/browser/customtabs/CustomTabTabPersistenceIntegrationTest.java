@@ -46,7 +46,9 @@ public class CustomTabTabPersistenceIntegrationTest {
     @DisabledTest(message = "crbug.com/1477814")
     public void testTabFilesDeletedOnClose() {
         Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-        String expectedTabFileName = TabStateFileManager.getTabStateFilename(tab.getId(), false);
+        String expectedTabFileName =
+                TabStateFileManager.getTabStateFilename(
+                        tab.getId(), false, /* isFlatBuffer= */ false);
 
         CustomTabTabPersistencePolicy tabPersistencePolicy =
                 mCustomTabActivityTestRule
@@ -54,7 +56,7 @@ public class CustomTabTabPersistenceIntegrationTest {
                         .getComponent()
                         .resolveTabPersistencePolicy();
 
-        String expectedMetadataFileName = tabPersistencePolicy.getStateFileName();
+        String expectedMetadataFileName = tabPersistencePolicy.getMetadataFileName();
         File stateDir = tabPersistencePolicy.getOrCreateStateDirectory();
 
         waitForFileExistState(true, expectedTabFileName, stateDir);

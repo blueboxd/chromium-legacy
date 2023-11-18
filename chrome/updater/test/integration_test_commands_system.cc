@@ -4,6 +4,7 @@
 
 #include <cstdlib>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -30,7 +31,6 @@
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_WIN)
@@ -65,7 +65,7 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
   void PrintLog() const override { RunCommand("print_log"); }
 
   void CopyLog() const override {
-    const absl::optional<base::FilePath> path =
+    const std::optional<base::FilePath> path =
         GetInstallDirectory(updater_scope_);
     ASSERT_TRUE(path);
     if (path)
@@ -411,6 +411,12 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
   }
 #endif  // BUILDFLAG(IS_WIN)
 
+#if BUILDFLAG(IS_MAC)
+  void PrivilegedHelperInstall() const override {
+    RunCommand("privileged_helper_install");
+  }
+#endif  // BUILDFLAG(IS_WIN)
+
   void ExpectLegacyUpdaterMigrated() const override {
     RunCommand("expect_legacy_updater_migrated");
   }
@@ -425,7 +431,8 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
   void SetLastChecked(const base::Time& time) const override {
     RunCommand(
         "set_last_checked",
-        {Param("time", base::NumberToString(time.ToJsTimeIgnoringNull()))});
+        {Param("time", base::NumberToString(
+                           time.InMillisecondsFSinceUnixEpochIgnoringNull()))});
   }
 
   void ExpectLastChecked() const override { RunCommand("expect_last_checked"); }

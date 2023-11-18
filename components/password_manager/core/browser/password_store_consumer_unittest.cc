@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/core/browser/password_store_consumer.h"
+#include "components/password_manager/core/browser/password_store/password_store_consumer.h"
 #include "components/password_manager/core/browser/mock_password_store_consumer.h"
 #include "components/password_manager/core/browser/mock_password_store_interface.h"
 #include "components/password_manager/core/browser/password_form.h"
@@ -55,8 +55,8 @@ TEST(PasswordStoreConsumerTest, OnGetPasswordStoreResultsFromIsCalledWithData) {
                     store, std::move(forms_or_error));
           });
 
-  std::vector<std::unique_ptr<PasswordForm>> forms;
-  forms.push_back(CreateForm());
+  std::vector<PasswordForm> forms;
+  forms.push_back(*CreateForm());
   std::vector<std::unique_ptr<PasswordForm>> copy_of_forms;
   copy_of_forms.push_back(CreateForm());
 
@@ -91,8 +91,8 @@ TEST(PasswordStoreConsumerTest,
 TEST(PasswordStoreConsumerTest, OnGetPasswordStoreResultsIsCalledWithData) {
   MockPasswordStoreConsumerPartial consumer;
 
-  std::vector<std::unique_ptr<PasswordForm>> forms;
-  forms.push_back(CreateForm());
+  std::vector<PasswordForm> forms;
+  forms.push_back(*CreateForm());
   std::vector<std::unique_ptr<PasswordForm>> copy_of_forms;
   copy_of_forms.push_back(CreateForm());
 

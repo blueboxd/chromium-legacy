@@ -129,8 +129,9 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
     bool has_user_gesture,
     scoped_refptr<UrlCheckerDelegate> url_checker_delegate,
     const base::RepeatingCallback<content::WebContents*()>& web_contents_getter,
+    base::WeakPtr<web::WebState> weak_web_state,
     UnsafeResource::RenderProcessId render_process_id,
-    UnsafeResource::RenderFrameId render_frame_id,
+    const UnsafeResource::RenderFrameToken& render_frame_token,
     UnsafeResource::FrameTreeNodeId frame_tree_node_id,
     bool url_real_time_lookup_enabled,
     bool can_urt_check_subresource_url,
@@ -152,8 +153,9 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
       has_user_gesture_(has_user_gesture),
       web_contents_getter_(web_contents_getter),
       render_process_id_(render_process_id),
-      render_frame_id_(render_frame_id),
+      render_frame_token_(render_frame_token),
       frame_tree_node_id_(frame_tree_node_id),
+      weak_web_state_(weak_web_state),
       url_checker_delegate_(std::move(url_checker_delegate)),
       database_manager_(url_checker_delegate_->GetDatabaseManager()),
       url_real_time_lookup_enabled_(url_real_time_lookup_enabled),
@@ -169,39 +171,8 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
       mechanism_experimenter_(mechanism_experimenter),
       is_mechanism_experiment_allowed_(is_mechanism_experiment_allowed),
       hash_realtime_selection_(hash_realtime_selection) {
-  DCHECK(!web_contents_getter_.is_null());
   DCHECK(!can_urt_check_subresource_url_ || url_real_time_lookup_enabled_);
   DCHECK(url_real_time_lookup_enabled_ || can_check_db_);
-
-  // This object is used exclusively on the IO thread but may be constructed on
-  // the UI thread.
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-}
-
-SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
-    network::mojom::RequestDestination request_destination,
-    scoped_refptr<UrlCheckerDelegate> url_checker_delegate,
-    base::WeakPtr<web::WebState> weak_web_state,
-    bool url_real_time_lookup_enabled,
-    bool can_urt_check_subresource_url,
-    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_on_ui,
-    base::WeakPtr<HashRealTimeService> hash_realtime_service_on_ui,
-    hash_realtime_utils::HashRealTimeSelection hash_realtime_selection)
-    : load_flags_(0),
-      request_destination_(request_destination),
-      has_user_gesture_(false),
-      weak_web_state_(weak_web_state),
-      url_checker_delegate_(url_checker_delegate),
-      database_manager_(url_checker_delegate_->GetDatabaseManager()),
-      url_real_time_lookup_enabled_(url_real_time_lookup_enabled),
-      can_urt_check_subresource_url_(can_urt_check_subresource_url),
-      can_check_db_(true),
-      ui_task_runner_(ui_task_runner),
-      url_lookup_service_on_ui_(url_lookup_service_on_ui),
-      hash_realtime_service_on_ui_(hash_realtime_service_on_ui),
-      hash_realtime_selection_(hash_realtime_selection) {
-  DCHECK(!can_urt_check_subresource_url_ || url_real_time_lookup_enabled_);
 
   // This object is used exclusively on the IO thread but may be constructed on
   // the UI thread.
@@ -267,7 +238,7 @@ UnsafeResource SafeBrowsingUrlCheckerImpl::MakeUnsafeResource(
       weak_factory_.GetWeakPtr(), performed_check);
   resource.callback_sequence = base::SequencedTaskRunner::GetCurrentDefault();
   resource.render_process_id = render_process_id_;
-  resource.render_frame_id = render_frame_id_;
+  resource.render_frame_token = render_frame_token_;
   resource.frame_tree_node_id = frame_tree_node_id_;
   resource.weak_web_state = weak_web_state_;
   resource.threat_source = threat_source;
@@ -347,6 +318,10 @@ void SafeBrowsingUrlCheckerImpl::OnUrlResultInternalAndMaybeDeleteSelf(
   }
 
   const bool is_prefetch = (load_flags_ & net::LOAD_PREFETCH);
+  if (request_destination_ == network::mojom::RequestDestination::kDocument) {
+    base::UmaHistogramBoolean("SafeBrowsing.CheckUrl.IsDocumentCheckPrefetch",
+                              is_prefetch);
+  }
 
   // Handle main frame and subresources. We do this to catch resources flagged
   // as phishing even if the top frame isn't flagged.
@@ -579,7 +554,8 @@ SafeBrowsingUrlCheckerImpl::KickOffLookupMechanism(const GURL& url) {
               can_check_high_confidence_allowlist_,
               url_lookup_service_metric_suffix_, last_committed_url_,
               url_lookup_service_on_ui_, webui_delegate_,
-              hash_realtime_service_on_ui_);
+              hash_realtime_service_on_ui_, url_checker_delegate_,
+              web_contents_getter_);
       return KickOffLookupMechanismResult(start_check_result, performed_check);
     } else {
       lookup_mechanism = std::make_unique<UrlRealTimeMechanism>(
@@ -588,7 +564,8 @@ SafeBrowsingUrlCheckerImpl::KickOffLookupMechanism(const GURL& url) {
           can_check_high_confidence_allowlist_,
           url_lookup_service_metric_suffix_, last_committed_url_,
           ui_task_runner_, url_lookup_service_on_ui_, webui_delegate_,
-          MechanismExperimentHashDatabaseCache::kNoExperiment);
+          MechanismExperimentHashDatabaseCache::kNoExperiment,
+          url_checker_delegate_, web_contents_getter_);
     }
   } else if (!can_check_db_) {
     return KickOffLookupMechanismResult(

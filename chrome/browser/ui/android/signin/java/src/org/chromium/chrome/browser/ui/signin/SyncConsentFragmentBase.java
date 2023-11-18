@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.browser.ui.device_lock.DeviceLockCoordinator;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerCoordinator;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerDialogCoordinator;
+import org.chromium.components.browser_ui.device_lock.DeviceLockActivityLauncher;
 import org.chromium.components.externalauth.ExternalAuthUtils;
 import org.chromium.components.externalauth.UserRecoverableErrorHandler;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -51,6 +52,7 @@ import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.AccountInfoServiceProvider;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.sync.UserSelectableType;
 import org.chromium.components.user_prefs.UserPrefs;
@@ -267,46 +269,60 @@ public abstract class SyncConsentFragmentBase extends Fragment
     // TODO(crbug.com/1462264): Refactor method to take CoreAccountInfo instead of String email.
     protected void signinAndEnableSync(
             String accountEmail, boolean settingsClicked, Runnable callback) {
-        AccountManagerFacadeProvider.getInstance().getCoreAccountInfos().then(coreAccountInfos -> {
-            @Nullable
-            CoreAccountInfo coreAccountInfo =
-                    AccountUtils.findCoreAccountInfoByEmail(coreAccountInfos, accountEmail);
-            if (coreAccountInfo == null) {
-                callback.run();
-                return;
-            }
-            Profile profile = Profile.getLastUsedRegularProfile();
-            SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(profile);
-            signinManager.signinAndEnableSync(
-                    CoreAccountInfo.getAndroidAccountFrom(coreAccountInfo), mSigninAccessPoint,
-                    new SigninManager.SignInCallback() {
-                        @Override
-                        public void onSignInComplete() {
-                            if (ChromeFeatureList.isEnabled(ChromeFeatureList.TANGIBLE_SYNC)
-                                    && getTangibleSyncGroup() != TangibleSyncGroup.GROUP_F) {
-                                // Groups A-E are only for enabling History and Tab Sync
-                                SyncServiceFactory.getForProfile(profile).setSelectedTypes(false,
-                                        Set.of(UserSelectableType.HISTORY,
-                                                UserSelectableType.TABS));
+        AccountManagerFacadeProvider.getInstance()
+                .getCoreAccountInfos()
+                .then(
+                        coreAccountInfos -> {
+                            @Nullable
+                            CoreAccountInfo coreAccountInfo =
+                                    AccountUtils.findCoreAccountInfoByEmail(
+                                            coreAccountInfos, accountEmail);
+                            if (coreAccountInfo == null) {
+                                callback.run();
+                                return;
                             }
-                            if (!settingsClicked) {
-                                UnifiedConsentServiceBridge
-                                        .setUrlKeyedAnonymizedDataCollectionEnabled(
-                                                Profile.getLastUsedRegularProfile(), true);
-                                SyncServiceFactory.getForProfile(profile)
-                                        .setInitialSyncFeatureSetupComplete(
-                                                SyncFirstSetupCompleteSource.BASIC_FLOW);
-                            }
-                            closeAndMaybeOpenSyncSettings(settingsClicked);
-                            callback.run();
-                        }
+                            Profile profile = Profile.getLastUsedRegularProfile();
+                            SigninManager signinManager =
+                                    IdentityServicesProvider.get().getSigninManager(profile);
+                            signinManager.signinAndEnableSync(
+                                    CoreAccountInfo.getAndroidAccountFrom(coreAccountInfo),
+                                    mSigninAccessPoint,
+                                    new SigninManager.SignInCallback() {
+                                        @Override
+                                        public void onSignInComplete() {
+                                            if (ChromeFeatureList.isEnabled(
+                                                            ChromeFeatureList.TANGIBLE_SYNC)
+                                                    && getTangibleSyncGroup()
+                                                            != TangibleSyncGroup.GROUP_F) {
+                                                // Groups A-E are only for enabling History and Tab
+                                                // Sync
+                                                SyncServiceFactory.getForProfile(profile)
+                                                        .setSelectedTypes(
+                                                                false,
+                                                                Set.of(
+                                                                        UserSelectableType.HISTORY,
+                                                                        UserSelectableType.TABS));
+                                            }
+                                            if (!settingsClicked) {
+                                                UnifiedConsentServiceBridge
+                                                        .setUrlKeyedAnonymizedDataCollectionEnabled(
+                                                                Profile.getLastUsedRegularProfile(),
+                                                                true);
+                                                SyncServiceFactory.getForProfile(profile)
+                                                        .setInitialSyncFeatureSetupComplete(
+                                                                SyncFirstSetupCompleteSource
+                                                                        .BASIC_FLOW);
+                                            }
+                                            closeAndMaybeOpenSyncSettings(settingsClicked);
+                                            callback.run();
+                                        }
 
-                        @Override
-                        public void onSignInAborted() {
-                            callback.run();
-                        }
-                    });
-        });
+                                        @Override
+                                        public void onSignInAborted() {
+                                            callback.run();
+                                        }
+                                    });
+                        });
     }
 
     @Override
@@ -519,6 +535,11 @@ public abstract class SyncConsentFragmentBase extends Fragment
     }
 
     @Override
+    public @DeviceLockActivityLauncher.Source String getSource() {
+        return DeviceLockActivityLauncher.Source.SYNC_CONSENT;
+    }
+
+    @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         boolean cancelable = !mIsChild;
@@ -599,13 +620,13 @@ public abstract class SyncConsentFragmentBase extends Fragment
     /** Sets texts for immutable elements. Accept button text is set by {@link #setHasAccounts}. */
     private void updateConsentText() {
         if (mSyncConsentView != null) {
-            updateSyncConsentViewText(R.string.no_thanks);
+            updateSyncConsentViewText(R.string.signin_sync_decline_button);
         } else {
             final @StringRes int refuseButtonTextId =
                     mSigninAccessPoint == SigninAccessPoint.SIGNIN_PROMO
-                            || mSigninAccessPoint == SigninAccessPoint.START_PAGE
-                    ? R.string.no_thanks
-                    : R.string.cancel;
+                                    || mSigninAccessPoint == SigninAccessPoint.START_PAGE
+                            ? R.string.signin_sync_decline_button
+                            : R.string.cancel;
             updateSigninViewText(refuseButtonTextId);
         }
     }
@@ -903,15 +924,19 @@ public abstract class SyncConsentFragmentBase extends Fragment
     public void onResume() {
         super.onResume();
         mAccountManagerFacade.addObserver(this);
+        final IdentityManager identityManager =
+                IdentityServicesProvider.get()
+                        .getIdentityManager(Profile.getLastUsedRegularProfile());
 
         final CoreAccountInfo primaryAccount =
-                IdentityServicesProvider.get()
-                        .getIdentityManager(Profile.getLastUsedRegularProfile())
-                        .getPrimaryAccountInfo(ConsentLevel.SIGNIN);
+                identityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN);
         mIsSignedInWithoutSync =
                 mSigninAccessPoint == SigninAccessPoint.START_PAGE && primaryAccount != null;
         if (mIsSignedInWithoutSync) {
             mSelectedAccountEmail = primaryAccount.getEmail();
+
+            AccountCapabilitiesLatencyTracker.trackAccountCapabilitiesFetchLatency(
+                    identityManager, primaryAccount);
         }
         // When a fragment that was in the FragmentManager backstack becomes visible again, the view
         // will be recreated by onCreateView. Update the state of this recreated UI.

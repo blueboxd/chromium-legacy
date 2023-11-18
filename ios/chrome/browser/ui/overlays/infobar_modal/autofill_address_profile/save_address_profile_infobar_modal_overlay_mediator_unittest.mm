@@ -11,9 +11,9 @@
 #import "components/autofill/core/browser/autofill_save_update_address_profile_delegate_ios.h"
 #import "components/autofill/core/browser/autofill_test_utils.h"
 #import "ios/chrome/browser/infobars/infobar_ios.h"
-#import "ios/chrome/browser/overlays/public/infobar_modal/save_address_profile_infobar_modal_overlay_request_config.h"
-#import "ios/chrome/browser/overlays/public/infobar_modal/save_address_profile_infobar_modal_overlay_responses.h"
-#import "ios/chrome/browser/overlays/test/fake_overlay_request_callback_installer.h"
+#import "ios/chrome/browser/overlays/model/public/infobar_modal/save_address_profile_infobar_modal_overlay_request_config.h"
+#import "ios/chrome/browser/overlays/model/public/infobar_modal/save_address_profile_infobar_modal_overlay_responses.h"
+#import "ios/chrome/browser/overlays/model/test/fake_overlay_request_callback_installer.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
 #import "ios/chrome/browser/ui/infobars/modals/autofill_address_profile/infobar_edit_address_profile_modal_consumer.h"
 #import "ios/chrome/browser/ui/infobars/modals/autofill_address_profile/infobar_save_address_profile_modal_consumer.h"
@@ -48,7 +48,7 @@ class SaveAddressProfileInfobarModalOverlayMediatorTest : public PlatformTest {
         delegate = std::make_unique<
             autofill::AutofillSaveUpdateAddressProfileDelegateIOS>(
             profile, /*original_profile=*/nullptr,
-            /*user_email=*/absl::nullopt,
+            /*user_email=*/std::nullopt,
             /*locale=*/"en-US",
             autofill::AutofillClient::SaveAddressProfilePromptOptions{},
             base::DoNothing());

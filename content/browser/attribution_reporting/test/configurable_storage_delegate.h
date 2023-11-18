@@ -5,8 +5,6 @@
 #ifndef CONTENT_BROWSER_ATTRIBUTION_REPORTING_TEST_CONFIGURABLE_STORAGE_DELEGATE_H_
 #define CONTENT_BROWSER_ATTRIBUTION_REPORTING_TEST_CONFIGURABLE_STORAGE_DELEGATE_H_
 
-#include <stdint.h>
-
 #include <vector>
 
 #include "base/thread_annotations.h"
@@ -38,13 +36,12 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
   void ShuffleTriggerVerifications(
       std::vector<network::TriggerVerification>&) override;
   double GetRandomizedResponseRate(
-      attribution_reporting::mojom::SourceType,
-      const attribution_reporting::EventReportWindows&,
-      int max_event_level_reports) const override;
+      const attribution_reporting::TriggerSpecs&,
+      attribution_reporting::MaxEventLevelReports) const override;
   GetRandomizedResponseResult GetRandomizedResponse(
       attribution_reporting::mojom::SourceType,
-      const attribution_reporting::EventReportWindows&,
-      int max_event_level_reports,
+      const attribution_reporting::TriggerSpecs&,
+      attribution_reporting::MaxEventLevelReports,
       base::Time source_time) const override;
   std::vector<NullAggregatableReport> GetNullAggregatableReports(
       const AttributionTrigger&,
@@ -81,9 +78,9 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
   void set_randomized_response(RandomizedResponse);
   void set_exceeds_channel_capacity_limit(bool);
 
-  void set_trigger_data_cardinality(uint64_t navigation, uint64_t event);
-
   void set_null_aggregatable_reports(std::vector<NullAggregatableReport>);
+
+  void use_realistic_report_times();
 
   // Detaches the delegate from its current sequence in preparation for being
   // moved to storage, which runs on its own sequence.
@@ -96,6 +93,9 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
       GUARDED_BY_CONTEXT(sequence_checker_);
 
   base::TimeDelta report_delay_ GUARDED_BY_CONTEXT(sequence_checker_);
+
+  bool use_realistic_report_times_ GUARDED_BY_CONTEXT(sequence_checker_) =
+      false;
 
   absl::optional<OfflineReportDelayConfig> offline_report_delay_config_
       GUARDED_BY_CONTEXT(sequence_checker_);

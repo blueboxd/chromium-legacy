@@ -61,10 +61,6 @@ class WebUIMochaBrowserTest : public InProcessBrowserTest {
   // involve the WebContents, before the Mocha test runs.
   virtual void OnWebContentsAvailable(content::WebContents* web_contents);
 
-  // Hook for subclasses that want to run the Mocha test on a different set of
-  // WebContents than the WebContents of the test tab.
-  virtual void SubstituteWebContents(content::WebContents** out_new_contents);
-
   // Gets the WebContents instance to set up the chrome://webui-test data
   // source for. Defaults to chrome_test_utils::GetActiveWebContents(this);
   virtual content::WebContents* GetWebContentsForSetup();
@@ -73,6 +69,7 @@ class WebUIMochaBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override;
 
   void set_test_loader_host(const std::string& host);
+  void set_test_loader_scheme(const std::string& scheme);
 
  private:
   // Helper that performs setup steps normally done by test_loader.html, invoked
@@ -88,6 +85,12 @@ class WebUIMochaBrowserTest : public InProcessBrowserTest {
   // `chrome::kChromeUIWebUITestHost`.
   // Note: It is also used by RunTest even when |skip_test_loader| is true.
   std::string test_loader_host_;
+
+  // The scheme to use when invoking the test_loader URL, like
+  // "<scheme>://webui-test/test_loader.html=...". Defaults to
+  // content::kChromeUIScheme.
+  // Note: It is also used by RunTest even when |skip_test_loader| is true.
+  std::string test_loader_scheme_;
 
   // Handles collection of code coverage.
   std::unique_ptr<DevToolsAgentCoverageObserver> coverage_handler_;

@@ -42,13 +42,6 @@ bool WebAuthenticationDelegate::OriginMayUseRemoteDesktopClientOverride(
   return false;
 }
 
-bool WebAuthenticationDelegate::IsSecurityLevelAcceptableForWebAuthn(
-    content::RenderFrameHost* rfh,
-    const url::Origin& caller_origin) {
-  return true;
-}
-
-#if !BUILDFLAG(IS_ANDROID)
 absl::optional<std::string>
 WebAuthenticationDelegate::MaybeGetRelyingPartyIdOverride(
     const std::string& claimed_relying_party_id,
@@ -102,7 +95,6 @@ WebAuthenticationRequestProxy* WebAuthenticationDelegate::MaybeGetRequestProxy(
     const url::Origin& caller_origin) {
   return nullptr;
 }
-#endif  // !IS_ANDROID
 
 #if BUILDFLAG(IS_MAC)
 absl::optional<WebAuthenticationDelegate::TouchIdAuthenticatorConfig>
@@ -119,15 +111,6 @@ WebAuthenticationDelegate::GetGenerateRequestIdCallback(
   return base::NullCallback();
 }
 #endif
-
-#if BUILDFLAG(IS_ANDROID)
-base::android::ScopedJavaLocalRef<jobject>
-WebAuthenticationDelegate::GetIntentSender(WebContents* web_contents) {
-  return nullptr;
-}
-#endif
-
-#if !BUILDFLAG(IS_ANDROID)
 
 AuthenticatorRequestClientDelegate::AuthenticatorRequestClientDelegate() =
     default;
@@ -245,7 +228,5 @@ void AuthenticatorRequestClientDelegate::FinishCollectToken() {}
 
 void AuthenticatorRequestClientDelegate::OnRetryUserVerification(int attempts) {
 }
-
-#endif  // !IS_ANDROID
 
 }  // namespace content

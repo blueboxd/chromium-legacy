@@ -40,6 +40,9 @@ _CONFIG = [
             'gfx::ICCProfile',
             'gfx::RadToDeg',
 
+            # For fast cos/sin functions
+            'gfx::SinCosDegrees',
+
             # absl
             'absl::MakeInt128',
             'absl::MakeUint128',
@@ -515,6 +518,7 @@ _CONFIG = [
             'cc::SnapAreaData',
             'cc::SnapAxis',
             'cc::SnapContainerData',
+            'cc::SnappedTargetData',
             'cc::SnapFlingClient',
             'cc::SnapFlingController',
             'cc::SnapPositionData',
@@ -549,7 +553,6 @@ _CONFIG = [
             'compositor_target_property::.+',
             'cors::.+',
             'css_parsing_utils::.+',
-            'css_toggle_key_handling::.+',
             'cssvalue::.+',
             'element_locator::.+',
             'encoding::.+',
@@ -937,7 +940,8 @@ _CONFIG = [
         ]
     },
     {
-        'paths': ['third_party/blink/renderer/core/frame/visual_viewport.cc'],
+        'paths': ['third_party/blink/renderer/core/frame/visual_viewport.cc',
+                  'third_party/blink/renderer/core/frame/visual_viewport.h'],
         'allowed': [
             'cc::SolidColorScrollbarLayer',
         ],
@@ -1230,6 +1234,15 @@ _CONFIG = [
     },
     {
         'paths': [
+            'third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h',
+        ],
+        # This class needs to pass gpu::Capabilities() to a //media function.
+        'allowed': [
+            'gpu::Capabilities',
+        ],
+    },
+   {
+        'paths': [
             'third_party/blink/renderer/core/html/media/',
         ],
         # This module needs access to the following for media's base::Feature
@@ -1432,10 +1445,12 @@ _CONFIG = [
         ],
         'allowed': [
             'base::ClampMul',
+            'base::IsAligned',
             'base::DoNothingWithBoundArgs',
             'base::PlatformThreadRef',
             'base::WrapRefCounted',
             'cc::kNumYUVPlanes',
+            'cc::SkiaPaintCanvas',
             'cc::YUVIndex',
             'cc::YUVSubsampling',
             'gpu::kNullSurfaceHandle',
@@ -1741,6 +1756,15 @@ _CONFIG = [
         ],
     },
     {
+        'paths': [
+            'third_party/blink/renderer/core/frame/local_frame.cc',
+            'third_party/blink/renderer/core/frame/local_frame.h',
+        ],
+        'allowed': [
+            'gfx::ImageSkia',
+        ],
+    },
+    {
         'paths': ['third_party/blink/renderer/core/frame/local_frame_view.cc'],
         'allowed': [
             'base::LapTimer',
@@ -1960,6 +1984,15 @@ _CONFIG = [
             'webnn::features::.+',
         ]
     },
+    {
+        'paths': [
+            'third_party/blink/renderer/modules/ad_auction/',
+            'third_party/blink/renderer/modules/shared_storage/',
+        ],
+        'allowed': [
+            'aggregation_service::.+',
+        ]
+    },
 ]
 
 
@@ -2137,6 +2170,7 @@ def check(path, contents):
     if (ext not in ('.cc', '.cpp', '.h', '.mm') or path.find('/testing/') >= 0
             or path.find('/core/web_test/') >= 0 or path.find('/tests/') >= 0
             or basename.endswith('_test') or basename.endswith('_test_helpers')
+            or basename.endswith('_test_utils')
             or basename.endswith('_unittest') or basename.endswith('_fuzzer')
             or basename.endswith('_perftest')):
         return results

@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "components/optimization_guide/core/page_content_annotation_type.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/optimization_guide/proto/model_execution.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "net/nqe/effective_connection_type.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -51,10 +52,11 @@ BASE_DECLARE_FEATURE(kExtractRelatedSearchesFromPrefetchedZPSResponse);
 BASE_DECLARE_FEATURE(kPageContentAnnotationsPersistSalientImageMetadata);
 BASE_DECLARE_FEATURE(kModelStoreUseRelativePath);
 BASE_DECLARE_FEATURE(kOptimizationGuidePersonalizedFetching);
-BASE_DECLARE_FEATURE(kOptimizationGuideHintsURLKeyedCacheDropFragments);
 BASE_DECLARE_FEATURE(kQueryInMemoryTextEmbeddings);
 BASE_DECLARE_FEATURE(kOptimizationGuidePredictionModelKillswitch);
 BASE_DECLARE_FEATURE(kOptimizationGuideModelExecution);
+BASE_DECLARE_FEATURE(kOptimizationGuideOnDeviceModel);
+BASE_DECLARE_FEATURE(kModelQualityLogging);
 
 // Enables use of task runner with trait CONTINUE_ON_SHUTDOWN for page content
 // annotations on-device models.
@@ -213,9 +215,6 @@ bool ShouldOverrideOptimizationTargetDecisionForMetricsPurposes(
 // |request_context|.
 bool ShouldEnablePersonalizedMetadata(proto::RequestContext request_context);
 
-// Returns the OAuth scopes to use for personalized metadata.
-std::set<std::string> GetOAuthScopesForPersonalizedMetadata();
-
 // Returns the minimum random delay before starting to fetch for prediction
 // models and host model features.
 base::TimeDelta PredictionModelFetchRandomMinDelay();
@@ -354,11 +353,15 @@ bool IsInstallWideModelStoreEnabled();
 bool ShouldPersistSalientImageMetadata(const std::string& locale,
                                        const std::string& country_code);
 
-// Whether to drop fragments for the URL-keyed hint cache key.
-bool ShouldDropFragmentsForURLKeyedHintCacheKey();
-
 // Returns whether to query text embeddings coming from history service.
 bool ShouldQueryEmbeddings();
+
+// Whether logging of model quality is enabled.
+bool IsModelQualityLoggingEnabled();
+
+// Whether model quality logging is enabled for a feature.
+bool IsModelQualityLoggingEnabledForFeature(
+    proto::ModelExecutionFeature feature);
 
 // Returns whether the `model_version` for `opt_target` is part of emergency
 // killswitch, and this model should be stopped serving immediately.
@@ -367,6 +370,17 @@ GetPredictionModelVersionsInKillSwitch();
 
 // Returns the OAuth scopes to use for model execution.
 std::set<std::string> GetOAuthScopesForModelExecution();
+
+// Returns the idle timeout before the on device model service shuts down.
+base::TimeDelta GetOnDeviceModelIdleTimeout();
+
+// These params determine how context processing works for the on device model.
+// The model will process at least min tokens before responding. While waiting
+// for the ExecuteModel() call, up to max tokens will be processed in chunks of
+// the given size.
+int GetOnDeviceModelMinTokensForContext();
+int GetOnDeviceModelMaxTokensForContext();
+int GetOnDeviceModelContextTokenChunkSize();
 
 }  // namespace features
 }  // namespace optimization_guide

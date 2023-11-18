@@ -44,6 +44,7 @@ from .protocol import (AccessibilityProtocolPart,
                        SetPermissionProtocolPart,
                        PrintProtocolPart,
                        DebugProtocolPart,
+                       VirtualSensorProtocolPart,
                        merge_dicts)
 
 
@@ -129,8 +130,12 @@ class MarionetteBaseProtocolPart(BaseProtocolPart):
 
         while True:
             try:
-                return self.marionette.execute_async_script("""let callback = arguments[arguments.length - 1];
+                rv = self.marionette.execute_async_script("""let callback = arguments[arguments.length - 1];
 addEventListener("__test_restart", e => {e.preventDefault(); callback(true)})""")
+                # None can be returned if we try to run the script again before we've completed a navigation.
+                # In that case, keep retrying
+                if rv is not None:
+                    return rv
             except errors.NoSuchWindowException:
                 # The window closed
                 break
@@ -720,6 +725,23 @@ class MarionetteAccessibilityProtocolPart(AccessibilityProtocolPart):
         return element.computed_role
 
 
+class MarionetteVirtualSensorProtocolPart(VirtualSensorProtocolPart):
+    def setup(self):
+        self.marionette = self.parent.marionette
+
+    def create_virtual_sensor(self, sensor_type, sensor_params):
+        raise NotImplementedError("create_virtual_sensor not yet implemented")
+
+    def update_virtual_sensor(self, sensor_type, reading):
+        raise NotImplementedError("update_virtual_sensor not yet implemented")
+
+    def remove_virtual_sensor(self, remove_parameters):
+        raise NotImplementedError("remove_virtual_sensor not yet implemented")
+
+    def get_virtual_sensor_information(self, information_parameters):
+        raise NotImplementedError("get_virtual_sensor_information not yet implemented")
+
+
 class MarionetteProtocol(Protocol):
     implements = [MarionetteBaseProtocolPart,
                   MarionetteTestharnessProtocolPart,
@@ -739,7 +761,8 @@ class MarionetteProtocol(Protocol):
                   MarionetteSetPermissionProtocolPart,
                   MarionettePrintProtocolPart,
                   MarionetteDebugProtocolPart,
-                  MarionetteAccessibilityProtocolPart]
+                  MarionetteAccessibilityProtocolPart,
+                  MarionetteVirtualSensorProtocolPart]
 
     def __init__(self, executor, browser, capabilities=None, timeout_multiplier=1, e10s=True, ccov=False):
         do_delayed_imports()

@@ -70,7 +70,7 @@ class CoreTabHelper : public content::WebContentsObserver,
       int thumbnail_max_height,
       DownscaleAndEncodeBitmapCallback callback);
 
-  // Open the Lens standalone experience for the image that triggered the
+  // Opens the Lens standalone experience for the image that triggered the
   // context menu. If the google lens supports opening requests in side panel,
   // then the request will open in the side panel instead of new tab.
   void SearchWithLens(content::RenderFrameHost* render_frame_host,
@@ -78,18 +78,13 @@ class CoreTabHelper : public content::WebContentsObserver,
                       lens::EntryPoint entry_point,
                       bool is_image_translate);
 
-  // Open the Lens experience for an image. Used for sending the bitmap selected
-  // via Lens Region Search. |image_original_size| is specified in case of
-  // resizing that happens prior to passing the image to |CoreTabHelper|. If
-  // the search engine supports opening requests in side panel, then the request
-  // will open in the side panel instead of a new tab.
-  void RegionSearchWithLens(gfx::Image image,
-                            const gfx::Size& image_original_size,
-                            std::vector<lens::mojom::LatencyLogPtr> log_data,
-                            lens::EntryPoint entry_point);
+  // Opens the Lens experience for an `image`, which will be resized if needed.
+  // If the search engine supports opening requests in side panel, then the
+  // request will open in the side panel instead of a new tab.
+  void SearchWithLens(const gfx::Image& image, lens::EntryPoint entry_point);
 
-  // Perform an image search for the image that triggered the context menu.  The
-  // |src_url| is passed to the search request and is not used directly to fetch
+  // Performs an image search for the image that triggered the context menu. The
+  // `src_url` is passed to the search request and is not used directly to fetch
   // the image resources. If the search engine supports opening requests in side
   // panel, then the request will open in the side panel instead of a new tab.
   void SearchByImage(content::RenderFrameHost* render_frame_host,
@@ -100,11 +95,10 @@ class CoreTabHelper : public content::WebContentsObserver,
                      const GURL& src_url,
                      bool is_image_translate);
 
-  // Performs an image search for the provided image. If the search engine
-  // supports opening requests in side panel, then the request will open in side
-  // panel instead of a new tab.
-  void SearchByImage(const gfx::Image& image,
-                     const gfx::Size& image_original_size);
+  // Performs an image search for the provided `image`, which will be resized if
+  // needed. If the search engine supports opening requests in side panel, then
+  // the request will open in side panel instead of a new tab.
+  void SearchByImage(const gfx::Image& image);
 
   void set_new_tab_start_time(const base::TimeTicks& time) {
     new_tab_start_time_ = time;
@@ -184,7 +178,7 @@ class CoreTabHelper : public content::WebContentsObserver,
   void OpenOpenURLParams(content::OpenURLParams open_url_params,
                          bool use_side_panel);
 
-  // Create a thumbnail to POST to search engine for the image that triggered
+  // Creates a thumbnail to POST to search engine for the image that triggered
   // the context menu.  The |src_url| is passed to the search request and is
   // not used directly to fetch the image resources. The
   // |additional_query_params| are also passed to the search request as part of
@@ -197,11 +191,11 @@ class CoreTabHelper : public content::WebContentsObserver,
                          const std::string& additional_query_params,
                          bool use_side_panel,
                          bool is_image_translate);
-  void SearchByImageImpl(const gfx::Image& image,
-                         const gfx::Size& image_original_size,
+
+  // Searches the `original_image`, which will be downscaled if needed.
+  void SearchByImageImpl(const gfx::Image& original_image,
                          const std::string& additional_query_params,
-                         bool use_side_panel,
-                         std::vector<lens::mojom::LatencyLogPtr> log_data);
+                         bool use_side_panel);
 
   // Sets search args used for image translation if the current page is
   // currently being translated.

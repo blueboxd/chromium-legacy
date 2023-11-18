@@ -58,8 +58,8 @@ source_set("promos_manager") {
     "//ios/chrome/browser/promos_manager:features",
     "//ios/chrome/browser/promos_manager:types",
     "//ios/chrome/browser/shared/coordinator/chrome_coordinator",
+    "//ios/chrome/browser/sync/model",
     "//ios/public/provider/chrome/browser/signin:choice_api",
-    "//third_party/abseil-cpp:absl",
   ]
   deps = [
     ":promos_manager_scene_agent",
@@ -67,11 +67,11 @@ source_set("promos_manager") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/credential_provider_promo/model:features",
     "//ios/chrome/browser/default_browser/model:utils",
-    "//ios/chrome/browser/ntp:features",
     "//ios/chrome/browser/promos_manager:constants",
     "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/model/browser",
     "//ios/chrome/browser/shared/public/commands",
+    "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/shared/public/features:system_flags",
     "//ios/chrome/browser/ui/app_store_rating",
     "//ios/chrome/browser/ui/app_store_rating:features",
@@ -106,6 +106,7 @@ source_set("unit_tests") {
     "//ios/chrome/common/ui/confirmation_alert",
     "//ios/chrome/common/ui/promo_style",
     "//ios/chrome/test:test_support",
+    "//ios/web/public/test",
     "//testing/gtest",
     "//third_party/ocmock",
   ]

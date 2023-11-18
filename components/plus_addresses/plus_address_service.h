@@ -46,16 +46,21 @@ class PlusAddressService : public KeyedService,
                      PrefService* pref_service,
                      PlusAddressClient plus_address_client);
 
-  // Returns `true` when plus addresses are supported. Currently requires only
-  // that the `kPlusAddressesEnabled` base::Feature is enabled.
+  // Returns `true` when plus addresses are supported. This includes checks that
+  // the `kPlusAddressesEnabled` base::Feature is enabled, that there's a
+  // signed-in user, the ability to talk to the server, and that off-the-record
+  // sessions will not offer new shielded email creation.
   // Virtual to allow overriding the behavior in tests. This allows external
   // tests (e.g., those in autofill that depend on this class) to substitute
   // their own behavior.
-  virtual bool SupportsPlusAddresses(url::Origin origin);
+  virtual bool SupportsPlusAddresses(url::Origin origin,
+                                     bool is_off_the_record);
   // Get a plus address, if one exists, for the passed-in origin. Note that all
   // plus address activity is scoped to eTLD+1. This class owns the conversion
   // of `origin` to its eTLD+1 form.
   absl::optional<std::string> GetPlusAddress(url::Origin origin);
+  // Same as above, but packages the plus address along with its eTLD+1.
+  absl::optional<PlusProfile> GetPlusProfile(url::Origin origin);
   // Save a plus address for the given origin, which is converted to its eTLD+1
   // form prior to persistence.
   void SavePlusAddress(url::Origin origin, std::string plus_address);
@@ -66,8 +71,24 @@ class PlusAddressService : public KeyedService,
   // completion: runs`callback` with the created plus address, and stores the
   // plus address in this service.
   // Virtual to allow overriding the behavior in tests.
+  // TODO (crbug.com/1467623): Remove this once dependencies are migrated away.
   virtual void OfferPlusAddressCreation(const url::Origin& origin,
                                         PlusAddressCallback callback);
+
+  // Asks the PlusAddressClient to reserve a plus address for use on `origin`,
+  // and returns the plus address via `on_completed`.
+  //
+  // Virtual to allow overriding the behavior in tests.
+  virtual void ReservePlusAddress(const url::Origin& origin,
+                                  PlusAddressRequestCallback on_completed);
+
+  // Asks the PlusAddressClient to confirm `plus_address` for use on `origin`.
+  // and returns the plus address via `on_completed`.
+  //
+  // Virtual to allow overriding the behavior in tests.
+  virtual void ConfirmPlusAddress(const url::Origin& origin,
+                                  const std::string& plus_address,
+                                  PlusAddressRequestCallback on_completed);
 
   // The label for an autofill suggestion offering to create a new plus address.
   // While only debatably relevant to this class, this function allows for

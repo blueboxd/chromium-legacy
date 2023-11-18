@@ -31,6 +31,9 @@ const char kCurrentMigrationVersionToGoogleMobileServices[] =
 
 const char kTimeOfLastMigrationAttempt[] = "time_of_last_migration_attempt";
 
+const char kPasswordsUseUPMLocalAndSeparateStores[] =
+    "passwords_use_upm_local_and_separate_stores";
+
 const char kRequiresMigrationAfterSyncStatusChange[] =
     "requires_migration_after_sync_status_change";
 
@@ -117,11 +120,6 @@ const char kProfileStoreDateLastUsedForFilling[] =
 const char kAccountStoreDateLastUsedForFilling[] =
     "password_manager.account_store_date_last_used_for_filling";
 
-const char kPasswordChangeSuccessTrackerFlows[] =
-    "password_manager.password_change_success_tracker.flows";
-const char kPasswordChangeSuccessTrackerVersion[] =
-    "password_manager.password_change_success_tracker.version";
-
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 const char kBiometricAuthBeforeFillingPromoShownCounter[] =
     "password_manager.biometric_authentication_filling_promo_counter";
@@ -148,6 +146,11 @@ const char kPasswordManagerPromoCardsList[] =
 
 const char kPasswordSharingEnabled[] =
     "password_manager.password_sharing_enabled";
+
+#if BUILDFLAG(IS_MAC)
+const char kRelaunchChromeBubbleDismissedCounter[] =
+    "password_manager.relaunch_chrome_bubble_dismissed_counter";
+#endif
 
 }  // namespace prefs
 }  // namespace password_manager

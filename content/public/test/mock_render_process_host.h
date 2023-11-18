@@ -179,8 +179,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   size_t GetShutdownDelayRefCount() const override;
   int GetRenderFrameHostCount() const override;
   void DisableRefCounts() override;
-  void ForEachRenderFrameHost(base::RepeatingCallback<void(RenderFrameHost*)>
-                                  on_render_frame_host) override;
+  void ForEachRenderFrameHost(
+      base::FunctionRef<void(RenderFrameHost*)> on_render_frame_host) override;
   void RegisterRenderFrameHost(
       const GlobalRenderFrameHostId& render_frame_host_id) override;
   void UnregisterRenderFrameHost(
@@ -286,9 +286,6 @@ class MockRenderProcessHost : public RenderProcessHost {
 
   std::string GetInfoForBrowserContextDestructionCrashReporting() override;
   void WriteIntoTrace(perfetto::TracedProto<TraceProto> proto) const override;
-
-  void SetAttributionReportingSupport(
-      network::mojom::AttributionSupport) override {}
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   void ReinitializeLogging(uint32_t logging_dest,

@@ -155,7 +155,7 @@ public class StripLayoutTab implements VirtualView {
                 }
             };
 
-    /** A property for animations to use for changing the trailingMargin of the tab. */
+    /** A property for animations to use for changing the brightness of the tab. */
     public static final FloatProperty<StripLayoutTab> BRIGHTNESS =
             new FloatProperty<StripLayoutTab>("brightness") {
                 @Override
@@ -166,6 +166,20 @@ public class StripLayoutTab implements VirtualView {
                 @Override
                 public Float get(StripLayoutTab object) {
                     return object.getBrightness();
+                }
+            };
+
+    /** A property for animations to use for changing the opacity of the tab. */
+    public static final FloatProperty<StripLayoutTab> OPACITY =
+            new FloatProperty<StripLayoutTab>("opacity") {
+                @Override
+                public void setValue(StripLayoutTab object, float value) {
+                    object.setContainerOpacity(value);
+                }
+
+                @Override
+                public Float get(StripLayoutTab object) {
+                    return object.getContainerOpacity();
                 }
             };
 
@@ -186,6 +200,10 @@ public class StripLayoutTab implements VirtualView {
 
     // Divider Constants
     private static final int DIVIDER_OFFSET_X = 13;
+
+    // Close button hover highlight alpha
+    private static final float CLOSE_BUTTON_HOVER_BACKGROUND_PRESSED_OPACITY = 0.12f;
+    private static final float CLOSE_BUTTON_HOVER_BACKGROUND_DEFAULT_OPACITY = 0.08f;
     @VisibleForTesting
     static final float DIVIDER_FOLIO_LIGHT_OPACITY = 0.2f;
 
@@ -195,7 +213,7 @@ public class StripLayoutTab implements VirtualView {
     private final StripLayoutTabDelegate mDelegate;
     private final TabLoadTracker mLoadTracker;
     private final LayoutUpdateHost mUpdateHost;
-    private final TintedCompositorButton mCloseButton;
+    private TintedCompositorButton mCloseButton;
 
     private boolean mVisible = true;
     private boolean mIsDying;
@@ -209,7 +227,7 @@ public class StripLayoutTab implements VirtualView {
     private float mContainerOpacity;
     private float mLeftInset;
     private float mRightInset;
-    private String mAccessibilityDescription;
+    private String mAccessibilityDescription = "";
 
     // Ideal intermediate parameters
     private float mIdealX;
@@ -269,9 +287,42 @@ public class StripLayoutTab implements VirtualView {
         };
         mCloseButton = new TintedCompositorButton(
                 context, 0, 0, closeClickAction, R.drawable.btn_tab_close_normal);
-        mCloseButton.setTintResources(R.color.default_icon_color_tint_list,
-                R.color.default_icon_color_accent1_tint_list, R.color.default_icon_color_light,
-                R.color.modern_blue_300);
+        mCloseButton.setTintResources(
+                R.color.default_icon_color_tint_list,
+                R.color.default_icon_color_tint_list,
+                R.color.default_icon_color_light,
+                R.color.default_icon_color_light);
+
+        mCloseButton.setBackgroundResourceId(R.drawable.tab_close_button_bg);
+        int apsBackgroundHoveredTint =
+                ColorUtils.setAlphaComponent(
+                        SemanticColorUtils.getDefaultTextColor(context),
+                        (int) (CLOSE_BUTTON_HOVER_BACKGROUND_DEFAULT_OPACITY * 255));
+        int apsBackgroundPressedTint =
+                ColorUtils.setAlphaComponent(
+                        SemanticColorUtils.getDefaultTextColor(context),
+                        (int) (CLOSE_BUTTON_HOVER_BACKGROUND_PRESSED_OPACITY * 255));
+
+        int apsBackgroundIncognitoHoveredTint =
+                ColorUtils.setAlphaComponent(
+                        context.getResources().getColor(R.color.tab_strip_button_hover_bg_color),
+                        (int) (CLOSE_BUTTON_HOVER_BACKGROUND_DEFAULT_OPACITY * 255));
+        int apsBackgroundIncognitoPressedTint =
+                ColorUtils.setAlphaComponent(
+                        context.getResources().getColor(R.color.tab_strip_button_hover_bg_color),
+                        (int) (CLOSE_BUTTON_HOVER_BACKGROUND_PRESSED_OPACITY * 255));
+
+        // Only set color for hover bg.
+        mCloseButton.setBackgroundTint(
+                Color.TRANSPARENT,
+                Color.TRANSPARENT,
+                Color.TRANSPARENT,
+                Color.TRANSPARENT,
+                apsBackgroundHoveredTint,
+                apsBackgroundPressedTint,
+                apsBackgroundIncognitoHoveredTint,
+                apsBackgroundIncognitoPressedTint);
+
         mCloseButton.setIncognito(mIncognito);
         mCloseButton.setBounds(getCloseRect());
         mCloseButton.setClickSlop(0.f);
@@ -330,7 +381,7 @@ public class StripLayoutTab implements VirtualView {
     }
 
     @Override
-    public boolean checkClicked(float x, float y) {
+    public boolean checkClickedOrHovered(float x, float y) {
         // Since both the close button as well as the tab inhabit the same coordinates, the tab
         // should not consider itself hit if the close button is also hit, since it is on top.
         if (checkCloseHitTest(x, y)) return false;
@@ -360,6 +411,14 @@ public class StripLayoutTab implements VirtualView {
 
     boolean getFolioAttachedForTesting() {
         return mFolioAttached;
+    }
+
+    void setCloseButtonForTesting(TintedCompositorButton closeButton) {
+        mCloseButton = closeButton;
+    }
+
+    void setShowingCloseButtonForTesting(boolean showingCloseButton) {
+        mShowingCloseButton = showingCloseButton;
     }
 
     /**
@@ -770,8 +829,22 @@ public class StripLayoutTab implements VirtualView {
     /**
      * @param closePressed The current pressed state of the attached button.
      */
-    public void setClosePressed(boolean closePressed) {
-        mCloseButton.setPressed(closePressed);
+    public void setClosePressed(boolean closePressed, boolean isPressedFromMouse) {
+        mCloseButton.setPressed(closePressed, isPressedFromMouse);
+    }
+
+    /**
+     * @param closeHovered The current hovered state of the attached button.
+     */
+    public void setCloseHovered(boolean closeHovered) {
+        mCloseButton.setHovered(closeHovered);
+    }
+
+    /**
+     * @return The current hovered state of the close button.
+     */
+    public boolean isCloseHovered() {
+        return mCloseButton.isHovered();
     }
 
     /**
@@ -805,7 +878,9 @@ public class StripLayoutTab implements VirtualView {
      *         if the button can be clicked.
      */
     public boolean checkCloseHitTest(float x, float y) {
-        return mShowingCloseButton ? mCloseButton.checkClicked(x, y) : false;
+        return mShowingCloseButton
+                ? ((CompositorButton) mCloseButton).checkClickedOrHovered(x, y)
+                : false;
     }
 
     /**

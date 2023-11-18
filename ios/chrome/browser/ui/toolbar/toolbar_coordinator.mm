@@ -6,10 +6,9 @@
 
 #import "base/apple/foundation_util.h"
 #import "components/prefs/pref_service.h"
-#import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/new_tab_page_util.h"
-#import "ios/chrome/browser/overlays/public/overlay_presentation_context.h"
+#import "ios/chrome/browser/overlays/model/public/overlay_presentation_context.h"
 #import "ios/chrome/browser/prerender/model/prerender_service.h"
 #import "ios/chrome/browser/prerender/model/prerender_service_factory.h"
 #import "ios/chrome/browser/segmentation_platform/segmentation_platform_service_factory.h"
@@ -19,6 +18,7 @@
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/find_in_page_commands.h"
+#import "ios/chrome/browser/shared/public/commands/help_commands.h"
 #import "ios/chrome/browser/shared/public/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/shared/public/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/shared/public/commands/toolbar_commands.h"
@@ -78,6 +78,11 @@
   /// Indicates whether the fakebox was pinned on last signal to focus from
   /// the fakebox.
   BOOL _fakeboxPinned;
+  /// Whether to show the share button IPH next time the location bar gets
+  /// unfocused.
+  BOOL _showShareButtonIPHOnNextLocationBarUnfocus;
+  /// Command handler for showing the IPH.
+  id<HelpCommands> _helpHandler;
 }
 
 - (instancetype)initWithBrowser:(Browser*)browser {
@@ -94,6 +99,9 @@
     [self.browser->GetCommandDispatcher()
         startDispatchingToTarget:self
                      forProtocol:@protocol(ToolbarCommands)];
+
+    _helpHandler =
+        HandlerForProtocol(browser->GetCommandDispatcher(), HelpCommands);
   }
   return self;
 }
@@ -291,13 +299,19 @@
   BOOL animateTransition = _enableAnimationsForOmniboxFocus &&
                            _steadyStateOmniboxPosition == ToolbarType::kPrimary;
 
+  __weak __typeof(self) weakSelf = self;
+  BOOL toolbarExpanded =
+      focused && !IsRegularXRegularSizeClass(self.traitEnvironment);
   [self.orchestrator
       transitionToStateOmniboxFocused:focused
-                      toolbarExpanded:focused && !IsRegularXRegularSizeClass(
-                                                     self.traitEnvironment)
+                      toolbarExpanded:toolbarExpanded
                               trigger:[self omniboxFocusTrigger]
                              animated:animateTransition
-                           completion:completion];
+                           completion:^{
+                             [weakSelf focusTransitionDidComplete:focused
+                                                       completion:completion];
+                           }];
+
   self.locationBarFocused = focused;
 }
 
@@ -530,6 +544,10 @@
   }
 }
 
+- (void)showShareButtonIPHAfterLocationBarUnfocus {
+  _showShareButtonIPHOnNextLocationBarUnfocus = YES;
+}
+
 #pragma mark - ToolbarMediatorDelegate
 
 - (void)transitionOmniboxToToolbarType:(ToolbarType)toolbarType {
@@ -607,6 +625,22 @@
                           : OmniboxFocusTrigger::kUnpinnedLargeFakebox;
   }
   return OmniboxFocusTrigger::kPinnedFakebox;
+}
+
+- (void)focusTransitionDidComplete:(BOOL)focused
+                        completion:(ProceduralBlock)completion {
+  if (!focused && _showShareButtonIPHOnNextLocationBarUnfocus) {
+    // Must call this display method after the animation is done, because the
+    // display depends on the location of the share button to anchor the IPH,
+    // doing it in the middle of the animtion will lead to the anchoring point
+    // being off.
+    [_helpHandler presentShareButtonHelpBubbleIfEligible];
+    _showShareButtonIPHOnNextLocationBarUnfocus = NO;
+  }
+  if (completion) {
+    completion();
+    completion = nil;
+  }
 }
 
 @end

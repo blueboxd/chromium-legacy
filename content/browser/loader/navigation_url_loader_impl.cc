@@ -325,7 +325,10 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->has_storage_access =
       request_info.begin_params->has_storage_access;
 
-  new_request->attribution_reporting_support = AttributionManager::GetSupport();
+  new_request->attribution_reporting_support =
+      AttributionManager::GetAttributionSupport(
+          WebContents::FromFrameTreeNodeId(
+              frame_tree_node->frame_tree_node_id()));
 
   new_request->attribution_reporting_eligibility =
       request_info.begin_params->impression.has_value()
@@ -337,7 +340,9 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
         request_info.begin_params->impression->runtime_features;
   }
 
-  new_request->shared_storage_writable = request_info.shared_storage_writable;
+  new_request->shared_storage_writable_eligible =
+      request_info.shared_storage_writable_eligible;
+  new_request->is_ad_tagged = request_info.is_ad_tagged;
 
   return new_request;
 }
@@ -533,12 +538,10 @@ void NavigationURLLoaderImpl::CreateInterceptors(
   }
 
   // Set up an interceptor for prefetch.
-  std::unique_ptr<PrefetchURLLoaderInterceptor> prefetch_interceptor =
-      content::PrefetchURLLoaderInterceptor::MaybeCreateInterceptor(
-          frame_tree_node_id_, request_info_->initiator_document_token);
-  if (prefetch_interceptor) {
-    interceptors_.push_back(std::move(prefetch_interceptor));
-  }
+  interceptors_.push_back(
+      std::make_unique<PrefetchURLLoaderInterceptor>(
+          frame_tree_node_id_, request_info_->initiator_document_token,
+          request_info_->prefetch_serving_page_metrics_container));
 
   // See if embedders want to add interceptors.
   std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>
@@ -660,10 +663,10 @@ void NavigationURLLoaderImpl::MaybeStartLoader(
     next_interceptor->MaybeCreateLoader(
         *resource_request_, browser_context_,
         base::BindOnce(&NavigationURLLoaderImpl::MaybeStartLoader,
-                       base::Unretained(this), next_interceptor),
+                       weak_factory_.GetWeakPtr(), next_interceptor),
         base::BindOnce(
             &NavigationURLLoaderImpl::FallbackToNonInterceptedRequest,
-            base::Unretained(this)));
+            weak_factory_.GetWeakPtr()));
     return;
   }
 
@@ -1389,7 +1392,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       &bypass_redirect_checks_);
 
   GetContentClient()->browser()->RegisterNonNetworkNavigationURLLoaderFactories(
-      frame_tree_node_id_, ukm_id, &non_network_url_loader_factories_);
+      frame_tree_node_id_, &non_network_url_loader_factories_);
 
   bool is_nav_allowed =
       base::FeatureList::IsEnabled(

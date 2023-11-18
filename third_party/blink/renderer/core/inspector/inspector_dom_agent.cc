@@ -104,6 +104,7 @@
 
 namespace blink {
 
+using mojom::blink::FormControlType;
 using protocol::Maybe;
 
 namespace {
@@ -1183,6 +1184,21 @@ protocol::Response InspectorDOMAgent::performSearch(
   HeapVector<Member<Document>> docs = Documents();
   HeapLinkedHashSet<Member<Node>> result_collector;
 
+  // Selector evaluation
+  for (Document* document : docs) {
+    DummyExceptionStateForTesting exception_state;
+    StaticElementList* element_list = document->QuerySelectorAll(
+        AtomicString(whitespace_trimmed_query), exception_state);
+    if (exception_state.HadException() || !element_list) {
+      continue;
+    }
+
+    unsigned size = element_list->length();
+    for (unsigned i = 0; i < size; ++i) {
+      result_collector.insert(element_list->item(i));
+    }
+  }
+
   for (Document* document : docs) {
     Node* document_element = document->documentElement();
     Node* node = document_element;
@@ -1263,19 +1279,6 @@ protocol::Response InspectorDOMAgent::performSearch(
         node = To<Attr>(node)->ownerElement();
       result_collector.insert(node);
     }
-  }
-
-  // Selector evaluation
-  for (Document* document : docs) {
-    DummyExceptionStateForTesting exception_state;
-    StaticElementList* element_list = document->QuerySelectorAll(
-        AtomicString(whitespace_trimmed_query), exception_state);
-    if (exception_state.HadException() || !element_list)
-      continue;
-
-    unsigned size = element_list->length();
-    for (unsigned i = 0; i < size; ++i)
-      result_collector.insert(element_list->item(i));
   }
 
   *search_id = IdentifiersFactory::CreateIdentifier();
@@ -1466,8 +1469,9 @@ protocol::Response InspectorDOMAgent::setFileInputFiles(
 
   auto* html_input_element = DynamicTo<HTMLInputElement>(node);
   if (!html_input_element ||
-      html_input_element->type() != input_type_names::kFile)
+      html_input_element->FormControlType() != FormControlType::kInputFile) {
     return protocol::Response::ServerError("Node is not a file input element");
+  }
 
   Vector<String> paths;
   for (const String& file : *files)

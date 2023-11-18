@@ -55,9 +55,6 @@ namespace blink {
 namespace {
 
 void InvalidateShadowIncludingAncestorForms(ContainerNode& insertion_point) {
-  if (!RuntimeEnabledFeatures::AutofillShadowDOMEnabled())
-    return;
-
   // Let any forms in the shadow including ancestors know that this
   // ListedElement has changed. Don't include any forms inside the same
   // TreeScope know because that relationship isn't tracked by listed elements
@@ -145,8 +142,10 @@ void ListedElement::InsertedInto(ContainerNode& insertion_point) {
   }
 
   // Trigger for elements outside of forms.
-  if (!form_ && insertion_point.isConnected())
-    element.GetDocument().DidAddOrRemoveFormRelatedElement(&element);
+  if (!form_ && insertion_point.isConnected()) {
+    element.GetDocument().DidChangeFormRelatedElementDynamically(
+        &element, WebFormRelatedChangeType::kAdd);
+  }
 
   InvalidateShadowIncludingAncestorForms(insertion_point);
 }
@@ -188,12 +187,11 @@ void ListedElement::RemovedFrom(ContainerNode& insertion_point) {
 
   InvalidateShadowIncludingAncestorForms(insertion_point);
 
-  if (base::FeatureList::IsEnabled(
-          blink::features::kAutofillDetectRemovedFormControls) &&
-      insertion_point.isConnected()) {
+  if (insertion_point.isConnected()) {
     // We don't insist on form_ being non-null as the form does not take care of
     // reporting the removal.
-    element.GetDocument().DidAddOrRemoveFormRelatedElement(&element);
+    element.GetDocument().DidChangeFormRelatedElementDynamically(
+        &element, WebFormRelatedChangeType::kRemove);
   }
 }
 
@@ -260,7 +258,8 @@ void ListedElement::WillChangeForm() {
 void ListedElement::DidChangeForm() {
   if (!form_was_set_by_parser_ && form_ && form_->isConnected()) {
     auto& element = ToHTMLElement();
-    element.GetDocument().DidAddOrRemoveFormRelatedElement(&element);
+    element.GetDocument().DidChangeFormRelatedElementDynamically(
+        &element, WebFormRelatedChangeType::kReassociate);
   }
   FormOwnerSetNeedsValidityCheck();
 }
@@ -313,10 +312,12 @@ void ListedElement::FormAttributeChanged() {
 bool ListedElement::RecalcWillValidate() const {
   const HTMLElement& element = ToHTMLElement();
   if (data_list_ancestor_state_ == DataListAncestorState::kUnknown) {
-    if (Traversal<HTMLDataListElement>::FirstAncestor(element))
+    if (element.GetDocument().HasAtLeastOneDataList() &&
+        Traversal<HTMLDataListElement>::FirstAncestor(element)) {
       data_list_ancestor_state_ = DataListAncestorState::kInsideDataList;
-    else
+    } else {
       data_list_ancestor_state_ = DataListAncestorState::kNotInsideDataList;
+    }
   }
   return data_list_ancestor_state_ ==
              DataListAncestorState::kNotInsideDataList &&

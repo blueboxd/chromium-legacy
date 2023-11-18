@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/signin/public/base/signin_switches.h"
+
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 
@@ -28,7 +29,7 @@ BASE_FEATURE(kEnableBoundSessionCredentials,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsBoundSessionCredentialsEnabled() {
-  return base::FeatureList::IsEnabled(switches::kEnableBoundSessionCredentials);
+  return base::FeatureList::IsEnabled(kEnableBoundSessionCredentials);
 }
 
 const base::FeatureParam<EnableBoundSessionCredentialsDiceSupport>::Option
@@ -40,6 +41,17 @@ const base::FeatureParam<EnableBoundSessionCredentialsDiceSupport>
         &kEnableBoundSessionCredentials, "dice-support",
         EnableBoundSessionCredentialsDiceSupport::kDisabled,
         &enable_bound_session_credentials_dice_support};
+
+// Enables Chrome refresh tokens binding to a device. Requires
+// "EnableBoundSessionCredentials" being enabled as a prerequisite.
+BASE_FEATURE(kEnableChromeRefreshTokenBinding,
+             "EnableChromeRefreshTokenBinding",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsChromeRefreshTokenBindingEnabled() {
+  return IsBoundSessionCredentialsEnabled() &&
+         base::FeatureList::IsEnabled(kEnableChromeRefreshTokenBinding);
+}
 #endif
 
 // Enables fetching account capabilities and populating AccountInfo with the
@@ -85,7 +97,7 @@ BASE_FEATURE(kSearchEngineChoiceFre,
 // Enables the new search engine choice setting UI.
 BASE_FEATURE(kSearchEngineChoiceSettingsUi,
              "SearchEngineChoiceSettingsUi",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kUnoDesktop, "UnoDesktop", base::FEATURE_DISABLED_BY_DEFAULT);
 

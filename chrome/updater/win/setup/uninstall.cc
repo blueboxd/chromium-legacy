@@ -8,6 +8,7 @@
 #include <windows.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -30,7 +31,6 @@
 #include "chrome/updater/util/win_util.h"
 #include "chrome/updater/win/setup/setup_util.h"
 #include "chrome/updater/win/win_constants.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
 namespace {
@@ -76,13 +76,19 @@ void DeleteComService(bool uninstall_all) {
 }
 
 void DeleteComInterfaces(UpdaterScope scope, bool uninstall_all) {
-  for (const IID& iid : JoinVectors(
+  for (const auto& [iid, interface_name] : JoinVectors(
            GetSideBySideInterfaces(scope),
-           uninstall_all ? GetActiveInterfaces(scope) : std::vector<IID>())) {
-    for (const auto& reg_path :
-         {GetComIidRegistryPath(iid), GetComTypeLibRegistryPath(iid)}) {
-      VLOG(1) << "Deleting reg_path: " << reg_path
-              << ": from scope: " << UpdaterScopeToString(scope);
+           uninstall_all ? GetActiveInterfaces(scope)
+                         : std::vector<std::pair<IID, std::wstring>>())) {
+    {
+      const std::wstring reg_path = GetComIidRegistryPath(iid);
+      for (const auto& key_flag : {KEY_WOW64_32KEY, KEY_WOW64_64KEY}) {
+        installer::DeleteRegistryKey(UpdaterScopeToHKeyRoot(scope), reg_path,
+                                     key_flag);
+      }
+    }
+    {
+      const std::wstring reg_path = GetComTypeLibRegistryPath(iid);
       installer::DeleteRegistryKey(UpdaterScopeToHKeyRoot(scope), reg_path,
                                    WorkItem::kWow64Default);
     }
@@ -131,7 +137,7 @@ void DeleteUpdaterKey(UpdaterScope scope) {
 void DeleteGoogleUpdateFilesAndKeys(UpdaterScope scope) {
   DeleteUpdaterKey(scope);
 
-  const absl::optional<base::FilePath> target_path =
+  const std::optional<base::FilePath> target_path =
       GetGoogleUpdateExePath(scope);
   if (target_path) {
     base::DeletePathRecursively(target_path->DirName());
@@ -139,13 +145,13 @@ void DeleteGoogleUpdateFilesAndKeys(UpdaterScope scope) {
 }
 
 int RunUninstallScript(UpdaterScope scope, bool uninstall_all) {
-  const absl::optional<base::FilePath> versioned_dir =
+  const std::optional<base::FilePath> versioned_dir =
       GetVersionedInstallDirectory(scope);
   if (!versioned_dir) {
     LOG(ERROR) << "GetVersionedInstallDirectory failed.";
     return kErrorNoVersionedDirectory;
   }
-  const absl::optional<base::FilePath> base_dir = GetInstallDirectory(scope);
+  const std::optional<base::FilePath> base_dir = GetInstallDirectory(scope);
   if (IsSystemInstall(scope) && !base_dir) {
     LOG(ERROR) << "GetInstallDirectory failed.";
     return kErrorNoBaseDirectory;

@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_ASH_FILEAPI_RECENT_DISK_SOURCE_H_
 
 #include <memory>
-#include <queue>
 #include <string>
 #include <vector>
 
@@ -15,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/fileapi/file_accumulator.h"
 #include "chrome/browser/ash/fileapi/recent_file.h"
 #include "chrome/browser/ash/fileapi/recent_model.h"
 #include "chrome/browser/ash/fileapi/recent_source.h"
@@ -29,13 +29,16 @@ namespace ash {
 // All member functions must be called on the UI thread.
 class RecentDiskSource : public RecentSource {
  public:
-  // Create a RecentDiskSource for the volume registered to |mount_point_name|.
-  // Does nothing if no volume is registered at |mount_point_name|.
-  // If |ignore_dotfiles| is true, recents will ignore directories and files
-  // starting with a dot.  Set |max_depth| to zero for unlimited depth.
+  // Create a RecentDiskSource for the volume registered to `mount_point_name`.
+  // Does nothing if no volume is registered at `mount_point_name`.
+  // If `ignore_dotfiles` is true, recents will ignore directories and files
+  // starting with a dot. Set `max_depth` to zero for unlimited depth.
+  // The `max_files` parameter limits the maximum number of files returned on
+  // the callback of `params` of GetRecentFiles method.
   RecentDiskSource(std::string mount_point_name,
                    bool ignore_dotfiles,
                    int max_depth,
+                   size_t max_files,
                    std::string uma_histogram_name);
 
   RecentDiskSource(const RecentDiskSource&) = delete;
@@ -84,8 +87,7 @@ class RecentDiskSource : public RecentSource {
   // Number of GetMetadata() calls in flight.
   int inflight_stats_ = 0;
   // Most recently modified files.
-  std::priority_queue<RecentFile, std::vector<RecentFile>, RecentFileComparator>
-      recent_files_;
+  FileAccumulator accumulator_;
 
   base::WeakPtrFactory<RecentDiskSource> weak_ptr_factory_{this};
 };

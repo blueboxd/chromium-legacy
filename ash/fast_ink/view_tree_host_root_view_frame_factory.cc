@@ -16,6 +16,7 @@
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
+#include "gpu/command_buffer/client/client_shared_image.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -112,20 +113,22 @@ ViewTreeHostRootViewFrameFactory::CreateUiResource(
   if (base::FeatureList::IsEnabled(
           kUseMappableSIInViewTreeHostRootViewFrameFactory)) {
     CHECK(!resource->gpu_memory_buffer);
-    resource->mailbox = sii->CreateSharedImage(
+    auto client_shared_image = sii->CreateSharedImage(
         format, size, gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin,
         kPremul_SkAlphaType, usage, "FastInkRootViewFrame",
         gpu::kNullSurfaceHandle, buffer_usage);
-
-    if (resource->mailbox.IsZero()) {
+    if (!client_shared_image) {
       LOG(ERROR) << "Failed to create MappableSharedImage";
       return nullptr;
     }
+    resource->SetClientSharedImage(std::move(client_shared_image));
   } else {
-    resource->mailbox = sii->CreateSharedImage(
+    auto client_shared_image = sii->CreateSharedImage(
         format, size, gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin,
         kPremul_SkAlphaType, usage, "FastInkRootViewFrame",
         resource->gpu_memory_buffer->CloneHandle());
+    CHECK(client_shared_image);
+    resource->SetClientSharedImage(std::move(client_shared_image));
   }
 
   resource->sync_token = sii->GenVerifiedSyncToken();
@@ -198,7 +201,7 @@ ViewTreeHostRootViewFrameFactory::CreateCompositorFrame(
     gpu::SharedImageInterface* sii =
         resource->context_provider->SharedImageInterface();
 
-    sii->UpdateSharedImage(resource->sync_token, resource->mailbox);
+    sii->UpdateSharedImage(resource->sync_token, resource->mailbox());
     resource->sync_token = sii->GenVerifiedSyncToken();
     resource->damaged = false;
   }
@@ -274,7 +277,8 @@ void ViewTreeHostRootViewFrameFactory::Paint(
 
     gpu::SharedImageInterface* sii =
         resource->context_provider->SharedImageInterface();
-    mapping = sii->MapSharedImage(resource->mailbox);
+    CHECK(resource->client_shared_image());
+    mapping = sii->MapSharedImage(resource->client_shared_image());
     if (!mapping) {
       TRACE_EVENT0("ui", "ViewTreeHostRootView::Paint::Map");
       LOG(ERROR) << "MapSharedImage Failed.";

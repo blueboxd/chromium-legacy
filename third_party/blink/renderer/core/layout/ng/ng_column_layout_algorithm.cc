@@ -18,7 +18,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/table/ng_table_layout_algorithm_utils.h"
+#include "third_party/blink/renderer/core/layout/table/table_layout_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -217,10 +217,10 @@ NGBlockNode GetSpannerFromPath(const NGColumnSpannerPath* path) {
 
 }  // namespace
 
-NGColumnLayoutAlgorithm::NGColumnLayoutAlgorithm(
-    const NGLayoutAlgorithmParams& params)
-    : NGLayoutAlgorithm(params) {
-  // When a list item has multicol, |NGColumnLayoutAlgorithm| needs to keep
+ColumnLayoutAlgorithm::ColumnLayoutAlgorithm(
+    const LayoutAlgorithmParams& params)
+    : LayoutAlgorithm(params) {
+  // When a list item has multicol, |ColumnLayoutAlgorithm| needs to keep
   // track of the list marker instead of the child layout algorithm. See
   // |NGBlockLayoutAlgorithm|.
   if (const NGBlockNode marker_node = Node().ListMarkerBlockNodeIfListItem()) {
@@ -232,7 +232,7 @@ NGColumnLayoutAlgorithm::NGColumnLayoutAlgorithm(
   }
 }
 
-const NGLayoutResult* NGColumnLayoutAlgorithm::Layout() {
+const NGLayoutResult* ColumnLayoutAlgorithm::Layout() {
   const LogicalSize border_box_size = container_builder_.InitialBorderBoxSize();
   // TODO(mstensho): This isn't the content-box size, as
   // |BorderScrollbarPadding()| has been adjusted for fragmentation. Verify
@@ -276,7 +276,7 @@ const NGLayoutResult* NGColumnLayoutAlgorithm::Layout() {
   if (break_status == NGBreakStatus::kNeedsEarlierBreak) {
     // We need to discard this layout and do it again. We found an earlier break
     // point that's more appealing than the one we ran out of space at.
-    return RelayoutAndBreakEarlier<NGColumnLayoutAlgorithm>(
+    return RelayoutAndBreakEarlier<ColumnLayoutAlgorithm>(
         container_builder_.EarlyBreak());
   }
   DCHECK_EQ(break_status, NGBreakStatus::kContinue);
@@ -337,12 +337,12 @@ const NGLayoutResult* NGColumnLayoutAlgorithm::Layout() {
     FinalizeTableCellLayout(intrinsic_block_size_, &container_builder_);
   }
 
-  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
+  OutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
 
   return container_builder_.ToBoxFragment();
 }
 
-MinMaxSizesResult NGColumnLayoutAlgorithm::ComputeMinMaxSizes(
+MinMaxSizesResult ColumnLayoutAlgorithm::ComputeMinMaxSizes(
     const MinMaxSizesFloatInput&) {
   const LayoutUnit override_intrinsic_inline_size =
       Node().OverrideIntrinsicContentInlineSize();
@@ -356,7 +356,7 @@ MinMaxSizesResult NGColumnLayoutAlgorithm::ComputeMinMaxSizes(
   NGConstraintSpace space = CreateConstraintSpaceForMinMax();
   FragmentGeometry fragment_geometry = CalculateInitialFragmentGeometry(
       space, Node(), /* break_token */ nullptr, /* is_intrinsic */ true);
-  NGBlockLayoutAlgorithm algorithm({Node(), fragment_geometry, space});
+  BlockLayoutAlgorithm algorithm({Node(), fragment_geometry, space});
   MinMaxSizesResult result =
       algorithm.ComputeMinMaxSizes(MinMaxSizesFloatInput());
 
@@ -409,7 +409,7 @@ MinMaxSizesResult NGColumnLayoutAlgorithm::ComputeMinMaxSizes(
   return result;
 }
 
-MinMaxSizesResult NGColumnLayoutAlgorithm::ComputeSpannersMinMaxSizes(
+MinMaxSizesResult ColumnLayoutAlgorithm::ComputeSpannersMinMaxSizes(
     const NGBlockNode& search_parent) const {
   MinMaxSizesResult result;
   for (NGLayoutInputNode child = search_parent.FirstChild(); child;
@@ -437,7 +437,7 @@ MinMaxSizesResult NGColumnLayoutAlgorithm::ComputeSpannersMinMaxSizes(
   return result;
 }
 
-NGBreakStatus NGColumnLayoutAlgorithm::LayoutChildren() {
+NGBreakStatus ColumnLayoutAlgorithm::LayoutChildren() {
   MarginStrut margin_strut;
   MulticolPartWalker walker(Node(), BreakToken());
   while (!walker.IsFinished()) {
@@ -497,7 +497,7 @@ NGBreakStatus NGColumnLayoutAlgorithm::LayoutChildren() {
 
     // Handle any OOF fragmentainer descendants that were found before the
     // spanner.
-    NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_)
+    OutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_)
         .HandleFragmentation();
     walker.UpdateNextColumnBreakToken(container_builder_.Children());
 
@@ -572,7 +572,7 @@ struct ResultWithOffset {
   void Trace(Visitor* visitor) const { visitor->Trace(result); }
 };
 
-const NGLayoutResult* NGColumnLayoutAlgorithm::LayoutRow(
+const NGLayoutResult* ColumnLayoutAlgorithm::LayoutRow(
     const NGBlockBreakToken* next_column_token,
     LayoutUnit minimum_column_block_size,
     MarginStrut* margin_strut) {
@@ -735,11 +735,11 @@ const NGLayoutResult* NGColumnLayoutAlgorithm::LayoutRow(
       FragmentGeometry fragment_geometry =
           CalculateInitialFragmentGeometry(child_space, Node(), BreakToken());
 
-      NGLayoutAlgorithmParams params(Node(), fragment_geometry, child_space,
-                                     column_break_token);
+      LayoutAlgorithmParams params(Node(), fragment_geometry, child_space,
+                                   column_break_token);
       params.column_spanner_path = spanner_path_;
 
-      NGBlockLayoutAlgorithm child_algorithm(params);
+      BlockLayoutAlgorithm child_algorithm(params);
       child_algorithm.SetBoxType(NGPhysicalFragment::kColumnBox);
       result = child_algorithm.Layout();
       const auto& column =
@@ -769,9 +769,10 @@ const NGLayoutResult* NGColumnLayoutAlgorithm::LayoutRow(
       }
 
       if (!has_oof_fragmentainer_descendants && balance_columns &&
-          NGFragmentedOutOfFlowData::
-              HasOutOfFlowPositionedFragmentainerDescendants(column))
+          FragmentedOofData::HasOutOfFlowPositionedFragmentainerDescendants(
+              column)) {
         has_oof_fragmentainer_descendants = true;
+      }
 
       // Add the new column fragment to the list, but don't commit anything to
       // the fragment builder until we know whether these are the final columns.
@@ -823,7 +824,7 @@ const NGLayoutResult* NGColumnLayoutAlgorithm::LayoutRow(
                      result->BreakAppeal());
 
         LayoutUnit block_end_overflow =
-            NGBoxFragment(ConstraintSpace().GetWritingDirection(), column)
+            LogicalBoxFragment(ConstraintSpace().GetWritingDirection(), column)
                 .BlockEndLayoutOverflow();
         if (row_offset + block_end_overflow >
             FragmentainerSpaceLeft(ConstraintSpace())) {
@@ -868,7 +869,7 @@ const NGLayoutResult* NGColumnLayoutAlgorithm::LayoutRow(
 
     // Any OOFs contained within this multicol get laid out once all columns
     // complete layout. However, OOFs should affect column balancing. Pass the
-    // current set of columns into NGOutOfFlowLayoutPart to determine if OOF
+    // current set of columns into OutOfFlowLayoutPart to determine if OOF
     // layout will affect column balancing in any way (without actually adding
     // the OOF results to the builder - this will be handled at a later point).
     if (has_oof_fragmentainer_descendants) {
@@ -879,16 +880,16 @@ const NGLayoutResult* NGColumnLayoutAlgorithm::LayoutRow(
       // offsets to be relative to the first column in the current row.
       LayoutUnit containing_block_adjustment = -TotalColumnBlockSize();
 
-      NGOutOfFlowLayoutPart::ColumnBalancingInfo column_balancing_info;
+      OutOfFlowLayoutPart::ColumnBalancingInfo column_balancing_info;
       for (wtf_size_t i = 0; i < new_columns.size(); i++) {
         auto& new_column = new_columns[i];
         column_balancing_info.columns.push_back(
-            NGLogicalLink{&new_column.Fragment(), new_column.offset});
+            LogicalFragmentLink{&new_column.Fragment(), new_column.offset});
 
         // Because the current set of columns haven't been added to the builder
         // yet, any OOF descendants won't have been propagated up yet. Instead,
         // propagate any OOF descendants up to |column_balancing_info| so that
-        // they can be passed into NGOutOfFlowLayoutPart (without affecting the
+        // they can be passed into OutOfFlowLayoutPart (without affecting the
         // builder).
         container_builder_.PropagateOOFFragmentainerDescendants(
             new_column.Fragment(), new_column.offset,
@@ -899,7 +900,7 @@ const NGLayoutResult* NGColumnLayoutAlgorithm::LayoutRow(
       }
       DCHECK(column_balancing_info.HasOutOfFlowFragmentainerDescendants());
 
-      NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_)
+      OutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_)
           .HandleFragmentation(&column_balancing_info);
       actual_column_count += column_balancing_info.num_new_columns;
       if (column_balancing_info.minimal_space_shortage > LayoutUnit()) {
@@ -1040,7 +1041,7 @@ const NGLayoutResult* NGColumnLayoutAlgorithm::LayoutRow(
   return result;
 }
 
-NGBreakStatus NGColumnLayoutAlgorithm::LayoutSpanner(
+NGBreakStatus ColumnLayoutAlgorithm::LayoutSpanner(
     NGBlockNode spanner_node,
     const NGBlockBreakToken* break_token,
     MarginStrut* margin_strut) {
@@ -1085,8 +1086,8 @@ NGBreakStatus NGColumnLayoutAlgorithm::LayoutSpanner(
 
   const auto& spanner_fragment =
       To<NGPhysicalBoxFragment>(result->PhysicalFragment());
-  NGFragment logical_fragment(ConstraintSpace().GetWritingDirection(),
-                              spanner_fragment);
+  LogicalFragment logical_fragment(ConstraintSpace().GetWritingDirection(),
+                                   spanner_fragment);
 
   ResolveInlineAutoMargins(spanner_style, Style(),
                            ChildAvailableSize().inline_size,
@@ -1113,7 +1114,7 @@ NGBreakStatus NGColumnLayoutAlgorithm::LayoutSpanner(
   return NGBreakStatus::kContinue;
 }
 
-void NGColumnLayoutAlgorithm::AttemptToPositionListMarker(
+void ColumnLayoutAlgorithm::AttemptToPositionListMarker(
     const NGPhysicalBoxFragment& child_fragment,
     LayoutUnit block_offset) {
   const auto marker = container_builder_.GetUnpositionedListMarker();
@@ -1141,7 +1142,7 @@ void NGColumnLayoutAlgorithm::AttemptToPositionListMarker(
   container_builder_.ClearUnpositionedListMarker();
 }
 
-void NGColumnLayoutAlgorithm::PositionAnyUnclaimedListMarker() {
+void ColumnLayoutAlgorithm::PositionAnyUnclaimedListMarker() {
   if (!Node().IsListItem())
     return;
   const auto marker = container_builder_.GetUnpositionedListMarker();
@@ -1160,10 +1161,10 @@ void NGColumnLayoutAlgorithm::PositionAnyUnclaimedListMarker() {
   container_builder_.ClearUnpositionedListMarker();
 }
 
-void NGColumnLayoutAlgorithm::PropagateBaselineFromChild(
+void ColumnLayoutAlgorithm::PropagateBaselineFromChild(
     const NGPhysicalBoxFragment& child,
     LayoutUnit block_offset) {
-  NGBoxFragment fragment(ConstraintSpace().GetWritingDirection(), child);
+  LogicalBoxFragment fragment(ConstraintSpace().GetWritingDirection(), child);
 
   // The first-baseline is the highest first-baseline of all fragments.
   if (auto first_baseline = fragment.FirstBaseline()) {
@@ -1183,7 +1184,7 @@ void NGColumnLayoutAlgorithm::PropagateBaselineFromChild(
   container_builder_.SetUseLastBaselineForInlineBaseline();
 }
 
-LayoutUnit NGColumnLayoutAlgorithm::ResolveColumnAutoBlockSize(
+LayoutUnit ColumnLayoutAlgorithm::ResolveColumnAutoBlockSize(
     const LogicalSize& column_size,
     LayoutUnit row_offset,
     LayoutUnit available_outer_space,
@@ -1195,7 +1196,7 @@ LayoutUnit NGColumnLayoutAlgorithm::ResolveColumnAutoBlockSize(
                                             child_break_token, balance_columns);
 }
 
-LayoutUnit NGColumnLayoutAlgorithm::ResolveColumnAutoBlockSizeInternal(
+LayoutUnit ColumnLayoutAlgorithm::ResolveColumnAutoBlockSizeInternal(
     const LogicalSize& column_size,
     LayoutUnit row_offset,
     LayoutUnit available_outer_space,
@@ -1292,10 +1293,9 @@ LayoutUnit NGColumnLayoutAlgorithm::ResolveColumnAutoBlockSizeInternal(
   tallest_unbreakable_block_size_ = LayoutUnit();
   int forced_break_count = 0;
   do {
-    NGLayoutAlgorithmParams params(Node(), fragment_geometry, space,
-                                   break_token);
+    LayoutAlgorithmParams params(Node(), fragment_geometry, space, break_token);
     params.column_spanner_path = spanner_path_;
-    NGBlockLayoutAlgorithm balancing_algorithm(params);
+    BlockLayoutAlgorithm balancing_algorithm(params);
     balancing_algorithm.SetBoxType(NGPhysicalFragment::kColumnBox);
     const NGLayoutResult* result = balancing_algorithm.Layout();
 
@@ -1327,8 +1327,8 @@ LayoutUnit NGColumnLayoutAlgorithm::ResolveColumnAutoBlockSizeInternal(
       // getting truncated. After all, they don't really require any space, so
       // what we're doing currently might be seen as unnecessary (and slightly
       // unpredictable) column over-stretching.
-      NGFragment logical_fragment(ConstraintSpace().GetWritingDirection(),
-                                  fragment);
+      LogicalFragment logical_fragment(ConstraintSpace().GetWritingDirection(),
+                                       fragment);
       column_block_size =
           std::max(column_block_size, logical_fragment.BlockSize());
       content_runs.AddRun(column_block_size);
@@ -1392,7 +1392,7 @@ LayoutUnit NGColumnLayoutAlgorithm::ResolveColumnAutoBlockSizeInternal(
 
 // Constrain a balanced column block size to not overflow the multicol
 // container.
-LayoutUnit NGColumnLayoutAlgorithm::ConstrainColumnBlockSize(
+LayoutUnit ColumnLayoutAlgorithm::ConstrainColumnBlockSize(
     LayoutUnit size,
     LayoutUnit row_offset,
     LayoutUnit available_outer_space) const {
@@ -1459,7 +1459,7 @@ LayoutUnit NGColumnLayoutAlgorithm::ConstrainColumnBlockSize(
   return (size - extra).ClampNegativeToZero();
 }
 
-NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForBalancing(
+NGConstraintSpace ColumnLayoutAlgorithm::CreateConstraintSpaceForBalancing(
     const LogicalSize& column_size) const {
   NGConstraintSpaceBuilder space_builder(
       ConstraintSpace(), Style().GetWritingDirection(), /* is_new_fc */ true);
@@ -1475,7 +1475,7 @@ NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForBalancing(
   return space_builder.ToConstraintSpace();
 }
 
-NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForSpanner(
+NGConstraintSpace ColumnLayoutAlgorithm::CreateConstraintSpaceForSpanner(
     const NGBlockNode& spanner,
     LayoutUnit block_offset) const {
   auto child_writing_direction = spanner.Style().GetWritingDirection();
@@ -1502,7 +1502,7 @@ NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForSpanner(
   return space_builder.ToConstraintSpace();
 }
 
-NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForMinMax()
+NGConstraintSpace ColumnLayoutAlgorithm::CreateConstraintSpaceForMinMax()
     const {
   NGConstraintSpaceBuilder space_builder(
       ConstraintSpace(), Style().GetWritingDirection(), /* is_new_fc */ true);
@@ -1512,7 +1512,7 @@ NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForMinMax()
   return space_builder.ToConstraintSpace();
 }
 
-LayoutUnit NGColumnLayoutAlgorithm::TotalColumnBlockSize() const {
+LayoutUnit ColumnLayoutAlgorithm::TotalColumnBlockSize() const {
   LayoutUnit total_block_size;
   WritingMode writing_mode = Style().GetWritingMode();
   for (auto& child : container_builder_.Children()) {

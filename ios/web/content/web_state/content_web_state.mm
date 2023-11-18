@@ -76,15 +76,12 @@ CRWSessionStorage* CreateSessionStorage(
     proto::WebStateMetadataStorage metadata,
     WebState::WebStateStorageLoader storage_loader) {
   // Load the data from disk as this is needed to create the CRWSessionStorage.
-  proto::WebStateStorage storage;
-  std::move(storage_loader).Run(storage);
+  proto::WebStateStorage storage = std::move(storage_loader).Run();
   *storage.mutable_metadata() = std::move(metadata);
 
-  CRWSessionStorage* session_storage =
-      [[CRWSessionStorage alloc] initWithProto:storage];
-  session_storage.stableIdentifier = [[NSUUID UUID] UUIDString];
-  session_storage.uniqueIdentifier = unique_identifier;
-  return session_storage;
+  return [[CRWSessionStorage alloc] initWithProto:storage
+                                 uniqueIdentifier:unique_identifier
+                                 stableIdentifier:[[NSUUID UUID] UUIDString]];
 }
 
 }  // namespace
@@ -400,7 +397,7 @@ const GURL& ContentWebState::GetLastCommittedURL() const {
   return item ? item->GetURL() : GURL::EmptyGURL();
 }
 
-absl::optional<GURL> ContentWebState::GetLastCommittedURLIfTrusted() const {
+std::optional<GURL> ContentWebState::GetLastCommittedURLIfTrusted() const {
   return GetLastCommittedURL();
 }
 

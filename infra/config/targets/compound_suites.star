@@ -177,10 +177,26 @@ targets.legacy_compound_suite(
 targets.legacy_compound_suite(
     name = "chromeos_vm_gtests",
     basic_suites = [
+        "chromeos_system_friendly_gtests",
+        "chromeos_integration_tests",
+    ],
+)
+
+targets.legacy_compound_suite(
+    name = "chromeos_vm_gtests_and_tast",
+    basic_suites = [
         "chromeos_browser_all_tast_tests",
         "chromeos_browser_integration_tests",
         "chromeos_system_friendly_gtests",
         "chromeos_integration_tests",
+    ],
+)
+
+targets.legacy_compound_suite(
+    name = "chromeos_vm_tast",
+    basic_suites = [
+        "chromeos_browser_all_tast_tests",
+        "chromeos_browser_integration_tests",
     ],
 )
 
@@ -224,7 +240,7 @@ targets.legacy_compound_suite(
         "gl_gtests_passthrough",
         "gpu_fyi_vulkan_swiftshader_gtests",
         "non_android_and_cast_and_chromeos_chromium_gtests",
-        "non_android_chromium_gtests",
+        "non_android_chromium_gtests_no_nacl",
         "vr_platform_specific_chromium_gtests",
     ],
 )
@@ -245,7 +261,7 @@ targets.legacy_compound_suite(
         "linux_specific_xr_gtests",
         "gl_gtests_passthrough",
         "non_android_and_cast_and_chromeos_chromium_gtests",
-        "non_android_chromium_gtests",
+        "non_android_chromium_gtests_no_nacl",
         "vr_platform_specific_chromium_gtests",
     ],
 )
@@ -304,7 +320,7 @@ targets.legacy_compound_suite(
         "linux_flavor_specific_chromium_gtests",
         "linux_specific_xr_gtests",
         "non_android_and_cast_and_chromeos_chromium_gtests",
-        "non_android_chromium_gtests",
+        "non_android_chromium_gtests_no_nacl",
         "vr_platform_specific_chromium_gtests",
     ],
 )
@@ -330,7 +346,7 @@ targets.legacy_compound_suite(
         "linux_flavor_specific_chromium_gtests",
         "linux_specific_xr_gtests",
         "non_android_and_cast_and_chromeos_chromium_gtests",
-        "non_android_chromium_gtests",
+        "non_android_chromium_gtests_no_nacl",
         "vr_platform_specific_chromium_gtests",
     ],
 )
@@ -346,6 +362,10 @@ targets.legacy_compound_suite(
         "telemetry_perf_unittests_isolated_scripts",
         "vulkan_swiftshader_isolated_scripts",
         "chromium_web_tests_high_dpi_isolated_scripts",
+        # TODO(weizhong): we should eventually run chrome_wpt_tests where
+        # blink_wpt_tests runs on Linux. There should not have any resource
+        # concern on this because those are all CI builders.
+        #"chromium_wpt_tests_isolated_scripts",
     ],
 )
 
@@ -381,6 +401,10 @@ targets.legacy_compound_suite(
         "telemetry_perf_unittests_isolated_scripts",
         "vulkan_swiftshader_isolated_scripts",
         "chromium_web_tests_high_dpi_isolated_scripts",
+        # TODO(crbug.com/1498364): Remove this once the BackgroundResourceFetch
+        # feature launches.
+        "chromium_web_tests_brfetch_isolated_scripts",
+        "chromium_wpt_tests_isolated_scripts",
     ],
 )
 
@@ -1334,6 +1358,20 @@ targets.legacy_compound_suite(
     basic_suites = [
         "system_webview_shell_instrumentation_tests",
         "webview_bot_instrumentation_test_apk_gtest",
+        "webview_bot_instrumentation_test_apk_no_field_trial_gtest",
+        "webview_bot_unittests_gtest",
+        "webview_cts_tests_gtest",
+        "webview_cts_tests_gtest_no_field_trial",
+        "webview_ui_instrumentation_tests",
+        "webview_ui_instrumentation_tests_no_field_trial",
+    ],
+)
+
+targets.legacy_compound_suite(
+    name = "webview_fyi_bot_all_gtests",
+    basic_suites = [
+        "system_webview_shell_instrumentation_tests",
+        "webview_bot_instrumentation_test_apk_mutations_gtest",
         "webview_bot_instrumentation_test_apk_no_field_trial_gtest",
         "webview_bot_unittests_gtest",
         "webview_cts_tests_gtest",

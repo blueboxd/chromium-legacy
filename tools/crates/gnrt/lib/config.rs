@@ -31,6 +31,10 @@ pub struct GnConfig {
     /// Path to a handlebars template for an output GN build file. The path is
     /// relative to the config file.
     pub build_file_template: std::path::PathBuf,
+    /// Path to a handlebars template for writing README.chromium files. The
+    /// path is relative to the config file. Only used for
+    /// //third_party/rust crates.
+    pub readme_file_template: std::path::PathBuf,
 }
 
 /// Influences dependency resolution for a session.
@@ -59,15 +63,42 @@ pub struct CrateConfig {
     /// These do not affect dependency resolution, so it will not change any
     /// other generated targets.
     pub exclude_deps_in_gn: Vec<String>,
+    /// If true, the build script should not be built or used.
+    #[serde(default)]
+    pub remove_build_rs: bool,
     /// Include rs and input files under these relative paths as part of the
     /// crate. The roots may each be a single file or a directory.
     #[serde(default)]
     pub extra_src_roots: Vec<std::path::PathBuf>,
     /// Include input files under these relative paths as part of the crate.
-    ///
     /// The roots may each be a single file or a directory.
     #[serde(default)]
     pub extra_input_roots: Vec<std::path::PathBuf>,
+    /// Include rs and input files under these relative paths as part of the
+    /// crate's build script. The roots may each be a single file or a
+    /// directory.
+    #[serde(default)]
+    pub extra_build_script_src_roots: Vec<std::path::PathBuf>,
+    /// Include input files under these relative paths as part of the crate's
+    /// build script. The roots may each be a single file or a directory.
+    #[serde(default)]
+    pub extra_build_script_input_roots: Vec<std::path::PathBuf>,
     #[serde(default)]
     pub extra_kv: HashMap<String, serde_json::Value>,
+
+    // Third-party crate settings.
+    #[serde(default)]
+    pub allow_first_party_usage: bool,
+    #[serde(default)]
+    pub build_script_outputs: Vec<std::path::PathBuf>,
+    #[serde(default)]
+    pub group: Option<String>,
+    #[serde(default)]
+    pub security_critical: Option<bool>,
+    #[serde(default)]
+    pub shipped: Option<bool>,
+    #[serde(default)]
+    pub license: Option<String>,
+    #[serde(default)]
+    pub license_file: Option<String>,
 }

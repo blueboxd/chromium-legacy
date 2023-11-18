@@ -116,7 +116,7 @@ void AndroidSmsAppSetupControllerImpl::SetUpApp(const GURL& app_url,
       base::Time::Now() /* last_access_time */,
       !net::IsLocalhost(app_url) /* secure */, false /* http_only */,
       net::CookieSameSite::STRICT_MODE, net::COOKIE_PRIORITY_DEFAULT,
-      false /* same_party */, absl::nullopt /* partition_key */);
+      absl::nullopt /* partition_key */);
   // TODO(crbug.com/1069974): The cookie source url must be faked here because
   // otherwise, this would fail to set a secure cookie if |app_url| is insecure.
   // Consider instead to use url::Replacements to force the scheme to be https.
@@ -252,9 +252,6 @@ void AndroidSmsAppSetupControllerImpl::TryInstallApp(const GURL& install_url,
       install_url, web_app::mojom::UserDisplayMode::kStandalone,
       web_app::ExternalInstallSource::kInternalDefault);
   options.override_previous_user_uninstall = true;
-  // The ServiceWorker does not load in time for the installability check, so
-  // bypass it as a workaround.
-  options.bypass_service_worker_check = true;
   options.require_manifest = true;
   externally_managed_app_manager_->Install(
       std::move(options),
@@ -331,7 +328,7 @@ void AndroidSmsAppSetupControllerImpl::SetMigrationCookie(
       base::Time::Now() /* last_access_time */,
       !net::IsLocalhost(app_url) /* secure */, false /* http_only */,
       net::CookieSameSite::STRICT_MODE, net::COOKIE_PRIORITY_DEFAULT,
-      false /* same_party */, absl::nullopt /* partition_key */);
+      absl::nullopt /* partition_key */);
   // TODO(crbug.com/1069974): The cookie source url must be faked here because
   // otherwise, this would fail to set a secure cookie if |app_url| is insecure.
   // Consider instead to use url::Replacements to force the scheme to be https.

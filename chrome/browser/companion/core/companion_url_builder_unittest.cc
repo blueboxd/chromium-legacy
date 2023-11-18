@@ -242,7 +242,7 @@ TEST_F(CompanionUrlBuilderTest, MsbbAndPcOn) {
   EXPECT_TRUE(proto.is_signed_in());
   EXPECT_TRUE(proto.is_entrypoint_pinned_by_default());
   EXPECT_TRUE(proto.links_open_in_new_tab());
-  EXPECT_FALSE(proto.is_vqs_enabled_on_chrome());
+  EXPECT_TRUE(proto.is_vqs_enabled_on_chrome());
   EXPECT_TRUE(proto.is_upload_dialog_supported());
   EXPECT_TRUE(proto.is_hard_refresh_supported());
 
@@ -357,7 +357,8 @@ TEST_F(CompanionUrlBuilderTest, WithQueryStartTime) {
   auto time = base::Time::Now();
   auto timestamp = std::make_unique<base::Time>(time);
   int64_t nanoseconds_in_milliseconds = 1e6;
-  int64_t time_nanoseconds = time.ToJavaTime() * nanoseconds_in_milliseconds;
+  int64_t time_nanoseconds =
+      time.InMillisecondsSinceUnixEpoch() * nanoseconds_in_milliseconds;
   GURL page_url(kValidUrl);
   std::string encoded_proto =
       url_builder_->BuildCompanionUrlParamProto(page_url, std::move(timestamp));

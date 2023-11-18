@@ -373,8 +373,7 @@ public class ReaderModeManager extends EmptyTabObserver implements UserData {
     public void recordDismissalConditions(@DismissReason int dismissReason) {
         if (mTab == null) return;
 
-        Profile profile = Profile.fromWebContents(mTab.getWebContents());
-        if (profile == null) return;
+        Profile profile = mTab.getProfile();
         boolean a11ySettingSelected =
                 UserPrefs.get(profile).getBoolean(Pref.READER_FOR_ACCESSIBILITY);
 
@@ -495,7 +494,7 @@ public class ReaderModeManager extends EmptyTabObserver implements UserData {
         if (mTab == null || mTab.getWebContents() == null) return;
 
         // If a reader mode button will be shown on the toolbar then don't show a message.
-        if (AdaptiveToolbarFeatures.isReaderModePageActionEnabled()) return;
+        if (AdaptiveToolbarFeatures.isReaderModePageActionEnabled() && !mTab.isCustomTab()) return;
 
         // Test if the user is requesting the desktop site. Ignore this if distiller is set to
         // ALWAYS_TRUE.

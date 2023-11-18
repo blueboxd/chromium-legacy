@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "remoting/base/constants.h"
 #include "remoting/host/base/desktop_environment_options.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/client_session_details.h"
@@ -40,6 +41,7 @@
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/data_channel_manager.h"
 #include "remoting/protocol/display_size.h"
+#include "remoting/protocol/fractional_input_filter.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_event_tracker.h"
 #include "remoting/protocol/input_filter.h"
@@ -274,6 +276,12 @@ class ClientSession : public protocol::HostStub,
   // whenever the screen id associated with the active window changes.
   void OnActiveDisplayChanged(webrtc::ScreenId display);
 
+  // Sets the fallback geometry on `fractional_input_filter_` according to the
+  // current display-layout and selected display index. This is only used for
+  // single-stream mode, when the client provides fractional-coordinates without
+  // any screen_id.
+  void UpdateFractionalFilterFallback();
+
   raw_ptr<EventHandler> event_handler_;
 
   // Used to create a DesktopEnvironment instance for this session.
@@ -290,6 +298,10 @@ class ClientSession : public protocol::HostStub,
 
   // Filter used to disable remote inputs during local input activity.
   RemoteInputFilter remote_input_filter_;
+
+  // Filter used to convert any fractional coordinates to input-injection
+  // coordinates.
+  protocol::FractionalInputFilter fractional_input_filter_;
 
   // Filter used to clamp mouse events to the current display dimensions.
   protocol::MouseInputFilter mouse_clamping_filter_;
@@ -351,8 +363,8 @@ class ClientSession : public protocol::HostStub,
   DesktopDisplayInfo desktop_display_info_;
 
   // Default DPI values to use if a display reports 0 for DPI.
-  int default_x_dpi_;
-  int default_y_dpi_;
+  int default_x_dpi_ = kDefaultDpi;
+  int default_y_dpi_ = kDefaultDpi;
 
   // The index of the desktop display to show to the user.
   // Default is webrtc::kInvalidScreenScreenId because we need to perform

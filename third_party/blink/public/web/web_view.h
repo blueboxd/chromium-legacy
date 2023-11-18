@@ -66,6 +66,7 @@ class SizeF;
 }
 
 namespace blink {
+struct ColorProviderColorMaps;
 class PageScheduler;
 class WebFrame;
 class WebFrameWidget;
@@ -368,6 +369,12 @@ class BLINK_EXPORT WebView {
   virtual void SetDeviceColorSpaceForTesting(
       const gfx::ColorSpace& color_space) = 0;
 
+  // Sets the initial color maps for this WebView. All frames in a WebView
+  // share the same color map; updates to the color map will be broadcast
+  // over the `UpdateColorProviders()` Mojo IPC.
+  virtual void SetColorProviders(
+      const ColorProviderColorMaps& color_provider_colors) = 0;
+
   // Scheduling -----------------------------------------------------------
 
   virtual PageScheduler* Scheduler() const = 0;
@@ -475,6 +482,11 @@ class BLINK_EXPORT WebView {
 
   // Returns the number of live WebView instances in this process.
   static size_t GetWebViewCount();
+
+  // Sets whether web or OS-level Attribution Reporting is supported. See
+  // https://github.com/WICG/attribution-reporting-api/blob/main/app_to_web.md
+  virtual void SetPageAttributionSupport(
+      network::mojom::AttributionSupport support) = 0;
 
  protected:
   ~WebView() = default;

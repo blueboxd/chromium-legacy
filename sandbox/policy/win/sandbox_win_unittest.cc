@@ -62,11 +62,14 @@ class TestTargetConfig : public TargetConfig {
   }
   JobLevel GetJobLevel() const override { return sandbox::JobLevel{}; }
   void SetJobMemoryLimit(size_t memory_limit) override {}
-  ResultCode AddRule(SubSystem subsystem,
-                     Semantics semantics,
-                     const wchar_t* pattern) override {
+  ResultCode AllowFileAccess(FileSemantics semantics,
+                             const wchar_t* pattern) override {
     return SBOX_ALL_OK;
   }
+  ResultCode AllowExtraDlls(const wchar_t* pattern) override {
+    return SBOX_ALL_OK;
+  }
+  ResultCode SetFakeGdiInit() override { return SBOX_ALL_OK; }
   void AddDllToUnload(const wchar_t* dll_name) override {
     blocklisted_dlls_.push_back(dll_name);
   }
@@ -552,7 +555,7 @@ TEST_F(SandboxWinTest, GetJobMemoryLimit) {
   // Test GPU with physical memory > 64GB.
   {
     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(k65GB);
-    absl::optional<size_t> memory_limit =
+    std::optional<size_t> memory_limit =
         SandboxWin::GetJobMemoryLimit(sandbox::mojom::Sandbox::kGpu);
     EXPECT_TRUE(memory_limit.has_value());
     EXPECT_EQ(memory_limit, 64 * kGB);
@@ -561,7 +564,7 @@ TEST_F(SandboxWinTest, GetJobMemoryLimit) {
   // Test GPU with physical memory > 32GB
   {
     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(k33GB);
-    absl::optional<size_t> memory_limit =
+    std::optional<size_t> memory_limit =
         SandboxWin::GetJobMemoryLimit(sandbox::mojom::Sandbox::kGpu);
     EXPECT_TRUE(memory_limit.has_value());
     EXPECT_EQ(memory_limit, 32 * kGB);
@@ -570,7 +573,7 @@ TEST_F(SandboxWinTest, GetJobMemoryLimit) {
   // Test GPU with physical memory > 16GB
   {
     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(k17GB);
-    absl::optional<size_t> memory_limit =
+    std::optional<size_t> memory_limit =
         SandboxWin::GetJobMemoryLimit(sandbox::mojom::Sandbox::kGpu);
     EXPECT_TRUE(memory_limit.has_value());
     EXPECT_EQ(memory_limit, 16 * kGB);
@@ -579,7 +582,7 @@ TEST_F(SandboxWinTest, GetJobMemoryLimit) {
   // Test GPU with physical memory < 16GB
   {
     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(k8GB);
-    absl::optional<size_t> memory_limit =
+    std::optional<size_t> memory_limit =
         SandboxWin::GetJobMemoryLimit(sandbox::mojom::Sandbox::kGpu);
     EXPECT_TRUE(memory_limit.has_value());
     EXPECT_EQ(memory_limit, 8 * kGB);
@@ -591,7 +594,7 @@ TEST_F(SandboxWinTest, GetJobMemoryLimit) {
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitAndDisableFeature(
         sandbox::policy::features::kWinSboxHighRendererJobMemoryLimits);
-    absl::optional<size_t> memory_limit =
+    std::optional<size_t> memory_limit =
         SandboxWin::GetJobMemoryLimit(sandbox::mojom::Sandbox::kRenderer);
     EXPECT_TRUE(memory_limit.has_value());
     EXPECT_EQ(memory_limit, 16 * kGB);
@@ -603,7 +606,7 @@ TEST_F(SandboxWinTest, GetJobMemoryLimit) {
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitAndDisableFeature(
         sandbox::policy::features::kWinSboxHighRendererJobMemoryLimits);
-    absl::optional<size_t> memory_limit =
+    std::optional<size_t> memory_limit =
         SandboxWin::GetJobMemoryLimit(sandbox::mojom::Sandbox::kRenderer);
     EXPECT_TRUE(memory_limit.has_value());
     EXPECT_EQ(memory_limit, 8 * kGB);
@@ -615,7 +618,7 @@ TEST_F(SandboxWinTest, GetJobMemoryLimit) {
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitAndEnableFeature(
         sandbox::policy::features::kWinSboxHighRendererJobMemoryLimits);
-    absl::optional<size_t> memory_limit =
+    std::optional<size_t> memory_limit =
         SandboxWin::GetJobMemoryLimit(sandbox::mojom::Sandbox::kRenderer);
     EXPECT_TRUE(memory_limit.has_value());
     EXPECT_EQ(memory_limit, 1024 * kGB);
@@ -624,7 +627,7 @@ TEST_F(SandboxWinTest, GetJobMemoryLimit) {
   // Test 32-bit processes don't get a limit.
   {
     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(k8GB);
-    absl::optional<size_t> memory_limit =
+    std::optional<size_t> memory_limit =
         SandboxWin::GetJobMemoryLimit(sandbox::mojom::Sandbox::kRenderer);
     EXPECT_FALSE(memory_limit.has_value());
   }

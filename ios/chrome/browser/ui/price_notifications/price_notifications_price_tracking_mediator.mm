@@ -15,12 +15,12 @@
 #import "components/power_bookmarks/core/power_bookmark_utils.h"
 #import "components/power_bookmarks/core/proto/power_bookmark_meta.pb.h"
 #import "components/power_bookmarks/core/proto/shopping_specifics.pb.h"
-#import "ios/chrome/browser/push_notification/push_notification_client_id.h"
-#import "ios/chrome/browser/push_notification/push_notification_service.h"
-#import "ios/chrome/browser/push_notification/push_notification_util.h"
+#import "ios/chrome/browser/push_notification/model/push_notification_client_id.h"
+#import "ios/chrome/browser/push_notification/model/push_notification_service.h"
+#import "ios/chrome/browser/push_notification/model/push_notification_util.h"
 #import "ios/chrome/browser/shared/public/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/shared/public/commands/price_notifications_commands.h"
-#import "ios/chrome/browser/tabs/tab_title_util.h"
+#import "ios/chrome/browser/tabs/model/tab_title_util.h"
 #import "ios/chrome/browser/ui/price_notifications/cells/price_notifications_table_view_item.h"
 #import "ios/chrome/browser/ui/price_notifications/price_notifications_alert_presenter.h"
 #import "ios/chrome/browser/ui/price_notifications/price_notifications_consumer.h"
@@ -59,7 +59,7 @@ using PriceNotificationItems =
 @property(nonatomic, assign) web::WebState* webState;
 // The product data for the product contained on the site the user is currently
 // viewing.
-@property(nonatomic, assign) absl::optional<commerce::ProductInfo>
+@property(nonatomic, assign) std::optional<commerce::ProductInfo>
     currentSiteProductInfo;
 // The service responsible for updating the user's chrome-level push
 // notification permissions for Price Tracking.
@@ -201,7 +201,7 @@ using PriceNotificationItems =
 
 // Creates a `PriceNotificationsTableViewItem` object and sends the newly
 // created object to the Price Notifications UI.
-- (void)displayProduct:(const absl::optional<commerce::ProductInfo>&)productInfo
+- (void)displayProduct:(const std::optional<commerce::ProductInfo>&)productInfo
               fromSite:(const GURL&)URL {
   if (!commerce::CanTrackPrice(productInfo)) {
     [self.consumer setTrackableItem:nil currentlyTracking:NO];
@@ -247,7 +247,7 @@ using PriceNotificationItems =
 // Creates a localized price string.
 - (NSString*)extractFormattedCurrentPrice:(BOOL)forCurrentPrice
                           fromProductInfo:
-                              (const absl::optional<commerce::ProductInfo>&)
+                              (const std::optional<commerce::ProductInfo>&)
                                   productInfo {
   if (!productInfo) {
     return nil;
@@ -294,7 +294,7 @@ using PriceNotificationItems =
       item.entryURL,
       base::BindOnce(^(
           const GURL& productURL,
-          const absl::optional<const commerce::ProductInfo>& productInfo) {
+          const std::optional<const commerce::ProductInfo>& productInfo) {
         PriceNotificationsPriceTrackingMediator* strongSelf = weakSelf;
         if (!strongSelf) {
           return;
@@ -334,7 +334,7 @@ using PriceNotificationItems =
               // BookmarkMeta to ProductInfo to build the
               // PriceNotificationTableViewItem for tracked products, instead of
               // passing BookmarkMeta directly.
-              absl::optional<commerce::ProductInfo> info;
+              std::optional<commerce::ProductInfo> info;
               info.emplace();
               info->title = specifics.title();
               info->image_url = GURL(meta->lead_image().url());
@@ -368,7 +368,7 @@ using PriceNotificationItems =
       currentSiteURL,
       base::BindOnce(
           ^(const GURL& productURL,
-            const absl::optional<const commerce::ProductInfo>& productInfo) {
+            const std::optional<const commerce::ProductInfo>& productInfo) {
             PriceNotificationsPriceTrackingMediator* strongSelf = weakSelf;
             if (!strongSelf) {
               return;
@@ -382,7 +382,7 @@ using PriceNotificationItems =
 
 // Creates a `PriceNotificationsTableViewItem` object and sends the newly
 // created object to the Price Notifications UI.
-- (void)addTrackedItem:(const absl::optional<commerce::ProductInfo>&)productInfo
+- (void)addTrackedItem:(const std::optional<commerce::ProductInfo>&)productInfo
               fromSite:(const GURL&)URL {
   if (!productInfo) {
     return;
@@ -412,7 +412,7 @@ using PriceNotificationItems =
 - (PriceNotificationsTableViewItem*)
     createPriceNotificationTableViewItem:(BOOL)forTrackedItem
                          fromProductInfo:
-                             (const absl::optional<commerce::ProductInfo>&)
+                             (const std::optional<commerce::ProductInfo>&)
                                  productInfo
                                    atURL:(const GURL&)URL {
   PriceNotificationsTableViewItem* item =
@@ -435,7 +435,7 @@ using PriceNotificationItems =
 // Compares two commerce::ProductInfo objects for equality based on the
 // `product_cluster_id` property.
 - (BOOL)isCurrentSiteEqualToProductInfo:
-    (const absl::optional<commerce::ProductInfo>&)productInfo {
+    (const std::optional<commerce::ProductInfo>&)productInfo {
   if (!productInfo || !productInfo->product_cluster_id.has_value() ||
       !self.currentSiteProductInfo ||
       !self.currentSiteProductInfo->product_cluster_id.has_value()) {

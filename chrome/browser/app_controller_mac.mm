@@ -280,8 +280,8 @@ void RecordLastRunAppBundlePath() {
       base::SysUTF8ToCFStringRef(app_bundle_path.value());
   CFPreferencesSetAppValue(
       base::apple::NSToCFPtrCast(app_mode::kLastRunAppBundlePathPrefsKey),
-      app_bundle_path_cfstring,
-      base::SysUTF8ToCFStringRef(base::apple::BaseBundleID()));
+      app_bundle_path_cfstring.get(),
+      base::SysUTF8ToCFStringRef(base::apple::BaseBundleID()).get());
 }
 
 bool IsProfileSignedOut(const base::FilePath& profile_path) {
@@ -911,6 +911,10 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
   _localPrefRegistrar.RemoveAll();
 
   _isShuttingDown = true;
+
+  // `_historyMenuBridge` has a dependency on `_lastProfile`, so that’s why it’s
+  // deleted first.
+  _historyMenuBridge.reset();
 
   // It's safe to delete |_lastProfile| now.
   [self setLastProfile:nullptr];

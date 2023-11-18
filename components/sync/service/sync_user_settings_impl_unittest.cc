@@ -62,7 +62,8 @@ class MockSyncServiceCryptoDelegate : public SyncServiceCrypto::Delegate {
   MOCK_METHOD(std::string, GetEncryptionBootstrapToken, (), (const override));
 };
 
-class SyncUserSettingsImplTest : public testing::Test {
+class SyncUserSettingsImplTest : public testing::Test,
+                                 public SyncUserSettingsImpl::Delegate {
  protected:
   SyncUserSettingsImplTest() {
     SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
@@ -72,21 +73,30 @@ class SyncUserSettingsImplTest : public testing::Test {
         &sync_service_crypto_delegate_, &trusted_vault_client_);
   }
 
-  std::unique_ptr<SyncUserSettingsImpl> MakeSyncUserSettings(
-      ModelTypeSet registered_types,
-      SyncPrefs::SyncAccountState sync_account_state =
-          SyncPrefs::SyncAccountState::kSyncing) {
+  // SyncUserSettingsImpl::Delegate implementation.
+  bool IsCustomPassphraseAllowed() const override { return true; }
+
+  SyncPrefs::SyncAccountState GetSyncAccountStateForPrefs() const override {
+    return sync_account_state_;
+  }
+
+  CoreAccountInfo GetSyncAccountInfoForPrefs() const override {
     CoreAccountInfo account;
     account.email = "name@account.com";
     account.gaia = "name";
     account.account_id = CoreAccountId::FromGaiaId(account.gaia);
+    return account;
+  }
 
+  void SetSyncAccountState(SyncPrefs::SyncAccountState sync_account_state) {
+    sync_account_state_ = sync_account_state;
+  }
+
+  std::unique_ptr<SyncUserSettingsImpl> MakeSyncUserSettings(
+      ModelTypeSet registered_types) {
     return std::make_unique<SyncUserSettingsImpl>(
-        sync_service_crypto_.get(), sync_prefs_.get(),
-        /*preference_provider=*/nullptr, registered_types,
-        base::BindLambdaForTesting(
-            [sync_account_state] { return sync_account_state; }),
-        base::BindLambdaForTesting([account] { return account; }));
+        /*delegate=*/this, sync_service_crypto_.get(), sync_prefs_.get(),
+        registered_types);
   }
 
   // The order of fields matters because it determines destruction order and
@@ -97,6 +107,8 @@ class SyncUserSettingsImplTest : public testing::Test {
       sync_service_crypto_delegate_;
   trusted_vault::FakeTrustedVaultClient trusted_vault_client_;
   std::unique_ptr<SyncServiceCrypto> sync_service_crypto_;
+  SyncPrefs::SyncAccountState sync_account_state_ =
+      SyncPrefs::SyncAccountState::kSyncing;
 };
 
 TEST_F(SyncUserSettingsImplTest, PreferredTypesSyncEverything) {
@@ -104,11 +116,24 @@ TEST_F(SyncUserSettingsImplTest, PreferredTypesSyncEverything) {
       MakeSyncUserSettings(GetUserTypes());
 
   ModelTypeSet expected_types = GetUserTypes();
+  UserSelectableTypeSet all_registered_types =
+      sync_user_settings->GetRegisteredSelectableTypes();
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Apps sync is controlled by a dedicated preference on Lacros,
+  // corresponding to the Apps toggle in OS Sync settings. That pref
+  // isn't set up in this test.
+  if (base::FeatureList::IsEnabled(kSyncChromeOSAppsToggleSharing)) {
+    ASSERT_TRUE(all_registered_types.Has(UserSelectableType::kApps));
+    ASSERT_FALSE(sync_prefs_->IsAppsSyncEnabledByOs());
+    expected_types.RemoveAll({APPS, APP_SETTINGS, WEB_APPS});
+    all_registered_types.Remove(UserSelectableType::kApps);
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
   EXPECT_TRUE(sync_user_settings->IsSyncEverythingEnabled());
   EXPECT_EQ(expected_types, GetPreferredUserTypes(*sync_user_settings));
 
-  UserSelectableTypeSet all_registered_types =
-      sync_user_settings->GetRegisteredSelectableTypes();
   for (UserSelectableType type : all_registered_types) {
     sync_user_settings->SetSelectedTypes(/*sync_everything=*/true, {type});
     EXPECT_EQ(expected_types, GetPreferredUserTypes(*sync_user_settings));
@@ -129,8 +154,8 @@ TEST_F(SyncUserSettingsImplTest, GetSelectedTypesWhileSignedOut) {
       /*disabled_features=*/{});
 
   std::unique_ptr<SyncUserSettingsImpl> sync_user_settings =
-      MakeSyncUserSettings(GetUserTypes(),
-                           SyncPrefs::SyncAccountState::kNotSignedIn);
+      MakeSyncUserSettings(GetUserTypes());
+  SetSyncAccountState(SyncPrefs::SyncAccountState::kNotSignedIn);
 
   EXPECT_EQ(sync_user_settings->GetSelectedTypes(), UserSelectableTypeSet());
 }
@@ -149,8 +174,8 @@ TEST_F(SyncUserSettingsImplTest, SetSelectedTypeInTransportMode) {
       /*disabled_features=*/{});
 
   std::unique_ptr<SyncUserSettingsImpl> sync_user_settings =
-      MakeSyncUserSettings(GetUserTypes(),
-                           SyncPrefs::SyncAccountState::kSignedInNotSyncing);
+      MakeSyncUserSettings(GetUserTypes());
+  SetSyncAccountState(SyncPrefs::SyncAccountState::kSignedInNotSyncing);
 
   UserSelectableTypeSet registered_types =
       sync_user_settings->GetRegisteredSelectableTypes();
@@ -181,11 +206,23 @@ TEST_F(SyncUserSettingsImplTest, SetSelectedTypeInTransportMode) {
 
 TEST_F(SyncUserSettingsImplTest, SetSelectedTypeInFullSyncMode) {
   std::unique_ptr<SyncUserSettingsImpl> sync_user_settings =
-      MakeSyncUserSettings(GetUserTypes(),
-                           SyncPrefs::SyncAccountState::kSyncing);
+      MakeSyncUserSettings(GetUserTypes());
+  SetSyncAccountState(SyncPrefs::SyncAccountState::kSyncing);
 
-  const UserSelectableTypeSet registered_types =
+  UserSelectableTypeSet registered_types =
       sync_user_settings->GetRegisteredSelectableTypes();
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (base::FeatureList::IsEnabled(kSyncChromeOSAppsToggleSharing)) {
+    // Apps sync is controlled by a dedicated preference on Lacros,
+    // corresponding to the Apps toggle in OS Sync settings. That pref
+    // isn't set up in this test.
+    ASSERT_TRUE(registered_types.Has(UserSelectableType::kApps));
+    ASSERT_FALSE(sync_prefs_->IsAppsSyncEnabledByOs());
+    registered_types.Remove(UserSelectableType::kApps);
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
   const UserSelectableTypeSet registered_types_except_passwords =
       base::Difference(registered_types,
                        UserSelectableTypeSet({UserSelectableType::kPasswords}));
@@ -246,6 +283,18 @@ TEST_F(SyncUserSettingsImplTest, PreferredTypesNotKeepEverythingSynced) {
 
   UserSelectableTypeSet all_registered_types =
       sync_user_settings->GetRegisteredSelectableTypes();
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (base::FeatureList::IsEnabled(kSyncChromeOSAppsToggleSharing)) {
+    // Apps sync is controlled by a dedicated preference on Lacros,
+    // corresponding to the Apps toggle in OS Sync settings. That pref
+    // isn't set up in this test.
+    ASSERT_TRUE(all_registered_types.Has(UserSelectableType::kApps));
+    ASSERT_FALSE(sync_prefs_->IsAppsSyncEnabledByOs());
+    all_registered_types.Remove(UserSelectableType::kApps);
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
   for (UserSelectableType type : all_registered_types) {
     ModelTypeSet expected_preferred_types =
         UserSelectableTypeToAllModelTypes(type);

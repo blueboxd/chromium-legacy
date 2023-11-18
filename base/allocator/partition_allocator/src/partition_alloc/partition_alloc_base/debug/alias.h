@@ -7,7 +7,7 @@
 
 #include <stddef.h>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/component_export.h"
+#include "partition_alloc/partition_alloc_base/component_export.h"
 
 namespace partition_alloc::internal::base::debug {
 
@@ -70,7 +70,7 @@ namespace partition_alloc::internal::base::debug {
 // stack variable (case #1) using base::debug::Alias() will also inhibit
 // tail calls for calls in earlier lines and prevent code folding.
 
-void PA_COMPONENT_EXPORT(PARTITION_ALLOC) Alias(const void* var);
+void PA_COMPONENT_EXPORT(PARTITION_ALLOC_BASE) Alias(const void* var);
 
 }  // namespace partition_alloc::internal::base::debug
 

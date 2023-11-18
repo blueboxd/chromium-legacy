@@ -41,6 +41,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -76,11 +77,12 @@ class FindBarMatchCountLabel : public views::Label {
 
   ~FindBarMatchCountLabel() override = default;
 
-  gfx::Size CalculatePreferredSize() const override {
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override {
     // We need to return at least 1dip so that box layout adds padding on either
     // side (otherwise there will be a jump when our size changes between empty
     // and non-empty).
-    gfx::Size size = views::Label::CalculatePreferredSize();
+    gfx::Size size = views::Label::CalculatePreferredSize(available_size);
     size.set_width(std::max(1, size.width()));
     return size;
   }
@@ -105,14 +107,17 @@ class FindBarMatchCountLabel : public views::Label {
       return;
 
     last_result_ = result;
+    // TODO(1499078): Get NO_RESULTS to be announced under Orca and ChromeVox.
     SetText(l10n_util::GetStringFUTF16(
         IDS_FIND_IN_PAGE_COUNT,
         base::FormatNumber(last_result_->active_match_ordinal()),
         base::FormatNumber(last_result_->number_of_matches())));
 
     if (last_result_->final_update()) {
-      NotifyAccessibilityEvent(ax::mojom::Event::kLiveRegionChanged,
-                               /* send_native_event = */ true);
+      ui::AXNodeData node_data;
+      GetAccessibleNodeData(&node_data);
+      GetViewAccessibility().AnnouncePolitely(
+          node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
     }
   }
 

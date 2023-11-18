@@ -63,18 +63,29 @@ enum class ParseResult {
   ERROR_INVALID_REGEX_SUBSTITUTION,
   ERROR_INVALID_ALLOW_ALL_REQUESTS_RESOURCE_TYPE,
 
-  ERROR_NO_HEADERS_SPECIFIED,
-  ERROR_EMPTY_REQUEST_HEADERS_LIST,
-  ERROR_EMPTY_RESPONSE_HEADERS_LIST,
-  ERROR_INVALID_HEADER_NAME,
-  ERROR_INVALID_HEADER_VALUE,
+  // Parse errors related to fields specific to modifyheaders rules.
+  ERROR_NO_HEADERS_TO_MODIFY_SPECIFIED,
+  ERROR_EMPTY_MODIFY_REQUEST_HEADERS_LIST,
+  ERROR_EMPTY_MODIFY_RESPONSE_HEADERS_LIST,
+  ERROR_INVALID_HEADER_TO_MODIFY_NAME,
+  ERROR_INVALID_HEADER_TO_MODIFY_VALUE,
   ERROR_HEADER_VALUE_NOT_SPECIFIED,
   ERROR_HEADER_VALUE_PRESENT,
   ERROR_APPEND_INVALID_REQUEST_HEADER,
 
+  // Parse errors related to matching on tab IDs.
   ERROR_EMPTY_TAB_IDS_LIST,
   ERROR_TAB_IDS_ON_NON_SESSION_RULE,
   ERROR_TAB_ID_DUPLICATED,
+
+  // Parse errors related to matching on response headers.
+  ERROR_EMPTY_RESPONSE_HEADER_MATCHING_LIST,
+  ERROR_EMPTY_EXCLUDED_RESPONSE_HEADER_MATCHING_LIST,
+  ERROR_INVALID_MATCHING_RESPONSE_HEADER_NAME,
+  ERROR_INVALID_MATCHING_EXCLUDED_RESPONSE_HEADER_NAME,
+  ERROR_INVALID_MATCHING_RESPONSE_HEADER_VALUE,
+  ERROR_MATCHING_RESPONSE_HEADER_DUPLICATED,
+  ERROR_RESPONSE_HEADER_RULE_CANNOT_MODIFY_REQUEST_HEADERS,
 };
 
 // Describes the ways in which updating dynamic rules can fail.
@@ -175,13 +186,17 @@ extern const char kErrorRegexSubstitutionWithoutFilter[];
 extern const char kErrorInvalidAllowAllRequestsResourceType[];
 extern const char kErrorRegexTooLarge[];
 extern const char kErrorNoHeaderListsSpecified[];
-extern const char kErrorInvalidHeaderName[];
-extern const char kErrorInvalidHeaderValue[];
+extern const char kErrorInvalidModifyHeaderName[];
+extern const char kErrorInvalidModifyHeaderValue[];
 extern const char kErrorNoHeaderValueSpecified[];
 extern const char kErrorHeaderValuePresent[];
 extern const char kErrorAppendInvalidRequestHeader[];
 extern const char kErrorTabIdsOnNonSessionRule[];
 extern const char kErrorTabIdDuplicated[];
+extern const char kErrorInvalidMatchingHeaderName[];
+extern const char kErrorInvalidMatchingHeaderValue[];
+extern const char kErrorResponseHeaderDuplicated[];
+extern const char kErrorResponseHeaderRuleCannotModifyRequestHeaders[];
 
 extern const char kErrorListNotPassed[];
 

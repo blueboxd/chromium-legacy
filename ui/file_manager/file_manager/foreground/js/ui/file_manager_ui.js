@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '../../elements/icons.html.js';
+
 import {assertInstanceof} from 'chrome://resources/ash/common/assert.js';
 
 import {DialogType} from '../../../common/js/dialog_type.js';
 import {queryDecoratedElement, queryRequiredElement} from '../../../common/js/dom_utils.js';
-import {decorate, define as crUiDefine} from '../../../common/js/ui.js';
-import {str, strf, util} from '../../../common/js/util.js';
+import {isDlpEnabled, isNewDirectoryTreeEnabled} from '../../../common/js/flags.js';
+import {str, strf} from '../../../common/js/translations.js';
+import {decorate} from '../../../common/js/ui.js';
 import {AllowedPaths} from '../../../common/js/volume_manager_types.js';
 import {BreadcrumbContainer} from '../../../containers/breadcrumb_container.js';
 import {CloudPanelContainer} from '../../../containers/cloud_panel_container.js';
@@ -41,15 +44,13 @@ import {FilesMenuItem} from './files_menu.js';
 import {GearMenu} from './gear_menu.js';
 import {ImportCrostiniImageDialog} from './import_crostini_image_dialog.js';
 import {InstallLinuxPackageDialog} from './install_linux_package_dialog.js';
-import {ListContainer} from './list_container.js';
+import {ListContainer, ListType} from './list_container.js';
 import {Menu} from './menu.js';
 import {MenuItem} from './menu_item.js';
 import {MultiMenu} from './multi_menu.js';
 import {MultiMenuButton} from './multi_menu_button.js';
 import {ProgressCenterPanel} from './progress_center_panel.js';
 import {ProvidersMenu} from './providers_menu.js';
-import {Splitter} from './splitter.js';
-
 
 /**
  * The root of the file manager's view managing the DOM of the Files app.
@@ -189,11 +190,6 @@ export class FileManagerUI {
      */
     this.dialogContainer =
         queryRequiredElement('.dialog-container', this.element);
-    // @ts-ignore: error TS6133: 'event' is declared but its value is never
-    // read.
-    this.dialogContainer.addEventListener('relayout', (event) => {
-      this.layoutChanged_();
-    });
 
     /**
      * Context menu for texts.
@@ -489,7 +485,7 @@ export class FileManagerUI {
    * @return {?XfDlpRestrictionDetailsDialog}
    */
   get dlpRestrictionDetailsDialog() {
-    if (!util.isDlpEnabled()) {
+    if (!isDlpEnabled()) {
       return null;
     }
     if (this.dlpRestrictionDetailsDialog_) {
@@ -522,29 +518,9 @@ export class FileManagerUI {
     // Splitter.
     const splitterContainer =
         queryRequiredElement('#navigation-list-splitter', this.element);
-    if (util.isJellyEnabled()) {
-      // Remove the unused splitter <div> and wrap the tree and list with an
-      // xf-splitter.
-      const dialogNavList = splitterContainer.previousElementSibling;
-      const dialogMain = splitterContainer.nextElementSibling;
-      splitterContainer.remove();
-      const splitterWidget = document.createElement('xf-splitter');
-      splitterWidget.classList.add('jelly-splitter');
-      splitterWidget.id = '#navigation-list-splitter';
-      // @ts-ignore: error TS18047: 'dialogNavList.parentNode' is possibly
-      // 'null'.
-      dialogNavList.parentNode.insertBefore(splitterWidget, dialogNavList);
-      // @ts-ignore: error TS2345: Argument of type 'Element | null' is not
-      // assignable to parameter of type 'Node'.
-      splitterWidget.appendChild(dialogNavList);
-      // @ts-ignore: error TS2345: Argument of type 'Element | null' is not
-      // assignable to parameter of type 'Node'.
-      splitterWidget.appendChild(dialogMain);
-      splitterWidget.addEventListener(
-          XfSplitter.events.SPLITTER_DRAGMOVE, this.relayout.bind(this));
-    } else {
-      this.decorateSplitter_(splitterContainer);
-    }
+    splitterContainer.addEventListener(
+        XfSplitter.events.SPLITTER_DRAGMOVE, this.relayout.bind(this));
+
 
     /**
      * Search container, which controls search UI elements.
@@ -557,16 +533,11 @@ export class FileManagerUI {
         queryRequiredElement('#path-display-container', this.element),
         /*a11y=*/ this);
 
-    if (util.isDriveFsBulkPinningEnabled()) {
-      /**
-       * @type {!CloudPanelContainer}
-       * @const
-       */
-      this.cloudPanelContainer_ = new CloudPanelContainer(
-          // @ts-ignore: error TS2345: Argument of type 'HTMLElement' is not
-          // assignable to parameter of type 'XfCloudPanel'.
-          queryRequiredElement('xf-cloud-panel', this.element));
-    }
+    /** @const {!CloudPanelContainer} */
+    this.cloudPanelContainer_ = new CloudPanelContainer(
+        // @ts-ignore: error TS2345: Argument of type 'HTMLElement' is not
+        // assignable to parameter of type 'XfCloudPanel'.
+        queryRequiredElement('xf-cloud-panel', this.element));
 
     // Init context menus.
     // @ts-ignore: error TS2345: Argument of type 'MultiMenu' is not assignable
@@ -623,12 +594,6 @@ export class FileManagerUI {
     document.addEventListener('dragend', () => {
       this.dragInProcess = false;
     });
-
-    // Observe the dialog header content box size: the breadcrumb and action
-    // bar buttons can become wide enough to extend past the available viewport,
-    // and this.layoutChanged_() is used to clamp their size to the viewport.
-    const resizeObserver = new ResizeObserver(() => this.layoutChanged_());
-    resizeObserver.observe(queryRequiredElement('div.dialog-header'));
   }
 
   /**
@@ -640,9 +605,7 @@ export class FileManagerUI {
     let targetElement = null;
     if (this.dialogType_ == DialogType.SELECT_SAVEAS_FILE) {
       targetElement = this.dialogFooter.filenameInput;
-    } else if (
-        this.listContainer.currentListType !=
-        ListContainer.ListType.UNINITIALIZED) {
+    } else if (this.listContainer.currentListType !== ListType.UNINITIALIZED) {
       targetElement = this.listContainer.currentList;
     }
 
@@ -658,7 +621,7 @@ export class FileManagerUI {
    * @suppress {checkTypes} closure can't cast Element to XfTree.
    */
   initDirectoryTree(directoryTree) {
-    if (util.isNewDirectoryTreeEnabled()) {
+    if (isNewDirectoryTreeEnabled()) {
       this.directoryTreeContainer =
           /** @type {!DirectoryTreeContainer} */ (directoryTree);
       this.directoryTree =
@@ -758,11 +721,10 @@ export class FileManagerUI {
    */
   relayout() {
     // May not be available during initialization.
-    if (this.listContainer.currentListType !==
-        ListContainer.ListType.UNINITIALIZED) {
+    if (this.listContainer.currentListType !== ListType.UNINITIALIZED) {
       this.listContainer.currentView.relayout();
     }
-    if (!util.isNewDirectoryTreeEnabled() && this.directoryTree) {
+    if (!isNewDirectoryTreeEnabled() && this.directoryTree) {
       // @ts-ignore: error TS2339: Property 'relayout' does not exist on type
       // 'XfTree | DirectoryTree'.
       this.directoryTree?.relayout();
@@ -770,70 +732,13 @@ export class FileManagerUI {
   }
 
   /**
-   * Handles the 'relayout' event to set sizing of the dialog main panel.
-   *
-   * @private
-   */
-  layoutChanged_() {
-    // The Jelly splitter uses flexbox, no need for this.
-    if (util.isJellyEnabled() || this.scrollRAFActive_ === true) {
-      return;
-    }
-
-    /**
-     * True if a scroll RAF is active: scroll events are frequent and serviced
-     * using RAF to throttle our processing of these events.
-     * @type {boolean}
-     */
-    this.scrollRAFActive_ = true;
-
-    window.requestAnimationFrame(() => {
-      this.scrollRAFActive_ = false;
-
-      const mainWindow = document.querySelector('.dialog-container');
-      const navigationList = document.querySelector('.dialog-navigation-list');
-      const splitter = document.querySelector('.splitter');
-      const dialogMain = document.querySelector('.dialog-main');
-
-      // Check the width of the tree and splitter and set the main panel width
-      // to the remainder if it's too wide.
-      // @ts-ignore: error TS2339: Property 'offsetWidth' does not exist on type
-      // 'Element'.
-      const mainWindowWidth = mainWindow.offsetWidth;
-      // @ts-ignore: error TS2339: Property 'offsetWidth' does not exist on type
-      // 'Element'.
-      const navListWidth = navigationList.offsetWidth;
-      // @ts-ignore: error TS2345: Argument of type 'Element | null' is not
-      // assignable to parameter of type 'Element'.
-      const splitStyle = window.getComputedStyle(splitter);
-      const splitMargin = parseInt(splitStyle.marginRight, 10) +
-          parseInt(splitStyle.marginLeft, 10);
-      // @ts-ignore: error TS2339: Property 'offsetWidth' does not exist on type
-      // 'Element'.
-      const splitWidth = splitter.offsetWidth + splitMargin;
-      // @ts-ignore: error TS2339: Property 'offsetWidth' does not exist on type
-      // 'Element'.
-      const dialogMainWidth = dialogMain.offsetWidth;
-      // @ts-ignore: error TS2339: Property 'style' does not exist on type
-      // 'Element'.
-      if (!dialogMain.style.width ||
-          (navListWidth + splitWidth + dialogMainWidth) > mainWindowWidth) {
-        // @ts-ignore: error TS2339: Property 'style' does not exist on type
-        // 'Element'.
-        dialogMain.style.width =
-            (mainWindowWidth - navListWidth - splitWidth) + 'px';
-      }
-    });
-  }
-
-  /**
    * Sets the current list type.
-   * @param {ListContainer.ListType} listType New list type.
+   * @param {ListType} listType New list type.
    */
   setCurrentListType(listType) {
     this.listContainer.setCurrentListType(listType);
 
-    const isListView = (listType === ListContainer.ListType.DETAIL);
+    const isListView = (listType === ListType.DETAIL);
     this.toggleViewButton.classList.toggle('thumbnail', isListView);
 
     const label = isListView ? str('CHANGE_TO_THUMBNAILVIEW_BUTTON_LABEL') :
@@ -860,56 +765,6 @@ export class FileManagerUI {
     if (this.dialogType_ != DialogType.FULL_PAGE) {
       this.dialogFooter.cancelButton.click();
     }
-  }
-
-  /**
-   * Decorates the given splitter element.
-   * @param {!HTMLElement} splitterElement
-   * @param {boolean=} opt_resizeNextElement
-   * @private
-   */
-  decorateSplitter_(splitterElement, opt_resizeNextElement) {
-    const self = this;
-    const FileSplitter = Splitter;
-    const customSplitter = crUiDefine('div');
-
-    customSplitter.prototype = {
-      __proto__: FileSplitter.prototype,
-
-      // @ts-ignore: error TS7006: Parameter 'e' implicitly has an 'any' type.
-      handleSplitterDragStart: function(e) {
-        FileSplitter.prototype.handleSplitterDragStart.apply(this, arguments);
-        // @ts-ignore: error TS2339: Property 'ownerDocument' does not exist on
-        // type '{ __proto__: any; handleSplitterDragStart: (e: any, ...args:
-        // any[]) => void; handleSplitterDragMove: (deltaX: any, ...args: any[])
-        // => void; handleSplitterDragEnd: (e: any, ...args: any[]) => void; }'.
-        this.ownerDocument.documentElement.classList.add('col-resize');
-      },
-
-      // @ts-ignore: error TS7006: Parameter 'deltaX' implicitly has an 'any'
-      // type.
-      handleSplitterDragMove: function(deltaX) {
-        FileSplitter.prototype.handleSplitterDragMove.apply(this, arguments);
-        self.relayout();
-      },
-
-      // @ts-ignore: error TS7006: Parameter 'e' implicitly has an 'any' type.
-      handleSplitterDragEnd: function(e) {
-        FileSplitter.prototype.handleSplitterDragEnd.apply(this, arguments);
-        // @ts-ignore: error TS2339: Property 'ownerDocument' does not exist on
-        // type '{ __proto__: any; handleSplitterDragStart: (e: any, ...args:
-        // any[]) => void; handleSplitterDragMove: (deltaX: any, ...args: any[])
-        // => void; handleSplitterDragEnd: (e: any, ...args: any[]) => void; }'.
-        this.ownerDocument.documentElement.classList.remove('col-resize');
-      },
-    };
-
-    // @ts-ignore: error TS2339: Property 'decorate' does not exist on type
-    // 'Object'.
-    /** @type Object */ (customSplitter).decorate(splitterElement);
-    // @ts-ignore: error TS2339: Property 'resizeNextElement' does not exist on
-    // type 'HTMLElement'.
-    splitterElement.resizeNextElement = !!opt_resizeNextElement;
   }
 
   /**

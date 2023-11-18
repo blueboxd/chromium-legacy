@@ -63,6 +63,7 @@ import android.content.ReceiverCallNotAllowedException;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
@@ -89,6 +90,7 @@ import org.chromium.base.ResettersForTesting;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.UserData;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.build.BuildConfig;
 import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.WindowEventObserverManager;
@@ -104,6 +106,8 @@ import org.chromium.content_public.browser.ContentFeatureMap;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.ui.accessibility.AccessibilityFeatures;
+import org.chromium.ui.accessibility.AccessibilityFeaturesMap;
 import org.chromium.ui.accessibility.AccessibilityState;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
@@ -171,6 +175,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
     private int mCursorIndex;
     private String mSupportedHtmlElementTypes;
     private final AccessibilityNodeInfoBuilder mAccessibilityNodeInfoBuilder;
+    private boolean mHasFinishedLatestAccessibilitySnapshot;
 
     // Observer for WebContents, used to update state when |this| is shown/hidden.
     private WebContentsObserver mWebContentsObserver;
@@ -453,10 +458,11 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
         if (mView.isAttachedToWindow()) registerLocaleChangeReceiver();
 
         // Define a set of relevant AccessibilityEvents.
-        Runnable serviceMaskRunnable = () -> {
-            int serviceEventMask = AccessibilityState.getAccessibilityServiceEventTypeMask();
-            mEventDispatcher.updateRelevantEventTypes(convertMaskToEventTypes(serviceEventMask));
-        };
+        Runnable serviceMaskRunnable =
+                () -> {
+                    mEventDispatcher.updateRelevantEventTypes(
+                            AccessibilityState.relevantEventTypesForCurrentServices());
+                };
         mView.post(serviceMaskRunnable);
 
         // Send state values set by embedders to native-side objects.
@@ -535,6 +541,10 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
 
     public void forceRecordUsageUMAHistogramsForTesting() {
         mHistogramRecorder.recordAccessibilityUsageHistograms();
+    }
+
+    public boolean hasFinishedLatestAccessibilitySnapshotForTesting() {
+        return mHasFinishedLatestAccessibilitySnapshot;
     }
 
     @CalledByNative
@@ -730,19 +740,14 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
                     AccessibilityState.isOnlyPasswordManagersEnabled(),
                     /* isAccessibilityEnabled= */ true);
 
-            // Update the state of how passwords are exposed based on user settings.
-            WebContentsAccessibilityImplJni.get().setPasswordRules(mNativeObj,
-                    AccessibilityAutofillHelper.shouldRespectDisplayedPasswordText(),
-                    AccessibilityAutofillHelper.shouldExposePasswordText());
-
             // Update the state of enabling/disabling the image descriptions feature. To enable the
             // feature, this instance must be a candidate and a screen reader must be enabled.
             WebContentsAccessibilityImplJni.get().setAllowImageDescriptions(mNativeObj,
                     mIsImageDescriptionsCandidate && AccessibilityState.isScreenReaderEnabled());
 
             // Update the list of events we dispatch to enabled services.
-            int serviceEventMask = AccessibilityState.getAccessibilityServiceEventTypeMask();
-            mEventDispatcher.updateRelevantEventTypes(convertMaskToEventTypes(serviceEventMask));
+            mEventDispatcher.updateRelevantEventTypes(
+                    AccessibilityState.relevantEventTypesForCurrentServices());
 
             // If the auto-disable feature is enabled, then we will disable renderer accessibility
             // and tear down objects when no accessibility services are running. If we have
@@ -768,6 +773,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
                     mAutoDisableAccessibilityHandler.cancelDisableTimer();
                     mAutoDisableAccessibilityHandler.startDisableTimer(
                             NO_ACCESSIBILITY_SERVICES_ENABLED_DELAY_MS);
+                } else {
+                    mAutoDisableAccessibilityHandler.cancelDisableTimer();
                 }
             }
         }
@@ -968,19 +975,6 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
         refreshNativeState();
     }
 
-    public Set<Integer> convertMaskToEventTypes(int serviceEventTypes) {
-        Set<Integer> relevantEventTypes = new HashSet<Integer>();
-        int eventTypeBit;
-
-        while (serviceEventTypes != 0) {
-            eventTypeBit = (1 << Integer.numberOfTrailingZeros(serviceEventTypes));
-            relevantEventTypes.add(eventTypeBit);
-            serviceEventTypes &= ~eventTypeBit;
-        }
-
-        return relevantEventTypes;
-    }
-
     // WebContentsAccessibility
 
     @Override
@@ -1033,12 +1027,26 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
             extras.putCharSequence(EXTRAS_KEY_URL, webContents.getVisibleUrl().getSpec());
         }
 
-        mDelegate.requestAccessibilitySnapshot(viewRoot, new Runnable() {
-            @Override
-            public void run() {
-                viewRoot.asyncCommit();
-            }
-        });
+        mHasFinishedLatestAccessibilitySnapshot = false;
+        long beforeSnapshotTimeMs = SystemClock.elapsedRealtime();
+        mDelegate.requestAccessibilitySnapshot(
+                viewRoot,
+                () -> {
+                    viewRoot.asyncCommit();
+                    mHasFinishedLatestAccessibilitySnapshot = true;
+
+                    if (AccessibilityFeaturesMap.isEnabled(
+                            AccessibilityFeatures.ACCESSIBILITY_SNAPSHOT_STRESS_TESTS)) {
+                        long snapshotRuntimeMs =
+                                SystemClock.elapsedRealtime() - beforeSnapshotTimeMs;
+                        RecordHistogram.recordLinearCountHistogram(
+                                "Accessibility.AXTreeSnapshotter.Snapshot.EndToEndRuntime",
+                                (int) snapshotRuntimeMs,
+                                1,
+                                5 * 1000,
+                                100);
+                    }
+                });
     }
 
     @Override
@@ -2057,8 +2065,6 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
         String getSupportedHtmlElementTypes(long nativeWebContentsAccessibilityAndroid);
         void showContextMenu(long nativeWebContentsAccessibilityAndroid, int id);
         boolean isRootManagerConnected(long nativeWebContentsAccessibilityAndroid);
-        void setPasswordRules(long nativeWebContentsAccessibilityAndroid,
-                boolean shouldRespectDisplayedPasswordText, boolean shouldExposePasswordText);
         boolean areInlineTextBoxesLoaded(long nativeWebContentsAccessibilityAndroid, int id);
         void loadInlineTextBoxes(long nativeWebContentsAccessibilityAndroid, int id);
         int[] getCharacterBoundingBoxes(

@@ -64,7 +64,7 @@ class PerformanceControlsHatsServiceTest : public testing::Test {
   void SetBatterySaverMode(
       const performance_manager::user_tuning::prefs::BatterySaverModeState
           battery_saver_mode) {
-    g_browser_process->local_state()->SetInteger(
+    local_state()->SetInteger(
         performance_manager::user_tuning::prefs::kBatterySaverModeState,
         static_cast<int>(battery_saver_mode));
   }
@@ -158,12 +158,9 @@ TEST_F(PerformanceControlsHatsServiceTest, LaunchesPerformanceSurvey) {
   SetBatterySaverMode(performance_manager::user_tuning::prefs::
                           BatterySaverModeState::kEnabledBelowThreshold);
 
-  SurveyBitsData expected_bits = {{"high_efficiency_mode", false}};
-  SurveyStringData expected_strings = {
-      {"battery_saver_mode",
-       base::NumberToString(static_cast<int>(
-           performance_manager::user_tuning::prefs::BatterySaverModeState::
-               kEnabledBelowThreshold))}};
+  SurveyBitsData expected_bits = {{"high_efficiency_mode", false},
+                                  {"battery_saver_mode", true}};
+  SurveyStringData expected_strings = {};
   EXPECT_CALL(*mock_hats_service(),
               LaunchSurvey(kHatsSurveyTriggerPerformanceControlsPerformance, _,
                            _, expected_bits, expected_strings));

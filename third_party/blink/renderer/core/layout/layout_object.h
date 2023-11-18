@@ -66,6 +66,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
 #include "third_party/blink/renderer/platform/graphics/subtree_paint_property_update_reason.h"
+#include "third_party/blink/renderer/platform/graphics/visual_rect_flags.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/transform.h"
@@ -89,17 +90,6 @@ class PaintLayer;
 class StyleRequest;
 struct PaintInfo;
 struct PaintInvalidatorContext;
-
-enum VisualRectFlags {
-  kDefaultVisualRectFlags = 0,
-  kEdgeInclusive = 1 << 0,
-  // Use the GeometryMapper fast-path, if possible.
-  kUseGeometryMapper = 1 << 1,
-  // When mapping to absolute coordinates and the main frame is remote, don't
-  // apply the main frame root scroller's overflow clip.
-  kDontApplyMainFrameOverflowClip = 1 << 2,
-  kIgnoreLocalClipPath = 1 << 3,
-};
 
 enum CursorDirective { kSetCursorBasedOnStyle, kSetCursor, kDoNotSetCursor };
 
@@ -191,7 +181,7 @@ struct RecalcLayoutOverflowResult {
 // Some LayoutObjects don't have an associated Node and are called "anonymous"
 // (see the constructor below). Anonymous LayoutObjects exist for several
 // purposes but are usually required by CSS. A good example is anonymous table
-// parts (see LayoutNGTable for the expected structure). Anonymous LayoutObjects
+// parts (see LayoutTable for the expected structure). Anonymous LayoutObjects
 // are generated when a new child is added to the tree in addChild(). See the
 // function for some important information on this.
 //
@@ -323,6 +313,10 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // name of the object along with extra information about the layout object
   // state (e.g. positioning).
   String DecoratedName() const;
+
+  // Returns the decorated name, and DOM node info (tag name and style / class /
+  // id attributes, if present).
+  String ToString() const;
 
   // This is an inexact determination of whether the display of this objects is
   // altered or obscured by CSS effects.
@@ -458,7 +452,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // that it may return wrong results for out-of-flow positioned objects.
   LayoutBox* DeprecatedEnclosingScrollableBox() const;
 
-  // Return the NG |LayoutBlockFlow| that will have any |NGFragmentItems| for
+  // Return the NG |LayoutBlockFlow| that will have any |FragmentItems| for
   // |this|, or nullptr if the containing block isn't an NG inline formatting
   // context root. |this| is required to be an object that participates in an
   // inline formatting context (i.e. something inline-level, or a float).
@@ -581,7 +575,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // from a structure of a flat tree if Shadow DOM is used.
   // See LayoutTreeBuilderTraversal and FlatTreeTraversal.
   //
-  // See LayoutNGTable::AddChild and LayoutBlockFlow::AddChild.
+  // See LayoutTable::AddChild and LayoutBlockFlow::AddChild.
   // TODO(jchaffraix): |newChild| cannot be nullptr and should be a reference.
   virtual void AddChild(LayoutObject* new_child,
                         LayoutObject* before_child = nullptr);
@@ -847,7 +841,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // For renderer creation, the inline-* values create the same renderer
   // as the non-inline version. The difference is that inline-* sets
   // is_inline_ during initialization. This means that
-  // "display: inline-table" creates a LayoutNGTable, like "display: table".
+  // "display: inline-table" creates a LayoutTable, like "display: table".
   //
   // Ideally every Element::createLayoutObject would call this function to
   // respond to 'display' but there are deep rooted assumptions about
@@ -900,9 +894,9 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectNGBlockFlow);
   }
-  bool IsLayoutNGFlexibleBox() const {
+  bool IsFlexibleBox() const {
     NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGFlexibleBox);
+    return IsOfType(kLayoutObjectFlexibleBox);
   }
   bool IsLayoutListItem() const {
     NOT_DESTROYED();
@@ -960,9 +954,9 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     return IsOfType(kLayoutObjectCustom);
   }
-  bool IsLayoutNGGrid() const {
+  bool IsLayoutGrid() const {
     NOT_DESTROYED();
-    return IsOfType(kLayoutObjectNGGrid);
+    return IsOfType(kLayoutObjectGrid);
   }
   bool IsLayoutIFrame() const {
     NOT_DESTROYED();
@@ -1820,6 +1814,13 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // instead of flex box. crbug.com/226252.
   bool BehavesLikeBlockContainer() const {
     NOT_DESTROYED();
+    // <rt> supports :first-letter for backward compatibility.
+    // <rt> had display:block, and :first-letter worked accidentally.
+    // Test: fast/ruby/ruby-first-letter.html.
+    // TODO(crbug.com/1501719): Remove rt:first-letter support.
+    if (IsRubyText() && IsA<HTMLRTElement>(GetNode())) {
+      return true;
+    }
     return (IsLayoutBlockFlow() && StyleRef().IsDisplayBlockContainer()) ||
            IsButton();
   }
@@ -1923,7 +1924,8 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   Element* OffsetParent(const Element* base = nullptr) const;
 
   // Inclusive of |this|, exclusive of |below|.
-  const LayoutBoxModelObject* FindFirstStickyContainer(LayoutBox* below) const;
+  const LayoutBoxModelObject* FindFirstStickyContainer(
+      const LayoutBox* below) const;
 
   // Mark this object needing to re-run |CollectInlines()|. Ancestors may be
   // marked too if needed.
@@ -1978,7 +1980,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // and preferred width recalc. Also invalidates shaping on all text nodes.
   virtual void InvalidateSubtreeLayoutForFontUpdates();
 
-  void InvalidateIntersectionObserverCachedRects();
+  void DeprecatedInvalidateIntersectionObserverCachedRects();
 
   // Mark elements with a principal box and a computed position-fallback
   // different from 'none' for layout when @position-fallback rules are removed
@@ -2343,7 +2345,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // or null if there is none.
   LayoutObject* NearestAncestorForElement() const;
 
-  const LayoutBlock* InclusiveContainingBlock() const;
+  LayoutBlock* InclusiveContainingBlock(AncestorSkipInfo* = nullptr);
 
   const LayoutBox* ContainingScrollContainer(
       bool ignore_layout_view_for_fixed_pos = false) const;
@@ -2556,9 +2558,9 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   inline const ComputedStyle* Style(bool first_line) const;
   inline const ComputedStyle& StyleRef(bool first_line) const;
 
-  const ComputedStyle& EffectiveStyle(NGStyleVariant style_variant) const {
+  const ComputedStyle& EffectiveStyle(StyleVariant style_variant) const {
     NOT_DESTROYED();
-    return style_variant == NGStyleVariant::kStandard
+    return style_variant == StyleVariant::kStandard
                ? StyleRef()
                : SlowEffectiveStyle(style_variant);
   }
@@ -2742,12 +2744,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   void DestroyAndCleanupAnonymousWrappers(bool performing_reattach);
 
   void Destroy();
-
-  // TODO(1229581): Rename this function.
-  virtual bool IsFlexibleBoxIncludingNG() const {
-    NOT_DESTROYED();
-    return false;
-  }
 
   // TODO(1229581): Rename this function.
   bool IsListItemIncludingNG() const {
@@ -3034,9 +3030,14 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     return *fragment_;
   }
 
+  const FragmentDataList& FragmentList() const {
+    NOT_DESTROYED();
+    return *fragment_;
+  }
+
   bool IsFragmented() const {
     NOT_DESTROYED();
-    return !!FirstFragment().NextFragment();
+    return FragmentList().size() > 1;
   }
 
   enum OverflowRecalcType {
@@ -3211,6 +3212,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     }
 
     FragmentData& FirstFragment() { return *layout_object_.fragment_; }
+    FragmentDataList& FragmentList() { return *layout_object_.fragment_; }
 
     void EnsureId() { layout_object_.fragment_->EnsureId(); }
 
@@ -3472,8 +3474,10 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     kLayoutObjectCustomScrollbarPart,
     kLayoutObjectEmbeddedObject,
     kLayoutObjectFieldset,
+    kLayoutObjectFlexibleBox,
     kLayoutObjectFrame,
     kLayoutObjectFrameSet,
+    kLayoutObjectGrid,
     kLayoutObjectIFrame,
     kLayoutObjectImage,
     kLayoutObjectInlineListItem,
@@ -3486,8 +3490,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     kLayoutObjectMultiColumnSet,
     kLayoutObjectMultiColumnSpannerPlaceholder,
     kLayoutObjectNGBlockFlow,
-    kLayoutObjectNGFlexibleBox,
-    kLayoutObjectNGGrid,
     kLayoutObjectOutsideListMarker,
     kLayoutObjectProgress,
     kLayoutObjectQuote,
@@ -3539,7 +3541,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 #endif
   }
 
-  const ComputedStyle& SlowEffectiveStyle(NGStyleVariant style_variant) const;
+  const ComputedStyle& SlowEffectiveStyle(StyleVariant style_variant) const;
 
   // Updates only the local style ptr of the object.  Does not update the state
   // of the object, and so only should be called when the style is known not to
@@ -3699,6 +3701,8 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   }
 
  private:
+  void InvalidateIntersectionObserverCachedRects();
+
   gfx::QuadF LocalToAncestorQuadInternal(const gfx::QuadF&,
                                          const LayoutBoxModelObject* ancestor,
                                          MapCoordinatesFlags = 0) const;
@@ -3953,7 +3957,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
         IntrinsicLogicalWidthsChildDependsOnBlockConstraints);
 
     // This flag is set on inline container boxes that need to run the
-    // Pre-layout phase in LayoutNG. See NGInlineNode::CollectInlines().
+    // Pre-layout phase in LayoutNG. See InlineNode::CollectInlines().
     // Also maybe set to inline boxes to optimize the propagation.
     ADD_BOOLEAN_BITFIELD(needs_collect_inlines_, NeedsCollectInlines);
 
@@ -4165,7 +4169,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     ADD_BOOLEAN_BITFIELD(is_table_column_constraints_dirty_,
                          IsTableColumnsConstraintsDirty);
 
-    // Grid item placement is cached on LayoutNGGrid.
+    // Grid item placement is cached on LayoutGrid.
     // When this flag is set, any cached item placements are invalid.
     ADD_BOOLEAN_BITFIELD(is_grid_placement_dirty_, IsGridPlacementDirty);
 
@@ -4273,7 +4277,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   Member<LayoutObject> parent_;
   Member<LayoutObject> previous_;
   Member<LayoutObject> next_;
-  Member<FragmentData> fragment_;
+  Member<FragmentDataList> fragment_;
 
   // Store state between styleWillChange and styleDidChange
   static bool affects_parent_block_;

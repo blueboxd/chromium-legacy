@@ -18,6 +18,7 @@
 #include "ash/ambient/ambient_ui_launcher.h"
 #include "ash/ambient/ambient_ui_settings.h"
 #include "ash/ambient/test/ambient_ash_test_helper.h"
+#include "ash/ambient/test/ambient_test_util.h"
 #include "ash/ambient/ui/ambient_animation_view.h"
 #include "ash/ambient/ui/ambient_background_image_view.h"
 #include "ash/ambient/ui/ambient_container_view.h"
@@ -51,6 +52,9 @@
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "components/prefs/testing_pref_service.h"
+#include "services/data_decoder/public/mojom/image_decoder.mojom-shared.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/image/image_skia.h"
@@ -74,15 +78,6 @@ class TestAmbientPhotoCacheImpl : public AmbientPhotoCache {
   }
 
   // AmbientPhotoCache:
-  void DownloadPhoto(
-      const std::string& url,
-      base::OnceCallback<void(std::string&&)> callback) override {
-    // Pretend to respond asynchronously.
-    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-        FROM_HERE, base::BindOnce(std::move(callback), GetDownloadData()),
-        photo_download_delay_);
-  }
-
   void DownloadPhotoToFile(const std::string& url,
                            int cache_index,
                            base::OnceCallback<void(bool)> callback) override {
@@ -100,21 +95,6 @@ class TestAmbientPhotoCacheImpl : public AmbientPhotoCache {
 
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), /*success=*/true));
-  }
-
-  void DecodePhoto(
-      const std::string& data,
-      base::OnceCallback<void(const gfx::ImageSkia&)> callback) override {
-    gfx::ImageSkia image = decoded_image_ ? *decoded_image_
-                                          : CreateSolidColorTestImage(
-                                                decoded_size_, decoded_color_);
-
-    // Only use once.
-    decoded_image_.reset();
-
-    // Pretend to respond asynchronously.
-    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), image));
   }
 
   void WritePhotoCache(int cache_index,
@@ -138,25 +118,14 @@ class TestAmbientPhotoCacheImpl : public AmbientPhotoCache {
   }
 
   void Clear() override {
-    download_count_ = 0;
+    test_image_size_ = kTestImageMinSize;
     download_data_.reset();
-    decoded_size_ = gfx::Size(10, 20);
-    decoded_image_.reset();
     files_.clear();
   }
 
   void SetDownloadData(std::unique_ptr<std::string> download_data) {
     download_data_ = std::move(download_data);
   }
-
-  void SetDecodedPhotoSize(int width, int height) {
-    decoded_size_.set_width(width);
-    decoded_size_.set_height(height);
-  }
-
-  void SetDecodedPhotoColor(SkColor color) { decoded_color_ = color; }
-
-  void SetDecodedPhoto(const gfx::ImageSkia& image) { decoded_image_ = image; }
 
   void SetPhotoDownloadDelay(base::TimeDelta delay) {
     photo_download_delay_ = delay;
@@ -167,29 +136,133 @@ class TestAmbientPhotoCacheImpl : public AmbientPhotoCache {
   }
 
  private:
+  static constexpr int kTestImageMinSize = 25;
+  static constexpr int kTestImageMaxSize = 50;
+
   std::string GetDownloadData() {
     // Reply with a unique string each time to avoid check to skip loading
     // duplicate images.
-    return download_data_
-               ? *download_data_
-               : base::StringPrintf("test_image_%i", download_count_++);
+    ++test_image_size_;
+    if (test_image_size_ > kTestImageMaxSize) {
+      test_image_size_ = kTestImageMinSize;
+    }
+    return download_data_ ? *download_data_
+                          : CreateEncodedImageForTesting(
+                                gfx::Size(test_image_size_, test_image_size_));
   }
 
-  int download_count_ = 0;
+  int test_image_size_ = kTestImageMinSize;
 
   // If not null, will return this data when downloading.
   std::unique_ptr<std::string> download_data_;
 
-  // Color of the test images.
-  SkColor decoded_color_ = SK_ColorGREEN;
-  // Width and height of test images.
-  gfx::Size decoded_size_{10, 20};
-  // If set, will replay this image.
-  absl::optional<gfx::ImageSkia> decoded_image_;
-
   std::map<int, ::ambient::PhotoCacheEntry> files_;
 
   base::TimeDelta photo_download_delay_ = base::Milliseconds(1);
+};
+
+class AmbientAshTestBase::FakePhotoDownloadServer {
+ public:
+  explicit FakePhotoDownloadServer(
+      network::TestURLLoaderFactory& url_loader_factory)
+      : url_loader_factory_(&url_loader_factory) {
+    url_loader_factory.SetInterceptor(
+        base::BindRepeating(&FakePhotoDownloadServer::InterceptIncomingRequest,
+                            weak_factory_.GetWeakPtr()));
+  }
+  FakePhotoDownloadServer(const FakePhotoDownloadServer&) = delete;
+  FakePhotoDownloadServer& operator=(const FakePhotoDownloadServer&) = delete;
+  ~FakePhotoDownloadServer() = default;
+
+  void set_download_data(std::unique_ptr<std::string> download_data) {
+    download_data_ = std::move(download_data);
+  }
+
+  void set_download_delay(base::TimeDelta delay) { download_delay_ = delay; }
+
+  void set_custom_image_size(gfx::Size custom_image_size) {
+    custom_image_size_ = std::move(custom_image_size);
+  }
+
+  void set_custom_image_color(SkColor custom_image_color) {
+    custom_image_color_ = std::move(custom_image_color);
+  }
+
+  void set_image_codec(data_decoder::mojom::ImageCodec image_codec) {
+    image_codec_ = image_codec;
+  }
+
+ private:
+  static constexpr int kTestImageMinSize = 25;
+  static constexpr int kTestImageMaxSize = 50;
+
+  void InterceptIncomingRequest(const network::ResourceRequest& request) {
+    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&FakePhotoDownloadServer::RespondToPendingRequest,
+                       weak_factory_.GetWeakPtr(), request.url.spec(),
+                       GetDownloadData()),
+        download_delay_);
+  }
+
+  void RespondToPendingRequest(const std::string& url,
+                               const std::string& content) {
+    CHECK(url_loader_factory_->SimulateResponseForPendingRequest(url, content))
+        << "Failed to find pending request for " << url;
+  }
+
+  std::string GetDownloadData() {
+    return download_data_ ? *download_data_
+                          : CreateEncodedImageForTesting(
+                                GetNextTestImageSize(), GetNextTestImageColor(),
+                                image_codec_);
+  }
+
+  gfx::Size GetNextTestImageSize() {
+    if (custom_image_size_) {
+      return *custom_image_size_;
+    }
+
+    gfx::Size test_size = gfx::Size(test_image_size_, test_image_size_);
+    ++test_image_size_;
+    if (test_image_size_ > kTestImageMaxSize) {
+      test_image_size_ = kTestImageMinSize;
+    }
+    return test_size;
+  }
+
+  SkColor GetNextTestImageColor() {
+    if (custom_image_color_) {
+      SkColor custom_image_color = *custom_image_color_;
+      custom_image_color_.reset();
+      return custom_image_color;
+    }
+    SkColor test_color =
+        SkColorSetRGB(test_image_color_, test_image_color_, test_image_color_);
+    ++test_image_color_;
+    return test_color;
+  }
+
+  const raw_ptr<network::TestURLLoaderFactory> url_loader_factory_;
+  // If not null, will return an arbitrary photo when downloading.
+  std::unique_ptr<std::string> download_data_;
+  base::TimeDelta download_delay_ = base::Milliseconds(1);
+
+  // Automatically generates images of different sizes and colors for every
+  // request to prevent duplicate photos being returned. This simulates the
+  // real backend behavior.
+  int test_image_size_ = kTestImageMinSize;
+  uint8_t test_image_color_ = 0;
+
+  // If not specified, the size is automatically generated using
+  // `test_image_size_`.
+  absl::optional<gfx::Size> custom_image_size_;
+  absl::optional<SkColor> custom_image_color_;
+
+  data_decoder::mojom::ImageCodec image_codec_ =
+      data_decoder::mojom::ImageCodec::kDefault;
+
+  base::WeakPtrFactory<FakePhotoDownloadServer> weak_factory_{this};
 };
 
 AmbientAshTestBase::AmbientAshTestBase()
@@ -204,6 +277,10 @@ void AmbientAshTestBase::SetUp() {
       base::BindRepeating(&TestAmbientPhotoCacheImpl::Create));
   AshTestBase::SetUp();
 
+  GetAmbientAshTestHelper()->ambient_client().SetAutomaticalyIssueToken(true);
+  fake_photo_download_server_ = std::make_unique<FakePhotoDownloadServer>(
+      GetAmbientAshTestHelper()->ambient_client().test_url_loader_factory());
+
   // Need to reset first and then assign the TestPhotoClient because can only
   // have one instance of AmbientBackendController.
   ambient_controller()->set_backend_controller_for_testing(nullptr);
@@ -215,6 +292,7 @@ void AmbientAshTestBase::SetUp() {
 }
 
 void AmbientAshTestBase::TearDown() {
+  fake_photo_download_server_.reset();
   AshTestBase::TearDown();
   AmbientPhotoCache::SetFactoryForTesting(base::NullCallback());
 }
@@ -397,17 +475,21 @@ void AmbientAshTestBase::SimulateMediaPlaybackStateChanged(
 }
 
 void AmbientAshTestBase::SetDecodedPhotoSize(int width, int height) {
-  auto* photo_cache = static_cast<TestAmbientPhotoCacheImpl*>(
-      ambient_controller()->ambient_photo_cache());
-
-  photo_cache->SetDecodedPhotoSize(width, height);
+  fake_photo_download_server_->set_custom_image_size(gfx::Size(width, height));
 }
 
-void AmbientAshTestBase::SetDecodedPhotoColor(SkColor color) {
-  auto* photo_cache = static_cast<TestAmbientPhotoCacheImpl*>(
-      ambient_controller()->ambient_photo_cache());
+void AmbientAshTestBase::SetNextDecodedPhotoColor(SkColor color) {
+  fake_photo_download_server_->set_custom_image_color(std::move(color));
+}
 
-  photo_cache->SetDecodedPhotoColor(color);
+void AmbientAshTestBase::UseLosslessPhotoCompression(
+    bool use_lossless_photo_compression) {
+  data_decoder::mojom::ImageCodec codec =
+      use_lossless_photo_compression
+          ? data_decoder::mojom::ImageCodec::kPng
+          : data_decoder::mojom::ImageCodec::kDefault;
+  photo_controller()->set_image_codec_for_testing(codec);
+  fake_photo_download_server_->set_image_codec(codec);
 }
 
 void AmbientAshTestBase::SetPhotoOrientation(bool portrait) {
@@ -674,7 +756,7 @@ AmbientContainerView* AmbientAshTestBase::GetContainerView() {
 }
 
 AmbientAccessTokenController* AmbientAshTestBase::token_controller() {
-  return ambient_controller()->access_token_controller_for_testing();
+  return ambient_controller()->access_token_controller();
 }
 
 FakeAmbientBackendControllerImpl* AmbientAshTestBase::backend_controller() {
@@ -698,7 +780,9 @@ void AmbientAshTestBase::SetDownloadPhotoData(std::string data) {
   auto* photo_cache = static_cast<TestAmbientPhotoCacheImpl*>(
       ambient_controller()->ambient_photo_cache());
 
-  photo_cache->SetDownloadData(std::make_unique<std::string>(std::move(data)));
+  photo_cache->SetDownloadData(std::make_unique<std::string>(data));
+  fake_photo_download_server_->set_download_data(
+      std::make_unique<std::string>(data));
 }
 
 void AmbientAshTestBase::ClearDownloadPhotoData() {
@@ -722,18 +806,12 @@ void AmbientAshTestBase::ClearBackupDownloadPhotoData() {
   backup_cache->SetDownloadData(nullptr);
 }
 
-void AmbientAshTestBase::SetDecodePhotoImage(const gfx::ImageSkia& image) {
-  auto* photo_cache = static_cast<TestAmbientPhotoCacheImpl*>(
-      ambient_controller()->ambient_photo_cache());
-
-  photo_cache->SetDecodedPhoto(image);
-}
-
 void AmbientAshTestBase::SetPhotoDownloadDelay(base::TimeDelta delay) {
   auto* photo_cache = static_cast<TestAmbientPhotoCacheImpl*>(
       ambient_controller()->ambient_photo_cache());
 
   photo_cache->SetPhotoDownloadDelay(delay);
+  fake_photo_download_server_->set_download_delay(delay);
 }
 
 void AmbientAshTestBase::CreateTestImageJpegFile(base::FilePath path,

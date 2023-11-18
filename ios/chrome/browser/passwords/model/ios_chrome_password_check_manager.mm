@@ -11,7 +11,6 @@
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/browser/ui/credential_utils.h"
-#import "components/password_manager/core/common/password_manager_features.h"
 #import "components/password_manager/core/common/password_manager_pref_names.h"
 #import "components/prefs/pref_service.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_account_password_store_factory.h"
@@ -74,31 +73,29 @@ PasswordCheckState ConvertBulkCheckState(State state) {
 }  // namespace
 
 IOSChromePasswordCheckManager::IOSChromePasswordCheckManager(
-    ChromeBrowserState* browser_state)
-    : browser_state_(browser_state),
-      profile_store_(IOSChromeProfilePasswordStoreFactory::GetForBrowserState(
-          browser_state,
-          ServiceAccessType::EXPLICIT_ACCESS)),
-      account_store_(IOSChromeAccountPasswordStoreFactory::GetForBrowserState(
-          browser_state,
-          ServiceAccessType::EXPLICIT_ACCESS)),
-      saved_passwords_presenter_(
-          IOSChromeAffiliationServiceFactory::GetForBrowserState(browser_state),
-          profile_store_,
-          account_store_),
+    scoped_refptr<password_manager::PasswordStoreInterface> profile_store,
+    scoped_refptr<password_manager::PasswordStoreInterface> account_store,
+    password_manager::AffiliationService* affiliation_service,
+    password_manager::BulkLeakCheckServiceInterface* bulk_leak_check_service,
+    PrefService* user_prefs)
+    : profile_store_(profile_store),
+      account_store_(account_store),
+      saved_passwords_presenter_(affiliation_service,
+                                 profile_store_,
+                                 account_store_),
       insecure_credentials_manager_(&saved_passwords_presenter_,
                                     profile_store_,
                                     account_store_),
-      bulk_leak_check_service_adapter_(
-          &saved_passwords_presenter_,
-          IOSChromeBulkLeakCheckServiceFactory::GetForBrowserState(
-              browser_state),
-          browser_state->GetPrefs()) {
+      bulk_leak_check_service_adapter_(&saved_passwords_presenter_,
+                                       bulk_leak_check_service,
+                                       user_prefs),
+      user_prefs_(user_prefs) {
   observed_saved_passwords_presenter_.Observe(&saved_passwords_presenter_);
+
   observed_insecure_credentials_manager_.Observe(
       &insecure_credentials_manager_);
-  observed_bulk_leak_check_service_.Observe(
-      IOSChromeBulkLeakCheckServiceFactory::GetForBrowserState(browser_state));
+
+  observed_bulk_leak_check_service_.Observe(bulk_leak_check_service);
 
   // Instructs the presenter and manager to initialize and build their caches.
   saved_passwords_presenter_.Init();
@@ -115,15 +112,13 @@ void IOSChromePasswordCheckManager::StartPasswordCheck() {
     bulk_leak_check_service_adapter_.StartBulkLeakCheck(kPasswordCheckDataKey,
                                                         &data);
 
-    if (password_manager::features::IsPasswordCheckupEnabled()) {
-      insecure_credentials_manager_.StartWeakCheck(base::BindOnce(
-          &IOSChromePasswordCheckManager::OnWeakOrReuseCheckFinished,
-          weak_ptr_factory_.GetWeakPtr()));
+    insecure_credentials_manager_.StartWeakCheck(base::BindOnce(
+        &IOSChromePasswordCheckManager::OnWeakOrReuseCheckFinished,
+        weak_ptr_factory_.GetWeakPtr()));
 
-      insecure_credentials_manager_.StartReuseCheck(base::BindOnce(
-          &IOSChromePasswordCheckManager::OnWeakOrReuseCheckFinished,
-          weak_ptr_factory_.GetWeakPtr()));
-    }
+    insecure_credentials_manager_.StartReuseCheck(base::BindOnce(
+        &IOSChromePasswordCheckManager::OnWeakOrReuseCheckFinished,
+        weak_ptr_factory_.GetWeakPtr()));
 
     is_check_running_ = true;
     start_time_ = base::Time::Now();
@@ -146,15 +141,15 @@ PasswordCheckState IOSChromePasswordCheckManager::GetPasswordCheckState()
       bulk_leak_check_service_adapter_.GetBulkLeakCheckState());
 }
 
-absl::optional<base::Time>
+std::optional<base::Time>
 IOSChromePasswordCheckManager::GetLastPasswordCheckTime() const {
-  if (!browser_state_->GetPrefs()->HasPrefPath(
+  if (!user_prefs_->HasPrefPath(
           password_manager::prefs::kLastTimePasswordCheckCompleted)) {
     return last_completed_weak_or_reuse_check_;
   }
 
   base::Time last_password_check =
-      base::Time::FromDoubleT(browser_state_->GetPrefs()->GetDouble(
+      base::Time::FromSecondsSinceUnixEpoch(user_prefs_->GetDouble(
           password_manager::prefs::kLastTimePasswordCheckCompleted));
 
   if (!last_completed_weak_or_reuse_check_.has_value()) {
@@ -188,10 +183,10 @@ void IOSChromePasswordCheckManager::OnInsecureCredentialsChanged() {
 void IOSChromePasswordCheckManager::OnStateChanged(State state) {
   if (state == State::kIdle && is_check_running_) {
     // Saving time of last successful password check
-    browser_state_->GetPrefs()->SetDouble(
+    user_prefs_->SetDouble(
         password_manager::prefs::kLastTimePasswordCheckCompleted,
-        base::Time::Now().ToDoubleT());
-    browser_state_->GetPrefs()->SetTime(
+        base::Time::Now().InSecondsFSinceUnixEpoch());
+    user_prefs_->SetTime(
         password_manager::prefs::kSyncedLastTimePasswordCheckCompleted,
         base::Time::Now());
 

@@ -27,7 +27,7 @@
 #include "base/test/test_future.h"
 #include "base/version.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
-#include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/app_mode/kiosk_chrome_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_system_session.h"
 #include "chrome/browser/ash/app_mode/test_kiosk_extension_builder.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
@@ -56,6 +56,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/components/standalone_browser/feature_refs.h"
+#include "chromeos/ash/components/standalone_browser/standalone_browser_features.h"
 #include "chromeos/crosapi/mojom/chrome_app_kiosk_service.mojom-forward.h"
 #include "chromeos/crosapi/mojom/chrome_app_kiosk_service.mojom-shared.h"
 #include "components/account_id/account_id.h"
@@ -382,26 +383,26 @@ extensions::AppWindow* CreateAppWindow(Profile* profile,
   return app_window;
 }
 
-// This class overrides some of the behaviour of `KioskAppManager`, which is the
-// `KioskAppManagerBase` implementation for ChromeApp kiosk.
-// Notably it injects its own `ExternalCache` implementation and overrides the
-// construction on an `KioskBrowserSession` object.
-class ScopedKioskAppManagerOverrides : public KioskAppManager::Overrides {
+// This class overrides some of the behaviour of `KioskChromeAppManager`, which
+// is the `KioskAppManagerBase` implementation for ChromeApp kiosk. Notably it
+// injects its own `ExternalCache` implementation and overrides the construction
+// on an `KioskBrowserSession` object.
+class ScopedKioskAppManagerOverrides : public KioskChromeAppManager::Overrides {
  public:
   ScopedKioskAppManagerOverrides() {
-    KioskAppManager::InitializeForTesting(this);
+    KioskChromeAppManager::InitializeForTesting(this);
     CHECK(temp_dir_.CreateUniqueTempDir());
   }
 
   chromeos::TestExternalCache* external_cache() { return external_cache_; }
 
   void InitializePrimaryAppState() {
-    // Inject test kiosk app data to prevent KioskAppManager from attempting to
-    // load it.
+    // Inject test kiosk app data to prevent KioskChromeAppManager from
+    // attempting to load it.
     // TODO(tbarzic): Introducing a test KioskAppData class that overrides app
     //     data load logic, and injecting a KioskAppData object factory to
-    //     KioskAppManager would be a cleaner solution here.
-    KioskAppManager::Get()->AddAppForTest(
+    //     KioskChromeAppManager would be a cleaner solution here.
+    KioskChromeAppManager::Get()->AddAppForTest(
         kTestPrimaryAppId, AccountId::FromUserEmail(kTestUserAccount),
         GURL(kCwsUrl),
         /*required_platform_version=*/"");
@@ -468,7 +469,7 @@ class ScopedKioskAppManagerOverrides : public KioskAppManager::Overrides {
     return AssertionSuccess();
   }
 
-  // KioskAppManager::Overrides:
+  // KioskChromeAppManager::Overrides:
   std::unique_ptr<chromeos::ExternalCache> CreateExternalCache(
       chromeos::ExternalCacheDelegate* delegate,
       bool always_check_updates) override {
@@ -695,8 +696,6 @@ class StartupAppLauncherNoCreateTest
 
   std::unique_ptr<extensions::ExternalProviderImpl> primary_app_provider_;
   std::unique_ptr<extensions::ExternalProviderImpl> secondary_apps_provider_;
-
-  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 };
 
 // Tests that extension download backoff is reduced during Chrome app Kiosk
@@ -885,7 +884,7 @@ TEST_F(StartupAppLauncherTest, PrimaryAppDownloadFailure) {
 
   histogram.ExpectUniqueSample(
       kKioskPrimaryAppInstallErrorHistogram,
-      KioskAppManager::PrimaryAppDownloadResult::kCrxFetchFailed,
+      KioskChromeAppManager::PrimaryAppDownloadResult::kCrxFetchFailed,
       /*expected_bucket_count=*/1);
 }
 
@@ -1510,12 +1509,11 @@ class FakeChromeKioskLaunchController : public ChromeKioskLaunchController {
 
 class StartupAppLauncherUsingLacrosTest : public testing::Test {
  public:
-  StartupAppLauncherUsingLacrosTest()
-      : fake_user_manager_(new FakeChromeUserManager()),
-        scoped_user_manager_(base::WrapUnique(fake_user_manager_.get())) {
+  StartupAppLauncherUsingLacrosTest() {
     std::vector<base::test::FeatureRef> enabled =
         ash::standalone_browser::GetFeatureRefs();
-    enabled.push_back(::features::kChromeKioskEnableLacros);
+    enabled.push_back(
+        ash::standalone_browser::features::kChromeKioskEnableLacros);
     scoped_feature_list_.InitWithFeatures(enabled, {});
   }
 
@@ -1526,9 +1524,9 @@ class StartupAppLauncherUsingLacrosTest : public testing::Test {
     profile_ = testing_profile_manager_.CreateTestingProfile("Default");
     crosapi_manager_ = crosapi::CreateCrosapiManagerWithTestRegistry();
     const AccountId account_id(AccountId::FromUserEmail(kTestUserAccount));
-    fake_user_manager().AddKioskAppUser(account_id);
-    fake_user_manager().LoginUser(account_id);
-    kiosk_app_manager_ = std::make_unique<KioskAppManager>();
+    fake_user_manager_->AddKioskAppUser(account_id);
+    fake_user_manager_->LoginUser(account_id);
+    kiosk_app_manager_ = std::make_unique<KioskChromeAppManager>();
     kiosk_app_manager_overrides_.InitializePrimaryAppState();
     RegisterFakeCrosapi();
     ASSERT_TRUE(crosapi::browser_util::IsLacrosEnabledInChromeKioskSession());
@@ -1601,8 +1599,6 @@ class StartupAppLauncherUsingLacrosTest : public testing::Test {
   TestAppLaunchDelegate startup_launch_delegate_;
 
  private:
-  FakeChromeUserManager& fake_user_manager() { return *fake_user_manager_; }
-
   void RegisterFakeCrosapi() {
     crosapi::CrosapiManager::Get()
         ->crosapi_ash()
@@ -1612,17 +1608,16 @@ class StartupAppLauncherUsingLacrosTest : public testing::Test {
 
   content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  user_manager::TypedScopedUserManager<ash::FakeChromeUserManager>
+      fake_user_manager_{std::make_unique<ash::FakeChromeUserManager>()};
   TestingProfileManager testing_profile_manager_{
       TestingBrowserProcess::GetGlobal()};
   raw_ptr<Profile, ExperimentalAsh> profile_;
-  raw_ptr<FakeChromeUserManager, DanglingUntriaged | ExperimentalAsh>
-      fake_user_manager_;
-  user_manager::ScopedUserManager scoped_user_manager_;
   FakeChromeKioskLaunchController launch_controller_;
   crosapi::FakeBrowserManager browser_manager_;
 
   ScopedKioskAppManagerOverrides kiosk_app_manager_overrides_;
-  std::unique_ptr<KioskAppManager> kiosk_app_manager_;
+  std::unique_ptr<KioskChromeAppManager> kiosk_app_manager_;
   std::unique_ptr<KioskAppLauncher> startup_app_launcher_;
 
   base::test::ScopedFeatureList scoped_feature_list_;

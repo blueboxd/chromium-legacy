@@ -50,11 +50,11 @@ import {DeviceStateType, NetworkType} from 'chrome://resources/mojo/chromeos/ser
 import {afterNextRender, DomRepeatEvent, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {castExists} from '../assert_extras.js';
-import {DeepLinkingMixin, DeepLinkingMixinInterface} from '../deep_linking_mixin.js';
+import {DeepLinkingMixin, DeepLinkingMixinInterface} from '../common/deep_linking_mixin.js';
+import {RouteOriginMixin, RouteOriginMixinInterface} from '../common/route_origin_mixin.js';
 import {recordSettingChange} from '../metrics_recorder.js';
 import {Section} from '../mojom-webui/routes.mojom-webui.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
-import {RouteOriginMixin, RouteOriginMixinInterface} from '../route_origin_mixin.js';
 import {Route, Router, routes} from '../router.js';
 
 import {ApnSubpageElement} from './apn_subpage.js';
@@ -301,6 +301,7 @@ class SettingsInternetPageElement extends SettingsInternetPageElementBase {
         value: () => new Set<Setting>([
           Setting.kWifiOnOff,
           Setting.kMobileOnOff,
+          Setting.kCellularAddApn,
         ]),
       },
 
@@ -475,6 +476,8 @@ class SettingsInternetPageElement extends SettingsInternetPageElementBase {
       networkType = NetworkType.kWiFi;
     } else if (settingId === Setting.kMobileOnOff) {
       networkType = NetworkType.kCellular;
+    } else {
+      return true;
     }
 
     afterNextRender(this, () => {
@@ -500,7 +503,7 @@ class SettingsInternetPageElement extends SettingsInternetPageElementBase {
   override currentRouteChanged(newRoute: Route, oldRoute?: Route): void {
     super.currentRouteChanged(newRoute, oldRoute);
 
-    if (newRoute === this.route) {
+    if (newRoute === this.route || newRoute === routes.APN) {
       // Show deep links for the internet page.
       this.attemptDeepLink();
     } else if (newRoute === routes.INTERNET_NETWORKS) {

@@ -43,6 +43,7 @@
 #include "net/base/network_isolation_key.h"
 #include "net/base/privacy_mode.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/base/schemeful_site.h"
 #include "net/base/trace_constants.h"
 #include "net/base/tracing.h"
 #include "net/base/url_util.h"
@@ -208,6 +209,45 @@ enum class ContentEncodingType {
   kMaxValue = kZstd,
 };
 
+bool IsSameSiteIgnoringWebSocketProtocol(const net::SchemefulSite& initiator,
+                                         const GURL& request_url) {
+  net::SchemefulSite request_site = net::SchemefulSite(
+      request_url.SchemeIsHTTPOrHTTPS()
+          ? request_url
+          : net::ChangeWebSocketSchemeToHttpScheme(request_url));
+  return initiator == request_site;
+}
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class HttpRequestStsState {
+  kUnknown = 0,
+  kUnprotectedHttps = 1,
+  kProtectedHttps = 2,
+  kUnprotectedHttp = 3,
+  kProtectedHttp = 4,
+  kMaxValue = kProtectedHttp,
+};
+
+void RecordSTSHistogram(bool sts_enabled, bool is_secure, int load_flags) {
+  // Embrace the layering violation and only record the histogram for main frame
+  // navigations. It's possible to record this outside of net/, but the code is
+  // a lot more complicated, and while this flag is deprecated, there are no
+  // current plans to remove it. See crbug.com/516499 .
+  if (!(load_flags & net::LOAD_MAIN_FRAME_DEPRECATED)) {
+    return;
+  }
+  HttpRequestStsState sts_state = HttpRequestStsState::kUnknown;
+  if (is_secure) {
+    sts_state = (sts_enabled ? HttpRequestStsState::kProtectedHttps
+                             : HttpRequestStsState::kUnprotectedHttps);
+  } else {
+    sts_state = (sts_enabled ? HttpRequestStsState::kProtectedHttp
+                             : HttpRequestStsState::kUnprotectedHttp);
+  }
+  UMA_HISTOGRAM_ENUMERATION("Net.HttpRequestStsState", sts_state);
+}
+
 }  // namespace
 
 namespace net {
@@ -218,6 +258,10 @@ std::unique_ptr<URLRequestJob> URLRequestHttpJob::Create(URLRequest* request) {
   // URLRequestContext must have been initialized.
   DCHECK(request->context()->http_transaction_factory());
   DCHECK(url.SchemeIsHTTPOrHTTPS() || url.SchemeIsWSOrWSS());
+
+  TransportSecurityState* hsts = request->context()->transport_security_state();
+  bool should_upgrade_to_ssl =
+      hsts && hsts->ShouldUpgradeToSSL(url.host(), request->net_log());
 
   // Check for reasons not to return a URLRequestHttpJob. These don't apply to
   // https and wss requests.
@@ -231,9 +275,9 @@ std::unique_ptr<URLRequestJob> URLRequestHttpJob::Create(URLRequest* request) {
       CHECK(request->allow_credentials() == false);
     } else {
       // Check for HSTS upgrade.
-      TransportSecurityState* hsts =
-          request->context()->transport_security_state();
-      if (hsts && hsts->ShouldUpgradeToSSL(url.host(), request->net_log())) {
+      if (should_upgrade_to_ssl) {
+        RecordSTSHistogram(/*sts_enabled=*/true, /*is_secure=*/false,
+                           request->load_flags());
         return std::make_unique<URLRequestRedirectJob>(
             request, UpgradeSchemeToCryptographic(url),
             // Use status code 307 to preserve the method, so POST requests
@@ -248,12 +292,16 @@ std::unique_ptr<URLRequestJob> URLRequestHttpJob::Create(URLRequest* request) {
     // ERR_CLEARTEXT_NOT_PERMITTED if not.
     if (request->context()->check_cleartext_permitted() &&
         !android::IsCleartextPermitted(url.host_piece())) {
+      RecordSTSHistogram(/*sts_enabled=*/false, /*is_secure=*/false,
+                         request->load_flags());
       return std::make_unique<URLRequestErrorJob>(request,
                                                   ERR_CLEARTEXT_NOT_PERMITTED);
     }
 #endif
   }
 
+  RecordSTSHistogram(should_upgrade_to_ssl, url.SchemeIsCryptographic(),
+                     request->load_flags());
   return base::WrapUnique<URLRequestJob>(new URLRequestHttpJob(
       request, request->context()->http_user_agent_settings()));
 }
@@ -315,8 +363,8 @@ void URLRequestHttpJob::Start() {
   request()->cookie_setting_overrides().PutOrRemove(
       net::CookieSettingOverride::kStorageAccessGrantEligible,
       request()->has_storage_access() && request_initiator_site().has_value() &&
-          request_initiator_site().value() ==
-              net::SchemefulSite(request()->url()));
+          IsSameSiteIgnoringWebSocketProtocol(request_initiator_site().value(),
+                                              request()->url()));
 
   UMA_HISTOGRAM_BOOLEAN("Net.HttpJob.CanIncludeCookies",
                         ShouldAddCookieHeader());
@@ -387,11 +435,6 @@ void URLRequestHttpJob::OnGotFirstPartySetMetadata(
   AddExtraHeaders();
 
   if (ShouldAddCookieHeader()) {
-    // We shouldn't overwrite this if we've already computed the key.
-    DCHECK(!cookie_partition_key_.has_value());
-
-    cookie_partition_key_ = CookiePartitionKey::FromNetworkIsolationKey(
-        request_->isolation_info().network_isolation_key());
     AddCookieHeaderAndStart();
   } else {
     StartTransaction();
@@ -680,7 +723,8 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
 
   cookie_store->GetCookieListWithOptionsAsync(
       request_->url(), options,
-      CookiePartitionKeyCollection::FromOptional(cookie_partition_key_.value()),
+      CookiePartitionKeyCollection::FromOptional(
+          request_->cookie_partition_key()),
       base::BindOnce(&URLRequestHttpJob::SetCookieHeaderAndStart,
                      weak_factory_.GetWeakPtr(), options));
 }
@@ -806,7 +850,7 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
         }
       }
 
-      if (IsPartitionedCookiesEnabled()) {
+      if (ShouldRecordPartitionedCookieUsage()) {
         base::UmaHistogramCounts100("Cookie.PartitionedCookiesInRequest",
                                     n_partitioned_cookies);
       }
@@ -959,7 +1003,7 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
     DCHECK(cookie_string.find('\n') == std::string::npos);
     std::unique_ptr<CanonicalCookie> cookie = net::CanonicalCookie::Create(
         request_->url(), cookie_string, base::Time::Now(), server_time,
-        cookie_partition_key_.value(), /*block_truncated=*/true,
+        request_->cookie_partition_key(), /*block_truncated=*/true,
         &returned_status);
 
     absl::optional<CanonicalCookie> cookie_to_return = absl::nullopt;
@@ -970,7 +1014,8 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
     }
 
     // Check cookie accessibility with cookie_settings.
-    if (cookie && !CanSetCookie(*cookie, &options, &returned_status)) {
+    if (cookie && !CanSetCookie(*cookie, &options, first_party_set_metadata_,
+                                &returned_status)) {
       // Cookie allowed by cookie_settings checks could be blocked explicitly,
       // e.g. via Android Webview APIs, we need to manually add exclusion reason
       // in this case.
@@ -1082,7 +1127,7 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
   }
 
   if (transaction_ && transaction_->GetResponseInfo()) {
-    SetProxyServer(transaction_->GetResponseInfo()->proxy_server);
+    SetProxyChain(transaction_->GetResponseInfo()->proxy_chain);
   }
 
   if (result == OK) {
@@ -1754,6 +1799,11 @@ void URLRequestHttpJob::RecordCompletionHistograms(CompletionCause reason) {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Net.HttpJob.PrefilterBytesRead.Net",
                                   prefilter_bytes_read(), 1, 50000000, 50);
 
+      if (request_->ad_tagged()) {
+        UMA_HISTOGRAM_CUSTOM_COUNTS("Net.HttpJob.PrefilterBytesRead.Ads.Net",
+                                    prefilter_bytes_read(), 1, 50000000, 50);
+      }
+
       if (is_https_google && used_quic) {
         UMA_HISTOGRAM_MEDIUM_TIMES("Net.HttpJob.TotalTimeNotCached.Secure.Quic",
                                    total_time);
@@ -1811,10 +1861,8 @@ bool URLRequestHttpJob::ShouldAddCookieHeader() const {
   return request_->context()->cookie_store() && request_->allow_credentials();
 }
 
-bool URLRequestHttpJob::IsPartitionedCookiesEnabled() const {
-  // Only valid to call this after we've computed the key.
-  DCHECK(cookie_partition_key_.has_value());
-  return cookie_partition_key_.value().has_value();
+bool URLRequestHttpJob::ShouldRecordPartitionedCookieUsage() const {
+  return request_->cookie_partition_key().has_value();
 }
 
 }  // namespace net

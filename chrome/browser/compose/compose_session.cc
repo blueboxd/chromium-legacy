@@ -9,41 +9,109 @@
 #include <utility>
 
 #include "base/functional/bind.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
+#include "base/time/time.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/compose/type_conversions.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/compose/core/browser/compose_manager_impl.h"
-#include "components/compose/proto/compose_metadata.pb.h"
+#include "components/compose/core/browser/compose_metrics.h"
+#include "components/compose/core/browser/config.h"
+#include "components/optimization_guide/core/model_execution/optimization_guide_model_execution_error.h"
+#include "components/optimization_guide/core/model_quality/feature_type_map.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_util.h"
+#include "components/optimization_guide/proto/features/compose.pb.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "content/public/common/referrer.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/page_transition_types.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect_f.h"
+
+namespace {
+
+bool IsValidComposePrompt(const std::string& prompt) {
+  const compose::Config& config = compose::GetComposeConfig();
+  if (prompt.length() > config.input_max_chars) {
+    return false;
+  }
+
+  base::StringTokenizer tokenizer(
+      prompt, " ", base::StringTokenizer::WhitespacePolicy::kSkipOver);
+  unsigned int word_count = 0;
+  while (tokenizer.GetNext()) {
+    ++word_count;
+    if (word_count > config.input_max_words) {
+      return false;
+    }
+  }
+
+  if (word_count < config.input_min_words) {
+    return false;
+  }
+  return true;
+}
+
+const char kComposeBugReportURL[] = "https://goto.google.com/ccbrfd";
+
+void LogComposeResponseStatus(compose::mojom::ComposeStatus status) {
+  UMA_HISTOGRAM_ENUMERATION(compose::kComposeResponseStatus, status);
+}
+
+}  // namespace
 
 ComposeSession::ComposeSession(
     content::WebContents* web_contents,
-    optimization_guide::OptimizationGuideModelExecutor* executor)
+    optimization_guide::OptimizationGuideModelExecutor* executor,
+    optimization_guide::ModelQualityLogsUploader* model_quality_logs_uploader,
+    ComposeCallback callback)
     : executor_(executor),
       handler_receiver_(this),
+      close_reason_(compose::ComposeSessionCloseReason::kEndedImplicitly),
+      final_status_(optimization_guide::proto::FinalStatus::STATUS_UNSPECIFIED),
       web_contents_(web_contents),
+      model_quality_logs_uploader_(model_quality_logs_uploader),
       weak_ptr_factory_(this) {
-  state_ = compose::mojom::ComposeState::New();
-  state_->style = compose::mojom::StyleModifiers::New();
+  callback_ = std::move(callback);
+  current_state_ = compose::mojom::ComposeState::New();
+  current_state_->style = compose::mojom::StyleModifiers::New();
+  if (executor_) {
+    session_ = executor_->StartSession(
+        optimization_guide::proto::ModelExecutionFeature::
+            MODEL_EXECUTION_FEATURE_COMPOSE);
+  }
 }
 
-ComposeSession::~ComposeSession() = default;
+ComposeSession::~ComposeSession() {
+  LogComposeSessionCloseMetrics(close_reason_, compose_count_,
+                                dialog_shown_count_, undo_count_);
+
+  // If we have a modeling quality log entry, upload it.
+  if (modeling_log_entry_) {
+    modeling_log_entry_
+        ->quality_data<optimization_guide::ComposeFeatureTypeMap>()
+        ->set_final_status(final_status_);
+    }
+    // Ensure that log gets uploaded on destruction.
+    modeling_log_entry_.reset();
+  }
 
 void ComposeSession::Bind(
-    mojo::PendingReceiver<compose::mojom::ComposeDialogPageHandler> handler,
+    mojo::PendingReceiver<compose::mojom::ComposeSessionPageHandler> handler,
     mojo::PendingRemote<compose::mojom::ComposeDialog> dialog) {
   handler_receiver_.reset();
   handler_receiver_.Bind(std::move(handler));
@@ -52,86 +120,336 @@ void ComposeSession::Bind(
   dialog_remote_.Bind(std::move(dialog));
 }
 
-// ComposeDialogPageHandler
+// ComposeSessionPageHandler
 void ComposeSession::Compose(compose::mojom::StyleModifiersPtr style,
-                             const std::string& input) {
-  SaveNewComposeRequest(std::move(style));
+                             const std::string& input,
+                             bool rewrite) {
+  current_state_->has_pending_request = true;
+  current_state_->style = std::move(style);
   // TODO(b/300974056): Move this to the overall feature-enabled check.
-  if (!executor_ ||
+  if (!session_ ||
       !base::FeatureList::IsEnabled(
           optimization_guide::features::kOptimizationGuideModelExecution)) {
-    ProcessError(l10n_util::GetStringUTF8(IDS_COMPOSE_CONFIGURATION_ERROR));
+    ProcessError(compose::mojom::ComposeStatus::kMisconfiguration);
     return;
   }
 
-  compose_proto::ComposePageMetadata page_metadata;
-  page_metadata.set_page_url(web_contents_->GetLastCommittedURL().spec());
-  page_metadata.set_page_title(base::UTF16ToUTF8(web_contents_->GetTitle()));
+  // Increase compose count regradless of status of request.
+  compose_count_ += 1;
 
-  compose_proto::ComposeRequest request;
+  if (skip_inner_text_ || inner_text_.has_value()) {
+    ComposeWithSession(input, rewrite);
+  } else {
+    // Prepare the compose call, which will be invoked when inner text
+    // extraction is completed.
+    continue_compose_ =
+        base::BindOnce(&ComposeSession::ComposeWithSession,
+                       weak_ptr_factory_.GetWeakPtr(), input, rewrite);
+  }
+}
+
+void ComposeSession::ComposeWithSession(const std::string& input,
+                                        bool rewrite) {
+  if (skip_inner_text_) {
+    // Make sure context is added for sessions with no inner text.
+    AddPageContentToSession("");
+  }
+
+  optimization_guide::proto::ComposeRequest request;
+  // TODO(b/310022952) Remove once backend handles new generate and rewrite
+  // params.
   request.set_user_input(input);
-  request.set_tone(ComposeTone(state_->style->tone));
-  request.set_length(ComposeLength(state_->style->length));
-  *request.mutable_page_metadata() = std::move(page_metadata);
-  executor_->ExecuteModel(
-      optimization_guide::proto::ModelExecutionFeature::
-          MODEL_EXECUTION_FEATURE_COMPOSE,
+  request.set_tone(
+      optimization_guide::proto::ComposeTone(current_state_->style->tone));
+  request.set_length(
+      optimization_guide::proto::ComposeLength(current_state_->style->length));
+
+  if (rewrite) {
+    optimization_guide::proto::ComposeRequest::RewriteParams rewrite_params;
+    if (current_state_->style->tone != compose::mojom::Tone::kUnset) {
+      rewrite_params.set_tone(
+          optimization_guide::proto::ComposeTone(current_state_->style->tone));
+    }
+    if (current_state_->style->length != compose::mojom::Length::kUnset) {
+      rewrite_params.set_length(optimization_guide::proto::ComposeLength(
+          current_state_->style->length));
+    }
+    rewrite_params.set_previous_response(current_state_->response->result);
+    *request.mutable_rewrite_params() = std::move(rewrite_params);
+  } else {
+    optimization_guide::proto::ComposeRequest::GenerateParams generate_params;
+    generate_params.set_user_input(input);
+    *request.mutable_generate_params() = std::move(generate_params);
+  }
+
+  auto request_timer = std::make_unique<base::ElapsedTimer>();
+  request_id_++;
+
+  session_->ExecuteModel(
       request,
-      base::BindOnce(&ComposeSession::ModelExecutionCallback,
-                     weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&ComposeSession::ModelExecutionCallback,
+                          weak_ptr_factory_.GetWeakPtr(),
+                          std::move(request_timer.get()), request_id_));
 }
 
 void ComposeSession::ModelExecutionCallback(
-    optimization_guide::OptimizationGuideModelExecutionResult result) {
-  state_->has_pending_request = false;
-
-  if (!result.has_value()) {
-    // TODO(b/302748001 Add proper error handler.
-    ProcessError("");
+    base::ElapsedTimer* request_timer,
+    int request_id,
+    optimization_guide::OptimizationGuideModelStreamingExecutionResult result,
+    std::unique_ptr<optimization_guide::ModelQualityLogEntry> log_entry) {
+  // A new request has been issued, ignore this one.
+  if (request_id != request_id_) {
     return;
   }
 
-  auto response =
-      optimization_guide::ParsedAnyMetadata<compose_proto::ComposeResponse>(
-          result.value());
+  base::TimeDelta request_delta = request_timer->Elapsed();
+  current_state_->has_pending_request = false;
+
+  compose::mojom::ComposeStatus status =
+      ComposeStatusFromOptimizationGuideResult(result);
+
+  if (status != compose::mojom::ComposeStatus::kOk) {
+    compose::LogComposeRequestDuration(request_delta, /* is_valid */ false);
+    ProcessError(status);
+    return;
+  }
+
+  auto response = optimization_guide::ParsedAnyMetadata<
+      optimization_guide::proto::ComposeResponse>(result->response);
 
   if (!response) {
-    ProcessError("");
+    compose::LogComposeRequestDuration(request_delta, /* is_valid */ false);
+    ProcessError(compose::mojom::ComposeStatus::kTryAgain);
     return;
   }
+
+  DCHECK(result->is_complete ||
+         base::FeatureList::IsEnabled(
+             optimization_guide::features::kOptimizationGuideOnDeviceModel));
 
   auto ui_response = compose::mojom::ComposeResponse::New();
   ui_response->status = compose::mojom::ComposeStatus::kOk;
   ui_response->result = response->output();
+  current_state_->response = ui_response->Clone();
+  if (result->is_complete) {
+    // Log successful response status.
+    LogComposeResponseStatus(compose::mojom::ComposeStatus::kOk);
+    compose::LogComposeRequestDuration(request_delta, /* is_valid */ true);
 
-  state_->response = ui_response->Clone();
-
+    SaveLastOKStateToUndoStack();
+  }
+  ui_response->undo_available = !undo_states_.empty();
   if (dialog_remote_.is_bound()) {
     dialog_remote_->ResponseReceived(std::move(ui_response));
   }
-}
 
-void ComposeSession::ProcessError(const std::string& message) {
-  state_->has_pending_request = false;
-  state_->response = compose::mojom::ComposeResponse::New();
-  state_->response->status = compose::mojom::ComposeStatus::kError;
+  // If log entry is null don't do anything.
+  if (log_entry.get()) {
+    modeling_log_entry_ = std::move(log_entry);
+    modeling_log_entry_
+        ->quality_data<optimization_guide::ComposeFeatureTypeMap>()
+        ->set_request_latency_ms(request_delta.InMilliseconds());
 
-  if (dialog_remote_.is_bound()) {
-    dialog_remote_->ResponseReceived(state_->response->Clone());
+    if (model_quality_logs_uploader_.has_value()) {
+      model_quality_logs_uploader_.value()->UploadModelQualityLogs(
+          std::move(modeling_log_entry_));
+    }
   }
 }
 
-void ComposeSession::SaveNewComposeRequest(
-    compose::mojom::StyleModifiersPtr style) {
-  state_ = compose::mojom::ComposeState::New();
-  state_->has_pending_request = true;
-  state_->style = std::move(style);
+void ComposeSession::ProcessError(compose::mojom::ComposeStatus error) {
+  LogComposeResponseStatus(error);
+
+  current_state_->has_pending_request = false;
+  current_state_->response = compose::mojom::ComposeResponse::New();
+  current_state_->response->status = error;
+
+  if (dialog_remote_.is_bound()) {
+    dialog_remote_->ResponseReceived(current_state_->response->Clone());
+  }
 }
 
 void ComposeSession::RequestInitialState(RequestInitialStateCallback callback) {
-  std::move(callback).Run(compose::mojom::OpenMetadata::New(state_->Clone()));
+  if (current_state_->response) {
+    current_state_->response->undo_available = !undo_states_.empty();
+  }
+  auto compose_config = compose::GetComposeConfig();
+  std::move(callback).Run(compose::mojom::OpenMetadata::New(
+      initial_input_, current_state_->Clone(),
+      compose::mojom::ConfigurableParams::New(compose_config.input_min_words,
+                                              compose_config.input_max_words,
+                                              compose_config.input_max_chars)));
 }
 
 void ComposeSession::SaveWebUIState(const std::string& webui_state) {
-  state_->webui_state = webui_state;
+  current_state_->webui_state = webui_state;
+}
+
+void ComposeSession::AcceptComposeResult(
+    AcceptComposeResultCallback success_callback) {
+  if (callback_.is_null() || !current_state_->response ||
+      current_state_->response->status != compose::mojom::ComposeStatus::kOk) {
+    // Guard against invoking twice before the UI is able to disconnect.
+    std::move(success_callback).Run(false);
+    return;
+  }
+  std::move(callback_).Run(base::UTF8ToUTF16(current_state_->response->result));
+  std::move(success_callback).Run(true);
+}
+
+void ComposeSession::Undo(UndoCallback callback) {
+  if (undo_states_.empty()) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  // Only increase undo count if there are states to undo.
+  undo_count_ += 1;
+
+  compose::mojom::ComposeStatePtr undo_state = std::move(undo_states_.top());
+  undo_states_.pop();
+  if (!undo_state->response ||
+      undo_state->response->status != compose::mojom::ComposeStatus::kOk ||
+      undo_state->response->result == "") {
+    // Gracefully fail if we find an invalid state on the undo stack.
+    std::move(callback).Run(nullptr);
+    return;
+  }
+  // State returns to the last undo_state.
+  current_state_ = undo_state->Clone();
+  last_ok_state_ = undo_state->Clone();
+  undo_state->response->undo_available = !undo_states_.empty();
+  std::move(callback).Run(std::move(undo_state));
+}
+
+void ComposeSession::OpenBugReportingLink() {
+  web_contents_->OpenURL(content::OpenURLParams(
+      GURL(kComposeBugReportURL), content::Referrer(),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
+      /* is_renderer_initiated= */ false));
+}
+
+void ComposeSession::SetUserFeedback(compose::mojom::UserFeedback feedback) {
+  optimization_guide::proto::UserFeedback user_feedback =
+      OptimizationFeedbackFromComposeFeedback(feedback);
+
+  if (modeling_log_entry_) {
+    optimization_guide::proto::ComposeQuality* quality =
+        modeling_log_entry_.get()
+            ->quality_data<optimization_guide::ComposeFeatureTypeMap>();
+    if (quality) {
+      quality->set_user_feedback(user_feedback);
+      auto* optimization_guide_keyed_service =
+          OptimizationGuideKeyedServiceFactory::GetForProfile(
+              Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
+      // TODO(b/311798158): manage lifecycle to maintain modeling_log_entry_.
+      optimization_guide_keyed_service->UploadModelQualityLogs(
+          std::move(modeling_log_entry_));
+    }
+  }
+}
+
+void ComposeSession::InitializeWithText(
+    const std::optional<std::string>& text) {
+  dialog_shown_count_ += 1;
+  RefreshInnerText();
+
+  // If no text provided (even an empty string), then we are reopening without
+  // calling compose again, or updating the input text..
+  if (!text.has_value()) {
+    return;
+  }
+
+  initial_input_ = text.value();
+
+  if (!IsValidComposePrompt(initial_input_) ||
+      !compose::GetComposeConfig().auto_submit_with_selection) {
+    return;
+  }
+
+  Compose(compose::mojom::StyleModifiersPtr(absl::in_place,
+                                            compose::mojom::Tone::kUnset,
+                                            compose::mojom::Length::kUnset),
+          initial_input_, /*rewrite=*/false);
+}
+
+void ComposeSession::OpenComposeSettings() {
+  auto* browser = chrome::FindBrowserWithTab(web_contents_);
+  // `browser` should never be null here. The ComposeSession is indirectly owned
+  // by the same WebContents that holds the field that the Compose dialog is
+  // triggered from. The session is created when that dialog is opened and it is
+  // destroyed if its WebContents is destroyed.
+  CHECK(browser);
+  chrome::ShowSettingsSubPage(browser, chrome::kSyncSetupPageContentSubPage);
+}
+
+void ComposeSession::SaveLastOKStateToUndoStack() {
+  if (!current_state_->response ||
+      current_state_->response->status != compose::mojom::ComposeStatus::kOk ||
+      current_state_->response->result == "") {
+    // Attempting to save a state with an invalid response onto the undo stack.
+    return;
+  }
+  if (last_ok_state_) {
+    undo_states_.push(std::move(last_ok_state_));
+  }
+  last_ok_state_ = current_state_->Clone();
+}
+
+void ComposeSession::AddPageContentToSession(const std::string& inner_text) {
+  if (!session_) {
+    return;
+  }
+  optimization_guide::proto::ComposePageMetadata page_metadata;
+  page_metadata.set_page_url(web_contents_->GetLastCommittedURL().spec());
+  page_metadata.set_page_title(base::UTF16ToUTF8(web_contents_->GetTitle()));
+  page_metadata.set_page_inner_text(inner_text);
+
+  optimization_guide::proto::ComposeRequest request;
+  *request.mutable_page_metadata() = std::move(page_metadata);
+
+  session_->AddContext(request);
+}
+
+void ComposeSession::UpdateInnerTextAndContinueComposeIfNecessary(
+    const std::string& inner_text) {
+  inner_text_ = inner_text;
+  AddPageContentToSession(inner_text);
+  if (!continue_compose_.is_null()) {
+    std::move(continue_compose_).Run();
+  }
+}
+
+void ComposeSession::RefreshInnerText() {
+  inner_text_ = std::nullopt;
+  if (skip_inner_text_) {
+    return;
+  }
+
+  inner_text_extractor_.Extract(
+      web_contents_,
+      base::BindOnce(
+          &ComposeSession::UpdateInnerTextAndContinueComposeIfNecessary,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ComposeSession::SetCloseReason(
+    compose::ComposeSessionCloseReason close_reason) {
+  close_reason_ = close_reason;
+  switch (close_reason) {
+    case compose::ComposeSessionCloseReason::kCloseButtonPressed:
+      final_status_ = optimization_guide::proto::FinalStatus::STATUS_ABANDONED;
+      break;
+    case compose::ComposeSessionCloseReason::kEndedImplicitly:
+      final_status_ = optimization_guide::proto::FinalStatus::
+          STATUS_FINISHED_WITHOUT_INSERT;
+      break;
+    case compose::ComposeSessionCloseReason::kAcceptedSuggestion:
+      final_status_ = optimization_guide::proto::FinalStatus::STATUS_INSERTED;
+      break;
+    default:
+      final_status_ =
+          optimization_guide::proto::FinalStatus::STATUS_UNSPECIFIED;
+      break;
+  }
 }

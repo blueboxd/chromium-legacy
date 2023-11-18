@@ -9,11 +9,16 @@
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/views/action_view_controller.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/style/typography.h"
 
 namespace views {
+
+// TODO(crbug.com/147023): Remove when ActionViewController implementation adds
+// LabelButton.
+class Button;
 
 // A button class that implements the Material Design text button spec.
 class VIEWS_EXPORT MdTextButton : public LabelButton {
@@ -22,7 +27,8 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
 
   explicit MdTextButton(PressedCallback callback = PressedCallback(),
                         const std::u16string& text = std::u16string(),
-                        int button_context = style::CONTEXT_BUTTON_MD);
+                        int button_context = style::CONTEXT_BUTTON_MD,
+                        bool use_text_color_for_icon = true);
 
   MdTextButton(const MdTextButton&) = delete;
   MdTextButton& operator=(const MdTextButton&) = delete;
@@ -36,9 +42,6 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
 
   void SetStyle(ui::ButtonStyle button_style);
   ui::ButtonStyle GetStyle() const;
-
-  // Returns the hover color depending on the button style.
-  SkColor GetHoverColor(ui::ButtonStyle button_style);
 
   // See |bg_color_override_|.
   void SetBgColorOverride(const absl::optional<SkColor>& color);
@@ -78,6 +81,9 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   void UpdateColors();
   void UpdateIconColor();
 
+  // Returns the hover color depending on the button style.
+  SkColor GetHoverColor(ui::ButtonStyle button_style);
+
   ui::ButtonStyle style_ = ui::ButtonStyle::kDefault;
 
   // When set, this provides the background color.
@@ -88,7 +94,24 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
 
   // Used to override default padding.
   absl::optional<gfx::Insets> custom_padding_;
+
+  // When set, the icon color will match the text color.
+  bool use_text_color_for_icon_ = true;
 };
+
+template <>
+struct VIEWS_EXPORT ActionViewControllerSuperClassT<MdTextButton> {
+  using SuperClass = ActionViewController<Button>;
+};
+
+template <>
+void ActionViewController<MdTextButton, ActionViewController<Button>>::
+    ActionItemChangedImpl(MdTextButton* action_view,
+                          actions::ActionItem* action_item);
+
+template <>
+void ActionViewController<MdTextButton, ActionViewController<Button>>::
+    SetActionViewImpl(MdTextButton* action_view);
 
 BEGIN_VIEW_BUILDER(VIEWS_EXPORT, MdTextButton, LabelButton)
 VIEW_BUILDER_PROPERTY(bool, Prominent)

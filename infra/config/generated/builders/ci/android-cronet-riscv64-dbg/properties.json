@@ -1,6 +1,9 @@
 {
   "$build/chromium_tests_builder_config": {
     "builder_config": {
+      "additional_exclusions": [
+        "infra/config/generated/builders/ci/android-cronet-riscv64-dbg/gn-args.json"
+      ],
       "builder_db": {
         "entries": [
           {
@@ -11,7 +14,7 @@
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-android-archive",
-              "builder_group": "chromium.android.fyi",
+              "builder_group": "chromium.android",
               "execution_mode": "COMPILE_AND_TEST",
               "legacy_android_config": {
                 "config": "main_builder"
@@ -42,12 +45,18 @@
           "builder": "android-cronet-riscv64-dbg",
           "project": "chromium"
         }
+      ],
+      "mirroring_builder_group_and_names": [
+        {
+          "builder": "android-cronet-riscv64-dbg",
+          "group": "tryserver.chromium.android"
+        }
       ]
     }
   },
   "$build/reclient": {
     "instance": "rbe-chromium-trusted",
-    "jobs": 250,
+    "jobs": 500,
     "metrics_project": "chromium-reclient-metrics",
     "scandeps_server": true
   },
@@ -58,6 +67,6 @@
       "v.test_suite"
     ]
   },
-  "builder_group": "chromium.android.fyi",
+  "builder_group": "chromium.android",
   "recipe": "chromium"
 }

@@ -15,8 +15,8 @@
 namespace blink {
 
 MathPaddedLayoutAlgorithm::MathPaddedLayoutAlgorithm(
-    const NGLayoutAlgorithmParams& params)
-    : NGLayoutAlgorithm(params) {}
+    const LayoutAlgorithmParams& params)
+    : LayoutAlgorithm(params) {}
 
 LayoutUnit MathPaddedLayoutAlgorithm::RequestedLSpace() const {
   return std::max(LayoutUnit(),
@@ -70,8 +70,8 @@ const NGLayoutResult* MathPaddedLayoutAlgorithm::Layout() {
         To<NGPhysicalBoxFragment>(content_layout_result->PhysicalFragment());
     content_margins =
         ComputeMarginsFor(constraint_space, content.Style(), ConstraintSpace());
-    NGBoxFragment fragment(ConstraintSpace().GetWritingDirection(),
-                           content_fragment);
+    LogicalBoxFragment fragment(ConstraintSpace().GetWritingDirection(),
+                                content_fragment);
     content_ascent = content_margins.block_start +
                      fragment.FirstBaseline().value_or(fragment.BlockSize());
     content_descent =
@@ -101,7 +101,7 @@ const NGLayoutResult* MathPaddedLayoutAlgorithm::Layout() {
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
   container_builder_.SetFragmentsTotalBlockSize(block_size);
 
-  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
+  OutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
 
   return container_builder_.ToBoxFragment();
 }

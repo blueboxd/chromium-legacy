@@ -7,7 +7,8 @@ import {$} from 'chrome://resources/ash/common/util.js';
 
 import {DialogType, isFolderDialogType} from '../../common/js/dialog_type.js';
 import {recordEnum} from '../../common/js/metrics.js';
-import {str, UserCanceledError, util} from '../../common/js/util.js';
+import {str} from '../../common/js/translations.js';
+import {testSendMessage, UserCanceledError} from '../../common/js/util.js';
 import {AllowedPaths, VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
 
@@ -188,7 +189,8 @@ export class DialogActionController {
 
     const dm = this.directoryModel_.getFileList();
     for (let i = 0; i < selectedIndexes.length; i++) {
-      const entry = dm.item(selectedIndexes[i]);
+      const index = selectedIndexes[i];
+      const entry = index === undefined ? null : dm.item(index);
       if (!entry) {
         console.warn('Error locating selected file at index: ' + i);
         continue;
@@ -212,7 +214,7 @@ export class DialogActionController {
       throw new Error('Too many files selected!');
     }
 
-    const selectedEntry = dm.item(selectedIndexes[0]);
+    const selectedEntry = dm.item(selectedIndexes[0] ?? -1);
 
     if (isFolderDialogType(this.dialogType_)) {
       if (!selectedEntry.isDirectory) {
@@ -400,7 +402,7 @@ export class DialogActionController {
 
     this.updateOkButton_();
     if (!this.dialogFooter_.okButton.disabled) {
-      util.testSendMessage('dialog-ready');
+      testSendMessage('dialog-ready');
     }
   }
 

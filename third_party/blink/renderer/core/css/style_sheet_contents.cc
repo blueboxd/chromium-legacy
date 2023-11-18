@@ -621,25 +621,6 @@ Document* StyleSheetContents::AnyOwnerDocument() const {
   return RootStyleSheet()->ClientAnyOwnerDocument();
 }
 
-bool StyleSheetContents::HasOwnerParentElementOrAdoptiveHost(
-    Element* candidate) const {
-  for (const WeakMember<CSSStyleSheet>& sheet : completed_clients_) {
-    // Handles the normal case of e.g. <div><style>@scope{}</style></div>,
-    // and (due to ParentOrShadowHostElement) also handles the case where
-    // the <style> element appears directly below the shadow root.
-    if (Node* node = sheet->ownerNode();
-        node && (node->ParentOrShadowHostElement() == candidate)) {
-      return true;
-    }
-    // Handles constructed/adopted stylesheets.
-    if (IsShadowHost(candidate) &&
-        sheet->IsAdoptedByTreeScope(*candidate->GetShadowRoot())) {
-      return true;
-    }
-  }
-  return false;
-}
-
 static bool ChildRulesHaveFailedOrCanceledSubresources(
     const HeapVector<Member<StyleRuleBase>>& rules) {
   for (unsigned i = 0; i < rules.size(); ++i) {
@@ -683,7 +664,7 @@ static bool ChildRulesHaveFailedOrCanceledSubresources(
       case StyleRuleBase::kFontFeature:
       case StyleRuleBase::kPositionFallback:
       case StyleRuleBase::kTry:
-      case StyleRuleBase::kViewTransitions:
+      case StyleRuleBase::kViewTransition:
         break;
       case StyleRuleBase::kCounterStyle:
         if (To<StyleRuleCounterStyle>(rule)

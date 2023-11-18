@@ -510,6 +510,7 @@ generate_jni("browser_jni_headers") {
     "java/src/org/chromium/android_webview/AwContentsClientBridge.java",
     "java/src/org/chromium/android_webview/AwContentsIoThreadClient.java",
     "java/src/org/chromium/android_webview/AwContentsLifecycleNotifier.java",
+    "java/src/org/chromium/android_webview/AwContentsOriginMatcher.java",
     "java/src/org/chromium/android_webview/AwContentsStatics.java",
     "java/src/org/chromium/android_webview/AwCookieManager.java",
     "java/src/org/chromium/android_webview/AwDarkMode.java",
@@ -562,6 +563,7 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/AwContentsClientCallbackHelper.java",
     "java/src/org/chromium/android_webview/AwContentsIoThreadClient.java",
     "java/src/org/chromium/android_webview/AwContentsLifecycleNotifier.java",
+    "java/src/org/chromium/android_webview/AwContentsOriginMatcher.java",
     "java/src/org/chromium/android_webview/AwContentsStatics.java",
     "java/src/org/chromium/android_webview/AwCookieManager.java",
     "java/src/org/chromium/android_webview/AwDarkMode.java",
@@ -576,6 +578,7 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/AwHttpAuthHandler.java",
     "java/src/org/chromium/android_webview/AwKeyboardShortcuts.java",
     "java/src/org/chromium/android_webview/AwLayoutSizer.java",
+    "java/src/org/chromium/android_webview/AwMediaIntegrityApiStatusConfig.java",
     "java/src/org/chromium/android_webview/AwNetworkChangeNotifierRegistrationPolicy.java",
     "java/src/org/chromium/android_webview/AwPacProcessor.java",
     "java/src/org/chromium/android_webview/AwPdfExporter.java",
@@ -618,6 +621,7 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/NoopSafeModeAction.java",
     "java/src/org/chromium/android_webview/NullAwViewMethods.java",
     "java/src/org/chromium/android_webview/OverScrollGlow.java",
+    "java/src/org/chromium/android_webview/PlatformServiceBridgeAwContentsWrapper.java",
     "java/src/org/chromium/android_webview/PopupTouchHandleDrawable.java",
     "java/src/org/chromium/android_webview/ScriptHandler.java",
     "java/src/org/chromium/android_webview/ScrollAccessibilityHelper.java",
@@ -632,7 +636,6 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/WebViewChromiumRunQueue.java",
     "java/src/org/chromium/android_webview/WebviewErrorCode.java",
     "java/src/org/chromium/android_webview/autofill/AndroidAutofillSafeModeAction.java",
-    "java/src/org/chromium/android_webview/autofill/ChromeAutocompleteSafeModeAction.java",
     "java/src/org/chromium/android_webview/client_hints/AwUserAgentMetadata.java",
     "java/src/org/chromium/android_webview/gfx/AwDrawFnImpl.java",
     "java/src/org/chromium/android_webview/gfx/AwFunctor.java",
@@ -681,10 +684,10 @@ android_library("browser_java") {
     "//components/content_capture/android:java",
     "//components/crash/android:handler_java",
     "//components/crash/android:java",
+    "//components/embedder_support/android:embedder_util_java",
     "//components/embedder_support/android:util_java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/embedder_support/android/metrics:java",
-    "//components/environment_integrity/android:java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/navigation_interception/android:navigation_interception_java",
     "//components/policy/android:policy_java",
@@ -826,6 +829,7 @@ android_library("common_java") {
     "java/src/org/chromium/android_webview/common/Lifetime.java",
     "java/src/org/chromium/android_webview/common/ProductionSupportedFlagList.java",
     "java/src/org/chromium/android_webview/common/SafeModeAction.java",
+    "java/src/org/chromium/android_webview/common/SafeModeActionIds.java",
     "java/src/org/chromium/android_webview/common/SafeModeController.java",
     "java/src/org/chromium/android_webview/common/VariationsFastFetchModeUtils.java",
     "java/src/org/chromium/android_webview/common/services/ServiceConnectionDelayRecorder.java",
@@ -939,6 +943,7 @@ android_assets("locale_pak_assets") {
 repack("repack_pack") {
   sources = [
     "$root_gen_dir/content/content_resources.pak",
+    "$root_gen_dir/content/histograms_resources.pak",
     "$root_gen_dir/net/net_resources.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
     "$root_gen_dir/third_party/blink/public/resources/inspector_overlay_resources.pak",
@@ -951,6 +956,7 @@ repack("repack_pack") {
     ":generate_mojo_resources",
     ":generate_webui_resources",
     "//content:content_resources",
+    "//content/browser/resources/histograms:resources",
     "//net:net_resources",
     "//third_party/blink/public:devtools_inspector_resources",
     "//third_party/blink/public:resources",
@@ -1114,6 +1120,7 @@ grit("generate_components_resources") {
     "enable_printing=$enable_printing",
     "safe_browsing_mode=$safe_browsing_mode",
     "enable_supervised_users=$enable_supervised_users",
+    "use_blink=$use_blink",
   ]
 
   # See :generate_webui_resources for an explanation of the allowlist
@@ -1135,9 +1142,11 @@ grit("generate_components_resources") {
 
   deps = [
     ":concatenate_resources_allowlists",
+    "//components/neterror/resources:bundle_js",
     "//components/resources:about_credits",
     "//components/resources/ssl/ssl_error_assistant:make_ssl_error_assistant_protobuf",
     "//components/security_interstitials/content/resources:build_ts",
+    "//components/security_interstitials/core/browser/resources:bundle_js",
   ]
 
   if (safe_browsing_mode != 0) {

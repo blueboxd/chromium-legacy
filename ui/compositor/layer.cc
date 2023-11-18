@@ -697,7 +697,22 @@ void Layer::SetBackgroundOffset(const gfx::Point& background_offset) {
 }
 
 void Layer::SetAlphaShape(std::unique_ptr<ShapeRects> shape) {
+  // Do some brief checks to avoid recomputing occlusion and layer filters.
+  // See crbug.com/1493406.
+  bool changed = true;
+  if (alpha_shape_ == nullptr && shape == nullptr) {
+    changed = false;
+  }
+  if (alpha_shape_ != nullptr && shape != nullptr) {
+    // This doesn't catch the case where the `ShapeRects` are different but the
+    // same if sorted, but we just want to prevent most unnecessary updates.
+    changed = *alpha_shape_ != *shape;
+  }
   alpha_shape_ = std::move(shape);
+
+  if (!changed) {
+    return;
+  }
 
   SetLayerFilters();
 
@@ -1017,6 +1032,10 @@ void Layer::SetSurfaceSize(gfx::Size surface_size_in_dip) {
   RecomputeDrawsContentAndUVRect();
 }
 
+base::WeakPtr<Layer> Layer::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 bool Layer::ContainsMirrorForTest(Layer* mirror) const {
   return base::Contains(mirrors_, mirror, &LayerMirror::dest);
 }
@@ -1101,6 +1120,29 @@ void Layer::SetShowSurface(const viz::SurfaceId& surface_id,
   for (const auto& mirror : mirrors_) {
     mirror->dest()->SetShowSurface(surface_id, frame_size_in_dip,
                                    default_background_color, deadline_policy,
+                                   stretch_content_to_fill_bounds);
+  }
+}
+
+void Layer::SetShowSurface(const viz::SurfaceId& surface_id,
+                           SkColor default_background_color,
+                           const cc::DeadlinePolicy& deadline_policy,
+                           bool stretch_content_to_fill_bounds) {
+  DCHECK(type_ == LAYER_TEXTURED || type_ == LAYER_SOLID_COLOR);
+  DCHECK(surface_layer_.get());
+
+  // Assumes `frame_size_in_dip_` is already set.
+  // TODO(crbug.com/1491605): with surface sync, it should use on `bounds_`.
+  surface_layer_->SetSurfaceId(surface_id, deadline_policy);
+  surface_layer_->SetBackgroundColor(
+      SkColor4f::FromColor(default_background_color));
+  surface_layer_->SetSafeOpaqueBackgroundColor(
+      SkColor4f::FromColor(default_background_color));
+  surface_layer_->SetStretchContentToFillBounds(stretch_content_to_fill_bounds);
+
+  for (const auto& mirror : mirrors_) {
+    mirror->dest()->SetShowSurface(surface_id, default_background_color,
+                                   deadline_policy,
                                    stretch_content_to_fill_bounds);
   }
 }
@@ -1776,6 +1818,8 @@ void Layer::RecomputeDrawsContentAndUVRect() {
       static_cast<float>(size.height()) / frame_size_in_dip_.height());
     texture_layer_->SetUV(uv_top_left, uv_bottom_right);
   } else if (surface_layer_.get()) {
+    // TODO(crbug.com/1491605): with surface sync, size shouldn't rely on
+    // `frame_size_in_dip_` anymore.
     size.SetToMin(frame_size_in_dip_);
   }
   cc_layer_->SetBounds(size);

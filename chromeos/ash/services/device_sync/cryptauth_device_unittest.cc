@@ -28,14 +28,17 @@ const char kFakeDeviceBetterTogetherPublicKey[] =
 }  // namespace
 
 TEST(DeviceSyncCryptAuthDevice, ToAndFromDictionary) {
-  const base::Time kFakeLastUpdateTime = base::Time::FromDoubleT(100);
+  const base::Time kFakeLastUpdateTime =
+      base::Time::FromSecondsSinceUnixEpoch(100);
   const std::map<multidevice::SoftwareFeature,
                  multidevice::SoftwareFeatureState>
       kFakeFeatureStates = {
           {multidevice::SoftwareFeature::kBetterTogetherClient,
            multidevice::SoftwareFeatureState::kEnabled},
           {multidevice::SoftwareFeature::kBetterTogetherHost,
-           multidevice::SoftwareFeatureState::kNotSupported}};
+           multidevice::SoftwareFeatureState::kNotSupported},
+          {multidevice::SoftwareFeature::kMessagesForWebClient,
+           multidevice::SoftwareFeatureState::kSupported}};
 
   CryptAuthDevice expected_device(
       kFakeInstanceId, kFakeDeviceName, kFakeDeviceBetterTogetherPublicKey,

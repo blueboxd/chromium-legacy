@@ -46,13 +46,14 @@ public class EdgeToEdgeControllerImpl implements EdgeToEdgeController {
 
     private final @NonNull Activity mActivity;
     private final @NonNull TabSupplierObserver mTabSupplierObserver;
-    private final @NonNull EdgeToEdgeOSWrapper mEdgeToEdgeOSWrapper;
+    private final @NonNull TabObserver mTabObserver;
 
     /** Multiplier to convert from pixels to DPs. */
     private final float mPxToDp;
 
+    private @NonNull EdgeToEdgeOSWrapper mEdgeToEdgeOSWrapper;
+
     private Tab mCurrentTab;
-    private TabObserver mTabObserver;
     private WebContentsObserver mWebContentsObserver;
     private boolean mIsActivityToEdge;
     private Insets mSystemInsets;
@@ -82,30 +83,33 @@ public class EdgeToEdgeControllerImpl implements EdgeToEdgeController {
                 onTabSwitched(tab);
             }
         };
+        mTabObserver =
+                new EmptyTabObserver() {
+                    @Override
+                    public void onWebContentsSwapped(
+                            Tab tab, boolean didStartLoad, boolean didFinishLoad) {
+                        updateWebContentsObserver(tab);
+                    }
+
+                    @Override
+                    public void onContentChanged(Tab tab) {
+                        assert tab.getWebContents() != null
+                                : "onContentChanged called on tab w/o WebContents: "
+                                        + tab.getTitle();
+                        updateWebContentsObserver(tab);
+                    }
+                };
     }
 
     @Override
     @RequiresApi(VERSION_CODES.R)
     public void onTabSwitched(@Nullable Tab tab) {
-        removeCurrentTabObserver();
+        if (mCurrentTab != null) mCurrentTab.removeObserver(mTabObserver);
         mCurrentTab = tab;
         if (tab != null) {
-            if (mTabObserver != null) {
-                tab.removeObserver(mTabObserver);
-                mTabObserver = null;
-            }
+            tab.addObserver(mTabObserver);
             if (tab.getWebContents() != null) {
                 updateWebContentsObserver(tab);
-                // Also disconnect the WebContentsObserver when this tab switches its WebContents.
-                mTabObserver =
-                        new EmptyTabObserver() {
-                            @Override
-                            public void onWebContentsSwapped(
-                                    Tab tab, boolean didStartLoad, boolean didFinishLoad) {
-                                updateWebContentsObserver(tab);
-                            }
-                        };
-                tab.addObserver(mTabObserver);
             }
         }
 
@@ -135,6 +139,8 @@ public class EdgeToEdgeControllerImpl implements EdgeToEdgeController {
                         drawToEdge(ROOT_UI_VIEW_ID, shouldDrawToEdge, tab.getWebContents());
                     }
                 };
+        // TODO(https://crbug.com/1482559#c23) remove this logging by end of '23.
+        Log.i(TAG, "E2E_Up Tab '%s'", tab.getTitle());
     }
 
     /**
@@ -150,7 +156,7 @@ public class EdgeToEdgeControllerImpl implements EdgeToEdgeController {
         if (toEdge == mIsActivityToEdge) return;
 
         mIsActivityToEdge = toEdge;
-        Log.v(TAG, "Switching " + (toEdge ? "ToEdge" : "ToNormal"));
+        Log.v(TAG, "Switching %s", (toEdge ? "ToEdge" : "ToNormal"));
         View rootView = mActivity.findViewById(viewId);
         assert rootView != null : "Root view for Edge To Edge not found!";
 
@@ -168,10 +174,10 @@ public class EdgeToEdgeControllerImpl implements EdgeToEdgeController {
                                                 + WindowInsets.Type.statusBars());
                         if (!newInsets.equals(mSystemInsets)) {
                             mSystemInsets = newInsets;
-                            Log.w(TAG, "System Bar insets changed to %s", mSystemInsets);
+                            Log.w(TAG, "System Bar insets changed to: %s", mSystemInsets);
                             // Note that we cannot adjustEdges earlier since we need the system
                             // insets.
-                            adjustEdges(toEdge, viewId, webContents);
+                            adjustEdges(mIsActivityToEdge, viewId, webContents);
                         }
                         return windowInsets;
                     });
@@ -275,14 +281,6 @@ public class EdgeToEdgeControllerImpl implements EdgeToEdgeController {
         return safeAreaInsetsTracker == null ? false : safeAreaInsetsTracker.isViewportFitCover();
     }
 
-    /** Removes any existing TabObserver tracked by private members for the Tab and TabObserver. */
-    private void removeCurrentTabObserver() {
-        if (mCurrentTab != null && mTabObserver != null) {
-            mCurrentTab.removeObserver(mTabObserver);
-            mTabObserver = null;
-        }
-    }
-
     @CallSuper
     @Override
     public void destroy() {
@@ -290,19 +288,23 @@ public class EdgeToEdgeControllerImpl implements EdgeToEdgeController {
             mWebContentsObserver.destroy();
             mWebContentsObserver = null;
         }
-        removeCurrentTabObserver();
+        if (mCurrentTab != null) mCurrentTab.removeObserver(mTabObserver);
         mTabSupplierObserver.destroy();
+    }
+
+    @VisibleForTesting
+    public boolean isToEdge() {
+        return mIsActivityToEdge;
+    }
+
+    public void setOsWrapperForTesting(EdgeToEdgeOSWrapper testOsWrapper) {
+        mEdgeToEdgeOSWrapper = testOsWrapper;
     }
 
     @VisibleForTesting
     @Nullable
     WebContentsObserver getWebContentsObserver() {
         return mWebContentsObserver;
-    }
-
-    @VisibleForTesting
-    boolean isToEdge() {
-        return mIsActivityToEdge;
     }
 
     void setToEdgeForTesting(boolean toEdge) {

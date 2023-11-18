@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.layouts.SceneOverlay;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
@@ -311,20 +312,27 @@ public class ContextualSearchManager
 
     /**
      * Initializes this manager.
+     *
      * @param parentView The parent view to attach Contextual Search UX to.
+     * @param profile The Profile associated with this ContextualSearchManager.
      * @param layoutManager A means of attaching the OverlayPanel to the scene.
-     * @param bottomSheetController The {@link BottomSheetController} that is used to show
-     *                              {@link BottomSheetContent}.
+     * @param bottomSheetController The {@link BottomSheetController} that is used to show {@link
+     *     BottomSheetContent}.
      * @param compositorViewHolder The {@link CompositorViewHolder} for the current activity.
      * @param toolbarHeightDp The height of the toolbar in dp.
      * @param toolbarManager The manager of the toolbar, used to query toolbar state.
      * @param activityType The type of the current activity.
      * @param intentRequestTracker The {@link IntentRequestTracker} of the current activity.
      */
-    public void initialize(@NonNull ViewGroup parentView, @NonNull LayoutManagerImpl layoutManager,
+    public void initialize(
+            @NonNull ViewGroup parentView,
+            @NonNull Profile profile,
+            @NonNull LayoutManagerImpl layoutManager,
             @NonNull BottomSheetController bottomSheetController,
-            @NonNull CompositorViewHolder compositorViewHolder, float toolbarHeightDp,
-            @NonNull ToolbarManager toolbarManager, @ActivityType int activityType,
+            @NonNull CompositorViewHolder compositorViewHolder,
+            float toolbarHeightDp,
+            @NonNull ToolbarManager toolbarManager,
+            @ActivityType int activityType,
             @NonNull IntentRequestTracker intentRequestTracker) {
         mNativeContextualSearchManagerPtr = ContextualSearchManagerJni.get().init(this);
 
@@ -339,10 +347,19 @@ public class ContextualSearchManager
             panel = new ContextualSearchPanelCoordinator(mActivity, mWindowAndroid,
                     bottomSheetController, this::getBasePageHeight, intentRequestTracker);
         } else {
-            panel = new ContextualSearchPanel(mActivity, mLayoutManager,
-                    mLayoutManager.getOverlayPanelManager(), mBrowserControlsStateProvider,
-                    mWindowAndroid, compositorViewHolder, toolbarHeightDp, toolbarManager,
-                    activityType, mTabSupplier);
+            panel =
+                    new ContextualSearchPanel(
+                            mActivity,
+                            mLayoutManager,
+                            mLayoutManager.getOverlayPanelManager(),
+                            mBrowserControlsStateProvider,
+                            mWindowAndroid,
+                            profile,
+                            compositorViewHolder,
+                            toolbarHeightDp,
+                            toolbarManager,
+                            activityType,
+                            mTabSupplier);
         }
 
         panel.setManagementDelegate(this);
@@ -1594,12 +1611,13 @@ public class ContextualSearchManager
             @Override
             public void gatherSurroundingText() {
                 if (mContext != null) mContext.destroy();
-                mContext = new ContextualSearchContext() {
-                    @Override
-                    void onSelectionChanged() {
-                        notifyObserversOfContextSelectionChanged();
-                    }
-                };
+                mContext =
+                        new ContextualSearchContext() {
+                            @Override
+                            void onSelectionChanged() {
+                                notifyObserversOfContextSelectionChanged();
+                            }
+                        };
 
                 boolean isResolvingGesture = mPolicy.isResolvingGesture();
                 if (isResolvingGesture && mPolicy.shouldPreviousGestureResolve()) {
@@ -1609,9 +1627,12 @@ public class ContextualSearchManager
                 if (webContents != null) {
                     mInternalStateController.notifyStartingWorkOn(
                             InternalState.GATHERING_SURROUNDINGS);
-                    ContextualSearchManagerJni.get().gatherSurroundingText(
-                            mNativeContextualSearchManagerPtr, ContextualSearchManager.this,
-                            mContext, webContents);
+                    ContextualSearchManagerJni.get()
+                            .gatherSurroundingText(
+                                    mNativeContextualSearchManagerPtr,
+                                    ContextualSearchManager.this,
+                                    mContext,
+                                    webContents);
                 } else {
                     mInternalStateController.reset(StateChangeReason.UNKNOWN);
                 }
@@ -1646,9 +1667,13 @@ public class ContextualSearchManager
                     mInternalStateController.notifyStartingWorkOn(
                             InternalState.START_SHOWING_TAP_UI);
                     mSelectAroundCaretCounter++;
-                    baseWebContents.selectAroundCaret(SelectionGranularity.WORD,
-                            /*shouldShowHandle=*/false,
-                            /*shouldShowContextMenu=*/false);
+                    baseWebContents.selectAroundCaret(
+                            SelectionGranularity.WORD,
+                            /* shouldShowHandle= */ false,
+                            /* shouldShowContextMenu= */ false,
+                            mContext.getSelectionStartOffset(),
+                            mContext.getSelectionEndOffset(),
+                            mContext.getSurroundingText().length());
                     // Let the policy know that a valid tap gesture has been received.
                     mPolicy.registerTap();
                 } else {
@@ -1659,43 +1684,51 @@ public class ContextualSearchManager
             /**
              * Waits for possible Tap gesture that's near enough to the previous tap to be
              * considered a "re-tap". We've done some work on the previous Tap and we just saw the
-             * selection get cleared (probably due to a Tap that may or may not be valid).
-             * If it's invalid we'll want to hide the UI.  If it's valid we'll want to just update
-             * the UI rather than having the Bar hide and re-show.
+             * selection get cleared (probably due to a Tap that may or may not be valid). If it's
+             * invalid we'll want to hide the UI. If it's valid we'll want to just update the UI
+             * rather than having the Bar hide and re-show.
              */
             @Override
             public void waitForPossibleTapNearPrevious() {
                 mInternalStateController.notifyStartingWorkOn(
                         InternalState.WAITING_FOR_POSSIBLE_TAP_NEAR_PREVIOUS);
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        // We may have been destroyed.
-                        if (mSearchPanel != null) mSearchPanel.hideCaption();
-                        mInternalStateController.notifyFinishedWorkOn(
-                                InternalState.WAITING_FOR_POSSIBLE_TAP_NEAR_PREVIOUS);
-                    }
-                }, TAP_NEAR_PREVIOUS_DETECTION_DELAY_MS);
+                new Handler()
+                        .postDelayed(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        // We may have been destroyed.
+                                        if (mSearchPanel != null) mSearchPanel.hideCaption();
+                                        mInternalStateController.notifyFinishedWorkOn(
+                                                InternalState
+                                                        .WAITING_FOR_POSSIBLE_TAP_NEAR_PREVIOUS);
+                                    }
+                                },
+                                TAP_NEAR_PREVIOUS_DETECTION_DELAY_MS);
             }
 
             /**
-             * Waits for possible Tap gesture that's on a previously established tap-selection.
-             * If the current Tap was on the previous tap-selection then this selection will become
-             * a Long-press selection and we'll recognize that gesture and start processing it.
-             * If that doesn't happen within our time window (which is the common case) then we'll
+             * Waits for possible Tap gesture that's on a previously established tap-selection. If
+             * the current Tap was on the previous tap-selection then this selection will become a
+             * Long-press selection and we'll recognize that gesture and start processing it. If
+             * that doesn't happen within our time window (which is the common case) then we'll
              * advance to the next state in normal Tap processing.
              */
             @Override
             public void waitForPossibleTapOnTapSelection() {
                 mInternalStateController.notifyStartingWorkOn(
                         InternalState.WAITING_FOR_POSSIBLE_TAP_ON_TAP_SELECTION);
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        mInternalStateController.notifyFinishedWorkOn(
-                                InternalState.WAITING_FOR_POSSIBLE_TAP_ON_TAP_SELECTION);
-                    }
-                }, TAP_ON_TAP_SELECTION_DELAY_MS);
+                new Handler()
+                        .postDelayed(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mInternalStateController.notifyFinishedWorkOn(
+                                                InternalState
+                                                        .WAITING_FOR_POSSIBLE_TAP_ON_TAP_SELECTION);
+                                    }
+                                },
+                                TAP_ON_TAP_SELECTION_DELAY_MS);
             }
 
             /** Starts a Resolve request to our server for the best Search Term. */
@@ -1732,8 +1765,10 @@ public class ContextualSearchManager
                 } else {
                     mInternalStateController.notifyStartingWorkOn(InternalState.SHOW_RESOLVING_UI);
                     boolean isTap = mSelectionController.getSelectionType() == SelectionType.TAP;
-                    showContextualSearch(isTap ? StateChangeReason.TEXT_SELECT_TAP
-                                               : StateChangeReason.TEXT_SELECT_LONG_PRESS);
+                    showContextualSearch(
+                            isTap
+                                    ? StateChangeReason.TEXT_SELECT_TAP
+                                    : StateChangeReason.TEXT_SELECT_LONG_PRESS);
                     mInternalStateController.notifyFinishedWorkOn(InternalState.SHOW_RESOLVING_UI);
                 }
             }

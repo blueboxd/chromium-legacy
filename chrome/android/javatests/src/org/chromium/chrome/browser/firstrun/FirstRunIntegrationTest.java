@@ -75,6 +75,7 @@ import org.chromium.chrome.browser.partnercustomizations.BasePartnerBrowserCusto
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.search_engines.DefaultSearchEngineDialogHelperUtils;
 import org.chromium.chrome.browser.search_engines.SearchEnginePromoType;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
@@ -305,8 +306,8 @@ public class FirstRunIntegrationTest {
                     return false;
                 },
                 "Did not find a different FirstRunActivity from " + previousFreActivity,
-                /*maxTimeoutMs*/ ACTIVITY_WAIT_LONG_MS,
-                /*checkIntervalMs*/ CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+                /* maxTimeoutMs= */ ACTIVITY_WAIT_LONG_MS,
+                /* checkIntervalMs= */ CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
         CriteriaHelper.pollInstrumentationThread(
                 previousFreActivity::isFinishing,
@@ -530,8 +531,8 @@ public class FirstRunIntegrationTest {
         if (testCase.cctTosDisabled()) skipTosDialogViaPolicy();
 
         FirstRunFlowSequencer.setDelegateFactoryForTesting(
-                (profileSupplier) ->
-                        new TestFirstRunFlowSequencerDelegate(testCase, profileSupplier));
+                (profileProvider) ->
+                        new TestFirstRunFlowSequencerDelegate(testCase, profileProvider));
 
         setUpLocaleManagerDelegate(testCase.searchPromoType());
     }
@@ -810,8 +811,7 @@ public class FirstRunIntegrationTest {
                                     .getView()
                                     .findViewById(R.id.fre_native_and_policy_load_progress_spinner);
                     // Replace the progress bar with a placeholder to allow other checks. Currently
-                    // the
-                    // progress bar cannot be stopped otherwise due to some espresso issues
+                    // the progress bar cannot be stopped otherwise due to some espresso issues
                     // (crbug/1115067).
                     progressBar.setIndeterminateDrawable(
                             new ColorDrawable(
@@ -971,9 +971,8 @@ public class FirstRunIntegrationTest {
         testCase.setSearchPromoType(SearchEnginePromoType.DONT_SHOW);
         setUpLocaleManagerDelegate(SearchEnginePromoType.DONT_SHOW);
 
-        // Go back until initial page, and
-        // then complete first run. The search engine prompt shouldn't be shown again in either
-        // direction.
+        // Go back until initial page, and then complete first run. The search engine prompt
+        // shouldn't be shown again in either direction.
         navigationHelper
                 .goBackToPreviousPage()
                 .ensureDefaultSearchEnginePromoNotCurrentPage()
@@ -1304,8 +1303,8 @@ public class FirstRunIntegrationTest {
         private FirstRunPagesTestCase mTestCase;
 
         public TestFirstRunFlowSequencerDelegate(
-                FirstRunPagesTestCase testCase, OneshotSupplier<Profile> profileSupplier) {
-            super(profileSupplier);
+                FirstRunPagesTestCase testCase, OneshotSupplier<ProfileProvider> profileProvider) {
+            super(profileProvider);
             mTestCase = testCase;
         }
 

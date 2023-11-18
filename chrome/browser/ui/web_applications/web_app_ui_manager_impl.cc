@@ -20,7 +20,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/one_shot_event.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -34,7 +34,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/browser/ui/web_applications/commands/launch_web_app_command.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_dialogs.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
@@ -51,6 +50,7 @@
 #include "components/webapps/browser/uninstall_result_code.h"
 #include "content/public/browser/clear_site_data_utils.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_system.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-shared.h"
@@ -82,6 +82,7 @@
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/ui/startup/first_run_service.h"
 #include "chromeos/crosapi/mojom/web_app_service.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -266,13 +267,19 @@ bool WebAppUiManagerImpl::IsAppInQuickLaunchBar(
   return false;
 }
 
-bool WebAppUiManagerImpl::IsInAppWindow(content::WebContents* web_contents,
-                                        const webapps::AppId* app_id) const {
+bool WebAppUiManagerImpl::IsInAppWindow(
+    content::WebContents* web_contents) const {
   Browser* browser = chrome::FindBrowserWithTab(web_contents);
-  if (app_id) {
-    return AppBrowserController::IsForWebApp(browser, *app_id);
-  }
   return AppBrowserController::IsWebApp(browser);
+}
+
+const webapps::AppId* WebAppUiManagerImpl::GetAppIdForWindow(
+    content::WebContents* web_contents) const {
+  Browser* browser = chrome::FindBrowserWithTab(web_contents);
+  if (AppBrowserController::IsWebApp(browser)) {
+    return &browser->app_controller()->app_id();
+  }
+  return nullptr;
 }
 
 void WebAppUiManagerImpl::NotifyOnAssociatedAppChanged(
@@ -345,14 +352,28 @@ void WebAppUiManagerImpl::ShowWebAppSettings(const webapps::AppId& app_id) {
   chrome::ShowSiteSettings(profile_, start_url);
 }
 
-base::Value WebAppUiManagerImpl::LaunchWebApp(
-    apps::AppLaunchParams params,
-    LaunchWebAppWindowSetting launch_setting,
+void WebAppUiManagerImpl::LaunchWebApp(apps::AppLaunchParams params,
+                                       LaunchWebAppWindowSetting launch_setting,
+                                       Profile& profile,
+                                       LaunchWebAppDebugValueCallback callback,
+                                       AppLock& lock) {
+  ::web_app::LaunchWebApp(std::move(params), launch_setting, profile, lock,
+                          std::move(callback));
+}
+
+void WebAppUiManagerImpl::WaitForFirstRunService(
     Profile& profile,
-    LaunchWebAppCallback callback,
-    AppLock& lock) {
-  return ::web_app::LaunchWebApp(std::move(params), launch_setting, profile,
-                                 std::move(callback), lock);
+    FirstRunServiceCompletedCallback callback) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  FirstRunService* first_run_service =
+      FirstRunServiceFactory::GetForBrowserContextIfExists(&profile);
+  if (first_run_service) {
+    first_run_service->OpenFirstRunIfNeeded(
+        FirstRunService::EntryPoint::kWebAppLaunch, std::move(callback));
+    return;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+  std::move(callback).Run(/*success=*/true);
 }
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -406,15 +427,14 @@ content::WebContents* WebAppUiManagerImpl::CreateNewTab() {
 bool WebAppUiManagerImpl::IsWebContentsActiveTabInBrowser(
     content::WebContents* web_contents) {
   Browser* browser = chrome::FindBrowserWithTab(web_contents);
-  return browser &&
-         browser->tab_strip_model() &&
+  return browser && browser->tab_strip_model() &&
          browser->tab_strip_model()->GetActiveWebContents() == web_contents;
 }
 
 void WebAppUiManagerImpl::TriggerInstallDialog(
     content::WebContents* web_contents) {
   web_app::CreateWebAppFromManifest(
-      web_contents, /*bypass_service_worker_check=*/true,
+      web_contents,
       // TODO(issuetracker.google.com/283034487): Consider passing in the
       // install source from the caller.
       webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON, base::DoNothing());

@@ -128,11 +128,11 @@ HTMLAnchorElement::HTMLAnchorElement(const QualifiedName& tag_name,
 
 HTMLAnchorElement::~HTMLAnchorElement() = default;
 
-bool HTMLAnchorElement::SupportsFocus() const {
+bool HTMLAnchorElement::SupportsFocus(UpdateBehavior update_behavior) const {
   if (IsLink() && !IsEditable(*this)) {
     return true;
   }
-  return HTMLElement::SupportsFocus();
+  return HTMLElement::SupportsFocus(update_behavior);
 }
 
 bool HTMLAnchorElement::ShouldHaveFocusAppearance() const {
@@ -141,27 +141,30 @@ bool HTMLAnchorElement::ShouldHaveFocusAppearance() const {
          HTMLElement::SupportsFocus();
 }
 
-bool HTMLAnchorElement::IsFocusable() const {
-  if (!IsFocusableStyleAfterUpdate())
+bool HTMLAnchorElement::IsFocusable(UpdateBehavior update_behavior) const {
+  if (!IsFocusableStyle(update_behavior)) {
     return false;
-  if (IsLink())
-    return SupportsFocus();
-
-  return HTMLElement::IsFocusable();
+  }
+  if (IsLink()) {
+    return SupportsFocus(update_behavior);
+  }
+  return HTMLElement::IsFocusable(update_behavior);
 }
 
-bool HTMLAnchorElement::IsKeyboardFocusable() const {
-  if (!IsFocusableStyleAfterUpdate())
+bool HTMLAnchorElement::IsKeyboardFocusable(
+    UpdateBehavior update_behavior) const {
+  if (!IsFocusableStyle(update_behavior)) {
     return false;
+  }
 
   // Anchor is focusable if the base element supports focus and is focusable.
-  if (Element::SupportsFocus() && IsFocusable()) {
-    return HTMLElement::IsKeyboardFocusable();
+  if (Element::SupportsFocus(update_behavior) && IsFocusable(update_behavior)) {
+    return HTMLElement::IsKeyboardFocusable(update_behavior);
   }
 
   if (IsLink() && !GetDocument().GetPage()->GetChromeClient().TabsToLinks())
     return false;
-  return HTMLElement::IsKeyboardFocusable();
+  return HTMLElement::IsKeyboardFocusable(update_behavior);
 }
 
 static void AppendServerMapMousePosition(StringBuilder& url, Event* event) {
@@ -357,8 +360,7 @@ void HTMLAnchorElement::SetHref(const AtomicString& value) {
 
 KURL HTMLAnchorElement::Url() const {
   KURL href = Href();
-  if (RuntimeEnabledFeatures::AnchorHrefCheckInvalidURLEnabled() &&
-      !href.IsValid()) {
+  if (!href.IsValid()) {
     return KURL();
   }
   return href;
@@ -393,6 +395,22 @@ void HTMLAnchorElement::SetRel(const AtomicString& value) {
   if (new_link_relations.Contains(AtomicString("opener"))) {
     link_relations_ |= kRelationOpener;
   }
+
+  // These don't currently have web-facing behavior, but embedders may wish to
+  // expose their presence to users:
+  if (new_link_relations.Contains(AtomicString("privacy-policy"))) {
+    link_relations_ |= kRelationPrivacyPolicy;
+    UseCounter::Count(GetDocument(), WebFeature::kLinkRelPrivacyPolicy);
+  }
+  if (new_link_relations.Contains(AtomicString("terms-of-service"))) {
+    link_relations_ |= kRelationTermsOfService;
+    UseCounter::Count(GetDocument(), WebFeature::kLinkRelTermsOfService);
+  }
+
+  // Adding or removing a value here whose processing model is web-visible
+  // (e.g. if the value is listed as a "supported token" for `<a>`'s `rel`
+  // attribute in HTML) also requires you to update the list of tokens in
+  // RelList::SupportedTokensAnchorAndAreaAndForm().
 }
 
 const AtomicString& HTMLAnchorElement::GetName() const {
@@ -488,8 +506,6 @@ void HTMLAnchorElement::NavigateToHyperlink(ResourceRequest request,
       is_trusted ? mojom::blink::TriggeringEventInfo::kFromTrustedEvent
                  : mojom::blink::TriggeringEventInfo::kFromUntrustedEvent);
   frame_request.SetInputStartTime(platform_time_stamp);
-
-  frame->MaybeLogAdClickNavigation();
 
   if (const AtomicString& attribution_src =
           FastGetAttribute(html_names::kAttributionsrcAttr);

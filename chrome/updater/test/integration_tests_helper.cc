@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <map>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -34,7 +35,6 @@
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util/unit_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_WIN)
@@ -59,7 +59,7 @@ constexpr int kUnknownSwitch = 101;
 constexpr int kBadCommand = 102;
 
 base::Value ValueFromString(const std::string& values) {
-  absl::optional<base::Value> results_value = base::JSONReader::Read(values);
+  std::optional<base::Value> results_value = base::JSONReader::Read(values);
   EXPECT_TRUE(results_value);
   return results_value->Clone();
 }
@@ -158,8 +158,9 @@ base::RepeatingCallback<bool(Args...)> WithSwitch(
       base::BindLambdaForTesting([=](const std::string& flag, Args... args) {
         double flag_value;
         if (base::StringToDouble(flag, &flag_value)) {
-          return callback.Run(base::Time::FromJsTime(flag_value),
-                              std::move(args)...);
+          return callback.Run(
+              base::Time::FromMillisecondsSinceUnixEpoch(flag_value),
+              std::move(args)...);
         }
         return false;
       }));
@@ -412,6 +413,10 @@ void AppTestHelper::FirstTaskRun() {
 #if BUILDFLAG(IS_WIN)
     {"run_fake_legacy_updater", WithSystemScope(Wrap(&RunFakeLegacyUpdater))},
 #endif  // BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_MAC)
+    {"privileged_helper_install",
+     WithSystemScope(Wrap(&PrivilegedHelperInstall))},
+#endif  // BUILDFLAG(IS_MAC)
     {"expect_legacy_updater_migrated",
      WithSystemScope(Wrap(&ExpectLegacyUpdaterMigrated))},
     {"run_recovery_component",

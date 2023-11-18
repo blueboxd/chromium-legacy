@@ -67,7 +67,7 @@ constexpr struct {
   // The enum to log in the user event for that response.
   PasswordReuseLookup::LookupResult lookup_result;
 } kTestCasesWithoutVerdict[]{
-    {RequestOutcome::MATCHED_ALLOWLIST, PasswordReuseLookup::WHITELIST_HIT},
+    {RequestOutcome::MATCHED_ALLOWLIST, PasswordReuseLookup::ALLOWLIST_HIT},
     {RequestOutcome::URL_NOT_VALID_FOR_REPUTATION_COMPUTING,
      PasswordReuseLookup::URL_UNSUPPORTED},
     {RequestOutcome::CANCELED, PasswordReuseLookup::REQUEST_FAILURE},
@@ -822,7 +822,8 @@ TEST_F(ChromePasswordProtectionServiceTest, TestGetCachedVerdicts) {
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
       reused_password_account_type, LoginReputationClientResponse::PHISHING,
       10 * kMinute, "test.com/def/",
-      base::Time::FromDoubleT(now.ToDoubleT() - kDay));  // Yesterday, expired.
+      base::Time::FromSecondsSinceUnixEpoch(now.InSecondsFSinceUnixEpoch() -
+                                            kDay));  // Yesterday, expired.
   reused_password_account_type.set_account_type(
       ReusedPasswordAccountType::UNKNOWN);
   CacheVerdict(GURL("http://test.com/bar/login.html"),

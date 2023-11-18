@@ -26,6 +26,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/chromeos/styles/cros_styles.h"
@@ -81,10 +82,6 @@ std::u16string PowerTrayView::GetTooltipText(const gfx::Point& p) const {
   return tooltip_;
 }
 
-const char* PowerTrayView::GetClassName() const {
-  return "PowerTrayView";
-}
-
 void PowerTrayView::OnThemeChanged() {
   TrayItemView::OnThemeChanged();
   UpdateStatus(false);
@@ -101,16 +98,17 @@ void PowerTrayView::UpdateLabelOrImageViewColor(bool active) {
   }
   TrayItemView::UpdateLabelOrImageViewColor(active);
 
-  const SkColor icon_fg_color = GetColorProvider()->GetColor(
-      active ? cros_tokens::kCrosSysSystemOnPrimaryContainer
-             : cros_tokens::kCrosSysOnSurface);
-  absl::optional<SkColor> badge_color =
-      features::IsBatterySaverAvailable()
-          ? absl::make_optional<SkColor>(icon_fg_color)
-          : absl::nullopt;
+  cros_tokens::CrosSysColorIds icon_fg_token = cros_tokens::kCrosSysOnSurface;
+  if (active) {
+    icon_fg_token = cros_tokens::kCrosSysSystemOnPrimaryContainer;
+  } else if (features::IsBatterySaverAvailable() &&
+             PowerStatus::Get()->IsBatterySaverActive()) {
+    icon_fg_token = cros_tokens::kCrosSysSystemWarningInverse;
+  }
+  const SkColor icon_fg_color = GetColorProvider()->GetColor(icon_fg_token);
 
   PowerStatus::BatteryImageInfo info =
-      PowerStatus::Get()->GenerateBatteryImageInfo(icon_fg_color, badge_color);
+      PowerStatus::Get()->GenerateBatteryImageInfo(icon_fg_color);
 
   image_view()->SetImage(PowerStatus::GetBatteryImage(
       info, kUnifiedTrayBatteryIconSize, GetColorProvider()));
@@ -172,5 +170,8 @@ void PowerTrayView::UpdateImage(bool icon_color_changed) {
   }
   UpdateLabelOrImageViewColor(is_active());
 }
+
+BEGIN_METADATA(PowerTrayView)
+END_METADATA
 
 }  // namespace ash

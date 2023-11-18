@@ -85,6 +85,7 @@ class MockAutofillAgent : public mojom::AutofillAgent {
   MOCK_METHOD(void,
               ApplyFieldAction,
               (mojom::ActionPersistence action_persistence,
+               mojom::TextReplacement text_replacement,
                FieldRendererId field,
                const std::u16string& value),
               (override));
@@ -101,7 +102,8 @@ class MockAutofillAgent : public mojom::AutofillAgent {
               (override));
   MOCK_METHOD(void,
               SetSuggestionAvailability,
-              (FieldRendererId field, mojom::AutofillState type),
+              (FieldRendererId field,
+               mojom::AutofillSuggestionAvailability suggestion_availability),
               (override));
   MOCK_METHOD(void,
               AcceptDataListSuggestion,

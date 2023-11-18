@@ -382,7 +382,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         mTabContentManagerSupplier = tabContentManagerSupplier;
         mIsInNightMode = isInNightMode;
 
-        Profile profile = Profile.fromWebContents(mTab.getWebContents());
+        Profile profile = mTab.getProfile();
 
         SuggestionsNavigationDelegate navigationDelegate = new SuggestionsNavigationDelegate(
                 activity, profile, nativePageHost, tabModelSelector, mTab);
@@ -513,7 +513,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                 mFeedSurfaceProvider.getScrollDelegate(),
                 mFeedSurfaceProvider.getTouchEnabledDelegate(), mFeedSurfaceProvider.getUiConfig(),
                 lifecycleDispatcher, uma, mTab.isIncognito(), windowAndroid,
-                mIsNtpAsHomeSurfaceEnabled, mIsSurfacePolishEnabled,
+                isNtpAsHomeSurfaceOnTablet(), mIsSurfacePolishEnabled,
                 mIsSurfacePolishOmniboxColorEnabled, mIsTablet);
 
         // If new NewTabPage is created via back operations, re-show the single Tab card with the
@@ -538,20 +538,26 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     protected void initializeMainView(Activity activity, WindowAndroid windowAndroid,
             SnackbarManager snackbarManager, NewTabPageUma uma, boolean isInNightMode,
             Supplier<ShareDelegate> shareDelegateSupplier, String url) {
-        Profile profile = Profile.fromWebContents(mTab.getWebContents());
+        Profile profile = mTab.getProfile();
 
         LayoutInflater inflater = LayoutInflater.from(activity);
         mNewTabPageLayout = (NewTabPageLayout) inflater.inflate(R.layout.new_tab_page_layout, null);
 
-        FeedActionDelegate actionDelegate = new FeedActionDelegateImpl(activity, snackbarManager,
-                mNewTabPageManager.getNavigationDelegate(), BookmarkModel.getForProfile(profile),
-                BrowserUiUtils.HostSurface.NEW_TAB_PAGE, mTabModelSelector) {
-            @Override
-            public void openHelpPage() {
-                NewTabPageUma.recordAction(NewTabPageUma.ACTION_CLICKED_LEARN_MORE);
-                super.openHelpPage();
-            }
-        };
+        FeedActionDelegate actionDelegate =
+                new FeedActionDelegateImpl(
+                        activity,
+                        snackbarManager,
+                        mNewTabPageManager.getNavigationDelegate(),
+                        BookmarkModel.getForProfile(profile),
+                        BrowserUiUtils.HostSurface.NEW_TAB_PAGE,
+                        mTabModelSelector,
+                        profile) {
+                    @Override
+                    public void openHelpPage() {
+                        NewTabPageUma.recordAction(NewTabPageUma.ACTION_CLICKED_LEARN_MORE);
+                        super.openHelpPage();
+                    }
+                };
 
         FeedSurfaceCoordinator feedSurfaceCoordinator = new FeedSurfaceCoordinator(activity,
                 snackbarManager, windowAndroid, mJankTracker,
@@ -1093,7 +1099,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
             }
         }
 
-        if (mIsNtpAsHomeSurfaceEnabled && mSearchProviderHasLogo) {
+        if (isNtpAsHomeSurfaceOnTablet() && mSearchProviderHasLogo) {
             return resources.getDimensionPixelSize(R.dimen.ntp_logo_vertical_top_margin_tablet);
         }
 
@@ -1111,7 +1117,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
             }
         }
 
-        if (mIsNtpAsHomeSurfaceEnabled && mSearchProviderHasLogo) {
+        if (isNtpAsHomeSurfaceOnTablet() && mSearchProviderHasLogo) {
             return resources.getDimensionPixelSize(R.dimen.ntp_logo_vertical_bottom_margin_tablet);
         }
 
@@ -1155,7 +1161,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         updateSingleTabCardContainerMargins();
         mSingleTabSwitcherCoordinator = new SingleTabSwitcherCoordinator(
                 mActivity, mSingleTabCardContainer, mActivityLifecycleDispatcher, mTabModelSelector,
-                true, isScrollableMvtEnabled(mContext), mostRecentTab, this::onSingleTabCardClicked,
+                true, mIsTablet, isScrollableMvtEnabled(mContext), mostRecentTab,
+                this::onSingleTabCardClicked,
                 ()
                         -> mSnapshotSingleTabCardChanged = true,
                 mTabContentManagerSupplier.get() /* tabContentManager */,
@@ -1180,12 +1187,13 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         MarginLayoutParams marginLayoutParams =
                 (MarginLayoutParams) mSingleTabCardContainer.getLayoutParams();
 
-        marginLayoutParams.topMargin = -mNewTabPageLayout.getResources().getDimensionPixelOffset(
-                R.dimen.single_tab_card_top_margin_tablet);
-        marginLayoutParams.bottomMargin = mNewTabPageLayout.getResources().getDimensionPixelOffset(
-                                                  R.dimen.single_tab_card_bottom_margin_tablet)
-                - mNewTabPageLayout.getResources().getDimensionPixelOffset(
-                        R.dimen.feed_header_tab_list_view_top_bottom_margin);
+        marginLayoutParams.topMargin = -mNewTabPageLayout.getResources().getDimensionPixelSize(
+            R.dimen.ntp_single_tab_card_top_margin);
+        marginLayoutParams.bottomMargin =
+            mNewTabPageLayout.getResources().getDimensionPixelSize(
+                R.dimen.ntp_single_tab_card_bottom_margin)
+                - mNewTabPageLayout.getResources().getDimensionPixelSize(
+                R.dimen.feed_header_tab_list_view_top_bottom_margin);
     }
 
     static boolean isScrollableMvtEnabled(Context context) {
@@ -1209,5 +1217,13 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
 
     public boolean getSnapshotSingleTabCardChangedForTesting() {
         return mSnapshotSingleTabCardChanged;
+    }
+
+    /**
+     * Returns whether Chrome is running on tablet with NTP as home surface enabled. Returns false
+     * if Chrome is running on phone.
+     */
+    private boolean isNtpAsHomeSurfaceOnTablet() {
+        return mIsNtpAsHomeSurfaceEnabled && mIsTablet;
     }
 }

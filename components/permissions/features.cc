@@ -40,14 +40,6 @@ BASE_FEATURE(kBlockRepeatedNotificationPermissionPrompts,
              "BlockRepeatedNotificationPermissionPrompts",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kConfirmationChip,
-             "ConfirmationChip",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kChipLocationBarIconOverride,
-             "ChipLocationIconOverride",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kPermissionElement,
              "PermissionElement",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -152,11 +144,6 @@ BASE_FEATURE(kWindowPlacementPermissionAlias,
 // visible in the Embedded content settings page.
 BASE_FEATURE(kShowRelatedWebsiteSetsPermissionGrants,
              "ShowRelatedWebsiteSetsPermissionGrants",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables disallowing MIDI permission by default.
-BASE_FEATURE(kBlockMidiByDefault,
-             "BlockMidiByDefault",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

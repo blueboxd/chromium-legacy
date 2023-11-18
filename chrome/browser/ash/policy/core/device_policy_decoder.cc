@@ -1685,13 +1685,6 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
   }
 
   if (policy.has_attestation_settings()) {
-    if (policy.attestation_settings().has_attestation_enabled()) {
-      policies->Set(
-          key::kAttestationEnabledForDevice, POLICY_LEVEL_MANDATORY,
-          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-          base::Value(policy.attestation_settings().attestation_enabled()),
-          nullptr);
-    }
     if (policy.attestation_settings().has_content_protection_enabled()) {
       policies->Set(
           key::kAttestationForContentProtectionEnabled, POLICY_LEVEL_MANDATORY,
@@ -2332,6 +2325,17 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(policy::key::kDeviceExtendedFkeysModifier,
                     POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
                     POLICY_SOURCE_CLOUD, base::Value(container.modifier()),
+                    nullptr);
+    }
+  }
+
+  if (policy.has_device_flex_hw_data_for_product_improvement_enabled()) {
+    const em::DeviceFlexHwDataForProductImprovementEnabledProto& container(
+        policy.device_flex_hw_data_for_product_improvement_enabled());
+    if (container.has_enabled()) {
+      policies->Set(key::kDeviceFlexHwDataForProductImprovementEnabled,
+                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                    POLICY_SOURCE_CLOUD, base::Value(container.enabled()),
                     nullptr);
     }
   }

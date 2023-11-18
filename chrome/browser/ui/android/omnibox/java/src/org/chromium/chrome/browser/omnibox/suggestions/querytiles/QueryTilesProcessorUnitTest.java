@@ -13,6 +13,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.view.ContextThemeWrapper;
+import android.view.View;
 
 import org.junit.After;
 import org.junit.Before;
@@ -85,8 +86,14 @@ public class QueryTilesProcessorUnitTest {
     }
 
     @Test
-    public void getMinimumCarouselItemViewHeight() {
-        assertEquals(0, mProcessor.getMinimumCarouselItemViewHeight());
+    public void getCarouselItemViewSize() {
+        var view = new QueryTileView(mContext);
+        view.measure(
+                View.MeasureSpec.makeMeasureSpec(Integer.MAX_VALUE, View.MeasureSpec.AT_MOST),
+                View.MeasureSpec.makeMeasureSpec(Integer.MAX_VALUE, View.MeasureSpec.AT_MOST));
+
+        assertEquals(view.getMeasuredHeight(), mProcessor.getCarouselItemViewHeight());
+        assertEquals(view.getMeasuredWidth(), mProcessor.getCarouselItemViewWidth());
     }
 
     @Test
@@ -234,5 +241,14 @@ public class QueryTilesProcessorUnitTest {
         verify(mSuggestionHost).onSuggestionClicked(match3, 7, url3);
 
         verifyNoMoreInteractions(mImageSupplier, mSuggestionHost);
+    }
+
+    @Test
+    public void createModel_checkContentDescription() {
+        var model = mProcessor.createModel();
+
+        assertEquals(
+                mContext.getResources().getString(R.string.accessibility_omnibox_query_tiles_list),
+                model.get(BaseCarouselSuggestionViewProperties.CONTENT_DESCRIPTION));
     }
 }

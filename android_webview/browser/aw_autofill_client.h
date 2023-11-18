@@ -26,7 +26,6 @@ class AutofillPopupDelegate;
 class CreditCard;
 class PersonalDataManager;
 class StrikeDatabase;
-struct CardUnmaskPromptOptions;
 }  // namespace autofill
 
 namespace content {
@@ -48,11 +47,10 @@ namespace android_webview {
 
 // Manager delegate for the autofill functionality.
 //
-// Android O and beyond shall use `AndroidAutofillManager` (and
-// `AutofillProvider`), whereas earlier versions use a `BrowserAutofillManager`.
-// This is determined by the `use_android_autofill_manager` parameters below.
+// Android O and beyond uses `AndroidAutofillManager`, unlike Chrome, which
+// uses `BrowserAutofillManager`.
 //
-// Android webview supports enabling autocomplete feature for each webview
+// Android WebView supports enabling Autofill feature for each webview
 // instance (different than the browser which supports enabling/disabling for a
 // profile). Since there is only one pref service for a given browser context,
 // we cannot enable this feature via UserPrefs. Rather, we always keep the
@@ -60,25 +58,12 @@ namespace android_webview {
 // Lifetime: WebView
 class AwAutofillClient : public autofill::ContentAutofillClient {
  public:
-  static AwAutofillClient* FromWebContents(content::WebContents* web_contents) {
-    return static_cast<AwAutofillClient*>(
-        ContentAutofillClient::FromWebContents(web_contents));
-  }
-
-  // The `use_android_autofill_manager` parameter determines which
-  // DriverInitCallback to use:
-  // - autofill::BrowserDriverInitHook() (to be used before Android O) or
-  // - android_webview::AndroidDriverInitHook() (to be used as of Android O).
-  static void CreateForWebContents(content::WebContents* contents,
-                                   bool use_android_autofill_manager);
+  static void CreateForWebContents(content::WebContents* contents);
 
   AwAutofillClient(const AwAutofillClient&) = delete;
   AwAutofillClient& operator=(const AwAutofillClient&) = delete;
 
   ~AwAutofillClient() override;
-
-  void SetSaveFormData(bool enabled);
-  bool GetSaveFormData() const;
 
   // AutofillClient:
   bool IsOffTheRecord() override;
@@ -92,7 +77,8 @@ class AwAutofillClient : public autofill::ContentAutofillClient {
   syncer::SyncService* GetSyncService() override;
   signin::IdentityManager* GetIdentityManager() override;
   autofill::FormDataImporter* GetFormDataImporter() override;
-  autofill::payments::PaymentsClient* GetPaymentsClient() override;
+  autofill::payments::PaymentsNetworkInterface* GetPaymentsNetworkInterface()
+      override;
   autofill::StrikeDatabase* GetStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
@@ -103,27 +89,6 @@ class AwAutofillClient : public autofill::ContentAutofillClient {
   const translate::LanguageState* GetLanguageState() override;
   translate::TranslateDriver* GetTranslateDriver() override;
   void ShowAutofillSettings(autofill::PopupType popup_type) override;
-  void ShowUnmaskPrompt(
-      const autofill::CreditCard& card,
-      const autofill::CardUnmaskPromptOptions& card_unmask_prompt_options,
-      base::WeakPtr<autofill::CardUnmaskDelegate> delegate) override;
-  void OnUnmaskVerificationResult(PaymentsRpcResult result) override;
-  void ConfirmAccountNameFixFlow(
-      base::OnceCallback<void(const std::u16string&)> callback) override;
-  void ConfirmExpirationDateFixFlow(
-      const autofill::CreditCard& card,
-      base::OnceCallback<void(const std::u16string&, const std::u16string&)>
-          callback) override;
-  void ConfirmSaveCreditCardLocally(
-      const autofill::CreditCard& card,
-      SaveCreditCardOptions options,
-      LocalSaveCardPromptCallback callback) override;
-  void ConfirmSaveCreditCardToCloud(
-      const autofill::CreditCard& card,
-      const autofill::LegalMessageLines& legal_message_lines,
-      SaveCreditCardOptions options,
-      UploadSaveCardPromptCallback callback) override;
-  void CreditCardUploadCompleted(bool card_saved) override;
   void ConfirmCreditCardFillAssist(const autofill::CreditCard& card,
                                    base::OnceClosure callback) override;
   void ConfirmSaveAddressProfile(
@@ -148,8 +113,7 @@ class AwAutofillClient : public autofill::ContentAutofillClient {
       const autofill::AutofillClient::PopupOpenArgs& open_args,
       base::WeakPtr<autofill::AutofillPopupDelegate> delegate) override;
   void UpdateAutofillPopupDataListValues(
-      const std::vector<std::u16string>& values,
-      const std::vector<std::u16string>& labels) override;
+      base::span<const autofill::SelectOption> datalist) override;
   std::vector<autofill::Suggestion> GetPopupSuggestions() const override;
   void PinPopupView() override;
   autofill::AutofillClient::PopupOpenArgs GetReopenPopupArgs(
@@ -168,7 +132,6 @@ class AwAutofillClient : public autofill::ContentAutofillClient {
   void DidFillOrPreviewField(const std::u16string& autofilled_value,
                              const std::u16string& profile_full_name) override;
   bool IsContextSecure() const override;
-  void OpenPromoCodeOfferDetailsURL(const GURL& url) override;
   autofill::FormInteractionsFlowId GetCurrentFormInteractionsFlowId() override;
 
   // RiskDataLoader:
@@ -181,12 +144,9 @@ class AwAutofillClient : public autofill::ContentAutofillClient {
                           jint position);
 
  private:
-  // `use_android_autofill_manager` determines which DriverInitCallback to use
-  // for the ContentAutofillDriverFactory: autofill::BrowserDriverInitHook() or
-  // android_webview::AndroidDriverInitHook().
-  AwAutofillClient(content::WebContents* web_contents,
-                   bool use_android_autofill_manager);
   friend class content::WebContentsUserData<AwAutofillClient>;
+
+  explicit AwAutofillClient(content::WebContents* web_contents);
 
   void ShowAutofillPopupImpl(
       const gfx::RectF& element_bounds,
@@ -195,7 +155,6 @@ class AwAutofillClient : public autofill::ContentAutofillClient {
 
   content::WebContents& GetWebContents() const;
 
-  bool save_form_data_ = false;
   JavaObjectWeakGlobalRef java_ref_;
 
   ui::ViewAndroid::ScopedAnchorView anchor_view_;

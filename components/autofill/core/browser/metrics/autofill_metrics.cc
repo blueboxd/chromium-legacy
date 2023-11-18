@@ -188,7 +188,9 @@ int GetFieldTypeGroupPredictionQualityMetric(
         case ADDRESS_HOME_LINE3:
           group = GROUP_ADDRESS_LINE_3;
           break;
+        case ADDRESS_HOME_APT:
         case ADDRESS_HOME_APT_NUM:
+        case ADDRESS_HOME_APT_TYPE:
           group = GROUP_ADDRESS_HOME_APT_NUM;
           break;
         case ADDRESS_HOME_STREET_ADDRESS:
@@ -325,6 +327,7 @@ int GetFieldTypeGroupPredictionQualityMetric(
         case MAX_VALID_FIELD_TYPE:
         case CREDIT_CARD_STANDALONE_VERIFICATION_CODE:
         case SINGLE_USERNAME_FORGOT_PASSWORD:
+        case SINGLE_USERNAME_WITH_INTERMEDIATE_VALUES:
           NOTREACHED() << field_type << " type is not in that group.";
           group = GROUP_AMBIGUOUS;
           break;
@@ -494,7 +497,7 @@ ServerFieldType GetActualFieldType(const ServerFieldTypeSet& possible_types,
   if (collapsed_field_types.size() == 1)
     actual_type = *collapsed_field_types.begin();
 
-  DVLOG(2) << "Inferred Type: " << FieldTypeToStringPiece(actual_type);
+  DVLOG(2) << "Inferred Type: " << FieldTypeToStringView(actual_type);
   return actual_type;
 }
 
@@ -700,8 +703,8 @@ void LogPredictionQualityMetrics(
   ServerFieldType actual_type =
       GetActualFieldType(possible_types, predicted_type);
 
-  DVLOG(2) << "Predicted: " << FieldTypeToStringPiece(predicted_type) << "; "
-           << "Actual: " << FieldTypeToStringPiece(actual_type);
+  DVLOG(2) << "Predicted: " << FieldTypeToStringView(predicted_type) << "; "
+           << "Actual: " << FieldTypeToStringView(actual_type);
 
   DCHECK_LE(predicted_type, UINT16_MAX);
   DCHECK_LE(actual_type, UINT16_MAX);
@@ -2207,22 +2210,17 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogSuggestionsShown(
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::LogDidFillSuggestion(
-    absl::variant<AutofillProfile::RecordType, CreditCard::RecordType>
-        record_type,
     const FormStructure& form,
-    const AutofillField& field) {
+    const AutofillField& field,
+    std::optional<CreditCard::RecordType> record_type) {
   if (!CanLog())
     return;
 
-  bool is_for_credit_card =
-      absl::holds_alternative<CreditCard::RecordType>(record_type);
-
-  ukm::builders::Autofill_SuggestionFilled(GetSourceId())
-      .SetRecordType(is_for_credit_card
-                         ? base::to_underlying(
-                               absl::get<CreditCard::RecordType>(record_type))
-                         : absl::get<AutofillProfile::RecordType>(record_type))
-      .SetIsForCreditCard(is_for_credit_card)
+  auto metric = ukm::builders::Autofill_SuggestionFilled(GetSourceId());
+  if (record_type) {
+    metric.SetRecordType(base::to_underlying(*record_type));
+  }
+  metric.SetIsForCreditCard(record_type.has_value())
       .SetMillisecondsSinceFormParsed(
           MillisecondsSinceFormParsed(form.form_parsed_timestamp()))
       .SetFormSignature(HashFormSignature(form.form_signature()))
@@ -2529,7 +2527,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::
       .SetFieldSessionIdentifier(
           AutofillMetrics::FieldGlobalIdToHash64Bit(field.global_id()))
       .SetFieldSignature(HashFieldSignature(field.GetFieldSignature()))
-      .SetFormControlType(base::to_underlying(field.FormControlType()))
+      .SetFormControlType2(base::to_underlying(field.form_control_type))
       .SetAutocompleteState(base::to_underlying(autocomplete_state));
 
   SetStatusVector(AutofillStatus::kIsFocusable, field.IsFocusable());

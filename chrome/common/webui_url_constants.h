@@ -10,7 +10,7 @@
 
 #include <stddef.h>
 
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -280,6 +280,7 @@ extern const char kChromeUIUserNotesSidePanelURL[];
 extern const char kChromeUIWebAppInternalsHost[];
 extern const char kChromeUIWebAppInternalsURL[];
 extern const char kChromeUIWebUITestHost[];
+extern const char kChromeUIUntrustedWebUITestURL[];
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -413,7 +414,6 @@ extern const char kChromeUINotifGeneratorURL[];
 extern const char kChromeUIOSSettingsHost[];
 extern const char kChromeUIOSSettingsURL[];
 extern const char kChromeUISystemURL[];
-extern const char kOsUIAboutURL[];
 extern const char kOsUIComponentsURL[];
 extern const char kOsUIConnectivityDiagnosticsAppURL[];
 extern const char kOsUIDeviceLogURL[];
@@ -528,6 +528,7 @@ extern const char kAutofillSubPage[];
 extern const char kClearBrowserDataSubPage[];
 extern const char kContentSettingsSubPage[];
 extern const char kAllSitesSettingsSubpage[];
+extern const char kOnDeviceSiteDataSubpage[];
 extern const char kCookieSettingsSubPage[];
 extern const char kDownloadsSubPage[];
 extern const char kHandlerSettingsSubPage[];
@@ -553,6 +554,7 @@ extern const char kSafetyHubSubPage[];
 extern const char kSearchSubPage[];
 extern const char kSearchEnginesSubPage[];
 extern const char kSignOutSubPage[];
+extern const char kSyncSetupPageContentSubPage[];
 extern const char kSyncSetupSubPage[];
 extern const char kTriggeredResetProfileSettingsSubPage[];
 // TODO(crbug.com/1378703): Remove these constants after the feature is
@@ -576,12 +578,6 @@ extern const char kCleanupSubPage[];
 
 #if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 extern const char kChromeUICastFeedbackHost[];
-#endif
-
-#if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-extern const char kChromeUILensUntrustedURL[];
-extern const char kChromeUILensURL[];
-extern const char kChromeUILensHost[];
 #endif
 
 // Extensions sub pages.

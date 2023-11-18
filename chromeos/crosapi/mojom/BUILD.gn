@@ -27,6 +27,7 @@ mojom("mojom") {
     "cros_display_config.mojom",
     "crosapi.mojom",
     "desk.mojom",
+    "desk_profiles.mojom",
     "desk_template.mojom",
     "device_attributes.mojom",
     "device_local_account_extension_service.mojom",
@@ -55,11 +56,11 @@ mojom("mojom") {
     "force_installed_tracker.mojom",
     "fullscreen_controller.mojom",
     "geolocation.mojom",
+    "guest_os_sk_forwarder.mojom",
     "holding_space_service.mojom",
     "identity_manager.mojom",
     "idle_service.mojom",
     "image_writer.mojom",
-    "in_session_auth.mojom",
     "kerberos_in_browser.mojom",
     "keystore_error.mojom",
     "keystore_service.mojom",
@@ -82,6 +83,7 @@ mojom("mojom") {
     "notification.mojom",
     "nullable_primitives.mojom",
     "parent_access.mojom",
+    "passkeys.mojom",
     "policy_namespace.mojom",
     "policy_service.mojom",
     "power.mojom",
@@ -129,6 +131,7 @@ mojom("mojom") {
   public_deps = [
     ":video_capture",
     "//chromeos/components/drivefs/mojom",
+    "//chromeos/components/in_session_auth/mojom",
     "//chromeos/components/payments/mojom",
     "//chromeos/components/remote_apps/mojom",
     "//chromeos/components/sensors/mojom",
@@ -274,6 +277,12 @@ mojom("mojom") {
           mojom = "crosapi.mojom.ResourceScaleFactor"
           cpp = "::ui::ResourceScaleFactor"
         },
+        {
+          mojom = "crosapi.mojom.AppShortcut"
+          cpp = "::apps::ShortcutPtr"
+          move_only = true
+          nullable_is_same_type = true
+        },
       ]
       traits_headers = [
         "//chromeos/crosapi/mojom/app_service_types_mojom_traits.h",
@@ -288,6 +297,7 @@ mojom("mojom") {
         "//chromeos/crosapi/mojom/web_app_types_mojom_traits.h",
         "//components/services/app_service/public/cpp/app_launch_util.h",
         "//components/services/app_service/public/cpp/app_types.h",
+        "//components/services/app_service/public/cpp/shortcut/shortcut.h",
         "//components/services/app_service/public/cpp/capability_access.h",
         "//components/services/app_service/public/cpp/icon_types.h",
         "//components/services/app_service/public/cpp/preferred_app.h",
@@ -309,6 +319,7 @@ mojom("mojom") {
         "//chromeos/components/certificate_provider:certificate_provider",
         "//components/policy/core/common:policy_namespace",
         "//components/services/app_service/public/cpp:app_types",
+        "//components/services/app_service/public/cpp/shortcut",
         "//components/tab_groups",
         "//components/webapps/browser:constants",
         "//ui/base:ui_data_pack",

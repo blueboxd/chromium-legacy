@@ -62,11 +62,13 @@
 #include "third_party/blink/public/mojom/link_to_text/link_to_text.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/loader/resource_cache.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/navigation/renderer_content_settings.mojom.h"
 #include "third_party/blink/public/mojom/navigation/renderer_eviction_reason.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/script/script_evaluation_params.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_background_resource_fetch_assets.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_script_execution_callback.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -94,6 +96,7 @@
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "ui/gfx/geometry/transform.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -164,6 +167,10 @@ class WebPrescientNetworking;
 class URLLoader;
 struct BlinkTransferableMessage;
 struct WebScriptSource;
+
+namespace v8_compile_hints {
+class V8LocalCompileHintsProducer;
+}  // namespace v8_compile_hints
 
 enum class BackForwardCacheAware;
 
@@ -258,7 +265,8 @@ class CORE_EXPORT LocalFrame final
   // BackForwardCacheLoaderHelperImpl::Delegate:
   void EvictFromBackForwardCache(
       mojom::blink::RendererEvictionReason reason) override;
-  void DidBufferLoadWhileInBackForwardCache(size_t num_bytes) override;
+  void DidBufferLoadWhileInBackForwardCache(bool update_process_wide_count,
+                                            size_t num_bytes) override;
 
   void DidChangeThemeColor(bool update_theme_color_cache);
   void DidChangeBackgroundColor(SkColor4f background_color, bool color_adjust);
@@ -315,6 +323,13 @@ class CORE_EXPORT LocalFrame final
   // needed.
   ContentCaptureManager* GetOrResetContentCaptureManager();
 
+  class CORE_EXPORT WidgetCreationObserver : public GarbageCollectedMixin {
+   public:
+    virtual void OnLocalRootWidgetCreated() = 0;
+  };
+  void AddWidgetCreationObserver(WidgetCreationObserver* observer);
+  void NotifyFrameWidgetCreated();
+
   // Returns the current state of caret browsing mode.
   bool IsCaretBrowsingEnabled() const;
 
@@ -343,6 +358,10 @@ class CORE_EXPORT LocalFrame final
     return history_user_activation_state_.IsActive();
   }
   void ConsumeHistoryUserActivation();
+
+  // Activates or clears history user activation state and also notifies frame
+  // scheduler of the state change.
+  void SetHadUserInteraction(bool had_user_interaction);
 
   // Registers an observer that will be notified if a VK occludes
   // the content when it raises/dismisses. The observer is a HeapHashSet
@@ -518,6 +537,9 @@ class CORE_EXPORT LocalFrame final
   // GetURLLoaderFactory().
   std::unique_ptr<URLLoader> CreateURLLoaderForTesting();
 
+  scoped_refptr<WebBackgroundResourceFetchAssets>
+  MaybeGetBackgroundResourceFetchAssets();
+
   bool IsInert() const { return is_inert_; }
 
   // If the frame hosts a PluginDocument, this method returns the
@@ -680,15 +702,6 @@ class CORE_EXPORT LocalFrame final
   // Whether the frame clips its content to the frame's size.
   bool ClipsContent() const;
 
-  // For a navigation initiated from this LocalFrame with user gesture, record
-  // the UseCounter AdClickNavigation if this frame is an adframe.
-  //
-  // TODO(crbug.com/939370): Currently this is called in a couple of sites,
-  // which is fragile and prone to break. If we have the ad status in
-  // RemoteFrame, we could call it at FrameLoader::StartNavigation where all
-  // navigations go through.
-  void MaybeLogAdClickNavigation();
-
   // Triggers a use counter if a feature, which is currently available in all
   // frames, would be blocked by the introduction of permissions policy. This
   // takes two counters (which may be the same). It triggers
@@ -719,6 +732,9 @@ class CORE_EXPORT LocalFrame final
       const gfx::Point& viewport_position,
       const blink::mojom::blink::MediaPlayerActionType type,
       bool enable);
+  void RequestVideoFrameAt(
+      const gfx::Point& viewport_position,
+      base::OnceCallback<void(const gfx::ImageSkia&)> callback);
 
   // Handle the request as a download. If the request is for a blob: URL,
   // a BlobURLToken should be provided as |blob_url_token| to ensure the
@@ -894,6 +910,15 @@ class CORE_EXPORT LocalFrame final
 
   bool IsSameOrigin();
 
+  v8_compile_hints::V8LocalCompileHintsProducer&
+  GetV8LocalCompileHintsProducer() {
+    return *v8_local_compile_hints_producer_;
+  }
+
+  // Gets the content settings associated with the current navigation commit.
+  // Can only be called while the frame is not detached.
+  const mojom::RendererContentSettingsPtr& GetContentSettings();
+
  private:
   friend class FrameNavigationDisabler;
   // LocalFrameMojoHandler is a part of LocalFrame.
@@ -913,14 +938,6 @@ class CORE_EXPORT LocalFrame final
   // already LocalFrame.
   bool IsLocalFrame() const override { return true; }
   bool IsRemoteFrame() const override { return false; }
-
-  void ActivateHistoryUserActivationState() override {
-    history_user_activation_state_.Activate();
-  }
-
-  void ClearHistoryUserActivationState() override {
-    history_user_activation_state_.Clear();
-  }
 
   void EnableNavigation() { --navigation_disable_count_; }
   void DisableNavigation() { ++navigation_disable_count_; }
@@ -998,6 +1015,8 @@ class CORE_EXPORT LocalFrame final
   // Keeps track of all the registered VK observers.
   HeapHashSet<WeakMember<VirtualKeyboardOverlayChangedObserver>>
       virtual_keyboard_overlay_changed_observers_;
+
+  HeapHashSet<WeakMember<WidgetCreationObserver>> widget_creation_observers_;
 
   mutable FrameLoader loader_;
 
@@ -1159,6 +1178,9 @@ class CORE_EXPORT LocalFrame final
 
   // Reduced accept language for top-level frame.
   AtomicString reduced_accept_language_;
+
+  Member<v8_compile_hints::V8LocalCompileHintsProducer>
+      v8_local_compile_hints_producer_;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {

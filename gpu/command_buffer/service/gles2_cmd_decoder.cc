@@ -19,6 +19,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include <optional>
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/containers/flat_set.h"
@@ -85,7 +86,6 @@
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_preferences.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point.h"
@@ -1116,8 +1116,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   void DoCreateAndConsumeTextureINTERNAL(GLuint client_id,
                                          const volatile GLbyte* key);
-  void DoTexImage2DSharedImageCHROMIUM(GLuint client_id,
-                                       const volatile GLbyte* mailbox);
   void DoCreateAndTexStorage2DSharedImageINTERNAL(
       GLuint client_id,
       const volatile GLbyte* mailbox);
@@ -3280,7 +3278,7 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
 
   if (offscreen) {
 #if BUILDFLAG(IS_ANDROID)
-    offscreen_buffer_should_have_alpha_ = attrib_helper.alpha_size > 0;
+    offscreen_buffer_should_have_alpha_ = attrib_helper.need_alpha;
 #else
     offscreen_buffer_should_have_alpha_ = false;
 #endif
@@ -3562,15 +3560,11 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
       workarounds().max_copy_texture_chromium_size;
   caps.render_buffer_format_bgra8888 =
       feature_info_->feature_flags().ext_render_buffer_format_bgra8888;
-  caps.gpu_rasterization =
-      group_->gpu_feature_info()
-          .status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
-      kGpuFeatureStatusEnabled;
+  caps.gpu_rasterization = false;
   if (workarounds().broken_egl_image_ref_counting &&
       group_->gpu_preferences().enable_threaded_texture_mailboxes) {
     caps.disable_2d_canvas_copy_on_write = true;
   }
-  caps.supports_oop_raster = false;
   caps.chromium_gpu_fence = feature_info_->feature_flags().chromium_gpu_fence;
   caps.mesa_framebuffer_flip_y =
       feature_info_->feature_flags().mesa_framebuffer_flip_y;
@@ -3905,8 +3899,6 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   ShCompileOptions driver_bug_workarounds{};
   if (workarounds().init_gl_position_in_vertex_shader)
     driver_bug_workarounds.initGLPosition = true;
-  if (workarounds().unfold_short_circuit_as_ternary_operation)
-    driver_bug_workarounds.unfoldShortCircuit = true;
   if (workarounds().scalarize_vec_and_mat_constructor_args)
     driver_bug_workarounds.scalarizeVecAndMatConstructorArgs = true;
   if (workarounds().add_and_true_to_loop_condition)
@@ -3917,8 +3909,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     driver_bug_workarounds.removeDynamicIndexingOfSwizzledVector = true;
 
   // Initialize uninitialized locals by default
-  if (!workarounds().dont_initialize_uninitialized_locals)
-    driver_bug_workarounds.initializeUninitializedLocals = true;
+  driver_bug_workarounds.initializeUninitializedLocals = true;
 
   ShShaderOutput shader_output_language =
       ShaderTranslator::GetShaderOutputLanguageForContext(gl_version_info());
@@ -6213,21 +6204,7 @@ void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
   if (workarounds().clamp_texture_base_level_and_max_level) {
     tex->ApplyClampedBaseLevelAndMaxLevelToDriver();
   }
-  if (enable_srgb && workarounds().decode_encode_srgb_for_generatemipmap) {
-    if (target == GL_TEXTURE_2D) {
-      if (!InitializeSRGBConverter("generateMipmap")) {
-        return;
-      }
-      srgb_converter_->GenerateMipmap(this, tex, target);
-    } else {
-      // TODO(yizhou): If the target is GL_TEXTURE_3D ,GL_TEXTURE_2D_ARRAY,
-      // GL_TEXTURE_CUBE_MAP,
-      // this change can not generate correct mipmap.
-      api()->glGenerateMipmapEXTFn(target);
-    }
-  } else {
-    api()->glGenerateMipmapEXTFn(target);
-  }
+  api()->glGenerateMipmapEXTFn(target);
 
   GLenum error = LOCAL_PEEK_GL_ERROR("glGenerateMipmap");
   if (error == GL_NO_ERROR) {
@@ -8867,9 +8844,6 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program_id) {
 
   LogClientServiceForInfo(program, program_id, "glLinkProgram");
   if (program->Link(shader_manager(),
-                    workarounds().count_all_in_varyings_packing
-                        ? Program::kCountAll
-                        : Program::kCountOnlyStaticallyUsed,
                     client())) {
     if (features().webgl_multi_draw)
       program_manager()->UpdateDrawIDUniformLocation(program);
@@ -11514,11 +11488,6 @@ void GLES2DecoderImpl::GetTexParameterImpl(
   }
   Texture* texture = texture_ref->texture();
   switch (pname) {
-    case GL_TEXTURE_MAX_ANISOTROPY_EXT:
-      if (workarounds().init_texture_max_anisotropy) {
-        texture->InitTextureMaxAnisotropyIfNeeded(target);
-      }
-      break;
     case GL_TEXTURE_IMMUTABLE_LEVELS:
       if (gl_version_info().IsLowerThanGL(4, 2)) {
         GLint levels = texture->GetImmutableLevels();
@@ -17188,55 +17157,6 @@ void GLES2DecoderImpl::DoCreateAndConsumeTextureINTERNAL(
   }
 
   texture_ref = texture_manager()->Consume(client_id, texture);
-}
-
-void GLES2DecoderImpl::DoTexImage2DSharedImageCHROMIUM(
-    GLuint client_id,
-    const volatile GLbyte* mailbox_data) {
-  TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoTexImage2DSharedImageCHROMIUM",
-               "context", logger_.GetLogPrefix(), "mailbox[0]",
-               static_cast<unsigned char>(mailbox_data[0]));
-  Mailbox mailbox = Mailbox::FromVolatile(
-      *reinterpret_cast<const volatile Mailbox*>(mailbox_data));
-  DLOG_IF(ERROR, !mailbox.Verify())
-      << "DoTexImage2DSharedImageCHROMIUM was passed an invalid "
-         "mailbox.";
-  if (!client_id) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "DoTexImage2DSharedImageCHROMIUM",
-                       "invalid client id");
-    return;
-  }
-
-  std::unique_ptr<GLTextureImageRepresentation> shared_image =
-      group_->shared_image_representation_factory()->ProduceGLTexture(mailbox);
-
-  if (!shared_image) {
-    // Mailbox missing, generate a texture.
-    bool result = GenTexturesHelper(1, &client_id);
-    DCHECK(result);
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "DoTexImage2DSharedImageCHROMIUM",
-                       "invalid mailbox name");
-    return;
-  }
-
-  Texture* texture = shared_image->GetTexture();
-  if (texture->target() != GL_TEXTURE_2D) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "DoTexImage2DSharedImageCHROMIUM",
-                       "invalid texture target.");
-    return;
-  }
-
-  // Ensure that `client_id` is mapped to `shared_image`.
-  texture_manager()->RemoveTexture(client_id);
-  auto* texture_ref =
-      texture_manager()->ConsumeSharedImage(client_id, std::move(shared_image));
-
-  // If `client_id` is currently bound to `target` in any texture units, the
-  // binding was done when `client_id` did not necessarily map to
-  // `texture->service_id()`. Update any such binding so that
-  // `texture->service_id()` (which `client_id` now maps to) is now bound in the
-  // relevant texture unit(s).
-  UpdateTextureBinding(texture->target(), client_id, texture_ref);
 }
 
 void GLES2DecoderImpl::DoCreateAndTexStorage2DSharedImageINTERNAL(

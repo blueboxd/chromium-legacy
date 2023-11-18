@@ -345,7 +345,7 @@ bool ShouldExcludeForOverview(const aura::Window* window) {
   // 3. If the window is not the mru window in snap group i.e. the corresponding
   // overview item representation for the snap group has been created.
   auto should_exclude_in_clamshell = [&]() -> bool {
-    if (IsFasterSplitScreenOrSnapGroupArm1Enabled()) {
+    if (IsFasterSplitScreenOrSnapGroupEnabledInClamshell()) {
       if (auto* split_view_overview_session =
               RootWindowController::ForWindow(window)
                   ->split_view_overview_session();
@@ -653,16 +653,14 @@ bool ShouldRoundThumbnailWindow(views::View* backdrop_view,
   return !backdrop_bounds_in_screen.Contains(thumbnail_bounds_in_screen);
 }
 
-bool IsFasterSplitScreenOrSnapGroupArm1Enabled() {
-  if (features::IsFasterSplitScreenSetupEnabled()) {
-    return true;
-  }
-  auto* snap_group_controller = SnapGroupController::Get();
-  return snap_group_controller &&
-         snap_group_controller->IsArm1AutomaticallyLockEnabled();
+bool IsFasterSplitScreenOrSnapGroupEnabledInClamshell() {
+  return !Shell::Get()->IsInTabletMode() &&
+         (features::IsFasterSplitScreenSetupEnabled() ||
+          SnapGroupController::Get());
 }
 
-void MaybeStartSplitViewOverview(aura::Window* window) {
+void MaybeStartSplitViewOverview(aura::Window* window,
+                                 WindowSnapActionSource snap_action_source) {
   auto* root_window_controller = RootWindowController::ForWindow(window);
   if (root_window_controller->split_view_overview_session()) {
     // If split view overview is already active, which may be the case if this
@@ -672,8 +670,8 @@ void MaybeStartSplitViewOverview(aura::Window* window) {
 
   if (!IsInOverviewSession()) {
     root_window_controller->StartSplitViewOverviewSession(
-        window, OverviewStartAction::kSplitView,
-        OverviewEnterExitType::kNormal);
+        window, OverviewStartAction::kFasterSplitScreenSetup,
+        OverviewEnterExitType::kNormal, snap_action_source);
   } else {
     // If overview has already started, we may need to update the bounds. This
     // may happen if a snapped window swaps positions or ratios during split

@@ -76,14 +76,69 @@ class SyncService;
 
 namespace autofill {
 
-// Handles loading and saving Autofill profile information to the web database.
-// This class also stores the profiles loaded from the database for use during
-// Autofill.
-// The `PersonalDataManager` is a `KeyedService`. However, no separate instance
-// exists for incognito mode. In incognito mode the original profile's
-// `PersonalDataManager` is used. It is the responsibility of the consumers of
-// the `PersonalDataManager` to ensure that no data from an incognito session is
-// persisted unintentionally.
+// The PersonalDataManager (PDM) has two main responsibilities:
+// - Caching the data stored in `AutofillTable` for synchronous retrieval.
+// - Posting changes to `AutofillTable` via the `AutofillWebDataService`
+//   and updating its state accordingly.
+//   Some payment-related changes (e.g. adding a new server card) don't pass
+//   through the PDM. Instead, they are upstreamed to payments directly, before
+//   Sync downstreams them to Chrome, making them available in `AutofillTable`.
+//
+// Since `AutofillTable` lives on a separate sequence, changes posted to the PDM
+// are asynchronous. They only become effective in the PDM after/if the
+// corresponding database operation successfully finished.
+//
+// Sync writes to `AutofillTable` directly, since sync bridges live on the same
+// sequence. In this case, the PDM is notified via
+// `AutofillWebDataServiceObserverOnUISequence::OnAutofillChangedBySync()` and
+// it reloads all its data from `AutofillTable`. This is done via an operation
+// called `Refresh()`.
+//
+// PDM getters such as `GetProfiles()` expose pointers to the PDM's internal
+// copy of `AutofillTable`'s data. As a result, whenever the PDM reloads any
+// data, these pointer are invalidated. Do not store them as member variables,
+// since a refresh through Sync can happen anytime.
+//
+// The PDM is a `KeyedService`. However, no separate instance exists for
+// incognito mode. In incognito mode the original profile's PDM is used. It is
+// the responsibility of the consumers of the PDM to ensure that no data from an
+// incognito session is persisted unintentionally.
+//
+// Technical details on how changes are implemented:
+// The mechanism works differently for `AutofillProfile` and `CreditCard`.
+
+// CreditCards simply post a task to the DB sequence and trigger a `Refresh()`.
+// Since `Refresh()` itself simply posts several read requests on the DB
+// sequence, and because the DB sequence is a sequence, the `Refresh()` is
+// guaranteed to read the latest data. This is unnecessarily inefficient, since
+// any change causes the PDM to reload all of its data.
+//
+// AutofillProfile queues pending changes in `ongoing_profile_changes_`. For
+// each profile, they are executed in order and the next change is only posted
+// to the DB sequence once the previous change has finished.
+// After each change that finishes, the `AutofillWebDataService` notifies the
+// PDM via `PersonalDataManager::OnAutofillProfileChanged(change)` - and the PDM
+// updates its state accordingly. No `Refresh()` is performed.
+// Queuing the pending modifications is necessary, so the PDM can do consistency
+// checks against the latest state. For example, a remove should only be
+// performed if the profile exists. Without the queuing, if a remove operation
+// was posted before the add operation has finished, the remove would
+// incorrectly get rejected by the PDM.
+//
+// Notifications from the PersonalDataManagerObserver():
+// - `OnPersonalDataChanged()` is called whenever some of the exposed data from
+//   the PDM changes. In particular, a `Refresh()` triggers this multiple times,
+//   once for every read that finishes (profiles, credit cards, etc are separate
+//   reads each).
+//   Due to the way changes are implemented, changes to credit cards trigger
+//   `OnPersonalDataChanged()` multiple times. Changes to AutofillProfiles only
+//   trigger it once.
+// - `OnPersonalDataFinishedProfileTasks()` is called once all pending changes,
+//   including reads and writes, have finished.
+//   TODO(crbug.com/1420547): While "ProfileTasks" sounds like it only affects
+//   AutofillProfile operations, it applies to all data types. For example, if
+//   credit card read operations are still pending,
+//   `OnPersonalDataFinishedProfileTasks()` is not triggered. Rename this event.
 class PersonalDataManager : public KeyedService,
                             public WebDataServiceConsumer,
                             public AutofillWebDataServiceObserverOnUISequence,
@@ -245,7 +300,7 @@ class PersonalDataManager : public KeyedService,
   // 1) IBAN saving must be enabled.
   // 2) No IBAN exists in `local_ibans_` which has the same guid as`iban`.
   // 3) Local database is available.
-  virtual std::string AddIban(Iban iban);
+  virtual std::string AddAsLocalIban(Iban iban);
 
   // Updates `iban` which already exists in the web database. This can only
   // be used on local ibans. Returns the guid of `iban` if the update is
@@ -271,9 +326,6 @@ class PersonalDataManager : public KeyedService,
   virtual void UpdateLocalCvc(const std::string& guid,
                               const std::u16string& cvc);
 
-  // Adds |credit_card| to the web database as a full server card.
-  virtual void AddFullServerCreditCard(const CreditCard& credit_card);
-
   // Update a server card. Only the full number and masked/unmasked
   // status can be changed. Looks up the card by server ID.
   virtual void UpdateServerCreditCard(const CreditCard& credit_card);
@@ -288,7 +340,10 @@ class PersonalDataManager : public KeyedService,
   virtual void UpdateServerCvc(int64_t instrument_id,
                                const std::u16string& cvc);
   void RemoveServerCvc(int64_t instrument_id);
-  void ClearServerCvcs();
+  virtual void ClearServerCvcs();
+
+  // Method to clear all local CVCs from the local web database.
+  virtual void ClearLocalCvcs();
 
   // Resets the card for |guid| to the masked state.
   void ResetFullServerCard(const std::string& guid);
@@ -323,6 +378,10 @@ class PersonalDataManager : public KeyedService,
   // Returns the IBAN with the specified |guid|, or nullptr if there is no IBAN
   // with the specified |guid|.
   virtual Iban* GetIbanByGUID(const std::string& guid);
+
+  // Returns the IBAN if any cached IBAN in `server_ibans_` has the same
+  // `instrument_id` as the given `instrument_id`, otherwise returns nullptr.
+  const Iban* GetIbanByInstrumentId(int64_t instrument_id) const;
 
   // Returns the credit card with the specified |guid|, or nullptr if there is
   // no credit card with the specified |guid|.
@@ -362,10 +421,6 @@ class PersonalDataManager : public KeyedService,
   virtual std::vector<AutofillProfile*> GetProfilesFromSource(
       AutofillProfile::Source profile_source,
       ProfileOrder order = ProfileOrder::kNone) const;
-  // Returns just SERVER_PROFILES.
-  // TODO(crbug.com/1348294): Server profiles are only accessed in tests and the
-  // concept should be removed.
-  virtual std::vector<AutofillProfile*> GetServerProfiles() const;
   // Returns just LOCAL_CARD cards.
   virtual std::vector<CreditCard*> GetLocalCreditCards() const;
   // Returns just server cards.
@@ -535,7 +590,10 @@ class PersonalDataManager : public KeyedService,
   // Records the sync transport consent if the user is in sync transport mode.
   virtual void OnUserAcceptedUpstreamOffer();
 
-  // Notifies observers that the waiting should be stopped.
+  // Triggers `OnPersonalDataChanged()` for all `observers_`.
+  // Additionally, if all of the PDM's pending operations have finished, meaning
+  // that the data exposed through the PDM matches the database,
+  // `OnPersonalDataFinishedProfileTasks()` is triggered.
   void NotifyPersonalDataObserver();
 
   // TODO(crbug.com/1337392): Revisit the function when card upload feedback is
@@ -661,6 +719,13 @@ class PersonalDataManager : public KeyedService,
     return test_addresses_;
   }
 
+  // Adds `credit_card` to the web database as a full server card.
+  //
+  // It is no longer possible for users to reach this path as full server cards
+  // have been deprecated, however tests still use this when testing
+  // still-supported paths (filling, editing, and deleting full server cards).
+  void AddFullServerCreditCardForTesting(const CreditCard& credit_card);
+
  protected:
   // Only PersonalDataManagerFactory and certain tests can create instances of
   // PersonalDataManager.
@@ -680,8 +745,6 @@ class PersonalDataManager : public KeyedService,
       PersonalDataManagerTest,
       GetCreditCardsToSuggest_NoCreditCardsAddedIfDisabled);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest, LogStoredCreditCardMetrics);
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerCleanerTest,
-                           UpdateCardsBillingAddressReference);
 
   friend class autofill::PersonalDataManagerCleaner;
   friend class ::PaymentsSuggestionBottomSheetMediatorTest;
@@ -782,9 +845,6 @@ class PersonalDataManager : public KeyedService,
   std::vector<std::unique_ptr<AutofillProfile>> synced_local_profiles_;
   std::vector<std::unique_ptr<AutofillProfile>> account_profiles_;
 
-  // Address profiles associated to the user's payment profile.
-  std::vector<std::unique_ptr<AutofillProfile>> credit_card_billing_addresses_;
-
   // Stores the PaymentsCustomerData obtained from the database.
   std::unique_ptr<PaymentsCustomerData> payments_customer_data_;
 
@@ -818,7 +878,6 @@ class PersonalDataManager : public KeyedService,
   // so they can be loaded at the same time.
   WebDataServiceBase::Handle pending_synced_local_profiles_query_ = 0;
   WebDataServiceBase::Handle pending_account_profiles_query_ = 0;
-  WebDataServiceBase::Handle pending_creditcard_billing_addresses_query_ = 0;
   WebDataServiceBase::Handle pending_creditcards_query_ = 0;
   WebDataServiceBase::Handle pending_server_creditcards_query_ = 0;
   WebDataServiceBase::Handle pending_server_creditcard_cloud_token_data_query_ =
@@ -838,6 +897,12 @@ class PersonalDataManager : public KeyedService,
       alternative_state_name_map_updater_;
 
  private:
+  // A profile change with a boolean representing if the change is ongoing or
+  // not. "Ongoing" means that the change is taking place asynchronously on the
+  // DB sequence at the moment. Ongoing changes are still part of
+  // `ongoing_profile_changes_` to prevent other changes from being scheduled.
+  using QueuedAutofillProfileChange = std::pair<AutofillProfileChange, bool>;
+
   // Sets (or resets) the Sync service, which may not have started yet
   // but its preferences can already be queried. Can also be a nullptr
   // if it is disabled by CLI.
@@ -856,20 +921,13 @@ class PersonalDataManager : public KeyedService,
   // prefs::kAutofillProfileEnabled changes.
   void EnableAutofillPrefChanged();
 
-  // Removes profile from web database according to |guid| and resets credit
-  // card's billing address if that address is used by any credit cards.
-  // The method does not refresh, this allows multiple removal with one
-  // refreshing in the end.
-  void RemoveAutofillProfileByGUIDAndBlankCreditCardReference(
-      const std::string& guid);
-
   // Add/Update/Removes a profile in AutofillTable asynchronously. The changes
   // only surface in the PDM after the task on the DB sequence has finished.
   void UpdateProfileInDB(const AutofillProfile& profile);
   void RemoveProfileFromDB(const std::string& guid);
 
   // Triggered when a profile is added/updated/removed on db.
-  void OnAutofillProfileChanged(const AutofillProfileDeepChange& change);
+  void OnAutofillProfileChanged(const AutofillProfileChange& change);
 
   // Triggered when all the card art image fetches have been completed,
   // regardless of whether all of them succeeded.
@@ -941,7 +999,7 @@ class PersonalDataManager : public KeyedService,
   std::unique_ptr<PersonalDataManagerCleaner> personal_data_manager_cleaner_;
 
   // A timely ordered list of ongoing changes for each profile.
-  std::unordered_map<std::string, std::deque<AutofillProfileDeepChange>>
+  std::unordered_map<std::string, std::deque<QueuedAutofillProfileChange>>
       ongoing_profile_changes_;
 
   // The identity manager that this instance uses. Must outlive this instance.

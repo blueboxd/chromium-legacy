@@ -14,7 +14,7 @@ import './policy_table.js';
 import {addWebUiListener, sendWithPromise} from 'chrome://resources/js/cr.js';
 import {FocusOutlineManager} from 'chrome://resources/js/focus_outline_manager.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
-import {getRequiredElement} from 'chrome://resources/js/util_ts.js';
+import {getRequiredElement} from 'chrome://resources/js/util.js';
 
 import {Policy} from './policy_row.js';
 import {PolicyTableElement, PolicyTableModel} from './policy_table.js';
@@ -204,12 +204,21 @@ export class Page {
 
   // Triggers the download of the policies as a JSON file.
   downloadJson(json: string) {
-    const blob = new Blob([json], {type: 'application/json'});
-    const blobUrl = URL.createObjectURL(blob);
+    const jsonObject = JSON.parse(json);
+    const timestamp = new Date(Date.now()).toLocaleString(undefined, {
+      dateStyle: 'short',
+      timeStyle: 'long',
+    });
 
+    jsonObject.policyExportTime = timestamp;
+    const blob = new Blob(
+        [JSON.stringify(jsonObject, null, 3)], {type: 'application/json'});
+    const blobUrl = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = blobUrl;
-    link.download = 'policies.json';
+    // Regex matches GMT timezone pattern, such as "GMT+5:30"
+    link.download =
+        `policies_${timestamp.replace(/ GMT[+-]\d+:\d+/g, '')}.json`;
 
     document.body.appendChild(link);
 

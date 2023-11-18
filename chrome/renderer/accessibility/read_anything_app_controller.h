@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_id_forward.h"
 #include "ui/accessibility/ax_tree_update_forward.h"
@@ -101,6 +102,7 @@ class ReadAnythingAppController
       double font_size,
       read_anything::mojom::Colors color,
       double speech_rate,
+      base::Value::Dict voices,
       read_anything::mojom::HighlightGranularity granularity) override;
   void SetDefaultLanguageCode(const std::string& code) override;
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
@@ -136,14 +138,18 @@ class ReadAnythingAppController
   int DarkTheme() const;
   int YellowTheme() const;
   int BlueTheme() const;
+  std::string GetStoredVoice(const std::string& lang) const;
   std::vector<ui::AXNodeID> GetChildren(ui::AXNodeID ax_node_id) const;
+  std::string GetDataFontCss(ui::AXNodeID ax_node_id) const;
   std::string GetHtmlTag(ui::AXNodeID ax_node_id) const;
   std::string GetLanguage(ui::AXNodeID ax_node_id) const;
+  std::string GetNameAttributeText(ui::AXNode* ax_node) const;
   std::string GetTextContent(ui::AXNodeID ax_node_id) const;
   std::string GetTextDirection(ui::AXNodeID ax_node_id) const;
   std::string GetUrl(ui::AXNodeID ax_node_id) const;
   bool ShouldBold(ui::AXNodeID ax_node_id) const;
   bool IsOverline(ui::AXNodeID ax_node_id) const;
+  bool IsLeafNode(ui::AXNodeID ax_node_id) const;
   void OnConnected();
   void OnCopy() const;
   void OnScroll(bool on_selection) const;
@@ -156,6 +162,7 @@ class ReadAnythingAppController
   bool IsSelectable() const;
   bool IsWebUIToolbarEnabled() const;
   bool IsReadAloudEnabled() const;
+  bool IsGoogleDocs() const;
   void OnStandardLineSpacing();
   void OnLooseLineSpacing();
   void OnVeryLooseLineSpacing();
@@ -169,11 +176,17 @@ class ReadAnythingAppController
   void OnBlueTheme();
   void OnFontChange(const std::string& font);
   void OnSpeechRateChange(double rate);
+  void OnVoiceChange(const std::string& voice, const std::string& lang);
   void TurnedHighlightOn();
   void TurnedHighlightOff();
   double GetLineSpacingValue(int line_spacing) const;
   double GetLetterSpacingValue(int letter_spacing) const;
   std::vector<std::string> GetSupportedFonts() const;
+
+  std::string GetHtmlTagForPDF(ui::AXNode* ax_node, std::string html_tag) const;
+  std::string GetHeadingHtmlTagForPDF(ui::AXNode* ax_node,
+                                      std::string html_tag) const;
+  std::string GetAriaLevel(ui::AXNode* ax_node) const;
 
   // The language code that should be used to determine which voices are
   // supported for speech.
@@ -232,7 +245,9 @@ class ReadAnythingAppController
                           int letter_spacing);
   void SetLanguageForTesting(const std::string& language_code);
 
-  raw_ptr<content::RenderFrame, DanglingUntriaged> render_frame_;
+  content::RenderFrame* GetRenderFrame();
+
+  const blink::LocalFrameToken frame_token_;
   std::unique_ptr<AXTreeDistiller> distiller_;
   mojo::Remote<read_anything::mojom::UntrustedPageHandlerFactory>
       page_handler_factory_;

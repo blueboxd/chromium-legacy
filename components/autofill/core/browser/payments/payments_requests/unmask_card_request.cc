@@ -175,10 +175,11 @@ CardUnmaskChallengeOption ParseCardUnmaskChallengeOption(
 }  // namespace
 
 UnmaskCardRequest::UnmaskCardRequest(
-    const PaymentsClient::UnmaskRequestDetails& request_details,
+    const PaymentsNetworkInterface::UnmaskRequestDetails& request_details,
     const bool full_sync_enabled,
     base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
-                            PaymentsClient::UnmaskResponseDetails&)> callback)
+                            PaymentsNetworkInterface::UnmaskResponseDetails&)>
+        callback)
     : request_details_(request_details),
       full_sync_enabled_(full_sync_enabled),
       callback_(std::move(callback)) {
@@ -212,7 +213,7 @@ std::string UnmaskCardRequest::GetRequestContent() {
   request_dict.Set("risk_data_encoded",
                    BuildRiskDictionary(request_details_.risk_data));
   base::Value::Dict context;
-  context.Set("billable_service", kUnmaskCardBillableServiceNumber);
+  context.Set("billable_service", kUnmaskPaymentMethodBillableServiceNumber);
   if (request_details_.billing_customer_number != 0) {
     context.Set("customer_context",
                 BuildCustomerContextDictionary(
@@ -425,11 +426,15 @@ bool UnmaskCardRequest::IsResponseComplete() {
     case AutofillClient::PaymentsRpcCardType::kUnknown:
       return false;
     case AutofillClient::PaymentsRpcCardType::kServerCard:
-      return !response_details_.real_pan.empty();
+      // When PAN is returned, the response is complete and no further
+      // authentication is needed. When PAN is not returned, the response has to
+      // contain context token in order to be considered a success.
+      return !response_details_.real_pan.empty() ||
+             !response_details_.context_token.empty();
     case AutofillClient::PaymentsRpcCardType::kVirtualCard:
-      // When pan is returned, it has to contain pan + expiry + cvv.
-      // When pan is not returned, it has to contain context token to indicate
-      // success.
+      // When the response contains a PAN, it must also contain expiration and
+      // CVV to be considered a success. When the response does not contain PAN,
+      // it must contain a context token instead.
       return IsAllCardInformationValidIncludingDcvv() ||
              CanPerformVirtualCardAuth();
   }

@@ -258,6 +258,10 @@ public class IntentHandler {
      */
     public static final String EXTRA_TAB_INDEX = "com.android.chrome.tab_index";
 
+    /** A boolean to indicate whether an intent was launched via ChromeLauncherActivity. */
+    public static final String EXTRA_LAUNCHED_VIA_CHROME_LAUNCHER_ACTIVITY =
+            "org.chromium.chrome.browser.launched_via_chrome_launcher_activity";
+
     private static Pair<Integer, String> sPendingReferrer;
     private static int sReferrerId;
     private static String sPendingIncognitoUrl;
@@ -625,7 +629,7 @@ public class IntentHandler {
         Profile profile = Profile.getLastUsedRegularProfile();
         AutocompleteMatch match;
         try (var controller = AutocompleteControllerProvider.createCloseableController(profile)) {
-            match = controller.get().classify(query, false);
+            match = controller.get().classify(query);
         }
 
         if (!match.isSearchSuggestion()) return match.getUrl().getSpec();
@@ -798,17 +802,8 @@ public class IntentHandler {
                 return true;
             }
 
+            // Determine if this intent came from a trustworthy source (Chrome).
             boolean isFromChrome = wasIntentSenderChrome(intent);
-
-            // Determine if this intent came from a trustworthy source (either Chrome or Google
-            // first party applications).
-            boolean isInternal = false;
-            if (ChromeFeatureList.sShouldIgnoreIntentSkipInternalCheck.isEnabled()) {
-                // When removing the flag replace the isInternal usage with isFromChrome.
-                isInternal = isFromChrome;
-            } else {
-                isInternal = notSecureIsIntentChromeOrFirstParty(intent);
-            }
 
             if (IntentUtils.safeGetBooleanExtra(intent, EXTRA_OPEN_NEW_INCOGNITO_TAB, false)
                     && !isAllowedIncognitoIntent(isFromChrome, isCustomTab, intent)) {
@@ -827,7 +822,7 @@ public class IntentHandler {
                 return false;
             }
 
-            if (isInternal) return false;
+            if (isFromChrome) return false;
 
             // Ignore all intents that specify a Chrome internal scheme if they did not come from
             // a trustworthy source.

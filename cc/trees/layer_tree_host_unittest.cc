@@ -3495,10 +3495,10 @@ class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest,
   void AfterTest() override { EXPECT_TRUE(sent_gesture_); }
 
   // ScrollCallbacks
-  void DidCompositorScroll(ElementId element_id,
-                           const gfx::PointF& scroll_offset,
-                           const absl::optional<TargetSnapAreaElementIds>&
-                               snap_target_ids) override {
+  void DidCompositorScroll(
+      ElementId element_id,
+      const gfx::PointF& scroll_offset,
+      const std::optional<TargetSnapAreaElementIds>& snap_target_ids) override {
     last_scrolled_element_id_ = element_id;
     last_scrolled_offset_ = scroll_offset;
   }
@@ -6649,9 +6649,6 @@ class LayerTreeHostTestGpuRasterizationDisabled : public LayerTreeHostTest {
       viz::TestContextProvider* context_provider,
       viz::TestContextProvider* worker_provider) override {
     // The test contexts have gpu raster disabled by default.
-    gpu::Capabilities caps =
-        context_provider->UnboundTestRasterInterface()->capabilities();
-    EXPECT_FALSE(caps.gpu_rasterization);
     gpu::Capabilities worker_caps =
         worker_provider->UnboundTestRasterInterface()->capabilities();
     EXPECT_FALSE(worker_caps.gpu_rasterization);
@@ -9247,9 +9244,9 @@ class LayerTreeHostTestDelegatedInkMetadataBase
 
   // Check DelegatedInkMetadata on the CompositorFrameMetadata when the
   // compositor frame is submitted.
-  void ExpectMetadata(absl::optional<DelegatedInkBrowserMetadata>
-                          browser_delegated_ink_metadata,
-                      gfx::DelegatedInkMetadata* actual_metadata) {
+  void ExpectMetadata(
+      std::optional<DelegatedInkBrowserMetadata> browser_delegated_ink_metadata,
+      gfx::DelegatedInkMetadata* actual_metadata) {
     if (expected_metadata_.has_value()) {
       EXPECT_TRUE(browser_delegated_ink_metadata.has_value());
       EXPECT_TRUE(actual_metadata);
@@ -9289,7 +9286,7 @@ class LayerTreeHostTestDelegatedInkMetadataBase
 #endif
 
  protected:
-  absl::optional<gfx::DelegatedInkMetadata> expected_metadata_;
+  std::optional<gfx::DelegatedInkMetadata> expected_metadata_;
   base::TimeTicks metadata_frame_time_;
   FakeContentLayerClient client_;
   scoped_refptr<Layer> layer_;
@@ -9492,7 +9489,7 @@ class LayerTreeHostTestEventsMetrics : public LayerTreeHostTest {
             /*is_inertial=*/false,
             ScrollUpdateEventMetrics::ScrollUpdateType::kContinued,
             /*delta=*/10.0f, event_time, arrived_in_browser_main_timestamp,
-            &tick_clock, absl::nullopt);
+            &tick_clock, std::nullopt);
     DCHECK_NE(metrics, nullptr);
     {
       tick_clock.Advance(base::Microseconds(10));

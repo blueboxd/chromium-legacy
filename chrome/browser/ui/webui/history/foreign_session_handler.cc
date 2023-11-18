@@ -153,9 +153,10 @@ void ForeignSessionHandler::OpenForeignSessionWindows(
   if (!open_tabs)
     return;
 
-  std::vector<const ::sessions::SessionWindow*> windows;
   // Note: we don't own the ForeignSessions themselves.
-  if (!open_tabs->GetForeignSession(session_string_value, &windows)) {
+  std::vector<const ::sessions::SessionWindow*> windows =
+      open_tabs->GetForeignSession(session_string_value);
+  if (windows.empty()) {
     LOG(ERROR) << "ForeignSessionHandler failed to get session data from"
                   "OpenTabsUIDelegate.";
     return;
@@ -287,7 +288,9 @@ base::Value::List ForeignSessionHandler::GetForeignSessions() {
       session_data.Set("name", session->GetSessionName());
       session_data.Set("modifiedTime",
                        FormatSessionTime(session->GetModifiedTime()));
-      session_data.Set("timestamp", session->GetModifiedTime().ToJsTime());
+      session_data.Set(
+          "timestamp",
+          session->GetModifiedTime().InMillisecondsFSinceUnixEpoch());
 
       bool is_collapsed = collapsed_sessions.Find(session_tag);
       session_data.Set("collapsed", is_collapsed);

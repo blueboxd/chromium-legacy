@@ -71,8 +71,7 @@ public class OfflinePageAutoFetchTest {
                         logAdditionalContext();
                     } catch (Exception ex) {
                         // Exceptions here are typical if the test failed to start. Catch them, or
-                        // it will
-                        // obscure the actual failure.
+                        // it will obscure the actual failure.
                         Log.w(TAG, "Failed to log additional context: " + ex.toString());
                     }
                 }
@@ -161,7 +160,7 @@ public class OfflinePageAutoFetchTest {
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    mProfile = Profile.fromWebContents(activityTab().getWebContents());
+                    mProfile = activityTab().getProfile();
                     mOfflinePageBridge = OfflinePageBridge.getForProfile(mProfile);
 
                     if (!NetworkChangeNotifier.isInitialized()) {

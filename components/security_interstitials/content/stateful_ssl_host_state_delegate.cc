@@ -9,7 +9,6 @@
 #include <functional>
 #include <memory>
 #include <set>
-#include <string>
 #include <utility>
 
 #include "base/base64.h"
@@ -85,7 +84,7 @@ void UpdateRecurrentInterstitialPref(PrefService* pref_service,
                                      base::Clock* clock,
                                      int error,
                                      int threshold) {
-  double now = clock->Now().ToJsTime();
+  double now = clock->Now().InMillisecondsFSinceUnixEpoch();
 
   ScopedDictPrefUpdate pref_update(pref_service,
                                    prefs::kRecurrentSSLInterstitial);
@@ -145,8 +144,10 @@ bool DoesRecurrentInterstitialPrefMeetThreshold(PrefService* pref_service,
   // are more than |threshold| values after the cutoff time.
   const base::Value::List& error_list = *list_value;
   for (size_t i = 0; i < error_list.size(); i++) {
-    if (base::Time::FromJsTime(error_list[i].GetDouble()) >= cutoff_time)
+    if (base::Time::FromMillisecondsSinceUnixEpoch(error_list[i].GetDouble()) >=
+        cutoff_time) {
       return base::MakeStrictNum(error_list.size() - i) >= threshold;
+    }
   }
   return false;
 }
@@ -388,18 +389,31 @@ void StatefulSSLHostStateDelegate::SetHttpsEnforcementForHost(
   }
 }
 
-bool StatefulSSLHostStateDelegate::IsHttpsEnforcedForHost(
-    const std::string& host,
+bool StatefulSSLHostStateDelegate::IsHttpsEnforcedForUrl(
+    const GURL& url,
     content::StoragePartition* storage_partition) {
   bool is_nondefault_storage =
       !storage_partition ||
       storage_partition != browser_context_->GetDefaultStoragePartition();
-  return https_only_mode_enforcelist_.IsEnforcedForHost(host,
-                                                        is_nondefault_storage);
+  return https_only_mode_enforcelist_.IsEnforcedForUrl(url,
+                                                       is_nondefault_storage);
+}
+
+std::set<GURL> StatefulSSLHostStateDelegate::GetHttpsEnforcedHosts(
+    content::StoragePartition* storage_partition) const {
+  bool is_nondefault_storage =
+      !storage_partition ||
+      storage_partition != browser_context_->GetDefaultStoragePartition();
+  return https_only_mode_enforcelist_.GetHosts(is_nondefault_storage);
 }
 
 void StatefulSSLHostStateDelegate::ClearHttpsOnlyModeAllowlist() {
   https_only_mode_allowlist_.ClearAllowlist(base::Time(), base::Time::Max());
+}
+
+void StatefulSSLHostStateDelegate::ClearHttpsEnforcelist() {
+  https_only_mode_enforcelist_.ClearEnforcements(base::Time(),
+                                                 base::Time::Max());
 }
 
 void StatefulSSLHostStateDelegate::RevokeUserAllowExceptions(

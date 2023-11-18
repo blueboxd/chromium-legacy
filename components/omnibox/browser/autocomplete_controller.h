@@ -254,6 +254,8 @@ class AutocompleteController : public AutocompleteProviderListener,
   friend class AutocompleteProviderTest;
   friend class OmniboxSuggestionButtonRowBrowserTest;
   friend class ZeroSuggestPrefetchTabHelperBrowserTest;
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteControllerTest,
+                           FilterMatchesForInstantKeywordWithBareAt);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest,
                            RedundantKeywordsIgnoredInResult);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest, UpdateAssistedQueryStats);
@@ -428,6 +430,20 @@ class AutocompleteController : public AutocompleteProviderListener,
   GURL ComputeURLFromSearchTermsArgs(
       TemplateURL* template_url,
       const TemplateURLRef::SearchTermsArgs& args) const;
+
+  // May remove company entity images if omnibox::kCompanyEntityIconAdjustment
+  // feature is enabled.
+  void MaybeRemoveCompanyEntityImages(AutocompleteResult* result);
+
+  // May remove actions from default suggestion to avoid interference with
+  // keyword mode refresh interaction. May clear some match text that is
+  // repeated across multiple consecutive matches.
+  void MaybeCleanSuggestionsForKeywordMode(const std::u16string& input,
+                                           AutocompleteResult* result);
+
+  // Get the experiment stats v2 entry for the omnibox position. Used on iOS.
+  const omnibox::metrics::ChromeSearchboxStats::ExperimentStatsV2
+  GetOmniboxPositionExperimentStatsV2() const;
 
   base::ObserverList<Observer> observers_;
 

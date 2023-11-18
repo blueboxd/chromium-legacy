@@ -14,6 +14,7 @@
 #import "components/omnibox/browser/actions/omnibox_pedal_provider.h"
 #import "components/omnibox/browser/autocomplete_classifier.h"
 #import "components/omnibox/browser/omnibox_triggered_feature_service.h"
+#import "components/omnibox/browser/provider_state_service.h"
 #import "components/omnibox/browser/shortcuts_backend.h"
 #import "components/omnibox/common/omnibox_features.h"
 #import "components/prefs/pref_service.h"
@@ -23,6 +24,7 @@
 #import "ios/chrome/browser/autocomplete/model/autocomplete_classifier_factory.h"
 #import "ios/chrome/browser/autocomplete/model/in_memory_url_index_factory.h"
 #import "ios/chrome/browser/autocomplete/model/omnibox_pedal_implementation.h"
+#import "ios/chrome/browser/autocomplete/model/provider_state_service_factory.h"
 #import "ios/chrome/browser/autocomplete/model/remote_suggestions_service_factory.h"
 #import "ios/chrome/browser/autocomplete/model/shortcuts_backend_factory.h"
 #import "ios/chrome/browser/autocomplete/model/tab_matcher_impl.h"
@@ -31,7 +33,7 @@
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/history/history_service_factory.h"
 #import "ios/chrome/browser/history/top_sites_factory.h"
-#import "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser/browser_list.h"
@@ -40,7 +42,7 @@
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/signin/model/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/components/webui/web_ui_url_constants.h"
 #import "services/network/public/cpp/shared_url_loader_factory.h"
@@ -203,6 +205,11 @@ OnDeviceTailModelService*
 AutocompleteProviderClientImpl::GetOnDeviceTailModelService() const {
   // TODO(crbug.com/1372112): implement the service factory for iOS.
   return nullptr;
+}
+
+ProviderStateService* AutocompleteProviderClientImpl::GetProviderStateService()
+    const {
+  return ios::ProviderStateServiceFactory::GetForBrowserState(browser_state_);
 }
 
 std::string AutocompleteProviderClientImpl::GetAcceptLanguages() const {

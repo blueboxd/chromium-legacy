@@ -143,7 +143,10 @@ executable("character_data_generator") {
 # but it helps to have the targets match the GYP build.
 group("make_platform_generated") {
   visibility = []  # Allow re-assignment of list.
-  visibility = [ "//third_party/blink/renderer/*" ]
+  visibility = [
+    "//third_party/blink/public:blink_headers",
+    "//third_party/blink/renderer/*",
+  ]
   public_deps = [
     ":bindings_buildflags",
     ":character_data",
@@ -152,6 +155,7 @@ group("make_platform_generated") {
     ":runtime_enabled_features",
     ":runtime_feature_state_override_context",
     "//third_party/blink/public/common:buildflags",
+    "//third_party/blink/renderer/platform/heap:blink_heap_buildflags",
     "//third_party/blink/renderer/platform/network:make_generated",
   ]
 }
@@ -198,7 +202,6 @@ group("blink_platform_public_deps") {
     "//third_party/blink/public/common:font_enumeration_table_proto",
     "//third_party/blink/public/mojom:mojom_platform_blink",
     "//third_party/blink/public/mojom:web_bluetooth_mojo_bindings_blink",
-    "//third_party/blink/renderer/platform/heap:blink_heap_buildflags",
     "//third_party/blink/renderer/platform/network:make_generated",
     "//third_party/blink/renderer/platform/wtf",
     "//third_party/boringssl",
@@ -1186,6 +1189,7 @@ component("platform") {
     "graphics/video_frame_submitter.cc",
     "graphics/video_frame_submitter.h",
     "graphics/view_transition_element_id.h",
+    "graphics/visual_rect_flags.h",
     "graphics/viz_util.cc",
     "graphics/viz_util.h",
     "graphics/web_graphics_context_3d_provider_util.cc",
@@ -1594,7 +1598,14 @@ component("platform") {
   if (current_cpu == "loong64") {
     cflags = [
       "-mlsx",
-      "-flax-vector-conversions",
+      "-flax-vector-conversions=all",
+    ]
+  }
+
+  if (is_apple) {
+    sources += [
+      "fonts/mac/font_platform_data_mac.h",
+      "fonts/mac/font_platform_data_mac.mm",
     ]
   }
 
@@ -1609,8 +1620,6 @@ component("platform") {
       "fonts/mac/font_cache_mac.mm",
       "fonts/mac/font_matcher_mac.h",
       "fonts/mac/font_matcher_mac.mm",
-      "fonts/mac/font_platform_data_mac.h",
-      "fonts/mac/font_platform_data_mac.mm",
       "mac/color_mac.h",
       "mac/color_mac.mm",
       "mac/graphics_context_canvas.h",
@@ -1978,6 +1987,10 @@ static_library("test_support") {
 test("blink_platform_unittests") {
   deps = [ ":blink_platform_unittests_sources" ]
 
+  if (enable_nocompile_tests_new) {
+    deps += [ ":blink_platform_nocompile_tests" ]
+  }
+
   if (is_fuchsia) {
     additional_manifest_fragments = [
       "//build/config/fuchsia/test/test_fonts.shard.test-cml",
@@ -1997,6 +2010,17 @@ test("blink_platform_unittests") {
   }
   if (is_ios) {
     bundle_deps = [ ":blink_platform_unittests_bundle_data" ]
+  }
+}
+
+if (enable_nocompile_tests_new) {
+  nocompile_source_set("blink_platform_nocompile_tests") {
+    sources = [ "wtf/functional_nocompile.nc" ]
+
+    deps = [
+      ":platform",
+      "//base",
+    ]
   }
 }
 
@@ -2066,6 +2090,7 @@ source_set("blink_platform_unittests_sources") {
     "fonts/typesetting_features_test.cc",
     "fonts/unicode_range_set_test.cc",
     "fonts/utf16_ragel_iterator_test.cc",
+    "fonts/web_font_typeface_factory_test.cc",
     "geometry/calculation_expression_node_test.cc",
     "geometry/float_polygon_test.cc",
     "geometry/float_rounded_rect_test.cc",
@@ -2502,6 +2527,14 @@ fuzzer_test("layout_locale_fuzzer") {
   ]
 }
 
+fuzzer_test("segmented_string_fuzzer") {
+  sources = [ "text/segmented_string_fuzzer.cc" ]
+  deps = [
+    ":blink_fuzzer_test_support",
+    ":platform",
+  ]
+}
+
 # Fuzzer for blink::FindCategory.
 fuzzer_test("mathml_operator_dictionary_fuzzer") {
   sources = [ "text/mathml_operator_dictionary_fuzzer.cc" ]
@@ -2676,6 +2709,7 @@ source_set("unit_tests") {
     "graphics/canvas_color_params_test.cc",
     "graphics/canvas_hibernation_handler_test.cc",
     "graphics/canvas_resource_dispatcher_test.cc",
+    "graphics/canvas_resource_host_test.cc",
     "graphics/canvas_resource_provider_test.cc",
     "graphics/canvas_resource_test.cc",
     "graphics/color_correction_test_utils.cc",
@@ -2712,26 +2746,4 @@ source_set("unit_tests") {
     "//third_party/blink/public:test_headers",
   ]
   public_deps = [ "//gpu:raster" ]
-}
-
-if (enable_nocompile_tests) {
-  nocompile_test("blink_platform_nocompile_tests") {
-    sources = [ "wtf/functional_test.nc" ]
-
-    deps = [
-      ":platform",
-      "//base",
-      "//base/test:run_all_unittests",
-      "//testing/gtest",
-    ]
-
-    # Since the nocompile test is not able to inspect the contents of
-    # include_dirs, we need to specify the v8 and PartitionAlloc include dir
-    # manually.
-    include_dirs = [
-      "//v8/include",
-      "${root_gen_dir}/base/allocator/partition_allocator/src",
-      "//base/allocator/partition_allocator/src",
-    ]
-  }
 }

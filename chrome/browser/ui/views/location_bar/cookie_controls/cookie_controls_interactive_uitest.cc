@@ -23,9 +23,11 @@
 #include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/feature_engagement/public/feature_constants.h"
+#include "components/privacy_sandbox/tracking_protection_prefs.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/user_education/views/help_bubble_view.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/content_mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/interaction/interaction_sequence.h"
@@ -47,6 +49,8 @@ const char kUMABubbleReloadingTimeout[] =
     "CookieControls.Bubble.ReloadingTimeout";
 }  // namespace
 
+// TODO(http://b/306151669): Update tests to check different strings based
+// on 3PCD state rather than explicitly disabling 3PCD.
 class CookieControlsInteractiveUiTest : public InteractiveBrowserTest {
  public:
   CookieControlsInteractiveUiTest() {
@@ -67,8 +71,26 @@ class CookieControlsInteractiveUiTest : public InteractiveBrowserTest {
     InteractiveBrowserTest::SetUp();
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    InteractiveBrowserTest::SetUpCommandLine(command_line);
+    mock_cert_verifier_.SetUpCommandLine(command_line);
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    mock_cert_verifier_.SetUpInProcessBrowserTestFixture();
+    InteractiveBrowserTest::SetUpInProcessBrowserTestFixture();
+  }
+
+  void TearDownInProcessBrowserTestFixture() override {
+    InteractiveBrowserTest::TearDownInProcessBrowserTestFixture();
+    mock_cert_verifier_.TearDownInProcessBrowserTestFixture();
+  }
+
   void SetUpOnMainThread() override {
     InteractiveBrowserTest::SetUpOnMainThread();
+    // This test uses a mock time, so use mock cert verifier to not have cert
+    // verification depend on the current mocked time.
+    mock_cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
     host_resolver()->AddRule("*", "127.0.0.1");
     content::SetupCrossSiteRedirector(https_server());
     https_server()->StartAcceptingConnections();
@@ -80,11 +102,11 @@ class CookieControlsInteractiveUiTest : public InteractiveBrowserTest {
   }
 
  protected:
-  virtual std::vector<base::test::FeatureRef> EnabledFeatures() {
-    return {content_settings::features::kUserBypassUI};
-  }
+  virtual std::vector<base::test::FeatureRef> EnabledFeatures() { return {}; }
 
-  virtual std::vector<base::test::FeatureRef> DisabledFeatures() { return {}; }
+  virtual std::vector<base::test::FeatureRef> DisabledFeatures() {
+    return {content_settings::features::kTrackingProtection3pcd};
+  }
 
   auto CheckIcon(ElementSpecifier view,
                  const gfx::VectorIcon& icon_pre_2023_refresh,
@@ -159,11 +181,16 @@ class CookieControlsInteractiveUiTest : public InteractiveBrowserTest {
         .InDays();
   }
 
-  void BlockThirdPartyCookies() {
-    browser()->profile()->GetPrefs()->SetInteger(
-        prefs::kCookieControlsMode,
-        static_cast<int>(
-            content_settings::CookieControlsMode::kBlockThirdParty));
+  void BlockThirdPartyCookies(bool use_3pcd = false) {
+    if (use_3pcd) {
+      browser()->profile()->GetPrefs()->SetBoolean(
+          prefs::kTrackingProtection3pcdEnabled, true);
+    } else {
+      browser()->profile()->GetPrefs()->SetInteger(
+          prefs::kCookieControlsMode,
+          static_cast<int>(
+              content_settings::CookieControlsMode::kBlockThirdParty));
+    }
   }
 
   void BlockCookiesAndSetHighConfidenceForSite() {
@@ -210,6 +237,7 @@ class CookieControlsInteractiveUiTest : public InteractiveBrowserTest {
   base::UserActionTester user_actions_;
   feature_engagement::test::ScopedIphFeatureList iph_feature_list_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
+  content::ContentMockCertVerifier mock_cert_verifier_;
 };
 
 class CookieControlsInteractiveUiNoFeedbackTest
@@ -220,7 +248,8 @@ class CookieControlsInteractiveUiNoFeedbackTest
 
  protected:
   std::vector<base::test::FeatureRef> DisabledFeatures() override {
-    return {content_settings::features::kUserBypassFeedback};
+    return {content_settings::features::kUserBypassFeedback,
+            content_settings::features::kTrackingProtection3pcd};
   }
 };
 
@@ -306,8 +335,7 @@ class CookieControlsInteractiveUiWithCookieControlsIphTest
 
  protected:
   std::vector<base::test::FeatureRef> EnabledFeatures() override {
-    return {content_settings::features::kUserBypassUI,
-            feature_engagement::kIPHCookieControlsFeature};
+    return {feature_engagement::kIPHCookieControlsFeature};
   }
 };
 
@@ -379,15 +407,13 @@ class CookieControlsInteractiveUiWith3pcdUserBypassIphTest
 
  protected:
   std::vector<base::test::FeatureRef> EnabledFeatures() override {
-    return {content_settings::features::kUserBypassUI,
-            feature_engagement::kIPH3pcdUserBypassFeature,
-            content_settings::features::kTrackingProtection3pcd};
+    return {feature_engagement::kIPH3pcdUserBypassFeature};
   }
 };
 
 IN_PROC_BROWSER_TEST_F(CookieControlsInteractiveUiWith3pcdUserBypassIphTest,
                        ShowAndHide3pcdUbIph) {
-  BlockThirdPartyCookies();
+  BlockThirdPartyCookies(/*use_3pcd=*/true);
   RunTestSequenceInContext(
       context(), ObserveState(kFeatureEngagementInitializedState, browser()),
       WaitForState(kFeatureEngagementInitializedState, true),
@@ -402,7 +428,7 @@ IN_PROC_BROWSER_TEST_F(CookieControlsInteractiveUiWith3pcdUserBypassIphTest,
 
 IN_PROC_BROWSER_TEST_F(CookieControlsInteractiveUiWith3pcdUserBypassIphTest,
                        Show3pcdUbIphAndOpenCookieControlsViaIcon) {
-  BlockThirdPartyCookies();
+  BlockThirdPartyCookies(/*use_3pcd=*/true);
   RunTestSequenceInContext(
       context(), ObserveState(kFeatureEngagementInitializedState, browser()),
       WaitForState(kFeatureEngagementInitializedState, true),

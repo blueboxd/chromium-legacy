@@ -5,18 +5,16 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Rect;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.TimingMetric;
+import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ServiceTabLauncher;
@@ -25,13 +23,13 @@ import org.chromium.chrome.browser.app.tab_activity_glue.ReparentingDelegateFact
 import org.chromium.chrome.browser.app.tab_activity_glue.ReparentingTask;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.new_tab_url.DseNewTabUrlManager;
 import org.chromium.chrome.browser.ntp.NewTabPageLaunchOrigin;
 import org.chromium.chrome.browser.ntp.NewTabPageUtils;
 import org.chromium.chrome.browser.prefetch.settings.PreloadPagesSettingsBridge;
 import org.chromium.chrome.browser.prefetch.settings.PreloadPagesState;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.tab.RedirectHandlerTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
@@ -42,7 +40,6 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabParentIntent;
 import org.chromium.chrome.browser.tab.TabResolver;
 import org.chromium.chrome.browser.tab.TabState;
-import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.url_formatter.UrlFormatter;
@@ -72,6 +69,7 @@ public class ChromeTabCreator extends TabCreator {
     }
 
     private final Activity mActivity;
+    private final OneshotSupplier<ProfileProvider> mProfileProviderSupplier;
     private final boolean mIncognito;
 
     private WindowAndroid mNativeWindow;
@@ -86,15 +84,21 @@ public class ChromeTabCreator extends TabCreator {
     @Nullable
     private final DseNewTabUrlManager mDseNewTabUrlManager;
 
-    public ChromeTabCreator(Activity activity, WindowAndroid nativeWindow,
-            Supplier<TabDelegateFactory> tabDelegateFactory, boolean incognito,
-            OverviewNTPCreator overviewNTPCreator, AsyncTabParamsManager asyncTabParamsManager,
+    public ChromeTabCreator(
+            Activity activity,
+            WindowAndroid nativeWindow,
+            Supplier<TabDelegateFactory> tabDelegateFactory,
+            OneshotSupplier<ProfileProvider> profileProviderSupplier,
+            boolean incognito,
+            OverviewNTPCreator overviewNTPCreator,
+            AsyncTabParamsManager asyncTabParamsManager,
             Supplier<TabModelSelector> tabModelSelectorSupplier,
             Supplier<CompositorViewHolder> compositorViewHolderSupplier,
             @Nullable DseNewTabUrlManager dseNewTabUrlManager) {
         mActivity = activity;
         mNativeWindow = nativeWindow;
         mTabDelegateFactorySupplier = tabDelegateFactory;
+        mProfileProviderSupplier = profileProviderSupplier;
         mIncognito = incognito;
         mOverviewNTPCreator = overviewNTPCreator;
         mAsyncTabParamsManager = asyncTabParamsManager;
@@ -159,6 +163,10 @@ public class ChromeTabCreator extends TabCreator {
         }
     }
 
+    private Profile getProfile() {
+        return ProfileProvider.getOrCreateProfile(mProfileProviderSupplier.get(), mIncognito);
+    }
+
     /**
      * Preconnect to the URL and its subresources as the tab is being created.
      * @param url URL to be preconnected to.
@@ -177,13 +185,8 @@ public class ChromeTabCreator extends TabCreator {
         // Only preconnect if we are allowed to trigger preloading.
         if (PreloadPagesSettingsBridge.getState() == PreloadPagesState.NO_PRELOADING) return;
 
-        Profile profile = IncognitoUtils.getProfileFromWindowAndroid(mNativeWindow, mIncognito);
-        WarmupManager.getInstance().maybePreconnectUrlAndSubResources(profile, url.getScheme());
-    }
-
-    @Override
-    public boolean createsTabsAsynchronously() {
-        return false;
+        WarmupManager.getInstance()
+                .maybePreconnectUrlAndSubResources(getProfile(), url.getScheme());
     }
 
     /**
@@ -232,49 +235,6 @@ public class ChromeTabCreator extends TabCreator {
         }
 
         return createNewTab(loadUrlParams, type, parent, position, intent);
-    }
-
-    /**
-     * Creates an instance of a {@link Tab} that is fully detached from any activity.
-     *
-     * Also performs general tab initialization as well as detached specifics.
-     *
-     * @param type Information about how the tab is launched.
-     * @param initializeRenderer Whether to initialize renderer with WebContents creation.
-     *
-     * @return The newly created and initialized spare tab.
-     *
-     * TODO(crbug.com/1412572): Adapt this method to create other tabs.
-     */
-    @Override
-    public Tab buildDetachedSpareTab(@TabLaunchType int type, boolean initializeRenderer) {
-        try (TraceEvent e = TraceEvent.scoped("ChromeTabCreator.buildDetachedTab")) {
-            Context context = ContextUtils.getApplicationContext();
-
-            // Don't create spare tab in incognito mode.
-            if (mIncognito) return null;
-
-            // TODO(crbug.com/1190971): Set isIncognito flag here if spare tabs are allowed for
-            // incognito mode.
-            TabDelegateFactory delegateFactory = createDefaultTabDelegateFactory();
-            Tab tab = TabBuilder.createLiveTab(true)
-                              .setWindow(mNativeWindow)
-                              .setLaunchType(type)
-                              .setDelegateFactory(delegateFactory)
-                              .setInitiallyHidden(true)
-                              .setInitializeRenderer(initializeRenderer)
-                              .build();
-
-            // Resize the webContents to avoid expensive post load resize when attaching the tab.
-            Rect bounds = TabUtils.estimateContentSize(context);
-            int width = bounds.right - bounds.left;
-            int height = bounds.bottom - bounds.top;
-            tab.getWebContents().setSize(width, height);
-
-            // Reparent the tab to detach it from the current activity.
-            ReparentingTask.from(tab).detach();
-            return tab;
-        }
     }
 
     /**
@@ -346,37 +306,40 @@ public class ChromeTabCreator extends TabCreator {
                 parent = selector != null ? selector.getTabById(parentId) : null;
                 assert TabModelUtils.getTabIndexById(mTabModel, assignedTabId)
                         == TabModel.INVALID_TAB_INDEX;
-                tab = TabBuilder.createLiveTab(!openInForeground)
-                              .setId(assignedTabId)
-                              .setParent(parent)
-                              .setIncognito(mIncognito)
-                              .setWindow(mNativeWindow)
-                              .setLaunchType(type)
-                              .setWebContents(webContents)
-                              .setDelegateFactory(delegateFactory)
-                              .setInitiallyHidden(!openInForeground)
-                              .build();
+                tab =
+                        TabBuilder.createLiveTab(getProfile(), !openInForeground)
+                                .setId(assignedTabId)
+                                .setParent(parent)
+                                .setWindow(mNativeWindow)
+                                .setLaunchType(type)
+                                .setWebContents(webContents)
+                                .setDelegateFactory(delegateFactory)
+                                .setInitiallyHidden(!openInForeground)
+                                .build();
                 TabParentIntent.from(tab).set(parentIntent).setCurrentTab(selector::getCurrentTab);
                 webContents.resumeLoadingCreatedWebContents();
             } else if (!openInForeground && SysUtils.isLowEndDevice()) {
                 // On low memory devices the tabs opened in background are not loaded automatically
                 // to preserve resources (cpu, memory, strong renderer binding) for the foreground
                 // tab.
-                tab = TabBuilder.createForLazyLoad(loadUrlParams)
-                              .setParent(parent)
-                              .setIncognito(mIncognito)
-                              .setWindow(mNativeWindow)
-                              .setLaunchType(type)
-                              .setDelegateFactory(delegateFactory)
-                              .setInitiallyHidden(!openInForeground)
-                              .build();
+                tab =
+                        TabBuilder.createForLazyLoad(getProfile(), loadUrlParams)
+                                .setParent(parent)
+                                .setWindow(mNativeWindow)
+                                .setLaunchType(type)
+                                .setDelegateFactory(delegateFactory)
+                                .setInitiallyHidden(!openInForeground)
+                                .build();
                 creationState = TabCreationState.FROZEN_FOR_LAZY_LOAD;
-            } else if ((tab = WarmupManager.getInstance().takeSpareTab(mIncognito, type)) != null) {
+            } else if (WarmupManager.getInstance().hasSpareTab(getProfile())) {
                 // Load URL using spare tab if available. This occurs only if a spare tab has been
                 // created beforehand. The creation of a spare tab is a costly operation that should
                 // not be performed without testing. Spare tab is only used for navigations in the
                 // foreground and for high-end devices.
                 TraceEvent.end("ChromeTabCreator.loadUrlWithSpareTab");
+
+                tab = WarmupManager.getInstance().takeSpareTab(getProfile(), type);
+                assert tab != null;
 
                 // Reparent the tab to its parent, updating the DelegateFactory and NativeWindow.
                 tab.reparentTab(parent);
@@ -394,14 +357,14 @@ public class ChromeTabCreator extends TabCreator {
                 TraceEvent.end("ChromeTabCreator.loadUrlWithSpareTab");
             } else {
                 TraceEvent.begin("ChromeTabCreator.loadUrl");
-                tab = TabBuilder.createLiveTab(!openInForeground)
-                              .setParent(parent)
-                              .setIncognito(mIncognito)
-                              .setWindow(mNativeWindow)
-                              .setLaunchType(type)
-                              .setDelegateFactory(delegateFactory)
-                              .setInitiallyHidden(!openInForeground)
-                              .build();
+                tab =
+                        TabBuilder.createLiveTab(getProfile(), !openInForeground)
+                                .setParent(parent)
+                                .setWindow(mNativeWindow)
+                                .setLaunchType(type)
+                                .setDelegateFactory(delegateFactory)
+                                .setInitiallyHidden(!openInForeground)
+                                .build();
                 tab.loadUrl(loadUrlParams);
                 TraceEvent.end("ChromeTabCreator.loadUrl");
             }
@@ -453,26 +416,26 @@ public class ChromeTabCreator extends TabCreator {
                     || !webContents.getMainFrame().isRenderFrameLive()) {
                 // The webContents may not have a renderer. Treat it as FROZEN_FOR_LAZY_LOAD
                 // so that the TabStateAttribute forces an immediate write.
-                tab = TabBuilder.createLazyTabWithWebContents()
-                              .setParent(parent)
-                              .setIncognito(mIncognito)
-                              .setWindow(mNativeWindow)
-                              .setLaunchType(type)
-                              .setWebContents(webContents)
-                              .setDelegateFactory(delegateFactory)
-                              .setInitiallyHidden(!openInForeground)
-                              .build();
+                tab =
+                        TabBuilder.createLazyTabWithWebContents(getProfile())
+                                .setParent(parent)
+                                .setWindow(mNativeWindow)
+                                .setLaunchType(type)
+                                .setWebContents(webContents)
+                                .setDelegateFactory(delegateFactory)
+                                .setInitiallyHidden(!openInForeground)
+                                .build();
                 creationState = TabCreationState.FROZEN_FOR_LAZY_LOAD;
             } else {
-                tab = TabBuilder.createLiveTab(!openInForeground)
-                              .setParent(parent)
-                              .setIncognito(mIncognito)
-                              .setWindow(mNativeWindow)
-                              .setLaunchType(type)
-                              .setWebContents(webContents)
-                              .setDelegateFactory(delegateFactory)
-                              .setInitiallyHidden(!openInForeground)
-                              .build();
+                tab =
+                        TabBuilder.createLiveTab(getProfile(), !openInForeground)
+                                .setParent(parent)
+                                .setWindow(mNativeWindow)
+                                .setLaunchType(type)
+                                .setWebContents(webContents)
+                                .setDelegateFactory(delegateFactory)
+                                .setInitiallyHidden(!openInForeground)
+                                .build();
                 creationState = openInForeground ? TabCreationState.LIVE_IN_FOREGROUND
                                                  : TabCreationState.LIVE_IN_BACKGROUND;
             }
@@ -563,13 +526,13 @@ public class ChromeTabCreator extends TabCreator {
     }
 
     @Override
-    public Tab createFrozenTab(TabState state, int id, boolean isIncognito, int index) {
+    public Tab createFrozenTab(TabState state, int id, int index) {
         TabModelSelector selector = mTabModelSelectorSupplier.get();
         TabResolver resolver = (tabId) -> {
             return selector != null ? selector.getTabById(tabId) : null;
         };
         boolean selectTab =
-                mOrderController.willOpenInForeground(TabLaunchType.FROM_RESTORE, isIncognito);
+                mOrderController.willOpenInForeground(TabLaunchType.FROM_RESTORE, mIncognito);
         AsyncTabParams asyncParams = mAsyncTabParamsManager.remove(id);
         Tab tab = null;
         @TabLaunchType
@@ -581,9 +544,12 @@ public class ChromeTabCreator extends TabCreator {
 
             TabReparentingParams params = (TabReparentingParams) asyncParams;
             tab = params.getTabToReparent();
-            if (tab.isIncognito() != isIncognito) {
-                throw new IllegalStateException("Incognito state mismatch. TabState: " + isIncognito
-                        + ". Tab: " + tab.isIncognito());
+            if (tab.isIncognito() != mIncognito) {
+                throw new IllegalStateException(
+                        "Incognito state mismatch. TabState: "
+                                + mIncognito
+                                + ". Tab: "
+                                + tab.isIncognito());
             }
             ReparentingTask.from(tab).finish(
                     ReparentingDelegateFactory.createReparentingTaskDelegate(
@@ -600,20 +566,15 @@ public class ChromeTabCreator extends TabCreator {
             }
         }
         if (tab == null) {
-            tab = TabBuilder.createFromFrozenState()
-                          .setId(id)
-                          .setTabResolver(resolver)
-                          .setIncognito(isIncognito)
-                          .setWindow(mNativeWindow)
-                          .setDelegateFactory(createDefaultTabDelegateFactory())
-                          .setInitiallyHidden(!selectTab)
-                          .setTabState(state)
-                          .build();
-        }
-
-        if (isIncognito != mIncognito) {
-            throw new IllegalStateException("Incognito state mismatch. TabState: "
-                    + state.isIncognito() + ". Creator: " + mIncognito);
+            tab =
+                    TabBuilder.createFromFrozenState(getProfile())
+                            .setId(id)
+                            .setTabResolver(resolver)
+                            .setWindow(mNativeWindow)
+                            .setDelegateFactory(createDefaultTabDelegateFactory())
+                            .setInitiallyHidden(!selectTab)
+                            .setTabState(state)
+                            .build();
         }
 
         mTabModel.addTab(tab, index, launchType, creationState);

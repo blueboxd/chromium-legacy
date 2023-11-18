@@ -120,8 +120,8 @@ struct URLResponseHead {
   // prefetched URL.
   NavigationDeliveryType navigation_delivery_type = kDefault;
 
-  // The proxy server used for this request, if any.
-  ProxyServer proxy_server;
+  // The proxy chain used for this request, if any.
+  ProxyChain proxy_chain;
 
   // True if a service worker responded to the request. If the service worker
   // received a fetch event and did not call respondWith(), or was bypassed due
@@ -249,6 +249,12 @@ struct URLResponseHead {
   // algorithm.
   // See: https://fetch.spec.whatwg.org/#concept-http-network-fetch
   bool request_include_credentials = true;
+
+  // If this response contains JavaScript, then downstream components may cache
+  // the parsed bytecode, but must use a source hash comparison rather than the
+  // response time when determining whether the current version of the script
+  // matches the cached bytecode.
+  bool should_use_source_hash_for_js_code_cache = false;
 
   // Supports aggregatable reports in the Attribution Reporting API:
   // https://github.com/WICG/attribution-reporting-api.

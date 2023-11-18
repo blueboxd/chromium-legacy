@@ -13,7 +13,10 @@
 
 namespace network {
 
-NetworkServiceProxyAllowList::NetworkServiceProxyAllowList() = default;
+NetworkServiceProxyAllowList::NetworkServiceProxyAllowList(
+    network::mojom::IpProtectionProxyBypassPolicy policy)
+    : proxy_bypass_policy_{policy} {}
+
 NetworkServiceProxyAllowList::~NetworkServiceProxyAllowList() = default;
 
 NetworkServiceProxyAllowList::NetworkServiceProxyAllowList(
@@ -21,7 +24,9 @@ NetworkServiceProxyAllowList::NetworkServiceProxyAllowList(
 
 NetworkServiceProxyAllowList NetworkServiceProxyAllowList::CreateForTesting(
     std::map<std::string, std::set<std::string>> first_party_map) {
-  auto allow_list = NetworkServiceProxyAllowList();
+  auto allow_list = NetworkServiceProxyAllowList(
+      network::mojom::IpProtectionProxyBypassPolicy::
+          kFirstPartyToTopLevelFrame);
 
   for (auto const& [domain, properties] : first_party_map) {
     net::SchemeHostPortMatcher bypass_matcher;
@@ -72,10 +77,36 @@ size_t NetworkServiceProxyAllowList::EstimateMemoryUsage() const {
   return base::trace_event::EstimateMemoryUsage(url_matcher_with_bypass_);
 }
 
-bool NetworkServiceProxyAllowList::Matches(const GURL& request_url,
-                                           const GURL& top_frame_url) {
-  VLOG(3) << "NSPAL::Matches(" << request_url << ", " << top_frame_url << ")";
-  return url_matcher_with_bypass_.Matches(request_url, top_frame_url);
+bool NetworkServiceProxyAllowList::Matches(
+    const GURL& request_url,
+    const net::NetworkAnonymizationKey& network_anonymization_key) {
+  absl::optional<net::SchemefulSite> top_frame_site =
+      network_anonymization_key.GetTopFrameSite();
+  switch (proxy_bypass_policy_) {
+    case network::mojom::IpProtectionProxyBypassPolicy::kNone: {
+      return url_matcher_with_bypass_.Matches(request_url, top_frame_site, true)
+          .matches;
+    }
+    case network::mojom::IpProtectionProxyBypassPolicy::
+        kFirstPartyToTopLevelFrame: {
+      if (!network_anonymization_key.GetTopFrameSite().has_value()) {
+        DVLOG(3) << "NSPAL::Matches(" << request_url
+                 << ", empty top_frame_site) - false";
+        return false;
+      }
+      DVLOG(3) << "NSPAL::Matches(" << request_url << ", "
+               << top_frame_site.value() << ")";
+
+      // If the NAK is transient (has a nonce and/or top_frame_origin is
+      // opaque), we should skip the first party check and match only on the
+      // request_url.
+      UrlMatcherWithBypass::MatchResult result =
+          url_matcher_with_bypass_.Matches(
+              request_url, top_frame_site,
+              network_anonymization_key.IsTransient());
+      return result.matches && result.is_third_party;
+    }
+  }
 }
 
 void NetworkServiceProxyAllowList::UseMaskedDomainList(

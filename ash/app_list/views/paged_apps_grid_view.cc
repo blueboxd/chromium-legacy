@@ -32,6 +32,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer.h"
@@ -550,20 +551,6 @@ PagedAppsGridView::GetVisibleItemIndexRange() const {
 
   return VisibleItemIndexRange(start_view_index,
                                start_view_index + on_page_item_count - 1);
-}
-
-base::ScopedClosureRunner PagedAppsGridView::LockAppsGridOpacity() {
-  lock_opacity_ = true;
-
-  base::OnceClosure reset_closure = base::BindOnce(
-      [](base::WeakPtr<PagedAppsGridView> weak_ptr) {
-        if (!weak_ptr)
-          return;
-
-        weak_ptr->lock_opacity_ = false;
-      },
-      weak_ptr_factory_.GetWeakPtr());
-  return base::ScopedClosureRunner(std::move(reset_closure));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1251,5 +1238,8 @@ void PagedAppsGridView::StackCardsAtBottom() {
     items_container()->layer()->StackAtBottom(background_cards_[i]->layer());
   }
 }
+
+BEGIN_METADATA(PagedAppsGridView)
+END_METADATA
 
 }  // namespace ash

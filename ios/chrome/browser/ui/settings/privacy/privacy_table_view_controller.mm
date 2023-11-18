@@ -18,7 +18,7 @@
 #import "components/prefs/pref_service.h"
 #import "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #import "components/strings/grit/components_strings.h"
-#import "components/supervised_user/core/common/supervised_user_utils.h"
+#import "components/supervised_user/core/browser/supervised_user_preferences.h"
 #import "components/sync/service/sync_service.h"
 #import "ios/chrome/browser/browsing_data/model/browsing_data_features.h"
 #import "ios/chrome/browser/net/crurl.h"
@@ -44,6 +44,7 @@
 #import "ios/chrome/browser/ui/settings/elements/info_popover_view_controller.h"
 #import "ios/chrome/browser/ui/settings/elements/supervised_user_info_popover_view_controller.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_constants.h"
+#import "ios/chrome/browser/ui/settings/privacy/privacy_guide/features.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_navigation_commands.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
@@ -68,6 +69,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierIncognitoAuth,
   SectionIdentifierIncognitoInterstitial,
   SectionIdentifierLockdownMode,
+  SectionIdentifierPrivacyGuide,
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
@@ -82,6 +84,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeIncognitoInterstitial,
   ItemTypeIncognitoInterstitialDisabled,
   ItemTypeLockdownMode,
+  ItemTypePrivacyGuide,
 };
 
 // Used to open the Sync and Google Services settings.
@@ -198,7 +201,7 @@ const char kSyncSettingsURL[] = "settings://open_sync";
   }
 }
 
-#pragma mark - ChromeTableViewController
+#pragma mark - LegacyChromeTableViewController
 
 - (void)loadModel {
   [super loadModel];
@@ -207,6 +210,9 @@ const char kSyncSettingsURL[] = "settings://open_sync";
 
   TableViewModel* model = self.tableViewModel;
   [model addSectionWithIdentifier:SectionIdentifierPrivacyContent];
+  if (IsPrivacyGuideIosEnabled()) {
+    [model addSectionWithIdentifier:SectionIdentifierPrivacyGuide];
+  }
   [model addSectionWithIdentifier:SectionIdentifierSafeBrowsing];
 
   if (base::FeatureList::IsEnabled(
@@ -224,6 +230,12 @@ const char kSyncSettingsURL[] = "settings://open_sync";
   // Clear Browsing item.
   [model addItem:[self clearBrowsingDetailItem]
       toSectionWithIdentifier:SectionIdentifierPrivacyContent];
+
+  // Privacy Guide item.
+  if (IsPrivacyGuideIosEnabled()) {
+    [model addItem:[self privacyGuideDetailItem]
+        toSectionWithIdentifier:SectionIdentifierPrivacyGuide];
+  }
 
   // Privacy Safe Browsing item.
   [model addItem:[self safeBrowsingDetailItem]
@@ -383,6 +395,13 @@ const char kSyncSettingsURL[] = "settings://open_sync";
   return _lockdownModeDetailItem;
 }
 
+- (TableViewItem*)privacyGuideDetailItem {
+  return [self detailItemWithType:ItemTypePrivacyGuide
+                          titleId:IDS_IOS_PRIVACY_GUIDE_TITLE
+                       detailText:nil
+          accessibilityIdentifier:kSettingsPrivacyGuideCellId];
+}
+
 - (TableViewSwitchItem*)incognitoReauthItem {
   if (_incognitoReauthItem) {
     return _incognitoReauthItem;
@@ -491,6 +510,9 @@ const char kSyncSettingsURL[] = "settings://open_sync";
       break;
     case ItemTypeLockdownMode:
       [self.handler showLockdownMode];
+      break;
+    case ItemTypePrivacyGuide:
+      [self.handler showPrivacyGuide];
       break;
     default:
       break;
@@ -618,7 +640,8 @@ const char kSyncSettingsURL[] = "settings://open_sync";
 // reauth setting's UI cell.
 - (void)didTapIncognitoReauthDisabledInfoButton:(UIButton*)buttonView {
   InfoPopoverViewController* popover;
-  if (supervised_user::IsSubjectToParentalControls(_browserState->GetPrefs())) {
+  if (supervised_user::IsSubjectToParentalControls(
+                           *_browserState->GetPrefs())) {
     popover = [[SupervisedUserInfoPopoverViewController alloc]
         initWithMessage:
             l10n_util::GetNSString(
@@ -641,7 +664,8 @@ const char kSyncSettingsURL[] = "settings://open_sync";
 // interstitial setting's UI cell.
 - (void)didTapIncognitoInterstitialDisabledInfoButton:(UIButton*)buttonView {
   InfoPopoverViewController* popover;
-  if (supervised_user::IsSubjectToParentalControls(_browserState->GetPrefs())) {
+  if (supervised_user::IsSubjectToParentalControls(
+                           *_browserState->GetPrefs())) {
     popover = [[SupervisedUserInfoPopoverViewController alloc]
         initWithMessage:
             l10n_util::GetNSString(

@@ -32,8 +32,9 @@ enum class LegendBlockAlignment {
 inline LegendBlockAlignment ComputeLegendBlockAlignment(
     const ComputedStyle& legend_style,
     const ComputedStyle& fieldset_style) {
-  bool start_auto = legend_style.MarginStartUsing(fieldset_style).IsAuto();
-  bool end_auto = legend_style.MarginEndUsing(fieldset_style).IsAuto();
+  bool start_auto =
+      legend_style.MarginInlineStartUsing(fieldset_style).IsAuto();
+  bool end_auto = legend_style.MarginInlineEndUsing(fieldset_style).IsAuto();
   if (start_auto || end_auto) {
     if (start_auto) {
       return end_auto ? LegendBlockAlignment::kCenter
@@ -56,9 +57,9 @@ inline LegendBlockAlignment ComputeLegendBlockAlignment(
 
 }  // namespace
 
-NGFieldsetLayoutAlgorithm::NGFieldsetLayoutAlgorithm(
-    const NGLayoutAlgorithmParams& params)
-    : NGLayoutAlgorithm(params),
+FieldsetLayoutAlgorithm::FieldsetLayoutAlgorithm(
+    const LayoutAlgorithmParams& params)
+    : LayoutAlgorithm(params),
       writing_direction_(ConstraintSpace().GetWritingDirection()),
       consumed_block_size_(BreakToken() ? BreakToken()->ConsumedBlockSize()
                                         : LayoutUnit()) {
@@ -66,7 +67,7 @@ NGFieldsetLayoutAlgorithm::NGFieldsetLayoutAlgorithm(
   border_box_size_ = container_builder_.InitialBorderBoxSize();
 }
 
-const NGLayoutResult* NGFieldsetLayoutAlgorithm::Layout() {
+const NGLayoutResult* FieldsetLayoutAlgorithm::Layout() {
   // Layout of a fieldset container consists of two parts: Create a child
   // fragment for the rendered legend (if any), and create a child fragment for
   // the fieldset contents anonymous box (if any).
@@ -83,7 +84,7 @@ const NGLayoutResult* NGFieldsetLayoutAlgorithm::Layout() {
 
   if (InvolvedInBlockFragmentation(container_builder_)) {
     container_builder_.SetBreakTokenData(
-        MakeGarbageCollected<NGFieldsetBreakTokenData>(
+        MakeGarbageCollected<FieldsetBreakTokenData>(
             container_builder_.GetBreakTokenData()));
   }
 
@@ -129,10 +130,10 @@ const NGLayoutResult* NGFieldsetLayoutAlgorithm::Layout() {
     if (status == NGBreakStatus::kNeedsEarlierBreak) {
       // If we found a good break somewhere inside this block, re-layout and
       // break at that location.
-      return RelayoutAndBreakEarlier<NGFieldsetLayoutAlgorithm>(
+      return RelayoutAndBreakEarlier<FieldsetLayoutAlgorithm>(
           container_builder_.EarlyBreak());
     } else if (status == NGBreakStatus::kDisableFragmentation) {
-      return RelayoutWithoutFragmentation<NGFieldsetLayoutAlgorithm>();
+      return RelayoutWithoutFragmentation<FieldsetLayoutAlgorithm>();
     }
     DCHECK_EQ(status, NGBreakStatus::kContinue);
   } else {
@@ -143,7 +144,7 @@ const NGLayoutResult* NGFieldsetLayoutAlgorithm::Layout() {
 #endif
   }
 
-  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
+  OutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
 
   const auto& style = Style();
   if (style.LogicalHeight().IsPercentOrCalc() ||
@@ -158,7 +159,7 @@ const NGLayoutResult* NGFieldsetLayoutAlgorithm::Layout() {
   return container_builder_.ToBoxFragment();
 }
 
-NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutChildren() {
+NGBreakStatus FieldsetLayoutAlgorithm::LayoutChildren() {
   const NGBlockBreakToken* content_break_token = nullptr;
   bool has_seen_all_children = false;
   if (const auto* token = BreakToken()) {
@@ -189,7 +190,7 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutChildren() {
     LayoutUnit legend_size_contribution;
     if (IsBreakInside(BreakToken())) {
       const auto* token_data =
-          To<NGFieldsetBreakTokenData>(BreakToken()->TokenData());
+          To<FieldsetBreakTokenData>(BreakToken()->TokenData());
       legend_size_contribution = token_data->legend_block_size_contribution;
     } else {
       // We're at the first fragment. The current layout position
@@ -200,7 +201,7 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutChildren() {
 
     if (InvolvedInBlockFragmentation(container_builder_)) {
       auto* token_data =
-          To<NGFieldsetBreakTokenData>(container_builder_.GetBreakTokenData());
+          To<FieldsetBreakTokenData>(container_builder_.GetBreakTokenData());
       token_data->legend_block_size_contribution = legend_size_contribution;
     }
 
@@ -234,7 +235,7 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutChildren() {
   return NGBreakStatus::kContinue;
 }
 
-void NGFieldsetLayoutAlgorithm::LayoutLegend(NGBlockNode& legend) {
+void FieldsetLayoutAlgorithm::LayoutLegend(NGBlockNode& legend) {
   // Lay out the legend. While the fieldset container normally ignores its
   // padding, the legend is laid out within what would have been the content
   // box had the fieldset been a regular block with no weirdness.
@@ -254,7 +255,7 @@ void NGFieldsetLayoutAlgorithm::LayoutLegend(NGBlockNode& legend) {
   const auto& physical_fragment = result->PhysicalFragment();
 
   LayoutUnit legend_border_box_block_size =
-      NGFragment(writing_direction_, physical_fragment).BlockSize();
+      LogicalFragment(writing_direction_, physical_fragment).BlockSize();
   LayoutUnit legend_margin_box_block_size = legend_margins.block_start +
                                             legend_border_box_block_size +
                                             legend_margins.block_end;
@@ -284,7 +285,8 @@ void NGFieldsetLayoutAlgorithm::LayoutLegend(NGBlockNode& legend) {
 
   LayoutUnit legend_inline_start = ComputeLegendInlineOffset(
       legend.Style(),
-      NGFragment(writing_direction_, result->PhysicalFragment()).InlineSize(),
+      LogicalFragment(writing_direction_, result->PhysicalFragment())
+          .InlineSize(),
       legend_margins, Style(), BorderScrollbarPadding().inline_start,
       ChildAvailableSize().inline_size);
   LogicalOffset legend_offset = {legend_inline_start, block_offset};
@@ -292,7 +294,7 @@ void NGFieldsetLayoutAlgorithm::LayoutLegend(NGBlockNode& legend) {
   container_builder_.AddResult(*result, legend_offset);
 }
 
-LayoutUnit NGFieldsetLayoutAlgorithm::ComputeLegendInlineOffset(
+LayoutUnit FieldsetLayoutAlgorithm::ComputeLegendInlineOffset(
     const ComputedStyle& legend_style,
     LayoutUnit legend_border_box_inline_size,
     const BoxStrut& legend_margins,
@@ -315,7 +317,7 @@ LayoutUnit NGFieldsetLayoutAlgorithm::ComputeLegendInlineOffset(
   return legend_inline_start;
 }
 
-NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutFieldsetContent(
+NGBreakStatus FieldsetLayoutAlgorithm::LayoutFieldsetContent(
     NGBlockNode& fieldset_content,
     const NGBlockBreakToken* content_break_token,
     LogicalSize adjusted_padding_box_size,
@@ -376,7 +378,7 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutFieldsetContent(
     if (result) {
       const auto& fragment = result->PhysicalFragment();
       LayoutUnit total_block_size =
-          NGFragment(writing_direction_, fragment).BlockSize();
+          LogicalFragment(writing_direction_, fragment).BlockSize();
       if (content_break_token)
         total_block_size += content_break_token->ConsumedBlockSize();
       if (total_block_size >= max_content_block_size)
@@ -420,7 +422,7 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutFieldsetContent(
       container_builder_.SetUseLastBaselineForInlineBaseline();
 
     intrinsic_block_size_ +=
-        NGFragment(writing_direction_, fragment).BlockSize();
+        LogicalFragment(writing_direction_, fragment).BlockSize();
     container_builder_.SetHasSeenAllChildren();
   } else if (break_status == NGBreakStatus::kBrokeBefore) {
     ConsumeRemainingFragmentainerSpace();
@@ -429,14 +431,14 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutFieldsetContent(
   return break_status;
 }
 
-LayoutUnit NGFieldsetLayoutAlgorithm::FragmentainerSpaceAvailable() const {
+LayoutUnit FieldsetLayoutAlgorithm::FragmentainerSpaceAvailable() const {
   // The legend may have extended past the end of the fragmentainer. Clamp to
   // zero if this is the case.
   return std::max(LayoutUnit(), FragmentainerSpaceLeft(ConstraintSpace()) -
                                     intrinsic_block_size_);
 }
 
-void NGFieldsetLayoutAlgorithm::ConsumeRemainingFragmentainerSpace() {
+void FieldsetLayoutAlgorithm::ConsumeRemainingFragmentainerSpace() {
   if (ConstraintSpace().HasKnownFragmentainerBlockSize()) {
     // The remaining part of the fragmentainer (the unusable space for child
     // content, due to the break) should still be occupied by this container.
@@ -444,7 +446,7 @@ void NGFieldsetLayoutAlgorithm::ConsumeRemainingFragmentainerSpace() {
   }
 }
 
-MinMaxSizesResult NGFieldsetLayoutAlgorithm::ComputeMinMaxSizes(
+MinMaxSizesResult FieldsetLayoutAlgorithm::ComputeMinMaxSizes(
     const MinMaxSizesFloatInput&) {
   MinMaxSizesResult result;
 
@@ -497,8 +499,7 @@ MinMaxSizesResult NGFieldsetLayoutAlgorithm::ComputeMinMaxSizes(
   return result;
 }
 
-const NGConstraintSpace
-NGFieldsetLayoutAlgorithm::CreateConstraintSpaceForLegend(
+const NGConstraintSpace FieldsetLayoutAlgorithm::CreateConstraintSpaceForLegend(
     NGBlockNode legend,
     LogicalSize available_size,
     LogicalSize percentage_size) {
@@ -513,7 +514,7 @@ NGFieldsetLayoutAlgorithm::CreateConstraintSpaceForLegend(
 }
 
 const NGConstraintSpace
-NGFieldsetLayoutAlgorithm::CreateConstraintSpaceForFieldsetContent(
+FieldsetLayoutAlgorithm::CreateConstraintSpaceForFieldsetContent(
     NGBlockNode fieldset_content,
     LogicalSize padding_box_size,
     LayoutUnit block_offset) {

@@ -814,9 +814,6 @@ public class TabsTest {
                             .addSceneChangeObserver(
                                     new SceneChangeObserver() {
                                         @Override
-                                        public void onTabSelectionHinted(int tabId) {}
-
-                                        @Override
                                         public void onSceneChange(Layout layout) {
                                             if (layout instanceof StaticLayout) {
                                                 staticLayoutCallbackHelper.notifyCalled();
@@ -1280,12 +1277,16 @@ public class TabsTest {
                 new File(
                         tabStateDir,
                         TabStateFileManager.getTabStateFilename(
-                                normalModel.getTabAt(normalModel.getCount() - 1).getId(), false));
+                                normalModel.getTabAt(normalModel.getCount() - 1).getId(),
+                                false,
+                                false));
         File incognitoTabFile =
                 new File(
                         tabStateDir,
                         TabStateFileManager.getTabStateFilename(
-                                incognitoModel.getTabAt(0).getId(), true));
+                                incognitoModel.getTabAt(0).getId(), true, false
+                                /** isFlatBuffer= */
+                                ));
 
         assertFileExists(normalTabFile, true);
         assertFileExists(incognitoTabFile, true);

@@ -10,15 +10,13 @@
 
 #include "ash/ash_export.h"
 #include "ash/style/system_shadow.h"
+#include "ash/wm/overview/event_handler_delegate.h"
 #include "ash/wm/overview/overview_types.h"
 #include "base/memory/raw_ptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/views/widget/widget.h"
-
-namespace aura {
-class Window;
-}  // namespace aura
 
 namespace gfx {
 class RectF;
@@ -32,7 +30,6 @@ class MouseEvent;
 
 namespace views {
 class View;
-class Widget;
 }  // namespace views
 
 namespace ash {
@@ -45,16 +42,17 @@ class RoundedLabelWidget;
 class SystemShadow;
 
 // Defines the interface for the overview item which will be implemented by
-// `OverviewItem` and `OverviewGroupItem`. The `OverviewGrid` creates and owns
-// the instance of this interface.
-class ASH_EXPORT OverviewItemBase {
+// `OverviewItem`, `OverviewGroupItem` or `OverviewDropTarget`. The
+// `OverviewGrid` creates and owns the top-level concrete instance of this
+// interface.
+class ASH_EXPORT OverviewItemBase : public EventHandlerDelegate {
  public:
   OverviewItemBase(OverviewSession* overview_session,
                    OverviewGrid* overview_grid,
                    aura::Window* root_window);
   OverviewItemBase(const OverviewItemBase&) = delete;
   OverviewItemBase& operator=(const OverviewItemBase&) = delete;
-  virtual ~OverviewItemBase();
+  ~OverviewItemBase() override;
 
   // Creates an instance of the `this` based on whether the given `window`
   // belongs to a snap group or not.
@@ -63,7 +61,7 @@ class ASH_EXPORT OverviewItemBase {
       OverviewSession* overview_session,
       OverviewGrid* overview_grid);
 
-  // Checks if `this` is currently being dragged.
+  // Returns true if `this` is currently being dragged.
   bool IsDragItem() const;
 
   // Refreshes visuals of the `shadow_` by setting the visibility and updating
@@ -73,15 +71,12 @@ class ASH_EXPORT OverviewItemBase {
   // Updates the type for the `shadow_` while being dragged and dropped.
   void UpdateShadowTypeForDrag(bool is_dragging);
 
-  // Handles events forwarded from the contents view.
-  void OnFocusedViewActivated();
-  void OnFocusedViewClosed();
-  void HandleMouseEvent(const ui::MouseEvent& event);
-  void HandleGestureEvent(ui::GestureEvent* event);
-
   // If in tablet mode, maybe forward events to `OverviewGridEventHandler` as we
-  // might want to process scroll events on the item.
-  void HandleGestureEventForTabletModeLayout(ui::GestureEvent* event);
+  // might want to process scroll events on `this`. `event_source_item`
+  // specifies the sender of the event.
+  void HandleGestureEventForTabletModeLayout(
+      ui::GestureEvent* event,
+      OverviewItemBase* event_source_item);
 
   void set_should_animate_when_entering(bool should_animate) {
     should_animate_when_entering_ = should_animate;
@@ -104,10 +99,12 @@ class ASH_EXPORT OverviewItemBase {
   }
 
   aura::Window* root_window() { return root_window_; }
+  const aura::Window* root_window() const { return root_window_; }
 
   OverviewGrid* overview_grid() { return overview_grid_; }
 
   views::Widget* item_widget() { return item_widget_.get(); }
+  const views::Widget* item_widget() const { return item_widget_.get(); }
 
   const gfx::RectF& target_bounds() const { return target_bounds_; }
 
@@ -180,9 +177,9 @@ class ASH_EXPORT OverviewItemBase {
       const gfx::RectF& target_bounds) = 0;
 
   // Returns the union of the original target bounds of all transformed windows
-  // managed by `this`, i.e. all regular (normal or panel transient descendants
-  // of the window returned by `GetWindows()`).
-  virtual gfx::RectF GetTargetBoundsInScreen() const = 0;
+  // represented by `this`, i.e. all regular (normal or transient descendants of
+  // the windows returned by `GetWindows()`).
+  virtual gfx::RectF GetWindowsUnionScreenBounds() const = 0;
 
   // Returns the `target_bounds_` of the `this` with insets of the header.
   virtual gfx::RectF GetTargetBoundsWithInsets() const = 0;
@@ -200,16 +197,16 @@ class ASH_EXPORT OverviewItemBase {
   // Ensures that a possibly minimized window becomes visible after restore.
   virtual void EnsureVisible() = 0;
 
-  // Returns the focusable view of this.
-  virtual OverviewFocusableView* GetFocusableView() const = 0;
+  // Returns the focusable views contained in `this`.
+  virtual std::vector<OverviewFocusableView*> GetFocusableViews() const = 0;
 
-  // Returns the backdrop view of this.
+  // Returns the backdrop view of `this`.
   virtual views::View* GetBackDropView() const = 0;
 
-  // Updates the rounded corners and shadow on this.
+  // Updates the rounded corners and shadow on `this`.
   virtual void UpdateRoundedCornersAndShadow() = 0;
 
-  // Changes the opacity of all the window(s) the item owns.
+  // Updates the opacity of all the window(s) owned by `this`.
   virtual void SetOpacity(float opacity) = 0;
   virtual float GetOpacity() const = 0;
 
@@ -280,8 +277,8 @@ class ASH_EXPORT OverviewItemBase {
   // remove window(s) from `ScopedOverviewHideWindows`.
   virtual void Shutdown() = 0;
 
-  // Slides the item up or down and then closes the associated window(s). Used
-  // by overview swipe to close.
+  // Slides `this` up or down and then closes the associated window(s). Used in
+  // overview swipe to close.
   virtual void AnimateAndCloseItem(bool up) = 0;
 
   // Stops the current animation of `item_widget_`.
@@ -299,6 +296,12 @@ class ASH_EXPORT OverviewItemBase {
 
   virtual const gfx::RoundedCornersF GetRoundedCorners() const = 0;
 
+  // EventHandlerDelegate:
+  void HandleMouseEvent(const ui::MouseEvent& event,
+                        OverviewItemBase* event_source_item) override;
+  void HandleGestureEvent(ui::GestureEvent* event,
+                          OverviewItemBase* event_source_item) override;
+
   void set_target_bounds_for_testing(const gfx::RectF& target_bounds) {
     target_bounds_ = target_bounds;
   }
@@ -312,18 +315,20 @@ class ASH_EXPORT OverviewItemBase {
   }
 
  protected:
-  // Creates `item_widget_` with `OverviewItemView` or
-  // `OverviewGroupContainerView` as its contents view.
-  virtual void CreateItemWidget() = 0;
-
   // Returns the widget init params needed to create the `item_widget_`.
   views::Widget::InitParams CreateOverviewItemWidgetParams(
       aura::Window* parent_window,
-      const std::string& widget_name) const;
+      const std::string& widget_name,
+      bool accept_events) const;
 
   // Creates the `shadow_` and stacks the shadow layer to be at the bottom after
   // `item_widget_` has been created.
   void ConfigureTheShadow();
+
+  // Drag event can be handled differently based on the concreate instance of
+  // `this`. For `OverviewItem`, the drag will be on window-level. For
+  // `OverviewGroupItem`, the drag will be on group-leve.
+  virtual void HandleDragEvent(const gfx::PointF& location_in_screen);
 
   // The root window `this` is being displayed on.
   raw_ptr<aura::Window> root_window_;
@@ -399,18 +404,19 @@ class ASH_EXPORT OverviewItemBase {
  private:
   friend class OverviewTestBase;
 
-  // TODO(sammiequon): Current events go from OverviewItemView to
-  // OverviewItem to OverviewSession to OverviewWindowDragController. We may be
-  // able to shorten this pipeline.
+  // TODO(sammiequon): Current events go from `OverviewItemView` to
+  // `EventHandlerDelegate` to `OverviewSession` to
+  // `OverviewWindowDragController`. We may be able to shorten this pipeline.
   void HandlePressEvent(const gfx::PointF& location_in_screen,
-                        bool from_touch_gesture);
+                        bool from_touch_gesture,
+                        OverviewItemBase* event_source_item);
   void HandleReleaseEvent(const gfx::PointF& location_in_screen);
-  void HandleDragEvent(const gfx::PointF& location_in_screen);
   void HandleLongPressEvent(const gfx::PointF& location_in_screen);
   void HandleFlingStartEvent(const gfx::PointF& location_in_screen,
                              float velocity_x,
                              float velocity_y);
-  void HandleTapEvent();
+  void HandleTapEvent(const gfx::PointF& location_in_screen,
+                      OverviewItemBase* event_source_item);
   void HandleGestureEndEvent();
 };
 

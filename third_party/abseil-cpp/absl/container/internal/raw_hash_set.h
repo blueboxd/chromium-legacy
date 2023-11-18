@@ -840,6 +840,9 @@ class CommonFieldsGenerationInfoEnabled {
   // whenever reserved_growth_ is zero.
   bool should_rehash_for_bug_detection_on_insert(const ctrl_t* ctrl,
                                                  size_t capacity) const;
+  // Similar to above, except that we don't depend on reserved_growth_.
+  bool should_rehash_for_bug_detection_on_move(const ctrl_t* ctrl,
+                                               size_t capacity) const;
   void maybe_increment_generation_on_insert() {
     if (reserved_growth_ == kReservedGrowthJustRanOut) reserved_growth_ = 0;
 
@@ -893,6 +896,9 @@ class CommonFieldsGenerationInfoDisabled {
       CommonFieldsGenerationInfoDisabled&&) = default;
 
   bool should_rehash_for_bug_detection_on_insert(const ctrl_t*, size_t) const {
+    return false;
+  }
+  bool should_rehash_for_bug_detection_on_move(const ctrl_t*, size_t) const {
     return false;
   }
   void maybe_increment_generation_on_insert() {}
@@ -1067,6 +1073,10 @@ class CommonFields : public CommonFieldsGenerationInfo {
   bool should_rehash_for_bug_detection_on_insert() const {
     return CommonFieldsGenerationInfo::
         should_rehash_for_bug_detection_on_insert(control(), capacity());
+  }
+  bool should_rehash_for_bug_detection_on_move() const {
+    return CommonFieldsGenerationInfo::
+        should_rehash_for_bug_detection_on_move(control(), capacity());
   }
   void maybe_increment_generation_on_move() {
     if (capacity() == 0) return;
@@ -1736,6 +1746,9 @@ class raw_hash_set {
       if (ABSL_PREDICT_FALSE(*ctrl_ == ctrl_t::kSentinel)) ctrl_ = nullptr;
     }
 
+    ctrl_t* control() const { return ctrl_; }
+    slot_type* slot() const { return slot_; }
+
     // We use EmptyGroup() for default-constructed iterators so that they can
     // be distinguished from end iterators, which have nullptr ctrl_.
     ctrl_t* ctrl_ = EmptyGroup();
@@ -1748,6 +1761,9 @@ class raw_hash_set {
 
   class const_iterator {
     friend class raw_hash_set;
+    template <class Container, typename Enabler>
+    friend struct absl::container_internal::hashtable_debug_internal::
+        HashtableDebugAccess;
 
    public:
     using iterator_category = typename iterator::iterator_category;
@@ -1781,6 +1797,8 @@ class raw_hash_set {
                    const GenerationType* gen)
         : inner_(const_cast<ctrl_t*>(ctrl), const_cast<slot_type*>(slot), gen) {
     }
+    ctrl_t* control() const { return inner_.control(); }
+    slot_type* slot() const { return inner_.slot(); }
 
     iterator inner_;
   };
@@ -1932,17 +1950,17 @@ class raw_hash_set {
         settings_(std::move(that.common()), that.hash_ref(), that.eq_ref(),
                   that.alloc_ref()) {
     that.common() = CommonFields{};
-    common().maybe_increment_generation_on_move();
+    maybe_increment_generation_or_rehash_on_move();
   }
 
   raw_hash_set(raw_hash_set&& that, const allocator_type& a)
       : settings_(CommonFields{}, that.hash_ref(), that.eq_ref(), a) {
     if (a == that.alloc_ref()) {
       std::swap(common(), that.common());
+      maybe_increment_generation_or_rehash_on_move();
     } else {
       move_elements_allocs_unequal(std::move(that));
     }
-    common().maybe_increment_generation_on_move();
   }
 
   raw_hash_set& operator=(const raw_hash_set& that) {
@@ -2143,7 +2161,7 @@ class raw_hash_set {
     alignas(slot_type) unsigned char raw[sizeof(slot_type)];
     slot_type* slot = reinterpret_cast<slot_type*>(&raw);
 
-    PolicyTraits::construct(&alloc_ref(), slot, std::forward<Args>(args)...);
+    construct(slot, std::forward<Args>(args)...);
     const auto& elem = PolicyTraits::element(slot);
     return PolicyTraits::apply(InsertSlot<true>{*this, std::move(*slot)}, elem);
   }
@@ -2247,8 +2265,8 @@ class raw_hash_set {
   // This overload is necessary because otherwise erase<K>(const K&) would be
   // a better match if non-const iterator is passed as an argument.
   void erase(iterator it) {
-    AssertIsFull(it.ctrl_, it.generation(), it.generation_ptr(), "erase()");
-    PolicyTraits::destroy(&alloc_ref(), it.slot_);
+    AssertIsFull(it.control(), it.generation(), it.generation_ptr(), "erase()");
+    destroy(it.slot());
     erase_meta_only(it);
   }
 
@@ -2279,8 +2297,8 @@ class raw_hash_set {
     assert(this != &src);
     for (auto it = src.begin(), e = src.end(); it != e;) {
       auto next = std::next(it);
-      if (PolicyTraits::apply(InsertSlot<false>{*this, std::move(*it.slot_)},
-                              PolicyTraits::element(it.slot_))
+      if (PolicyTraits::apply(InsertSlot<false>{*this, std::move(*it.slot())},
+                              PolicyTraits::element(it.slot()))
               .second) {
         src.erase_meta_only(it);
       }
@@ -2294,10 +2312,9 @@ class raw_hash_set {
   }
 
   node_type extract(const_iterator position) {
-    AssertIsFull(position.inner_.ctrl_, position.inner_.generation(),
+    AssertIsFull(position.control(), position.inner_.generation(),
                  position.inner_.generation_ptr(), "extract()");
-    auto node =
-        CommonAccess::Transfer<node_type>(alloc_ref(), position.inner_.slot_);
+    auto node = CommonAccess::Transfer<node_type>(alloc_ref(), position.slot());
     erase_meta_only(position);
     return node;
   }
@@ -2541,10 +2558,9 @@ class raw_hash_set {
     std::pair<iterator, bool> operator()(const K& key, Args&&...) && {
       auto res = s.find_or_prepare_insert(key);
       if (res.second) {
-        PolicyTraits::transfer(&s.alloc_ref(), s.slot_array() + res.first,
-                               &slot);
+        s.transfer(s.slot_array() + res.first, &slot);
       } else if (do_destroy) {
-        PolicyTraits::destroy(&s.alloc_ref(), &slot);
+        s.destroy(&slot);
       }
       return {s.iterator_at(res.first), res.second};
     }
@@ -2553,13 +2569,25 @@ class raw_hash_set {
     slot_type&& slot;
   };
 
+  // TODO(b/303305702): re-enable reentrant validation.
+  template <typename... Args>
+  inline void construct(slot_type* slot, Args&&... args) {
+    PolicyTraits::construct(&alloc_ref(), slot, std::forward<Args>(args)...);
+  }
+  inline void destroy(slot_type* slot) {
+    PolicyTraits::destroy(&alloc_ref(), slot);
+  }
+  inline void transfer(slot_type* to, slot_type* from) {
+    PolicyTraits::transfer(&alloc_ref(), to, from);
+  }
+
   inline void destroy_slots() {
     const size_t cap = capacity();
     const ctrl_t* ctrl = control();
     slot_type* slot = slot_array();
     for (size_t i = 0; i != cap; ++i) {
       if (IsFull(ctrl[i])) {
-        PolicyTraits::destroy(&alloc_ref(), slot + i);
+        destroy(slot + i);
       }
     }
   }
@@ -2585,7 +2613,7 @@ class raw_hash_set {
   // This merely updates the pertinent control byte. This can be used in
   // conjunction with Policy::transfer to move the object to another place.
   void erase_meta_only(const_iterator it) {
-    EraseMetaOnly(common(), it.inner_.ctrl_, sizeof(slot_type));
+    EraseMetaOnly(common(), it.control(), sizeof(slot_type));
   }
 
   // Allocates a backing array for `self` and initializes its control bytes.
@@ -2622,7 +2650,7 @@ class raw_hash_set {
         size_t new_i = target.offset;
         total_probe_length += target.probe_length;
         SetCtrl(common(), new_i, H2(hash), sizeof(slot_type));
-        PolicyTraits::transfer(&alloc_ref(), new_slots + new_i, old_slots + i);
+        transfer(new_slots + new_i, old_slots + i);
       }
     }
     if (old_capacity) {
@@ -2703,6 +2731,13 @@ class raw_hash_set {
     }
   }
 
+  void maybe_increment_generation_or_rehash_on_move() {
+    common().maybe_increment_generation_on_move();
+    if (!empty() && common().should_rehash_for_bug_detection_on_move()) {
+      resize(capacity());
+    }
+  }
+
   template<bool propagate_alloc>
   raw_hash_set& assign_impl(raw_hash_set&& that) {
     // We don't bother checking for this/that aliasing. We just need to avoid
@@ -2715,7 +2750,7 @@ class raw_hash_set {
     CopyAlloc(alloc_ref(), that.alloc_ref(),
               std::integral_constant<bool, propagate_alloc>());
     that.common() = CommonFields{};
-    common().maybe_increment_generation_on_move();
+    maybe_increment_generation_or_rehash_on_move();
     return *this;
   }
 
@@ -2724,11 +2759,12 @@ class raw_hash_set {
     if (size == 0) return *this;
     reserve(size);
     for (iterator it = that.begin(); it != that.end(); ++it) {
-      insert(std::move(PolicyTraits::element(it.slot_)));
-      PolicyTraits::destroy(&that.alloc_ref(), it.slot_);
+      insert(std::move(PolicyTraits::element(it.slot())));
+      that.destroy(it.slot());
     }
     that.dealloc();
     that.common() = CommonFields{};
+    maybe_increment_generation_or_rehash_on_move();
     return *this;
   }
 
@@ -2750,7 +2786,6 @@ class raw_hash_set {
     // TODO(b/296061262): move instead of copying hash/eq.
     hash_ref() = that.hash_ref();
     eq_ref() = that.eq_ref();
-    common().maybe_increment_generation_on_move();
     return move_elements_allocs_unequal(std::move(that));
   }
 
@@ -2816,8 +2851,7 @@ class raw_hash_set {
   // POSTCONDITION: *m.iterator_at(i) == value_type(forward<Args>(args)...).
   template <class... Args>
   void emplace_at(size_t i, Args&&... args) {
-    PolicyTraits::construct(&alloc_ref(), slot_array() + i,
-                            std::forward<Args>(args)...);
+    construct(slot_array() + i, std::forward<Args>(args)...);
 
     assert(PolicyTraits::apply(FindElement{*this}, *iterator_at(i)) ==
                iterator_at(i) &&
@@ -2883,8 +2917,7 @@ class raw_hash_set {
   }
   static void transfer_slot_fn(void* set, void* dst, void* src) {
     auto* h = static_cast<raw_hash_set*>(set);
-    PolicyTraits::transfer(&h->alloc_ref(), static_cast<slot_type*>(dst),
-                           static_cast<slot_type*>(src));
+    h->transfer(static_cast<slot_type*>(dst), static_cast<slot_type*>(src));
   }
   // Note: dealloc_fn will only be used if we have a non-standard allocator.
   static void dealloc_fn(CommonFields& common, const PolicyFunctions&) {
@@ -2974,11 +3007,8 @@ struct HashtableDebugAccess<Set, absl::void_t<typename Set::raw_hash_set>> {
     if (per_slot != ~size_t{}) {
       m += per_slot * c.size();
     } else {
-      const ctrl_t* ctrl = c.control();
-      for (size_t i = 0; i != capacity; ++i) {
-        if (container_internal::IsFull(ctrl[i])) {
-          m += Traits::space_used(c.slot_array() + i);
-        }
+      for (auto it = c.begin(); it != c.end(); ++it) {
+        m += Traits::space_used(it.slot());
       }
     }
     return m;

@@ -91,6 +91,11 @@ inline constexpr char kHomePage[] = "homepage";
 // A boolean specifying whether HTTPS-Only Mode is enabled by the user.
 inline constexpr char kHttpsOnlyModeEnabled[] = "https_only_mode_enabled";
 
+// A boolean specifying whether HTTPS-First Mode (aka "HTTPS-Only Mode") is
+// enabled in Incognito Mode.
+inline constexpr char kHttpsFirstModeIncognito[] =
+    "https_first_mode_incognito_enabled";
+
 // A boolean specifying whether HTTPS-Only Mode is automatically enabled by
 // heuristics. Can only be set to true if this pref or kHttpsOnlyModeEnabled has
 // never been set before (true or false). If kHttpsOnlyModeEnabled is modified,
@@ -104,6 +109,9 @@ inline constexpr char kHttpsOnlyModeAutoEnabled[] =
 // entries are evicted from the list and new entries are added when a new HTTPS
 // Upgrade fallback happens.
 inline constexpr char kHttpsUpgradeFallbacks[] = "https_upgrade_fallbacks";
+
+// A dictionary containing information about HTTPS Upgrade related navigations.
+inline constexpr char kHttpsUpgradeNavigations[] = "https_upgrade_navigations";
 
 // Stores information about the important sites dialog, including the time and
 // frequency it has been ignored.
@@ -440,6 +448,9 @@ inline constexpr char kAttestationExtensionAllowlist[] =
 inline constexpr char kDeskAPIThirdPartyAccessEnabled[] =
     "desk_api.third_party_access_enabled";
 
+inline constexpr char kDeskAPIDeskSaveAndShareEnabled[] =
+    "desk_api.desk_save_and_share_enabled";
+
 // A list of third party web application domains allowed to use the Desk API.
 inline constexpr char kDeskAPIThirdPartyAllowlist[] =
     "desk_api.third_party_allowlist";
@@ -495,6 +506,7 @@ inline constexpr char kLanguageAllowedInputMethods[] =
 
 // A string pref (comma-separated list) set to the preloaded (active) input
 // method IDs (ex. "pinyin,mozc").
+// TODO: b/308389509 - Remove this constant to complete migration.
 inline constexpr char kLanguagePreloadEngines[] =
     "settings.language.preload_engines";
 inline constexpr char kLanguagePreloadEnginesSyncable[] =
@@ -782,6 +794,16 @@ inline constexpr char kHatsAudioSurveyCycleEndTs[] =
 // A boolean pref. Indicates if the device is selected for the Audio survey
 inline constexpr char kHatsAudioDeviceIsSelected[] =
     "hats_audio_device_is_selected";
+
+// An int64 pref. This is the timestamp, microseconds after epoch, that
+// indicates the end of the most recent Bluetooth Audio survey cycle.
+inline constexpr char kHatsBluetoothAudioSurveyCycleEndTs[] =
+    "hats_bluetooth_audio_cycle_end_timestamp";
+
+// A boolean pref. Indicates if the device is selected for the Bluetooth Audio
+// survey
+inline constexpr char kHatsBluetoothAudioDeviceIsSelected[] =
+    "hats_bluetooth_audio_device_is_selected";
 
 // An int64 pref. This is the timestamp, microseconds after epoch, that
 // indicates the end of the most recent Personalization Avatar survey cycle.
@@ -1748,10 +1770,6 @@ inline constexpr char kWebRtcEventLogCollectionAllowed[] =
 // in ICE candidates.
 inline constexpr char kWebRtcLocalIpsAllowedUrls[] =
     "webrtc.local_ips_allowed_urls";
-// Whether WebRTC PeerConnections are allowed to use legacy versions of the TLS
-// and DTLS protocols.
-inline constexpr char kWebRTCAllowLegacyTLSProtocols[] =
-    "webrtc.allow_legacy_tls_protocols";
 // Whether WebRTC text log collection by Google domains is allowed.
 inline constexpr char kWebRtcTextLogCollectionAllowed[] =
     "webrtc.text_log_collection_allowed";
@@ -1842,6 +1860,16 @@ inline constexpr char kSidePanelCompanionEntryPinnedToToolbar[] =
 // Corresponds to the enterprise policy.
 inline constexpr char kGoogleSearchSidePanelEnabled[] =
     "side_panel.google_search_side_panel_enabled";
+#endif
+
+inline constexpr char kManagedPrivateNetworkAccessRestrictionsEnabled[] =
+    "managed_private_network_access_restrictions_enabled";
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+// Boolean indicating whether or not Compose consent has been given or
+// acknowledged.
+inline constexpr char kPrefHasAcceptedComposeConsent[] =
+    "compose_has_accepted_consent";
 #endif
 
 // *************** LOCAL STATE ***************
@@ -2069,6 +2097,11 @@ inline constexpr char kOfficeFileMovedToGoogleDrive[] =
 inline constexpr char kMicrosoftOneDriveMount[] =
     "filebrowser.office.microsoft_one_drive_mount";
 
+// Pref that contains the value of the MicrosoftOneDriveAccountRestrictions
+// policy.
+inline constexpr char kMicrosoftOneDriveAccountRestrictions[] =
+    "filebrowser.office.microsoft_one_drive_account_restrictions";
+
 // Pref that contains the value of the MicrosoftOfficeCloudUpload policy.
 inline constexpr char kMicrosoftOfficeCloudUpload[] =
     "filebrowser.office.microsoft_office_cloud_upload";
@@ -2176,6 +2209,8 @@ inline constexpr char kNtpCollapsedSyncPromo[] = "ntp.collapsed_sync_promo";
 inline constexpr char kNtpCustomBackgroundDict[] = "ntp.custom_background_dict";
 inline constexpr char kNtpCustomBackgroundLocalToDevice[] =
     "ntp.custom_background_local_to_device";
+inline constexpr char kNtpCustomBackgroundLocalToDeviceId[] =
+    "ntp.custom_background_local_to_device_id";
 // Number of times the user has opened the side panel with the customize chrome
 // button.
 inline constexpr char kNtpCustomizeChromeButtonOpenCount[] =
@@ -2197,6 +2232,9 @@ inline constexpr char kNtpModulesFreVisible[] = "NewTabPage.ModulesFreVisible";
 inline constexpr char kNtpPromoBlocklist[] = "ntp.promo_blocklist";
 // Whether the promo is visible.
 inline constexpr char kNtpPromoVisible[] = "ntp.promo_visible";
+// List of ids for past wallpaper search themes.
+inline constexpr char kNtpWallpaperSearchHistory[] =
+    "ntp.wallpaper_search_history";
 // Number of times the seed color has been changed via the Customize Chrome
 // panel across NTP tabs. Incremented at most once per NTP tab.
 inline constexpr char kSeedColorChangeCount[] =
@@ -2358,10 +2396,14 @@ inline constexpr char kWebAppsPreferences[] = "web_apps.web_app_ids";
 inline constexpr char kWebAppsIsolationState[] = "web_apps.isolation_state";
 
 // The default audio capture device used by the Media content setting.
+// TODO(crbug.com/311205211): Remove this once users have been migrated to
+// `kAudioInputUserPreferenceRanking`.
 inline constexpr char kDefaultAudioCaptureDevice[] =
     "media.default_audio_capture_device";
 
 // The default video capture device used by the Media content setting.
+// TODO(crbug.com/311205211): Remove this once users have been migrated to
+// `kVideoInputUserPreferenceRanking`.
 inline constexpr char kDefaultVideoCaptureDevice[] =
     "media.default_video_capture_Device";
 
@@ -3187,7 +3229,7 @@ inline constexpr char kCryptAuthInstanceIdToken[] =
 inline constexpr char kRecoveryComponentNeedsElevation[] =
     "recovery_component.needs_elevation";
 
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 // Boolean that indicates whether Chrome enterprise extension request is enabled
 // or not.
 inline constexpr char kCloudExtensionRequestEnabled[] =
@@ -3198,9 +3240,7 @@ inline constexpr char kCloudExtensionRequestEnabled[] =
 // denied.
 inline constexpr char kCloudExtensionRequestIds[] =
     "enterprise_reporting.extension_request.ids";
-#endif
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
 // Policy that indicates how to handle animated images.
 inline constexpr char kAnimationPolicy[] = "settings.a11y.animation_policy";
 
@@ -3910,6 +3950,27 @@ inline constexpr char kZstdContentEncodingEnabled[] =
 inline constexpr char kIPv6ReachabilityOverrideEnabled[] =
     "net.ipv6_reachability_override_enabled";
 
+#if BUILDFLAG(IS_WIN)
+// Whether native hosts executables launch directly is enabled or
+// disabled.
+inline constexpr char kNativeHostsExecutablesLaunchDirectly[] =
+    "native_hosts_executables_launch_directly";
+#endif  // BUILDFLAG(IS_WIN)
+
+#if BUILDFLAG(IS_ANDROID)
+// Dictionary mapping language to Read Aloud voice. Keys are language names like
+// "en" and values are voice ID strings.
+inline constexpr char kReadAloudVoiceSettings[] = "readaloud.voices";
+
+// Double indicating Read Aloud playback speed. Default is 1.0, double speed
+// is 2.0, etc.
+inline constexpr char kReadAloudSpeed[] = "readaloud.speed";
+
+// Boolean that specifies whether Read Aloud highlights words on the page during
+// playback and scrolls the page to match the playback position.
+inline constexpr char kReadAloudHighlightingEnabled[] =
+    "readaloud.highlighting_enabled";
+#endif  // BUILDFLAG(IS_ANDROID)
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

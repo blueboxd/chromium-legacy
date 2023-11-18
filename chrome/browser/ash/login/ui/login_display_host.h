@@ -153,6 +153,14 @@ class LoginDisplayHost {
   // dialog.
   virtual void ShowGaiaDialog(const AccountId& prefilled_account) = 0;
 
+  // Starts user cryptohome recovery flow (once user indicates that they've
+  // forgot their knowledge key).
+  virtual void StartUserRecovery(const AccountId& account_to_recovery) = 0;
+
+  // Show a notification screen informing the user that an admin user privately
+  // accessed the device using Chrome Remote Desktop.
+  virtual void ShowRemoteActivityNotificationScreen() = 0;
+
   // Show allowlist check failed error. Happens after user completes online
   // signin but allowlist check fails.
   virtual void ShowAllowlistCheckFailedError() = 0;
@@ -221,8 +229,6 @@ class LoginDisplayHost {
 
   // Returns if the device has any user after filtering based on policy.
   virtual bool HasUserPods() = 0;
-
-  virtual void VerifyOwnerForKiosk(base::OnceClosure on_success) = 0;
 
   // Used to add an observer for the changes in the web dilaog login view.
   virtual void AddObserver(Observer* observer) = 0;

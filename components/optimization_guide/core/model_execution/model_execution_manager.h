@@ -5,7 +5,9 @@
 #define COMPONENTS_OPTIMIZATION_GUIDE_CORE_MODEL_EXECUTION_MODEL_EXECUTION_MANAGER_H_
 
 #include <map>
+#include <memory>
 
+#include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -13,6 +15,8 @@
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_model_executor.h"
 #include "components/optimization_guide/proto/model_execution.pb.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/on_device_model/public/mojom/on_device_model.mojom.h"
 #include "url/gurl.h"
 
 class OptimizationGuideLogger;
@@ -28,12 +32,15 @@ class IdentityManager;
 namespace optimization_guide {
 
 class ModelExecutionFetcher;
+class OnDeviceModelServiceController;
 
 class ModelExecutionManager {
  public:
   ModelExecutionManager(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       signin::IdentityManager* identity_manager,
+      std::unique_ptr<OnDeviceModelServiceController>
+          on_device_model_service_controller,
       OptimizationGuideLogger* optimization_guide_logger);
 
   ~ModelExecutionManager();
@@ -45,12 +52,16 @@ class ModelExecutionManager {
                     const google::protobuf::MessageLite& request_metadata,
                     OptimizationGuideModelExecutionResultCallback callback);
 
+  std::unique_ptr<OptimizationGuideModelExecutor::Session> StartSession(
+      proto::ModelExecutionFeature feature);
+
  private:
   // Invoked when the model execution result is available.
   void OnModelExecuteResponse(
       proto::ModelExecutionFeature feature,
       OptimizationGuideModelExecutionResultCallback callback,
-      base::optional_ref<const proto::ExecuteResponse> execute_response);
+      base::expected<const proto::ExecuteResponse,
+                     OptimizationGuideModelExecutionError> execute_response);
 
   // Owned by OptimizationGuideKeyedService and outlives `this`.
   raw_ptr<OptimizationGuideLogger> optimization_guide_logger_;
@@ -71,6 +82,10 @@ class ModelExecutionManager {
 
   // The set of OAuth scopes to use for requesting access token.
   std::set<std::string> oauth_scopes_;
+
+  // Controller for the on-device service.
+  std::unique_ptr<OnDeviceModelServiceController>
+      on_device_model_service_controller_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

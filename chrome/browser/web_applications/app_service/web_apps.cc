@@ -19,6 +19,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/services/app_service/public/cpp/icon_effects.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -192,11 +193,16 @@ void WebApps::GetMenuModel(const std::string& app_id,
                            IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW, menu_items);
     }
   } else {
-    apps::CreateOpenNewSubmenu(
-        publisher_helper().GetWindowMode(app_id) == apps::WindowMode::kBrowser
-            ? IDS_APP_LIST_CONTEXT_MENU_NEW_TAB
-            : IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW,
-        menu_items);
+    if (chromeos::features::IsCrosShortstandEnabled()) {
+      apps::AddCommandItem(ash::LAUNCH_NEW,
+                           IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW, menu_items);
+    } else {
+      apps::CreateOpenNewSubmenu(
+          publisher_helper().GetWindowMode(app_id) == apps::WindowMode::kBrowser
+              ? IDS_APP_LIST_CONTEXT_MENU_NEW_TAB
+              : IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW,
+          menu_items);
+    }
   }
 
   if (app_id == guest_os::kTerminalSystemAppId) {
@@ -230,14 +236,7 @@ void WebApps::GetMenuModel(const std::string& app_id,
 #endif
 
 void WebApps::UpdateAppSize(const std::string& app_id) {
-  const auto* web_app = GetWebApp(app_id);
-  if (!web_app) {
-    return;
-  }
-
-  provider_->scheduler().ComputeAppSize(
-      app_id, base::BindOnce(&WebApps::OnGetAppSize,
-                             weak_ptr_factory_.GetWeakPtr(), app_id));
+  publisher_helper().UpdateAppSize(app_id);
 }
 
 void WebApps::SetWindowMode(const std::string& app_id,
@@ -353,16 +352,6 @@ void WebApps::InitWebApps() {
                               /*should_notify_initialized=*/true);
 }
 
-void WebApps::OnGetAppSize(webapps::AppId app_id,
-                           absl::optional<ComputeAppSizeCommand::Size> size) {
-  auto app = std::make_unique<apps::App>(app_type(), app_id);
-  if (!size.has_value()) {
-    return;
-  }
-  app->app_size_in_bytes = size->app_size_in_bytes;
-  app->data_size_in_bytes = size->data_size_in_bytes;
-  PublishWebApp(std::move(app));
-}
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void WebApps::PauseApp(const std::string& app_id) {

@@ -20,10 +20,6 @@
 
 class Browser;
 class ReadAnythingController;
-class SidePanelRegistry;
-namespace views {
-class View;
-}  // namespace views
 
 ///////////////////////////////////////////////////////////////////////////////
 // ReadAnythingCoordinator
@@ -37,7 +33,6 @@ class View;
 //  This class has the same lifetime as the browser.
 //
 class ReadAnythingCoordinator : public BrowserUserData<ReadAnythingCoordinator>,
-                                public SidePanelEntryObserver,
                                 public TabStripModelObserver,
                                 public content::WebContentsObserver,
                                 public BrowserListObserver {
@@ -45,6 +40,7 @@ class ReadAnythingCoordinator : public BrowserUserData<ReadAnythingCoordinator>,
   class Observer : public base::CheckedObserver {
    public:
     virtual void Activate(bool active) {}
+    virtual void OnActivePageDistillable(bool distillable) {}
     virtual void OnCoordinatorDestroyed() = 0;
     virtual void SetDefaultLanguageCode(const std::string& code) {}
   };
@@ -52,7 +48,6 @@ class ReadAnythingCoordinator : public BrowserUserData<ReadAnythingCoordinator>,
   explicit ReadAnythingCoordinator(Browser* browser);
   ~ReadAnythingCoordinator() override;
 
-  void CreateAndRegisterEntry(SidePanelRegistry* global_registry);
   ReadAnythingController* GetController();
   ReadAnythingModel* GetModel();
 
@@ -61,10 +56,20 @@ class ReadAnythingCoordinator : public BrowserUserData<ReadAnythingCoordinator>,
   void AddModelObserver(ReadAnythingModel::Observer* observer);
   void RemoveModelObserver(ReadAnythingModel::Observer* observer);
 
+  void OnReadAnythingSidePanelEntryShown();
+  void OnReadAnythingSidePanelEntryHidden();
+
+  void ActivePageDistillableForTesting();
+  void ActivePageNotDistillableForTesting();
+
  private:
   friend class BrowserUserData<ReadAnythingCoordinator>;
   friend class ReadAnythingCoordinatorTest;
   friend class ReadAnythingCoordinatorScreen2xDataCollectionModeTest;
+
+  void CreateAndRegisterEntriesForExistingWebContents(
+      TabStripModel* tab_strip_model);
+  void CreateAndRegisterEntryForWebContents(content::WebContents* web_contents);
 
   // Used during construction to initialize the model with saved user prefs.
   void InitModelWithUserPrefs();
@@ -72,14 +77,6 @@ class ReadAnythingCoordinator : public BrowserUserData<ReadAnythingCoordinator>,
   void StartPageChangeDelay();
   // Occurs when the timer set when changing tabs is finished.
   void OnTabChangeDelayComplete();
-
-  // SidePanelEntryObserver:
-  void OnEntryShown(SidePanelEntry* entry) override;
-  void OnEntryHidden(SidePanelEntry* entry) override;
-
-  // Callback passed to SidePanelCoordinator. This function creates the
-  // container view and all its child views and returns it.
-  std::unique_ptr<views::View> CreateContainerView();
 
   // TabStripModelObserver:
   void OnTabStripModelChanged(
@@ -93,10 +90,11 @@ class ReadAnythingCoordinator : public BrowserUserData<ReadAnythingCoordinator>,
 
   content::WebContents* GetActiveWebContents() const;
 
-  // Attempts to show in product help for reading mode.
-  void MaybeShowReadingModeSidePanelIPH();
-  void CancelShowReadingModeSidePanelIPH();
-  bool ShouldShowReadingModeSidePanelIPH() const;
+  // Decides whether the active page is distillable and alerts observers. Also,
+  // attempts to show or hide in product help for reading mode.
+  void ActivePageDistillable();
+  void ActivePageNotDistillable();
+  bool IsActivePageDistillable() const;
 
   std::string default_language_code_;
   std::unique_ptr<ReadAnythingModel> model_;

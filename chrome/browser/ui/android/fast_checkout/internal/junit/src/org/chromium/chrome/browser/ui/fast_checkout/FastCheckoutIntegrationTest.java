@@ -40,6 +40,7 @@ import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.ui.fast_checkout.data.FastCheckoutAutofillProfile;
 import org.chromium.chrome.browser.ui.fast_checkout.data.FastCheckoutCreditCard;
+import org.chromium.chrome.browser.ui.suggestion.Icon;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
@@ -89,19 +90,19 @@ public class FastCheckoutIntegrationTest {
                 /* origin= */ "https://example.fr",
                 /* name= */ "Frederic Profiletest",
                 /* number= */ "4111111111111",
-                /*obfuscatedNumber*/ "1111",
+                /* obfuscatedNumber= */ "1111",
                 /* month= */ "11",
                 /* year= */ "2023",
-                /* issuerIconString= */ "dinersCC"),
+                /* issuerIcon= */ Icon.CARD_DINERS),
         FastCheckoutTestUtils.createDetailedLocalCreditCard(
                 /* guid= */ "431",
                 /* origin= */ "https://example.fr",
                 /* name= */ "Jane Doe",
                 /* number= */ "4564565541234",
-                /*obfuscatedNumber*/ "1234",
+                /* obfuscatedNumber= */ "1234",
                 /* month= */ "10",
                 /* year= */ "2025",
-                /* issuerIconString= */ "visaCC")
+                /* issuerIcon= */ Icon.CARD_VISA)
     };
 
     private FastCheckoutComponent mFastCheckout;

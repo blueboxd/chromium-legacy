@@ -5,7 +5,6 @@
 // API for integration testing. To be used on test images with a test component
 // extension.
 [platforms=("chromeos"),
- modernised_enums,
  implemented_in="chrome/browser/ash/extensions/autotest_private/autotest_private_api.h"]
 namespace autotestPrivate {
 
@@ -70,6 +69,16 @@ namespace autotestPrivate {
     Removed,
     UninstalledByMigration
   };
+
+  // A mapping of arc::mojom::WakefulnessMode
+  enum WakefulnessMode {
+    Unknown,
+    Asleep,
+    Awake,
+    Dreaming,
+    Dozing
+  };
+  callback WakefulnessModeCallback = void (WakefulnessMode mode);
 
   // A subset of Window State types in ash::WindowStateType. We may add more
   // into the set in the future.
@@ -278,7 +287,7 @@ namespace autotestPrivate {
     Mounting,
     Unavailable,
     Stopped,
-    CreatingLogFile,
+    PreparingForLaunch,
     PreLaunched,
     Starting,
     Running,
@@ -301,7 +310,11 @@ namespace autotestPrivate {
     DOMString lacrosPath;
     // Specifies the mode Lacros is currently running.
     // For a full list of supported mode, see LacrosMode enum definition.
+    // DEPRECATED: please use isEnabled.
+    // TODO(crbug.com/1494005): Remove this field after tests are fixed.
     LacrosMode mode;
+    // True iff Lacros is enabled for the current user session's primary user.
+    boolean isEnabled;
   };
 
   callback GetLacrosInfoCallback = void (LacrosInfo info);
@@ -818,6 +831,9 @@ namespace autotestPrivate {
   // Response callback for current input method keyboard layout.
   callback GetCurrentInputMethodDescriptorCallback = void
       (GetCurrentInputMethodDescriptorData data);
+
+  // Response callback to report if a field trial exists and has been activated.
+  callback IsFieldTrialActiveCallback = void(boolean active);
 
   interface Functions {
     // Must be called to allow autotestPrivateAPI events to be fired.
@@ -1581,6 +1597,16 @@ namespace autotestPrivate {
     // |callback|: Called when the operation sent to ARC by mojo.
     [supportsPromises] static void setArcInteractiveState(
       boolean enabled, VoidCallback callback);
+
+    // Returns whether a field trial exists and has been activated.
+    [supportsPromises] static void isFieldTrialActive(
+        DOMString trial_name,
+        DOMString group_name,
+        IsFieldTrialActiveCallback callback);
+
+    // ARC get wakefulness mode.
+    [supportsPromises] static void getArcWakefulnessMode(
+      WakefulnessModeCallback callback);
   };
 
   interface Events {

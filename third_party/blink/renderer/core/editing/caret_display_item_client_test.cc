@@ -15,8 +15,8 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/layout/inline/inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/paint/paint_and_raster_invalidation_test.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -501,10 +501,10 @@ TEST_P(CaretDisplayItemClientTest, PlainTextRTLCaretPosition) {
   EXPECT_EQ(regular_caret_rect, plaintext_caret_rect);
 }
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_IOS)
 // TODO(crbug.com/1457081): Previously, this test passed on the Mac bots even
 // though `LoadNoto()` always failed. Now that `LoadNoto()` actually succeeds,
-// this test fails on Mac though...
+// this test fails on Mac and iOS though...
 #define MAYBE_InsertSpaceToWhiteSpacePreWrapRTL \
   DISABLED_InsertSpaceToWhiteSpacePreWrapRTL
 #else

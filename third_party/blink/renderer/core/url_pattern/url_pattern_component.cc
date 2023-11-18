@@ -4,12 +4,14 @@
 
 #include "third_party/blink/renderer/core/url_pattern/url_pattern_component.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_url_pattern_options.h"
 #include "third_party/blink/renderer/core/url_pattern/url_pattern_canon.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "url/url_util.h"
 
@@ -239,6 +241,20 @@ Component* Component::Compile(StringView pattern,
     regexp = MakeGarbageCollected<ScriptRegexp>(
         String(regexp_string.data(), regexp_string.size()), case_sensitive,
         MultilineMode::kMultilineDisabled, UnicodeMode::kUnicode);
+
+    // There are some incompatible regexp patterns between "u" and "v". Counting
+    // those cases to measure the potential impact of upgrading to the "v" flag.
+    ScriptRegexp* regexp_v = MakeGarbageCollected<ScriptRegexp>(
+        String(regexp_string.data(), regexp_string.size()), case_sensitive,
+        MultilineMode::kMultilineDisabled, UnicodeMode::kUnicodeSets);
+    base::UmaHistogramBoolean(
+        "Blink.URLPattern.IncompatiblePatternWithUnicodeSetsMode",
+        regexp->IsValid() && !regexp_v->IsValid());
+
+    if (RuntimeEnabledFeatures::URLPatternRegexpUnicodeSetsModeEnabled()) {
+      regexp = regexp_v;
+    }
+
     if (!regexp->IsValid()) {
       // The regular expression failed to compile.  This means that some
       // custom regexp group within the pattern is illegal.  Attempt to
@@ -251,7 +267,9 @@ Component* Component::Compile(StringView pattern,
         String group_value(part.value.data(), part.value.size());
         regexp = MakeGarbageCollected<ScriptRegexp>(
             group_value, case_sensitive, MultilineMode::kMultilineDisabled,
-            UnicodeMode::kUnicode);
+            RuntimeEnabledFeatures::URLPatternRegexpUnicodeSetsModeEnabled()
+                ? UnicodeMode::kUnicodeSets
+                : UnicodeMode::kUnicode);
         if (regexp->IsValid())
           continue;
         exception_state.ThrowTypeError("Invalid " + TypeToString(type) +

@@ -18,9 +18,9 @@ namespace blink {
 
 class LayoutObject;
 class LocalFrameView;
-struct NGLink;
 class NGPhysicalBoxFragment;
 class NGPhysicalFragment;
+struct PhysicalFragmentLink;
 
 // This class walks the whole layout tree, beginning from the root
 // LocalFrameView, across frame boundaries. Helper classes are called for each
@@ -70,10 +70,6 @@ class CORE_EXPORT PrePaintTreeWalk final {
     }
 
     PaintInvalidatorContext paint_invalidator_context;
-
-    // The ancestor in the PaintLayer tree which is a scroll container. Note
-    // that it is tree ancestor, not containing block or stacking ancestor.
-    PaintLayer* ancestor_scroll_container_paint_layer = nullptr;
 
     // Whether there is a blocking touch event handler on any ancestor.
     bool inside_blocking_touch_event_handler = false;
@@ -146,7 +142,7 @@ class CORE_EXPORT PrePaintTreeWalk final {
   // everything except its FragmentData. We need to get a bit further inside the
   // child (WalkInternal()) before we can set up FragmentData (if we get there
   // at all).
-  NGPrePaintInfo CreatePrePaintInfo(const NGLink& child,
+  NGPrePaintInfo CreatePrePaintInfo(const PhysicalFragmentLink& child,
                                     const PrePaintTreeWalkContext& context);
 
   // Locate and/or set up a FragmentData object for the current object /
@@ -206,6 +202,7 @@ class CORE_EXPORT PrePaintTreeWalk final {
   // Walk any missed children (i.e. those collected by CollectMissableChildren()
   // and not walked by Walk()) after child object traversal.
   void WalkMissedChildren(const NGPhysicalBoxFragment&,
+                          bool is_in_fragment_traversal,
                           const PrePaintTreeWalkContext&);
 
   void WalkFragmentationContextRootChildren(const LayoutObject&,
@@ -245,7 +242,7 @@ class CORE_EXPORT PrePaintTreeWalk final {
   // CollectMissableChildren() and WalkMissedChildren().
   HeapHashSet<Member<const NGPhysicalFragment>> pending_missables_;
 
-  bool needs_invalidate_chrome_client_ = false;
+  bool needs_invalidate_chrome_client_and_intersection_ = false;
 
   FRIEND_TEST_ALL_PREFIXES(PrePaintTreeWalkTest, ClipRects);
 };

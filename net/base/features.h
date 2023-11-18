@@ -6,10 +6,10 @@
 #define NET_BASE_FEATURES_H_
 
 #include <string>
+#include <string_view>
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "crypto/crypto_buildflags.h"
@@ -176,7 +176,7 @@ NET_EXPORT BASE_DECLARE_FEATURE(kPartitionNelAndReportingByNetworkIsolationKey);
 // Creates a <double key + is_cross_site> NetworkIsolationKey which is used
 // to partition the HTTP cache. This key will have the following properties:
 // `top_frame_site_` -> the schemeful site of the top level page.
-// `frame_site_` -> absl::nullopt.
+// `frame_site_` -> std::nullopt.
 // `is_cross_site_` -> a boolean indicating whether the frame site is
 // schemefully cross-site from the top-level site.
 NET_EXPORT BASE_DECLARE_FEATURE(kEnableCrossSiteFlagNetworkIsolationKey);
@@ -222,9 +222,9 @@ NET_EXPORT BASE_DECLARE_FEATURE(kSameSiteDefaultChecksMethodRigorously);
 NET_EXPORT BASE_DECLARE_FEATURE(kChromeRootStoreUsed);
 #endif  // BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
 
-// When enabled, TrustStore implementations will use TRUSTED_LEAF,
+// When enabled, bssl::TrustStore implementations will use TRUSTED_LEAF,
 // TRUSTED_ANCHOR_OR_LEAF, and TRUSTED_ANCHOR as appropriate. When disabled,
-// TrustStore implementation will only use TRUSTED_ANCHOR.
+// bssl::TrustStore implementation will only use TRUSTED_ANCHOR.
 // TODO(https://crbug.com/1403034): remove this a few milestones after the
 // trusted leaf support has been launched on all relevant platforms.
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(USE_NSS_CERTS) || BUILDFLAG(IS_WIN)
@@ -421,6 +421,14 @@ NET_EXPORT extern const base::FeatureParam<bool> kIpPrivacyDirectOnly;
 // the privacy pass token format.
 NET_EXPORT extern const base::FeatureParam<bool> kIpPrivacyBsaEnablePrivacyPass;
 
+// The PSK added to connections to proxyB with `Proxy-Authorization: Preshared
+// $PSK`.
+NET_EXPORT extern const base::FeatureParam<std::string> kIpPrivacyProxyBPsk;
+
+// If true, use the `proxy_chains` provided by Phosphor. Otherwise, use the
+// `first_hop_hostnames` (and thus always single-proxy chains).
+NET_EXPORT extern const base::FeatureParam<bool> kIpPrivacyUseProxyChains;
+
 // Whether QuicParams::migrate_sessions_on_network_change_v2 defaults to true or
 // false. This is needed as a workaround to set this value to true on Android
 // but not on WebView (until crbug.com/1430082 has been fixed).
@@ -456,9 +464,6 @@ NET_EXPORT BASE_DECLARE_FEATURE(kEnableWebTransportDraft07);
 // Enables Zstandard Content-Encoding support.
 NET_EXPORT BASE_DECLARE_FEATURE(kZstdContentEncoding);
 
-// Enables SHA-256 and username hashing support for HTTP Digest auth.
-NET_EXPORT BASE_DECLARE_FEATURE(kDigestAuthEnableSecureAlgorithms);
-
 NET_EXPORT BASE_DECLARE_FEATURE(kThirdPartyPartitionedStorageAllowedByDefault);
 
 // Enables the HTTP extensible priorities "priority" header.
@@ -468,17 +473,13 @@ NET_EXPORT BASE_DECLARE_FEATURE(kPriorityHeader);
 // Enables a more efficient implementation of SpdyHeadersToHttpResponse().
 NET_EXPORT BASE_DECLARE_FEATURE(kSpdyHeadersToHttpResponseUseBuilder);
 
-// Enables comparison of old and new implementations of
-// SpdyHeadersToHttpResponse at runtime and calls DumpWithoutCrashing() if they
-// differ. This is slow, so should never be enabled in Beta or Stable channels.
-// TODO(https://crbug.com/1485670): Remove this once we have run an experiment
-// for two weeks on Dev.
-NET_EXPORT BASE_DECLARE_FEATURE(kSpdyHeadersToHttpResponseVerifyCorrectness);
-
 // Enables receiving ECN bit by sockets in Chrome.
 NET_EXPORT BASE_DECLARE_FEATURE(kReceiveEcn);
 
 NET_EXPORT BASE_DECLARE_FEATURE(kNewCertPathBuilderIterationLimit);
+
+// Enables using the new ALPS codepoint to negotiate application settings.
+NET_EXPORT BASE_DECLARE_FEATURE(kUseAlpsNewCodepoint);
 
 }  // namespace net::features
 

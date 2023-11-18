@@ -360,7 +360,7 @@ std::unique_ptr<RulesetMatcher> RulesetInfo::TakeMatcher() {
   return std::move(matcher_);
 }
 
-const absl::optional<LoadRulesetResult>& RulesetInfo::load_ruleset_result()
+const std::optional<LoadRulesetResult>& RulesetInfo::load_ruleset_result()
     const {
   // |matcher_| is valid only on success.
   DCHECK_EQ(load_ruleset_result_ == LoadRulesetResult::kSuccess, !!matcher_);
@@ -379,8 +379,10 @@ void RulesetInfo::CreateVerifiedMatcher() {
       source_.CreateVerifiedMatcher(*expected_checksum_, &matcher_);
 }
 
-LoadRequestData::LoadRequestData(ExtensionId extension_id)
-    : extension_id(std::move(extension_id)) {}
+LoadRequestData::LoadRequestData(ExtensionId extension_id,
+                                 base::Version extension_version)
+    : extension_id(std::move(extension_id)),
+      extension_version(std::move(extension_version)) {}
 LoadRequestData::~LoadRequestData() = default;
 LoadRequestData::LoadRequestData(LoadRequestData&&) = default;
 LoadRequestData& LoadRequestData::operator=(LoadRequestData&&) = default;
@@ -447,7 +449,7 @@ void FileSequenceHelper::UpdateDynamicRules(
   DCHECK(!dynamic_ruleset.expected_checksum());
 
   auto log_status_and_dispatch_callback = [&ui_callback, &load_data](
-                                              absl::optional<std::string> error,
+                                              std::optional<std::string> error,
                                               UpdateDynamicRulesStatus status) {
     base::UmaHistogramEnumeration(kUpdateDynamicRulesStatusHistogram, status);
 
@@ -484,7 +486,7 @@ void FileSequenceHelper::UpdateDynamicRules(
   }
 
   // Success.
-  log_status_and_dispatch_callback(absl::nullopt, status);
+  log_status_and_dispatch_callback(std::nullopt, status);
 }
 
 void FileSequenceHelper::OnRulesetsIndexed(LoadRulesetsUICallback ui_callback,

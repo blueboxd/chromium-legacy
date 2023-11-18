@@ -13,6 +13,8 @@
 #include "base/test/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/themed_vector_icon.h"
 #include "ui/compositor/canvas_painter.h"
 #include "ui/gfx/canvas.h"
@@ -53,6 +55,8 @@ namespace {
 
 // A simple View class that will match its height to the available width.
 class SquareView : public views::View {
+  METADATA_HEADER(SquareView, views::View)
+
  public:
   SquareView() = default;
   ~SquareView() override = default;
@@ -61,6 +65,9 @@ class SquareView : public views::View {
   gfx::Size CalculatePreferredSize() const override { return gfx::Size(1, 1); }
   int GetHeightForWidth(int width) const override { return width; }
 };
+
+BEGIN_METADATA(SquareView)
+END_METADATA
 
 }  // namespace
 
@@ -179,9 +186,11 @@ class TouchableMenuItemViewTest : public ViewsTestBase {
     widget_->Show();
 
     menu_delegate_ = std::make_unique<test::TestMenuDelegate>();
-    menu_item_view_ = new TestMenuItemView(menu_delegate_.get());
+    auto menu_item_view_owning =
+        std::make_unique<TestMenuItemView>(menu_delegate_.get());
+    menu_item_view_ = menu_item_view_owning.get();
     menu_runner_ = std::make_unique<MenuRunner>(
-        menu_item_view_, MenuRunner::USE_ASH_SYS_UI_LAYOUT);
+        std::move(menu_item_view_owning), MenuRunner::USE_ASH_SYS_UI_LAYOUT);
     menu_runner_->RunMenuAt(widget_.get(), nullptr, gfx::Rect(),
                             MenuAnchorPosition::kTopLeft,
                             ui::MENU_SOURCE_KEYBOARD);
@@ -294,6 +303,8 @@ namespace {
 // A fake View to check if GetHeightForWidth() is called with the appropriate
 // width value.
 class FakeView : public View {
+  METADATA_HEADER(FakeView, View)
+
  public:
   explicit FakeView(int expected_width) : expected_width_(expected_width) {}
   ~FakeView() override = default;
@@ -308,6 +319,9 @@ class FakeView : public View {
  private:
   const int expected_width_;
 };
+
+BEGIN_METADATA(FakeView)
+END_METADATA
 
 }  // namespace
 
@@ -351,7 +365,9 @@ class MenuItemViewPaintUnitTest : public ViewsTestBase {
   void SetUp() override {
     ViewsTestBase::SetUp();
     menu_delegate_ = CreateMenuDelegate();
-    menu_item_view_ = new MenuItemView(menu_delegate_.get());
+    auto menu_item_view_owning =
+        std::make_unique<MenuItemView>(menu_delegate_.get());
+    menu_item_view_ = menu_item_view_owning.get();
 
     widget_ = std::make_unique<Widget>();
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
@@ -359,7 +375,8 @@ class MenuItemViewPaintUnitTest : public ViewsTestBase {
     widget_->Init(std::move(params));
     widget_->Show();
 
-    menu_runner_ = std::make_unique<MenuRunner>(menu_item_view_, 0);
+    menu_runner_ =
+        std::make_unique<MenuRunner>(std::move(menu_item_view_owning), 0);
   }
 
   void TearDown() override {

@@ -28,10 +28,12 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
     kUniquePtrToGCManaged,
     kMemberToGCUnmanaged,
     kMemberInUnmanaged,
+    kPtrToMemberInUnmanaged,
     kPtrFromHeapToStack,
     kGCDerivedPartObject,
     kIteratorToGCManaged,
     kMemberInStackAllocated,
+    kTraceablePartObjectInUnmanaged,
   };
 
   using Errors = std::vector<std::pair<FieldPoint*, Error>>;

@@ -15,6 +15,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_source.h"
+#include "chrome/browser/apps/app_service/app_install/app_install_service_lacros.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_forwarder.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_tracker.h"
@@ -28,9 +29,11 @@
 #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/web_applications/app_service/lacros_browser_shortcuts_controller.h"
 #include "chrome/browser/web_applications/app_service/lacros_web_apps_controller.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/lacros/lacros_service.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
@@ -110,6 +113,10 @@ AppServiceProxyLacros::BrowserAppInstanceTracker() {
 apps::WebsiteMetricsServiceLacros*
 AppServiceProxyLacros::WebsiteMetricsService() {
   return metrics_service_.get();
+}
+
+AppInstallService& AppServiceProxyLacros::AppInstallService() {
+  return *app_install_service_;
 }
 
 void AppServiceProxyLacros::OnApps(std::vector<AppPtr> deltas,
@@ -521,6 +528,11 @@ void AppServiceProxyLacros::Initialize() {
     lacros_web_apps_controller_ =
         std::make_unique<web_app::LacrosWebAppsController>(profile_);
     lacros_web_apps_controller_->Init();
+    if (chromeos::features::IsCrosWebAppShortcutUiUpdateEnabled()) {
+      lacros_browser_shortcuts_controller_ =
+          std::make_unique<web_app::LacrosBrowserShortcutsController>(profile_);
+      lacros_browser_shortcuts_controller_->Initialize();
+    }
   }
 
   // Make the chrome://app-icon/ resource available.
@@ -557,6 +569,9 @@ void AppServiceProxyLacros::Initialize() {
           crosapi_receiver_.BindNewPipeAndPassRemote());
   remote_crosapi_app_service_proxy_ =
       service->GetRemote<crosapi::mojom::AppServiceProxy>().get();
+
+  app_install_service_ = std::make_unique<AppInstallServiceLacros>(
+      *remote_crosapi_app_service_proxy_);
 }
 
 void AppServiceProxyLacros::Shutdown() {

@@ -234,13 +234,6 @@ class AttributionInteropParser {
 
     ParseInt(dict, "max_event_level_reports_per_destination",
              config.event_level_limit.max_reports_per_destination, required);
-    ParseUint64(
-        dict, "navigation_source_trigger_data_cardinality",
-        config.event_level_limit.navigation_source_trigger_data_cardinality,
-        required);
-    ParseUint64(dict, "event_source_trigger_data_cardinality",
-                config.event_level_limit.event_source_trigger_data_cardinality,
-                required);
     ParseDouble(dict, "randomized_response_epsilon",
                 config.event_level_limit.randomized_response_epsilon, required);
     ParseInt(dict, "max_aggregatable_reports_per_destination",
@@ -645,15 +638,6 @@ class AttributionInteropParser {
                         allow_zero);
   }
 
-  bool ParseUint64(const base::Value::Dict& dict,
-                   base::StringPiece key,
-                   uint64_t& result,
-                   bool required,
-                   bool allow_zero = false) {
-    return ParseInteger(dict, key, result, &base::StringToUint64, required,
-                        allow_zero);
-  }
-
   bool ParseInt64(const base::Value::Dict& dict,
                   base::StringPiece key,
                   int64_t& result,
@@ -802,20 +786,6 @@ AttributionInteropOutput::Report& AttributionInteropOutput::Report::operator=(
   url = other.url;
   payload = other.payload.Clone();
   return *this;
-}
-
-// TODO(apaseltiner): The payload comparison here is too brittle. Reports can
-// be logically equivalent without having exactly the same JSON structure.
-bool operator==(const AttributionInteropOutput::Report& a,
-                const AttributionInteropOutput::Report& b) {
-  return a.time == b.time &&  //
-         a.url == b.url &&    //
-         a.payload == b.payload;
-}
-
-bool operator==(const AttributionInteropOutput::UnparsableRegistration& a,
-                const AttributionInteropOutput::UnparsableRegistration& b) {
-  return a.time == b.time && a.type == b.type;
 }
 
 std::ostream& operator<<(std::ostream& out,

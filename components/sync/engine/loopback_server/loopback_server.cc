@@ -234,10 +234,7 @@ bool SortByVersion(const LoopbackServerEntity* lhs,
 }  // namespace
 
 LoopbackServer::LoopbackServer(const base::FilePath& persistent_file)
-    : strong_consistency_model_enabled_(false),
-      version_(0),
-      store_birthday_(0),
-      persistent_file_(persistent_file),
+    : persistent_file_(persistent_file),
       writer_(
           persistent_file_,
           base::ThreadPool::CreateSequencedTaskRunner(
@@ -255,7 +252,7 @@ void LoopbackServer::Init() {
   if (LoadStateFromFile())
     return;
 
-  store_birthday_ = base::Time::Now().ToJavaTime();
+  store_birthday_ = base::Time::Now().InMillisecondsSinceUnixEpoch();
   keystore_keys_.push_back(GenerateNewKeystoreKey());
 
   const bool create_result = CreateDefaultPermanentItems();
@@ -701,7 +698,7 @@ void LoopbackServer::ClearServerData() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   entities_.clear();
   keystore_keys_.clear();
-  store_birthday_ = base::Time::Now().ToJavaTime();
+  store_birthday_ = base::Time::Now().InMillisecondsSinceUnixEpoch();
   base::DeleteFile(persistent_file_);
   Init();
 }

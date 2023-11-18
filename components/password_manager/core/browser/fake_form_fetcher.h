@@ -10,7 +10,7 @@
 #include "base/observer_list.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
 #include "components/password_manager/core/browser/password_form.h"
-#include "components/password_manager/core/browser/statistics_table.h"
+#include "components/password_manager/core/browser/password_store/interactions_stats.h"
 
 namespace password_manager {
 

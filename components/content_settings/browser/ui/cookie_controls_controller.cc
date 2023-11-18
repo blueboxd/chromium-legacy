@@ -20,6 +20,7 @@
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/content_settings/core/common/cookie_blocking_3pcd_status.h"
 #include "components/content_settings/core/common/cookie_controls_enforcement.h"
@@ -146,9 +147,9 @@ void CookieControlsController::Update(content::WebContents* web_contents) {
                                status.blocking_status, status.expiration);
       observer.OnSitesCountChanged(third_party_allowed_sites,
                                    third_party_blocked_sites);
-      observer.OnBreakageConfidenceLevelChanged(
-          GetConfidenceLevel(status.status, third_party_allowed_sites,
-                             third_party_blocked_sites, bounce_count));
+      observer.OnBreakageConfidenceLevelChanged(GetConfidenceLevel(
+          status.status, status.enforcement, third_party_allowed_sites,
+          third_party_blocked_sites, bounce_count));
     }
   } else {
     int allowed_cookies = GetAllowedCookieCount();
@@ -189,7 +190,8 @@ CookieControlsController::Status CookieControlsController::GetStatus(
   // site-scoped exceptions.
   const bool host_or_site_scoped_exception =
       !info.secondary_pattern.HasDomainWildcard() ||
-      info.secondary_pattern == URLToSchemefulSitePattern(url);
+      info.secondary_pattern ==
+          ContentSettingsPattern::FromURLToSchemefulSitePattern(url);
 
   // Rules from regular mode can't be temporarily overridden in incognito.
   bool exception_exists_in_regular_profile = false;
@@ -234,16 +236,21 @@ CookieControlsController::Status CookieControlsController::GetStatus(
 }
 
 CookieControlsBreakageConfidenceLevel
-CookieControlsController::GetConfidenceLevel(CookieControlsStatus status,
-                                             int allowed_sites,
-                                             int blocked_sites,
-                                             int bounce_count) {
+CookieControlsController::GetConfidenceLevel(
+    CookieControlsStatus status,
+    CookieControlsEnforcement enforcement,
+    int allowed_sites,
+    int blocked_sites,
+    int bounce_count) {
   // If 3PC cookies are not blocked by default:
   switch (status) {
     case CookieControlsStatus::kDisabled:
     case CookieControlsStatus::kUninitialized:
       return CookieControlsBreakageConfidenceLevel::kUninitialized;
     case CookieControlsStatus::kDisabledForSite:
+      if (enforcement == CookieControlsEnforcement::kEnforcedByTpcdGrant) {
+        return CookieControlsBreakageConfidenceLevel::kUninitialized;
+      }
       return CookieControlsBreakageConfidenceLevel::kMedium;
     case CookieControlsStatus::kEnabled:
       // Check other conditions to determine the level.
@@ -259,8 +266,16 @@ CookieControlsController::GetConfidenceLevel(CookieControlsStatus status,
     return CookieControlsBreakageConfidenceLevel::kLow;
   }
 
-  // TODO(crbug.com/1446230): Check if FedCM was requested.
+  // Return `kMedium` confidence for incognito and Guest profile. We don't want
+  // to show high-confidence UI (animation, IPH) in these cases as we can't
+  // persist their usage cross-session. This puts us at high risk of
+  // over-triggering noisy UI and annoying users.
   auto* web_contents = GetWebContents();
+  if (web_contents->GetBrowserContext()->IsOffTheRecord()) {
+    return CookieControlsBreakageConfidenceLevel::kMedium;
+  }
+
+  // TODO(crbug.com/1446230): Check if FedCM was requested.
   const GURL& url = web_contents->GetLastCommittedURL();
   if (cookie_settings_->HasAnyFrameRequestedStorageAccess(url)) {
     return CookieControlsBreakageConfidenceLevel::kMedium;
@@ -360,8 +375,8 @@ CookieControlsController::GetBreakageConfidenceLevel() {
     int allowed_sites = GetAllowedSitesCount();
     int blocked_sites = GetBlockedSitesCount();
     int bounce_count = GetStatefulBounceCount();
-    return GetConfidenceLevel(status.status, allowed_sites, blocked_sites,
-                              bounce_count);
+    return GetConfidenceLevel(status.status, status.enforcement, allowed_sites,
+                              blocked_sites, bounce_count);
   } else {
     return CookieControlsBreakageConfidenceLevel::kUninitialized;
   }
@@ -465,9 +480,9 @@ void CookieControlsController::PresentBlockedCookieCounter() {
     for (auto& observer : observers_) {
       observer.OnSitesCountChanged(third_party_allowed_sites,
                                    third_party_blocked_sites);
-      observer.OnBreakageConfidenceLevelChanged(
-          GetConfidenceLevel(status.status, third_party_allowed_sites,
-                             third_party_blocked_sites, bounce_count));
+      observer.OnBreakageConfidenceLevelChanged(GetConfidenceLevel(
+          status.status, status.enforcement, third_party_allowed_sites,
+          third_party_blocked_sites, bounce_count));
     }
   } else {
     int allowed_cookies = GetAllowedCookieCount();
@@ -523,8 +538,9 @@ void CookieControlsController::OnPageReloadDetected(int recent_reloads_count) {
   int bounce_count = GetStatefulBounceCount();
 
   for (auto& observer : observers_) {
-    observer.OnBreakageConfidenceLevelChanged(GetConfidenceLevel(
-        status.status, allowed_sites, blocked_sites, bounce_count));
+    observer.OnBreakageConfidenceLevelChanged(
+        GetConfidenceLevel(status.status, status.enforcement, allowed_sites,
+                           blocked_sites, bounce_count));
   }
 }
 

@@ -62,9 +62,7 @@ enum class SyncTransportDataStartupState {
 std::string GenerateCacheGUID() {
   // Generate a GUID with 128 bits of randomness.
   const int kGuidBytes = 128 / 8;
-  std::string guid;
-  base::Base64Encode(base::RandBytesAsString(kGuidBytes), &guid);
-  return guid;
+  return base::Base64Encode(base::RandBytesAsVector(kGuidBytes));
 }
 
 SyncTransportDataStartupState ValidateSyncTransportData(
@@ -545,6 +543,15 @@ void SyncEngineImpl::GetNigoriNodeForDebugging(AllNodesCallback callback) {
       FROM_HERE,
       base::BindOnce(&SyncEngineBackend::GetNigoriNodeForDebugging, backend_,
                      base::BindPostTaskToCurrentDefault(std::move(callback))));
+}
+
+void SyncEngineImpl::RecordNigoriMemoryUsageAndCountsHistograms() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  sync_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &SyncEngineBackend::RecordNigoriMemoryUsageAndCountsHistograms,
+          backend_));
 }
 
 void SyncEngineImpl::OnInvalidationReceived(const std::string& payload) {

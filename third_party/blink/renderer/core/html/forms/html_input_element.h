@@ -110,10 +110,10 @@ class CORE_EXPORT HTMLInputElement
   bool IsTextField() const;
   bool IsTelephone() const;
   // To override from TextControlElement
-  bool ShouldAutoDirUseValue() const final;
+  bool IsAutoDirectionalityFormAssociated() const final;
   // Do not add type check predicates for concrete input types; e.g.  isImage,
   // isRadio, isFile.  If you want to check the input type, you may use
-  // |input->type() == input_type_names::kImage|, etc.
+  // |input->FormControlType() == FormControlType::kInputImage|, etc.
 
   // Returns whether this field is or has ever been a password field, or if
   // autofill classified the field as password by predictions, so that its value
@@ -370,6 +370,7 @@ class CORE_EXPORT HTMLInputElement
 
   bool IsDraggedSlider() const;
 
+  mojom::blink::FormControlType FormControlType() const final;
   FormElementPiiType GetFormElementPiiType() const override {
     return form_element_pii_type_;
   }
@@ -383,6 +384,9 @@ class CORE_EXPORT HTMLInputElement
   void showPicker(ExceptionState&);
 
   ShadowRoot* EnsureShadowSubtree();
+
+  bool HandleInvokeInternal(HTMLElement& invoker,
+                            AtomicString& action) override;
 
  protected:
   void DefaultEventHandler(Event&) override;
@@ -398,7 +402,8 @@ class CORE_EXPORT HTMLInputElement
   bool HasActivationBehavior() const override;
 
   bool HasCustomFocusLogic() const final;
-  bool IsKeyboardFocusable() const final;
+  bool IsKeyboardFocusable(UpdateBehavior update_behavior =
+                               UpdateBehavior::kStyleAndLayout) const final;
   bool MayTriggerVirtualKeyboard() const final;
   bool ShouldHaveFocusAppearance() const final;
   bool IsEnumeratable() const final;
@@ -411,7 +416,6 @@ class CORE_EXPORT HTMLInputElement
 
   bool CanTriggerImplicitSubmission() const final { return IsTextField(); }
 
-  mojom::blink::FormControlType FormControlType() const final;
   const AtomicString& FormControlTypeAsString() const override;
 
   bool ShouldSaveAndRestoreFormControlState() const final;
@@ -454,7 +458,6 @@ class CORE_EXPORT HTMLInputElement
 
   TextControlInnerEditorElement* EnsureInnerEditorElement() const final;
   void UpdatePlaceholderText() final;
-  bool IsEmptyValue() const final { return InnerEditorValue().empty(); }
   void HandleBlurEvent() final;
   void DispatchFocusInEvent(const AtomicString& event_type,
                             Element* old_focused_element,

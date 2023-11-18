@@ -96,7 +96,7 @@ namespace {
 // update it immediately.
 BASE_FEATURE(kDelayUpdateWindowsAfterTextInputStateChanged,
              "DelayUpdateWindowsAfterTextInputStateChanged",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace
 
@@ -230,13 +230,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
   DCHECK(![GetInProcessNSView() window]);
 
   host()->SetView(this);
-
-  // Let the page-level input event router know about our surface ID
-  // namespace for surface-based hit testing.
-  if (host()->delegate() && host()->delegate()->GetInputEventRouter()) {
-    host()->delegate()->GetInputEventRouter()->AddFrameSinkIdOwner(
-        GetFrameSinkId(), this);
-  }
 
   RenderWidgetHostOwnerDelegate* owner_delegate = host()->owner_delegate();
   if (owner_delegate) {
@@ -446,6 +439,7 @@ void RenderWidgetHostViewMac::InitAsPopup(
 
   // This path is used by the time/date picker.
   ns_view_->InitAsPopup(pos, popup_parent_host_view_->ns_view_id_);
+  Show();
 }
 
 RenderWidgetHostViewBase*
@@ -626,13 +620,16 @@ CursorManager* RenderWidgetHostViewMac::GetCursorManager() {
   return cursor_manager_.get();
 }
 
-void RenderWidgetHostViewMac::DidNavigateMainFramePreCommit() {
-  CHECK(browser_compositor_) << "Shouldn't be called during destruction!";
-  gesture_provider_.ResetDetection();
+void RenderWidgetHostViewMac::OnOldViewDidNavigatePreCommit() {
   if (base::FeatureList::IsEnabled(
           features::kInvalidateLocalSurfaceIdPreCommit)) {
+    CHECK(browser_compositor_) << "Shouldn't be called during destruction!";
     browser_compositor_->DidNavigateMainFramePreCommit();
   }
+}
+
+void RenderWidgetHostViewMac::OnNewViewDidNavigatePostCommit() {
+  gesture_provider_.ResetDetection();
 }
 
 void RenderWidgetHostViewMac::DidEnterBackForwardCache() {
@@ -1495,6 +1492,12 @@ const viz::LocalSurfaceId& RenderWidgetHostViewMac::GetLocalSurfaceId() const {
 
 void RenderWidgetHostViewMac::InvalidateLocalSurfaceIdAndAllocationGroup() {
   browser_compositor_->InvalidateSurfaceAllocationGroup();
+}
+
+void RenderWidgetHostViewMac::UpdateFrameSinkIdRegistration() {
+  RenderWidgetHostViewBase::UpdateFrameSinkIdRegistration();
+  browser_compositor_->GetDelegatedFrameHost()->SetIsFrameSinkIdOwner(
+      is_frame_sink_id_owner());
 }
 
 const viz::FrameSinkId& RenderWidgetHostViewMac::GetFrameSinkId() const {

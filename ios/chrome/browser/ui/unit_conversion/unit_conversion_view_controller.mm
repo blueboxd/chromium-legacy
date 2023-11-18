@@ -9,6 +9,7 @@
 #import "base/check.h"
 #import "base/notreached.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
+#import "ios/chrome/browser/ui/unit_conversion/unit_conversion_constants.h"
 #import "ios/chrome/browser/ui/unit_conversion/unit_conversion_mutator.h"
 #import "ios/chrome/browser/ui/unit_conversion/unit_conversion_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/unit_conversion/unit_type_cell.h"
@@ -48,14 +49,6 @@ const CGFloat kUnitTitlePadding = 4;
 // Cells identifiers.
 NSString* kUnitTypeCellIdentifier = @"UnitTypeCell";
 NSString* kUnitTypeFieldCellIdentifier = @"UnitTypeValueFieldCell";
-
-// Accessibility identifiers.
-NSString* kUnitConversionTableViewIdentifier =
-    @"UnitConversionTableViewIdentifier";
-NSString* kSourceUnitLabelIdentifier = @"sourceUnitLabelIdentifier";
-NSString* kTargetUnitLabelIdentifier = @"targetUnitLabelIdentifier";
-NSString* kSourceUnitFieldIdentifier = @"sourceUnitFieldIdentifier";
-NSString* kTargetUnitFieldIdentifier = @"targetUnitFieldIdentifier";
 
 // Source and target sections indexes.
 const NSInteger kSourceSection = 0;
@@ -170,7 +163,8 @@ ios::provider::UnitType TypeByUnit(NSUnit* unit) {
   [super viewDidLoad];
   _targetUnit = ios::provider::GetDefaultTargetUnit(_sourceUnit);
   _unitType = TypeByUnit(_sourceUnit);
-  _sourceUnitValueField = [NSString stringWithFormat:@"%lf", _unitValue];
+  _sourceUnitValueField =
+      [NSString localizedStringWithFormat:@"%lf", _unitValue];
   _unitTypes = ios::provider::GetSupportedUnitTypes();
   _unitTypeTitle = [self titleForUnitType:_unitType];
   _formattedSourceUnit = ios::provider::GetFormattedUnit(_sourceUnit);
@@ -183,7 +177,7 @@ ios::provider::UnitType TypeByUnit(NSUnit* unit) {
   [closeButton
       setImage:SymbolWithPalette(closeIcon,
                                  @[
-                                   [UIColor colorNamed:kTextTertiaryColor],
+                                   [UIColor colorNamed:kTextSecondaryColor],
                                    [UIColor colorNamed:kGrey200Color]
                                  ])
       forState:UIControlStateNormal];
@@ -354,8 +348,8 @@ ios::provider::UnitType TypeByUnit(NSUnit* unit) {
   DCHECK([sourceUnitMeasurement canBeConvertedToUnit:_targetUnit]);
   NSMeasurement* targetUnitMeasurement =
       [sourceUnitMeasurement measurementByConvertingToUnit:_targetUnit];
-  _targetUnitValueField =
-      [NSString stringWithFormat:@"%lf", targetUnitMeasurement.doubleValue];
+  _targetUnitValueField = [NSString
+      localizedStringWithFormat:@"%lf", targetUnitMeasurement.doubleValue];
 }
 
 // Returns the title string based on the unit type.
@@ -397,12 +391,14 @@ ios::provider::UnitType TypeByUnit(NSUnit* unit) {
                     if (section == kSourceSection) {
                       [weakSelf.mutator sourceUnitDidChange:unit
                                                  targetUnit:weakSelf.targetUnit
-                                                  unitValue:weakSelf.unitValue];
+                                                  unitValue:weakSelf.unitValue
+                                                   unitType:weakSelf.unitType];
 
                     } else if (section == kTargetSection) {
                       [weakSelf.mutator targetUnitDidChange:unit
                                                  sourceUnit:weakSelf.sourceUnit
-                                                  unitValue:weakSelf.unitValue];
+                                                  unitValue:weakSelf.unitValue
+                                                   unitType:weakSelf.unitType];
                     }
                   }];
       [unitsSubMenu addObject:unitAction];
@@ -420,11 +416,19 @@ ios::provider::UnitType TypeByUnit(NSUnit* unit) {
                       children:menuItemsArray];
 }
 
-// Invoked when the value of textfield is changed.
-- (void)textFieldDidChange:(UITextField*)textField {
+// Invoked when the value of the source unit textfield is changed.
+- (void)sourceUnitFieldDidChange:(UITextField*)textField {
   _sourceUnitValueField = [textField.text copy];
   self.unitValue = [_sourceUnitValueField doubleValue];
   [self.mutator sourceUnitValueFieldDidChange:_sourceUnitValueField
+                                   sourceUnit:_sourceUnit
+                                   targetUnit:_targetUnit];
+}
+
+// Invoked when the value of the target unit textfield is changed.
+- (void)targetUnitFieldDidChange:(UITextField*)textField {
+  _targetUnitValueField = [textField.text copy];
+  [self.mutator targetUnitValueFieldDidChange:_targetUnitValueField
                                    sourceUnit:_sourceUnit
                                    targetUnit:_targetUnit];
 }
@@ -463,9 +467,13 @@ ios::provider::UnitType TypeByUnit(NSUnit* unit) {
     if (indexPath.section == kSourceSection) {
       cell.unitTypeLabel.text = _formattedSourceUnit;
       cell.unitTypeLabel.accessibilityIdentifier = kSourceUnitLabelIdentifier;
+      cell.unitMenuButton.accessibilityIdentifier =
+          kSourceUnitMenuButtonIdentifier;
     } else if (indexPath.section == kTargetSection) {
       cell.unitTypeLabel.text = _formattedTargetUnit;
       cell.unitTypeLabel.accessibilityIdentifier = kTargetUnitLabelIdentifier;
+      cell.unitMenuButton.accessibilityIdentifier =
+          kTargetUnitMenuButtonIdentifier;
     } else {
       NOTREACHED_NORETURN();
     }
@@ -481,13 +489,15 @@ ios::provider::UnitType TypeByUnit(NSUnit* unit) {
       cell.unitValueTextField.accessibilityIdentifier =
           kSourceUnitFieldIdentifier;
       [cell.unitValueTextField addTarget:self
-                                  action:@selector(textFieldDidChange:)
+                                  action:@selector(sourceUnitFieldDidChange:)
                         forControlEvents:UIControlEventEditingChanged];
     } else if (indexPath.section == kTargetSection) {
       cell.unitValueTextField.text = _targetUnitValueField;
       cell.unitValueTextField.accessibilityIdentifier =
           kTargetUnitFieldIdentifier;
-      cell.unitValueTextField.enabled = NO;
+      [cell.unitValueTextField addTarget:self
+                                  action:@selector(targetUnitFieldDidChange:)
+                        forControlEvents:UIControlEventEditingChanged];
     } else {
       NOTREACHED_NORETURN();
     }
@@ -511,13 +521,15 @@ ios::provider::UnitType TypeByUnit(NSUnit* unit) {
 }
 
 - (void)updateSourceUnitValue:(double)sourceUnitValue reload:(BOOL)reload {
-  _sourceUnitValueField = [NSString stringWithFormat:@"%lf", sourceUnitValue];
+  _sourceUnitValueField =
+      [NSString localizedStringWithFormat:@"%lf", sourceUnitValue];
   self.unitValue = sourceUnitValue;
   [self reloadRow:kUnitValueFieldRow section:kSourceSection reload:reload];
 }
 
 - (void)updateTargetUnitValue:(double)targetUnitValue reload:(BOOL)reload {
-  _targetUnitValueField = [NSString stringWithFormat:@"%lf", targetUnitValue];
+  _targetUnitValueField =
+      [NSString localizedStringWithFormat:@"%lf", targetUnitValue];
   [self reloadRow:kUnitValueFieldRow section:kTargetSection reload:reload];
 }
 

@@ -16,21 +16,11 @@
 
 - (void)selectAllButtonTapped:(id)sender;
 
-- (void)searchButtonTapped:(id)sender;
-
-- (void)cancelSearchButtonTapped:(id)sender;
-
-- (void)closeSelectedTabs:(id)sender;
-
-- (void)shareSelectedTabs:(id)sender;
-
 - (void)pageControlChangedValue:(id)sender;
 
 - (void)pageControlChangedPageByDrag:(id)sender;
 
 - (void)pageControlChangedPageByTap:(id)sender;
-
-- (void)selectTabsButtonTapped:(id)sender;
 
 @end
 

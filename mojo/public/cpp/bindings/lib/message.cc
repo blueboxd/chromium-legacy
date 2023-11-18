@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "base/check_op.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
@@ -31,9 +32,40 @@ namespace mojo {
 
 namespace {
 
-base::LazyInstance<
-    base::SequenceLocalStorageSlot<internal::MessageDispatchContext*>>::Leaky
-    g_sls_message_dispatch_context = LAZY_INSTANCE_INITIALIZER;
+BASE_FEATURE(kMojoBindingsInlineSLS,
+             "MojoBindingsInlineSLS",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+base::GenericSequenceLocalStorageSlot<internal::MessageDispatchContext*>&
+GetSLSMessageDispatchContext() {
+  static base::GenericSequenceLocalStorageSlot<
+      internal::MessageDispatchContext*>
+      sls;
+  return sls;
+}
+
+base::SmallSequenceLocalStorageSlot<internal::MessageDispatchContext*>&
+GetSmallSLSMessageDispatchContext() {
+  static base::SmallSequenceLocalStorageSlot<internal::MessageDispatchContext*>
+      sls;
+  return sls;
+}
+
+void SetMessageDispatchContext(internal::MessageDispatchContext* context) {
+  if (base::FeatureList::IsEnabled(kMojoBindingsInlineSLS)) {
+    GetSmallSLSMessageDispatchContext().emplace(context);
+  } else {
+    GetSLSMessageDispatchContext().emplace(context);
+  }
+}
+
+internal::MessageDispatchContext* GetMessageDispatchContext() {
+  if (base::FeatureList::IsEnabled(kMojoBindingsInlineSLS)) {
+    return GetSmallSLSMessageDispatchContext().GetOrCreateValue();
+  } else {
+    return GetSLSMessageDispatchContext().GetOrCreateValue();
+  }
+}
 
 void DoNotifyBadMessage(Message message, base::StringPiece error) {
   message.NotifyBadMessage(error);
@@ -158,6 +190,8 @@ void DestroyUnserializedContext(uintptr_t context) {
 Message CreateUnserializedMessage(
     std::unique_ptr<internal::UnserializedMessageContext> context,
     MojoCreateMessageFlags create_message_flags) {
+  context->header()->trace_nonce =
+      static_cast<uint32_t>(base::trace_event::GetNextGlobalTraceId());
   ScopedMessageHandle handle;
   MojoResult rv = CreateMessage(&handle, create_message_flags);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
@@ -613,17 +647,17 @@ MessageHeaderV2::MessageHeaderV2() = default;
 
 MessageDispatchContext::MessageDispatchContext(Message* message)
     : outer_context_(current()), message_(message) {
-  g_sls_message_dispatch_context.Get().emplace(this);
+  SetMessageDispatchContext(this);
 }
 
 MessageDispatchContext::~MessageDispatchContext() {
   DCHECK_EQ(current(), this);
-  g_sls_message_dispatch_context.Get().emplace(outer_context_);
+  SetMessageDispatchContext(outer_context_);
 }
 
 // static
 MessageDispatchContext* MessageDispatchContext::current() {
-  return g_sls_message_dispatch_context.Get().GetOrCreateValue();
+  return GetMessageDispatchContext();
 }
 
 ReportBadMessageCallback MessageDispatchContext::GetBadMessageCallback() {

@@ -39,12 +39,6 @@ BASE_FEATURE(kIOSPasswordUISplit,
              "IOSPasswordUISplit",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables displaying and managing compromised, weak and reused credentials in
-// the Password Manager.
-BASE_FEATURE(kIOSPasswordCheckup,
-             "IOSPasswordCheckup",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables password bottom sheet to be displayed (on iOS) when a user is
 // signed-in and taps on a username or password field on a website that has at
 // least one credential saved in their password manager.
@@ -75,10 +69,6 @@ BASE_FEATURE(kSendPasswords,
 BASE_FEATURE(kPasswordChangeWellKnown,
              "PasswordChangeWellKnown",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kPasswordsImportM2,
-             "PasswordsImportM2",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables password reuse detection.
 BASE_FEATURE(kPasswordReuseDetectionEnabled,
@@ -130,10 +120,6 @@ BASE_FEATURE(kUnifiedPasswordManagerLocalPasswordsMigrationWarning,
 BASE_FEATURE(kUnifiedPasswordManagerSyncUsingAndroidBackendOnly,
              "UnifiedPasswordManagerSyncUsingAndroidBackendOnly",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kPasswordsInCredMan,
-             "PasswordsInCredMan",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -170,11 +156,6 @@ const char kGenerationRequirementsPrefixLength[] = "prefix_length";
 const char kGenerationRequirementsTimeout[] = "timeout";
 
 #if BUILDFLAG(IS_IOS)
-bool IsPasswordCheckupEnabled() {
-  return base::FeatureList::IsEnabled(
-      password_manager::features::kIOSPasswordCheckup);
-}
-
 bool IsBulkUploadLocalPasswordsEnabled() {
   return base::FeatureList::IsEnabled(
       kIOSPasswordSettingsBulkUploadLocalPasswords);

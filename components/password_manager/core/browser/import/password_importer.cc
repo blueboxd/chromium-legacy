@@ -20,8 +20,6 @@
 #include "components/password_manager/core/browser/import/csv_password_sequence.h"
 #include "components/password_manager/core/browser/import/import_results.h"
 #include "components/password_manager/core/browser/password_form.h"
-#include "components/password_manager/core/browser/password_manager_util.h"
-#include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #include "components/password_manager/core/browser/ui/credential_utils.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
@@ -113,7 +111,7 @@ ImportEntry::Status GetConflictType(
 ImportEntry CreateFailedImportEntry(const CredentialUIEntry& credential,
                                     const ImportEntry::Status status) {
   ImportEntry result;
-  result.url = password_manager::GetShownOrigin(credential);
+  result.url = credential.GetAffiliatedDomains()[0].name;
   result.username = base::UTF16ToUTF8(credential.username);
   result.status = status;
   return result;
@@ -123,7 +121,7 @@ ImportEntry CreateValidImportEntry(const CredentialUIEntry& credential,
                                    int id) {
   ImportEntry result;
   result.id = id;
-  result.url = password_manager::GetShownOrigin(credential);
+  result.url = credential.GetAffiliatedDomains()[0].name;
   result.username = base::UTF16ToUTF8(credential.username);
   result.password = base::UTF16ToUTF8(credential.password);
   result.status = ImportEntry::VALID;
@@ -587,9 +585,7 @@ void PasswordImporter::ConsumePasswords(
   base::UmaHistogramCounts1M("PasswordManager.Import.PerFile.Duplicates",
                              duplicates_count);
 
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordsImportM2) ||
-      conflicts.empty()) {
+  if (conflicts.empty()) {
     for (const std::vector<PasswordForm>& forms : conflicts) {
       results.displayed_entries.push_back(CreateFailedImportEntry(
           CredentialUIEntry(forms), GetConflictType(to_store)));
@@ -641,9 +637,7 @@ void PasswordImporter::ImportFinished(ImportResultsCallback results_callback,
                                       size_t conflicts_count) {
   ReportImportResultsMetrics(results, start_time, conflicts_count);
 
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordsImportM2) &&
-      results.displayed_entries.empty()) {
+  if (results.displayed_entries.empty()) {
     // After successful import with no errors, the user has an option to delete
     // the imported file.
     state_ = kFinished;

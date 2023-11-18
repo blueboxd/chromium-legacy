@@ -10,7 +10,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "media/base/media_export.h"
 #include "media/base/mime_util.h"
@@ -53,7 +53,8 @@ class MEDIA_EXPORT MimeUtil {
     DTS,
     DTSXP2,
     DTSE,
-    LAST_CODEC = DTSE
+    AC4,
+    LAST_CODEC = AC4
   };
 
   // Platform configuration structure.  Controls which codecs are supported at

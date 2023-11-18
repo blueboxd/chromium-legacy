@@ -189,8 +189,8 @@ bool ActionTap::ParseFromJson(const base::Value::Dict& value) {
              : ParseJsonFromMouse(value);
 }
 
-bool ActionTap::InitByAddingNewAction() {
-  if (!Action::InitByAddingNewAction()) {
+bool ActionTap::InitByAddingNewAction(const gfx::Point& target_pos) {
+  if (!Action::InitByAddingNewAction(target_pos)) {
     return false;
   }
 
@@ -312,9 +312,12 @@ bool ActionTap::RewriteKeyEvent(const ui::KeyEvent* key_event,
 
   if (key_event->type() == ui::ET_KEY_PRESSED) {
     DCHECK_LT(current_position_idx_, touch_down_positions_.size());
-    if (current_position_idx_ >= touch_down_positions_.size()) {
+    // TODO(b/308486017): "Modifier key + regular key" support is TBD. Currently
+    // it is not supported.
+    if (ContainShortcutEventFlags(key_event)) {
       return false;
     }
+
     last_touch_root_location_ = touch_down_positions_[current_position_idx_];
     if (!CreateTouchPressedEvent(key_event->time_stamp(), rewritten_events)) {
       return false;

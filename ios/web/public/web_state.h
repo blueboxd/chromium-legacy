@@ -11,6 +11,7 @@
 
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -27,7 +28,6 @@
 #include "ios/web/public/web_state_id.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
@@ -77,8 +77,7 @@ class WebState : public base::SupportsUserData {
  public:
   // Callback used to load the full information for the WebState when
   // it will become realized.
-  using WebStateStorageLoader =
-      base::OnceCallback<void(proto::WebStateStorage&)>;
+  using WebStateStorageLoader = base::OnceCallback<proto::WebStateStorage()>;
 
   // Callback used to fetch the native session for the WebState.
   using NativeSessionFetcher = base::OnceCallback<NSData*()>;
@@ -106,7 +105,7 @@ class WebState : public base::SupportsUserData {
     // is left default initialized, then the value will not be passed on
     // to the WebState and GetLastActiveTime() will return the WebState's
     // creation time.
-    absl::optional<base::Time> last_active_time;
+    std::optional<base::Time> last_active_time;
   };
 
   // Parameters for the OpenURL() method.
@@ -429,8 +428,8 @@ class WebState : public base::SupportsUserData {
   virtual const GURL& GetLastCommittedURL() const = 0;
 
   // Returns the last committed URL if the correctness of this URL's origin is
-  // trusted, and absl::nullopt otherwise.
-  virtual absl::optional<GURL> GetLastCommittedURLIfTrusted() const = 0;
+  // trusted, and std::nullopt otherwise.
+  virtual std::optional<GURL> GetLastCommittedURLIfTrusted() const = 0;
 
   // Returns the current CRWWebViewProxy object.
   virtual CRWWebViewProxyType GetWebViewProxy() const = 0;

@@ -49,10 +49,12 @@ class Profile;
 
 namespace web_app {
 class LacrosWebAppsController;
+class LacrosBrowserShortcutsController;
 }  // namespace web_app
 
 namespace apps {
 
+class AppInstallService;
 class BrowserAppInstanceForwarder;
 class BrowserAppInstanceTracker;
 class WebsiteMetricsServiceLacros;
@@ -102,6 +104,8 @@ class AppServiceProxyLacros : public KeyedService,
   apps::BrowserAppInstanceTracker* BrowserAppInstanceTracker();
 
   apps::WebsiteMetricsServiceLacros* WebsiteMetricsService();
+
+  apps::AppInstallService& AppInstallService();
 
   // crosapi::mojom::AppServiceSubscriber overrides.
   void OnApps(std::vector<AppPtr> deltas,
@@ -347,12 +351,17 @@ class AppServiceProxyLacros : public KeyedService,
   base::OnceClosure dialog_created_callback_;
 
   std::unique_ptr<web_app::LacrosWebAppsController> lacros_web_apps_controller_;
+
+  std::unique_ptr<web_app::LacrosBrowserShortcutsController>
+      lacros_browser_shortcuts_controller_;
   mojo::Receiver<crosapi::mojom::AppServiceSubscriber> crosapi_receiver_{this};
   raw_ptr<crosapi::mojom::AppServiceProxy> remote_crosapi_app_service_proxy_ =
       nullptr;
   int crosapi_app_service_proxy_version_ = 0;
 
   std::unique_ptr<apps::WebsiteMetricsServiceLacros> metrics_service_;
+
+  std::unique_ptr<apps::AppInstallService> app_install_service_;
 
   base::WeakPtrFactory<AppServiceProxyLacros> weak_ptr_factory_{this};
 

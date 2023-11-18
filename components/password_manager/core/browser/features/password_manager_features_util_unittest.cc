@@ -419,13 +419,10 @@ TEST_F(PasswordManagerFeaturesUtilTest, SyncDisablesAccountStorage) {
   // storage again (since with Sync, there's only a single combined storage).
   SetSyncStateFeatureActive(account);
   ASSERT_TRUE(sync_service_.IsSyncFeatureEnabled());
-#if !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
-  // On desktop, the opt-in wasn't actually cleared.
-  EXPECT_TRUE(IsOptedInForAccountStorage(&pref_service_, &sync_service_));
-#else
+  // On desktop, the opt-in pref wasn't actually cleared, but
+  // IsOptedInForAccountStorage() must return false because the user is syncing.
   // On mobile, since no explicit opt-in exists, the (implicit) opt-in is gone.
   EXPECT_FALSE(IsOptedInForAccountStorage(&pref_service_, &sync_service_));
-#endif  // !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
   EXPECT_FALSE(ShouldShowAccountStorageOptIn(&pref_service_, &sync_service_));
   EXPECT_FALSE(
       ShouldShowAccountStorageBubbleUi(&pref_service_, &sync_service_));
@@ -546,7 +543,7 @@ TEST_F(PasswordManagerFeaturesUtilTest, OptInOutHistograms) {
       "PasswordManager.AccountStorage.NumOptedInAccountsAfterOptOut", 1, 1);
 
   // Clear all remaining opt-ins (which is just one).
-  ClearAccountStorageSettingsForAllUsers(&pref_service_);
+  KeepAccountStorageSettingsOnlyForUsers(&pref_service_, {});
   // The OptedIn/OptedOut histograms are unchanged.
   histogram_tester.ExpectTotalCount(
       "PasswordManager.AccountStorage.NumOptedInAccountsAfterOptIn", 2);

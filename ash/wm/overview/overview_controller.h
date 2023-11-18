@@ -25,12 +25,11 @@
 namespace ash {
 
 class OverviewSession;
-class OverviewWallpaperController;
 
 // Manages a overview session which displays an overview of all windows and
 // allows selecting a window to activate it.
 class ASH_EXPORT OverviewController : public OverviewDelegate,
-                                      public ::wm::ActivationChangeObserver {
+                                      public wm::ActivationChangeObserver {
  public:
   OverviewController();
 
@@ -126,6 +125,11 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   // overview mode is active for testing.
   std::vector<aura::Window*> GetWindowsListInOverviewGridsForTest();
 
+  // Returns true if it's possible to enter overview mode in the current
+  // configuration. This can be false at certain times, such as when the lock
+  // screen is visible we can't overview mode.
+  bool CanEnterOverview() const;
+
  private:
   friend class SavedDeskTest;
 
@@ -138,11 +142,10 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   void ToggleOverview(
       OverviewEnterExitType type = OverviewEnterExitType::kNormal);
 
-  // Returns true if it's possible to enter or exit overview mode in the current
-  // configuration. This can be false at certain times, such as when the lock
-  // screen is visible we can't overview mode.
-  bool CanEnterOverview();
-  bool CanEndOverview(OverviewEnterExitType type);
+  // Returns true if it's possible to exit overview mode in the current
+  // configuration. This can be false at certain times, such as when the divider
+  // or desks are animating.
+  bool CanEndOverview(OverviewEnterExitType type) const;
 
   void OnStartingAnimationComplete(bool canceled);
   void OnEndingAnimationComplete(bool canceled);
@@ -177,10 +180,6 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   base::Time last_overview_session_time_;
 
   base::TimeDelta occlusion_pause_duration_for_end_;
-
-  // Handles blurring and dimming of the wallpaper when entering or exiting
-  // overview mode. Animates the blurring and dimming if necessary.
-  std::unique_ptr<OverviewWallpaperController> overview_wallpaper_controller_;
 
   base::CancelableOnceClosure reset_pauser_task_;
 

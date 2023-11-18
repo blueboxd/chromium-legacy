@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "content/browser/media/media_devices_permission_checker.h"
@@ -22,11 +23,14 @@
 #include "content/browser/renderer_host/media/mock_video_capture_provider.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_browser_context.h"
+#include "content/test/test_web_contents.h"
 #include "media/audio/audio_device_name.h"
 #include "media/audio/audio_system_impl.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/fake_audio_manager.h"
 #include "media/audio/test_audio_thread.h"
+#include "media/capture/mojom/video_capture_types.mojom.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
 #include "media/capture/video/video_capture_system_impl.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -40,8 +44,8 @@
 
 using base::HistogramTester;
 using blink::mojom::MediaDeviceType;
-using blink::mojom::SubCaptureTargetType;
 using media::mojom::DeviceEnumerationResult;
+using media::mojom::SubCaptureTargetType;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::SaveArg;
@@ -52,6 +56,8 @@ namespace {
 
 const int kRenderProcessId = 1;
 const int kRenderFrameId = 3;
+const GlobalRenderFrameHostId kRenderFrameHostId{kRenderProcessId,
+                                                 kRenderFrameId};
 
 // Number of client enumerations to simulate on each test run.
 // This allows testing that a single call to low-level enumeration functions
@@ -68,6 +74,22 @@ void GetSaltAndOrigin(GlobalRenderFrameHostId,
   std::move(callback).Run(MediaDeviceSaltAndOrigin(
       salt, url::Origin::Create(GURL("https://test.com")), "fake_group_id_salt",
       /*has_focus=*/true, /*is_background=*/false));
+}
+
+std::string GetAudioDeviceName(size_t suffix) {
+  return "fake_device_name_" + base::NumberToString(suffix);
+}
+
+std::string GetAudioDeviceId(size_t suffix) {
+  return "fake_device_id_" + base::NumberToString(suffix);
+}
+
+std::string GetVideoDeviceName(size_t suffix) {
+  return "fake_device_" + base::NumberToString(suffix);
+}
+
+std::string GetVideoDeviceId(size_t suffix) {
+  return "/dev/video" + base::NumberToString(suffix);
 }
 
 // This class mocks the audio manager and overrides some methods to ensure that
@@ -111,7 +133,7 @@ class MockAudioManager : public media::FakeAudioManager {
     size_t num_devices_to_create = num_input_devices_;
     size_t start_id_trailer = 0;
     while (num_devices_to_create > 0) {
-      size_t trailer = ++start_id_trailer;
+      size_t trailer = start_id_trailer++;
       std::string id("fake_device_id_" + base::NumberToString(trailer));
       if (base::Contains(removed_input_audio_device_ids_, id))
         continue;
@@ -278,12 +300,26 @@ class MockMediaDevicesDispatcherHost
 #endif
 };
 
+class MockBrowserClient : public ContentBrowserClient {
+ public:
+  MOCK_METHOD(void,
+              PreferenceRankAudioDeviceInfos,
+              (BrowserContext * browser_context,
+               blink::WebMediaDeviceInfoArray& infos),
+              (override));
+  MOCK_METHOD(void,
+              PreferenceRankVideoDeviceInfos,
+              (BrowserContext * browser_context,
+               blink::WebMediaDeviceInfoArray& infos),
+              (override));
+};
+
 }  // namespace
 
 class MediaDevicesManagerTest : public ::testing::Test {
  public:
   MediaDevicesManagerTest()
-      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   MediaDevicesManagerTest(const MediaDevicesManagerTest&) = delete;
   MediaDevicesManagerTest& operator=(const MediaDevicesManagerTest&) = delete;
@@ -357,6 +393,7 @@ class MediaDevicesManagerTest : public ::testing::Test {
 
  protected:
   void SetUp() override {
+    SetBrowserClientForTesting(&browser_client_);
     audio_manager_ = std::make_unique<MockAudioManager>();
     audio_system_ =
         std::make_unique<media::AudioSystemImpl>(audio_manager_.get());
@@ -418,6 +455,12 @@ class MediaDevicesManagerTest : public ::testing::Test {
         DeviceEnumerationResult::kUnknownError, error_count);
   }
 
+  void InitializeRenderFrameHost() {
+    web_contents_ = TestWebContents::Create(
+        &browser_context_, SiteInstanceImpl::Create(&browser_context_));
+    render_frame_host_ = web_contents_->GetPrimaryMainFrame();
+  }
+
   // Must outlive MediaDevicesManager as ~MediaDevicesManager() verifies it's
   // running on the IO thread.
   BrowserTaskEnvironment task_environment_;
@@ -435,6 +478,11 @@ class MediaDevicesManagerTest : public ::testing::Test {
   std::unique_ptr<InProcessVideoCaptureProvider>
       in_process_video_capture_provider_;
   HistogramTester histogram_tester_;
+  RenderViewHostTestEnabler rvh_test_enabler_;
+  TestBrowserContext browser_context_;
+  std::unique_ptr<TestWebContents> web_contents_;
+  raw_ptr<TestRenderFrameHost> render_frame_host_;
+  MockBrowserClient browser_client_;
 };
 
 TEST_F(MediaDevicesManagerTest, EnumerateNoCacheAudioInput) {
@@ -516,6 +564,89 @@ TEST_F(MediaDevicesManagerTest, EnumerateNoCacheAudio) {
         devices_to_enumerate,
         base::BindOnce(&MediaDevicesManagerTest::EnumerateCallback,
                        base::Unretained(this), &run_loop));
+    run_loop.Run();
+  }
+}
+
+TEST_F(MediaDevicesManagerTest, EnumerateNoCacheAudioInputRanked) {
+  InitializeRenderFrameHost();
+  EXPECT_CALL(*audio_manager_, MockGetAudioInputDeviceNames(_))
+      .Times(kNumCalls);
+  EXPECT_CALL(media_devices_manager_client_, InputDevicesChangedUI(_, _));
+  const size_t kNumDevices = 3;
+  audio_manager_->SetNumAudioInputDevices(kNumDevices);
+  MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
+  devices_to_enumerate[static_cast<size_t>(MediaDeviceType::kMediaAudioInput)] =
+      true;
+
+  blink::WebMediaDeviceInfoArray audio_devices;
+  for (size_t i = 0; i < kNumDevices; ++i) {
+    audio_devices.emplace_back(GetAudioDeviceId(i), GetAudioDeviceName(i),
+                               /*group_id=*/"");
+  }
+
+  for (int i = 0; i < kNumCalls; i++) {
+    EXPECT_CALL(browser_client_, PreferenceRankAudioDeviceInfos(
+                                     &browser_context_, audio_devices));
+    base::RunLoop run_loop;
+    media_devices_manager_->EnumerateDevices(
+        render_frame_host_->GetGlobalId(), devices_to_enumerate,
+        /*request_video_input_capabilities=*/false,
+        /*request_audio_input_capabilities=*/true,
+        base::BindLambdaForTesting(
+            [&run_loop, kNumDevices](
+                const std::vector<blink::WebMediaDeviceInfoArray>& devices,
+                std::vector<VideoInputDeviceCapabilitiesPtr> video_capabilities,
+                std::vector<AudioInputDeviceCapabilitiesPtr>
+                    audio_capabilities) {
+              ASSERT_EQ(kNumDevices,
+                        devices[static_cast<size_t>(
+                                    MediaDeviceType::kMediaAudioInput)]
+                            .size());
+
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+  }
+}
+
+TEST_F(MediaDevicesManagerTest, EnumerateNoCacheVideoInputRanked) {
+  InitializeRenderFrameHost();
+  EXPECT_CALL(*video_capture_device_factory_, MockGetDevicesInfo())
+      .Times(kNumCalls);
+  EXPECT_CALL(media_devices_manager_client_, InputDevicesChangedUI(_, _))
+      .Times(2);
+  const size_t kNumDevices = 3;
+  video_capture_device_factory_->SetToDefaultDevicesConfig(kNumDevices);
+  MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
+  devices_to_enumerate[static_cast<size_t>(MediaDeviceType::kMediaVideoInput)] =
+      true;
+
+  blink::WebMediaDeviceInfoArray video_devices;
+  for (size_t i = 0; i < kNumDevices; ++i) {
+    video_devices.emplace_back(media::VideoCaptureDeviceDescriptor{
+        GetVideoDeviceName(i), GetVideoDeviceId(i)});
+  }
+
+  for (int i = 0; i < kNumCalls; i++) {
+    base::RunLoop run_loop;
+    EXPECT_CALL(browser_client_, PreferenceRankVideoDeviceInfos(
+                                     &browser_context_, video_devices));
+    media_devices_manager_->EnumerateDevices(
+        render_frame_host_->GetGlobalId(), devices_to_enumerate, true, false,
+        base::BindLambdaForTesting(
+            [&run_loop, kNumDevices](
+                const std::vector<blink::WebMediaDeviceInfoArray>& devices,
+                std::vector<VideoInputDeviceCapabilitiesPtr> video_capabilities,
+                std::vector<AudioInputDeviceCapabilitiesPtr>
+                    audio_capabilities) {
+              ASSERT_EQ(kNumDevices,
+                        devices[static_cast<size_t>(
+                                    MediaDeviceType::kMediaVideoInput)]
+                            .size());
+
+              run_loop.Quit();
+            }));
     run_loop.Run();
   }
 }
@@ -868,6 +999,8 @@ TEST_F(MediaDevicesManagerTest, SubscribeDeviceChanges) {
                      base::Unretained(this), &run_loop));
   run_loop.Run();
 
+  InitializeRenderFrameHost();
+
   // Add device-change event listeners.
   MockMediaDevicesListener listener_audio_input;
   MediaDevicesManager::BoolDeviceTypes audio_input_devices_to_subscribe;
@@ -875,7 +1008,7 @@ TEST_F(MediaDevicesManagerTest, SubscribeDeviceChanges) {
       MediaDeviceType::kMediaAudioInput)] = true;
   uint32_t audio_input_subscription_id =
       media_devices_manager_->SubscribeDeviceChangeNotifications(
-          kRenderProcessId, kRenderFrameId, audio_input_devices_to_subscribe,
+          kRenderFrameHostId, audio_input_devices_to_subscribe,
           listener_audio_input.CreateInterfacePtrAndBind());
 
   MockMediaDevicesListener listener_video_input;
@@ -884,7 +1017,7 @@ TEST_F(MediaDevicesManagerTest, SubscribeDeviceChanges) {
       MediaDeviceType::kMediaVideoInput)] = true;
   uint32_t video_input_subscription_id =
       media_devices_manager_->SubscribeDeviceChangeNotifications(
-          kRenderProcessId, kRenderFrameId, video_input_devices_to_subscribe,
+          kRenderFrameHostId, video_input_devices_to_subscribe,
           listener_video_input.CreateInterfacePtrAndBind());
 
   MockMediaDevicesListener listener_audio_output;
@@ -893,7 +1026,7 @@ TEST_F(MediaDevicesManagerTest, SubscribeDeviceChanges) {
       MediaDeviceType::kMediaAudioOuput)] = true;
   uint32_t audio_output_subscription_id =
       media_devices_manager_->SubscribeDeviceChangeNotifications(
-          kRenderProcessId, kRenderFrameId, audio_output_devices_to_subscribe,
+          kRenderFrameHostId, audio_output_devices_to_subscribe,
           listener_audio_output.CreateInterfacePtrAndBind());
 
   MockMediaDevicesListener listener_all;
@@ -905,7 +1038,7 @@ TEST_F(MediaDevicesManagerTest, SubscribeDeviceChanges) {
   all_devices_to_subscribe[static_cast<size_t>(
       MediaDeviceType::kMediaAudioOuput)] = true;
   media_devices_manager_->SubscribeDeviceChangeNotifications(
-      kRenderProcessId, kRenderFrameId, all_devices_to_subscribe,
+      kRenderFrameHostId, all_devices_to_subscribe,
       listener_all.CreateInterfacePtrAndBind());
 
   blink::WebMediaDeviceInfoArray notification_audio_input;
@@ -1049,9 +1182,12 @@ TEST_F(MediaDevicesManagerTest, EnumerateDevicesWithCapabilities) {
       true;
   devices_to_enumerate[static_cast<size_t>(MediaDeviceType::kMediaAudioInput)] =
       true;
+
+  InitializeRenderFrameHost();
+
   base::RunLoop run_loop;
   media_devices_manager_->EnumerateDevices(
-      -1, -1, devices_to_enumerate, true, true,
+      {-1, -1}, devices_to_enumerate, true, true,
       base::BindOnce(
           &MediaDevicesManagerTest::EnumerateWithCapabilitiesCallback,
           base::Unretained(this), fake_capture_device_settings, &run_loop));
@@ -1291,13 +1427,15 @@ TEST_F(MediaDevicesManagerTest, DeviceIdSaltReset) {
                      base::Unretained(this), &run_loop));
   run_loop.Run();
 
+  InitializeRenderFrameHost();
+
   // Add device-change event listener.
   MockMediaDevicesListener listener_video_input;
   MediaDevicesManager::BoolDeviceTypes video_input_devices_to_subscribe;
   video_input_devices_to_subscribe[static_cast<size_t>(
       MediaDeviceType::kMediaVideoInput)] = true;
   media_devices_manager_->SubscribeDeviceChangeNotifications(
-      kRenderProcessId, kRenderFrameId, video_input_devices_to_subscribe,
+      kRenderFrameHostId, video_input_devices_to_subscribe,
       listener_video_input.CreateInterfacePtrAndBind());
 
   // Expect an OnDevicesChanged event.

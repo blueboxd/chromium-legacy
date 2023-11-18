@@ -150,7 +150,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   bool OpenBeforeUnloadConfirmPanelDelegate(LocalFrame*, bool) override {
     return true;
   }
-  void CloseWindowSoon() override {}
+  void CloseWindow() override {}
   Page* CreateWindowDelegate(LocalFrame*,
                              const FrameLoadRequest&,
                              const AtomicString&,
@@ -239,7 +239,10 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void RequestUnbufferedInputEvents(LocalFrame*) override {}
   void SetTouchAction(LocalFrame*, TouchAction) override {}
   void SetPanAction(LocalFrame*, mojom::blink::PanAction pan_action) override {}
-  void DidAddOrRemoveFormRelatedElementsAfterLoad(LocalFrame*) override {}
+  void DidChangeFormRelatedElementDynamically(
+      LocalFrame*,
+      HTMLElement*,
+      WebFormRelatedChangeType) override {}
   String AcceptLanguages() override;
   void RegisterPopupOpeningObserver(PopupOpeningObserver*) override {}
   void UnregisterPopupOpeningObserver(PopupOpeningObserver*) override {}
@@ -446,6 +449,11 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   }
 
   std::unique_ptr<URLLoader> CreateURLLoaderForTesting() override {
+    return nullptr;
+  }
+
+  scoped_refptr<WebBackgroundResourceFetchAssets>
+  MaybeGetBackgroundResourceFetchAssets() override {
     return nullptr;
   }
 

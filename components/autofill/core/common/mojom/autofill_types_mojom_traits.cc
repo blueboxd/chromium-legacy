@@ -37,7 +37,7 @@ bool StructTraits<autofill::mojom::FrameTokenWithPredecessorDataView,
   if (!data.ReadToken(&out->token))
     return false;
   out->predecessor = data.predecessor();
-  return true;
+  return out->predecessor >= -1;
 }
 
 // static
@@ -177,10 +177,9 @@ bool StructTraits<
     return false;
   if (!data.ReadValue(&out->value))
     return false;
-  uint32_t max_length = out->value.length();
-  out->selection_end = std::min(data.selection_end(), max_length);
-  out->selection_start = std::min(data.selection_start(), out->selection_end);
-  DCHECK_LE(out->selection_start, out->selection_end);
+  if (!data.ReadSelectedText(&out->selected_text)) {
+    return false;
+  }
 
   if (!data.ReadFormControlType(&out->form_control_type))
     return false;
@@ -243,10 +242,9 @@ bool StructTraits<
   if (!data.ReadBounds(&out->bounds))
     return false;
 
-  if (!data.ReadDatalistValues(&out->datalist_values))
+  if (!data.ReadDatalistOptions(&out->datalist_options)) {
     return false;
-  if (!data.ReadDatalistLabels(&out->datalist_labels))
-    return false;
+  }
 
   out->force_override = data.force_override();
 
@@ -297,7 +295,13 @@ bool StructTraits<autofill::mojom::FormDataDataView, autofill::FormData>::Read(
   out->is_gaia_with_skip_save_password_form =
       data.is_gaia_with_skip_save_password_form();
 
-  return true;
+  return base::ranges::all_of(
+      out->child_frames,
+      [&](int predecessor) {
+        return predecessor == -1 ||
+               base::checked_cast<size_t>(predecessor) < out->fields.size();
+      },
+      &autofill::FrameTokenWithPredecessor::predecessor);
 }
 
 // static
@@ -337,6 +341,9 @@ bool StructTraits<autofill::mojom::FormDataPredictionsDataView,
     return false;
   if (!data.ReadSignature(&out->signature))
     return false;
+  if (!data.ReadAlternativeSignature(&out->alternative_signature)) {
+    return false;
+  }
   if (!data.ReadFields(&out->fields))
     return false;
 

@@ -31,7 +31,6 @@
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
-#include "chrome/browser/extensions/identifiability_metrics_test_util.h"
 #include "chrome/browser/lifetime/application_lifetime_desktop.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
@@ -117,7 +116,6 @@
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/features/feature_channel.h"
-#include "extensions/common/identifiability_metrics.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "media/base/media_switches.h"
 #include "net/dns/mock_host_resolver.h"
@@ -577,7 +575,6 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
         std::make_unique<device::ScopedGeolocationOverrider>(10, 20);
 
     host_resolver()->AddRule("*", "127.0.0.1");
-    identifiability_metrics_test_helper_.SetUpOnMainThread();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -839,9 +836,6 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   WebViewTest() = default;
 
   ~WebViewTest() override = default;
-
-  extensions::IdentifiabilityMetricsTestHelper
-      identifiability_metrics_test_helper_;
 
  private:
   bool UsesFakeSpeech() {
@@ -1928,6 +1922,25 @@ IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest,
             unattached_guest_rfh->GetOutermostMainFrameOrEmbedder());
   EXPECT_EQ(embedder,
             unattached_guest->web_contents()->GetResponsibleWebContents());
+}
+
+// Creates a guest in a unattached state, then confirms that calling
+// the various view methods return null.
+IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest,
+                       NewWindow_UnattachedVerifyViewMethods) {
+  TestHelper("testNewWindowDeferredAttachmentIndefinitely",
+             "web_view/newwindow", NEEDS_TEST_SERVER);
+  GetGuestViewManager()->WaitForNumGuestsCreated(2);
+
+  content::WebContents* embedder = GetEmbedderWebContents();
+  auto* unattached_guest = GetGuestViewManager()->GetLastGuestViewCreated();
+  ASSERT_TRUE(unattached_guest);
+  ASSERT_EQ(embedder, unattached_guest->owner_web_contents());
+  ASSERT_FALSE(unattached_guest->attached());
+  ASSERT_FALSE(unattached_guest->embedder_web_contents());
+  ASSERT_FALSE(unattached_guest->web_contents()->GetNativeView());
+  ASSERT_FALSE(unattached_guest->web_contents()->GetContentNativeView());
+  ASSERT_FALSE(unattached_guest->web_contents()->GetTopLevelNativeWindow());
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestContentLoadEvent) {
@@ -4006,9 +4019,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, HttpAuth) {
   const GURL auth_url = embedded_test_server()->GetURL("/auth-basic");
   content::NavigationController* guest_controller =
       &GetGuestView()->GetController();
-  LoginPromptBrowserTestObserver login_observer;
-  login_observer.Register(
-      content::Source<content::NavigationController>(guest_controller));
   WindowedAuthNeededObserver auth_needed(guest_controller);
   WindowedAuthSuppliedObserver auth_supplied(guest_controller);
   // There are two navigations occurring here. The first fails due to the need
@@ -4022,7 +4032,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, HttpAuth) {
                       content::JsReplace("location.href = $1;", auth_url)));
   auth_needed.Wait();
 
-  LoginHandler* login_handler = login_observer.handlers().front();
+  LoginHandler* login_handler =
+      LoginHandler::GetAllLoginHandlersForTest().front();
   login_handler->SetAuth(u"basicuser", u"secret");
   auth_supplied.Wait();
   nav_observer.WaitForNavigationFinished();
@@ -4037,11 +4048,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, HttpAuthIdentical) {
       &GetGuestView()->GetController();
   content::NavigationController* tab_controller =
       &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
-  LoginPromptBrowserTestObserver login_observer;
-  login_observer.Register(
-      content::Source<content::NavigationController>(guest_controller));
-  login_observer.Register(
-      content::Source<content::NavigationController>(tab_controller));
   WindowedAuthNeededObserver guest_auth_needed(guest_controller);
   WindowedAuthNeededObserver tab_auth_needed(tab_controller);
   WindowedAuthSuppliedObserver guest_auth_supplied(guest_controller);
@@ -4067,9 +4073,11 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, HttpAuthIdentical) {
   // identical challenges if multiple prompts are shown for them. However,
   // credentials can't be shared across StoragePartitions. So providing
   // credentials within the guest should not affect the tab.
-  ASSERT_EQ(2u, login_observer.handlers().size());
-  LoginHandler* guest_login_handler = login_observer.handlers().front();
-  LoginHandler* tab_login_handler = login_observer.handlers().back();
+  ASSERT_EQ(2u, LoginHandler::GetAllLoginHandlersForTest().size());
+  LoginHandler* guest_login_handler =
+      LoginHandler::GetAllLoginHandlersForTest().front();
+  LoginHandler* tab_login_handler =
+      LoginHandler::GetAllLoginHandlersForTest().back();
   EXPECT_EQ(tab_controller,
             &tab_login_handler->web_contents()->GetController());
   EXPECT_TRUE(guest_login_handler->auth_info().MatchesExceptPath(
@@ -4080,8 +4088,9 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, HttpAuthIdentical) {
   guest_nav_observer.WaitForNavigationFinished();
 
   // The tab should still be prompting for credentials.
-  ASSERT_EQ(1u, login_observer.handlers().size());
-  EXPECT_EQ(tab_login_handler, login_observer.handlers().front());
+  ASSERT_EQ(1u, LoginHandler::GetAllLoginHandlersForTest().size());
+  EXPECT_EQ(tab_login_handler,
+            LoginHandler::GetAllLoginHandlersForTest().front());
 }
 
 namespace {
@@ -4712,7 +4721,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
 
 // Makes sure that a webview will display correctly after reloading it after a
 // crash.
-IN_PROC_BROWSER_TEST_F(WebViewTest, ReloadAfterCrash) {
+// TODO(https://crbug.com/1494743): Flaky on Win,Mac,ChromeOS,Linux.
+IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_ReloadAfterCrash) {
   // Load guest and wait for it to appear.
   LoadAppWithGuest("web_view/simple");
 
@@ -5620,7 +5630,6 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWebViewTest, ClassificationInGuest) {
 IN_PROC_BROWSER_TEST_F(WebViewTest, LoadDisallowedExtensionURLInSubframe) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   base::RunLoop run_loop;
-  identifiability_metrics_test_helper_.PrepareForTest(&run_loop);
 
   LoadAppWithGuest("web_view/simple");
   content::RenderFrameHost* guest = GetGuestView()->GetGuestMainFrame();
@@ -5652,26 +5661,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, LoadDisallowedExtensionURLInSubframe) {
   // The navigation should be aborted and the iframe should be left at its old
   // URL.
   EXPECT_EQ(webview_subframe->GetLastCommittedURL(), iframe_url);
-
-  // Check that a proper UKM event was logged for failed extension file access.
-  // First, find the source ID corresponding to the logged event, then make
-  // sure that the corresponding metric contains a failed
-  // ExtensionResourceAccessResult.
-  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
-      identifiability_metrics_test_helper_.NavigateToBlankAndWaitForMetrics(
-          guest, &run_loop);
-  std::set<ukm::SourceId> source_ids = extensions::
-      IdentifiabilityMetricsTestHelper::GetSourceIDsForSurfaceAndExtension(
-          merged_entries,
-          blink::IdentifiableSurface::Type::kExtensionFileAccess,
-          extension->id());
-  ASSERT_EQ(1u, source_ids.size());
-
-  const auto& entry = merged_entries[*source_ids.begin()];
-  ASSERT_EQ(1u, entry->metrics.size());
-  EXPECT_EQ(blink::IdentifiableToken(
-                extensions::ExtensionResourceAccessResult::kFailure),
-            entry->metrics.begin()->second);
 }
 
 class PopupWaiter : public content::WebContentsObserver {

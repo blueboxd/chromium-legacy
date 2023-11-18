@@ -30,6 +30,7 @@
 #import "components/sync/base/pref_names.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
+#import "components/sync/test/fake_server_http_post_provider.h"
 #import "components/unified_consent/unified_consent_service.h"
 #import "components/variations/variations_associated_data.h"
 #import "components/variations/variations_ids_provider.h"
@@ -38,12 +39,11 @@
 #import "ios/chrome/browser/content_settings/model/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/default_browser/model/utils.h"
 #import "ios/chrome/browser/default_browser/model/utils_test_support.h"
-#import "ios/chrome/browser/first_run/first_run.h"
-#import "ios/chrome/browser/ntp/features.h"
-#import "ios/chrome/browser/search_engines/search_engines_util.h"
-#import "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
-#import "ios/chrome/browser/sessions/session_service_ios.h"
+#import "ios/chrome/browser/first_run/model/first_run.h"
+#import "ios/chrome/browser/search_engines/model/search_engines_util.h"
+#import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
+#import "ios/chrome/browser/sessions/session_restoration_service.h"
+#import "ios/chrome/browser/sessions/session_restoration_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser_provider.h"
@@ -54,7 +54,7 @@
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
-#import "ios/chrome/browser/signin/fake_system_identity.h"
+#import "ios/chrome/browser/signin/model/fake_system_identity.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
@@ -90,10 +90,6 @@
 #import "services/metrics/public/cpp/ukm_recorder.h"
 #import "ui/base/device_form_factor.h"
 
-// To get access to UseSessionSerializationOptimizations().
-// TODO(crbug.com/1383087): remove once the feature is fully launched.
-#import "ios/web/common/features.h"
-
 using base::test::ios::kWaitForActionTimeout;
 using base::test::ios::kWaitForJSCompletionTimeout;
 using base::test::ios::kWaitForPageLoadTimeout;
@@ -126,7 +122,22 @@ NSString* SerializedValue(const base::Value* value) {
   serializer.Serialize(*result);
   return base::SysUTF8ToNSString(serialized_value);
 }
+
+// Returns a RepeatingClosure that will call `closure` after being called
+// exactly n time. The closure does not have to be called on a specific
+// thread or sequence.
+base::RepeatingClosure ExpectNCall(uint32_t n, base::RepeatingClosure closure) {
+  return base::BindRepeating(
+      [](base::RepeatingClosure closure,
+         const std::unique_ptr<std::atomic<uint32_t>>& counter) {
+        if (!--*counter) {
+          closure.Run();
+        }
+      },
+      std::move(closure), std::make_unique<std::atomic<uint32_t>>(n));
 }
+
+}  // namespace
 
 @implementation JavaScriptExecutionResult
 
@@ -191,17 +202,32 @@ NSString* SerializedValue(const base::Value* value) {
 }
 
 + (void)saveSessionImmediately {
-  if (!web::features::UseSessionSerializationOptimizations()) {
-    SessionRestorationBrowserAgent::FromBrowser(
-        chrome_test_util::GetMainBrowser())
-        ->SaveSession(/*immediately=*/true);
-    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-    ProceduralBlock completionBlock = ^{
-      dispatch_semaphore_signal(semaphore);
-    };
-    [[SessionServiceIOS sharedService] shutdownWithCompletion:completionBlock];
-    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+  ChromeBrowserState* browserState =
+      chrome_test_util::GetOriginalBrowserState();
+
+  SessionRestorationService* service =
+      SessionRestorationServiceFactory::GetForBrowserState(browserState);
+
+  SessionRestorationService* otrService = nullptr;
+  if (browserState->HasOffTheRecordChromeBrowserState()) {
+    SessionRestorationServiceFactory::GetForBrowserState(
+        browserState->GetOffTheRecordChromeBrowserState());
   }
+
+  dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+  base::RepeatingClosure closure =
+      ExpectNCall(otrService ? 2u : 1u, base::BindRepeating(^{
+                    dispatch_semaphore_signal(semaphore);
+                  }));
+
+  service->SaveSessions();
+  service->InvokeClosureWhenBackgroundProcessingDone(closure);
+  if (otrService) {
+    otrService->SaveSessions();
+    otrService->InvokeClosureWhenBackgroundProcessingDone(closure);
+  }
+
+  dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
 }
 
 + (NSError*)clearAllWebStateBrowsingData {
@@ -458,10 +484,6 @@ NSString* SerializedValue(const base::Value* value) {
         @"Multiwindow not supported");
   }
 
-  // Always disable default browser promo in new window, to avoid
-  // messages to be closed too early.
-  [self disableDefaultBrowserPromo];
-
   NSUserActivity* activity =
       [[NSUserActivity alloc] initWithActivityType:@"EG2NewWindow"];
   UISceneActivationRequestOptions* options =
@@ -670,19 +692,22 @@ NSString* SerializedValue(const base::Value* value) {
 }
 
 + (BOOL)webStateContainsElement:(ElementSelector*)selector {
-  return web::test::IsWebViewContainingElement(
-      chrome_test_util::GetCurrentWebState(), selector);
+  web::WebState* web_state = chrome_test_util::GetCurrentWebState();
+  return web_state &&
+         web::test::IsWebViewContainingElement(web_state, selector);
 }
 
 + (BOOL)webStateContainsText:(NSString*)text {
-  return web::test::IsWebViewContainingText(
-      chrome_test_util::GetCurrentWebState(), base::SysNSStringToUTF8(text));
+  web::WebState* web_state = chrome_test_util::GetCurrentWebState();
+  return web_state && web::test::IsWebViewContainingText(
+                          web_state, base::SysNSStringToUTF8(text));
 }
 
 + (NSError*)waitForWebStateContainingLoadedImage:(NSString*)imageID {
-  bool success = web::test::WaitForWebViewContainingImage(
-      base::SysNSStringToUTF8(imageID), chrome_test_util::GetCurrentWebState(),
-      web::test::IMAGE_STATE_LOADED);
+  web::WebState* web_state = chrome_test_util::GetCurrentWebState();
+  bool success = web_state && web::test::WaitForWebViewContainingImage(
+                                  base::SysNSStringToUTF8(imageID), web_state,
+                                  web::test::IMAGE_STATE_LOADED);
 
   if (!success) {
     NSString* errorString = [NSString
@@ -695,8 +720,9 @@ NSString* SerializedValue(const base::Value* value) {
 }
 
 + (NSError*)waitForWebStateContainingBlockedImage:(NSString*)imageID {
+  web::WebState* web_state = chrome_test_util::GetCurrentWebState();
   bool success = web::test::WaitForWebViewContainingImage(
-      base::SysNSStringToUTF8(imageID), chrome_test_util::GetCurrentWebState(),
+      base::SysNSStringToUTF8(imageID), web_state,
       web::test::IMAGE_STATE_BLOCKED);
 
   if (!success) {
@@ -769,17 +795,18 @@ NSString* SerializedValue(const base::Value* value) {
 
 + (BOOL)isRestoreSessionInProgress {
   web::WebState* web_state = chrome_test_util::GetCurrentWebState();
-  return web_state->GetNavigationManager()->IsRestoreSessionInProgress();
+  return web_state &&
+         web_state->GetNavigationManager()->IsRestoreSessionInProgress();
 }
 
 + (BOOL)webStateWebViewUsesContentInset {
   web::WebState* web_state = chrome_test_util::GetCurrentWebState();
-  return web_state->GetWebViewProxy().shouldUseViewContentInset;
+  return web_state && web_state->GetWebViewProxy().shouldUseViewContentInset;
 }
 
 + (CGSize)webStateWebViewSize {
   web::WebState* web_state = chrome_test_util::GetCurrentWebState();
-  return [web_state->GetWebViewProxy() bounds].size;
+  return web_state ? [web_state->GetWebViewProxy() bounds].size : CGSizeZero;
 }
 
 + (void)stopAllWebStatesLoading {
@@ -806,6 +833,14 @@ NSString* SerializedValue(const base::Value* value) {
 
 + (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type {
   return chrome_test_util::GetNumberOfSyncEntities(type);
+}
+
++ (void)disconnectFakeSyncServerNetwork {
+  fake_server::FakeServerHttpPostProvider::DisableNetwork();
+}
+
++ (void)connectFakeSyncServerNetwork {
+  fake_server::FakeServerHttpPostProvider::EnableNetwork();
 }
 
 + (void)addFakeSyncServerBookmarkWithURL:(NSString*)URL title:(NSString*)title {
@@ -1187,10 +1222,6 @@ NSString* SerializedValue(const base::Value* value) {
   return base::FeatureList::IsEnabled(kEnableWebChannels);
 }
 
-+ (BOOL)isUIButtonConfigurationEnabled {
-  return IsUIButtonConfigurationEnabled();
-}
-
 + (BOOL)isBottomOmniboxSteadyStateEnabled {
   return IsBottomOmniboxSteadyStateEnabled();
 }
@@ -1225,15 +1256,15 @@ NSString* SerializedValue(const base::Value* value) {
 
 #pragma mark - Default Utilities (EG2)
 
-+ (void)setUserDefaultObject:(id)value forKey:(NSString*)defaultName {
++ (void)setUserDefaultsObject:(id)value forKey:(NSString*)defaultName {
   [[NSUserDefaults standardUserDefaults] setObject:value forKey:defaultName];
 }
 
-+ (void)removeUserDefaultObjectForKey:(NSString*)key {
++ (void)removeUserDefaultsObjectForKey:(NSString*)key {
   [[NSUserDefaults standardUserDefaults] removeObjectForKey:key];
 }
 
-+ (id)userDefaultObjectForKey:(NSString*)key {
++ (id)userDefaultsObjectForKey:(NSString*)key {
   return [[NSUserDefaults standardUserDefaults] objectForKey:key];
 }
 
@@ -1263,6 +1294,12 @@ NSString* SerializedValue(const base::Value* value) {
   std::string path = base::SysNSStringToUTF8(prefName);
   PrefService* prefService = GetApplicationContext()->GetLocalState();
   prefService->SetString(path, UTF8Value);
+}
+
++ (void)setBoolValue:(BOOL)value forLocalStatePref:(NSString*)prefName {
+  std::string path = base::SysNSStringToUTF8(prefName);
+  PrefService* prefService = GetApplicationContext()->GetLocalState();
+  prefService->SetBoolean(path, value);
 }
 
 + (NSString*)userPrefValue:(NSString*)prefName {
@@ -1465,12 +1502,6 @@ int watchRunNumber = 0;
 + (void)copyURLToPasteBoard {
   UIPasteboard* pasteboard = UIPasteboard.generalPasteboard;
   pasteboard.URL = [NSURL URLWithString:@"chrome://version"];
-}
-
-+ (void)disableDefaultBrowserPromo {
-  chrome_test_util::GetMainController().appState.shouldShowDefaultBrowserPromo =
-      NO;
-  LogUserInteractionWithFullscreenPromo();
 }
 
 #pragma mark - First Run Utilities

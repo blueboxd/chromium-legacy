@@ -14,9 +14,7 @@
 #import "base/no_destructor.h"
 #import "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
-#import "components/autofill/core/common/autofill_features.cc"
 #import "components/autofill/ios/browser/autofill_java_script_feature.h"
-#import "components/autofill/ios/browser/child_frame_registration_java_script_feature.h"
 #import "components/autofill/ios/browser/suggestion_controller_java_script_feature.h"
 #import "components/autofill/ios/form_util/form_handlers_java_script_feature.h"
 #import "components/dom_distiller/core/url_constants.h"
@@ -42,8 +40,8 @@
 #import "ios/chrome/browser/reading_list/model/offline_url_utils.h"
 #import "ios/chrome/browser/safe_browsing/model/password_protection_java_script_feature.h"
 #import "ios/chrome/browser/safe_browsing/model/safe_browsing_blocking_page.h"
-#import "ios/chrome/browser/search_engines/search_engine_java_script_feature.h"
-#import "ios/chrome/browser/search_engines/search_engine_tab_helper_factory.h"
+#import "ios/chrome/browser/search_engines/model/search_engine_java_script_feature.h"
+#import "ios/chrome/browser/search_engines/model/search_engine_tab_helper_factory.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
@@ -51,8 +49,9 @@
 #import "ios/chrome/browser/shared/model/url/url_util.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/elements/windowed_container_view.h"
-#import "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
+#import "ios/chrome/browser/ssl/model/ios_ssl_error_handler.h"
 #import "ios/chrome/browser/web/browser_about_rewriter.h"
+#import "ios/chrome/browser/web/choose_file/choose_file_java_script_feature.h"
 #import "ios/chrome/browser/web/chrome_main_parts.h"
 #import "ios/chrome/browser/web/error_page_util.h"
 #import "ios/chrome/browser/web/features.h"
@@ -345,11 +344,6 @@ std::vector<web::JavaScriptFeature*> ChromeWebClient::GetJavaScriptFeatures(
   features.push_back(
       autofill::SuggestionControllerJavaScriptFeature::GetInstance());
   features.push_back(AutofillBottomSheetJavaScriptFeature::GetInstance());
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillAcrossIframesIos)) {
-    features.push_back(
-        autofill::ChildFrameRegistrationJavaScriptFeature::GetInstance());
-  }
   features.push_back(FontSizeJavaScriptFeature::GetInstance());
   features.push_back(ImageFetchJavaScriptFeature::GetInstance());
   features.push_back(
@@ -370,6 +364,8 @@ std::vector<web::JavaScriptFeature*> ChromeWebClient::GetJavaScriptFeatures(
   features.push_back(translate::TranslateJavaScriptFeature::GetInstance());
   features.push_back(WebPerformanceMetricsJavaScriptFeature::GetInstance());
   features.push_back(FollowJavaScriptFeature::GetInstance());
+  features.push_back(ChooseFileJavaScriptFeature::GetInstance());
+
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   features.push_back(
       SupervisedUserInterstitialJavaScriptFeature::GetInstance());
@@ -383,7 +379,7 @@ void ChromeWebClient::PrepareErrorPage(
     NSError* error,
     bool is_post,
     bool is_off_the_record,
-    const absl::optional<net::SSLInfo>& ssl_info,
+    const std::optional<net::SSLInfo>& ssl_info,
     int64_t navigation_id,
     base::OnceCallback<void(NSString*)> callback) {
   OfflinePageTabHelper* offline_page_tab_helper =

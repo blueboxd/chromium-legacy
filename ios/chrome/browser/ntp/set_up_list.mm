@@ -11,13 +11,13 @@
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
 #import "ios/chrome/browser/default_browser/model/utils.h"
-#import "ios/chrome/browser/ntp/home/features.h"
 #import "ios/chrome/browser/ntp/set_up_list_delegate.h"
 #import "ios/chrome/browser/ntp/set_up_list_item.h"
 #import "ios/chrome/browser/ntp/set_up_list_item_type.h"
 #import "ios/chrome/browser/ntp/set_up_list_metrics.h"
 #import "ios/chrome/browser/ntp/set_up_list_prefs.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/signin/model/authentication_service.h"
 #import "ios/chrome/browser/sync/model/enterprise_utils.h"
 
 using set_up_list_prefs::SetUpListItemState;
@@ -34,6 +34,9 @@ bool GetIsItemComplete(SetUpListItemType type,
       return IsChromeLikelyDefaultBrowser();
     case SetUpListItemType::kAutofill:
       return password_manager_util::IsCredentialProviderEnabledOnStartup(prefs);
+    case SetUpListItemType::kContentNotification:
+      // TODO(b/311067444): check the content notification pref.
+      return false;
     case SetUpListItemType::kFollow:
     case SetUpListItemType::kAllSet:
       NOTREACHED_NORETURN();
@@ -131,6 +134,15 @@ bool IsSigninEnabled(AuthenticationService* auth_service) {
                                    localState, authService));
   AddItemIfNotNil(items, BuildItem(SetUpListItemType::kAutofill, prefs,
                                    localState, authService));
+
+  // Add content notification item if the feature is enabled and the user has
+  // signed in.
+  if (IsSetUpListContentNotificationEnabled() &&
+      authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
+    AddItemIfNotNil(items, BuildItem(SetUpListItemType::kContentNotification,
+                                     prefs, localState, authService));
+  }
+
   if (IsMagicStackEnabled()) {
     AddSignInItem();
   }
@@ -155,6 +167,9 @@ bool IsSigninEnabled(AuthenticationService* auth_service) {
         set_up_list_prefs::kAutofillItemState, &_prefChangeRegistrar);
     _prefObserverBridge->ObserveChangesForPreference(
         set_up_list_prefs::kFollowItemState, &_prefChangeRegistrar);
+    _prefObserverBridge->ObserveChangesForPreference(
+        set_up_list_prefs::kContentNotificationItemState,
+        &_prefChangeRegistrar);
   }
   return self;
 }
@@ -178,7 +193,8 @@ bool IsSigninEnabled(AuthenticationService* auth_service) {
   NSMutableArray* itemTypes = [[NSMutableArray alloc]
       initWithObjects:@(int(SetUpListItemType::kSignInSync)),
                       @(int(SetUpListItemType::kDefaultBrowser)),
-                      @(int(SetUpListItemType::kAutofill)), nil];
+                      @(int(SetUpListItemType::kAutofill)),
+                      @(int(SetUpListItemType::kContentNotification)), nil];
   for (SetUpListItem* item in _items) {
     [itemTypes removeObject:@(int(item.type))];
   }

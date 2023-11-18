@@ -256,7 +256,7 @@ class CompositorFrameReportingControllerTest : public testing::Test {
 
   std::unique_ptr<EventMetrics> CreateEventMetrics(
       ui::EventType type,
-      absl::optional<EventMetrics::TraceId> trace_id) {
+      std::optional<EventMetrics::TraceId> trace_id) {
     const base::TimeTicks event_time = AdvanceNowByMs(10);
     const base::TimeTicks arrived_in_browser_main_timestamp = AdvanceNowByMs(3);
     AdvanceNowByMs(10);
@@ -280,7 +280,7 @@ class CompositorFrameReportingControllerTest : public testing::Test {
       ui::ScrollInputType input_type,
       bool is_inertial,
       ScrollUpdateEventMetrics::ScrollUpdateType scroll_update_type,
-      absl::optional<EventMetrics::TraceId> trace_id) {
+      std::optional<EventMetrics::TraceId> trace_id) {
     const base::TimeTicks event_time = AdvanceNowByMs(10);
     const base::TimeTicks arrived_in_browser_main_timestamp = AdvanceNowByMs(3);
     AdvanceNowByMs(10);
@@ -1220,9 +1220,9 @@ TEST_F(CompositorFrameReportingControllerTest,
   base::HistogramTester histogram_tester;
 
   std::unique_ptr<EventMetrics> event_metrics_ptrs[] = {
-      CreateEventMetrics(ui::ET_TOUCH_PRESSED, absl::nullopt),
-      CreateEventMetrics(ui::ET_TOUCH_MOVED, absl::nullopt),
-      CreateEventMetrics(ui::ET_TOUCH_MOVED, absl::nullopt),
+      CreateEventMetrics(ui::ET_TOUCH_PRESSED, std::nullopt),
+      CreateEventMetrics(ui::ET_TOUCH_MOVED, std::nullopt),
+      CreateEventMetrics(ui::ET_TOUCH_MOVED, std::nullopt),
   };
   EXPECT_THAT(event_metrics_ptrs, Each(NotNull()));
   EventMetrics::List events_metrics(
@@ -1295,27 +1295,23 @@ TEST_F(CompositorFrameReportingControllerTest,
       CreateScrollBeginEventMetrics(ui::ScrollInputType::kWheel),
       CreateScrollUpdateEventMetrics(
           ui::ScrollInputType::kWheel, kScrollIsNotInertial,
-          ScrollUpdateEventMetrics::ScrollUpdateType::kStarted, absl::nullopt),
+          ScrollUpdateEventMetrics::ScrollUpdateType::kStarted, std::nullopt),
       CreateScrollUpdateEventMetrics(
           ui::ScrollInputType::kWheel, kScrollIsNotInertial,
-          ScrollUpdateEventMetrics::ScrollUpdateType::kContinued,
-          absl::nullopt),
+          ScrollUpdateEventMetrics::ScrollUpdateType::kContinued, std::nullopt),
       CreateScrollUpdateEventMetrics(
           ui::ScrollInputType::kWheel, kScrollIsInertial,
-          ScrollUpdateEventMetrics::ScrollUpdateType::kContinued,
-          absl::nullopt),
+          ScrollUpdateEventMetrics::ScrollUpdateType::kContinued, std::nullopt),
       CreateScrollBeginEventMetrics(ui::ScrollInputType::kTouchscreen),
       CreateScrollUpdateEventMetrics(
           ui::ScrollInputType::kTouchscreen, kScrollIsNotInertial,
-          ScrollUpdateEventMetrics::ScrollUpdateType::kStarted, absl::nullopt),
+          ScrollUpdateEventMetrics::ScrollUpdateType::kStarted, std::nullopt),
       CreateScrollUpdateEventMetrics(
           ui::ScrollInputType::kTouchscreen, kScrollIsNotInertial,
-          ScrollUpdateEventMetrics::ScrollUpdateType::kContinued,
-          absl::nullopt),
+          ScrollUpdateEventMetrics::ScrollUpdateType::kContinued, std::nullopt),
       CreateScrollUpdateEventMetrics(
           ui::ScrollInputType::kTouchscreen, kScrollIsInertial,
-          ScrollUpdateEventMetrics::ScrollUpdateType::kContinued,
-          absl::nullopt),
+          ScrollUpdateEventMetrics::ScrollUpdateType::kContinued, std::nullopt),
   };
   EXPECT_THAT(event_metrics_ptrs, Each(NotNull()));
   EventMetrics::List events_metrics(
@@ -1358,12 +1354,16 @@ TEST_F(CompositorFrameReportingControllerTest,
       {"EventLatency.InertialGestureScrollUpdate.Touchscreen.TotalLatency2", 1},
       {"EventLatency.GestureScrollBegin.TotalLatency", 2},
       {"EventLatency.GestureScrollBegin.TotalLatency2", 2},
+      {"EventLatency.GestureScrollBegin.GenerationToBrowserMain", 2},
       {"EventLatency.FirstGestureScrollUpdate.TotalLatency", 2},
       {"EventLatency.FirstGestureScrollUpdate.TotalLatency2", 2},
+      {"EventLatency.FirstGestureScrollUpdate.GenerationToBrowserMain", 2},
       {"EventLatency.GestureScrollUpdate.TotalLatency", 2},
       {"EventLatency.GestureScrollUpdate.TotalLatency2", 2},
+      {"EventLatency.GestureScrollUpdate.GenerationToBrowserMain", 2},
       {"EventLatency.InertialGestureScrollUpdate.TotalLatency", 2},
       {"EventLatency.InertialGestureScrollUpdate.TotalLatency2", 2},
+      {"EventLatency.InertialGestureScrollUpdate.GenerationToBrowserMain", 2},
       {"EventLatency.TotalLatency", 8},
   };
   for (const auto& expected_count : expected_counts) {
@@ -1439,7 +1439,7 @@ TEST_F(CompositorFrameReportingControllerTest,
   // Set up two EventMetrics objects.
   std::unique_ptr<EventMetrics> metrics_1 = CreateScrollUpdateEventMetrics(
       ui::ScrollInputType::kWheel, /*is_inertial=*/false,
-      ScrollUpdateEventMetrics::ScrollUpdateType::kStarted, absl::nullopt);
+      ScrollUpdateEventMetrics::ScrollUpdateType::kStarted, std::nullopt);
   base::TimeTicks start_time_1 = metrics_1->GetDispatchStageTimestamp(
       EventMetrics::DispatchStage::kGenerated);
 
@@ -1448,7 +1448,7 @@ TEST_F(CompositorFrameReportingControllerTest,
   // with differing values for this bit, but let's test both conditions here.)
   std::unique_ptr<EventMetrics> metrics_2 = CreateScrollUpdateEventMetrics(
       ui::ScrollInputType::kWheel, /*is_inertial=*/false,
-      ScrollUpdateEventMetrics::ScrollUpdateType::kContinued, absl::nullopt);
+      ScrollUpdateEventMetrics::ScrollUpdateType::kContinued, std::nullopt);
   metrics_2->set_requires_main_thread_update();
   base::TimeTicks start_time_2 = metrics_2->GetDispatchStageTimestamp(
       EventMetrics::DispatchStage::kGenerated);
@@ -1592,9 +1592,9 @@ TEST_F(CompositorFrameReportingControllerTest,
   base::HistogramTester histogram_tester;
 
   std::unique_ptr<EventMetrics> event_metrics_ptrs[] = {
-      CreateEventMetrics(ui::ET_TOUCH_PRESSED, absl::nullopt),
-      CreateEventMetrics(ui::ET_TOUCH_MOVED, absl::nullopt),
-      CreateEventMetrics(ui::ET_TOUCH_MOVED, absl::nullopt),
+      CreateEventMetrics(ui::ET_TOUCH_PRESSED, std::nullopt),
+      CreateEventMetrics(ui::ET_TOUCH_MOVED, std::nullopt),
+      CreateEventMetrics(ui::ET_TOUCH_MOVED, std::nullopt),
   };
   EXPECT_THAT(event_metrics_ptrs, Each(NotNull()));
   EventMetrics::List events_metrics(
@@ -2200,15 +2200,15 @@ TEST_F(CompositorFrameReportingControllerTest,
 
   std::unique_ptr<EventMetrics> metrics_1 = CreateScrollUpdateEventMetrics(
       ui::ScrollInputType::kWheel, /*is_inertial=*/false,
-      ScrollUpdateEventMetrics::ScrollUpdateType::kStarted, absl::nullopt);
+      ScrollUpdateEventMetrics::ScrollUpdateType::kStarted, std::nullopt);
 
   std::unique_ptr<EventMetrics> metrics_2 = CreateScrollUpdateEventMetrics(
       ui::ScrollInputType::kWheel, /*is_inertial=*/false,
-      ScrollUpdateEventMetrics::ScrollUpdateType::kContinued, absl::nullopt);
+      ScrollUpdateEventMetrics::ScrollUpdateType::kContinued, std::nullopt);
 
   std::unique_ptr<EventMetrics> metrics_3 = CreateScrollUpdateEventMetrics(
       ui::ScrollInputType::kWheel, /*is_inertial=*/false,
-      ScrollUpdateEventMetrics::ScrollUpdateType::kContinued, absl::nullopt);
+      ScrollUpdateEventMetrics::ScrollUpdateType::kContinued, std::nullopt);
 
   SimulateBeginImplFrame();  // BF1
   viz::BeginFrameId bf1_id = current_id_;
@@ -2320,12 +2320,12 @@ TEST_F(CompositorFrameReportingControllerTest,
 
   std::unique_ptr<EventMetrics> metrics_1 = CreateScrollUpdateEventMetrics(
       ui::ScrollInputType::kWheel, /*is_inertial=*/false,
-      ScrollUpdateEventMetrics::ScrollUpdateType::kStarted, absl::nullopt);
+      ScrollUpdateEventMetrics::ScrollUpdateType::kStarted, std::nullopt);
   metrics_1->set_requires_main_thread_update();
 
   std::unique_ptr<EventMetrics> metrics_2 = CreateScrollUpdateEventMetrics(
       ui::ScrollInputType::kWheel, /*is_inertial=*/false,
-      ScrollUpdateEventMetrics::ScrollUpdateType::kContinued, absl::nullopt);
+      ScrollUpdateEventMetrics::ScrollUpdateType::kContinued, std::nullopt);
   metrics_2->set_requires_main_thread_update();
 
   SimulateBeginImplFrame();  // BF1
@@ -2427,11 +2427,11 @@ TEST_F(CompositorFrameReportingControllerTest,
 
   std::unique_ptr<EventMetrics> metrics_1 = CreateScrollUpdateEventMetrics(
       ui::ScrollInputType::kWheel, /*is_inertial=*/false,
-      ScrollUpdateEventMetrics::ScrollUpdateType::kStarted, absl::nullopt);
+      ScrollUpdateEventMetrics::ScrollUpdateType::kStarted, std::nullopt);
 
   std::unique_ptr<EventMetrics> metrics_2 = CreateScrollUpdateEventMetrics(
       ui::ScrollInputType::kWheel, /*is_inertial=*/false,
-      ScrollUpdateEventMetrics::ScrollUpdateType::kContinued, absl::nullopt);
+      ScrollUpdateEventMetrics::ScrollUpdateType::kContinued, std::nullopt);
 
   SimulateBeginImplFrame();  // BF1
   viz::BeginFrameId bf1_id = current_id_;
@@ -2518,17 +2518,17 @@ TEST_F(CompositorFrameReportingControllerTest,
 
   std::unique_ptr<EventMetrics> metrics_1 = CreateScrollUpdateEventMetrics(
       ui::ScrollInputType::kWheel, /*is_inertial=*/false,
-      ScrollUpdateEventMetrics::ScrollUpdateType::kStarted, absl::nullopt);
+      ScrollUpdateEventMetrics::ScrollUpdateType::kStarted, std::nullopt);
   metrics_1->set_requires_main_thread_update();
 
   std::unique_ptr<EventMetrics> metrics_2 = CreateScrollUpdateEventMetrics(
       ui::ScrollInputType::kWheel, /*is_inertial=*/false,
-      ScrollUpdateEventMetrics::ScrollUpdateType::kContinued, absl::nullopt);
+      ScrollUpdateEventMetrics::ScrollUpdateType::kContinued, std::nullopt);
   metrics_2->set_requires_main_thread_update();
 
   std::unique_ptr<EventMetrics> metrics_3 = CreateScrollUpdateEventMetrics(
       ui::ScrollInputType::kWheel, /*is_inertial=*/false,
-      ScrollUpdateEventMetrics::ScrollUpdateType::kContinued, absl::nullopt);
+      ScrollUpdateEventMetrics::ScrollUpdateType::kContinued, std::nullopt);
   metrics_3->set_requires_main_thread_update();
 
   SimulateBeginImplFrame();  // BF1
@@ -2688,18 +2688,18 @@ TEST_F(CompositorFrameReportingControllerTest, JankyScrolledFrameArg) {
 
   std::unique_ptr<EventMetrics> metrics_1 = CreateScrollUpdateEventMetrics(
       ui::ScrollInputType::kWheel, /*is_inertial=*/false,
-      ScrollUpdateEventMetrics::ScrollUpdateType::kStarted, absl::nullopt);
+      ScrollUpdateEventMetrics::ScrollUpdateType::kStarted, std::nullopt);
   base::TimeTicks event1_generation_ts = metrics_1->GetDispatchStageTimestamp(
       EventMetrics::DispatchStage::kGenerated);
 
   std::unique_ptr<EventMetrics> metrics_2 = CreateScrollUpdateEventMetrics(
       ui::ScrollInputType::kWheel, /*is_inertial=*/false,
-      ScrollUpdateEventMetrics::ScrollUpdateType::kContinued, absl::nullopt);
+      ScrollUpdateEventMetrics::ScrollUpdateType::kContinued, std::nullopt);
   base::TimeTicks event2_generation_ts = metrics_2->GetDispatchStageTimestamp(
       EventMetrics::DispatchStage::kGenerated);
 
   std::unique_ptr<EventMetrics> non_scroll_event =
-      CreateEventMetrics(ui::ET_TOUCH_PRESSED, absl::nullopt);
+      CreateEventMetrics(ui::ET_TOUCH_PRESSED, std::nullopt);
 
   base::TimeDelta vsync_interval = event2_generation_ts - event1_generation_ts;
   args_.interval = vsync_interval;

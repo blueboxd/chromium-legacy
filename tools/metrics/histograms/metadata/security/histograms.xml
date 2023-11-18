@@ -39,7 +39,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.DataDecoder.Image.DecodingTime" units="ms"
-    expires_after="2024-02-25">
+    expires_after="2024-04-28">
   <owner>lukasza@chromium.org</owner>
   <owner>rsesek@chromium.org</owner>
   <summary>
@@ -52,7 +52,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.DataDecoder.Image.Isolated.EndToEndTime" units="ms"
-    expires_after="2024-02-25">
+    expires_after="2024-04-28">
   <owner>lukasza@chromium.org</owner>
   <owner>rsesek@chromium.org</owner>
   <summary>
@@ -76,7 +76,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.DataDecoder.Image.Isolated.ProcessOverhead"
-    units="ms" expires_after="2024-02-25">
+    units="ms" expires_after="2024-04-28">
   <owner>lukasza@chromium.org</owner>
   <owner>rsesek@chromium.org</owner>
   <summary>
@@ -99,7 +99,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.DataDecoder.Image.Reusable.EndToEndTime" units="ms"
-    expires_after="2024-02-25">
+    expires_after="2024-04-28">
   <owner>lukasza@chromium.org</owner>
   <owner>rsesek@chromium.org</owner>
   <summary>
@@ -203,6 +203,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Security.HttpsFirstMode.SettingChanged2"
+    enum="HttpsFirstModeSetting" expires_after="2024-07-01">
+  <owner>cthomp@chromium.org</owner>
+  <owner>trusty-transport@chromium.org</owner>
+  <summary>
+    Records the HTTPS-First Mode setting state when it changes for a profile.
+    Recorded for regular profiles only (not for Incognito, Guest, or Sign-in
+    profiles). Supersedes Security.HttpsFirstMode.SettingChanged after the
+    rollout of HTTPS-First Mode in Incognito.
+  </summary>
+</histogram>
+
 <histogram name="Security.HttpsFirstMode.SettingEnabledAtStartup"
     enum="BooleanEnabled" expires_after="2024-03-17">
   <owner>cthomp@chromium.org</owner>
@@ -211,6 +223,18 @@ chromium-metrics-reviews@google.com.
     Records whether the HTTPS-First Mode preference is enabled at profile
     startup. Recorded for regular profiles only (not for Incognito, Guest, or
     Sign-in profiles).
+  </summary>
+</histogram>
+
+<histogram name="Security.HttpsFirstMode.SettingEnabledAtStartup2"
+    enum="HttpsFirstModeSetting" expires_after="2024-07-01">
+  <owner>cthomp@chromium.org</owner>
+  <owner>trusty-transport@chromium.org</owner>
+  <summary>
+    Records the HTTPS-First Mode setting state at profile startup. Recorded for
+    regular profiles only (not for Incognito, Guest, or Sign-in profiles).
+    Supercedes Security.HttpsFirstMode.SettingEnabledAtStartup after the rollout
+    of HTTPS-First Mode in Incognito.
   </summary>
 </histogram>
 
@@ -302,7 +326,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.NavigationRequestSecurityLevel"
-    enum="NavigationRequestSecurityLevel" expires_after="2024-03-01">
+    enum="NavigationRequestSecurityLevel" expires_after="2024-05-05">
   <owner>jdeblasio@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>
@@ -332,7 +356,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.PageInfo.AboutThisSiteLanguageSupported"
-    enum="Boolean" expires_after="2024-02-25">
+    enum="Boolean" expires_after="2024-04-28">
   <owner>dullweber@chromium.org</owner>
   <owner>olesiamarukhno@chromium.org</owner>
   <summary>
@@ -352,7 +376,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.PageInfo.AdPersonalizationRowShown" enum="Boolean"
-    expires_after="2023-11-12">
+    expires_after="2024-04-26">
   <owner>dullweber@chromium.org</owner>
   <owner>sauski@google.com</owner>
   <summary>
@@ -414,6 +438,32 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Security.PrivateNetworkAccess.PermissionDeviceValidity"
+    enum="PrivateNetworkDeviceValidity" expires_after="M125">
+  <owner>lyf@chromium.org</owner>
+  <owner>phao@chromium.org</owner>
+  <owner>clamy@chromium.org</owner>
+  <owner>src/chrome/browser/private_network_access/OWNERS</owner>
+  <summary>
+    The device validity when calling Private Network Permission Prompt. Recorded
+    once per call for Private Network Access device chooser, which may be more
+    than once per URL request.
+  </summary>
+</histogram>
+
+<histogram name="Security.PrivateNetworkAccess.PermissionNewAcceptedDeviceType"
+    enum="NewAcceptedDeviceType" expires_after="M125">
+  <owner>lyf@chromium.org</owner>
+  <owner>phao@chromium.org</owner>
+  <owner>clamy@chromium.org</owner>
+  <owner>src/chrome/browser/private_network_access/OWNERS</owner>
+  <summary>
+    The device type of a user accepted request to Private Network device. The
+    device is stored permenantly when it has valid name and ID. Otherwise, the
+    device is stored temporarily with IP address.
+  </summary>
+</histogram>
+
 <histogram name="Security.PrivateNetworkAccess.PrivateIpInferrable"
     enum="Boolean" expires_after="2024-03-03">
   <owner>titouan@chromium.org</owner>
@@ -427,7 +477,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.PrivateNetworkAccess.PrivateIpResolveMatch"
-    enum="Boolean" expires_after="2024-03-03">
+    enum="Boolean" expires_after="2024-05-05">
   <owner>titouan@chromium.org</owner>
   <owner>lyf@chromium.org</owner>
   <owner>clamy@chromium.org</owner>
@@ -507,7 +557,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.SCTAuditing.OptIn.ReportCompletionStatus"
-    enum="SCTAuditingReportCompletionStatus" expires_after="2024-02-11">
+    enum="SCTAuditingReportCompletionStatus" expires_after="2024-04-28">
   <owner>cthomp@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>
@@ -670,7 +720,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.SecurityLevel.OnComplete" enum="SecurityLevel"
-    expires_after="2024-03-10">
+    expires_after="2024-05-12">
   <owner>cthomp@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -823,60 +873,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SiteIsolation.ORB.ResponseHeadersHeuristic.Decision"
-    enum="OpaqueResponseBlocking_ResponseHeadersHeuristic" expires_after="M92">
-  <obsolete>
-    Removed in Feb 2022 / M100.
-
-    Old results are preserved in
-    https://docs.google.com/document/d/1LkF7a-_RXg0uQQdk86FQHq7CMW5pKozPDmmbnJJRhY8/edit#heading=h.6labqs212jfn
-  </obsolete>
-  <owner>creis@chromium.org</owner>
-  <owner>lukasza@chromium.org</owner>
-  <summary>
-    The approximation of a route that Opaque Response Blocking (ORB) algorithm
-    would have taken to decide whether to block the response or not. The logged
-    value is based on heuristics that only look at the HTTP response headers,
-    and attempt to approximate if the full ORB algorithm would need to parse the
-    response body as Javascript (vs also reaching a decision purely based on the
-    HTTP response headers).
-
-    Note that only partial ORB algorithm is used for logging the UMA (e.g. no
-    multimedia sniffing and/or 206-response processing is done). This means that
-    the results overestimate how many responses need Javascript parsing.
-
-    Logged for each final HTTP/HTTPS response processed by the NetworkService.
-  </summary>
-</histogram>
-
-<histogram name="SiteIsolation.ORB.ResponseHeadersHeuristic.{OrbDecision}"
-    enum="RequestDestination" expires_after="M92">
-  <obsolete>
-    Removed in Feb 2022 / M100.
-
-    Old results are preserved in
-    https://docs.google.com/document/d/1LkF7a-_RXg0uQQdk86FQHq7CMW5pKozPDmmbnJJRhY8/edit#heading=h.6labqs212jfn
-  </obsolete>
-  <owner>creis@chromium.org</owner>
-  <owner>lukasza@chromium.org</owner>
-  <summary>
-    The request destination (e.g. script vs image) of a response that Opaque
-    Response Blocking (ORB) algorithm processed {OrbDecision}.
-
-    Note that only partial ORB algorithm is used for logging the UMA (e.g. no
-    multimedia sniffing and/or 206-response processing is done). This means that
-    the results overestimate how many responses need Javascript parsing.
-
-    Logged for each final HTTP/HTTPS response processed by the NetworkService.
-  </summary>
-  <token key="OrbDecision">
-    <variant name="ProcessedBasedOnHeaders"
-        summary="based on HTTP response headers"/>
-    <variant name="RequiresJavascriptParsing"
-        summary="with required Javascript parsing"/>
-  </token>
-</histogram>
-
 <histogram name="SiteIsolation.OutOfProcessIframes" units="oopifs"
     expires_after="2024-03-24">
   <owner>alexmos@chromium.org</owner>
@@ -903,7 +899,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="SiteIsolation.ProcessPerSiteWithMainFrameThreshold.BlockReason"
     enum="ProcessPerSiteWithMainFrameThresholdBlockReason"
-    expires_after="2024-02-20">
+    expires_after="2024-04-28">
   <owner>bashi@chromium.org</owner>
   <owner>blink-network-stack@google.com</owner>
   <summary>
@@ -949,7 +945,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SiteIsolation.ReusePendingOrCommittedSite.TimeSinceReusableProcessDestroyed"
-    units="ms" expires_after="2024-02-20">
+    units="ms" expires_after="2024-04-28">
   <owner>jessemckenna@google.com</owner>
   <owner>olivierli@chromium.org</owner>
   <summary>

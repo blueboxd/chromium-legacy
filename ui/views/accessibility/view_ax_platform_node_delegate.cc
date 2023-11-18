@@ -30,6 +30,7 @@
 #include "ui/base/layout.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/accessibility/atomic_view_ax_tree_manager.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/accessibility/view_accessibility_utils.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/view.h"
@@ -224,6 +225,17 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetNativeObject() const {
 void ViewAXPlatformNodeDelegate::NotifyAccessibilityEvent(
     ax::mojom::Event event_type) {
   DCHECK(ax_platform_node_);
+  Widget* const widget = view()->GetWidget();
+  if (!widget || widget->IsClosed()) {
+    return;
+  }
+  if (event_type == ax::mojom::Event::kAlert) {
+    // Do not queue alert events for later. They must be dealt with
+    // before the window potentially closes, and they can be fired
+    // out of order relative to other events.
+    ax_platform_node_->NotifyAccessibilityEvent(event_type);
+    return;
+  }
   if (accessibility_events_callback_)
     accessibility_events_callback_.Run(this, event_type);
   if (g_is_queueing_events) {
@@ -274,8 +286,10 @@ void ViewAXPlatformNodeDelegate::NotifyAccessibilityEvent(
 }
 
 #if BUILDFLAG(IS_MAC)
-void ViewAXPlatformNodeDelegate::AnnounceText(const std::u16string& text) {
-  ax_platform_node_->AnnounceText(text);
+void ViewAXPlatformNodeDelegate::AnnounceTextAs(
+    const std::u16string& text,
+    ui::AXPlatformNode::AnnouncementType announcement_type) {
+  ax_platform_node_->AnnounceTextAs(text, announcement_type);
 }
 #endif  // BUILDFLAG(IS_MAC)
 
@@ -479,9 +493,7 @@ ui::AXNodePosition::AXPositionInstance
 ViewAXPlatformNodeDelegate::CreateTextPositionAt(
     int offset,
     ax::mojom::TextAffinity affinity) const {
-  // Support text navigation only on text fields for now. Primarily this is to
-  // support navigating the address bar.
-  if (!atomic_view_ax_tree_manager_ || !IsDescendantOfAtomicTextField()) {
+  if (!atomic_view_ax_tree_manager_) {
     return ui::AXNodePosition::CreateNullPosition();
   }
 

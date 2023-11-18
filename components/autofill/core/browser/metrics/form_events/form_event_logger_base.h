@@ -29,14 +29,6 @@ class FormEventLoggerBase {
       AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
       AutofillClient* client);
 
-  inline void set_server_record_type_count(size_t server_record_type_count) {
-    server_record_type_count_ = server_record_type_count;
-  }
-
-  inline void set_local_record_type_count(size_t local_record_type_count) {
-    local_record_type_count_ = local_record_type_count;
-  }
-
   void OnDidInteractWithAutofillableForm(
       const FormStructure& form,
       AutofillMetrics::PaymentsSigninState signin_state_for_metrics);
@@ -84,7 +76,7 @@ class FormEventLoggerBase {
   void OnAutofilledFieldWasClearedByJavaScriptShortlyAfterFill(
       const FormStructure& form);
 
-  void Log(FormEvent event, const FormStructure& form);
+  virtual void Log(FormEvent event, const FormStructure& form);
 
   void OnTextFieldDidChange(const FieldGlobalId& field_global_id);
 
@@ -114,19 +106,10 @@ class FormEventLoggerBase {
   virtual void LogWillSubmitForm(const FormStructure& form);
   virtual void LogFormSubmitted(const FormStructure& form);
 
-  // This is a temporary analysis for crbug.com/1352826. We apply local
-  // heuristics to forms if >= 3 fields are discovered by local heuristics. The
-  // working hypothesis is that we should change this to ">= 3 distinct field
-  // types are discovered by local heuristics". To test this hypothesis we want
-  // to calculate the FillingAcceptance for forms for which the stricter
-  // rule would make a difference.
-  // TODO(crbug.com/1352826): Remove this after investigating the impact.
-  void LogImpactOfHeuristicsThreshold(const FormStructure& form);
-
   // Only used for UKM backward compatibility since it depends on IsCreditCard.
   // TODO (crbug.com/925913): Remove IsCreditCard from UKM logs amd replace with
   // |form_type_name_|.
-  virtual void LogUkmInteractedWithForm(FormSignature form_signature);
+  virtual void LogUkmInteractedWithForm(FormSignature form_signature) = 0;
 
   virtual void OnSuggestionsShownOnce(const FormStructure& form) {}
   virtual void OnSuggestionsShownSubmittedOnce(const FormStructure& form) {}
@@ -180,13 +163,15 @@ class FormEventLoggerBase {
 
   void UpdateFlowId();
 
+  // Returns whether the logger was notified that any data to fill is available.
+  // This is used to emit the readiness key metric.
+  virtual bool HasLoggedDataToFillAvailable() const = 0;
+
   // Constructor parameters.
   std::string form_type_name_;
   bool is_in_any_main_frame_;
 
   // State variables.
-  size_t server_record_type_count_ = 0;
-  size_t local_record_type_count_ = 0;
   bool has_parsed_form_ = false;
   bool has_logged_interacted_ = false;
   bool has_logged_user_hide_suggestions_ = false;
@@ -201,6 +186,7 @@ class FormEventLoggerBase {
   bool has_logged_autofilled_field_was_cleared_by_javascript_after_fill_ =
       false;
   bool has_called_on_destoryed_ = false;
+  bool is_heuristic_only_email_form_ = false;
   AblationGroup ablation_group_ = AblationGroup::kDefault;
   AblationGroup conditional_ablation_group_ = AblationGroup::kDefault;
   absl::optional<base::TimeDelta> time_from_interaction_to_submission_;

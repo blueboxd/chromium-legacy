@@ -50,7 +50,7 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
                  bookmarks::BookmarkModel* model,
                  bookmarks::ManagedBookmarkService* managed_bookmark_service,
                  PartnerBookmarksShim* partner_bookmarks_shim,
-                 ReadingListManager* reading_list_manager,
+                 std::unique_ptr<ReadingListManager> reading_list_manager,
                  page_image_service::ImageService* image_service);
 
   BookmarkBridge(const BookmarkBridge&) = delete;
@@ -64,11 +64,10 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
       const base::android::JavaParamRef<jobject>& j_url,
       const base::android::JavaParamRef<jobject>& j_callback);
 
-  base::android::ScopedJavaLocalRef<jobject> GetBookmarkIdForWebContents(
+  base::android::ScopedJavaLocalRef<jobject>
+  GetMostRecentlyAddedUserBookmarkIdForUrl(
       JNIEnv* env,
-
-      const base::android::JavaParamRef<jobject>& jweb_contents,
-      jboolean only_editable);
+      const base::android::JavaParamRef<jobject>& j_url);
 
   bool IsDoingExtensiveChanges(JNIEnv* env);
 
@@ -215,10 +214,6 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
       const base::android::JavaParamRef<jstring>& j_title,
       const base::android::JavaParamRef<jobject>& j_url);
 
-  base::android::ScopedJavaLocalRef<jobject> GetReadingListItem(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& j_url);
-
   void SetReadStatus(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& j_url,
                      jboolean j_read);
@@ -321,8 +316,8 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
   // This is owned by profile.
   raw_ptr<PartnerBookmarksShim> partner_bookmarks_shim_;
 
-  // Holds reading list data. A keyed service owned by the profile.
-  raw_ptr<ReadingListManager> reading_list_manager_;  // weak
+  // Holds reading list data as an in-memory BookmarkNode tree.
+  const std::unique_ptr<ReadingListManager> reading_list_manager_;
 
   raw_ptr<page_image_service::ImageService> image_service_;  // weak
 

@@ -31,8 +31,8 @@
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
+#include "third_party/blink/renderer/core/layout/inline/fragment_item.h"
+#include "third_party/blink/renderer/core/layout/inline/inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_text.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -114,9 +114,10 @@ gfx::RectF LayoutSVGInlineText::ObjectBoundingBox() const {
   InlineCursor cursor;
   cursor.MoveTo(*this);
   for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
-    const NGFragmentItem& item = *cursor.CurrentItem();
-    if (item.Type() == NGFragmentItem::kSvgText)
+    const FragmentItem& item = *cursor.CurrentItem();
+    if (item.Type() == FragmentItem::kSvgText) {
       bounds.Union(cursor.Current().ObjectBoundingBox(cursor));
+    }
   }
   return bounds;
 }

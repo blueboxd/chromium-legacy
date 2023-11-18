@@ -58,8 +58,9 @@
 #include "components/ukm/ukm_service.h"
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace metrics {
@@ -310,7 +311,6 @@ void AndroidMetricsServiceClient::MaybeStartMetrics() {
     // Register for notifications so we can detect when the user or app are
     // interacting with the embedder. We use these as signals to wake up the
     // MetricsService.
-    RegisterForNotifications();
     OnMetricsStart();
 
     if (IsReportingEnabled()) {
@@ -396,17 +396,6 @@ void AndroidMetricsServiceClient::CreateUkmService() {
       ukm::CreateFieldTrialsProviderForUkm(synthetic_trial_registry_.get()));
 
   UpdateUkmService();
-}
-
-void AndroidMetricsServiceClient::RegisterForNotifications() {
-  registrar_.Add(this, content::NOTIFICATION_LOAD_START,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_HANG,
-                 content::NotificationService::AllSources());
 }
 
 void AndroidMetricsServiceClient::SetHaveMetricsConsent(bool user_consent,
@@ -615,22 +604,28 @@ bool AndroidMetricsServiceClient::ShouldStartUpFastForTesting() const {
   return fast_startup_for_testing_;
 }
 
-void AndroidMetricsServiceClient::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  switch (type) {
-    case content::NOTIFICATION_LOAD_STOP:
-    case content::NOTIFICATION_LOAD_START:
-    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED:
-    case content::NOTIFICATION_RENDER_WIDGET_HOST_HANG:
-      metrics_service_->OnApplicationNotIdle();
-      break;
-    default:
-      NOTREACHED();
+void AndroidMetricsServiceClient::OnRenderProcessHostCreated(
+    content::RenderProcessHost* host) {
+  if (!host_observation_.IsObservingSource(host)) {
+    host_observation_.AddObservation(host);
   }
+}
+
+void AndroidMetricsServiceClient::RenderProcessExited(
+    content::RenderProcessHost* host,
+    const content::ChildProcessTerminationInfo& info) {
+  host_observation_.RemoveObservation(host);
+
+  if (did_start_metrics_) {
+    metrics_service_->OnApplicationNotIdle();
+  }
+}
+
+void AndroidMetricsServiceClient::OnWebContentsCreated(
+    content::WebContents* web_contents) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  WebContentsObserverImpl::CreateForWebContents(web_contents,
+                                                weak_ptr_factory_.GetWeakPtr());
 }
 
 void AndroidMetricsServiceClient::SetCollectFinalMetricsForLogClosureForTesting(
@@ -698,5 +693,45 @@ scoped_refptr<network::SharedURLLoaderFactory>
 AndroidMetricsServiceClient::GetURLLoaderFactory() {
   return nullptr;
 }
+
+AndroidMetricsServiceClient::WebContentsObserverImpl::WebContentsObserverImpl(
+    content::WebContents* web_contents,
+    base::WeakPtr<AndroidMetricsServiceClient> weak_service_client)
+    : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<WebContentsObserverImpl>(*web_contents),
+      weak_service_client_(weak_service_client) {}
+
+AndroidMetricsServiceClient::WebContentsObserverImpl::
+    ~WebContentsObserverImpl() = default;
+
+void AndroidMetricsServiceClient::WebContentsObserverImpl::DidStartLoading() {
+  OnApplicationNotIdle();
+}
+
+void AndroidMetricsServiceClient::WebContentsObserverImpl::DidStopLoading() {
+  OnApplicationNotIdle();
+}
+
+void AndroidMetricsServiceClient::WebContentsObserverImpl::
+    OnRendererUnresponsive(content::RenderProcessHost* host) {
+  OnApplicationNotIdle();
+}
+
+void AndroidMetricsServiceClient::WebContentsObserverImpl::
+    OnApplicationNotIdle() {
+  if (!weak_service_client_) {
+    return;
+  }
+
+  auto* metrics_service = weak_service_client_->GetMetricsServiceIfStarted();
+  if (!metrics_service) {
+    return;
+  }
+
+  metrics_service->OnApplicationNotIdle();
+}
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(
+    AndroidMetricsServiceClient::WebContentsObserverImpl);
 
 }  // namespace metrics

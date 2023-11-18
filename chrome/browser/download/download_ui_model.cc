@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/bubble/download_bubble_prefs.h"
 #include "chrome/browser/download/download_commands.h"
+#include "chrome/browser/download/download_item_warning_data.h"
 #include "chrome/browser/download/download_ui_safe_browsing_util.h"
 #include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/enterprise/connectors/common.h"
@@ -357,6 +358,7 @@ std::u16string DownloadUIModel::GetWarningText(const std::u16string& filename,
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_FAILED:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
+    case download::DOWNLOAD_DANGER_TYPE_ASYNC_LOCAL_PASSWORD_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
     case download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
@@ -643,6 +645,7 @@ bool DownloadUIModel::IsCommandEnabled(
     case DownloadCommands::LEARN_MORE_DOWNLOAD_BLOCKED:
     case DownloadCommands::DEEP_SCAN:
     case DownloadCommands::BYPASS_DEEP_SCANNING:
+    case DownloadCommands::BYPASS_DEEP_SCANNING_AND_OPEN:
     case DownloadCommands::REVIEW:
     case DownloadCommands::RETRY:
     case DownloadCommands::CANCEL_DEEP_SCAN:
@@ -678,6 +681,7 @@ bool DownloadUIModel::IsCommandChecked(
     case DownloadCommands::COPY_TO_CLIPBOARD:
     case DownloadCommands::DEEP_SCAN:
     case DownloadCommands::BYPASS_DEEP_SCANNING:
+    case DownloadCommands::BYPASS_DEEP_SCANNING_AND_OPEN:
     case DownloadCommands::REVIEW:
     case DownloadCommands::RETRY:
     case DownloadCommands::CANCEL_DEEP_SCAN:
@@ -745,6 +749,7 @@ void DownloadUIModel::ExecuteCommand(DownloadCommands* download_commands,
     case DownloadCommands::DEEP_SCAN:
       break;
     case DownloadCommands::BYPASS_DEEP_SCANNING:
+    case DownloadCommands::BYPASS_DEEP_SCANNING_AND_OPEN:
     case DownloadCommands::REVIEW:
     case DownloadCommands::RETRY:
     case DownloadCommands::CANCEL_DEEP_SCAN:
@@ -979,6 +984,7 @@ DownloadUIModel::BubbleUIInfo DownloadUIModel::GetBubbleUIInfoForInterrupted(
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_LOCAL_PASSWORD_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
+    case download::DOWNLOAD_DANGER_TYPE_ASYNC_LOCAL_PASSWORD_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_FAILED:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
@@ -1360,85 +1366,116 @@ DownloadUIModel::GetBubbleUIInfoForInProgressOrComplete(
           .AddSecondarySubpageButton(
               l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CONTINUE),
               DownloadCommands::Command::KEEP, kColorDownloadItemTextWarning);
-    case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING:
+    case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING: {
       ui_info = DownloadUIModel::BubbleUIInfo()
                     .AddIconAndColor(features::IsChromeRefresh2023()
                                          ? kDownloadWarningIcon
                                          : vector_icons::kNotSecureWarningIcon,
                                      kColorDownloadItemIconWarning)
                     .AddSecondaryTextColor(kColorDownloadItemTextWarning);
-      if (base::FeatureList::IsEnabled(safe_browsing::kDeepScanningUpdatedUX)) {
-        std::u16string subpage_text = l10n_util::GetStringFUTF16(
-            IsEncryptedArchive()
-                ? IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_DEEP_SCANNING_PROMPT_ENCRYPTED_ARCHIVE
-                : IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_DEEP_SCANNING_PROMPT_UPDATED,
-            u"\n\n");
-        ui_info.AddSubpageSummary(subpage_text)
-            .AddPrimarySubpageButton(
-                l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_SCAN_UPDATED),
-                DownloadCommands::Command::DEEP_SCAN)
-            .AddSecondarySubpageButton(
-                l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_OPEN_UPDATED),
-                DownloadCommands::Command::BYPASS_DEEP_SCANNING);
-      } else {
-        ui_info.AddPrimaryButton(DownloadCommands::Command::DEEP_SCAN)
-            .AddSubpageSummary(l10n_util::GetStringUTF16(
-                IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_DEEP_SCANNING_PROMPT))
-            .AddPrimarySubpageButton(
-                l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_SCAN),
-                DownloadCommands::Command::DEEP_SCAN)
-            .AddSecondarySubpageButton(
-                l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_OPEN),
-                DownloadCommands::Command::BYPASS_DEEP_SCANNING,
-                kColorDownloadItemTextWarning);
-      }
-
-      return ui_info;
-    case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_LOCAL_PASSWORD_SCANNING:
-      // TODO(crbug.com/1491184): Implement UX for this danger type.
-      NOTREACHED();
-      break;
-    case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
-      if (base::FeatureList::IsEnabled(safe_browsing::kDeepScanningUpdatedUX)) {
-        ui_info =
-            DownloadUIModel::BubbleUIInfo()
-                .AddProgressBar()
-                .SetProgressBarLooping()
-                .AddSubpageSummary(l10n_util::GetStringUTF16(
-                    IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING))
-                .AddSubpageSecondaryIconAndText(
-                    vector_icons::kDocumentScannerIcon,
-                    download::DoesDownloadConnectorBlock(profile(), GetURL())
-                        ? l10n_util::GetStringUTF16(
-                              IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING_ENTERPRISE_SECONDARY)
-                        : l10n_util::GetStringUTF16(
-                              IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING_SECONDARY))
-                .AddIconAndColor(features::IsChromeRefresh2023()
-                                     ? kDownloadWarningIcon
-                                     : vector_icons::kNotSecureWarningIcon,
-                                 kColorDownloadItemIconWarning)
-                .AddPrimarySubpageButton(
-                    l10n_util::GetStringUTF16(
-                        IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING_DISCARD),
-                    DownloadCommands::Command::DISCARD);
-        ui_info.subpage_buttons[0].is_prominent = false;
-        if (!download::DoesDownloadConnectorBlock(profile(), GetURL())) {
-          ui_info.AddSecondarySubpageButton(
-              l10n_util::GetStringUTF16(
-                  IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING_CANCEL),
-              DownloadCommands::Command::CANCEL_DEEP_SCAN,
-              ui::kColorButtonForeground);
-        }
-      } else {
-        ui_info = DownloadUIModel::BubbleUIInfo()
-                      .AddProgressBar()
-                      .SetProgressBarLooping();
-        if (!download::DoesDownloadConnectorBlock(profile(), GetURL())) {
-          ui_info.AddPrimaryButton(
+      std::u16string subpage_text = l10n_util::GetStringFUTF16(
+          IsEncryptedArchive()
+              ? IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_DEEP_SCANNING_PROMPT_ENCRYPTED_ARCHIVE
+              : IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_DEEP_SCANNING_PROMPT_UPDATED,
+          u"\n\n");
+      ui_info.AddSubpageSummary(subpage_text)
+          .AddPrimarySubpageButton(
+              l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_SCAN_UPDATED),
+              DownloadCommands::Command::DEEP_SCAN)
+          .AddSecondarySubpageButton(
+              l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_OPEN_UPDATED),
               DownloadCommands::Command::BYPASS_DEEP_SCANNING);
-        }
+      return ui_info;
+    }
+    case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_LOCAL_PASSWORD_SCANNING: {
+      ui_info = DownloadUIModel::BubbleUIInfo()
+                    .AddIconAndColor(features::IsChromeRefresh2023()
+                                         ? kDownloadWarningIcon
+                                         : vector_icons::kNotSecureWarningIcon,
+                                     kColorDownloadItemIconWarning)
+                    .AddSecondaryTextColor(kColorDownloadItemTextWarning);
+      std::u16string subpage_text = l10n_util::GetStringFUTF16(
+          IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_DEEP_SCANNING_PROMPT_LOCAL_DECRYPTION,
+          u"\n\n");
+      ui_info.AddSubpageSummary(subpage_text)
+          .AddPrimarySubpageButton(
+              l10n_util::GetStringUTF16(
+                  IDS_DOWNLOAD_BUBBLE_ACCEPT_LOCAL_DECRYPTION),
+              // These download commands are not propagated
+              // to the DownloadItem. Instead they are handled specially in
+              // DownloadBubbleSecurityView::ProcessButtonClick. That makes it
+              // okay that the we aren't really prompting for a deep scan.
+              // TODO(crbug/1482901): Remove this by creating a dedicated View
+              // for the local decryption prompt which directly handles teh
+              // button presses.
+              DownloadCommands::Command::DEEP_SCAN)
+          .AddSecondarySubpageButton(
+              l10n_util::GetStringUTF16(
+                  IDS_DOWNLOAD_BUBBLE_BYPASS_LOCAL_DECRYPTION),
+              DownloadCommands::Command::KEEP);
+      return ui_info;
+    }
+    case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
+      ui_info =
+          DownloadUIModel::BubbleUIInfo()
+              .AddProgressBar()
+              .SetProgressBarLooping()
+              .AddSubpageSummary(l10n_util::GetStringUTF16(
+                  IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING))
+              .AddSubpageSecondaryIconAndText(
+                  vector_icons::kDocumentScannerIcon,
+                  download::DoesDownloadConnectorBlock(profile(), GetURL())
+                      ? l10n_util::GetStringUTF16(
+                            IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING_ENTERPRISE_SECONDARY)
+                      : l10n_util::GetStringUTF16(
+                            IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING_SECONDARY))
+              .AddIconAndColor(features::IsChromeRefresh2023()
+                                   ? kDownloadWarningIcon
+                                   : vector_icons::kNotSecureWarningIcon,
+                               kColorDownloadItemIconWarning)
+              .AddPrimarySubpageButton(
+                  l10n_util::GetStringUTF16(
+                      IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING_DISCARD),
+                  DownloadCommands::Command::DISCARD);
+      ui_info.subpage_buttons[0].is_prominent = false;
+      if (!download::DoesDownloadConnectorBlock(profile(), GetURL())) {
+        ui_info.AddSecondarySubpageButton(
+            l10n_util::GetStringUTF16(
+                IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING_CANCEL),
+            DownloadCommands::Command::CANCEL_DEEP_SCAN,
+            ui::kColorButtonForeground);
       }
       return ui_info;
+    case download::DOWNLOAD_DANGER_TYPE_ASYNC_LOCAL_PASSWORD_SCANNING: {
+      std::u16string subpage_text = l10n_util::GetStringFUTF16(
+          IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_LOCAL_DECRYPTION_IN_PROGRESS,
+          u"\n\n");
+      ui_info = DownloadUIModel::BubbleUIInfo()
+                    .AddProgressBar()
+                    .SetProgressBarLooping()
+                    .AddSubpageSummary(subpage_text)
+                    .AddIconAndColor(features::IsChromeRefresh2023()
+                                         ? kDownloadWarningIcon
+                                         : vector_icons::kNotSecureWarningIcon,
+                                     kColorDownloadItemIconWarning)
+                    // These download commands are not propagated
+                    // to the DownloadItem. Instead they are handled specially
+                    // in DownloadBubbleSecurityView::ProcessButtonClick. That
+                    // means the semantics don't have to line up with the actual
+                    // behavior of the download command.
+                    // TODO(crbug/1482901): Remove this by creating a dedicated
+                    // View for the local decryption prompt which directly
+                    // handles teh button presses.
+                    .AddPrimarySubpageButton(
+                        l10n_util::GetStringUTF16(
+                            IDS_DOWNLOAD_BUBBLE_LOCAL_DECRYPTION_CANCEL),
+                        DownloadCommands::Command::CANCEL)
+                    .AddSecondarySubpageButton(
+                        l10n_util::GetStringUTF16(
+                            IDS_DOWNLOAD_BUBBLE_BYPASS_LOCAL_DECRYPTION),
+                        DownloadCommands::Command::BYPASS_DEEP_SCANNING);
+      return ui_info;
+    }
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_FAILED:
       return DownloadUIModel::BubbleUIInfo()
           .AddIconAndColor(features::IsChromeRefresh2023()
@@ -1788,22 +1825,20 @@ DownloadUIModel::BubbleStatusTextBuilder::GetBubbleWarningStatusText() const {
       return l10n_util::GetStringUTF16(
           IDS_DOWNLOAD_BUBBLE_INTERRUPTED_STATUS_BLOCKED_ORGANIZATION);
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING:
-      if (base::FeatureList::IsEnabled(safe_browsing::kDeepScanningUpdatedUX)) {
         // "Scan for malware • Suspicious"
         return l10n_util::GetStringFUTF16(
             IDS_DOWNLOAD_BUBBLE_DOWNLOAD_STATUS_MESSAGE_WITH_SEPARATOR,
             l10n_util::GetStringUTF16(
                 IDS_DOWNLOAD_BUBBLE_STATUS_DEEP_SCANNING_PROMPT_UPDATED),
             l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_STATUS_SUSPICIOUS));
-      } else {
-        // "Scan before opening"
-        return l10n_util::GetStringUTF16(
-            IDS_DOWNLOAD_BUBBLE_STATUS_DEEP_SCANNING_PROMPT);
-      }
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_LOCAL_PASSWORD_SCANNING:
-      // TODO(crbug.com/1491184): Implement UX for this danger type.
-      NOTREACHED();
-      break;
+      // "Suspicious file blocked • Password needed"
+      return l10n_util::GetStringFUTF16(
+          IDS_DOWNLOAD_BUBBLE_DOWNLOAD_STATUS_MESSAGE_WITH_SEPARATOR,
+          l10n_util::GetStringUTF16(
+              IDS_DOWNLOAD_BUBBLE_STATUS_LOCAL_DECRYPTION_STATUS),
+          l10n_util::GetStringUTF16(
+              IDS_DOWNLOAD_BUBBLE_STATUS_PASSWORD_NEEDED));
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
 #if BUILDFLAG(IS_ANDROID)
       // "Scanning..."
@@ -1812,23 +1847,26 @@ DownloadUIModel::BubbleStatusTextBuilder::GetBubbleWarningStatusText() const {
 #else
       // Either "Checking with your organization's security policies..." or
       // "Scanning..."
-      return download::DoesDownloadConnectorBlock(
-                 model_->profile(), model_->GetDownloadItem()->GetURL())
-                 ? l10n_util::GetStringUTF16(
-                       IDS_DOWNLOAD_BUBBLE_STATUS_ASYNC_SCANNING_ENTERPRISE)
-                 : l10n_util::GetStringUTF16(
-                       IDS_DOWNLOAD_BUBBLE_STATUS_ASYNC_SCANNING);
+      if (download::DoesDownloadConnectorBlock(
+              model_->profile(), model_->GetDownloadItem()->GetURL())) {
+        return l10n_util::GetStringUTF16(
+            IDS_DOWNLOAD_BUBBLE_STATUS_ASYNC_SCANNING_ENTERPRISE);
+      } else {
+        return l10n_util::GetStringUTF16(
+            IDS_DOWNLOAD_BUBBLE_STATUS_ASYNC_SCANNING);
+      }
 #endif
+    case download::DOWNLOAD_DANGER_TYPE_ASYNC_LOCAL_PASSWORD_SCANNING:
+      // "Checking for malware..."
+      return l10n_util::GetStringUTF16(
+          IDS_DOWNLOAD_BUBBLE_STATUS_LOCAL_DECRYPTING);
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_FAILED:
-      if (base::FeatureList::IsEnabled(safe_browsing::kDeepScanningUpdatedUX)) {
         // "Scan failed • Suspicious"
         return l10n_util::GetStringFUTF16(
             IDS_DOWNLOAD_BUBBLE_DOWNLOAD_STATUS_MESSAGE_WITH_SEPARATOR,
             l10n_util::GetStringUTF16(
                 IDS_DOWNLOAD_BUBBLE_STATUS_DEEP_SCANNED_FAILED_UPDATED),
             l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_STATUS_SUSPICIOUS));
-      }
-      [[fallthrough]];
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
@@ -1967,15 +2005,9 @@ DownloadUIModel::BubbleStatusTextBuilder::GetCompletedStatusText() const {
     std::u16string delta_str;
     if (model_->GetDangerType() ==
         download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE) {
-      if (base::FeatureList::IsEnabled(safe_browsing::kDeepScanningUpdatedUX)) {
         // "2 B • Scan is done"
         delta_str = l10n_util::GetStringUTF16(
             IDS_DOWNLOAD_BUBBLE_STATUS_DEEP_SCANNING_DONE_UPDATED);
-      } else {
-        // "2 B • Done, no issues found"
-        delta_str = l10n_util::GetStringUTF16(
-            IDS_DOWNLOAD_BUBBLE_STATUS_DEEP_SCANNING_DONE);
-      }
     } else {
       base::TimeDelta time_elapsed = base::Time::Now() - model_->GetEndTime();
       // If less than 1 minute has passed since download completed: "2 B • Done"

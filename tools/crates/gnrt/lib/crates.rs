@@ -286,17 +286,28 @@ pub struct CrateFiles {
     /// may contain .rs files as well that are part of other crates and which
     /// may be include()'d or used through module paths.
     pub inputs: Vec<PathBuf>,
+    /// Like `sources` but for the crate's build script.
+    pub build_script_sources: Vec<PathBuf>,
+    /// Like `inputs` but for the crate's build script.
+    pub build_script_inputs: Vec<PathBuf>,
 }
 
 impl CrateFiles {
     fn new() -> Self {
-        Self { sources: vec![], inputs: vec![] }
+        Self {
+            sources: vec![],
+            inputs: vec![],
+            build_script_sources: vec![],
+            build_script_inputs: vec![],
+        }
     }
 
     /// Sorts the CrateFiles for a deterministic output.
     fn sort(&mut self) {
         self.sources.sort_unstable();
         self.inputs.sort_unstable();
+        self.build_script_sources.sort_unstable();
+        self.build_script_inputs.sort_unstable();
     }
 }
 
@@ -332,45 +343,23 @@ impl ThirdPartySource {
             }
 
             let crate_path = crate_dir.path();
+            let Some(crate_id) = get_vendored_crate_id(&crate_path)? else {
+                warn!(
+                    "directory name parsed as valid epoch but contained no Cargo.toml: {}",
+                    crate_path.to_string_lossy()
+                );
+                continue;
+            };
 
-            // Ensure the path has a valid name: is UTF8, has our normalized format.
-            let normalized_name = path_as_str(crate_path.file_name().unwrap())?;
-            into_io_result(NormalizedName::new(normalized_name).ok_or_else(|| {
-                format!("unnormalized crate name in path {}", crate_path.to_string_lossy())
-            }))?;
+            let mut files = CrateFiles::new();
+            recurse_crate_files(&crate_path, &mut |filepath| {
+                collect_crate_file(&mut files, CollectCrateFiles::Internal, filepath)
+            })?;
+            files.sort();
 
-            for epoch_dir in fs::read_dir(crate_dir.path())? {
-                // Look at each epoch of the crate we have checked in.
-                let epoch_dir: fs::DirEntry = epoch_dir?;
-                if !epoch_dir.file_type()?.is_dir() {
-                    continue;
-                }
+            all_crate_files.insert(crate_id.clone(), files);
 
-                // Skip it if it's not a valid epoch.
-                if epoch_dir.file_name().to_str().and_then(|s| Epoch::from_str(s).ok()).is_none() {
-                    continue;
-                }
-
-                let crate_path = epoch_dir.path().join("crate");
-
-                let Some(crate_id) = get_vendored_crate_id(&crate_path)? else {
-                    warn!(
-                        "directory name parsed as valid epoch but contained no Cargo.toml: {}",
-                        crate_path.to_string_lossy()
-                    );
-                    continue;
-                };
-
-                let mut files = CrateFiles::new();
-                recurse_crate_files(&crate_path, &mut |filepath| {
-                    collect_crate_file(&mut files, CollectCrateFiles::Internal, filepath)
-                })?;
-                files.sort();
-
-                all_crate_files.insert(crate_id.clone(), files);
-
-                crate_versions.entry(crate_id.name).or_default().push(crate_id.version);
-            }
+            crate_versions.entry(crate_id.name).or_default().push(crate_id.version);
         }
 
         Ok(ThirdPartySource { crate_versions, crate_files: all_crate_files })
@@ -400,7 +389,12 @@ impl ThirdPartySource {
                     name = c.name,
                     epoch = Epoch::from_version(&c.version)
                 ),
-                path: Self::crate_path(c),
+                path: Path::new(&format!(
+                    "chromium_crates_io/vendor/{name}-{version}",
+                    name = c.name,
+                    version = c.version
+                ))
+                .to_owned(),
             })
             .collect();
         // Give patches a stable ordering, instead of the arbitrary HashMap
@@ -429,35 +423,85 @@ pub fn std_crate_path(id: &VendoredCrate) -> PathBuf {
     format!("{}-{}", id.name, id.version).into()
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub enum IncludeCrateTargets {
+    LibOnly,
+    LibAndBin,
+}
+
 /// Collect the source and input files (i.e. `CrateFiles`) for each library that
 /// is part of the standard library build.
 pub fn collect_std_crate_files<'a>(
     p: &deps::Package,
     config: &BuildConfig,
+    include_targets: IncludeCrateTargets,
 ) -> anyhow::Result<(VendoredCrate, CrateFiles)> {
-    // We only look at lib targets here because these are stdlib targets, and thus
-    // we only are building the libs. We're not building bins even if they existed.
-    let lib_target = p.lib_target.as_ref().expect("dependency had no lib target");
-    let root_dir = lib_target.root.parent().expect("lib target has no directory in its path");
     let crate_config = config.per_crate_config.get(&p.crate_id().name);
 
-    let extra_src_roots =
-        crate_config.iter().flat_map(|crate_config| &crate_config.extra_src_roots);
-    let extra_input_roots =
-        crate_config.iter().flat_map(|crate_config| &crate_config.extra_input_roots);
-
     let mut files = CrateFiles::new();
-    recurse_crate_files(&root_dir, &mut |filepath| {
-        collect_crate_file(&mut files, CollectCrateFiles::Internal, filepath)
-    })?;
-    for path in extra_src_roots {
-        recurse_crate_files(&root_dir.to_owned().join(path), &mut |filepath| {
-            collect_crate_file(&mut files, CollectCrateFiles::ExternalSourcesAndInputs, filepath)
-        })?;
+
+    struct RootDir {
+        path: PathBuf,
+        collect: CollectCrateFiles,
     }
-    for path in extra_input_roots {
-        recurse_crate_files(&root_dir.to_owned().join(path), &mut |filepath| {
-            collect_crate_file(&mut files, CollectCrateFiles::ExternalInputsOnly, filepath)
+
+    let mut root_dirs = Vec::new();
+    if let Some(lib_target) = p.lib_target.as_ref() {
+        let lib_root = lib_target.root.parent().expect("lib target has no directory in its path");
+        root_dirs.push(RootDir { path: lib_root.to_owned(), collect: CollectCrateFiles::Internal });
+
+        root_dirs.extend(
+            crate_config
+                .iter()
+                .flat_map(|crate_config| &crate_config.extra_src_roots)
+                .chain(&config.all_config.extra_src_roots)
+                .map(|path| RootDir {
+                    path: lib_root.join(path),
+                    collect: CollectCrateFiles::ExternalSourcesAndInputs,
+                }),
+        );
+        root_dirs.extend(
+            crate_config
+                .iter()
+                .flat_map(|crate_config| &crate_config.extra_input_roots)
+                .chain(&config.all_config.extra_input_roots)
+                .map(|path| RootDir {
+                    path: lib_root.join(path),
+                    collect: CollectCrateFiles::ExternalInputsOnly,
+                }),
+        );
+        root_dirs.extend(
+            crate_config
+                .iter()
+                .flat_map(|crate_config| &crate_config.extra_build_script_src_roots)
+                .chain(&config.all_config.extra_build_script_src_roots)
+                .map(|path| RootDir {
+                    path: lib_root.join(path),
+                    collect: CollectCrateFiles::BuildScriptExternalSourcesAndInputs,
+                }),
+        );
+        root_dirs.extend(
+            crate_config
+                .iter()
+                .flat_map(|crate_config| &crate_config.extra_build_script_input_roots)
+                .chain(&config.all_config.extra_build_script_input_roots)
+                .map(|path| RootDir {
+                    path: lib_root.join(path),
+                    collect: CollectCrateFiles::BuildScriptExternalInputsOnly,
+                }),
+        );
+    }
+    if include_targets == IncludeCrateTargets::LibAndBin {
+        for bin in &p.bin_targets {
+            let bin_root = bin.root.parent().expect("bin target has no directory in its path");
+            root_dirs
+                .push(RootDir { path: bin_root.to_owned(), collect: CollectCrateFiles::Internal });
+        }
+    }
+
+    for root_dir in root_dirs {
+        recurse_crate_files(&root_dir.path, &mut |filepath| {
+            collect_crate_file(&mut files, root_dir.collect, filepath)
         })?;
     }
     files.sort();
@@ -504,7 +548,6 @@ pub fn collect_std_vendored_crates(vendor_path: &Path) -> io::Result<Vec<Vendore
                 ),
             ));
         }
-
         crates.push(crate_id);
     }
 
@@ -522,6 +565,10 @@ enum CollectCrateFiles {
     ExternalSourcesAndInputs,
     /// Like ExternalSourcesAndInputs but excludes .rs files.
     ExternalInputsOnly,
+    /// Like `ExternalSourcesAndInputs` but for build scripts.
+    BuildScriptExternalSourcesAndInputs,
+    /// Like `ExternalInputsOnly` but for build scripts.
+    BuildScriptExternalInputsOnly,
 }
 
 // Adds a `filepath` to `CrateFiles` depending on the type of file and the
@@ -532,10 +579,22 @@ fn collect_crate_file(files: &mut CrateFiles, mode: CollectCrateFiles, filepath:
             CollectCrateFiles::Internal => files.sources.push(filepath.to_owned()),
             CollectCrateFiles::ExternalSourcesAndInputs => files.inputs.push(filepath.to_owned()),
             CollectCrateFiles::ExternalInputsOnly => (),
+            CollectCrateFiles::BuildScriptExternalSourcesAndInputs => {
+                files.build_script_inputs.push(filepath.to_owned())
+            }
+            CollectCrateFiles::BuildScriptExternalInputsOnly => (),
         },
         // md: Markdown files are commonly include!()'d into source code as docs.
         // h: cxxbridge_cmd include!()'s its .h file into it.
-        Some("md") | Some("h") => files.inputs.push(filepath.to_owned()),
+        Some("md") | Some("h") => match mode {
+            CollectCrateFiles::Internal
+            | CollectCrateFiles::ExternalSourcesAndInputs
+            | CollectCrateFiles::ExternalInputsOnly => files.inputs.push(filepath.to_owned()),
+            CollectCrateFiles::BuildScriptExternalSourcesAndInputs
+            | CollectCrateFiles::BuildScriptExternalInputsOnly => {
+                files.build_script_inputs.push(filepath.to_owned())
+            }
+        },
         _ => (),
     };
 }

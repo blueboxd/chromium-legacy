@@ -21,8 +21,8 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/password_manager/core/browser/password_reuse_manager.h"
-#include "components/password_manager/core/browser/password_store_consumer.h"
-#include "components/password_manager/core/browser/password_store_interface.h"
+#include "components/password_manager/core/browser/password_store/password_store_consumer.h"
+#include "components/password_manager/core/browser/password_store/password_store_interface.h"
 #include "components/password_manager/core/browser/password_sync_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -682,11 +682,11 @@ StoreMetricsReporter::StoreMetricsReporter(
 
   prefs->SetDouble(
       password_manager::prefs::kLastTimePasswordStoreMetricsReported,
-      base::Time::Now().ToDoubleT());
+      base::Time::Now().InSecondsFSinceUnixEpoch());
 
-  sync_username_ =
-      password_manager::sync_util::GetSyncUsernameIfSyncingPasswords(
-          sync_service, identity_manager);
+  sync_username_ = password_manager::sync_util::
+      GetAccountEmailIfSyncFeatureEnabledIncludingPasswords(sync_service,
+                                                            identity_manager);
 
   custom_passphrase_enabled_ = IsCustomPassphraseEnabled(
       password_manager::sync_util::GetPasswordSyncState(sync_service));

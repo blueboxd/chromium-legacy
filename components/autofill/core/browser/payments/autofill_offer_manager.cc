@@ -10,7 +10,6 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
-#include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -27,7 +26,8 @@ AutofillOfferData ToAutofillOfferData(
     const GURL& url,
     const commerce::DiscountInfo& discount_info) {
   return AutofillOfferData::FreeListingCouponOffer(
-      discount_info.id, base::Time::FromDoubleT(discount_info.expiry_time_sec),
+      discount_info.id,
+      base::Time::FromSecondsSinceUnixEpoch(discount_info.expiry_time_sec),
       {url}, url, DisplayStrings{discount_info.description_detail},
       discount_info.discount_code.value_or(""), discount_info.is_merchant_wide);
 }
@@ -132,10 +132,10 @@ AutofillOfferData* AutofillOfferManager::GetOfferForUrl(
 void AutofillOfferManager::GetShoppingServiceOfferForUrl(
     const GURL& url,
     AsyncOfferCallback callback) {
-  if ((shopping_service_delegate_ &&
-       shopping_service_delegate_->IsDiscountEligibleToShowOnNavigation()) ||
-      (base::FeatureList::IsEnabled(
-          ntp_features::kNtpHistoryClustersModuleDiscounts))) {
+  if (shopping_service_delegate_ &&
+      (shopping_service_delegate_->IsDiscountEligibleToShowOnNavigation() ||
+       (base::FeatureList::IsEnabled(
+           ntp_features::kNtpHistoryClustersModuleDiscounts)))) {
     shopping_service_delegate_->GetDiscountInfoForUrls(
         {url}, base::BindOnce(
                    &AutofillOfferManager::HandleShoppingServiceResponse,

@@ -4,19 +4,20 @@
 
 #include "components/autofill/core/browser/data_model/autofill_structured_address_component.h"
 
-#include <stddef.h>
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/autofill_i18n_api.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_name.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_utils.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -320,6 +321,30 @@ TEST(AutofillStructuredAddressAddressComponent, TestGetSupportedTypes) {
   EXPECT_EQ(field_type_set,
             ServerFieldTypeSet({NAME_MIDDLE, NAME_MIDDLE_INITIAL, NAME_FIRST,
                                 NAME_LAST, NAME_FULL}));
+}
+
+// Tests adding all storable types to the set.
+TEST(AutofillStructuredAddressAddressComponent, TestGetStorableTypes) {
+  ServerFieldTypeSet field_type_set;
+
+  TestAtomicFirstNameAddressComponent first_name_component;
+  TestAtomicMiddleNameAddressComponent middle_name_component;
+  TestCompoundNameAddressComponent compound_name;
+
+  // The first name only supports NAME_FIRST.
+  first_name_component.GetStorableTypes(&field_type_set);
+  EXPECT_EQ(field_type_set, ServerFieldTypeSet({NAME_FIRST}));
+
+  // The middle name supports an initial.
+  field_type_set.clear();
+  middle_name_component.GetStorableTypes(&field_type_set);
+  EXPECT_EQ(field_type_set, ServerFieldTypeSet({NAME_MIDDLE}));
+
+  // Verify that all types are added correctly in a compound structure.
+  field_type_set.clear();
+  compound_name.GetStorableTypes(&field_type_set);
+  EXPECT_EQ(field_type_set, ServerFieldTypeSet({NAME_MIDDLE, NAME_FIRST,
+                                                NAME_LAST, NAME_FULL}));
 }
 
 // Tests the comparison of the atoms of the same type.
@@ -1835,6 +1860,9 @@ TEST(AutofillStructuredAddressAddressComponent, TestFillTreeGaps) {
 
 TEST(AutofillStructuredAddressAddressComponent,
      IsValueCompatibleWithAncestorsCompatible) {
+  base::test::ScopedFeatureList feature{
+      features::kAutofillEnableSupportForApartmentNumbers};
+
   std::unique_ptr<AddressComponent> address =
       i18n_model_definition::CreateAddressComponentModel();
 

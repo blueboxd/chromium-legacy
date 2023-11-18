@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/editor_menu/editor_menu_view.h"
 
+#include <algorithm>
 #include <array>
 #include <string_view>
 #include <utility>
@@ -52,6 +53,9 @@ namespace {
 constexpr char kWidgetName[] = "EditorMenuViewWidget";
 
 constexpr gfx::Insets kTitleContainerInsets = gfx::Insets::TLBR(12, 16, 12, 14);
+
+// Min width in rewrite mode to ensure there is space for the chips.
+constexpr int kEditorMenuRewriteModeMinWidth = 288;
 
 // Spacing to apply between and around chips.
 constexpr int kChipsHorizontalPadding = 8;
@@ -153,12 +157,28 @@ void EditorMenuView::OnWidgetVisibilityChanged(views::Widget* widget,
 }
 
 void EditorMenuView::UpdateBounds(const gfx::Rect& anchor_view_bounds) {
-  const int editor_menu_width = GetEditorMenuWidth(anchor_view_bounds.width());
+  const int editor_menu_width = editor_menu_mode_ == EditorMenuMode::kWrite
+                                    ? anchor_view_bounds.width()
+                                    : std::max(anchor_view_bounds.width(),
+                                               kEditorMenuRewriteModeMinWidth);
   UpdateChipsContainer(editor_menu_width);
 
   GetWidget()->SetBounds(GetEditorMenuBounds(
       anchor_view_bounds,
       gfx::Size(editor_menu_width, GetHeightForWidth(editor_menu_width))));
+}
+
+void EditorMenuView::DisableMenu() {
+  settings_button_->SetEnabled(false);
+
+  for (auto* row : chips_container_->children()) {
+    for (auto* chip : row->children()) {
+      chip->SetEnabled(false);
+    }
+  }
+
+  textfield_->textfield()->SetEnabled(false);
+  textfield_->arrow_button()->SetEnabled(false);
 }
 
 void EditorMenuView::InitLayout(const PresetTextQueries& preset_text_queries) {

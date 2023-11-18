@@ -19,6 +19,7 @@
 #include "base/scoped_observation.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -133,18 +134,17 @@ class BlockedHttpResponse : public net::test_server::BasicHttpResponse {
   void SendResponse(
       base::WeakPtr<net::test_server::HttpResponseDelegate> delegate) override {
     // Called on the IO thread to unblock the response.
-    base::OnceClosure unblock_io_thread =
+    base::OnceClosure unblock_response =
         base::BindOnce(&BlockedHttpResponse::SendResponseInternal,
                        weak_factory_.GetWeakPtr(), delegate);
-    // Unblock the response from any thread by posting a task to the IO thread.
-    base::OnceClosure unblock_any_thread =
-        base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
-                       base::SingleThreadTaskRunner::GetCurrentDefault(),
-                       FROM_HERE, std::move(unblock_io_thread));
+    // Bind the callback to the current sequence to ensure invoking `Run()` from
+    // any thread will run the callback on the current sequence.
+    base::OnceClosure unblock_from_any_thread =
+        base::BindPostTaskToCurrentDefault(std::move(unblock_response));
     // Pass |unblock_any_thread| to the caller on the UI thread.
     content::GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback_), std::move(unblock_any_thread)));
+        FROM_HERE, base::BindOnce(std::move(callback_),
+                                  std::move(unblock_from_any_thread)));
   }
 
  private:
@@ -721,18 +721,21 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, Signin) {
 class DiceBrowserTestWithBoundSessionCredentialsEnabled
     : public DiceBrowserTest {
  public:
-  DiceBrowserTestWithBoundSessionCredentialsEnabled() = default;
+  DiceBrowserTestWithBoundSessionCredentialsEnabled() {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{switches::kEnableBoundSessionCredentials,
+                              switches::kEnableChromeRefreshTokenBinding},
+        /*disabled_features=*/{});
+  }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_{
-      switches::kEnableBoundSessionCredentials};
+  base::test::ScopedFeatureList scoped_feature_list_;
+  crypto::ScopedMockUnexportableKeyProvider mock_key_provider_;
 };
 
 // Checks that signin on Gaia triggers the fetch for a refresh token.
 IN_PROC_BROWSER_TEST_F(DiceBrowserTestWithBoundSessionCredentialsEnabled,
                        SigninWithTokenBinding) {
-  crypto::ScopedMockUnexportableKeyProvider mock_key_provider_;
-
   // Navigate to Gaia and sign in.
   NavigateToURL(kSigninURL);
 

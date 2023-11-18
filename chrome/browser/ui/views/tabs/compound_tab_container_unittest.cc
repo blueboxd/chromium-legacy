@@ -17,12 +17,16 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drop_target_event.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/gfx/animation/animation_test_api.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
 
 class FakeTabDragContext : public TabDragContextBase {
+  METADATA_HEADER(FakeTabDragContext, TabDragContextBase)
  public:
   FakeTabDragContext() = default;
   ~FakeTabDragContext() override = default;
@@ -34,6 +38,9 @@ class FakeTabDragContext : public TabDragContextBase {
   void CompleteEndDragAnimations() override {}
   int GetTabDragAreaWidth() const override { return width(); }
 };
+
+BEGIN_METADATA(FakeTabDragContext)
+END_METADATA
 
 class FakeTabContainerController final : public TabContainerController {
  public:
@@ -107,7 +114,9 @@ void SetTabDataPinned(Tab* tab, TabPinned pinned) {
 
 class CompoundTabContainerTest : public ChromeViewsTestBase {
  public:
-  CompoundTabContainerTest() = default;
+  CompoundTabContainerTest()
+      : animation_mode_reset_(gfx::AnimationTestApi::SetRichAnimationRenderMode(
+            gfx::Animation::RichAnimationRenderMode::FORCE_ENABLED)) {}
   CompoundTabContainerTest(const CompoundTabContainerTest&) = delete;
   CompoundTabContainerTest& operator=(const CompoundTabContainerTest&) = delete;
   ~CompoundTabContainerTest() override = default;
@@ -212,6 +221,10 @@ class CompoundTabContainerTest : public ChromeViewsTestBase {
   raw_ptr<TabDragContextBase> drag_context_;
   raw_ptr<CompoundTabContainer> tab_container_;
   std::unique_ptr<views::Widget> widget_;
+
+  // Used to force animation on, so that tabs aren't deleted immediately on
+  // removal.
+  gfx::AnimationTestApi::RenderModeResetter animation_mode_reset_;
 
   int tab_container_width_ = 0;
 };

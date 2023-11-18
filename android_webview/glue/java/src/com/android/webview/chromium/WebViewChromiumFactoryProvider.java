@@ -6,11 +6,9 @@ package com.android.webview.chromium;
 
 import android.app.Application;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
-import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.SystemClock;
@@ -274,29 +272,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
      * This must not be called until {@link #initialize(WebViewDelegate)} has set mWebViewDelegate.
      */
     public void addWebViewAssetPath(Context ctx) {
-        mWebViewDelegate.addWebViewAssetPath(new ContextWrapper(ctx) {
-            // In the Android framework (<= API level 23)
-            // ContextThemeWrapper provides an implementation of
-            // getResources() that may proxy to either the wrapped
-            // context or a newly constructed context, but it does not
-            // provide an implementation of getAssets() that overrides
-            // the ContextWrapper implementation that always proxies
-            // to the wrapped context. This means that getAssets() and
-            // getResources().getAssets() may potentially return
-            // different AssetManagers, confusing WebView.
-            //
-            // To work around this problem, we provide an additional
-            // wrapper here here to avoid calling the getAssets()
-            // proxy chain (which we cannot change because it is in
-            // WebView framework code).
-            //
-            // We should be able to remove this workaround once we
-            // drop support for API 23.
-            @Override
-            public AssetManager getAssets() {
-                return getResources().getAssets();
-            }
-        });
+        mWebViewDelegate.addWebViewAssetPath(ctx);
     }
 
     @SuppressWarnings("NoContextGetApplicationContext")
@@ -498,7 +474,10 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
             // sWebLayerRunningInSameProcess may have been set before initialize().
             if (sWebLayerRunningInSameProcess) {
-                addTask(() -> { getBrowserContextOnUiThread().setWebLayerRunningInSameProcess(); });
+                addTask(
+                        () -> {
+                            getDefaultBrowserContextOnUiThread().setWebLayerRunningInSameProcess();
+                        });
             }
         }
 
@@ -771,7 +750,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     }
 
     // Only on UI thread.
-    AwBrowserContext getBrowserContextOnUiThread() {
+    AwBrowserContext getDefaultBrowserContextOnUiThread() {
         return mAwInit.getDefaultBrowserContextOnUiThread();
     }
 
@@ -839,9 +818,13 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                 return;
             }
         }
-        getSingleton().addTask(() -> {
-            getSingleton().getBrowserContextOnUiThread().setWebLayerRunningInSameProcess();
-        });
+        getSingleton()
+                .addTask(
+                        () -> {
+                            getSingleton()
+                                    .getDefaultBrowserContextOnUiThread()
+                                    .setWebLayerRunningInSameProcess();
+                        });
     }
 
     @RequiresApi(Build.VERSION_CODES.R)

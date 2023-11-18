@@ -125,9 +125,6 @@ const char kArcUseDevCaches[] = "arc-use-dev-caches";
 // Flag that indicates ARC images are formatted with EROFS (go/arcvm-erofs).
 const char kArcErofs[] = "arc-erofs";
 
-// If set, forces ARC apk cache to be enabled for testing.
-const char kArcForceEnableApkCache[] = "arc-force-enable-apk-cache";
-
 // If set, forces post boot dexopt to run immediately without device idle
 // requirement.
 const char kArcForcePostBootDexOpt[] = "arc-force-post-boot-dex-opt";
@@ -220,9 +217,6 @@ const char kAshDeveloperShortcuts[] = "ash-dev-shortcuts";
 // set.
 const char kAshDisableTouchExplorationMode[] =
     "ash-disable-touch-exploration-mode";
-
-// Enable cursor motion blur.
-const char kAshEnableCursorMotionBlur[] = "ash-enable-cursor-motion-blur";
 
 // Enables key bindings to scroll magnified screen.
 const char kAshEnableMagnifierKeyScroller[] =
@@ -392,6 +386,10 @@ const char kDisableDemoMode[] = "disable-demo-mode";
 
 // If this switch is set, the device cannot be remotely disabled by its owner.
 const char kDisableDeviceDisabling[] = "disable-device-disabling";
+
+// Disables DriveFS for testing purposes, used in tast testing and only on test
+// images.
+const char kDisableDriveFsForTesting[] = "disable-drive-fs-for-testing";
 
 // Disables fine grained time zone detection.
 const char kDisableFineGrainedTimeZoneDetection[] =
@@ -833,6 +831,9 @@ const char kBrowserDataMigrationForUser[] = "browser-data-migration-for-user";
 const char kBrowserDataBackwardMigrationForUser[] =
     "browser-data-backward-migration-for-user";
 
+// Supply secret key for Coral feature.
+const char kCoralFeatureKey[] = "coral-feature-key";
+
 // Tells Chrome to forcefully trigger backward data migration.
 extern const char kForceBrowserDataBackwardMigration[] =
     "force-browser-data-backward-migration";
@@ -911,6 +912,8 @@ const char kHiddenNetworkMigrationInterval[] =
 // considered for removal. The interval should be provided in days, should
 // follow the format "--hidden-network-migration-age=#", and should be >= 0.
 const char kHiddenNetworkMigrationAge[] = "hidden-network-migration-age";
+
+const char kPickerFeatureKey[] = "picker-feature-key";
 
 // Sets the channel from which the PPD files are loaded.
 const char kPrintingPpdChannel[] = "printing-ppd-channel";
@@ -998,11 +1001,6 @@ const char kSkipForceOnlineSignInForTesting[] =
 // the nudge is considered as shown.
 const char kSkipReorderNudgeShowThresholdDurationForTest[] =
     "skip-reorder-nudge-show-threshold-duration";
-
-// Used to force software cursors on specific devices that do not have enough
-// planes to display a hardware cursor when connected to displays with higher
-// widths in pixels.
-const char kSwCursorOnWideDisplays[] = "sw-cursor-on-wide-displays";
 
 // If set, the device will be forced to stay in clamshell UI mode but screen
 // auto rotation will be supported. E.g, chromebase device Dooly.
@@ -1098,6 +1096,10 @@ const char kPreventKioskAutolaunchForTesting[] =
 // to download data from the server (which many tests can't achieve).
 const char kAllowDefaultShelfPinLayoutIgnoringSync[] =
     "ash-allow-default-shelf-pin-layout-ignoring-sync";
+
+// On devices that support refresh rate throttling, force the throttling
+// behavior to be active regardless of system state.
+const char kForceRefreshRateThrottle[] = "force-refresh-rate-throttle";
 
 bool IsAuthSessionCryptohomeEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(

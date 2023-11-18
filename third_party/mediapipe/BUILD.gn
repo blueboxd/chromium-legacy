@@ -58,6 +58,7 @@ config("mediapipe_internal_config") {
   cflags = [
     "-Wno-unused-function",
     "-Wno-deprecated-declarations",
+
     # MediaPipe's CHECK macros are redefined from absl's.
     "-Wno-macro-redefined",
   ]
@@ -74,6 +75,10 @@ config("mediapipe_flags") {
     # When building with GPU support on Windows, we don't want MediaPipe to try
     # and use pthreads, since they will be unavailable.
     defines += [ "MEDIAPIPE_DISABLE_PTHREADS=1" ]
+  }
+
+  if (is_android) {
+    defines += [ "MEDIAPIPE_NO_JNI=1" ]
   }
 }
 
@@ -132,6 +137,7 @@ proto_library("mediapipe_proto") {
     "src/mediapipe/tasks/cc/components/processors/proto/classifier_options.proto",
     "src/mediapipe/tasks/cc/components/processors/proto/detection_postprocessing_graph_options.proto",
     "src/mediapipe/tasks/cc/components/processors/proto/detector_options.proto",
+    "src/mediapipe/tasks/cc/components/processors/proto/llm_params.proto",
     "src/mediapipe/tasks/cc/components/processors/proto/text_model_type.proto",
     "src/mediapipe/tasks/cc/components/processors/proto/text_preprocessing_graph_options.proto",
     "src/mediapipe/tasks/cc/components/processors/proto/transformer_params.proto",

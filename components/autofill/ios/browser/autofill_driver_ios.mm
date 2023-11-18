@@ -84,38 +84,53 @@ bool AutofillDriverIOS::CanShowAutofillUi() const {
   return true;
 }
 
-bool AutofillDriverIOS::RendererIsAvailable() {
-  return true;
-}
-
 std::vector<FieldGlobalId> AutofillDriverIOS::ApplyFormAction(
     mojom::ActionType action_type,
     mojom::ActionPersistence action_persistence,
     const FormData& data,
     const url::Origin& triggered_origin,
     const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map) {
-  // TODO(crbug.com/1441410) Add Undo support on iOS.
-  if (action_type == mojom::ActionType::kUndo) {
-    return {};
+  switch (action_type) {
+    case mojom::ActionType::kUndo:
+      // TODO(crbug.com/1441410) Add Undo support on iOS.
+      return {};
+    case mojom::ActionType::kFill:
+      web::WebFrame* frame = web_frame();
+      if (frame) {
+        [bridge_ fillFormData:data inFrame:frame];
+      }
+      std::vector<FieldGlobalId> safe_fields;
+      for (const auto& field : data.fields) {
+        safe_fields.push_back(field.global_id());
+      }
+      return safe_fields;
   }
-  web::WebFrame* frame = web_frame();
-  if (frame) {
-    [bridge_ fillFormData:data inFrame:frame];
-  }
-  std::vector<FieldGlobalId> safe_fields;
-  for (const auto& field : data.fields)
-    safe_fields.push_back(field.global_id());
-  return safe_fields;
 }
 
 void AutofillDriverIOS::ApplyFieldAction(
     mojom::ActionPersistence action_persistence,
+    mojom::TextReplacement text_replacement,
     const FieldGlobalId& field,
-    const std::u16string& value) {}
+    const std::u16string& value) {
+  // For now, only support filling.
+  switch (action_persistence) {
+    case mojom::ActionPersistence::kFill: {
+      web::WebFrame* frame = web_frame();
+      if (frame) {
+        [bridge_ fillSpecificFormField:field.renderer_id
+                             withValue:value
+                               inFrame:frame];
+      }
+      break;
+    }
+    case mojom::ActionPersistence::kPreview:
+      return;
+  }
+}
 
 void AutofillDriverIOS::ExtractForm(
     FormGlobalId form,
-    base::OnceCallback<void(const std::optional<FormData>&)>
+    base::OnceCallback<void(AutofillDriver*, const std::optional<FormData>&)>
         response_callback) {
   // TODO(crbug.com/1490670): Implement ExtractForm().
   NOTIMPLEMENTED();
@@ -187,7 +202,7 @@ void AutofillDriverIOS::RendererShouldTriggerSuggestions(
 
 void AutofillDriverIOS::RendererShouldSetSuggestionAvailability(
     const FieldGlobalId& field,
-    const mojom::AutofillState state) {}
+    mojom::AutofillSuggestionAvailability suggestion_availability) {}
 
 void AutofillDriverIOS::PopupHidden() {
 }

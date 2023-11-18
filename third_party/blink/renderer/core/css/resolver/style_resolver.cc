@@ -138,13 +138,24 @@ const ComputedStyle* BuildInitialStyleForImg(
 bool ShouldStoreOldStyle(const StyleRecalcContext& style_recalc_context,
                          StyleResolverState& state) {
   // Storing the old style is only relevant if we risk computing the style
-  // more than once for the same element. This is only possible if we are
-  // currently inside a container.
+  // more than once for the same element. This can happen if we are currently
+  // inside a size query container, or doing multiple style resolutions for
+  // @position-fallback.
   //
-  // If we are not inside a container, we can fall back to the default
-  // behavior (in CSSAnimations) of using the current style on Element
-  // as the old style.
-  return style_recalc_context.container && state.CanAffectAnimations();
+  // If we are not inside a size query container or an element with
+  // position-fallback, we can fall back to the default behavior (in
+  // CSSAnimations) of using the current style on Element as the old style.
+  //
+  // TODO(futhark): We also need to check whether we are a descendant of an
+  // element with position-fallback to cover the case where the descendant
+  // explicitly inherits insets or other valid @try properties from the
+  // element with position-fallback.
+  return (style_recalc_context.container ||
+          style_recalc_context.position_fallback ||
+          (RuntimeEnabledFeatures::
+               CSSAnchorPositioningCascadeFallbackEnabled() &&
+           state.StyleBuilder().PositionFallback())) &&
+         state.CanAffectAnimations();
 }
 
 bool ShouldSetPendingUpdate(StyleResolverState& state, Element& element) {
@@ -451,8 +462,6 @@ static CSSPropertyValueSet* UniversalOverlayUserAgentDeclaration() {
   DEFINE_STATIC_LOCAL(
       Persistent<MutableCSSPropertyValueSet>, decl,
       (MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode)));
-
-  DCHECK(RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled());
 
   if (decl->IsEmpty()) {
     decl->SetProperty(CSSPropertyID::kOverlay,
@@ -813,12 +822,41 @@ void StyleResolver::MatchPseudoPartRules(const Element& part_matching_element,
   }
 }
 
+// Declarations within @try rules match when ResolveStyle is invoked
+// with that rule explicitly specified to match
+// (see StyleRecalcContext.position_fallback/index).
+void StyleResolver::MatchTryRules(ElementRuleCollector& collector) {
+  const ScopedCSSName* position_fallback = collector.PositionFallback();
+  if (!position_fallback) {
+    return;
+  }
+  unsigned index = collector.PositionFallbackIndex();
+  const TreeScope* tree_scope = position_fallback->GetTreeScope();
+  if (!tree_scope) {
+    tree_scope = &GetDocument();
+  }
+  StyleRulePositionFallback* position_fallback_rule =
+      ResolvePositionFallbackRule(tree_scope, position_fallback->GetName());
+
+  if (!position_fallback_rule ||
+      index >= position_fallback_rule->ChildRules().size()) {
+    return;
+  }
+
+  StyleRuleTry* try_rule =
+      To<StyleRuleTry>(position_fallback_rule->ChildRules()[index].Get());
+  const CSSPropertyValueSet& properties = try_rule->Properties();
+
+  collector.AddTryStyleProperties(&properties);
+}
+
 void StyleResolver::MatchAuthorRules(const Element& element,
                                      ElementRuleCollector& collector) {
   MatchHostRules(element, collector, tracker_);
   MatchSlottedRules(element, collector, tracker_);
   MatchElementScopeRules(element, collector, tracker_);
   MatchPseudoPartRules(element, collector);
+  MatchTryRules(collector);
 }
 
 void StyleResolver::MatchUserRules(ElementRuleCollector& collector) {
@@ -1416,10 +1454,8 @@ void StyleResolver::ApplyBaseStyleNoCache(
     // the UA sheets. Note that this is a universal rule in any namespace.
     // Adding this to the html.css would only do the override in the HTML
     // namespace since the sheet has a default namespace.
-    if (RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled()) {
-      cascade.MutableMatchResult().AddMatchedProperties(
-          UniversalOverlayUserAgentDeclaration(), CascadeOrigin::kUserAgent);
-    }
+    cascade.MutableMatchResult().AddMatchedProperties(
+        UniversalOverlayUserAgentDeclaration(), CascadeOrigin::kUserAgent);
 
     // This adds a CSSInitialColorValue to the cascade for the document
     // element. The CSSInitialColorValue will resolve to a color-scheme
@@ -1626,12 +1662,18 @@ void StyleResolver::ApplyBaseStyle(
     return;
   }
 
-  if (!style_recalc_context.parent_forces_recalc &&
+  if (style_recalc_context.can_use_incremental_style &&
       CanApplyInlineStyleIncrementally(element, state, style_request)) {
     // We are in a situation where we can reuse the old style
     // and just apply the element's inline style on top of it
     // (see the function comment).
     state.SetStyle(*element->GetComputedStyle());
+
+    // This is always false when creating a new style, but is not reset
+    // when copying the style, so it needs to happen here. After us,
+    // Element::StyleForLayoutObject() will call AdjustElementStyle(),
+    // which sets it to true if applicable.
+    state.StyleBuilder().ResetSkipsContents();
 
     const CSSPropertyValueSet* inline_style = element->InlineStyle();
     if (inline_style) {
@@ -1728,20 +1770,21 @@ CompositorKeyframeValue* StyleResolver::CreateCompositorKeyframeValueSnapshot(
 const ComputedStyle* StyleResolver::StyleForPage(
     uint32_t page_index,
     const AtomicString& page_name) {
-  const ComputedStyle* initial_style = InitialStyleForElement();
-  if (!GetDocument().documentElement()) {
-    return initial_style;
+  // The page context inherits from the root element.
+  Element* root_element = GetDocument().documentElement();
+  if (!root_element) {
+    return InitialStyleForElement();
   }
-
-  const ComputedStyle* document_style = GetDocument().GetComputedStyle();
-  StyleResolverState state(GetDocument(), *GetDocument().documentElement(),
+  DCHECK(!GetDocument().NeedsLayoutTreeUpdateForNode(*root_element));
+  const ComputedStyle* parent_style = root_element->EnsureComputedStyle();
+  StyleResolverState state(GetDocument(), *root_element,
                            nullptr /* StyleRecalcContext */,
-                           StyleRequest(initial_style));
-  state.CreateNewStyle(*initial_style, *document_style);
+                           StyleRequest(parent_style));
+  state.CreateNewStyle(*parent_style, *parent_style);
 
   STACK_UNINITIALIZED StyleCascade cascade(state);
 
-  PageRuleCollector collector(document_style, page_index, page_name,
+  PageRuleCollector collector(parent_style, page_index, page_name,
                               cascade.MutableMatchResult());
 
   collector.MatchPageRules(
@@ -1819,8 +1862,8 @@ ComputedStyleBuilder StyleResolver::InitialStyleBuilderForElement() const {
 
 const ComputedStyle* StyleResolver::StyleForText(Text* text_node) {
   DCHECK(text_node);
-  if (Node* parent_node = LayoutTreeBuilderTraversal::Parent(*text_node)) {
-    const ComputedStyle* style = parent_node->GetComputedStyle();
+  if (Element* parent = LayoutTreeBuilderTraversal::ParentElement(*text_node)) {
+    const ComputedStyle* style = parent->GetComputedStyle();
     if (style && !style->IsEnsuredInDisplayNone()) {
       return style;
     }
@@ -2107,8 +2150,9 @@ bool StyleResolver::CacheSuccess::InheritedVariablesChanged(
   if (!cached_matched_properties) {
     return false;
   }
-  return cached_matched_properties->computed_style->InheritedVariables() !=
-         builder.InheritedVariables();
+  return !base::ValuesEquivalent(
+      cached_matched_properties->computed_style->InheritedVariables(),
+      builder.InheritedVariables());
 }
 
 bool StyleResolver::CacheSuccess::LineHeightChanged(
@@ -2244,7 +2288,16 @@ void StyleResolver::MaybeAddToMatchedPropertiesCache(
     const CacheSuccess& cache_success,
     const MatchResult& match_result) {
   state.LoadPendingResources();
-  if (!cache_success.cached_matched_properties && cache_success.key.IsValid() &&
+
+  // NOTE: We replace everything that isn't a full cache hit. There are cases
+  // where this would be bad (e.g., every other element we style with the same
+  // key has a different parent computed style), but it seems a much more common
+  // case, if we don't replace elements giving partial hits, is that a
+  // bad entry gets stuck into the MPC and we _never_ get full hits again
+  // from there because it's never replaced. (Or, similarly, a partial
+  // hit where we have to reapply the inherited properties, or where we trash
+  // the “partner cache” in StyleInheritedVariables.)
+  if (cache_success.key.IsValid() &&
       MatchedPropertiesCache::IsCacheable(state)) {
     INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                   matched_property_cache_added, 1);
@@ -2309,6 +2362,11 @@ bool StyleResolver::CanReuseBaseComputedStyle(const StyleResolverState& state) {
 
   if (TextAutosizingMultiplierChanged(state,
                                       *base_data->GetBaseComputedStyle())) {
+    return false;
+  }
+
+  if (RuntimeEnabledFeatures::CSSAnchorPositioningCascadeFallbackEnabled() &&
+      base_data->GetBaseComputedStyle()->PositionFallback()) {
     return false;
   }
 
@@ -2620,11 +2678,6 @@ bool PropagateScrollSnapStyleToViewport(
   PROPAGATE_FROM(document_element_style, ScrollPaddingLeft,
                  SetScrollPaddingLeft, Length());
 
-  if (changed && !RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled()) {
-    document.GetSnapCoordinator().SnapContainerDidChange(
-        *document.GetLayoutView());
-  }
-
   return changed;
 }
 
@@ -2860,6 +2913,10 @@ void StyleResolver::PropagateStyleToViewport() {
                    absl::nullopt);
     PROPAGATE_FROM(document_element_style, ForcedColorAdjust,
                    SetForcedColorAdjust, EForcedColorAdjust::kAuto);
+    if (RuntimeEnabledFeatures::UsedColorSchemeRootScrollbarsEnabled()) {
+      PROPAGATE_FROM(document_element_style, ColorSchemeFlagsIsNormal,
+                     SetColorSchemeFlagsIsNormal, false);
+    }
   }
 
   // scroll-start

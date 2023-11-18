@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/download/download_item_mode.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/vector_icons/vector_icons.h"
@@ -277,26 +278,31 @@ void DownloadBubbleRowViewInfo::PopulateForInProgressOrComplete() {
       return;
     }
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_LOCAL_PASSWORD_SCANNING: {
-      // TODO(crbug.com/1491184): Implement UX for this danger type.
-      NOTREACHED();
+      icon_override_ = features::IsChromeRefresh2023()
+                           ? &kDownloadWarningIcon
+                           : &vector_icons::kNotSecureWarningIcon;
+      secondary_color_ = kColorDownloadItemIconWarning;
+      secondary_text_color_ = kColorDownloadItemTextWarning;
+      has_subpage_ = true;
       return;
     }
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
       has_progress_bar_ = true;
       is_progress_bar_looping_ = true;
-      if (base::FeatureList::IsEnabled(safe_browsing::kDeepScanningUpdatedUX)) {
-        has_subpage_ = true;
-        icon_override_ = features::IsChromeRefresh2023()
-                             ? &kDownloadWarningIcon
-                             : &vector_icons::kNotSecureWarningIcon;
-        secondary_color_ = kColorDownloadItemIconWarning;
-      } else {
-        if (!download::DoesDownloadConnectorBlock(model_->profile(),
-                                                  model_->GetURL())) {
-          primary_button_command_ =
-              DownloadCommands::Command::BYPASS_DEEP_SCANNING;
-        }
-      }
+      has_subpage_ = true;
+      icon_override_ = features::IsChromeRefresh2023()
+                           ? &kDownloadWarningIcon
+                           : &vector_icons::kNotSecureWarningIcon;
+      secondary_color_ = kColorDownloadItemIconWarning;
+      return;
+    case download::DOWNLOAD_DANGER_TYPE_ASYNC_LOCAL_PASSWORD_SCANNING:
+      has_progress_bar_ = true;
+      is_progress_bar_looping_ = true;
+      has_subpage_ = true;
+      icon_override_ = features::IsChromeRefresh2023()
+                           ? &kDownloadWarningIcon
+                           : &vector_icons::kNotSecureWarningIcon;
+      secondary_color_ = kColorDownloadItemIconWarning;
       return;
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_FAILED:
       icon_override_ = features::IsChromeRefresh2023()
@@ -430,6 +436,7 @@ void DownloadBubbleRowViewInfo::PopulateForInterrupted(
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_LOCAL_PASSWORD_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
+    case download::DOWNLOAD_DANGER_TYPE_ASYNC_LOCAL_PASSWORD_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_FAILED:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:

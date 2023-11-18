@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <optional>
 #include <string>
 
 #include "base/base_paths.h"
@@ -37,7 +38,6 @@
 #include "chrome/updater/util/util.h"
 #include "components/crx_file/crx_verifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace updater::test {
@@ -51,7 +51,7 @@ base::FilePath GetExecutablePath() {
 }
 }  // namespace
 
-absl::optional<base::FilePath> GetFakeUpdaterInstallFolderPath(
+std::optional<base::FilePath> GetFakeUpdaterInstallFolderPath(
     UpdaterScope scope,
     const base::Version& version) {
   return GetVersionedInstallDirectory(scope, version);
@@ -62,10 +62,10 @@ base::FilePath GetSetupExecutablePath() {
   return GetExecutablePath();
 }
 
-absl::optional<base::FilePath> GetInstalledExecutablePath(UpdaterScope scope) {
-  absl::optional<base::FilePath> path = GetVersionedInstallDirectory(scope);
+std::optional<base::FilePath> GetInstalledExecutablePath(UpdaterScope scope) {
+  std::optional<base::FilePath> path = GetVersionedInstallDirectory(scope);
   if (!path) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   return path->Append(GetExecutableRelativePath());
 }
@@ -81,7 +81,7 @@ bool WaitForUpdaterExit(UpdaterScope /*scope*/) {
 }
 
 void Uninstall(UpdaterScope scope) {
-  absl::optional<base::FilePath> path = GetExecutablePath();
+  std::optional<base::FilePath> path = GetExecutablePath();
   ASSERT_TRUE(path);
   base::CommandLine command_line(*path);
   command_line.AppendSwitch(kUninstallSwitch);
@@ -91,7 +91,7 @@ void Uninstall(UpdaterScope scope) {
 }
 
 void ExpectCandidateUninstalled(UpdaterScope scope) {
-  absl::optional<base::FilePath> path = GetVersionedInstallDirectory(scope);
+  std::optional<base::FilePath> path = GetVersionedInstallDirectory(scope);
   EXPECT_TRUE(path);
   if (path) {
     EXPECT_FALSE(base::PathExists(*path));
@@ -99,7 +99,7 @@ void ExpectCandidateUninstalled(UpdaterScope scope) {
 }
 
 void ExpectInstalled(UpdaterScope scope) {
-  absl::optional<base::FilePath> path = GetInstalledExecutablePath(scope);
+  std::optional<base::FilePath> path = GetInstalledExecutablePath(scope);
   EXPECT_TRUE(path);
   if (path) {
     EXPECT_TRUE(base::PathExists(*path));
@@ -107,7 +107,7 @@ void ExpectInstalled(UpdaterScope scope) {
 }
 
 void Clean(UpdaterScope scope) {
-  absl::optional<base::FilePath> path = GetInstallDirectory(scope);
+  std::optional<base::FilePath> path = GetInstallDirectory(scope);
   EXPECT_TRUE(path);
   if (path) {
     EXPECT_TRUE(base::DeletePathRecursively(*path));
@@ -116,23 +116,31 @@ void Clean(UpdaterScope scope) {
   EXPECT_TRUE(UninstallSystemdUnits(scope));
 }
 
-void ExpectClean(UpdaterScope scope) {
-  ExpectCleanProcesses();
-
-  absl::optional<base::FilePath> path = GetInstallDirectory(scope);
+// The uninstaller cannot reliably completely remove the installer directory
+// itself, because it uses the prefs file and writes the log file while it
+// is operating. If the provided path exists, it must be a directory with
+// only these residual files present to be considered "clean".
+void ExpectMostlyClean(const std::optional<base::FilePath>& path) {
   EXPECT_TRUE(path);
-  if (path && base::PathExists(*path)) {
-    // If the path exists, then expect only the log file to be present.
-    int count = CountDirectoryFiles(*path);
-    EXPECT_LE(count, 2);
-    if (count >= 1) {
-      EXPECT_TRUE(base::PathExists(path->AppendASCII("updater.log")));
-    }
-    if (count == 2) {
-      EXPECT_TRUE(base::PathExists(path->AppendASCII("prefs.json")));
-    }
+  if (!path || !base::PathExists(*path)) {
+    return;
   }
 
+  // If the path exists, expect only the log and prefs files to be present.
+  int count = CountDirectoryFiles(*path);
+  EXPECT_LE(count, 2);
+  if (count >= 1) {
+    EXPECT_TRUE(base::PathExists(path->AppendASCII("updater.log")));
+  }
+  if (count == 2) {
+    EXPECT_TRUE(base::PathExists(path->AppendASCII("prefs.json")));
+  }
+}
+
+void ExpectClean(UpdaterScope scope) {
+  ExpectCleanProcesses();
+  ExpectMostlyClean(GetInstallDirectory(scope));
+  ExpectMostlyClean(GetCacheBaseDirectory(scope));
   EXPECT_FALSE(SystemdUnitsInstalled(scope));
 }
 
@@ -154,7 +162,7 @@ void EnterTestMode(const GURL& update_url,
 }
 
 void SetActive(UpdaterScope scope, const std::string& app_id) {
-  const absl::optional<base::FilePath> path =
+  const std::optional<base::FilePath> path =
       GetActiveFile(base::GetHomeDir(), app_id);
   ASSERT_TRUE(path);
   base::File::Error err = base::File::FILE_OK;
@@ -164,7 +172,7 @@ void SetActive(UpdaterScope scope, const std::string& app_id) {
 }
 
 void ExpectActive(UpdaterScope scope, const std::string& app_id) {
-  const absl::optional<base::FilePath> path =
+  const std::optional<base::FilePath> path =
       GetActiveFile(base::GetHomeDir(), app_id);
   ASSERT_TRUE(path);
   EXPECT_TRUE(base::PathExists(*path));
@@ -172,7 +180,7 @@ void ExpectActive(UpdaterScope scope, const std::string& app_id) {
 }
 
 void ExpectNotActive(UpdaterScope scope, const std::string& app_id) {
-  const absl::optional<base::FilePath> path =
+  const std::optional<base::FilePath> path =
       GetActiveFile(base::GetHomeDir(), app_id);
   ASSERT_TRUE(path);
   EXPECT_FALSE(base::PathExists(*path));

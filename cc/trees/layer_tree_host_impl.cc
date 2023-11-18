@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include <optional>
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -117,13 +118,13 @@
 #include "components/viz/common/traced_value.h"
 #include "components/viz/common/transition_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/client_shared_image.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_capabilities.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_latency_info.pbzero.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
@@ -848,7 +849,7 @@ PaintWorkletJobMap LayerTreeHostImpl::GatherDirtyPaintWorklets(
     for (const auto& entry : layer->GetPaintWorkletRecordMap()) {
       const scoped_refptr<const PaintWorkletInput>& input = entry.first;
       const PaintImage::Id& paint_image_id = entry.second.first;
-      const absl::optional<PaintRecord>& record = entry.second.second;
+      const std::optional<PaintRecord>& record = entry.second.second;
       // If we already have a record we can reuse it and so the
       // PaintWorkletInput isn't dirty.
       if (record)
@@ -972,6 +973,17 @@ bool LayerTreeHostImpl::CanDraw() const {
 
   if (resourceless_software_draw_)
     return true;
+
+  // Do not draw while evicted. Await the activation of a tree containing a
+  // newer viz::Surface
+  if (base::FeatureList::IsEnabled(features::kEvictionThrottlesDraw) &&
+      evicted_local_surface_id_.is_valid()) {
+    TRACE_EVENT_INSTANT0(
+        "cc",
+        "LayerTreeHostImpl::CanDraw viz::Surface evicted and not recreated",
+        TRACE_EVENT_SCOPE_THREAD);
+    return false;
+  }
 
   if (active_tree_->GetDeviceViewport().IsEmpty()) {
     TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::CanDraw empty viewport",
@@ -1165,7 +1177,7 @@ static void AppendQuadsToFillScreen(
       target_render_pass->CreateAndAppendSharedQuadState();
   shared_quad_state->SetAll(
       gfx::Transform(), root_target_rect, root_target_rect,
-      gfx::MaskFilterInfo(), absl::nullopt, screen_background_color.isOpaque(),
+      gfx::MaskFilterInfo(), std::nullopt, screen_background_color.isOpaque(),
       /*opacity_f=*/1.f, SkBlendMode::kSrcOver, /*sorting_context=*/0,
       /*layer_id=*/0u, /*fast_rounded_corner=*/false);
 
@@ -2259,6 +2271,19 @@ void LayerTreeHostImpl::OnCompositorFrameTransitionDirectiveProcessed(
   client_->NotifyTransitionRequestFinished(sequence_id);
 }
 
+void LayerTreeHostImpl::OnSurfaceEvicted(
+    const viz::LocalSurfaceId& local_surface_id) {
+  // Don't evict if the host has given us a newer viz::SurfaceId. Instead handle
+  // resource returns as normal, and begin producing from the new tree.
+  if (target_local_surface_id_.IsNewerThanOrEmbeddingChanged(
+          local_surface_id)) {
+    return;
+  }
+  evicted_local_surface_id_ = local_surface_id;
+  resource_provider_.SetEvicted(true);
+  client_->OnCanDrawStateChanged(CanDraw());
+}
+
 void LayerTreeHostImpl::ReportEventLatency(
     std::vector<EventLatencyTracker::LatencyData> latencies) {
   if (auto* recorder = CustomMetricRecorder::Get())
@@ -2472,7 +2497,7 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
   return metadata;
 }
 
-absl::optional<LayerTreeHostImpl::SubmitInfo> LayerTreeHostImpl::DrawLayers(
+std::optional<LayerTreeHostImpl::SubmitInfo> LayerTreeHostImpl::DrawLayers(
     FrameData* frame) {
   DCHECK(CanDraw());
   DCHECK_EQ(frame->has_no_damage, frame->render_passes.empty());
@@ -2487,7 +2512,17 @@ absl::optional<LayerTreeHostImpl::SubmitInfo> LayerTreeHostImpl::DrawLayers(
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoDamage", TRACE_EVENT_SCOPE_THREAD);
     active_tree()->BreakSwapPromises(SwapPromise::SWAP_FAILS);
     active_tree()->ResetAllChangeTracking();
-    return absl::nullopt;
+
+    // Drop pending event metrics for UI when the frame has no damage because
+    // it could leave the event metrics pending indefinitely and also breaks the
+    // association between input events and screen updates.
+    // See b/297940877.
+    if (settings_.is_layer_tree_for_ui) {
+      std::ignore = active_tree()->TakeEventsMetrics();
+      std::ignore = events_metrics_manager_.TakeSavedEventsMetrics();
+    }
+
+    return std::nullopt;
   }
 
   layer_tree_frame_sink_->set_source_frame_number(
@@ -2906,7 +2941,6 @@ void LayerTreeHostImpl::UpdateRasterCapabilities() {
   }
 
   // GPU compositing + rasterization is enabled if we get this far.
-  CHECK(context_caps.supports_oop_raster);
   raster_caps_.use_gpu_rasterization = true;
 
   raster_caps_.can_use_msaa =
@@ -3106,10 +3140,10 @@ static void PopulateHitTestRegion(viz::HitTestRegion* hit_test_region,
   hit_test_region->transform = surface_to_root_transform.InverseOrIdentity();
 }
 
-absl::optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
+std::optional<viz::HitTestRegionList> LayerTreeHostImpl::BuildHitTestData() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::BuildHitTestData");
 
-  absl::optional<viz::HitTestRegionList> hit_test_region_list(absl::in_place);
+  std::optional<viz::HitTestRegionList> hit_test_region_list(std::in_place);
   hit_test_region_list->flags = viz::HitTestRegionFlags::kHitTestMine |
                                 viz::HitTestRegionFlags::kHitTestMouse |
                                 viz::HitTestRegionFlags::kHitTestTouch;
@@ -3415,6 +3449,24 @@ void LayerTreeHostImpl::ActivateSyncTree() {
   if (!active_tree_->picture_layers().empty())
     DidModifyTilePriorities();
 
+  // Update the child's LocalSurfaceId.
+  if (active_tree()->local_surface_id_from_parent().is_valid()) {
+    child_local_surface_id_allocator_.UpdateFromParent(
+        active_tree()->local_surface_id_from_parent());
+    if (active_tree()->TakeNewLocalSurfaceIdRequest()) {
+      AllocateLocalSurfaceId();
+    }
+
+    // We have a newer surface than the evicted one, or the embedding has
+    // changed, clear eviction state resume drawing.
+    if (evicted_local_surface_id_.is_valid() &&
+        child_local_surface_id_allocator_.GetCurrentLocalSurfaceId()
+            .IsNewerThanOrEmbeddingChanged(evicted_local_surface_id_)) {
+      evicted_local_surface_id_ = viz::LocalSurfaceId();
+      resource_provider_.SetEvicted(false);
+    }
+  }
+
   client_->OnCanDrawStateChanged(CanDraw());
   client_->DidActivateSyncTree();
   if (!tree_activation_callback_.is_null())
@@ -3431,14 +3483,6 @@ void LayerTreeHostImpl::ActivateSyncTree() {
 
   if (input_delegate_)
     input_delegate_->DidActivatePendingTree();
-
-  // Update the child's LocalSurfaceId.
-  if (active_tree()->local_surface_id_from_parent().is_valid()) {
-    child_local_surface_id_allocator_.UpdateFromParent(
-        active_tree()->local_surface_id_from_parent());
-    if (active_tree()->TakeNewLocalSurfaceIdRequest())
-      AllocateLocalSurfaceId();
-  }
 
   // Dump property trees and layers if VerboseLogEnabled().
   VERBOSE_LOG() << "After activating sync tree, the active tree:"
@@ -3537,6 +3581,7 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
     PrepareTiles();
     tile_manager_.decoded_image_tracker().UnlockAllImages();
   }
+  resource_provider_.SetVisible(visible);
 }
 
 void LayerTreeHostImpl::SetNeedsOneBeginImplFrame() {
@@ -3940,11 +3985,13 @@ void LayerTreeHostImpl::DidChangeBrowserControlsPosition() {
 }
 
 void LayerTreeHostImpl::DidObserveScrollDelay(
+    int source_frame_number,
     base::TimeDelta scroll_delay,
     base::TimeTicks scroll_timestamp) {
   // Record First Scroll Delay.
   if (!has_observed_first_scroll_delay_) {
-    client_->DidObserveFirstScrollDelay(scroll_delay, scroll_timestamp);
+    client_->DidObserveFirstScrollDelay(source_frame_number, scroll_delay,
+                                        scroll_timestamp);
     has_observed_first_scroll_delay_ = true;
   }
 }
@@ -4264,6 +4311,12 @@ bool LayerTreeHostImpl::AnimateBrowserControls(base::TimeTicks time) {
                       /*is_wheel_scroll=*/false,
                       /*affect_browser_controls=*/false,
                       /*scroll_outer_viewport=*/true);
+
+  // If the viewport has scroll snap styling, we may need to snap after
+  // scrolling it. Browser controls animations may happen after scrollend, so
+  // it is too late for InputHandler to do the snapping.
+  viewport().SnapIfNeeded();
+
   client_->SetNeedsCommitOnImplThread();
   client_->RenewTreePriority();
   return true;
@@ -4629,10 +4682,12 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
       viz::RasterContextProvider* context_provider =
           layer_tree_frame_sink_->context_provider();
       auto* sii = context_provider->SharedImageInterface();
-      mailbox = sii->CreateSharedImage(
+      auto client_shared_image = sii->CreateSharedImage(
           format, upload_size, color_space, kTopLeft_GrSurfaceOrigin,
           kPremul_SkAlphaType, shared_image_usage, "LayerTreeHostUIResource",
           base::span<const uint8_t>(bitmap.GetPixels(), bitmap.SizeInBytes()));
+      CHECK(client_shared_image);
+      mailbox = client_shared_image->mailbox();
     } else {
       DCHECK_EQ(bitmap.GetFormat(), UIResourceBitmap::RGBA8);
       SkImageInfo src_info =
@@ -4696,12 +4751,14 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
       viz::RasterContextProvider* context_provider =
           layer_tree_frame_sink_->context_provider();
       auto* sii = context_provider->SharedImageInterface();
-      mailbox = sii->CreateSharedImage(
+      auto client_shared_image = sii->CreateSharedImage(
           format, upload_size, color_space, kTopLeft_GrSurfaceOrigin,
           kPremul_SkAlphaType, shared_image_usage, "LayerTreeHostUIResource",
           base::span<const uint8_t>(
               reinterpret_cast<const uint8_t*>(pixmap.addr()),
               pixmap.computeByteSize()));
+      CHECK(client_shared_image);
+      mailbox = client_shared_image->mailbox();
     }
   }
 
@@ -5209,13 +5266,14 @@ void LayerTreeHostImpl::ApplyFirstScrollTracking(const ui::LatencyInfo& latency,
   // presentation timestamp.
   std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback> callbacks;
   callbacks.push_back(base::BindOnce(
-      [](base::TimeTicks event_creation,
+      [](base::TimeTicks event_creation, int source_frame_number,
          LayerTreeHostImpl* layer_tree_host_impl,
          base::TimeTicks presentation_timestamp) {
         layer_tree_host_impl->DidObserveScrollDelay(
-            presentation_timestamp - event_creation, event_creation);
+            source_frame_number, presentation_timestamp - event_creation,
+            event_creation);
       },
-      creation_timestamp, this));
+      creation_timestamp, active_tree_->source_frame_number(), this));
 
   // Register the callback to run with the presentation timestamp corresponding
   // to the given `frame_token`.

@@ -484,6 +484,7 @@ class Browser : public TabStripModelObserver,
   }
 
   base::WeakPtr<Browser> AsWeakPtr();
+  base::WeakPtr<const Browser> AsWeakPtr() const;
 
   // Get the FindBarController for this browser, creating it if it does not
   // yet exist.
@@ -755,6 +756,7 @@ class Browser : public TabStripModelObserver,
       content::EyeDropperListener* listener) override;
   void InitiatePreview(content::WebContents& web_contents,
                        const GURL& url) override;
+  bool ShouldUseInstancedSystemMediaControls() const override;
 
   bool is_type_normal() const { return type_ == TYPE_NORMAL; }
   bool is_type_popup() const { return type_ == TYPE_POPUP; }
@@ -885,6 +887,7 @@ class Browser : public TabStripModelObserver,
                          bool proceed,
                          bool* proceed_to_fire_unload) override;
   bool ShouldFocusLocationBarByDefault(content::WebContents* source) override;
+  bool ShouldFocusPageAfterCrash(content::WebContents* source) override;
   void ShowRepostFormWarningDialog(content::WebContents* source) override;
   bool IsWebContentsCreationOverridden(
       content::SiteInstance* source_site_instance,
@@ -934,6 +937,14 @@ class Browser : public TabStripModelObserver,
   void EnumerateDirectory(content::WebContents* web_contents,
                           scoped_refptr<content::FileSelectListener> listener,
                           const base::FilePath& path) override;
+  bool CanUseWindowingControls(
+      content::RenderFrameHost* requesting_frame) override;
+  void OnCanResizeFromWebAPIChanged() override;
+  bool GetCanResize() override;
+  void MinimizeFromWebAPI() override;
+  void MaximizeFromWebAPI() override;
+  void RestoreFromWebAPI() override;
+  ui::WindowShowState GetWindowShowState() const override;
   bool CanEnterFullscreenModeForTab(
       content::RenderFrameHost* requesting_frame,
       const blink::mojom::FullscreenOptions& options) override;

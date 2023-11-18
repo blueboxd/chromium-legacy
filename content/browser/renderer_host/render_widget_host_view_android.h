@@ -86,6 +86,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       public ui::ViewAndroidObserver,
       public ui::WindowAndroidObserver {
  public:
+  static RenderWidgetHostViewAndroid* FromRenderWidgetHostView(
+      RenderWidgetHostView* view);
+
   // Note: The tree of `gfx::NativeView` might not match the tree of
   // `cc::slim::Layer`.
   RenderWidgetHostViewAndroid(RenderWidgetHostImpl* widget,
@@ -198,7 +201,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool CanSynchronizeVisualProperties() override;
   std::unique_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
       override;
-  void DidNavigateMainFramePreCommit() override;
+  void OnOldViewDidNavigatePreCommit() override;
+  void OnNewViewDidNavigatePostCommit() override;
   void DidEnterBackForwardCache() override;
   const viz::FrameSinkId& GetFrameSinkId() const override;
   viz::FrameSinkId GetRootFrameSinkId() override;
@@ -326,7 +330,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void DismissTextHandles();
   void SetTextHandlesHiddenForDropdownMenu(bool hide_handles);
   void SetTextHandlesTemporarilyHidden(bool hide_handles);
-  void SelectAroundCaretAck(blink::mojom::SelectAroundCaretResultPtr result);
+  void SelectAroundCaretAck(int startOffset,
+                            int endOffset,
+                            int surroundingTextLength,
+                            blink::mojom::SelectAroundCaretResultPtr result);
 
   void SetSynchronousCompositorClient(SynchronousCompositorClient* client);
 
@@ -423,6 +430,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   ~RenderWidgetHostViewAndroid() override;
 
   // RenderWidgetHostViewBase:
+  void UpdateFrameSinkIdRegistration() override;
   void UpdateBackgroundColor() override;
   bool HasFallbackSurface() const override;
   absl::optional<DisplayFeature> GetDisplayFeature() override;

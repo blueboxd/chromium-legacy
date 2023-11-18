@@ -235,8 +235,13 @@ void LaunchApplication(const base::FilePath& app_bundle_path,
           });
         };
 
-    NSWorkspaceOpenConfiguration* configuration =
-        GetOpenConfiguration(options, command_line_args);
+    _LSOpenURLsWithCompletionHandler(
+        base::apple::NSToCFPtrCast(ns_urls ? ns_urls : @[]),
+        apple::FilePathToCFURL(app_bundle_path).get(),
+        base::apple::NSToCFPtrCast(GetOpenOptions(options, command_line_args)),
+        action_block);
+    return;
+  }
 
     if (ns_urls) {
       [NSWorkspace.sharedWorkspace openURLs:ns_urls

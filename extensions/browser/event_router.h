@@ -5,10 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_EVENT_ROUTER_H_
 #define EXTENSIONS_BROWSER_EVENT_ROUTER_H_
 
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
-
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
 #include "base/functional/callback.h"
@@ -28,15 +28,15 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/lazy_context_task_queue.h"
+#include "extensions/browser/service_worker/worker_id.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/features/feature.h"
-#include "extensions/common/mojom/event_dispatcher.mojom-forward.h"
+#include "extensions/common/mojom/event_dispatcher.mojom.h"
 #include "extensions/common/mojom/event_router.mojom.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 class GURL;
@@ -67,6 +67,11 @@ enum class EventDispatchSource : int {
   // Event went through EventRouter::DispatchEventToSender() dispatch flow.
   kDispatchEventToSender,
 };
+
+// The upper bound of time allowed for event dispatch histograms. Also used in
+// histograms for determining when an event is "stale" (it has not been acked by
+// the renderer to the browser by this time).
+inline constexpr base::TimeDelta kEventAckMetricTimeLimit = base::Minutes(5);
 
 // TODO(lazyboy): Document how extension events work, including how listeners
 // are registered and how listeners are tracked in renderer and browser process.
@@ -377,15 +382,17 @@ class EventRouter : public KeyedService,
   };
 
   // TODO(gdk): Document this.
-  void DispatchExtensionMessage(content::RenderProcessHost* rph,
-                                int worker_thread_id,
-                                content::BrowserContext* browser_context,
-                                const std::string& extension_id,
-                                int event_id,
-                                const std::string& event_name,
-                                base::Value::List event_args,
-                                UserGestureState user_gesture,
-                                extensions::mojom::EventFilteringInfoPtr info);
+  void DispatchExtensionMessage(
+      content::RenderProcessHost* rph,
+      int worker_thread_id,
+      content::BrowserContext* browser_context,
+      const std::string& extension_id,
+      int event_id,
+      const std::string& event_name,
+      base::Value::List event_args,
+      UserGestureState user_gesture,
+      extensions::mojom::EventFilteringInfoPtr info,
+      mojom::EventDispatcher::DispatchEventCallback callback);
 
   void ObserveProcess(content::RenderProcessHost* process);
   content::RenderProcessHost* GetRenderProcessHostForCurrentReceiver();
@@ -477,10 +484,22 @@ class EventRouter : public KeyedService,
                                base::TimeTicks dispatch_start_time,
                                int64_t service_worker_version_id,
                                EventDispatchSource dispatch_source);
+  void DecrementInFlightEventsForServiceWorker(
+      const WorkerId& worker_id,
+      int event_id,
+      // Always false since this is only possibly true for lazy background page.
+      bool event_will_run_in_lazy_background_page_script);
+  void DecrementInFlightEventsForRenderFrameHost(
+      int render_process_host,
+      const ExtensionId& extension_id,
+      int event_id,
+      bool event_will_run_in_lazy_background_page_script);
 
-  void RouteDispatchEvent(content::RenderProcessHost* rph,
-                          mojom::DispatchEventParamsPtr params,
-                          base::Value::List event_args);
+  void RouteDispatchEvent(
+      content::RenderProcessHost* rph,
+      mojom::DispatchEventParamsPtr params,
+      base::Value::List event_args,
+      mojom::EventDispatcher::DispatchEventCallback callback);
 
   void DispatchPendingEvent(
       std::unique_ptr<Event> event,
@@ -552,7 +571,7 @@ struct Event {
       Feature::Context,
       const Extension*,
       const base::Value::Dict*,
-      absl::optional<base::Value::List>& event_args_out,
+      std::optional<base::Value::List>& event_args_out,
       mojom::EventFilteringInfoPtr& event_filtering_info_out)>;
 
   using DidDispatchCallback = base::RepeatingCallback<void(const EventTarget&)>;

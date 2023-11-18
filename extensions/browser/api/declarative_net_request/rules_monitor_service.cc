@@ -484,7 +484,7 @@ void RulesMonitorService::OnExtensionLoaded(
   if (!HasAPIPermission(*extension))
     return;
 
-  LoadRequestData load_data(extension->id());
+  LoadRequestData load_data(extension->id(), extension->version());
   int expected_ruleset_checksum;
 
   // Static rulesets.
@@ -493,7 +493,7 @@ void RulesMonitorService::OnExtensionLoaded(
         FileBackedRulesetSource::CreateStatic(
             *extension, FileBackedRulesetSource::RulesetFilter::kIncludeAll);
 
-    absl::optional<std::set<RulesetID>> prefs_enabled_rulesets =
+    std::optional<std::set<RulesetID>> prefs_enabled_rulesets =
         prefs_->GetDNREnabledStaticRulesets(extension->id());
 
     bool ruleset_failed_to_load = false;
@@ -618,15 +618,17 @@ void RulesMonitorService::UpdateDynamicRulesInternal(
     std::vector<int> rule_ids_to_remove,
     std::vector<api::declarative_net_request::Rule> rules_to_add,
     ApiCallback callback) {
-  if (!extension_registry_->enabled_extensions().Contains(extension_id)) {
+  const Extension* extension =
+      extension_registry_->enabled_extensions().GetByID(extension_id);
+  if (!extension) {
     // There is no enabled extension to respond to. While this is probably a
     // no-op, still dispatch the callback to ensure any related bookkeeping is
     // done.
-    std::move(callback).Run(absl::nullopt /* error */);
+    std::move(callback).Run(std::nullopt /* error */);
     return;
   }
 
-  LoadRequestData data(extension_id);
+  LoadRequestData data(extension_id, extension->version());
 
   // Calculate available shared rule limits. These limits won't be affected by
   // another simultaneous api call since we ensure that for a given extension,
@@ -662,7 +664,7 @@ void RulesMonitorService::UpdateSessionRulesInternal(
     // There is no enabled extension to respond to. While this is probably a
     // no-op, still dispatch the callback to ensure any related bookkeeping is
     // done.
-    std::move(callback).Run(absl::nullopt /* error */);
+    std::move(callback).Run(std::nullopt /* error */);
     return;
   }
 
@@ -726,7 +728,7 @@ void RulesMonitorService::UpdateSessionRulesInternal(
 
   session_rules_[extension_id] = std::move(new_rules_value);
   UpdateRulesetMatcher(*extension, std::move(matcher));
-  std::move(callback).Run(absl::nullopt /* error */);
+  std::move(callback).Run(std::nullopt /* error */);
 }
 
 void RulesMonitorService::UpdateEnabledStaticRulesetsInternal(
@@ -740,11 +742,11 @@ void RulesMonitorService::UpdateEnabledStaticRulesetsInternal(
     // There is no enabled extension to respond to. While this is probably a
     // no-op, still dispatch the callback to ensure any related bookkeeping is
     // done.
-    std::move(callback).Run(absl::nullopt /* error */);
+    std::move(callback).Run(std::nullopt /* error */);
     return;
   }
 
-  LoadRequestData load_data(extension_id);
+  LoadRequestData load_data(extension_id, extension->version());
   int expected_ruleset_checksum = -1;
   for (const RulesetID& id_to_enable : ids_to_enable) {
     const DNRManifestData::RulesetInfo& info =
@@ -781,7 +783,7 @@ void RulesMonitorService::UpdateStaticRulesInternal(
     // There is no enabled extension to respond to. While this is probably a
     // no-op, still dispatch the callback to ensure any related bookkeeping is
     // done.
-    std::move(callback).Run(absl::nullopt /* error */);
+    std::move(callback).Run(std::nullopt /* error */);
     return;
   }
 
@@ -795,7 +797,7 @@ void RulesMonitorService::UpdateStaticRulesInternal(
   }
 
   if (!result.changed) {
-    std::move(callback).Run(absl::nullopt /* error */);
+    std::move(callback).Run(std::nullopt /* error */);
     return;
   }
 
@@ -812,7 +814,7 @@ void RulesMonitorService::UpdateStaticRulesInternal(
     }
   }
 
-  std::move(callback).Run(absl::nullopt /* error */);
+  std::move(callback).Run(std::nullopt /* error */);
 }
 
 void RulesMonitorService::GetDisabledRuleIdsInternal(
@@ -845,11 +847,16 @@ void RulesMonitorService::OnInitialRulesetsLoadedFromDisk(
   LogMetricsAndUpdateChecksumsIfNeeded(load_data);
 
   // It's possible that the extension has been disabled since the initial load
-  // ruleset request. If it's disabled, do nothing.
+  // ruleset request, or the extension was updated to a new version while the
+  // ruleset for the old version was still loading (and is thus stale). In
+  // either case, do nothing.
+  // TODO(crbug.com/1493992, crbug.com/1386010): Add a test which will cause
+  // this block to be hit when the extension updates.
   const Extension* extension =
       extension_registry_->enabled_extensions().GetByID(load_data.extension_id);
-  if (!extension)
+  if (!extension || (load_data.extension_version != extension->version())) {
     return;
+  }
 
   // Load session-scoped ruleset.
   std::vector<api::declarative_net_request::Rule> session_rules =
@@ -886,7 +893,7 @@ void RulesMonitorService::OnInitialRulesetsLoadedFromDisk(
   RuleCounts static_rule_limit(
       global_rules_tracker_.GetAvailableAllocation(load_data.extension_id) +
           GetStaticGuaranteedMinimumRuleCount(),
-      /*unsafe_rule_count=*/absl::nullopt, GetRegexRuleLimit());
+      /*unsafe_rule_count=*/std::nullopt, GetRegexRuleLimit());
 
   for (RulesetInfo& ruleset : load_data.rulesets) {
     if (!ruleset.did_load_successfully()) {
@@ -964,7 +971,7 @@ void RulesMonitorService::OnNewStaticRulesetsLoaded(
       load_data.extension_id, ExtensionRegistry::ENABLED);
   if (!extension) {
     // Still dispatch the |callback|, even though it's probably a no-op.
-    std::move(callback).Run(absl::nullopt /* error */);
+    std::move(callback).Run(std::nullopt /* error */);
     return;
   }
 
@@ -1065,13 +1072,13 @@ void RulesMonitorService::OnNewStaticRulesetsLoaded(
                                         matcher->ComputeStaticRulesetIDs());
   }
 
-  std::move(callback).Run(absl::nullopt);
+  std::move(callback).Run(std::nullopt);
 }
 
 void RulesMonitorService::OnDynamicRulesUpdated(
     ApiCallback callback,
     LoadRequestData load_data,
-    absl::optional<std::string> error) {
+    std::optional<std::string> error) {
   DCHECK_EQ(1u, load_data.rulesets.size());
 
   const bool has_error = error.has_value();

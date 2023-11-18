@@ -16,7 +16,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/app_mode/kiosk_chrome_app_manager.h"
 #include "chrome/browser/ash/login/saml/password_sync_token_checkers_collection.h"
 #include "chrome/browser/ash/login/screens/encryption_migration_mode.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
@@ -93,6 +93,11 @@ class ExistingUserController : public content::NotificationObserver,
   // Ignore password change, remove existing cryptohome and force full sync of
   // user data.
   void ResyncUserData();
+
+  // Resumes login process once local authentication is completed.
+  void ResumeAfterLocalAuthentication(std::unique_ptr<UserContext>);
+  // Invoked if login process was cancelled at local authentication.
+  void OnLocalAuthenticationCancelled();
 
   // Returns name of the currently connected network, for error message,
   std::u16string GetConnectedNetworkName() const;
@@ -178,6 +183,8 @@ class ExistingUserController : public content::NotificationObserver,
   void OnOffTheRecordAuthSuccess() override;
   void OnPasswordChangeDetectedLegacy(const UserContext& user_context) override;
   void OnPasswordChangeDetected(std::unique_ptr<UserContext>) override;
+  void OnLocalAuthenticationRequired(
+      std::unique_ptr<UserContext> user_context) override;
   void OnOldEncryptionDetected(std::unique_ptr<UserContext>,
                                bool has_incomplete_migration) override;
   void AllowlistCheckFailed(const std::string& email) override;
@@ -194,6 +201,7 @@ class ExistingUserController : public content::NotificationObserver,
 
   // UserSessionManagerDelegate implementation:
   void OnProfilePrepared(Profile* profile, bool browser_launched) override;
+  base::WeakPtr<UserSessionManagerDelegate> AsWeakPtr() override;
 
   // Called when device settings change.
   void DeviceSettingsChanged();
@@ -206,7 +214,7 @@ class ExistingUserController : public content::NotificationObserver,
   // Handles result of consumer kiosk configurability check and starts
   // enable kiosk screen if applicable.
   void OnConsumerKioskAutoLaunchCheckCompleted(
-      KioskAppManager::ConsumerKioskAutoLaunchStatus status);
+      KioskChromeAppManager::ConsumerKioskAutoLaunchStatus status);
 
   // Shows privacy notification in case of auto lunch managed guest session.
   void ShowAutoLaunchManagedGuestSessionNotification();
@@ -298,11 +306,6 @@ class ExistingUserController : public content::NotificationObserver,
   // Clear the recorded displayed email, displayed name, given name so it won't
   // affect any future attempts.
   void ClearRecordedNames();
-
-  // Restart authpolicy daemon in case of Active Directory authentication.
-  // Used to prevent data from leaking from one user session into another.
-  // Should be called to cancel AuthPolicyHelper::TryAuthenticateUser call.
-  void ClearActiveDirectoryState();
 
   // Public session auto-login timer.
   std::unique_ptr<base::OneShotTimer> auto_login_timer_;

@@ -5,9 +5,11 @@
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 import(
+    "//chrome/browser/resources/chromeos/accessibility/tools/generate_message_formatting_data.gni")
+import(
     "//chrome/browser/resources/chromeos/accessibility/tools/run_jsbundler.gni")
 import("//chrome/common/features.gni")
-import("//chrome/test/base/js2gtest.gni")
+import("//chrome/test/base/ash/js2gtest.gni")
 import("//testing/test.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 
@@ -121,7 +123,7 @@ chromevox_es6_modules = [
   "background/primary_tts.js",
   "background/tts_background.js",
   "background/tts_interface.js",
-  "background/user_action_monitor.js",
+  "background/forced_action_path.js",
   "common/background_bridge.js",
   "common/braille/braille_command_data.js",
   "common/braille/braille_key_types.js",
@@ -159,6 +161,7 @@ chromevox_es6_modules = [
   "panel/i_search_ui.js",
   "panel/menu_manager.js",
   "panel/panel.js",
+  "panel/panel_captions.js",
   "panel/panel_interface.js",
   "panel/panel_menu.js",
   "panel/panel_menu_item.js",
@@ -201,6 +204,11 @@ group("build") {
 
 chromevox_background_script_loader_file = "background/loader.js"
 chromevox_panel_script_loader_file = "panel/panel_loader.js"
+
+generate_message_formatting_data("i18n_data") {
+  inputs = [ "//third_party/cldr/src/common/supplemental/plurals.xml" ]
+  output_dir = "$chromevox_out_dir/common"
+}
 
 # Instead of setting up one copy target for each subdirectory, use a script
 # to copy all files.
@@ -274,7 +282,7 @@ template("generate_deps_js") {
 action("chromevox_phonetic_dictionaries_js") {
   script = "tools/phonetic_dictionaries.py"
   src_dir = [ "$root_out_dir/resources/chromeos/accessibility/_locales" ]
-  output_file = "$chromevox_out_dir/phonetic_dictionaries.js"
+  output_file = "$chromevox_out_dir/background/phonetic_dictionaries.js"
   outputs = [ output_file ]
   deps = [
     "//chrome/browser/resources/chromeos/accessibility:accessibility_strings",
@@ -375,7 +383,6 @@ if (is_chromeos_ash) {
       "../common/testing/accessibility_test_base.js",
       "../common/testing/assert_additions.js",
       "../common/testing/callback_helper.js",
-      "../common/closure_shim.js",
       "background/braille/expanding_braille_translator.js",
       "background/braille/pan_strategy.js",
       "background/braille/spans.js",
@@ -409,6 +416,7 @@ if (is_chromeos_ash) {
       "background/editing/editing_test.js",
       "background/editing/intent_handler_test.js",
       "background/event/desktop_automation_handler_test.js",
+      "background/forced_action_path_test.js",
       "background/input/keyboard_handler_test.js",
       "background/input/smart_sticky_mode_test.js",
       "background/live_regions_test.js",
@@ -420,7 +428,6 @@ if (is_chromeos_ash) {
       "background/portals_test.js",
       "background/settings_test.js",
       "background/tts_background_test.js",
-      "background/user_action_monitor_test.js",
       "common/braille/braille_command_data_test.js",
       "common/braille/braille_table_test.js",
       "common/locale_output_helper_test.js",

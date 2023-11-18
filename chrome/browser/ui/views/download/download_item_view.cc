@@ -1040,6 +1040,7 @@ ui::ImageModel DownloadItemView::GetIcon() const {
     case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING:
       return kWarning;
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
+    case download::DOWNLOAD_DANGER_TYPE_ASYNC_LOCAL_PASSWORD_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_LOCAL_PASSWORD_SCANNING:
       return kInfo;
@@ -1239,7 +1240,7 @@ void DownloadItemView::ShowOpenDialog(content::WebContents* web_contents) {
                        DownloadCommands::DEEP_SCAN),
         base::BindOnce(&DownloadItemView::ExecuteCommand,
                        weak_ptr_factory_.GetWeakPtr(),
-                       DownloadCommands::BYPASS_DEEP_SCANNING));
+                       DownloadCommands::BYPASS_DEEP_SCANNING_AND_OPEN));
   }
 }
 

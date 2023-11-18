@@ -29,69 +29,69 @@ namespace {
 constexpr base::FeatureParam<std::string> kPreloadingConfigParam{
     &features::kPreloadingConfig, "preloading_config", R"(
 [{
-  "preloading_type": "Prerender",
-  "preloading_predictor": "SpeculationRulesFromIsolatedWorld",
-  "sampling_likelihood": 1.000000
-}, {
-  "preloading_type": "Prefetch",
-  "preloading_predictor": "OmniboxSearchPredictor",
-  "sampling_likelihood": 1.000000
-}, {
-  "preloading_type": "Prefetch",
-  "preloading_predictor": "OmniboxMousePredictor",
-  "sampling_likelihood": 1.000000
-}, {
-  "preloading_type": "Prerender",
-  "preloading_predictor": "PointerDownOnBookmarkBar",
-  "sampling_likelihood": 1.000000
-}, {
-  "preloading_type": "Prerender",
-  "preloading_predictor": "SpeculationRules",
-  "sampling_likelihood": 1.000000
-}, {
-  "preloading_type": "NoStatePrefetch",
-  "preloading_predictor": "OmniboxDirectURLInput",
-  "sampling_likelihood": 1.000000
-}, {
-  "preloading_type": "Prerender",
-  "preloading_predictor": "MouseHoverOnBookmarkBar",
-  "sampling_likelihood": 0.928087
-}, {
-  "preloading_type": "Prerender",
-  "preloading_predictor": "DefaultSearchEngine",
-  "sampling_likelihood": 0.762589
-}, {
-  "preloading_type": "Prerender",
-  "preloading_predictor": "BackGestureNavigation",
-  "sampling_likelihood": 0.334136
-}, {
-  "preloading_type": "Prerender",
-  "preloading_predictor": "MouseBackButton",
-  "sampling_likelihood": 0.111881
-}, {
-  "preloading_type": "Prefetch",
-  "preloading_predictor": "DefaultSearchEngine",
-  "sampling_likelihood": 0.023220
-}, {
-  "preloading_type": "Prerender",
-  "preloading_predictor": "OmniboxDirectURLInput",
-  "sampling_likelihood": 0.013281
-}, {
-  "preloading_type": "Prerender",
-  "preloading_predictor": "BackButtonHover",
-  "sampling_likelihood": 0.010158
-}, {
   "preloading_type": "NoStatePrefetch",
   "preloading_predictor": "LinkRel",
-  "sampling_likelihood": 0.008495
+  "sampling_likelihood": "0.007824"
 }, {
-  "preloading_type": "Prefetch",
-  "preloading_predictor": "SpeculationRules",
-  "sampling_likelihood": 0.004013
+  "preloading_type": "NoStatePrefetch",
+  "preloading_predictor": "OmniboxDirectURLInput",
+  "sampling_likelihood": "1.000000"
 }, {
   "preloading_type": "Preconnect",
   "preloading_predictor": "PointerDownOnAnchor",
-  "sampling_likelihood": 0.000190
+  "sampling_likelihood": "0.000190"
+}, {
+  "preloading_type": "Prefetch",
+  "preloading_predictor": "DefaultSearchEngine",
+  "sampling_likelihood": "0.023205"
+}, {
+  "preloading_type": "Prefetch",
+  "preloading_predictor": "OmniboxMousePredictor",
+  "sampling_likelihood": "1.000000"
+}, {
+  "preloading_type": "Prefetch",
+  "preloading_predictor": "OmniboxSearchPredictor",
+  "sampling_likelihood": "1.000000"
+}, {
+  "preloading_type": "Prefetch",
+  "preloading_predictor": "SpeculationRules",
+  "sampling_likelihood": "0.004185"
+}, {
+  "preloading_type": "Prerender",
+  "preloading_predictor": "BackButtonHover",
+  "sampling_likelihood": "0.010113"
+}, {
+  "preloading_type": "Prerender",
+  "preloading_predictor": "BackGestureNavigation",
+  "sampling_likelihood": "0.340065"
+}, {
+  "preloading_type": "Prerender",
+  "preloading_predictor": "DefaultSearchEngine",
+  "sampling_likelihood": "0.057099"
+}, {
+  "preloading_type": "Prerender",
+  "preloading_predictor": "MouseBackButton",
+  "sampling_likelihood": "0.111760"
+}, {
+  "preloading_type": "Prerender",
+  "preloading_predictor": "MouseHoverOnBookmarkBar",
+  "sampling_likelihood": "0.306493"
+}, {
+  "preloading_type": "Prerender",
+  "preloading_predictor": "OmniboxDirectURLInput",
+  "sampling_likelihood": "0.010774"
+}, {
+  "preloading_type": "Prerender",
+  "preloading_predictor": "PointerDownOnBookmarkBar",
+  "sampling_likelihood": "1.000000"
+}, {
+  "preloading_type": "Prerender",
+  "preloading_predictor": "SpeculationRules",
+  "sampling_likelihood": "1.000000"
+}, {
+  "preloading_type": "Prerender",
+  "preloading_predictor": "SpeculationRulesFromIsolatedWorld",
+  "sampling_likelihood": "1.000000"
 }]
 )"};
 

@@ -90,9 +90,6 @@ void DumpAccessibilityTreeTest::SetUpCommandLine(
   // Enable KeyboardFocusableScrollers, used by AccessibilityScrollableOverflow.
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kEnableBlinkFeatures, "KeyboardFocusableScrollers");
-  // Enable HighlightAPI, used by AccessibilityCSSPseudoElementHighligh.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnableBlinkFeatures, "HighlightAPI");
   // Enable ARIA touch pass through, used by AccessibilityAriaTouchPassthrough.
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kEnableBlinkFeatures, "AccessibilityAriaTouchPassthrough");
@@ -131,6 +128,7 @@ void DumpAccessibilityTreeTest::ChooseFeatures(
       features::kEnableAccessibilityExposeHTMLElement);
   enabled_features->emplace_back(
       features::kEnableAccessibilityAriaVirtualContent);
+  enabled_features->emplace_back(features::kAugmentExistingImageLabels);
   DumpAccessibilityTestBase::ChooseFeatures(enabled_features,
                                             disabled_features);
 }
@@ -157,6 +155,26 @@ struct DumpAccessibilityTreeTestPassToString {
   }
 };
 
+class YieldingParserDumpAccessibilityTreeTest
+    : public DumpAccessibilityTreeTest {
+ protected:
+  YieldingParserDumpAccessibilityTreeTest() {
+    feature_list_.InitWithFeatures(
+        {{blink::features::kHTMLParserYieldAndDelayOftenForTesting}},
+        {/* disabled_features */});
+  }
+
+  ~YieldingParserDumpAccessibilityTreeTest() override {
+    // Ensure that the feature lists are destroyed in the same order they
+    // were created in.
+    scoped_feature_list_.Reset();
+    feature_list_.Reset();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // TODO(https://crbug.com/1470120): We need to create a way to incrementally
 // enable and create UIA tests.
 INSTANTIATE_TEST_SUITE_P(
@@ -175,6 +193,12 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     DumpAccessibilityTreeTestWithIgnoredNodes,
     ::testing::ValuesIn(DumpAccessibilityTestBase::TreeTestPasses()),
+    DumpAccessibilityTreeTestPassToString());
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    YieldingParserDumpAccessibilityTreeTest,
+    ::testing::ValuesIn(DumpAccessibilityTestBase::TreeTestPassesExceptUIA()),
     DumpAccessibilityTreeTestPassToString());
 
 // TODO(crbug.com/1428967): Flaky on asan of linux, chromeos and win.
@@ -1131,13 +1155,32 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaOwnsCrash2) {
   RunAriaTest(FILE_PATH_LITERAL("aria-owns-crash-2.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaOwnsFromTextarea) {
+  RunRegressionTest(FILE_PATH_LITERAL("aria-owns-from-textarea.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaOwnsGrid) {
   RunAriaTest(FILE_PATH_LITERAL("aria-owns-grid.html"));
 }
 
+// TODO(crbug.com/1503056): Enable flaky tests
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_AccessibilityAriaTwoOwnersRemoveOne \
+  DISABLED_AccessibilityAriaTwoOwnersRemoveOne
+#else
+#define MAYBE_AccessibilityAriaTwoOwnersRemoveOne \
+  AccessibilityAriaTwoOwnersRemoveOne
+#endif  // BUILDFLAG(IS_LINUX)
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityAriaTwoOwnersRemoveOne) {
+                       MAYBE_AccessibilityAriaTwoOwnersRemoveOne) {
   RunAriaTest(FILE_PATH_LITERAL("aria-two-owners-remove-one.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaOwnsReparentAboveOtherChangeCrash) {
+  RunRegressionTest(
+      FILE_PATH_LITERAL("aria-owns-reparent-above-other-change-crash.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
@@ -1150,16 +1193,13 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunAriaTest(FILE_PATH_LITERAL("aria-owns-included-in-tree.html"));
 }
 
-// TODO(crbug.com/1367886): Test flaky on win-asan. Renable it.
-#if BUILDFLAG(IS_WIN) && defined(ADDRESS_SANITIZER)
-#define MAYBE_AccessibilityAriaOwnsFromDisplayNone \
-  DISABLED_AccessibilityAriaOwnsFromDisplayNone
-#else
-#define MAYBE_AccessibilityAriaOwnsFromDisplayNone \
-  AccessibilityAriaOwnsFromDisplayNone
-#endif
+IN_PROC_BROWSER_TEST_P(YieldingParserDumpAccessibilityTreeTest,
+                       AccessibilityAriaOwnsFromDisplayNone) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-owns-from-display-none.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       MAYBE_AccessibilityAriaOwnsFromDisplayNone) {
+                       AccessibilityAriaOwnsFromDisplayNone) {
   RunAriaTest(FILE_PATH_LITERAL("aria-owns-from-display-none.html"));
 }
 
@@ -1545,9 +1585,13 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("aside-inside-section-role-generic.html"));
 }
 
-// https://crbug.com/923993
-// Super flaky with NetworkService.
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DISABLED_AccessibilityAudio) {
+// TODO(crbug.com/1502854): Fix failure on android
+#if BUILDFLAG(IS_ANDROID)
+#define MAYBE_AccessibilityAudio DISABLED_AccessibilityAudio
+#else
+#define MAYBE_AccessibilityAudio AccessibilityAudio
+#endif
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MAYBE_AccessibilityAudio) {
   RunHtmlTest(FILE_PATH_LITERAL("audio.html"));
 }
 
@@ -2212,6 +2256,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("img-link-empty-alt.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityImgLinkEmptyAltSet) {
+  RunHtmlTest(FILE_PATH_LITERAL("img-link-empty-alt-set.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityImgMimeType) {
   RunHtmlTest(FILE_PATH_LITERAL("img-mime-type.png"));  // Open an image file.
 }
@@ -2417,13 +2466,12 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInputSearch) {
   RunHtmlTest(FILE_PATH_LITERAL("input-search.html"));
 }
 
-// TODO(crbug.com/1480429): failing on Linux, Lacros ASAN and chromeos
-#if (BUILDFLAG(IS_CHROMEOS_LACROS) && defined(ADDRESS_SANITIZER)) || \
-    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
+// TODO(crbug.com/1503056): Enable flaky tests
+#if BUILDFLAG(IS_LINUX)
 #define MAYBE_AccessibilityInsertBefore DISABLED_AccessibilityInsertBefore
 #else
 #define MAYBE_AccessibilityInsertBefore AccessibilityInsertBefore
-#endif
+#endif  // BUILDFLAG(IS_LINUX)
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        MAYBE_AccessibilityInsertBefore) {
   RunHtmlTest(FILE_PATH_LITERAL("insert-before.html"));
@@ -3020,7 +3068,14 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilitySelect) {
   RunHtmlTest(FILE_PATH_LITERAL("select.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilitySelectInCanvas) {
+// Flaky on Android and linux-chromeos-dbg - crbug.com/1367886
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_AccessibilitySelectInCanvas DISABLED_AccessibilitySelectInCanvas
+#else
+#define MAYBE_AccessibilitySelectInCanvas AccessibilitySelectInCanvas
+#endif
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       MAYBE_AccessibilitySelectInCanvas) {
   RunHtmlTest(FILE_PATH_LITERAL("select-in-canvas.html"));
 }
 
@@ -3098,32 +3153,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityStyle) {
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilitySub) {
   RunHtmlTest(FILE_PATH_LITERAL("sub.html"));
 }
-
-class YieldingParserDumpAccessibilityTreeTest
-    : public DumpAccessibilityTreeTest {
- protected:
-  YieldingParserDumpAccessibilityTreeTest() {
-    feature_list_.InitWithFeatures(
-        {{blink::features::kHTMLParserYieldAndDelayOftenForTesting}},
-        {/* disabled_features */});
-  }
-
-  ~YieldingParserDumpAccessibilityTreeTest() override {
-    // Ensure that the feature lists are destroyed in the same order they
-    // were created in.
-    scoped_feature_list_.Reset();
-    feature_list_.Reset();
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    YieldingParserDumpAccessibilityTreeTest,
-    ::testing::ValuesIn(DumpAccessibilityTestBase::TreeTestPassesExceptUIA()),
-    DumpAccessibilityTreeTestPassToString());
 
 // TODO(crbug.com/1480429): Flaky
 #if BUILDFLAG(IS_MAC)
@@ -3292,9 +3321,16 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 }
 
 // TODO(https://crbug.com/1367886): Flaky on ASan builders.
-IN_PROC_BROWSER_TEST_P(
-    DumpAccessibilityTreeTest,
-    MAYBE_ASAN(AccessibilityTableMultipleRowAndColumnHeaders)) {
+// TODO(https://crbug.com/1503056): Flaky on linux-chromeos-dbg.
+#if BUILDFLAG(IS_CHROMEOS) || defined(ADDRESS_SANITIZER)
+#define MAYBE_AccessibilityTableMultipleRowAndColumnHeaders \
+  DISABLED_AccessibilityTableMultipleRowAndColumnHeaders
+#else
+#define MAYBE_AccessibilityTableMultipleRowAndColumnHeaders \
+  AccessibilityTableMultipleRowAndColumnHeaders
+#endif
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       MAYBE_AccessibilityTableMultipleRowAndColumnHeaders) {
   RunHtmlTest(FILE_PATH_LITERAL("table-multiple-row-and-column-headers.html"));
 }
 
@@ -3564,8 +3600,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, XmlInIframeCrash) {
   RunRegressionTest(FILE_PATH_LITERAL("xml-in-iframe-crash.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, ActivedescendantCrash) {
-  RunRegressionTest(FILE_PATH_LITERAL("activedescendant-crash.html"));
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       RelationPointsToInvalidNodesCrash) {
+  RunRegressionTest(
+      FILE_PATH_LITERAL("relation-points-to-invalid-nodes-crash.html"));
 }
 
 // TODO(crbug.com/1191098): Test is flaky on all platforms.
@@ -3639,13 +3677,7 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, ReusedMap) {
   RunRegressionTest(FILE_PATH_LITERAL("reused-map.html"));
 }
 
-// TODO(crbug.com/1480429): failing on linux and chromeos
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-#define MAYBE_ReusedMapMoveImage DISABLED_ReusedMapMoveImage
-#else
-#define MAYBE_ReusedMapMoveImage ReusedMapMoveImage
-#endif
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MAYBE_ReusedMapMoveImage) {
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, ReusedMapMoveImage) {
   RunRegressionTest(FILE_PATH_LITERAL("reused-map-move-image.html"));
 }
 

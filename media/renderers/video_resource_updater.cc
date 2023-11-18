@@ -37,6 +37,7 @@
 #include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/client_shared_image.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_capabilities.h"
@@ -550,10 +551,12 @@ class VideoResourceUpdater::HardwarePlaneResource
           gfx::BufferUsage::SCANOUT,
           SinglePlaneSharedImageFormatToBufferFormat(format), caps);
     }
-    mailbox_ = sii->CreateSharedImage(
+    auto client_shared_image = sii->CreateSharedImage(
         format, size, color_space, kTopLeft_GrSurfaceOrigin,
         kPremul_SkAlphaType, shared_image_usage, "VideoResourceUpdater",
         gpu::kNullSurfaceHandle);
+    CHECK(client_shared_image);
+    mailbox_ = client_shared_image->mailbox();
     InterfaceBase()->WaitSyncTokenCHROMIUM(
         sii->GenUnverifiedSyncToken().GetConstData());
   }
@@ -929,7 +932,6 @@ VideoResourceUpdater::PlaneResource* VideoResourceUpdater::AllocateResource(
 
 void VideoResourceUpdater::CopyHardwarePlane(
     VideoFrame* video_frame,
-    const gfx::ColorSpace& resource_color_space,
     const gpu::MailboxHolder& mailbox_holder,
     VideoFrameExternalResources* external_resources) {
   const gfx::Size output_plane_resource_size = video_frame->coded_size();
@@ -938,11 +940,14 @@ void VideoResourceUpdater::CopyHardwarePlane(
   constexpr viz::SharedImageFormat copy_si_format =
       viz::SinglePlaneFormat::kRGBA_8888;
 
+  // We copy to RGBA image, so we need only RGBA portion of the color space.
+  const auto copy_color_space = video_frame->ColorSpace().GetAsFullRangeRGB();
+
   const VideoFrame::ID no_unique_id;
   const int no_plane_index = -1;  // Do not recycle referenced textures.
-  PlaneResource* plane_resource = RecycleOrAllocateResource(
-      output_plane_resource_size, copy_si_format, resource_color_space,
-      no_unique_id, no_plane_index);
+  PlaneResource* plane_resource =
+      RecycleOrAllocateResource(output_plane_resource_size, copy_si_format,
+                                copy_color_space, no_unique_id, no_plane_index);
   HardwarePlaneResource* hardware_resource = plane_resource->AsHardware();
   hardware_resource->add_ref();
 
@@ -1000,7 +1005,7 @@ void VideoResourceUpdater::CopyHardwarePlane(
       output_plane_resource_size, copy_si_format,
       false /* is_overlay_candidate */,
       viz::TransferableResource::ResourceSource::kVideo);
-  transferable_resource.color_space = resource_color_space;
+  transferable_resource.color_space = copy_color_space;
   external_resources->resources.push_back(std::move(transferable_resource));
 
   external_resources->release_callbacks.push_back(base::BindOnce(
@@ -1010,14 +1015,13 @@ void VideoResourceUpdater::CopyHardwarePlane(
 
 VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
     scoped_refptr<VideoFrame> video_frame) {
-  TRACE_EVENT0("cc", "VideoResourceUpdater::CreateForHardwarePlanes");
+  TRACE_EVENT0("media", "VideoResourceUpdater::CreateForHardwarePlanes");
   DCHECK(video_frame->HasTextures());
   if (!context_provider_) {
     return VideoFrameExternalResources();
   }
 
   VideoFrameExternalResources external_resources;
-  gfx::ColorSpace resource_color_space = video_frame->ColorSpace();
 
   const bool copy_required = video_frame->metadata().copy_required;
 
@@ -1036,13 +1040,6 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
                 << VideoPixelFormatToString(video_frame->format());
     return external_resources;
   }
-  absl::optional<gfx::ColorSpace> resource_color_space_when_sampled;
-  if (external_resources.type == VideoFrameResourceType::RGB ||
-      external_resources.type == VideoFrameResourceType::RGBA ||
-      external_resources.type == VideoFrameResourceType::RGBA_PREMULTIPLIED) {
-    resource_color_space_when_sampled =
-        resource_color_space.GetAsFullRangeRGB();
-  }
 
   const size_t num_textures = video_frame->NumTextures();
   if (video_frame->shared_image_format_type() !=
@@ -1060,10 +1057,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
       break;
 
     if (copy_required) {
-      CopyHardwarePlane(
-          video_frame.get(),
-          resource_color_space_when_sampled.value_or(resource_color_space),
-          mailbox_holder, &external_resources);
+      CopyHardwarePlane(video_frame.get(), mailbox_holder, &external_resources);
     } else {
       const size_t width = video_frame->columns(i);
       const size_t height = video_frame->rows(i);
@@ -1073,9 +1067,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
           mailbox_holder.sync_token, plane_size, si_formats[i],
           video_frame->metadata().allow_overlay,
           viz::TransferableResource::ResourceSource::kVideo);
-      transfer_resource.color_space = resource_color_space;
-      transfer_resource.color_space_when_sampled =
-          resource_color_space_when_sampled;
+      transfer_resource.color_space = video_frame->ColorSpace();
       transfer_resource.hdr_metadata =
           video_frame->hdr_metadata().value_or(gfx::HDRMetadata());
       if (video_frame->metadata().read_lock_fences_enabled) {
@@ -1105,7 +1097,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
 
 VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     scoped_refptr<VideoFrame> video_frame) {
-  TRACE_EVENT0("cc", "VideoResourceUpdater::CreateForSoftwarePlanes");
+  TRACE_EVENT0("media", "VideoResourceUpdater::CreateForSoftwarePlanes");
   const VideoPixelFormat input_frame_format = video_frame->format();
 
   size_t bits_per_channel = video_frame->BitDepth();
@@ -1413,8 +1405,17 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     const size_t upload_image_stride = cc::MathUtil::CheckedRoundUp<size_t>(
         bytes_per_row, kDefaultUnpackAlignment);
 
-    const size_t resource_bit_depth =
+    size_t resource_bit_depth =
         static_cast<size_t>(plane_si_format.BitsPerPixel());
+    // BitsPerPixel calculates bit depth for multiple channels together. So for
+    // planar formats that represent UV channels we need to divide by the number
+    // of channels.
+    if (plane_si_format == viz::SinglePlaneFormat::kRG_88 ||
+        plane_si_format == viz::SinglePlaneFormat::kRG_1616) {
+      resource_bit_depth /= 2;
+    }
+
+    CHECK_LE(resource_bit_depth, 16u);
 
     // Data downshifting is needed if the resource bit depth is not enough.
     const bool needs_bit_downshifting = bits_per_channel > resource_bit_depth;

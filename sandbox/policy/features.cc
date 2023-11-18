@@ -4,6 +4,7 @@
 
 #include "sandbox/policy/features.h"
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "sandbox/features.h"
@@ -80,7 +81,7 @@ BASE_FEATURE(kWinSboxRendererCloseKsecDD,
 // up `advapi32!RtlGenRandom`.
 BASE_FEATURE(kWinSboxWarmupProcessPrng,
              "WinSboxWarmupProcessPrng",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, launch the network service within an LPAC sandbox. If disabled,
 // the network service will run inside an App Container.
@@ -103,11 +104,12 @@ BASE_FEATURE(kWinSboxZeroAppShim,
              "WinSboxZeroAppShim",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Emergency off-switch for FSCTL mitigation.
 // If enabled, applies the FSCTL syscall lockdown mitigation to all sandboxed
 // processes, if supported by the OS.
 BASE_FEATURE(kWinSboxFsctlLockdown,
              "WinSboxFsctlLockdown",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -126,6 +128,31 @@ BASE_FEATURE(kForceSpectreVariant2Mitigation,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+// Enabling the kNetworkServiceSandbox feature automatically enables Spectre
+// variant 2 mitigations in the network service. This can lead to performance
+// regressions, so enabling this feature will turn off the Spectre Variant 2
+// mitigations.
+//
+// On ChromeOS Ash, this overrides the system-wide kSpectreVariant2Mitigation
+// feature above, but not the user-controlled kForceSpectreVariant2Mitigation
+// feature.
+BASE_FEATURE(kForceDisableSpectreVariant2MitigationInNetworkService,
+             "kForceDisableSpectreVariant2MitigationInNetworkService",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Increase the renderer sandbox memory limit. As of 2023, there are no limits
+// on macOS, and a 1TiB limit on Windows. There are reports of users bumping
+// into the limit. This increases the limit by 2x compared to the default
+// state. We are not increasing it all the way as on Windows as Linux systems
+// typically ship with overcommit, so there is no "commit limit" to save us
+// from egregious cases as on Windows.
+BASE_FEATURE(kHigherRendererMemoryLimit,
+             "HigherRendererMemoryLimit",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+
 #if BUILDFLAG(IS_MAC)
 // Enables caching compiled sandbox profiles. Only some profiles support this,
 // as controlled by CanCacheSandboxPolicy().
@@ -138,6 +165,11 @@ BASE_FEATURE(kCacheMacSandboxProfiles,
 // Enables the renderer on Android to use a separate seccomp policy.
 BASE_FEATURE(kUseRendererProcessPolicy,
              "UseRendererProcessPolicy",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+// When enabled, this features restricts a set of syscalls in
+// BaselinePolicyAndroid that are used by RendererProcessPolicy.
+BASE_FEATURE(kRestrictRendererPoliciesInBaseline,
+             "RestrictRendererPoliciesInBaseline",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_ANDROID)
 

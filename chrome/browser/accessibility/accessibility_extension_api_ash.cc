@@ -73,12 +73,11 @@ using ::ash::AccessibilityManager;
 ash::AccessibilityToastType ConvertToastType(
     accessibility_private::ToastType type) {
   switch (type) {
-    case accessibility_private::ToastType::
-        TOAST_TYPE_DICTATIONNOFOCUSEDTEXTFIELD:
+    case accessibility_private::ToastType::kDictationNoFocusedTextField:
       return ash::AccessibilityToastType::kDictationNoFocusedTextField;
-    case accessibility_private::ToastType::TOAST_TYPE_DICTATIONMICMUTED:
+    case accessibility_private::ToastType::kDictationMicMuted:
       return ash::AccessibilityToastType::kDictationMicMuted;
-    case accessibility_private::ToastType::TOAST_TYPE_NONE:
+    case accessibility_private::ToastType::kNone:
       NOTREACHED_NORETURN();
   }
 }
@@ -86,32 +85,23 @@ ash::AccessibilityToastType ConvertToastType(
 ash::DictationBubbleHintType ConvertDictationHintType(
     accessibility_private::DictationBubbleHintType hint_type) {
   switch (hint_type) {
-    case accessibility_private::DictationBubbleHintType::
-        DICTATION_BUBBLE_HINT_TYPE_TRYSAYING:
+    case accessibility_private::DictationBubbleHintType::kTrySaying:
       return ash::DictationBubbleHintType::kTrySaying;
-    case accessibility_private::DictationBubbleHintType::
-        DICTATION_BUBBLE_HINT_TYPE_TYPE:
+    case accessibility_private::DictationBubbleHintType::kType:
       return ash::DictationBubbleHintType::kType;
-    case accessibility_private::DictationBubbleHintType::
-        DICTATION_BUBBLE_HINT_TYPE_DELETE:
+    case accessibility_private::DictationBubbleHintType::kDelete:
       return ash::DictationBubbleHintType::kDelete;
-    case accessibility_private::DictationBubbleHintType::
-        DICTATION_BUBBLE_HINT_TYPE_SELECTALL:
+    case accessibility_private::DictationBubbleHintType::kSelectAll:
       return ash::DictationBubbleHintType::kSelectAll;
-    case accessibility_private::DictationBubbleHintType::
-        DICTATION_BUBBLE_HINT_TYPE_UNDO:
+    case accessibility_private::DictationBubbleHintType::kUndo:
       return ash::DictationBubbleHintType::kUndo;
-    case accessibility_private::DictationBubbleHintType::
-        DICTATION_BUBBLE_HINT_TYPE_HELP:
+    case accessibility_private::DictationBubbleHintType::kHelp:
       return ash::DictationBubbleHintType::kHelp;
-    case accessibility_private::DictationBubbleHintType::
-        DICTATION_BUBBLE_HINT_TYPE_UNSELECT:
+    case accessibility_private::DictationBubbleHintType::kUnselect:
       return ash::DictationBubbleHintType::kUnselect;
-    case accessibility_private::DictationBubbleHintType::
-        DICTATION_BUBBLE_HINT_TYPE_COPY:
+    case accessibility_private::DictationBubbleHintType::kCopy:
       return ash::DictationBubbleHintType::kCopy;
-    case accessibility_private::DictationBubbleHintType::
-        DICTATION_BUBBLE_HINT_TYPE_NONE:
+    case accessibility_private::DictationBubbleHintType::kNone:
       NOTREACHED();
       return ash::DictationBubbleHintType::kTrySaying;
   }
@@ -150,6 +140,29 @@ AccessibilityPrivateEnableMouseEventsFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction
+AccessibilityPrivateSetCursorPositionFunction::Run() {
+  absl::optional<accessibility_private::SetCursorPosition::Params> params =
+      accessibility_private::SetCursorPosition::Params::Create(args());
+  EXTENSION_FUNCTION_VALIDATE(params);
+  gfx::Point location_in_screen(params->point.x, params->point.y);
+  const display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestPoint(location_in_screen);
+  auto* host = ash::GetWindowTreeHostForDisplay(display.id());
+  if (!host) {
+    return RespondNow(Error("Unable to find a window tree host"));
+  }
+  aura::Window* root_window = host->window();
+  if (!root_window) {
+    return RespondNow(Error("Unable to get root window"));
+  }
+  gfx::Point location_in_window(location_in_screen);
+  ::wm::ConvertPointFromScreen(root_window, &location_in_window);
+  host->MoveCursorToLocationInDIP(location_in_window);
+
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
 AccessibilityPrivateForwardKeyEventsToSwitchAccessFunction::Run() {
   absl::optional<accessibility_private::ForwardKeyEventsToSwitchAccess::Params>
       params =
@@ -172,6 +185,9 @@ AccessibilityPrivateGetBatteryDescriptionFunction::Run() {
       ash::AccessibilityController::Get()->GetBatteryDescription()));
 }
 
+// TODO(b/286296201): AccessibilityPrivateGetDlcContentsFunction is deprecated
+// (use AccessibilityPrivateGetTtsDlcContentsFunction instead). Delete
+// GetDlcContents after uprreving Google TTS to use GetTtsDlcContents.
 ExtensionFunction::ResponseAction
 AccessibilityPrivateGetDlcContentsFunction::Run() {
   absl::optional<accessibility_private::GetDlcContents::Params> params(
@@ -179,8 +195,8 @@ AccessibilityPrivateGetDlcContentsFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
   accessibility_private::DlcType dlc = params->dlc;
 
-  AccessibilityManager::Get()->GetDlcContents(
-      dlc,
+  AccessibilityManager::Get()->GetTtsDlcContents(
+      dlc, accessibility_private::TtsVariant::kLite,
       base::BindOnce(
           &AccessibilityPrivateGetDlcContentsFunction::OnDlcContentsRetrieved,
           this));
@@ -188,6 +204,33 @@ AccessibilityPrivateGetDlcContentsFunction::Run() {
 }
 
 void AccessibilityPrivateGetDlcContentsFunction::OnDlcContentsRetrieved(
+    const std::vector<uint8_t>& contents,
+    absl::optional<std::string> error) {
+  if (error.has_value()) {
+    Respond(Error(error.value()));
+    return;
+  }
+
+  Respond(WithArguments(base::Value(contents)));
+}
+
+ExtensionFunction::ResponseAction
+AccessibilityPrivateGetTtsDlcContentsFunction::Run() {
+  absl::optional<accessibility_private::GetTtsDlcContents::Params> params(
+      accessibility_private::GetTtsDlcContents::Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  accessibility_private::DlcType dlc = params->dlc;
+  accessibility_private::TtsVariant variant = params->variant;
+
+  AccessibilityManager::Get()->GetTtsDlcContents(
+      dlc, variant,
+      base::BindOnce(&AccessibilityPrivateGetTtsDlcContentsFunction::
+                         OnTtsDlcContentsRetrieved,
+                     this));
+  return RespondLater();
+}
+
+void AccessibilityPrivateGetTtsDlcContentsFunction::OnTtsDlcContentsRetrieved(
     const std::vector<uint8_t>& contents,
     absl::optional<std::string> error) {
   if (error.has_value()) {
@@ -283,27 +326,23 @@ AccessibilityPrivateIsFeatureEnabledFunction::Run() {
   accessibility_private::AccessibilityFeature params_feature = params->feature;
   bool enabled;
   switch (params_feature) {
-    case accessibility_private::AccessibilityFeature::
-        ACCESSIBILITY_FEATURE_GOOGLETTSLANGUAGEPACKS:
+    case accessibility_private::AccessibilityFeature::kGoogleTtsLanguagePacks:
       enabled = ::features::
           IsExperimentalAccessibilityGoogleTtsLanguagePacksEnabled();
       break;
     case accessibility_private::AccessibilityFeature::
-        ACCESSIBILITY_FEATURE_GOOGLETTSHIGHQUALITYVOICES:
+        kGoogleTtsHighQualityVoices:
       enabled = ::features::
           IsExperimentalAccessibilityGoogleTtsHighQualityVoicesEnabled();
       break;
-    case accessibility_private::AccessibilityFeature::
-        ACCESSIBILITY_FEATURE_DICTATIONCONTEXTCHECKING:
+    case accessibility_private::AccessibilityFeature::kDictationContextChecking:
       enabled = ::features::
           IsExperimentalAccessibilityDictationContextCheckingEnabled();
       break;
-    case accessibility_private::AccessibilityFeature::
-        ACCESSIBILITY_FEATURE_GAMEFACEINTEGRATION:
-      enabled = ::features::IsAccessibilityGameFaceIntegrationEnabled();
+    case accessibility_private::AccessibilityFeature::kFaceGaze:
+      enabled = ::features::IsAccessibilityFaceGazeEnabled();
       break;
-    case accessibility_private::AccessibilityFeature::
-        ACCESSIBILITY_FEATURE_NONE:
+    case accessibility_private::AccessibilityFeature::kNone:
       return RespondNow(Error("Unrecognized feature"));
   }
 
@@ -357,13 +396,13 @@ AccessibilityPrivatePerformAcceleratorActionFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
   ash::AcceleratorAction accelerator_action;
   switch (params->accelerator_action) {
-    case accessibility_private::ACCELERATOR_ACTION_FOCUSPREVIOUSPANE:
+    case accessibility_private::AcceleratorAction::kFocusPreviousPane:
       accelerator_action = ash::AcceleratorAction::kFocusPreviousPane;
       break;
-    case accessibility_private::ACCELERATOR_ACTION_FOCUSNEXTPANE:
+    case accessibility_private::AcceleratorAction::kFocusNextPane:
       accelerator_action = ash::AcceleratorAction::kFocusNextPane;
       break;
-    case accessibility_private::ACCELERATOR_ACTION_NONE:
+    case accessibility_private::AcceleratorAction::kNone:
       NOTREACHED();
       return RespondNow(Error("Invalid accelerator action."));
   }
@@ -400,7 +439,7 @@ AccessibilityPrivateSendSyntheticKeyEventFunction::Run() {
       static_cast<ui::KeyboardCode>(key_data->key_code);
   ui::KeyEvent synthetic_key_event(
       key_data->type ==
-              accessibility_private::SYNTHETIC_KEYBOARD_EVENT_TYPE_KEYUP
+              accessibility_private::SyntheticKeyboardEventType::kKeyup
           ? ui::ET_KEY_RELEASED
           : ui::ET_KEY_PRESSED,
       keyboard_code, ui::UsLayoutKeyboardCodeToDomCode(keyboard_code),
@@ -435,22 +474,22 @@ AccessibilityPrivateSendSyntheticMouseEventFunction::Run() {
 
   ui::EventType type = ui::ET_UNKNOWN;
   switch (mouse_data->type) {
-    case accessibility_private::SYNTHETIC_MOUSE_EVENT_TYPE_PRESS:
+    case accessibility_private::SyntheticMouseEventType::kPress:
       type = ui::ET_MOUSE_PRESSED;
       break;
-    case accessibility_private::SYNTHETIC_MOUSE_EVENT_TYPE_RELEASE:
+    case accessibility_private::SyntheticMouseEventType::kRelease:
       type = ui::ET_MOUSE_RELEASED;
       break;
-    case accessibility_private::SYNTHETIC_MOUSE_EVENT_TYPE_DRAG:
+    case accessibility_private::SyntheticMouseEventType::kDrag:
       type = ui::ET_MOUSE_DRAGGED;
       break;
-    case accessibility_private::SYNTHETIC_MOUSE_EVENT_TYPE_MOVE:
+    case accessibility_private::SyntheticMouseEventType::kMove:
       type = ui::ET_MOUSE_MOVED;
       break;
-    case accessibility_private::SYNTHETIC_MOUSE_EVENT_TYPE_ENTER:
+    case accessibility_private::SyntheticMouseEventType::kEnter:
       type = ui::ET_MOUSE_ENTERED;
       break;
-    case accessibility_private::SYNTHETIC_MOUSE_EVENT_TYPE_EXIT:
+    case accessibility_private::SyntheticMouseEventType::kExit:
       type = ui::ET_MOUSE_EXITED;
       break;
     default:
@@ -460,19 +499,19 @@ AccessibilityPrivateSendSyntheticMouseEventFunction::Run() {
   int flags = 0;
   if (type != ui::ET_MOUSE_MOVED) {
     switch (mouse_data->mouse_button) {
-      case accessibility_private::SYNTHETIC_MOUSE_EVENT_BUTTON_LEFT:
+      case accessibility_private::SyntheticMouseEventButton::kLeft:
         flags |= ui::EF_LEFT_MOUSE_BUTTON;
         break;
-      case accessibility_private::SYNTHETIC_MOUSE_EVENT_BUTTON_MIDDLE:
+      case accessibility_private::SyntheticMouseEventButton::kMiddle:
         flags |= ui::EF_MIDDLE_MOUSE_BUTTON;
         break;
-      case accessibility_private::SYNTHETIC_MOUSE_EVENT_BUTTON_RIGHT:
+      case accessibility_private::SyntheticMouseEventButton::kRight:
         flags |= ui::EF_RIGHT_MOUSE_BUTTON;
         break;
-      case accessibility_private::SYNTHETIC_MOUSE_EVENT_BUTTON_BACK:
+      case accessibility_private::SyntheticMouseEventButton::kBack:
         flags |= ui::EF_BACK_MOUSE_BUTTON;
         break;
-      case accessibility_private::SYNTHETIC_MOUSE_EVENT_BUTTON_FOWARD:
+      case accessibility_private::SyntheticMouseEventButton::kFoward:
         flags |= ui::EF_FORWARD_MOUSE_BUTTON;
         break;
       default:
@@ -489,7 +528,7 @@ AccessibilityPrivateSendSyntheticMouseEventFunction::Run() {
 
   // Locations are assumed to be in screen coordinates.
   gfx::Point location_in_screen(mouse_data->x, mouse_data->y);
-  const display::Display& display =
+  const display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestPoint(location_in_screen);
   auto* host = ash::GetWindowTreeHostForDisplay(display.id());
   if (!host) {
@@ -540,31 +579,31 @@ AccessibilityPrivateSetFocusRingsFunction::Run() {
 
   ax::mojom::AssistiveTechnologyType at_type;
   switch (params->at_type) {
-    case extensions::api::accessibility_private::ASSISTIVE_TECHNOLOGY_TYPE_NONE:
+    case extensions::api::accessibility_private::AssistiveTechnologyType::kNone:
       at_type = ax::mojom::AssistiveTechnologyType::kUnknown;
       break;
-    case extensions::api::accessibility_private::
-        ASSISTIVE_TECHNOLOGY_TYPE_CHROMEVOX:
+    case extensions::api::accessibility_private::AssistiveTechnologyType::
+        kChromeVox:
       at_type = ax::mojom::AssistiveTechnologyType::kChromeVox;
       break;
-    case extensions::api::accessibility_private::
-        ASSISTIVE_TECHNOLOGY_TYPE_SELECTTOSPEAK:
+    case extensions::api::accessibility_private::AssistiveTechnologyType::
+        kSelectToSpeak:
       at_type = ax::mojom::AssistiveTechnologyType::kSelectToSpeak;
       break;
-    case extensions::api::accessibility_private::
-        ASSISTIVE_TECHNOLOGY_TYPE_SWITCHACCESS:
+    case extensions::api::accessibility_private::AssistiveTechnologyType::
+        kSwitchAccess:
       at_type = ax::mojom::AssistiveTechnologyType::kSwitchAccess;
       break;
-    case extensions::api::accessibility_private::
-        ASSISTIVE_TECHNOLOGY_TYPE_AUTOCLICK:
+    case extensions::api::accessibility_private::AssistiveTechnologyType::
+        kAutoClick:
       at_type = ax::mojom::AssistiveTechnologyType::kAutoClick;
       break;
-    case extensions::api::accessibility_private::
-        ASSISTIVE_TECHNOLOGY_TYPE_MAGNIFIER:
+    case extensions::api::accessibility_private::AssistiveTechnologyType::
+        kMagnifier:
       at_type = ax::mojom::AssistiveTechnologyType::kMagnifier;
       break;
-    case extensions::api::accessibility_private::
-        ASSISTIVE_TECHNOLOGY_TYPE_DICTATION:
+    case extensions::api::accessibility_private::AssistiveTechnologyType::
+        kDictation:
       at_type = ax::mojom::AssistiveTechnologyType::kDictation;
       break;
   }
@@ -596,28 +635,29 @@ AccessibilityPrivateSetFocusRingsFunction::Run() {
     }
 
     switch (focus_ring_info.type) {
-      case accessibility_private::FOCUS_TYPE_SOLID:
+      case accessibility_private::FocusType::kSolid:
         focus_ring->type = ash::FocusRingType::SOLID;
         break;
-      case accessibility_private::FOCUS_TYPE_DASHED:
+      case accessibility_private::FocusType::kDashed:
         focus_ring->type = ash::FocusRingType::DASHED;
         break;
-      case accessibility_private::FOCUS_TYPE_GLOW:
+      case accessibility_private::FocusType::kGlow:
         focus_ring->type = ash::FocusRingType::GLOW;
         break;
       default:
         NOTREACHED();
     }
 
-    if (focus_ring_info.stacking_order) {
+    if (focus_ring_info.stacking_order !=
+        accessibility_private::FocusRingStackingOrder::kNone) {
       switch (focus_ring_info.stacking_order) {
-        case accessibility_private::
-            FOCUS_RING_STACKING_ORDER_ABOVEACCESSIBILITYBUBBLES:
+        case accessibility_private::FocusRingStackingOrder::
+            kAboveAccessibilityBubbles:
           focus_ring->stacking_order =
               ash::FocusRingStackingOrder::ABOVE_ACCESSIBILITY_BUBBLES;
           break;
-        case accessibility_private::
-            FOCUS_RING_STACKING_ORDER_BELOWACCESSIBILITYBUBBLES:
+        case accessibility_private::FocusRingStackingOrder::
+            kBelowAccessibilityBubbles:
           focus_ring->stacking_order =
               ash::FocusRingStackingOrder::BELOW_ACCESSIBILITY_BUBBLES;
           break;
@@ -736,8 +776,7 @@ AccessibilityPrivateSetNativeChromeVoxArcSupportForCurrentAppFunction::Run() {
       extensions::api::accessibility_private::
           SetNativeChromeVoxArcSupportForCurrentApp::Results::Create(
               extensions::api::accessibility_private::
-                  SetNativeChromeVoxResponse::
-                      SET_NATIVE_CHROME_VOX_RESPONSE_FAILURE)));
+                  SetNativeChromeVoxResponse::kFailure)));
 }
 
 void AccessibilityPrivateSetNativeChromeVoxArcSupportForCurrentAppFunction::
@@ -758,13 +797,13 @@ AccessibilityPrivateSetPointScanStateFunction::Run() {
   accessibility_private::PointScanState params_state = params->state;
 
   switch (params_state) {
-    case accessibility_private::PointScanState::POINT_SCAN_STATE_START:
+    case accessibility_private::PointScanState::kStart:
       ash::AccessibilityController::Get()->StartPointScan();
       break;
-    case accessibility_private::PointScanState::POINT_SCAN_STATE_STOP:
+    case accessibility_private::PointScanState::kStop:
       ash::AccessibilityController::Get()->StopPointScan();
       break;
-    case accessibility_private::PointScanState::POINT_SCAN_STATE_NONE:
+    case accessibility_private::PointScanState::kNone:
       break;
   }
 
@@ -779,17 +818,14 @@ AccessibilityPrivateSetSelectToSpeakStateFunction::Run() {
   accessibility_private::SelectToSpeakState params_state = params->state;
   ash::SelectToSpeakState state;
   switch (params_state) {
-    case accessibility_private::SelectToSpeakState::
-        SELECT_TO_SPEAK_STATE_SELECTING:
+    case accessibility_private::SelectToSpeakState::kSelecting:
       state = ash::SelectToSpeakState::kSelectToSpeakStateSelecting;
       break;
-    case accessibility_private::SelectToSpeakState::
-        SELECT_TO_SPEAK_STATE_SPEAKING:
+    case accessibility_private::SelectToSpeakState::kSpeaking:
       state = ash::SelectToSpeakState::kSelectToSpeakStateSpeaking;
       break;
-    case accessibility_private::SelectToSpeakState::
-        SELECT_TO_SPEAK_STATE_INACTIVE:
-    case accessibility_private::SelectToSpeakState::SELECT_TO_SPEAK_STATE_NONE:
+    case accessibility_private::SelectToSpeakState::kInactive:
+    case accessibility_private::SelectToSpeakState::kNone:
       state = ash::SelectToSpeakState::kSelectToSpeakStateInactive;
   }
 
@@ -888,24 +924,19 @@ AccessibilityPrivateUpdateDictationBubbleFunction::Run() {
   // Extract the icon type.
   ash::DictationBubbleIconType icon = ash::DictationBubbleIconType::kHidden;
   switch (properties.icon) {
-    case accessibility_private::DictationBubbleIconType::
-        DICTATION_BUBBLE_ICON_TYPE_HIDDEN:
+    case accessibility_private::DictationBubbleIconType::kHidden:
       icon = ash::DictationBubbleIconType::kHidden;
       break;
-    case accessibility_private::DictationBubbleIconType::
-        DICTATION_BUBBLE_ICON_TYPE_STANDBY:
+    case accessibility_private::DictationBubbleIconType::kStandby:
       icon = ash::DictationBubbleIconType::kStandby;
       break;
-    case accessibility_private::DictationBubbleIconType::
-        DICTATION_BUBBLE_ICON_TYPE_MACROSUCCESS:
+    case accessibility_private::DictationBubbleIconType::kMacroSuccess:
       icon = ash::DictationBubbleIconType::kMacroSuccess;
       break;
-    case accessibility_private::DictationBubbleIconType::
-        DICTATION_BUBBLE_ICON_TYPE_MACROFAIL:
+    case accessibility_private::DictationBubbleIconType::kMacroFail:
       icon = ash::DictationBubbleIconType::kMacroFail;
       break;
-    case accessibility_private::DictationBubbleIconType::
-        DICTATION_BUBBLE_ICON_TYPE_NONE:
+    case accessibility_private::DictationBubbleIconType::kNone:
       NOTREACHED();
       break;
   }
@@ -970,10 +1001,10 @@ AccessibilityPrivateUpdateSwitchAccessBubbleFunction::Run() {
 
   if (!params->show) {
     if (params->bubble ==
-        accessibility_private::SWITCH_ACCESS_BUBBLE_BACKBUTTON) {
+        accessibility_private::SwitchAccessBubble::kBackButton) {
       ash::AccessibilityController::Get()->HideSwitchAccessBackButton();
     } else if (params->bubble ==
-               accessibility_private::SWITCH_ACCESS_BUBBLE_MENU) {
+               accessibility_private::SwitchAccessBubble::kMenu) {
       ash::AccessibilityController::Get()->HideSwitchAccessMenu();
     }
     return RespondNow(NoArguments());
@@ -987,7 +1018,7 @@ AccessibilityPrivateUpdateSwitchAccessBubbleFunction::Run() {
                    params->anchor->width, params->anchor->height);
 
   if (params->bubble ==
-      accessibility_private::SWITCH_ACCESS_BUBBLE_BACKBUTTON) {
+      accessibility_private::SwitchAccessBubble::kBackButton) {
     ash::AccessibilityController::Get()->ShowSwitchAccessBackButton(anchor);
     return RespondNow(NoArguments());
   }

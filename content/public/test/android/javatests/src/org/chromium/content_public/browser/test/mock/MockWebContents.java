@@ -21,6 +21,7 @@ import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.RenderWidgetHostView;
 import org.chromium.content_public.browser.StylusWritingHandler;
+import org.chromium.content_public.browser.StylusWritingImeCallback;
 import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.Visibility;
 import org.chromium.content_public.browser.WebContents;
@@ -199,8 +200,13 @@ public class MockWebContents implements WebContents {
     public void scrollFocusedEditableNodeIntoView() {}
 
     @Override
-    public void selectAroundCaret(@SelectionGranularity int granularity, boolean shouldShowHandle,
-            boolean shouldShowContextMenu) {}
+    public void selectAroundCaret(
+            @SelectionGranularity int granularity,
+            boolean shouldShowHandle,
+            boolean shouldShowContextMenu,
+            int startOffset,
+            int endOffset,
+            int surroundingTextLength) {}
 
     @Override
     public void adjustSelectionByCharacterOffset(
@@ -264,6 +270,11 @@ public class MockWebContents implements WebContents {
 
     @Override
     public void setStylusWritingHandler(StylusWritingHandler stylusWritingHandler) {}
+
+    @Override
+    public StylusWritingImeCallback getStylusWritingImeCallback() {
+        return null;
+    }
 
     @Override
     public EventForwarder getEventForwarder() {

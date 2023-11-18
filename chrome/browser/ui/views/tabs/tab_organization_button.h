@@ -8,8 +8,6 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_control_button.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 
-class Browser;
-class TabOrganizationSession;
 class TabStripController;
 
 class TabOrganizationButton : public TabStripControlButton {
@@ -17,6 +15,7 @@ class TabOrganizationButton : public TabStripControlButton {
   METADATA_HEADER(TabOrganizationButton);
   TabOrganizationButton(TabStripController* tab_strip_controller,
                         PressedCallback pressed_callback,
+                        PressedCallback close_pressed_callback,
                         Edge flat_edge);
   TabOrganizationButton(const TabOrganizationButton&) = delete;
   TabOrganizationButton& operator=(const TabOrganizationButton&) = delete;
@@ -25,14 +24,8 @@ class TabOrganizationButton : public TabStripControlButton {
   void SetWidthFactor(float factor);
   float width_factor_for_testing() { return width_factor_; }
 
-  void SetSession(TabOrganizationSession* session) { session_ = session; }
-  TabOrganizationSession* session_for_testing() { return session_; }
-
   // TabStripControlButton:
   gfx::Size CalculatePreferredSize() const override;
-
-  void ButtonPressed(const ui::Event& event);
-  void ClosePressed(const ui::Event& event);
 
  protected:
   // TabStripControlButton:
@@ -44,10 +37,7 @@ class TabOrganizationButton : public TabStripControlButton {
 
   // Preferred width multiplier, between 0-1. Used to animate button size.
   float width_factor_ = 0;
-  raw_ptr<TabOrganizationSession, DanglingUntriaged> session_ = nullptr;
-  PressedCallback pressed_callback_;
   raw_ptr<views::LabelButton> close_button_;
-  raw_ptr<const Browser> browser_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_ORGANIZATION_BUTTON_H_

@@ -484,27 +484,6 @@ bool InputMethodEngine::SetComposingRange(
       static_cast<uint32_t>(start), static_cast<uint32_t>(end), text_spans);
 }
 
-gfx::Rect InputMethodEngine::GetTextFieldBounds(int context_id,
-                                                std::string* error) {
-  if (!IsActive()) {
-    *error = kErrorNotActive;
-    return gfx::Rect();
-  }
-  if (context_id != context_id_ || context_id_ == -1) {
-    *error = base::StringPrintf(
-        "%s request context id = %d, current context id = %d",
-        kErrorWrongContext, context_id, context_id_);
-    return gfx::Rect();
-  }
-
-  TextInputTarget* input_context = IMEBridge::Get()->GetInputContextHandler();
-  if (!input_context) {
-    return gfx::Rect();
-  }
-
-  return input_context->GetTextFieldBounds();
-}
-
 void InputMethodEngine::KeyEventHandled(const std::string& extension_id,
                                         const std::string& request_id,
                                         bool handled) {
@@ -576,13 +555,6 @@ void InputMethodEngine::Blur() {
   int context_id = context_id_;
   context_id_ = -1;
   observer_->OnBlur(active_component_id_, context_id);
-}
-
-void InputMethodEngine::OnTouch(ui::EventPointerType pointerType) {
-  if (!IsActive() || current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
-    return;
-
-  observer_->OnTouch(pointerType);
 }
 
 void InputMethodEngine::Enable(const std::string& component_id) {

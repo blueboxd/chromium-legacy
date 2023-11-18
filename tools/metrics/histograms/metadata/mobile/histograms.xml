@@ -35,6 +35,8 @@ chromium-metrics-reviews@google.com.
   <variant name="InfobarTypeAutofillAddressProfile"
       summary="Recorded for Autofill Address Infobar."/>
   <variant name="InfobarTypeConfirm" summary="Recorded for Confirm Messages."/>
+  <variant name="InfobarTypeParcelTracking"
+      summary="Recorded for Parcel Tracking Infobar."/>
   <variant name="InfobarTypePasswordSave"
       summary="Recorded for Save Password Infobar."/>
   <variant name="InfobarTypePasswordUpdate"
@@ -99,7 +101,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.ContextMenu.EntryPoints" enum="IOSMenuScenario"
-    expires_after="2024-02-11">
+    expires_after="2024-04-28">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@chromium.org</owner>
   <summary>
@@ -110,7 +112,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.ContextMenu.GetImageDataByJsResult"
-    enum="ContextMenuIOSGetImageDataByJsResult" expires_after="2024-02-11">
+    enum="ContextMenuIOSGetImageDataByJsResult" expires_after="2024-04-28">
   <owner>djean@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
@@ -601,7 +603,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.SystemNotification.Permission.Change"
-    enum="BooleanEnabled" expires_after="2024-03-03">
+    enum="BooleanEnabled" expires_after="2024-05-05">
   <owner>salg@google.com</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>
@@ -612,7 +614,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.SystemNotification.Permission.OSPromptResult"
-    enum="BooleanEnabled" expires_after="2024-03-03">
+    enum="BooleanEnabled" expires_after="2024-05-05">
   <owner>salg@google.com</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>
@@ -622,7 +624,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.SystemNotification.Permission.RationaleResult"
-    enum="NotificationRationaleResult" expires_after="2024-03-03">
+    enum="NotificationRationaleResult" expires_after="2024-05-05">
   <owner>salg@google.com</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>
@@ -632,7 +634,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.SystemNotification.Permission.StartupRequestCount"
-    units="attempts" expires_after="2024-03-03">
+    units="attempts" expires_after="2024-05-05">
   <owner>salg@google.com</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>
@@ -883,7 +885,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileFre.Progress" enum="MobileFreProgress"
-    expires_after="2024-02-04">
+    expires_after="2024-04-28">
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>droger@chromium.org</owner>
@@ -1038,7 +1040,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileOmnibox.PressedClipboardSuggestionAge" units="ms"
-    expires_after="2024-02-25">
+    expires_after="2024-04-28">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <summary>
@@ -1085,22 +1087,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="MobileSignInPromo.NTPContentSuggestions.ImpressionsTilXButton"
-    units="impressions" expires_after="2022-05-10">
-  <obsolete>
-    Removed in 2022/05. Replaced with Signin.SyncPromo.Dismissed.Count.Ntp.
-  </obsolete>
-  <owner>bsazonov@chromium.org</owner>
-  <owner>chrome-signin-team@google.com</owner>
-  <summary>
-    Counts how many times the explicit &quot;X&quot;-to-close button is clicked
-    per impression. Recorded when the signin promo is dismissed using the
-    &quot;X&quot;.
-  </summary>
-</histogram>
-
 <histogram name="MobileSignInPromo.NTPFeedTop.ImpressionsTilDismiss"
-    units="impressions" expires_after="2024-03-10">
+    units="impressions" expires_after="2024-05-12">
   <owner>mrefaat@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -1205,7 +1193,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileStartup.IntentToCreationTime" units="ms"
-    expires_after="2024-02-11">
+    expires_after="2024-04-28">
   <owner>tedchoc@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>

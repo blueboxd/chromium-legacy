@@ -43,7 +43,7 @@
 #include "components/viz/service/frame_sinks/external_begin_frame_source_mac.h"
 #endif
 
-#if BUILDFLAG(IS_OZONE)
+#if BUILDFLAG(IS_LINUX)
 #include "ui/ozone/buildflags.h"
 #endif
 
@@ -112,13 +112,13 @@ RootCompositorFrameSinkImpl::Create(
   output_surface->SetNeedsSwapSizeNotifications(
       params->send_swap_size_notifications);
 
-#if BUILDFLAG(IS_OZONE)
+#if BUILDFLAG(IS_LINUX)
 #if BUILDFLAG(OZONE_PLATFORM_X11)
   // For X11, we need notify client about swap completion after resizing, so the
   // client can use it for synchronize with X11 WM.
   output_surface->SetNeedsSwapSizeNotifications(true);
 #endif  // BUILDFLAG(OZONE_PLATFORM_X11)
-#endif  // BUILFFLAG(IS_OZONE)
+#endif  // BUILDFLAG(IS_LINUX)
 
   // Create some sort of a BeginFrameSource, depending on the platform and
   // |params|.
@@ -219,10 +219,12 @@ RootCompositorFrameSinkImpl::Create(
       display_controller.get(), sii, params->renderer_settings, debug_settings);
 
   auto display = std::make_unique<Display>(
-      frame_sink_manager->shared_bitmap_manager(), params->renderer_settings,
-      debug_settings, params->frame_sink_id, std::move(display_controller),
-      std::move(output_surface), std::move(overlay_processor),
-      std::move(scheduler), std::move(task_runner));
+      frame_sink_manager->shared_bitmap_manager(),
+      output_surface_provider->GetSharedImageManager(),
+      params->renderer_settings, debug_settings, params->frame_sink_id,
+      std::move(display_controller), std::move(output_surface),
+      std::move(overlay_processor), std::move(scheduler),
+      std::move(task_runner));
 
   if (external_begin_frame_source_mojo)
     external_begin_frame_source_mojo->SetDisplay(display.get());
@@ -716,14 +718,14 @@ void RootCompositorFrameSinkImpl::DisplayDidCompleteSwapWithSize(
 #if BUILDFLAG(IS_ANDROID)
   if (display_client_ && enable_swap_competion_callback_)
     display_client_->DidCompleteSwapWithSize(pixel_size);
-#elif BUILDFLAG(IS_OZONE)
+#elif BUILDFLAG(IS_LINUX)
 #if BUILDFLAG(OZONE_PLATFORM_X11)
   if (display_client_ && pixel_size != last_swap_pixel_size_) {
     last_swap_pixel_size_ = pixel_size;
     display_client_->DidCompleteSwapWithNewSize(last_swap_pixel_size_);
   }
 #endif  // BUILDFLAG(OZONE_PLATFORM_X11)
-#else   // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_OZONE)
+#else   // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_LINUX)
   NOTREACHED();
 #endif
 }

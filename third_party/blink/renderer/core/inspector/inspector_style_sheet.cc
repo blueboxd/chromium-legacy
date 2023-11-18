@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_regexp.h"
 #include "third_party/blink/renderer/core/css/css_container_rule.h"
+#include "third_party/blink/renderer/core/css/css_font_palette_values_rule.h"
 #include "third_party/blink/renderer/core/css/css_grouping_rule.h"
 #include "third_party/blink/renderer/core/css/css_import_rule.h"
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
@@ -68,6 +69,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_css_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_network_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_resource_container.h"
+#include "third_party/blink/renderer/core/inspector/protocol/css.h"
 #include "third_party/blink/renderer/core/svg/svg_style_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -202,6 +204,7 @@ class StyleSheetHandler final : public CSSParserObserver {
 
   TextPosition GetTextPosition(unsigned start_offset);
   void AddNewRuleToSourceTree(CSSRuleSourceData*);
+  void RemoveLastRuleFromSourceTree();
   CSSRuleSourceData* PopRuleData();
   template <typename CharacterType>
   inline void SetRuleHeaderEnd(const CharacterType*, unsigned);
@@ -339,10 +342,19 @@ void StyleSheetHandler::AddNewRuleToSourceTree(CSSRuleSourceData* rule) {
     return;
   }
 
-  if (current_rule_data_stack_.empty())
+  if (current_rule_data_stack_.empty()) {
     result_->push_back(rule);
-  else
+  } else {
     current_rule_data_stack_.back()->child_rules.push_back(rule);
+  }
+}
+
+void StyleSheetHandler::RemoveLastRuleFromSourceTree() {
+  if (current_rule_data_stack_.empty()) {
+    result_->pop_back();
+  } else {
+    current_rule_data_stack_.back()->child_rules.pop_back();
+  }
 }
 
 CSSRuleSourceData* StyleSheetHandler::PopRuleData() {
@@ -493,15 +505,20 @@ void StyleSheetHandler::ObserveErroneousAtRule(
     }
     case CSSAtRuleID::kCSSAtRuleProperty: {
       if (invalid_properties.empty()) {
+        // Invoked from the prelude handling, which means the name is invalid.
         TextPosition start = GetTextPosition(start_offset);
         AuditsIssue::ReportPropertyRuleIssue(
             document_, issueReportingContext_->DocumentURL, start.line_,
             start.column_,
             protocol::Audits::PropertyRuleIssueReasonEnum::InvalidName, {});
-        break;
-      }
-      for (CSSPropertyID invalid_property : invalid_properties) {
-        ReportPropertyRuleFailure(start_offset, invalid_property);
+      } else {
+        // The rule is being dropped because it lacks required descriptors, or
+        // some descriptors have invalid values. The rule has already been
+        // committed and must be removed.
+        for (CSSPropertyID invalid_property : invalid_properties) {
+          ReportPropertyRuleFailure(start_offset, invalid_property);
+        }
+        RemoveLastRuleFromSourceTree();
       }
       break;
     }
@@ -854,7 +871,7 @@ void FlattenSourceData(const CSSRuleSourceDataList& data_list,
       case StyleRule::kKeyframe:
       case StyleRule::kFontFeature:
       case StyleRule::kTry:
-      case StyleRule::kViewTransitions:
+      case StyleRule::kViewTransition:
         result->push_back(data);
         break;
       case StyleRule::kStyle:
@@ -867,6 +884,7 @@ void FlattenSourceData(const CSSRuleSourceDataList& data_list,
       case StyleRule::kFontFeatureValues:
       case StyleRule::kPositionFallback:
       case StyleRule::kProperty:
+      case StyleRule::kFontPaletteValues:
         result->push_back(data);
         FlattenSourceData(data->child_rules, result);
         break;
@@ -909,6 +927,10 @@ CSSRuleList* AsCSSRuleList(CSSRule* rule) {
   if (auto* property_rule = DynamicTo<CSSPropertyRule>(rule))
     return property_rule->cssRules();
 
+  if (auto* font_palette_values_rule =
+          DynamicTo<CSSFontPaletteValuesRule>(rule))
+    return font_palette_values_rule->cssRules();
+
   return nullptr;
 }
 
@@ -931,7 +953,8 @@ void CollectFlatRules(RuleList rule_list, CSSRuleVector* result) {
       case CSSRule::kKeyframeRule:
       case CSSRule::kFontFeatureRule:
       case CSSRule::kTryRule:
-      case CSSRule::kViewTransitionsRule:
+      case CSSRule::kViewTransitionRule:
+      case CSSRule::kFontPaletteValuesRule:
         result->push_back(rule);
         break;
       case CSSRule::kStyleRule:
@@ -1349,6 +1372,10 @@ bool InspectorStyleSheet::SetText(const String& text,
   return true;
 }
 
+void InspectorStyleSheet::CSSOMStyleSheetTextReplaced(const String& text) {
+  InnerSetText(text, false);
+}
+
 CSSStyleRule* InspectorStyleSheet::SetRuleSelector(
     const SourceRange& range,
     const String& text,
@@ -1494,7 +1521,8 @@ CSSRule* InspectorStyleSheet::SetStyleText(const SourceRange& range,
   CSSRule* rule = RuleForSourceData(source_data);
   if (!rule || !rule->parentStyleSheet() ||
       (!IsA<CSSStyleRule>(rule) && !IsA<CSSKeyframeRule>(rule) &&
-       !IsA<CSSPropertyRule>(rule) && !IsA<CSSTryRule>(rule))) {
+       !IsA<CSSPropertyRule>(rule) && !IsA<CSSFontPaletteValuesRule>(rule) &&
+       !IsA<CSSTryRule>(rule))) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotFoundError,
         "Source range didn't match existing style source range");
@@ -1508,6 +1536,9 @@ CSSRule* InspectorStyleSheet::SetStyleText(const SourceRange& range,
     style = try_rule->style();
   } else if (auto* property_rule = DynamicTo<CSSPropertyRule>(rule)) {
     style = property_rule->Style();
+  } else if (auto* font_palette_values_rule =
+                 DynamicTo<CSSFontPaletteValuesRule>(rule)) {
+    style = font_palette_values_rule->Style();
   } else {
     style = To<CSSKeyframeRule>(rule)->style();
   }
@@ -2034,6 +2065,7 @@ String InspectorStyleSheet::MergeCSSOMRulesWithText(const String& text) {
 
 void InspectorStyleSheet::InnerSetText(const String& text,
                                        bool mark_as_locally_modified) {
+  marked_for_sync_ = false;
   ParseText(text);
 
   text_ = text;
@@ -2103,7 +2135,7 @@ InspectorStyleSheet::BuildObjectForStyleSheetInfo() {
   // proper URL of the source of the stylesheet.
   const String& source_url =
       (style_sheet->IsConstructed() && !style_sheet->IsForCSSModuleScript())
-          ? String()
+          ? SourceURL()
           : Url();
 
   std::unique_ptr<protocol::CSS::CSSStyleSheetHeader> result =
@@ -2279,6 +2311,25 @@ InspectorStyleSheet::BuildObjectForTryRule(CSSTryRule* try_rule) {
   if (CanBind(origin_) && !Id().empty()) {
     result->setStyleSheetId(Id());
   }
+  return result;
+}
+
+std::unique_ptr<protocol::CSS::CSSFontPaletteValuesRule>
+InspectorStyleSheet::BuildObjectForFontPaletteValuesRule(
+    CSSFontPaletteValuesRule* values_rule) {
+  std::unique_ptr<protocol::CSS::Value> name_text =
+      protocol::CSS::Value::create().setText(values_rule->name()).build();
+  CSSRuleSourceData* source_data = SourceDataForRule(values_rule);
+  if (source_data)
+    name_text->setRange(BuildSourceRangeObject(source_data->rule_header_range));
+  std::unique_ptr<protocol::CSS::CSSFontPaletteValuesRule> result =
+      protocol::CSS::CSSFontPaletteValuesRule::create()
+          .setFontPaletteName(std::move(name_text))
+          .setOrigin(origin_)
+          .setStyle(BuildObjectForStyle(values_rule->Style()))
+          .build();
+  if (CanBind(origin_) && !Id().empty())
+    result->setStyleSheetId(Id());
   return result;
 }
 

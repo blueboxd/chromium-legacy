@@ -11,7 +11,7 @@
 #import "components/autofill/ios/browser/autofill_java_script_feature.h"
 #import "components/autofill/ios/form_util/form_util_java_script_feature.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/web/chrome_web_client.h"
+#import "ios/chrome/browser/web/model/chrome_web_client.h"
 #import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/test/js_test_util.h"
@@ -24,7 +24,7 @@
 #import "testing/gtest_mac.h"
 #import "testing/platform_test.h"
 
-// Unit tests for ios/chrome/browser/web/resources/autofill_controller.js
+// Unit tests for ios/chrome/browser/web/model/resources/autofill_controller.js
 namespace {
 
 using base::test::ios::kWaitForJSCompletionTimeout;
@@ -2004,6 +2004,51 @@ TEST_F(AutofillControllerJsTest, FillActiveFormField) {
                        "__gCrWeb.autofill.fillActiveFormField(data);"
                        "element.value === oldValue",
                       newValue]))
+      << "A non-form element's value should changed.";
+}
+
+TEST_F(AutofillControllerJsTest, FillSpecificFormField) {
+  web::test::LoadHtml(kHTMLForTestingElements, web_state());
+
+  web::WebFrame* main_frame = WaitForMainFrame();
+  ASSERT_TRUE(main_frame);
+
+  uint32_t next_available_id = 1;
+  autofill::FormUtilJavaScriptFeature::GetInstance()
+      ->SetUpForUniqueIDsWithInitialState(main_frame, next_available_id);
+
+  // Wait for `SetUpForUniqueIDsWithInitialState` to complete.
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
+    return [ExecuteJavaScript(@"document[__gCrWeb.fill.ID_SYMBOL]") intValue] ==
+           static_cast<int>(next_available_id);
+  }));
+
+  // Simulate form parsing to set renderer IDs.
+  ExecuteJavaScript(@"__gCrWeb.autofill.extractForms(0, true)");
+
+  NSString* new_value = @"new value";
+  EXPECT_NSEQ(new_value,
+              ExecuteJavaScript([NSString
+                  stringWithFormat:
+                      @"var element=document.getElementsByName('lastname')[0];"
+                       "var "
+                       "data={\"name\":\"lastname\",\"value\":\"%@\","
+                       "\"identifier\":\"lastname\",\"unique_renderer_id\":3};"
+                       "__gCrWeb.autofill.fillSpecificFormField(data);"
+                       "element.value",
+                      new_value]));
+
+  EXPECT_NSEQ(@YES,
+              ExecuteJavaScript([NSString
+                  stringWithFormat:
+                      @"var element=document.getElementsByName('gl')[0];"
+                       "var oldValue = element.value;"
+                       "var "
+                       "data={\"name\":\"lastname\",\"value\":\"%@\","
+                       "\"identifier\":\"lastname\",\"unique_renderer_id\":3};"
+                       "__gCrWeb.autofill.fillSpecificFormField(data);"
+                       "element.value === oldValue",
+                      new_value]))
       << "A non-form element's value should changed.";
 }
 

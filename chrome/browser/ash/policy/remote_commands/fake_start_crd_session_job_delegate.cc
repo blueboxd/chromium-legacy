@@ -32,11 +32,9 @@ bool FakeStartCrdSessionJobDelegate::HasActiveSession() const {
   return has_active_session_;
 }
 
-void FakeStartCrdSessionJobDelegate::TerminateSession(
-    base::OnceClosure callback) {
+void FakeStartCrdSessionJobDelegate::TerminateSession() {
   has_active_session_ = false;
   terminate_session_called_ = true;
-  std::move(callback).Run();
 }
 
 void FakeStartCrdSessionJobDelegate::StartCrdHostAndGetCode(
@@ -51,7 +49,8 @@ void FakeStartCrdSessionJobDelegate::StartCrdHostAndGetCode(
     std::move(success_callback).Run(kTestAccessCode);
   } else {
     std::move(error_callback)
-        .Run(ResultCode::FAILURE_CRD_HOST_ERROR, std::string());
+        .Run(ExtendedStartCrdSessionResultCode::kFailureCrdHostError,
+             std::string());
   }
 }
 

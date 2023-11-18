@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/webui/settings/hats_handler.h"
 
 #include <memory>
@@ -9,6 +10,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
 #include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/hats/hats_service_factory.h"
@@ -132,6 +134,43 @@ TEST_F(HatsHandlerTest, PrivacyGuideHats) {
   args.Append(static_cast<int>(
       HatsHandler::TrustSafetyInteraction::COMPLETED_PRIVACY_GUIDE));
   handler()->HandleTrustSafetyInteractionOccurred(args);
+  task_environment()->RunUntilIdle();
+}
+
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_SecurityPageInteractions DISABLED_SecurityPageInteractions
+#else
+#define MAYBE_SecurityPageInteractions SecurityPageInteractions
+#endif
+TEST_F(HatsHandlerTest, MAYBE_SecurityPageInteractions) {
+  SurveyStringData expected_product_specific_data = {
+    {"Security Page User Action", "enhanced_protection_radio_button_clicked"},
+    {"Safe Browsing Setting Before Trigger", "standard_protection"},
+    {"Safe Browsing Setting After Trigger", "standard_protection"},
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    {"Client Channel", "stable"},
+#else
+    {"Client Channel", "unknown"},
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  };
+
+  // Check that triggering the security page handler function will trigger HaTS
+  // correctly.
+  EXPECT_CALL(*mock_hats_service_,
+              LaunchDelayedSurveyForWebContents(
+                  kHatsSurveyTriggerSettingsSecurity, web_contents(), 15000, _,
+                  expected_product_specific_data, true))
+      .Times(1);
+
+  base::Value::List args;
+  args.Append(static_cast<int>(
+      HatsHandler::SecurityPageInteraction::RADIO_BUTTON_ENHANCED_CLICK));
+  args.Append(static_cast<int>(HatsHandler::SafeBrowsingSetting::STANDARD));
+
+  profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled, true);
+  profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingSurveysEnabled, true);
+
+  handler()->HandleSecurityPageInteractionOccurred(args);
   task_environment()->RunUntilIdle();
 }
 

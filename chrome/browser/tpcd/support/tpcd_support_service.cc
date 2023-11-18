@@ -46,6 +46,13 @@ void TpcdSupportService::Shutdown() {
   browser_context_ = nullptr;
 }
 
+void TpcdSupportService::Update3pcdSupportSettingsForTesting(
+    const url::Origin& request_origin,
+    const std::string& partition_site,
+    bool enabled) {
+  Update3pcdSupportSettings(request_origin, partition_site, enabled);
+}
+
 void TpcdSupportService::Update3pcdSupportSettings(
     const url::Origin& request_origin,
     const std::string& partition_site,
@@ -56,7 +63,7 @@ void TpcdSupportService::Update3pcdSupportSettings(
       HostContentSettingsMapFactory::GetForProfile(browser_context_);
   CHECK(settings_map);
 
-  const GURL request_site_as_url = net::SchemefulSite(request_origin).GetURL();
+  const GURL request_site_as_url = request_origin.GetURL();
   const GURL partition_site_as_url = GURL(partition_site);
 
   // Check for an existing `TPCD_SUPPORT` setting that allows the pair.

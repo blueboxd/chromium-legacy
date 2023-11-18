@@ -154,9 +154,10 @@ const long int kSafeModeRestartUiDelayMs = 30000;
 // Makes a call to the policy subsystem to reload the policy when we detect
 // authentication change.
 void RefreshPoliciesOnUIThread() {
-  if (g_browser_process->policy_service())
+  if (g_browser_process->policy_service()) {
     g_browser_process->policy_service()->RefreshPolicies(
         base::OnceClosure(), policy::PolicyFetchReason::kSignin);
+  }
 }
 
 void OnTranferredHttpAuthCaches() {
@@ -204,18 +205,21 @@ bool IsTestingMigrationUI() {
 }
 
 bool ShouldForceDircrypto(const AccountId& account_id) {
-  if (IsTestingMigrationUI())
+  if (IsTestingMigrationUI()) {
     return true;
+  }
 
   // If the device is not officially supported to run ARC, we don't need to
   // force Ext4 dircrypto.
-  if (!arc::IsArcAvailable())
+  if (!arc::IsArcAvailable()) {
     return false;
+  }
 
   // When a user is signing in as a secondary user, we don't need to force Ext4
   // dircrypto since the user can not run ARC.
-  if (UserAddingScreen::Get()->IsRunning())
+  if (UserAddingScreen::Get()->IsRunning()) {
     return false;
+  }
 
   return true;
 }
@@ -286,7 +290,7 @@ int CountRegularUsers(const user_manager::UserList& users) {
   for (auto* user : users) {
     // Skip kiosk apps for login screen user list. Kiosk apps as pods (aka new
     // kiosk UI) is currently disabled and it gets the apps directly from
-    // KioskAppManager, ArcKioskAppManager and WebKioskAppManager.
+    // KioskChromeAppManager, ArcKioskAppManager and WebKioskAppManager.
     if (user->IsKioskType()) {
       continue;
     }
@@ -451,8 +455,9 @@ void ExistingUserController::Observe(
 
   // Don't transfer http auth cache on NOTIFICATION_AUTH_SUPPLIED after user
   // session starts.
-  if (session_manager::SessionManager::Get()->IsSessionStarted())
+  if (session_manager::SessionManager::Get()->IsSessionStarted()) {
     return;
+  }
 
   // Possibly the user has authenticated against a proxy server and we might
   // need the credentials for enrollment and other system requests from the
@@ -489,8 +494,9 @@ void ExistingUserController::CompleteLogin(const UserContext& user_context) {
     return;
   }
 
-  if (is_login_in_progress_)
+  if (is_login_in_progress_) {
     return;
+  }
 
   is_login_in_progress_ = true;
 
@@ -601,7 +607,7 @@ void ExistingUserController::OnGaiaScreenReady() {
 }
 
 void ExistingUserController::OnStartKioskEnableScreen() {
-  KioskAppManager::Get()->GetConsumerKioskAutoLaunchStatus(base::BindOnce(
+  KioskChromeAppManager::Get()->GetConsumerKioskAutoLaunchStatus(base::BindOnce(
       &ExistingUserController::OnConsumerKioskAutoLaunchCheckCompleted,
       weak_factory_.GetWeakPtr()));
 }
@@ -637,9 +643,11 @@ void ExistingUserController::LocalStateChanged(
 }
 
 void ExistingUserController::OnConsumerKioskAutoLaunchCheckCompleted(
-    KioskAppManager::ConsumerKioskAutoLaunchStatus status) {
-  if (status == KioskAppManager::ConsumerKioskAutoLaunchStatus::kConfigurable)
+    KioskChromeAppManager::ConsumerKioskAutoLaunchStatus status) {
+  if (status ==
+      KioskChromeAppManager::ConsumerKioskAutoLaunchStatus::kConfigurable) {
     ShowKioskEnableScreen();
+  }
 }
 
 void ExistingUserController::ShowKioskEnableScreen() {
@@ -727,23 +735,25 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
     // Check networking after trying to login in case user is
     // cached locally or the local admin account.
     if (!network_state_helper_->IsConnected()) {
-      if (is_known_user)
+      if (is_known_user) {
         ShowError(SigninError::kKnownUserFailedNetworkNotConnected, error);
-      else
+      } else {
         ShowError(SigninError::kNewUserFailedNetworkNotConnected, error);
+      }
     } else {
-      if (is_known_user)
+      if (is_known_user) {
         ShowError(SigninError::kKnownUserFailedNetworkConnected, error);
-      else
+      } else {
         ShowError(SigninError::kNewUserFailedNetworkConnected, error);
+      }
     }
     StartAutoLoginTimer();
   }
 
-  for (auto& auth_status_consumer : auth_status_consumers_)
+  for (auto& auth_status_consumer : auth_status_consumers_) {
     auth_status_consumer.OnAuthFailure(failure);
+  }
 
-  ClearActiveDirectoryState();
   ClearRecordedNames();
 }
 
@@ -919,8 +929,13 @@ void ExistingUserController::OnProfilePrepared(Profile* profile,
 
   // Inform `auth_status_consumers_` about successful login.
   // TODO(nkostylev): Pass UserContext back crbug.com/424550
-  for (auto& auth_status_consumer : auth_status_consumers_)
+  for (auto& auth_status_consumer : auth_status_consumers_) {
     auth_status_consumer.OnAuthSuccess(user_context);
+  }
+}
+
+base::WeakPtr<UserSessionManagerDelegate> ExistingUserController::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 void ExistingUserController::OnOffTheRecordAuthSuccess() {
@@ -929,13 +944,15 @@ void ExistingUserController::OnOffTheRecordAuthSuccess() {
   // that would actually complete the login process.
 
   // Mark the device as registered., i.e. the second part of OOBE as completed.
-  if (!StartupUtils::IsDeviceRegistered())
+  if (!StartupUtils::IsDeviceRegistered()) {
     StartupUtils::MarkDeviceRegistered(base::OnceClosure());
+  }
 
   UserSessionManager::GetInstance()->CompleteGuestSessionLogin(guest_mode_url_);
 
-  for (auto& auth_status_consumer : auth_status_consumers_)
+  for (auto& auth_status_consumer : auth_status_consumers_) {
     auth_status_consumer.OnOffTheRecordAuthSuccess();
+  }
 }
 
 void ExistingUserController::OnPasswordChangeDetectedLegacy(
@@ -953,8 +970,9 @@ void ExistingUserController::OnPasswordChangeDetectedLegacy(
     return;
   }
 
-  for (auto& auth_status_consumer : auth_status_consumers_)
+  for (auto& auth_status_consumer : auth_status_consumers_) {
     auth_status_consumer.OnPasswordChangeDetectedLegacy(user_context);
+  }
 
   ShowPasswordChangedDialogLegacy(user_context);
 }
@@ -990,6 +1008,23 @@ void ExistingUserController::OnPasswordChangeDetectedImpl(
 
   GetLoginDisplayHost()->GetSigninUI()->StartCryptohomeRecovery(
       std::move(user_context));
+}
+
+void ExistingUserController::OnLocalAuthenticationRequired(
+    std::unique_ptr<UserContext> user_context) {
+  GetLoginDisplayHost()->GetSigninUI()->RunLocalAuthentication(
+      std::move(user_context));
+}
+
+void ExistingUserController::ResumeAfterLocalAuthentication(
+    std::unique_ptr<UserContext> user_context) {
+  CHECK(login_performer_);
+  login_performer_->LoginAuthenticated(std::move(user_context));
+}
+
+void ExistingUserController::OnLocalAuthenticationCancelled() {
+  login_performer_.reset(nullptr);
+  PerformLoginFinishedActions(true /* start auto login timer */);
 }
 
 void ExistingUserController::OnOldEncryptionDetected(
@@ -1033,7 +1068,6 @@ void ExistingUserController::AllowlistCheckFailed(const std::string& email) {
         AuthFailure(AuthFailure::ALLOWLIST_CHECK_FAILED));
   }
 
-  ClearActiveDirectoryState();
   ClearRecordedNames();
 }
 
@@ -1041,7 +1075,6 @@ void ExistingUserController::PolicyLoadFailed() {
   ShowError(SigninError::kOwnerKeyLost, std::string());
 
   PerformLoginFinishedActions(false /* don't start auto login timer */);
-  ClearActiveDirectoryState();
   ClearRecordedNames();
 }
 
@@ -1074,15 +1107,17 @@ void ExistingUserController::RemoveLoginStatusConsumer(
 }
 
 LoginPerformer::AuthorizationMode ExistingUserController::auth_mode() const {
-  if (login_performer_)
+  if (login_performer_) {
     return login_performer_->auth_mode();
+  }
 
   return auth_mode_;
 }
 
 bool ExistingUserController::password_changed() const {
-  if (login_performer_)
+  if (login_performer_) {
     return login_performer_->password_changed();
+  }
 
   return password_changed_;
 }
@@ -1097,9 +1132,10 @@ user_manager::UserList ExistingUserController::ExtractLoginUsers(
   for (auto* user : users) {
     // Skip kiosk apps for login screen user list. Kiosk apps as pods (aka new
     // kiosk UI) is currently disabled and it gets the apps directly from
-    // KioskAppManager, ArcKioskAppManager and WebKioskAppManager.
-    if (user->IsKioskType())
+    // KioskChromeAppManager, ArcKioskAppManager and WebKioskAppManager.
+    if (user->IsKioskType()) {
       continue;
+    }
     const bool meets_allowlist_requirements =
         !user->HasGaiaAccount() ||
         user_manager::UserManager::Get()->IsGaiaUserAllowed(*user);
@@ -1107,8 +1143,9 @@ user_manager::UserList ExistingUserController::ExtractLoginUsers(
     const bool meets_show_users_requirements =
         show_users_on_signin ||
         user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
-    if (meets_allowlist_requirements && meets_show_users_requirements)
+    if (meets_allowlist_requirements && meets_show_users_requirements) {
       filtered_users.push_back(user);
+    }
   }
   return filtered_users;
 }
@@ -1306,13 +1343,13 @@ void ExistingUserController::OnPublicSessionAutoLoginTimerFire() {
 void ExistingUserController::StopAutoLoginTimer() {
   VLOG(2) << "Stopping autologin timer that is "
           << (auto_login_timer_ ? "" : "not ") << "running";
-  if (auto_login_timer_)
+  if (auto_login_timer_) {
     auto_login_timer_->Stop();
+  }
 }
 
 void ExistingUserController::CancelPasswordChangedFlow() {
   login_performer_.reset(nullptr);
-  ClearActiveDirectoryState();
   PerformLoginFinishedActions(true /* start auto login timer */);
 }
 
@@ -1354,8 +1391,9 @@ void ExistingUserController::StartAutoLoginTimer() {
   }
 
   // Start the auto-login timer.
-  if (!auto_login_timer_)
+  if (!auto_login_timer_) {
     auto_login_timer_ = std::make_unique<base::OneShotTimer>();
+  }
 
   VLOG(2) << "Public session autologin will be fired in " << auto_login_delay_
           << "ms";
@@ -1392,8 +1430,9 @@ void ExistingUserController::SetPublicSessionKeyboardLayoutAndLogin(
     base::Value::Dict& entry_dict = entry.GetDict();
     if (entry_dict.FindBool("selected").value_or(false)) {
       const std::string* keyboard_layout_ptr = entry_dict.FindString("value");
-      if (keyboard_layout_ptr)
+      if (keyboard_layout_ptr) {
         keyboard_layout = *keyboard_layout_ptr;
+      }
       break;
     }
   }
@@ -1446,8 +1485,9 @@ void ExistingUserController::PerformLoginFinishedActions(
         ->SetKeyboardEventsAndSystemTrayEnabled(true);
   }
 
-  if (start_auto_login_timer)
+  if (start_auto_login_timer) {
     StartAutoLoginTimer();
+  }
 }
 
 void ExistingUserController::ContinueLoginWhenCryptohomeAvailable(
@@ -1481,8 +1521,9 @@ void ExistingUserController::ContinueLoginIfDeviceNotDisabled(
       cros_settings_->PrepareTrustedValues(base::BindOnce(
           &ExistingUserController::ContinueLoginIfDeviceNotDisabled,
           weak_factory_.GetWeakPtr(), std::move(split_continuation.first)));
-  if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
+  if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED) {
     return;
+  }
 
   if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
     // If the `cros_settings_` are permanently untrusted, show an error message
@@ -1527,9 +1568,7 @@ void ExistingUserController::DoCompleteLogin(
   std::string device_id = known_user.GetDeviceId(user_context.GetAccountId());
   if (device_id.empty()) {
     const bool is_ephemeral = ChromeUserManager::Get()->IsEphemeralAccountId(
-                                  user_context.GetAccountId()) &&
-                              user_context.GetAccountId() !=
-                                  ChromeUserManager::Get()->GetOwnerAccountId();
+        user_context.GetAccountId());
     device_id = GenerateSigninScopedDeviceId(is_ephemeral);
   }
   user_context.SetDeviceId(device_id);
@@ -1568,9 +1607,10 @@ void ExistingUserController::DoLogin(const UserContext& user_context,
   if (user_context.GetUserType() == user_manager::USER_TYPE_GUEST) {
     if (!specifics.guest_mode_url.empty()) {
       guest_mode_url_ = GURL(specifics.guest_mode_url);
-      if (specifics.guest_mode_url_append_locale)
+      if (specifics.guest_mode_url_append_locale) {
         guest_mode_url_ = google_util::AppendGoogleLocaleParam(
             guest_mode_url_, g_browser_process->GetApplicationLocale());
+      }
     }
     LoginAsGuest();
     return;
@@ -1583,7 +1623,8 @@ void ExistingUserController::DoLogin(const UserContext& user_context,
 
   if (user_context.GetUserType() == user_manager::USER_TYPE_KIOSK_APP) {
     LoginAsKioskApp(
-        KioskAppId::ForChromeApp(user_context.GetAccountId().GetUserEmail()));
+        KioskAppId::ForChromeApp(user_context.GetAccountId().GetUserEmail(),
+                                 user_context.GetAccountId()));
     return;
   }
 
@@ -1631,13 +1672,6 @@ void ExistingUserController::OnOAuth2TokensFetched(
 
 void ExistingUserController::ClearRecordedNames() {
   display_email_.clear();
-}
-
-void ExistingUserController::ClearActiveDirectoryState() {
-  if (last_login_attempt_account_id_.GetAccountType() !=
-      AccountType::ACTIVE_DIRECTORY) {
-    return;
-  }
 }
 
 AccountId ExistingUserController::GetLastLoginAttemptAccountId() const {

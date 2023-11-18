@@ -91,39 +91,34 @@ const std::u16string GetDestination(DlpFileDestination destination) {
 }
 
 const std::u16string GetJustificationLabelText(dlp::FileAction action) {
-  std::u16string text;
-  // TODO(b/299870671): replace with final strings once available.
   switch (action) {
     case dlp::FileAction::kDownload:
-      text = u"downloading";
-      break;
+      return l10n_util::GetStringUTF16(
+          IDS_POLICY_DLP_FILES_DOWNLOAD_JUSTIFICATION_LABEL);
     case dlp::FileAction::kUpload:
-      text = u"uploading";
-      break;
+      return l10n_util::GetStringUTF16(
+          IDS_POLICY_DLP_FILES_UPLOAD_JUSTIFICATION_LABEL);
     case dlp::FileAction::kCopy:
-      text = u"copying";
-      break;
+      return l10n_util::GetStringUTF16(
+          IDS_POLICY_DLP_FILES_COPY_JUSTIFICATION_LABEL);
     case dlp::FileAction::kMove:
-      text = u"moving";
-      break;
+      return l10n_util::GetStringUTF16(
+          IDS_POLICY_DLP_FILES_MOVE_JUSTIFICATION_LABEL);
     case dlp::FileAction::kOpen:
-      text = u"opening";
-      break;
     case dlp::FileAction::kShare:
-      text = u"sharing";
-      break;
+      return l10n_util::GetStringUTF16(
+          IDS_POLICY_DLP_FILES_OPEN_JUSTIFICATION_LABEL);
     case dlp::FileAction::kTransfer:
     case dlp::FileAction::kUnknown:
-      text = u"transferring";
-      break;
+      return l10n_util::GetStringUTF16(
+          IDS_POLICY_DLP_FILES_TRANSFER_JUSTIFICATION_LABEL);
   }
-  return u"Provide reason for " + text + u" (required):";
 }
 
 }  // namespace
 
 FilesPolicyWarnDialog::FilesPolicyWarnDialog(
-    OnDlpRestrictionCheckedWithJustificationCallback callback,
+    WarningWithJustificationCallback callback,
     dlp::FileAction action,
     gfx::NativeWindow modal_parent,
     absl::optional<DlpFileDestination> destination,
@@ -283,7 +278,7 @@ std::u16string FilesPolicyWarnDialog::GetMessage() {
 }
 
 void FilesPolicyWarnDialog::ProceedWarning(
-    OnDlpRestrictionCheckedWithJustificationCallback callback) {
+    WarningWithJustificationCallback callback) {
   absl::optional<std::u16string> user_justification;
   if (justification_field_) {
     user_justification = justification_field_->GetText();
@@ -293,7 +288,7 @@ void FilesPolicyWarnDialog::ProceedWarning(
 }
 
 void FilesPolicyWarnDialog::CancelWarning(
-    OnDlpRestrictionCheckedWithJustificationCallback callback) {
+    WarningWithJustificationCallback callback) {
   std::move(callback).Run(/*user_justification=*/absl::nullopt,
                           /*should_proceed=*/false);
 }

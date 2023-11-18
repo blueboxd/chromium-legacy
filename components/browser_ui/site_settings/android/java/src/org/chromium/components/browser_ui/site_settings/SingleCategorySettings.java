@@ -19,6 +19,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
 import android.util.Pair;
@@ -83,6 +84,8 @@ import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modaldialog.ModalDialogProperties.ButtonType;
 import org.chromium.ui.modaldialog.ModalDialogProperties.Controller;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.text.NoUnderlineClickableSpan;
+import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
@@ -100,16 +103,20 @@ import java.util.Set;
 
 /**
  * Shows a list of sites in a particular Site Settings category. For example, this could show all
- * the websites with microphone permissions. When the user selects a site, SingleWebsiteSettings
- * is launched to allow the user to see or modify the settings for that particular website.
+ * the websites with microphone permissions. When the user selects a site, SingleWebsiteSettings is
+ * launched to allow the user to see or modify the settings for that particular website.
  */
 @UsedByReflection("site_settings_preferences.xml")
 public class SingleCategorySettings extends BaseSiteSettingsFragment
-        implements OnPreferenceChangeListener, OnPreferenceClickListener, SiteAddedCallback,
-                   OnPreferenceTreeClickListener, FragmentSettingsLauncher,
-                   OnCookiesDetailsRequested,
-                   TriStateCookieSettingsPreference.OnCookiesDetailsRequested,
-                   CustomDividerFragment {
+        implements OnPreferenceChangeListener,
+                OnPreferenceClickListener,
+                SiteAddedCallback,
+                OnPreferenceTreeClickListener,
+                FragmentSettingsLauncher,
+                OnCookiesDetailsRequested,
+                TriStateCookieSettingsPreference.OnCookiesDetailsRequested,
+                CustomDividerFragment,
+                WebsitePreference.OnStorageAccessWebsiteDetailsRequested {
     @IntDef({GlobalToggleLayout.BINARY_TOGGLE, GlobalToggleLayout.TRI_STATE_TOGGLE,
             GlobalToggleLayout.TRI_STATE_COOKIE_TOGGLE,
             GlobalToggleLayout.FOUR_STATE_COOKIE_TOGGLE})
@@ -183,6 +190,18 @@ public class SingleCategorySettings extends BaseSiteSettingsFragment
 
         mSettingsLauncher.launchSettingsActivity(
                 getActivity(), FPSCookieSettings.class, fragmentArgs);
+    }
+
+    @Override
+    public void onStorageAccessWebsiteDetailsRequested(WebsitePreference website) {
+        Bundle fragmentArgs = new Bundle();
+        fragmentArgs.putSerializable(
+                StorageAccessSubpageSettings.EXTRA_STORAGE_ACCESS_STATE, website.site());
+        fragmentArgs.putBoolean(
+                StorageAccessSubpageSettings.EXTRA_ALLOWED, !isOnBlockList(website));
+
+        mSettingsLauncher.launchSettingsActivity(
+                getActivity(), StorageAccessSubpageSettings.class, fragmentArgs);
     }
 
     // Note: these values must match the SiteLayout enum in enums.xml.
@@ -624,6 +643,8 @@ public class SingleCategorySettings extends BaseSiteSettingsFragment
             prefService.setBoolean(DESKTOP_SITE_DISPLAY_SETTING_ENABLED, (boolean) newValue);
         } else if (DESKTOP_SITE_WINDOW_TOGGLE_KEY.equals(preference.getKey())) {
             prefService.setBoolean(DESKTOP_SITE_WINDOW_SETTING_ENABLED, (boolean) newValue);
+            RecordHistogram.recordBooleanHistogram(
+                    "Android.RequestDesktopSite.WindowSettingChanged", (boolean) newValue);
         }
         return true;
     }
@@ -929,6 +950,10 @@ public class SingleCategorySettings extends BaseSiteSettingsFragment
             if (mSearch == null || mSearch.isEmpty() || site.getTitle().contains(mSearch)) {
                 WebsitePreference preference = new WebsitePreference(
                         getStyledContext(), getSiteSettingsDelegate(), site, mCategory);
+
+                if (mCategory.getType() == SiteSettingsCategory.Type.STORAGE_ACCESS) {
+                    preference.setStorageAccessSettingsPageListener(this);
+                }
                 websites.add(preference);
                 preference.setManagedPreferenceDelegate(websiteDelegate);
             }
@@ -1158,8 +1183,8 @@ public class SingleCategorySettings extends BaseSiteSettingsFragment
             infoText.setSummary(R.string.website_settings_cookie_info);
         } else if (mCategory.getType() == SiteSettingsCategory.Type.SITE_DATA) {
             infoText.setSummary(R.string.website_settings_site_data_page_description);
-        } else if (mCategory.getType() == SiteSettingsCategory.Type.THIRD_PARTY_COOKIES) {
-            infoText.setSummary(R.string.website_settings_third_party_cookies_page_description);
+        } else if (mCategory.getType() == SiteSettingsCategory.Type.STORAGE_ACCESS) {
+            infoText.setSummary(getStorageAccessSummary());
         } else {
             screen.removePreference(infoText);
         }
@@ -1277,6 +1302,21 @@ public class SingleCategorySettings extends BaseSiteSettingsFragment
         managedGroup.setOnPreferenceClickListener(this);
     }
 
+    private SpannableString getStorageAccessSummary() {
+        final String storageAccessRawString =
+                getContext().getString(R.string.website_settings_storage_access_page_description);
+        final NoUnderlineClickableSpan clickableSpan =
+                new NoUnderlineClickableSpan(
+                        getContext(),
+                        (widget) -> {
+                            getSiteSettingsDelegate()
+                                    .launchStorageAccessHelpActivity(getActivity());
+                        });
+        return SpanApplier.applySpans(
+                storageAccessRawString,
+                new SpanApplier.SpanInfo("<link>", "</link>", clickableSpan));
+    }
+
     private void maybeShowOsWarning(PreferenceScreen screen) {
         if (isBlocked()) {
             return;
@@ -1331,6 +1371,9 @@ public class SingleCategorySettings extends BaseSiteSettingsFragment
                 getSiteSettingsDelegate().isPrivacySandboxFirstPartySetsUIFeatureEnabled();
         params.isFirstPartySetsDataAccessEnabled =
                 getSiteSettingsDelegate().isFirstPartySetsDataAccessEnabled();
+        params.shouldShowTrackingProtectionOffboardingCard =
+                getSiteSettingsDelegate().shouldShowSettingsOffboardingNotice();
+        params.customTabIntentHelper = getCustomTabIntentHelper();
         triStateCookieToggle.setState(params);
     }
 
@@ -1368,6 +1411,13 @@ public class SingleCategorySettings extends BaseSiteSettingsFragment
         }
         binaryToggle.setSummaryOff(ContentSettingsResources.getDisabledSummary(
                 contentType, getSiteSettingsDelegate()));
+        int summaryForAccessibility =
+                ContentSettingsResources.getSummaryOverrideForScreenReader(
+                        contentType, getSiteSettingsDelegate());
+        if (summaryForAccessibility != 0) {
+            binaryToggle.setSummaryOverrideForScreenReader(
+                    getContext().getString(summaryForAccessibility));
+        }
 
         binaryToggle.setManagedPreferenceDelegate(new SingleCategoryManagedPreferenceDelegate(
                 getSiteSettingsDelegate().getManagedPreferenceDelegate()));

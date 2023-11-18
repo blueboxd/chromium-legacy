@@ -8,6 +8,19 @@
 
 namespace ui {
 
+NSString* const kUTTypeChromiumImageAndHTML = @"org.chromium.image-html";
+
+NSString* const kUTTypeChromiumInitiatedDrag =
+    @"org.chromium.chromium-initiated-drag";
+
+NSString* const kUTTypeChromiumPrivilegedInitiatedDrag =
+    @"org.chromium.chromium-privileged-initiated-drag";
+
+NSString* const kUTTypeChromiumRendererInitiatedDrag =
+    @"org.chromium.chromium-renderer-initiated-drag";
+
+NSString* const kUTTypeChromiumWebCustomData = @"org.chromium.web-custom-data";
+
 NSString* const kImageSvg = @"public.svg-image";
 // TODO(dcheng): This name is temporary. See crbug.com/106449.
 NSString* const kWebCustomDataPboardType = @"org.chromium.web-custom-data";

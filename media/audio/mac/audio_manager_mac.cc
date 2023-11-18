@@ -448,58 +448,6 @@ static bool GetDeviceChannels(AudioUnit audio_unit,
 
     DVLOG(2) << __FUNCTION__ << " Output channels: " << *channels;
     return true;
-
-  // We don't want to have to know about all channel layout tags, so force OSX
-  // to give us the channel descriptions from the bitmap or tag if necessary.
-  const AudioChannelLayoutTag tag = layout->mChannelLayoutTag;
-  if (tag != kAudioChannelLayoutTag_UseChannelDescriptions) {
-    const bool is_bitmap = tag == kAudioChannelLayoutTag_UseChannelBitmap;
-    const AudioFormatPropertyID fa =
-        is_bitmap ? kAudioFormatProperty_ChannelLayoutForBitmap
-                  : kAudioFormatProperty_ChannelLayoutForTag;
-
-    if (is_bitmap) {
-      result = AudioFormatGetPropertyInfo(fa, sizeof(UInt32),
-                                          &layout->mChannelBitmap, &size);
-    } else {
-      result = AudioFormatGetPropertyInfo(fa, sizeof(AudioChannelLayoutTag),
-                                          &tag, &size);
-    }
-    if (result != noErr || !size) {
-      OSSTATUS_DLOG(ERROR, result)
-          << "Failed to get AudioFormat property info, size=" << size;
-      return false;
-    }
-
-    layout_storage.reset(new uint8_t[size]);
-    layout = reinterpret_cast<AudioChannelLayout*>(layout_storage.get());
-    if (is_bitmap) {
-      result = AudioFormatGetProperty(fa, sizeof(UInt32),
-                                      &layout->mChannelBitmap, &size, layout);
-    } else {
-      result = AudioFormatGetProperty(fa, sizeof(AudioChannelLayoutTag), &tag,
-                                      &size, layout);
-    }
-    if (result != noErr) {
-      OSSTATUS_DLOG(ERROR, result) << "Failed to get AudioFormat property.";
-      return false;
-    }
-  }
-
-  // There is no channel info for stereo, assume so for mono as well.
-  if (layout->mNumberChannelDescriptions <= 2) {
-    *channels = layout->mNumberChannelDescriptions;
-  } else {
-    *channels = 0;
-    for (UInt32 i = 0; i < layout->mNumberChannelDescriptions; ++i) {
-      if (layout->mChannelDescriptions[i].mChannelLabel !=
-          kAudioChannelLabel_Unknown) {
-        (*channels)++;
-      }
-    }
-  }
-
-  DVLOG(2) << __FUNCTION__ << " Output channels: " << *channels;
   return true;
   } else {
     return false;
@@ -1156,7 +1104,7 @@ bool AudioManagerMac::MaybeChangeBufferSize(AudioDeviceID device_id,
   UInt32 property_size = sizeof(buffer_size);
   OSStatus result = AudioUnitGetProperty(
       audio_unit, kAudioDevicePropertyBufferFrameSize, kAudioUnitScope_Global,
-      0, &buffer_size, &property_size);
+      AUElement::OUTPUT, &buffer_size, &property_size);
   if (result != noErr) {
     OSSTATUS_DLOG(ERROR, result)
         << "AudioUnitGetProperty(kAudioDevicePropertyBufferFrameSize) failed.";

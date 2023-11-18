@@ -65,6 +65,9 @@ extern const char kMimeTypeWebkitSmartPaste[];
 #else
 // MacOS-specific Uniform Type Identifiers.
 
+COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
+extern NSString* const kUTTypeChromiumInitiatedDrag;
+
 // SVG images.
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
 extern NSString* const kImageSvg;
@@ -73,10 +76,16 @@ extern NSString* const kImageSvg;
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
 extern NSString* const kWebCustomDataPboardType;
 
+COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
+extern NSString* const kUTTypeChromiumPrivilegedInitiatedDrag;
+
 // Tells us if WebKit was the last to write to the pasteboard. There's no
 // actual data associated with this type.
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
 extern NSString* const kWebSmartPastePboardType;
+
+COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
+extern NSString* const kUTTypeChromiumRendererInitiatedDrag;
 
 // Data format used to tag the current data as confidential.
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)

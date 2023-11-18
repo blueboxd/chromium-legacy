@@ -170,43 +170,6 @@ void SuspendObserverDelegate::DoStartObserver(
   }
 }
 
-void SuspendObserverDelegate::DoOnDeviceChanged(
-    NSArray<AVCaptureDevice*>* devices) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  std::vector<DeviceInfo> snapshot_devices;
-  for (AVCaptureDevice* device in devices) {
-    [suspend_observer_ startObserving:device];
-
-    BOOL suspended = [device respondsToSelector:@selector(isSuspended)] &&
-                     [device isSuspended];
-    DeviceInfo::DeviceType device_type = DeviceInfo::kUnknown;
-    if ([device hasMediaType:AVMediaTypeVideo]) {
-      if (suspended) {
-        continue;
-      }
-      device_type = DeviceInfo::kVideo;
-    } else if ([device hasMediaType:AVMediaTypeMuxed]) {
-      device_type = suspended ? DeviceInfo::kAudio : DeviceInfo::kMuxed;
-    } else if ([device hasMediaType:AVMediaTypeAudio]) {
-      device_type = DeviceInfo::kAudio;
-    }
-    snapshot_devices.emplace_back(base::SysNSStringToUTF8(device.uniqueID),
-                                  device_type);
-  }
-  // Make sure no references are held to |devices| when
-  // ConsolidateDevicesListAndNotify is called since the VideoCaptureManager
-  // and AudioCaptureManagers also enumerates the available devices but on
-  // another thread.
-  devices = nil;
-
-  // |avfoundation_monitor_impl_| might have been NULLed asynchronously before
-  // arriving at this line.
-  if (avfoundation_monitor_impl_) {
-    avfoundation_monitor_impl_->ConsolidateDevicesListAndNotify(
-        snapshot_devices);
-  }
-}
-
 // AVFoundation implementation of the Mac Device Monitor, registers as a global
 // device connect/disconnect observer and plugs suspend/wake up device observers
 // per device. This class is created and lives on the main Application thread

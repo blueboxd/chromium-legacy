@@ -37,6 +37,8 @@ class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderMac
   CreateProviderWrappingPasteboard(NSPasteboard* pasteboard);
 
   // Overridden from OSExchangeDataProvider:
+  void MarkOriginatedFromRenderer();
+  bool DidOriginateFromRenderer() const;
   void MarkRendererTaintedFromOrigin(const url::Origin& origin) override;
   bool IsRendererTainted() const override;
   absl::optional<url::Origin> GetRendererTaintedOrigin() const override;
@@ -52,6 +54,7 @@ class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderMac
   bool GetURLAndTitle(FilenameToURLPolicy policy,
                       GURL* url,
                       std::u16string* title) const override;
+  bool GetFilename(base::FilePath* path) const;
   bool GetFilenames(std::vector<FileInfo>* filenames) const override;
   bool GetPickledData(const ClipboardFormatType& format,
                       base::Pickle* data) const override;

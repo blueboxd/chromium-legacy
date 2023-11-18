@@ -7337,6 +7337,12 @@ const char kCrOSSystemVoiceIsolationOptionName[] =
 const char kCrOSSystemVoiceIsolationOptionDescription[] =
     "Enable the options of setting system voice isolation per stream.";
 
+const char kAudioFlexibleLoopbackForSystemLoopbackName[] =
+    "Use FLEXIBLE_LOOPBACK instead of POST_MIX_LOOPBACK";
+const char kAudioFlexibleLoopbackForSystemLoopbackDescription[] =
+    "Request a FLEXIBLE_LOOPBACK instead of POST_MIX_LOOPBACK for system "
+    "loopback";
+
 const char kCrosPrivacyHubName[] = "Enable ChromeOS Privacy Hub";
 const char kCrosPrivacyHubDescription[] = "Enables ChromeOS Privacy Hub.";
 

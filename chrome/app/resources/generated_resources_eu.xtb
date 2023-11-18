@@ -401,7 +401,7 @@ Txartel adimenduna sartuta edukitzea eskatzen du <ph name="DOMAIN" /> domeinuak.
 <translation id="13130607084115184">Gordetako pasahitzak hemen agertuko dira. Pasahitzak <ph name="BRAND" /> zerbitzura inportatzeko gailu honetan, <ph name="BEGIN_LINK" /> hautatu CSV fitxategi bat.<ph name="END_LINK" /></translation>
 <translation id="1313264149528821971">Hauek kendu dira: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" />, <ph name="PERMISSION_3" /></translation>
 <translation id="1313405956111467313">Proxy-konfigurazio automatikoa</translation>
-<translation id="131364520783682672">Maiuskula-blokeoa</translation>
+<translation id="131364520783682672">Maiuskulen blokeoa</translation>
 <translation id="1313660246522271310">Webgune guztietan amaituko da saioa, baita irekita dauden fitxetan ere</translation>
 <translation id="1313705515580255288">Laster-markak, historia eta bestelako ezarpenak Google-ko kontuarekin sinkronizatuko dira.</translation>
 <translation id="1315184295353569363">Ezabatu taldea</translation>
@@ -873,7 +873,7 @@ Baliteke aplikazioei emandako baimenak kontu honi aplikatzea. <ph name="APPS_LIN
 <translation id="1677306805708094828">Ezin da gehitu <ph name="EXTENSION_TYPE_PARAMETER" /></translation>
 <translation id="1677472565718498478"><ph name="TIME" /> geratzen dira</translation>
 <translation id="1678849866171627536">Ezin izan da aztertu. Baliteke fitxategi hau birusa edo malwarea izatea.</translation>
-<translation id="1679068421605151609">Garatzaileen tresnak</translation>
+<translation id="1679068421605151609">Garatzaileentzako tresnak</translation>
 <translation id="1679810534535368772">Ziur irten nahi duzula?</translation>
 <translation id="167983332380191032">HTTParen errore bat bidali du kudeaketa-zerbitzuak.</translation>
 <translation id="167997285881077031">Testua ahots bihurtzeko eginbidearen ahots-ezarpenak</translation>
@@ -1447,7 +1447,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="2114820389966440614">Ikusi "Azkenaldiko aipagarriak" eta beste oroitzapen batzuk hemen</translation>
 <translation id="2114896190328250491">Argazkiaren egilea: <ph name="NAME" /></translation>
 <translation id="2114995631896158695">Ez da sartu SIM txartelik</translation>
-<translation id="2116619964159595185">Webguneak Bluetooth bidezko gailuetara konektatu ohi dira kontsumo txikiko kokapen-adierazle bat, osasunaren edo fitnessaren jarraipena egiteko gailu bat, edo bonbilla adimendun bat konfiguratzeko edo sinkronizatzeko, eta antzeko eginbideak eskaintzeko</translation>
+<translation id="2116619964159595185">Webguneak Bluetooth bidezko gailuetara konektatu ohi dira kontsumo txikiko kokapen-adierazle bat, osasunaren edo fitnessaren jarraipen-gailu bat, edo bonbilla adimendun bat konfiguratzeko edo sinkronizatzeko, eta antzeko eginbideak eskaintzeko</translation>
 <translation id="2117655453726830283">Hurrengo diapositiba</translation>
 <translation id="2119461801241504254">Arakatze segurua aktibatuta dago, eta webgune eta deskarga kaltegarrietatik babesten zaitu</translation>
 <translation id="2120297377148151361">Jarduerak eta interakzioak</translation>
@@ -3613,7 +3613,7 @@ Besteak beste, instalatutako softwareari, fitxategiei, arakatzaileari eta sistem
 <translation id="3834728400518755610">Mikrofonoaren ezarpenean egindako aldaketa aplikatzeko, itxi egin behar da Linux. Aurrera egiteko, itxi Linux.</translation>
 <translation id="3834775135533257713">Ezin izan da gehitu "<ph name="TO_INSTALL_APP_NAME" />" aplikazioa, "<ph name="INSTALLED_APP_NAME" />" aplikazioarekin gatazkan dagoelako.</translation>
 <translation id="3835904559946595746">Ezin izan da leheneratu Linux-en babeskopia</translation>
-<translation id="383669374481694771">Gailu honi eta hura erabiltzeko moduari buruzko informazio orokorra da hau (adibidez, bateria-maila, sistemako eta aplikazioetako jarduerak, eta erroreak). Android hobetzeko erabiliko dira datuok. Gainera, multzokatutako datu batzuk oso baliagarriak dira Google-ren aplikazioak hobetzeko eta bazkideei (adibidez, Android-en garatzaileei) euren aplikazio eta produktuak hobetzen laguntzeko.</translation>
+<translation id="383669374481694771">Gailu honi eta hura erabiltzeko moduari buruzko informazio orokorra da hau (adibidez, bateria-maila, sistemako eta aplikazioetako jarduerak, eta erroreak). Android hobetzeko erabiliko dira datuok. Gainera, datu bateratu batzuk oso baliagarriak dira Google-ren aplikazioak hobetzeko eta bazkideei (adibidez, Android-en garatzaileei) euren aplikazio eta produktuak hobetzen laguntzeko.</translation>
 <translation id="3837569373891539515">Dagozkion guztiak hauta ditzakezu. <ph name="DEVICE_TYPE" /> gailua konfiguratzen amaitzean, Ezarpenak atalean aurkituko dituzu aukera hauek.</translation>
 <translation id="3838085852053358637">Ezin izan da kargatu luzapena</translation>
 <translation id="3838486795898716504"><ph name="PAGE_TITLE" /> orriaren jarraipena</translation>
@@ -5718,7 +5718,7 @@ Baliteke webguneei eta aplikazioei emandako baimenak kontu honi aplikatzea. Goog
 <translation id="5583640892426849032">Atzera tekla</translation>
 <translation id="5584088138253955452">Erabiltzaile-izena gorde nahi duzu?</translation>
 <translation id="5584091888252706332">Abioan</translation>
-<translation id="5584915726528712820"><ph name="BEGIN_PARAGRAPH1" />Gailuari eta hura erabiltzeko moduari buruzko informazio orokorra da (adibidez, bateria-maila, sistemako eta aplikazioetako jarduerak, eta erroreak). Android hobetzeko erabiliko dira datuok. Gainera, multzokatutako datu batzuk oso baliagarriak dira Google-ren aplikazioak hobetzeko eta bazkideei (adibidez, Android garatzaileei) euren aplikazio eta produktuak hobetzen laguntzeko.<ph name="END_PARAGRAPH1" />
+<translation id="5584915726528712820"><ph name="BEGIN_PARAGRAPH1" />Gailuari eta hura erabiltzeko moduari buruzko informazio orokorra da (adibidez, bateria-maila, sistemako eta aplikazioetako jarduerak, eta erroreak). Android hobetzeko erabiliko dira datuok. Gainera, datu bateratu batzuk oso baliagarriak dira Google-ren aplikazioak hobetzeko eta bazkideei (adibidez, Android garatzaileei) euren aplikazio eta produktuak hobetzen laguntzeko.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Eginbidea desaktibatuta ere, gailuak beharrezko informazioa bidaltzen jarraitu ahal izango du funtsezko zerbitzuak jasotzeko, hala nola sistemaren eguneratzeak eta segurtasun-neurriak.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />Jabeak kontrolatu nahi badu, atal honetara joan beharko du: Ezarpenak &gt; Aurreratuak &gt; Bidali Google-ri diagnostiko- eta erabilera-datuak automatikoki.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />Sareko eta aplikazioetako jarduera gehigarriak ezarpena aktibatuta badago, baliteke datu horiek Google-ko kontuan gordetzea. Zure datuak ikusi edo ezabatzeko eta kontuaren ezarpenak aldatzeko, joan account.google.com helbidera.<ph name="END_PARAGRAPH4" /></translation>
@@ -5848,7 +5848,7 @@ Baliteke webguneei eta aplikazioei emandako baimenak kontu honi aplikatzea. Goog
 <translation id="5696679855467848181">Oraingo PPD fitxategia: <ph name="PPD_NAME" /></translation>
 <translation id="5697832193891326782">Emoji-hautatzailea</translation>
 <translation id="5698462638680260399">Hasi saioa pasahitzak erabiltzeko</translation>
-<translation id="570043786759263127">Google Play aplikazioak eta zerbitzuak</translation>
+<translation id="570043786759263127">Google Play-ko aplikazioak eta zerbitzuak</translation>
 <translation id="5700761515355162635">Hirugarrenen cookieak erabil daitezke</translation>
 <translation id="5700836101007545240">Administratzaileak desgaitu du konexioak gehitzeko aukera</translation>
 <translation id="5701080607174488915">Errore bat gertatu da gidalerroa eskuratzean zerbitzaritik.</translation>
@@ -6555,7 +6555,7 @@ Baliteke webguneei eta aplikazioei emandako baimenak kontu honi aplikatzea. Goog
 <translation id="6266532094411434237"><ph name="DEVICE" /> gailura konektatzen</translation>
 <translation id="6267166720438879315">Hautatu ziurtagiria zeure burua <ph name="HOST_NAME" /> ostalarian egiaztatzeko</translation>
 <translation id="6268252012308737255">Ireki <ph name="APP" /> aplikazioan</translation>
-<translation id="6270309713620950855">Audioa desaktibatuta edukitzearen abisua</translation>
+<translation id="6270309713620950855">Audioa desaktibatuaren abisua</translation>
 <translation id="6270391203985052864">Webguneek jakinarazpenak bidaltzea eska dezakete</translation>
 <translation id="6270486800167535228">Luzapena ainguratuta dago. Aukera gehiago ikusteko, hautatu hau</translation>
 <translation id="6270770586500173387">Bidali <ph name="BEGIN_LINK1" />sistemari eta aplikazioei buruzko informazioa<ph name="END_LINK1" /> eta <ph name="BEGIN_LINK2" />estatistikak<ph name="END_LINK2" /></translation>
@@ -7179,7 +7179,7 @@ Arriskuan dauden # pasahitz gehiago dauzkazu. Google-ren Pasahitz-kudeatzailea z
 <translation id="6798420440063423019">Segurtasun-giltza blokeatuta dago PINa gehiegitan idatzi delako oker. Segurtasun-giltza berrezarri beharko duzu.</translation>
 <translation id="679845623837196966">Erakutsi irakurketa-zerrenda</translation>
 <translation id="6798578729981748444">Inportazioa amaitzeko, itxi Firefox-eko leiho guztiak.</translation>
-<translation id="6798780071646309401">maiuskulak aktibatuta daude</translation>
+<translation id="6798780071646309401">maiuskulen blokeoa aktibatuta dago</translation>
 <translation id="6798954102094737107"><ph name="PLUGIN_NAME" /> plugina</translation>
 <translation id="679905836499387150">Tresna-barraren botoi ezkutuak</translation>
 <translation id="6801129617625983991">Ezarpen orokorrak</translation>
@@ -7598,7 +7598,7 @@ Inoiz Voice Match erabiltzeari utzi nahi badiozu, ken ezazu Laguntzailea zerbitz
 <translation id="7123302939607518173">Gehitu interes edo webgune bat harekin erlazionatutako iragarkiak zuretzat erabilgarriak izango direla uste baduzu;</translation>
 <translation id="7124013154139278147">Esleitu erabilerraztasun-etengailu bat "Aurrekoa" ekintzari</translation>
 <translation id="7124712201233930202">Ez dira gordetzen erakundearen gidalerroak</translation>
-<translation id="7125029162161377569">Privacy Sandbox-aren probei esker, berdin arakatu ahalko dituzu webguneak datu gutxiago erabilita. Pribatutasun handiagoa izango duzula eta webguneen arteko jarraipena mugatuko dela esan nahi du horrek. Proba berriak gehituko ditugu kaleratzeko prest egon ahala.</translation>
+<translation id="7125029162161377569">Privacy Sandbox-aren probei esker, berdin arakatu ahalko dituzu webguneak datu gutxiago erabilita. Pribatutasun handiagoa izango duzula eta webgunearteko jarraipena mugatuko dela esan nahi du horrek. Proba berriak gehituko ditugu kaleratzeko prest egon ahala.</translation>
 <translation id="7125148293026877011">Ezabatu Crostini</translation>
 <translation id="7125932261198019860">Ziurtatu inprimagailua Chromebook-aren wifi-sare berera konektatuta dagoela, edo erabili USB kable bat. <ph name="LINK_BEGIN" />Lortu bateragarritasunari buruzko informazio gehiago<ph name="LINK_END" /></translation>
 <translation id="7127980134843952133">Deskargen historia</translation>
@@ -8189,7 +8189,7 @@ Inoiz Voice Match erabiltzeari utzi nahi badiozu, ken ezazu Laguntzailea zerbitz
 <translation id="7622114377921274169">Kargatzen.</translation>
 <translation id="7622768823216805500">Webguneek ordainketa-kudeatzaileak instalatu ohi dituzte ordainketa erraza eta antzeko erosketa-eginbideak eskaintzeko</translation>
 <translation id="7622966771025050155">Aldatu grabatutako fitxara</translation>
-<translation id="7624337243375417909">maiuskulak desaktibatuta daude</translation>
+<translation id="7624337243375417909">maiuskulen blokeoa desaktibatuta dago</translation>
 <translation id="7625568159987162309">Ikusi webguneetan gordetako baimenak eta datuak</translation>
 <translation id="7625823789272218216">Fitxa berria ezkerrean</translation>
 <translation id="7628201176665550262">Freskatze-abiadura</translation>
@@ -9027,7 +9027,7 @@ Gorde gakoen fitxategia leku seguru batean. Zure luzapenaren bertsio berriak sor
 <translation id="8265671588726449108">{COUNT,plural, =1{Berriro exekutatu ondoren, ezkutuko moduko leihoa ez da irekiko}other{Berriro exekutatu ondoren, ezkutuko moduko {COUNT} leihoak ez dira irekiko}}</translation>
 <translation id="8266947622852630193">Idazketa-metodo guztiak</translation>
 <translation id="8267539814046467575">Gehitu inprimagailu bat</translation>
-<translation id="8267961145111171918"><ph name="BEGIN_PARAGRAPH1" />Gailuari eta hura erabiltzeko moduari buruzko informazio orokorra da (adibidez, bateria-maila, sistemako eta aplikazioetako jarduerak, eta erroreak). Android hobetzeko erabiliko dira datuok. Gainera, multzokatutako datu batzuk oso baliagarriak dira Google-ren aplikazioak hobetzeko eta bazkideei (adibidez, Android garatzaileei) euren aplikazio eta produktuak hobetzen laguntzeko.<ph name="END_PARAGRAPH1" />
+<translation id="8267961145111171918"><ph name="BEGIN_PARAGRAPH1" />Gailuari eta hura erabiltzeko moduari buruzko informazio orokorra da (adibidez, bateria-maila, sistemako eta aplikazioetako jarduerak, eta erroreak). Android hobetzeko erabiliko dira datuok. Gainera, datu bateratu batzuk oso baliagarriak dira Google-ren aplikazioak hobetzeko eta bazkideei (adibidez, Android garatzaileei) euren aplikazio eta produktuak hobetzen laguntzeko.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />Eginbidea desaktibatuta ere, gailuak beharrezko informazioa bidaltzen jarraitu ahal izango du funtsezko zerbitzuak jasotzeko, hala nola sistemaren eguneratzeak eta segurtasun-neurriak.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />Jabeak kontrolatu nahi badu, atal honetara joan beharko du: Ezarpenak &gt; Aurreratuak &gt; Bidali Google-ri diagnostiko- eta erabilera-datuak automatikoki.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />Sareko eta aplikazioetako jarduera gehigarriak ezarpena aktibatuta badago haurrarentzat, baliteke datu horiek haren Google-ko kontuan gordetzea. Lortu informazio gehiago ezarpenei eta haiek doitzeko moduari buruz families.google.com helbidean.<ph name="END_PARAGRAPH4" /></translation>
@@ -9521,7 +9521,7 @@ Gorde gakoen fitxategia leku seguru batean. Zure luzapenaren bertsio berriak sor
 <translation id="8666759526542103597">Iragarkiak arakatzailean oinarrituta pertsonalizatzeari buruz</translation>
 <translation id="8667261224612332309">Hobe daitezkeen pasahitzak dituzu</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> pantaila osoan dago eta saguaren kurtsorea desgaitu du.</translation>
-<translation id="8667760277771450375">Webguneei spama eta iruzurrak saihesteko aukera gaitu bitartean webguneen arteko jarraipenak mugatzeko moduak arakatzen ari gara.</translation>
+<translation id="8667760277771450375">Webguneei spama eta iruzurrak saihesteko aukera gaitu bitartean webgunearteko jarraipenak mugatzeko moduak arakatzen ari gara.</translation>
 <translation id="8668378421690365723">Baliteke gailuak behar bezala funtzionatzeari uztea eta segurtasun- eta errendimendu-arazoak izatea.</translation>
 <translation id="8669284339312441707">Beroagoa</translation>
 <translation id="8670537393737592796">Hona bizkor itzuli ahal izateko, instalatu <ph name="APP_NAME" /> instalatzeko botoia sakatuta</translation>
@@ -9624,7 +9624,7 @@ Gorde gakoen fitxategia leku seguru batean. Zure luzapenaren bertsio berriak sor
 <translation id="8740672167979365981">ChromeOS Flex eguneratu egin behar da</translation>
 <translation id="8741944563400125534">Erabilerraztasun-osagarria konfiguratzeko gida</translation>
 <translation id="8742395827132970586">Instalazioak huts egin du, garbitzen</translation>
-<translation id="8742998548129056176">Gailuari eta hura erabiltzeko moduari buruzko informazio orokorra da hau (adibidez, bateria-maila, sistemako eta aplikazioetako jarduerak, eta erroreak). Android hobetzeko erabiliko dira datuok. Gainera, multzokatutako datu batzuk oso baliagarriak dira Google-ren aplikazioak hobetzeko eta bazkideei (adibidez, Android-en garatzaileei) euren aplikazio eta produktuak hobetzen laguntzeko.</translation>
+<translation id="8742998548129056176">Gailuari eta hura erabiltzeko moduari buruzko informazio orokorra da hau (adibidez, bateria-maila, sistemako eta aplikazioetako jarduerak, eta erroreak). Android hobetzeko erabiliko dira datuok. Gainera, datu bateratu batzuk oso baliagarriak dira Google-ren aplikazioak hobetzeko eta bazkideei (adibidez, Android-en garatzaileei) euren aplikazio eta produktuak hobetzen laguntzeko.</translation>
 <translation id="8743357966416354615">Garapen-ingurune kudeatua (<ph name="GENERAL_NAME" />)</translation>
 <translation id="8744641000906923997">Romaji</translation>
 <translation id="8745034592125932220">Ez du gailu honetan datuak gordetzeko baimenik</translation>

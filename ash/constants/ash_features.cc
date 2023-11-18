@@ -2047,6 +2047,11 @@ BASE_FEATURE(kPerDeskShelf, "PerDeskShelf", base::FEATURE_DISABLED_BY_DEFAULT);
 // and perform phone-side actions within ChromeOS.
 BASE_FEATURE(kPhoneHub, "PhoneHub", base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Retry generating attestation certificates when there are failures.
+BASE_FEATURE(kPhoneHubAttestationRetries,
+             "PhoneHubAttestationRetries",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Enables the Camera Roll feature in Phone Hub, which allows users to access
 // recent photos and videos taken on a connected Android device
 BASE_FEATURE(kPhoneHubCameraRoll,
@@ -2476,6 +2481,12 @@ BASE_FEATURE(kSuspendToDiskAllowS4,
 BASE_FEATURE(kFeatureManagementFeatureAwareDeviceDemoMode,
              "FeatureManagementFeatureAwareDeviceDemoMode",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enabled the demo mode session to close GMSCore windows which disrupt
+// the attract loop videos.
+BASE_FEATURE(kDemoModeGMSCoreWindowCloser,
+             "DemoModeGMSCoreWindowCloser",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the shutdown confirmation bubble from the login shelf view.
 BASE_FEATURE(kShutdownConfirmationBubble,
@@ -3245,6 +3256,10 @@ bool IsAudioSourceFetcherResamplingEnabled() {
   return base::FeatureList::IsEnabled(kAudioSourceFetcherResampling);
 }
 
+bool IsDemoModeGMSCoreWindowCloserEnabled() {
+  return base::FeatureList::IsEnabled(kDemoModeGMSCoreWindowCloser);
+}
+
 bool IsEcheSWAEnabled() {
   return base::FeatureList::IsEnabled(kEcheSWA);
 }
@@ -3895,6 +3910,10 @@ bool IsPhoneHubPingOnBubbleOpenEnabled() {
 
 bool IsPhoneHubEnabled() {
   return base::FeatureList::IsEnabled(kPhoneHub);
+}
+
+bool IsPhoneHubAttestationRetriesEnabled() {
+  return base::FeatureList::IsEnabled(kPhoneHubAttestationRetries);
 }
 
 bool IsPhoneHubCallNotificationEnabled() {

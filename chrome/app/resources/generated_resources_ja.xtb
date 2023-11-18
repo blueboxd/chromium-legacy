@@ -4309,7 +4309,7 @@
 <translation id="4412547955014928315"><ph name="SITE_NAME" /> とその下にあるすべてのサイトのサイトデータと権限を削除しますか？</translation>
 <translation id="4412632005703201014">Chrome アプリはプログレッシブ ウェブアプリに移行しています。この Chrome アプリは組織によりブラウザにインストールされたものです。アプリのリストからプログレッシブ ウェブアプリを開くには、まず Chrome アプリをアンインストールするよう管理者に依頼します。その間は、<ph name="EXTENSION_LAUNCH_URL" /> にアクセスして、ウェブで <ph name="EXTENSION_NAME" /> を開いてください。</translation>
 <translation id="4412698727486357573">ヘルプセンター</translation>
-<translation id="4412992751769744546">サードパーティの Cookie を許可</translation>
+<translation id="4412992751769744546">サードパーティの Cookie を許可する</translation>
 <translation id="4413087696295876280">ChromeOS Flex のデバイス情報とデータを読み取る</translation>
 <translation id="44141919652824029">接続された USB デバイスのリストを「<ph name="APP_NAME" />」が取得することを許可しますか？</translation>
 <translation id="4414232939543644979">新しいシークレット ウインドウ(&amp;I)</translation>
@@ -6758,7 +6758,7 @@
 <translation id="6451591602925140504">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" />、他 1 個のタブ}other{<ph name="PAGE_TITLE" />、他 # 個のタブ}}</translation>
 <translation id="6451689256222386810">パスフレーズを忘れた場合や、この設定を変更する場合は、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />します。</translation>
 <translation id="6452181791372256707">拒否</translation>
-<translation id="6452251728599530347"><ph name="PERCENT" />% 完了</translation>
+<translation id="6452251728599530347"><ph name="PERCENT" /> 完了</translation>
 <translation id="645286928527869380">レシピ</translation>
 <translation id="6452961788130242735">ネットワークに問題があるか、レルムが正しくありません</translation>
 <translation id="6453191633103419909">タブや画面投影の品質</translation>

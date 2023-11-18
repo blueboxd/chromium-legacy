@@ -45,11 +45,13 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsSizer;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridge;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridgeJni;
+import org.chromium.chrome.browser.page_insights.proto.Config.PageInsightsConfig;
 import org.chromium.chrome.browser.page_insights.proto.PageInsights;
 import org.chromium.chrome.browser.page_insights.proto.PageInsights.AutoPeekConditions;
 import org.chromium.chrome.browser.page_insights.proto.PageInsights.Page;
@@ -144,6 +146,8 @@ public class PageInsightsCoordinatorTest {
     private PageInsightsSurfaceRenderer mSurfaceRenderer;
     @Mock
     private Supplier<ShareDelegate> mShareDelegateSupplier;
+    @Mock
+    private BackPressManager mBackPressManager;
 
     private PageInsightsCoordinator mPageInsightsCoordinator;
     private ManagedBottomSheetController mPageInsightsController;
@@ -221,18 +225,27 @@ public class PageInsightsCoordinatorTest {
         });
         doReturn(true).when(mIsPageInsightsHubEnabled).getAsBoolean();
         mPageInsightsCoordinator =
-                new PageInsightsCoordinator(
-                        activity,
-                        mTabProvider,
-                        mShareDelegateSupplier,
-                        mProfileSupplier,
-                        mPageInsightsController,
-                        mBottomUiController,
-                        mExpandedSheetHelper,
-                        mBrowserControlsStateProvider,
-                        mBrowserControlsSizer,
-                        mIsPageInsightsHubEnabled,
-                        0);
+                TestThreadUtils.runOnUiThreadBlocking(
+                        () ->
+                                new PageInsightsCoordinator(
+                                        activity,
+                                        new View(ContextUtils.getApplicationContext()),
+                                        mTabProvider,
+                                        mShareDelegateSupplier,
+                                        mProfileSupplier,
+                                        mPageInsightsController,
+                                        mBottomUiController,
+                                        mExpandedSheetHelper,
+                                        mBrowserControlsStateProvider,
+                                        mBrowserControlsSizer,
+                                        mBackPressManager,
+                                        mIsPageInsightsHubEnabled,
+                                        (navigationHandle) ->
+                                                PageInsightsConfig.newBuilder()
+                                                        .setShouldAutoTrigger(true)
+                                                        .setShouldXsurfaceLog(true)
+                                                        .setShouldAttachGaiaToRequest(true)
+                                                        .build()));
         doReturn(mTab).when(mTabProvider).get();
         doReturn(JUnitTestGURLs.EXAMPLE_URL).when(mTab).getUrl();
         verify(mTabProvider).addObserver(mTabCallbackCaptor.capture());
@@ -260,8 +273,11 @@ public class PageInsightsCoordinatorTest {
         waitForAnimationToFinish();
     }
 
-    private void collapseSheet() throws Exception {
-        TestThreadUtils.runOnUiThreadBlocking(() -> mPageInsightsController.collapseSheet(true));
+    private void hideSheet() throws Exception {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () ->
+                        mPageInsightsController.hideContent(
+                                mPageInsightsController.getCurrentSheetContent(), true));
         waitForAnimationToFinish();
     }
 
@@ -386,7 +402,9 @@ public class PageInsightsCoordinatorTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mPageInsightsCoordinator.onBottomUiStateChanged(false));
         waitForAnimationToFinish();
-        assertEquals("Sheet should be restored", SheetState.PEEK,
+        assertEquals(
+                "Sheet should be restored",
+                SheetState.FULL,
                 mPageInsightsController.getSheetState());
 
         // Other bottom sheets
@@ -404,7 +422,9 @@ public class PageInsightsCoordinatorTest {
                         -> mBottomUiObserverCaptor.getValue().onSheetStateChanged(
                                 SheetState.HIDDEN, /*unused*/ 0));
         waitForAnimationToFinish();
-        assertEquals("Sheet should be restored", SheetState.PEEK,
+        assertEquals(
+                "Sheet should be restored",
+                SheetState.FULL,
                 mPageInsightsController.getSheetState());
     }
 
@@ -414,7 +434,7 @@ public class PageInsightsCoordinatorTest {
         createAndLaunchPageInsightsCoordinator();
         expandSheet();
         verify(mExpandedSheetHelper).onSheetExpanded();
-        collapseSheet();
+        hideSheet();
         verify(mExpandedSheetHelper).onSheetCollapsed();
     }
 

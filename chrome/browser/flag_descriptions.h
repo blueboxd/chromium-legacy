@@ -4261,6 +4261,9 @@ extern const char kShowForceRespectUiGainsToggleDescription[];
 
 extern const char kCrOSSystemVoiceIsolationOptionName[];
 extern const char kCrOSSystemVoiceIsolationOptionDescription[];
+
+extern const char kAudioFlexibleLoopbackForSystemLoopbackName[];
+extern const char kAudioFlexibleLoopbackForSystemLoopbackDescription[];
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)

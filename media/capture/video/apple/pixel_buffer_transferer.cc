@@ -40,7 +40,7 @@ bool PixelBufferTransferer::TransferImage(CVPixelBufferRef source,
 
 PixelBufferTransferer::~PixelBufferTransferer() {
   if (__builtin_available(macOS 10.8, *)) {
-    VTPixelTransferSessionInvalidate(transfer_session_.get(),);
+    VTPixelTransferSessionInvalidate(transfer_session_.get());
   }
 }
 

@@ -861,10 +861,10 @@ static const LSCopyApplicationURLsForBundleIdentifierPtr LSCopyApplicationURLsFo
             base::SysUTF8ToCFStringRef(bundle_id).get(), /*outError=*/nullptr));
   } else {
     base::apple::ScopedCFTypeRef<CFURLRef> cf_url;
-    LSFindApplicationForInfo(kLSUnknownCreator, base::SysUTF8ToCFStringRef(bundle_id), NULL, NULL,
+    LSFindApplicationForInfo(kLSUnknownCreator, base::SysUTF8ToCFStringRef(bundle_id).get(), NULL, NULL,
                              cf_url.InitializeInto());
     if (cf_url)
-      bundle_urls = (@[ base::apple::CFToNSPtrCast(cf_url) ]);
+      bundle_urls = (@[ base::apple::CFToNSPtrCast(cf_url.get()) ]);
   }
   for (NSURL* url : bundle_urls) {
     base::FilePath bundle_path = base::apple::NSURLToFilePath(url);

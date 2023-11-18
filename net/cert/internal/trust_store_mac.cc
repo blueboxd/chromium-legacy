@@ -1175,7 +1175,7 @@ base::apple::ScopedCFTypeRef<CFDataRef> TrustStoreMac::GetMacNormalizedIssuer(
     name_data.reset(SecCertificateCopyNormalizedIssuerSequence(cert_handle.get()));
   } else {
     name_data.reset(
-        SecCertificateCopyNormalizedIssuerContent(cert_handle, nullptr));
+        SecCertificateCopyNormalizedIssuerContent(cert_handle.get(), nullptr));
   }
   if (!name_data)
     LOG(ERROR) << "SecCertificateCopyNormalizedIssuerContent";

@@ -324,7 +324,7 @@ using content::DropData;
       base::apple::ScopedCFTypeRef<CFStringRef> mimeTypeCF(
           base::SysUTF8ToCFStringRef(mimeType));
       _fileUTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType,
-                                                       mimeTypeCF, NULL);
+                                                       mimeTypeCF.get(), NULL);
 
       // File (HFS) promise.
       // There are two ways to drag/drop files. NSFilesPromisePboardType is the

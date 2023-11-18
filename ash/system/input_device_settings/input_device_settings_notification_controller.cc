@@ -308,6 +308,14 @@ void ShowTouchpadSettings() {
   Shell::Get()->system_tray_model()->client()->ShowTouchpadSettings();
 }
 
+void ShowMouseSettings() {
+  Shell::Get()->system_tray_model()->client()->ShowMouseSettings();
+}
+
+void ShowGraphicsTabletSettings() {
+  Shell::Get()->system_tray_model()->client()->ShowGraphicsTabletSettings();
+}
+
 void OnLearnMoreClicked() {
   NewWindowDelegate::GetPrimary()->OpenUrl(
       GURL(kKeyboardSettingsLearnMoreLink),
@@ -502,6 +510,22 @@ void InputDeviceSettingsNotificationController::
   RemoveNotification(notification_id);
 }
 
+void HandleMouseCustomizationNotificationClicked(
+    const std::string& notification_id,
+    absl::optional<int> button_index) {
+  ShowMouseSettings();
+  RemoveNotification(notification_id);
+  return;
+}
+
+void HandleGraphicsTabletCustomizationNotificationClicked(
+    const std::string& notification_id,
+    absl::optional<int> button_index) {
+  ShowGraphicsTabletSettings();
+  RemoveNotification(notification_id);
+  return;
+}
+
 // TODO(b/279503977): Use `blocked_modifier` and `active_modifier` to display
 // the notification message once strings are finalized.
 void InputDeviceSettingsNotificationController::
@@ -554,13 +578,16 @@ void InputDeviceSettingsNotificationController::
   message_center_->AddNotification(std::move(notification));
 }
 
-// TODO(wangdanny): Add link to per device mouse settings subpage.
 void InputDeviceSettingsNotificationController::NotifyMouseIsCustomizable(
     const mojom::Mouse& mouse) {
   const auto peripheral_name = base::UTF8ToUTF16(mouse.name);
+  const auto notification_id =
+      GetPeripheralCustomizationMouseNotificationID(mouse.id);
+  message_center::RichNotificationData rich_notification_data;
+  rich_notification_data.buttons.emplace_back(l10n_util::GetStringUTF16(
+      IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_OPEN_SETTINGS_BUTTON));
   auto notification = CreateSystemNotificationPtr(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      GetPeripheralCustomizationMouseNotificationID(mouse.id),
+      message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
       l10n_util::GetStringFUTF16(
           IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_PERIPHERAL_CUSTOMIZATION_TITLE,
           peripheral_name),
@@ -571,20 +598,26 @@ void InputDeviceSettingsNotificationController::NotifyMouseIsCustomizable(
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierId,
                                  NotificationCatalogName::kInputDeviceSettings),
-      message_center::RichNotificationData(), nullptr, kSettingsIcon,
-      message_center::SystemNotificationWarningLevel::NORMAL);
+      rich_notification_data,
+      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+          base::BindRepeating(&HandleMouseCustomizationNotificationClicked,
+                              notification_id)),
+      kSettingsIcon, message_center::SystemNotificationWarningLevel::NORMAL);
   message_center_->AddNotification(std::move(notification));
 }
 
-// TODO(wangdanny): Add link to graphics tablet settings subpage.
 void InputDeviceSettingsNotificationController::
     NotifyGraphicsTabletIsCustomizable(
         const mojom::GraphicsTablet& graphics_tablet) {
   const auto peripheral_name = base::UTF8ToUTF16(graphics_tablet.name);
-  auto notification = CreateSystemNotificationPtr(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
+  const auto notification_id =
       GetPeripheralCustomizationGraphicsTabletNotificationID(
-          graphics_tablet.id),
+          graphics_tablet.id);
+  message_center::RichNotificationData rich_notification_data;
+  rich_notification_data.buttons.emplace_back(l10n_util::GetStringUTF16(
+      IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_OPEN_SETTINGS_BUTTON));
+  auto notification = CreateSystemNotificationPtr(
+      message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
       l10n_util::GetStringFUTF16(
           IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_PERIPHERAL_CUSTOMIZATION_TITLE,
           peripheral_name),
@@ -595,8 +628,12 @@ void InputDeviceSettingsNotificationController::
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierId,
                                  NotificationCatalogName::kInputDeviceSettings),
-      message_center::RichNotificationData(), nullptr, kSettingsIcon,
-      message_center::SystemNotificationWarningLevel::NORMAL);
+      rich_notification_data,
+      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+          base::BindRepeating(
+              &HandleGraphicsTabletCustomizationNotificationClicked,
+              notification_id)),
+      kSettingsIcon, message_center::SystemNotificationWarningLevel::NORMAL);
   message_center_->AddNotification(std::move(notification));
 }
 

@@ -1170,14 +1170,14 @@ bool BrowserView::UsesImmersiveFullscreenMode() const {
       GetIsWebAppType();
   const bool is_tabbed_window = GetSupportsTabStrip();
   return base::FeatureList::IsEnabled(features::kImmersiveFullscreen) &&
-         (is_pwa || is_tabbed_window);
+         (is_pwa || is_tabbed_window) && __builtin_available(macOS 10.14, *);
 }
 
 bool BrowserView::UsesImmersiveFullscreenTabbedMode() const {
   return (GetSupportsTabStrip() &&
           base::FeatureList::IsEnabled(features::kImmersiveFullscreen) &&
           base::FeatureList::IsEnabled(features::kImmersiveFullscreenTabs)) &&
-         !GetIsWebAppType();
+         !GetIsWebAppType() && __builtin_available(macOS 10.14, *);
 }
 #endif
 
